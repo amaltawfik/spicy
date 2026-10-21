@@ -58,14 +58,14 @@ fits. The *Generalized linear models* section covers the
 glm-specific argument semantics; the *Mixed-effects models*
 section introduces the Random effects rows that mixed-effects
 fits add below the fixed effects (`lmer`, `glmer`, `glmmTMB`,
-`lme`). Each further model family has a dedicated article that
+`lme`, and the ordinal `clmm`). Each further model family has a dedicated article that
 applies these mechanics to its own estimands:
 [*Mixed-effects regression tables*](table-regression-mixed.html) for mixed-effects models,
 [*GEE regression tables*](table-regression-gee.html) for population-averaged (GEE)
 models, [*Count and two-part regression tables*](table-regression-counts.html) for Poisson,
 negative-binomial, and two-part models,
 [*Ordinal regression tables*](table-regression-ordinal.html) for ordinal models
-(`polr`, `clm`), [*Multinomial regression tables*](table-regression-multinomial.html) for
+(`polr`, `clm`, and the mixed `clmm`), [*Multinomial regression tables*](table-regression-multinomial.html) for
 multinomial models (`multinom`, `mlogit`),
 [*Survival regression tables*](table-regression-survival.html) for survival models
 (`coxph`, `survreg`), and [*Bayesian regression tables*](table-regression-bayesian.html)
@@ -579,9 +579,10 @@ visible to the reader.
 
 `keep` and `drop` accept regular expressions matched against
 coefficient names (as returned by `stats::coef()`). They are
-mutually exclusive — use `keep` to retain only the focal
-predictors, or `drop` to hide a few control variables. Multiple
-patterns combine with logical OR.
+mutually exclusive — use `keep` to retain the focal predictors, or
+`drop` to hide a few control variables. Multiple patterns combine
+with logical OR. The intercept is not filtered: `show_intercept`
+decides whether it shows.
 
 ```{r keep}
 fit <- lm(wellbeing_score ~ age + sex + smoking + bmi + education,
@@ -662,7 +663,7 @@ follows Stata's `glm` default rather than `summary.glm()`. The
 table title becomes family-aware ("Logistic regression", "Poisson
 regression", "Probit regression", …) and the default
 fit-statistics block swaps in `nobs`, `pseudo_r2_mcfadden`,
-`pseudo_r2_nagelkerke`, and `AIC` instead of `R²` and `Adj. R²`.
+`pseudo_r2_nagelkerke`, and `aic` instead of `R²` and `Adj. R²`.
 
 We illustrate with a logistic regression of `smoking` on `sex`,
 `age`, and `education` from `sochealth`, reusing `sh` — the copy
@@ -897,9 +898,11 @@ over rejection* rule, spicy accepts the fit and emits a
 
 ## Mixed-effects models
 
-`table_regression()` supports four mixed-effects engines:
+`table_regression()` supports the mixed-effects fits of
 `lme4::lmer()` and `lme4::glmer()`, `glmmTMB::glmmTMB()`, and
-`nlme::lme()`. The fixed-effects section of the table follows
+`nlme::lme()`, and, for an ordinal outcome, of `ordinal::clmm()` and
+glmmTMB's ordinal family (see *Ordinal regression tables*). The
+fixed-effects section of the table follows
 the same conventions as `lm` / `glm`. Below it, a subordinate
 **Random effects** block reports the variance components as rows
 — one per random standard deviation (σ), correlation (ρ), and
@@ -1079,7 +1082,8 @@ Descriptive and reporting companions:
 
 - [*Categorical summary tables*](table-categorical.html) for the APA
   Table 1 categorical descriptors (factors, labelled variables,
-  chi-squared tests, association measures).
+  chi-squared or Fisher's exact tests chosen per variable, association
+  measures).
 - [*Continuous summary tables*](table-continuous.html) for the APA
   Table 1 / Table 2 continuous descriptors and unadjusted
   group-comparison tests.
@@ -1088,8 +1092,8 @@ Descriptive and reporting companions:
   (estimated marginal means, contrast or slope, four effect-size
   families with noncentral CIs).
 - [*Summary tables for reporting*](summary-tables-reporting.html) for an
-  end-to-end reporting workflow that combines the four spicy
-  summary-table helpers along the APA Table 1 / 2 / 3 sequence.
+  end-to-end reporting workflow that combines the spicy
+  table functions along the APA Table 1 / 2 / 3 sequence.
 
 ## References
 

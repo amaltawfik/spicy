@@ -166,6 +166,50 @@ test_that("table_continuous_lm contrast none suppresses binary contrasts", {
   expect_true(all(is.na(out$estimate_type)))
 })
 
+test_that("contrast = \"none\" leaves the contrast and its interval out of every output", {
+  # The table printed the contrast column and its two bounds, empty.
+  tb <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    contrast = "none",
+    statistic = TRUE
+  )
+  txt <- paste(capture.output(print(tb)), collapse = "\n")
+  expect_no_match(txt, "Δ", fixed = TRUE)
+  expect_no_match(txt, "95% CI", fixed = TRUE)
+  expect_match(txt, "M (Female)", fixed = TRUE)
+  expect_match(txt, "F(1, 1186)", fixed = TRUE)
+  df <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    contrast = "none",
+    statistic = TRUE,
+    output = "data.frame"
+  )
+  expect_identical(df, as.data.frame(tb))
+  expect_false(any(startsWith(names(df), "Δ")))
+  expect_false(any(grepl("CI", names(df), fixed = TRUE)))
+  expect_true(all(c("M (Female)", "M (Male)", "p", "n") %in% names(df)))
+  tokens <- vapply(
+    as_structured(tb)$col_meta,
+    function(m) if (is.null(m$token)) "" else m$token,
+    character(1)
+  )
+  expect_true("emmean" %in% tokens)
+  expect_false(any(c("delta", "ci") %in% tokens))
+  # With the contrast, the columns are there.
+  df_auto <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    output = "data.frame"
+  )
+  expect_true(any(startsWith(names(df_auto), "Δ")))
+  expect_true(any(grepl("CI", names(df_auto), fixed = TRUE)))
+})
+
 test_that("table_continuous_lm weights accept column names", {
   df <- data.frame(
     y = c(1, 2, 3, 10),
@@ -1913,6 +1957,40 @@ test_that("glance() exposes test_type 't' for numeric predictors", {
   expect_equal(glance_out$test_type[1], "t")
 })
 
+test_that("glance() reports the displayed test: the t of a two-level contrast", {
+  skip_if_not_installed("broom")
+  out <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    statistic = TRUE
+  )
+  g <- broom::glance(out)
+  expect_identical(g$test_type, "t")
+  expect_equal(g$statistic, 2.373843, tolerance = 1e-6)
+  expect_identical(g$df, 1186)
+  expect_true(is.na(g$df.residual))
+  expect_match(
+    paste(capture.output(print(out)), collapse = "\n"),
+    "t(1186)",
+    fixed = TRUE
+  )
+  # The long output keeps both rows: the F of the model, the square of
+  # the t, and the t of the contrast.
+  lg <- table_continuous_lm(sochealth, select = bmi, by = sex, output = "long")
+  expect_identical(lg$test_type, c("F", "t"))
+  expect_equal(lg$statistic[[1L]], g$statistic^2, tolerance = 1e-8)
+  # Without the contrast, the table displays the F, and so does glance().
+  g0 <- broom::glance(table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    contrast = "none"
+  ))
+  expect_identical(g0$test_type, "F")
+  expect_identical(c(g0$df, g0$df.residual), c(1, 1186))
+})
+
 test_that("coercion is a no-op on the original object", {
   out <- table_continuous_lm(
     sochealth,
@@ -2756,12 +2834,13 @@ test_that("effect sizes are invariant to vcov = 'CR2'", {
   )
 })
 
-test_that("glance() preserves df.residual without integer truncation", {
+test_that("glance() preserves a fractional df without integer truncation", {
   # Regression: glance() previously coerced df2 -> integer, which
   # truncated both genuinely-fractional Satterthwaite df (e.g. 45.32)
   # and FP-noisy near-integer values (47.999999... -> 47). The
   # broom convention for Satterthwaite-corrected models keeps df as
-  # numeric, so spicy now mirrors that.
+  # numeric, so spicy now mirrors that. With a two-level `by`, glance()
+  # reports the t of the contrast, which carries that df in `df`.
   skip_if_not_installed("clubSandwich")
   set.seed(1)
   n <- 200
@@ -2777,17 +2856,20 @@ test_that("glance() preserves df.residual without integer truncation", {
     vcov = "CR2",
     cluster = cluster_id
   )
-  # The compute frame of the printed object, under its internal name.
-  raw_df2 <- res$df2[1]
+  # The compute frame of the printed object, under its internal name: the
+  # second row carries the contrast.
+  raw_df2 <- res$df2[2]
   expect_false(is.na(raw_df2))
   g <- broom::glance(res)
-  expect_type(g$df.residual, "double")
-  expect_equal(g$df.residual, raw_df2)
+  expect_identical(g$test_type, "t")
+  expect_type(g$df, "double")
+  expect_equal(g$df, raw_df2)
+  expect_true(is.na(g$df.residual))
   # Also verify a synthetic genuinely-fractional value is preserved.
   res2 <- res
   res2$df2 <- 45.32
   g2 <- broom::glance(res2)
-  expect_equal(g2$df.residual, 45.32)
+  expect_equal(g2$df, 45.32)
 })
 
 test_that("CR2 df.residual differs from the classical one (cluster-aware df)", {

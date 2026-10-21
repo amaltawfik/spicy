@@ -1311,7 +1311,7 @@ table_outcome <- function(
     # The block geometry is handed over rather than derived: the
     # exporter's own fallback reads the label column, and every row of
     # this shape carries a label. Both vectors come from the typed
-    # predicates the three descriptive families share.
+    # predicates the descriptive tables share.
     geom <- list(body = .outcome_body_geometry(result))
     return(export_desc_table(
       display_df,

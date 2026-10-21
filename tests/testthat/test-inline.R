@@ -1612,3 +1612,18 @@ test_that("the p of a by-group continuous table is cited without `model`", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("the errors of inline() name inline(), not one of its helpers", {
+  tbl <- table_regression(lm(wellbeing_score ~ age + sex, data = sochealth))
+  # A fit statistic is addressed by its token: broom's column name is no
+  # address.
+  err <- expect_error(inline(tbl, "r.squared"), class = "spicy_invalid_input")
+  expect_identical(rlang::call_name(conditionCall(err)), "inline")
+  expect_identical(inline(tbl, "r2"), "0.02")
+  # A refusal raised two helpers down names it as well.
+  err <- expect_error(
+    inline(tbl, sex, "Female", "b"),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "inline")
+})

@@ -63,9 +63,9 @@
 #'         (with `options(spicy.language)` / `options(spicy.labels)`),
 #'         since 0.13.0
 #'   \item Codebooks: [code_book()] (the `spicy_codebook` object, its
-#'         Excel workbook, and its PDF), in the development version
-#'   \item Multiple-response questions: [table_multiresponse()], in the
-#'         development version
+#'         Excel workbook, and its PDF), since 0.14.0
+#'   \item Multiple-response questions: [table_multiresponse()], since
+#'         0.14.0
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
@@ -88,7 +88,7 @@
 #' | Concept | Column |
 #' |---|---|
 #' | the variable a row describes, its displayed label | `variable`, `label` |
-#' | the level of a categorical variable, the group of `by` | `level`, `group` |
+#' | the level of a categorical variable, the group of `by` (in the tables that take a `by`) | `level`, `group` |
 #' | the role of the row's `level` (or item): a level, the row of missing values, ... | `.row_role` (`"level"`, `"missing"`, `"summary"`, ...) |
 #' | the role of `group`: a group, the column of missing `by` values, the margin | `.group_role` (`"group"`, `"missing"`, `"total"`) |
 #' | the `Total` margin of the groups | `total` (logical) |
@@ -102,11 +102,24 @@
 #' | the observations of a variable or of a model, and their weighted count | `nobs`, `weighted_nobs` |
 #' | the weighted count of a group (beside its `n`) | `weighted_n` |
 #' | the counts of the groups of `by`, of the categories of a variable | `n_groups`, `n_levels` |
-#' | the fit of a model | `r.squared`, `adj.r.squared` |
+#' | the fit of a model | `r.squared`, `adj.r.squared` as columns; as a row, its `show_fit_stats` token in `variable` (`r2`, `adj_r2`, `aic`, ...) |
 #'
 #' `variable` holds the name of the column a row describes and `label`
 #' its displayed label. `outcome` names the response of a regression
-#' model and the single outcome of [table_outcome()]. The proportions of
+#' model and the single outcome of [table_outcome()]. `group` is a key of
+#' the tables that take a `by` ([table_categorical()],
+#' [table_categorical_svy()], [table_continuous()],
+#' [table_continuous_svy()] and [table_multiresponse()]): their `tidy()`
+#' carries it with or without `by`, `NA` without. [table_outcome()] has
+#' no `group`: its groupings are the `level` of each block. Nor has
+#' [table_continuous_lm()], whose `by` sets the columns of the table: its
+#' levels are the `level` of the long output and the `term` of the
+#' `"emmean"` rows of `tidy()`.
+#' A fit statistic is a column of `glance()` and of the long output,
+#' under broom's name, and a row of `output = "data.frame"` (`.row_role`
+#' `"fit_stat"`), keyed in `variable` by its `show_fit_stats` token, the
+#' token [inline()] takes: `r2` is the row of the column `r.squared`.
+#' The proportions of
 #' `tidy()` are between 0 and 1, and the `Total` rows stay, flagged by
 #' `total`. Each role column describes the key column it follows,
 #' whatever the orientation of the printed table: `.row_role` the row's
@@ -116,9 +129,13 @@
 #' groups, the long output carries the effect-size and SMD columns
 #' whether or not they were requested (`NA` then), and `glance()` has a
 #' fixed set of columns; `p_value = FALSE` removes the test columns.
-#' Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`,
-#' and in the long output only for [table_regression_uv()], whose rows
-#' are separate models. The printed objects carry the `by` column and its
+#' Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`.
+#' The long output carries them as well where its rows are models of
+#' their own: in [table_continuous_lm()], one model per outcome (the fit
+#' on the first row of the outcome, its size on every row), and in
+#' [table_regression_uv()], one univariable model per predictor. The long
+#' output of [table_regression()] has the same columns, `NA`: one shape
+#' for the class. The printed objects carry the `by` column and its
 #' label in the attributes `group_var` and `group_label`.
 #'
 #' `output = "data.frame"` and `as.data.frame()` return the table as it
@@ -127,7 +144,10 @@
 #' `.row_role`, the role of the printed row, where the table adds rows),
 #' then the printed columns under their names. The two are identical for
 #' every class. `output = "excel"` and `"word"` return the path of the
-#' file, invisibly.
+#' file, invisibly. The columns of the object `output = "default"`
+#' returns are internal and can change without notice: the contracts are
+#' `output = "data.frame"`, `output = "long"`, `tidy()`, `glance()` and
+#' [as_structured()].
 #'
 #' The set of columns produced by each method is considered
 #' **stabilizing** (**experimental** for [table_multiresponse()], as the
@@ -160,8 +180,8 @@
 #'     \itemize{
 #'       \item \code{spicy_invalid_input} -- bad argument value or type.
 #'       \item \code{spicy_invalid_data} -- bad data shape or content
-#'         (not a data.frame, length mismatch, `bit64::integer64`
-#'         columns, degenerate grouping).
+#'         (not a data.frame, data or a design with no rows, length
+#'         mismatch, `bit64::integer64` columns, degenerate grouping).
 #'       \item \code{spicy_wrong_regime} -- signaled together with
 #'         \code{spicy_invalid_data} when a table receives the wrong kind
 #'         of data for its regime: a survey design handed to a plain table,

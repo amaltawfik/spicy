@@ -47,17 +47,22 @@ it (see \code{labels}).
 
 \code{glance()} returns one row per outcome with model-level
 statistics. Columns: \code{variable}, \code{label}, \code{predictor_type}
-(\code{"categorical"} or \code{"continuous"}), \code{test_type} (\code{"F"} for
-categorical predictors, \code{"t"} for continuous ones),
+(\code{"categorical"} or \code{"continuous"}), \code{test_type} (the test the table
+displays: \code{"t"} for a numeric \code{by} and for the contrast of a
+two-level \code{by}, \code{"F"} for a \code{by} of three or more levels or under
+\code{contrast = "none"}, and \code{"z"} or \code{"chi2"} in their place under
+\code{vcov = "bootstrap"} or \code{"jackknife"}),
 \code{statistic}, \code{df}, \code{df.residual} (the degrees of freedom follow the
 statistic: an \emph{F} has both, a \emph{t} has its own in \code{df} and none in
 \code{df.residual}), \code{p.value}, \code{r.squared},
 \code{adj.r.squared}, \code{es_type}, \code{es_value}, \code{es_ci_lower},
 \code{es_ci_upper}, \code{nobs}, \code{weighted_nobs} (the sum of the weights, \code{NA}
-without \code{weights}).
+without \code{weights}). Beside the contrast of a two-level \code{by}, the \emph{F}
+of the model, the square of its \emph{t}, is in the long output only.
 }
 \seealso{
-\code{\link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame.spicy_continuous_lm_table()}} for the raw
-long-format access.
+\code{\link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame.spicy_continuous_lm_table()}} for the displayed
+table as a data frame, and \code{output = "long"} of
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} for every estimate in long format.
 }
 \keyword{internal}

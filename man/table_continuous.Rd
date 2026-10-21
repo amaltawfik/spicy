@@ -369,11 +369,13 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: the underlying \code{data.frame} carrying the
-rendering metadata as attributes (S3 class
-\code{"spicy_continuous_table"} / \code{"spicy_table"}). The object is
-returned visibly, so a bare \code{table_continuous(...)} call
-auto-prints the styled ASCII table at the console while
+\item \code{"default"}: a \code{data.frame} of class
+\code{"spicy_continuous_table"} / \code{"spicy_table"} carrying the
+rendering metadata as attributes. Its columns are internal and can
+change without notice: read the numbers from \code{"data.frame"},
+\code{"long"}, \code{\link[broom:tidy]{broom::tidy()}}, \code{\link[broom:glance]{broom::glance()}} or \code{\link[=as_structured]{as_structured()}}.
+The object is returned visibly, so a bare \code{table_continuous(...)}
+call auto-prints the styled ASCII table at the console while
 \code{t <- table_continuous(...)} stays silent (print \code{t} to display
 the table). The object can be re-coerced via
 \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} or piped into

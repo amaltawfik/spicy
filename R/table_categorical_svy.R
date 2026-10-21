@@ -507,8 +507,9 @@
 #' \itemize{
 #'   \item `"default"`: a `spicy_categorical_svy_table` (a `data.frame`
 #'     subclass, with the parent class `"spicy_table"`), printed when the
-#'     call is bare; its columns are the table's compute frame, and the
-#'     display frame and the typed view are attached.
+#'     call is bare; its columns are the table's compute frame, internal
+#'     and liable to change without notice, and the display frame and the
+#'     typed view are attached.
 #'   \item `"data.frame"`: the displayed table with its numbers, what
 #'     [as.data.frame()][as.data.frame.spicy_categorical_svy_table] of the
 #'     default object returns: one row per printed row (the header row of

@@ -8,7 +8,7 @@
       i `options(spicy.language = "fr")` gives a French table -- words and numbers.
       i For the numbers alone, compose `spicy_style(decimal_mark = ",", p_style = "standard")`.
 
-# the no-style corpus is pinned across all four families
+# the no-style corpus is pinned across four table functions
 
     {
       "type": "character",

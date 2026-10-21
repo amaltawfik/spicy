@@ -780,7 +780,7 @@ validate_vcov_cluster_lists <- function(
       # nothing to add -- the estimator choice lives on the fit
       # (geeglm's `std.err =`), not in the table call.
       if (inherits(models[[i]], "geeglm")) {
-        .gee_refuse_vcov(vt)
+        .gee_refuse_vcov(vt, call = call)
       }
       # glm + "CR1S": refuse with the reason. Stata's ML commands
       # (logit, poisson, ...) use a DIFFERENT vce(cluster) convention
@@ -1025,7 +1025,7 @@ validate_vcov_cluster_lists <- function(
       # glmmTMB: one estimator, CR0, through glmmTMB's own sandwich; every
       # other token is refused with its reason (R/vcov_glmmTMB.R).
       if (inherits(models[[i]], "glmmTMB")) {
-        .glmmTMB_refuse_vcov(models[[i]], vt)
+        .glmmTMB_refuse_vcov(models[[i]], vt, call = call)
       }
       if (inherits(models[[i]], "fixest")) {
         spicy_abort(

@@ -1023,12 +1023,15 @@
 #' @param keep Character vector of regexes. Only coefficient rows
 #'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
 #'   `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are
-#'   kept. Mutually exclusive with `drop`. Filtering is a display
+#'   kept. The intercept and the subordinate blocks (thresholds, random
+#'   effects) are exempt from `keep` and `drop`: `show_intercept`,
+#'   `show_thresholds` and `show_re` govern them.
+#'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
 #' @param drop Character vector of regexes. Coefficient rows
-#'   matching any pattern are removed. Mutually exclusive with
-#'   `keep`. Default `NULL`.
+#'   matching any pattern are removed, with the exemptions of `keep`.
+#'   Mutually exclusive with `keep`. Default `NULL`.
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param show_thresholds For ordinal cumulative-link models

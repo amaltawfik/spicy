@@ -44,8 +44,9 @@ test_that("every row says what it is", {
       "missing"
     )
   )
-  # Three roles at indent 0, which is exactly why the shared geometry
-  # predicates read `.indent` and not the complement of a role.
+  # Two roles at indent 0, `summary` and `factor_header`, which is
+  # exactly why the shared geometry predicates read `.indent` and not the
+  # complement of a role.
   expect_identical(s$body$.indent, c(0L, 0L, 1L, 1L, 0L, 1L, 1L, 1L))
   expect_identical(
     s$body$.variable,

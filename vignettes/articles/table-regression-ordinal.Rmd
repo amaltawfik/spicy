@@ -5,9 +5,9 @@ description: >
   logit) regression in R with `table_regression()`: shared slope
   coefficients and ordered thresholds, odds ratios, per-outcome-category
   average marginal effects laid out as a probability matrix,
-  cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines,
-  testing the proportional-odds assumption, and the partial
-  proportional odds and scale relaxations.
+  cluster-robust variance, the `MASS::polr` and `ordinal::clm` engines
+  and their mixed counterparts, testing the proportional-odds
+  assumption, and the partial proportional odds and scale relaxations.
 output:
   html_document:
     toc: true
@@ -38,12 +38,23 @@ the shared mechanics (`vcov`, `ci_level`, output formats, multi-model
 layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html)); here we focus on what is *specific* to
 ordinal fits.
 
-`table_regression()` supports both ordinal engines:
+`table_regression()` supports two ordinal engines for independent
+observations:
 
 * **`MASS::polr()`** — proportional-odds cumulative logit (also probit /
   cloglog / cauchit via `method =`);
 * **`ordinal::clm()`** — the more flexible cumulative link model, with
   optional scale and partial-proportional-odds (nominal) effects.
+
+Clustered or repeated ratings take a cumulative-link mixed model:
+`ordinal::clmm()`, or `glmmTMB::glmmTMB()` with
+`family = glmmTMB::ordinal()`. Their tables keep the `Thresholds` block
+described below and add the *Random effects* block of [*Mixed-effects
+regression tables*](table-regression-mixed.html). They take the
+model-based variance only, without average marginal effects:
+`vcov = "CR0"` and the AME columns are refused for both, so the
+cluster-robust and marginal-effects sections below apply to `polr` and
+`clm`.
 
 The model used throughout is a self-rated-health rating regressed on
 age, sex, smoking, and physical activity, using the bundled `sochealth`
@@ -117,7 +128,7 @@ Reading the table:
   substance lies in the odds ratios and marginal effects below. Hide
   the block with `show_thresholds = FALSE` to fall back to a compact
   footer line.
-* Below the fit-stats rule, the model-fit block reports **N**, two
+* Below the fit-stats rule, the model-fit block reports **n**, two
   pseudo-$R^2$ (**McFadden**, the Stata `ologit` default, and
   **Nagelkerke**, one of the three measures SPSS PLUM prints by
   default, alongside Cox &amp; Snell and McFadden), and **AIC**. Both compare the
@@ -235,7 +246,7 @@ more than two categories.
 
 ## Cluster-robust standard errors
 
-Ordinal fits accept the cluster-robust `vcov` family
+The `polr` and `clm` fits accept the cluster-robust `vcov` family
 (`"CR0"`–`"CR3"`), computed by `sandwich::vcovCL()`. One caveat up
 front: the CR2 / CR3 small-sample bias-reduction adjustments are
 defined for (generalized) linear models — `clubSandwich` has no
@@ -435,12 +446,6 @@ formed and `CR*` is refused up front with a
 ```{r clm-scale-refuse, eval = have_ordinal, error = TRUE}
 table_regression(clm_scale, vcov = "CR2", cluster = ~region)
 ```
-
-One wart in the refusal message: it speaks of `clm` models as a
-class and lists only `classical` — read it as applying to this
-*fit*. A plain proportional-odds `clm` (no `scale =` or `nominal =`
-component) supports `CR0`–`CR3` exactly as the `polr` fit in the
-cluster section above.
 
 ### Choosing an ordinal specification
 

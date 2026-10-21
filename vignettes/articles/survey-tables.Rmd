@@ -295,7 +295,7 @@ table_regression(
 
 And the counts are both there: the observed `n` and the `Weighted n`
 the estimates describe, the same pair the descriptive tables print in
-their header.
+their note.
 
 ### Ordinal and Cox fits
 
@@ -412,7 +412,8 @@ inline(tbl, "stype", column = "p")
 
 Every engine of the family is available: `"tinytable"`, `"gt"`,
 `"flextable"`, `"word"`, `"excel"`, `"clipboard"`, plus
-`"data.frame"` / `"long"` for the raw frame.
+`"data.frame"` for the displayed table with its numbers and `"long"`
+for one row per variable, level and group.
 
 ```{r gt, eval = survey_ok && requireNamespace("gt", quietly = TRUE)}
 table_continuous_svy(

@@ -482,8 +482,8 @@ format would require a separate refactor.}
 \item \code{"default"}: an ASCII table object, printed when the call is bare
 \item \code{"data.frame"}: the displayed table with its numbers, one row per
 outcome
-\item \code{"long"}: one row per level of \code{by} and outcome, with every
-estimate
+\item \code{"long"}: one row per level of \code{by} and outcome (one row per
+outcome with a numeric \code{by}), with every estimate
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
@@ -548,8 +548,10 @@ means (categorical \code{by}) or the slope (numeric \code{by}), the contrast
 and its interval bounds, the test statistic, \code{p}, the fit
 statistic, the effect size (with \code{es_ci_lower} / \code{es_ci_upper}
 beside it when \code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.
-\item \code{"long"}: one block per outcome, one row per level of \code{by},
-with every estimate: identification (\code{variable}, \code{label},
+\item \code{"long"}: one block per outcome, one row per level of \code{by}
+(one row, \code{estimate_type} \code{"slope"} and \code{level} \code{NA}, with a
+numeric \code{by}), with every estimate: identification (\code{variable},
+\code{label},
 \code{predictor_type}, \code{predictor_label}, \code{level}, \code{reference}),
 fitted means and their CI (\code{emmean}, \code{emmean_se}, \code{emmean_ci_lower},
 \code{emmean_ci_upper}), contrast or slope estimates and CI
@@ -559,8 +561,11 @@ fitted means and their CI (\code{emmean}, \code{emmean_se}, \code{emmean_ci_lowe
 degrees of freedom, the \emph{t} of a contrast or a slope has its own in
 \code{df} and none in \code{df.residual}), effect size with its CI
 (\code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit
-(\code{r.squared}, \code{adj.r.squared}), and the size of the model (\code{nobs},
-\code{weighted_nobs}, repeated on each row of an outcome).
+(\code{r.squared}, \code{adj.r.squared}, on the first row of an outcome),
+the size of the model (\code{nobs}, \code{weighted_nobs}, repeated on each
+row of an outcome), and \code{boot_n_valid}, the number of bootstrap
+replicates whose refit gave every coefficient (\code{NA} without
+\code{vcov = "bootstrap"}).
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.

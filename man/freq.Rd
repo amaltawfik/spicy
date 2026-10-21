@@ -143,7 +143,7 @@ attributes and columns:
 \item \code{n} - frequency count (weighted if applicable)
 \item \code{prop} - proportion of total
 \item \code{valid_prop} - proportion of valid responses (if \code{valid = TRUE})
-\item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if \code{cum = TRUE})
+\item \code{cum_prop}, \code{cum_valid_prop} - cumulative proportions, between 0 and 1 (if \code{cum = TRUE})
 }
 
 With \code{output = "default"} (the default), a \code{spicy_freq_table} object: the same

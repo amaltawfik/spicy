@@ -173,7 +173,12 @@ spicy_glm_exp_header <- function(family_name, link_name) {
     family_name %in% c("binomial", "bernoulli", "quasibinomial", "cumulative")
 }
 
-.assert_exp_link_ok <- function(family_name, link_name, model_id = NULL) {
+.assert_exp_link_ok <- function(
+  family_name,
+  link_name,
+  model_id = NULL,
+  call = rlang::caller_env()
+) {
   family_name <- as.character(family_name %||% "")[1L]
   link_name <- as.character(link_name %||% "")[1L]
   if (.exp_gate_allowed(family_name, link_name)) {
@@ -258,7 +263,8 @@ spicy_glm_exp_header <- function(family_name, link_name) {
         "(`show_columns = c(\"b\", \"ame\")`)."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
@@ -583,8 +589,14 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
 # exp_header without any class-specific branching.
 #
 # A no-op (coefs pass through unchanged) when exponentiate is not TRUE or the
-# frame does not advertise supports$exponentiate.
-.apply_exp_to_frame <- function(coefs, info, exponentiate) {
+# frame does not advertise supports$exponentiate. `call` is the function the
+# user called: its refusals name it.
+.apply_exp_to_frame <- function(
+  coefs,
+  info,
+  exponentiate,
+  call = rlang::caller_env()
+) {
   # Already exponentiated by a self-applying method (lm/glm legacy, merMod /
   # glmmTMB / nlme mixed, coxph / survreg)? Leave it untouched. This guard
   # makes a second, central application in the table_regression() orchestrator
@@ -610,7 +622,8 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
   .assert_exp_link_ok(
     info$family$family,
     info$family$link,
-    model_id = coefs$model_id[1L]
+    model_id = coefs$model_id[1L],
+    call = call
   )
   # Cumulative cloglog: the HR of the grouped-time proportional-hazards
   # reading is exp(-B) under the zeta_j - xB parametrization (see
@@ -641,7 +654,8 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
           ),
           "i" = "Report the link-scale coefficients instead."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }

@@ -679,8 +679,9 @@ table_multiresponse <- function(
   if (has_group) {
     g0 <- .user_na_to_na(data[[by_name]])
     # A `by` no observation holds leaves no group, whatever levels a
-    # factor declares: refused, as across the family. The rows missing
-    # `by` always leave this table, so there is no `drop_na` to point at.
+    # factor declares: refused, as across the family (data with no rows
+    # never reaches this point). The rows missing `by` always leave this
+    # table, so there is no `drop_na` to point at.
     .check_grouping_observed(
       g0,
       sprintf("`by` (`%s`)", by_name),
@@ -689,15 +690,6 @@ table_multiresponse <- function(
     # The family's order of the groups: a factor keeps its levels, any
     # other `by` is sorted in the C locale.
     group_levels <- .group_levels(g0)
-    if (!length(group_levels)) {
-      spicy_abort(
-        c(
-          sprintf("`by = %s` has no level to tabulate.", by_name),
-          "x" = "The data has no rows."
-        ),
-        class = "spicy_invalid_data"
-      )
-    }
     keep <- !is.na(g0)
     n_by_na <- sum(!keep)
     margin_key <- .cat_margin_key(group_levels, by_name)

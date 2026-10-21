@@ -414,8 +414,8 @@
 #'   - `"default"`: an ASCII table object, printed when the call is bare
 #'   - `"data.frame"`: the displayed table with its numbers, one row per
 #'     outcome
-#'   - `"long"`: one row per level of `by` and outcome, with every
-#'     estimate
+#'   - `"long"`: one row per level of `by` and outcome (one row per
+#'     outcome with a numeric `by`), with every estimate
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
@@ -474,8 +474,10 @@
 #'     and its interval bounds, the test statistic, `p`, the fit
 #'     statistic, the effect size (with `es_ci_lower` / `es_ci_upper`
 #'     beside it when `effect_size_ci = TRUE`), `n`, and `Weighted n`.
-#'   \item `"long"`: one block per outcome, one row per level of `by`,
-#'     with every estimate: identification (`variable`, `label`,
+#'   \item `"long"`: one block per outcome, one row per level of `by`
+#'     (one row, `estimate_type` `"slope"` and `level` `NA`, with a
+#'     numeric `by`), with every estimate: identification (`variable`,
+#'     `label`,
 #'     `predictor_type`, `predictor_label`, `level`, `reference`),
 #'     fitted means and their CI (`emmean`, `emmean_se`, `emmean_ci_lower`,
 #'     `emmean_ci_upper`), contrast or slope estimates and CI
@@ -485,8 +487,11 @@
 #'     degrees of freedom, the *t* of a contrast or a slope has its own in
 #'     `df` and none in `df.residual`), effect size with its CI
 #'     (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
-#'     (`r.squared`, `adj.r.squared`), and the size of the model (`nobs`,
-#'     `weighted_nobs`, repeated on each row of an outcome).
+#'     (`r.squared`, `adj.r.squared`, on the first row of an outcome),
+#'     the size of the model (`nobs`, `weighted_nobs`, repeated on each
+#'     row of an outcome), and `boot_n_valid`, the number of bootstrap
+#'     replicates whose refit gave every coefficient (`NA` without
+#'     `vcov = "bootstrap"`).
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.

@@ -338,8 +338,9 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #'
 #' @return A `tbl_df`.
 #'
-#' @seealso [as.data.frame.spicy_continuous_table()] for the raw
-#'   long-format access; [tidy.spicy_continuous_lm_table()] for the
+#' @seealso [as.data.frame.spicy_continuous_table()] for the displayed
+#'   table as a data frame, and `output = "long"` of [table_continuous()]
+#'   for the long format; [tidy.spicy_continuous_lm_table()] for the
 #'   model-based companion.
 #'
 #' @name tidy.spicy_continuous_table

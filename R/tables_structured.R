@@ -2,9 +2,10 @@
 #
 # Wave 2 of the v3 contract: `table_categorical()`,
 # `table_continuous()` and `table_continuous_lm()` attach the SAME
-# structured view `table_regression()` attaches, so `as_structured()`
-# reads the three descriptive families with one schema (see the
-# schema comment at the top of R/regression_structured.R -- it is
+# structured view `table_regression()` attaches, and so do
+# `table_outcome()`, `table_multiresponse()` and the survey twins, so
+# `as_structured()` reads every descriptive table with one schema (see
+# the schema comment at the top of R/regression_structured.R -- it is
 # normative for this file too).
 #
 # What is family-specific:
@@ -1048,9 +1049,9 @@
 # carrying the block's own statistics and one `level` (or `missing`)
 # row per displayed level.
 #
-# Three roles sit at `.indent == 0` here, which is why the shared
-# geometry predicates read `.indent` rather than the complement of a
-# role.
+# Two roles sit at `.indent == 0` here, the `summary` row and the
+# `factor_header` rows, which is why the shared geometry predicates read
+# `.indent` rather than the complement of a role.
 #
 # The structural blanks are ABSENCES, never `undefined` cells: a
 # descriptive statistic on a block header and a block statistic on a

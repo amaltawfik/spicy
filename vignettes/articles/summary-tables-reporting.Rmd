@@ -44,10 +44,11 @@ sequence used in empirical articles:
   design-based SEs and CIs, design degrees of freedom, design tests
   (see [*Summary tables from a survey design*](survey-tables.html));
 - `table_regression()` builds **Table 3** (the coefficient table) from
-  one or several fitted models — `lm()` / `glm()` through the 36
-  supported classes listed by `table_regression_models()`.
+  one or several fitted models — `lm()` / `glm()` through the
+  `r nrow(spicy::table_regression_models())` supported classes listed
+  by `table_regression_models()`.
 
-The four functions share the same output grammar — the same `output`
+These functions share the same output grammar — the same `output`
 formats (`default` console ASCII, `gt`, `tinytable`, `flextable`,
 `word`, `excel`, `clipboard`),
 the same `decimal_mark`, `p_digits`, `labels`, and `align`
@@ -68,6 +69,7 @@ Use the function that matches the unit you want to report:
 | `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges' *g*, η², rank-biserial *r*, ε²) |
 | `table_continuous_lm()` | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | `table_outcome()` | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as `table_continuous()` |
+| `table_multiresponse()` (experimental) | A "check all that apply" question, one row per item | `select` (the items), `by` | Chi-squared or Fisher's exact test per item with a Holm adjustment, a global test that allows for several answers per respondent |
 | `table_continuous_svy()`, `table_categorical_svy()` | The same descriptive tables from a `survey::svydesign` (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
 | `table_regression()` | One or several fitted models — `r nrow(spicy::table_regression_models())` classes, from `lm()` / `glm()` to mixed, ordinal, survival and Bayesian engines (see [*Supported models*](table-regression-supported-models.html)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
@@ -107,7 +109,7 @@ The examples below use `sochealth`, the dataset bundled with spicy: a
 simulated social-health survey of 1200 respondents and 29 variables,
 every one of them carrying a variable label (see `?sochealth`).
 
-The three descriptive functions share the same core arguments:
+The descriptive functions share the same core arguments:
 
 ```{r grammar-categorical}
 table_categorical(
@@ -185,8 +187,8 @@ table_regression(
 )
 ```
 
-This split is intentional. The descriptive trio (categorical,
-continuous, continuous_lm) reports the *data* — `select` and `by`
+This split is intentional. The descriptive functions report the
+*data* — `select` and `by`
 describe what you want to see. `table_regression()` reports the
 *model* — the model formula has already declared which predictors,
 interactions, polynomials, transformations, splines, and contrasts to
@@ -273,15 +275,15 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = sex,
-  smd = TRUE
+  smd = TRUE,
+  p_value = FALSE
 )
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
 column itself, and the usual rule of thumb (|SMD| > 0.1) quoted in the
-table note without any cell being highlighted. Note the asymmetry
-between the two calls: `table_continuous()` can drop its *p* column,
-`table_categorical()` currently cannot.
+table note without any cell being highlighted. Both calls drop the *p*
+column with `p_value = FALSE`.
 
 ### The coefficient table
 
@@ -361,7 +363,7 @@ call; see the *Univariable screening* section of
 
 ## Choose the output format
 
-All four functions support the same reporting formats:
+All of these functions support the same reporting formats:
 
 | Output | Best use |
 |:--|:--|
@@ -534,7 +536,7 @@ its reason instead of pasting a dash into a sentence.
 
 ## Post-process the returned table object
 
-All four summary-table helpers return regular `gt`, `tinytable`, or
+All the table functions return regular `gt`, `tinytable`, or
 `flextable` objects, so you can keep styling them with the native
 package API. This includes `table_regression()`: nothing about the
 fit-first interface changes what the rendering engine produces.

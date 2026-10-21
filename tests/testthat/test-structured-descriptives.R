@@ -1,6 +1,6 @@
 # The structured (typed) view of the DESCRIPTIVE families.
 #
-# One contract, four families: what `as_structured()` returns for
+# One contract for every table: what `as_structured()` returns for
 # `table_categorical()` / `table_continuous()` /
 # `table_continuous_lm()` is the same v3 object it returns for
 # `table_regression()`. Three properties are pinned here:
@@ -838,9 +838,9 @@ test_that("an unknown row role is refused on a descriptive body", {
     class = "spicy_internal_invariant"
   )
 
-  # And the three descriptive roles ARE part of the vocabulary.
+  # And the four descriptive roles ARE part of the vocabulary.
   expect_true(all(
-    c("summary", "group", "missing") %in% spicy:::.STRUCT_ROW_ROLES
+    c("summary", "group", "missing", "none") %in% spicy:::.STRUCT_ROW_ROLES
   ))
 })
 

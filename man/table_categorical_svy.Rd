@@ -210,8 +210,9 @@ Depends on \code{output}:
 \itemize{
 \item \code{"default"}: a \code{spicy_categorical_svy_table} (a \code{data.frame}
 subclass, with the parent class \code{"spicy_table"}), printed when the
-call is bare; its columns are the table's compute frame, and the
-display frame and the typed view are attached.
+call is bare; its columns are the table's compute frame, internal
+and liable to change without notice, and the display frame and the
+typed view are attached.
 \item \code{"data.frame"}: the displayed table with its numbers, what
 \link[=as.data.frame.spicy_categorical_svy_table]{as.data.frame()} of the
 default object returns: one row per printed row (the header row of

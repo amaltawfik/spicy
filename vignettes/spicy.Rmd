@@ -344,7 +344,7 @@ kept alongside the reference pages and rebuilt with each release.
 **Putting it together**
 
 - [Summary tables for reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
-  — the end-to-end reporting sequence tying the four `table_*` helpers
+  — the end-to-end reporting sequence tying the `table_*()` functions
   together.
 - `?mean_n`, `?sum_n`, `?count_n` — row-wise summaries with
   minimum-valid-values rules.

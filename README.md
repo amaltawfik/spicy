@@ -24,12 +24,12 @@ survey data workflows.
 
 ## Features
 
-Every spicy table prints as readable text in the console and exports to
-gt, tinytable, flextable, Excel, Word, or the clipboard, following
-rigorous reporting conventions – APA by default, with named journal
-styles. Around the tables, spicy provides the survey-data tools that
-feed them: variable inspection, codebooks, label extraction, and
-row-wise summaries.
+Every summary and regression table prints as readable text in the
+console and exports to gt, tinytable, flextable, Excel, Word, or the
+clipboard, following rigorous reporting conventions – APA by default,
+with named journal styles. Around the tables, spicy provides the
+survey-data tools that feed them: variable inspection, codebooks, label
+extraction, and row-wise summaries.
 
 - **Frequency tables** with `freq()`.
 - **Cross-tabulations** with `cross_tab()`: percentages, weights,
@@ -41,7 +41,8 @@ row-wise summaries.
   `table_categorical()` and `table_continuous()`, overall or by group.
 - **Multiple-response tables** with `table_multiresponse()`: “check all
   that apply” items read as one question, overall or by group, with a
-  global test that allows for several answers per respondent.
+  global test that allows for several answers per respondent. The
+  function is experimental in this release.
 - **Outcome-first summary tables** with `table_outcome()`: one
   continuous outcome described across several groupings, one block of
   rows per grouping variable, a group comparison per block, and a
@@ -127,10 +128,10 @@ spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
   estimation samples, standard-error types, test choices,
   multiple-comparison families.
 - **A typed, versioned table contract.** `as_structured()` returns the
-  complete typed view of a regression table – values, precisions,
-  significance markers, row roles – with an explicit contract version,
-  so custom renderers and downstream pipelines can detect changes
-  instead of silently mis-reading them.
+  complete typed view of a regression or summary table – values,
+  precisions, significance markers, row roles – with an explicit
+  contract version, so custom renderers and downstream pipelines can
+  detect changes instead of silently mis-reading them.
 - **Hard errors over silent guesses.** Requests a model class cannot
   honor are refused with a classed, actionable error – never rendered as
   an empty column or a silently substituted statistic.

@@ -7,7 +7,7 @@ description: >
   cross-level interactions), random effects as table rows, the
   boundary-corrected chi-bar-squared test, opt-in per-term LRT / RLRT,
   Nakagawa R-squared, Satterthwaite inference, three-level and crossed
-  designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
+  designs, and the `lme4`, `glmmTMB`, `nlme`, and `ordinal` engines.
 output:
   html_document:
     toc: true
@@ -50,7 +50,7 @@ tables*](table-regression.html) covers the shared mechanics (`vcov`,
 here we focus on what is *specific* to mixed fits — above all, how the
 **random effects** are reported.
 
-`table_regression()` supports four mixed engines:
+`table_regression()` supports these mixed engines:
 
 * **`lme4::lmer()`** — linear mixed models. Load **`lmerTest`** before
   fitting to get Satterthwaite degrees of freedom; plain `lme4` fits
@@ -59,6 +59,14 @@ here we focus on what is *specific* to mixed fits — above all, how the
 * **`glmmTMB::glmmTMB()`** — a wider family space, plus zero-inflation
   and dispersion components.
 * **`nlme::lme()`** — the classical engine (containment-df t-tests).
+
+An ordered outcome takes a cumulative-link mixed model:
+`ordinal::clmm()`, or `glmmTMB::glmmTMB()` with
+`family = glmmTMB::ordinal()`. Both render the same *Random effects*
+block below their thresholds (see [*Ordinal regression
+tables*](table-regression-ordinal.html)), with the model-based variance
+only: `vcov = "CR0"` and the average marginal effects are refused for
+both.
 
 The Bayesian mixed engines (`stan_lmer()` / `stan_glmer()`, `brm()`
 with grouping terms) render the same *Random effects* block from
@@ -349,8 +357,8 @@ REML by default, and a REML likelihood is only comparable between
 models with the *same fixed part* — which is why the random-structure
 decisions above could read REML deviances and AICs directly (steps 3
 and 4: 46,578.6 → 46,571.7). Comparing fixed parts requires ML:
-`nested = TRUE` performs that refit for you, silently, as
-`lme4::anova()` does. The footer's `(REML)`/`(ML)` tag on the
+`nested = TRUE` performs that refit for you, as `lme4::anova()` does,
+and a note under the table says so. The footer's `(REML)`/`(ML)` tag on the
 random-effects test line always states which likelihood the fitted
 model — and hence that test — used.
 

@@ -1343,6 +1343,11 @@ table_continuous_svy <- function(
   if (!.is_supported_design(design)) {
     .abort_unsupported_design(design, fn, call = call)
   }
+  # A design subset to nothing (`design[0, ]`, `subset(design, FALSE)`):
+  # the refusal of the family, before any selection.
+  if (NROW(design$variables) == 0L) {
+    .abort_no_rows("design", call = call)
+  }
   validate_ci_level(ci_level, call = call)
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
   validate_decimal_mark(decimal_mark, call = call)

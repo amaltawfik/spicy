@@ -106,7 +106,10 @@ p-values, and notes.
   `df` and leaves `df.residual` empty, where the long output and
   `glance()` gave the 1 and the residual df of the equivalent *F*; a *z*
   or a chi-squared (`vcov = "bootstrap"` or `"jackknife"`) leaves
-  `df.residual` empty too, and `df` is a double.
+  `df.residual` empty too, and `df` is a double. The `glance()` of
+  `table_continuous_lm()` reports the test the table shows: with a
+  two-level `by`, the *t* of the contrast, where it gave the *F* of the
+  model.
 
 * `output = "data.frame"` returns the table as it is displayed, with its
   numbers, in every table function: one row per printed row, the printed
@@ -236,7 +239,11 @@ p-values, and notes.
   `table_outcome()`. `table_continuous()`, `table_categorical()`, and
   `table_outcome()` printed empty groups, `table_categorical_svy()` said
   the variable had no level to display, and `table_continuous_svy()`
-  failed with a base R error.
+  failed with a base R error. Every table function refuses data with no
+  rows, and the survey twins a design with none, with or without `by` and
+  whatever `drop_na`, with one `spicy_invalid_data` error that comes
+  before any check of `select`. They returned tables with no rows or
+  empty groups, or failed on something else.
 
 * `table_regression_uv()` refuses a survey design with a pointer to
   `survey::svyglm()` (class `spicy_wrong_regime`), and any other object
@@ -286,7 +293,8 @@ p-values, and notes.
   and heads the merged cell of the rendered formats
   `Cramer's V [95% CI]`. They were `CI lower` and `CI upper`, the
   rendered header stated no level, and the keys `header_ci_lower` and
-  `header_ci_upper` of `options(spicy.labels)` are gone.
+  `header_ci_upper` of `options(spicy.labels)` are gone. The columns of
+  `as_structured()` keep their names, `CI lower` and `CI upper`.
 
 * `table_continuous()` and `table_outcome()` spell their effect sizes
   `"eta2"` and `"epsilon2"`, and `table_continuous_lm()` `"cohens_d"` and
@@ -310,12 +318,17 @@ p-values, and notes.
   values of `table_categorical()` and `table_categorical_svy()`),
   `.group_role` the role of `group` (`"missing"` on the group of missing
   `by` values, `"total"` on the margin, `"group"` otherwise), and `total`
-  flags the `Total` margin. `tidy()` always has a `group`
-  column, `NA` without `by`, and that of `table_continuous()` and
-  `table_outcome()` gains `weighted_n`, `median`, `q1`, and `q3`, as the
-  survey twin has. `glance()` of `table_categorical()` gains `smd_type` and
-  `smd_value`, and in a table that compares groups the long output keeps
-  the effect-size and SMD columns, `NA` when they were not requested.
+  flags the `Total` margin. In the tables that take a `by`,
+  `table_categorical()`, `table_continuous()`, `table_multiresponse()`,
+  and the survey twins, `tidy()` always has a `group` column, `NA`
+  without `by`. `table_outcome()` and `table_continuous_lm()` have none:
+  their groups are the `level` of a row, or the `term` of a mean in the
+  `tidy()` of `table_continuous_lm()`. The `tidy()` of
+  `table_continuous()` and `table_outcome()` gains `weighted_n`,
+  `median`, `q1`, and `q3`, as the survey twin has. `glance()` of
+  `table_categorical()` gains `smd_type` and `smd_value`, and in a table
+  that compares groups the long output keeps the effect-size and SMD
+  columns, `NA` when they were not requested.
 
 * `table_categorical_svy()`, `table_continuous_svy()`, and
   `table_outcome()` results inherit the class `spicy_table`, as the other
@@ -540,6 +553,12 @@ p-values, and notes.
   number of observations, and of two rows showing one label it cited the
   first.
 
+* `inline()` without `column` refuses a `table_continuous_lm()` row that
+  shows the mean of each group and no contrast (a `by` of three or more
+  levels, or `contrast = "none"`), and gives the address of a mean. It
+  cited the sample size. Its errors name `inline()`, where some named an
+  internal helper.
+
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 
@@ -592,6 +611,10 @@ p-values, and notes.
 
 * `table_continuous_lm()` accepts `p_value = NULL`, now its default as in
   the rest of the family: the p-value is shown, `by` being required.
+
+* `table_continuous_lm(contrast = "none")` leaves out the contrast column
+  and its interval, in every output, as documented. It printed them
+  empty.
 
 * `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in tinytable, gt, flextable, Word, and Excel

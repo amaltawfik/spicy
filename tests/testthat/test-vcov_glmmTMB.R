@@ -429,6 +429,31 @@ test_that("glmmTMB refuses every token but CR0, each with its reason", {
   expect_match(conditionMessage(err), "REML = FALSE", fixed = TRUE)
 })
 
+test_that("the glmmTMB vcov refusals name table_regression(), not a helper", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("ordinal")
+  d <- .tmb_cluster_data()
+  fit <- glmmTMB::glmmTMB(y ~ x + (1 | site), data = d, family = stats::poisson)
+  fit_ord <- glmmTMB::glmmTMB(
+    rating ~ temp + contact + (1 | judge),
+    data = ordinal::wine,
+    family = glmmTMB::ordinal()
+  )
+  calls <- list(
+    quote(table_regression(fit, vcov = "CR1")),
+    quote(table_regression(fit, vcov = "bootstrap")),
+    quote(table_regression(fit_ord, vcov = "CR0"))
+  )
+  for (cl in calls) {
+    err <- expect_error(eval(cl), class = "spicy_unsupported_vcov")
+    expect_identical(
+      rlang::call_name(conditionCall(err)),
+      "table_regression",
+      info = deparse(cl)
+    )
+  }
+})
+
 test_that("crossed random effects have no default cluster", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   set.seed(11)

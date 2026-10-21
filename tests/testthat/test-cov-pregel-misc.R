@@ -270,11 +270,18 @@ test_that("the empty-cell refusal works without any table context", {
   )
 
   # With a real table the SAME refusal earns its hints -- which is what
-  # makes the bare form a fallback rather than the norm.
-  d <- mtcars
-  d$grp <- factor(ifelse(d$am == 1, "manual", "auto"))
-  tl <- table_continuous_lm(d, mpg, by = grp, contrast = "none")
-  err2 <- expect_error(inline(tl, mpg), class = "spicy_invalid_input")
+  # makes the bare form a fallback rather than the norm. An outcome
+  # observed in one group only cannot be fitted: its contrast is empty on
+  # every row of the table.
+  d <- data.frame(
+    y = c(rep(NA, 10), as.numeric(1:10)),
+    grp = factor(rep(c("auto", "manual"), each = 10))
+  )
+  tl <- withCallingHandlers(
+    table_continuous_lm(d, y, by = grp),
+    spicy_undefined_stat = function(w) invokeRestart("muffleWarning")
+  )
+  err2 <- expect_error(inline(tl, y), class = "spicy_invalid_input")
   expect_match(
     conditionMessage(err2),
     "The \"delta\" column is empty on EVERY row",

@@ -44,7 +44,7 @@ focus on what is specific to survival fits:
 hazard ratios and time ratios, event counts and concordance, and the
 variance estimators of multi-center studies.
 
-`table_regression()` supports four survival engines:
+`table_regression()` supports four survival engines on a data frame:
 
 * **`survival::coxph()`** — the semiparametric Cox proportional
   hazards model, the field default;
@@ -53,6 +53,10 @@ variance estimators of multi-center studies.
 * **`rms::cph()`** — the Cox model in the `rms` ecosystem;
 * **`flexsurv::flexsurvreg()`** — fully parametric models over a wide
   family of distributions.
+
+The Cox model of a survey design, `survey::svycoxph()`, is rendered
+too, with its design-based variance: see [*Summary tables from a survey
+design*](survey-tables.html).
 
 The running example is `survival::lung`: survival of 228 patients with
 advanced lung cancer, with age, sex, and the ECOG performance score

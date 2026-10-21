@@ -69,9 +69,9 @@ OWN clock rather than the parent family's):
 (with \code{options(spicy.language)} / \code{options(spicy.labels)}),
 since 0.13.0
 \item Codebooks: \code{\link[=code_book]{code_book()}} (the \code{spicy_codebook} object, its
-Excel workbook, and its PDF), in the development version
-\item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, in the
-development version
+Excel workbook, and its PDF), since 0.14.0
+\item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, since
+0.14.0
 }
 
 \strong{Internal API} (not part of the public surface; can change
@@ -94,7 +94,7 @@ vocabulary: broom's name wherever broom defines one, and one
 snake_case name per concept otherwise, the same in every function.\tabular{ll}{
    Concept \tab Column \cr
    the variable a row describes, its displayed label \tab \code{variable}, \code{label} \cr
-   the level of a categorical variable, the group of \code{by} \tab \code{level}, \code{group} \cr
+   the level of a categorical variable, the group of \code{by} (in the tables that take a \code{by}) \tab \code{level}, \code{group} \cr
    the role of the row's \code{level} (or item): a level, the row of missing values, ... \tab \code{.row_role} (\code{"level"}, \code{"missing"}, \code{"summary"}, ...) \cr
    the role of \code{group}: a group, the column of missing \code{by} values, the margin \tab \code{.group_role} (\code{"group"}, \code{"missing"}, \code{"total"}) \cr
    the \code{Total} margin of the groups \tab \code{total} (logical) \cr
@@ -108,13 +108,26 @@ snake_case name per concept otherwise, the same in every function.\tabular{ll}{
    the observations of a variable or of a model, and their weighted count \tab \code{nobs}, \code{weighted_nobs} \cr
    the weighted count of a group (beside its \code{n}) \tab \code{weighted_n} \cr
    the counts of the groups of \code{by}, of the categories of a variable \tab \code{n_groups}, \code{n_levels} \cr
-   the fit of a model \tab \code{r.squared}, \code{adj.r.squared} \cr
+   the fit of a model \tab \code{r.squared}, \code{adj.r.squared} as columns; as a row, its \code{show_fit_stats} token in \code{variable} (\code{r2}, \code{adj_r2}, \code{aic}, ...) \cr
 }
 
 
 \code{variable} holds the name of the column a row describes and \code{label}
 its displayed label. \code{outcome} names the response of a regression
-model and the single outcome of \code{\link[=table_outcome]{table_outcome()}}. The proportions of
+model and the single outcome of \code{\link[=table_outcome]{table_outcome()}}. \code{group} is a key of
+the tables that take a \code{by} (\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_svy]{table_continuous_svy()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}): their \code{tidy()}
+carries it with or without \code{by}, \code{NA} without. \code{\link[=table_outcome]{table_outcome()}} has
+no \code{group}: its groupings are the \code{level} of each block. Nor has
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose \code{by} sets the columns of the table: its
+levels are the \code{level} of the long output and the \code{term} of the
+\code{"emmean"} rows of \code{tidy()}.
+A fit statistic is a column of \code{glance()} and of the long output,
+under broom's name, and a row of \code{output = "data.frame"} (\code{.row_role}
+\code{"fit_stat"}), keyed in \code{variable} by its \code{show_fit_stats} token, the
+token \code{\link[=inline]{inline()}} takes: \code{r2} is the row of the column \code{r.squared}.
+The proportions of
 \code{tidy()} are between 0 and 1, and the \code{Total} rows stay, flagged by
 \code{total}. Each role column describes the key column it follows,
 whatever the orientation of the printed table: \code{.row_role} the row's
@@ -124,9 +137,13 @@ label, which follows the display language. In a table that compares
 groups, the long output carries the effect-size and SMD columns
 whether or not they were requested (\code{NA} then), and \code{glance()} has a
 fixed set of columns; \code{p_value = FALSE} removes the test columns.
-Model-level statistics (\code{nobs}, \code{r.squared}, ...) are in \code{glance()},
-and in the long output only for \code{\link[=table_regression_uv]{table_regression_uv()}}, whose rows
-are separate models. The printed objects carry the \code{by} column and its
+Model-level statistics (\code{nobs}, \code{r.squared}, ...) are in \code{glance()}.
+The long output carries them as well where its rows are models of
+their own: in \code{\link[=table_continuous_lm]{table_continuous_lm()}}, one model per outcome (the fit
+on the first row of the outcome, its size on every row), and in
+\code{\link[=table_regression_uv]{table_regression_uv()}}, one univariable model per predictor. The long
+output of \code{\link[=table_regression]{table_regression()}} has the same columns, \code{NA}: one shape
+for the class. The printed objects carry the \code{by} column and its
 label in the attributes \code{group_var} and \code{group_label}.
 
 \code{output = "data.frame"} and \code{as.data.frame()} return the table as it
@@ -135,7 +152,10 @@ is displayed, one row per printed row, with numbers: the key columns
 \code{.row_role}, the role of the printed row, where the table adds rows),
 then the printed columns under their names. The two are identical for
 every class. \code{output = "excel"} and \code{"word"} return the path of the
-file, invisibly.
+file, invisibly. The columns of the object \code{output = "default"}
+returns are internal and can change without notice: the contracts are
+\code{output = "data.frame"}, \code{output = "long"}, \code{tidy()}, \code{glance()} and
+\code{\link[=as_structured]{as_structured()}}.
 
 The set of columns produced by each method is considered
 \strong{stabilizing} (\strong{experimental} for \code{\link[=table_multiresponse]{table_multiresponse()}}, as the
@@ -170,8 +190,8 @@ raised by spicy. Leaves:
 \itemize{
 \item \code{spicy_invalid_input} -- bad argument value or type.
 \item \code{spicy_invalid_data} -- bad data shape or content
-(not a data.frame, length mismatch, \code{bit64::integer64}
-columns, degenerate grouping).
+(not a data.frame, data or a design with no rows, length
+mismatch, \code{bit64::integer64} columns, degenerate grouping).
 \item \code{spicy_wrong_regime} -- signaled together with
 \code{spicy_invalid_data} when a table receives the wrong kind
 of data for its regime: a survey design handed to a plain table,

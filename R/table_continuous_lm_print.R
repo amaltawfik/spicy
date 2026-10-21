@@ -528,14 +528,18 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #'
 #' `glance()` returns one row per outcome with model-level
 #' statistics. Columns: `variable`, `label`, `predictor_type`
-#' (`"categorical"` or `"continuous"`), `test_type` (`"F"` for
-#' categorical predictors, `"t"` for continuous ones),
+#' (`"categorical"` or `"continuous"`), `test_type` (the test the table
+#' displays: `"t"` for a numeric `by` and for the contrast of a
+#' two-level `by`, `"F"` for a `by` of three or more levels or under
+#' `contrast = "none"`, and `"z"` or `"chi2"` in their place under
+#' `vcov = "bootstrap"` or `"jackknife"`),
 #' `statistic`, `df`, `df.residual` (the degrees of freedom follow the
 #' statistic: an *F* has both, a *t* has its own in `df` and none in
 #' `df.residual`), `p.value`, `r.squared`,
 #' `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,
 #' `es_ci_upper`, `nobs`, `weighted_nobs` (the sum of the weights, `NA`
-#' without `weights`).
+#' without `weights`). Beside the contrast of a two-level `by`, the *F*
+#' of the model, the square of its *t*, is in the long output only.
 #'
 #' @param x A `spicy_continuous_lm_table` returned by
 #'   [table_continuous_lm()].
@@ -544,8 +548,9 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #'
 #' @return A `tbl_df`.
 #'
-#' @seealso [as.data.frame.spicy_continuous_lm_table()] for the raw
-#'   long-format access.
+#' @seealso [as.data.frame.spicy_continuous_lm_table()] for the displayed
+#'   table as a data frame, and `output = "long"` of
+#'   [table_continuous_lm()] for every estimate in long format.
 #'
 #' @name tidy.spicy_continuous_lm_table
 #' @keywords internal
@@ -635,23 +640,37 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
 
   first_idx <- !duplicated(long$variable)
   per_outcome <- long[first_idx, , drop = FALSE]
+  # The test of each outcome is the one the table displays, from the row
+  # the wide table reads (`get_test_row_index_lm()`): with a two-level
+  # `by`, the t (or z) of the contrast, not the F (or chi-squared) of the
+  # model, which is its square. The fit and the size stay on the first row.
+  test_rows <- vapply(
+    per_outcome$variable,
+    function(v) {
+      rows <- which(long$variable == v)
+      rows[get_test_row_index_lm(long[rows, , drop = FALSE])]
+    },
+    integer(1),
+    USE.NAMES = FALSE
+  )
+  tests <- long[test_rows, , drop = FALSE]
   # The degrees of freedom follow the statistic (`.lm_df_cols()`), and
   # stay numeric: for CR* the df of a t, or the denominator df of an F,
   # is the Satterthwaite df, genuinely fractional (e.g. 38.7) or an
   # integer with FP noise (47.999... would truncate to 47). Mirrors the
   # broom convention for Satterthwaite-corrected models (e.g.
   # lmerTest::glance, afex output).
-  dfs <- .lm_df_cols(per_outcome$test_type, per_outcome$df1, per_outcome$df2)
+  dfs <- .lm_df_cols(tests$test_type, tests$df1, tests$df2)
 
   result <- data.frame(
     variable = per_outcome$variable,
     label = per_outcome$label,
     predictor_type = per_outcome$predictor_type,
-    test_type = per_outcome$test_type,
-    statistic = per_outcome$statistic,
+    test_type = tests$test_type,
+    statistic = tests$statistic,
     df = dfs$df,
     df.residual = dfs$df.residual,
-    p.value = per_outcome$p.value,
+    p.value = tests$p.value,
     r.squared = per_outcome$r2,
     adj.r.squared = per_outcome$adj_r2,
     es_type = per_outcome$es_type,

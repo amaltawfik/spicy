@@ -49,8 +49,9 @@
 }
 
 # The refusal, with its reason, for a token a glmmTMB fit does not
-# support. Shared by the public gate and the compute path.
-.glmmTMB_refuse_vcov <- function(fit, type) {
+# support. Shared by the public gate and the compute path; `call` is the
+# function the user called, so the error names it.
+.glmmTMB_refuse_vcov <- function(fit, type, call = rlang::caller_env()) {
   why <- if (is_reml_glmmTMB_fit(fit)) {
     c(
       "i" = "glmmTMB's sandwich is defined for maximum-likelihood fits only.",
@@ -91,7 +92,8 @@
       sprintf("`vcov = \"%s\"` is not available for this `glmmTMB` fit.", type),
       why
     ),
-    class = "spicy_unsupported_vcov"
+    class = "spicy_unsupported_vcov",
+    call = call
   )
 }
 

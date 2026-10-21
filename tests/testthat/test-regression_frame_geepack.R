@@ -439,6 +439,15 @@ test_that("geeglm: spicy's HC* / CR* vcov tokens are refused", {
   )
 })
 
+test_that("geeglm: the vcov refusal names table_regression(), not a helper", {
+  fit <- .fit_gee_gaussian()
+  err <- expect_error(
+    table_regression(fit, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+})
+
 test_that("geeglm: spicy's cluster argument is refused (id = owns it)", {
   fit <- .fit_gee_gaussian()
   expect_error(

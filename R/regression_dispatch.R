@@ -2915,9 +2915,15 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' * `version` -- integer contract version (see *Versioning* below).
 #' * `body` -- `data.frame` with a `Variable` character column, one or
 #'   more numeric value columns, and four dot-prefixed *identity*
-#'   columns at the end. Confidence intervals are split into `LL` /
-#'   `UL` columns named like `"95% CI: LL"` / `"95% CI: UL"` (or
-#'   prefixed with the model label in multi-model output). A cell with
+#'   columns at the end. Confidence intervals are split into a lower and
+#'   an upper column, named as each family names them: `"95% CI: LL"` /
+#'   `"95% CI: UL"` in a regression table (prefixed with the model label
+#'   in multi-model output), `"95% CI LL"` / `"95% CI UL"` in
+#'   [table_continuous()], [table_continuous_lm()], [table_outcome()] and
+#'   [table_continuous_svy()], `"CI lower"` / `"CI upper"` for the
+#'   association measure of [table_categorical()], and
+#'   `"<group> % CI lower"` / `"<group> % CI upper"` in
+#'   [table_categorical_svy()]. A cell with
 #'   no value (reference level, term absent from a model, factor
 #'   header) is `NA`.
 #' * `body$.variable` -- source variable of the row: the factor name on
@@ -2974,8 +2980,14 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   p-style, CI level, etc.).
 #'
 #' @section Descriptive tables:
-#' The three descriptive families return the same schema; only the
-#' `col_meta` tokens and the row roles they emit differ.
+#' The descriptive tables return the same schema; only the `col_meta`
+#' tokens and the row roles they emit differ. [table_outcome()] has the
+#' columns of [table_continuous()] and the rows of [table_categorical()]:
+#' a `"summary"` row for the whole sample, then a `"factor_header"` row
+#' per grouping and its `"level"` (or `"missing"`) rows. The survey twins
+#' follow the table they twin, [table_categorical_svy()] with the
+#' interval of each percentage (token `"prop_ci"`) and no association
+#' measure.
 #'
 #' * [table_categorical()] -- one `"factor_header"` row per variable
 #'   then one `"level"` (or `"missing"`) row per category, exactly as

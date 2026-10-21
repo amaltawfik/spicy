@@ -31,7 +31,10 @@ the slope (\code{"b"}) for \code{\link[=table_continuous_lm]{table_continuous_lm
 or, on a median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
 \code{\link[=table_continuous]{table_continuous()}}, and the count (\code{"n"}) for
 \code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}. A row carrying
-none of them refuses and lists its tokens.}
+none of them refuses and lists its tokens. A \code{\link[=table_continuous_lm]{table_continuous_lm()}}
+row that shows the mean of each group and no contrast (a \code{by} of
+three or more levels, or \code{contrast = "none"}) has no default: it
+refuses and gives the address of a mean.}
 
 \item{model}{A group of \code{by}, or in a multi-model table the model:
 its label (as displayed) or its position. See \emph{Groups and models}.}
@@ -56,9 +59,14 @@ display never change the call. As a convenience, a \code{variable}
 that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
 \code{level = "(Missing)"} whatever its displayed (possibly translated or
-relabeled) label, through its row role. Fit statistics are addressed by their
-token as \code{variable} (\code{inline(tbl, "nobs")}, \code{inline(tbl, "r2")}) or by
-their label (\code{inline(tbl, "n")}). Identity comes first: a source column
+relabeled) label, through its row role. Fit statistics are addressed
+by their token as \code{variable} (\code{inline(tbl, "nobs")},
+\code{inline(tbl, "r2")}) or by their label (\code{inline(tbl, "n")}). The token
+is the one \code{show_fit_stats} takes (\code{"r2"}, \code{"adj_r2"}, \code{"aic"}, ...),
+the key of the row in the \code{variable} column of
+\code{output = "data.frame"}. \code{glance()} and the long output name the same
+statistic as broom does (\code{r.squared}, \code{adj.r.squared}), a name
+\code{inline()} does not read. Identity comes first: a source column
 wins over a token or a label of the same name, and an exact label over
 a fit statistic's label read regardless of case. A \code{variable} that
 still matches the rows of two variables or statistics is refused, and
@@ -105,7 +113,7 @@ name, then the rows of \code{none_row}, addressed as \code{"none"} and
 \code{"no_data"}, and the base row, the number of respondents, addressed as
 the fit statistic \code{"nobs"}: \code{inline(tbl, "nobs", model = "Total")}.
 The item \code{p} and \code{statistic} belong to no group and are cited without
-\code{model} (\code{inline(tbl, smoking, column = "p")}).
+\code{model} (\code{inline(tbl, info_internet, column = "p")}).
 }
 
 \section{Columns}{

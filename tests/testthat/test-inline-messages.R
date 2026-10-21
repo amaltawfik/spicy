@@ -15,32 +15,37 @@
 
 # ---- n. 227(a): contrast = "none" ----------------------------------------
 
-# `table_continuous_lm(contrast = "none")` still prints the delta column,
-# empty, and `delta` is the token a BARE inline(x, var) asks for. The
-# refusal used to stop at "The "delta" cell of this row is empty in the
-# table." -- true, and a dead end: it did not say the column is empty
-# throughout, and it did not point at the group means beside it.
-test_that("an empty delta cell names the table-wide emptiness and the remedy", {
+# `table_continuous_lm(contrast = "none")` printed the delta column, empty,
+# and `delta` was the token a BARE inline(x, var) asked for: "The "delta"
+# cell of this row is empty in the table." The column is now left out, so
+# the bare call has no contrast to cite. It refuses with the address of a
+# group mean, rather than falling through to the next token, `n`, and
+# quoting the sample size.
+test_that("a table with no contrast has no default column, and names a mean", {
   d <- .inline_msg_data()
   tbl <- table_continuous_lm(d, c(bmi, chol), by = sex, contrast = "none")
   err <- tryCatch(inline(tbl, bmi), error = function(e) e)
   expect_s3_class(err, "spicy_invalid_input")
+  expect_identical(rlang::call_name(conditionCall(err)), "inline")
   msg <- conditionMessage(err)
-  expect_match(msg, "The \"delta\" cell of this row is empty", fixed = TRUE)
-  expect_match(msg, "empty on EVERY row", fixed = TRUE)
+  expect_match(msg, "with no contrast", fixed = TRUE)
   expect_match(msg, "model = \"Female\", column = \"emmean\"", fixed = TRUE)
   expect_match(msg, "Available groups: \"Female\", \"Male\".", fixed = TRUE)
 })
 
-test_that("the same hints reach an explicitly addressed delta", {
+test_that("an explicitly addressed delta is a token the table does not carry", {
   d <- .inline_msg_data()
   tbl <- table_continuous_lm(d, c(bmi, chol), by = sex, contrast = "none")
   msg <- tryCatch(
     inline(tbl, bmi, column = "delta"),
     error = function(e) conditionMessage(e)
   )
-  expect_match(msg, "empty on EVERY row", fixed = TRUE)
-  expect_match(msg, "column = \"emmean\"", fixed = TRUE)
+  expect_match(
+    msg,
+    "No column with token \"delta\" in this table.",
+    fixed = TRUE
+  )
+  expect_match(msg, "\"emmean\"", fixed = TRUE)
 })
 
 test_that("the remedy the message names actually works", {

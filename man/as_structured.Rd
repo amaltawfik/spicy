@@ -47,9 +47,15 @@ structured contract as spicy's built-in engines.
 \item \code{version} -- integer contract version (see \emph{Versioning} below).
 \item \code{body} -- \code{data.frame} with a \code{Variable} character column, one or
 more numeric value columns, and four dot-prefixed \emph{identity}
-columns at the end. Confidence intervals are split into \code{LL} /
-\code{UL} columns named like \code{"95\% CI: LL"} / \code{"95\% CI: UL"} (or
-prefixed with the model label in multi-model output). A cell with
+columns at the end. Confidence intervals are split into a lower and
+an upper column, named as each family names them: \code{"95\% CI: LL"} /
+\code{"95\% CI: UL"} in a regression table (prefixed with the model label
+in multi-model output), \code{"95\% CI LL"} / \code{"95\% CI UL"} in
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}} and
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{"CI lower"} / \code{"CI upper"} for the
+association measure of \code{\link[=table_categorical]{table_categorical()}}, and
+\code{"<group> \% CI lower"} / \code{"<group> \% CI upper"} in
+\code{\link[=table_categorical_svy]{table_categorical_svy()}}. A cell with
 no value (reference level, term absent from a model, factor
 header) is \code{NA}.
 \item \code{body$.variable} -- source variable of the row: the factor name on
@@ -109,8 +115,14 @@ p-style, CI level, etc.).
 
 \section{Descriptive tables}{
 
-The three descriptive families return the same schema; only the
-\code{col_meta} tokens and the row roles they emit differ.
+The descriptive tables return the same schema; only the \code{col_meta}
+tokens and the row roles they emit differ. \code{\link[=table_outcome]{table_outcome()}} has the
+columns of \code{\link[=table_continuous]{table_continuous()}} and the rows of \code{\link[=table_categorical]{table_categorical()}}:
+a \code{"summary"} row for the whole sample, then a \code{"factor_header"} row
+per grouping and its \code{"level"} (or \code{"missing"}) rows. The survey twins
+follow the table they twin, \code{\link[=table_categorical_svy]{table_categorical_svy()}} with the
+interval of each percentage (token \code{"prop_ci"}) and no association
+measure.
 \itemize{
 \item \code{\link[=table_categorical]{table_categorical()}} -- one \code{"factor_header"} row per variable
 then one \code{"level"} (or \code{"missing"}) row per category, exactly as

@@ -946,7 +946,7 @@ test_that("the style argument beats the option, which beats the defaults", {
   )
 })
 
-test_that("options(spicy.style) reaches all four families", {
+test_that("options(spicy.style) reaches four table functions", {
   d <- fixed_data()
   withr::local_options(spicy.style = spicy_style(decimal_mark = ","))
   expect_match(console(table_regression(fixed_fit())), "37,23")
@@ -1068,7 +1068,7 @@ test_that("a style leaves no residue after the call that used it", {
   expect_null(spicy:::.style_fmt())
 })
 
-test_that("the no-style corpus is pinned across all four families", {
+test_that("the no-style corpus is pinned across four table functions", {
   # A style must be opt-in to the byte: this snapshot is the guard
   # that a lever added later cannot leak into the defaults.
   d <- fixed_data()

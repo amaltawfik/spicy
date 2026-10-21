@@ -196,6 +196,8 @@
 #
 # `raw_only` marks the two effect-size interval columns: they exist in
 # `output = "data.frame"` and nowhere else, so they never reach a header.
+# `contrast = "none"` leaves out the contrast of a two-level `by` and its
+# interval, which would otherwise be columns with no value.
 .lm_column_spec <- function(
   x,
   ci_level = 0.95,
@@ -207,7 +209,8 @@
   effect_size_ci = FALSE,
   r2_type = "r2",
   ci = TRUE,
-  decimal_mark = "."
+  decimal_mark = ".",
+  contrast = attr(x, "contrast", exact = TRUE) %||% "auto"
 ) {
   vars <- unique(x$variable)
   first_block <- x[x$variable == vars[1], , drop = FALSE]
@@ -255,7 +258,7 @@
     for (lev in first_block$level) {
       add(.lm_key_emmean(lev), .lm_label_emmean(lev), "emmean", level = lev)
     }
-    if (nrow(first_block) == 2L) {
+    if (nrow(first_block) == 2L && !identical(contrast, "none")) {
       add(
         get_delta_label_lm(first_block),
         .lm_label_delta(first_block),
@@ -438,7 +441,8 @@ build_wide_raw_continuous_lm <- function(
         # captured before the per-outcome complete-case filtering.
         out[i, .lm_key_emmean(block$level[j])] <- block$emmean[j]
       }
-      if (nrow(block) == 2L) {
+      # No contrast column under `contrast = "none"`: nothing to fill.
+      if (nrow(block) == 2L && !is.null(delta_name)) {
         out[[delta_name]][i] <- block$estimate[test_row]
         if (isTRUE(ci)) {
           out[[ci_ll_name]][i] <- block$estimate_ci_lower[test_row]
@@ -569,7 +573,8 @@ build_wide_display_df_continuous_lm <- function(
           format_number(block$emmean[j], digits, decimal_mark)
         }
       }
-      if (nrow(block) == 2L) {
+      # See the raw builder: no contrast column, nothing to fill.
+      if (nrow(block) == 2L && !is.null(delta_name)) {
         out[[delta_name]][i] <- format_number(
           block$estimate[test_row],
           digits,

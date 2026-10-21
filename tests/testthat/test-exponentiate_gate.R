@@ -96,6 +96,24 @@ test_that("multi-model gate names the offending model", {
   expect_match(conditionMessage(err), "every model", fixed = TRUE)
 })
 
+test_that("the gate refusal names table_regression(), not a helper", {
+  skip_if_not_installed("MASS")
+  # A polr fit reaches the gate in the orchestrator, outside the model
+  # frame: its refusal named the gate itself.
+  fit <- suppressMessages(MASS::polr(
+    Sat ~ Infl,
+    weights = Freq,
+    data = MASS::housing,
+    method = "probit",
+    Hess = TRUE
+  ))
+  err <- expect_error(
+    table_regression(fit, exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+})
+
 # ---- Allowed links keep working (regression guard) ------------------------
 
 test_that("ratio links stay green: logit OR, cloglog HR, gaussian-log exp(B)", {

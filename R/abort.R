@@ -353,7 +353,26 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
       call = call
     )
   }
+  if (nrow(data) == 0L) {
+    .abort_no_rows("data", call = call)
+  }
   invisible(data)
+}
+
+# Data with no rows leaves nothing to tabulate, with or without `by`:
+# every table function refuses it with this one error, from its data gate
+# (`.check_data_frame()`, or `.svy_validate_common()` for a survey design),
+# so the refusal comes before any selection or role check. `what` is the
+# argument that holds the rows: `data`, or the `design` of a survey twin.
+.abort_no_rows <- function(what = "data", call = rlang::caller_env()) {
+  spicy_abort(
+    c(
+      "A table needs at least one row of data.",
+      "x" = sprintf("`%s` has no rows.", what)
+    ),
+    class = "spicy_invalid_data",
+    call = call
+  )
 }
 
 # Where each plain builder sends a caller who handed it a design. Two

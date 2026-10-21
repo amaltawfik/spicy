@@ -1173,12 +1173,15 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: the underlying `data.frame` carrying the
-#'     rendering metadata as attributes (S3 class
-#'     `"spicy_categorical_table"`). The object is returned visibly, so
-#'     a bare `table_categorical(...)` call auto-prints the styled ASCII
-#'     table at the console while `t <- table_categorical(...)` stays
-#'     silent (print `t` to display the table).
+#'   \item `"default"`: a `data.frame` of class
+#'     `"spicy_categorical_table"` carrying the rendering metadata as
+#'     attributes. Its columns are internal and can change without
+#'     notice: read the numbers from `"data.frame"`, `"long"`,
+#'     [broom::tidy()], [broom::glance()] or [as_structured()]. The object
+#'     is returned visibly, so a bare `table_categorical(...)` call
+#'     auto-prints the styled ASCII table at the console while
+#'     `t <- table_categorical(...)` stays silent (print `t` to display
+#'     the table).
 #'   \item `"data.frame"`: the displayed table with its numbers, what
 #'     [as.data.frame()][as.data.frame.spicy_categorical_table] of the
 #'     default object returns: one row per printed row -- the header row
@@ -1222,8 +1225,8 @@
 #'   \item `"flextable"`: a `flextable` object.
 #'   \item `"excel"` / `"word"`: writes to disk and returns the file
 #'     path invisibly.
-#'   \item `"clipboard"`: copies the table and returns the display
-#'     `data.frame` invisibly.
+#'   \item `"clipboard"`: copies the table and returns the copied text
+#'     invisibly.
 #' }
 #'
 #' The note, the `drop_na = TRUE` disclosure included, travels with the
@@ -2262,7 +2265,7 @@ table_categorical <- function(
   }
 
   # `fmt_p` defers to the shared `format_p_value()` helper so the
-  # three `table_*` functions print *p*-values identically: `p_digits`
+  # `table_*()` functions print *p*-values identically: `p_digits`
   # drives both the displayed precision AND the small-*p* threshold
   # (`p_digits = 3` -> `<.001`, `p_digits = 4` -> `<.0001`, etc.),
   # leading zeros are stripped, and the configured `decimal_mark` is
@@ -3255,27 +3258,14 @@ table_categorical <- function(
     group_levels <- c(group_levels, missing_label)
     missing_group <- TRUE
   }
-  # No group left to tabulate. The group columns are keyed
-  # `paste0(<level>, " n")`, and `paste0(character(0), " n")` is " n" --
-  # R recycles the zero-length side to "" -- so the table used to grow a
-  # pair of phantom columns named " n" and " %", with no rows under
-  # them. tinytable then refused a zero-row table, gt refused two empty
-  # column names, and flextable died on a recycling mismatch: three
-  # different errors, none of them naming the cause.
+  # A group is always left to tabulate here: data with no rows is refused
+  # by `.check_data_frame()`, and a `by` every observation misses is
+  # refused above under `drop_na = TRUE` and is the "(Missing)" group
+  # under `drop_na = FALSE`. Without a group the columns, keyed
+  # `paste0(<level>, " n")`, would be the phantom pair " n" / " %" (R
+  # recycles the zero-length side to ""), which every rendering engine
+  # refused with an error naming something else.
   #
-  # Every observation missing `by` is refused above, with `drop_na =
-  # FALSE` as the remedy; under it the "(Missing)" level is a group. The
-  # shape left is a data set with no rows, where that is no remedy: the
-  # same refusal fires either way, so offering it would be a lie.
-  if (length(group_levels) == 0L) {
-    spicy_abort(
-      c(
-        sprintf("`by = %s` has no level to tabulate.", by_name),
-        "x" = "The data has no rows."
-      ),
-      class = "spicy_invalid_data"
-    )
-  }
   # Internal KEY for the margin column, never a label: it is a value of
   # `long$group`, the prefix of a public column name ("Total n") and the
   # `total_group` attribute, and every site that recognizes the margin --

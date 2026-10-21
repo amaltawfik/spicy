@@ -352,7 +352,7 @@ no support. In between, read the difference continuously as a
 relative likelihood, `exp(-Δ/2)`: a ΔAIC of 5 makes the better
 model about 12 times more likely, a ΔAIC of 7 about 33 times —
 real evidence that weakens the poorer model without dismissing it,
-where substantive grounds should complete the decision. Here the quadratic costs +1.8: indistinguishable from
+where substantive grounds should complete the decision. Here the quadratic costs +1.7: indistinguishable from
 the linear fit, and its own coefficient is indistinguishable from
 zero, so the linear fit stands by parsimony. Now carry the same
 scale back to the previous table: the binned model's AIC of 9898.1

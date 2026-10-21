@@ -3746,4 +3746,69 @@ test_that("every engine sets the stars legend on a line of its own", {
   }
   expect_length(plain("gt")[["_source_notes"]], 1L)
   expect_identical(nrow(plain("flextable")$footer$dataset), 1L)
+test_that("every table function refuses data with no rows, first", {
+  # Data with no rows leaves nothing to tabulate, with or without `by` and
+  # whatever `drop_na`: one error, raised by the data gate of each
+  # function before any selection or role check -- a column that does not
+  # exist, or `by` named in `select`, is not what the caller hears about.
+  # A survey twin refuses a design with no rows the same way.
+  # `table_regression()` takes fitted models, not data.
+  d <- data.frame(
+    y = as.numeric(1:20),
+    f = factor(rep(c("u", "v"), 10)),
+    q1 = rep(c(TRUE, FALSE), 10),
+    q2 = rep(c(FALSE, TRUE), 10),
+    g = factor(rep(c("a", "b"), 10)),
+    w = 1
+  )
+  d0 <- d[0, ]
+  check <- function(cases, what) {
+    msgs <- character(0)
+    for (cl in cases) {
+      info <- paste(deparse(cl), collapse = " ")
+      err <- tryCatch(eval(cl), error = identity)
+      expect_s3_class(err, "spicy_invalid_data")
+      expect_identical(
+        rlang::call_name(conditionCall(err)),
+        as.character(cl[[1L]]),
+        info = info
+      )
+      msg <- conditionMessage(err)
+      expect_match(msg, sprintf("`%s` has no rows.", what), fixed = TRUE)
+      msgs <- c(msgs, msg)
+    }
+    # One message, whatever the function and its arguments.
+    expect_length(unique(msgs), 1L)
+    msgs[[1L]]
+  }
+  msg_data <- check(
+    alist(
+      table_categorical(d0, select = f, by = g),
+      table_categorical(d0, select = f, drop_na = TRUE),
+      table_categorical(d0, select = no_such_column),
+      table_continuous(d0, select = y, by = g, drop_na = FALSE),
+      table_continuous(d0, select = c(y, g), by = g),
+      table_continuous_lm(d0, select = y, by = g),
+      table_outcome(d0, y, select = c(g, f)),
+      table_multiresponse(d0, select = c(q1, q2)),
+      table_multiresponse(d0, select = c(q1, q2), by = g),
+      table_regression_uv(d0, outcome = y, predictors = c(f, g))
+    ),
+    "data"
+  )
+  skip_if_not_installed("survey")
+  des0 <- survey::svydesign(ids = ~1, weights = ~w, data = d)[integer(0), ]
+  msg_design <- check(
+    alist(
+      table_categorical_svy(des0, select = f, by = g),
+      table_continuous_svy(des0, select = y),
+      table_continuous_svy(des0, select = no_such_column)
+    ),
+    "design"
+  )
+  # The same sentence opens both.
+  expect_identical(
+    sub("\n.*", "", msg_design),
+    sub("\n.*", "", msg_data)
+  )
 })

@@ -317,11 +317,13 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: the underlying `data.frame` carrying the
-#'     rendering metadata as attributes (S3 class
-#'     `"spicy_continuous_table"` / `"spicy_table"`). The object is
-#'     returned visibly, so a bare `table_continuous(...)` call
-#'     auto-prints the styled ASCII table at the console while
+#'   \item `"default"`: a `data.frame` of class
+#'     `"spicy_continuous_table"` / `"spicy_table"` carrying the
+#'     rendering metadata as attributes. Its columns are internal and can
+#'     change without notice: read the numbers from `"data.frame"`,
+#'     `"long"`, [broom::tidy()], [broom::glance()] or [as_structured()].
+#'     The object is returned visibly, so a bare `table_continuous(...)`
+#'     call auto-prints the styled ASCII table at the console while
 #'     `t <- table_continuous(...)` stays silent (print `t` to display
 #'     the table). The object can be re-coerced via
 #'     [as.data.frame.spicy_continuous_table()] or piped into

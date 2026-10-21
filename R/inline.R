@@ -41,9 +41,14 @@
 #' that matches no source column is looked up among the displayed
 #' labels before erroring. The missing-value category is addressed by
 #' `level = "(Missing)"` whatever its displayed (possibly translated or
-#' relabeled) label, through its row role. Fit statistics are addressed by their
-#' token as `variable` (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by
-#' their label (`inline(tbl, "n")`). Identity comes first: a source column
+#' relabeled) label, through its row role. Fit statistics are addressed
+#' by their token as `variable` (`inline(tbl, "nobs")`,
+#' `inline(tbl, "r2")`) or by their label (`inline(tbl, "n")`). The token
+#' is the one `show_fit_stats` takes (`"r2"`, `"adj_r2"`, `"aic"`, ...),
+#' the key of the row in the `variable` column of
+#' `output = "data.frame"`. `glance()` and the long output name the same
+#' statistic as broom does (`r.squared`, `adj.r.squared`), a name
+#' `inline()` does not read. Identity comes first: a source column
 #' wins over a token or a label of the same name, and an exact label over
 #' a fit statistic's label read regardless of case. A `variable` that
 #' still matches the rows of two variables or statistics is refused, and
@@ -90,7 +95,7 @@
 #' `"no_data"`, and the base row, the number of respondents, addressed as
 #' the fit statistic `"nobs"`: `inline(tbl, "nobs", model = "Total")`.
 #' The item `p` and `statistic` belong to no group and are cited without
-#' `model` (`inline(tbl, smoking, column = "p")`).
+#' `model` (`inline(tbl, info_internet, column = "p")`).
 #'
 #' # Columns
 #'
@@ -149,7 +154,10 @@
 #'   or, on a median-only table, the median (`"med"`, `"med_iqr"`) for
 #'   [table_continuous()], and the count (`"n"`) for
 #'   [table_categorical()] and [table_multiresponse()]. A row carrying
-#'   none of them refuses and lists its tokens.
+#'   none of them refuses and lists its tokens. A [table_continuous_lm()]
+#'   row that shows the mean of each group and no contrast (a `by` of
+#'   three or more levels, or `contrast = "none"`) has no default: it
+#'   refuses and gives the address of a mean.
 #' @param model A group of `by`, or in a multi-model table the model:
 #'   its label (as displayed) or its position. See *Groups and models*.
 #'
@@ -267,13 +275,16 @@ inline <- function(
 # with the base row ("Respondents"), and the label "(No item chosen)" led
 # to its token, "none", which an item column of that name shared, so the
 # item's count came back. Another row's number, with no error.
-.inline_variable_rows <- function(s, var_chr) {
+#
+# `call` is the frame of `inline()`, which the errors name; every helper of
+# this file that aborts takes it and hands it on.
+.inline_variable_rows <- function(s, var_chr, call = rlang::caller_env()) {
   body <- s$body
   generated <- .inline_generated_rows(body)
   id <- .inline_row_identity(body, generated)
   ids <- unique(id[.inline_match_rows(body, var_chr, generated)])
   if (length(ids) > 1L) {
-    .inline_abort_ambiguous(body, var_chr, ids, id, generated)
+    .inline_abort_ambiguous(body, var_chr, ids, id, generated, call = call)
   }
   rows <- which(id %in% ids)
   if (length(rows) == 0L) {
@@ -289,7 +300,8 @@ inline <- function(
           "."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   rows
@@ -370,7 +382,14 @@ inline <- function(
 # row, each checked against the resolver itself. A generated row can be
 # left with none (a regression term named like a fit statistic's token
 # and another labeled like its label), and the message says so.
-.inline_abort_ambiguous <- function(body, var_chr, ids, id, generated) {
+.inline_abort_ambiguous <- function(
+  body,
+  var_chr,
+  ids,
+  id,
+  generated,
+  call = rlang::caller_env()
+) {
   shown <- .inline_shown_labels(body)
   top <- is.na(body$.indent) | body$.indent == 0L
   lines <- vapply(
@@ -422,7 +441,8 @@ inline <- function(
       ),
       stats::setNames(lines, rep("i", length(lines)))
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
@@ -435,7 +455,8 @@ inline <- function(
   var_chr,
   level,
   column,
-  cols
+  cols,
+  call = rlang::caller_env()
 ) {
   body <- s$body
 
@@ -448,7 +469,8 @@ inline <- function(
         rows,
         var_chr,
         .inline_requested_tokens(column),
-        cols
+        cols,
+        call = call
       )
       if (!is.null(hdr)) {
         return(hdr)
@@ -492,7 +514,8 @@ inline <- function(
             "."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     return(rows[1L])
@@ -520,7 +543,8 @@ inline <- function(
         sprintf("No level %s for %s.", .quote_val(level), .quote_val(var_chr)),
         .inline_level_hints(s, rows, var_chr, level)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   hit
@@ -795,7 +819,12 @@ inline <- function(
   var_stat <- if (length(group_rows) > 0L && !is.null(column)) {
     carried <- Filter(
       function(tk) {
-        length(.inline_token_cols(s, .inline_model_cols(s, NULL), tk)) > 0L
+        length(.inline_token_cols(
+          s,
+          .inline_model_cols(s, NULL, call = call),
+          tk
+        )) >
+          0L
       },
       intersect(.inline_requested_tokens(column), .INLINE_VARIABLE_TOKENS)
     )
@@ -859,7 +888,15 @@ inline <- function(
 #
 # A token the table does not carry is not this rule's business: it
 # falls through, and the caller gets the message they got before.
-.inline_header_row <- function(s, formatted, rows, var_chr, tokens, cols) {
+.inline_header_row <- function(
+  s,
+  formatted,
+  rows,
+  var_chr,
+  tokens,
+  cols,
+  call = rlang::caller_env()
+) {
   body <- s$body
   hdr <- rows[body$.row_role[rows] == "factor_header"]
   if (length(hdr) != 1L || length(tokens) == 0L) {
@@ -907,7 +944,8 @@ inline <- function(
           "value to cite."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   NULL
@@ -938,7 +976,7 @@ inline <- function(
 # The candidate columns after the `model` filter: NULL model on a
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
-.inline_model_cols <- function(s, model) {
+.inline_model_cols <- function(s, model, call = rlang::caller_env()) {
   all_cols <- setdiff(names(s$col_meta), .REG_KEY_VARIABLE)
   spans <- s$spanners
   if (is.null(model)) {
@@ -947,7 +985,8 @@ inline <- function(
   if (length(model) != 1L) {
     spicy_abort(
       sprintf("`model` must be a single value, not length %d.", length(model)),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (length(spans) == 0L) {
@@ -958,7 +997,8 @@ inline <- function(
     if (length(groups) == 0L) {
       spicy_abort(
         "`model` was supplied but this table has no model or group to select.",
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     pick <- if (is.numeric(model)) {
@@ -967,7 +1007,7 @@ inline <- function(
       model
     }
     if (is.null(pick)) {
-      .inline_abort_no_group(model, groups)
+      .inline_abort_no_group(model, groups, call = call)
     }
     lv <- vapply(
       all_cols,
@@ -999,7 +1039,8 @@ inline <- function(
           "."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   # Spanner indices count the Variable column; col_meta keys do not.
@@ -1035,12 +1076,36 @@ inline <- function(
 # table carries no `"b"` at all. Without this entry the preference
 # fell through to `"n"`, and a bare `inline(tbl, outcome)` quoted the
 # sample size where the sentence meant the mean difference.
-.inline_default_token <- function(s, cols) {
+#
+# A row with the means of the groups and no contrast (a `by` of three or
+# more levels, or `contrast = "none"`) has no single estimate: falling
+# through to `"n"` would quote the sample size again, so it is refused
+# with the address of a mean.
+.inline_default_token <- function(s, cols, call = rlang::caller_env()) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
+  if ("emmean" %in% tokens && !any(c("b", "delta") %in% tokens)) {
+    groups <- .inline_column_groups(s)
+    spicy_abort(
+      c(
+        "No default column for this row: the table shows the mean of each group, with no contrast.",
+        "i" = sprintf(
+          "Cite a mean with `model`: `model = %s, column = \"emmean\"`.",
+          .quote_val(groups[[1L]])
+        ),
+        "i" = paste0(
+          "Available groups: ",
+          paste(.quote_val(groups), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   for (cand in c("b", "delta", "m", "med", "med_iqr", "n")) {
     if (cand %in% tokens) {
       return(cand)
@@ -1055,7 +1120,8 @@ inline <- function(
         "."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
@@ -1065,14 +1131,15 @@ inline <- function(
 # sentence is the one thing it must not do -- which is what `?inline`
 # promises. Shared by the scalar path and by BOTH bounds of an interval:
 # the interval path used to skip this and render "[<dash>, <dash>]".
-.inline_refuse_status <- function(status, token) {
+.inline_refuse_status <- function(status, token, call = rlang::caller_env()) {
   if (identical(status, "undefined")) {
     spicy_abort(
       sprintf(
         "The %s cell of this row is undefined in the table (not estimable).",
         .quote_val(token)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (identical(status, "reference")) {
@@ -1081,7 +1148,8 @@ inline <- function(
         "This row is the reference category: it has no %s value.",
         .quote_val(token)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -1093,20 +1161,20 @@ inline <- function(
 # brackets around nothing and returned "[, ]". One producer, so the two
 # paths cannot word the same refusal differently.
 #
-# The refusal used to stop at the period, which made it a dead end on
-# the one table where it is REACHED BY DEFAULT: `table_continuous_lm(
-# contrast = "none")` still prints the delta column, empty, and `delta`
-# is the token a bare `inline(x, var)` asks for. The reader was told the
-# cell is empty and nothing else -- not that the column is empty
+# The refusal used to stop at the period, a dead end: the reader was told
+# the cell is empty and nothing else -- not that the column is empty
 # throughout, and not that the group means beside it are addressable.
-# The context arguments are optional so a caller without a structured
-# table still gets the bare refusal.
+# (`table_continuous_lm(contrast = "none")` printed an empty contrast
+# column, the case that exposed it; the column is now left out.) The
+# context arguments are optional so a caller without a structured table
+# still gets the bare refusal.
 .inline_refuse_empty <- function(
   txt,
   token,
   s = NULL,
   formatted = NULL,
-  cols = NULL
+  cols = NULL,
+  call = rlang::caller_env()
 ) {
   if (nzchar(txt)) {
     return(invisible(NULL))
@@ -1119,7 +1187,8 @@ inline <- function(
       ),
       .inline_empty_cell_hints(s, token, formatted, cols)
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
@@ -1214,7 +1283,14 @@ inline <- function(
 
 # One formatted cell by (row, token), the interval composed like the
 # console composes it.
-.inline_cell <- function(s, formatted, row, token, cols) {
+.inline_cell <- function(
+  s,
+  formatted,
+  row,
+  token,
+  cols,
+  call = rlang::caller_env()
+) {
   hits <- cols[
     vapply(
       cols,
@@ -1225,7 +1301,7 @@ inline <- function(
     )
   ]
   if (length(hits) == 0L) {
-    .inline_abort_no_token(s, token)
+    .inline_abort_no_token(s, token, call = call)
   }
   # An interval token names its two BOUNDS, not two competing columns.
   # Selecting by token FIRST is what keeps "ci" apart from "ame_ci",
@@ -1238,9 +1314,9 @@ inline <- function(
     character(1)
   )
   if (length(hits) >= 2L && all(nzchar(roles))) {
-    pair <- .inline_ci_pair(s, hits)
+    pair <- .inline_ci_pair(s, hits, call = call)
     for (nm in pair) {
-      .inline_refuse_status(.struct_cell_status(s, nm)[row], token)
+      .inline_refuse_status(.struct_cell_status(s, nm)[row], token, call = call)
     }
     lo <- trimws(formatted[[pair[1L]]][row])
     hi <- trimws(formatted[[pair[2L]]][row])
@@ -1248,8 +1324,8 @@ inline <- function(
     # above lets it through: an association interval on a LEVEL row of
     # `table_categorical()` (the measure sits on the variable row) used
     # to compose as "[, ]".
-    .inline_refuse_empty(lo, token, s, formatted, cols)
-    .inline_refuse_empty(hi, token, s, formatted, cols)
+    .inline_refuse_empty(lo, token, s, formatted, cols, call = call)
+    .inline_refuse_empty(hi, token, s, formatted, cols, call = call)
     br <- .style_ci_brackets()
     sep <- .style_ci_sep(
       ci_bracket_separator(s$format_spec$decimal_mark)
@@ -1279,12 +1355,13 @@ inline <- function(
           "."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
-  .inline_refuse_status(.struct_cell_status(s, hits)[row], token)
+  .inline_refuse_status(.struct_cell_status(s, hits)[row], token, call = call)
   out <- trimws(formatted[[hits]][row])
-  .inline_refuse_empty(out, token, s, formatted, cols)
+  .inline_refuse_empty(out, token, s, formatted, cols, call = call)
   out
 }
 
@@ -1292,7 +1369,7 @@ inline <- function(
 # ONE interval token. A remaining ambiguity is therefore a genuine
 # multi-model (or multi-group) one, and `model` is the remedy the
 # message names -- `s$spanners` is populated exactly on those tables.
-.inline_ci_pair <- function(s, cols) {
+.inline_ci_pair <- function(s, cols, call = rlang::caller_env()) {
   roles <- vapply(
     cols,
     function(nm) s$col_meta[[nm]]$ci_role %||% "",
@@ -1313,17 +1390,26 @@ inline <- function(
           "."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   spicy_abort(
     "This table displays no confidence interval.",
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
 # Render a "{token} ... {token}" pattern.
-.inline_pattern <- function(s, formatted, row, pattern, cols) {
+.inline_pattern <- function(
+  s,
+  formatted,
+  row,
+  pattern,
+  cols,
+  call = rlang::caller_env()
+) {
   tokens <- regmatches(
     pattern,
     gregexpr("\\{[^{}]+\\}", pattern)
@@ -1339,9 +1425,9 @@ inline <- function(
   for (tk in unique(tokens)) {
     name <- substring(tk, 2L, nchar(tk) - 1L)
     value <- if (identical(name, "ci_label")) {
-      .inline_ci_label(s, cols, cited_intervals)
+      .inline_ci_label(s, cols, cited_intervals, call = call)
     } else {
-      .inline_cell(s, formatted, row, name, cols)
+      .inline_cell(s, formatted, row, name, cols, call = call)
     }
     out <- gsub(tk, value, out, fixed = TRUE)
   }
@@ -1371,7 +1457,12 @@ inline <- function(
 # in the order it cites them; the first one wins, which is the interval
 # a reader pairs with the label. A pattern citing none (`"{b}
 # {ci_label}"`) keeps the plain scan.
-.inline_ci_label <- function(s, cols, want = character(0)) {
+.inline_ci_label <- function(
+  s,
+  cols,
+  want = character(0),
+  call = rlang::caller_env()
+) {
   for (tk in want) {
     for (nm in cols) {
       m <- s$col_meta[[nm]]
@@ -1388,6 +1479,7 @@ inline <- function(
   }
   spicy_abort(
     "This table displays no confidence interval.",
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }

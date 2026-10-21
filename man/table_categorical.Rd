@@ -386,12 +386,15 @@ as in the other table functions; supplying \code{v_digits} is an error
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: the underlying \code{data.frame} carrying the
-rendering metadata as attributes (S3 class
-\code{"spicy_categorical_table"}). The object is returned visibly, so
-a bare \code{table_categorical(...)} call auto-prints the styled ASCII
-table at the console while \code{t <- table_categorical(...)} stays
-silent (print \code{t} to display the table).
+\item \code{"default"}: a \code{data.frame} of class
+\code{"spicy_categorical_table"} carrying the rendering metadata as
+attributes. Its columns are internal and can change without
+notice: read the numbers from \code{"data.frame"}, \code{"long"},
+\code{\link[broom:tidy]{broom::tidy()}}, \code{\link[broom:glance]{broom::glance()}} or \code{\link[=as_structured]{as_structured()}}. The object
+is returned visibly, so a bare \code{table_categorical(...)} call
+auto-prints the styled ASCII table at the console while
+\code{t <- table_categorical(...)} stays silent (print \code{t} to display
+the table).
 \item \code{"data.frame"}: the displayed table with its numbers, what
 \link[=as.data.frame.spicy_categorical_table]{as.data.frame()} of the
 default object returns: one row per printed row -- the header row
@@ -435,8 +438,8 @@ variable sit on every row of its block.
 \item \code{"flextable"}: a \code{flextable} object.
 \item \code{"excel"} / \code{"word"}: writes to disk and returns the file
 path invisibly.
-\item \code{"clipboard"}: copies the table and returns the display
-\code{data.frame} invisibly.
+\item \code{"clipboard"}: copies the table and returns the copied text
+invisibly.
 }
 
 The note, the \code{drop_na = TRUE} disclosure included, travels with the

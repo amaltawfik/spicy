@@ -1647,21 +1647,24 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
   expect_null(w$call)
 })
 
-# ---- grouped empty data returns typed columns, not logical ----
+# ---- empty data: refused, with or without `by` ----
 
-test_that("grouped table with empty data returns typed zero-length columns", {
+test_that("empty data is refused, with or without `by`", {
   df <- data.frame(
     x = factor(levels = c("a", "b")),
     g = factor(levels = c("A", "B")),
     stringsAsFactors = FALSE
   )
-  out <- table_categorical(df, select = "x", by = "g", output = "data.frame")
-  expect_equal(nrow(out), 0L)
-  # Text keys, numeric statistics: never the logical of an all-NA column.
-  col_types <- vapply(out, typeof, character(1))
-  keys <- c("variable", "label", "level", ".row_role")
-  expect_true(all(col_types[keys] == "character"))
-  expect_true(all(col_types[setdiff(names(out), keys)] == "double"))
+  # A factor keeps its levels on data with no rows: there is still nothing
+  # to tabulate, and no table of zero rows is returned.
+  expect_error(
+    table_categorical(df, select = "x", by = "g", output = "data.frame"),
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_categorical(df, select = "x", output = "data.frame"),
+    class = "spicy_invalid_data"
+  )
 })
 
 test_that("table_categorical gt output omits association header when assoc_measure = 'none'", {
@@ -4808,7 +4811,6 @@ test_that("an all-missing `by` is refused instead of growing phantom columns", {
 })
 
 test_that("the refusal states the reason the DATA gives, not a generic one", {
-  # Two shapes reach the same refusal and the message must fit both.
   # Zero rows: nothing is missing `by`, there is simply nothing -- and
   # `drop_na = FALSE` is NOT a remedy here (it raises the same error),
   # so the message must not offer it.
@@ -4823,7 +4825,7 @@ test_that("the refusal states the reason the DATA gives, not a generic one", {
   )
   expect_s3_class(err0, "spicy_invalid_data")
   msg0 <- conditionMessage(err0)
-  expect_match(msg0, "The data has no rows.", fixed = TRUE)
+  expect_match(msg0, "`data` has no rows.", fixed = TRUE)
   expect_false(grepl("Every observation is missing it.", msg0, fixed = TRUE))
   expect_false(grepl("drop_na = FALSE", msg0, fixed = TRUE))
   # And it really is not a remedy.

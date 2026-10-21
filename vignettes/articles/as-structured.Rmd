@@ -2,12 +2,13 @@
 title: "The structured view: programmatic access to spicy tables"
 description: >
   `as_structured()` exposes the typed representation behind every
-  `table_regression()`, `table_categorical()`, `table_continuous()`,
-  `table_continuous_lm()`, and `table_outcome()` output: a numeric body with per-row
-  identity columns, per-column metadata, per-cell status, and the
-  format specification. Filter rows programmatically, aggregate raw
-  values, or build a custom renderer -- against one schema for all
-  five families.
+  spicy table, from `table_regression()` to `table_categorical()`,
+  `table_continuous()`, `table_continuous_lm()`, `table_outcome()`,
+  `table_multiresponse()` and the survey twins: a numeric body with
+  per-row identity columns, per-column metadata, per-cell status, and
+  the format specification. Filter rows programmatically, aggregate raw
+  values, or build a custom renderer -- against one schema for all of
+  them.
 output:
   html_document:
     toc: true
@@ -37,10 +38,12 @@ empty, plus the metadata a renderer needs to reconstruct the
 display. For regression tables it is the very contract spicy's own
 output engines (Excel, gt, tinytable, flextable, clipboard) consume
 internally -- nothing about it is second-class -- and the
-descriptive families (`table_categorical()`, `table_continuous()`,
-`table_continuous_lm()`, `table_outcome()`) expose the same schema, covered at the end
+descriptive tables (`table_categorical()`, `table_continuous()`,
+`table_continuous_lm()`, `table_outcome()`, `table_multiresponse()`,
+and the survey twins `table_categorical_svy()` and
+`table_continuous_svy()`) expose the same schema, covered at the end
 of this article. The tour below uses a regression table; everything
-it shows reads identically on the other four.
+it shows reads identically on the others.
 
 Two sibling tools serve different needs, and choosing well saves
 work. `broom::tidy()` returns the *statistical* long form -- one row
@@ -274,12 +277,13 @@ the coefficients and it renders the way it prints.
 ## The descriptive tables
 
 Everything above extends beyond regression. The same accessor reads
-`table_categorical()`, `table_continuous()`,
-`table_continuous_lm()` and `table_outcome()`, and returns the same schema -- the same
-identity columns, the same `cell_status`, the same `display_cells`
-mechanism for composite cells. A consumer written for one family
-reads the other four. `table_categorical()` lays out one factor
-header row per variable and one row per category:
+`table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+`table_outcome()`, `table_multiresponse()` and the survey twins, and
+returns the same schema -- the same identity columns, the same
+`cell_status`, the same `display_cells` mechanism for composite cells.
+A consumer written for one table reads the others.
+`table_categorical()` lays out one factor header row per variable and
+one row per category:
 
 ```{r desc-categorical}
 ct <- table_categorical(sochealth, c(sex, smoking), by = education)
@@ -331,13 +335,13 @@ slm$body[, c("Variable", ".variable", ".row_role")]
 slm$col_meta[["M (Male)"]]
 ```
 
-`table_outcome()` is the one shape where three roles share
-`.indent == 0`: a `"summary"` row for the whole analytic sample, a
-`"factor_header"` row per grouping, and the indented `"level"` rows
-under it. A consumer that read "a level is anything that is not a
-header" would swallow the marginal row; the `.indent` field is the
-one to read, and it is why the block geometry of all three
-descriptive families is computed from it:
+`table_outcome()` is the one shape where two roles share
+`.indent == 0`: a `"summary"` row for the whole analytic sample and a
+`"factor_header"` row per grouping, with the indented `"level"` rows
+(`.indent == 1`) under it. A consumer that read "a level is anything
+that is not a header" would swallow the marginal row; the `.indent`
+field is the one to read, and it is why the block geometry of the
+descriptive tables is computed from it:
 
 ```{r desc-outcome}
 ot <- table_outcome(sochealth, bmi, select = c(sex, smoking))

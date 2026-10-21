@@ -611,6 +611,5 @@ table_categorical(
   full coefficient table from one or several fitted `lm` / `glm`
   models (APA Table 3).
 - See [*Summary tables for reporting*](summary-tables-reporting.html) for
-  a cross-function reporting workflow that ties the four
-  summary-table helpers together along the APA Table 1 / 2 / 3
-  sequence.
+  a cross-function reporting workflow that ties the summary-table
+  functions together along the APA Table 1 / 2 / 3 sequence.

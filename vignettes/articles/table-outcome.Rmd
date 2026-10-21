@@ -320,7 +320,8 @@ inline(tbl, smoking, column = "{p}")
 `output = "long"` returns the compute frame: one row per displayed
 row, with `.row_role` saying what each row is and every statistic the
 table computes. `output = "data.frame"`, and `as.data.frame()` on the
-table, give the same rows with the printed columns only.
+table, give the same rows with the key columns `variable`, `label`,
+`level` and `.row_role`, then the printed columns.
 
 ```{r long}
 head(table_outcome(sochealth, bmi, select = sex, output = "long"), 4)
@@ -335,9 +336,9 @@ broom::tidy(tbl)
 broom::glance(tbl)
 ```
 
-Two identity columns rather than one, and deliberately: `outcome` is
-constant down the frame, `variable` names the block. A single column
-would have to mean two different things depending on the row.
+Two identity columns rather than one: `outcome` is constant down the
+frame, and `variable` names the column each row describes, the
+grouping of its block, or the outcome itself on the `Overall` row.
 
 The `glance()` schema is fixed: a column the table does not fill is
 present and `NA`. Index by name, never by position.

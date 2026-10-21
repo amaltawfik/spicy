@@ -167,7 +167,7 @@
 #'   \item \code{n} - frequency count (weighted if applicable)
 #'   \item \code{prop} - proportion of total
 #'   \item \code{valid_prop} - proportion of valid responses (if `valid = TRUE`)
-#'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative percentages (if `cum = TRUE`)
+#'   \item \code{cum_prop}, \code{cum_valid_prop} - cumulative proportions, between 0 and 1 (if `cum = TRUE`)
 #' }
 #'
 #' With `output = "default"` (the default), a `spicy_freq_table` object: the same

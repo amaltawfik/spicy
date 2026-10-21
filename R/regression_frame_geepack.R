@@ -151,8 +151,9 @@ as_regression_frame.gee <- function(fit, ...) {
 
 # Classed refusal for spicy's robust-vcov tokens. GEE inference is
 # robust by construction; the estimator choice lives on the fit
-# (geeglm's `std.err =`), not in the table call.
-.gee_refuse_vcov <- function(vt) {
+# (geeglm's `std.err =`), not in the table call. `call` is the
+# function the user called, so the error names it.
+.gee_refuse_vcov <- function(vt, call = rlang::caller_env()) {
   spicy_abort(
     c(
       sprintf(
@@ -170,7 +171,8 @@ as_regression_frame.gee <- function(fit, ...) {
         "reads the fit's choice."
       )
     ),
-    class = "spicy_unsupported_vcov"
+    class = "spicy_unsupported_vcov",
+    call = call
   )
 }
 

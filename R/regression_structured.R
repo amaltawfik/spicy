@@ -221,7 +221,7 @@
 }
 
 # The row roles a v3 body may carry. Regression roles first, then the
-# three the descriptive families add (R/tables_structured.R). The
+# four the descriptive tables add (R/tables_structured.R). The
 # vocabulary is EXTENDED, never re-worded: a role says what a row IS,
 # so it is the key a consumer matches on -- never the displayed label,
 # which is a display string ("(Missing)", translatable, relabeled
@@ -234,6 +234,8 @@
 #            category of a categorical table, the missing-`by` group
 #            of a continuous one. Takes precedence over `level` /
 #            `group`: what the row is, is the missing key.
+#   none     the respondents of the base of a multiple-response table
+#            who chose no item.
 .STRUCT_ROW_ROLES <- c(
   "coef",
   "factor_header",

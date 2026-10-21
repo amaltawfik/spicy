@@ -180,7 +180,8 @@ table_continuous_lm(
 When you need the underlying returned data for further processing, use
 `output = "data.frame"` for the displayed table with its numbers, one
 row per outcome, or `output = "long"` for the analytic long table, one
-row per level of `by`.
+row per level of `by` and outcome, or one row per outcome with a
+numeric `by` like this one.
 
 ## Covariate adjustment
 
@@ -206,9 +207,9 @@ table_continuous_lm(
 `covariates` accepts the full tidyselect vocabulary
 (`c(age, sex)`, `tidyselect::starts_with("life_sat_")`,
 `tidyselect::all_of(cov_names)`) or a literal character vector. A
-covariate that also appears in `select` is silently auto-excluded
-from the outcome list (mirroring how `by` / `weights` are excluded
-from `select`); a covariate equal to `by` is rejected up front.
+covariate named in `select` is an error (class `spicy_invalid_input`),
+as are the `by` and `weights` columns, and so is a covariate equal to
+`by`.
 
 ### Two estimands for the adjusted marginal means
 
@@ -482,9 +483,9 @@ out <- table_continuous_lm(
 # binary predictors, slope for numeric predictors.
 broom::tidy(out)
 
-# One row per outcome with model-level statistics: r.squared,
-# adj.r.squared, F / t, df, p.value, nobs, weighted_nobs, plus the
-# effect-size summary.
+# One row per outcome with model-level statistics: the test the table
+# shows (here the t of the contrast, with its df), p.value, r.squared,
+# adj.r.squared, nobs, weighted_nobs, plus the effect-size summary.
 broom::glance(out)
 ```
 

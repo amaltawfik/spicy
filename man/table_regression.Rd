@@ -287,13 +287,16 @@ p-value use \code{"ame_p"}.}
 \item{keep}{Character vector of regexes. Only coefficient rows
 whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
 \code{"cyl6"}, \code{"factor(cyl)8"}) matches at least one pattern are
-kept. Mutually exclusive with \code{drop}. Filtering is a display
+kept. The intercept and the subordinate blocks (thresholds, random
+effects) are exempt from \code{keep} and \code{drop}: \code{show_intercept},
+\code{show_thresholds} and \code{show_re} govern them.
+Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
 
 \item{drop}{Character vector of regexes. Coefficient rows
-matching any pattern are removed. Mutually exclusive with
-\code{keep}. Default \code{NULL}.}
+matching any pattern are removed, with the exemptions of \code{keep}.
+Mutually exclusive with \code{keep}. Default \code{NULL}.}
 
 \item{show_intercept}{Whether to display the intercept row.
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}

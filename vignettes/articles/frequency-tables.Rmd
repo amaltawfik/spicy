@@ -147,8 +147,10 @@ ordinary categories instead; tagged NAs are genuine `NA`s either
 way, so for them it only collapses the per-tag breakdown into the
 regular `NA` count. The same argument, with the same default,
 exists in `cross_tab()`, the descriptive helpers
-`table_categorical()`, `table_continuous()` and
-`table_continuous_lm()`, and the row-wise functions `mean_n()`,
+`table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+`table_outcome()` and the survey twins `table_categorical_svy()` and
+`table_continuous_svy()`, the inspection tools `varlist()` and
+`code_book()`, and the row-wise functions `mean_n()`,
 `sum_n()` and `count_n()`. (`table_regression()` takes a fitted
 model, not raw data, so the argument does not apply there.)
 `cross_tab()` and the descriptive helpers disclose the exclusion in
@@ -261,12 +263,13 @@ cross_tab(students, self_rated_health, education,
 
 ### Data frame output
 
-Set `output = "data.frame"` to get a plain data frame for further
-processing. The same argument works in `freq()`, and its two values
-("default", "data.frame") are shared with the `output` argument of
-the `table_*()` family -- but the rendered engines that family also
-accepts ("tinytable", "gt", "flextable", ...) are not available
-here:
+Set `output = "data.frame"` to get the cells of the table as a plain
+data frame for further processing, without its margins. In `freq()`,
+the same value returns the counts with their proportions, between 0
+and 1. The `table_*()` functions take `output = "data.frame"` too,
+for the table as it is displayed, and render to engines
+("tinytable", "gt", "flextable", ...) that `freq()` and `cross_tab()`
+do not offer:
 
 ```{r cross-df}
 cross_tab(sochealth, smoking, education,
@@ -277,8 +280,9 @@ cross_tab(sochealth, smoking, education,
 
 You can set tabulation defaults with `options()` so you don't have
 to repeat arguments. `spicy.rescale` is read by `cross_tab()`,
-`freq()`, and `table_categorical()`; `spicy.percent` and
-`spicy.simulate_p` are read by `cross_tab()`:
+`freq()`, `table_categorical()`, `table_continuous()` and
+`table_outcome()`; `spicy.percent` and `spicy.simulate_p` are read by
+`cross_tab()`:
 
 ```{r options, eval = FALSE}
 options(
@@ -295,7 +299,7 @@ options(
 - [*Categorical summary tables*](table-categorical.html) - building publication-ready
   categorical tables.
 - [*Summary tables for reporting*](summary-tables-reporting.html) - end-to-end reporting
-  workflow that ties the four `table_*` helpers together along the
+  workflow that ties the `table_*()` functions together along the
   APA Table 1 / 2 / 3 sequence (including `table_regression()` for
   the coefficient table).
 - `?freq` and `?cross_tab` for the full argument reference.

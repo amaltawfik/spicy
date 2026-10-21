@@ -53,8 +53,9 @@ no standardized mean difference, as in
 than by position.
 }
 \seealso{
-\code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} for the raw
-long-format access; \code{\link[=tidy.spicy_continuous_lm_table]{tidy.spicy_continuous_lm_table()}} for the
+\code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} for the displayed
+table as a data frame, and \code{output = "long"} of \code{\link[=table_continuous]{table_continuous()}}
+for the long format; \code{\link[=tidy.spicy_continuous_lm_table]{tidy.spicy_continuous_lm_table()}} for the
 model-based companion.
 }
 \keyword{internal}

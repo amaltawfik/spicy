@@ -138,7 +138,7 @@ table_continuous(
 )
 ```
 
-Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
+Allowed values are `"none"` (default), `"auto"`,
 `"hedges_g"`, `"eta2"`, `"r_rb"`, and `"epsilon2"`. Incompatible
 explicit choices (e.g. `"eta2"` with two groups, or `"hedges_g"`
 with `test = "nonparametric"`) trigger an actionable error.
@@ -279,8 +279,8 @@ table_continuous(
 ```
 
 Missing values in `by` are removed by default (`drop_na = TRUE`),
-and the removal is again disclosed rather than silent -- here in the
-note ("Rows with missing income_group removed") and in a warning:
+and the removal is again disclosed rather than silent, in the note
+under the table:
 
 ```{r missing-by-default}
 table_continuous(
@@ -557,5 +557,5 @@ table_continuous(
   regression tables from one or more fitted models
   (APA Table 3).
 - See [*Summary tables for reporting*](summary-tables-reporting.html) for a
-  cross-function reporting workflow that ties the four summary-table
-  helpers together along the APA Table 1 / 2 / 3 sequence.
+  cross-function reporting workflow that ties the summary-table
+  functions together along the APA Table 1 / 2 / 3 sequence.
