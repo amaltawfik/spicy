@@ -131,8 +131,9 @@ air format (pinned: air 0.7.0; the whole tree was one-shot formatted -- see .git
 
 * Every user-facing change should get a bullet in `NEWS.md`. Do not add bullets for small documentation changes or internal refactors.
 * Each bullet should describe the end-user impact and mention the affected function early when relevant.
-* Keep each bullet to a single paragraph with no manual line wrapping.
-* Order bullets alphabetically by function name within a release block. Put general bullets that do not name a function first.
+* Keep each bullet to a single paragraph, hard-wrapped at the width the file uses (72 columns, 73 at most, as in the released sections), with one blank line between bullets.
+* Order the bullets of "Breaking changes" by their impact on users: first the label collisions that now raise an error, then the machine outputs (`output = "long"`, `tidy()`, `glance()`) and the shape of `output = "data.frame"`, the renamed arguments and spellings, the order of groups, the `inline()` rules, the notes under the tables, and then the rest.
+* In the other sections, order bullets alphabetically by the function they name, a `tidy()` or `glance()` bullet under the table function it applies to. Put general bullets that do not name a function first.
 
 ## Repository workflow
 

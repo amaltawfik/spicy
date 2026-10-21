@@ -8,546 +8,729 @@ p-values, and notes.
 
 ## Breaking changes
 
-* The note under every table is one paragraph, its sentences in one
-  order: what the numbers are (weights, design, model), the missing
-  data, the tests and the inference, then the definitions. The legend
-  of the stars follows on its own line. `table_regression()`,
-  `table_regression_uv()`, and `table_continuous_lm()` gave one sentence
-  per line, `table_categorical()` broke the line after the missing
-  values, and the order changed from table to table (#11).
-  `table_continuous()` and `table_continuous_lm()` now name the test
-  behind their p-values, and `table_categorical()` and
-  `table_continuous_lm()` say when the statistics are weighted.
-
-* The note under every table defines the abbreviations its headers
-  show, at its end and in the order of the columns, as the APA manual
-  does, and leaves undefined the statistics the manual leaves undefined
-  (M, Mdn, SD, SE, B, OR, R², the Greek letters, *n*, *p*). No note
-  defines a test statistic (*t*, *z*, *F*, chi-squared). The default
-  note of `table_regression()` and `table_regression_uv()` no longer
-  defines OR and now defines CI ("CI = confidence interval"), and that
-  of a table of means adds its interval and bounds ("CI = confidence
-  interval; LL = lower limit; UL = upper limit"). The fit-statistic rows
-  of a regression table are defined too ("AIC = Akaike information
-  criterion", BIC, ICC, RMSE, WAIC, ...). The definitions of the IQR,
-  the SMD, the design effect and the effect sizes of
-  `table_regression()` join that list, and the direction of the SMD and
-  its threshold get a sentence of their own.
-
-* A variable with no observed value in a group of `by`, typically a
-  question not asked there, has no data in that group, which is not a
-  missing answer: its cells there show a dash, its rows leave the count
-  of missing values, the `Total` column and the test, and the note says
-  "No data for X and Y in G." (#11). This holds in `table_categorical()`,
-  `table_continuous()`, `table_continuous_lm()`, `table_outcome()`,
-  `table_multiresponse()`, and the survey twins, and without `by` for a
-  variable with no observed value at all ("No data for X.").
-
-* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-  `table_outcome()`, `table_categorical_svy()`, and
-  `table_continuous_svy()` show column names by default. The `label`
-  attribute is read only with `labels = TRUE`: add it to keep the labels
-  of 0.13.0. `labels = c(bmi = "Body mass index")` sets the labels you
-  publish, and the other columns follow `options(spicy.var_labels)`.
-  With the new `var_labels()`, as in `labels = var_labels(bmi = "IMC")`,
-  the other columns keep their `label` attribute. Names that match no
-  column are ignored, and `labels = NULL` is an error. In
-  `table_regression()` and `table_regression_uv()`, whose default output
-  does not change, `labels = NULL` (their default in 0.13.0) is an error
-  as well, and a name that matches no term is ignored instead of refused.
-
-* `table_categorical()` chooses its test per variable: Pearson's
-  chi-squared test when every expected count is at least 5, Fisher's
-  exact test otherwise (`test = "auto"`), and the note names the test of
-  each variable. `test = "chisq"` restores the p-values of 0.13.0, and
-  `test = "fisher"` tests every variable exactly. The long output gains a
-  `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
-  mid-p test and Campbell's N-1 chi-squared for 2x2 tables.
-
-* `code_book()` returns a `spicy_codebook` object and no longer opens a
-  DT widget; `output` writes the file. `filename` and `include_na` are
-  defunct, `values` is now a number of categories (default 100), an
-  explicit `NA` level of a factor counts as missing, and `difftime`
-  columns no longer list their values. DT leaves Suggests.
-
 * `table_categorical()` stops with an error (class
   `spicy_label_collision`) when a level of a variable or of `by` reads
   like the row or column it adds for missing values, or like its `Total`
-  margin. It renamed the added row or column `"(Missing_1)"` or
-  `"Total_1"`. Rename the level, or give the added row or column another
-  label with `options(spicy.labels)`, as the message shows.
-  `table_categorical_svy()`, `table_continuous()`,
-  `table_continuous_svy()`, and `table_outcome()` refuse such a level the
-  same way.
+  margin, which it renamed `"(Missing_1)"` or `"Total_1"`. Rename the
+  level, or relabel the added row or column with `options(spicy.labels)`,
+  as the message shows.
 
-* `table_categorical()`, `table_continuous()`, `table_outcome()`, and
-  their survey twins open their notes with "Note.", as
-  `table_regression()` does, in italics in the rendered tables.
-  `table_categorical()` printed "Note." in the middle of the note when
-  `drop_na = TRUE` removed values (#11).
+* `table_categorical_svy()`, `table_continuous()`,
+  `table_continuous_svy()`, and `table_outcome()` refuse such a level
+  the same way.
 
-* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-  `table_outcome()`, and their survey twins carry the whole note, as
-  printed, in `attr(x, "note")`: the printed object and the data frames
-  of `output = "data.frame"` and `"long"`. The `missing_note` attribute
-  of `table_categorical()` and `table_continuous()` is now `note`.
-
-* In `tidy()` and `glance()`, `table_categorical()`, `table_continuous()`,
-  and `table_continuous_lm()` call `variable` the column they called
-  `outcome`, as `table_categorical_svy()` and `table_continuous_svy()`
-  do. It holds the column name, and `label` the displayed label. In
-  `table_categorical()`, `outcome` held the displayed label and there was
-  no `label` column. `output = "long"` of `table_categorical()` also
-  gives the column name in `variable`, where it gave the label, and its
-  `glance()` lists the variables in the order of `select`, as the table
-  and `tidy()` do. It sorted them by label.
+* `table_outcome()` also refuses a `select` variable displayed as
+  "Overall", the label of its marginal row, where it showed two such
+  rows: relabel one with `labels` or `options(spicy.labels)`.
 
 * The machine outputs of the table functions (`output = "long"`,
-  `tidy()`, `glance()`) give one name to each statistic, broom's where
-  broom has one, as listed in `?spicy`: `p.value` (was `p`),
-  `statistic` (`chi2`), `df` and `df.residual` (`df1` and `df2`),
-  `test_type` (`statistic_type`), `es_type`, `es_value`, `es_ci_lower`
-  and `es_ci_upper` (`effect_size_type`, `effect_size`, `assoc_type`,
-  `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`, and the `ci_lower` /
-  `ci_upper` of an association measure), `smd_value` (`smd`), `nobs`
-  (`n_total`, and `n_obs` in `table_regression()`), `weighted_nobs`
-  (`weighted.nobs`), `weighted_n` (`weighted.n`), `r.squared` and
-  `adj.r.squared` (`r2` and `adj_r2`). In `table_continuous_lm()`, the
-  size of the model is `nobs` and `weighted_nobs`, where the long output
-  had `n` and `weighted_n` and `glance()` had `weighted_n`, and the
-  attributes naming the `by` column are `group_var` and `group_label`, as
-  in the other tables (`by_var` and `by_label`). There too, a *t*, the
-  test of a contrast or a slope, carries its own degrees of freedom in
-  `df` and leaves `df.residual` empty, where the long output and
-  `glance()` gave the 1 and the residual df of the equivalent *F*; a *z*
-  or a chi-squared (`vcov = "bootstrap"` or `"jackknife"`) leaves
-  `df.residual` empty too, and `df` is a double. The `glance()` of
-  `table_continuous_lm()` reports the test the table shows: with a
-  two-level `by`, the *t* of the contrast, where it gave the *F* of the
-  model.
+  `tidy()`, `glance()`) give one name to each statistic, the `broom`
+  name where `broom` has one, as listed in `?spicy`.
 
-* `output = "data.frame"` returns the table as it is displayed, with its
-  numbers, in every table function: one row per printed row, the printed
-  columns, and the key columns `variable` and `label`, with `level`,
-  `group`, and `.row_role` where they apply. The bounds of an interval
-  are named as printed: `95% CI LL` and `95% CI UL`, `Female 95% CI LL`
-  in `table_categorical_svy()`. `as.data.frame()` on a table returns the
-  same frame, with the note as its one attribute.
-  `output = "long"` gives one row per variable, level, and group. In
-  `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`,
-  `"data.frame"` was the long frame, in `table_categorical()` a frame of
-  levels (its `Chi2`, `df` and `test_type` columns are now in `"long"`
-  only), and in `table_regression()` the text of the printed table. The
-  `"long"` output of `table_categorical_svy()` was its wide frame, and
-  `as.data.frame()` of `table_continuous_lm()` its long frame.
+* The machine outputs name the test `test_type` (was `statistic_type`),
+  `statistic` (`chi2`), `df` and `df.residual` (`df1` and `df2`), and
+  `p.value` (`p`), and the SMD `smd_value` (`smd`).
+
+* The machine outputs name the effect size `es_type`, `es_value`,
+  `es_ci_lower`, and `es_ci_upper` (`effect_size_type`, `effect_size`,
+  `assoc_*`, the `ci_lower` / `ci_upper` of an association measure).
+
+* The machine outputs name the sizes `nobs` (`n_total`, and `n_obs` in
+  `table_regression()`), `weighted_nobs` (`weighted.nobs`), and
+  `weighted_n` (`weighted.n`).
+
+* The machine outputs name the fit `r.squared` and `adj.r.squared` (were
+  `r2` and `adj_r2`).
+
+* `tidy()` gives a row's mean or coefficient, standard error, and
+  interval as `estimate`, `std.error`, `conf.low`, and `conf.high`;
+  descriptive long outputs keep `mean`, `se`, `ci_lower`, `ci_upper`.
+
+* `tidy()` and `glance()` of `table_categorical()`,
+  `table_continuous()`, and `table_continuous_lm()` call `variable` the
+  column they called `outcome`, as the survey twins do.
+
+* In the machine outputs, `variable` holds the column name and `label`
+  the displayed label.
+
+* In `table_categorical()`, `outcome` held the displayed label and there
+  was no `label` column, and `output = "long"` gave the label in
+  `variable`, where it now gives the column name.
+
+* `glance()` of `table_categorical()` lists the variables in the order
+  of `select`, as the table and `tidy()` do, where it sorted them by
+  label.
+
+* In `table_continuous_lm()`, the size of the model is `nobs` and
+  `weighted_nobs`, where the long output had `n` and `weighted_n` and
+  `glance()` had `weighted_n`.
+
+* The attributes of `table_continuous_lm()` that name the `by` column
+  are `group_var` and `group_label`, as in the other tables (`by_var`
+  and `by_label`).
+
+* In `table_continuous_lm()`, the *t* of a contrast or a slope has its
+  own degrees of freedom in `df` and an empty `df.residual`, where the
+  long output and `glance()` gave those of the equivalent *F*.
+
+* In `table_continuous_lm()`, a *z* or a chi-squared
+  (`vcov = "bootstrap"` or `"jackknife"`) leaves `df.residual` empty
+  too, and `df` is a double.
+
+* The `glance()` of `table_continuous_lm()` reports the test the table
+  shows: with a two-level `by`, the *t* of the contrast, where it gave
+  the *F* of the model.
+
+* In every table, `output = "data.frame"` is the displayed table with
+  its numbers: one row per printed row, the keys (`variable`, `label`,
+  and `level`, `group`, `.row_role` where they apply), then the printed
+  columns.
+
+* In `output = "data.frame"`, the bounds of an interval are named as
+  printed, `95% CI LL` and `95% CI UL` (`Female 95% CI LL` in
+  `table_categorical_svy()`).
+
+* In `output = "data.frame"`, a cell of several numbers keeps the first
+  in its column and the others after it, under their long-output names
+  (`df`, `df.residual`, `es_ci_lower`, `es_ci_upper`, `q1`, `q3`).
+
+* `as.data.frame()` on a table returns the same frame, with the note as
+  its attribute (and the global test in `table_multiresponse()`).
+  `output = "long"` gives one row per variable, level, and group.
+
+* `output = "data.frame"` was the long frame in `table_continuous()`,
+  `table_continuous_svy()`, and `table_outcome()`, and the text of the
+  printed table in `table_regression()`.
+
+* In `table_categorical()`, `output = "data.frame"` was a frame of
+  levels, whose `Chi2` and `df` columns are now the `statistic` and `df`
+  of `"long"`.
+
+* The `"long"` output of `table_categorical_svy()` was its wide frame,
+  and `as.data.frame()` of `table_continuous_lm()` its long frame.
 
 * `tidy()` on a `table_categorical_svy()` result reports `proportion`,
   between 0 and 1, and its interval on the same scale, in the order of
   the table. It reported the percentage in `estimate`.
 
-* `tidy()` on a `table_categorical()` result keeps the rows of the `Total`
-  margin and flags them with `total`, as `table_categorical_svy()` does.
-  It dropped them.
+* `tidy()` on a `table_categorical()` result keeps the rows of the
+  `Total` margin, as `table_categorical_svy()` does, where it left them
+  out: filter on `total` to drop them.
+
+* `table_outcome()` no longer has the `smd_type` and `smd_value` columns,
+  which were always `NA`, in its long output and `glance()`.
+
+* `glance()` of `table_categorical()` gives the measure of each variable
+  in `es_type` (`"phi"`, `"cramer_v"`), as the long output does, where
+  it gave the header (`Effect size` when measures differed).
+
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+  `table_outcome()`, and their survey twins carry the whole note, as
+  printed, in `attr(x, "note")`.
+
+* The note attribute is on the printed object and on the data frames of
+  `output = "data.frame"` and `"long"`; the `missing_note` attribute of
+  `table_categorical()` and `table_continuous()` is now `note`.
 
 * `table_regression()` and `table_regression_uv()` return the path of the
   file, invisibly, with `output = "excel"` or `"word"`, as the other
   tables do. They returned the table.
 
-* `table_outcome()` no longer has the `smd_type` and `smd_value` columns,
-  which were always `NA`, in its long output and `glance()`.
+* `table_regression()` and `table_regression_uv()` name an interval
+  column with a point whatever `decimal_mark`: they wrote `97,5% CI`
+  under `decimal_mark = ","`.
 
-* `table_categorical()` gives each association measure of its note a
-  sentence of its own: "Phi: smoking. Cramer's V: education." A
-  semicolon joined them.
+* The interval columns of `table_regression()` are `97.5% CI LL` and
+  `97.5% CI UL` in `as.data.frame()`, `97.5% CI: LL` and `97.5% CI: UL`
+  in `as_structured()`, `97.5% CI` in the printed object; the header
+  still follows the mark.
 
-* `table_regression()` and `table_regression_uv()` name an interval column
-  with a point whatever `decimal_mark`: `97.5% CI LL` and `97.5% CI UL`
-  in `as.data.frame()`, `97.5% CI: LL` and `97.5% CI: UL` in
-  `as_structured()`, `97.5% CI` in the printed object. They were
-  `97,5% CI` under `decimal_mark = ","`. The header still follows the
-  mark.
+* The median columns of the continuous tables are `Med`, `Med [Q1, Q3]`,
+  and `Med 95% CI LL` in `output = "data.frame"` and `as.data.frame()`,
+  as in `as_structured()`.
 
-* `table_regression()` words its `p_adjust` note for the reader:
-  "P-values adjusted for 5 tests (Holm method)." A table of several
-  models says the adjustment ran within each model. The note quoted the
-  `stats::p.adjust()` call.
+* `table_categorical()` names the bounds of the association interval
+  `95% CI LL` and `95% CI UL` in the console, data frame, Excel, and
+  clipboard outputs, as the other tables do.
 
-* The `jama` and `lancet` themes of `spicy_style()` open the note under
-  the table without a lead-in word, as the AMA manual and The Lancet do.
-  It opened with "Note.".
+* The rendered formats of `table_categorical()` head the merged cell of
+  the association measure `Cramer's V [95% CI]`, stating the level.
 
-* The `jama` theme of `spicy_style()` opens the note with a line of its
-  abbreviations, in alphabetical order ("Abbreviations: HR, hazard
-  ratio; OR, odds ratio."), as the AMA manual does, and does not expand
-  SD, SE, CI and the statistical symbols the manual lists. The
-  `lancet` theme spells the abbreviations out at the end of the note,
-  one "HR=hazard ratio." sentence each, and leaves SD, SE, IQR and CI
-  undefined, as the journal's tables do.
+* The bounds of the association interval were `CI lower` and `CI upper`,
+  and the keys `header_ci_lower` and `header_ci_upper` of
+  `options(spicy.labels)` are gone.
 
-* `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`
-  head the median "Mdn", the APA symbol, where they printed "Med". The
-  French header stays "Méd.". The columns keep their names (`Med`,
-  `Med [Q1, Q3]`, `Med 95% CI LL`) in `output = "data.frame"`,
-  `as.data.frame()`, and `as_structured()`.
+* The association interval columns of `as_structured()` keep their
+  names, `CI lower` and `CI upper`.
 
-* The table functions refuse a `by` column named in `select`, all with
-  the same error. `table_categorical()` crossed it with itself,
-  `table_continuous_lm()` dropped it, and the others said it did not
-  exist. The outcome named in the `predictors` of `table_regression_uv()`
-  and the covariates named in the `select` of `table_continuous_lm()`,
-  which were dropped, are refused the same way, as the outcome in the
-  `select` of `table_outcome()` already was. So is the weights column,
-  which `table_continuous()` and `table_categorical()` described as a
-  variable, and the cluster column of `table_continuous_lm()`, which it
-  dropped with the weights. A position counts as a name (`select = 1:2`
-  with `by` first is refused), and `everything()` and the other
-  selection helpers skip all these columns.
+* `as_structured()` reads contract version 4, and refuses a view built
+  by an older spicy.
 
-* `table_categorical_svy()` and `table_continuous_svy()` leave the
-  design's own columns out of `select`: its sampling weights, replicate
-  weights, cluster identifiers, and finite population corrections.
-  `everything()` and the other selection helpers skip them, and naming
-  one is an error that points to `table_categorical()` or
-  `table_continuous()`. They described these columns as variables.
-  Strata stay variables.
+* In `as_structured()`, the `format_spec` of `table_categorical()` gives
+  the decimals of the association measure as `effect_size_digits`, as in
+  the other tables (was `v_digits`).
 
-* In `table_continuous()`, `table_continuous_svy()`, and
-  `table_categorical_svy()`, a position in `select` (`select = 2:3`)
-  counts the columns of the data, the `by` column included, as in the
-  other tables and in `dplyr::select()`. They counted them without the
-  `by` column, and so picked other columns.
+* `table_categorical()` and `spicy_style()` call `effect_size_digits`
+  the argument they called `v_digits`, as the other tables do;
+  `v_digits` is an error (class `spicy_defunct`) that names it.
 
-* The table functions refuse a column that is not in the data, in
-  `select`, `by`, `exclude`, `outcome`, or `predictors`, with an error of
-  class `spicy_missing_column` that names it, and the column it is likely
-  a typo of when one name is close. The class and the wording varied,
-  some errors came from tidyselect unclassed, and a name in a character
-  `exclude` was ignored. A `by` of two columns is a `spicy_invalid_input`
-  error.
+* The `effect_size_digits` of a style now reaches the association
+  measure and the SMD of `table_categorical()`.
 
-* `table_continuous()` and `table_continuous_lm()` stop with an error when
-  `select` leaves no numeric column, as the other tables do, and
-  `table_categorical()` when it is called without `select` on data with no
-  categorical column. They warned and returned an empty data frame.
+* `table_continuous()` and `table_outcome()` spell their effect sizes
+  `"eta2"` and `"epsilon2"`, and `table_continuous_lm()` `"cohens_d"`
+  and `"hedges_g"`, in `effect_size` and in `es_type`.
 
-* The table functions refuse a number of decimals that is not a whole
-  number (`digits = 2.5`), as `table_regression()` did. They truncated it.
-  `table_regression()` and `table_regression_uv()` also refuse
-  `p_digits = 0`, as the descriptive tables do: the table printed `.015`
-  and `inline()` `<1`.
+* A squared effect size ends in 2 in every table, as in
+  `table_regression()`, and an estimator named after its author carries
+  the name.
+
+* `"eta_sq"`, `"epsilon_sq"`, `"d"`, and `"g"` are an error (class
+  `spicy_defunct`) that gives the new value.
 
 * `table_continuous()` and `table_outcome()` refuse `effect_size = TRUE`
   and `FALSE` (class `spicy_defunct`): use `"auto"` and `"none"`.
 
-* With `output = "excel"` or `"word"`, the table functions refuse an
-  `excel_path` or `word_path` that is not a single path ending in `.xlsx`
-  or `.docx`, in a directory that exists. A `.csv` path was written as a
-  workbook anyway, and the other mistakes failed in the package writing
-  the file, with an unclassed error.
+* `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`
+  head the median `Mdn`, where they printed `Med`, and `Méd.` in French,
+  where they printed `Méd`.
 
-* `table_regression_uv()` refuses an argument of `...` that is not an
-  argument of `table_regression()`, or that abbreviates one, and names it.
-  An unknown name failed with base R's "unused argument" error, and
-  `effect_size = TRUE` reached `effect_size_digits`.
+* In French, the effect size of `table_continuous()` is headed
+  `Taille d'effet`, where it read `ES`, which now heads the standard
+  errors of the regression tables.
 
-* `table_continuous()` no longer warns when its default `drop_na = TRUE`
-  removes rows with a missing `by`. The note gives their number, as in the
-  other tables.
+* The tables sort the groups of a character `by` in the C locale,
+  capitals before lower case and the same on every machine, as
+  `cross_tab()` does.
 
-* `glance()` on a `table_categorical()` result gives in `es_type` the
-  measure of each variable, as the long output does (`"phi"`,
-  `"cramer_v"`). It gave the column header, "Effect size" on every row
-  when the variables used different measures.
+* They sort a logical `by` with `FALSE` first and a numeric or labeled
+  `by` in ascending order; a factor keeps the order of its levels.
 
-* `table_categorical()` refuses a `NaN` weight, as the other tables do. It
-  dropped the row, as for a missing weight.
+* `table_categorical()`, `table_continuous()`, and the survey twins
+  followed the order of first appearance, and `table_continuous_lm()`
+  sorted text in the machine's locale, which chose its reference group.
 
-* Under `drop_na = TRUE`, a `by` that no observation holds is an error of
-  class `spicy_invalid_data` in every table, as in
-  `table_continuous_lm()`, and so is such a grouping in the `select` of
-  `table_outcome()`. `table_continuous()`, `table_categorical()`, and
-  `table_outcome()` printed empty groups, `table_categorical_svy()` said
-  the variable had no level to display, and `table_continuous_svy()`
-  failed with a base R error. Every table function refuses data with no
-  rows, and the survey twins a design with none, with or without `by` and
-  whatever `drop_na`, with one `spicy_invalid_data` error that comes
-  before any check of `select`. They returned tables with no rows or
-  empty groups, or failed on something else.
-
-* `table_regression_uv()` refuses a survey design with a pointer to
-  `survey::svyglm()` (class `spicy_wrong_regime`), and any other object
-  that is not a data frame with class `spicy_invalid_data`, as the other
-  tables do. Both were `spicy_invalid_input` errors.
-
-* The tables sort the groups of a character or logical `by` in the C
-  locale, capitals before lower case and the same on every machine,
-  `FALSE` before `TRUE`, and a numeric or labelled `by` in ascending
-  order, as `cross_tab()` does; a factor keeps the order of its levels.
-  `table_categorical()`, `table_categorical_svy()`, `table_continuous()`,
-  and `table_continuous_svy()` followed the order of first appearance in
-  the data, and `table_continuous_lm()` sorted text in the locale of the
-  machine, which chose its reference group. The levels of a variable of
-  `table_categorical()` and `table_categorical_svy()`, and the groupings
-  of `table_outcome()`, follow the same order.
+* The levels of a variable of `table_categorical()` and
+  `table_categorical_svy()`, and the groupings of `table_outcome()`,
+  follow the same order.
 
 * `freq()` lists the values of a character variable in the C locale,
   capitals before lower case and the same on every machine, as
   `cross_tab()` and the tables do. It followed the locale of the machine.
 
 * `inline()` selects a group of `by` with `model` in every table, as in
-  `table_categorical()`: `inline(tbl, bmi, model = "Female")` in
-  `table_continuous()` and `table_continuous_svy()`,
-  `inline(tbl, bmi, column = "emmean", model = "Female")` in
-  `table_continuous_lm()`. `level` naming such a group is an error (class
-  `spicy_defunct`) that gives the call to use. In `table_continuous()` and
-  `table_continuous_svy()`, the test, its *p*, the effect size, and the
-  SMD belong to the variable and are cited without `model`
-  (`inline(tbl, bmi, column = "p")`); with a group, they are an error
-  that gives that call.
+  `table_categorical()`: `inline(tbl, bmi, model = "Female")`, and
+  `column = "emmean"` for a mean of `table_continuous_lm()`.
 
-* `table_categorical()` and `spicy_style()` call `effect_size_digits` the
-  argument they called `v_digits`, as the other tables do, so the
-  `effect_size_digits` of a style reaches the association measure and the
-  SMD of `table_categorical()`. `v_digits` is an error (class
-  `spicy_defunct`) that names the new argument.
+* `level` naming a group of `by` in `inline()` is an error (class
+  `spicy_defunct`) that gives the call to use.
 
-* `as_structured()` reads contract version 4: in the `format_spec` of
-  `table_categorical()`, the decimals of the association measure are
-  `effect_size_digits`, as in the other tables (was `v_digits`). A view
-  built by an older spicy is refused.
+* `inline()` cites a statistic of the variable (*p*, test, effect size,
+  association measure, SMD) without `model`. `table_categorical()` and
+  its survey twin cite it with a group too, which `table_continuous()`
+  and its survey twin refuse, giving the call without `model`.
 
-* `table_categorical()` names the bounds of the association interval
-  `95% CI LL` and `95% CI UL` in the console, data frame, Excel, and
-  clipboard outputs, as the other tables name their interval columns,
-  and heads the merged cell of the rendered formats
-  `Cramer's V [95% CI]`. They were `CI lower` and `CI upper`, the
-  rendered header stated no level, and the keys `header_ci_lower` and
-  `header_ci_upper` of `options(spicy.labels)` are gone. The columns of
-  `as_structured()` keep their names, `CI lower` and `CI upper`.
+* With a group, the categorical tables dropped these statistics and
+  refused the table's own *p*; without a level, the continuous tables
+  asked for one, though the first group's row alone carries the value.
 
-* `table_continuous()` and `table_outcome()` spell their effect sizes
-  `"eta2"` and `"epsilon2"`, and `table_continuous_lm()` `"cohens_d"` and
-  `"hedges_g"`, in `effect_size` and in `es_type`: a squared measure ends
-  in 2, as in `table_regression()`, and an estimator named after its
-  author carries the name. `"eta_sq"`, `"epsilon_sq"`, `"d"`, and `"g"`
-  are an error (class `spicy_defunct`) that gives the new value.
+* Every table note is one paragraph: what the numbers are (weights,
+  design, model), the missing data, the tests and inference, the
+  definitions, in that order. The stars legend follows on its own line.
+
+* The regression notes and that of `table_continuous_lm()` gave one
+  sentence per line, `table_categorical()` broke its note after the
+  missing values, and the order changed from table to table (#11).
+
+* `table_continuous()` and `table_continuous_lm()` now name the test
+  behind their p-values, and `table_categorical()` and
+  `table_continuous_lm()` say when the statistics are weighted.
+
+* By default, a table note defines the abbreviations of the headers, the
+  spanners, and the fit-statistic rows ("AIC = Akaike information
+  criterion") at its end, in reading order.
+
+* The default note leaves M, Mdn, SD, SE, B, OR, R², *d*, *g*, and the
+  Greek letters undefined; a definition that says how the number was
+  computed (partial η², a standardized β) stays in every style.
+
+* *n*, *N*, *p*, and test statistics are never defined, but for the
+  partial χ² of `table_regression()`, which names its test; the notes of
+  `table_categorical_svy()` still say how % and *n* are computed.
+
+* The default note of `table_regression()` and `table_regression_uv()`
+  no longer defines OR, and defines CI; that of a table of means adds
+  "CI = confidence interval; LL = lower limit; UL = upper limit".
+
+* The definitions of the IQR, the SMD, the design effect, and the
+  regression effect sizes join the list at the end of the note; the
+  direction and threshold of the SMD get a sentence of their own.
+
+* `table_categorical()`, `table_continuous()`, `table_outcome()`, and
+  their survey twins open their notes with the lead-in of the style,
+  "Note." by default, as `table_regression()` does.
+
+* `table_categorical()` printed "Note." in the middle of its note when
+  `drop_na = TRUE` removed values (#11).
+
+* The `jama` and `lancet` themes open the note without a lead-in word,
+  where the regression tables, `table_continuous_lm()`, and the
+  association note of `table_categorical()` wrote "Note.".
+
+* The `jama` theme opens the note with its abbreviations on one line, in
+  alphabetical order ("Abbreviations: HR, hazard ratio; OR, odds
+  ratio."), and does not expand M, SD, SE, CI, B, Δ, R², *d*, σ, and ρ.
+
+* The `lancet` theme spells the abbreviations out at the end of the
+  note, one "HR=hazard ratio." sentence each, in alphabetical order, and
+  leaves SD, SE, and CI undefined.
+
+* `table_categorical()` gives each association measure of its note a
+  sentence of its own: "Phi: smoking. Cramer's V: education." A
+  semicolon joined them.
+
+* `table_regression()` words its `p_adjust` note for the reader,
+  "P-values adjusted for 5 tests (Holm method).", where it quoted the
+  `stats::p.adjust()` call.
+
+* The `p_adjust` note of a `table_regression()` table of several models
+  says the adjustment ran within each model.
+
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+  `table_outcome()`, and the survey twins show column names by default:
+  add `labels = TRUE` to read the `label` attribute, as 0.13.0 did.
+
+* `labels = c(bmi = "Body mass index")` sets the labels you publish, and
+  the other columns follow `options(spicy.var_labels)`.
+
+* Names in `labels` that match no column are ignored, where
+  `table_categorical()` refused them, and `labels = NULL` is an error.
+
+* `table_regression()` and `table_regression_uv()` keep their default
+  output, but `labels = NULL` (their 0.13.0 default) is an error too,
+  and a name that matches no term is ignored, not refused.
+
+* `table_categorical(test = "auto")`, the default, chooses Pearson's
+  chi-squared test when every expected count is at least 5, Fisher's
+  exact test otherwise; `test = "chisq"` restores the 0.13.0 p-values.
+
+* The note of `table_categorical()` names the test of each variable. A
+  weighted table whose cells are not whole numbers keeps the chi-squared
+  test, with a warning.
+
+* `code_book()` returns a `spicy_codebook` object and no longer opens a
+  `DT` widget; `output` writes the file. `filename` and `include_na` are
+  defunct, and `DT` leaves Suggests.
+
+* In `code_book()`, `values` is now a number of categories (default
+  100), an explicit `NA` level of a factor counts as missing, and
+  `difftime` columns no longer list their values.
+
+* A variable with no observed value in a group of `by` (a question not
+  asked there) has no data there, unlike missing answers: its cells show
+  a dash and the note says "No data for X and Y in G." (#11).
+
+* Such a group stays out of the count of missing values, the `Total`
+  column, and the test, in `table_categorical()`, `table_continuous()`,
+  `table_continuous_lm()`, `table_outcome()`, and the survey twins.
+
+* Without `by`, a variable with no observed value at all is shown the
+  same way ("No data for X.").
+
+* `table_regression(nested = TRUE)` with a robust or cluster-robust
+  `vcov` tests each added block with a Wald test on that matrix, labeled
+  as such: a Wald F-change for `lm`, a Wald χ² for `glm` and `coxph`,
+  and the regime of the coefficient tests for the other classes.
+
+* Tables of 0.13.0 built with a robust `vcov` and `nested = TRUE` show
+  different change statistics. Under the classical `vcov`, the partial F
+  and the likelihood-ratio test are unchanged.
+
+* The table functions refuse a `by` column named in `select` with one
+  error, where `table_categorical()` crossed it with itself,
+  `table_continuous_lm()` dropped it, and the others called it missing.
+
+* The same error refuses the outcome in the `predictors` of
+  `table_regression_uv()` and the covariates in the `select` of
+  `table_continuous_lm()`, which were dropped, as it did the outcome in
+  the `select` of `table_outcome()`.
+
+* The same error refuses the weights column, which `table_continuous()`
+  and `table_categorical()` described as a variable, and the cluster
+  column of `table_continuous_lm()`, which it dropped with the weights.
+
+* In these refusals, a position counts as a name (`select = 1:2` with
+  `by` first is refused), and `everything()` and the other selection
+  helpers skip all these columns.
+
+* The survey twins leave the design's own columns out of `select`
+  (sampling and replicate weights, cluster identifiers, finite
+  population corrections), which they described as variables.
+
+* The selection helpers of the survey twins skip these columns, naming
+  one is an error that points to `table_categorical()` or
+  `table_continuous()`, and strata stay variables.
+
+* In every table, a position in `select` (`select = 2:3`) counts every
+  column of the data, `by` included: `table_continuous()` and the survey
+  twins skipped `by`, and so picked other columns.
+
+* The table functions refuse a column that is not in the data, in
+  `select`, `by`, `exclude`, `outcome`, or `predictors`, with an error
+  of class `spicy_missing_column` that names it, and the column it is
+  likely a typo of when one name is close.
+
+* The class and the wording of these errors varied, some were not
+  classed, and a name in a character `exclude` was ignored. A `by` of
+  two columns is a `spicy_invalid_input` error.
+
+* `table_continuous()` and `table_continuous_lm()` stop with an error
+  when `select` leaves no numeric column, as the other tables do, where
+  they warned and returned an empty data frame.
+
+* `table_categorical()` stops with an error when it is called without
+  `select` on data with no categorical column, where it warned and
+  returned an empty data frame.
+
+* The table functions refuse a number of decimals that is not a whole
+  number (`digits = 2.5`), as `table_regression()` did, where they
+  truncated it.
+
+* `table_regression()` and `table_regression_uv()` refuse
+  `p_digits = 0`, as the descriptive tables do, where the table printed
+  `.015` and `inline()` `<1`.
+
+* With `output = "excel"` or `"word"`, the table functions refuse an
+  `excel_path` or `word_path` that is not a single path ending in
+  `.xlsx` or `.docx`, in a directory that exists.
+
+* A `.csv` or `.xls` path was written as a workbook anyway, and the
+  other mistakes failed with an unclassed error, except a missing
+  directory in `table_regression()` and `table_regression_uv()`.
+
+* `table_regression_uv()` refuses, and names, an argument of `...` that
+  is not an argument of `table_regression()` or that abbreviates one.
+
+* An unknown name in the `...` of `table_regression_uv()` failed with
+  base R's "unused argument" error, and `effect_size = TRUE` reached
+  `effect_size_digits`.
+
+* `table_regression_uv()` refuses a survey design with a pointer to
+  `survey::svyglm()` (class `spicy_wrong_regime`), where it gave a
+  `spicy_invalid_input` error.
+
+* `table_regression_uv()` refuses any other object that is not a data
+  frame with class `spicy_invalid_data`, as the other tables do, where
+  it gave a `spicy_invalid_input` error.
+
+* `table_categorical()` refuses a `NaN` weight, as the other tables do.
+  It dropped the row, as for a missing weight.
+
+* Under `drop_na = TRUE`, every table refuses a `by` that no observation
+  holds (class `spicy_invalid_data`), as `table_continuous_lm()` did,
+  and `table_outcome()` such a grouping in `select`.
+
+* With a factor `by` whose levels no observation holds,
+  `table_continuous()`, `table_categorical()`, and `table_outcome()`
+  printed empty groups.
+
+* With a `by` that no observation holds, `table_categorical_svy()` said
+  the variable had no level to display, and `table_continuous_svy()`, as
+  `table_continuous()` on a character `by`, failed with a base R error.
+
+* Every table function refuses data with no rows, and the survey twins a
+  design with none, with one `spicy_invalid_data` error that comes
+  before any check of `select`, whatever `by` and `drop_na`.
+
+* On data with no rows the tables returned no rows or empty groups, or
+  failed on something else.
+
+* `table_continuous()` no longer warns when its default `drop_na = TRUE`
+  removes rows with a missing `by`. The note gives their number, as in
+  the other tables.
 
 * `table_continuous_lm()` checks `boot_n` as `table_regression()` does: a
   positive whole number. It truncated a fraction (`500.9` gave 500) and
   required 50 replicates; a bootstrap variance needs 10, in both tables.
 
+* `table_regression()` refuses a robust `vcov` for the extended families
+  of `mgcv` other than `nb()` (`tw()`, `scat()`, `betar()`, ...), whose
+  score is not the GLM score. It accepted them.
+
+* `sochealth` gains five columns after `dentist_12m`: the later columns
+  move five places, and `table_categorical(sochealth)` tabulates 18
+  variables by default, where it tabulated 13.
+
 ## New features
 
 * Every table function keeps the title it prints in `attr(x, "title")`,
-  as `table_regression()` and `table_multiresponse()` already did.
+  as `table_regression()` already did.
 
 * The long output and `tidy()` of the tables mark the rows they add by a
-  key rather than by their label, which follows the display language:
-  `.row_role` gives the role of `level` (`"missing"` on the row of missing
-  values of `table_categorical()` and `table_categorical_svy()`),
-  `.group_role` the role of `group` (`"missing"` on the group of missing
-  `by` values, `"total"` on the margin, `"group"` otherwise), and `total`
-  flags the `Total` margin. In the tables that take a `by`,
-  `table_categorical()`, `table_continuous()`, `table_multiresponse()`,
-  and the survey twins, `tidy()` always has a `group` column, `NA`
-  without `by`. `table_outcome()` and `table_continuous_lm()` have none:
-  their groups are the `level` of a row, or the `term` of a mean in the
-  `tidy()` of `table_continuous_lm()`. The `tidy()` of
-  `table_continuous()` and `table_outcome()` gains `weighted_n`,
-  `median`, `q1`, and `q3`, as the survey twin has. `glance()` of
-  `table_categorical()` gains `smd_type` and `smd_value`, and in a table
-  that compares groups the long output keeps the effect-size and SMD
-  columns, `NA` when they were not requested.
+  key rather than by their label, which follows the display language.
 
-* `table_categorical_svy()`, `table_continuous_svy()`, and
-  `table_outcome()` results inherit the class `spicy_table`, as the other
-  tables do, and the long output of `table_regression()` carries the note
-  in `attr(x, "note")`.
+* `.row_role` gives the role of `level`: `"missing"` on the row of
+  missing values of the categorical tables.
 
-* `sochealth` gains a multiple-response question, the sources of health
-  information used in the past 12 months: five logical `info_*` items,
-  missing together for the 36 respondents who skipped the question, as
-  example data for `table_multiresponse()`.
+* `.group_role` gives the role of `group` (`"missing"` on the group of
+  missing `by` values, `"total"` on the margin, `"group"` otherwise),
+  and `total` flags the `Total` margin.
+
+* The `tidy()` of the tables that take a `by` (`table_categorical()`,
+  `table_continuous()`, `table_multiresponse()`, and the survey twins)
+  always has a `group` column, `NA` without `by`.
 
 * `code_book()` builds a codebook in three parts, `header`, `variables`,
   and `values` (unweighted counts and percentages per category), and
   prints it as the list of variables.
 
 * `code_book(output = "<path>.xlsx")` writes the codebook to an Excel
-  workbook, and `output = "<path>.pdf"` to a PDF, with a cover, a page
-  about the data, the list of variables, one sheet per variable, and an
-  index, through the Typst that Quarto bundles; `output = "<path>.typ"`
-  writes the Typst source for a machine without Quarto.
+  workbook.
 
-* `code_book()` gains `subtitle`, `authors`, `notes` (paragraphs or list
-  items, with `*italics*`, `**bold**`, `` `code` ``, and links in the
-  PDF), `source`, `range`, and `decimal_mark`, and, for the PDF, `font`,
-  `font_code`, `font_size`, `colors`, `paper`, and `index_columns`.
+* `code_book(output = "<path>.pdf")` writes it to a PDF, with a cover, a
+  page about the data, the list of variables, one sheet per variable,
+  and an index, through the Typst that Quarto bundles.
+
+* `code_book(output = "<path>.typ")` writes the Typst source for a
+  machine without Quarto.
+
+* `code_book()` gains `subtitle`, `authors`, `notes`, `source`, `range`,
+  and `decimal_mark`.
+
+* The `notes` of `code_book()` take paragraphs or list items, with
+  `*italics*`, `**bold**`, `` `code` ``, and links in the PDF.
+
+* For the PDF, `code_book()` gains `font`, `font_code`, `font_size`,
+  `colors`, `paper`, and `index_columns`.
 
 * `code_book()` documents declared missing values: their own rows in
   `values`, a summary in the header, and how each variable declares them
-  (`declared_codes`).
+  (`declared_codes`, from `na_values` and `na_range`).
 
-* `code_book()` names the type of each variable in plain words
-  (categorical (nominal), categorical (ordinal), categorical (labelled
-  codes), numeric, logical, text, date, date-time, time), in English or
-  in French with `options(spicy.language)`.
+* `code_book()` names the type of each variable in plain words:
+  categorical (nominal), categorical (ordinal), categorical (labelled
+  codes), numeric, logical, text, date, date-time, time.
+
+* `code_book()` writes these types in English or in French with
+  `options(spicy.language)`; a `difftime` column keeps its class name.
+
+* `sochealth` gains a multiple-response question, example data for
+  `table_multiresponse()`: the sources of health information used in the
+  past 12 months, five logical `info_*` items.
+
+* The `info_*` items of `sochealth` are missing together for the 36
+  respondents who skipped the question.
 
 * `spicy_style()` gains `note_label`, the word that opens the note under
   a table: "Note." (APA, the default), "Note:" (Chicago), or `""` for
-  none. It is set in italics in every rendered output.
+  none.
 
-* `spicy_style()` gains `abbreviations`, which abbreviations the note
-  under a table defines. Unset, the note follows the rule of the theme
-  (APA by default). `"all"` defines every abbreviation and symbol the
-  table shows except *n*, *N*, *p* and the test statistics, for readers
-  outside the field.
-  `"none"` keeps only the definitions that say how a number was
-  computed, such as partial eta-squared. `options(spicy.style)` carries
-  it with the other levers.
+* `spicy_style()` gains `abbreviations`, which abbreviations a note
+  defines: unset, the rule of the theme (`apa` by default);
+  `options(spicy.style)` carries it with the other levers.
+
+* In `spicy_style()`, `abbreviations = "all"` defines every abbreviation
+  and symbol of the headers, spanners, and fit-statistic rows, except
+  *n*, *N*, *p*, and the test statistics, for readers outside the field.
+
+* In `spicy_style()`, `abbreviations = "none"` keeps only the
+  definitions that say how a number was computed, such as partial
+  eta-squared.
+
+* The long output of `table_categorical()` and `table_continuous()`
+  keeps the effect-size and SMD columns when they were not requested,
+  `NA`.
 
 * `table_categorical()`, `table_continuous()`, `table_outcome()`, and
   their survey twins gain `p_adjust`, the multiple-comparison adjustment
-  of `table_regression()`, applied to all the tests of the table
-  together. The note gives the method and the number of tests, and the
-  raw p-values stay in the object as `p_unadjusted`.
+  of `table_regression()`, over all the tests of the table.
 
-* `table_categorical()` gains `p_value`, as its siblings have.
-  `p_value = FALSE` drops the test (`p`, and `test_type`, `statistic`,
-  `df` and `p.value` in the long output) from every output; with
-  `assoc_measure = "none"` as well, the table is purely descriptive (#9).
+* With `p_adjust`, the note of `table_categorical()` and its siblings
+  gives the method and the number of tests, and the raw p-values stay in
+  the object as `p_unadjusted`.
 
-* `table_categorical()` takes a named list in `levels_keep`, one entry
-  per variable, as `table_categorical_svy()` does:
-  `levels_keep = list(smoking = "Yes")`. A list was read as one vector
-  for every variable, and the variables it did not match were dropped.
+* `table_categorical()` gains `p_value`, as its siblings have (#9).
+
+* `table_categorical(p_value = FALSE)` drops the test from every output
+  (`p`; `test_type`, `statistic`, `df`, `p.value` in the long output),
+  but `glance()` keeps these columns, `NA`.
+
+* With `p_value = FALSE` and `assoc_measure = "none"`,
+  `table_categorical()` is purely descriptive.
+
+* `table_categorical(test = "fisher")` applies Fisher's exact test to
+  every variable, by Monte Carlo for a table too large for the exact
+  computation.
+
+* `test = "midp"` and `test = "n1"` of `table_categorical()` give the
+  Fisher mid-p test and Campbell's N-1 chi-squared for 2x2 tables, and
+  Pearson's chi-squared test on larger ones.
+
+* The long output of `table_categorical()` gains `test_type`, the test
+  of each variable.
+
+* `table_categorical_svy()`, `table_continuous_svy()`, and
+  `table_outcome()` results inherit the class `spicy_table`, as the
+  other tables do.
+
+* The `tidy()` of `table_continuous()` and `table_outcome()` gains
+  `weighted_n`, `median`, `q1`, and `q3`, as the survey twin has, and
+  `glance()` of `table_categorical()` gains `smd_type` and `smd_value`.
 
 * `table_multiresponse()`, experimental in this release, tabulates a
   "check all that apply" question: one row per item with the count and
   the percentage of respondents who chose it (`percent` also gives
-  percentages of responses, or both), and a row with the number of
-  respondents in the base (`base`). Respondents of the base who chose no
-  item get a row of their own (`none_row`), and the note says what the
-  percentages sum to and who is in the base. With `by`, each item gets a
-  test (`test`: chi-squared, or Fisher's exact test where an expected
-  count is below 5, or the mid-p and N-1 tests for 2x2 tables), adjusted
-  by Holm by default (`p_adjust`), and the question gets a global test
-  that allows for several answers per respondent, Rao-Scott corrected or
-  by bootstrap (`global_test`). `p_value = FALSE` removes the tests, and
-  `statistic = TRUE` shows each item's chi-squared. `glance()` reports
-  the Rao-Scott design-effect summary (`rs_cv`), and `inline()` cites the
-  cells, a group selected with `model` and the base row as `"nobs"`.
-  `title = FALSE` removes the title, as in `table_regression()`. The
-  article *Multiple-response questions* on the site walks through it
-  (#10, #11).
+  percentages of responses, or both) (#10, #11).
 
-* `inline()` says when a variable has no levels and how to select a
-  group with `model`, where its error printed an empty list of levels.
+* `table_multiresponse()` adds a row with the number of respondents in
+  the base (`base`), and one for those who chose no item (`none_row`).
+
+* The note of `table_multiresponse()` says what the percentages sum to
+  and who is in the base.
+
+* With `by`, `table_multiresponse()` tests each item (`test`, as in
+  `table_categorical()`), with the Holm adjustment by default
+  (`p_adjust`).
+
+* The global test of `table_multiresponse()` allows for several answers
+  per respondent, Rao-Scott corrected or by bootstrap (`global_test`),
+  and `glance()` reports the Rao-Scott design-effect summary (`rs_cv`).
+
+* In `table_multiresponse()`, `p_value = FALSE` removes the tests,
+  `statistic = TRUE` shows each item's chi-squared, and `title = FALSE`
+  removes the title, as in `table_regression()`.
+
+* The cells of `table_multiresponse()` are cited with `inline()`, a
+  group selected with `model` and the base row as `"nobs"`. A group with
+  no data for the question shows a dash, and the note says so.
+
+* The article *Multiple-response questions* on the site walks through
+  `table_multiresponse()`.
+
+* `table_outcome()` and `table_continuous_lm()` have no `group` column
+  in `tidy()`: their groups are the `level` of a row, or the `term` of a
+  mean in `table_continuous_lm()`.
+
+* The long output of `table_regression()` carries the note in
+  `attr(x, "note")`.
 
 * `table_regression()` and `table_regression_uv()` take the same four
-  `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
-  and the factor headers by their `label` attribute, as in "Linear
-  regression: Body mass index", while factor levels, interactions, and
-  transformed terms keep their names.
+  `labels` forms.
+
+* With `labels = TRUE`, `table_regression()` and `table_regression_uv()`
+  name the outcome, the numeric terms, and the factor headers by their
+  `label` attribute, as in "Linear regression: Body mass index".
+
+* Factor levels, interactions, and transformed terms keep their names in
+  `table_regression()` under `labels = TRUE`.
 
 * `table_regression()` supports cumulative-link mixed models:
   `ordinal::clmm()` fits and `glmmTMB::glmmTMB()` fits with the ordinal
   family, with their thresholds and random effects.
 
-* `table_regression(nested = TRUE)` with a robust or cluster-robust
-  `vcov` tests each added block with a Wald test on that matrix,
-  labeled as such: a Wald F-change for `lm`, a Wald χ² for `glm` and
-  `coxph`, and the regime of the coefficient tests for the other
-  classes. Under the classical `vcov`, the partial F and the
-  likelihood-ratio test are unchanged. Tables of 0.13.0 built with a
-  robust `vcov` and `nested = TRUE` show different change statistics.
-
 * `table_regression(vcov = "CR0")` gives cluster-robust standard errors
-  for `glmmTMB::glmmTMB()` fits, from glmmTMB's own sandwich (glmmTMB
-  >= 1.1.15), for the coefficients, their joint tests (`partial_chi2`),
-  the standardized coefficients, the zero-inflation and dispersion
-  blocks, and the average marginal effects. The cluster defaults to the
-  top-level grouping factor of the random effects. Crossed random
+  for `glmmTMB::glmmTMB()` fits (`glmmTMB` >= 1.1.15), clustered by
+  default on the top-level grouping factor of the random effects.
+
+* `table_regression()` uses them for the coefficients, their joint tests
+  (`partial_chi2`), the standardized coefficients, the zero-inflation
+  and dispersion blocks, and the average marginal effects.
+
+* `table_regression()` refuses, for `glmmTMB()` fits, crossed random
   effects without a cluster that contains them, REML fits, the ordinal
-  family, and the other `vcov` types are refused.
+  family, and the other `vcov` types.
+
+* New `var_labels()` sets the labels of some columns and keeps the
+  `label` attribute of the others: `labels = var_labels(bmi = "IMC")`.
 
 ## Bug fixes
 
 * The table functions warn (class `spicy_ignored_arg`) when an argument
-  typed in the call has no effect, and name only the arguments typed:
-  `excel_path` or `excel_sheet` without `output = "excel"`, `word_path`
-  without `"word"`, `clipboard_delim` without `"clipboard"`, a `boot_n`
-  that no bootstrap uses, `adjustment` without covariates and `contrast`
-  with a numeric `by` in `table_continuous_lm()`, and `drop_na = FALSE`
-  without `by` in `table_continuous_svy()` as in `table_continuous()`.
-  Without `by`, the continuous tables named `statistic` when only
-  `p_value` was typed, and `table_categorical()` warned about a `rescale`
-  set by `options(spicy.rescale)`.
+  typed in the call has no effect, and name only the arguments typed.
+
+* Such arguments are `excel_path` or `excel_sheet` without
+  `output = "excel"`, `word_path` without `"word"`, `clipboard_delim`
+  without `"clipboard"`, and a `boot_n` that no bootstrap uses.
+
+* Without `by`, the continuous tables warned about `statistic` when only
+  `p_value` was typed.
 
 * The table functions word a check of the same argument the same way:
-  "`ci_level` must be a number strictly between 0 and 1.", "`digits`
-  must be a non-negative whole number.", "`drop_na` must be TRUE or
+  "`digits` must be a non-negative whole number."
+
+* Across the table functions, the checks read "`ci_level` must be a
+  number strictly between 0 and 1." and "`drop_na` must be TRUE or
   FALSE.".
 
-* The header of an effect size printed with its interval states the
-  level of the interval: `ES [95% CI]` in `table_continuous()` and
+* Outside the data frame, an effect size printed with its interval is
+  headed with the level: `ES [95% CI]` in `table_continuous()` and
   `table_outcome()`, `d [95% CI]` (or `f²`, `g`, `ω²`) in
-  `table_continuous_lm()`, in every output but the data frame, whose
-  column holds the estimate alone. The rendered formats of
-  `table_categorical_svy()` head the bounds of a proportion `95% CI LL`
-  and `95% CI UL` under each group, where they read `LL` and `UL`.
+  `table_continuous_lm()`.
 
-* The note of every table opens with *Note.* in italics in Typst, LaTeX,
-  Markdown documents, and Excel output, and in gt's LaTeX, RTF, and Word
-  output, as in HTML, Word, and PowerPoint. LaTeX output compiles when a
-  note contains `%` or `_`, centers each tinytable spanner over its
-  columns, and keeps the Greek letters and the decimal alignment the
-  default font dropped, under each of the three LaTeX engines, Cohen's
-  f² set in math like the squared Greek letters. A note of
-  several lines no longer drops out of a Word document built from
-  tinytable, and `table_continuous_lm(output = "gt")` keeps its note in
-  `gt::as_latex()`, `gt::gtsave()`, and the other gt outputs.
+* The note's lead-in ("Note." or the `note_label` of the style) is in
+  italics in Typst, LaTeX, Markdown documents, and Excel output, and in
+  `gt`'s LaTeX, RTF, and Word output, as in HTML, Word, and PowerPoint.
+
+* The LaTeX output of `tinytable` compiles when a note contains `%` or
+  `_`, and centers each spanner over its columns.
+
+* In LaTeX, the `tinytable` output and the `gt` output of a knitted
+  document keep the Greek letters and the decimal alignment that the
+  default font dropped, under all three engines.
+
+* LaTeX output sets Cohen's f² in math, like the squared Greek letters.
 
 * Typst output prints the note as text, as the other outputs do. The
   stars of the `stars = TRUE` legend turned into bold and vanished, and
-  the `//` of a URL stopped the compilation. Typst also no longer breaks
-  a label in the middle of a word ("Fe-male"), and widens the columns
-  under a group label wider than them, where neighboring labels ran into
-  each other (#11).
+  the `//` of a URL stopped the compilation.
+
+* Typst output no longer breaks a label in the middle of a word
+  ("Fe-male"), and widens the columns under a group label wider than
+  them, where neighboring labels ran into each other (#11).
 
 * LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table
   that fits keeps its size.
 
-* `output = "gt"` sets the title of every table at the size of the table
-  text, as `table_regression()` did. The descriptive tables used gt's
-  125%. In LaTeX output, the title is also flush left, a one-column
-  header has no rule under it, as in HTML, and a table wider than the
-  text block is scaled down to it.
+* In HTML, `output = "gt"` sets the title of every table at the size of
+  the table text, as `table_regression()` did, where the descriptive
+  tables used 125%.
 
-* Every error of a table function names that function. Some named an
-  internal helper, `table_categorical()` named `cross_tab()` for a
-  negative weight, and `table_regression_uv()` named none. A survey
-  design handed to a plain table is now a `spicy_invalid_data` error too,
-  a `spicy_missing_column` error a `spicy_invalid_input` one, a
-  `spicy_not_implemented` error a `spicy_unsupported` one, and `?spicy`
-  lists every class.
+* In a LaTeX document knitted with Quarto or R Markdown, the `gt` title
+  is at the size of the table text and flush left, as in HTML.
+
+* In a knitted LaTeX document, a one-column `gt` header has no rule
+  under it, and a `gt` table wider than the text block is scaled down to
+  it.
+
+* Every error of a table function names it, where some named an internal
+  helper, `cross_tab()` or `freq()` (a negative weight in
+  `table_categorical()`), or an anonymous function (an unknown argument
+  of `table_regression_uv()`).
+
+* A survey design handed to a plain table is a `spicy_invalid_data`
+  error, and `?spicy` lists every class.
+
+* `spicy_missing_column` errors are also `spicy_invalid_input` ones, and
+  `spicy_not_implemented` errors `spicy_unsupported` ones.
 
 * A column name given to a table function, or to the `select` of
   `mean_n()`, `sum_n()`, and `count_n()`, always means that column, even
-  when an object of the same name exists in the calling environment. The
-  object took the column's place: with `w <- "z"`, `weights = w` weighted
-  by `w` while the note named `z`, and `covariates = age` adjusted for the
-  column the object `age` named.
+  when an object of that name exists in the calling environment.
 
-* `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
-  `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value
-  in `output = "long"` when `statistic = TRUE` or an effect size ran the
-  test, and `table_outcome()` and `table_categorical_svy()` no longer
-  leave empty test columns there.
+* Such an object took the column's place: with `w <- "z"`, `weights = w`
+  weighted by `w` while the note named `z`, and `covariates = age`
+  adjusted for the column the object `age` named.
 
-* `varlist()` and `code_book()` keep only the selected columns of an sf
-  object. The geometry column came along.
+* With `labels = TRUE`, a note reads "Missing values removed: Body mass
+  index (12)", "Rows with missing Sex removed: 3", or "Group comparison:
+  Welch t-test (Sex)".
+
+* A list of variables in a note is joined with semicolons when one of
+  the labels contains a comma.
+
+* The Excel files of the table functions leave an empty cell empty. It
+  held an empty text, which Excel counted and refused in a formula.
 
 * `cross_tab()` sets `<` apart in its note: `p < .001`, and in French
   `p < 0,001` with no-break spaces. It wrote `p <.001`.
@@ -558,52 +741,48 @@ p-values, and notes.
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
 
-* `glance()` on a `table_categorical()` result leaves `es_ci_lower` and
-  `es_ci_upper` at `NA` unless the table was built with `assoc_ci = TRUE`.
-  It reported the interval whatever `assoc_ci` said.
-
-* `glance()` on a `table_categorical_svy()` result names no test when the
-  table has none, without `by` or for a variable whose test was withheld.
-  It named the `chisq_statistic` on every row.
-
-* `glance()` on a `table_categorical_svy()` result built with
-  `include_total = FALSE` counts the whole sample in `nobs`. It counted
-  the last group only.
-
-* `inline()` with `model` cites the `p` and the association measure of a
-  `table_categorical()` or `table_categorical_svy()` table, which belong
-  to no group. Selecting a group dropped them, and the table's own `p`
-  was refused.
-
-* `inline()` cites the `p` of a by-group `table_continuous()` or
-  `table_continuous_svy()` without `level`, as its help says. It asked
-  for a level, though the first group's row alone carries the value.
-
 * `inline()` refuses a column the table does not carry with the same
   message on every table: "No column with token "p" in this table."
-  Without `level`, `table_categorical()`, `table_categorical_svy()`,
-  `table_continuous()`, and `table_outcome()` said to pick a level
-  instead.
+
+* Without `level`, `inline()` on `table_categorical()`,
+  `table_categorical_svy()`, `table_continuous()`, and `table_outcome()`
+  said to pick a level instead.
 
 * `inline()` matches a label exactly before it reads the label of a fit
-  statistic regardless of case, and refuses a `variable` that matches the
-  rows of two variables or statistics, with an address for each. With a
-  `table_regression()` term labeled "N", `inline(tbl, "N")` cited the
-  number of observations, and of two rows showing one label it cited the
-  first.
+  statistic regardless of case: with a `table_regression()` term labeled
+  "N", `inline(tbl, "N")` cited the number of observations.
+
+* `inline()` refuses a `variable` that matches the rows of two variables
+  or statistics, with an address for each, where it cited the first of
+  two rows showing one label.
+
+* `inline()` says when a variable has no levels and how to select a
+  group with `model`, where its error printed an empty list of levels.
 
 * `inline()` without `column` refuses a `table_continuous_lm()` row that
-  shows the mean of each group and no contrast (a `by` of three or more
-  levels, or `contrast = "none"`), and gives the address of a mean. It
-  cited the sample size. Its errors name `inline()`, where some named an
+  shows the mean of each group and no contrast, and gives the address of
+  a mean.
+
+* `inline()` cited the sample size of such a row with a `by` of three or
+  more levels, and refused one under `contrast = "none"` through an
   internal helper.
+
+* `inline()` names itself in its errors, where some named an internal
+  helper.
+
+* `table_categorical()` and `table_continuous()` no longer warn about a
+  `rescale` set by `options(spicy.rescale)`.
+
+* `glance()` on a `table_categorical()` result leaves `es_ci_lower` and
+  `es_ci_upper` at `NA` unless the table was built with
+  `assoc_ci = TRUE`. It reported the interval whatever `assoc_ci` said.
 
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 
-* `table_categorical(output = "gt")` gives each group spanner its own id,
-  so that under gt 1.4.0, which writes an id on every spanner, two `by`
-  levels differing only in whitespace no longer share one DOM id.
+* `table_categorical(output = "gt")` gives each group spanner its own
+  id: under `gt` 1.4.0, which writes an id on every spanner, two `by`
+  levels such as "A B" and "A-B" shared one DOM id.
 
 * `table_categorical()` titles a grouped table with the label of the `by`
   variable, as `table_continuous()` does: with `labels = TRUE`,
@@ -613,134 +792,210 @@ p-values, and notes.
   same label; both rows show, as in the other tables. A column named
   twice in `select` is shown once.
 
+* `table_categorical()` reads a list in `levels_keep` as one entry per
+  variable (`list(smoking = "Yes")`), as `table_categorical_svy()` does,
+  where it read one vector for all and dropped the unmatched variables.
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-  `table_outcome()`, `table_categorical_svy()`, and
-  `table_continuous_svy()` name each variable of their notes as the rows
-  and the title name it: with `labels = TRUE`, "Missing values removed:
-  Body mass index (12)", "Rows with missing Sex removed: 3", "Group
-  comparison: Welch t-test (Sex)", and the covariates of
-  `table_continuous_lm()` after "Adjusted for". They used the column
-  name whatever `labels` said. A list of variables in a note is joined
-  with semicolons when one of the labels contains a comma.
+  `table_outcome()`, and the survey twins name each variable of their
+  notes as the rows and the title do, where they used the column name
+  whatever `labels` said.
+
+* The rendered formats of `table_categorical_svy()` head the bounds of a
+  proportion `95% CI LL` and `95% CI UL` under each group, where they
+  read `LL` and `UL`.
+
+* `glance()` on a `table_categorical_svy()` result names no test when the
+  table has none, without `by` or for a variable whose test was withheld.
+  It named the `chisq_statistic` on every row.
+
+* `glance()` on a `table_categorical_svy()` result built with
+  `include_total = FALSE` counts the whole sample in `nobs`. It counted
+  the last group only.
 
 * `table_categorical_svy()` names its test in the note only when a test
   ran, which a one-level `by` or a constant variable prevents.
   `table_outcome()` no longer names a test that failed.
 
-* `table_categorical_svy()` no longer prints a zero-width interval around
-  a percentage of 0 or 100: such a cell gets the exact binomial interval
-  on its unweighted count, whatever `ci_method`, and the note says so.
+* `table_categorical_svy()` gives a percentage of 0 or 100 the exact
+  binomial interval on its unweighted count, whatever `ci_method`, and
+  the note says so.
+
+* `table_categorical_svy()` printed a zero-width interval around such a
+  percentage under the default `"logit"`, and a dash under `"wilson"`
+  and `"beta"`.
+
+* When rows with a missing `by` are dropped, `table_categorical_svy()`
+  and `table_continuous_svy()` with `labels = TRUE` keep the label of
+  the `by` variable in the title.
+
+* `table_categorical_svy()` with `labels = TRUE` also keeps the labels
+  of its rows when rows with a missing `by` are dropped.
+
+* `table_categorical_svy()` counts a declared missing value once, in
+  "Declared missing values removed", where `drop_na = TRUE` also counted
+  it in "Missing values removed".
+
+* `table_categorical_svy()` no longer says it removed the values its
+  `(Missing)` row shows, and its note spells "chi-squared", as the other
+  notes do.
+
+* With `p_value = FALSE`, `table_continuous()`, `table_outcome()`, and
+  the survey twins keep no p-value in `output = "long"`, where they kept
+  one when `statistic = TRUE` or an effect size ran the test.
 
 * `table_continuous()`, `table_continuous_svy()`, `table_outcome()`, and
-  `table_continuous_lm()` show a dash in a comparison cell that cannot be
-  computed (a variable with no variance, too few observations in a group,
-  a test that fails or is refused, a non-finite effect size, a saturated
-  or unfitted model), where they left it blank, and `inline()` refuses
-  it as undefined. A blank cell now only means a cell that does not
-  apply. They draw no inference either when the residual variance is
-  zero, each group constant on its own value: the test, p-value,
-  interval, and effect size show a dash, the means and the contrast
-  stay, and one `spicy_undefined_stat` warning says why. They printed
-  rounding noise there (t = 3.32e+15 for two groups at 4 and 6), and
-  `table_continuous_lm()` let base R's "essentially perfect fit" warning
-  through.
+  `table_continuous_lm()` show a dash in a comparison cell that cannot
+  be computed, where they left it blank.
 
-* `table_continuous_svy()` runs no comparison on a variable with no
-  variance, with a `spicy_undefined_stat` warning, as `table_continuous()`
-  does. It printed the p-value survey returns there.
+* In `table_continuous()` and its siblings, a blank cell only means a
+  cell that does not apply, and `inline()` refuses a dash as undefined.
 
-* `table_continuous()` and `table_outcome()` run no rank test on a
-  variable with no variance, with a `spicy_undefined_stat` warning, as
-  for the Welch test. They printed p = 1.000 for two groups.
+* `table_continuous()` and its siblings show that dash for a constant
+  variable, too few observations in a group, a failed or refused test, a
+  non-finite effect size, and a saturated or unfitted model.
 
-* `table_continuous_lm()` fits no model to an outcome with no variance:
-  its means are kept and its test, interval, effect size, and R² are
-  undefined, with a `spicy_undefined_stat` warning. It printed rounding
-  noise there, such as p = .331 for an outcome equal to 5.
+* `table_continuous()` and its siblings draw no inference on a constant
+  variable, nor a parametric one on groups each constant on its own
+  value.
 
-* `table_categorical_svy()` and `table_continuous_svy()` with
-  `labels = TRUE` keep the label of the `by` variable in the title, and
-  `table_categorical_svy()` the labels of its rows, when rows with a
-  missing `by` are dropped.
+* In `table_continuous()` and its siblings, such an undefined test, its
+  *p*, and its effect size show a dash, with a `spicy_undefined_stat`
+  warning.
+
+* On a constant variable, `table_continuous()` and `table_outcome()`
+  printed p = 1.000 for their rank test, and `table_continuous_svy()` a
+  p-value.
+
+* `table_continuous()` and its siblings no longer print rounding noise
+  for groups each constant, as `table_continuous_svy()` and
+  `table_continuous_lm()` did (t = 3.32e+15 for two groups at 4 and 6).
 
 * `table_continuous()`, `table_continuous_svy()`, and
-  `table_continuous_lm()` give their `verbose` message one wording and the
-  class `spicy_info`.
+  `table_continuous_lm()` give their `verbose` message one wording and
+  the class `spicy_info`.
+
+* `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
+  render one header row in `tinytable`, `gt`, `flextable`, Word, and
+  Excel output, as documented, where an empty row sat under the labels.
+
+* `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, and
+  the survey twins write the French headers of `table_regression()`,
+  such as `IC à 95 %` over `LI` and `LS`.
+
+* `table_continuous_lm()` warns that `adjustment` without covariates and
+  `contrast` with a numeric `by` have no effect.
+
+* `table_continuous_lm(output = "gt")` keeps its note in
+  `gt::as_latex()`, `gt::gtsave()`, and the other `gt` outputs.
+
+* `table_continuous_lm()` lists its covariates by label after "Adjusted
+  for" in its note.
+
+* `table_continuous_lm()` fits no model to an outcome with no variance:
+  its means are kept, and its test, interval, effect size, and R² are
+  undefined, with a `spicy_undefined_stat` warning.
+
+* `table_continuous_lm()` printed rounding noise for an outcome with no
+  variance, such as p = .331 for an outcome equal to 5.
+
+* With groups each constant, `table_continuous_lm()` keeps the contrast,
+  shows a dash for its interval, and no longer lets R's "essentially
+  perfect fit" warning through.
 
 * `table_continuous_lm()` accepts `p_value = NULL`, now its default as in
   the rest of the family: the p-value is shown, `by` being required.
 
-* `table_continuous_lm(contrast = "none")` leaves out the contrast column
-  and its interval, in every output, as documented. It printed them
-  empty.
+* `table_continuous_lm(contrast = "none")` leaves out the contrast
+  column and its interval in every displayed output, as documented,
+  where it printed them empty; the long output keeps them, `NA`.
 
-* `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
-  render one header row in tinytable, gt, flextable, Word, and Excel
-  output, as documented. An empty row sat under the column labels. The
-  same holds for `table_outcome()` without interval columns,
+* `table_continuous_lm()` no longer stops with "attempt to select less
+  than one element" when an outcome has no complete observation in a
+  level of `by`.
+
+* `table_continuous_svy()` warns that `drop_na = FALSE` without `by` has
+  no effect, as `table_continuous()` does.
+
+* `table_continuous_svy()` compares a numeric `by` as groups, as it
+  compares a factor, where it tested a slope under the name of a group
+  comparison.
+
+* `table_continuous_svy()` compares a `by` that is an ordered factor of
+  two levels, whose p-value was left blank.
+
+* The note of `table_continuous_svy()` gives the degrees of freedom of
+  each variable's comparison when they differ, where it gave those of
+  the last variable for all of them.
+
+* `table_outcome()` and `table_categorical_svy()` no longer leave empty
+  test columns in `output = "long"` under `p_value = FALSE`.
+
+* `table_outcome()` without interval columns,
   `table_continuous_svy(ci = FALSE)`, and `table_categorical_svy()`
-  without `by`.
+  without `by` also render one header row.
+
+* `table_outcome()` sets a no-break space before the semicolon that joins
+  the tests of its comparison note in French.
+
+* The note of `table_outcome()` names its marginal row as the table
+  shows it, relabeled with `options(spicy.labels)`, where it kept
+  "Overall".
 
 * `table_regression()` labels the standard errors of `mgcv` fits
   "Bayesian (mgcv posterior covariance)". The label said "REML-implied"
   whatever the smoothing method, including the GCV default of `gam()`.
 
-* `table_outcome()` sets a no-break space before the semicolon that joins
-  the tests of its comparison note in French.
-
-* `table_outcome()` stops with an error when a `select` variable is
-  displayed as "Overall", the label of its marginal row, where the table
-  showed two rows "Overall". Choose another label in `labels`, or relabel
-  the row with `options(spicy.labels)`, and the note then names the row as
-  the table shows it.
-
 * `table_regression()` writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
-  `NULL`, the label of the language. A label you supply is printed as
-  typed. The footer of `reference_style = "footer"` is translated too
+  `NULL`, the label of the language.
+
+* In `table_regression()`, a `reference_label` you supply is printed as
+  typed, and the footer of `reference_style = "footer"` is translated
   ("Modalités de référence : ...").
 
-* `table_regression()` and `table_regression_uv()` write their headers in
-  French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %` over
-  `LI` and `LS`, and `R² ajusté`. The column names stay `SE`, `95% CI`,
-  and `Adj. R²` in every language. `table_continuous()`,
-  `table_continuous_lm()`, `table_outcome()`, and the survey twins use
-  the same French headers. The effect size of `table_continuous()` reads
-  `Taille d'effet`.
+* `table_regression()` and `table_regression_uv()` write their headers
+  in French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %`
+  over `LI` and `LS`, and `R² ajusté`.
 
-* `table_regression()` writes these notes in French under
-  `options(spicy.language = "fr")`: the robust standard-error line of
-  every model class, not only `lm` and `glm`, the model-based one of
-  `lmer`, `lme`, and `gls`, the standardized-coefficient legend, the
-  p-value line, the `p_adjust` note, the likelihood-ratio test of the
-  random effects of mixed models, the REML refit note of
-  `nested = TRUE`, the exponentiation, component, threshold, and
-  scale-effect notes, and the title and notes of Bayesian models (the
-  model, sampler diagnostics, predictive accuracy). Nested
-  models are `modèles emboîtés` in the title, RR is glossed
-  `risque relatif`, and `table_continuous_lm()` and `table_outcome()`
-  write `ajusté sur`. The French wording was reviewed and corrected
-  throughout (#7).
+* The column names of `table_regression()` stay `SE`, `95% CI`, and
+  `Adj. R²` in every language.
+
+* In French, `table_regression()` writes the robust standard-error line
+  of every model class, not only `lm` and `glm`, and the model-based one
+  of `lmer`, `lme`, and `gls` (#7).
+
+* In French, `table_regression()` also writes the p-value line, the
+  `p_adjust` note, the exponentiation note and its "not exponentiated"
+  suffixes, and the legend of standardized coefficients.
+
+* In French, `table_regression()` also writes the likelihood-ratio test
+  of the random effects, the REML refit note of `nested = TRUE`, and the
+  title and every note of Bayesian models.
+
+* In French, `table_regression()` calls nested models `modèles emboîtés`
+  in the title and glosses RR `risque relatif`, and
+  `table_continuous_lm()` and `table_outcome()` write `ajusté sur`.
 
 * `table_regression()` speaks of the confidence interval in its
   exponentiation note only when the table shows one. The compact layout
   of several models (B, SE, p) said "CI bounds exponentiated".
 
-* `table_regression()` handles `glmer()` fits with a Gamma or
-  inverse-Gaussian family, which failed, and no longer fails on them or on
-  `glmer.nb()` fits once merDeriv is loaded in the session. It reads the
-  coefficient covariance from lme4 whatever else is loaded.
+* `table_regression()` now handles `glmer()` fits with a Gamma,
+  inverse-Gaussian, or non-identity gaussian family, testing their
+  random effects against the `glm()` of that family and link.
+
+* `table_regression()` no longer fails on these fits or on `glmer.nb()`
+  fits once `merDeriv` is loaded in the session: it reads the
+  coefficient covariance from `lme4` whatever else is loaded.
 
 * `table_regression()` titles a `glmer.nb()` fit "Negative-binomial
   mixed-effects regression", as for the other negative-binomial models,
   and translates the title in French. It carried the theta of the fit.
 
-* `table_regression()` tests the random effects of a `glmer()` fit with
-  a gaussian family and a link other than identity against the `glm()`
-  of that family and link. It used a linear regression, which that fit
-  does not nest. The footer of such a `glmer()` or `glmmTMB()` fit names
-  the null "gaussian regression" ("régression gaussienne" in French),
-  not "linear regression".
+* `table_regression()` calls the null of the random-effects test of a
+  non-identity gaussian `glmmTMB()` fit "gaussian regression"
+  ("régression gaussienne"), not "linear regression".
 
 * `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
   `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It
@@ -748,58 +1003,46 @@ p-values, and notes.
 
 * `table_regression()` names the link of the zero part of a
   `pscl::zeroinfl()` or `pscl::hurdle()` fit in its component note when
-  it is not logit: "Zero-inflation component: probability of a
-  structural (excess) zero on the probit scale." It said log-odds for
-  every link.
+  it is not logit, where it said log-odds for every link.
+
+* The component note of `table_regression()` then reads "Zero-inflation
+  component: probability of a structural (excess) zero on the probit
+  scale."
 
 * `table_regression()` with a cluster-robust `vcov` on `lmer` and `lme`
-  fits uses that matrix for the joint tests of the terms (`partial_chi2`)
-  and the standard errors of the standardized coefficients, as for the
-  coefficients. They were model-based.
+  fits uses that matrix for the joint tests of the terms
+  (`partial_chi2`), which were model-based.
 
-* `table_regression()` computes the robust and cluster-robust standard
-  errors of `mgcv::gam()` and `mgcv::bam()` fits itself. Through
-  sandwich they were wrong for a family with a free dispersion (divided
-  by it), for a non-canonical link and for a non-Gaussian `bam()`. Only
-  a `gam()` with a canonical link and a fixed dispersion was right.
-  The extended families of `mgcv` other than `nb()`, whose score is not
-  the GLM score, now refuse a robust `vcov`.
+* `table_regression()` also uses it for the standard errors of the
+  standardized coefficients of these fits, as for the coefficients,
+  where they were model-based.
+
+* `table_regression()` computes the cluster-robust standard errors of
+  `mgcv::gam()` and `mgcv::bam()` fits itself; only a `gam()` with a
+  canonical link and a fixed dispersion had them right.
+
+* In `table_regression()`, the cluster-robust standard errors of an
+  `mgcv` fit with a free dispersion were divided by it, and those of a
+  non-canonical link or a non-Gaussian `bam()` were wrong too.
 
 * `table_regression(nested = TRUE)` divides the deviance difference by
   the dispersion for `glm()` fits whose family estimates it (gaussian,
   Gamma, inverse Gaussian, quasi), so that the Δχ² row is the statistic
-  its p-value is computed on, as in `anova(test = "LRT")`. It showed the
-  raw difference. The same holds for `mgcv::gam()` and `mgcv::bam()`
-  fits, whose test is no longer dropped when rounding leaves the added
-  degrees of freedom just under one (#6).
+  its p-value is computed on. It showed the raw difference.
+
+* `table_regression(nested = TRUE)` does the same for `mgcv::gam()` and
+  `mgcv::bam()` fits, whose test is no longer dropped when rounding
+  leaves the added degrees of freedom just under one (#6).
 
 * `table_regression()` names the supported model classes when it refuses
   a model. It pointed to an internal function.
 
-* The Excel files of `table_regression()`, `table_categorical()`,
-  `table_continuous()`, and `table_continuous_lm()` leave an empty cell
-  empty. It held an empty text, which Excel counted and refused in a
-  formula.
+* `table_regression_uv()` writes its title in French under
+  `options(spicy.language = "fr")` ("Régression linéaire univariable et
+  multivariable").
 
-* `table_categorical_svy()` counts a declared missing value once, in
-  "Declared missing values removed", where `drop_na = TRUE` also counted
-  it in "Missing values removed", and no longer says it removed the
-  values its `(Missing)` row shows. Its note spells "chi-squared", as
-  the other notes do.
-
-* `table_continuous_lm()` no longer stops with "attempt to select less
-  than one element" when an outcome has no complete observation in a
-  level of `by`.
-
-* `table_continuous_svy()` compares a numeric `by` as groups, as it
-  compares a factor, where it tested a slope under the name of a group
-  comparison, and compares a `by` that is an ordered factor of two
-  levels, whose p-value was left blank. Its note gives the degrees of
-  freedom of each variable's comparison when they differ; it gave those
-  of the last variable for all of them.
-
-* The French title of `table_regression_uv()` says "univariable", as the
-  English one does.
+* `varlist()` and `code_book()` keep only the selected columns of an
+  `sf` object. The geometry column came along.
 
 # spicy 0.13.0
 

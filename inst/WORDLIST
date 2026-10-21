@@ -70,7 +70,6 @@ Crosstabs
 DDI
 DDIwR
 DOM
-DT
 DV
 DVs
 Davison
@@ -216,7 +215,6 @@ Muncy
 Mundlak
 Mundlak's
 Mächler
-Méd
 NCHS
 NEJM
 NEJM's
@@ -270,6 +268,7 @@ Rothman
 Routledge
 Royston
 Ruppert
+Régression
 SAMPL
 SDs
 SES
@@ -429,6 +428,7 @@ labelled
 le
 les
 linearized
+linéaire
 listwise
 literatures
 lm
@@ -534,13 +534,13 @@ unstarred
 untagged
 untruncated
 utilisee
-validator
 variational
 varlist
 vcov
 von
 waic
 wellbeing
+Δ
 ΔAIC
 ΔR
 Δf
