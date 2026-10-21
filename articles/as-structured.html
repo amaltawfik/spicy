@@ -837,14 +837,15 @@ in the <em>stabilizing</em> tier of the API (see <code><a href="../reference/spi
 section <em>API stability</em>). The rule the contract actually keeps in
 the <code>0.y</code> series is this: nothing ever changes
 <em>silently</em>. Components are added by default; when one must be
-removed or reshaped – as version 3 did with the row-index vectors – the
-removal is announced under <em>Breaking changes</em> in
+removed or reshaped – as version 3 did with the row-index vectors, and
+version 4 with the <code>v_digits</code> key of a categorical table –
+the removal is announced under <em>Breaking changes</em> in
 <code>NEWS.md</code> with its replacement named, and the version guard
 below turns any version mismatch into an error instead of a wrong
 table.</li>
 <li>
 <strong>Version guard.</strong> <code>version</code> names the
-contract an object carries; it is <code>3</code> here. A table built by
+contract an object carries; it is <code>4</code> here. A table built by
 a spicy that speaks a different contract – older or newer – is refused
 rather than mis-read, with the correspondence between the two named in
 the error. Objects from before the structured view existed are refused

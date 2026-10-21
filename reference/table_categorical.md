@@ -330,13 +330,14 @@ table_categorical(
 
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  If `TRUE`, includes the 95\\ and in the `"excel"` and `"clipboard"`
-  outputs, two extra columns headed `95\% CI LL` / `95\% CI UL` are
-  added, the level stated as the other tables state it (the
-  `"data.frame"` output names them `CI lower` / `CI upper`); in the long
-  output (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`. In
-  rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the
-  CI is shown inline (e.g., `.14 [.08, .19]`). Defaults to `FALSE`.
+  If `TRUE`, includes the 95\\ and in the `"data.frame"`, `"excel"` and
+  `"clipboard"` outputs, two extra columns headed `95\% CI LL` /
+  `95\% CI UL` are added, the level stated as the other tables state it;
+  in the long output (`"long"`) the bounds fill `es_ci_lower` /
+  `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
+  `"flextable"`, `"word"`), the CI is shown inline (e.g.,
+  `.14 [.08, .19]`) under a header that states its level
+  (`Cramer's V [95\% CI]`). Defaults to `FALSE`.
 
 - smd:
 
@@ -523,7 +524,7 @@ Depends on `output`:
   (plus `Total` when `include_total = TRUE`), `p` (absent with
   `p_value = FALSE`), the association measure (named after the measure,
   or `Effect size` when the row variables do not share one), its bounds
-  `CI lower` / `CI upper` with `assoc_ci = TRUE`, and `SMD` with
+  `95\% CI LL` / `95\% CI UL` with `assoc_ci = TRUE`, and `SMD` with
   `smd = TRUE`. When `by = NULL`, the printed columns are `n` and `\%`.
 
 - `"long"`: a long `data.frame`, one row per variable, level and group,

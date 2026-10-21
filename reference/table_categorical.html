@@ -389,14 +389,13 @@ another measure or fall back to <code>"auto"</code>.</p></dd>
 <dt id="arg-assoc-ci">assoc_ci<a class="anchor" aria-label="anchor" href="#arg-assoc-ci"></a></dt>
 <dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. If <code>TRUE</code>, includes the
 95\<!-- % confidence interval of the association measure. In the console -->
-and in the <code>"excel"</code> and <code>"clipboard"</code> outputs, two extra columns
-headed <code>95\% CI LL</code> / <code>95\% CI UL</code> are added, the level stated as the
-other tables state it (the <code>"data.frame"</code> output names them
-<code>CI lower</code> / <code>CI upper</code>); in the long
-output (<code>"long"</code>) the bounds fill <code>es_ci_lower</code> / <code>es_ci_upper</code>.
-In rendered formats (<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>,
-<code>"word"</code>), the CI is shown inline (e.g., <code>.14 [.08, .19]</code>).
-Defaults to <code>FALSE</code>.</p></dd>
+and in the <code>"data.frame"</code>, <code>"excel"</code> and <code>"clipboard"</code> outputs, two
+extra columns headed <code>95\% CI LL</code> / <code>95\% CI UL</code> are added, the level
+stated as the other tables state it; in the long output (<code>"long"</code>)
+the bounds fill <code>es_ci_lower</code> / <code>es_ci_upper</code>. In rendered formats
+(<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>, <code>"word"</code>), the CI is shown
+inline (e.g., <code>.14 [.08, .19]</code>) under a header that states its level
+(<code>Cramer's V [95\% CI]</code>). Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-smd">smd<a class="anchor" aria-label="anchor" href="#arg-smd"></a></dt>
@@ -563,8 +562,8 @@ adds), then the printed columns: one pair <code>&lt;group&gt; n</code> /
 <code>&lt;group&gt; \%</code> per group level (plus <code>Total</code> when
 <code>include_total = TRUE</code>), <code>p</code> (absent with <code>p_value = FALSE</code>), the
 association measure (named after the measure, or <code>Effect size</code>
-when the row variables do not share one), its bounds <code>CI lower</code> /
-<code>CI upper</code> with <code>assoc_ci = TRUE</code>, and <code>SMD</code> with <code>smd = TRUE</code>.
+when the row variables do not share one), its bounds <code>95\% CI LL</code> /
+<code>95\% CI UL</code> with <code>assoc_ci = TRUE</code>, and <code>SMD</code> with <code>smd = TRUE</code>.
 When <code>by = NULL</code>, the printed columns are <code>n</code> and <code>\%</code>.</p></li>
 <li><p><code>"long"</code>: a long <code>data.frame</code>, one row per variable, level and
 group, with columns <code>variable</code>, <code>label</code>, <code>level</code>, <code>.row_role</code> (the

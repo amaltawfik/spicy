@@ -477,9 +477,9 @@ table_continuous_lm(
   names, `es_ci_lower` / `es_ci_upper` (numeric). In the printed ASCII
   table and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`,
   `"word"`, `"excel"`, `"clipboard"`), the effect-size column shows the
-  value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`).
-  Defaults to `FALSE`. When `effect_size = "none"`, this argument is
-  ignored with a warning.
+  value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`), under
+  a header that states its level (`d [95\% CI]`). Defaults to `FALSE`.
+  When `effect_size = "none"`, this argument is ignored with a warning.
 
 - r2:
 
@@ -1230,7 +1230,7 @@ table_continuous_lm(
 #>  wellbeing_score │   67.16      71.05          3.89           2.13    
 #>  bmi             │   25.69      26.20          0.51           0.09    
 #> 
-#>  Variable        │ 95% CI UL    p     R²           g           n   
+#>  Variable        │ 95% CI UL    p     R²      g [95% CI]       n   
 #> ─────────────────┼─────────────────────────────────────────────────
 #>  wellbeing_score │   5.64     <.001  0.02  0.25 [0.14, 0.36]  1200 
 #>  bmi             │   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 
@@ -1395,7 +1395,7 @@ table_continuous_lm(
 #>  wellbeing_score │   67.27      70.93          3.65           2.09    
 #>  bmi             │   25.65      26.23          0.58           0.19    
 #> 
-#>  Variable        │ 95% CI UL    p     R²          f²           n   
+#>  Variable        │ 95% CI UL    p     R²      f² [95% CI]      n   
 #> ─────────────────┼─────────────────────────────────────────────────
 #>  wellbeing_score │   5.22     <.001  0.22  0.02 [0.01, 0.04]  1200 
 #>  bmi             │   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 

@@ -14,8 +14,8 @@ and `.row_role` (`"coef"`, `"factor_header"`, `"level"`, `"reference"`,
 `"fit_stat"`, ..., the roles of
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
 then the printed columns under their names, numeric: the interval of a
-coefficient is split into its two bounds (`"95\% CI: LL"`,
-`"95\% CI: UL"`), a fit statistic sits in the first column of its model,
+coefficient is split into its two bounds (`"95\% CI LL"`,
+`"95\% CI UL"`), a fit statistic sits in the first column of its model,
 and a cell of events over a total (`n_events`) keeps the events in its
 column and the total beside it (`"<column>: N"`). With several models
 each column name starts with the model's label. The note, as printed, is

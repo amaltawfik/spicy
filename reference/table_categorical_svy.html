@@ -373,9 +373,10 @@ displayed), <code>level</code> and <code>.row_role</code> (<code>"factor_header"
 or <code>"missing"</code> on the row of missing values the table adds), then
 the printed columns in their order: per block of <code>by</code> (and the
 <code>Total</code> margin) <code>&lt;group&gt; n</code>, <code>&lt;group&gt; \%</code>, with <code>proportion_ci</code> the
-interval bounds <code>&lt;group&gt; \% CI lower</code> and <code>&lt;group&gt; \% CI upper</code>,
-with <code>deff</code> <code>&lt;group&gt; DEff</code>, and last <code>p</code>. Without <code>by</code>, the
-columns of the one block are <code>n</code>, <code>\%</code>, ...</p></li>
+interval bounds <code>&lt;group&gt; 95\% CI LL</code> and <code>&lt;group&gt; 95\% CI UL</code> (the
+level of <code>ci_level</code>, as printed), with <code>deff</code> <code>&lt;group&gt; DEff</code>, and
+last <code>p</code>. Without <code>by</code>, the columns of the one block are <code>n</code>, <code>\%</code>,
+...</p></li>
 <li><p><code>"long"</code>: one row per variable, level and group, in the order
 of the table, with <code>variable</code>, <code>label</code>, <code>level</code>, <code>.row_role</code> (the
 role of <code>level</code>: <code>"level"</code>, or <code>"missing"</code>), with <code>by</code> <code>group</code>,

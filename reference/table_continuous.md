@@ -277,10 +277,11 @@ table_continuous(
 - effect_size_ci:
 
   Logical. If `TRUE`, appends the confidence interval of the effect size
-  in brackets (e.g., `g = 0.45 [0.22, 0.68]`). Implies a non-`"none"`
-  effect size: if left at the default `effect_size = "none"`, the
-  function warns and promotes `effect_size` to `"auto"` so the requested
-  CI can be shown. Defaults to `FALSE`.
+  in brackets (e.g., `g = 0.45 [0.22, 0.68]`), under a header that
+  states its level (`ES [95\% CI]`). Implies a non-`"none"` effect size:
+  if left at the default `effect_size = "none"`, the function warns and
+  promotes `effect_size` to `"auto"` so the requested CI can be shown.
+  Defaults to `FALSE`.
 
 - smd:
 
@@ -1056,7 +1057,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
 #>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
 #> 
-#>  Variable        │ Group    n     p               ES            
+#>  Variable        │ Group    n     p          ES [95% CI]        
 #> ─────────────────┼──────────────────────────────────────────────
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
@@ -1084,7 +1085,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#>  Variable        │ Group                       ES             
+#>  Variable        │ Group                   ES [95% CI]        
 #> ─────────────────┼────────────────────────────────────────────
 #>  wellbeing_score │ Lower secondary  η² = 0.208 [0.169, 0.246] 
 #>                  │ Upper secondary                            

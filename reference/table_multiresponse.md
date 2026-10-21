@@ -216,10 +216,10 @@ table_multiresponse(
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
-  Defaults to `1999`, the default of the `MRCV` package for the same
-  bootstrap test. Typed with `global_test = "rs2"`, or in a table
-  without a global test, it is ignored with a warning (class
-  `spicy_ignored_arg`).
+  Defaults to `1999`, the default `B` of `MI.test()` in the `MRCV`
+  package for the same bootstrap test (reference manual of `MRCV`
+  0.4-0). Typed with `global_test = "rs2"`, or in a table without a
+  global test, it is ignored with a warning (class `spicy_ignored_arg`).
 
 - p_adjust:
 

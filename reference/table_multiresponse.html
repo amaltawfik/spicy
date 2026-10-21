@@ -299,9 +299,10 @@ distribution. See <em>Tests</em>.</p></dd>
 <dd><p>Number of bootstrap resamples for
 <code>global_test = "bootstrap"</code>: a positive whole number, as in
 <code><a href="table_regression.html">table_regression()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. Defaults to <code>1999</code>,
-the default of the <code>MRCV</code> package for the same bootstrap test. Typed
-with <code>global_test = "rs2"</code>, or in a table without a global test, it
-is ignored with a warning (class <code>spicy_ignored_arg</code>).</p></dd>
+the default <code>B</code> of <code>MI.test()</code> in the <code>MRCV</code> package for the same
+bootstrap test (reference manual of <code>MRCV</code> 0.4-0). Typed with
+<code>global_test = "rs2"</code>, or in a table without a global test, it is
+ignored with a warning (class <code>spicy_ignored_arg</code>).</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>

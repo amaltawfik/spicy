@@ -122,7 +122,15 @@ missing `by` values is `model = "(Missing)"`. In a multi-model table,
 `model` selects the model the same way. The cells that belong to no
 group (a *p*, the contrast of
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-and its interval, an association measure) are cited without `model`.
+and its interval, an association measure) are cited without `model`. In
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+the test, its *p*, the effect size and the SMD are statistics of the
+variable, printed once on the row of the first group:
+`inline(tbl, bmi, column = "p")`. Asked with `model`, whichever group it
+names, they are an error (class `spicy_invalid_input`) that gives that
+call.
 
 `level` names a category shown as a row: the level of a variable, its
 row of missing values. Until spicy 0.14.0 it also selected the groups of
@@ -131,7 +139,7 @@ row of missing values. Until spicy 0.14.0 it also selected the groups of
 and
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
 that use is an error (class `spicy_defunct`) whose message gives the
-`model` call.
+call to use instead.
 
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 has one row per item, addressed by its column name, then the rows of

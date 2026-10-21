@@ -754,7 +754,7 @@ table_regression(fit_zip, output = "data.frame")
 #> 12 Zero-inflation Zero-inflation        ment         level   -0.13007253
 #> 13           nobs              n        <NA>      fit_stat  915.00000000
 #> 14            aic            AIC        <NA>      fit_stat 3225.51736808
-#>             SE   95% CI: LL  95% CI: UL            p
+#>             SE    95% CI LL   95% CI UL            p
 #> 1  0.067760782  0.476666850  0.74228423 2.372719e-19
 #> 2           NA           NA          NA           NA
 #> 3           NA           NA          NA           NA

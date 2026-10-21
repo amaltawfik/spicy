@@ -206,7 +206,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534                        
 #>                  │ Tertiary            4.21    399                        
 #> 
-#>  Variable        │ Group              p              ES           
+#>  Variable        │ Group              p         ES [95% CI]       
 #> ─────────────────┼────────────────────────────────────────────────
 #>  bmi             │ Lower secondary  <.001  η² = 0.13 [0.10, 0.17] 
 #>                  │ Upper secondary                                
@@ -293,7 +293,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
 #>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
 #> 
-#>  Variable        │ Group    n     p               ES            
+#>  Variable        │ Group    n     p          ES [95% CI]        
 #> ─────────────────┼──────────────────────────────────────────────
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580
@@ -1001,7 +1001,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_cuer0vyighoohxwgct9k
+Descriptive statistics by education {#tinytable_854saqhl1iixsaxhmq4g
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

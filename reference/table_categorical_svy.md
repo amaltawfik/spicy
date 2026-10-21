@@ -318,9 +318,9 @@ Depends on `output`:
   `"missing"` on the row of missing values the table adds), then the
   printed columns in their order: per block of `by` (and the `Total`
   margin) `<group> n`, `<group> \%`, with `proportion_ci` the interval
-  bounds `<group> \% CI lower` and `<group> \% CI upper`, with `deff`
-  `<group> DEff`, and last `p`. Without `by`, the columns of the one
-  block are `n`, `\%`, ...
+  bounds `<group> 95\% CI LL` and `<group> 95\% CI UL` (the level of
+  `ci_level`, as printed), with `deff` `<group> DEff`, and last `p`.
+  Without `by`, the columns of the one block are `n`, `\%`, ...
 
 - `"long"`: one row per variable, level and group, in the order of the
   table, with `variable`, `label`, `level`, `.row_role` (the role of

@@ -1485,7 +1485,7 @@ head(table_regression(fit, output = "data.frame"), 8)
 #> 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250232
 #> 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080110
 #> 8           nobs              n                          <NA>      fit_stat 180.00000000        NA
-#>    95% CI: LL  95% CI: UL            p
+#>     95% CI LL   95% CI UL            p
 #> 1 237.0064468 265.8037629 1.171558e-17
 #> 2   7.2059547  13.7286173 3.263824e-06
 #> 3          NA          NA           NA

@@ -714,12 +714,13 @@ Three properties make the structured view safe to build on:
   section *API stability*). The rule the contract actually keeps in the
   `0.y` series is this: nothing ever changes *silently*. Components are
   added by default; when one must be removed or reshaped – as version 3
-  did with the row-index vectors – the removal is announced under
-  *Breaking changes* in `NEWS.md` with its replacement named, and the
-  version guard below turns any version mismatch into an error instead
-  of a wrong table.
+  did with the row-index vectors, and version 4 with the `v_digits` key
+  of a categorical table – the removal is announced under *Breaking
+  changes* in `NEWS.md` with its replacement named, and the version
+  guard below turns any version mismatch into an error instead of a
+  wrong table.
 - **Version guard.** `version` names the contract an object carries; it
-  is `3` here. A table built by a spicy that speaks a different contract
+  is `4` here. A table built by a spicy that speaks a different contract
   – older or newer – is refused rather than mis-read, with the
   correspondence between the two named in the error. Objects from before
   the structured view existed are refused outright.

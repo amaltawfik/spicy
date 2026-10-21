@@ -180,12 +180,17 @@ one per group (<code>inline(tbl, bmi, model = "Female")</code>). The group of
 missing <code>by</code> values is <code>model = "(Missing)"</code>. In a multi-model table,
 <code>model</code> selects the model the same way. The cells that belong to no
 group (a <em>p</em>, the contrast of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and its
-interval, an association measure) are cited without <code>model</code>.</p>
+interval, an association measure) are cited without <code>model</code>. In
+<code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, the test, its <em>p</em>,
+the effect size and the SMD are statistics of the variable, printed
+once on the row of the first group: <code>inline(tbl, bmi, column = "p")</code>.
+Asked with <code>model</code>, whichever group it names, they are an error (class
+<code>spicy_invalid_input</code>) that gives that call.</p>
 <p><code>level</code> names a category shown as a row: the level of a variable,
 its row of missing values. Until spicy 0.14.0 it also selected the
 groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class <code>spicy_defunct</code>)
-whose message gives the <code>model</code> call.</p>
+whose message gives the call to use instead.</p>
 <p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> has one row per item, addressed by its column
 name, then the rows of <code>none_row</code>, addressed as <code>"none"</code> and
 <code>"no_data"</code>, and the base row, the number of respondents, addressed as

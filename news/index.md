@@ -135,7 +135,10 @@ the descriptive tables one contract for labels, p-values, and notes.
 - `output = "data.frame"` returns the table as it is displayed, with its
   numbers, in every table function: one row per printed row, the printed
   columns, and the key columns `variable` and `label`, with `level`,
-  `group`, and `.row_role` where they apply.
+  `group`, and `.row_role` where they apply. The bounds of an interval
+  are named as printed: `95% CI LL` and `95% CI UL`, `Female 95% CI LL`
+  in
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md).
   [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) on a
   table returns the same frame, with the note as its one attribute.
   `output = "long"` gives one row per variable, level, and group. In
@@ -186,12 +189,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   name an interval column with a point whatever `decimal_mark`:
+  `97.5% CI LL` and `97.5% CI UL` in
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
   `97.5% CI: LL` and `97.5% CI: UL` in
-  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
   `97.5% CI` in the printed object. They were `97,5% CI` under
-  `decimal_mark = ","`. The header still follows the mark, and the names
-  at 95% are unchanged.
+  `decimal_mark = ","`. The header still follows the mark.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   words its `p_adjust` note for the reader: “P-values adjusted for 5
@@ -359,6 +362,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   follow the same order.
 
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) lists
+  the values of a character variable in the C locale, capitals before
+  lower case and the same on every machine, as
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and the tables do. It followed the locale of the machine.
+
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   selects a group of `by` with `model` in every table, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
@@ -369,7 +378,13 @@ the descriptive tables one contract for labels, p-values, and notes.
   `inline(tbl, bmi, column = "emmean", model = "Female")` in
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
   `level` naming such a group is an error (class `spicy_defunct`) that
-  gives the `model` call.
+  gives the call to use. In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  the test, its *p*, the effect size, and the SMD belong to the variable
+  and are cited without `model` (`inline(tbl, bmi, column = "p")`); with
+  a group, they are an error that gives that call.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
@@ -381,10 +396,19 @@ the descriptive tables one contract for labels, p-values, and notes.
   `v_digits` is an error (class `spicy_defunct`) that names the new
   argument.
 
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  reads contract version 4: in the `format_spec` of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  the decimals of the association measure are `effect_size_digits`, as
+  in the other tables (was `v_digits`). A view built by an older spicy
+  is refused.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  heads the bounds of the association interval `95% CI LL` and
-  `95% CI UL` in the console, Excel, and clipboard outputs, stating its
-  level as the other tables do. They read `CI lower` and `CI upper`, and
+  names the bounds of the association interval `95% CI LL` and
+  `95% CI UL` in the console, data frame, Excel, and clipboard outputs,
+  as the other tables name their interval columns, and heads the merged
+  cell of the rendered formats `Cramer's V [95% CI]`. They were
+  `CI lower` and `CI upper`, the rendered header stated no level, and
   the keys `header_ci_lower` and `header_ci_upper` of
   `options(spicy.labels)` are gone.
 
@@ -588,6 +612,19 @@ the descriptive tables one contract for labels, p-values, and notes.
   “`ci_level` must be a number strictly between 0 and 1.”, “`digits`
   must be a non-negative whole number.”, “`drop_na` must be TRUE or
   FALSE.”.
+
+- The header of an effect size printed with its interval states the
+  level of the interval: `ES [95% CI]` in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  `d [95% CI]` (or `f²`, `g`, `ω²`) in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  in every output but the data frame, whose column holds the estimate
+  alone. The rendered formats of
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  head the bounds of a proportion `95% CI LL` and `95% CI UL` under each
+  group, where they read `LL` and `UL`.
 
 - The note of every table opens with *Note.* in italics in Typst, LaTeX,
   Markdown documents, and Excel output, and in gt’s LaTeX, RTF, and Word

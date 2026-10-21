@@ -7,11 +7,11 @@ displays, with its numbers: exactly what `output = "data.frame"`
 returns. One row per printed row – the header row of each variable,
 which carries its *p*-value, then one row per level – and the printed
 columns under their names (`"Female n"`, `"Female \%"`, the interval
-bounds `"Female \% CI lower"` and `"Female \% CI upper"`,
-`"Female DEff"`, ..., `"p"`), plus the key columns `variable`, `label`,
-`level` and `.row_role` (`"factor_header"`, `"level"`, or `"missing"`).
-The note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns
-the same table as a tibble.
+bounds `"Female 95\% CI LL"` and `"Female 95\% CI UL"`, `"Female DEff"`,
+..., `"p"`), plus the key columns `variable`, `label`, `level` and
+`.row_role` (`"factor_header"`, `"level"`, or `"missing"`). The note, as
+printed, is kept in `attr(, "note")`. `as_tibble()` returns the same
+table as a tibble.
 
 ## Usage
 

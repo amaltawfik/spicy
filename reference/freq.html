@@ -162,11 +162,14 @@ If <code>TRUE</code>, adds cumulative percentages.</p></dd>
 
 
 <dt id="arg-sort">sort<a class="anchor" aria-label="anchor" href="#arg-sort"></a></dt>
-<dd><p>Sorting method for values:</p><ul><li><p><code>""</code> - no sorting (default)</p></li>
+<dd><p>Sorting method for values:</p><ul><li><p><code>""</code> - the order of the values (default): the levels of a factor
+or of a labelled variable, numbers in ascending order, text in the
+C locale (capitals before lower case, the same on every machine)
+and <code>FALSE</code> before <code>TRUE</code>, as in <code><a href="cross_tab.html">cross_tab()</a></code> and the tables</p></li>
 <li><p><code>"+"</code> - increasing frequency</p></li>
 <li><p><code>"-"</code> - decreasing frequency</p></li>
-<li><p><code>"name+"</code> - alphabetical A-Z</p></li>
-<li><p><code>"name-"</code> - alphabetical Z-A</p></li>
+<li><p><code>"name+"</code> - alphabetical A-Z, in the C locale</p></li>
+<li><p><code>"name-"</code> - alphabetical Z-A, in the C locale</p></li>
 </ul><p>For labelled variables displayed with their codes
 (<code>labelled_levels</code> <code>"prefixed"</code> or <code>"values"</code>), <code>"name+"</code> /
 <code>"name-"</code> sort by the underlying code (so <code>[10]</code> follows <code>[2]</code>,

@@ -377,7 +377,8 @@ triggers an actionable error. Ignored when <code>by</code> is not used.</p></dd>
 <dt id="arg-effect-size-ci">effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-ci"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, appends the confidence
 interval of the effect size in brackets (e.g.,
-<code>g = 0.45 [0.22, 0.68]</code>). Implies a non-<code>"none"</code> effect size: if
+<code>g = 0.45 [0.22, 0.68]</code>), under a header that states its level
+(<code>ES [95\% CI]</code>). Implies a non-<code>"none"</code> effect size: if
 left at the default <code>effect_size = "none"</code>, the function warns
 and promotes <code>effect_size</code> to <code>"auto"</code> so the requested CI can
 be shown. Defaults to <code>FALSE</code>.</p></dd>
@@ -1051,7 +1052,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00    65.99      68.33   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00    69.73      72.37   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group    n     p               ES            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group    n     p          ES [95% CI]        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  &lt;.001  g = -0.25 [-0.36, -0.14] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    580                                  </span>
@@ -1079,7 +1080,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group                       ES             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group                   ES [95% CI]        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.208 [0.169, 0.246] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>

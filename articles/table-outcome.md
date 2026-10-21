@@ -698,7 +698,7 @@ table_outcome(
 | *Note.* Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_y6nsh9dqqvc73lu0an6j .table .tinytable
+{#tinytable_d6bcobh1vrfcnlu5w8k7 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

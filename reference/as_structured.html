@@ -273,6 +273,11 @@ which had no typed view before: <code>.row_role</code> gained <code>"summary"</c
 <code>"group"</code> and <code>"missing"</code>, then <code>"none"</code> with <code><a href="table_multiresponse.html">table_multiresponse()</a></code>.
 The vocabulary is extended by addition – an existing role never
 changes meaning.</p>
+<p>Version <code>4</code> renames one component: in the <code>format_spec</code> of
+<code><a href="table_categorical.html">table_categorical()</a></code>, the number of decimals of the association
+measure and the SMD is <code>effect_size_digits</code>, the key of the other
+tables, where it was <code>v_digits</code> (the argument was renamed alike). An
+object carrying version <code>3</code> is refused as an older contract.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

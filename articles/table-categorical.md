@@ -420,12 +420,13 @@ the per-row choice.
 
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
 (`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
-the measure, e.g. `.14 [.08, .19]` (demonstrated in the final section).
-In the default console table and in the `"excel"` and `"clipboard"`
-outputs, separate columns headed `95% CI LL` and `95% CI UL` are added,
-the level stated as the other tables state it (`"data.frame"` names them
-`CI lower` and `CI upper`); in the long format (`"long"`) the bounds
-fill `es_ci_lower` / `es_ci_upper`:
+the measure, e.g. `.14 [.08, .19]`, under a header that states its
+level, `Cramer's V [95% CI]` (demonstrated in the final section). In the
+default console table and in the `"data.frame"`, `"excel"` and
+`"clipboard"` outputs, separate columns named `95% CI LL` and
+`95% CI UL` are added, as the other tables name their interval columns;
+in the long format (`"long"`) the bounds fill `es_ci_lower` /
+`es_ci_upper`:
 
 ``` r
 
@@ -446,7 +447,7 @@ table_categorical(
 #> 2               415         76.994434        332      83.00     926 77.166667
 #> 3               112         20.779221         59      14.75     249 20.750000
 #> 4                12          2.226345          9       2.25      25  2.083333
-#>              p Cramer's V   CI lower  CI upper
+#>              p Cramer's V  95% CI LL 95% CI UL
 #> 1 2.012877e-05  0.1356677 0.07909264 0.1913716
 #> 2           NA         NA         NA        NA
 #> 3           NA         NA         NA        NA
@@ -1037,7 +1038,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_s041srf4ldm3u59kmebt .table
+Categorical table by sex {#tinytable_olt3bv0xr4sy2ouhqlbp .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

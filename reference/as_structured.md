@@ -213,6 +213,13 @@ had no typed view before: `.row_role` gained `"summary"`, `"group"` and
 The vocabulary is extended by addition – an existing role never changes
 meaning.
 
+Version `4` renames one component: in the `format_spec` of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+the number of decimals of the association measure and the SMD is
+`effect_size_digits`, the key of the other tables, where it was
+`v_digits` (the argument was renamed alike). An object carrying version
+`3` is refused as an older contract.
+
 ## See also
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),

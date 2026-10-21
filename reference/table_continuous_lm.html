@@ -516,9 +516,9 @@ output (<code>output = "data.frame"</code>), the bounds appear under the same
 names, <code>es_ci_lower</code> / <code>es_ci_upper</code> (numeric). In the printed ASCII
 table and rendered outputs (<code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
 <code>"word"</code>, <code>"excel"</code>, <code>"clipboard"</code>), the effect-size column shows the
-value followed by the CI in brackets (e.g. <code>0.18 [0.07, 0.30]</code>). Defaults
-to <code>FALSE</code>. When <code>effect_size = "none"</code>, this argument is ignored with a
-warning.</p></dd>
+value followed by the CI in brackets (e.g. <code>0.18 [0.07, 0.30]</code>), under
+a header that states its level (<code>d [95\% CI]</code>). Defaults to <code>FALSE</code>.
+When <code>effect_size = "none"</code>, this argument is ignored with a warning.</p></dd>
 
 
 <dt id="arg-r-">r2<a class="anchor" aria-label="anchor" href="#arg-r-"></a></dt>
@@ -1177,7 +1177,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²           g           n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²      g [95% CI]       n   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.25 [0.14, 0.36]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 </span>
@@ -1342,7 +1342,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.09    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²          f²           n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²      f² [95% CI]      n   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.22     &lt;.001  0.22  0.02 [0.01, 0.04]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 </span>
