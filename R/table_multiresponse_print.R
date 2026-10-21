@@ -266,7 +266,7 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
     if (is.null(long[[nm]])) rep(na, nrow(long)) else long[[nm]]
   }
   total <- !is.na(group) & group %in% margin
-  .outcome_as_tbl(data.frame(
+  .as_broom_tbl(data.frame(
     variable = long$variable,
     label = long$label,
     group = group,
@@ -312,7 +312,7 @@ glance.spicy_multiresponse_table <- function(x, ...) {
     function(m) identical(m$token, "n") && (!has_group || isTRUE(m$total)),
     logical(1)
   )]
-  .outcome_as_tbl(data.frame(
+  .as_broom_tbl(data.frame(
     n_items = length(dat$items),
     n_items_tested = global("n_items", NA_integer_),
     n_groups = if (has_group) {

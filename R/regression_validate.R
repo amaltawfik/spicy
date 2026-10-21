@@ -2515,14 +2515,8 @@ validate_digit_arg <- function(
 .digit_arg_message <- function(name, min = 0L) {
   if (min == 0L) {
     sprintf("`%s` must be a non-negative whole number.", name)
-  } else if (min == 1L) {
-    sprintf("`%s` must be a positive whole number.", name)
   } else {
-    sprintf(
-      "`%s` must be a whole number of at least %d.",
-      name,
-      as.integer(min)
-    )
+    sprintf("`%s` must be a positive whole number.", name)
   }
 }
 

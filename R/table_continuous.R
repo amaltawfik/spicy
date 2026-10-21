@@ -1987,12 +1987,12 @@ table_continuous <- function(
       es_ci_lower = rep(NA_real_, n),
       es_ci_upper = rep(NA_real_, n)
     )
-    before <- match("smd_type", names(out))
-    out <- if (is.na(before)) {
-      .insert_cols_after(out, es, names(out)[ncol(out)])
-    } else {
-      .insert_cols_after(out, es, names(out)[before - 1L])
-    }
+    # Before the SMD columns, which a grouped compute frame always carries.
+    out <- .insert_cols_after(
+      out,
+      es,
+      names(out)[match("smd_type", names(out)) - 1L]
+    )
   }
   out <- .rename_cols(out, c(df1 = "df", df2 = "df.residual"))
   rownames(out) <- NULL

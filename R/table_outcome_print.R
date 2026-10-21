@@ -274,14 +274,6 @@ as_tibble.spicy_outcome_table <- function(x, ...) {
 #' @keywords internal
 NULL
 
-.outcome_as_tbl <- function(df) {
-  rownames(df) <- NULL
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(df))
-  }
-  df
-}
-
 #' @rdname tidy.spicy_outcome_table
 #' @exportS3Method broom::tidy
 tidy.spicy_outcome_table <- function(x, ...) {
