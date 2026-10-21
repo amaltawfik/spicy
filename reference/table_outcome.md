@@ -397,7 +397,8 @@ Depends on `output`:
 
 The default object and the two data frames carry the whole note as
 printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
-nothing to say).
+nothing to say). The default object also keeps the title it prints in
+`attr(x, "title")`.
 
 ## Which shape do I need?
 
@@ -461,6 +462,14 @@ one-way ANOVA, and `test = "nonparametric"` is the Wilcoxon rank-sum or
 the Kruskal-Wallis test on the same rule. A block with fewer than two
 observed levels, or with a level holding a single observation, is not
 tested; its statistics stay empty and the other blocks are unaffected.
+
+A level where the outcome has no observed value (typically a question
+not asked there) has no data, which is not a missing answer: its cells
+show an en dash, *n* included, the block compares the levels with data,
+the rows of that level are not counted in the outcome's missing values
+(whichever block they fall in), and the note says so ("No data for X in
+G.", X the label of the outcome and G the level). The `Overall` row
+stays the whole analytic sample.
 
 ## The `Overall` row
 
@@ -725,5 +734,5 @@ table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #>    High              │       
 #>    Very high         │       
 #> 
-#> Note. Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```

@@ -164,7 +164,7 @@ table_outcome(
 #>    Upper secondary   │  26.10 [23.50, 28.50]     534           
 #>    Tertiary          │  24.50 [22.00, 26.78]     394           
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test (sex); Kruskal-Wallis test (education). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Med [Q1, Q3] = median [first quartile, third quartile]. Overall = the whole analytic sample.
 ```
 
 Only the character-vector form is accepted. The per-variable named list
@@ -229,7 +229,7 @@ table_outcome(
 #>    South   │                                       
 #>    West    │                                       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Read that table as a set of bivariate descriptions. It is not a model,
@@ -381,7 +381,7 @@ table_outcome(
 #>    High                │  67.92    16.17     234           
 #>    Very high           │  67.69    16.15     128           
 #> 
-#> Note. Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Negation (`select = -c(x, y)`) is **not** recommended, and the reason is
@@ -446,7 +446,7 @@ table_outcome(
 #>    Female   │  25.51    3.75     616      648.72    
 #>    Male     │  25.98    3.61     572      539.28    
 #> 
-#> Note. Missing values removed: bmi (12). Statistics weighted by weight. Overall = the whole analytic sample.
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). Overall = the whole analytic sample.
 ```
 
 Note *statistics*, above, and not *the table*: the mean, SD, quantiles
@@ -513,7 +513,8 @@ inline(tbl, smoking, column = "{p}")
 with `.row_role` saying what each row is and every statistic the table
 computes. `output = "data.frame"`, and
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) on the
-table, give the same rows with the printed columns only.
+table, give the same rows with the key columns `variable`, `label`,
+`level` and `.row_role`, then the printed columns.
 
 ``` r
 
@@ -568,9 +569,9 @@ broom::glance(tbl)
 #> #   es_ci_upper <dbl>, nobs <int>
 ```
 
-Two identity columns rather than one, and deliberately: `outcome` is
-constant down the frame, `variable` names the block. A single column
-would have to mean two different things depending on the row.
+Two identity columns rather than one: `outcome` is constant down the
+frame, and `variable` names the column each row describes, the grouping
+of its block, or the outcome itself on the `Overall` row.
 
 The `glance()` schema is fixed: a column the table does not fill is
 present and `NA`. Index by name, never by position.
@@ -669,10 +670,10 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Missing values removed: bmi (12). Group comparison: Welch
-one-way ANOVA (education); Welch t-test (sex). Each block compares bmi
-across the levels of one variable; blocks are not adjusted for one
-another. Overall = the whole analytic sample.
+*Note.* Missing values removed: bmi (12). Group comparison: Welch t-test
+(sex); Welch one-way ANOVA (education). Each block compares bmi across
+the levels of one variable; blocks are not adjusted for one another.
+Overall = the whole analytic sample.
 
 ``` r
 
@@ -695,10 +696,10 @@ table_outcome(
 |     No | 70.95 \[59.23, 79.60\] |  926 |       |
 |     Yes | 68.50 \[58.30, 77.30\] |  249 |       |
 |     (Missing) | 69.70 \[62.80, 77.10\] |   25 |       |
-| *Note.* Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
+| *Note.* Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_d6bcobh1vrfcnlu5w8k7 .table .tinytable
+{#tinytable_g5ddf5jf43dm49goedvi .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

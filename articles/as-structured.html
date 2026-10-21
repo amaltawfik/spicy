@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="The structured view: programmatic access to spicy tables">
-<meta name="description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, and `table_outcome()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all five families.
+<meta name="description" content="`as_structured()` exposes the typed representation behind every spicy table, from `table_regression()` to `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, `table_multiresponse()` and the survey twins: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all of them.
 ">
-<meta property="og:description" content="`as_structured()` exposes the typed representation behind every `table_regression()`, `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, and `table_outcome()` output: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all five families.
+<meta property="og:description" content="`as_structured()` exposes the typed representation behind every spicy table, from `table_regression()` to `table_categorical()`, `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, `table_multiresponse()` and the survey twins: a numeric body with per-row identity columns, per-column metadata, per-cell status, and the format specification. Filter rows programmatically, aggregate raw values, or build a custom renderer -- against one schema for all of them.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -127,12 +127,14 @@ columns, <code>NA</code> where a cell is structurally empty, plus the
 metadata a renderer needs to reconstruct the display. For regression
 tables it is the very contract spicy’s own output engines (Excel, gt,
 tinytable, flextable, clipboard) consume internally – nothing about it
-is second-class – and the descriptive families
+is second-class – and the descriptive tables
 (<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code>) expose
-the same schema, covered at the end of this article. The tour below uses
-a regression table; everything it shows reads identically on the other
-four.</p>
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code>,
+<code><a href="../reference/table_multiresponse.html">table_multiresponse()</a></code>, and the survey twins
+<code><a href="../reference/table_categorical_svy.html">table_categorical_svy()</a></code> and
+<code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>) expose the same schema, covered at
+the end of this article. The tour below uses a regression table;
+everything it shows reads identically on the others.</p>
 <p>Two sibling tools serve different needs, and choosing well saves
 work. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the <em>statistical</em> long
 form – one row per term and estimate type per model, with
@@ -176,8 +178,7 @@ compared against:</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>Every display trait named above is visible here: <code>(ref.)</code>
 markers and en-dashes on the reference rows, blank factor header rows,
 one bracketed <code>[LL, UL]</code> column, APA p-values
@@ -538,12 +539,13 @@ coefficients and it renders the way it prints.</p>
 </h2>
 <p>Everything above extends beyond regression. The same accessor reads
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="../reference/table_outcome.html">table_outcome()</a></code>, and
-returns the same schema – the same identity columns, the same
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code>,
+<code><a href="../reference/table_multiresponse.html">table_multiresponse()</a></code> and the survey twins, and returns the
+same schema – the same identity columns, the same
 <code>cell_status</code>, the same <code>display_cells</code> mechanism
-for composite cells. A consumer written for one family reads the other
-four. <code><a href="../reference/table_categorical.html">table_categorical()</a></code> lays out one factor header row
-per variable and one row per category:</p>
+for composite cells. A consumer written for one table reads the others.
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code> lays out one factor header row per
+variable and one row per category:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">education</span><span class="op">)</span></span>
 <span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">ct</span><span class="op">)</span></span>
@@ -631,14 +633,14 @@ which level it carries, so nothing has to parse
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $display_label</span></span>
 <span><span class="co">#&gt; [1] "M (Male)"</span></span></code></pre></div>
-<p><code><a href="../reference/table_outcome.html">table_outcome()</a></code> is the one shape where three roles share
+<p><code><a href="../reference/table_outcome.html">table_outcome()</a></code> is the one shape where two roles share
 <code>.indent == 0</code>: a <code>"summary"</code> row for the whole
-analytic sample, a <code>"factor_header"</code> row per grouping, and
-the indented <code>"level"</code> rows under it. A consumer that read “a
-level is anything that is not a header” would swallow the marginal row;
-the <code>.indent</code> field is the one to read, and it is why the
-block geometry of all three descriptive families is computed from
-it:</p>
+analytic sample and a <code>"factor_header"</code> row per grouping,
+with the indented <code>"level"</code> rows (<code>.indent == 1</code>)
+under it. A consumer that read “a level is anything that is not a
+header” would swallow the marginal row; the <code>.indent</code> field
+is the one to read, and it is why the block geometry of the descriptive
+tables is computed from it:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">so</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">ot</span><span class="op">)</span></span>

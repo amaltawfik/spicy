@@ -90,10 +90,7 @@ table_regression(fit_pois, exponentiate = TRUE)
 #>  R² (Nagelkerke) │    0.19                            
 #>  AIC             │ 3312.3                             
 #> 
-#> Note. Poisson regression.
-#> Std. errors: classical (Fisher information).
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio.
 ```
 
 Each IRR multiplies the expected article count, holding the other
@@ -161,10 +158,7 @@ table_regression(fit_nb, exponentiate = TRUE,
 #>  α (= 1/θ)       │    0.44                            
 #>  AIC             │ 3134.1                             
 #> 
-#> Note. Negative-binomial regression.
-#> Std. errors: Model-based (asymptotic).
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Model-based (asymptotic). IRR = incidence rate ratio.
 ```
 
 The dispersion estimate sits in the table itself: the opt-in
@@ -264,11 +258,7 @@ table_regression(fit_zip, exponentiate = TRUE)
 #>  n               │  915                               
 #>  AIC             │ 3225.5                             
 #> 
-#> Note. Poisson zero-inflated regression.
-#> Std. errors: Wald asymptotic (z).
-#> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson zero-inflated regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.
 ```
 
 ``` r
@@ -297,11 +287,7 @@ table_regression(fit_hur, exponentiate = TRUE)
 #>  n               │  915                               
 #>  AIC             │ 3233.8                             
 #> 
-#> Note. Poisson hurdle regression.
-#> Std. errors: Wald asymptotic (z).
-#> Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.
 ```
 
 Compare the `ment` row in the two zero blocks — the same predictor, the
@@ -396,15 +382,7 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
-#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression.
-#> Std. errors:
-#>   Poisson: classical (Fisher information)
-#>   ZIP: Wald asymptotic (z)
-#>   NB: Model-based (asymptotic)
-#>   ZINB: Wald asymptotic (z)
-#> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; CI bounds exponentiated.
+#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR; CI bounds exponentiated. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: Model-based (asymptotic), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.
 ```
 
 Read the AIC row across. The ZIP’s entire inflation component buys less
@@ -461,10 +439,7 @@ table_regression(fit_zip, show_columns = c("b", "ame", "p"))
 #>  n               │  915                  
 #>  AIC             │ 3225.5                
 #> 
-#> Note. Poisson zero-inflated regression.
-#> Std. errors: Wald asymptotic (z).
-#> Zero-inflation component: log-odds of a structural (excess) zero.
-#> AME = average marginal effect.
+#> Note. Poisson zero-inflated regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect.
 ```
 
 Averaged over the sample’s covariate values, women are expected to
@@ -516,9 +491,7 @@ table_regression(fit_zip, vcov = "CR0", cluster = bioChemists$lab,
 #>  n               │  915                 
 #>  AIC             │ 3225.5               
 #> 
-#> Note. Poisson zero-inflated regression.
-#> Std. errors: cluster-robust (CL), clusters by lab.
-#> Zero-inflation component: log-odds of a structural (excess) zero.
+#> Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CL), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero.
 ```
 
 Do not read the shift here as the effect of clustering. The labs are
@@ -594,13 +567,7 @@ table_regression(fit_mix, exponentiate = TRUE)
 #>  AIC                  │ 1741.4                             
 #>  BIC                  │ 1768.2                             
 #> 
-#> Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated).
-#> Std. errors: Wald asymptotic (z).
-#> p-values: Wald-z asymptotic (glmmTMB).
-#> Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010.
-#> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.
 ```
 
 Among streams not in the structural-zero state, unmined ones host
@@ -659,10 +626,7 @@ table_regression(fp, exponentiate = TRUE)
 #>  R² (McFadden)  │    0.60                               
 #>  AIC            │    5.4e+11                            
 #> 
-#> Note. Poisson regression (fixed effects).
-#> Std. errors: Classical.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Classical. IRR = incidence rate ratio.
 ```
 
 Distance cuts trade hard: the IRR of 0.22 says a one-log-unit increase
@@ -702,10 +666,7 @@ table_regression(fp_cl, exponentiate = TRUE)
 #>  R² (McFadden)  │    0.60                               
 #>  AIC            │    5.4e+11                            
 #> 
-#> Note. Poisson regression (fixed effects).
-#> Std. errors: Clustered (Origin).
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Clustered (Origin). IRR = incidence rate ratio.
 ```
 
 Same coefficient, honest interval: \[0.18, 0.28\] under clustering by
@@ -778,11 +739,12 @@ pkgdown_dark_gt(table_regression(fit_zip, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Poisson zero-inflated regression. Std. errors: Wald asymptotic
-(z). Zero-inflation component: log-odds of a structural (excess) zero.
+*Note.* Poisson zero-inflated regression. Coefficients exponentiated and
+displayed as IRR; SE on the IRR scale (delta method); CI bounds
+exponentiated (asymmetric). Std. errors: Wald asymptotic (z).
+Zero-inflation component: log-odds of a structural (excess) zero.
 Coefficients exponentiated and displayed as odds ratios. IRR = incidence
-rate ratio. Coefficients exponentiated and displayed as IRR; SE on the
-IRR scale (delta method); CI bounds exponentiated (asymmetric).
+rate ratio.
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
 terms carry a `zero_` prefix, so the two parts separate cleanly:

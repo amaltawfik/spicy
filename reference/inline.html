@@ -129,7 +129,10 @@ the slope (<code>"b"</code>) for <code><a href="table_continuous_lm.html">table_
 or, on a median-only table, the median (<code>"med"</code>, <code>"med_iqr"</code>) for
 <code><a href="table_continuous.html">table_continuous()</a></code>, and the count (<code>"n"</code>) for
 <code><a href="table_categorical.html">table_categorical()</a></code> and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>. A row carrying
-none of them refuses and lists its tokens.</p></dd>
+none of them refuses and lists its tokens. A <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>
+row that shows the mean of each group and no contrast (a <code>by</code> of
+three or more levels, or <code>contrast = "none"</code>) has no default: it
+refuses and gives the address of a mean.</p></dd>
 
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
@@ -150,9 +153,14 @@ display never change the call. As a convenience, a <code>variable</code>
 that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
 <code>level = "(Missing)"</code> whatever its displayed (possibly translated or
-relabeled) label, through its row role. Fit statistics are addressed by their
-token as <code>variable</code> (<code>inline(tbl, "nobs")</code>, <code>inline(tbl, "r2")</code>) or by
-their label (<code>inline(tbl, "n")</code>). Identity comes first: a source column
+relabeled) label, through its row role. Fit statistics are addressed
+by their token as <code>variable</code> (<code>inline(tbl, "nobs")</code>,
+<code>inline(tbl, "r2")</code>) or by their label (<code>inline(tbl, "n")</code>). The token
+is the one <code>show_fit_stats</code> takes (<code>"r2"</code>, <code>"adj_r2"</code>, <code>"aic"</code>, ...),
+the key of the row in the <code>variable</code> column of
+<code>output = "data.frame"</code>. <code>glance()</code> and the long output name the same
+statistic as broom does (<code>r.squared</code>, <code>adj.r.squared</code>), a name
+<code>inline()</code> does not read. Identity comes first: a source column
 wins over a token or a label of the same name, and an exact label over
 a fit statistic's label read regardless of case. A <code>variable</code> that
 still matches the rows of two variables or statistics is refused, and
@@ -196,7 +204,7 @@ name, then the rows of <code>none_row</code>, addressed as <code>"none"</code> a
 <code>"no_data"</code>, and the base row, the number of respondents, addressed as
 the fit statistic <code>"nobs"</code>: <code>inline(tbl, "nobs", model = "Total")</code>.
 The item <code>p</code> and <code>statistic</code> belong to no group and are cited without
-<code>model</code> (<code>inline(tbl, smoking, column = "p")</code>).</p>
+<code>model</code> (<code>inline(tbl, info_internet, column = "p")</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="columns">Columns<a class="anchor" aria-label="anchor" href="#columns"></a></h2>

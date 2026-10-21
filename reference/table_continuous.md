@@ -485,12 +485,18 @@ table_continuous(
 
 Depends on `output`:
 
-- `"default"`: the underlying `data.frame` carrying the rendering
-  metadata as attributes (S3 class `"spicy_continuous_table"` /
-  `"spicy_table"`). The object is returned visibly, so a bare
-  `table_continuous(...)` call auto-prints the styled ASCII table at the
-  console while `t <- table_continuous(...)` stays silent (print `t` to
-  display the table). The object can be re-coerced via
+- `"default"`: a `data.frame` of class `"spicy_continuous_table"` /
+  `"spicy_table"` carrying the rendering metadata as attributes. Its
+  columns are internal and can change without notice: read the numbers
+  from `"data.frame"`, `"long"`,
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  or
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+  The object is returned visibly, so a bare `table_continuous(...)` call
+  auto-prints the styled ASCII table at the console while
+  `t <- table_continuous(...)` stays silent (print `t` to display the
+  table). The object can be re-coerced via
   [`as.data.frame.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
   or piped into
   [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
@@ -565,9 +571,10 @@ it under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
 and the default object and the data frames of `"data.frame"` / `"long"`
 keep the whole note as printed, "Note." included, in `attr(x, "note")`
 (`NULL` when there is nothing to say), so a pipeline that renders the
-numbers itself can still state what left the table. On the `"tinytable"`
-route the note is set one size down; `options(spicy.note_style)` governs
-that (see
+numbers itself can still state what left the table. The default object
+also keeps the title it prints in `attr(x, "title")`. On the
+`"tinytable"` route the note is set one size down;
+`options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 The Excel sheet carries the same title the console prints on its first
@@ -692,7 +699,24 @@ The omnibus test is computed only when `by` is supplied and at least two
 groups remain after dropping `NA`s, with every group contributing at
 least two observations. Choice of test family is driven by `test` (see
 the `@param` entry for the full dispatch and the underlying `stats::`
-functions called).
+functions called). Whenever the table shows *p*-values, its note names
+the test of each variable ("Group comparison: Welch t-test."), each
+variable beside its own test when they differ.
+
+## No data in a group
+
+A variable with no observed value in a group of `by` (every value
+missing there, typically a question not asked in that group) has no data
+in it, which is not a missing answer. Its cells in that group show an en
+dash, *n* included (`NA` in `output = "long"` and the typed view), its
+rows there are not counted in the missing values of the note, the
+comparison and the effect size use the groups with data (with fewer than
+two, there is no test and its cell is left blank), and the note says so
+("No data for X and Y in G.", X and Y the labels of the variables with
+no data in group G). Without `by`, a variable with no observed value at
+all is shown the same way ("No data for X."). A declared level of `by`
+that no row holds keeps its count of zero, and the group of missing `by`
+values is never such a group.
 
 For model-based contrasts (heteroskedasticity-consistent SE,
 cluster-robust SE, weighted contrasts, fitted means, covariate
@@ -937,7 +961,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -978,7 +1002,7 @@ table_continuous(
 #>                  │ Upper secondary        
 #>                  │ Tertiary               
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -1061,6 +1085,8 @@ table_continuous(
 #> ─────────────────┼──────────────────────────────────────────────
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
+#> 
+#> Note. Group comparison: Welch t-test.
 
 # Explicit effect-size measure.
 table_continuous(
@@ -1090,6 +1116,8 @@ table_continuous(
 #>  wellbeing_score │ Lower secondary  η² = 0.208 [0.169, 0.246] 
 #>                  │ Upper secondary                            
 #>                  │ Tertiary                                   
+#> 
+#> Note. Group comparison: Welch one-way ANOVA.
 
 # --- Selection helpers --------------------------------------------------
 

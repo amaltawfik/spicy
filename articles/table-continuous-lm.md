@@ -48,7 +48,7 @@ table_continuous_lm(
 #>  bmi             │   0.93      .018  0.00  1188 
 #>  life_sat_health │   0.22      .267  0.00  1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model.
 ```
 
 For categorical predictors, the table reports estimated means by level.
@@ -81,8 +81,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
 #>  bmi             │   0.93     2.38   .018  0.00  1188 
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 The `HC*` family is computed via
@@ -119,7 +118,7 @@ table_continuous_lm(
 #> ──────────┼─────────────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 
 #> 
-#> Note. Std. errors: cluster-robust (CR2), clusters by ID.
+#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.
 ```
 
 `"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
@@ -161,7 +160,7 @@ table_continuous_lm(
 #> ─────────────────┼────────────────────────────────────
 #>  wellbeing_score │   5.66     4.30  <.001  0.02  1200 
 #> 
-#> Note. Std. errors: nonparametric bootstrap (1000 replicates).
+#> Note. Group comparison: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates).
 ```
 
 When `cluster` is supplied, bootstrap switches to a cluster bootstrap
@@ -197,7 +196,7 @@ table_continuous_lm(
 #>  wellbeing_score │ <.001  0.19  1200   1196.47   
 #>  bmi             │ <.001  0.13  1188   1183.32   
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: F-test from the linear model.
 ```
 
 This is often the most natural summary-table function when your
@@ -224,14 +223,14 @@ table_continuous_lm(
 #>  wellbeing_score   │  0.04      -0.02        0.10        .176    0.00    1200  
 #>  bmi               │  0.04       0.02        0.05       <.001    0.02    1188  
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 When you need the underlying returned data for further processing, use
 `output = "data.frame"` for the displayed table with its numbers, one
 row per outcome, or `output = "long"` for the analytic long table, one
-row per level of `by`.
+row per level of `by` and outcome, or one row per outcome with a numeric
+`by` like this one.
 
 ## Covariate adjustment
 
@@ -264,17 +263,14 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional).
-#> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
 `tidyselect::starts_with("life_sat_")`, `tidyselect::all_of(cov_names)`)
-or a literal character vector. A covariate that also appears in `select`
-is silently auto-excluded from the outcome list (mirroring how `by` /
-`weights` are excluded from `select`); a covariate equal to `by` is
-rejected up front.
+or a literal character vector. A covariate named in `select` is an error
+(class `spicy_invalid_input`), as are the `by` and `weights` columns,
+and so is a covariate equal to `by`.
 
 ### Two estimands for the adjusted marginal means
 
@@ -341,9 +337,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced).
-#> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ### Effect sizes under adjustment
@@ -413,7 +407,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
 ```
 
 Hedges’ *g* applies the small-sample correction
@@ -440,7 +434,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -468,7 +462,7 @@ table_continuous_lm(
 #>  wellbeing_score │ <.001  0.21  0.21  1200 
 #>  bmi             │ <.001  0.13  0.13  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: F-test from the linear model.
 ```
 
 Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from
@@ -490,7 +484,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.04    -0.02      0.10      .177  0.00  0.00  1200 
 #>  bmi             │ 0.04     0.02      0.05     <.001  0.02  0.02  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model.
 ```
 
 ## Confidence intervals for effect sizes
@@ -534,7 +528,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11 [-0.25, 0.03]  1175 
 #>  bmi             │ 0.00  -0.01 [-0.15, 0.13]  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -612,7 +606,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100) │   5,64     <0,001  0,02  0,25 [0,14; 0,36]  1200 
 #>  Body-mass index (kg/m²) │   0,93      0,018  0,00  0,14 [0,02; 0,25]  1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m²) (12).
+#> Note. Missing values removed: Body-mass index (kg/m²) (12). Group comparison: t-test from the linear model.
 ```
 
 ## Publication-ready output
@@ -637,8 +631,9 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Std. errors: heteroskedasticity-robust (HC3). Missing values
-removed: bmi (12), life_sat_health (8).
+*Note.* Missing values removed: bmi (12), life_sat_health (8). Group
+comparison: t-test from the linear model. Std. errors:
+heteroskedasticity-robust (HC3).
 
 ## Tidying for downstream pipelines
 
@@ -673,15 +668,15 @@ broom::tidy(out)
 #> 6 bmi            bmi   Male… difference       0.512     0.216   0.0888     0.935
 #> # ℹ 2 more variables: statistic <dbl>, p.value <dbl>
 
-# One row per outcome with model-level statistics: r.squared,
-# adj.r.squared, F / t, df, p.value, nobs, weighted_nobs, plus the
-# effect-size summary.
+# One row per outcome with model-level statistics: the test the table
+# shows (here the t of the contrast, with its df), p.value, r.squared,
+# adj.r.squared, nobs, weighted_nobs, plus the effect-size summary.
 broom::glance(out)
 #> # A tibble: 2 × 16
 #>   variable    label predictor_type test_type statistic    df df.residual p.value
 #>   <chr>       <chr> <chr>          <chr>         <dbl> <dbl>       <dbl>   <dbl>
-#> 1 wellbeing_… well… categorical    F             18.8      1        1198 1.55e-5
-#> 2 bmi         bmi   categorical    F              5.64     1        1186 1.78e-2
+#> 1 wellbeing_… well… categorical    t              4.34  1198          NA 1.55e-5
+#> 2 bmi         bmi   categorical    t              2.37  1186          NA 1.78e-2
 #> # ℹ 8 more variables: r.squared <dbl>, adj.r.squared <dbl>, es_type <chr>,
 #> #   es_value <dbl>, es_ci_lower <dbl>, es_ci_upper <dbl>, nobs <int>,
 #> #   weighted_nobs <dbl>

@@ -19,7 +19,7 @@ here we focus on what is *specific* to mixed fits — above all, how the
 **random effects** are reported.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports four mixed engines:
+supports these mixed engines:
 
 - **[`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html)** — linear
   mixed models. Load **`lmerTest`** before fitting to get Satterthwaite
@@ -31,6 +31,15 @@ supports four mixed engines:
   — a wider family space, plus zero-inflation and dispersion components.
 - **[`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html)** — the
   classical engine (containment-df t-tests).
+
+An ordered outcome takes a cumulative-link mixed model:
+[`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html), or
+[`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+with `family = glmmTMB::ordinal()`. Both render the same *Random
+effects* block below their thresholds (see [*Ordinal regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)),
+with the model-based variance only: `vcov = "CR0"` and the average
+marginal effects are refused for both.
 
 The Bayesian mixed engines
 ([`stan_lmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html)
@@ -91,10 +100,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 Reading the table, top to bottom:
@@ -202,8 +208,7 @@ table_regression(ols, show_columns = c("b", "se", "p"))
 #>  R²          │    0.13              
 #>  Adj. R²     │    0.13              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 A one-point difference in SES is associated with 3.18 more achievement
@@ -241,11 +246,7 @@ table_regression(m_empty)
 #>  AIC                    │ 47122.8                               
 #>  BIC                    │ 47143.4                               
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001. Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 The **ICC of 0.18** is nothing but the two σ rows combined: 2.93² /
@@ -299,13 +300,7 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>  AIC                    │ 47103.9                46653.2               
 #>  BIC                    │ 47124.6                46680.7               
 #> 
-#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression.
-#> Std. errors:
-#>   OLS: classical (OLS)
-#>   Multilevel: Wald (model-based)
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001.
-#> Multilevel: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001. Multilevel: Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 Reading the two columns against each other, five things change:
@@ -367,11 +362,7 @@ table_regression(m_wb, show_columns = c("b", "se", "p"))
 #>  AIC                    │ 46578.6               
 #>  BIC                    │ 46613.0               
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001. Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 Within a school, a one-point difference in SES is associated with 2.19
@@ -422,12 +413,7 @@ table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
 #>  AIC                            │ 46571.7         
 #>  BIC                            │ 46619.8         
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001.
-#> Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.
-#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 The slope SD is 0.83 achievement points around the average slope of
@@ -479,11 +465,7 @@ table_regression(m_cl, show_columns = c("b", "se", "p"))
 #>  AIC                            │ 46532.5               
 #>  BIC                            │ 46594.5               
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001.
-#> Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001. Random-effect variance components: SE and CI not computed (n = 7185 exceeds the spicy.re_se_max_n cap).
 ```
 
 In public schools the within-school SES slope is 2.79; in Catholic
@@ -506,9 +488,10 @@ by default, and a REML likelihood is only comparable between models with
 the *same fixed part* — which is why the random-structure decisions
 above could read REML deviances and AICs directly (steps 3 and 4:
 46,578.6 → 46,571.7). Comparing fixed parts requires ML: `nested = TRUE`
-performs that refit for you, silently, as `lme4::anova()` does. The
-footer’s `(REML)`/`(ML)` tag on the random-effects test line always
-states which likelihood the fitted model — and hence that test — used.
+performs that refit for you, as `lme4::anova()` does, and a note under
+the table says so. The footer’s `(REML)`/`(ML)` tag on the
+random-effects test line always states which likelihood the fitted model
+— and hence that test — used.
 
 **Before reporting any of these tables.** The sequence above runs
 estimation, testing, and interpretation; every textbook it follows puts
@@ -552,11 +535,7 @@ table_regression(p3, show_columns = c("b", "se"))
 #>  AIC                        │ 255.0        
 #>  BIC                        │ 263.4        
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001.
-#> ICC is not reported: several grouping factors define several ICCs.
+#> Note. Linear mixed-effects regression. ICC is not reported: several grouping factors define several ICCs. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001.
 ```
 
 Both levels of nesting get their σ row, one `N (cask:batch)` /
@@ -608,11 +587,7 @@ table_regression(sfit)
 #>  AIC               │ 342.0                             
 #>  BIC               │ 353.1                             
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
-#> Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.
+#> Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
 ```
 
 The chi-bar-squared test reads p = 1.000 — the boundary case. The
@@ -660,11 +635,7 @@ table_regression(fit, re_test = "lrt")
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
-#> Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.
 ```
 
 Only the `Days` slope row gains a p-value: following the marginality
@@ -710,11 +681,7 @@ table_regression(fit_ri, re_test = "rlrt")
 #>  AIC                     │ 1794.5                                 
 #>  BIC                     │ 1807.2                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
-#> Random-effect p-value: exact restricted LRT (simulated null distribution).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. Random-effect p-value: exact restricted LRT (simulated null distribution).
 ```
 
 ## The random-effects block on your terms
@@ -751,10 +718,7 @@ table_regression(fit, re_scale = "variance", re_columns = "est")
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 Where those SEs come from depends on the engine: `lmer` / `glmer` rows
@@ -812,11 +776,7 @@ table_regression(
 #>  AIC                             │ 1794.5                1755.6               
 #>  BIC                             │ 1807.2                1774.8               
 #> 
-#> Note. Linear mixed-effects regression models.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
-#> + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 **What is — and is not — being tested here.** Each footer’s
@@ -965,13 +925,7 @@ table_regression(
 #>  AIC                    │ 9890.8                9884.6                
 #>  BIC                    │ 9916.2                9915.1                
 #> 
-#> Note. Linear mixed-effects regression models.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431.
-#> Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
-#> Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.
-#> Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).
+#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).
 ```
 
 Reading the table:
@@ -1076,12 +1030,7 @@ table_regression(gfit, exponentiate = TRUE)
 #>  AIC                  │ 194.1                             
 #>  BIC                  │ 204.2                             
 #> 
-#> Note. Logistic mixed-effects regression.
-#> Std. errors: Wald asymptotic (z).
-#> p-values: Wald-z asymptotic (lme4).
-#> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001.
-#> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (lme4). Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001. OR = odds ratio.
 ```
 
 The random-effect row is now on the **log-odds scale** (the linear
@@ -1161,11 +1110,7 @@ table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 #>  AIC               │ 562.4                             
 #>  BIC               │ 583.5                             
 #> 
-#> Note. Logistic mixed-effects regression.
-#> Std. errors: Wald asymptotic (z).
-#> p-values: Wald-z asymptotic (lme4).
-#> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001.
-#> AME = average marginal effect.
+#> Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (lme4). Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME = average marginal effect.
 ```
 
 Factor predictors are handled level-by-level: AME rows align under the
@@ -1229,13 +1174,7 @@ table_regression(zfit, exponentiate = TRUE)
 #>  AIC                  │ 1908.5                             
 #>  BIC                  │ 1930.8                             
 #> 
-#> Note. Poisson mixed-effects regression (glmmTMB) (zero-inflated).
-#> Std. errors: Wald asymptotic (z).
-#> p-values: Wald-z asymptotic (glmmTMB).
-#> Random effects (ML): LR test vs poisson regression, χ̄²(1) = 19.46, p < .001.
-#> Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.
-#> IRR = incidence rate ratio.
-#> Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Poisson mixed-effects regression (glmmTMB) (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.
 ```
 
 Note the per-block exponentiation: the count coefficients become
@@ -1282,10 +1221,7 @@ table_regression(lfit)
 #>  AIC                     │ 1794.5                                 
 #>  BIC                     │ 1807.2                                 
 #> 
-#> Note. Linear mixed-effects regression (nlme).
-#> Std. errors: Wald (model-based).
-#> p-values: t-test with containment df (nlme).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
+#> Note. Linear mixed-effects regression (nlme). Std. errors: Wald (model-based). p-values: t-test with containment df (nlme). Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
 ```
 
 ## Population-averaged alternatives: GEE
@@ -1352,15 +1288,7 @@ table_regression(
 #>  BIC                     │    –                          464.1                        
 #>  Max cluster size        │   4                              –                         
 #> 
-#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression.
-#> Std. errors:
-#>   Population-averaged: Robust sandwich (GEE), clusters by subject
-#>   Subject-specific: Wald asymptotic (z)
-#> p-values: Wald-z asymptotic (lme4).
-#> GEE working correlation: exchangeable (alpha = 0.36).
-#> Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p < .001.
-#> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Population-averaged: Robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). p-values: Wald-z asymptotic (lme4). Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.14, p < .001. OR = odds ratio.
 ```
 
 The active-treatment odds ratio is the same effect asked two ways: the
@@ -1399,10 +1327,7 @@ table_regression(fit_ri, vcov = "CR2", cluster = ~Subject)
 #>  AIC                     │ 1794.5                                 
 #>  BIC                     │ 1807.2                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: cluster-robust (CR2), clusters by Subject.
-#> p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).
-#> Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: cluster-robust (CR2), clusters by Subject. p-values: Satterthwaite t-test, cluster-robust df (clubSandwich). Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
 ```
 
 `glmmTMB` fits take `"CR0"` from glmmTMB’s own sandwich (glmmTMB \>=
@@ -1451,11 +1376,7 @@ table_regression(fit, standardized = "refit", show_columns = c("b", "beta", "p")
 #>  AIC                             │ 1755.6               
 #>  BIC                             │ 1774.8               
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Satterthwaite t-test (lmerTest).
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
-#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 The algebraic shortcuts (`"posthoc"`, `"basic"`, `"smart"`) are

@@ -59,7 +59,11 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md).
-  A row carrying none of them refuses and lists its tokens.
+  A row carrying none of them refuses and lists its tokens. A
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  row that shows the mean of each group and no contrast (a `by` of three
+  or more levels, or `contrast = "none"`) has no default: it refuses and
+  gives the address of a mean.
 
 - model:
 
@@ -81,8 +85,12 @@ missing-value category is addressed by `level = "(Missing)"` whatever
 its displayed (possibly translated or relabeled) label, through its row
 role. Fit statistics are addressed by their token as `variable`
 (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by their label
-(`inline(tbl, "n")`). Identity comes first: a source column wins over a
-token or a label of the same name, and an exact label over a fit
+(`inline(tbl, "n")`). The token is the one `show_fit_stats` takes
+(`"r2"`, `"adj_r2"`, `"aic"`, ...), the key of the row in the `variable`
+column of `output = "data.frame"`. `glance()` and the long output name
+the same statistic as broom does (`r.squared`, `adj.r.squared`), a name
+`inline()` does not read. Identity comes first: a source column wins
+over a token or a label of the same name, and an exact label over a fit
 statistic's label read regardless of case. A `variable` that still
 matches the rows of two variables or statistics is refused, and the
 error names an address for each.
@@ -147,7 +155,7 @@ has one row per item, addressed by its column name, then the rows of
 number of respondents, addressed as the fit statistic `"nobs"`:
 `inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
 belong to no group and are cited without `model`
-(`inline(tbl, smoking, column = "p")`).
+(`inline(tbl, info_internet, column = "p")`).
 
 ## Columns
 

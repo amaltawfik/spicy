@@ -96,12 +96,12 @@ clock rather than the parent family's):
 
 - Codebooks:
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  (the `spicy_codebook` object, its Excel workbook, and its PDF), in the
-  development version
+  (the `spicy_codebook` object, its Excel workbook, and its PDF), since
+  0.14.0
 
 - Multiple-response questions:
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
-  in the development version
+  since 0.14.0
 
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
@@ -129,7 +129,7 @@ function.
 |----|----|
 | Concept | Column |
 | the variable a row describes, its displayed label | `variable`, `label` |
-| the level of a categorical variable, the group of `by` | `level`, `group` |
+| the level of a categorical variable, the group of `by` (in the tables that take a `by`) | `level`, `group` |
 | the role of the row's `level` (or item): a level, the row of missing values, ... | `.row_role` (`"level"`, `"missing"`, `"summary"`, ...) |
 | the role of `group`: a group, the column of missing `by` values, the margin | `.group_role` (`"group"`, `"missing"`, `"total"`) |
 | the `Total` margin of the groups | `total` (logical) |
@@ -143,26 +143,51 @@ function.
 | the observations of a variable or of a model, and their weighted count | `nobs`, `weighted_nobs` |
 | the weighted count of a group (beside its `n`) | `weighted_n` |
 | the counts of the groups of `by`, of the categories of a variable | `n_groups`, `n_levels` |
-| the fit of a model | `r.squared`, `adj.r.squared` |
+| the fit of a model | `r.squared`, `adj.r.squared` as columns; as a row, its `show_fit_stats` token in `variable` (`r2`, `adj_r2`, `aic`, ...) |
 
 `variable` holds the name of the column a row describes and `label` its
 displayed label. `outcome` names the response of a regression model and
 the single outcome of
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
-The proportions of `tidy()` are between 0 and 1, and the `Total` rows
-stay, flagged by `total`. Each role column describes the key column it
-follows, whatever the orientation of the printed table: `.row_role` the
-row's `level`, `.group_role` its `group`. A level or a group added for
-missing values is told apart by its role, `"missing"`, never by its
-label, which follows the display language. In a table that compares
-groups, the long output carries the effect-size and SMD columns whether
-or not they were requested (`NA` then), and `glance()` has a fixed set
-of columns; `p_value = FALSE` removes the test columns. Model-level
-statistics (`nobs`, `r.squared`, ...) are in `glance()`, and in the long
-output only for
+`group` is a key of the tables that take a `by`
+([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+and
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)):
+their `tidy()` carries it with or without `by`, `NA` without.
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+has no `group`: its groupings are the `level` of each block. Nor has
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+whose `by` sets the columns of the table: its levels are the `level` of
+the long output and the `term` of the `"emmean"` rows of `tidy()`. A fit
+statistic is a column of `glance()` and of the long output, under
+broom's name, and a row of `output = "data.frame"` (`.row_role`
+`"fit_stat"`), keyed in `variable` by its `show_fit_stats` token, the
+token
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+takes: `r2` is the row of the column `r.squared`. The proportions of
+`tidy()` are between 0 and 1, and the `Total` rows stay, flagged by
+`total`. Each role column describes the key column it follows, whatever
+the orientation of the printed table: `.row_role` the row's `level`,
+`.group_role` its `group`. A level or a group added for missing values
+is told apart by its role, `"missing"`, never by its label, which
+follows the display language. In a table that compares groups, the long
+output carries the effect-size and SMD columns whether or not they were
+requested (`NA` then), and `glance()` has a fixed set of columns;
+`p_value = FALSE` removes the test columns. Model-level statistics
+(`nobs`, `r.squared`, ...) are in `glance()`. The long output carries
+them as well where its rows are models of their own: in
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+one model per outcome (the fit on the first row of the outcome, its size
+on every row), and in
 [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
-whose rows are separate models. The printed objects carry the `by`
-column and its label in the attributes `group_var` and `group_label`.
+one univariable model per predictor. The long output of
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+has the same columns, `NA`: one shape for the class. The printed objects
+carry the `by` column and its label in the attributes `group_var` and
+`group_label`.
 
 `output = "data.frame"` and
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) return
@@ -171,7 +196,10 @@ key columns `variable`, `label` (and the `level` or `group` of the row,
 and `.row_role`, the role of the printed row, where the table adds
 rows), then the printed columns under their names. The two are identical
 for every class. `output = "excel"` and `"word"` return the path of the
-file, invisibly.
+file, invisibly. The columns of the object `output = "default"` returns
+are internal and can change without notice: the contracts are
+`output = "data.frame"`, `output = "long"`, `tidy()`, `glance()` and
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 
 The set of columns produced by each method is considered **stabilizing**
 (**experimental** for
@@ -205,7 +233,7 @@ parent class plus a leaf class describing the specific cause:
   - `spicy_invalid_input` – bad argument value or type.
 
   - `spicy_invalid_data` – bad data shape or content (not a data.frame,
-    length mismatch,
+    data or a design with no rows, length mismatch,
     [`bit64::integer64`](https://bit64.r-lib.org/reference/bit64-package.html)
     columns, degenerate grouping).
 

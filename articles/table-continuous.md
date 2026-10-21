@@ -119,7 +119,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 This is the main pattern for reporting continuous variables across
@@ -157,8 +157,7 @@ table_continuous_lm(
 #>  wellbeing_score │ <.001  0.21  1200 
 #>  life_sat_health │ <.001  0.16  1192 
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ## Add test statistics and effect sizes
@@ -220,7 +219,7 @@ table_continuous(
 #>                  │ Upper secondary                                
 #>                  │ Tertiary                                       
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 Use `test = "student"` for equal-variance parametric tests or
@@ -268,7 +267,7 @@ table_continuous(
 #>                  │ Upper secondary            
 #>                  │ Tertiary                   
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: Kruskal-Wallis test.
 ```
 
 `effect_size = "auto"` selects the canonical measure for the chosen
@@ -296,13 +295,15 @@ table_continuous(
 #>  Variable        │ Group    n     p          ES [95% CI]        
 #> ─────────────────┼──────────────────────────────────────────────
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
-#>                  │ Male    580
+#>                  │ Male    580                                  
+#> 
+#> Note. Group comparison: Welch t-test.
 ```
 
-Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
-`"hedges_g"`, `"eta2"`, `"r_rb"`, and `"epsilon2"`. Incompatible
-explicit choices (e.g. `"eta2"` with two groups, or `"hedges_g"` with
-`test = "nonparametric"`) trigger an actionable error.
+Allowed values are `"none"` (default), `"auto"`, `"hedges_g"`, `"eta2"`,
+`"r_rb"`, and `"epsilon2"`. Incompatible explicit choices (e.g. `"eta2"`
+with two groups, or `"hedges_g"` with `test = "nonparametric"`) trigger
+an actionable error.
 
 When you need the numbers for further processing, use
 `output = "data.frame"` for the table as it is displayed, one row per
@@ -432,7 +433,7 @@ table_continuous(
 #>  bmi      │ Female  g = -1.3057  -1.5194 
 #>           │ Male                         
 #> 
-#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. Group comparison: Welch t-test. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 Both standardize a mean difference, but by different denominators.
@@ -493,7 +494,7 @@ table_continuous(
 #>  life_sat_standard      │ Female  615  .453 
 #>                         │ Male    577       
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: Welch t-test.
 ```
 
 For more programmatic selection, set `regex = TRUE`:
@@ -570,7 +571,7 @@ table_continuous(
 #>  life_sat_health │ Female  616   .267 
 #>                  │ Male    576        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test.
 ```
 
 ## Handling missing values
@@ -596,8 +597,8 @@ table_continuous(
 ```
 
 Missing values in `by` are removed by default (`drop_na = TRUE`), and
-the removal is again disclosed rather than silent – here in the note
-(“Rows with missing income_group removed”) and in a warning:
+the removal is again disclosed rather than silent, in the note under the
+table:
 
 ``` r
 
@@ -622,7 +623,7 @@ table_continuous(
 #>           │ Upper middle        
 #>           │ High                
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing income_group removed: 18.
+#> Note. Missing values removed: bmi (12). Rows with missing income_group removed: 18. Group comparison: Welch one-way ANOVA.
 ```
 
 Set `drop_na = FALSE` to display those rows as a dedicated “(Missing)”
@@ -656,7 +657,7 @@ table_continuous(
 #>           │ High                
 #>           │ (Missing)           
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.
 ```
 
 ## Weights
@@ -803,7 +804,7 @@ table_continuous(
 #>  life_sat_health          │ Female     3.61    616   .267 
 #>                           │ Male       3.69    576        
 #> 
-#> Note. Missing values removed: life_sat_health (8).
+#> Note. Missing values removed: life_sat_health (8). Group comparison: Welch t-test.
 ```
 
 [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
@@ -836,7 +837,7 @@ table_continuous(
 #>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
 #>                                 │ Male       3.49       3.69    576        
 #> 
-#> Note. Missing values removed: Satisfaction with health (1-5) (8).
+#> Note. Missing values removed: Satisfaction with health (1-5) (8). Group comparison: Welch t-test.
 ```
 
 ## Display options
@@ -879,7 +880,7 @@ table_continuous(
 #>  wellbeing_score   │ Female     67.16    14.80    19.60    100.00    <.0001  
 #>                    │ Male       71.05    16.23    18.70    100.00            
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test.
 ```
 
 ## Tidying for downstream pipelines
@@ -973,7 +974,8 @@ table_continuous(
 
 [TABLE]
 
-*Note.* Missing values removed: bmi (12), life_sat_health (8).
+*Note.* Missing values removed: bmi (12), life_sat_health (8). Group
+comparison: Welch one-way ANOVA.
 
 `output = "tinytable"` works well in Quarto and R Markdown documents:
 
@@ -999,9 +1001,9 @@ table_continuous(
 | life_sat_health | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
 |  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
-| *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
+| *Note.* Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_854saqhl1iixsaxhmq4g
+Descriptive statistics by education {#tinytable_la9scyda6d66xronwwvn
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
@@ -1050,5 +1052,5 @@ table_continuous(
   3).
 - See [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for a cross-function reporting workflow that ties the four
-  summary-table helpers together along the APA Table 1 / 2 / 3 sequence.
+  for a cross-function reporting workflow that ties the summary-table
+  functions together along the APA Table 1 / 2 / 3 sequence.

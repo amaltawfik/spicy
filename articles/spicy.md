@@ -370,7 +370,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -398,8 +398,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.65     <.001  0.02  1200 
 #>  bmi             │   0.93      .018  0.00  1188 
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 By default every `table_*` helper formats to APA conventions. To match a
@@ -526,8 +525,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 For detailed guidance, start with the core
@@ -670,7 +668,7 @@ kept alongside the reference pages and rebuilt with each release.
 
 - [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
-  — the end-to-end reporting sequence tying the four `table_*` helpers
+  — the end-to-end reporting sequence tying the `table_*()` functions
   together.
 - [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`?sum_n`](https://amaltawfik.github.io/spicy/reference/sum_n.md),

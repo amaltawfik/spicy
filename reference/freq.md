@@ -196,8 +196,8 @@ attributes and columns:
 
 - `valid_prop` - proportion of valid responses (if `valid = TRUE`)
 
-- `cum_prop`, `cum_valid_prop` - cumulative percentages (if
-  `cum = TRUE`)
+- `cum_prop`, `cum_valid_prop` - cumulative proportions, between 0 and 1
+  (if `cum = TRUE`)
 
 With `output = "default"` (the default), a `spicy_freq_table` object:
 the same `data.frame` carrying rendering metadata as attributes

@@ -12,7 +12,8 @@ question is an indicator column, chosen or not, and one respondent can
 choose several items. The function reads the columns as one question:
 one row per item, with the number and the percentage of respondents who
 chose it. A last row gives the number of respondents behind the
-percentages.
+percentages. The function is experimental in this release: its arguments
+and its output may still change.
 
 With `by`, it compares groups. Each item gets a chi-squared test, or
 Fisher’s exact test when an expected count is below 5. The question gets
@@ -1004,7 +1005,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_d1u5130zg2i3nm7hevkx .table
+Multiple responses by Sex {#tinytable_venrba749vy8bqx7rmip .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

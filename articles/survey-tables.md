@@ -109,7 +109,7 @@ table_continuous_svy(
 #> ──────────┼──────────────────
 #>  api00    │  6194.00    9.35 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Quantiles: qrule = "math" (survey). Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
 ```
 
 The design effect of 9.35 is the point of the whole exercise: the
@@ -242,7 +242,7 @@ table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #>    H        │    3     13.0      11      6.9        14        7.7            
 #>    M        │    8     34.8      17     10.6        25       13.7            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
 ```
 
 The `p` is [`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html):
@@ -392,9 +392,7 @@ table_regression(gl)
 #>  Weighted n  │ 6194                                      
 #>  AIC         │ 2197.8                                    
 #> 
-#> Note. Survey-weighted linear regression.
-#> Design: stratified (stype), with finite population correction; 193 residual degrees of freedom.
-#> Std. errors: Design-based (Taylor linearization).
+#> Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization).
 ```
 
 Three things in that footer are worth naming.
@@ -436,14 +434,12 @@ table_regression(
 #>  Weighted n  │ 6194                             
 #>  AIC         │ 2150.5                           
 #> 
-#> Note. Survey-weighted linear regression.
-#> Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom.
-#> Std. errors: Design-based (replicate weights, JK1).
+#> Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1).
 ```
 
 And the counts are both there: the observed `n` and the `Weighted n` the
 estimates describe, the same pair the descriptive tables print in their
-header.
+note.
 
 ### Ordinal and Cox fits
 
@@ -476,10 +472,7 @@ table_regression(svyolr(grade ~ ell + stype, design = dg))
 #>  n                         │  200                                 
 #>  Weighted n                │ 6194                                 
 #> 
-#> Note. Survey-weighted cumulative logit regression (proportional odds).
-#> Design: stratified (stype), with finite population correction; 194 residual degrees of freedom.
-#> Std. errors: Design-based (Taylor linearization).
-#> Thresholds: latent-scale category cut-points.
+#> Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points.
 ```
 
 A [`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) fit
@@ -511,12 +504,7 @@ table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #>  Weighted n │ 235                         
 #>  N events   │ 144                         
 #> 
-#> Note. Survey-weighted Cox proportional hazards regression.
-#> Design: stratified (edema); 307 residual degrees of freedom.
-#> Std. errors: Design-based (Taylor linearization).
-#> Concordance C = 0.81 (SE = 0.02).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
+#> Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio.
 ```
 
 ### What a design fit refuses
@@ -631,8 +619,9 @@ inline(tbl, "stype", column = "p")
 ## Rendering
 
 Every engine of the family is available: `"tinytable"`, `"gt"`,
-`"flextable"`, `"word"`, `"excel"`, `"clipboard"`, plus `"data.frame"` /
-`"long"` for the raw frame.
+`"flextable"`, `"word"`, `"excel"`, `"clipboard"`, plus `"data.frame"`
+for the displayed table with its numbers and `"long"` for one row per
+variable, level and group.
 
 ``` r
 

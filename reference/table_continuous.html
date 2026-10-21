@@ -559,11 +559,13 @@ error.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: the underlying <code>data.frame</code> carrying the
-rendering metadata as attributes (S3 class
-<code>"spicy_continuous_table"</code> / <code>"spicy_table"</code>). The object is
-returned visibly, so a bare <code>table_continuous(...)</code> call
-auto-prints the styled ASCII table at the console while
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: a <code>data.frame</code> of class
+<code>"spicy_continuous_table"</code> / <code>"spicy_table"</code> carrying the
+rendering metadata as attributes. Its columns are internal and can
+change without notice: read the numbers from <code>"data.frame"</code>,
+<code>"long"</code>, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> or <code><a href="as_structured.html">as_structured()</a></code>.
+The object is returned visibly, so a bare <code>table_continuous(...)</code>
+call auto-prints the styled ASCII table at the console while
 <code>t &lt;- table_continuous(...)</code> stays silent (print <code>t</code> to display
 the table). The object can be re-coerced via
 <code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame.spicy_continuous_table()</a></code> or piped into
@@ -627,7 +629,8 @@ it below the body, and the default object and the data frames of
 <code>"data.frame"</code> / <code>"long"</code> keep the whole note as printed, "Note."
 included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is nothing to say),
 so a pipeline that renders the numbers itself can still state what
-left the table. On the <code>"tinytable"</code> route the
+left the table. The default object also keeps the title it prints in
+<code>attr(x, "title")</code>. On the <code>"tinytable"</code> route the
 note is set one size down; <code>options(spicy.note_style)</code> governs that
 (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
 <p>The Excel sheet carries the same title the console prints on its
@@ -717,7 +720,25 @@ own, and a contradictory <code>show_n</code> / <code>ci</code> is reported.</p>
 least two groups remain after dropping <code>NA</code>s, with every group
 contributing at least two observations. Choice of test family is
 driven by <code>test</code> (see the <code>@param</code> entry for the full dispatch
-and the underlying <code>stats::</code> functions called).</p>
+and the underlying <code>stats::</code> functions called). Whenever the table
+shows <em>p</em>-values, its note names the test of each variable ("Group
+comparison: Welch t-test."), each variable beside its own test when
+they differ.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="no-data-in-a-group">No data in a group<a class="anchor" aria-label="anchor" href="#no-data-in-a-group"></a></h2>
+    <p>A variable with no observed value in a group of <code>by</code> (every value
+missing there, typically a question not asked in that group) has no
+data in it, which is not a missing answer. Its cells in that group
+show an en dash, <em>n</em> included (<code>NA</code> in <code>output = "long"</code> and the
+typed view), its rows there are not counted in the missing values of
+the note, the comparison and the effect size use the groups with data
+(with fewer than two, there is no test and its cell is left blank),
+and the note says so ("No data for X and Y in G.", X and Y the labels
+of the variables with no data in group G). Without <code>by</code>, a variable
+with no observed value at all is shown the same way ("No data for
+X."). A declared level of <code>by</code> that no row holds keeps its count of
+zero, and the group of missing <code>by</code> values is never such a group.</p>
 <p>For model-based contrasts (heteroskedasticity-consistent SE,
 cluster-robust SE, weighted contrasts, fitted means, covariate
 adjustment), use <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
@@ -932,7 +953,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Test statistic alongside the p-value.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -973,7 +994,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Choosing the statistics --------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1056,6 +1077,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  &lt;.001  g = -0.25 [-0.36, -0.14] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    580                                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Explicit effect-size measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1085,6 +1108,8 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.208 [0.169, 0.246] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch one-way ANOVA.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Selection helpers --------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

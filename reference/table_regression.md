@@ -320,15 +320,18 @@ table_regression(
 
   Character vector of regexes. Only coefficient rows whose term name (as
   in [`stats::coef()`](https://rdrr.io/r/stats/coef.html) – e.g. `"wt"`,
-  `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are kept.
-  Mutually exclusive with `drop`. Filtering is a display choice;
-  `p_adjust` runs against the full coefficient family before filtering.
-  Default `NULL` (no filter).
+  `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are kept. The
+  intercept and the subordinate blocks (thresholds, random effects) are
+  exempt from `keep` and `drop`: `show_intercept`, `show_thresholds` and
+  `show_re` govern them. Mutually exclusive with `drop`. Filtering is a
+  display choice; `p_adjust` runs against the full coefficient family
+  before filtering. Default `NULL` (no filter).
 
 - drop:
 
   Character vector of regexes. Coefficient rows matching any pattern are
-  removed. Mutually exclusive with `keep`. Default `NULL`.
+  removed, with the exemptions of `keep`. Mutually exclusive with
+  `keep`. Default `NULL`.
 
 - show_intercept:
 
@@ -419,7 +422,7 @@ table_regression(
     `[vs Lower]` is attached to the **first non-reference dummy** of
     each factor (subsequent dummies inherit the same reference).
 
-  - `"footer"`: the row is dropped and a single line
+  - `"footer"`: the row is dropped and a sentence
     `Reference categories: education = Lower; sex = Female.` is added to
     the footer note. SAS `PROC LOGISTIC` / SPSS "Categorical Variables
     Codings" convention. Best for publication-grade dense multi-factor
@@ -809,8 +812,12 @@ table_regression(
 
   - `NULL` (default): the package builds the standard caption ("Linear
     regression on `<DV>`" / "Hierarchical linear regression on `<DV>`" /
-    ...) and a methodological note (VCV type, p-adjust method, reference
-    categories, ...).
+    ...) and a methodological note, one paragraph in the order of every
+    table of the package: what the model is (its family, design, scale
+    of the coefficients, reference categories, ...), the cases a
+    univariable screen fits on, the inference (VCV type, p-adjust
+    method, ...), then the definitions (abbreviations, block glosses).
+    Under `stars`, the legend of the stars follows on a line of its own.
 
   - `FALSE`: the corresponding banner row is omitted from every output
     engine. Use when the surrounding manuscript provides its own caption
@@ -1902,8 +1909,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 
 # \donttest{
 # Standardized coefficients (beta) injected next to B. "refit"
@@ -1927,9 +1933,7 @@ table_regression(fit, standardized = "refit")
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 # }
 
 # \donttest{
@@ -1959,9 +1963,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
 # }
 
 # \donttest{
@@ -1998,9 +2000,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>    No (ref.)     │       –           –    
 #>    Yes           │ [-3.89, 0.45]     .121 
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
 # }
 
 # ---- Cluster-robust variance -------------------------------------
@@ -2029,8 +2029,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.
 if (requireNamespace("clubSandwich", quietly = TRUE)) {
   table_regression(fit, vcov = "CR2", cluster = "region")
 }
@@ -2051,8 +2050,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.
 if (requireNamespace("clubSandwich", quietly = TRUE)) {
   table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 }
@@ -2073,8 +2071,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region:age_group.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region:age_group.
 # }
 
 # \donttest{
@@ -2130,8 +2127,7 @@ table_regression(
 #>    No (ref.)     │  –    
 #>    Yes           │  .121 
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 # }
 
 # \donttest{
@@ -2177,11 +2173,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>    No (ref.)     │  –    
 #>    Yes           │  .313 
 #> 
-#> Note. Linear regression models.
-#> Std. errors:
-#>   Classical: classical (OLS)
-#>   HC3: heteroskedasticity-robust (HC3)
-#>   CR2: cluster-robust (CR2), clusters by region
+#> Note. Linear regression models. Std. errors: Classical: classical (OLS); HC3: heteroskedasticity-robust (HC3); CR2: cluster-robust (CR2), clusters by region.
 # }
 
 # ---- Tidy long format for downstream pipelines -------------------
@@ -2236,9 +2228,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC              │ 1755.6                                 
 #>  BIC              │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
 
 # Hierarchical mixed-effects comparison (nested LRT).
 if (requireNamespace("lme4", quietly = TRUE)) {
@@ -2302,12 +2292,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                             │  +42.14               
 #>  p (change)                      │    <.001              
 #> 
-#> Note. Linear mixed-effects regression models.
-#> Std. errors: Wald (model-based).
-#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001.
-#> Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001.
-#> Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
+#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
 # }
 
 if (FALSE) { # \dontrun{

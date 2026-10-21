@@ -111,17 +111,18 @@
   tables](https://amaltawfik.github.io/spicy/articles/as-structured.md):
 
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  exposes the typed representation behind every
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  exposes the typed representation behind every spicy table, from
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  to
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  and
-  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  output: a numeric body with per-row identity columns, per-column
-  metadata, per-cell status, and the format specification. Filter rows
-  programmatically, aggregate raw values, or build a custom renderer –
-  against one schema for all five families.
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  and the survey twins: a numeric body with per-row identity columns,
+  per-column metadata, per-cell status, and the format specification.
+  Filter rows programmatically, aggregate raw values, or build a custom
+  renderer – against one schema for all of them.
 
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
@@ -134,7 +135,7 @@
   random effects as table rows, the boundary-corrected chi-bar-squared
   test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite
   inference, three-level and crossed designs, and the `lme4`, `glmmTMB`,
-  and `nlme` engines.
+  `nlme`, and `ordinal` engines.
 
 - [GEE regression tables (population-averaged
   models)](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md):
@@ -179,9 +180,9 @@
   per-outcome-category average marginal effects laid out as a
   probability matrix, cluster-robust variance, the
   [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
-  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines,
-  testing the proportional-odds assumption, and the partial proportional
-  odds and scale relaxations.
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines and
+  their mixed counterparts, testing the proportional-odds assumption,
+  and the partial proportional odds and scale relaxations.
 
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md):

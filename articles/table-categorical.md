@@ -409,7 +409,7 @@ table_categorical(
 #>    Very good       │  24.6                       
 #>    (Missing)       │   1.7                       
 #> 
-#> Note. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health. Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
 ```
 
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
@@ -545,7 +545,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Phi: smoking. Cramer's V: education. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking).
+#> Note. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
 ```
 
 ## Descriptive tables without tests
@@ -623,7 +623,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. Phi: smoking. Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -701,7 +701,7 @@ table_categorical(
 #>    No              │  54.6                      
 #>    Yes             │  45.4                      
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. Statistics weighted by weight. Group comparison: Pearson chi-squared test.
 ```
 
 ## Handling missing values
@@ -749,8 +749,7 @@ table_categorical(
 #>    Upper middle │                        
 #>    High         │                        
 #> 
-#> Note. Missing values removed: income_group (18).
-#> Group comparison: Pearson chi-squared test.
+#> Note. Missing values removed: income_group (18). Group comparison: Pearson chi-squared test.
 ```
 
 With several selected variables the note lists each variable’s removals
@@ -1038,7 +1037,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_olt3bv0xr4sy2ouhqlbp .table
+Categorical table by sex {#tinytable_hz3qm54ogm7f0jomntb8 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1115,5 +1114,5 @@ table_categorical(
   models (APA Table 3).
 - See [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for a cross-function reporting workflow that ties the four
-  summary-table helpers together along the APA Table 1 / 2 / 3 sequence.
+  for a cross-function reporting workflow that ties the summary-table
+  functions together along the APA Table 1 / 2 / 3 sequence.

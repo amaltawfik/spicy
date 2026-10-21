@@ -469,8 +469,7 @@ table_regression(fit, style = "jama")
 #>  R²          │  0.83                              
 #>  Adj. R²     │  0.81                              
 #> 
-#> Linear regression.
-#> Std. errors: classical (OLS).
+#> Linear regression. Std. errors: classical (OLS).
 
 # An argument you type beats the theme.
 table_regression(fit, style = "jama", p_digits = 4)
@@ -486,8 +485,7 @@ table_regression(fit, style = "jama", p_digits = 4)
 #>  R²          │  0.83                               
 #>  Adj. R²     │  0.81                               
 #> 
-#> Linear regression.
-#> Std. errors: classical (OLS).
+#> Linear regression. Std. errors: classical (OLS).
 
 # A style composed by hand.
 table_regression(fit, style = spicy_style(decimal_mark = ",",
@@ -504,8 +502,7 @@ table_regression(fit, style = spicy_style(decimal_mark = ",",
 #>  R²          │  0,83                               
 #>  Adj. R²     │  0,81                               
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 
 # A theme with one rule changed.
 table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
@@ -521,8 +518,7 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 #>  R²          │  0·83                                  
 #>  Adj. R²     │  0·81                                  
 #> 
-#> Linear regression.
-#> Std. errors: classical (OLS).
+#> Linear regression. Std. errors: classical (OLS).
 
 # Document-wide scope.
 old <- options(spicy.style = "apa")

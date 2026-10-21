@@ -20,7 +20,7 @@ time ratios, event counts and concordance, and the variance estimators
 of multi-center studies.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports four survival engines:
+supports four survival engines on a data frame:
 
 - **[`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html)**
   — the semiparametric Cox proportional hazards model, the field
@@ -31,6 +31,12 @@ supports four survival engines:
   model in the `rms` ecosystem;
 - **[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)**
   — fully parametric models over a wide family of distributions.
+
+The Cox model of a survey design,
+[`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html), is
+rendered too, with its design-based variance: see [*Summary tables from
+a survey
+design*](https://amaltawfik.github.io/spicy/articles/survey-tables.md).
 
 The running example is
 [`survival::lung`](https://rdrr.io/pkg/survival/man/lung.html): survival
@@ -87,11 +93,7 @@ table_regression(cx, exponentiate = TRUE)
 #>  N events      │  163                               
 #>  AIC           │ 1454.2                             
 #> 
-#> Note. Cox proportional hazards regression.
-#> Std. errors: Wald asymptotic (z).
-#> Concordance C = 0.64 (SE = 0.03).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio.
 ```
 
 Reading the table:
@@ -226,12 +228,7 @@ table_regression(cx,
 #>    Female      │       [-0.30, -0.08] 
 #>  ph.ecog       │       [ 0.08,  0.22] 
 #> 
-#> Note. Cox proportional hazards regression.
-#> Std. errors: Wald asymptotic (z).
-#> Concordance C = 0.64 (SE = 0.03).
-#> dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
+#> Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). HR = hazard ratio.
 ```
 
 One display note before reading: five columns are one more than the
@@ -330,11 +327,7 @@ table_regression(cx, vcov = "CR0", cluster = ~inst,
 #>  N events      │  163                               
 #>  AIC           │ 1454.2                             
 #> 
-#> Note. Cox proportional hazards regression.
-#> Std. errors: cluster-robust (Lin-Wei), clusters by inst.
-#> Concordance C = 0.64 (SE = 0.03).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio.
 ```
 
 Two lessons here. First, the mechanics: the cluster variable must
@@ -382,12 +375,7 @@ table_regression(list(cx0, cx), nested = TRUE, exponentiate = TRUE,
 #>  Δχ²           │     –            +16.78         
 #>  p (change)    │     –              <.001        
 #> 
-#> Note. Cox proportional hazards regression models.
-#> Std. errors: Wald asymptotic (z).
-#> Model 1: Concordance C = 0.60 (SE = 0.03).
-#> Model 2: Concordance C = 0.64 (SE = 0.03).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
+#> Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio.
 ```
 
 Adding `ph.ecog` buys a chi-squared change of 16.78 on one degree of
@@ -438,11 +426,7 @@ table_regression_uv(lung2, outcome = Surv(time, status),
 #>    Female      │ [0.41, 0.80]   <.001 
 #>  ph.ecog       │ [1.28, 2.00]   <.001 
 #> 
-#> Note. Cox proportional hazards regression models.
-#> Std. errors: Wald asymptotic (z).
-#> Concordance C = 0.64 (SE = 0.03).
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; CI bounds exponentiated.
+#> Note. Cox proportional hazards regression models. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio.
 ```
 
 The `Events/N` column carries the information a survival reader checks
@@ -501,11 +485,7 @@ table_regression(sr, exponentiate = TRUE)
 #>  n             │  226                                      
 #>  AIC           │ 2261.7                                    
 #> 
-#> Note. Weibull AFT regression.
-#> Std. errors: Wald asymptotic (z).
-#> Distribution: Weibull; scale = 0.73.
-#> TR = time ratio.
-#> Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). TR = time ratio.
 ```
 
 The intercept is back — a parametric model must anchor the time scale,
@@ -568,10 +548,7 @@ table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
 #>  N events      │  163                               
 #>  AIC           │ 1469.0                             
 #> 
-#> Note. Cox proportional hazards regression (rms).
-#> Std. errors: cluster-robust (Lin-Wei), clusters by inst.
-#> HR = hazard ratio.
-#> Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Cox proportional hazards regression (rms). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio.
 ```
 
 ## Fully parametric: `flexsurv`
@@ -601,11 +578,7 @@ table_regression(fs, exponentiate = TRUE)
 #>  n             │  226                               
 #>  AIC           │ 2276.5                             
 #> 
-#> Note. Weibull parametric survival regression.
-#> Std. errors: Wald asymptotic (z).
-#> Distribution: Weibull; shape = 1.33, scale = 792.70.
-#> exp(B) = exponentiated coefficient.
-#> Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Weibull parametric survival regression. Distribution: Weibull; shape = 1.33, scale = 792.70. Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). exp(B) = exponentiated coefficient.
 ```
 
 Two guardrails apply. A spline model on the `"normal"` scale places its
@@ -652,10 +625,10 @@ pkgdown_dark_gt(table_regression(cx, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Cox proportional hazards regression. Std. errors: Wald
-asymptotic (z). Concordance C = 0.64 (SE = 0.03). HR = hazard ratio.
-Coefficients exponentiated and displayed as HR; SE on the HR scale
-(delta method); CI bounds exponentiated (asymmetric).
+*Note.* Cox proportional hazards regression. Concordance C = 0.64 (SE =
+0.03). Coefficients exponentiated and displayed as HR; SE on the HR
+scale (delta method); CI bounds exponentiated (asymmetric). Std. errors:
+Wald asymptotic (z). HR = hazard ratio.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame;
 with `exponentiate = TRUE` the estimates and CI bounds are on the ratio

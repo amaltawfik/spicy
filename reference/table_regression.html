@@ -413,15 +413,18 @@ p-value use <code>"ame_p"</code>.</p></dd>
 <dd><p>Character vector of regexes. Only coefficient rows
 whose term name (as in <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">stats::coef()</a></code> – e.g. <code>"wt"</code>,
 <code>"cyl6"</code>, <code>"factor(cyl)8"</code>) matches at least one pattern are
-kept. Mutually exclusive with <code>drop</code>. Filtering is a display
+kept. The intercept and the subordinate blocks (thresholds, random
+effects) are exempt from <code>keep</code> and <code>drop</code>: <code>show_intercept</code>,
+<code>show_thresholds</code> and <code>show_re</code> govern them.
+Mutually exclusive with <code>drop</code>. Filtering is a display
 choice; <code>p_adjust</code> runs against the full coefficient family
 before filtering. Default <code>NULL</code> (no filter).</p></dd>
 
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
 <dd><p>Character vector of regexes. Coefficient rows
-matching any pattern are removed. Mutually exclusive with
-<code>keep</code>. Default <code>NULL</code>.</p></dd>
+matching any pattern are removed, with the exemptions of <code>keep</code>.
+Mutually exclusive with <code>keep</code>. Default <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-show-intercept">show_intercept<a class="anchor" aria-label="anchor" href="#arg-show-intercept"></a></dt>
@@ -502,7 +505,7 @@ factor header reads <code>education: [ref: Lower]</code>; under
 <code>factor_layout = "flat"</code> the marker <code>[vs Lower]</code> is
 attached to the <strong>first non-reference dummy</strong> of each
 factor (subsequent dummies inherit the same reference).</p></li>
-<li><p><code>"footer"</code>: the row is dropped and a single line
+<li><p><code>"footer"</code>: the row is dropped and a sentence
 <code>Reference categories: education = Lower; sex = Female.</code>
 is added to the footer note. SAS <code>PROC LOGISTIC</code> / SPSS
 "Categorical Variables Codings" convention. Best for
@@ -870,8 +873,13 @@ published table carries the wording you set here.</p></dd>
 <dd><p>Override or suppress the auto-built caption /
 methodological footer. Three modes per argument:</p><ul><li><p><code>NULL</code> (default): the package builds the standard caption
 ("Linear regression on <code>&lt;DV&gt;</code>" / "Hierarchical linear
-regression on <code>&lt;DV&gt;</code>" / ...) and a methodological note
-(VCV type, p-adjust method, reference categories, ...).</p></li>
+regression on <code>&lt;DV&gt;</code>" / ...) and a methodological note, one
+paragraph in the order of every table of the package: what
+the model is (its family, design, scale of the coefficients,
+reference categories, ...), the cases a univariable screen fits
+on, the inference (VCV type, p-adjust method, ...), then the
+definitions (abbreviations, block glosses). Under <code>stars</code>, the
+legend of the stars follows on a line of its own.</p></li>
 <li><p><code>FALSE</code>: the corresponding banner row is omitted from
 every output engine. Use when the surrounding manuscript
 provides its own caption / note.</p></li>
@@ -1864,8 +1872,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Standardized coefficients (beta) injected next to B. "refit"</span></span></span>
@@ -1889,9 +1896,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
@@ -1921,9 +1926,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
@@ -1960,9 +1963,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>       –           –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span> [-3.89, 0.45]     .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Cluster-robust variance -------------------------------------</span></span></span>
@@ -1991,8 +1992,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.</span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"clubSandwich"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="st">"region"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -2013,8 +2013,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.</span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"clubSandwich"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">:</span><span class="va">age_group</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -2035,8 +2034,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region:age_group.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region:age_group.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
@@ -2092,8 +2090,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .121 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
@@ -2139,11 +2136,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes           <span style="color: #9E9E9E;">│</span>  .313 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors:</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  Classical: classical (OLS)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  HC3: heteroskedasticity-robust (HC3)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  CR2: cluster-robust (CR2), clusters by region</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: Classical: classical (OLS); HC3: heteroskedasticity-robust (HC3); CR2: cluster-robust (CR2), clusters by region.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Tidy long format for downstream pipelines -------------------</span></span></span>
@@ -2198,9 +2191,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC              <span style="color: #9E9E9E;">│</span> 1755.6                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  BIC              <span style="color: #9E9E9E;">│</span> 1774.8                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: Wald (model-based).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical mixed-effects comparison (nested LRT).</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
@@ -2264,12 +2255,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²                             <span style="color: #9E9E9E;">│</span>  +42.14               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)                      <span style="color: #9E9E9E;">│</span>    &lt;.001              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: Wald (model-based).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>

@@ -199,10 +199,7 @@ and the sections below follow that escalation.</p>
 <span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19                            </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Each IRR multiplies the expected article count, holding the other
 predictors constant: the expected count for women is about 20% lower
 than for otherwise-similar men (IRR 0.80), and each additional mentor
@@ -261,10 +258,7 @@ overdispersion, and the Poisson is the limiting case as <span class="math inline
 <span><span class="co">#&gt;  α (= 1/θ)       <span style="color: #9E9E9E;">│</span>    0.44                            </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3134.1                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Model-based (asymptotic).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Model-based (asymptotic). IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>The dispersion estimate sits in the table itself: the opt-in
 <code>θ (dispersion)</code> row shows <span class="math inline">\(\hat\theta\)</span> = 2.26, and
 <code>α (= 1/θ)</code> its reciprocal 0.44 — the parameterization
@@ -353,11 +347,7 @@ not a default to accept.</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                               </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_hur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">hurdle</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                  data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
@@ -383,11 +373,7 @@ not a default to accept.</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                               </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3233.8                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson hurdle regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Compare the <code>ment</code> row in the two zero blocks — the same
 predictor, the same substantive finding, and <em>opposite-looking</em>
 odds ratios:</p>
@@ -475,15 +461,7 @@ substantive reasoning carry the comparison.)</p>
 <span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19      –       0.11      –   </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3   3225.5   3134.1   3122.5  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Poisson: classical (Fisher information)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   ZIP: Wald asymptotic (z)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   NB: Model-based (asymptotic)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   ZINB: Wald asymptotic (z)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; CI bounds exponentiated.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR; CI bounds exponentiated. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: Model-based (asymptotic), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Read the AIC row across. The ZIP’s entire inflation component buys
 less than the negative binomial’s single dispersion parameter (3225.5
 against 3134.1): modeling the zeros directly is the <em>worse</em>
@@ -536,10 +514,7 @@ on the full model):</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                  </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect.</span></span></span></code></pre></div>
 <p>Averaged over the sample’s covariate values, women are expected to
 publish 0.36 fewer articles over the three years than comparable men
 (AME −0.36) — one number combining both components; the zero-component
@@ -587,9 +562,7 @@ footer records it as <code>CL</code>:</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                 </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CL), clusters by lab.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CL), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero.</span></span></span></code></pre></div>
 <p>Do not read the shift here as the effect of clustering. The labs are
 assigned at random, so they carry no real dependence: most of the
 movement in marriage (p = .041 → .147) comes from the sandwich estimator
@@ -661,13 +634,7 @@ tables</em></a> article:</p>
 <span><span class="co">#&gt;  AIC                  <span style="color: #9E9E9E;">│</span> 1741.4                             </span></span>
 <span><span class="co">#&gt;  BIC                  <span style="color: #9E9E9E;">│</span> 1768.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald asymptotic (z).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Wald-z asymptotic (glmmTMB).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Among streams not in the structural-zero state, unmined ones host
 salamanders at over four times the rate of mined ones (IRR 4.34); they
 are also far less likely to be structural zeros in the first place (OR
@@ -718,10 +685,7 @@ fit statistics:</p>
 <span><span class="co">#&gt;  R² (McFadden)  <span style="color: #9E9E9E;">│</span>    0.60                               </span></span>
 <span><span class="co">#&gt;  AIC            <span style="color: #9E9E9E;">│</span>    5.4e+11                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression (fixed effects).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Classical.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Classical. IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Distance cuts trade hard: the IRR of 0.22 says a one-log-unit
 increase in distance multiplies expected flows by 0.22, origin and
 destination effects absorbed. Three reading notes.</p>
@@ -757,10 +721,7 @@ footer included, follows:</p>
 <span><span class="co">#&gt;  R² (McFadden)  <span style="color: #9E9E9E;">│</span>    0.60                               </span></span>
 <span><span class="co">#&gt;  AIC            <span style="color: #9E9E9E;">│</span>    5.4e+11                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression (fixed effects).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Clustered (Origin).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; IRR = incidence rate ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Clustered (Origin). IRR = incidence rate ratio.</span></span></span></code></pre></div>
 <p>Same coefficient, honest interval: [0.18, 0.28] under clustering by
 origin, in place of the degenerate model-based one.</p>
 <p>Second, ignore the AIC’s magnitude. The Poisson log-likelihood is
@@ -1297,12 +1258,12 @@ AIC
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Poisson zero-inflated regression. Std. errors: Wald
-asymptotic (z). Zero-inflation component: log-odds of a structural
-(excess) zero. Coefficients exponentiated and displayed as odds ratios.
-IRR = incidence rate ratio. Coefficients exponentiated and displayed as
-IRR; SE on the IRR scale (delta method); CI bounds exponentiated
-(asymmetric).
+<em>Note.</em> Poisson zero-inflated regression. Coefficients
+exponentiated and displayed as IRR; SE on the IRR scale (delta method);
+CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z).
+Zero-inflation component: log-odds of a structural (excess) zero.
+Coefficients exponentiated and displayed as odds ratios. IRR = incidence
+rate ratio.
 </div>
 </div>
 </div>

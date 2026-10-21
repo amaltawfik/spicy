@@ -67,6 +67,8 @@ Index this frame by NAME rather than by position.
 ## See also
 
 [`as.data.frame.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
-for the raw long-format access;
+for the displayed table as a data frame, and `output = "long"` of
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+for the long format;
 [`tidy.spicy_continuous_lm_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.md)
 for the model-based companion.

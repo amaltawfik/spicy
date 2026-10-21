@@ -137,9 +137,15 @@ structured contract as spicy's built-in engines.</p></li>
 <ul><li><p><code>version</code> – integer contract version (see <em>Versioning</em> below).</p></li>
 <li><p><code>body</code> – <code>data.frame</code> with a <code>Variable</code> character column, one or
 more numeric value columns, and four dot-prefixed <em>identity</em>
-columns at the end. Confidence intervals are split into <code>LL</code> /
-<code>UL</code> columns named like <code>"95% CI: LL"</code> / <code>"95% CI: UL"</code> (or
-prefixed with the model label in multi-model output). A cell with
+columns at the end. Confidence intervals are split into a lower and
+an upper column, named as each family names them: <code>"95% CI: LL"</code> /
+<code>"95% CI: UL"</code> in a regression table (prefixed with the model label
+in multi-model output), <code>"95% CI LL"</code> / <code>"95% CI UL"</code> in
+<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code> and
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, <code>"CI lower"</code> / <code>"CI upper"</code> for the
+association measure of <code><a href="table_categorical.html">table_categorical()</a></code>, and
+<code>"&lt;group&gt; % CI lower"</code> / <code>"&lt;group&gt; % CI upper"</code> in
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>. A cell with
 no value (reference level, term absent from a model, factor
 header) is <code>NA</code>.</p></li>
 <li><p><code>body$.variable</code> – source variable of the row: the factor name on
@@ -199,8 +205,14 @@ p-style, CI level, etc.).</p></li>
     <h2 id="descriptive-tables">Descriptive tables<a class="anchor" aria-label="anchor" href="#descriptive-tables"></a></h2>
 
 
-<p>The three descriptive families return the same schema; only the
-<code>col_meta</code> tokens and the row roles they emit differ.</p><ul><li><p><code><a href="table_categorical.html">table_categorical()</a></code> – one <code>"factor_header"</code> row per variable
+<p>The descriptive tables return the same schema; only the <code>col_meta</code>
+tokens and the row roles they emit differ. <code><a href="table_outcome.html">table_outcome()</a></code> has the
+columns of <code><a href="table_continuous.html">table_continuous()</a></code> and the rows of <code><a href="table_categorical.html">table_categorical()</a></code>:
+a <code>"summary"</code> row for the whole sample, then a <code>"factor_header"</code> row
+per grouping and its <code>"level"</code> (or <code>"missing"</code>) rows. The survey twins
+follow the table they twin, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> with the
+interval of each percentage (token <code>"prop_ci"</code>) and no association
+measure.</p><ul><li><p><code><a href="table_categorical.html">table_categorical()</a></code> – one <code>"factor_header"</code> row per variable
 then one <code>"level"</code> (or <code>"missing"</code>) row per category, exactly as
 the console lays them out. Tokens: <code>"n"</code>, <code>"pct"</code>, <code>"p"</code>,
 <code>"assoc"</code> (the association measure), <code>"assoc_ci"</code> (its bounds)

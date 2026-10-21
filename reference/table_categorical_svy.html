@@ -362,8 +362,9 @@ error.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: a <code>spicy_categorical_svy_table</code> (a <code>data.frame</code>
 subclass, with the parent class <code>"spicy_table"</code>), printed when the
-call is bare; its columns are the table's compute frame, and the
-display frame and the typed view are attached.</p></li>
+call is bare; its columns are the table's compute frame, internal
+and liable to change without notice, and the display frame and the
+typed view are attached.</p></li>
 <li><p><code>"data.frame"</code>: the displayed table with its numbers, what
 <a href="as.data.frame.spicy_categorical_svy_table.html">as.data.frame()</a> of the
 default object returns: one row per printed row (the header row of
@@ -395,7 +396,8 @@ invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
 </ul><p>The default object and the two data frames carry the whole note as
-printed, "Note." included, in <code>attr(x, "note")</code>.
+printed, "Note." included, in <code>attr(x, "note")</code>. The default object
+also keeps the title the console prints, in <code>attr(x, "title")</code>.
 <a href="tidy.spicy_categorical_svy_table.html">tidy()</a> reports the proportions
 between 0 and 1.</p>
     </div>
@@ -444,6 +446,23 @@ statistic there is not the one the p-value came from. <code>"Wald"</code>,
 <code>"wls-score"</code> are refused, the first because its integration is
 documented as failing in the far tail (<code>?pchisqsum</code>), the second
 because it has no reporting convention here.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="groups-with-no-data">Groups with no data<a class="anchor" aria-label="anchor" href="#groups-with-no-data"></a></h2>
+    <p>As in <code><a href="table_categorical.html">table_categorical()</a></code>, a variable with no observed value in a
+group of <code>by</code> that holds sampled rows, typically a question not asked
+in that group, has no data there, which is not a missing answer. Its
+cells in that group show an en dash (<code>NA</code> in the data frames, in
+<a href="tidy.spicy_categorical_svy_table.html">tidy()</a> and in <code><a href="as_structured.html">as_structured()</a></code>),
+and its rows there are left out of everything computed for that
+variable: the missing values the note counts, the <code>Total</code> block, the
+<code>(Missing)</code> row and the test. A variable left with fewer than two
+groups with data is not tested: its <code>p</code> cell is left blank. The note
+says "No data for X in G.", in one sentence for the variables with no
+data in the same groups ("No data for X and Y in G."). Without <code>by</code>, a
+variable with no observed value at all keeps its declared levels (its
+one row when it declares none) with the dash, and the note says "No
+data for X."</p>
     </div>
     <div class="section level2">
     <h2 id="stability">Stability<a class="anchor" aria-label="anchor" href="#stability"></a></h2>
@@ -536,7 +555,7 @@ Vital and Health Statistics, Series 2, No. 175.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    H        <span style="color: #9E9E9E;">│</span>    3     13.0      11      6.9        14        7.7            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    M        <span style="color: #9E9E9E;">│</span>    8     34.8      17     10.6        25       13.7            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span>
 <span class="r-in"><span><span class="fu">table_categorical_svy</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">dclus1</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="va">stype</span>,</span></span>

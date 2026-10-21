@@ -36,9 +36,9 @@ This article teaches the shared mechanics on
 linear models* section covers the glm-specific argument semantics; the
 *Mixed-effects models* section introduces the Random effects rows that
 mixed-effects fits add below the fixed effects (`lmer`, `glmer`,
-`glmmTMB`, `lme`). Each further model family has a dedicated article
-that applies these mechanics to its own estimands: [*Mixed-effects
-regression
+`glmmTMB`, `lme`, and the ordinal `clmm`). Each further model family has
+a dedicated article that applies these mechanics to its own estimands:
+[*Mixed-effects regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 for mixed-effects models, [*GEE regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
@@ -47,7 +47,8 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
 for Poisson, negative-binomial, and two-part models, [*Ordinal
 regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
-for ordinal models (`polr`, `clm`), [*Multinomial regression
+for ordinal models (`polr`, `clm`, and the mixed `clmm`), [*Multinomial
+regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
 for multinomial models (`multinom`, `mlogit`), [*Survival regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
@@ -93,8 +94,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Reading the table:
@@ -142,8 +142,7 @@ table_regression(fit, style = "nejm")
 #>  R²              │    0.02                               
 #>  Adj. R²         │    0.02                               
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 The complete tour of the named styles — what each journal specifies,
@@ -215,9 +214,7 @@ table_regression(fit, standardized = "refit")
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 On the standardized scale the predictors become directly comparable:
@@ -303,9 +300,7 @@ table_regression(
 #>    Upper secondary        │ [0.17, 0.25] 
 #>    Tertiary               │ [0.17, 0.25] 
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> η² = partial eta-squared; ω² = bias-corrected partial omega-squared.
+#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; ω² = bias-corrected partial omega-squared.
 ```
 
 Methodology notes:
@@ -389,9 +384,7 @@ table_regression(
 #>  R²              │    0.02                                           
 #>  Adj. R²         │    0.02                                           
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
 ```
 
 Reading conventions:
@@ -457,8 +450,7 @@ table_regression(list(m_wellbeing, m_bmi))
 #>  R²              │    0.02                  0.02              
 #>  Adj. R²         │    0.02                  0.02              
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 When all models share the same DV, the DV appears in the title. Use a
@@ -516,10 +508,7 @@ table_regression_uv(sh, outcome = smoking,
 #>    Upper secondary        │ [0.44, 0.87]    .005 
 #>    Tertiary               │ [0.27, 0.59]   <.001 
 #> 
-#> Note. Logistic regression models.
-#> Std. errors: classical (Fisher information).
-#> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). OR = odds ratio.
 ```
 
 Reading it: each *Univariable* row is its own simple logistic regression
@@ -602,8 +591,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>    Yes           │  .119 
 #>  bmi             │ <.001 
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 Reading the change rows: adding `smoking` in Model 2 does not improve
@@ -685,8 +673,7 @@ table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 #>    Yes           │  .122 
 #>  bmi             │ <.001 
 #> 
-#> Note. Linear regression models.
-#> Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ## Robust variance
@@ -726,8 +713,7 @@ table_regression(fit, vcov = "HC3")
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 The footer reads “*Std. errors: heteroskedasticity-robust (HC3)*”; the
@@ -784,10 +770,7 @@ table_regression(
 #>  R²              │    0.02                                            
 #>  Adj. R²         │    0.02                                            
 #> 
-#> Note. Linear regression.
-#> Std. errors: cluster-robust (CR2), clusters by region.
-#> AME = average marginal effect.
-#> AME inference: t-test with Satterthwaite df.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME = average marginal effect.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -839,9 +822,7 @@ table_regression(fit, p_adjust = "bonferroni")
 #>  R²                       │    0.22                              
 #>  Adj. R²                  │    0.22                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> P-values adjusted for 5 tests (Bonferroni method).
+#> Note. Linear regression. Std. errors: classical (OLS). P-values adjusted for 5 tests (Bonferroni method).
 ```
 
 The footer documents the chosen method and the family size; the SE
@@ -881,8 +862,9 @@ analyst’s, and the footer makes that choice visible to the reader.
 `keep` and `drop` accept regular expressions matched against coefficient
 names (as returned by
 [`stats::coef()`](https://rdrr.io/r/stats/coef.html)). They are mutually
-exclusive — use `keep` to retain only the focal predictors, or `drop` to
-hide a few control variables. Multiple patterns combine with logical OR.
+exclusive — use `keep` to retain the focal predictors, or `drop` to hide
+a few control variables. Multiple patterns combine with logical OR. The
+intercept is not filtered: `show_intercept` decides whether it shows.
 
 ``` r
 
@@ -903,8 +885,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #>  R²          │    0.23                              
 #>  Adj. R²     │    0.22                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 ``` r
@@ -928,8 +909,7 @@ table_regression(fit, drop = "^education")
 #>  R²              │    0.23                              
 #>  Adj. R²         │    0.22                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Together with `p_adjust`, this is the article-ready workflow: adjust on
@@ -966,8 +946,7 @@ table_regression(fit, stars = TRUE)
 #>  R²              │    0.02                                 
 #>  Adj. R²         │    0.02                                 
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 #> *** p < .001, ** p < .01, * p < .05.
 ```
 
@@ -1021,8 +1000,7 @@ table_regression(
 #>  R²                                │    0,22                               
 #>  Adj. R²                           │    0,22                               
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 ## Generalized linear models (glm)
@@ -1042,7 +1020,7 @@ table follows Stata’s `glm` default rather than
 [`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html). The table
 title becomes family-aware (“Logistic regression”, “Poisson regression”,
 “Probit regression”, …) and the default fit-statistics block swaps in
-`nobs`, `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `AIC` instead
+`nobs`, `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `aic` instead
 of `R²` and `Adj. R²`.
 
 We illustrate with a logistic regression of `smoking` on `sex`, `age`,
@@ -1077,8 +1055,7 @@ table_regression(fit)
 #>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
+#> Note. Logistic regression. Std. errors: classical (Fisher information).
 ```
 
 Read the fit block with care. McFadden and Nagelkerke R² are
@@ -1136,10 +1113,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  R² (Nagelkerke)          │    0.03                            
 #>  AIC                      │ 1200.9                             
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). OR = odds ratio.
 ```
 
 Read exponentiated rows with the factor-change template (Long and Freese
@@ -1184,8 +1158,7 @@ table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
 #>  R² (Nagelkerke)          │          0.03                               
 #>  AIC                      │       1200.9                                
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
+#> Note. Logistic regression. Std. errors: classical (Fisher information).
 ```
 
 The token is off by default and *deliberately narrow*: it is defined for
@@ -1227,9 +1200,7 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  R² (Nagelkerke)          │    0.03                   
 #>  AIC                      │ 1198.9                    
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> χ² = partial likelihood-ratio chi-squared.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared.
 ```
 
 The `p` column and the `χ²` column answer different questions. Each
@@ -1293,9 +1264,7 @@ table_regression(fit, standardized = "pseudo")
 #>  R² (Nagelkerke)          │    0.03                                     
 #>  AIC                      │ 1200.9                                      
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
+#> Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
 ```
 
 ### Average marginal effects: probability units, not log-odds
@@ -1334,9 +1303,7 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>  R² (Nagelkerke)          │    0.03                                      
 #>  AIC                      │ 1200.9                                       
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> AME = average marginal effect.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect.
 ```
 
 Point estimate and inference are delegated to
@@ -1379,9 +1346,7 @@ table_regression(fit, ci_method = "profile")
 #>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> 95% CIs: profile likelihood.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood.
 ```
 
 One consequence worth naming when combining with `exponentiate = TRUE`:
@@ -1454,8 +1419,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  Δχ²                      │  +21.64               
 #>  p (change)               │    <.001              
 #> 
-#> Note. Logistic regression models.
-#> Std. errors: classical (Fisher information).
+#> Note. Logistic regression models. Std. errors: classical (Fisher information).
 ```
 
 ### Gaussian glm caveat
@@ -1471,11 +1435,14 @@ suggesting a refit with [`lm()`](https://rdrr.io/r/stats/lm.html).
 ## Mixed-effects models
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports four mixed-effects engines:
+supports the mixed-effects fits of
 [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) and
 [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html),
 [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html),
-and [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html). The
+and [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html), and, for an
+ordinal outcome, of
+[`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) and
+glmmTMB’s ordinal family (see *Ordinal regression tables*). The
 fixed-effects section of the table follows the same conventions as `lm`
 / `glm`. Below it, a subordinate **Random effects** block reports the
 variance components as rows — one per random standard deviation (σ),
@@ -1511,10 +1478,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 No `ICC` row appears here: a random-slope fit has no single intra-class
@@ -1601,7 +1565,7 @@ str(out)
 #>  $ 95% CI LL: num  61.9504 -0.0137 NA NA 2.0796 ...
 #>  $ 95% CI UL: num  68.451 0.107 NA NA 5.632 ...
 #>  $ p        : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...
-#>  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."
+#>  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS)."
 ```
 
 ``` r
@@ -1735,7 +1699,8 @@ Descriptive and reporting companions:
 - [*Categorical summary
   tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for the APA Table 1 categorical descriptors (factors, labelled
-  variables, chi-squared tests, association measures).
+  variables, chi-squared or Fisher’s exact tests chosen per variable,
+  association measures).
 - [*Continuous summary
   tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   for the APA Table 1 / Table 2 continuous descriptors and unadjusted
@@ -1747,8 +1712,8 @@ Descriptive and reporting companions:
   families with noncentral CIs).
 - [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
-  for an end-to-end reporting workflow that combines the four spicy
-  summary-table helpers along the APA Table 1 / 2 / 3 sequence.
+  for an end-to-end reporting workflow that combines the spicy table
+  functions along the APA Table 1 / 2 / 3 sequence.
 
 ## References
 

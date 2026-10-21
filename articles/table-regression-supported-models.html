@@ -350,9 +350,10 @@ for Cox and parametric AFT fits alike, in single tables and in the
 univariable screen.</p>
 <p>And when you fit something the guide does not cover: if the class is
 supported, the registry below renders it; if it is not, spicy refuses
-with a classed error that names the nearest supported route (see
-<em>When a class is not supported</em>) – it never renders an
-approximation of a model it does not understand.</p>
+with a classed error that lists the supported classes and points to
+<code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> (see <em>When a class is not
+supported</em>) – it never renders an approximation of a model it does
+not understand.</p>
 </div>
 <div class="section level2">
 <h2 id="the-registry">The registry<a class="anchor" aria-label="anchor" href="#the-registry"></a>
@@ -857,10 +858,15 @@ which otherwise report equal-tailed credible intervals.</li>
 change-test convention: Delta R-squared with the partial F test for
 <code>lm</code>, the likelihood-ratio test for <code>glm</code>, mixed,
 <code>multinom</code> and Cox models, and <code>anova.rq</code>’s
-Wald-type F for quantile regressions (all fits at one tau).
-<code>p_adjust</code> applies a multiplicity correction across the
-displayed p-values – and is refused for Bayesian tables, which carry no
-p-values at all.</p>
+Wald-type F for quantile regressions (all fits at one tau). Under a
+robust or cluster-robust <code>vcov</code>, each added block is tested
+by a Wald test on that matrix instead: a Wald F-change for
+<code>lm</code>, a Wald chi-squared for <code>glm</code> and
+<code>coxph</code>. <code>p_adjust</code> applies a multiplicity
+correction across the coefficient p-values of each model, the intercept
+excepted, rows hidden by <code>keep</code> or <code>drop</code> included
+– and is refused for Bayesian tables, which carry no p-values at
+all.</p>
 </div>
 <div class="section level2">
 <h2 id="the-families-in-brief">The families in brief<a class="anchor" aria-label="anchor" href="#the-families-in-brief"></a>
@@ -942,9 +948,8 @@ Efron fit an Efron one – so the hazard-ratio column and the dRMST column
 always come from the same likelihood. See <a href="table-regression-survival.html"><em>Survival regression
 tables</em></a>.</p>
 <p><strong>Survey-weighted.</strong> <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>:
-design-based inference; the unweighted n is a default fit statistic and
-the sum of design weights is available as
-<code>show_fit_stats = "weighted_nobs"</code>.</p>
+design-based inference; the unweighted n and the sum of the design
+weights (<code>Weighted n</code>) are default fit statistics.</p>
 <p><strong>Additive, proportions, selection.</strong>
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code>,
 <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code> (odds ratios on the logit mean link

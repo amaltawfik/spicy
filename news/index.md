@@ -12,6 +12,42 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 ### Breaking changes
 
+- The note under every table is one paragraph, its sentences in one
+  order: what the numbers are (weights, design, model), the missing
+  data, the tests and the inference, then the definitions. The legend of
+  the stars follows on its own line.
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  gave one sentence per line,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  broke the line after the missing values, and the order changed from
+  table to table
+  ([\#11](https://github.com/amaltawfik/spicy/issues/11)).
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  now name the test behind their p-values, and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  say when the statistics are weighted.
+
+- A variable with no observed value in a group of `by`, typically a
+  question not asked there, has no data in that group, which is not a
+  missing answer: its cells there show a dash, its rows leave the count
+  of missing values, the `Total` column and the test, and the note says
+  “No data for X and Y in G.”
+  ([\#11](https://github.com/amaltawfik/spicy/issues/11)). This holds in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  and the survey twins, and without `by` for a variable with no observed
+  value at all (“No data for X.”).
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -130,7 +166,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   of freedom in `df` and leaves `df.residual` empty, where the long
   output and `glance()` gave the 1 and the residual df of the equivalent
   *F*; a *z* or a chi-squared (`vcov = "bootstrap"` or `"jackknife"`)
-  leaves `df.residual` empty too, and `df` is a double.
+  leaves `df.residual` empty too, and `df` is a double. The `glance()`
+  of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  reports the test the table shows: with a two-level `by`, the *t* of
+  the contrast, where it gave the *F* of the model.
 
 - `output = "data.frame"` returns the table as it is displayed, with its
   numbers, in every table function: one row per printed row, the printed
@@ -331,7 +371,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   said the variable had no level to display, and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  failed with a base R error.
+  failed with a base R error. Every table function refuses data with no
+  rows, and the survey twins a design with none, with or without `by`
+  and whatever `drop_na`, with one `spicy_invalid_data` error that comes
+  before any check of `select`. They returned tables with no rows or
+  empty groups, or failed on something else.
 
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   refuses a survey design with a pointer to
@@ -410,7 +454,9 @@ the descriptive tables one contract for labels, p-values, and notes.
   cell of the rendered formats `Cramer's V [95% CI]`. They were
   `CI lower` and `CI upper`, the rendered header stated no level, and
   the keys `header_ci_lower` and `header_ci_upper` of
-  `options(spicy.labels)` are gone.
+  `options(spicy.labels)` are gone. The columns of
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  keep their names, `CI lower` and `CI upper`.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
@@ -433,6 +479,13 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 ### New features
 
+- Every table function keeps the title it prints in `attr(x, "title")`,
+  as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  already did.
+
 - The long output and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of the
   tables mark the rows they add by a key rather than by their label,
@@ -443,9 +496,21 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)),
   `.group_role` the role of `group` (`"missing"` on the group of missing
   `by` values, `"total"` on the margin, `"group"` otherwise), and
-  `total` flags the `Total` margin.
+  `total` flags the `Total` margin. In the tables that take a `by`,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  and the survey twins,
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) always has
-  a `group` column, `NA` without `by`, and that of
+  a `group` column, `NA` without `by`.
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  have none: their groups are the `level` of a row, or the `term` of a
+  mean in the [`tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  The [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
@@ -760,6 +825,15 @@ the descriptive tables one contract for labels, p-values, and notes.
   term labeled “N”, `inline(tbl, "N")` cited the number of observations,
   and of two rows showing one label it cited the first.
 
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  without `column` refuses a
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  row that shows the mean of each group and no contrast (a `by` of three
+  or more levels, or `contrast = "none"`), and gives the address of a
+  mean. It cited the sample size. Its errors name
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md),
+  where some named an internal helper.
+
 - `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 
@@ -834,6 +908,10 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   accepts `p_value = NULL`, now its default as in the rest of the
   family: the p-value is shown, `by` being required.
+
+- `table_continuous_lm(contrast = "none")` leaves out the contrast
+  column and its interval, in every output, as documented. It printed
+  them empty.
 
 - `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in tinytable, gt, flextable, Word, and Excel
@@ -911,6 +989,16 @@ the descriptive tables one contract for labels, p-values, and notes.
   carried the theta of the fit.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  tests the random effects of a
+  [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fit with a
+  gaussian family and a link other than identity against the
+  [`glm()`](https://rdrr.io/r/stats/glm.html) of that family and link.
+  It used a linear regression, which that fit does not nest. The footer
+  of such a [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) or
+  `glmmTMB()` fit names the null “gaussian regression”, not “linear
+  regression”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   calls the `partial_chi2` of `lmer`, `glmer`, `glmmTMB`, and `lme` fits
   a partial Wald chi-squared in its footer. It called it a
   likelihood-ratio chi-squared, the test of `glm`.
@@ -962,6 +1050,28 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   leave an empty cell empty. It held an empty text, which Excel counted
   and refused in a formula.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  counts a declared missing value once, in “Declared missing values
+  removed”, where `drop_na = TRUE` also counted it in “Missing values
+  removed”, and no longer says it removed the values its `(Missing)` row
+  shows. Its note spells “chi-squared”, as the other notes do.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  no longer stops with “attempt to select less than one element” when an
+  outcome has no complete observation in a level of `by`.
+
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  compares a numeric `by` as groups, as it compares a factor, where it
+  tested a slope under the name of a group comparison, and compares a
+  `by` that is an ordered factor of two levels, whose p-value was left
+  blank. Its note gives the degrees of freedom of each variable’s
+  comparison when they differ; it gave those of the last variable for
+  all of them.
+
+- The French title of
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  says “univariable”, as the English one does.
 
 ## spicy 0.13.0
 

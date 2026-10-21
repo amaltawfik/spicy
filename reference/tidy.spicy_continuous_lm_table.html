@@ -118,7 +118,9 @@ pipeline.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per <strong>estimated parameter</strong> across all
 outcomes:</p><ul><li><p>One row per fitted level mean (<code>estimate_type = "emmean"</code>)
-for categorical predictors, with the level name in <code>term</code>.</p></li>
+for categorical predictors, with the level name in <code>term</code>, <code>NA</code>
+where no mean is estimated (a level in which the outcome has no
+data, an outcome whose model could not be fit).</p></li>
 <li><p>One row per <strong>contrast</strong> (<code>estimate_type = "difference"</code>)
 when a binary contrast is shown, with <code>term = "&lt;level2&gt; - &lt;level1&gt;"</code>.</p></li>
 <li><p>One row per <strong>slope</strong> (<code>estimate_type = "slope"</code>) for
@@ -130,19 +132,24 @@ name of the outcome; <code>label</code> carries the label the rows display for
 it (see <code>labels</code>).</p>
 <p><code>glance()</code> returns one row per outcome with model-level
 statistics. Columns: <code>variable</code>, <code>label</code>, <code>predictor_type</code>
-(<code>"categorical"</code> or <code>"continuous"</code>), <code>test_type</code> (<code>"F"</code> for
-categorical predictors, <code>"t"</code> for continuous ones),
+(<code>"categorical"</code> or <code>"continuous"</code>), <code>test_type</code> (the test the table
+displays: <code>"t"</code> for a numeric <code>by</code> and for the contrast of a
+two-level <code>by</code>, <code>"F"</code> for a <code>by</code> of three or more levels or under
+<code>contrast = "none"</code>, and <code>"z"</code> or <code>"chi2"</code> in their place under
+<code>vcov = "bootstrap"</code> or <code>"jackknife"</code>),
 <code>statistic</code>, <code>df</code>, <code>df.residual</code> (the degrees of freedom follow the
 statistic: an <em>F</em> has both, a <em>t</em> has its own in <code>df</code> and none in
 <code>df.residual</code>), <code>p.value</code>, <code>r.squared</code>,
 <code>adj.r.squared</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
 <code>es_ci_upper</code>, <code>nobs</code>, <code>weighted_nobs</code> (the sum of the weights, <code>NA</code>
-without <code>weights</code>).</p>
+without <code>weights</code>). Beside the contrast of a two-level <code>by</code>, the <em>F</em>
+of the model, the square of its <em>t</em>, is in the long output only.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="as.data.frame.spicy_continuous_lm_table.html">as.data.frame.spicy_continuous_lm_table()</a></code> for the raw
-long-format access.</p></div>
+    <div class="dont-index"><p><code><a href="as.data.frame.spicy_continuous_lm_table.html">as.data.frame.spicy_continuous_lm_table()</a></code> for the displayed
+table as a data frame, and <code>output = "long"</code> of
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> for every estimate in long format.</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

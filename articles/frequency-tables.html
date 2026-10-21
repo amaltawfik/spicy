@@ -399,15 +399,19 @@ as ordinary categories instead; tagged NAs are genuine <code>NA</code>s
 either way, so for them it only collapses the per-tag breakdown into the
 regular <code>NA</code> count. The same argument, with the same default,
 exists in <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, the descriptive helpers
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
-<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the row-wise functions
-<code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code> and <code><a href="../reference/count_n.html">count_n()</a></code>.
-(<code><a href="../reference/table_regression.html">table_regression()</a></code> takes a fitted model, not raw data, so
-the argument does not apply there.) <code><a href="../reference/cross_tab.html">cross_tab()</a></code> and the
-descriptive helpers disclose the exclusion in the table note; the
-row-wise functions return bare numeric vectors, so they count the
-declared codes as missing without any note. See the “Declared missing
-values” section of <code><a href="../reference/freq.html">?freq</a></code> for the full contract.</p>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+<code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code> and the
+survey twins <code><a href="../reference/table_categorical_svy.html">table_categorical_svy()</a></code> and
+<code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>, the inspection tools
+<code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/code_book.html">code_book()</a></code>, and the row-wise
+functions <code><a href="../reference/mean_n.html">mean_n()</a></code>, <code><a href="../reference/sum_n.html">sum_n()</a></code> and
+<code><a href="../reference/count_n.html">count_n()</a></code>. (<code><a href="../reference/table_regression.html">table_regression()</a></code> takes a fitted
+model, not raw data, so the argument does not apply there.)
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code> and the descriptive helpers disclose the
+exclusion in the table note; the row-wise functions return bare numeric
+vectors, so they count the declared codes as missing without any note.
+See the “Declared missing values” section of <code><a href="../reference/freq.html">?freq</a></code> for the
+full contract.</p>
 </div>
 </div>
 <div class="section level2">
@@ -757,12 +761,13 @@ no degrees of freedom, which is why the statistic prints as
 <div class="section level3">
 <h3 id="data-frame-output">Data frame output<a class="anchor" aria-label="anchor" href="#data-frame-output"></a>
 </h3>
-<p>Set <code>output = "data.frame"</code> to get a plain data frame for
-further processing. The same argument works in <code><a href="../reference/freq.html">freq()</a></code>, and
-its two values (“default”, “data.frame”) are shared with the
-<code>output</code> argument of the <code>table_*()</code> family – but
-the rendered engines that family also accepts (“tinytable”, “gt”,
-“flextable”, …) are not available here:</p>
+<p>Set <code>output = "data.frame"</code> to get the cells of the table
+as a plain data frame for further processing, without its margins. In
+<code><a href="../reference/freq.html">freq()</a></code>, the same value returns the counts with their
+proportions, between 0 and 1. The <code>table_*()</code> functions take
+<code>output = "data.frame"</code> too, for the table as it is
+displayed, and render to engines (“tinytable”, “gt”, “flextable”, …)
+that <code><a href="../reference/freq.html">freq()</a></code> and <code><a href="../reference/cross_tab.html">cross_tab()</a></code> do not offer:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>,</span>
 <span>          percent <span class="op">=</span> <span class="st">"column"</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
@@ -776,8 +781,9 @@ the rendered engines that family also accepts (“tinytable”, “gt”,
 </h2>
 <p>You can set tabulation defaults with <code><a href="https://rdrr.io/r/base/options.html" class="external-link">options()</a></code> so you
 don’t have to repeat arguments. <code>spicy.rescale</code> is read by
-<code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code>, and
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code>; <code>spicy.percent</code> and
+<code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code>,
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and
+<code><a href="../reference/table_outcome.html">table_outcome()</a></code>; <code>spicy.percent</code> and
 <code>spicy.simulate_p</code> are read by <code><a href="../reference/cross_tab.html">cross_tab()</a></code>:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
@@ -799,8 +805,8 @@ contingency table.</li>
 tables</em></a> - building publication-ready categorical tables.</li>
 <li>
 <a href="summary-tables-reporting.html"><em>Summary tables for
-reporting</em></a> - end-to-end reporting workflow that ties the four
-<code>table_*</code> helpers together along the APA Table 1 / 2 / 3
+reporting</em></a> - end-to-end reporting workflow that ties the
+<code>table_*()</code> functions together along the APA Table 1 / 2 / 3
 sequence (including <code><a href="../reference/table_regression.html">table_regression()</a></code> for the coefficient
 table).</li>
 <li>

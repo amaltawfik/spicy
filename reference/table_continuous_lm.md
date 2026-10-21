@@ -139,6 +139,12 @@ table_continuous_lm(
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md));
   this table has no `drop_na`.
 
+  An outcome with no observed value in a level of a categorical `by`
+  (typically a question not asked in that group) has no data there: it
+  is fit on the other levels, the cells of that level show a dash, its
+  rows are not counted as missing values, and the note says so. With
+  fewer than two levels with data, the outcome has no model and no test.
+
 - covariates:
 
   Optional additive covariates to adjust each per-outcome linear model
@@ -614,7 +620,8 @@ table_continuous_lm(
   - `"data.frame"`: the displayed table with its numbers, one row per
     outcome
 
-  - `"long"`: one row per level of `by` and outcome, with every estimate
+  - `"long"`: one row per level of `by` and outcome (one row per outcome
+    with a numeric `by`), with every estimate
 
   - `"tinytable"` (requires `tinytable`)
 
@@ -683,10 +690,11 @@ Depends on `output`:
 - `"default"`: the compute frame with class
   `"spicy_continuous_lm_table"` / `"spicy_table"`, carrying the
   rendering metadata as attributes (the `by` column and its label as
-  `group_var` and `group_label`). The object is returned visibly, so a
-  bare `table_continuous_lm(...)` call auto-prints the styled ASCII
-  table at the console while `t <- table_continuous_lm(...)` stays
-  silent (print `t` to display the table).
+  `group_var` and `group_label`, the title as printed as `title`). The
+  object is returned visibly, so a bare `table_continuous_lm(...)` call
+  auto-prints the styled ASCII table at the console while
+  `t <- table_continuous_lm(...)` stays silent (print `t` to display the
+  table).
 
 - `"data.frame"`: the displayed table with its numbers, what
   [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.md)
@@ -698,8 +706,9 @@ Depends on `output`:
   effect size (with `es_ci_lower` / `es_ci_upper` beside it when
   `effect_size_ci = TRUE`), `n`, and `Weighted n`.
 
-- `"long"`: one block per outcome, one row per level of `by`, with every
-  estimate: identification (`variable`, `label`, `predictor_type`,
+- `"long"`: one block per outcome, one row per level of `by` (one row,
+  `estimate_type` `"slope"` and `level` `NA`, with a numeric `by`), with
+  every estimate: identification (`variable`, `label`, `predictor_type`,
   `predictor_label`, `level`, `reference`), fitted means and their CI
   (`emmean`, `emmean_se`, `emmean_ci_lower`, `emmean_ci_upper`),
   contrast or slope estimates and CI (`estimate_type`, `estimate`,
@@ -708,8 +717,10 @@ Depends on `output`:
   *F* of a factor has both degrees of freedom, the *t* of a contrast or
   a slope has its own in `df` and none in `df.residual`), effect size
   with its CI (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
-  (`r.squared`, `adj.r.squared`), and the size of the model (`nobs`,
-  `weighted_nobs`, repeated on each row of an outcome).
+  (`r.squared`, `adj.r.squared`, on the first row of an outcome), the
+  size of the model (`nobs`, `weighted_nobs`, repeated on each row of an
+  outcome), and `boot_n_valid`, the number of bootstrap replicates whose
+  refit gave every coefficient (`NA` without `vcov = "bootstrap"`).
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -942,7 +953,10 @@ degrees of freedom are constant across outcomes).
 
 When `covariates` is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
-`Note. Adjusted for age, education (proportional).`
+`Note. Adjusted for age, education (proportional).` With p-values, the
+note also names the test behind them, read off each outcome's model:
+`Group comparison: t-test from the linear model.` (the F-test for a `by`
+with more than two levels), or `Slope test: ...` for a numeric `by`.
 
 The rendering engines carry that same footer as a table note. On the
 `"tinytable"` route the note is set one size down;
@@ -1166,7 +1180,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  1200 
 #>  bmi             │   0.93      .018  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1189,7 +1203,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.25  1200 
 #>  bmi             │   0.93      .018  0.00  0.14  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # Hedges' g with weighted analysis and weighted n column.
 table_continuous_lm(
@@ -1213,7 +1227,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.62     4.33  <.001  0.02  0.25  1200   1196.47   
 #>  bmi             │   0.89     2.18   .030  0.00  0.13  1188   1183.32   
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # Hedges' g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
@@ -1235,7 +1249,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.25 [0.14, 0.36]  1200 
 #>  bmi             │   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
 table_continuous_lm(
@@ -1256,7 +1270,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.02  1200 
 #>  bmi             │   0.93      .018  0.00  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # Hays' omega-squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
@@ -1278,7 +1292,7 @@ table_continuous_lm(
 #>  wellbeing_score │ <.001  0.21  0.21  1200 
 #>  bmi             │ <.001  0.13  0.13  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: F-test from the linear model.
 
 # --- Robust SE for a numeric predictor ----------------------------------
 
@@ -1297,8 +1311,7 @@ table_continuous_lm(
 #>  wellbeing_score   │  0.04     .176    0.00    1200  
 #>  bmi               │  0.04    <.001    0.02    1188  
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).
@@ -1321,7 +1334,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #> ──────────┼───────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
 #> 
-#> Note. Std. errors: cluster-robust (CR2), clusters by ID.
+#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.
 
 # --- Covariate adjustment ----------------------------------------------
 
@@ -1347,9 +1360,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional).
-#> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 
 # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
 # marginal means on a synthetic covariate grid).
@@ -1373,9 +1384,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced).
-#> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
 # effect sizes via the partial F restricted to the focal `by`.
@@ -1400,8 +1409,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.22     <.001  0.22  0.02 [0.01, 0.04]  1200 
 #>  bmi             │   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 
 #> 
-#> Note. Adjusted for age, education (proportional).
-#> Missing values removed: bmi (12).
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # --- Article-style polish -----------------------------------------------
 
@@ -1428,7 +1436,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100)  │   5.64     <.001   0.01    1200 
 #>  Body-mass index (kg/m^2) │   0.93      .018   0.00    1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m^2) (12).
+#> Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model.
 
 # European decimal comma.
 table_continuous_lm(
@@ -1449,7 +1457,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5,64     <0,001  0,02  1200 
 #>  bmi             │   0,93      0,018  0,00  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
 
 # Regex selection of all columns starting with "life_sat".
 table_continuous_lm(
@@ -1474,7 +1482,7 @@ table_continuous_lm(
 #>  life_sat_relationships │   0.16     .570  0.00  1192 
 #>  life_sat_standard      │   0.18     .453  0.00  1192 
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model.
 
 # --- Output formats -----------------------------------------------------
 

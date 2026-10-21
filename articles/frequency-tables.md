@@ -310,9 +310,17 @@ same argument, with the same default, exists in
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
 the descriptive helpers
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-and
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+and the survey twins
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+and
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+the inspection tools
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+and
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
 and the row-wise functions
 [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
 [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) and
@@ -707,13 +715,16 @@ cross_tab(students, self_rated_health, education,
 
 ### Data frame output
 
-Set `output = "data.frame"` to get a plain data frame for further
-processing. The same argument works in
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
-its two values (“default”, “data.frame”) are shared with the `output`
-argument of the `table_*()` family – but the rendered engines that
-family also accepts (“tinytable”, “gt”, “flextable”, …) are not
-available here:
+Set `output = "data.frame"` to get the cells of the table as a plain
+data frame for further processing, without its margins. In
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), the
+same value returns the counts with their proportions, between 0 and 1.
+The `table_*()` functions take `output = "data.frame"` too, for the
+table as it is displayed, and render to engines (“tinytable”, “gt”,
+“flextable”, …) that
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+do not offer:
 
 ``` r
 
@@ -730,8 +741,11 @@ You can set tabulation defaults with
 [`options()`](https://rdrr.io/r/base/options.html) so you don’t have to
 repeat arguments. `spicy.rescale` is read by
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
-[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md), and
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md);
 `spicy.percent` and `spicy.simulate_p` are read by
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
 
@@ -754,7 +768,7 @@ options(
   building publication-ready categorical tables.
 - [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md) -
-  end-to-end reporting workflow that ties the four `table_*` helpers
+  end-to-end reporting workflow that ties the `table_*()` functions
   together along the APA Table 1 / 2 / 3 sequence (including
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   for the coefficient table).

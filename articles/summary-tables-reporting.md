@@ -32,11 +32,11 @@ used in empirical articles:
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   builds **Table 3** (the coefficient table) from one or several fitted
   models — [`lm()`](https://rdrr.io/r/stats/lm.html) /
-  [`glm()`](https://rdrr.io/r/stats/glm.html) through the 36 supported
+  [`glm()`](https://rdrr.io/r/stats/glm.html) through the 39 supported
   classes listed by
   [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
 
-The four functions share the same output grammar — the same `output`
+These functions share the same output grammar — the same `output`
 formats (`default` console ASCII, `gt`, `tinytable`, `flextable`,
 `word`, `excel`, `clipboard`), the same `decimal_mark`, `p_digits`,
 `labels`, and `align` arguments, and the same `digits` control for
@@ -56,6 +56,7 @@ Use the function that matches the unit you want to report:
 | [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
+| [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md) (experimental) | A “check all that apply” question, one row per item | `select` (the items), `by` | Chi-squared or Fisher’s exact test per item with a Holm adjustment, a global test that allows for several answers per respondent |
 | [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md), [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md) | The same descriptive tables from a [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html) (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
 | [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 39 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [*Supported models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
@@ -111,7 +112,7 @@ simulated social-health survey of 1200 respondents and 29 variables,
 every one of them carrying a variable label (see
 [`?sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md)).
 
-The three descriptive functions share the same core arguments:
+The descriptive functions share the same core arguments:
 
 ``` r
 
@@ -204,7 +205,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 ``` r
@@ -230,8 +231,7 @@ table_continuous_lm(
 #>  wellbeing_score │ <.001  0.19  1200 
 #>  life_sat_health │ <.001  0.15  1192 
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12), life_sat_health (8). Group comparison: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -295,13 +295,11 @@ table_regression(
 #>  R²                         │    0.03                              
 #>  Adj. R²                    │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
-This split is intentional. The descriptive trio (categorical,
-continuous, continuous_lm) reports the *data* — `select` and `by`
-describe what you want to see.
+This split is intentional. The descriptive functions report the *data* —
+`select` and `by` describe what you want to see.
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 reports the *model* — the model formula has already declared which
 predictors, interactions, polynomials, transformations, splines, and
@@ -454,7 +452,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -485,8 +483,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
 #>  life_sat_health │   0.22     1.11   .267  0.00  1192 
 #> 
-#> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 This is the better summary-table path when the article is already
@@ -543,43 +540,40 @@ table_categorical(
   sochealth,
   select = c(smoking, physical_activity),
   by = sex,
-  smd = TRUE
+  smd = TRUE,
+  p_value = FALSE
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                       .832 
-#>    No              │   334       53.9     316     54.5     650     54.2         
-#>    Yes             │   286       46.1     264     45.5     550     45.8         
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %  Phi 
+#> ───────────────────┼───────────────────────────────────────────────────────────
+#>  smoking           │                                                       .01 
+#>    No              │   475       76.6     451     77.8     926     77.2        
+#>    Yes             │   131       21.1     118     20.3     249     20.8        
+#>    (Missing)       │    14        2.3      11      1.9      25      2.1        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .01 
+#>    No              │   334       53.9     316     54.5     650     54.2        
+#>    Yes             │   286       46.1     264     45.5     550     45.8        
 #> 
-#>  Variable          │ Phi  SMD  
-#> ───────────────────┼───────────
-#>  smoking           │ .01  0.02 
-#>    No              │           
-#>    Yes             │           
-#>    (Missing)       │           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │ .01  0.01 
-#>    No              │           
-#>    Yes             │           
+#>  Variable          │ SMD  
+#> ───────────────────┼──────
+#>  smoking           │ 0.02 
+#>    No              │      
+#>    Yes             │      
+#>    (Missing)       │      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌
+#>  physical_activity │ 0.01 
+#>    No              │      
+#>    Yes             │      
 #> 
-#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.
+#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
 column itself, and the usual rule of thumb (\|SMD\| \> 0.1) quoted in
-the table note without any cell being highlighted. Note the asymmetry
-between the two calls:
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-can drop its *p* column,
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-currently cannot.
+the table note without any cell being highlighted. Both calls drop the
+*p* column with `p_value = FALSE`.
 
 ### The coefficient table
 
@@ -621,9 +615,7 @@ table_regression(
 #>  R²                 │    0.03                               
 #>  Adj. R²            │    0.02                               
 #> 
-#> Note. Linear regression.
-#> Std. errors: heteroskedasticity-robust (HC3).
-#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 The default footer documents the variance estimator, flags standardized
@@ -688,8 +680,7 @@ table_regression(
 #>    No (ref.)        │  –    
 #>    Yes              │  .003 
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 For binary or count outcomes, swap
@@ -727,10 +718,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                                   
 #>  AIC                │ 1220.5                                                    
 #> 
-#> Note. Logistic regression.
-#> Std. errors: classical (Fisher information).
-#> AME = average marginal effect; OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; CI bounds exponentiated.
+#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). AME = average marginal effect; OR = odds ratio.
 ```
 
 Average marginal effects (`ame`) are useful next to the odds ratio
@@ -752,7 +740,7 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
 ## Choose the output format
 
-All four functions support the same reporting formats:
+All of these functions support the same reporting formats:
 
 | Output        | Best use                                     |
 |:--------------|:---------------------------------------------|
@@ -845,7 +833,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  bmi      │ Female  0,018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12).
+#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -882,7 +870,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>  bmi      │ Female  ,02 
 #>           │ Male        
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -912,7 +900,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  bmi      │ Female  0.018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12).
+#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -998,9 +986,9 @@ its reason instead of pasting a dash into a sentence.
 
 ## Post-process the returned table object
 
-All four summary-table helpers return regular `gt`, `tinytable`, or
-`flextable` objects, so you can keep styling them with the native
-package API. This includes
+All the table functions return regular `gt`, `tinytable`, or `flextable`
+objects, so you can keep styling them with the native package API. This
+includes
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
 nothing about the fit-first interface changes what the rendering engine
 produces.
@@ -1072,7 +1060,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_icb4n8ag4a48j1e8f6cu .table
+Categorical table by education {#tinytable_2m3k8d4rztc6fwgzu3gn .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

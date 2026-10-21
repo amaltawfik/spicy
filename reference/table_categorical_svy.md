@@ -306,8 +306,9 @@ Depends on `output`:
 
 - `"default"`: a `spicy_categorical_svy_table` (a `data.frame` subclass,
   with the parent class `"spicy_table"`), printed when the call is bare;
-  its columns are the table's compute frame, and the display frame and
-  the typed view are attached.
+  its columns are the table's compute frame, internal and liable to
+  change without notice, and the display frame and the typed view are
+  attached.
 
 - `"data.frame"`: the displayed table with its numbers, what
   [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)
@@ -342,7 +343,8 @@ Depends on `output`:
   invisibly.
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in `attr(x, "note")`.
+printed, "Note." included, in `attr(x, "note")`. The default object also
+keeps the title the console prints, in `attr(x, "title")`.
 [tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
 reports the proportions between 0 and 1.
 
@@ -396,6 +398,26 @@ there is not the one the p-value came from. `"Wald"`, `"adjWald"` and
 the first because its integration is documented as failing in the far
 tail (`?pchisqsum`), the second because it has no reporting convention
 here.
+
+## Groups with no data
+
+As in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+a variable with no observed value in a group of `by` that holds sampled
+rows, typically a question not asked in that group, has no data there,
+which is not a missing answer. Its cells in that group show an en dash
+(`NA` in the data frames, in
+[tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
+and in
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
+and its rows there are left out of everything computed for that
+variable: the missing values the note counts, the `Total` block, the
+`(Missing)` row and the test. A variable left with fewer than two groups
+with data is not tested: its `p` cell is left blank. The note says "No
+data for X in G.", in one sentence for the variables with no data in the
+same groups ("No data for X and Y in G."). Without `by`, a variable with
+no observed value at all keeps its declared levels (its one row when it
+declares none) with the dash, and the note says "No data for X."
 
 ## Stability
 
@@ -498,7 +520,7 @@ table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #>    H        │    3     13.0      11      6.9        14        7.7            
 #>    M        │    8     34.8      17     10.6        25       13.7            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-square (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
 table_categorical_svy(
   dclus1,
   select = stype,

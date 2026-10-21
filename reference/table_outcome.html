@@ -454,7 +454,8 @@ invisibly.</p></li>
 <code>data.frame</code> invisibly.</p></li>
 </ul><p>The default object and the two data frames carry the whole note as
 printed, "Note." included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is
-nothing to say).</p>
+nothing to say). The default object also keeps the title it prints in
+<code>attr(x, "title")</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="which-shape-do-i-need-">Which shape do I need?<a class="anchor" aria-label="anchor" href="#which-shape-do-i-need-"></a></h2>
@@ -511,6 +512,13 @@ Wilcoxon rank-sum or the Kruskal-Wallis test on the same rule. A
 block with fewer than two observed levels, or with a level holding a
 single observation, is not tested; its statistics stay empty and the
 other blocks are unaffected.</p>
+<p>A level where the outcome has no observed value (typically a question
+not asked there) has no data, which is not a missing answer: its cells
+show an en dash, <em>n</em> included, the block compares the levels with
+data, the rows of that level are not counted in the outcome's missing
+values (whichever block they fall in), and the note says so ("No data
+for X in G.", X the label of the outcome and G the level). The
+<code>Overall</code> row stays the whole analytic sample.</p>
     </div>
     <div class="section level2">
     <h2 id="the-overall-row">The <code>Overall</code> row<a class="anchor" aria-label="anchor" href="#the-overall-row"></a></h2>
@@ -761,7 +769,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

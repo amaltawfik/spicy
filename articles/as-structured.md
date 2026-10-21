@@ -18,14 +18,19 @@ structurally empty, plus the metadata a renderer needs to reconstruct
 the display. For regression tables it is the very contract spicy’s own
 output engines (Excel, gt, tinytable, flextable, clipboard) consume
 internally – nothing about it is second-class – and the descriptive
-families
+tables
 ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md))
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+and the survey twins
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+and
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md))
 expose the same schema, covered at the end of this article. The tour
 below uses a regression table; everything it shows reads identically on
-the other four.
+the others.
 
 Two sibling tools serve different needs, and choosing well saves work.
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
@@ -75,8 +80,7 @@ tbl
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Every display trait named above is visible here: `(ref.)` markers and
@@ -476,12 +480,12 @@ coefficients and it renders the way it prints.
 Everything above extends beyond regression. The same accessor reads
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-and returns the same schema – the same identity columns, the same
-`cell_status`, the same `display_cells` mechanism for composite cells. A
-consumer written for one family reads the other four.
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+and the survey twins, and returns the same schema – the same identity
+columns, the same `cell_status`, the same `display_cells` mechanism for
+composite cells. A consumer written for one table reads the others.
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 lays out one factor header row per variable and one row per category:
 
@@ -589,12 +593,12 @@ slm$col_meta[["M (Male)"]]
 ```
 
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-is the one shape where three roles share `.indent == 0`: a `"summary"`
-row for the whole analytic sample, a `"factor_header"` row per grouping,
-and the indented `"level"` rows under it. A consumer that read “a level
-is anything that is not a header” would swallow the marginal row; the
-`.indent` field is the one to read, and it is why the block geometry of
-all three descriptive families is computed from it:
+is the one shape where two roles share `.indent == 0`: a `"summary"` row
+for the whole analytic sample and a `"factor_header"` row per grouping,
+with the indented `"level"` rows (`.indent == 1`) under it. A consumer
+that read “a level is anything that is not a header” would swallow the
+marginal row; the `.indent` field is the one to read, and it is why the
+block geometry of the descriptive tables is computed from it:
 
 ``` r
 

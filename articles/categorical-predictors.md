@@ -55,8 +55,7 @@ table_regression(fit)
 #>  R²                 │    0.01                              
 #>  Adj. R²            │    0.01                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Each coefficient is a comparison **with the reference level, holding the
@@ -101,8 +100,7 @@ table_regression(fit_u, keep = "employment_status")
 #>  R²                  │    0.01                              
 #>  Adj. R²             │    0.01                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Every group now sits 3.6 to 4.7 points *above* the unemployed — the same
@@ -171,8 +169,7 @@ table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 #>  F-change           │     –             +3.13         
 #>  p (change)         │     –               .025        
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
@@ -234,8 +231,7 @@ table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
 #>  F-change         │     –             +0.89         
 #>  p (change)       │     –               .485        
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 For `region`, the joint test gives F(5, 1193) = 0.89, p = .485 — no
@@ -278,9 +274,7 @@ table_regression(fit_srh, show_columns = c("b", "se", "p"))
 #>  R²                 │    0.35              
 #>  Adj. R²            │    0.34              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
-#> Ordered factor `self_rated_health`: polynomial trends (.L = linear, .Q = quadratic, .C = cubic).
+#> Note. Linear regression. Std. errors: classical (OLS). Ordered factor `self_rated_health`: polynomial trends (.L = linear, .Q = quadratic, .C = cubic).
 ```
 
 These rows answer trend questions across the ordered levels: `.L`
@@ -345,8 +339,7 @@ table_regression(list(g_lin, g_fac), nested = TRUE,
 #>  Δχ²                      │     –             +0.03         
 #>  p (change)               │     –               .852        
 #> 
-#> Note. Logistic regression models.
-#> Std. errors: classical (Fisher information).
+#> Note. Logistic regression models. Std. errors: classical (Fisher information).
 ```
 
 Freeing education from the linear trend buys a chi-square of 0.03 on 1
@@ -398,8 +391,7 @@ table_regression(list(s_lin, s_fac), nested = TRUE,
 #>  F-change      │     –            +12.96         
 #>  p (change)    │     –              <.001        
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 Here the test rejects the single slope: F-change = 12.96 on 2 df, p \<
@@ -464,8 +456,7 @@ table_regression(
 #>  R²          │    0.35                              
 #>  Adj. R²     │    0.34                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Each row is one step of the scale: Fair sits 14.97 points above Poor,
@@ -511,8 +502,7 @@ table_regression(list(b_cont, b_cat), show_columns = c("b", "p"),
 #>  R²                     │    0.02            0.01        
 #>  AIC                    │ 9884.2          9898.1         
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 The continuous fit explains twice the variance with half the parameters
@@ -549,8 +539,7 @@ table_regression(
 #>  AIC         │ 9884.2                9885.9                
 #>  ΔAIC        │     –                   +1.7                
 #> 
-#> Note. Linear regression models.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
 Read the `ΔAIC` row with the standard interpretive scale (Burnham and
@@ -561,7 +550,7 @@ In between, read the difference continuously as a relative likelihood,
 `exp(-Δ/2)`: a ΔAIC of 5 makes the better model about 12 times more
 likely, a ΔAIC of 7 about 33 times — real evidence that weakens the
 poorer model without dismissing it, where substantive grounds should
-complete the decision. Here the quadratic costs +1.8: indistinguishable
+complete the decision. Here the quadratic costs +1.7: indistinguishable
 from the linear fit, and its own coefficient is indistinguishable from
 zero, so the linear fit stands by parsimony. Now carry the same scale
 back to the previous table: the binned model’s AIC of 9898.1 sits **13.9
@@ -614,8 +603,7 @@ table_regression(
 #>  R²                                 │    0.01                              
 #>  Adj. R²                            │    0.01                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 ## See also

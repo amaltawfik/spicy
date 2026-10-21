@@ -260,7 +260,7 @@ attributes and columns:</p><ul><li><p><code>value</code> - unique values or fact
 <li><p><code>n</code> - frequency count (weighted if applicable)</p></li>
 <li><p><code>prop</code> - proportion of total</p></li>
 <li><p><code>valid_prop</code> - proportion of valid responses (if <code>valid = TRUE</code>)</p></li>
-<li><p><code>cum_prop</code>, <code>cum_valid_prop</code> - cumulative percentages (if <code>cum = TRUE</code>)</p></li>
+<li><p><code>cum_prop</code>, <code>cum_valid_prop</code> - cumulative proportions, between 0 and 1 (if <code>cum = TRUE</code>)</p></li>
 </ul><p>With <code>output = "default"</code> (the default), a <code>spicy_freq_table</code> object: the same
 <code>data.frame</code> carrying rendering metadata as attributes (<code>digits</code>,
 <code>data_name</code>, <code>var_name</code>, <code>var_label</code>, <code>class_name</code>, <code>n_total</code>,

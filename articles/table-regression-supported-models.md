@@ -92,9 +92,10 @@ in single tables and in the univariable screen.
 
 And when you fit something the guide does not cover: if the class is
 supported, the registry below renders it; if it is not, spicy refuses
-with a classed error that names the nearest supported route (see *When a
-class is not supported*) – it never renders an approximation of a model
-it does not understand.
+with a classed error that lists the supported classes and points to
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+(see *When a class is not supported*) – it never renders an
+approximation of a model it does not understand.
 
 ## The registry
 
@@ -266,9 +267,13 @@ frequentist ones point to the AME columns instead.
 fits by the family’s change-test convention: Delta R-squared with the
 partial F test for `lm`, the likelihood-ratio test for `glm`, mixed,
 `multinom` and Cox models, and `anova.rq`’s Wald-type F for quantile
-regressions (all fits at one tau). `p_adjust` applies a multiplicity
-correction across the displayed p-values – and is refused for Bayesian
-tables, which carry no p-values at all.
+regressions (all fits at one tau). Under a robust or cluster-robust
+`vcov`, each added block is tested by a Wald test on that matrix
+instead: a Wald F-change for `lm`, a Wald chi-squared for `glm` and
+`coxph`. `p_adjust` applies a multiplicity correction across the
+coefficient p-values of each model, the intercept excepted, rows hidden
+by `keep` or `drop` included – and is refused for Bayesian tables, which
+carry no p-values at all.
 
 ## The families in brief
 
@@ -370,9 +375,8 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.m
 
 **Survey-weighted.**
 [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html):
-design-based inference; the unweighted n is a default fit statistic and
-the sum of design weights is available as
-`show_fit_stats = "weighted_nobs"`.
+design-based inference; the unweighted n and the sum of the design
+weights (`Weighted n`) are default fit statistics.
 
 **Additive, proportions, selection.**
 [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()`,

@@ -18,7 +18,7 @@ models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-
 here we focus on what is *specific* to ordinal fits.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-supports both ordinal engines:
+supports two ordinal engines for independent observations:
 
 - **[`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html)** —
   proportional-odds cumulative logit (also probit / cloglog / cauchit
@@ -26,6 +26,18 @@ supports both ordinal engines:
 - **[`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html)** — the
   more flexible cumulative link model, with optional scale and
   partial-proportional-odds (nominal) effects.
+
+Clustered or repeated ratings take a cumulative-link mixed model:
+[`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html), or
+[`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+with `family = glmmTMB::ordinal()`. Their tables keep the `Thresholds`
+block described below and add the *Random effects* block of
+[*Mixed-effects regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
+They take the model-based variance only, without average marginal
+effects: `vcov = "CR0"` and the AME columns are refused for both, so the
+cluster-robust and marginal-effects sections below apply to `polr` and
+`clm`.
 
 The model used throughout is a self-rated-health rating regressed on
 age, sex, smoking, and physical activity, using the bundled `sochealth`
@@ -111,9 +123,7 @@ table_regression(fit)
 #>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points.
 ```
 
 Reading the table:
@@ -136,7 +146,7 @@ Reading the table:
   substance lies in the odds ratios and marginal effects below. Hide the
   block with `show_thresholds = FALSE` to fall back to a compact footer
   line.
-- Below the fit-stats rule, the model-fit block reports **N**, two
+- Below the fit-stats rule, the model-fit block reports **n**, two
   pseudo-\\R^2\\ (**McFadden**, the Stata `ologit` default, and
   **Nagelkerke**, one of the three measures SPSS PLUM prints by default,
   alongside Cox & Snell and McFadden), and **AIC**. Both compare the
@@ -191,11 +201,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated).
-#> OR = odds ratio.
-#> Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric).
+#> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). OR = odds ratio.
 ```
 
 The OR here is a *cumulative* odds ratio: it multiplies the odds of
@@ -257,10 +263,7 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
-#> AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
 ```
 
 How to read it, with the `smoking = Yes` row:
@@ -339,10 +342,7 @@ table_regression(fit, show_columns = "ame")
 #>  R² (Nagelkerke)    │     0.00                                    
 #>  AIC                │  2761.2                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04.
-#> AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability.
 ```
 
 Marginal effects are the response-scale (probability) output of
@@ -353,8 +353,8 @@ than two categories.
 
 ## Cluster-robust standard errors
 
-Ordinal fits accept the cluster-robust `vcov` family (`"CR0"`–`"CR3"`),
-computed by
+The `polr` and `clm` fits accept the cluster-robust `vcov` family
+(`"CR0"`–`"CR3"`), computed by
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 One caveat up front: the CR2 / CR3 small-sample bias-reduction
 adjustments are defined for (generalized) linear models — `clubSandwich`
@@ -398,10 +398,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: cluster-robust (CL), clusters by region.
-#> Thresholds: latent-scale category cut-points.
-#> AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CL), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
 ```
 
 The footer switches to name the estimator and the clustering variable.
@@ -468,10 +465,7 @@ table_regression(fit, ci_method = "profile", show_columns = c("b", "ci", "p"))
 #>  R² (Nagelkerke)    │    0.00                        
 #>  AIC                │ 2761.2                         
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> 95% CIs: profile likelihood.
-#> Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points.
 ```
 
 ## The `ordinal::clm()` engine
@@ -513,10 +507,7 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
-#> AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
 ```
 
 ### Testing proportional odds
@@ -614,9 +605,7 @@ table_regression(clm_npo)
 #>  R² (Nagelkerke)                 │    0.01                              
 #>  AIC                             │ 2756.1                               
 #> 
-#> Note. Cumulative logit regression (partial proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points.
 ```
 
 The freed structure is read *within* the block: the smoking effect is
@@ -711,10 +700,7 @@ table_regression(clm_scale)
 #>  R² (Nagelkerke)    │    0.01                              
 #>  AIC                │ 2757.8                               
 #> 
-#> Note. Cumulative logit regression (proportional odds).
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
-#> Scale effects: covariate effects on the log standard deviation of the latent response.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response.
 ```
 
 Cluster-robust SEs are not available for scale fits: `sandwich`’s
@@ -731,11 +717,6 @@ table_regression(clm_scale, vcov = "CR2", cluster = ~region)
 #> ℹ `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR0"-"CR3" with `cluster`.
 #> ℹ Use the model-based default, or refit without `scale` / `nominal`.
 ```
-
-One wart in the refusal message: it speaks of `clm` models as a class
-and lists only `classical` — read it as applying to this *fit*. A plain
-proportional-odds `clm` (no `scale =` or `nominal =` component) supports
-`CR0`–`CR3` exactly as the `polr` fit in the cluster section above.
 
 ### Choosing an ordinal specification
 
@@ -818,10 +799,7 @@ table_regression(
 #>    Fair | Good      │                                     
 #>    Good | Very good │                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds) models.
-#> Std. errors: Wald asymptotic (z).
-#> Thresholds: latent-scale category cut-points.
-#> AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
 ```
 
 ## Output formats
@@ -875,8 +853,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
+#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000570
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

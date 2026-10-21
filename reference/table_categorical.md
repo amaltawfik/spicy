@@ -505,10 +505,16 @@ table_categorical(
 
 Depends on `output`:
 
-- `"default"`: the underlying `data.frame` carrying the rendering
-  metadata as attributes (S3 class `"spicy_categorical_table"`). The
-  object is returned visibly, so a bare `table_categorical(...)` call
-  auto-prints the styled ASCII table at the console while
+- `"default"`: a `data.frame` of class `"spicy_categorical_table"`
+  carrying the rendering metadata as attributes. Its columns are
+  internal and can change without notice: read the numbers from
+  `"data.frame"`, `"long"`,
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+  or
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+  The object is returned visibly, so a bare `table_categorical(...)`
+  call auto-prints the styled ASCII table at the console while
   `t <- table_categorical(...)` stays silent (print `t` to display the
   table).
 
@@ -559,8 +565,7 @@ Depends on `output`:
 - `"excel"` / `"word"`: writes to disk and returns the file path
   invisibly.
 
-- `"clipboard"`: copies the table and returns the display `data.frame`
-  invisibly.
+- `"clipboard"`: copies the table and returns the copied text invisibly.
 
 The note, the `drop_na = TRUE` disclosure included, travels with the
 table on every route, not just the console: `"default"` prints it under
@@ -569,8 +574,10 @@ it as a table note, `"excel"` writes it below the body, and the default
 object and the data frames of `"data.frame"` / `"long"` keep the whole
 note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
 there is nothing to say), so a pipeline that renders the numbers itself
-can still state what left the table. On the `"tinytable"` route the note
-is set one size down; `options(spicy.note_style)` governs that (see
+can still state what left the table. The default object also keeps the
+title the console prints, in `attr(x, "title")`. On the `"tinytable"`
+route the note is set one size down; `options(spicy.note_style)` governs
+that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 The Excel sheet carries the same title the console prints on its first
@@ -585,7 +592,7 @@ and tested on the complete cases of its observed levels, a `"(Missing)"`
 level and a declared level nobody holds left out: one *p*-value per
 variable, in the `p` column. A table left with a single row or column (a
 variable observed at one level, or in one group) is uninformative and
-gets no test, whatever `test` says: its `p` cell shows a dash.
+gets no test, whatever `test` says: its `p` cell is left blank.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -665,6 +672,27 @@ fitted means) on continuous outcomes, see
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 For descriptive (empirical) comparisons on continuous outcomes, see
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+## Groups with no data
+
+A variable with no observed value in a group of `by` that holds rows,
+typically a question not asked in that group, has no data there, which
+is not a missing answer. Its cells in that group show an en dash (`NA`
+in the data frames, in
+[tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
+and in
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
+and its rows there are left out of everything computed for that
+variable: the missing values the note counts, the `Total` column, the
+`"(Missing)"` row, the test, the association measure and the SMD. A
+variable left with fewer than two groups with data is not tested: its
+`p` cell is left blank. The note says "No data for X in G.", in one
+sentence for the variables with no data in the same groups ("No data for
+X and Y in G."). Without `by`, a variable with no observed value at all
+keeps its declared levels (its one row when it declares none) with the
+dash, and the note says "No data for X." The column of missing `by`
+values is never such a group, and a declared level of `by` that holds no
+row keeps its zero column.
 
 ## Multiple-comparison adjustment
 
@@ -1053,7 +1081,7 @@ table_categorical(
 #>    No              │  54.6                      
 #>    Yes             │  45.4                      
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. Statistics weighted by weight. Group comparison: Pearson chi-squared test.
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -1125,7 +1153,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education.
 
 # Force a uniform measure across all row variables.
 table_categorical(
@@ -1213,7 +1241,7 @@ table_categorical(
 #>    Very good       │             
 #>    (Missing)       │             
 #> 
-#> Note. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health. Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health.
 
 # --- Output formats -----------------------------------------------------
 

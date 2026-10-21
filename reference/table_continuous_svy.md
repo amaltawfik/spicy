@@ -409,7 +409,8 @@ Depends on `output`:
   invisibly.
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in `attr(x, "note")`.
+printed, "Note." included, in `attr(x, "note")`. The default object also
+keeps the title it prints in `attr(x, "title")`.
 
 ## Which function do I need?
 
@@ -498,7 +499,14 @@ distinction does not exist – the variance is the design's – so
 `test = "student"` warns and behaves like `"welch"`. A variable with no
 variance has no comparison: its test cells are left blank, with a
 warning (class `spicy_undefined_stat`), where survey would still return
-a p-value.
+a p-value. The note names the comparison of each variable.
+
+A variable with no observed value in a domain (a question not asked in
+that group) has no data in it, as in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+its cells there show an en dash, *n* included, those rows are not
+counted in the missing values of the note, the comparison uses the
+domains with data, and the note says so ("No data for X in G.").
 
 ## Stability
 

@@ -382,10 +382,10 @@ contract; a single string replaces it, and <code>FALSE</code> removes it, as in
 
 <dt id="arg-note">note<a class="anchor" aria-label="anchor" href="#arg-note"></a></dt>
 <dd><p>The table note. <code>NULL</code> (the default) builds it, opening
-with "Note.": the rows removed for a missing <code>by</code>, what the
-percentages sum to, the base with the respondents it holds or leaves
-out, and the tests. A single string replaces it and is printed as
-typed, and <code>FALSE</code> removes it.</p></dd>
+with "Note.": what the percentages sum to, the base with the
+respondents it holds or leaves out, the rows removed for a missing
+<code>by</code> and the items with no data in a group, then the tests. A single
+string replaces it and is printed as typed, and <code>FALSE</code> removes it.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -460,7 +460,8 @@ chi-squared of the item, with <code>df</code> beside it) under
 label the row displays), <code>.row_role</code> as above, with <code>by</code> <code>group</code>,
 <code>.group_role</code> (the role of <code>group</code>: <code>"group"</code>, or <code>"total"</code> for
 the margin) and <code>total</code> (<code>TRUE</code> on the rows of the margin), <code>n</code>,
-<code>base</code> (the respondents of the group), the percentage named by its
+<code>base</code> (the respondents of the group; in the margin, those of the
+groups with data for the item), the percentage named by its
 base: <code>pct_cases</code> (of the respondents) or <code>pct_responses</code> (of the
 choices made), as <code>percent</code> asks, both under <code>percent = "both"</code>,
 and, when the item tests ran (for <code>p_value</code> or
@@ -562,9 +563,13 @@ of multiple marginal independence compares it with the second-order
 test. It is random: call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> first to reproduce it.</p>
 <p>An item chosen by every respondent, or by none, has no test: its <code>p</code>
 cell shows a dash, it leaves the global test, and the note names it.
-Its row stays. With fewer than two groups holding respondents there is
-nothing to compare, and the table shows no test. The note names the
-global test with its statistic, degrees of freedom, and p-value.</p>
+Its row stays. An item with no data in a group (see <em>Base and missing
+values</em>) is tested on the groups with data for it, has no test with
+fewer than two (its <code>p</code> cell is then blank), and leaves the global
+test, which compares every group on the same items. With fewer than
+two groups holding respondents there is nothing to compare, and the
+table shows no test. The note names the global test with its
+statistic, degrees of freedom, and p-value.</p>
     </div>
     <div class="section level2">
     <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a></h2>
@@ -605,6 +610,15 @@ label in <code>labels</code>, or give the row another label, for example
 Declared missing values of a labelled column (<code>na_values</code>, <code>na_range</code>)
 are missing, as under the <code>user_na = TRUE</code> default of
 <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
+<p>An item missing for every respondent of a group (typically an item not
+asked there) has no data in that group: its cells there show a dash,
+its <code>Total</code> counts the other groups only, and the note says so, in one
+sentence for the items with no data in the same groups. Without <code>by</code>,
+an item with no observed value at all
+shows a dash. A group with no data for any item was not asked the
+question: all its cells, <code>Respondents</code> included, show a dash, and its
+respondents leave the base, the <code>Total</code>, the tests and the count of
+the respondents with no data for the question.</p>
 <p>A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical
 Association, 2020, section 4.1.8): <code>percent_digits = 0</code> prints them.</p>

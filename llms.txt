@@ -7,12 +7,12 @@ survey data workflows.
 
 ## Features
 
-Every spicy table prints as readable text in the console and exports to
-gt, tinytable, flextable, Excel, Word, or the clipboard, following
-rigorous reporting conventions – APA by default, with named journal
-styles. Around the tables, spicy provides the survey-data tools that
-feed them: variable inspection, codebooks, label extraction, and
-row-wise summaries.
+Every summary and regression table prints as readable text in the
+console and exports to gt, tinytable, flextable, Excel, Word, or the
+clipboard, following rigorous reporting conventions – APA by default,
+with named journal styles. Around the tables, spicy provides the
+survey-data tools that feed them: variable inspection, codebooks, label
+extraction, and row-wise summaries.
 
 - **Frequency tables** with
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
@@ -37,7 +37,7 @@ row-wise summaries.
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md):
   “check all that apply” items read as one question, overall or by
   group, with a global test that allows for several answers per
-  respondent.
+  respondent. The function is experimental in this release.
 - **Outcome-first summary tables** with
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md):
   one continuous outcome described across several groupings, one block
@@ -146,8 +146,8 @@ spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
   multiple-comparison families.
 - **A typed, versioned table contract.**
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  returns the complete typed view of a regression table – values,
-  precisions, significance markers, row roles – with an explicit
+  returns the complete typed view of a regression or summary table –
+  values, precisions, significance markers, row roles – with an explicit
   contract version, so custom renderers and downstream pipelines can
   detect changes instead of silently mis-reading them.
 - **Hard errors over silent guesses.** Requests a model class cannot
@@ -500,7 +500,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.
 ```
 
 ``` r
@@ -541,8 +541,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression.
-#> Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS).
 ```
 
 Regression tables cover 39 model classes with the conventions of each
@@ -576,10 +575,7 @@ table_regression(fit_mixed)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression.
-#> Std. errors: Wald (model-based).
-#> p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
-#> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
 ```
 
 See [Categorical summary
@@ -1176,17 +1172,18 @@ Documented here for direct invocation with custom arguments (e.g.,
   tables](https://amaltawfik.github.io/spicy/articles/as-structured.md):
 
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  exposes the typed representation behind every
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  exposes the typed representation behind every spicy table, from
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  to
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  and
-  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  output: a numeric body with per-row identity columns, per-column
-  metadata, per-cell status, and the format specification. Filter rows
-  programmatically, aggregate raw values, or build a custom renderer –
-  against one schema for all five families.
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  and the survey twins: a numeric body with per-row identity columns,
+  per-column metadata, per-cell status, and the format specification.
+  Filter rows programmatically, aggregate raw values, or build a custom
+  renderer – against one schema for all of them.
 
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
@@ -1199,7 +1196,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   random effects as table rows, the boundary-corrected chi-bar-squared
   test, opt-in per-term LRT / RLRT, Nakagawa R-squared, Satterthwaite
   inference, three-level and crossed designs, and the `lme4`, `glmmTMB`,
-  and `nlme` engines.
+  `nlme`, and `ordinal` engines.
 
 - [GEE regression tables (population-averaged
   models)](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md):
@@ -1244,9 +1241,9 @@ Documented here for direct invocation with custom arguments (e.g.,
   per-outcome-category average marginal effects laid out as a
   probability matrix, cluster-robust variance, the
   [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
-  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines,
-  testing the proportional-odds assumption, and the partial proportional
-  odds and scale relaxations.
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html) engines and
+  their mixed counterparts, testing the proportional-odds assumption,
+  and the partial proportional odds and scale relaxations.
 
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md):

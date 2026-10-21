@@ -149,9 +149,9 @@ OWN clock rather than the parent family's):</p><ul><li><p>Display language and l
 (with <code>options(spicy.language)</code> / <code>options(spicy.labels)</code>),
 since 0.13.0</p></li>
 <li><p>Codebooks: <code><a href="code_book.html">code_book()</a></code> (the <code>spicy_codebook</code> object, its
-Excel workbook, and its PDF), in the development version</p></li>
-<li><p>Multiple-response questions: <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, in the
-development version</p></li>
+Excel workbook, and its PDF), since 0.14.0</p></li>
+<li><p>Multiple-response questions: <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, since
+0.14.0</p></li>
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
 without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitive: <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
 (<code><a href="build_ascii_table.html">build_ascii_table()</a></code> is no longer exported)</p></li>
@@ -167,9 +167,22 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 <code>spicy_multiresponse_table</code>, and <code>spicy_regression_table</code>, and the
 <code>output = "long"</code> frame of every table function, speak one
 vocabulary: broom's name wherever broom defines one, and one
-snake_case name per concept otherwise, the same in every function.</p><table class="table table"><tr><td>Concept</td><td>Column</td></tr><tr><td>the variable a row describes, its displayed label</td><td><code>variable</code>, <code>label</code></td></tr><tr><td>the level of a categorical variable, the group of <code>by</code></td><td><code>level</code>, <code>group</code></td></tr><tr><td>the role of the row's <code>level</code> (or item): a level, the row of missing values, ...</td><td><code>.row_role</code> (<code>"level"</code>, <code>"missing"</code>, <code>"summary"</code>, ...)</td></tr><tr><td>the role of <code>group</code>: a group, the column of missing <code>by</code> values, the margin</td><td><code>.group_role</code> (<code>"group"</code>, <code>"missing"</code>, <code>"total"</code>)</td></tr><tr><td>the <code>Total</code> margin of the groups</td><td><code>total</code> (logical)</td></tr><tr><td>a count, a percentage, a proportion between 0 and 1</td><td><code>n</code>, <code>pct</code>, <code>proportion</code>, named by their base where a table has two (<code>pct_cases</code>, <code>pct_responses</code>, <code>proportion_cases</code>, <code>proportion_responses</code>)</td></tr><tr><td>the estimate of a row, its standard error and interval</td><td><code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code></td></tr><tr><td>the test: its name and statistic</td><td><code>test_type</code>, <code>statistic</code></td></tr><tr><td>the degrees of freedom, which follow the statistic</td><td><code>df</code> for a <em>t</em> or a chi-squared (<code>Inf</code> for a <em>z</em>); <code>df</code> and <code>df.residual</code> for an <em>F</em>, the Rao-Scott <em>F</em> and the <em>F</em> of a linear model included</td></tr><tr><td>the p-value, and the raw one under <code>p_adjust</code></td><td><code>p.value</code>, <code>p_unadjusted</code></td></tr><tr><td>the effect size: its measure, value and interval</td><td><code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code></td></tr><tr><td>the standardized mean difference</td><td><code>smd_type</code>, <code>smd_value</code></td></tr><tr><td>the observations of a variable or of a model, and their weighted count</td><td><code>nobs</code>, <code>weighted_nobs</code></td></tr><tr><td>the weighted count of a group (beside its <code>n</code>)</td><td><code>weighted_n</code></td></tr><tr><td>the counts of the groups of <code>by</code>, of the categories of a variable</td><td><code>n_groups</code>, <code>n_levels</code></td></tr><tr><td>the fit of a model</td><td><code>r.squared</code>, <code>adj.r.squared</code></td></tr></table><p><code>variable</code> holds the name of the column a row describes and <code>label</code>
+snake_case name per concept otherwise, the same in every function.</p><table class="table table"><tr><td>Concept</td><td>Column</td></tr><tr><td>the variable a row describes, its displayed label</td><td><code>variable</code>, <code>label</code></td></tr><tr><td>the level of a categorical variable, the group of <code>by</code> (in the tables that take a <code>by</code>)</td><td><code>level</code>, <code>group</code></td></tr><tr><td>the role of the row's <code>level</code> (or item): a level, the row of missing values, ...</td><td><code>.row_role</code> (<code>"level"</code>, <code>"missing"</code>, <code>"summary"</code>, ...)</td></tr><tr><td>the role of <code>group</code>: a group, the column of missing <code>by</code> values, the margin</td><td><code>.group_role</code> (<code>"group"</code>, <code>"missing"</code>, <code>"total"</code>)</td></tr><tr><td>the <code>Total</code> margin of the groups</td><td><code>total</code> (logical)</td></tr><tr><td>a count, a percentage, a proportion between 0 and 1</td><td><code>n</code>, <code>pct</code>, <code>proportion</code>, named by their base where a table has two (<code>pct_cases</code>, <code>pct_responses</code>, <code>proportion_cases</code>, <code>proportion_responses</code>)</td></tr><tr><td>the estimate of a row, its standard error and interval</td><td><code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code></td></tr><tr><td>the test: its name and statistic</td><td><code>test_type</code>, <code>statistic</code></td></tr><tr><td>the degrees of freedom, which follow the statistic</td><td><code>df</code> for a <em>t</em> or a chi-squared (<code>Inf</code> for a <em>z</em>); <code>df</code> and <code>df.residual</code> for an <em>F</em>, the Rao-Scott <em>F</em> and the <em>F</em> of a linear model included</td></tr><tr><td>the p-value, and the raw one under <code>p_adjust</code></td><td><code>p.value</code>, <code>p_unadjusted</code></td></tr><tr><td>the effect size: its measure, value and interval</td><td><code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code></td></tr><tr><td>the standardized mean difference</td><td><code>smd_type</code>, <code>smd_value</code></td></tr><tr><td>the observations of a variable or of a model, and their weighted count</td><td><code>nobs</code>, <code>weighted_nobs</code></td></tr><tr><td>the weighted count of a group (beside its <code>n</code>)</td><td><code>weighted_n</code></td></tr><tr><td>the counts of the groups of <code>by</code>, of the categories of a variable</td><td><code>n_groups</code>, <code>n_levels</code></td></tr><tr><td>the fit of a model</td><td><code>r.squared</code>, <code>adj.r.squared</code> as columns; as a row, its <code>show_fit_stats</code> token in <code>variable</code> (<code>r2</code>, <code>adj_r2</code>, <code>aic</code>, ...)</td></tr></table><p><code>variable</code> holds the name of the column a row describes and <code>label</code>
 its displayed label. <code>outcome</code> names the response of a regression
-model and the single outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. The proportions of
+model and the single outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. <code>group</code> is a key of
+the tables that take a <code>by</code> (<code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>): their <code>tidy()</code>
+carries it with or without <code>by</code>, <code>NA</code> without. <code><a href="table_outcome.html">table_outcome()</a></code> has
+no <code>group</code>: its groupings are the <code>level</code> of each block. Nor has
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, whose <code>by</code> sets the columns of the table: its
+levels are the <code>level</code> of the long output and the <code>term</code> of the
+<code>"emmean"</code> rows of <code>tidy()</code>.
+A fit statistic is a column of <code>glance()</code> and of the long output,
+under broom's name, and a row of <code>output = "data.frame"</code> (<code>.row_role</code>
+<code>"fit_stat"</code>), keyed in <code>variable</code> by its <code>show_fit_stats</code> token, the
+token <code><a href="inline.html">inline()</a></code> takes: <code>r2</code> is the row of the column <code>r.squared</code>.
+The proportions of
 <code>tidy()</code> are between 0 and 1, and the <code>Total</code> rows stay, flagged by
 <code>total</code>. Each role column describes the key column it follows,
 whatever the orientation of the printed table: <code>.row_role</code> the row's
@@ -179,9 +192,13 @@ label, which follows the display language. In a table that compares
 groups, the long output carries the effect-size and SMD columns
 whether or not they were requested (<code>NA</code> then), and <code>glance()</code> has a
 fixed set of columns; <code>p_value = FALSE</code> removes the test columns.
-Model-level statistics (<code>nobs</code>, <code>r.squared</code>, ...) are in <code>glance()</code>,
-and in the long output only for <code><a href="table_regression_uv.html">table_regression_uv()</a></code>, whose rows
-are separate models. The printed objects carry the <code>by</code> column and its
+Model-level statistics (<code>nobs</code>, <code>r.squared</code>, ...) are in <code>glance()</code>.
+The long output carries them as well where its rows are models of
+their own: in <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, one model per outcome (the fit
+on the first row of the outcome, its size on every row), and in
+<code><a href="table_regression_uv.html">table_regression_uv()</a></code>, one univariable model per predictor. The long
+output of <code><a href="table_regression.html">table_regression()</a></code> has the same columns, <code>NA</code>: one shape
+for the class. The printed objects carry the <code>by</code> column and its
 label in the attributes <code>group_var</code> and <code>group_label</code>.</p>
 <p><code>output = "data.frame"</code> and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> return the table as it
 is displayed, one row per printed row, with numbers: the key columns
@@ -189,7 +206,10 @@ is displayed, one row per printed row, with numbers: the key columns
 <code>.row_role</code>, the role of the printed row, where the table adds rows),
 then the printed columns under their names. The two are identical for
 every class. <code>output = "excel"</code> and <code>"word"</code> return the path of the
-file, invisibly.</p>
+file, invisibly. The columns of the object <code>output = "default"</code>
+returns are internal and can change without notice: the contracts are
+<code>output = "data.frame"</code>, <code>output = "long"</code>, <code>tidy()</code>, <code>glance()</code> and
+<code><a href="as_structured.html">as_structured()</a></code>.</p>
 <p>The set of columns produced by each method is considered
 <strong>stabilizing</strong> (<strong>experimental</strong> for <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, as the
 function itself): existing columns will not be
@@ -221,8 +241,8 @@ specific cause:</p>
 <dd><p>Catch-all parent for every error
 raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad argument value or type.</p></li>
 <li><p><code>spicy_invalid_data</code> – bad data shape or content
-(not a data.frame, length mismatch, <code><a href="https://bit64.r-lib.org/reference/bit64-package.html" class="external-link">bit64::integer64</a></code>
-columns, degenerate grouping).</p></li>
+(not a data.frame, data or a design with no rows, length
+mismatch, <code><a href="https://bit64.r-lib.org/reference/bit64-package.html" class="external-link">bit64::integer64</a></code> columns, degenerate grouping).</p></li>
 <li><p><code>spicy_wrong_regime</code> – signaled together with
 <code>spicy_invalid_data</code> when a table receives the wrong kind
 of data for its regime: a survey design handed to a plain table,

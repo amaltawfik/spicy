@@ -40,7 +40,8 @@ displayed label), `group` (the `by` level or the margin, `NA` without
 `by`), `.group_role` (the role of `group`: `"group"` or `"total"`, `NA`
 without `by`), `total` (whether the row is the margin), `n` (the
 respondents who chose the item), `base` (the respondents of the group's
-base), `proportion_cases` (`n / base`, the share of respondents),
+base; in the margin, those of the groups with data for the item),
+`proportion_cases` (`n / base`, the share of respondents),
 `proportion_responses` (`n` over the choices made in the group), and the
 item's test: `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
 `"fisher_exact"`, `"fisher_midp"` or `"fisher_exact_mc"`), `statistic`

@@ -175,8 +175,7 @@ scarcest (Vehtari et al. 2021).</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                          </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span></code></pre></div>
 <p>Reading the columns against their frequentist counterparts:</p>
 <ul>
 <li>
@@ -243,9 +242,7 @@ Makowski et al. 2019) — is opt-in:</li>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).</span></span></span></code></pre></div>
 <p>Read against the table: <code>Male</code>, at .617, is barely better
 than a coin flip on sign; <code>age</code>, at .886, leans positive
 without settling the direction; the education contrasts show 1.000 and
@@ -316,9 +313,7 @@ posterior median:</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                    </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021).</span></span></span></code></pre></div>
 <p>The <code>mcse</code> column answers a question the other diagnostics
 do not: <em>how many of the printed digits are real?</em> MCMC output is
 stochastic — rerun the sampler with another seed and the third
@@ -440,10 +435,7 @@ reconstruct one as B ± 2 SE:</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                        </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; OR = odds ratio.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors: posterior MAD SD (scaled median absolute deviation). OR = odds ratio.</span></span></span></code></pre></div>
 <p>Reading the <code>Tertiary</code> row with the factor-change
 template: holding sex and age constant, the odds of smoking for a
 tertiary-educated respondent are 0.40 times the odds for one with lower
@@ -480,9 +472,7 @@ request):</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). AME = average marginal effect.</span></span></span></code></pre></div>
 <p>Reading the <code>Tertiary</code> row: averaged over the sample,
 tertiary education shifts the probability of smoking by −0.15 — 15
 percentage points lower — and, given model, priors, and data, that shift
@@ -527,11 +517,7 @@ reader:</p>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                       –                   </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>     –                       0.02                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors:</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   ML (glm): classical (Fisher information)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt;   Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation)</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Model 2: 95% CI is an equal-tailed posterior credible interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression (stanreg). Std. errors: ML (glm): classical (Fisher information), Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation). Model 2: 95% CI is an equal-tailed posterior credible interval.</span></span></span></code></pre></div>
 <p>The intervals differ in <em>reading</em>, not much in width: the
 frequentist column’s CI is a coverage statement about the procedure, the
 Bayesian column’s CrI a probability statement about the parameter. The
@@ -573,9 +559,7 @@ a few seconds of PSIS-LOO per model:</p>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                       </span></span>
 <span><span class="co">#&gt;  ELPD (LOO)               <span style="color: #9E9E9E;">│</span> -600.6                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Predictive accuracy by PSIS-LOO; SE(ELPD) = 18.7.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). Predictive accuracy by PSIS-LOO; SE(ELPD) = 18.7.</span></span></span></code></pre></div>
 <p>The <code>ELPD (LOO)</code> row is the expected log predictive
 density (Vehtari, Gelman &amp; Gabry 2017), with its standard error
 disclosed in the footer. Prefer the log scale: <code>"looic"</code> (its
@@ -628,9 +612,7 @@ SD ratio and nothing is re-summarized:</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175           </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardized coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). β = standardized coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).</span></span></span></code></pre></div>
 <p>On this logistic model the betas are x-standardized on the link scale
 (the glm convention): <code>age</code>, the only continuous predictor,
 moves from a per-year log-odds of 0.01 to 0.09 per SD of age — the
@@ -743,10 +725,7 @@ quantile never encounters:</p>
 <span><span class="co">#&gt;  n                                <span style="color: #9E9E9E;">│</span> 180                            </span></span>
 <span><span class="co">#&gt;  R² (Bayes)                       <span style="color: #9E9E9E;">│</span>   0.79                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian linear regression (stanreg).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (MCMC).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Sampler diagnostics: max R-hat = 1.011 (target &lt; 1.01); min ESS = 282 (target &gt; 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian linear regression (stanreg). Sampler diagnostics: max R-hat = 1.011 (target &lt; 1.01); min ESS = 282 (target &gt; 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021). Std. errors: posterior MAD SD (scaled median absolute deviation). Random effects (MCMC).</span></span></span></code></pre></div>
 <p>Note the guard from the convergence section doing its job: this
 deliberately trimmed run (two short chains, a correlated random slope)
 misses the R-hat and ESS targets, so the table says so in its footer and
@@ -1199,11 +1178,11 @@ R² (Bayes)
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Bayesian logistic regression (stanreg). Std. errors:
-posterior MAD SD (scaled median absolute deviation). OR = odds ratio.
-Coefficients exponentiated and displayed as OR; SE on the OR scale
-(posterior MAD SD of the exponentiated draws); CI bounds exponentiated
-(asymmetric).
+<em>Note.</em> Bayesian logistic regression (stanreg). Coefficients
+exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD
+of the exponentiated draws); CI bounds exponentiated (asymmetric). Std.
+errors: posterior MAD SD (scaled median absolute deviation). OR = odds
+ratio.
 </div>
 </div>
 </div>

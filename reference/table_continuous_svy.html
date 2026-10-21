@@ -451,7 +451,8 @@ invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
 </ul><p>The default object and the two data frames carry the whole note as
-printed, "Note." included, in <code>attr(x, "note")</code>.</p>
+printed, "Note." included, in <code>attr(x, "note")</code>. The default object
+also keeps the title it prints in <code>attr(x, "title")</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="which-function-do-i-need-">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need-"></a></h2>
@@ -520,7 +521,13 @@ design the Welch / Student distinction does not exist – the
 variance is the design's – so <code>test = "student"</code> warns and behaves
 like <code>"welch"</code>. A variable with no variance has no comparison: its
 test cells are left blank, with a warning (class
-<code>spicy_undefined_stat</code>), where survey would still return a p-value.</p>
+<code>spicy_undefined_stat</code>), where survey would still return a p-value.
+The note names the comparison of each variable.</p>
+<p>A variable with no observed value in a domain (a question not asked
+in that group) has no data in it, as in <code><a href="table_continuous.html">table_continuous()</a></code>: its
+cells there show an en dash, <em>n</em> included, those rows are not counted
+in the missing values of the note, the comparison uses the domains
+with data, and the note says so ("No data for X in G.").</p>
     </div>
     <div class="section level2">
     <h2 id="stability">Stability<a class="anchor" aria-label="anchor" href="#stability"></a></h2>

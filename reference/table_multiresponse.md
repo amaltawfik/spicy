@@ -310,10 +310,10 @@ table_multiresponse(
 - note:
 
   The table note. `NULL` (the default) builds it, opening with "Note.":
-  the rows removed for a missing `by`, what the percentages sum to, the
-  base with the respondents it holds or leaves out, and the tests. A
-  single string replaces it and is printed as typed, and `FALSE` removes
-  it.
+  what the percentages sum to, the base with the respondents it holds or
+  leaves out, the rows removed for a missing `by` and the items with no
+  data in a group, then the tests. A single string replaces it and is
+  printed as typed, and `FALSE` removes it.
 
 - output:
 
@@ -401,11 +401,11 @@ Depends on `output`:
   displays), `.row_role` as above, with `by` `group`, `.group_role` (the
   role of `group`: `"group"`, or `"total"` for the margin) and `total`
   (`TRUE` on the rows of the margin), `n`, `base` (the respondents of
-  the group), the percentage named by its base: `pct_cases` (of the
-  respondents) or `pct_responses` (of the choices made), as `percent`
-  asks, both under `percent = "both"`, and, when the item tests ran (for
-  `p_value` or for `statistic`), `test_type` (the test of the item, as
-  in
+  the group; in the margin, those of the groups with data for the item),
+  the percentage named by its base: `pct_cases` (of the respondents) or
+  `pct_responses` (of the choices made), as `percent` asks, both under
+  `percent = "both"`, and, when the item tests ran (for `p_value` or for
+  `statistic`), `test_type` (the test of the item, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
   `"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
   `"fisher_midp"`, `"fisher_exact_mc"`), `statistic` and `df` (`NA` for
@@ -519,9 +519,13 @@ it.
 
 An item chosen by every respondent, or by none, has no test: its `p`
 cell shows a dash, it leaves the global test, and the note names it. Its
-row stays. With fewer than two groups holding respondents there is
-nothing to compare, and the table shows no test. The note names the
-global test with its statistic, degrees of freedom, and p-value.
+row stays. An item with no data in a group (see *Base and missing
+values*) is tested on the groups with data for it, has no test with
+fewer than two (its `p` cell is then blank), and leaves the global test,
+which compares every group on the same items. With fewer than two groups
+holding respondents there is nothing to compare, and the table shows no
+test. The note names the global test with its statistic, degrees of
+freedom, and p-value.
 
 ## Multiple-comparison adjustment
 
@@ -565,6 +569,16 @@ or give the row another label, for example
 Declared missing values of a labelled column (`na_values`, `na_range`)
 are missing, as under the `user_na = TRUE` default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+
+An item missing for every respondent of a group (typically an item not
+asked there) has no data in that group: its cells there show a dash, its
+`Total` counts the other groups only, and the note says so, in one
+sentence for the items with no data in the same groups. Without `by`, an
+item with no observed value at all shows a dash. A group with no data
+for any item was not asked the question: all its cells, `Respondents`
+included, show a dash, and its respondents leave the base, the `Total`,
+the tests and the count of the respondents with no data for the
+question.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical

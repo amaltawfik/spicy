@@ -57,10 +57,21 @@ This is the right entry point for users who want to:
 
 - `body` – `data.frame` with a `Variable` character column, one or more
   numeric value columns, and four dot-prefixed *identity* columns at the
-  end. Confidence intervals are split into `LL` / `UL` columns named
-  like `"95% CI: LL"` / `"95% CI: UL"` (or prefixed with the model label
-  in multi-model output). A cell with no value (reference level, term
-  absent from a model, factor header) is `NA`.
+  end. Confidence intervals are split into a lower and an upper column,
+  named as each family names them: `"95% CI: LL"` / `"95% CI: UL"` in a
+  regression table (prefixed with the model label in multi-model
+  output), `"95% CI LL"` / `"95% CI UL"` in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  `"CI lower"` / `"CI upper"` for the association measure of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  and `"<group> % CI lower"` / `"<group> % CI upper"` in
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md).
+  A cell with no value (reference level, term absent from a model,
+  factor header) is `NA`.
 
 - `body$.variable` – source variable of the row: the factor name on a
   factor header / level / reference row, the term otherwise, and the
@@ -123,8 +134,19 @@ This is the right entry point for users who want to:
 
 ## Descriptive tables
 
-The three descriptive families return the same schema; only the
-`col_meta` tokens and the row roles they emit differ.
+The descriptive tables return the same schema; only the `col_meta`
+tokens and the row roles they emit differ.
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+has the columns of
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and the rows of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+a `"summary"` row for the whole sample, then a `"factor_header"` row per
+grouping and its `"level"` (or `"missing"`) rows. The survey twins
+follow the table they twin,
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+with the interval of each percentage (token `"prop_ci"`) and no
+association measure.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   – one `"factor_header"` row per variable then one `"level"` (or
