@@ -248,7 +248,7 @@ test_that("a token the table does not carry is named, not met with a level hint"
 })
 
 
-# ---- inline.R 666: the empty-cell refusal without a structured table ----
+# ---- inline.R: the empty-cell refusal, bare and with its hint ----
 
 test_that("the empty-cell refusal works without any table context", {
   # The context arguments are optional, and the promise attached to
@@ -269,20 +269,50 @@ test_that("the empty-cell refusal works without any table context", {
     character(0)
   )
 
-  # With a real table the SAME refusal earns its hint -- which is what
-  # makes the bare form a fallback rather than the norm. A variable with
-  # one observed category has no test in `table_categorical()`: the p
-  # column is empty on every row of the table, its level rows included.
+  # A variable with one observed category has no test in
+  # `table_categorical()`: its p shows the undefined mark on the
+  # variable's row, which is refused as undefined. The level row is
+  # blank, the p sitting on the variable's row, and is refused as empty
+  # with no hint: the column is not empty on every row.
   d <- data.frame(x = rep("a", 10), g = rep(c("u", "v"), 5))
   tc <- table_categorical(d, select = x, by = g)
+  expect_error(
+    inline(tc, x, column = "p"),
+    "The \"p\" cell of this row is undefined in the table (not estimable).",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
   err2 <- expect_error(inline(tc, x, "a", "p"), class = "spicy_invalid_input")
-  msg <- conditionMessage(err2)
+  expect_identical(
+    conditionMessage(err2),
+    "The \"p\" cell of this row is empty in the table."
+  )
+
+  # The hint comes from a regression that mixes classes, through
+  # `model`: the partial f-squared applies to the linear model, so the
+  # logistic model's column is empty on every row.
+  m_lm <- lm(wellbeing_score ~ age + sex, data = sochealth)
+  m_glm <- glm(smoking ~ age + sex, data = sochealth, family = binomial)
+  tr <- table_regression(
+    list(Linear = m_lm, Logistic = m_glm),
+    show_columns = c("b", "partial_f2")
+  )
+  expect_true(nzchar(inline(tr, age, column = "partial_f2", model = "Linear")))
+  err3 <- expect_error(
+    inline(tr, age, column = "partial_f2", model = "Logistic"),
+    class = "spicy_invalid_input"
+  )
+  msg <- strsplit(conditionMessage(err3), "\n", fixed = TRUE)[[1L]]
+  expect_length(msg, 2L)
+  expect_identical(
+    msg[[1L]],
+    "The \"partial_f2\" cell of this row is empty in the table."
+  )
   expect_match(
-    msg,
-    "The \"p\" cell of this row is empty in the table.",
+    msg[[2L]],
+    "The \"partial_f2\" column is empty on EVERY row, not only on this one.",
     fixed = TRUE
   )
-  expect_match(msg, "The \"p\" column is empty on EVERY row", fixed = TRUE)
 
   # In the continuous family no cell is empty for want of a value: a
   # comparison that cannot run shows the undefined mark and is refused as

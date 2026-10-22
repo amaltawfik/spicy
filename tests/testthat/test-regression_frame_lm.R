@@ -80,7 +80,9 @@ test_that("as_regression_frame.lm() populates required info fields correctly", {
   # The canon, not the "classical" synonym the argument still spells:
   # new_regression_frame() normalizes on the way in (register n. 228).
   expect_identical(info$vcov_kind, "model")
-  expect_identical(info$vcov_label, "OLS")
+  # The wording the note prints ("Std. errors: classical (OLS)."): the
+  # label goes through the registry derivation of the footer.
+  expect_identical(info$vcov_label, "classical (OLS)")
 })
 
 test_that("as_regression_frame.lm() reports lm capabilities", {
@@ -305,7 +307,64 @@ test_that("vcov = 'HC3' is reflected in vcov_kind and vcov_label", {
   fit <- .fixture_lm()
   frame <- as_regression_frame(fit, vcov = "HC3")
   expect_identical(frame$info$vcov_kind, "HC3")
-  expect_match(frame$info$vcov_label, "HC3", fixed = TRUE)
+  expect_identical(frame$info$vcov_label, "heteroskedasticity-robust (HC3)")
+})
+
+test_that("the standard-error sentence prints the frame's label once, in each language", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("survival")
+  fits <- list(
+    lm = .fixture_lm(),
+    glm = .fixture_glm_logistic(),
+    negbin = MASS::glm.nb(Days ~ Sex + Age, data = MASS::quine),
+    lmer = lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy),
+    coxph = survival::coxph(
+      survival::Surv(time, status) ~ age + sex,
+      data = survival::lung
+    )
+  )
+  expected <- list(
+    en = c(
+      lm = "Std. errors: classical (OLS).",
+      glm = "Std. errors: classical (Fisher information).",
+      negbin = "Std. errors: classical (Fisher information).",
+      lmer = "Std. errors: Wald (model-based).",
+      coxph = "Std. errors: Wald asymptotic (z)."
+    ),
+    fr = c(
+      lm = "Erreurs standards\u00A0: classiques (MCO).",
+      glm = "Erreurs standards\u00A0: classiques (information de Fisher).",
+      negbin = "Erreurs standards\u00A0: classiques (information de Fisher).",
+      lmer = "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le).",
+      coxph = "Erreurs standards\u00A0: Wald asymptotique (z)."
+    )
+  )
+  for (lang in names(expected)) {
+    withr::local_options(spicy.language = lang)
+    for (cls in names(fits)) {
+      note <- attr(table_regression(fits[[cls]]), "note")
+      # One sentence, exactly this one: a label wrapped twice
+      # ("classical (classical (OLS))") or printed twice fails here.
+      expect_identical(
+        regmatches(
+          note,
+          gregexpr("(Std\\. errors|Erreurs standards)[^.]*\\.", note)
+        )[[1L]],
+        expected[[lang]][[cls]],
+        info = paste(lang, cls)
+      )
+      # The frame holds the very label the sentence prints.
+      expect_identical(
+        spicy_fmt(
+          "note_std_errors_single",
+          as_regression_frame(fits[[cls]])$info$vcov_label
+        ),
+        expected[[lang]][[cls]],
+        info = paste(lang, cls)
+      )
+    }
+  }
 })
 
 test_that("HC3 standard errors differ from classical (sanity check)", {

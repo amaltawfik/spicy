@@ -1170,11 +1170,16 @@ inline <- function(
 }
 
 # The hint the empty-cell refusal can earn from the table itself: the
-# column is empty on EVERY row, not just this one -- the table carries no
-# value for the token at all (a `table_categorical()` whose test did not
-# run). Stated as a property of the table, never by naming the argument
-# that produced it: `inline()` reads the structured view and has no sight
-# of the call. A second hint named the group means of
+# column is empty on EVERY row, not just this one, so no other address
+# will find a value in it. It is reached through `model` in a regression
+# that mixes classes, where a class-specific column stays empty for the
+# model it does not apply to (the partial f-squared of a logistic model
+# beside a linear one). The other models carry the token, so the hint
+# speaks of the column, not of the table. Stated as a property of the
+# table, never by naming the argument that produced it: `inline()` reads
+# the structured view and has no sight of the call. A
+# `table_categorical()` whose test did not run reached it until its p
+# showed the undefined mark. A second hint named the group means of
 # `table_continuous_lm()` as addressable; no cell of that table is blank
 # any more, an undefined one shows the mark, so it went.
 .inline_empty_cell_hints <- function(s, token, formatted, cols) {
@@ -1196,10 +1201,7 @@ inline <- function(
   }
   c(
     "i" = sprintf(
-      paste0(
-        "The %s column is empty on EVERY row: this table carries no ",
-        "value for that token."
-      ),
+      "The %s column is empty on EVERY row, not only on this one.",
       .quote_val(token)
     )
   )
