@@ -1484,15 +1484,28 @@ test_that("a block constant within its levels keeps its rank test", {
     v = c(rep(4, 5), rep(6, 5), rep(9, 5)),
     g = factor(rep(c("a", "b", "c"), each = 5))
   )
-  rank_p <- function(d) {
-    out <- expect_no_warning(
-      table_outcome(d, v, select = g, test = "nonparametric", output = "long")
+  # Before R 4.6.0, wilcox.test() warns that ties forbid an exact p-value
+  # and uses the normal approximation; spicy passes that warning on. Only
+  # that warning is let by, and the oracle is the same R's wilcox.test().
+  muffle_ties <- function(expr) {
+    withCallingHandlers(
+      expr,
+      warning = function(w) {
+        if (grepl("ties", conditionMessage(w), fixed = TRUE)) {
+          invokeRestart("muffleWarning")
+        }
+      }
     )
+  }
+  rank_p <- function(d) {
+    out <- expect_no_warning(muffle_ties(
+      table_outcome(d, v, select = g, test = "nonparametric", output = "long")
+    ))
     out$p.value[out$.row_role == "factor_header"]
   }
   expect_equal(
     rank_p(two),
-    stats::wilcox.test(v ~ g, data = two)$p.value,
+    suppressWarnings(stats::wilcox.test(v ~ g, data = two))$p.value,
     tolerance = 1e-12
   )
   expect_equal(

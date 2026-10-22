@@ -5430,15 +5430,35 @@ test_that("the rank tests run on groups each constant on their own value", {
     v = c(rep(4, 5), rep(6, 5), rep(9, 5)),
     g = factor(rep(c("a", "b", "c"), each = 5))
   )
-  rank_p <- function(d, ...) {
-    out <- expect_no_warning(
-      table_continuous(d, select = v, by = g, output = "long", ...)
+  # Before R 4.6.0, wilcox.test() warns that ties forbid an exact p-value
+  # and uses the normal approximation; spicy passes that warning on. The
+  # oracle is the same R's wilcox.test(), and only that warning is let by.
+  muffle_ties <- function(expr) {
+    withCallingHandlers(
+      expr,
+      warning = function(w) {
+        if (grepl("ties", conditionMessage(w), fixed = TRUE)) {
+          invokeRestart("muffleWarning")
+        }
+      }
     )
+  }
+  rank_p <- function(d, ...) {
+    out <- expect_no_warning(muffle_ties(
+      table_continuous(d, select = v, by = g, output = "long", ...)
+    ))
     out$p.value[[1L]]
   }
-  wil <- stats::wilcox.test(v ~ g, data = two)$p.value
+  wil_warns <- inherits(
+    tryCatch(stats::wilcox.test(v ~ g, data = two), warning = identity),
+    "warning"
+  )
+  wil <- suppressWarnings(stats::wilcox.test(v ~ g, data = two))$p.value
   expect_equal(rank_p(two, test = "nonparametric"), wil, tolerance = 1e-12)
-  expect_identical(round(wil, 3), 0.008)
+  # The exact p-value of complete separation, 2 / choose(10, 5).
+  if (!wil_warns) {
+    expect_identical(round(wil, 3), 0.008)
+  }
   expect_equal(
     rank_p(three, test = "nonparametric"),
     stats::kruskal.test(v ~ g, data = three)$p.value,
