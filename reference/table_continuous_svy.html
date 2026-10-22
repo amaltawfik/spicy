@@ -522,7 +522,10 @@ variance is the design's – so <code>test = "student"</code> warns and behaves
 like <code>"welch"</code>. A variable with no variance, or whose domains are each
 constant on their own value (a residual variance of zero), has no
 comparison, with a warning (class <code>spicy_undefined_stat</code>), where survey
-would still return a p-value. Its test cells show the undefined mark,
+would still return a p-value. Under <code>test = "nonparametric"</code> too, unlike
+<code><a href="table_continuous.html">table_continuous()</a></code>: <code><a href="https://rdrr.io/pkg/survey/man/svyranktest.html" class="external-link">survey::svyranktest()</a></code> is a design-based test of
+the ranks, which are then constant within the domains as well. Its
+test cells show the undefined mark,
 as do those of any comparison that cannot run (too few observations in
 a domain, a test refused under weights that change sign).
 The note names the comparison of each variable.</p>

@@ -65,10 +65,14 @@ table_categorical_svy(
 - select:
 
   Columns to tabulate, as a tidyselect expression on the design's
-  variables. The design's own columns are not variables to describe: its
-  sampling weights, replicate weights, cluster identifiers (every stage,
-  unless each cluster of a one-stage design is a single observation) and
-  finite population corrections.
+  variables. When omitted, every categorical column of the design
+  (factor, character, logical, and labelled columns), as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+  an explicit `select` is taken verbatim, so a numeric-coded variable
+  can still be tabulated by naming it. The design's own columns are not
+  variables to describe: its sampling weights, replicate weights,
+  cluster identifiers (every stage, unless each cluster of a one-stage
+  design is a single observation) and finite population corrections.
   [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
   and the other selection helpers skip them, and naming one, or giving
   its position, is an error;
@@ -414,11 +418,12 @@ and in
 and its rows there are left out of everything computed for that
 variable: the missing values the note counts, the `Total` block, the
 `(Missing)` row and the test. A variable left with fewer than two groups
-with data is not tested: its `p` cell is left blank. The note says "No
-data for X in G.", in one sentence for the variables with no data in the
-same groups ("No data for X and Y in G."). Without `by`, a variable with
-no observed value at all keeps its declared levels (its one row when it
-declares none) with the dash, and the note says "No data for X."
+with data, or observed at one level, is not tested: its `p` cell shows
+the dash, the undefined cell. The note says "No data for X in G.", in
+one sentence for the variables with no data in the same groups ("No data
+for X and Y in G."). Without `by`, a variable with no observed value at
+all keeps its declared levels (its one row when it declares none) with
+the dash, and the note says "No data for X."
 
 ## Stability
 

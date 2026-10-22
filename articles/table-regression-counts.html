@@ -258,7 +258,7 @@ overdispersion, and the Poisson is the limiting case as <span class="math inline
 <span><span class="co">#&gt;  α (= 1/θ)       <span style="color: #9E9E9E;">│</span>    0.44                            </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3134.1                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Model-based (asymptotic). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The dispersion estimate sits in the table itself: the opt-in
 <code>θ (dispersion)</code> row shows <span class="math inline">\(\hat\theta\)</span> = 2.26, and
 <code>α (= 1/θ)</code> its reciprocal 0.44 — the parameterization
@@ -461,7 +461,7 @@ substantive reasoning carry the comparison.)</p>
 <span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19      –       0.11      –   </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3   3225.5   3134.1   3122.5  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: Model-based (asymptotic), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read the AIC row across. The ZIP’s entire inflation component buys
 less than the negative binomial’s single dispersion parameter (3225.5
 against 3134.1): modeling the zeros directly is the <em>worse</em>

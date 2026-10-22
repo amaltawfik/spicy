@@ -229,9 +229,12 @@ level ordering (e.g. via <code><a href="https://forcats.tidyverse.org/reference/
 that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
 so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
 <li><p><strong>haven labelled with value labels</strong> (an SPSS / Stata import):
-treated as categorical over the raw codes, in ascending code
-order (the reference level is the lowest code; the model needs
-a fixed level order), the order in which <code><a href="table_continuous.html">table_continuous()</a></code> and
+treated as categorical, one level per observed code named by its
+value label (<code>"[1] Women"</code>, as the rows of a labelled variable of
+<code><a href="table_categorical.html">table_categorical()</a></code> are), in the order of its <code>labels</code> attribute
+when every observed value carries a label and by ascending code
+otherwise (the first level is the reference; the model needs a
+fixed level order), the order in which <code><a href="table_continuous.html">table_continuous()</a></code> and
 <code><a href="table_categorical.html">table_categorical()</a></code> display the same groups. A
 labelled vector without value labels is treated as a continuous
 regressor. Declared missing values follow <code>user_na</code> as usual.</p></li>
@@ -453,7 +456,10 @@ wide and rendered outputs. Defaults to <code>FALSE</code>.</p></dd>
 <dd><p>Logical or <code>NULL</code>. If <code>TRUE</code>, includes a <code>p</code> column in
 the wide and rendered outputs. <code>NULL</code> (the default) shows it whenever
 <code>by</code> is supplied, as in the rest of the family; <code>by</code> is required
-here, so <code>NULL</code> means <code>TRUE</code>. Pass <code>p_value = FALSE</code> to suppress it.</p></dd>
+here, so <code>NULL</code> means <code>TRUE</code>. Pass <code>p_value = FALSE</code> to suppress it:
+<code>output = "long"</code>, <code>tidy()</code> and <code>glance()</code> then keep their columns
+with <code>p.value</code> <code>NA</code>, and <code>test_type</code>, <code>statistic</code>, <code>df</code> and
+<code>df.residual</code> too unless <code>statistic = TRUE</code>.</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>

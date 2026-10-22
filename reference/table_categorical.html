@@ -172,9 +172,8 @@ selection: <code><a href="https://tidyselect.r-lib.org/reference/everything.html
 naming one in <code>select</code>, or giving its position, is an error. A name
 that is not a column of <code>data</code> is an error (class
 <code>spicy_missing_column</code>), and so is a selection with no column to
-tabulate. The levels of a variable are its rows in the order <code>by</code>
-gives its groups (see <code>by</code>); a labelled variable keeps the order of
-its codes.</p></dd>
+tabulate. The levels of a variable are its rows, in the order <code>by</code>
+gives its groups (see <code>by</code>), a labelled variable's included.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -183,13 +182,14 @@ unquoted column name or a single character column name. Factor
 levels keep their declared order, which is the way to choose another
 order; any other <code>by</code> is sorted, as in <code><a href="freq.html">freq()</a></code> and <code><a href="cross_tab.html">cross_tab()</a></code>:
 text in the C locale (capitals before lower case, the same on every
-machine), <code>FALSE</code> before <code>TRUE</code>, numbers and the codes of a haven
-labelled column ascending, whatever the order of the rows. The
-column of missing values comes last. For a haven labelled <code>by</code>, the
-group headers are the raw codes (value labels are not used for group
-headers – the family convention shared with <code><a href="table_continuous.html">table_continuous()</a></code>
-and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); declared missing values follow
-<code>user_na</code> as usual.</p></dd>
+machine), <code>FALSE</code> before <code>TRUE</code>, numbers ascending, whatever the
+order of the rows. The column of missing values comes last. A haven
+labelled <code>by</code> names its groups by their value labels, as the rows of
+a labelled variable name its levels (<code>"[1] Women"</code>), in the order of
+its <code>labels</code> attribute when every observed value carries a label and
+by ascending code otherwise; a value label no observation holds adds
+no group, and declared missing values follow <code>user_na</code> as usual. The
+rule of the whole family.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -262,7 +262,8 @@ error (class <code>spicy_invalid_data</code>).</p></dd>
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
 <dd><p>Optional weights. Either <code>NULL</code> (the default), a numeric vector
 of length <code>nrow(data)</code>, or a single column in <code>data</code> supplied as an
-unquoted name or a character string.</p></dd>
+unquoted name or a character string. Rows with an <code>NA</code> weight leave
+the table, and the note says how many.</p></dd>
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
@@ -621,7 +622,10 @@ complete cases of its observed levels, a <code>"(Missing)"</code> level and a
 declared level nobody holds left out: one <em>p</em>-value per variable,
 in the <code>p</code> column. A table left with a single row or column (a
 variable observed at one level, or in one group) is uninformative and
-gets no test, whatever <code>test</code> says: its <code>p</code> cell is left blank.</p>
+gets no test and no association measure, whatever <code>test</code> and
+<code>assoc_measure</code> say: its <code>p</code> and measure cells show an en dash, the
+undefined cell, and the note names no measure for it. A blank cell
+only means a statistic that was not requested or does not apply.</p>
 <p>The chi-squared approximation is unreliable when expected counts are
 small. Under <code>test = "auto"</code>, the default, a variable takes Pearson's
 chi-squared test (<code><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">stats::chisq.test()</a></code>) when every expected count of
@@ -702,7 +706,8 @@ and in <code><a href="as_structured.html">as_structured()</a></code>), and its r
 everything computed for that variable: the missing values the note
 counts, the <code>Total</code> column, the <code>"(Missing)"</code> row, the test, the
 association measure and the SMD. A variable left with fewer than two
-groups with data is not tested: its <code>p</code> cell is left blank. The note
+groups with data is not compared: its <code>p</code> and measure cells show the
+dash, and the note names no test and no measure for it. The note
 says "No data for X in G.", in one sentence for the variables with no
 data in the same groups ("No data for X and Y in G."). Without <code>by</code>, a
 variable with no observed value at all keeps its declared levels (its

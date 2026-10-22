@@ -158,7 +158,7 @@ table_regression(fit_nb, exponentiate = TRUE,
 #>  α (= 1/θ)       │    0.44                            
 #>  AIC             │ 3134.1                             
 #> 
-#> Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Model-based (asymptotic). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The dispersion estimate sits in the table itself: the opt-in
@@ -382,7 +382,7 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
-#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: Model-based (asymptotic), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.
+#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.
 ```
 
 Read the AIC row across. The ZIP’s entire inflation component buys less

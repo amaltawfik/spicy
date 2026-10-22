@@ -96,15 +96,14 @@ table_continuous(
   another order; any other `by` is sorted, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
   text in the C locale (capitals before lower case, the same on every
-  machine), `FALSE` before `TRUE`, numbers and the codes of a haven
-  labelled column ascending, whatever the order of the rows. The group
-  of missing values comes last. For a haven labelled `by`, the group
-  headers are the raw codes (value labels are not used for grouping
-  headers – the family convention shared with
+  machine), `FALSE` before `TRUE`, numbers ascending, whatever the order
+  of the rows. The group of missing values comes last. A haven labelled
+  `by` names its groups by their value labels, as the rows of a labelled
+  variable of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
-  declared missing values follow `user_na` as usual.
+  name its levels (`"[1] Women"`), in the order of its `labels`
+  attribute when every observed value carries a label and by ascending
+  code otherwise; declared missing values follow `user_na` as usual.
 
 - exclude:
 
@@ -186,13 +185,14 @@ table_continuous(
   Used whenever `by` is supplied (since `p_value` defaults to `TRUE` in
   that case) or when `statistic = TRUE` or an `effect_size` is
   requested. Ignored when `by` is not used, or when all three display
-  toggles are turned off. A variable with no variance, or whose groups
-  are each constant on their own value (a residual variance of zero),
-  has no test, whichever is chosen, with a warning (class
-  `spicy_undefined_stat`). Its test cells (test, p-value, effect size)
-  show the undefined mark, as do those of any comparison that cannot run
-  (too few observations in a group, a test that fails, a non-finite
-  effect size).
+  toggles are turned off. A variable with no variance has no test,
+  whichever is chosen, with a warning (class `spicy_undefined_stat`); so
+  has a variable whose groups are each constant on their own value (a
+  residual variance of zero) under `"welch"` and `"student"`, while the
+  rank tests, which read the order of the values, run. Its test cells
+  (test, p-value, effect size) show the undefined mark, as do those of
+  any comparison that cannot run (too few observations in a group, a
+  test that fails, a non-finite effect size).
 
 - p_value:
 
@@ -609,10 +609,11 @@ The column is the header the table prints. In `output = "data.frame"`,
 [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
 and
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
-the median columns keep the names of 0.13.0, `Med`, `Med [Q1, Q3]` and
-`Med <level>% CI LL` / `UL`. The note under the table defines the
-abbreviations these headers show, as the style in force asks (see
-`abbreviations` in
+the columns are named by their keys, the same in every display language:
+the printed header in English, except for the median, whose keys are
+`Med`, `Med [Q1, Q3]` and `Med <level>% CI LL` / `UL` under the printed
+`Mdn`. The note under the table defines the abbreviations these headers
+show, as the style in force asks (see `abbreviations` in
 [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)).
 
 Quartiles use

@@ -1061,7 +1061,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_116bnh7kfdm2ie2uvzjb .table
+Categorical table by education {#tinytable_onqnjbyi0sak4d58t30t .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

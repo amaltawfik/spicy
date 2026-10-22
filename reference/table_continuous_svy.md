@@ -500,11 +500,15 @@ distinction does not exist – the variance is the design's – so
 `test = "student"` warns and behaves like `"welch"`. A variable with no
 variance, or whose domains are each constant on their own value (a
 residual variance of zero), has no comparison, with a warning (class
-`spicy_undefined_stat`), where survey would still return a p-value. Its
-test cells show the undefined mark, as do those of any comparison that
-cannot run (too few observations in a domain, a test refused under
-weights that change sign). The note names the comparison of each
-variable.
+`spicy_undefined_stat`), where survey would still return a p-value.
+Under `test = "nonparametric"` too, unlike
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+[`survey::svyranktest()`](https://rdrr.io/pkg/survey/man/svyranktest.html)
+is a design-based test of the ranks, which are then constant within the
+domains as well. Its test cells show the undefined mark, as do those of
+any comparison that cannot run (too few observations in a domain, a test
+refused under weights that change sign). The note names the comparison
+of each variable.
 
 A variable with no observed value in a domain (a question not asked in
 that group) has no data in it, as in

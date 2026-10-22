@@ -81,9 +81,9 @@ table_categorical(
   and the other helpers skip them, and naming one in `select`, or giving
   its position, is an error. A name that is not a column of `data` is an
   error (class `spicy_missing_column`), and so is a selection with no
-  column to tabulate. The levels of a variable are its rows in the order
-  `by` gives its groups (see `by`); a labelled variable keeps the order
-  of its codes.
+  column to tabulate. The levels of a variable are its rows, in the
+  order `by` gives its groups (see `by`), a labelled variable's
+  included.
 
 - by:
 
@@ -94,15 +94,14 @@ table_categorical(
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
   text in the C locale (capitals before lower case, the same on every
-  machine), `FALSE` before `TRUE`, numbers and the codes of a haven
-  labelled column ascending, whatever the order of the rows. The column
-  of missing values comes last. For a haven labelled `by`, the group
-  headers are the raw codes (value labels are not used for group headers
-  – the family convention shared with
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
-  declared missing values follow `user_na` as usual.
+  machine), `FALSE` before `TRUE`, numbers ascending, whatever the order
+  of the rows. The column of missing values comes last. A haven labelled
+  `by` names its groups by their value labels, as the rows of a labelled
+  variable name its levels (`"[1] Women"`), in the order of its `labels`
+  attribute when every observed value carries a label and by ascending
+  code otherwise; a value label no observation holds adds no group, and
+  declared missing values follow `user_na` as usual. The rule of the
+  whole family.
 
 - labels:
 
@@ -187,7 +186,8 @@ table_categorical(
 
   Optional weights. Either `NULL` (the default), a numeric vector of
   length `nrow(data)`, or a single column in `data` supplied as an
-  unquoted name or a character string.
+  unquoted name or a character string. Rows with an `NA` weight leave
+  the table, and the note says how many.
 
 - rescale:
 
@@ -593,7 +593,10 @@ and tested on the complete cases of its observed levels, a `"(Missing)"`
 level and a declared level nobody holds left out: one *p*-value per
 variable, in the `p` column. A table left with a single row or column (a
 variable observed at one level, or in one group) is uninformative and
-gets no test, whatever `test` says: its `p` cell is left blank.
+gets no test and no association measure, whatever `test` and
+`assoc_measure` say: its `p` and measure cells show an en dash, the
+undefined cell, and the note names no measure for it. A blank cell only
+means a statistic that was not requested or does not apply.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -686,14 +689,15 @@ and in
 and its rows there are left out of everything computed for that
 variable: the missing values the note counts, the `Total` column, the
 `"(Missing)"` row, the test, the association measure and the SMD. A
-variable left with fewer than two groups with data is not tested: its
-`p` cell is left blank. The note says "No data for X in G.", in one
-sentence for the variables with no data in the same groups ("No data for
-X and Y in G."). Without `by`, a variable with no observed value at all
-keeps its declared levels (its one row when it declares none) with the
-dash, and the note says "No data for X." The column of missing `by`
-values is never such a group, and a declared level of `by` that holds no
-row keeps its zero column.
+variable left with fewer than two groups with data is not compared: its
+`p` and measure cells show the dash, and the note names no test and no
+measure for it. The note says "No data for X in G.", in one sentence for
+the variables with no data in the same groups ("No data for X and Y in
+G."). Without `by`, a variable with no observed value at all keeps its
+declared levels (its one row when it declares none) with the dash, and
+the note says "No data for X." The column of missing `by` values is
+never such a group, and a declared level of `by` that holds no row keeps
+its zero column.
 
 ## Multiple-comparison adjustment
 

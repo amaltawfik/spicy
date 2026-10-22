@@ -69,13 +69,13 @@ table_outcome(
   per level: the levels of a factor in their order, any other variable
   sorted, as the groups of `by` are in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  (text in the C locale, `FALSE` before `TRUE`, numbers and codes
-  ascending), whatever the order of the rows. As everywhere in the
-  family, `select` is what structures the rows. The outcome and the
-  `weights` column are not part of the selection: a selection helper
-  skips them, and naming one in `select`, or giving its position, is an
-  error. A name that is not a column of `data` is an error (class
-  `spicy_missing_column`), and so is an empty selection.
+  (text in the C locale, `FALSE` before `TRUE`, numbers ascending, a
+  labelled column by its value labels), whatever the order of the rows.
+  As everywhere in the family, `select` is what structures the rows. The
+  outcome and the `weights` column are not part of the selection: a
+  selection helper skips them, and naming one in `select`, or giving its
+  position, is an error. A name that is not a column of `data` is an
+  error (class `spicy_missing_column`), and so is an empty selection.
 
 - labels:
 
@@ -158,13 +158,15 @@ table_outcome(
 - test:
 
   Group comparison for every block: `"welch"` (default), `"student"` or
-  `"nonparametric"`. An outcome with no variance in a block, or constant
-  within each of its levels (a residual variance of zero), has no test
+  `"nonparametric"`. An outcome with no variance in a block has no test
   there, whichever is chosen, with a warning (class
-  `spicy_undefined_stat`). The block's test cells (test, p-value, effect
-  size) show the undefined mark, as do those of any block whose
-  comparison cannot run (too few observations in a level, a test that
-  fails, a non-finite effect size).
+  `spicy_undefined_stat`); so has an outcome constant within each level
+  of a block (a residual variance of zero) under `"welch"` and
+  `"student"`, while the rank tests, which read the order of the values,
+  run. The block's test cells (test, p-value, effect size) show the
+  undefined mark, as do those of any block whose comparison cannot run
+  (too few observations in a level, a test that fails, a non-finite
+  effect size).
 
 - p_value:
 
@@ -506,12 +508,14 @@ more than 20 levels raises a warning for that reason – an arbitrary
 threshold, but a sixty-row block where a reader expects a handful of
 categories is not a table.
 
-A `haven_labelled` column used as `select` shows its numeric CODES, not
-its value labels, as it does in
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
-Convert it first
-([`haven::as_factor()`](https://forcats.tidyverse.org/reference/as_factor.html))
-to get the labels in the stub.
+A `haven_labelled` column used as `select` names its levels by their
+value labels (`"[1] Women"`), in the order of its `labels` attribute
+when every observed value carries a label and by ascending code
+otherwise, as a labelled `by` names its groups in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and as the rows of a labelled variable of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+read.
 
 ## The table note
 
@@ -577,7 +581,7 @@ table_outcome(sochealth, bmi, select = c(sex, smoking))
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of wellbeing_score
 #> 
@@ -739,5 +743,5 @@ table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #>    High              │       
 #>    Very high         │       
 #> 
-#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```

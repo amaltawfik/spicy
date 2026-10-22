@@ -283,8 +283,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   does.
 
-- They sort a logical `by` with `FALSE` first and a numeric or labeled
-  `by` in ascending order; a factor keeps the order of its levels.
+- They sort a logical `by` with `FALSE` first and a numeric `by` in
+  ascending order; a factor keeps the order of its levels.
+
+- A labeled `by` follows the order of its value labels when every
+  observed value has one and of its codes otherwise, the order of the
+  rows of a labeled variable.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -437,6 +441,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   keep their default output, but `labels = NULL` (their 0.13.0 default)
   is an error too, and a name that matches no term is ignored, not
   refused.
+
+- A labeled `by` heads its groups with their value labels, as the rows
+  of a labeled variable read (`[1] Women n`, not `1 n`), in every table;
+  so do the levels of a labeled `select` in
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
 
 - `table_categorical(test = "auto")`, the default, chooses Pearson’s
   chi-squared test when every expected count is at least 5, Fisher’s
@@ -1094,6 +1103,18 @@ the descriptive tables one contract for labels, p-values, and notes.
   does, where it read one vector for all and dropped the unmatched
   variables.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  show a dash, not a blank, in the test and association cells of a
+  variable they cannot compare, and the note names no association
+  measure for it.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  says in its note how many rows a missing weight removed, as the other
+  tables do, where it warned once per internal tabulation, three times
+  for one variable with `by`.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -1150,6 +1171,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   no longer says it removed the values its `(Missing)` row shows, and
   its note spells “chi-squared”, as the other notes do.
 
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  without `select` tabulates the categorical columns of the design, as
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  does. It tabulated the numeric ones too, one row per distinct value.
+
 - With `p_value = FALSE`,
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
@@ -1178,7 +1204,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and its siblings draw no inference on a constant variable, nor a
-  parametric one on groups each constant on its own value.
+  parametric one on groups each constant on its own value (nor a rank
+  test, in
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)).
 
 - In
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -1248,13 +1276,21 @@ the descriptive tables one contract for labels, p-values, and notes.
   accepts `p_value = NULL`, now its default as in the rest of the
   family: the p-value is shown, `by` being required.
 
+- With `p_value = FALSE`,
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  leaves the p-value `NA` in `output = "long"`,
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html), and
+  `glance()`, and the rest of the test too unless `statistic = TRUE`. It
+  kept them filled.
+
 - `table_continuous_lm(contrast = "none")` leaves out the contrast
   column and its interval in every displayed output, as documented,
   where it printed them empty; the long output keeps them, `NA`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   no longer stops with “attempt to select less than one element” when an
-  outcome has no complete observation in a level of `by`.
+  outcome has no complete observation in a level of `by`: the levels
+  with data keep their means, and the n stays.
 
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   warns that `drop_na = FALSE` without `by` has no effect, as
@@ -1294,6 +1330,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   names its marginal row as the table shows it, relabeled with
   `options(spicy.labels)`, where it kept “Overall”.
 
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  says each block compares the outcome “without controlling for the
+  other variables”: “blocks are not adjusted for one another”
+  contradicted `p_adjust`, which adjusts them all together.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   labels the standard errors of `mgcv` fits “Bayesian (mgcv posterior
   covariance)”. The label said “REML-implied” whatever the smoothing
@@ -1325,6 +1366,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   writes the robust standard-error line of every model class, not only
   `lm` and `glm`, and the model-based one of `lmer`, `lme`, and `gls`
   ([\#7](https://github.com/amaltawfik/spicy/issues/7)).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  words the standard errors of a
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit as
+  those of a glm, in every language, where it wrote “Model-based
+  (asymptotic)” or “HC0 heteroskedasticity-consistent” in English.
 
 - In French,
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -1374,6 +1421,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   calls the null of the random-effects test of a non-identity gaussian
   `glmmTMB()` fit “gaussian regression” (“régression gaussienne”), not
   “linear regression”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gives the theta of a
+  [`glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) null model
+  two decimals and the decimal mark of the table in its random-effects
+  test, “negative binomial(1.46) regression”; it printed “1.4579”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   calls the `partial_chi2` of `lmer`, `glmer`, `glmmTMB`, and `lme` fits

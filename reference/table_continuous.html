@@ -209,13 +209,13 @@ logical) are supported as-is. Factor levels keep their declared
 order, which is the way to choose another order; any other <code>by</code> is
 sorted, as in <code><a href="table_categorical.html">table_categorical()</a></code>: text in the C locale (capitals
 before lower case, the same on every machine), <code>FALSE</code> before
-<code>TRUE</code>, numbers and the codes of a haven labelled column ascending,
-whatever the order of the rows. The group of missing values comes
-last. For a haven labelled <code>by</code>,
-the group headers are the raw codes (value labels are not used
-for grouping headers – the family convention shared with
-<code><a href="table_categorical.html">table_categorical()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); declared
-missing values follow <code>user_na</code> as usual.</p></dd>
+<code>TRUE</code>, numbers ascending, whatever the order of the rows. The group
+of missing values comes last. A haven labelled <code>by</code> names its groups
+by their value labels, as the rows of a labelled variable of
+<code><a href="table_categorical.html">table_categorical()</a></code> name its levels (<code>"[1] Women"</code>), in the order
+of its <code>labels</code> attribute when every observed value carries a label
+and by ascending code otherwise; declared missing values follow
+<code>user_na</code> as usual.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -291,10 +291,12 @@ ANOVA (3+ groups). Assumes equal variances.</p></li>
 in that case) or when <code>statistic = TRUE</code> or an <code>effect_size</code> is
 requested.
 Ignored when <code>by</code> is not used, or when all three display toggles
-are turned off. A variable with no variance, or whose groups are
-each constant on their own value (a residual variance of zero), has
-no test, whichever is chosen, with a warning (class
-<code>spicy_undefined_stat</code>). Its test cells (test, p-value, effect size)
+are turned off. A variable with no variance has no test, whichever
+is chosen, with a warning (class <code>spicy_undefined_stat</code>); so has a
+variable whose groups are each constant on their own value (a
+residual variance of zero) under <code>"welch"</code> and <code>"student"</code>, while the
+rank tests, which read the order of the values, run. Its test cells
+(test, p-value, effect size)
 show the undefined mark, as do those of any comparison that cannot
 run (too few observations in a group, a test that fails, a
 non-finite effect size).</p></dd>
@@ -644,8 +646,10 @@ first row; the table itself starts on row 3.</p>
     <h2 id="choosing-the-statistics">Choosing the statistics<a class="anchor" aria-label="anchor" href="#choosing-the-statistics"></a></h2>
     <p><code>show_columns</code> selects which statistics the table displays. The
 tokens, and the column each one produces:</p><table class="table table"><tr><td>Token</td><td>Column</td><td>Statistic</td></tr><tr><td><code>"m"</code></td><td><code>M</code></td><td>mean</td></tr><tr><td><code>"sd"</code></td><td><code>SD</code></td><td>standard deviation</td></tr><tr><td><code>"med"</code></td><td><code>Mdn</code></td><td>median (<code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median()</a></code>)</td></tr><tr><td><code>"iqr"</code></td><td><code>IQR</code></td><td>interquartile <em>width</em>, <code>Q3 - Q1</code></td></tr><tr><td><code>"med_iqr"</code></td><td><code>Mdn [Q1, Q3]</code></td><td>median and the interquartile <em>interval</em>, in one compact column</td></tr><tr><td><code>"q1"</code> / <code>"q3"</code></td><td><code>Q1</code> / <code>Q3</code></td><td>first / third quartile</td></tr><tr><td><code>"min"</code> / <code>"max"</code></td><td><code>Min</code> / <code>Max</code></td><td>extremes</td></tr><tr><td><code>"ci"</code></td><td><code>&lt;level&gt;% CI LL</code> / <code>UL</code></td><td><em>t</em> confidence interval of the mean</td></tr><tr><td><code>"med_ci"</code></td><td><code>Mdn &lt;level&gt;% CI LL</code> / <code>UL</code></td><td>exact confidence interval of the median</td></tr><tr><td><code>"n"</code></td><td><code>n</code></td><td>valid observations</td></tr><tr><td><code>"weighted_n"</code></td><td><code>Weighted n</code></td><td>sum of weights (requires <code>weights</code>)</td></tr></table><p>The column is the header the table prints. In <code>output = "data.frame"</code>, <a href="as.data.frame.spicy_continuous_table.html">as.data.frame()</a>
-and <code><a href="as_structured.html">as_structured()</a></code>, the median columns keep the names of 0.13.0,
-<code>Med</code>, <code>Med [Q1, Q3]</code> and <code>Med &lt;level&gt;% CI LL</code> / <code>UL</code>. The note under
+and <code><a href="as_structured.html">as_structured()</a></code>, the columns are named by their keys, the same
+in every display language: the printed header in English, except for
+the median, whose keys are <code>Med</code>, <code>Med [Q1, Q3]</code> and
+<code>Med &lt;level&gt;% CI LL</code> / <code>UL</code> under the printed <code>Mdn</code>. The note under
 the table defines the abbreviations these headers show, as the style
 in force asks (see <code>abbreviations</code> in <code><a href="spicy_style.html">spicy_style()</a></code>).</p>
 <p>Quartiles use <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code>'s default type 7. <code>"iqr"</code> is the

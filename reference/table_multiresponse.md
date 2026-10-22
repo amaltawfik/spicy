@@ -75,10 +75,11 @@ table_multiresponse(
   their declared order, a declared level with no respondent included;
   any other column is sorted, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
-  text in the C locale, `FALSE` before `TRUE`, numbers and the codes of
-  a labelled column ascending, whatever the order of the rows. The
-  missing answers to the question are counted (see `base` and
-  `none_row`), as a table that counts does (see `drop_na` in
+  text in the C locale, `FALSE` before `TRUE`, numbers ascending,
+  whatever the order of the rows, and a labelled column is named and
+  ordered by its value labels as there. The missing answers to the
+  question are counted (see `base` and `none_row`), as a table that
+  counts does (see `drop_na` in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
   but a missing `by` has no group to be counted in: rows with a missing
   `by` are removed, and the note says how many, so this table has no

@@ -123,9 +123,13 @@ table_continuous_lm(
     so a binary contrast displays as `Delta (TRUE - FALSE)`.
 
   - **haven labelled with value labels** (an SPSS / Stata import):
-    treated as categorical over the raw codes, in ascending code order
-    (the reference level is the lowest code; the model needs a fixed
-    level order), the order in which
+    treated as categorical, one level per observed code named by its
+    value label (`"[1] Women"`, as the rows of a labelled variable of
+    [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+    are), in the order of its `labels` attribute when every observed
+    value carries a label and by ascending code otherwise (the first
+    level is the reference; the model needs a fixed level order), the
+    order in which
     [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
     and
     [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
@@ -402,7 +406,10 @@ table_continuous_lm(
   Logical or `NULL`. If `TRUE`, includes a `p` column in the wide and
   rendered outputs. `NULL` (the default) shows it whenever `by` is
   supplied, as in the rest of the family; `by` is required here, so
-  `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it.
+  `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it:
+  `output = "long"`, `tidy()` and `glance()` then keep their columns
+  with `p.value` `NA`, and `test_type`, `statistic`, `df` and
+  `df.residual` too unless `statistic = TRUE`.
 
 - show_n:
 
