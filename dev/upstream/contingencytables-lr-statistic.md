@@ -3,7 +3,7 @@
 - **Cible** : contingencytables 3.1.0 (`develop` 2d5fad1 identique sur ces lignes)
 - **Canal** : issue GitHub [ocbe-uio/contingencytables#70](https://github.com/ocbe-uio/contingencytables/issues/70)
 - **Posté** : 2026-10-21
-- **Statut** : ouvert
+- **Statut** : fermé le 2026-10-22 ; les deux causes étaient déjà corrigées dans `develop` par le commit 3d1c9c7a du mainteneur (21.10, 10 h 23 UTC, dans la branche de la PR #63), avant le post ; vérifié sur 17 775 tableaux (0 écart) ; réponse postée et issue fermée par nous
 - **Côté spicy** : non exposé (spicy ne dépend pas de contingencytables).
 
 ---
