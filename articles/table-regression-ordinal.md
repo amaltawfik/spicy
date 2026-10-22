@@ -353,21 +353,21 @@ than two categories.
 
 ## Cluster-robust standard errors
 
-The `polr` and `clm` fits accept the cluster-robust `vcov` family
-(`"CR0"`–`"CR3"`), computed by
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-One caveat up front: the CR2 / CR3 small-sample bias-reduction
-adjustments are defined for (generalized) linear models — `clubSandwich`
-has no method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
-labels map to the *same* plain (CR0-type) cluster sandwich, and the
-footer names the estimator `CL` rather than the requested label. Pass
-the cluster as a formula, a column name, or a vector (the three accepted
-forms are detailed in the main article’s *Cluster-robust (CR)* section):
+The `polr` and `clm` fits accept one cluster-robust estimator,
+`vcov = "CR1"`, computed by
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html):
+the CR0 sandwich scaled by G/(G − 1) for G clusters. The CR2 / CR3
+small-sample bias-reduction adjustments are defined for (generalized)
+linear models — `clubSandwich` has no method for an ordinal MLE — so
+`"CR0"`, `"CR2"` and `"CR3"` are refused rather than mapped onto CR1.
+Pass the cluster as a formula, a column name, or a vector (the three
+accepted forms are detailed in the main article’s *Cluster-robust (CR)*
+section):
 
 ``` r
 
 table_regression(
-  fit, vcov = "CR2", cluster = ~region,
+  fit, vcov = "CR1", cluster = ~region,
   show_columns = c("b", "ame")
 )
 #> Registered S3 method overwritten by 'clubSandwich':
@@ -398,7 +398,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CL), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 The footer switches to name the estimator and the clustering variable.
@@ -711,10 +711,10 @@ refused up front with a `spicy_unsupported_vcov` error:
 
 ``` r
 
-table_regression(clm_scale, vcov = "CR2", cluster = ~region)
+table_regression(clm_scale, vcov = "CR1", cluster = ~region)
 #> Error in `table_regression()`:
-#> ! `vcov = "CR2"` is not available for a `clm` fit with a scale or nominal component.
-#> ℹ `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR0"-"CR3" with `cluster`.
+#> ! `vcov = "CR1"` is not available for a `clm` fit with a scale or nominal component.
+#> ℹ `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR1" with `cluster`.
 #> ℹ Use the model-based default, or refit without `scale` / `nominal`.
 ```
 

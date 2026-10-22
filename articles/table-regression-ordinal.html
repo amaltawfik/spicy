@@ -452,21 +452,19 @@ only when the response has more than two categories.</p>
 <div class="section level2">
 <h2 id="cluster-robust-standard-errors">Cluster-robust standard errors<a class="anchor" aria-label="anchor" href="#cluster-robust-standard-errors"></a>
 </h2>
-<p>The <code>polr</code> and <code>clm</code> fits accept the
-cluster-robust <code>vcov</code> family
-(<code>"CR0"</code>–<code>"CR3"</code>), computed by
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. One caveat up front: the CR2 / CR3
-small-sample bias-reduction adjustments are defined for (generalized)
-linear models — <code>clubSandwich</code> has no method for an ordinal
-MLE — so for <code>polr</code> / <code>clm</code> all four
-<code>CR*</code> labels map to the <em>same</em> plain (CR0-type)
-cluster sandwich, and the footer names the estimator <code>CL</code>
-rather than the requested label. Pass the cluster as a formula, a column
-name, or a vector (the three accepted forms are detailed in the main
-article’s <em>Cluster-robust (CR)</em> section):</p>
+<p>The <code>polr</code> and <code>clm</code> fits accept one
+cluster-robust estimator, <code>vcov = "CR1"</code>, computed by
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>: the CR0 sandwich scaled by G/(G − 1)
+for G clusters. The CR2 / CR3 small-sample bias-reduction adjustments
+are defined for (generalized) linear models — <code>clubSandwich</code>
+has no method for an ordinal MLE — so <code>"CR0"</code>,
+<code>"CR2"</code> and <code>"CR3"</code> are refused rather than mapped
+onto CR1. Pass the cluster as a formula, a column name, or a vector (the
+three accepted forms are detailed in the main article’s
+<em>Cluster-robust (CR)</em> section):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
+<span>  <span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR1"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Registered S3 method overwritten by 'clubSandwich':</span></span>
@@ -497,7 +495,7 @@ article’s <em>Cluster-robust (CR)</em> section):</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CL), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
 variable. The clustering is applied <em>consistently</em>: the
 <code>Thresholds</code> rows and the AME columns are reweighted from the
@@ -808,10 +806,10 @@ implemented yet”), so no cluster sandwich can be formed and
 <code>CR*</code> is refused up front with a
 <code>spicy_unsupported_vcov</code> error:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">clm_scale</span>, vcov <span class="op">=</span> <span class="st">"CR1"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_regression()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR2"` is not available for a `clm` fit with a scale or nominal component.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR0"-"CR3" with `cluster`.</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "CR1"` is not available for a `clm` fit with a scale or nominal component.</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> `ordinal` provides no estimating functions for the scale / nominal parts, so no sandwich can be built. A plain proportional-odds `clm` supports "CR1" with `cluster`.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Use the model-based default, or refit without `scale` / `nominal`.</span></span></code></pre></div>
 </div>
 <div class="section level3">

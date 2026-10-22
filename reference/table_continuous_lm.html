@@ -785,14 +785,15 @@ same value) leaves nothing to infer, as in <code><a href="table_continuous.html"
 test, its interval, its effect size and its \(R^2\) are undefined
 cells (<code>NA</code> in the long output and in <code>glance()</code>), its means and its
 contrast or slope (0) are shown, and a warning (class
-<code>spicy_undefined_stat</code>) names it. So does an outcome constant within
-each group of a categorical <code>by</code> (a residual variance of zero): its
-means, its contrast and its \(R^2\) of 1 are shown, and its test,
-interval and effect size are undefined. Every cell of an outcome
-applies to it, so a cell with no value shows the undefined mark, never
-a blank: a saturated fit (one observation per group) has no interval,
-test or effect size, and a model that could not be fit has no cell at
-all.</p>
+<code>spicy_undefined_stat</code>) names it. So does a residual variance of zero,
+an outcome constant within each group of a categorical <code>by</code> or an exact
+linear function of <code>by</code> and the covariates: its means (adjusted for the
+covariates), its contrast or slope and its \(R^2\) of 1 are
+shown, and its test, interval and effect size are undefined. Every cell
+of an outcome applies to it, so a cell with no value shows the undefined
+mark, never a blank: a saturated fit (one observation per group) has no
+interval, test or effect size, and a model that could not be fit has no
+cell at all.</p>
     </div>
     <div class="section level2">
     <h2 id="effect-sizes">Effect sizes<a class="anchor" aria-label="anchor" href="#effect-sizes"></a></h2>

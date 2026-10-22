@@ -281,7 +281,7 @@ tiny value and the decisive test is exactly why it should not be read as
 one.</p>
 <p>One scope note on inference: alongside the classical Wald-z default,
 <code>multinom</code> fits support <strong>cluster-robust standard
-errors</strong> (<code>vcov = "CR0"</code>–<code>"CR3"</code> with
+errors</strong> (<code>vcov = "CR1"</code> with
 <code>cluster = ~id</code>, one cluster value per observation; requires
 sandwich ≥ 3.1-2, whose new <code>estfun()</code> method unlocked the
 cluster sandwich) — and the AME columns honor the same estimator.
@@ -710,11 +710,11 @@ rows of the long-format data: each angler contributes one choice, and
 that is the model’s sample size.</p>
 <p>Three guardrails: average marginal effects are refused for
 <code>mlogit</code> (<code>marginaleffects</code> has no slopes method
-for its one-row-per-choice structure); the robust <code>vcov</code>
-family is <code>CR0</code>–<code>CR3</code> only, with one cluster value
-per choice situation, not per long-format row; and <code>HC*</code> is
-refused outright — <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
-sandwich for mlogit’s per-choice-situation scores.</p>
+for its one-row-per-choice structure); the one robust <code>vcov</code>
+is <code>CR1</code>, with one cluster value per choice situation, not
+per long-format row; and <code>HC*</code> is refused outright —
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the sandwich for mlogit’s
+per-choice-situation scores.</p>
 </div>
 <div class="section level2">
 <h2 id="several-models-side-by-side">Several models side by side<a class="anchor" aria-label="anchor" href="#several-models-side-by-side"></a>

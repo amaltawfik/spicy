@@ -170,7 +170,7 @@ nonzero count – the opposite direction, hence the distinct label), and a
 `Dispersion` block when `dispformula` has covariates. Component
 coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). `CR*` for `pscl` fits covers both
+combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
 components via
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
 and `"CR0"` for `glmmTMB` fits covers the zero-inflation and dispersion
@@ -184,11 +184,11 @@ baseline-category logits are log-odds (Agresti; SAS prints "Odds Ratio
 Estimates" under its generalized-logit link; Stata's `mlogit, rrr`
 labels the same quantity a relative-risk ratio). AME is per-outcome.
 `nested = TRUE` compares nested `multinom` fits by likelihood-ratio test
-(the `anova.multinom()` convention). Cluster-robust `CR*` is available
+(the `anova.multinom()` convention). Cluster-robust `"CR1"` is available
 (one cluster value per observation; sandwich \>= 3.1-2) and the AME
 columns honor it; `HC*` is refused – a multi-equation model has no
 working residuals. `mlogit` renders per-alternative rows; AME is refused
-(no `slopes()` method exists for its data format). `CR*` is available
+(no `slopes()` method exists for its data format). `"CR1"` is available
 with one cluster value per choice situation, and `n` counts choice
 situations; `HC*` is refused
 ([`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
@@ -205,11 +205,12 @@ cumulative-incidence differences by g-computation, with the mandatory
 `tau` / `at_time` horizons. For `coxph`: right-censored single-record
 fits, `strata()` supported (within-stratum baselines), `tt()` refused.
 For `survreg`: the closed-form AFT curves are standardized directly
-(stratified `survreg` refused). `CR*` uses the Lin-Wei grouped-dfbeta
+(stratified `survreg` refused). `"CR0"` uses the Lin-Wei grouped-dfbeta
 sandwich (`coxph`) or
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (`cph`, needs
-`x = TRUE, y = TRUE`). `nested = TRUE` compares nested Cox fits by
-likelihood-ratio test.
+`x = TRUE, y = TRUE`); `survreg` takes `"CR1"`, from
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+`nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 
 ## Survey-design models
 

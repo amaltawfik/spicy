@@ -457,18 +457,19 @@ with `datagrid()`.
 
 ## Cluster-robust variance
 
-Students cluster in labs, cohorts, mentor groups. The `CR*` family
-covers **both components with one estimator** —
+Students cluster in labs, cohorts, mentor groups. `vcov = "CR1"` covers
+**both components with one estimator** —
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-on the full score matrix, so the count and zero rows shift together. For
-two-part models every `CR*` variant maps to that same estimator, and the
-footer records it as `CL`:
+on the full score matrix, so the count and zero rows shift together. It
+is the one cluster estimator `vcovCL()` computes here, the CR0 sandwich
+scaled by G/(G − 1) for G clusters, so `"CR0"`, `"CR2"` and `"CR3"` are
+refused:
 
 ``` r
 
 set.seed(1)
 bioChemists$lab <- factor(sample(1:60, nrow(bioChemists), replace = TRUE))
-table_regression(fit_zip, vcov = "CR0", cluster = bioChemists$lab,
+table_regression(fit_zip, vcov = "CR1", cluster = bioChemists$lab,
                  show_columns = c("b", "se", "p"))
 #> Poisson zero-inflated regression: art
 #> 
@@ -491,7 +492,7 @@ table_regression(fit_zip, vcov = "CR0", cluster = bioChemists$lab,
 #>  n               │  915                 
 #>  AIC             │ 3225.5               
 #> 
-#> Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CL), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.
+#> Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CR1), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.
 ```
 
 Do not read the shift here as the effect of clustering. The labs are
@@ -511,7 +512,7 @@ z <- coef(fit_zip)["count_marMarried"] / sqrt(diag(V))["count_marMarried"]
 
 The rest of the movement is noise in the synthetic labels. What the
 example demonstrates is mechanical: both components shift together under
-one `CL` estimator. With genuinely clustered data, positive
+one CR1 estimator. With genuinely clustered data, positive
 within-cluster dependence widens the intervals further, and borderline
 effects are typically the first casualties. `HC*` and the resampling
 estimators have no two-part backend and are refused with a clear error.

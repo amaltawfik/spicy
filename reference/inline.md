@@ -165,7 +165,8 @@ The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `col_meta`), never a display header. `"ci"` composes the interval with
 the style's brackets and separator, and so does every other interval
 token the table carries (`"med_ci"`, `"ame_ci"`, `"assoc_ci"`): each
-addresses its own bounds.
+addresses its own bounds. `"partial_chi2"` cites the statistic alone,
+without the degrees of freedom the table prints beside it.
 
 ## Patterns
 

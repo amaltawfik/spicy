@@ -403,11 +403,12 @@ convention when you have a reason, not on principle.</p>
 <h2 id="multi-center-data-cluster-robust-variance">Multi-center data: cluster-robust variance<a class="anchor" aria-label="anchor" href="#multi-center-data-cluster-robust-variance"></a>
 </h2>
 <p>The <code>lung</code> patients were enrolled by 18 institutions, and
-outcomes within an institution may correlate. The <code>CR*</code>
-request routes to the <strong>Lin &amp; Wei (1989)</strong> robust
-variance — the grouped score (dfbeta) sandwich that
-<code>coxph(..., cluster = )</code> and Stata
-<code>stcox, vce(cluster)</code> use:</p>
+outcomes within an institution may correlate. <code>vcov = "CR0"</code>
+requests the <strong>Lin &amp; Wei (1989)</strong> robust variance — the
+grouped score (dfbeta) sandwich that <code>coxph(..., cluster = )</code>
+and Stata <code>stcox, vce(cluster)</code> use. It has no small-sample
+factor, hence its token, and the other <code>CR*</code> tokens are
+refused:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, vcov <span class="op">=</span> <span class="st">"CR0"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">inst</span>,</span>
 <span>                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>

@@ -785,13 +785,15 @@ same value) leaves nothing to infer, as in
 its test, its interval, its effect size and its \\R^2\\ are undefined
 cells (`NA` in the long output and in `glance()`), its means and its
 contrast or slope (0) are shown, and a warning (class
-`spicy_undefined_stat`) names it. So does an outcome constant within
-each group of a categorical `by` (a residual variance of zero): its
-means, its contrast and its \\R^2\\ of 1 are shown, and its test,
-interval and effect size are undefined. Every cell of an outcome applies
-to it, so a cell with no value shows the undefined mark, never a blank:
-a saturated fit (one observation per group) has no interval, test or
-effect size, and a model that could not be fit has no cell at all.
+`spicy_undefined_stat`) names it. So does a residual variance of zero,
+an outcome constant within each group of a categorical `by` or an exact
+linear function of `by` and the covariates: its means (adjusted for the
+covariates), its contrast or slope and its \\R^2\\ of 1 are shown, and
+its test, interval and effect size are undefined. Every cell of an
+outcome applies to it, so a cell with no value shows the undefined mark,
+never a blank: a saturated fit (one observation per group) has no
+interval, test or effect size, and a model that could not be fit has no
+cell at all.
 
 ## Effect sizes
 

@@ -304,10 +304,11 @@ convention when you have a reason, not on principle.
 ## Multi-center data: cluster-robust variance
 
 The `lung` patients were enrolled by 18 institutions, and outcomes
-within an institution may correlate. The `CR*` request routes to the
-**Lin & Wei (1989)** robust variance — the grouped score (dfbeta)
-sandwich that `coxph(..., cluster = )` and Stata `stcox, vce(cluster)`
-use:
+within an institution may correlate. `vcov = "CR0"` requests the **Lin &
+Wei (1989)** robust variance — the grouped score (dfbeta) sandwich that
+`coxph(..., cluster = )` and Stata `stcox, vce(cluster)` use. It has no
+small-sample factor, hence its token, and the other `CR*` tokens are
+refused:
 
 ``` r
 

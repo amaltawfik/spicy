@@ -1297,18 +1297,30 @@ different convention (<code>G/(G-1)</code> scaling, z), so the label
 would not match Stata output there.</p></dd>
 
 <dt><code>mlogit</code></dt>
-<dd><p><code>classical</code> + <code>CR*</code> only (cluster at the
+<dd><p><code>classical</code> + <code>"CR1"</code> only (cluster at the
 choice-situation level) – <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the
 sandwich for mlogit's per-choice-situation scores, so <code>HC*</code> is
 refused.</p></dd>
 
-<dt><code>lmer</code>, <code>lme</code>, <code>coxph</code>, <code>survreg</code>,
-<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
-<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code>/<code>hurdle</code>,
-<code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
+<dt><code>lmer</code>, <code>lme</code></dt>
+<dd><p><code>classical</code> + <code>CR*</code> only – <code>HC*</code> and the
+resamplers (which refit <code>lm</code>/<code>glm</code>) are not defined for these.</p></dd>
+
+<dt><code>coxph</code>, <code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
+<dd><p><code>classical</code> +
+<code>"CR0"</code> only: the Lin-Wei sandwich of <code>coxph(cluster = )</code> and
+<code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> are one cluster estimator each, with no
+small-sample factor. <code>"CR1"</code> to <code>"CR3"</code> are refused, as are <code>HC*</code>
+and the resamplers.</p></dd>
+
+<dt><code>survreg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
+<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code>/<code>hurdle</code></dt>
 <dd><p><code>classical</code>
-+ <code>CR*</code> only – <code>HC*</code> and the resamplers (which refit
-<code>lm</code>/<code>glm</code>) are not defined for these. <code>clm</code> with a scale /
++ <code>"CR1"</code> only: <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> computes one cluster
+estimator for these, the CR0 sandwich scaled by
+\(G/(G-1)\), <code>G</code> the number of clusters
+(<span class="pkg">clubSandwich</span>'s CR1). <code>"CR0"</code>, <code>"CR2"</code> and <code>"CR3"</code> are
+refused, as are <code>HC*</code> and the resamplers. <code>clm</code> with a scale /
 nominal (partial-PO) component is <code>classical</code> only.
 <code>multinom</code> needs <span class="pkg">sandwich</span> &gt;= 3.1-2 (which added its
 <code>estfun()</code> method); its <code>cluster</code> is one entry per
@@ -1388,11 +1400,14 @@ and lets <code>vcovCL()</code> do only the clustering arithmetic: the sandwich
 methods for these fits are wrong for a free dispersion, a
 non-canonical link and a non-Gaussian <code>bam()</code>. Extended families
 other than <code>nb()</code> (<code>betar</code>, <code>ocat</code>, <code>scat</code>, <code>tw</code>, ...) have another
-score and are refused. <code>rms</code> fits use
+score and are refused. For all of these <code>vcovCL()</code> classes, the one
+estimator is CR1, requested as <code>"CR1"</code>; the other <code>CR*</code> tokens are
+refused rather than mapped. <code>rms</code> fits use
 <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
-needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
-sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-<code>CR*</code> maps to the one available estimator. <code>glmmTMB</code> fits use
+needs the fit's <code>x = TRUE, y = TRUE</code>). The Lin-Wei and <code>robcov()</code>
+sandwiches have no small-sample factor: their one estimator is
+requested as <code>"CR0"</code>, and the other <code>CR*</code> tokens are refused rather
+than mapped. <code>glmmTMB</code> fits use
 <code><a href="https://rdrr.io/pkg/glmmTMB/man/sandwich.html" class="external-link">glmmTMB::sandwich()</a></code>, with one score per cluster (the gradient of
 the cluster's marginal log-likelihood) and no finite-sample factor;
 its one estimator is requested as <code>"CR0"</code>, and the other <code>CR*</code>
@@ -1573,8 +1588,8 @@ coefficient tests:</p><ul><li><p><em>F</em>, in a row labeled "Wald F-change": \
 \((q, df)\) degrees of freedom, the convention of
 <code>lmtest::waldtest(test = "F")</code> and <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html" class="external-link">car::linearHypothesis()</a></code>.
 It applies to <code>lm</code> under <code>"HC0"</code>-<code>"HC5"</code> (and <code>"CR1S"</code>, on
-\(G - 1\) degrees of freedom), <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> under <code>"CR0"</code>-<code>"CR3"</code>
-or after <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code> under <code>"iid"</code> and
+\(G - 1\) degrees of freedom), <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> under <code>"CR0"</code> or
+after <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code> under <code>"iid"</code> and
 <code>"ker"</code>, and a <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols</a></code> fit estimated with a non-iid vcov
 (on fixest's own degrees of freedom, as <code><a href="https://lrberge.github.io/fixest/reference/wald.html" class="external-link">fixest::wald()</a></code>). Under
 <code>"CR0"</code>-<code>"CR3"</code>, <code>lm</code>, <code>glm</code> (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> included),
@@ -1586,10 +1601,11 @@ coefficient tests.</p></li>
 \(q\) degrees of freedom, the convention of
 <code>lmtest::waldtest(test = "Chisq")</code>. It applies to <code>glm</code> and
 <code>glm.nb</code> under <code>"HC0"</code>-<code>"HC5"</code>, <code>lm</code> and <code>glm</code> under
-<code>"bootstrap"</code> and <code>"jackknife"</code>, <code>rq</code> under <code>"bootstrap"</code>, and
-under <code>"CR0"</code>-<code>"CR3"</code> to <code>coxph</code>, <code>survreg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> and
-<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>, <code>multinom</code>, <code>mlogit</code>,
-<code>zeroinfl</code>, <code>hurdle</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> / <code>cph</code> / <code>Glm</code>; also to
+<code>"bootstrap"</code> and <code>"jackknife"</code>, <code>rq</code> under <code>"bootstrap"</code>,
+under <code>"CR0"</code> to <code>coxph</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> / <code>cph</code> / <code>Glm</code>,
+and under <code>"CR1"</code> to <code>survreg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> and <code>bam</code>, <code>polr</code>,
+<code>clm</code>, <code>betareg</code>, <code>multinom</code>, <code>mlogit</code>, <code>zeroinfl</code> and
+<code>hurdle</code>; also to
 <code>survreg(robust = TRUE)</code>, a <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois</a></code> or <code>feglm</code> fit with
 a non-iid vcov, and an <code>rms</code> fit of these classes passed through
 <code>robcov()</code>.</p></li>

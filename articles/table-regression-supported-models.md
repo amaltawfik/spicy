@@ -199,13 +199,16 @@ Family by family:
   `glmer` and `gls` are model-based only (`clubSandwich` has no working
   backend for `glmer`, and its `gls` backend is not yet wired and
   validated in spicy).
-- **Ordinal (`polr`, `clm`)** – `CR0`–`CR3`, no `HC*`; the cut-point
-  thresholds are reweighted from the same clustered vcov. A `clm` with a
-  scale or nominal partial-proportional-odds component is model-based
-  only.
-- **Categorical** – `multinom` takes `CR*` (one cluster value per
-  observation), `mlogit` takes `CR*` (one per choice situation). Both
-  refuse `HC*`: `multinom` has no working-residual form for a
+- **Ordinal (`polr`, `clm`)** – `CR1` via
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
+  no `HC*`; the cut-point thresholds are reweighted from the same
+  clustered vcov. A `clm` with a scale or nominal
+  partial-proportional-odds component is model-based only.
+- **Categorical** – `multinom` takes `CR1` (one cluster value per
+  observation), `mlogit` takes `CR1` (one per choice situation), both
+  via
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+  Both refuse `HC*`: `multinom` has no working-residual form for a
   multi-equation model, and for `mlogit`,
   [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   computes a result but silently mis-scales the meat for its per-chooser
@@ -214,17 +217,21 @@ Family by family:
   to the robust `nid` sandwich, `iid` / `ker` / `rank` are opt-ins, and
   clustering goes through the native wild gradient bootstrap
   (`vcov = "bootstrap"` + `cluster`). `HC*` / `CR*` are refused.
-- **Survival** – Cox models use the Lin-Wei grouped-dfbeta sandwich; the
-  `rms` fits take `CR*` via
+- **Survival** – Cox models take `CR0`, the Lin-Wei grouped-dfbeta
+  sandwich; the `rms` fits take `CR0` via
   [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
-  `x = TRUE, y = TRUE`); `survreg` takes `CR*` via
+  `x = TRUE, y = TRUE`). Neither has a small-sample factor, and `CR1` to
+  `CR3` are refused. `survreg` takes `CR1` via
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-- **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR*` via
+- **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR1` via
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
   zero-inflated and hurdle fits cluster both components. For `gam` /
   `bam`, spicy forms the sandwich itself, from the score and the
   penalized covariance of the fit, and `vcovCL()` only does the
-  clustering arithmetic.
+  clustering arithmetic. For every `vcovCL()` class (these, the ordinal
+  and categorical fits and `survreg`), CR1 is the one estimator, the CR0
+  sandwich scaled by G/(G-1) with G clusters; `CR0`, `CR2` and `CR3` are
+  refused.
 - **Own-estimator classes** – `estimatr` fits keep the robust SEs they
   were computed with; `fixest` fits keep their estimator (the footer
   carries fixest’s own label – clustered, Newey-West, Conley, …;

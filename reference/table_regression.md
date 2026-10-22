@@ -1264,24 +1264,39 @@ silent model-based result under a robust label:
 
 - `mlogit`:
 
-  `classical` + `CR*` only (cluster at the choice-situation level) –
+  `classical` + `"CR1"` only (cluster at the choice-situation level) –
   [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
-- `lmer`, `lme`, `coxph`, `survreg`,
-  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `polr`,
-  `clm`, `betareg`,
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
-  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`,
-  `rms` (`ols`/`lrm`/`cph`/`Glm`):
+- `lmer`, `lme`:
 
   `classical` + `CR*` only – `HC*` and the resamplers (which refit
-  `lm`/`glm`) are not defined for these. `clm` with a scale / nominal
-  (partial-PO) component is `classical` only. `multinom` needs sandwich
-  \>= 3.1-2 (which added its `estfun()` method); its `cluster` is one
-  entry per observation. For the two-part `pscl` fits the cluster
-  sandwich covers both components (count and zero) at once.
+  `lm`/`glm`) are not defined for these.
+
+- `coxph`, `rms` (`ols`/`lrm`/`cph`/`Glm`):
+
+  `classical` + `"CR0"` only: the Lin-Wei sandwich of
+  `coxph(cluster = )` and
+  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) are one
+  cluster estimator each, with no small-sample factor. `"CR1"` to
+  `"CR3"` are refused, as are `HC*` and the resamplers.
+
+- `survreg`, [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`,
+  `polr`, `clm`, `betareg`,
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`:
+
+  `classical` + `"CR1"` only:
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  computes one cluster estimator for these, the CR0 sandwich scaled by
+  \\G/(G-1)\\, `G` the number of clusters (clubSandwich's CR1). `"CR0"`,
+  `"CR2"` and `"CR3"` are refused, as are `HC*` and the resamplers.
+  `clm` with a scale / nominal (partial-PO) component is `classical`
+  only. `multinom` needs sandwich \>= 3.1-2 (which added its `estfun()`
+  method); its `cluster` is one entry per observation. For the two-part
+  `pscl` fits the cluster sandwich covers both components (count and
+  zero) at once.
 
 - [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html):
 
@@ -1355,11 +1370,14 @@ the penalized covariance of the fit, and lets `vcovCL()` do only the
 clustering arithmetic: the sandwich methods for these fits are wrong for
 a free dispersion, a non-canonical link and a non-Gaussian `bam()`.
 Extended families other than `nb()` (`betar`, `ocat`, `scat`, `tw`, ...)
-have another score and are refused. `rms` fits use
+have another score and are refused. For all of these `vcovCL()` classes,
+the one estimator is CR1, requested as `"CR1"`; the other `CR*` tokens
+are refused rather than mapped. `rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs
-the fit's `x = TRUE, y = TRUE`). These single cluster sandwiches have no
-CR0-CR3 bias-reduction variants, so the requested `CR*` maps to the one
-available estimator. `glmmTMB` fits use
+the fit's `x = TRUE, y = TRUE`). The Lin-Wei and `robcov()` sandwiches
+have no small-sample factor: their one estimator is requested as
+`"CR0"`, and the other `CR*` tokens are refused rather than mapped.
+`glmmTMB` fits use
 [`glmmTMB::sandwich()`](https://rdrr.io/pkg/glmmTMB/man/sandwich.html),
 with one score per cluster (the gradient of the cluster's marginal
 log-likelihood) and no finite-sample factor; its one estimator is
@@ -1554,9 +1572,8 @@ coefficient tests:
   [`car::linearHypothesis()`](https://rdrr.io/pkg/car/man/linearHypothesis.html).
   It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on \\G - 1\\
   degrees of freedom),
-  [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) under
-  `"CR0"`-`"CR3"` or after
-  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
+  [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) under `"CR0"` or
+  after [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
   [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html) under
   `"iid"` and `"ker"`, and a
   [`fixest::feols`](https://lrberge.github.io/fixest/reference/feols.html)
@@ -1575,12 +1592,13 @@ coefficient tests:
   replaces the likelihood-ratio row: \\W\\ on \\q\\ degrees of freedom,
   the convention of `lmtest::waldtest(test = "Chisq")`. It applies to
   `glm` and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
-  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, and under
-  `"CR0"`-`"CR3"` to `coxph`, `survreg`,
+  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, under
+  `"CR0"` to `coxph` and
+  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph` / `Glm`,
+  and under `"CR1"` to `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam`,
-  `polr`, `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl`, `hurdle`
-  and [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph` /
-  `Glm`; also to `survreg(robust = TRUE)`, a
+  `polr`, `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
+  `hurdle`; also to `survreg(robust = TRUE)`, a
   [`fixest::fepois`](https://lrberge.github.io/fixest/reference/feglm.html)
   or `feglm` fit with a non-iid vcov, and an `rms` fit of these classes
   passed through `robcov()`.
