@@ -105,6 +105,8 @@
 #' composes the interval with the style's brackets and separator, and
 #' so does every other interval token the table carries (`"med_ci"`,
 #' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds.
+#' `"partial_chi2"` cites the statistic alone, without the degrees of
+#' freedom the table prints beside it.
 #'
 #' # Patterns
 #'
@@ -956,8 +958,18 @@ inline <- function(
 # The candidate columns after the `model` filter: NULL model on a
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
+#
+# The degrees of freedom printed beside a partial chi-squared ("1.10
+# (1)") are a column of their own carrying the same token, flagged
+# `is_df`. They are not a cited cell: `column = "partial_chi2"` quotes
+# the statistic, as `column = "statistic"` does in the descriptive
+# tables. Left among the candidates, the pair read as two columns and
+# the token was refused on every table, `model` or not.
 .inline_model_cols <- function(s, model, call = rlang::caller_env()) {
   all_cols <- setdiff(names(s$col_meta), .REG_KEY_VARIABLE)
+  all_cols <- all_cols[
+    !vapply(all_cols, function(nm) isTRUE(s$col_meta[[nm]]$is_df), logical(1))
+  ]
   spans <- s$spanners
   if (is.null(model)) {
     return(all_cols)
@@ -1029,7 +1041,11 @@ inline <- function(
   # association measure of a `by` table, the item test of a
   # multiple-response table -- so they stay addressable whichever group
   # `model` picks. A multi-model table has none.
-  c(body_cols[spans[[pick]]], setdiff(all_cols, body_cols[unlist(spans)]))
+  picked <- body_cols[spans[[pick]]]
+  c(
+    picked[picked %in% all_cols],
+    setdiff(all_cols, body_cols[unlist(spans)])
+  )
 }
 
 # The default column for a bare inline(tbl, var, level): the row's
@@ -1291,6 +1307,20 @@ inline <- function(
       character(1)
     )))
     choices <- if (length(groups) > 1L) groups else names(s$spanners)
+    # With no group or model to name, `model` cannot settle it and the
+    # list would read "Available: ." -- a dead end the refusal must not
+    # print.
+    if (length(choices) == 0L) {
+      spicy_abort(
+        sprintf(
+          "Token %s matches %d columns of this table and no `model` selects one.",
+          .quote_val(token),
+          length(hits)
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
     spicy_abort(
       c(
         sprintf(

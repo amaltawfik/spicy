@@ -30,7 +30,7 @@ test_that("ols CR* matches rms::robcov (Wald t, df.residual, intercept aligned)"
   skip_if_not_installed("rms")
   d <- make_rms_data()
   f <- rms::ols(y ~ x1 + x2 + f, data = d, x = TRUE, y = TRUE)
-  fr <- as_regression_frame(f, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- sqrt(diag(rms::robcov(f, d$g)$var))
   names(orc) <- norm_nm(names(stats::coef(f)))
@@ -44,7 +44,7 @@ test_that("lrm CR* matches rms::robcov (Wald z)", {
   skip_if_not_installed("rms")
   d <- make_rms_data()
   f <- rms::lrm(yb ~ x1 + x2, data = d, x = TRUE, y = TRUE)
-  fr <- as_regression_frame(f, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- sqrt(diag(rms::robcov(f, d$g)$var))
   names(orc) <- norm_nm(names(stats::coef(f)))
@@ -65,7 +65,7 @@ test_that("cph CR* matches rms::robcov AND native coxph+cluster (Lin-Wei)", {
     x = TRUE,
     y = TRUE
   )
-  fr <- as_regression_frame(f, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- stats::setNames(
     sqrt(diag(rms::robcov(f, d$g)$var)),
@@ -89,7 +89,7 @@ test_that("Glm CR* matches rms::robcov (Wald z)", {
   skip_if_not_installed("rms")
   d <- make_rms_data()
   f <- rms::Glm(yb ~ x1 + x2, data = d, family = binomial, x = TRUE, y = TRUE)
-  fr <- as_regression_frame(f, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- sqrt(diag(rms::robcov(f, d$g)$var))
   names(orc) <- norm_nm(names(stats::coef(f)))
@@ -102,11 +102,50 @@ test_that("rms fit without x=TRUE,y=TRUE gives a clear x/y error", {
   d <- make_rms_data()
   f <- rms::ols(y ~ x1 + x2, data = d) # no x=TRUE, y=TRUE
   err <- tryCatch(
-    as_regression_frame(f, vcov = "CR2", cluster = d$g),
+    as_regression_frame(f, vcov = "CR0", cluster = d$g),
     error = function(e) e
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "x = TRUE", fixed = TRUE)
+})
+
+test_that("rms fits take CR0 alone: robcov() has no small-sample factor", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("sandwich")
+  d <- make_rms_data()
+  f <- rms::ols(y ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  # robcov() is the bread times the cross-product of the cluster score
+  # sums times the bread: the CR0 of the same linear model.
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g)
+  orc <- sandwich::vcovCL(
+    stats::lm(y ~ x1 + x2, data = d),
+    cluster = d$g,
+    type = "HC0",
+    cadjust = FALSE
+  )
+  expect_equal(
+    b_rows(fr)$std_error,
+    unname(sqrt(diag(orc))),
+    tolerance = 1e-9
+  )
+  for (v in c("CR1", "CR2", "CR3")) {
+    expect_error(
+      as_regression_frame(f, vcov = v, cluster = d$g),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_error(
+      table_regression(f, vcov = v, cluster = d$g),
+      "This class supports: classical, CR0.",
+      fixed = TRUE,
+      class = "spicy_unsupported_vcov"
+    )
+  }
+  w <- expect_warning(
+    table_regression(f, cluster = d$g),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(conditionMessage(w), "CR0", fixed = TRUE)
+  expect_no_match(conditionMessage(w), "CR2", fixed = TRUE)
 })
 
 test_that("rms HC* / bootstrap are refused (cluster-robust only)", {

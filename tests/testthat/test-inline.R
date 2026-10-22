@@ -185,6 +185,50 @@ test_that("a multi-model table requires and honors `model`", {
   expect_identical(inline(tbl, age, column = "b", model = 1), b_a)
 })
 
+test_that("a partial chi-squared is cited without its degrees of freedom", {
+  # The table prints "1.10 (1)": the df is a column of its own carrying
+  # the same token, and the pair was refused as two columns, `model` or
+  # not, with "Available: ." on a single-model table.
+  d <- as.data.frame(sochealth)
+  m1 <- glm(smoking ~ age + sex, data = d, family = binomial)
+  m2 <- glm(smoking ~ age, data = d, family = binomial)
+  cols <- c("b", "partial_chi2")
+  one <- .il_quiet(table_regression(m1, show_columns = cols))
+  expect_identical(inline(one, age, column = "partial_chi2"), "1.10")
+  expect_identical(inline(one, sex, "Male", "partial_chi2"), "0.13")
+  expect_identical(
+    inline(one, age, column = "{b}, chi2 = {partial_chi2}"),
+    "0.01, chi2 = 1.10"
+  )
+  two <- .il_quiet(table_regression(list(m1, m2), show_columns = cols))
+  expect_identical(inline(two, age, column = "partial_chi2", model = 1), "1.10")
+  expect_identical(inline(two, age, column = "partial_chi2", model = 2), "1.11")
+  err <- tryCatch(inline(two, age, column = "partial_chi2"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "\"Model 1\"")
+
+  fl <- .il_quiet(table_regression(
+    .il_fit(),
+    show_columns = c("b", "partial_f2", "partial_eta2", "partial_omega2")
+  ))
+  expect_identical(inline(fl, sex, "Male", "partial_f2"), "0.02")
+  expect_identical(inline(fl, sex, "Male", "partial_eta2"), "0.02")
+  expect_identical(inline(fl, sex, "Male", "partial_omega2"), "0.01")
+
+  # No group or model to name: the refusal lists nothing rather than
+  # printing "Available: .".
+  s <- list(
+    col_meta = list(a = list(token = "x"), b = list(token = "x")),
+    spanners = list()
+  )
+  err <- tryCatch(
+    spicy:::.inline_cell(s, data.frame(a = "1", b = "2"), 1L, "x", c("a", "b")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_no_match(conditionMessage(err), "Available")
+})
+
 test_that("`model = k` addresses the k-th model, by identity", {
   # `model = k` used to resolve to `names(spans)[[k]]` and then re-enter
   # the list BY NAME. That is the k-th model only while no two labels

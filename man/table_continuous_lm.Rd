@@ -650,14 +650,15 @@ same value) leaves nothing to infer, as in \code{\link[=table_continuous]{table_
 test, its interval, its effect size and its \eqn{R^2}{R^2} are undefined
 cells (\code{NA} in the long output and in \code{glance()}), its means and its
 contrast or slope (0) are shown, and a warning (class
-\code{spicy_undefined_stat}) names it. So does an outcome constant within
-each group of a categorical \code{by} (a residual variance of zero): its
-means, its contrast and its \eqn{R^2}{R^2} of 1 are shown, and its test,
-interval and effect size are undefined. Every cell of an outcome
-applies to it, so a cell with no value shows the undefined mark, never
-a blank: a saturated fit (one observation per group) has no interval,
-test or effect size, and a model that could not be fit has no cell at
-all.
+\code{spicy_undefined_stat}) names it. So does a residual variance of zero,
+an outcome constant within each group of a categorical \code{by} or an exact
+linear function of \code{by} and the covariates: its means (adjusted for the
+covariates), its contrast or slope and its \eqn{R^2}{R^2} of 1 are
+shown, and its test, interval and effect size are undefined. Every cell
+of an outcome applies to it, so a cell with no value shows the undefined
+mark, never a blank: a saturated fit (one observation per group) has no
+interval, test or effect size, and a model that could not be fit has no
+cell at all.
 }
 
 \section{Effect sizes}{

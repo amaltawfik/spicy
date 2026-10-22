@@ -390,8 +390,8 @@
 #' `Dispersion` block when `dispformula` has covariates. Component
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
-#' combined-response effect on E(Y). `CR*` for `pscl` fits covers both components
-#' via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
+#' combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
+#' components via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
 #' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
 #'
 #' @section Categorical outcomes:
@@ -401,13 +401,13 @@
 #' "Odds Ratio Estimates" under its generalized-logit link; Stata's `mlogit, rrr` labels
 #' the same quantity a relative-risk ratio). AME is per-outcome.
 #' `nested = TRUE` compares nested `multinom` fits by likelihood-ratio test
-#' (the `anova.multinom()` convention). Cluster-robust `CR*` is
+#' (the `anova.multinom()` convention). Cluster-robust `"CR1"` is
 #' available (one cluster value per observation; sandwich >= 3.1-2)
 #' and the AME columns honor it; `HC*` is refused -- a multi-equation
 #' model has no working residuals.
 #' `mlogit` renders
 #' per-alternative rows; AME is refused (no `slopes()` method exists for
-#' its data format). `CR*` is available with one cluster value per choice
+#' its data format). `"CR1"` is available with one cluster value per choice
 #' situation, and `n` counts choice situations; `HC*` is refused
 #' (`sandwich::vcovHC()` mis-scales the meat for mlogit's per-chooser
 #' score structure).
@@ -424,8 +424,9 @@
 #' (within-stratum baselines), `tt()` refused. For `survreg`: the
 #' closed-form AFT curves are standardized directly (stratified
 #' `survreg` refused).
-#' `CR*` uses the Lin-Wei grouped-dfbeta sandwich
-#' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`).
+#' `"CR0"` uses the Lin-Wei grouped-dfbeta sandwich
+#' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`);
+#' `survreg` takes `"CR1"`, from `sandwich::vcovCL()`.
 #' `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 #'
 #' @section Survey-design models:

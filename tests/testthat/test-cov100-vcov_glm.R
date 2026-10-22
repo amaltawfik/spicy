@@ -112,23 +112,20 @@ test_that(".robust_vcov_support grants glm.nb (negbin) the full estimator set", 
   )
 })
 
-test_that(".robust_vcov_support grants mgcv::bam cluster-robust CR* only", {
+test_that(".robust_vcov_support grants mgcv::bam cluster-robust CR1 only", {
   skip_if_not_installed("mgcv")
   set.seed(3)
   db <- data.frame(x = rnorm(100))
   db$y <- 1 + 2 * db$x + rnorm(100)
   bam_fit <- mgcv::bam(y ~ x, data = db)
   expect_identical(class(bam_fit)[1L], "bam")
-  expect_identical(
-    spicy:::.robust_vcov_support(bam_fit),
-    c("classical", paste0("CR", 0:3))
-  )
+  expect_identical(spicy:::.robust_vcov_support(bam_fit), c("classical", "CR1"))
 })
 
-test_that(".robust_vcov_support grants rms lrm / cph / Glm CR* only", {
+test_that(".robust_vcov_support grants rms lrm / cph / Glm CR0 only", {
   skip_if_not_installed("rms")
   skip_if_not_installed("survival")
-  cr_only <- c("classical", paste0("CR", 0:3))
+  cr_only <- c("classical", "CR0")
   set.seed(5)
   dl <- data.frame(x = rnorm(80))
   dl$yb <- rbinom(80, 1, plogis(dl$x))

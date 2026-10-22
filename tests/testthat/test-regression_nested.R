@@ -608,7 +608,7 @@ test_that("Wald change, sandwich::vcovCL classes: b' V^-1 b of the cluster matri
   n_checked <- 0L
   for (nm in names(pairs)) {
     p <- pairs[[nm]]
-    got <- suppressWarnings(.wald_pair(p[[1]], p[[2]], "CR0", cluster = d$g))
+    got <- suppressWarnings(.wald_pair(p[[1]], p[[2]], "CR1", cluster = d$g))
     V <- sandwich::vcovCL(p[[2]], cluster = d$g)
     cf <- spicy:::nested_wald_coefs(p[[2]])
     if (is.null(rownames(V))) {
@@ -630,7 +630,7 @@ test_that("Wald change, sandwich::vcovCL classes: b' V^-1 b of the cluster matri
   expect_oracle_covered(n_checked, length(pairs))
 })
 
-test_that("Wald change, mlogit CR0: b' V^-1 b of the cluster matrix", {
+test_that("Wald change, mlogit CR1: b' V^-1 b of the cluster matrix", {
   skip_if_not_installed("sandwich")
   skip_if_not_installed("mlogit")
   d <- .wald_data()
@@ -649,7 +649,7 @@ test_that("Wald change, mlogit CR0: b' V^-1 b of the cluster matrix", {
   md <- mlogit::dfidx(dm, idx = c("id", "alt"), choice = "ch")
   m1 <- mlogit::mlogit(ch ~ x, md)
   m2 <- mlogit::mlogit(ch ~ x + z, md)
-  got <- .wald_pair(m1, m2, "CR0", cluster = d$g)
+  got <- .wald_pair(m1, m2, "CR1", cluster = d$g)
   V <- sandwich::vcovCL(m2, cluster = d$g)
   expect_equal(
     got$wald_chi2_change,
@@ -898,7 +898,7 @@ test_that("Wald change refuses a smooth term added under a robust vcov", {
   m1 <- mgcv::gam(y ~ x1, data = d)
   m2 <- mgcv::gam(y ~ x1 + s(x2), data = d)
   expect_error(
-    table_regression(list(m1, m2), nested = TRUE, vcov = "CR0", cluster = d$g),
+    table_regression(list(m1, m2), nested = TRUE, vcov = "CR1", cluster = d$g),
     class = "spicy_invalid_input"
   )
 })

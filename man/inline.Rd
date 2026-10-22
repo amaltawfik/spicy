@@ -123,6 +123,8 @@ The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 composes the interval with the style's brackets and separator, and
 so does every other interval token the table carries (\code{"med_ci"},
 \code{"ame_ci"}, \code{"assoc_ci"}): each addresses its own bounds.
+\code{"partial_chi2"} cites the statistic alone, without the degrees of
+freedom the table prints beside it.
 }
 
 \section{Patterns}{

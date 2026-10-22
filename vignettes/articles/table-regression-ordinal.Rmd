@@ -246,20 +246,19 @@ more than two categories.
 
 ## Cluster-robust standard errors
 
-The `polr` and `clm` fits accept the cluster-robust `vcov` family
-(`"CR0"`–`"CR3"`), computed by `sandwich::vcovCL()`. One caveat up
-front: the CR2 / CR3 small-sample bias-reduction adjustments are
-defined for (generalized) linear models — `clubSandwich` has no
-method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
-labels map to the *same* plain (CR0-type) cluster sandwich, and the
-footer names the estimator `CL` rather than the requested label.
-Pass the cluster as a formula, a column name, or a vector (the three
-accepted forms are detailed in the main article's
+The `polr` and `clm` fits accept one cluster-robust estimator,
+`vcov = "CR1"`, computed by `sandwich::vcovCL()`: the CR0 sandwich
+scaled by G/(G − 1) for G clusters. The CR2 / CR3 small-sample
+bias-reduction adjustments are defined for (generalized) linear
+models — `clubSandwich` has no method for an ordinal MLE — so
+`"CR0"`, `"CR2"` and `"CR3"` are refused rather than mapped onto
+CR1. Pass the cluster as a formula, a column name, or a vector (the
+three accepted forms are detailed in the main article's
 *Cluster-robust (CR)* section):
 
 ```{r cluster}
 table_regression(
-  fit, vcov = "CR2", cluster = ~region,
+  fit, vcov = "CR1", cluster = ~region,
   show_columns = c("b", "ame")
 )
 ```
@@ -444,7 +443,7 @@ formed and `CR*` is refused up front with a
 `spicy_unsupported_vcov` error:
 
 ```{r clm-scale-refuse, eval = have_ordinal, error = TRUE}
-table_regression(clm_scale, vcov = "CR2", cluster = ~region)
+table_regression(clm_scale, vcov = "CR1", cluster = ~region)
 ```
 
 ### Choosing an ordinal specification

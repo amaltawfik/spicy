@@ -5425,6 +5425,182 @@ test_that("a residual variance of zero draws no inference, with one warning", {
   expect_identical(inline(tl, v, column = "emmean", model = "c"), "9.00")
 })
 
+test_that("an exact linear function of a numeric `by` draws no inference", {
+  # y = 2 + 3x: lm() fits it exactly, the t of the slope was 5.20e+16 and
+  # base R warned of an "essentially perfect fit". Decided on the design
+  # (y in the column space of the model matrix), with or without weights
+  # and covariates.
+  mark <- spicy_str("cell_undefined")
+  d <- data.frame(
+    x = 1:8,
+    z = c(3, 1, 4, 1, 5, 9, 2, 6),
+    w = c(1, 2, 1, 2, 1, 2, 1, 2)
+  )
+  d$y <- 2 + 3 * d$x
+  d$yz <- 2 + 3 * d$x - 0.5 * d$z
+  fits <- list(
+    plain = function() {
+      table_continuous_lm(d, y, by = x, statistic = TRUE, effect_size = "f2")
+    },
+    weighted = function() {
+      table_continuous_lm(d, y, by = x, weights = w, statistic = TRUE)
+    },
+    adjusted = function() {
+      table_continuous_lm(d, yz, by = x, covariates = z, effect_size = "omega2")
+    }
+  )
+  for (fit in names(fits)) {
+    warned <- list()
+    tl <- withCallingHandlers(
+      fits[[fit]](),
+      warning = function(w) {
+        warned[[length(warned) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    expect_length(warned, 1L)
+    expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+    expect_match(
+      conditionMessage(warned[[1L]]),
+      "(the residual variance is zero: the outcome is an exact linear function",
+      fixed = TRUE
+    )
+    s <- as_structured(tl)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    cell <- function(token) unname(unlist(shown[1L, names(tok)[tok == token]]))
+    # The slope and R2 = 1 stay; the interval, the test, the p and the
+    # effect size are undefined.
+    expect_identical(cell("b"), "3.00", info = fit)
+    expect_identical(cell("r2"), "1.00", info = fit)
+    for (token in intersect(c("ci", "statistic", "p", "es"), tok)) {
+      expect_identical(unique(cell(token)), mark, info = fit)
+    }
+  }
+  long <- suppressWarnings(
+    table_continuous_lm(d, y, by = x, weights = w, output = "long")
+  )
+  expect_equal(long$estimate, 3)
+  expect_identical(long$r.squared, 1)
+  expect_true(is.na(long$p.value))
+  expect_true(is.na(long$test_type))
+  expect_equal(long$weighted_nobs, sum(d$w))
+
+  # Beside an outcome with a residual variance, the test column shows the
+  # undefined mark; that outcome keeps its inference, unchanged.
+  set.seed(1)
+  d$yn <- d$y + stats::rnorm(8)
+  expect_no_warning(
+    tn <- table_continuous_lm(d, yn, by = x, output = "long")
+  )
+  ref <- summary(stats::lm(yn ~ x, data = d))$coefficients["x", ]
+  expect_equal(tn$statistic, unname(ref[["t value"]]))
+  expect_equal(tn$p.value, unname(ref[["Pr(>|t|)"]]))
+  both <- suppressWarnings(
+    table_continuous_lm(d, c(y, yn), by = x, statistic = TRUE)
+  )
+  s <- as_structured(both)
+  shown <- spicy:::.format_structured_to_string_body(s)
+  tok <- vapply(s$col_meta, `[[`, character(1), "token")
+  t_col <- names(tok)[tok == "statistic"]
+  expect_identical(shown[[t_col]][[1L]], mark)
+  expect_false(identical(shown[[t_col]][[2L]], mark))
+
+  # The rank test reads the outcome centered: its tolerance is relative to
+  # the variation of the outcome, not to its level. Uncentered, 1000 + 3x
+  # with noise of SD 1e-4 read as exact.
+  d$y1000 <- 1000 + 3 * d$x
+  expect_warning(
+    l1 <- table_continuous_lm(d, y1000, by = x, output = "long"),
+    "the outcome is an exact linear function of `by`",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
+  )
+  expect_true(is.na(l1$p.value))
+  set.seed(2)
+  d$y1000n <- d$y1000 + stats::rnorm(8, sd = 1e-4)
+  expect_no_warning(
+    ln <- table_continuous_lm(d, y1000n, by = x, output = "long")
+  )
+  ref <- summary(stats::lm(y1000n ~ x, data = d))$coefficients["x", ]
+  expect_equal(ln$statistic, unname(ref[["t value"]]))
+  expect_equal(ln$p.value, unname(ref[["Pr(>|t|)"]]))
+})
+
+test_that("an exact fit on a categorical `by` and a covariate keeps the adjusted means", {
+  # y = group constant + 2z: lm() fits it exactly although no group is
+  # constant, so only the rank of the design shows it. The t of the
+  # contrast was 1.31e+15, with base R's "essentially perfect fit" warning.
+  mark <- spicy_str("cell_undefined")
+  d <- data.frame(
+    z = c(3, 1, 4, 1, 5, 9, 2, 6),
+    w = c(1, 2, 1, 2, 1, 2, 1, 2),
+    g = factor(rep(c("a", "b"), 4))
+  )
+  d$y <- ifelse(d$g == "a", 1, 4) + 2 * d$z
+  fits <- list(
+    plain = function() {
+      table_continuous_lm(
+        d,
+        y,
+        by = g,
+        covariates = z,
+        statistic = TRUE,
+        effect_size = "f2"
+      )
+    },
+    weighted = function() {
+      table_continuous_lm(
+        d,
+        y,
+        by = g,
+        covariates = z,
+        weights = w,
+        statistic = TRUE
+      )
+    }
+  )
+  # The model's adjusted means at the (weighted) mean of z: 3.875, or 4.
+  means <- list(plain = c("8.75", "11.75"), weighted = c("9.00", "12.00"))
+  for (fit in names(fits)) {
+    warned <- list()
+    tl <- withCallingHandlers(
+      fits[[fit]](),
+      warning = function(w) {
+        warned[[length(warned) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    expect_length(warned, 1L)
+    expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+    expect_match(
+      conditionMessage(warned[[1L]]),
+      "exact linear function of `by` and the covariates",
+      fixed = TRUE
+    )
+    s <- as_structured(tl)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    cell <- function(token) unname(unlist(shown[1L, names(tok)[tok == token]]))
+    expect_identical(cell("emmean"), means[[fit]], info = fit)
+    expect_identical(cell("delta"), "3.00", info = fit)
+    expect_identical(cell("r2"), "1.00", info = fit)
+    for (token in intersect(c("ci", "statistic", "p", "es"), tok)) {
+      expect_identical(unique(cell(token)), mark, info = fit)
+    }
+  }
+  # With a residual variance, the inference is the model's, unchanged.
+  set.seed(1)
+  d$yn <- d$y + stats::rnorm(8)
+  expect_no_warning(
+    ln <- table_continuous_lm(d, yn, by = g, covariates = z, output = "long")
+  )
+  ref <- summary(stats::lm(yn ~ g + z, data = d))$coefficients["gb", ]
+  row <- ln[ln$estimate_type %in% "difference", ]
+  expect_equal(row$statistic, unname(ref[["t value"]]))
+  expect_equal(row$p.value, unname(ref[["Pr(>|t|)"]]))
+})
+
 test_that("table_continuous_lm() rejects bit64::integer64 columns", {
   i64 <- structure(
     rep(c(4.94e-324, 9.88e-324), 10),

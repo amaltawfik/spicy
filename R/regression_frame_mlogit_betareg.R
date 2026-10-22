@@ -51,7 +51,7 @@ as_regression_frame.mlogit <- function(
         "i" = paste0(
           "`sandwich::vcovHC()` mis-scales the sandwich for ",
           "mlogit's per-choice-situation scores. Use a ",
-          "cluster-robust `vcov` (\"CR0\"-\"CR3\") with one cluster ",
+          "cluster-robust `vcov = \"CR1\"` with one cluster ",
           "value per choice situation, or the model-based default."
         )
       ),
@@ -92,8 +92,7 @@ as_regression_frame.mlogit <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = if (startsWith(vcov, "CR")) "CL" else NULL
+      cluster_name %||% NA_character_
     )
   }
 
@@ -354,8 +353,7 @@ as_regression_frame.betareg <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = "CL"
+      cluster_name %||% NA_character_
     )
   }
 

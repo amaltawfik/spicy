@@ -277,7 +277,7 @@ test_that("frame AME honors the requested robust vcov (SE), estimate invariant",
   am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
   ar <- ame_rows(as_regression_frame(
     fit,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = d$g,
     show_columns = "ame"
   ))
@@ -286,7 +286,7 @@ test_that("frame AME honors the requested robust vcov (SE), estimate invariant",
   expect_gt(max(abs(am$std_error - ar$std_error)), 1e-8)
 
   # The robust AME SE equals avg_slopes() fed the same robust vcov matrix.
-  vc <- spicy:::compute_model_vcov(fit, type = "CR2", cluster = d$g)
+  vc <- spicy:::compute_model_vcov(fit, type = "CR1", cluster = d$g)
   orc <- as.data.frame(suppressWarnings(suppressMessages(
     marginaleffects::avg_slopes(fit, df = Inf, vcov = vc)
   )))

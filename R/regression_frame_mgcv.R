@@ -86,8 +86,7 @@ as_regression_frame.gam <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = "CL"
+      cluster_name %||% NA_character_
     )
   }
 

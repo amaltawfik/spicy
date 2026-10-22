@@ -28,7 +28,9 @@
 .mgcv_rel <- function(a, b) max(abs(a - b)) / max(abs(b))
 
 .mgcv_hc_types <- c("HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5")
-.mgcv_cr_types <- paste0("CR", 0:3)
+# vcovCL() computes one cluster estimator for a gam, CR1 (G/(G-1) times
+# CR0); the other CR tokens are refused.
+.mgcv_cr_types <- "CR1"
 
 # Fits converge tighter than their defaults so that the gam / glm
 # agreement is not limited by the stopping rule.
@@ -71,7 +73,7 @@
   }
 }
 
-test_that("gam without smooth terms: every HC and CR type equals the glm sandwich", {
+test_that("gam without smooth terms: every HC type and CR1 equal the glm sandwich", {
   skip_if_not_installed("mgcv")
   skip_if_not_installed("sandwich")
   d <- .mgcv_oracle_data()
@@ -107,7 +109,7 @@ test_that("gam prior weights: binomial trials and gaussian case weights", {
   .expect_mgcv_matches_glm(p, d$g, "gaussian weights")
 })
 
-test_that("bam without smooth terms: every HC and CR type equals the glm sandwich", {
+test_that("bam without smooth terms: every HC type and CR1 equal the glm sandwich", {
   skip_if_not_installed("mgcv")
   skip_if_not_installed("sandwich")
   d <- .mgcv_oracle_data()
@@ -235,7 +237,7 @@ test_that("extended families other than nb() are refused", {
   d$yp01 <- stats::plogis(0.3 * d$x1 + stats::rnorm(nrow(d), sd = 0.5))
   m <- mgcv::gam(yp01 ~ x1, family = mgcv::betar(), data = d)
   expect_error(
-    spicy:::compute_model_vcov(m, type = "CR0", cluster = d$g),
+    spicy:::compute_model_vcov(m, type = "CR1", cluster = d$g),
     class = "spicy_unsupported_vcov"
   )
   expect_error(
@@ -243,7 +245,49 @@ test_that("extended families other than nb() are refused", {
     class = "spicy_unsupported_vcov"
   )
   expect_error(
-    table_regression(m, vcov = "CR2", cluster = d$g, output = "data.frame"),
+    table_regression(m, vcov = "CR1", cluster = d$g, output = "data.frame"),
     class = "spicy_unsupported_vcov"
   )
+})
+
+test_that("a gam takes CR1 alone, and the note names it", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("sandwich")
+  d <- .mgcv_oracle_data()
+  m <- mgcv::gam(yb ~ x1 + s(z), family = stats::binomial(), data = d)
+  # CR1 is vcovCL()'s HC0 meat scaled by G/(G-1), with no (n-1)/(n-k).
+  G <- length(unique(d$g))
+  raw <- sandwich::vcovCL(
+    spicy:::.mgcv_sandwich_wrap(m),
+    cluster = d$g,
+    type = "HC0",
+    cadjust = FALSE
+  )
+  expect_equal(
+    unname(spicy:::compute_model_vcov(m, type = "CR1", cluster = d$g)),
+    unname(raw * G / (G - 1)),
+    tolerance = 1e-10
+  )
+  for (t in c("CR0", "CR2", "CR3")) {
+    expect_error(
+      spicy:::compute_model_vcov(m, type = t, cluster = d$g),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_error(
+      table_regression(m, vcov = t, cluster = d$g),
+      "This class supports: classical, CR1.",
+      fixed = TRUE,
+      class = "spicy_unsupported_vcov"
+    )
+  }
+  tbl <- table_regression(m, vcov = "CR1", cluster = d$g)
+  expect_match(attr(tbl, "note"), "(CR1)", fixed = TRUE)
+  expect_no_match(attr(tbl, "note"), "(CL)", fixed = TRUE)
+  # A cluster under the model-based vcov points to the token it takes.
+  w <- expect_warning(
+    table_regression(m, cluster = d$g),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(conditionMessage(w), "CR1", fixed = TRUE)
+  expect_no_match(conditionMessage(w), "CR2", fixed = TRUE)
 })

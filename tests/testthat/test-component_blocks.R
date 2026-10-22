@@ -148,14 +148,14 @@ test_that("stars apply to component rows", {
 
 ## ---- 5. Robust CL covers BOTH components (pscl upgrade) --------------------
 
-test_that("zeroinfl CR* matches sandwich::vcovCL on both components", {
+test_that("zeroinfl CR1 matches sandwich::vcovCL on both components", {
   skip_if_not_installed("sandwich")
   skip_if_not_installed("broom")
   m <- .cb_zeroinfl()
   data("bioChemists", package = "pscl", envir = environment())
   td <- broom::tidy(table_regression(
     m,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = bioChemists$fem
   ))
   se_orc <- sqrt(diag(sandwich::vcovCL(m, cluster = bioChemists$fem)))

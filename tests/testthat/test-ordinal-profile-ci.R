@@ -87,7 +87,7 @@ test_that("footer discloses profile CIs only when they are actually used", {
   ))
   # robust vcov takes precedence -> no profile note, and the CI is robust-Wald
   res_cr <- suppressWarnings(
-    table_regression(fit, vcov = "CR2", cluster = d$g, ci_method = "profile")
+    table_regression(fit, vcov = "CR1", cluster = d$g, ci_method = "profile")
   )
   expect_false(grepl("profile likelihood", note_of(res_cr), fixed = TRUE))
 })
@@ -97,7 +97,7 @@ test_that("profile + robust vcov yields symmetric (robust-Wald) CIs", {
   d <- make_ord()
   fit <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
   fr <- suppressWarnings(
-    as_regression_frame(fit, vcov = "CR2", cluster = d$g, ci_method = "profile")
+    as_regression_frame(fit, vcov = "CR1", cluster = d$g, ci_method = "profile")
   )
   r <- fr$coefs[fr$coefs$term == "x1" & fr$coefs$estimate_type == "B", ]
   expect_equal((r$ci_lower + r$ci_upper) / 2, r$estimate, tolerance = 1e-9)

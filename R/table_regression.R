@@ -309,16 +309,24 @@
 #'     for `glm` with an explanation: Stata's ML commands use a
 #'     different convention (`G/(G-1)` scaling, z), so the label
 #'     would not match Stata output there.}
-#'   \item{`mlogit`}{`classical` + `CR*` only (cluster at the
+#'   \item{`mlogit`}{`classical` + `"CR1"` only (cluster at the
 #'     choice-situation level) -- `sandwich::vcovHC()` mis-scales the
 #'     sandwich for mlogit's per-choice-situation scores, so `HC*` is
 #'     refused.}
-#'   \item{`lmer`, `lme`, `coxph`, `survreg`,
-#'     `mgcv::gam`/`bam`, `polr`, `clm`, `betareg`,
-#'     `nnet::multinom`, `pscl::zeroinfl`/`hurdle`,
-#'     `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical`
-#'     + `CR*` only -- `HC*` and the resamplers (which refit
-#'     `lm`/`glm`) are not defined for these. `clm` with a scale /
+#'   \item{`lmer`, `lme`}{`classical` + `CR*` only -- `HC*` and the
+#'     resamplers (which refit `lm`/`glm`) are not defined for these.}
+#'   \item{`coxph`, `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical` +
+#'     `"CR0"` only: the Lin-Wei sandwich of `coxph(cluster = )` and
+#'     [rms::robcov()] are one cluster estimator each, with no
+#'     small-sample factor. `"CR1"` to `"CR3"` are refused, as are `HC*`
+#'     and the resamplers.}
+#'   \item{`survreg`, `mgcv::gam`/`bam`, `polr`, `clm`, `betareg`,
+#'     `nnet::multinom`, `pscl::zeroinfl`/`hurdle`}{`classical`
+#'     + `"CR1"` only: [sandwich::vcovCL()] computes one cluster
+#'     estimator for these, the CR0 sandwich scaled by
+#'     \eqn{G/(G-1)}{G/(G-1)}, `G` the number of clusters
+#'     (\pkg{clubSandwich}'s CR1). `"CR0"`, `"CR2"` and `"CR3"` are
+#'     refused, as are `HC*` and the resamplers. `clm` with a scale /
 #'     nominal (partial-PO) component is `classical` only.
 #'     `multinom` needs \pkg{sandwich} >= 3.1-2 (which added its
 #'     `estfun()` method); its `cluster` is one entry per
@@ -387,11 +395,14 @@
 #' methods for these fits are wrong for a free dispersion, a
 #' non-canonical link and a non-Gaussian `bam()`. Extended families
 #' other than `nb()` (`betar`, `ocat`, `scat`, `tw`, ...) have another
-#' score and are refused. `rms` fits use
+#' score and are refused. For all of these `vcovCL()` classes, the one
+#' estimator is CR1, requested as `"CR1"`; the other `CR*` tokens are
+#' refused rather than mapped. `rms` fits use
 #' [rms::robcov()] (which
-#' needs the fit's `x = TRUE, y = TRUE`). These single cluster
-#' sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-#' `CR*` maps to the one available estimator. `glmmTMB` fits use
+#' needs the fit's `x = TRUE, y = TRUE`). The Lin-Wei and `robcov()`
+#' sandwiches have no small-sample factor: their one estimator is
+#' requested as `"CR0"`, and the other `CR*` tokens are refused rather
+#' than mapped. `glmmTMB` fits use
 #' `glmmTMB::sandwich()`, with one score per cluster (the gradient of
 #' the cluster's marginal log-likelihood) and no finite-sample factor;
 #' its one estimator is requested as `"CR0"`, and the other `CR*`
@@ -587,8 +598,8 @@
 #'     \eqn{(q, df)} degrees of freedom, the convention of
 #'     `lmtest::waldtest(test = "F")` and `car::linearHypothesis()`.
 #'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
-#'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"`-`"CR3"`
-#'     or after `rms::robcov()`, `quantreg::rq` under `"iid"` and
+#'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"` or
+#'     after `rms::robcov()`, `quantreg::rq` under `"iid"` and
 #'     `"ker"`, and a `fixest::feols` fit estimated with a non-iid vcov
 #'     (on fixest's own degrees of freedom, as `fixest::wald()`). Under
 #'     `"CR0"`-`"CR3"`, `lm`, `glm` (`MASS::glm.nb` included),
@@ -600,10 +611,11 @@
 #'     \eqn{q} degrees of freedom, the convention of
 #'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
 #'     `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
-#'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, and
-#'     under `"CR0"`-`"CR3"` to `coxph`, `survreg`, `mgcv::gam` and
-#'     `bam`, `polr`, `clm`, `betareg`, `multinom`, `mlogit`,
-#'     `zeroinfl`, `hurdle` and `rms::lrm` / `cph` / `Glm`; also to
+#'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`,
+#'     under `"CR0"` to `coxph` and `rms::lrm` / `cph` / `Glm`,
+#'     and under `"CR1"` to `survreg`, `mgcv::gam` and `bam`, `polr`,
+#'     `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
+#'     `hurdle`; also to
 #'     `survreg(robust = TRUE)`, a `fixest::fepois` or `feglm` fit with
 #'     a non-iid vcov, and an `rms` fit of these classes passed through
 #'     `robcov()`.

@@ -269,18 +269,24 @@ compute_model_vcov <- function(
     .check_cluster_length(fit, cluster)
     .check_cluster_no_na(fit, cluster)
     # Cluster-robust backend by class. The CR0..CR3 bias-reduction variants are
-    # a clubSandwich concept; Cox and the sandwich::vcovCL classes have a single
-    # cluster sandwich, so the requested CR* maps to that one estimator.
+    # a clubSandwich concept; the other backends compute one cluster sandwich
+    # each, requested by the token that names it, the others refused
+    # (.single_cluster_token()):
     #   * coxph / cph -> Lin & Wei (1989) grouped-dfbeta = coxph(cluster=); the
     #     field-standard Cox robust SE (clubSandwich gives a different,
-    #     non-standard result for Cox).
+    #     non-standard result for Cox). No small-sample factor: CR0.
     #   * ols / lrm / cph / Glm (rms) -> rms::robcov() native cluster sandwich
     #     (Huber-White; Lin-Wei for cph). Requires the fit's x = TRUE, y = TRUE.
-    #   * survreg / gam / polr / clm / betareg / mlogit -> sandwich::vcovCL
-    #     (clubSandwich has no usable method for these classes). gam / bam
-    #     reach it through the wrapper of R/vcov_mgcv.R, which supplies the
-    #     score and mgcv's penalized bread.
+    #     No small-sample factor: CR0.
+    #   * the .VCOVCL_CLASSES -> sandwich::vcovCL (clubSandwich has no usable
+    #     method for these classes): CR1. gam / bam reach it through the
+    #     wrapper of R/vcov_mgcv.R, which supplies the score and mgcv's
+    #     penalized bread.
     #   * lm / glm / lmer / lme -> clubSandwich bias-reduced CR*.
+    one_token <- .single_cluster_token(fit)
+    if (!is.null(one_token) && !identical(type, one_token)) {
+      .single_cluster_refuse_vcov(fit, type)
+    }
     # rms first: cph inherits "coxph", but robcov() == the Lin-Wei sandwich and
     # gives a clearer x/y error, so route the whole rms family through it.
     if (inherits(fit, c("ols", "lrm", "cph", "Glm"))) {
@@ -289,26 +295,15 @@ compute_model_vcov <- function(
     if (inherits(fit, "coxph")) {
       return(.coxph_cluster_robust_vcov(fit, cluster))
     }
-    if (
-      inherits(
-        fit,
-        c(
-          "survreg",
-          "gam",
-          "bam",
-          "polr",
-          "clm",
-          "betareg",
-          "mlogit",
-          "multinom",
-          "zeroinfl",
-          "hurdle"
-        )
-      )
-    ) {
+    if (inherits(fit, .VCOVCL_CLASSES)) {
       cl_fit <- if (inherits(fit, "gam")) .mgcv_sandwich_wrap(fit) else fit
       return(tryCatch(
-        sandwich::vcovCL(cl_fit, cluster = cluster),
+        sandwich::vcovCL(
+          cl_fit,
+          cluster = cluster,
+          type = "HC0",
+          cadjust = TRUE
+        ),
         error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovCL()")
       ))
     }
@@ -1035,6 +1030,11 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   # Cluster-robust only: clubSandwich CR* is defined, but HC* (an OLS / single-
   # level concept) and the lm/glm-refitting resamplers are not.
   cr_only <- c("classical", paste0("CR", 0:3))
+  # The classes that compute one cluster estimator take the token that names
+  # it (.single_cluster_token()): CR1 for the sandwich::vcovCL() classes,
+  # CR0 for coxph and the rms fits.
+  cl_only <- c("classical", "CR1")
+  cr0_only <- c("classical", "CR0")
   switch(
     class(fit)[1L],
     # lm additionally takes "CR1S" -- the full Stata
@@ -1055,8 +1055,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     lme = cr_only,
     glmmTMB = .glmmTMB_robust_vcov_support(fit),
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
-    coxph = cr_only,
-    survreg = cr_only,
+    coxph = cr0_only,
+    survreg = cl_only,
     # Inc 4: cluster sandwich via sandwich::vcovCL. clm is structure-aware:
     # scale/nominal (partial-PO) fits have no sandwich estfun method, so CR*
     # is refused for them (-> spicy_unsupported_vcov up front).
@@ -1065,18 +1065,18 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # (strata, FPC, calibration). Clustering belongs in the design itself
     # (svydesign(ids = ...)); the fit's own Taylor/replicate variance IS the
     # design-based robust variance (refusal message in the validate gate).
-    gam = cr_only,
-    bam = cr_only,
-    polr = cr_only,
-    clm = .clm_robust_vcov_support(fit, cr_only),
-    betareg = cr_only,
+    gam = cl_only,
+    bam = cl_only,
+    polr = cl_only,
+    clm = .clm_robust_vcov_support(fit, cl_only),
+    betareg = cl_only,
     # mlogit: CR* only. vcovHC() is NUMERICALLY WRONG for mlogit -- its meat
     # divides by nobs() (long-format rows, n x J) while estfun() has one row
     # per choice situation (n), deflating SEs by ~sqrt(J); and without a
     # hatvalues method HC1-HC5 silently equal HC0. vcovCL() sizes everything
     # off the estfun rows and matches sandwich::sandwich(), so the cluster
     # path is correct (verified against the Fishing data, 2026-07-03).
-    mlogit = cr_only,
+    mlogit = cl_only,
     # nnet::multinom: CR* via sandwich::vcovCL, unlocked by sandwich
     # 3.1-2's estfun.multinom(). HC* stays impossible -- no working
     # residuals or hatvalues for a multi-equation model (meatHC errors
@@ -1084,18 +1084,18 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Cluster SEs cross-validated against mlogit::mlogit on identical
     # data: coefficients and vcovCL SEs agree to 4 decimals
     # (dev/multinom_robust_vcov_spec.md, 2026-07-14).
-    multinom = cr_only,
+    multinom = cl_only,
     # Inc 4b: rms fits via rms::robcov() native cluster sandwich (needs the
     # fit's x = TRUE, y = TRUE). ols / lrm / cph / Glm.
-    ols = cr_only,
-    lrm = cr_only,
-    cph = cr_only,
-    Glm = cr_only,
+    ols = cr0_only,
+    lrm = cr0_only,
+    cph = cr0_only,
+    Glm = cr0_only,
     # Two-part count models (pscl): sandwich::estfun / bread work for BOTH
     # components (verified 2026-07-02), so the CL cluster sandwich covers the
     # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
-    zeroinfl = cr_only,
-    hurdle = cr_only,
+    zeroinfl = cl_only,
+    hurdle = cl_only,
     # quantreg::rq: its own summary.rq() estimator family, not the
     # sandwich vocabulary. "classical" resolves to the nid sandwich
     # (Hendricks-Koenker; quantreg's own large-sample default and what
@@ -1244,9 +1244,90 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # no sandwich::estfun method ("estimating functions for scale regression not
 # implemented yet"), so vcovCL / CR* cannot be formed. Refuse CR* up front for
 # those fits (the validate gate then emits a clear spicy_unsupported_vcov) rather
-# than crashing deep inside estfun. Plain proportional-odds clm keeps cr_only.
-.clm_robust_vcov_support <- function(fit, cr_only) {
-  if (!is.null(fit$S.terms) || !is.null(fit$nom.terms)) "classical" else cr_only
+# than crashing deep inside estfun. Plain proportional-odds clm keeps cl_only.
+.clm_robust_vcov_support <- function(fit, cl_only) {
+  if (!is.null(fit$S.terms) || !is.null(fit$nom.terms)) "classical" else cl_only
+}
+
+# The classes whose cluster-robust matrix is sandwich::vcovCL(). spicy calls
+# it with type = "HC0" and cadjust = TRUE: the meat of CR0 scaled by G/(G-1),
+# G the number of clusters, with no (n-1)/(n-k) factor. That is clubSandwich's
+# CR1 (type = "HC1" would add the factor and give CR1S). vcovCL() has no
+# bias-reduced variant for these classes, so CR1 is the one estimator
+# (.single_cluster_token()). `bam` inherits "gam".
+.VCOVCL_CLASSES <- c(
+  "survreg",
+  "gam",
+  "polr",
+  "clm",
+  "betareg",
+  "mlogit",
+  "multinom",
+  "zeroinfl",
+  "hurdle"
+)
+
+# The rms classes whose cluster-robust matrix is rms::robcov().
+.RMS_CR_CLASSES <- c("ols", "lrm", "cph", "Glm")
+
+# The one cluster-robust token of a class that computes a single cluster
+# estimator, NULL for the others. Each is the token that names what the
+# class computes, verified against its backend:
+#   * coxph (spicy's grouped-dfbeta cross-product, equal to
+#     coxph(cluster = )$var) and the rms fits (rms::robcov(): the bread
+#     times the cross-product of the cluster score sums times the bread)
+#     apply no small-sample factor: CR0;
+#   * the .VCOVCL_CLASSES: CR1.
+# The other CR* tokens are refused rather than mapped onto that estimator
+# (the published 0.13.0 accepted all four and computed it under each).
+# cph inherits "coxph": both give CR0.
+.single_cluster_token <- function(fit) {
+  if (inherits(fit, c("coxph", .RMS_CR_CLASSES))) {
+    return("CR0")
+  }
+  if (inherits(fit, .VCOVCL_CLASSES)) {
+    return("CR1")
+  }
+  NULL
+}
+
+# The refusal of a CR* token other than the one a single-estimator class
+# computes (.single_cluster_token()). Shared by the public gate and the
+# compute path; `call` is the function the user called, so the error
+# names it.
+.single_cluster_refuse_vcov <- function(fit, type, call = rlang::caller_env()) {
+  why <- if (inherits(fit, .RMS_CR_CLASSES)) {
+    paste0(
+      "rms::robcov() computes one cluster-robust estimator, with no ",
+      "small-sample factor: CR0."
+    )
+  } else if (inherits(fit, "coxph")) {
+    paste0(
+      "The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust ",
+      "estimator, with no small-sample factor: CR0."
+    )
+  } else {
+    paste0(
+      "sandwich::vcovCL() computes one cluster-robust estimator for this ",
+      "class: CR1, the CR0 sandwich scaled by G/(G-1)."
+    )
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "`vcov = \"%s\"` is not available for `%s` models.",
+        type,
+        class(fit)[1L]
+      ),
+      "i" = why,
+      "i" = sprintf(
+        "This class supports: %s.",
+        paste(.robust_vcov_support(fit), collapse = ", ")
+      )
+    ),
+    class = "spicy_unsupported_vcov",
+    call = call
+  )
 }
 
 

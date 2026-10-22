@@ -33,7 +33,7 @@ test_that("multinom CR* matches sandwich::vcovCL exactly (Wald z)", {
   m <- nnet::multinom(y ~ x + z, data = d, trace = FALSE)
   fr <- as_regression_frame(
     m,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = d$cl,
     cluster_name = "cl"
   )
@@ -60,7 +60,7 @@ test_that("multinom CR* matches sandwich::vcovCL exactly (Wald z)", {
     unname(b$estimate - z975 * b$std_error),
     tolerance = 1e-10
   )
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by cl")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by cl")
   # ... and the classical frame is untouched by the new path.
   fr0 <- as_regression_frame(m)
   se_mat <- summary(m)$standard.errors
@@ -76,11 +76,11 @@ test_that("multinom CR* renders end-to-end with a formula cluster", {
   m <- nnet::multinom(y ~ x + z, data = d, trace = FALSE)
   out <- paste(
     capture.output(print(
-      table_regression(m, vcov = "CR0", cluster = ~cl)
+      table_regression(m, vcov = "CR1", cluster = ~cl)
     )),
     collapse = "\n"
   )
-  expect_match(out, "cluster-robust (CL), clusters by cl", fixed = TRUE)
+  expect_match(out, "cluster-robust (CR1), clusters by cl", fixed = TRUE)
   expect_match(out, "Reference outcome: A.", fixed = TRUE)
 })
 
@@ -139,7 +139,7 @@ test_that("binary multinom (flat coef vector) aligns positionally", {
   expect_false(is.matrix(coef(m)))
   fr <- as_regression_frame(
     m,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = d$cl,
     cluster_name = "cl"
   )
@@ -172,7 +172,7 @@ test_that("multinom HC* and resamplers are refused; bad cluster length errors", 
   expect_error(
     table_regression(
       m,
-      vcov = "CR2",
+      vcov = "CR1",
       cluster = d$cl[1:37],
       output = "data.frame"
     ),
@@ -188,7 +188,7 @@ test_that("multinom AME columns honor the requested CR*", {
   m <- nnet::multinom(y ~ x + z, data = d, trace = FALSE)
   fr_cl <- as_regression_frame(
     m,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = d$cl,
     cluster_name = "cl",
     show_columns = c("b", "ame", "ame_se")

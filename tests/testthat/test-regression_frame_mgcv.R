@@ -307,7 +307,7 @@ test_that("gam / bam CR2 standard errors equal the glm's cluster sandwich", {
   for (nm in names(cases)) {
     m_gam <- cases[[nm]][[1]]
     m_glm <- cases[[nm]][[2]]
-    se_gam <- se_of(m_gam, "CR2")
+    se_gam <- se_of(m_gam, "CR1")
     oracle <- sqrt(diag(sandwich::vcovCL(m_glm, cluster = d$g)))
     expect_equal(se_gam, oracle[names(se_gam)], tolerance = 1e-5, label = nm)
     # The same estimator through clubSandwich's CR1 on the glm table.

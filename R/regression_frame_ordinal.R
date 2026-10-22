@@ -91,8 +91,7 @@ as_regression_frame.polr <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = "CL"
+      cluster_name %||% NA_character_
     )
     # The Thresholds block follows the same estimator: its SE / z / p /
     # CI come from the same full vcovCL matrix as the slopes, so the
@@ -196,8 +195,7 @@ as_regression_frame.clm <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = "CL"
+      cluster_name %||% NA_character_
     )
     # Thresholds follow the same estimator (see the polr method): PPO
     # fits never reach here (scale / nominal components are gated to

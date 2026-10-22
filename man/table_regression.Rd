@@ -1166,16 +1166,24 @@ remains the recommended modern choice. \code{"CR1S"} is refused
 for \code{glm} with an explanation: Stata's ML commands use a
 different convention (\code{G/(G-1)} scaling, z), so the label
 would not match Stata output there.}
-\item{\code{mlogit}}{\code{classical} + \verb{CR*} only (cluster at the
+\item{\code{mlogit}}{\code{classical} + \code{"CR1"} only (cluster at the
 choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
 sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
 refused.}
-\item{\code{lmer}, \code{lme}, \code{coxph}, \code{survreg},
-\code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
-\code{nnet::multinom}, \code{pscl::zeroinfl}/\code{hurdle},
-\code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
-+ \verb{CR*} only -- \verb{HC*} and the resamplers (which refit
-\code{lm}/\code{glm}) are not defined for these. \code{clm} with a scale /
+\item{\code{lmer}, \code{lme}}{\code{classical} + \verb{CR*} only -- \verb{HC*} and the
+resamplers (which refit \code{lm}/\code{glm}) are not defined for these.}
+\item{\code{coxph}, \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical} +
+\code{"CR0"} only: the Lin-Wei sandwich of \code{coxph(cluster = )} and
+\code{\link[rms:robcov]{rms::robcov()}} are one cluster estimator each, with no
+small-sample factor. \code{"CR1"} to \code{"CR3"} are refused, as are \verb{HC*}
+and the resamplers.}
+\item{\code{survreg}, \code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
+\code{nnet::multinom}, \code{pscl::zeroinfl}/\code{hurdle}}{\code{classical}
++ \code{"CR1"} only: \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} computes one cluster
+estimator for these, the CR0 sandwich scaled by
+\eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters
+(\pkg{clubSandwich}'s CR1). \code{"CR0"}, \code{"CR2"} and \code{"CR3"} are
+refused, as are \verb{HC*} and the resamplers. \code{clm} with a scale /
 nominal (partial-PO) component is \code{classical} only.
 \code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
 \code{estfun()} method); its \code{cluster} is one entry per
@@ -1244,11 +1252,14 @@ and lets \code{vcovCL()} do only the clustering arithmetic: the sandwich
 methods for these fits are wrong for a free dispersion, a
 non-canonical link and a non-Gaussian \code{bam()}. Extended families
 other than \code{nb()} (\code{betar}, \code{ocat}, \code{scat}, \code{tw}, ...) have another
-score and are refused. \code{rms} fits use
+score and are refused. For all of these \code{vcovCL()} classes, the one
+estimator is CR1, requested as \code{"CR1"}; the other \verb{CR*} tokens are
+refused rather than mapped. \code{rms} fits use
 \code{\link[rms:robcov]{rms::robcov()}} (which
-needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
-sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-\verb{CR*} maps to the one available estimator. \code{glmmTMB} fits use
+needs the fit's \verb{x = TRUE, y = TRUE}). The Lin-Wei and \code{robcov()}
+sandwiches have no small-sample factor: their one estimator is
+requested as \code{"CR0"}, and the other \verb{CR*} tokens are refused rather
+than mapped. \code{glmmTMB} fits use
 \code{glmmTMB::sandwich()}, with one score per cluster (the gradient of
 the cluster's marginal log-likelihood) and no finite-sample factor;
 its one estimator is requested as \code{"CR0"}, and the other \verb{CR*}
@@ -1444,8 +1455,8 @@ coefficient tests:
 \eqn{(q, df)} degrees of freedom, the convention of
 \code{lmtest::waldtest(test = "F")} and \code{car::linearHypothesis()}.
 It applies to \code{lm} under \code{"HC0"}-\code{"HC5"} (and \code{"CR1S"}, on
-\eqn{G - 1} degrees of freedom), \code{rms::ols} under \code{"CR0"}-\code{"CR3"}
-or after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
+\eqn{G - 1} degrees of freedom), \code{rms::ols} under \code{"CR0"} or
+after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
 \code{"ker"}, and a \code{fixest::feols} fit estimated with a non-iid vcov
 (on fixest's own degrees of freedom, as \code{fixest::wald()}). Under
 \code{"CR0"}-\code{"CR3"}, \code{lm}, \code{glm} (\code{MASS::glm.nb} included),
@@ -1457,10 +1468,11 @@ coefficient tests.
 \eqn{q} degrees of freedom, the convention of
 \code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} and
 \code{glm.nb} under \code{"HC0"}-\code{"HC5"}, \code{lm} and \code{glm} under
-\code{"bootstrap"} and \code{"jackknife"}, \code{rq} under \code{"bootstrap"}, and
-under \code{"CR0"}-\code{"CR3"} to \code{coxph}, \code{survreg}, \code{mgcv::gam} and
-\code{bam}, \code{polr}, \code{clm}, \code{betareg}, \code{multinom}, \code{mlogit},
-\code{zeroinfl}, \code{hurdle} and \code{rms::lrm} / \code{cph} / \code{Glm}; also to
+\code{"bootstrap"} and \code{"jackknife"}, \code{rq} under \code{"bootstrap"},
+under \code{"CR0"} to \code{coxph} and \code{rms::lrm} / \code{cph} / \code{Glm},
+and under \code{"CR1"} to \code{survreg}, \code{mgcv::gam} and \code{bam}, \code{polr},
+\code{clm}, \code{betareg}, \code{multinom}, \code{mlogit}, \code{zeroinfl} and
+\code{hurdle}; also to
 \code{survreg(robust = TRUE)}, a \code{fixest::fepois} or \code{feglm} fit with
 a non-iid vcov, and an \code{rms} fit of these classes passed through
 \code{robcov()}.

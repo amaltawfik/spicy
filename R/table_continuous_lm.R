@@ -550,14 +550,15 @@
 #' test, its interval, its effect size and its \eqn{R^2}{R^2} are undefined
 #' cells (`NA` in the long output and in `glance()`), its means and its
 #' contrast or slope (0) are shown, and a warning (class
-#' `spicy_undefined_stat`) names it. So does an outcome constant within
-#' each group of a categorical `by` (a residual variance of zero): its
-#' means, its contrast and its \eqn{R^2}{R^2} of 1 are shown, and its test,
-#' interval and effect size are undefined. Every cell of an outcome
-#' applies to it, so a cell with no value shows the undefined mark, never
-#' a blank: a saturated fit (one observation per group) has no interval,
-#' test or effect size, and a model that could not be fit has no cell at
-#' all.
+#' `spicy_undefined_stat`) names it. So does a residual variance of zero,
+#' an outcome constant within each group of a categorical `by` or an exact
+#' linear function of `by` and the covariates: its means (adjusted for the
+#' covariates), its contrast or slope and its \eqn{R^2}{R^2} of 1 are
+#' shown, and its test, interval and effect size are undefined. Every cell
+#' of an outcome applies to it, so a cell with no value shows the undefined
+#' mark, never a blank: a saturated fit (one observation per group) has no
+#' interval, test or effect size, and a model that could not be fit has no
+#' cell at all.
 #'
 #' # Effect sizes
 #'
@@ -2047,14 +2048,20 @@ degrade_saturated_lm_rows <- function(out, fit, outcome_name) {
 #     y = 0.1);
 #   * a residual variance of zero, each group of a categorical `by`
 #     constant on its own value (`.within_groups_constant()`): the t of
-#     the contrast was 3.32e+15. R^2 is 1 there, and stays.
+#     the contrast was 3.32e+15; or an outcome that is an exact linear
+#     function of `by` and the covariates (`.lm_exact_fit()`): the t of a
+#     slope was 5.20e+16, that of a contrast adjusted for a covariate
+#     1.31e+15. There `means` are the model's adjusted means. R^2 is 1
+#     there, and stays: it is defined (the outcome varies) and exact, not
+#     rounding noise.
 # Both came with base R's "essentially perfect fit" warning. The rule of
 # `table_continuous()` applies instead: the means (the constant of each
-# group) and the contrast (their difference) or the slope (0) are kept,
-# every inferential column is NA, the test is none (so the note names
-# none for it), and one classed warning names the outcome. The display
-# shows the undefined mark in those cells, as in every cell with no value.
-# `x` is the fitted `by`, a factor for a categorical one.
+# group) and the contrast (their difference) or the slope (0, or the
+# fitted slope of an exact fit) are kept, every inferential column is NA,
+# the test is none (so the note names none for it), and one classed
+# warning names the outcome. The display shows the undefined mark in
+# those cells, as in every cell with no value. `x` is the fitted `by`, a
+# factor for a categorical one.
 no_inference_lm_rows <- function(
   y,
   x,
@@ -2064,7 +2071,10 @@ no_inference_lm_rows <- function(
   predictor_label,
   effect_size = "none",
   contrast_shown = FALSE,
-  by_levels = NULL
+  by_levels = NULL,
+  slope = 0,
+  adjusted = FALSE,
+  means = NULL
 ) {
   constant <- length(unique(y)) < 2L
   spicy_warn(
@@ -2076,8 +2086,15 @@ no_inference_lm_rows <- function(
         )
       } else {
         sprintf(
-          "The model for `%s` has no inference (the residual variance is zero: each group of `by` is constant), so it has no test, interval, or effect size; those cells are undefined.",
-          outcome_name
+          "The model for `%s` has no inference (the residual variance is zero: %s), so it has no test, interval, or effect size; those cells are undefined.",
+          outcome_name,
+          if (adjusted) {
+            "the outcome is an exact linear function of `by` and the covariates"
+          } else if (is.factor(x)) {
+            "each group of `by` is constant"
+          } else {
+            "the outcome is an exact linear function of `by`"
+          }
         )
       },
       "i" = "Other outcomes are unaffected."
@@ -2093,12 +2110,13 @@ no_inference_lm_rows <- function(
     levels = if (categorical) levels(x) else NA_character_
   )
   if (categorical) {
-    means <- vapply(
-      levels(x),
-      function(lv) y[x == lv][[1L]],
-      numeric(1),
-      USE.NAMES = FALSE
-    )
+    means <- means %||%
+      vapply(
+        levels(x),
+        function(lv) y[x == lv][[1L]],
+        numeric(1),
+        USE.NAMES = FALSE
+      )
     out$emmean <- means
     if (contrast_shown) {
       out$estimate_type[2L] <- "difference"
@@ -2106,11 +2124,12 @@ no_inference_lm_rows <- function(
     }
   } else {
     out$estimate_type <- "slope"
-    out$estimate <- 0
+    out$estimate <- slope
   }
   if (!constant) {
-    # The groups explain all of the variance: R^2 is 1, with residual
-    # degrees of freedom to spare (the caller's condition).
+    # The groups (or the exact line) explain all of the variance: R^2 is
+    # 1, with residual degrees of freedom to spare (the caller's
+    # condition).
     out$r2[[1L]] <- 1
     out$adj_r2[[1L]] <- 1
   }
@@ -2121,6 +2140,60 @@ no_inference_lm_rows <- function(
     out <- .tclm_expand_levels(out, by_levels %||% levels(x))
   }
   out
+}
+
+# TRUE when the outcome lies in the column space of the design: appending
+# it to the (weighted) model matrix leaves the rank unchanged, at the
+# tolerance lm() itself uses to decide the rank of the design. A property
+# of the data, read like lm() reads aliasing, never from the size of a
+# residual or of a statistic. The rows are weighted as lm.wfit() weights
+# them, so a zero weight removes its row.
+#
+# The outcome is centered on its (weighted) mean first. The design has an
+# intercept, so the answer is the same, but qr() judges a column by its
+# norm: on the raw outcome the tolerance was relative to its LEVEL, and
+# 1000 + 3x with noise of SD 1e-4 read as exact. Centered, it is relative
+# to the variation of the outcome.
+.lm_exact_fit <- function(fit) {
+  X <- stats::model.matrix(fit)
+  y <- stats::model.response(stats::model.frame(fit))
+  w <- stats::weights(fit) %||% rep(1, length(y))
+  y <- y - sum(w * y) / sum(w)
+  X <- X * sqrt(w)
+  y <- y * sqrt(w)
+  qr(cbind(X, y), tol = 1e-7)$rank == qr(X, tol = 1e-7)$rank
+}
+
+# The rows that turn the coefficients into the mean of each level of a
+# categorical `by`, one per level, aligned with `cf`: the means are
+# `L %*% cf` and their variance `L V L'`. Without covariates, the design
+# row of the level: `contrasts.arg = fit$contrasts` pins the grid to the
+# coding the model was fitted with, and the columns are aligned to the
+# coefficients BY NAME, since a positional product would silently mismatch
+# if the codings ever diverged (audit phase 2). With covariates, the
+# averaged row of `build_emmean_avg_row()`. Shared by the fit with
+# inference and by an exact fit, which keeps the means without intervals.
+.tclm_emmean_rows <- function(fit, cf, levs, covariates, adjustment) {
+  if (is.null(covariates)) {
+    design <- stats::model.matrix(
+      stats::delete.response(stats::terms(fit)),
+      data.frame(x = factor(levs, levels = levs)),
+      contrasts.arg = fit$contrasts
+    )
+    return(align_design_to_coef(design, cf))
+  }
+  do.call(
+    rbind,
+    lapply(levs, function(lv) {
+      build_emmean_avg_row(
+        fit,
+        x_focal_level = lv,
+        x_levels = levs,
+        covariates_observed = covariates,
+        method = adjustment
+      )
+    })
+  )
 }
 
 fit_numeric_predictor_lm_rows <- function(
@@ -2193,6 +2266,24 @@ fit_numeric_predictor_lm_rows <- function(
     stats::lm(formula, data = model_df)
   } else {
     stats::lm(formula, data = model_df, weights = weights)
+  }
+
+  # The outcome an exact linear function of `by` (and the covariates),
+  # with residual degrees of freedom to spare: the residual variance is
+  # zero, as for a categorical `by` constant within each group. Decided
+  # on the design before any test; a saturated fit keeps its rule.
+  if (stats::df.residual(fit) > 0 && .lm_exact_fit(fit)) {
+    return(no_inference_lm_rows(
+      y,
+      x,
+      weights,
+      outcome_name,
+      outcome_label,
+      predictor_label,
+      effect_size = effect_size,
+      slope = unname(stats::coef(fit)[[2L]]),
+      adjusted = has_covs
+    ))
   }
 
   vc <- compute_model_vcov(
@@ -2441,6 +2532,31 @@ fit_categorical_predictor_lm_rows <- function(
       by_levels = by_levels
     ))
   }
+  # The same with covariates: the outcome an exact linear function of `by`
+  # and the covariates. The means are the model's adjusted means, those the
+  # table shows when it can infer, and the contrast their difference.
+  if (stats::df.residual(fit) > 0 && .lm_exact_fit(fit)) {
+    L <- .tclm_emmean_rows(
+      fit,
+      stats::coef(fit),
+      levels(x),
+      if (has_covs) covariates,
+      adjustment
+    )
+    return(no_inference_lm_rows(
+      y,
+      x,
+      weights,
+      outcome_name,
+      outcome_label,
+      predictor_label,
+      effect_size = effect_size,
+      contrast_shown = show_reference,
+      by_levels = by_levels,
+      means = as.vector(L %*% stats::coef(fit)),
+      adjusted = has_covs
+    ))
+  }
 
   vc <- compute_model_vcov(
     fit,
@@ -2478,35 +2594,9 @@ fit_categorical_predictor_lm_rows <- function(
   # Both reduce to the same linear-contrast formula
   # (`avg_row %*% cf`); only `avg_row` differs.
   levs <- levels(x)
-  if (!has_covs) {
-    newdata <- data.frame(x = factor(levs, levels = levs))
-    # `contrasts.arg = fit$contrasts` pins the grid to the coding the
-    # model was actually fitted with, and the columns are then aligned
-    # to the coefficient vector BY NAME -- a positional product would
-    # silently mismatch if the codings ever diverged (audit phase 2).
-    design <- stats::model.matrix(
-      stats::delete.response(stats::terms(fit)),
-      newdata,
-      contrasts.arg = fit$contrasts
-    )
-    design <- align_design_to_coef(design, cf)
-    emmean <- as.vector(design %*% cf)
-    emmean_se <- sqrt(rowSums((design %*% vc) * design))
-  } else {
-    emmean <- numeric(length(levs))
-    emmean_se <- numeric(length(levs))
-    for (i in seq_along(levs)) {
-      avg_row <- build_emmean_avg_row(
-        fit,
-        x_focal_level = levs[i],
-        x_levels = levs,
-        covariates_observed = covariates,
-        method = adjustment
-      )
-      emmean[i] <- sum(avg_row * cf)
-      emmean_se[i] <- sqrt(sum((avg_row %*% vc) * avg_row))
-    }
-  }
+  L <- .tclm_emmean_rows(fit, cf, levs, if (has_covs) covariates, adjustment)
+  emmean <- as.vector(L %*% cf)
+  emmean_se <- sqrt(rowSums((L %*% vc) * L))
 
   # Global Wald F restricted to the focal term `x`. With covariates,
   # `seq_along(cf)[-1]` would also pick up covariate coefficients,

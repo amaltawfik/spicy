@@ -465,6 +465,16 @@ p-values, and notes.
   of `mgcv` other than `nb()` (`tw()`, `scat()`, `betar()`, ...), whose
   score is not the GLM score. It accepted them.
 
+* `table_regression()` refuses `vcov = "CR0"`, `"CR2"`, and `"CR3"` for
+  `survreg`, `gam`, `bam`, `polr`, `clm`, `betareg`, `mlogit`,
+  `multinom`, `zeroinfl`, and `hurdle` fits (class
+  `spicy_unsupported_vcov`): `sandwich::vcovCL()` computes one estimator
+  for them, `"CR1"`, which the note now names. It refuses `"CR1"` to
+  `"CR3"` for `coxph` and the `rms` fits (`ols`, `lrm`, `cph`, `Glm`),
+  whose Lin-Wei or `robcov()` sandwich is `"CR0"`. Each class accepted
+  all four tokens and computed its one estimator under each, and the
+  note of the `vcovCL()` classes called it `CL`.
+
 * `sochealth` gains five columns after `dentist_12m`: the later columns
   move five places, and `table_categorical(sochealth)` tabulates 18
   variables by default, where it tabulated 13.
@@ -778,6 +788,10 @@ p-values, and notes.
 * `inline()` names itself in its errors, where some named an internal
   helper.
 
+* `inline()` cites the `partial_chi2` of a `table_regression()` table,
+  the statistic without its degrees of freedom, where it refused it as
+  a token of two columns, with `model` or not.
+
 * `table_categorical()` and `table_continuous()` no longer warn about a
   `rescale` set by `options(spicy.rescale)`.
 
@@ -922,6 +936,12 @@ p-values, and notes.
 * With groups each constant, `table_continuous_lm()` keeps the contrast,
   shows a dash for its interval, and no longer lets R's "essentially
   perfect fit" warning through.
+
+* `table_continuous_lm()` does the same for an outcome that is an exact
+  linear function of `by` and the covariates: it keeps the slope, or the
+  adjusted means and the contrast, and the R² of 1, and shows a dash for
+  the interval, the test, and the effect size, where it printed a t of
+  5.20e+16 and R's warning.
 
 * `table_continuous_lm()` accepts `p_value = NULL`, now its default as in
   the rest of the family: the p-value is shown, `by` being required.

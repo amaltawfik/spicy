@@ -65,8 +65,8 @@ as_regression_frame.multinom <- function(
         "i" = paste0(
           "A multi-equation model has no working residuals ",
           "or hat values, so `sandwich::vcovHC()` is not ",
-          "defined for it. Use a cluster-robust `vcov` ",
-          "(\"CR0\"-\"CR3\") with `cluster`, or the ",
+          "defined for it. Use the cluster-robust ",
+          "`vcov = \"CR1\"` with `cluster`, or the ",
           "model-based default."
         )
       ),
@@ -135,8 +135,7 @@ as_regression_frame.multinom <- function(
   if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
-      cluster_name %||% NA_character_,
-      estimator = if (startsWith(vcov, "CR")) "CL" else NULL
+      cluster_name %||% NA_character_
     )
   }
 

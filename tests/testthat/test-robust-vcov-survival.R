@@ -14,7 +14,7 @@ test_that("coxph CR* matches the native Lin-Wei robust SE exactly", {
   f <- survival::coxph(survival::Surv(time, status) ~ age + sex, lung2)
   fr <- as_regression_frame(
     f,
-    vcov = "CR2",
+    vcov = "CR0",
     cluster = lung2$inst,
     cluster_name = "inst"
   )
@@ -32,6 +32,20 @@ test_that("coxph CR* matches the native Lin-Wei robust SE exactly", {
     fr$info$vcov_label,
     "cluster-robust (Lin-Wei), clusters by inst"
   )
+  # The Lin-Wei sandwich has no small-sample factor: CR0 is its one token,
+  # and the others are refused rather than mapped onto it.
+  for (v in c("CR1", "CR2", "CR3")) {
+    expect_error(
+      as_regression_frame(f, vcov = v, cluster = lung2$inst),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_error(
+      table_regression(f, vcov = v, cluster = ~inst),
+      "This class supports: classical, CR0.",
+      fixed = TRUE,
+      class = "spicy_unsupported_vcov"
+    )
+  }
 })
 
 test_that("coxph CR* differs from (and is not) the model-based SE", {
@@ -46,7 +60,7 @@ test_that("coxph CR* differs from (and is not) the model-based SE", {
   f <- survival::coxph(survival::Surv(time, status) ~ age + sex, lung2)
   se_model <- as_regression_frame(f, vcov = "model")$coefs
   se_model <- se_model$std_error[se_model$estimate_type == "B"]
-  se_rob <- as_regression_frame(f, vcov = "CR2", cluster = lung2$inst)$coefs
+  se_rob <- as_regression_frame(f, vcov = "CR0", cluster = lung2$inst)$coefs
   se_rob <- se_rob$std_error[se_rob$estimate_type == "B"]
   expect_false(isTRUE(all.equal(se_model, se_rob)))
 })
@@ -68,7 +82,7 @@ test_that("survreg CR* matches sandwich::vcovCL", {
   )
   fr <- as_regression_frame(
     sf,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = lung2$inst,
     cluster_name = "inst"
   )
@@ -77,7 +91,7 @@ test_that("survreg CR* matches sandwich::vcovCL", {
     b
   ))]
   expect_equal(unname(b$std_error), unname(oracle), tolerance = 1e-6)
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by inst")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by inst")
 })
 
 test_that("survival HC* / bootstrap are refused", {
@@ -118,7 +132,7 @@ test_that("censored coxph: public table_regression accepts a subject-length clus
 
   out <- table_regression(
     f,
-    vcov = "CR2",
+    vcov = "CR0",
     cluster = lung2$inst,
     output = "data.frame"
   )
@@ -127,7 +141,7 @@ test_that("censored coxph: public table_regression accepts a subject-length clus
 
   # SE equal the native Lin-Wei robust fit. coxph()$var carries no dimnames, so
   # name it from coef() before matching by term.
-  fr <- as_regression_frame(f, vcov = "CR2", cluster = lung2$inst)
+  fr <- as_regression_frame(f, vcov = "CR0", cluster = lung2$inst)
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !(fr$coefs$is_ref %in% TRUE), ]
   rf <- survival::coxph(
     survival::Surv(time, status) ~ age + sex + survival::cluster(inst),
@@ -140,7 +154,7 @@ test_that("censored coxph: public table_regression accepts a subject-length clus
   expect_error(
     table_regression(
       f,
-      vcov = "CR2",
+      vcov = "CR0",
       cluster = rep(1L, stats::nobs(f)),
       output = "data.frame"
     ),

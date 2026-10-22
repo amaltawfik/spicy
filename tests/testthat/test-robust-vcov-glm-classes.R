@@ -6,11 +6,12 @@
 #                                 Thresholds block, from the same
 #                                 full-model matrix)
 #   * betareg                 -> sandwich::vcovCL (mean component; phi in extras)
-#   * mlogit                  -> sandwich::vcovCL (CR*); HC* refused (vcovHC
+#   * mlogit                  -> sandwich::vcovCL (CR1); HC* refused (vcovHC
 #                                 mis-scales the per-choice-situation meat)
 #   * svyglm (survey)         -> classical only (design-native variance)
-# Each is cross-validated against its oracle to ~machine precision; HC* / the
-# lm/glm resamplers are refused for the cr_only classes.
+# Each is cross-validated against its oracle to ~machine precision. vcovCL()
+# computes one estimator for these classes, CR1: CR0, CR2, CR3, HC* and the
+# lm/glm resamplers are refused.
 
 b_rows <- function(fr) {
   fr$coefs[fr$coefs$estimate_type == "B" & !(fr$coefs$is_ref %in% TRUE), ]
@@ -18,7 +19,7 @@ b_rows <- function(fr) {
 
 ## ---- gam ------------------------------------------------------------------
 
-test_that("gam CR* matches sandwich::vcovCL of the same glm (Wald z)", {
+test_that("gam CR1 matches sandwich::vcovCL of the same glm (Wald z)", {
   skip_if_not_installed("mgcv")
   skip_if_not_installed("sandwich")
   set.seed(1)
@@ -29,7 +30,7 @@ test_that("gam CR* matches sandwich::vcovCL of the same glm (Wald z)", {
     g = factor(sample(12, 200, TRUE))
   )
   m <- mgcv::gam(y ~ x1 + x2, data = d)
-  fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(m, vcov = "CR1", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   # The glm is the oracle: sandwich::vcovCL() on the gaussian gam itself
   # is deflated by the dispersion squared (test-vcov_mgcv.R).
@@ -37,7 +38,7 @@ test_that("gam CR* matches sandwich::vcovCL of the same glm (Wald z)", {
   orc <- sqrt(diag(sandwich::vcovCL(m_glm, cluster = d$g)))[b$term]
   expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-7)
   expect_true(all(b$test_type == "z"))
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by g")
 })
 
 test_that("gam's one cluster sandwich carries the small-sample factor of CR1", {
@@ -56,8 +57,10 @@ test_that("gam's one cluster sandwich carries the small-sample factor of CR1", {
   }
   m_gam <- mgcv::gam(y ~ x1, data = d)
   m_lm <- stats::lm(y ~ x1, data = d)
-  # Every CR* token maps to the one estimator, named CL in the note.
-  expect_identical(se(m_gam, "CR0"), se(m_gam, "CR1"))
+  # CR1 is the one estimator: the other tokens are refused, not mapped.
+  for (v in c("CR0", "CR2", "CR3")) {
+    expect_error(se(m_gam, v), class = "spicy_unsupported_vcov")
+  }
   # It is the CR1 of the same linear fit, G / (G - 1) included
   # (sandwich::vcovCL(), type HC0 with its cluster adjustment), not the
   # CR0, which leaves the factor out.
@@ -87,7 +90,7 @@ test_that("gam HC* and bootstrap are refused", {
 
 ## ---- polr -----------------------------------------------------------------
 
-test_that("polr CR* matches sandwich::vcovCL on the slope block", {
+test_that("polr CR1 matches sandwich::vcovCL on the slope block", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("sandwich")
   set.seed(2)
@@ -98,12 +101,12 @@ test_that("polr CR* matches sandwich::vcovCL on the slope block", {
     g = factor(sample(15, 240, TRUE))
   )
   m <- MASS::polr(y ~ x1 + x2, data = d, Hess = TRUE)
-  fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(m, vcov = "CR1", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc_full <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))
   expect_equal(unname(b$std_error), unname(orc_full[b$term]), tolerance = 1e-7)
   expect_true(all(b$test_type == "z"))
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by g")
   # The Thresholds block follows the same cluster sandwich (mislabel
   # fix): its SEs come from the zeta rows of the SAME full vcovCL
   # matrix, not the classical vcov the footer would then misdescribe.
@@ -154,7 +157,7 @@ test_that("polr and clm refuse HC* and the resamplers with spicy_unsupported_vco
 
 ## ---- clm ------------------------------------------------------------------
 
-test_that("clm CR* matches sandwich::vcovCL (thresholds before slopes)", {
+test_that("clm CR1 matches sandwich::vcovCL (thresholds before slopes)", {
   skip_if_not_installed("ordinal")
   skip_if_not_installed("sandwich")
   set.seed(5)
@@ -165,11 +168,11 @@ test_that("clm CR* matches sandwich::vcovCL (thresholds before slopes)", {
     g = factor(sample(12, 200, TRUE))
   )
   m <- ordinal::clm(y ~ x1 + x2, data = d)
-  fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(m, vcov = "CR1", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc_full <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))
   expect_equal(unname(b$std_error), unname(orc_full[b$term]), tolerance = 1e-7)
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by g")
   # Thresholds (alpha, BEFORE the slopes in coef(clm)) follow the same
   # cluster sandwich -- mislabel fix, mirroring the polr assertion.
   thr <- fr$info$extras$thresholds
@@ -201,19 +204,19 @@ test_that("clm with scale/nominal component refuses CR* cleanly", {
 
   expect_identical(spicy:::.robust_vcov_support(m_scale), "classical")
   expect_identical(spicy:::.robust_vcov_support(m_nom), "classical")
-  expect_true("CR2" %in% spicy:::.robust_vcov_support(m_plain))
+  expect_identical(spicy:::.robust_vcov_support(m_plain), c("classical", "CR1"))
 
   expect_error(
     table_regression(
       m_scale,
-      vcov = "CR2",
+      vcov = "CR1",
       cluster = d$g,
       output = "data.frame"
     ),
     class = "spicy_unsupported_vcov"
   )
   expect_error(
-    table_regression(m_nom, vcov = "CR2", cluster = d$g, output = "data.frame"),
+    table_regression(m_nom, vcov = "CR1", cluster = d$g, output = "data.frame"),
     class = "spicy_unsupported_vcov"
   )
   # The classical/default path still works for a SCALE fit (location
@@ -233,7 +236,7 @@ test_that("clm with scale/nominal component refuses CR* cleanly", {
 
 ## ---- betareg --------------------------------------------------------------
 
-test_that("betareg CR* matches sandwich::vcovCL on the mean block", {
+test_that("betareg CR1 matches sandwich::vcovCL on the mean block", {
   skip_if_not_installed("betareg")
   skip_if_not_installed("sandwich")
   set.seed(3)
@@ -248,16 +251,16 @@ test_that("betareg CR* matches sandwich::vcovCL on the mean block", {
     g = factor(sample(14, n, TRUE))
   )
   m <- betareg::betareg(y ~ x1 + x2, data = d)
-  fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
+  fr <- as_regression_frame(m, vcov = "CR1", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))[b$term]
   expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-7)
-  expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR1), clusters by g")
 })
 
 ## ---- mlogit ---------------------------------------------------------------
 
-test_that("mlogit CR* (vcovCL) matches its oracle; HC* is refused", {
+test_that("mlogit CR1 (vcovCL) matches its oracle; HC* is refused", {
   skip_if_not_installed("mlogit")
   skip_if_not_installed("sandwich")
   data("Fishing", package = "mlogit", envir = environment())
@@ -276,14 +279,17 @@ test_that("mlogit CR* (vcovCL) matches its oracle; HC* is refused", {
 
   fr_cr <- as_regression_frame(
     m,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = clus,
     cluster_name = "id"
   )
   b_cr <- b_rows(fr_cr)
   orc_cr <- sqrt(diag(sandwich::vcovCL(m, cluster = clus)))[b_cr$term]
   expect_equal(unname(b_cr$std_error), unname(orc_cr), tolerance = 1e-7)
-  expect_identical(fr_cr$info$vcov_label, "cluster-robust (CL), clusters by id")
+  expect_identical(
+    fr_cr$info$vcov_label,
+    "cluster-robust (CR1), clusters by id"
+  )
 
   # HC* is refused: sandwich::vcovHC() mis-scales the meat for mlogit (it
   # divides by nobs() = long-format rows while estfun() has one row per
@@ -300,7 +306,7 @@ test_that("mlogit CR* (vcovCL) matches its oracle; HC* is refused", {
   )
   err <- tryCatch(table_regression(m, vcov = "HC0"), error = function(e) e)
   expect_s3_class(err, "spicy_unsupported_vcov")
-  expect_match(conditionMessage(err), "CR0", fixed = TRUE)
+  expect_match(conditionMessage(err), "CR1", fixed = TRUE)
 })
 
 test_that("mlogit n counts choice situations, not long-format rows", {
@@ -336,11 +342,11 @@ test_that("mlogit cluster at the wrong (long-format) length errors clearly", {
   # A long-format cluster (one per alternative-row) is the natural user mistake.
   bad <- rep(1L, nrow(fd))
   expect_error(
-    as_regression_frame(m, vcov = "CR2", cluster = bad),
+    as_regression_frame(m, vcov = "CR1", cluster = bad),
     class = "spicy_invalid_input"
   )
   expect_error(
-    table_regression(m, vcov = "CR2", cluster = bad, output = "data.frame"),
+    table_regression(m, vcov = "CR1", cluster = bad, output = "data.frame"),
     class = "spicy_invalid_input"
   )
 })
@@ -383,10 +389,10 @@ test_that("svyglm default (survey-Taylor) is the design-based SE, untouched", {
 
 ## ---- multinom (CR* via sandwich >= 3.1-2) ----------------------------------
 
-test_that("multinom CR* computes identically for all three cluster forms", {
+test_that("multinom CR1 computes identically for all three cluster forms", {
   skip_if_not_installed("nnet")
   skip_if_not_installed("sandwich")
-  # sandwich 3.1-2 added estfun.multinom(), so CR* now COMPUTES where it
+  # sandwich 3.1-2 added estfun.multinom(), so CR1 now COMPUTES where it
   # used to refuse. The three cluster forms still exercise the
   # resolution paths that once crashed on if(NA) for a variable outside
   # the model formula (nnet registers no nobs.multinom); all three must
@@ -398,7 +404,7 @@ test_that("multinom CR* computes identically for all three cluster forms", {
   )
   orc <- sqrt(diag(sandwich::vcovCL(fit, cluster = sochealth$region)))
   for (cl in list(~region, "region", sochealth$region)) {
-    td <- broom::tidy(table_regression(fit, vcov = "CR2", cluster = cl))
+    td <- broom::tidy(table_regression(fit, vcov = "CR1", cluster = cl))
     # tidy() already drops the NA-estimate reference rows.
     bb <- td[td$estimate_type == "B" & !is.na(td$std.error), ]
     vc_key <- sub(": ", ":", bb$term, fixed = TRUE)
@@ -419,7 +425,7 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
   skip_if_not_installed("sandwich")
   # Regression guard: stats::nobs() errors for pscl fits, and the cluster
   # lookup's na.action subsetting used to crash on if(NA) for a formula or
-  # string cluster. These classes DO support CR*, so the request must
+  # string cluster. These classes DO support CR1, so the request must
   # compute -- not crash.
   data("bioChemists", package = "pscl", envir = environment())
   d <- get("bioChemists", envir = environment())
@@ -430,13 +436,13 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
   for (m in list(zi, hd)) {
     fr_cl <- as_regression_frame(
       m,
-      vcov = "CR0",
+      vcov = "CR1",
       cluster = d$dept,
       cluster_name = "dept"
     )
     tab <- table_regression(
       m,
-      vcov = "CR0",
+      vcov = "CR1",
       cluster = ~dept,
       output = "data.frame"
     )
@@ -458,10 +464,11 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
 # Phase 3 matrix: rd-vcov-classes:cr-only-class-set
 # The classes not yet covered by a per-class refusal test: lme, polr,
 # clm, betareg, survreg. Each supports classical + CR* ONLY: HC* and the
-# lm/glm-refitting resamplers are refused up front, while CR2 + cluster
-# computes. glmmTMB and svyglm are classical-only (no valid clubSandwich
+# lm/glm-refitting resamplers are refused up front. lme computes CR2
+# (clubSandwich); the vcovCL() classes compute CR1 alone and refuse CR2.
+# glmmTMB and svyglm are classical-only (no valid clubSandwich
 # backend; design-native variance) -- every robust token is refused.
-test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
+test_that("cr-only classes refuse HC* / bootstrap and accept their CR token", {
   skip_if_not_installed("nlme")
   skip_if_not_installed("MASS")
   skip_if_not_installed("ordinal")
@@ -499,14 +506,22 @@ test_that("cr-only classes refuse HC* / bootstrap and accept CR2 + cluster", {
         info = paste(nm, v)
       )
     }
+    cr <- if (identical(nm, "lme")) "CR2" else "CR1"
     out <- suppressWarnings(table_regression(
       fits[[nm]],
-      vcov = "CR2",
+      vcov = cr,
       cluster = d$g,
       output = "data.frame"
     ))
     expect_s3_class(out, "data.frame")
     expect_gt(nrow(out), 0L)
+    if (!identical(nm, "lme")) {
+      expect_error(
+        table_regression(fits[[nm]], vcov = "CR2", cluster = d$g),
+        class = "spicy_unsupported_vcov",
+        info = nm
+      )
+    }
   }
 })
 
@@ -552,16 +567,16 @@ test_that("structure-aware refusal messages: clm scale/nominal, multinom/mlogit 
     data = sochealth
   )
   err <- expect_error(
-    table_regression(f_ppo, vcov = "CR2", cluster = ~region),
+    table_regression(f_ppo, vcov = "CR1", cluster = ~region),
     class = "spicy_unsupported_vcov"
   )
   expect_match(conditionMessage(err), "scale or nominal", fixed = TRUE)
   expect_match(conditionMessage(err), "proportional-odds", fixed = TRUE)
-  # Plain PO clm still computes CR2 (the restriction is structural).
+  # Plain PO clm still computes CR1 (the restriction is structural).
   f_po <- ordinal::clm(self_rated_health ~ age, data = sochealth)
   out <- table_regression(
     f_po,
-    vcov = "CR2",
+    vcov = "CR1",
     cluster = ~region,
     output = "data.frame"
   )

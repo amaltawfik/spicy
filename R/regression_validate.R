@@ -782,6 +782,19 @@ validate_vcov_cluster_lists <- function(
       if (inherits(models[[i]], "geeglm")) {
         .gee_refuse_vcov(vt, call = call)
       }
+      # A class that computes one cluster estimator (CR1 for the
+      # sandwich::vcovCL() classes, CR0 for coxph and the rms fits) refuses
+      # any other CR* token with that reason, before the glm "CR1S" branch
+      # below, which a gam or an rms Glm (they inherit "glm") would reach
+      # with advice that does not apply to them.
+      one_token <- .single_cluster_token(models[[i]])
+      if (
+        startsWith(vt, "CR") &&
+          !is.null(one_token) &&
+          one_token %in% supported
+      ) {
+        .single_cluster_refuse_vcov(models[[i]], vt, call = call)
+      }
       # glm + "CR1S": refuse with the reason. Stata's ML commands
       # (logit, poisson, ...) use a DIFFERENT vce(cluster) convention
       # -- G/(G-1) scaling with z inference -- so a glm "CR1S" would
@@ -829,7 +842,7 @@ validate_vcov_cluster_lists <- function(
               "`ordinal` provides no estimating functions for the ",
               "scale / nominal parts, so no sandwich can be built. ",
               "A plain proportional-odds `clm` supports ",
-              "\"CR0\"-\"CR3\" with `cluster`."
+              "\"CR1\" with `cluster`."
             ),
             "i" = paste0(
               "Use the model-based default, or refit without ",
@@ -868,7 +881,7 @@ validate_vcov_cluster_lists <- function(
             ),
             "i" = why_hc,
             "i" = paste0(
-              "Cluster-robust \"CR0\"-\"CR3\" with `cluster` is ",
+              "Cluster-robust \"CR1\" with `cluster` is ",
               "supported for this class."
             )
           ),
@@ -1241,6 +1254,11 @@ validate_vcov_cluster_lists <- function(
         )
       } else if (inherits(models[[i]], "glmmTMB")) {
         "Set `vcov` to `\"CR0\"` to use the cluster vector for cluster-robust SE."
+      } else if (!is.null(.single_cluster_token(models[[i]]))) {
+        sprintf(
+          "Set `vcov` to `\"%s\"` to use the cluster vector for cluster-robust SE.",
+          .single_cluster_token(models[[i]])
+        )
       } else {
         paste0(
           "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",

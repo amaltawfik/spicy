@@ -175,8 +175,8 @@ nonzero count -- the opposite direction, hence the distinct label), and a
 \code{Dispersion} block when \code{dispformula} has covariates. Component
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). \verb{CR*} for \code{pscl} fits covers both components
-via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
+combined-response effect on E(Y). \code{"CR1"} for \code{pscl} fits covers both
+components via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
 zero-inflation and dispersion blocks. Opt out with \code{show_components = FALSE}.
 }
 
@@ -188,13 +188,13 @@ baseline-category logits are log-odds (Agresti; SAS prints
 "Odds Ratio Estimates" under its generalized-logit link; Stata's \verb{mlogit, rrr} labels
 the same quantity a relative-risk ratio). AME is per-outcome.
 \code{nested = TRUE} compares nested \code{multinom} fits by likelihood-ratio test
-(the \code{anova.multinom()} convention). Cluster-robust \verb{CR*} is
+(the \code{anova.multinom()} convention). Cluster-robust \code{"CR1"} is
 available (one cluster value per observation; sandwich >= 3.1-2)
 and the AME columns honor it; \verb{HC*} is refused -- a multi-equation
 model has no working residuals.
 \code{mlogit} renders
 per-alternative rows; AME is refused (no \code{slopes()} method exists for
-its data format). \verb{CR*} is available with one cluster value per choice
+its data format). \code{"CR1"} is available with one cluster value per choice
 situation, and \code{n} counts choice situations; \verb{HC*} is refused
 (\code{sandwich::vcovHC()} mis-scales the meat for mlogit's per-chooser
 score structure).
@@ -213,8 +213,9 @@ right-censored single-record fits, \code{strata()} supported
 (within-stratum baselines), \code{tt()} refused. For \code{survreg}: the
 closed-form AFT curves are standardized directly (stratified
 \code{survreg} refused).
-\verb{CR*} uses the Lin-Wei grouped-dfbeta sandwich
-(\code{coxph}) or \code{rms::robcov()} (\code{cph}, needs \verb{x = TRUE, y = TRUE}).
+\code{"CR0"} uses the Lin-Wei grouped-dfbeta sandwich
+(\code{coxph}) or \code{rms::robcov()} (\code{cph}, needs \verb{x = TRUE, y = TRUE});
+\code{survreg} takes \code{"CR1"}, from \code{sandwich::vcovCL()}.
 \code{nested = TRUE} compares nested Cox fits by likelihood-ratio test.
 }
 

@@ -376,7 +376,7 @@ test_that("glm.nb bootstrap SEs equal a manual held-theta resampler; re-estimate
 
 ## ---- Phase 3 matrix: rd-vcov-classes:cr-token-maps-single-estimator --------
 
-test_that("CR0-CR3 map to the single cluster sandwich for coxph / polr / ols", {
+test_that("a single cluster sandwich takes its one token: CR0 for coxph / ols, CR1 for polr", {
   skip_if_not_installed("survival")
   skip_if_not_installed("sandwich")
   lung2 <- stats::na.omit(survival::lung[, c(
@@ -387,22 +387,25 @@ test_that("CR0-CR3 map to the single cluster sandwich for coxph / polr / ols", {
     "inst"
   )])
   fcox <- survival::coxph(survival::Surv(time, status) ~ age + sex, lung2)
-  se_by_token <- function(fit, cluster) {
-    sapply(paste0("CR", 0:3), function(tk) {
-      fr <- as_regression_frame(fit, vcov = tk, cluster = cluster)
-      b <- b_rows_p3(fr)
-      b$std_error[order(b$term)]
-    })
+  # The other tokens are refused rather than mapped onto the estimator.
+  expect_one_token <- function(fit, cluster, token) {
+    for (tk in setdiff(paste0("CR", 0:3), token)) {
+      expect_error(
+        as_regression_frame(fit, vcov = tk, cluster = cluster),
+        class = "spicy_unsupported_vcov"
+      )
+    }
+    b <- b_rows_p3(as_regression_frame(fit, vcov = token, cluster = cluster))
+    b$std_error[order(b$term)]
   }
-  ses <- se_by_token(fcox, lung2$inst)
-  expect_true(all(apply(ses, 1L, function(r) max(r) - min(r) == 0)))
+  se_cox <- expect_one_token(fcox, lung2$inst, "CR0")
   # ... and that single estimator is the native Lin-Wei sandwich.
   native <- survival::coxph(
     survival::Surv(time, status) ~ age + sex + survival::cluster(inst),
     lung2
   )
   nat_se <- sqrt(diag(native$var))[order(names(stats::coef(native)))]
-  expect_equal(unname(ses[, "CR0"]), unname(nat_se), tolerance = 1e-6)
+  expect_equal(se_cox, unname(nat_se), tolerance = 1e-6)
 
   skip_if_not_installed("MASS")
   set.seed(2)
@@ -413,11 +416,10 @@ test_that("CR0-CR3 map to the single cluster sandwich for coxph / polr / ols", {
     g = factor(sample(15, 240, TRUE))
   )
   fp <- MASS::polr(y ~ x1 + x2, data = dp, Hess = TRUE)
-  ses_p <- se_by_token(fp, dp$g)
-  expect_true(all(apply(ses_p, 1L, function(r) max(r) - min(r) == 0)))
+  se_p <- expect_one_token(fp, dp$g, "CR1")
   orc_p <- sqrt(diag(sandwich::vcovCL(fp, cluster = dp$g)))
   expect_equal(
-    unname(ses_p[, "CR3"]),
+    se_p,
     unname(orc_p[sort(names(stats::coef(fp)))]),
     tolerance = 1e-8
   )
@@ -427,8 +429,15 @@ test_that("CR0-CR3 map to the single cluster sandwich for coxph / polr / ols", {
   dr <- data.frame(x1 = rnorm(150), g = factor(sample(12, 150, TRUE)))
   dr$y <- 1 + 0.5 * dr$x1 + rnorm(150)
   fo <- rms::ols(y ~ x1, data = dr, x = TRUE, y = TRUE)
-  ses_o <- se_by_token(fo, dr$g)
-  expect_true(all(apply(ses_o, 1L, function(r) max(r) - min(r) == 0)))
+  se_o <- expect_one_token(fo, dr$g, "CR0")
+  expect_equal(
+    se_o,
+    unname(sqrt(diag(rms::robcov(fo, dr$g)$var)))[order(c(
+      "(Intercept)",
+      "x1"
+    ))],
+    tolerance = 1e-9
+  )
 })
 
 ## ---- Phase 3 matrix: rd-vcov-classes:cluster-formula-interaction -----------

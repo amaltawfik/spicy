@@ -114,13 +114,13 @@ test_that("sandwich::vcovCL failures are classed, not bare", {
   fit <- pscl::zeroinfl(art ~ fem + mar | 1, data = bioChemists)
   cl <- bioChemists$fem
   # The good case still computes.
-  expect_true(is.matrix(compute_model_vcov(fit, "CR0", cluster = cl)))
+  expect_true(is.matrix(compute_model_vcov(fit, "CR1", cluster = cl)))
   cl_na <- cl
   cl_na[1:5] <- NA
   # Sanity: the engine itself refuses, and used to do so unclassed.
   expect_error(suppressWarnings(sandwich::vcovCL(fit, cluster = cl_na)))
   err <- tryCatch(
-    compute_model_vcov(fit, "CR0", cluster = cl_na),
+    compute_model_vcov(fit, "CR1", cluster = cl_na),
     error = function(e) e
   )
   expect_s3_class(err, "spicy_error")
