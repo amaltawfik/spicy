@@ -2816,7 +2816,7 @@ table_categorical <- function(
       )
       tt <- tinytable::style_tt(tt, i = 0, j = 2:ncol(dat_tt), align = "c")
       if (length(mod_rows)) {
-        tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
+        tt <- .spicy_tt_indent(tt, mod_rows)
         tt <- tinytable::style_tt(
           tt,
           i = mod_rows,
@@ -4634,7 +4634,7 @@ table_categorical <- function(
     # Center spanner labels (row -1 = spanner row)
     tt <- tinytable::style_tt(tt, i = -1, j = 2:ncol(dat_tt), align = "c")
     if (length(mod_rows)) {
-      tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
+      tt <- .spicy_tt_indent(tt, mod_rows)
       tt <- tinytable::style_tt(
         tt,
         i = mod_rows,

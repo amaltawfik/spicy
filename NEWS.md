@@ -706,6 +706,11 @@ p-values, and notes.
   ("Fe-male"), and widens the columns under a group label wider than
   them, where neighboring labels ran into each other (#11).
 
+* In Typst output, the second line of a wrapped level label starts under
+  the first, not an em to its left: the level is indented by its cell,
+  no longer by spaces in its text. An indented label also no longer
+  wraps in a column wide enough for it.
+
 * LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table
   that fits keeps its size.

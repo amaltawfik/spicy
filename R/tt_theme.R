@@ -66,9 +66,10 @@
   })
 }
 
-# Typst: three repairs of the layout tinytable writes for a table with a
+# Typst: four repairs of the layout tinytable writes for a table with a
 # note, all behind words broken in the middle ("Fe-male", "(No item
-# cho-sen)") or run into each other ("EmployeursParticipants").
+# cho-sen)"), run into each other ("EmployeursParticipants") or wrapped
+# in a column wide enough for them.
 #
 # * tinytable sizes such a table's columns from their natural widths,
 #   each measured as a one-column grid with `inset: 5pt`, Typst's default
@@ -85,6 +86,10 @@
 #   the columns it spans are widened, evenly, until it fits
 #   (`.spicy_tt_typst_spans()`). Without a note, tinytable gives Typst
 #   `auto` columns, which Typst widens for a spanning cell itself.
+# * The same measure reads an indented cell bare, while the table pads
+#   it by its indent: the widest indented label of a column wrapped on
+#   a page wide enough for it. Each such cell is measured padded
+#   (`.spicy_tt_typst_indents()`).
 # * Quarto's template justifies paragraphs, and Typst hyphenates
 #   justified text, table cells and notes included. No other engine
 #   justifies a cell. The table is set ragged right, which also stops the
@@ -101,6 +106,7 @@
     s,
     fixed = TRUE
   )
+  s <- .spicy_tt_typst_indents(s, groups)
   s <- .spicy_tt_typst_spans(s, groups)
   sub(
     "// start block\n",
@@ -183,6 +189,75 @@
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   at <- grep(anchor, lines, fixed = TRUE)[[1L]]
   paste(append(lines, code, after = at), collapse = "\n")
+}
+
+# The cells of `tinytable-coldata` padded as the table pads them, before
+# the natural widths are measured: tinytable's `show table.cell` rule
+# wraps a cell whose style has an `indent` in `pad(left:)`, a rule the
+# measure, a grid, never meets. Each cell is found by its position, the
+# style-dict key of the table: its column, and its row counted from the
+# column names, which the column-group rows (`groups`) precede in the
+# table and not in the measure. Only for a template with that rule and a
+# table with an indented cell; any other string comes back unchanged.
+.spicy_tt_typst_indents <- function(s, groups) {
+  anchor <- "    let tinytable-naturals = tinytable-coldata.map("
+  rule <- "if (\"indent\" in style) { tmp = pad(left: style.indent, tmp) }"
+  if (
+    !grepl(anchor, s, fixed = TRUE) ||
+      !grepl(rule, s, fixed = TRUE) ||
+      !grepl("indent: [0-9.]+em", s)
+  ) {
+    return(s)
+  }
+  code <- c(
+    "    // spicy: an indented cell is measured with its indent",
+    paste0(
+      "    let tinytable-coldata = tinytable-coldata.enumerate().map(",
+      "((spicy_x, spicy_col)) => spicy_col.enumerate().map(",
+      "((spicy_k, spicy_cell)) => {"
+    ),
+    sprintf(
+      "      let spicy_style = get-style(spicy_x, spicy_k + %d)",
+      NROW(groups)
+    ),
+    paste0(
+      "      if spicy_style != none and \"indent\" in spicy_style ",
+      "{ pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }"
+    ),
+    "    }))",
+    ""
+  )
+  sub(anchor, paste0(paste(code, collapse = "\n"), anchor), s, fixed = TRUE)
+}
+
+# Indent the label cell of `rows`, the rows the console indents
+# (`.struct_indent_rows()`), in a descriptive table.
+#
+# tinytable's `indent` is structural: a `\hspace` before the text in
+# LaTeX, a `pad(left:)` around the cell in Typst. The builders also
+# prefix each label with four non-breaking spaces, which HTML needs (it
+# collapses the leading white space of a cell) and which LaTeX and
+# markdown keep. In Typst the two stacked, and the spaces moved the
+# first line only: a label that wrapped started its next lines at the
+# pad, an em to the left of the text above them. The Typst cell keeps
+# the pad alone, under which every line starts at the same x. A
+# preparation step drops the spaces, for Typst only, from the cells as
+# tinytable is about to write them: escaped, and placed by data row.
+.spicy_tt_indent <- function(x, rows) {
+  x <- tinytable::style_tt(x, i = rows, j = 1, indent = 1)
+  prefix <- strrep("\u00A0", 4)
+  drop_prefix <- function(tbl) {
+    at <- tbl@index_body[rows]
+    lab <- tbl@data_body[[1L]][at]
+    hit <- which(startsWith(lab, prefix))
+    tbl@data_body[[1L]][at[hit]] <- substring(lab[hit], nchar(prefix) + 1L)
+    tbl
+  }
+  x@lazy_prepare <- c(
+    x@lazy_prepare,
+    list(structure(drop_prefix, output = "typst"))
+  )
+  x
 }
 
 # LaTeX: a table wider than the text block is scaled down to it, a

@@ -4042,9 +4042,10 @@ export_desc_table <- function(
     # Block indentation, parts two and three: the LaTeX/typst indent
     # and the HTML padding. The label prefix alone does not indent an
     # HTML cell whose leading whitespace the browser collapses, and
-    # the style alone does not reach the non-HTML backends.
+    # the style alone does not reach the non-HTML backends. Typst keeps
+    # the style alone (`.spicy_tt_indent()`).
     if (has_indent) {
-      tt <- tinytable::style_tt(tt, i = indent_rows, j = 1, indent = 1)
+      tt <- .spicy_tt_indent(tt, indent_rows)
       tt <- tinytable::style_tt(
         tt,
         i = indent_rows,

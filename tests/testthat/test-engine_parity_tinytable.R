@@ -794,6 +794,81 @@ test_that("factor levels are indented once, by the engine", {
   expect_match(.pt_html(tt), "padding-left: 1.4em;", fixed = TRUE)
 })
 
+# A level label long enough to wrap, in a table with a note (Typst
+# measures its columns) and two header rows.
+.pt_long_level <- function() {
+  long <- "At least one parent holds a university degree"
+  data.frame(
+    parents = factor(
+      rep(c(long, "None", long, "None"), c(14L, 6L, 10L, 10L)),
+      levels = c(long, "None")
+    ),
+    grp = factor(rep(c("A", "B"), each = 20L))
+  )
+}
+
+# The rows (Typst `y`) whose first cell has an indent in its style.
+.pt_typst_indent_rows <- function(typ) {
+  ln <- strsplit(typ, "\n", fixed = TRUE)[[1L]]
+  from <- grep("tinytable cell style after", ln, fixed = TRUE) + 1L
+  to <- from + which(!startsWith(ln[-seq_len(from - 1L)], "    ("))[1L] - 2L
+  ids <- grep("indent:", ln[from:to], fixed = TRUE) - 1L
+  dict <- ln[grep("tinytable style-dict after", ln, fixed = TRUE) + 1L]
+  keys <- regmatches(dict, gregexpr("\"[0-9]+_0\": [0-9]+", dict))[[1L]]
+  rows <- as.integer(sub("^\"([0-9]+)_0\".*$", "\\1", keys))
+  sort(rows[as.integer(sub("^.*: ", "", keys)) %in% ids])
+}
+
+test_that("Typst indents a level row by its cell, not by spaces", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_long_level()
+  long <- levels(d$parents)[1L]
+  nbsp4 <- strrep(intToUtf8(0x00A0), 4L)
+  tt <- table_categorical(d, parents, by = grp, output = "tinytable")
+  typ <- .pt_typst(tt)
+  # A wrapped label started its next lines at the cell's indent, left of
+  # the first, which four spaces had pushed right. The label now opens
+  # the cell, and the indent is the style of the rows the console
+  # indents, two header rows down, and of no other cell.
+  lv <- as_structured(table_categorical(d, parents, by = grp))$body$.indent
+  expect_match(typ, paste0("\n[", long, "], "), fixed = TRUE)
+  expect_match(typ, "\n[None], ", fixed = TRUE)
+  expect_no_match(typ, paste0("[", nbsp4), fixed = TRUE)
+  expect_identical(.pt_typst_indent_rows(typ), which(lv > 0L) + 1L)
+  expect_match(
+    typ,
+    "\n[Variable], table.cell(colspan: 2, align: center)[A], ",
+    fixed = TRUE
+  )
+  expect_match(typ, "text(size: 0.9em, [#emph[Note.]", fixed = TRUE)
+  # The natural widths are measured with the same indent.
+  expect_match(typ, "get-style(spicy_x, spicy_k + 1)", fixed = TRUE)
+  # The other outputs keep the spaces.
+  for (out in list(.pt_latex(tt), .pt_html(tt), .pt_markdown(tt))) {
+    expect_match(out, paste0(nbsp4, long), fixed = TRUE)
+  }
+  # A table with no indented row is measured as before.
+  plain <- .pt_typst(table_continuous(
+    data.frame(y = c(1, 4, 2, 8, 5, 7), g = rep(c("A", "B"), 3L)),
+    y,
+    by = g,
+    output = "tinytable"
+  ))
+  expect_match(plain, "tinytable-coldata.map(", fixed = TRUE)
+  expect_no_match(plain, "spicy_style", fixed = TRUE)
+  expect_identical(spicy:::.spicy_tt_typst_indents("x", NULL), "x")
+})
+
+test_that("the Typst source of a table with a long level label", {
+  skip_if_not_installed("tinytable")
+  expect_snapshot(cat(.pt_typst(table_categorical(
+    .pt_long_level(),
+    parents,
+    by = grp,
+    output = "tinytable"
+  ))))
+})
+
 
 # ---- compiled documents (local only) --------------------------------------
 #
@@ -933,4 +1008,46 @@ test_that("a PDF compiled through LaTeX sets every note prefix in italics", {
 
 test_that("a PDF compiled through Typst sets every note prefix in italics", {
   .pt_expect_compiled_notes(.pt_compile("typst"))
+})
+
+test_that("a wrapped level label lines up under its first line in a PDF", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("pdftools")
+  skip_if(is.null(quarto::quarto_path()), "the Quarto CLI is not installed")
+  d <- .pt_long_level()
+  typ <- .pt_typst(table_categorical(
+    d,
+    parents,
+    by = grp,
+    output = "tinytable"
+  ))
+  words <- strsplit(levels(d$parents)[1L], " ", fixed = TRUE)[[1L]]
+  # The x of the first word of each line of the long label, and of the
+  # variable's own label above it, on a page `width` wide.
+  starts <- function(width) {
+    dir <- withr::local_tempdir()
+    src <- file.path(dir, "t.typ")
+    pdf <- file.path(dir, "t.pdf")
+    page <- sprintf("#set page(width: %s, height: auto, margin: 0.5cm)", width)
+    writeLines(c(page, typ), src, useBytes = TRUE)
+    system2(
+      quarto::quarto_path(),
+      c("typst", "compile", shQuote(src), shQuote(pdf)),
+      stdout = FALSE,
+      stderr = FALSE
+    )
+    w <- pdftools::pdf_data(pdf)[[1L]]
+    row <- w$y >= w$y[w$text == "At"] & w$y < w$y[w$text == "None"]
+    lab <- w[row & w$text %in% words, ]
+    list(lines = tapply(lab$x, lab$y, min), header = w$x[w$text == "parents"])
+  }
+  narrow <- starts("7cm")
+  expect_gt(length(narrow$lines), 1L)
+  expect_true(all(narrow$lines == narrow$lines[[1L]]))
+  expect_gt(narrow$lines[[1L]], narrow$header)
+  # Measured with its indent, the label fits a column wide enough for it.
+  expect_length(starts("20cm")$lines, 1L)
 })
