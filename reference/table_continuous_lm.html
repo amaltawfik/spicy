@@ -1034,7 +1034,11 @@ APA-style footer naming the covariates and the chosen estimand, e.g.
 note also names the test behind them, read off each outcome's model:
 <code>P-values: t-test from the linear model.</code> (the F-test for a <code>by</code> with
 more than two levels, the t-test of the slope for a numeric <code>by</code>), in
-the singular, <code>P-value:</code>, when the table shows one.</p>
+the singular, <code>P-value:</code>, when the table shows one. A test shown by its
+statistic alone (<code>p_value = FALSE, statistic = TRUE</code>) is named as the
+group comparison, <code>Group comparison: t-test from the linear model.</code>,
+or, for a numeric <code>by</code>, as the slope test:
+<code>Slope test: t-test from the linear model.</code></p>
 <p>The rendering engines carry that same footer as a table note. On the
 <code>"tinytable"</code> route the note is set one size down;
 <code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>

@@ -377,10 +377,9 @@ decimals per variable, and notes you can replace, extend, or relabel
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  now name the test behind their p-values, and
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  the test of a statistic shown without them (“Group comparison: Welch
-  t-test.”).
+  now name the test behind their p-values, and the test of a statistic
+  shown without them (“Group comparison: Welch t-test.”, “Slope test:”
+  for a slope).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and

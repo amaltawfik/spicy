@@ -1066,7 +1066,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* P-values: Pearson chi-squared test. V = Cramer's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_klu6nze1xb3vslj2nfbh .table
+Categorical table by education {#tinytable_chw4frr4h0zqocirgt1i .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
