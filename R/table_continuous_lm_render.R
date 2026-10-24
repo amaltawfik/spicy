@@ -500,7 +500,8 @@ build_wide_display_df_continuous_lm <- function(
   fit_digits = 2L,
   effect_size_digits = 2L,
   p_digits = 3L,
-  spec = NULL
+  spec = NULL,
+  digits_by_var = NULL
 ) {
   vars <- unique(x$variable)
   by_type <- unique(x[x$variable == vars[1], , drop = FALSE]$predictor_type)[1]
@@ -563,6 +564,10 @@ build_wide_display_df_continuous_lm <- function(
     block <- x[x$variable == vars[i], , drop = FALSE]
     test_row <- get_test_row_index_lm(block)
     no_data <- block$level %in% no_data_levels[[vars[i]]]
+    # The decimals of the numbers on the outcome's scale: its own under a
+    # named `digits`. The test statistic and the weighted n keep the
+    # table's.
+    d_var <- if (is.null(digits_by_var)) digits else digits_by_var[[vars[i]]]
     if (identical(by_type, "categorical")) {
       for (j in seq_len(nrow(block))) {
         # See the raw builder: `[<-` on an absent name would ADD a
@@ -570,25 +575,25 @@ build_wide_display_df_continuous_lm <- function(
         out[i, .lm_key_emmean(block$level[j])] <- if (no_data[j]) {
           mark
         } else {
-          format_number(block$emmean[j], digits, decimal_mark)
+          format_number(block$emmean[j], d_var, decimal_mark)
         }
       }
       # See the raw builder: no contrast column, nothing to fill.
       if (nrow(block) == 2L && !is.null(delta_name)) {
         out[[delta_name]][i] <- format_number(
           block$estimate[test_row],
-          digits,
+          d_var,
           decimal_mark
         )
         if (isTRUE(ci)) {
           out[[ci_ll_name]][i] <- format_number(
             block$estimate_ci_lower[test_row],
-            digits,
+            d_var,
             decimal_mark
           )
           out[[ci_ul_name]][i] <- format_number(
             block$estimate_ci_upper[test_row],
-            digits,
+            d_var,
             decimal_mark
           )
         }
@@ -603,18 +608,18 @@ build_wide_display_df_continuous_lm <- function(
     } else {
       out[[.LM_KEY_B]][i] <- format_number(
         block$estimate[1],
-        digits,
+        d_var,
         decimal_mark
       )
       if (isTRUE(ci)) {
         out[[ci_ll_name]][i] <- format_number(
           block$estimate_ci_lower[1],
-          digits,
+          d_var,
           decimal_mark
         )
         out[[ci_ul_name]][i] <- format_number(
           block$estimate_ci_upper[1],
-          digits,
+          d_var,
           decimal_mark
         )
       }

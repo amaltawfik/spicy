@@ -481,6 +481,10 @@ p-values, and notes.
 
 ## New features
 
+* In `table_continuous()`, `table_continuous_svy()`, and
+  `table_continuous_lm()`, `digits` takes a named vector: one value per
+  variable for the numbers on its scale, the others at the default.
+
 * Every table function keeps the title it prints in `attr(x, "title")`,
   as `table_regression()` already did.
 
@@ -809,6 +813,13 @@ p-values, and notes.
 * `inline()` cites the `partial_chi2` of a `table_regression()` table,
   the statistic without its degrees of freedom, where it refused it as
   a token of two columns, with `model` or not.
+
+* `spicy_style()` and the functions whose `digits` is one number refuse
+  a named `digits`, with a hint, and a name on any other `*_digits`;
+  they accepted it and dropped the name.
+
+* `spicy_style()` names itself in its errors, where some named an
+  internal helper.
 
 * `table_categorical()` and `table_continuous()` no longer warn about a
   `rescale` set by `options(spicy.rescale)`.

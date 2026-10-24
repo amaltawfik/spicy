@@ -71,7 +71,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     effect_size_ci = show_effect_size_ci,
     r2_type = r2_type,
     ci = show_ci,
-    spec = spec
+    spec = spec,
+    digits_by_var = attr(x, "digits_by_var")
   )
 
   # The header a reader sees is the registry label, never the frozen

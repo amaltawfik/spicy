@@ -758,6 +758,12 @@
 # composite cells ("Med [Q1, Q3]", the test statistic, the effect
 # size) are read from it, so the typed view and the console can never
 # word the same cell differently.
+#
+# Under a named `digits`, `digits_by_var` gives each variable its
+# decimals and `col_meta$precision` stays the table's `digits`: a cell on
+# the scale of a variable whose decimals differ carries its printed
+# string as a display override, which every renderer prefers, so
+# `inline()` cites the number the table prints.
 .build_continuous_structured <- function(
   result,
   display_df,
@@ -769,7 +775,8 @@
   decimal_mark,
   ci_level,
   missing_group_label = NA_character_,
-  es_ci = FALSE
+  es_ci = FALSE,
+  digits_by_var = NULL
 ) {
   has_group <- "group" %in% names(result)
   # The column half is shared with `table_outcome()`.
@@ -793,6 +800,8 @@
   for (i in seq_len(nrow(result))) {
     var_name <- result$variable[i]
     shown <- tokens_by_var[[var_name]] %||% tokens_union
+    own_digits <- !is.null(digits_by_var) &&
+      digits_by_var[[var_name]] != digits
     values <- list()
     display <- character(0)
     status <- character(0)
@@ -810,7 +819,11 @@
         values[[nm]] <- as.numeric(val)
       }
       shown_str <- as.character(display_df[[nm]][i])
-      if (isTRUE(src$composite)) {
+      on_scale <- own_digits &&
+        tok %in% names(spec) &&
+        !isTRUE(src$integer) &&
+        !isTRUE(src$table_digits)
+      if (isTRUE(src$composite) || on_scale) {
         if (nzchar(shown_str)) {
           display[[nm]] <- shown_str
         }
@@ -888,6 +901,10 @@
 # `wide_raw` and `wide_display` are the two frames the function has
 # already built for the raw and the console outputs, so the typed
 # body and the printed body come from one computation each.
+#
+# Under a named `digits`, the means, the contrast or slope and its
+# interval of an outcome whose decimals differ from the table's carry
+# their printed string, as in `.build_continuous_structured()`.
 .build_continuous_lm_structured <- function(
   result,
   wide_raw,
@@ -902,7 +919,8 @@
   effect_size,
   effect_size_ci,
   r2_type,
-  spec
+  spec,
+  digits_by_var = NULL
 ) {
   vars <- unique(result$variable)
   ci_pct <- .lm_ci_pct(ci_level)
@@ -1010,6 +1028,8 @@
 
   rows <- list()
   for (i in seq_along(vars)) {
+    own_digits <- !is.null(digits_by_var) &&
+      digits_by_var[[vars[i]]] != digits
     values <- list()
     display <- character(0)
     status <- character(0)
@@ -1019,7 +1039,9 @@
         values[[nm]] <- as.numeric(val)
       }
       shown_str <- as.character(wide_display[[nm]][i])
-      if (nm %in% composite) {
+      on_scale <- own_digits &&
+        col_meta[[nm]]$token %in% c("emmean", "delta", "ci", "b")
+      if (nm %in% composite || on_scale) {
         if (nzchar(shown_str)) {
           display[[nm]] <- shown_str
         }

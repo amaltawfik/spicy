@@ -2501,7 +2501,8 @@ validate_token_vector <- function(x, valid, arg, call = rlang::caller_env()) {
 # Step 15: digit args (whole-number scalar). The one validator of every
 # number of decimals in the table family: `digits`, `p_digits`,
 # `effect_size_digits`, `fit_digits`, `ic_digits`, `percent_digits`.
-# A fraction is refused rather than truncated. `min = 1` for
+# A fraction is refused rather than truncated, and a name rather than
+# dropped (`.digit_arg_message()`). `min = 1` for
 # `p_digits`: a p-value printed with no decimal reads ".015" in the table
 # and "<1" in `inline()`. Returns the value as an integer.
 validate_digit_arg <- function(
@@ -2512,6 +2513,7 @@ validate_digit_arg <- function(
 ) {
   ok <- length(x) == 1L &&
     is.numeric(x) &&
+    is.null(names(x)) &&
     !is.na(x) &&
     is.finite(x) &&
     x >= min &&
@@ -2519,7 +2521,7 @@ validate_digit_arg <- function(
     x == trunc(x)
   if (!ok) {
     spicy_abort(
-      .digit_arg_message(name, min),
+      .digit_arg_message(name, min, x),
       class = "spicy_invalid_input",
       call = call
     )
@@ -2529,14 +2531,30 @@ validate_digit_arg <- function(
 
 # The one wording of a number-of-decimals check, shared with the levers of
 # `spicy_style()` (`.style_check_count()`): only `min = 0` and `min = 1`
-# occur.
-.digit_arg_message <- function(name, min = 0L) {
-  if (min == 0L) {
+# occur. `x`, the value refused, adds what a name means. A named `digits`
+# gives each variable its own decimals in the three continuous tables
+# (`.continuous_digits_arg()`) and nowhere else: read as one number with
+# its name dropped, it would mean the opposite of what it says.
+.digit_arg_message <- function(name, min = 0L, x = NULL) {
+  msg <- if (min == 0L) {
     sprintf("`%s` must be a non-negative whole number.", name)
   } else {
     sprintf("`%s` must be a positive whole number.", name)
   }
+  if (is.null(names(x))) {
+    return(msg)
+  }
+  c(
+    msg,
+    "x" = sprintf("`%s` is named; give one unnamed number.", name),
+    "i" = if (identical(name, "digits")) .DIGITS_NAMED_HINT
+  )
 }
+
+.DIGITS_NAMED_HINT <- paste(
+  "A named `digits`, one value per variable, is taken only by",
+  "`table_continuous()`, `table_continuous_svy()` and `table_continuous_lm()`."
+)
 
 # Step 16: ci_level. The one check of a confidence level in the table
 # family, the descriptive tables included.

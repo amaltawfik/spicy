@@ -1026,6 +1026,359 @@ test_that("table_continuous uses dedicated digits for effect sizes", {
   expect_match(display$ES[1], "\\[[0-9]+\\.[0-9]{3}, [0-9]+\\.[0-9]{3}\\]")
 })
 
+# ---- digits per variable ----------------------------------------------------
+
+# A height measured to the centimeter and a BMI to the hundredth, by two
+# groups, with a numeric predictor for the slope of table_continuous_lm().
+.dpv_data <- function() {
+  set.seed(9)
+  data.frame(
+    height = round(stats::rnorm(30, 170, 8)),
+    bmi = round(stats::rnorm(30, 23, 3), 2),
+    age = round(stats::runif(30, 20, 60)),
+    g = rep(c("A", "B"), 15L)
+  )
+}
+.dpv_fmt <- function(x, d) formatC(x, format = "f", digits = d)
+# The columns of a default one-way row, in order: mean, SD, minimum,
+# maximum and the t interval of the mean.
+.dpv_stats <- function(x) {
+  h <- stats::qt(0.975, length(x) - 1L) * stats::sd(x) / sqrt(length(x))
+  c(mean(x), stats::sd(x), min(x), max(x), mean(x) - h, mean(x) + h)
+}
+# The cells of a variable's row in a one-way console table.
+.dpv_cells <- function(x, v) {
+  lines <- utils::capture.output(print(x))
+  row <- lines[startsWith(lines, paste0(" ", v, " "))]
+  strsplit(trimws(row), " +")[[1L]][-(1:2)]
+}
+
+test_that("a named digits gives each variable its own decimals", {
+  d <- .dpv_data()
+  x <- table_continuous(
+    d,
+    select = c(height, bmi),
+    digits = c(height = 0, bmi = 1)
+  )
+  expect_identical(
+    .dpv_cells(x, "height"),
+    c(.dpv_fmt(.dpv_stats(d$height), 0L), "30")
+  )
+  expect_identical(
+    .dpv_cells(x, "bmi"),
+    c(.dpv_fmt(.dpv_stats(d$bmi), 1L), "30")
+  )
+  expect_identical(attr(x, "digits"), 2L)
+  expect_identical(attr(x, "digits_by_var"), c(height = 0L, bmi = 1L))
+  # A single number reads as it always did.
+  one <- table_continuous(d, select = c(height, bmi), digits = 1)
+  expect_identical(attr(one, "digits"), 1L)
+  expect_null(attr(one, "digits_by_var"))
+  expect_identical(
+    .dpv_cells(one, "height"),
+    c(.dpv_fmt(.dpv_stats(d$height), 1L), "30")
+  )
+  # The data frames carry the numbers, whatever their decimals.
+  for (out in c("data.frame", "long")) {
+    expect_identical(
+      table_continuous(
+        d,
+        select = c(height, bmi),
+        by = g,
+        digits = c(height = 0, bmi = 1),
+        output = out
+      ),
+      table_continuous(d, select = c(height, bmi), by = g, output = out),
+      info = out
+    )
+  }
+})
+
+test_that("inline() and as_structured() follow the decimals the table prints", {
+  d <- .dpv_data()
+  a <- d$g == "A"
+  tbl <- function(...) {
+    table_continuous(
+      d,
+      select = c(height, bmi),
+      by = g,
+      statistic = TRUE,
+      effect_size = "auto",
+      effect_size_ci = TRUE,
+      smd = TRUE,
+      ...
+    )
+  }
+  x <- tbl(digits = c(height = 0, bmi = 1))
+  ref <- tbl()
+  expect_identical(
+    inline(x, height, model = "A"),
+    .dpv_fmt(mean(d$height[a]), 0L)
+  )
+  expect_identical(inline(x, bmi, model = "B"), .dpv_fmt(mean(d$bmi[!a]), 1L))
+  ci <- .dpv_fmt(.dpv_stats(d$bmi[a])[5:6], 1L)
+  expect_identical(
+    inline(x, bmi, column = "ci", model = "A"),
+    sprintf("[%s, %s]", ci[[1L]], ci[[2L]])
+  )
+  # The p-value, the test statistic, the effect size and the SMD are on no
+  # variable's scale: they keep their own decimals.
+  for (tk in c("p", "statistic", "es", "smd")) {
+    expect_identical(
+      inline(x, bmi, column = tk),
+      inline(ref, bmi, column = tk),
+      info = tk
+    )
+  }
+  # The typed view keeps the numbers and the table's precision; a cell
+  # whose variable prints other decimals carries the string it prints.
+  s <- as_structured(x)
+  expect_identical(s$col_meta$M$precision, 2L)
+  expect_identical(s$format_spec$digits, 2L)
+  expect_identical(s$body$M, as_structured(ref)$body$M)
+  expect_identical(
+    s$col_meta$M$display_cells[[1L]],
+    .dpv_fmt(mean(d$height[a]), 0L)
+  )
+  expect_null(s$col_meta$n$display_cells)
+  expect_null(as_structured(ref)$col_meta$M$display_cells)
+})
+
+test_that("a name that matches no variable is ignored, as in labels", {
+  d <- .dpv_data()
+  expect_silent(
+    x <- table_continuous(
+      d,
+      select = c(height, bmi),
+      digits = c(height = 0, weight = 3)
+    )
+  )
+  expect_identical(attr(x, "digits_by_var"), c(height = 0L, bmi = 2L))
+  # A vector that gives no variable decimals of its own builds the table
+  # the single number builds.
+  expect_identical(
+    table_continuous(
+      d,
+      select = c(height, bmi),
+      digits = c(weight = 0, bmi = 2)
+    ),
+    table_continuous(d, select = c(height, bmi))
+  )
+})
+
+test_that("the other forms of digits are errors that give both forms", {
+  d <- .dpv_data()
+  bad <- list(
+    c(1, 2),
+    c(height = 1, 2),
+    c(height = 1, height = 2),
+    c(height = -1),
+    c(height = 1.5),
+    c(height = "1"),
+    1.5,
+    -1,
+    NA
+  )
+  calls <- list(
+    function(dg) table_continuous(d, select = c(height, bmi), digits = dg),
+    function(dg) {
+      table_continuous_lm(d, select = c(height, bmi), by = g, digits = dg)
+    }
+  )
+  for (call in calls) {
+    for (dg in bad) {
+      e <- expect_error(call(dg), class = "spicy_invalid_input")
+      expect_match(conditionMessage(e), "`digits` must be", fixed = TRUE)
+      expect_match(
+        conditionMessage(e),
+        "`digits = c(height = 0, bmi = 1)`",
+        fixed = TRUE
+      )
+    }
+  }
+  msg <- function(dg) {
+    conditionMessage(expect_error(table_continuous(
+      d,
+      select = c(height, bmi),
+      digits = dg
+    )))
+  }
+  expect_match(msg(c(1, 2)), "2 values and no names", fixed = TRUE)
+  expect_match(msg(c(height = 1, 2)), "and others are not", fixed = TRUE)
+  expect_match(msg(c(height = 1, height = 2)), "more than once", fixed = TRUE)
+  expect_match(
+    msg(c(height = -1)),
+    "The value for `height` is -1.",
+    fixed = TRUE
+  )
+  # A style holds the number of the table, never a vector.
+  expect_error(
+    spicy_style(digits = c(height = 0)),
+    class = "spicy_invalid_input"
+  )
+  skip_if_not_installed("survey", "4.5")
+  d$w <- 1
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  expect_error(
+    table_continuous_svy(des, select = c(height, bmi), digits = c(1, 2)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("the variables a named digits leaves out keep the style's", {
+  d <- .dpv_data()
+  x <- table_continuous(
+    d,
+    select = c(height, bmi),
+    style = spicy_style(digits = 3),
+    digits = c(height = 0)
+  )
+  expect_identical(
+    .dpv_cells(x, "bmi"),
+    c(.dpv_fmt(.dpv_stats(d$bmi), 3L), "30")
+  )
+  withr::local_options(spicy.style = spicy_style(digits = 1))
+  y <- table_continuous(d, select = c(height, bmi), digits = c(height = 0))
+  expect_identical(
+    .dpv_cells(y, "height"),
+    c(.dpv_fmt(.dpv_stats(d$height), 0L), "30")
+  )
+  expect_identical(
+    .dpv_cells(y, "bmi"),
+    c(.dpv_fmt(.dpv_stats(d$bmi), 1L), "30")
+  )
+})
+
+test_that("a weighted n keeps the table's decimals, a median the variable's", {
+  d <- .dpv_data()
+  d$w <- rep(c(0.5, 1.5), 15L)
+  dg <- c(height = 0, bmi = 1)
+  x <- table_continuous(
+    d,
+    select = c(height, bmi),
+    weights = w,
+    show_columns = c("m", "weighted_n"),
+    digits = dg
+  )
+  expect_identical(
+    .dpv_cells(x, "height"),
+    c(.dpv_fmt(stats::weighted.mean(d$height, d$w), 0L), "30.00")
+  )
+  expect_identical(
+    .dpv_cells(x, "bmi"),
+    c(.dpv_fmt(stats::weighted.mean(d$bmi, d$w), 1L), "30.00")
+  )
+  y <- table_continuous(
+    d,
+    select = c(height, bmi),
+    show_columns = c("med_iqr", "n"),
+    digits = dg
+  )
+  q <- .dpv_fmt(stats::quantile(d$bmi, c(0.5, 0.25, 0.75), names = FALSE), 1L)
+  expect_identical(
+    inline(y, bmi, column = "med_iqr"),
+    sprintf("%s [%s, %s]", q[[1L]], q[[2L]], q[[3L]])
+  )
+})
+
+test_that("table_continuous_lm() gives each outcome its decimals", {
+  d <- .dpv_data()
+  a <- d$g == "A"
+  dg <- c(height = 0, bmi = 1)
+  tbl <- function(...) {
+    table_continuous_lm(
+      d,
+      select = c(height, bmi),
+      by = g,
+      statistic = TRUE,
+      effect_size = "hedges_g",
+      ...
+    )
+  }
+  x <- tbl(digits = dg)
+  ref <- tbl()
+  expect_identical(
+    inline(x, height, column = "emmean", model = "A"),
+    .dpv_fmt(mean(d$height[a]), 0L)
+  )
+  expect_identical(
+    inline(x, bmi, column = "emmean", model = "B"),
+    .dpv_fmt(mean(d$bmi[!a]), 1L)
+  )
+  fit <- stats::lm(bmi ~ g, data = d)
+  ci <- .dpv_fmt(stats::confint(fit)["gB", ], 1L)
+  expect_identical(inline(x, bmi), .dpv_fmt(stats::coef(fit)[["gB"]], 1L))
+  expect_identical(
+    inline(x, bmi, column = "ci"),
+    sprintf("[%s, %s]", ci[[1L]], ci[[2L]])
+  )
+  # The test statistic keeps the table's decimals, the p-value, the
+  # R-squared and the effect size their own.
+  for (tk in c("statistic", "p", "r2", "es")) {
+    expect_identical(
+      inline(x, bmi, column = tk),
+      inline(ref, bmi, column = tk),
+      info = tk
+    )
+  }
+  # The console row of the outcome, in the first of its panels.
+  lines <- utils::capture.output(print(x))
+  expect_match(
+    lines[startsWith(lines, " bmi ")][[1L]],
+    paste0(" ", .dpv_fmt(mean(d$bmi[a]), 1L), " "),
+    fixed = TRUE
+  )
+  expect_identical(
+    as_structured(x)$col_meta[["M (A)"]]$display_cells[[1L]],
+    .dpv_fmt(mean(d$height[a]), 0L)
+  )
+  expect_identical(
+    tbl(digits = dg, output = "data.frame"),
+    tbl(output = "data.frame")
+  )
+  # Across a numeric `by`, the slope and its interval.
+  z <- table_continuous_lm(d, select = c(height, bmi), by = age, digits = dg)
+  slope <- function(y) stats::coef(stats::lm(d[[y]] ~ d$age))[[2L]]
+  expect_identical(inline(z, height), .dpv_fmt(slope("height"), 0L))
+  expect_identical(inline(z, bmi), .dpv_fmt(slope("bmi"), 1L))
+})
+
+test_that("table_continuous_svy() gives each variable its decimals", {
+  skip_if_not_installed("survey", "4.5")
+  d <- .dpv_data()
+  d$w <- rep(c(0.5, 1.5), 15L)
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  tbl <- function(...) {
+    table_continuous_svy(
+      des,
+      select = c(height, bmi),
+      show_columns = c("m", "se", "n"),
+      deff = TRUE,
+      ...
+    )
+  }
+  x <- tbl(digits = c(height = 0, bmi = 1))
+  m <- survey::svymean(~bmi, des)
+  # Mean and standard error on the variable's scale; n; the design
+  # effect, on no variable's scale, at the table's decimals.
+  expect_identical(
+    .dpv_cells(x, "bmi"),
+    c(
+      .dpv_fmt(c(stats::coef(m)[[1L]], survey::SE(m)[[1L]]), 1L),
+      "30",
+      .dpv_cells(tbl(), "bmi")[[4L]]
+    )
+  )
+  expect_identical(
+    inline(x, height, column = "se"),
+    .dpv_fmt(survey::SE(survey::svymean(~height, des))[[1L]], 0L)
+  )
+  expect_identical(
+    tbl(digits = c(height = 0, bmi = 1), output = "data.frame"),
+    tbl(output = "data.frame")
+  )
+})
+
 # ---- printing ----
 
 test_that("print.spicy_continuous_table produces output", {

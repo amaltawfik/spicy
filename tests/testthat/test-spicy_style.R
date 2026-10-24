@@ -152,6 +152,20 @@ test_that("a misspelled lever is an error, never a silent no-op", {
   expect_error(spicy_style(p_digit = 2), class = "spicy_invalid_input")
 })
 
+test_that("a lever's error names spicy_style(), and a name is refused", {
+  e <- expect_error(spicy_style(digits = -1), class = "spicy_invalid_input")
+  expect_identical(rlang::call_name(e$call), "spicy_style")
+  # A style holds one number of decimals for every table: a named one is
+  # refused rather than read without its name.
+  e <- expect_error(
+    spicy_style(digits = c(bmi = 1)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(e), "`digits` is named", fixed = TRUE)
+  expect_match(conditionMessage(e), "`table_continuous()`", fixed = TRUE)
+  expect_error(spicy_style(p_digits = c(a = 3)), class = "spicy_invalid_input")
+})
+
 test_that("spicy_style() composes on a base theme and says it was modified", {
   s <- spicy_style("lancet", ci_sep = " to ")
   expect_identical(s$ci_sep, " to ")

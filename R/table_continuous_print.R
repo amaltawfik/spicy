@@ -62,7 +62,8 @@ print.spicy_continuous_table <- function(x, ...) {
     show_effect_size_ci = show_effect_size_ci,
     show_smd = show_smd,
     tokens_union = attr(x, "show_columns"),
-    tokens_by_var = attr(x, "show_columns_by_var")
+    tokens_by_var = attr(x, "show_columns_by_var"),
+    digits_by_var = attr(x, "digits_by_var")
   )
 
   has_group <- !is.null(group_var)

@@ -201,7 +201,7 @@ alongside rows with \code{NA} in \code{y} or \code{by}. A weights column is not 
 outcome: \code{select = everything()} skips it, and naming it in
 \code{select}, or giving its position, is an error. When supplied, weights are
 passed to \code{lm(..., weights = ...)}, so coefficients become weighted
-least-squares estimates and \verb{\eqn{R^2}{R^2}}, adjusted \verb{\eqn{R^2}{R^2}}, and the four effect
+least-squares estimates and \eqn{R^2}{R^2}, adjusted \eqn{R^2}{R^2}, and the four effect
 sizes are computed from the corresponding weighted sums of squares
 (see the \emph{Weights} section in Details).}
 
@@ -252,7 +252,7 @@ when \code{cluster} is supplied (Quenouille 1956; MacKinnon and White
 }
 
 The \verb{HC*} variants are computed via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}.
-Coefficients (means, contrasts, slopes), \verb{\eqn{R^2}{R^2}}, and the standardized
+Coefficients (means, contrasts, slopes), \eqn{R^2}{R^2}, and the standardized
 effect sizes (\code{f2}, \code{cohens_d}, \code{hedges_g}, \code{omega2}) are point
 estimates from the
 OLS/WLS fit and are not affected by \code{vcov}; only their standard errors,
@@ -332,10 +332,10 @@ does in \code{\link[=table_continuous]{table_continuous()}}: \code{"d"} and \cod
 of:
 \itemize{
 \item \code{"none"} (the default): no effect-size column.
-\item \code{"f2"}: Cohen's \verb{\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})}. Defined for any predictor type.
+\item \code{"f2"}: Cohen's \code{f^2 = R^2 / (1 - R^2)}. Defined for any predictor type.
 Familiar from Cohen (1988); standard input for a-priori power analysis.
-Note that for a single-predictor model, \verb{\eqn{f^2}{f^2}} is a monotone transform of
-\verb{\eqn{R^2}{R^2}} and adds no information beyond it.
+Note that for a single-predictor model, \eqn{f^2}{f^2} is a monotone transform of
+\eqn{R^2}{R^2} and adds no information beyond it.
 \item \code{"cohens_d"}: Cohen's \code{d = beta_hat / sigma_hat}, where \code{beta_hat} is
 the model coefficient (the displayed difference) and \code{sigma_hat} is the
 residual standard deviation from the fitted model. Defined only when
@@ -344,7 +344,7 @@ The sign matches the displayed \code{Delta (level2 - level1)}.
 \item \code{"hedges_g"}: Hedges' \code{g = J * d} with the small-sample correction
 \code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
 \item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
-population variance explained, less optimistic than \verb{\eqn{R^2}{R^2}} for small
+population variance explained, less optimistic than \eqn{R^2}{R^2} for small
 samples. Defined for any predictor type and truncated at 0.
 }
 
@@ -390,13 +390,13 @@ When \code{effect_size = "none"}, this argument is ignored with a warning.}
 \item{r2}{Character. Fit statistic to include in the wide and rendered
 outputs. One of:
 \itemize{
-\item \code{"r2"} (default): the model \verb{\eqn{R^2}{R^2}} (\code{summary(lm)$r.squared}).
-\item \code{"adj_r2"}: adjusted \verb{\eqn{R^2}{R^2}}, penalizing for \code{df_effect} relative to the
+\item \code{"r2"} (default): the model \eqn{R^2}{R^2} (\code{summary(lm)$r.squared}).
+\item \code{"adj_r2"}: adjusted \eqn{R^2}{R^2}, penalizing for \code{df_effect} relative to the
 residual degrees of freedom.
 \item \code{"none"}: omit the fit-statistic column.
 }
 
-When \code{weights} is supplied, \verb{\eqn{R^2}{R^2}} and adjusted \verb{\eqn{R^2}{R^2}} are the weighted
+When \code{weights} is supplied, \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2} are the weighted
 least-squares versions reported by \code{summary(lm(..., weights = ...))}.}
 
 \item{ci}{Logical. If \code{TRUE}, includes contrast confidence-interval columns
@@ -429,13 +429,21 @@ the wording you set here.}
 \item{ci_level}{Confidence level for coefficient and model-based mean
 intervals (default: \code{0.95}): a number strictly between 0 and 1.}
 
-\item{digits}{Number of decimal places for descriptive values, regression
-coefficients, and test statistics (default: \code{2}). Must be a single
-non-negative whole number: a fraction (\code{2.9}) is an error. Same
-constraint for \code{fit_digits} and \code{effect_size_digits}.}
+\item{digits}{Number of decimal places of the numbers on each outcome's
+own scale: the means of the groups, adjusted or not, the difference or
+the slope, and its confidence interval. One non-negative whole number
+sets them for every outcome (default: \code{2}), and the test statistic and
+the weighted \emph{n} with them. A vector named by column, not by label,
+gives each outcome it names its own, \code{digits = c(height = 0, bmi = 1)};
+the other outcomes, the test statistic and the weighted \emph{n} keep the
+default, the \code{digits} of a \code{\link[=spicy_style]{spicy_style()}} in force included. Names
+that match no outcome are ignored, as in \code{labels}. A fraction (\code{2.9})
+is an error, as for \code{fit_digits} and \code{effect_size_digits}. The
+\emph{p}-value (\code{p_digits}), the \eqn{R^2}{R^2} (\code{fit_digits}), the effect
+size (\code{effect_size_digits}) and the counts keep their own decimals.}
 
-\item{fit_digits}{Number of decimal places for model-fit columns (\verb{\eqn{R^2}{R^2}} or
-adjusted \verb{\eqn{R^2}{R^2}}) in wide and rendered outputs (default: \code{2}).}
+\item{fit_digits}{Number of decimal places for model-fit columns (\eqn{R^2}{R^2} or
+adjusted \eqn{R^2}{R^2}) in wide and rendered outputs (default: \code{2}).}
 
 \item{effect_size_digits}{Number of decimal places for the effect-size
 column (\code{f2}, \code{d}, \code{g}, or \code{omega2}) in wide and rendered outputs
@@ -664,13 +672,13 @@ cell at all.
 \section{Effect sizes}{
 Effect size is selected explicitly via \code{effect_size} (defaults to
 \code{"none"}). All variants are derived from the same fitted model as the
-displayed coefficients, \verb{\eqn{R^2}{R^2}}, and CIs, so the effect size stays
+displayed coefficients, \eqn{R^2}{R^2}, and CIs, so the effect size stays
 internally consistent with the rest of the table.
 
 \itemize{
-\item \code{"f2"}: Cohen's \verb{\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})} (Cohen 1988). Defined
-for any predictor type. For a single-predictor model, \verb{\eqn{f^2}{f^2}} is a
-monotone transform of \verb{\eqn{R^2}{R^2}} and adds no information beyond it; its
+\item \code{"f2"}: Cohen's \code{f^2 = R^2 / (1 - R^2)} (Cohen 1988). Defined
+for any predictor type. For a single-predictor model, \eqn{f^2}{f^2} is a
+monotone transform of \eqn{R^2}{R^2} and adds no information beyond it; its
 primary use is in \emph{a priori} power analysis (e.g. G*Power).
 \item \code{"cohens_d"}, \code{"hedges_g"}: standardized mean difference
 (Cohen's \emph{d} or Hedges' \emph{g}), defined only when \code{by} has exactly two
@@ -721,10 +729,10 @@ correction.
 \item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
 Without covariates (model-level effect sizes), bounds are
 converted from the noncentrality parameter using
-\code{omega^2 = ncp / (ncp + N)} and \verb{\eqn{f^2}{f^2} = ncp / N} respectively, with
+\code{omega^2 = ncp / (ncp + N)} and \code{f^2 = ncp / N} respectively, with
 \code{N = df1 + df2 + 1} (total sample size). Under covariate
 adjustment (partial effect sizes), the bounds use the partial
-transforms instead: partial \verb{\eqn{f^2}{f^2} = ncp / df2}, and for partial
+transforms instead: partial \code{f^2 = ncp / df2}, and for partial
 \code{omega^2} the inversion runs at the \emph{F}-value equivalent of the
 omega-squared point estimate with bounds \code{ncp / (ncp + df2)} --
 the \code{\link[effectsize:omega_squared]{effectsize::omega_squared()}} \code{partial = TRUE} convention,
@@ -800,7 +808,7 @@ bootstrap when the residual distribution is non-standard or the
 sample is small; use the jackknife as a closed-form, deterministic
 alternative.
 
-\verb{\eqn{R^2}{R^2}}, adjusted \verb{\eqn{R^2}{R^2}}, and the effect sizes remain ordinary
+\eqn{R^2}{R^2}, adjusted \eqn{R^2}{R^2}, and the effect sizes remain ordinary
 least-squares (or weighted least-squares) statistics regardless of
 \code{vcov}.
 }
@@ -809,8 +817,8 @@ least-squares (or weighted least-squares) statistics regardless of
 When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted
 linear models via \code{lm(..., weights = ...)}. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
-fit statistics \verb{\eqn{R^2}{R^2}} and adjusted \verb{\eqn{R^2}{R^2}}, as well as Hays' \code{omega^2}
-and Cohen's \verb{\eqn{f^2}{f^2}}, use the corresponding \strong{weighted sums of squares}
+fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays' \code{omega^2}
+and Cohen's \eqn{f^2}{f^2}, use the corresponding \strong{weighted sums of squares}
 from the WLS fit. Cohen's \code{d} and Hedges' \code{g} use the \strong{WLS
 coefficient and the model's weighted residual standard deviation}
 (\code{summary(fit)$sigma}), which is the standard convention for
@@ -898,7 +906,7 @@ the regular \code{NA} count.
 \examples{
 # --- Basic usage ---------------------------------------------------------
 
-# Default: ASCII table with model-based means, p, and \eqn{R^2}{R^2}.
+# Default: ASCII table with model-based means, p, and R-squared.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -935,7 +943,7 @@ table_continuous_lm(
   effect_size_ci = TRUE
 )
 
-# Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
+# Cohen's f-squared alongside R-squared (familiar power-analysis effect size).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1013,7 +1021,7 @@ table_continuous_lm(
 
 # --- Article-style polish -----------------------------------------------
 
-# Pretty outcome labels and adjusted \eqn{R^2}{R^2}.
+# Pretty outcome labels and adjusted R-squared.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),

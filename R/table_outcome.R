@@ -725,6 +725,9 @@ abort_outcome_by_renamed <- function() {
 #' @param effect_size,effect_size_ci Effect size per block and its
 #'   confidence interval, as in [table_continuous()] (a logical
 #'   `effect_size` is an error there and here).
+#' @param digits Number of decimal places of the descriptive statistics
+#'   (default: `2`). A whole number: a fraction is an error, as for every
+#'   `*_digits` argument. Test statistics keep two decimals.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed

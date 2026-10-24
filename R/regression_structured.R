@@ -113,8 +113,12 @@
 #                                   # composite cells no single number
 #                                   # can express -- today the
 #                                   # "events/N" counts of the
-#                                   # `n_events` token. Any engine that
-#                                   # renders strings MUST prefer it.
+#                                   # `n_events` token -- and, in the
+#                                   # continuous tables, the cells of a
+#                                   # variable a named `digits` gives
+#                                   # decimals other than `precision`.
+#                                   # Any engine that renders strings
+#                                   # MUST prefer it.
 #         p_adjust = NULL | chr,    # descriptive, token "p" under
 #         p_adjust_m = NULL | int,  # `p_adjust`: the method, the number
 #         p_unadjusted = NULL | num # of tests adjusted together, and

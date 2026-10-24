@@ -672,7 +672,10 @@ spicy_style <- function(
 
 # ---- Field validators -----------------------------------------------------
 
-.style_check_enum <- function(x, field, allowed) {
+# Each takes `call`, the frame of `spicy_style()`, so that a lever's error
+# names the function the user called rather than the helper.
+
+.style_check_enum <- function(x, field, allowed, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
@@ -683,32 +686,37 @@ spicy_style <- function(
         field,
         paste0("\"", allowed, "\"", collapse = ", ")
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   x
 }
 
-.style_check_count <- function(x, field, min = 0L) {
+# A name is refused rather than dropped, as in `validate_digit_arg()`: a
+# style holds one number of decimals for every table.
+.style_check_count <- function(x, field, min = 0L, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
   ok <- is.numeric(x) &&
     length(x) == 1L &&
+    is.null(names(x)) &&
     !is.na(x) &&
     is.finite(x) &&
     x == as.integer(x) &&
     x >= min
   if (!ok) {
     spicy_abort(
-      .digit_arg_message(field, min),
-      class = "spicy_invalid_input"
+      .digit_arg_message(field, min, x),
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   as.integer(x)
 }
 
-.style_check_prob <- function(x, field) {
+.style_check_prob <- function(x, field, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
@@ -721,7 +729,8 @@ spicy_style <- function(
   if (!ok) {
     spicy_abort(
       sprintf("`%s` must be a single number strictly between 0 and 1.", field),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   as.numeric(x)
@@ -735,33 +744,35 @@ spicy_style <- function(
   is.character(x) && length(x) == 1L && !is.na(x) && nchar(x) == 1L
 }
 
-.style_check_char1 <- function(x, field) {
+.style_check_char1 <- function(x, field, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
   if (!is.character(x) || length(x) != 1L || is.na(x) || nchar(x) != 1L) {
     spicy_abort(
       sprintf("`%s` must be a single character.", field),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   x
 }
 
-.style_check_string <- function(x, field) {
+.style_check_string <- function(x, field, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
   if (!is.character(x) || length(x) != 1L || is.na(x)) {
     spicy_abort(
       sprintf("`%s` must be a single string.", field),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   x
 }
 
-.style_check_brackets <- function(x) {
+.style_check_brackets <- function(x, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
@@ -771,13 +782,14 @@ spicy_style <- function(
         "`ci_brackets` must be a character vector of length 2.",
         "i" = "For example `c(\"[\", \"]\")` or `c(\"(\", \")\")`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   unname(x)
 }
 
-.style_check_stars <- function(x) {
+.style_check_stars <- function(x, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
@@ -797,13 +809,14 @@ spicy_style <- function(
         "i" = "For example `c(\"***\" = .001, \"**\" = .01, \"*\" = .05)`.",
         "i" = "Thresholds must be named, and lie in (0, 1]."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   x
 }
 
-.style_check_bands <- function(x) {
+.style_check_bands <- function(x, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(NULL)
   }
@@ -817,7 +830,8 @@ spicy_style <- function(
         ),
         "i" = "For example `list(c(0.01, 3), c(Inf, 2))`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (!is.list(x) || length(x) == 0L) {
@@ -1448,6 +1462,19 @@ print.spicy_style <- function(x, ...) {
     .style_pop()
   }
   invisible(NULL)
+}
+
+# The default of a lever the caller typed in a form no style can hold: a
+# named `digits` of the continuous tables, one value per variable, leaves
+# the variables it does not name at the number the call would have used
+# without it. That is what `.style_begin()` writes into an untyped
+# argument: the style's value, over the language's, over `default`, the
+# function's own.
+.style_arg_default <- function(spec, field, default) {
+  eff <- .style_locale_defaults()
+  style <- .style_resolve(spec)
+  eff[names(style)] <- style
+  eff[[field]] %||% default
 }
 
 # The descriptive families return RAW values and re-format them at print

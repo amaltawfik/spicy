@@ -231,9 +231,19 @@
 #'   the wording you set here.
 #' @param ci_level Confidence level for the mean confidence interval
 #'   (default: `0.95`): a number strictly between 0 and 1.
-#' @param digits Number of decimal places for descriptive values and test
-#'   statistics (default: `2`). A whole number: a fraction is an error,
-#'   as for every `*_digits` argument.
+#' @param digits Number of decimal places of the statistics on each
+#'   variable's own scale: the mean, SD, median, IQR, quartiles, minimum
+#'   and maximum, and the confidence intervals of the mean and of the
+#'   median. One non-negative whole number sets them for every variable
+#'   (default: `2`), and the weighted *n* with them. A vector named by
+#'   column, not by label, gives each variable it names its own,
+#'   `digits = c(height = 0, bmi = 1)`; the other variables and the
+#'   weighted *n* keep the default, the `digits` of a [spicy_style()] in
+#'   force included. Names that match no variable are ignored, as in
+#'   `labels`. A fraction is an error, as for every `*_digits` argument.
+#'   The other numbers keep their own decimals: *p*-values (`p_digits`),
+#'   effect sizes and the SMD (`effect_size_digits`), test statistics (two
+#'   decimals) and counts (none).
 #' @param effect_size_digits Number of decimal places for effect-size values
 #'   in formatted displays (default: `2`).
 #' @param p_digits Integer >= 1. Number of decimal places used to
@@ -892,7 +902,14 @@ table_continuous <- function(
   # --- validation ---
   .check_data_frame(data, "table_continuous")
   validate_ci_level(ci_level)
-  digits <- validate_digit_arg(digits, "digits")
+  # One number of decimals for the table, or one per variable: `digits`
+  # is then the table's number, the one the variables not named keep.
+  digits_arg <- .continuous_digits_arg(
+    digits,
+    style,
+    formals(table_continuous)$digits
+  )
+  digits <- digits_arg$table
   effect_size_digits <- validate_digit_arg(
     effect_size_digits,
     "effect_size_digits"
@@ -1123,6 +1140,11 @@ table_continuous <- function(
   if (length(numeric_cols) == 0L) {
     .abort_empty_selection("select", "numeric")
   }
+  digits_by_var <- .continuous_digits_by_var(
+    digits_arg$named,
+    numeric_cols,
+    digits
+  )
 
   # Declared missing values (see the "Declared missing values" section
   # of ?freq): with `user_na = TRUE` declared codes become regular NA
@@ -1809,6 +1831,7 @@ table_continuous <- function(
   # --- attributes & class ---
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
+  attr(result, "digits_by_var") <- digits_by_var
   attr(result, "effect_size_digits") <- effect_size_digits
   attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
@@ -1904,7 +1927,8 @@ table_continuous <- function(
       show_effect_size_ci = attr(result, "show_effect_size_ci"),
       show_smd = attr(result, "show_smd"),
       tokens_union = tokens_union,
-      tokens_by_var = tokens_by_var
+      tokens_by_var = tokens_by_var,
+      digits_by_var = digits_by_var
     )
     return(
       export_desc_table(
@@ -1963,11 +1987,13 @@ table_continuous <- function(
       show_effect_size_ci = attr(result, "show_effect_size_ci"),
       show_smd = attr(result, "show_smd"),
       tokens_union = tokens_union,
-      tokens_by_var = tokens_by_var
+      tokens_by_var = tokens_by_var,
+      digits_by_var = digits_by_var
     ),
     tokens_union = tokens_union,
     tokens_by_var = tokens_by_var,
     digits = digits,
+    digits_by_var = digits_by_var,
     effect_size_digits = effect_size_digits,
     p_digits = p_digits,
     decimal_mark = decimal_mark,
@@ -2159,6 +2185,8 @@ order_continuous_tokens <- function(tokens) {
 #   field       the column of the long frame carrying the raw value
 #   composite   no single number expresses the cell (display override)
 #   integer     a count: precision 0 rather than the table's `digits`
+#   table_digits  not on the variable's scale: the table's `digits`, never
+#               the value a named `digits` gives the variable
 #   ci_role     `.CON_KEY_CI_LL` / `.CON_KEY_CI_UL` for an interval bound
 #   short_name  the bare key `rename_ci_cols()` leaves for the engines
 #   ci_key      the frozen key of the interval the bound belongs to
@@ -2287,19 +2315,23 @@ order_continuous_tokens <- function(tokens) {
     )),
     # Sum of weights (decision 17): a weighted count, generally
     # non-integer, so it takes the table's regular precision -- the
-    # `table_continuous_lm()` "Weighted n" convention.
+    # `table_continuous_lm()` "Weighted n" convention. It is on the scale
+    # of the weights, not of the variable.
     weighted_n = list(
       list(
         name = .CON_KEY_WEIGHTED_N,
         label = spicy_str("header_weighted_n"),
         field = "weighted_n",
-        integer = FALSE
+        integer = FALSE,
+        table_digits = TRUE
       )
     ),
+    # A ratio of two variances, on no variable's scale.
     deff = list(list(
       name = .CON_KEY_DEFF,
       label = spicy_str("header_deff"),
-      field = "deff"
+      field = "deff",
+      table_digits = TRUE
     ))
   )
 }
@@ -3267,6 +3299,107 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   unname(stats::quantile(boot_vals, probs = c(alpha / 2, 1 - alpha / 2)))
 }
 
+# --- internal: decimal places, for the table or per variable -------------
+# `digits` of `table_continuous()`, `table_continuous_svy()` and
+# `table_continuous_lm()`: one number of decimals for the whole table, as
+# everywhere in the package, or a vector named by column that gives the
+# variables it names their own (point 9 of the ADR of 2026-10-23: a
+# height measured to the centimeter and a BMI to one decimal belong in
+# one table). A variable's value governs the numbers on its scale only.
+#
+# Checked before any column is read. Returns `table`, the table's number
+# of decimals, and `named`, the named vector or NULL. Under a named
+# vector, `table` is the number the call would have used without it --
+# the style's when one is in force (`.style_arg_default()`), `default`
+# otherwise -- and it is what the variables not named keep, with the
+# numbers that are on no variable's scale. A name that matches no
+# variable is ignored, as in `labels`, so one vector can serve every
+# table of a project; an unnamed vector of several values, a vector named
+# in part or twice, and a value that is not a non-negative whole number
+# are errors that give both forms.
+.continuous_digits_arg <- function(
+  digits,
+  style,
+  default,
+  call = rlang::caller_env()
+) {
+  nms <- names(digits)
+  whole <- is.numeric(digits) &&
+    length(digits) > 0L &&
+    !anyNA(digits) &&
+    all(is.finite(digits)) &&
+    all(digits >= 0) &&
+    all(digits <= .Machine$integer.max) &&
+    all(digits == trunc(digits))
+  problem <- if (is.null(nms)) {
+    if (length(digits) > 1L) {
+      sprintf("`digits` has %d values and no names.", length(digits))
+    } else if (!whole) {
+      ""
+    }
+  } else if (anyNA(nms) || !all(nzchar(nms))) {
+    "Some values of `digits` are named and others are not."
+  } else if (anyDuplicated(nms)) {
+    sprintf(
+      "`digits` names %s more than once.",
+      .quote_val(nms[duplicated(nms)][[1L]])
+    )
+  } else if (!whole) {
+    bad <- if (is.numeric(digits)) {
+      which(
+        is.na(digits) |
+          !(digits >= 0 &
+            digits == trunc(digits) &
+            digits <= .Machine$integer.max)
+      )
+    }
+    if (length(bad) > 0L) {
+      sprintf(
+        "The value for `%s` is %s.",
+        nms[[bad[[1L]]]],
+        format(digits[[bad[[1L]]]])
+      )
+    } else {
+      ""
+    }
+  }
+  if (!is.null(problem)) {
+    spicy_abort(
+      c(
+        "`digits` must be a non-negative whole number, or a vector of them named by column.",
+        "x" = if (nzchar(problem)) problem,
+        "i" = "One number for every variable: `digits = 1`.",
+        "i" = "One per variable, the others at the default: `digits = c(height = 0, bmi = 1)`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  value <- as.integer(digits)
+  if (is.null(nms)) {
+    return(list(table = value, named = NULL))
+  }
+  list(
+    table = as.integer(.style_arg_default(style, "digits", default)),
+    named = stats::setNames(value, nms)
+  )
+}
+
+# The decimals of each variable of the table under a named `digits`, named
+# by column: its own value when the vector names it, the table's `digits`
+# otherwise. NULL without a named vector, and when no variable of the
+# table takes a value of its own, so such a call builds the very table
+# the single number builds.
+.continuous_digits_by_var <- function(named, vars, digits) {
+  if (is.null(named)) {
+    return(NULL)
+  }
+  out <- stats::setNames(rep(digits, length(vars)), vars)
+  hit <- intersect(names(named), vars)
+  out[hit] <- named[hit]
+  if (all(out == digits)) NULL else out
+}
+
 # --- internal: the cell formatters of the descriptive display -------------
 # One producer for every string the continuous vocabulary prints: the
 # plain number, the p-value, the test gloss, the effect-size gloss, and
@@ -3286,7 +3419,19 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   decimal_mark = "."
 ) {
   fmt <- function(v, d = digits) {
-    out <- formatC(v, format = "f", digits = d, decimal.mark = ".")
+    # `d` holds one number of decimals per value under a named `digits`,
+    # and `formatC()` takes a single one.
+    out <- if (length(d) > 1L) {
+      vapply(
+        seq_along(v),
+        function(i) {
+          formatC(v[[i]], format = "f", digits = d[[i]], decimal.mark = ".")
+        },
+        character(1)
+      )
+    } else {
+      formatC(v, format = "f", digits = d, decimal.mark = ".")
+    }
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }
@@ -3423,14 +3568,26 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
 # blanks a statistic the variable does not display (per-variable
 # `show_columns`), `table_outcome()` has a single set of tokens and
 # passes the identity.
+#
+# `row_digits` holds the decimals of each row under a named `digits`
+# (NULL otherwise): a statistic on the variable's scale takes them, one
+# marked `table_digits` keeps the table's.
 .continuous_stat_cells <- function(
   result,
   tokens,
   spec,
   fmts,
-  blanked = function(v, token) v
+  blanked = function(v, token) v,
+  row_digits = NULL
 ) {
   fmt <- fmts$fmt
+  fmt_col <- function(v, e) {
+    if (is.null(row_digits) || isTRUE(e$table_digits)) {
+      fmt(v)
+    } else {
+      fmt(v, row_digits)
+    }
+  }
   bracket_sep <- fmts$bracket_sep
   out <- list()
   for (tok in tokens) {
@@ -3442,11 +3599,11 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
         is.na(result$median) | is.na(result$q1) | is.na(result$q3),
         spicy_str("cell_undefined"),
         paste0(
-          fmt(result$median),
+          fmt_col(result$median, entries[[1L]]),
           " [",
-          fmt(result$q1),
+          fmt_col(result$q1, entries[[1L]]),
           bracket_sep,
-          fmt(result$q3),
+          fmt_col(result$q3, entries[[1L]]),
           "]"
         )
       )
@@ -3460,7 +3617,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
       out[[entries[[1L]]$name]] <- blanked(n_cells, tok)
     } else {
       for (e in entries) {
-        out[[e$name]] <- blanked(fmt(result[[e$field]]), tok)
+        out[[e$name]] <- blanked(fmt_col(result[[e$field]], e), tok)
       }
     }
   }
@@ -3483,7 +3640,8 @@ build_display_df <- function(
   effect_size_digits = 2L,
   p_digits = 3L,
   tokens_union = NULL,
-  tokens_by_var = NULL
+  tokens_by_var = NULL,
+  digits_by_var = NULL
 ) {
   # Every cell string of the family comes from one producer.
   fmts <- .continuous_cell_formatters(
@@ -3562,7 +3720,18 @@ build_display_df <- function(
   if (has_group) {
     df[[.CON_KEY_GROUP]] <- result$group
   }
-  cells <- .continuous_stat_cells(result, tokens_union, spec, fmts, blanked)
+  # A named `digits`: the decimals of the variable each row describes.
+  row_digits <- if (!is.null(digits_by_var)) {
+    unname(digits_by_var[result$variable])
+  }
+  cells <- .continuous_stat_cells(
+    result,
+    tokens_union,
+    spec,
+    fmts,
+    blanked,
+    row_digits = row_digits
+  )
   for (nm in names(cells)) {
     df[[nm]] <- cells[[nm]]
   }

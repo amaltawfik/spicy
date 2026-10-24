@@ -998,6 +998,26 @@ test_that("the Typst source of a table whose variable label spans its groups", {
 })
 
 
+# ---- decimal places per variable ------------------------------------------
+
+test_that("the Typst source of a table with decimal places per variable", {
+  skip_if_not_installed("tinytable")
+  set.seed(23)
+  d <- data.frame(
+    x = round(stats::rnorm(20, 170, 8)),
+    y = stats::rnorm(20, 23, 3),
+    g = rep(c("A", "B"), 10L)
+  )
+  expect_snapshot(cat(.pt_typst(table_continuous(
+    d,
+    select = c(x, y),
+    by = g,
+    digits = c(x = 0, y = 2),
+    output = "tinytable"
+  ))))
+})
+
+
 # ---- compiled documents (local only) --------------------------------------
 #
 # The sources above are the contract; a compiled document is the proof.

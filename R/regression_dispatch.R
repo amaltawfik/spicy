@@ -3030,7 +3030,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' Cells the console builds from more than one number -- a
 #' `"Med [Q1, Q3]"`, a test gloss, an effect size with its interval --
 #' keep their numeric anchor in `body` and their exact printed string
-#' in `col_meta$<col>$display_cells`. `stars` is always `NULL`:
+#' in `col_meta$<col>$display_cells`. So does a cell of a variable that a
+#' named `digits` gives decimals other than the column's `precision`,
+#' which stays the table's `digits`. `stars` is always `NULL`:
 #' descriptive tables carry no significance markers.
 #'
 #' Under `p_adjust`, the p-value column holds the adjusted values and its

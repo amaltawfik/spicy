@@ -640,6 +640,18 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   and the p-value column. See *Multiple-comparison adjustment*.
 #' @param show_columns Character vector of statistic tokens; `NULL`
 #'   keeps the default display.
+#' @param digits Number of decimal places of the statistics on each
+#'   variable's own scale: the mean, SD, standard error, median, IQR,
+#'   quartiles, minimum and maximum, and the confidence interval of the
+#'   mean. One non-negative whole number sets them for every variable
+#'   (default: `2`), and the weighted *n* and the design effect with them.
+#'   A vector named by column, not by label, gives each variable it names
+#'   its own, `digits = c(height = 0, bmi = 1)`; the other variables, the
+#'   weighted *n* and the design effect keep the default, the `digits` of
+#'   a [spicy_style()] in force included. Names that match no variable are
+#'   ignored, as in `labels`. A fraction is an error, as for every
+#'   `*_digits` argument. The *p*-values (`p_digits`), the test statistics
+#'   (two decimals) and the counts keep their own decimals.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
@@ -785,7 +797,14 @@ table_continuous_svy <- function(
   p_digits <- cfg$p_digits
   df_user <- cfg$df
 
-  digits <- validate_digit_arg(digits, "digits")
+  # One number of decimals for the table, or one per variable, as in the
+  # sibling.
+  digits_arg <- .continuous_digits_arg(
+    digits,
+    style,
+    formals(table_continuous_svy)$digits
+  )
+  digits <- digits_arg$table
   for (.lname in c(
     "statistic",
     "show_n",
@@ -918,6 +937,11 @@ table_continuous_svy <- function(
   if (length(numeric_cols) == 0L) {
     .abort_empty_selection("select", "numeric")
   }
+  digits_by_var <- .continuous_digits_by_var(
+    digits_arg$named,
+    numeric_cols,
+    digits
+  )
 
   # --- tokens --------------------------------------------------------------
   legacy_tokens <- order_continuous_svy_tokens(c(
@@ -1258,6 +1282,7 @@ table_continuous_svy <- function(
 
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
+  attr(result, "digits_by_var") <- digits_by_var
   attr(result, "effect_size_digits") <- digits
   attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
@@ -1291,7 +1316,8 @@ table_continuous_svy <- function(
     show_ci = ci,
     p_digits = p_digits,
     tokens_union = tokens,
-    tokens_by_var = attr(result, "show_columns_by_var")
+    tokens_by_var = attr(result, "show_columns_by_var"),
+    digits_by_var = digits_by_var
   )
 
   if (!output %in% c("default", "data.frame")) {
@@ -1337,7 +1363,8 @@ table_continuous_svy <- function(
       p_digits = p_digits,
       decimal_mark = decimal_mark,
       ci_level = ci_level,
-      missing_group_label = missing_group_label
+      missing_group_label = missing_group_label,
+      digits_by_var = digits_by_var
     ),
     p_adjust_info
   )

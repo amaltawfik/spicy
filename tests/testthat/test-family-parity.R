@@ -2562,15 +2562,30 @@ test_that("identical checks of the family give identical messages", {
     unique(ci),
     "`ci_level` must be a number strictly between 0 and 1."
   )
+  # The continuous tables also take one `digits` per variable, a named
+  # vector: their check names both forms, in one wording of its own.
   digits <- c(
     msg(table_continuous(d, select = bmi, digits = 1.5)),
-    msg(table_continuous_lm(d, select = bmi, by = sex, digits = 1.5)),
-    msg(table_regression(fit, digits = 1.5))
+    msg(table_continuous_lm(d, select = bmi, by = sex, digits = 1.5))
   )
+  expect_length(unique(digits), 1L)
+  expect_match(digits[[1L]], "named by column", fixed = TRUE)
   expect_identical(
-    unique(digits),
+    msg(table_regression(fit, digits = 1.5)),
     "`digits` must be a non-negative whole number."
   )
+  # Elsewhere a name is refused rather than dropped, in every number of
+  # decimals, and a named `digits` points to the tables that take one.
+  named <- c(
+    msg(table_outcome(d, bmi, select = sex, digits = c(bmi = 1))),
+    msg(table_regression(fit, digits = c(sex = 1)))
+  )
+  expect_length(unique(named), 1L)
+  expect_match(named[[1L]], "`digits` is named", fixed = TRUE)
+  expect_match(named[[1L]], "`table_continuous_lm()`", fixed = TRUE)
+  pct <- msg(table_categorical(d, select = smoking, percent_digits = c(a = 1)))
+  expect_match(pct, "`percent_digits` is named", fixed = TRUE)
+  expect_no_match(pct, "table_continuous", fixed = TRUE)
   flags <- c(
     msg(table_categorical(d, select = smoking, drop_na = NA)),
     msg(table_continuous(d, select = bmi, drop_na = NA)),

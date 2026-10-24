@@ -166,7 +166,9 @@ margin is flagged \verb{col_meta$<col>$total}.
 Cells the console builds from more than one number -- a
 \code{"Med [Q1, Q3]"}, a test gloss, an effect size with its interval --
 keep their numeric anchor in \code{body} and their exact printed string
-in \verb{col_meta$<col>$display_cells}. \code{stars} is always \code{NULL}:
+in \verb{col_meta$<col>$display_cells}. So does a cell of a variable that a
+named \code{digits} gives decimals other than the column's \code{precision},
+which stays the table's \code{digits}. \code{stars} is always \code{NULL}:
 descriptive tables carry no significance markers.
 
 Under \code{p_adjust}, the p-value column holds the adjusted values and its

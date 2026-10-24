@@ -177,9 +177,18 @@ the wording you set here.}
 \item{ci_level}{Confidence level for the mean confidence interval
 (default: \code{0.95}): a number strictly between 0 and 1.}
 
-\item{digits}{Number of decimal places for descriptive values and test
-statistics (default: \code{2}). A whole number: a fraction is an error,
-as for every \verb{*_digits} argument.}
+\item{digits}{Number of decimal places of the statistics on each
+variable's own scale: the mean, SD, standard error, median, IQR,
+quartiles, minimum and maximum, and the confidence interval of the
+mean. One non-negative whole number sets them for every variable
+(default: \code{2}), and the weighted \emph{n} and the design effect with them.
+A vector named by column, not by label, gives each variable it names
+its own, \code{digits = c(height = 0, bmi = 1)}; the other variables, the
+weighted \emph{n} and the design effect keep the default, the \code{digits} of
+a \code{\link[=spicy_style]{spicy_style()}} in force included. Names that match no variable are
+ignored, as in \code{labels}. A fraction is an error, as for every
+\verb{*_digits} argument. The \emph{p}-values (\code{p_digits}), the test statistics
+(two decimals) and the counts keep their own decimals.}
 
 \item{p_digits}{Integer >= 1. Number of decimal places used to
 render \emph{p}-values in the \code{p} column (default: \code{3}, the APA

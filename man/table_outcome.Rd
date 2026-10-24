@@ -181,9 +181,9 @@ Ignored (with a warning) when \code{show_columns} is supplied.}
 \item{ci_level}{Confidence level for the mean confidence interval
 (default: \code{0.95}): a number strictly between 0 and 1.}
 
-\item{digits}{Number of decimal places for descriptive values and test
-statistics (default: \code{2}). A whole number: a fraction is an error,
-as for every \verb{*_digits} argument.}
+\item{digits}{Number of decimal places of the descriptive statistics
+(default: \code{2}). A whole number: a fraction is an error, as for every
+\verb{*_digits} argument. Test statistics keep two decimals.}
 
 \item{effect_size_digits}{Number of decimal places for effect-size values
 in formatted displays (default: \code{2}).}
