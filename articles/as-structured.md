@@ -589,7 +589,7 @@ slm$col_meta[["M (Male)"]]
 #> [1] "Male"
 #> 
 #> $display_label
-#> [1] "M (Male)"
+#> [1] "Male"
 ```
 
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)

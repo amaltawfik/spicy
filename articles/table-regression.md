@@ -1478,7 +1478,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 No `ICC` row appears here: a random-slope fit has no single intra-class

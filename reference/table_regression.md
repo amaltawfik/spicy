@@ -54,8 +54,10 @@ table_regression(
   align = c("decimal", "center", "right"),
   padding = 0L,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -803,38 +805,72 @@ table_regression(
   The default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
   typed in the call wins over it. Any other value, `NULL` included, is
   an error. A variable label documents the data file; a published table
-  carries the wording you set here.
+  carries the wording you set here. `note_labels` gives the outcome a
+  shorter label in the title.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
 
 - title, note:
 
   Override or suppress the auto-built caption / methodological footer.
-  Three modes per argument:
+  Three modes per argument, those `note` has in every table function:
 
   - `NULL` (default): the package builds the standard caption ("Linear
     regression on `<DV>`" / "Hierarchical linear regression on `<DV>`" /
-    ...) and a methodological note, one paragraph in the order of every
-    table of the package: what the model is (its family, design, scale
-    of the coefficients, reference categories, ...), the cases a
+    ..., the outcome named by its label in `note_labels`, else in
+    `labels`) and a methodological note, one paragraph in the order of
+    every table of the package: what the model is (its family, design,
+    scale of the coefficients, reference categories, ...), the cases a
     univariable screen fits on, the inference (VCV type, p-adjust
     method, ...), the glosses of the blocks, then the abbreviations the
     column headers and the rows of the fit statistics and of the random
     effects show ("AIC = Akaike information criterion"), defined as the
     style in force asks (`spicy_style(abbreviations = )`; under `"jama"`
-    they open the note on a line of their own). Under `stars`, the
-    legend of the stars follows on a line of its own.
+    they open the note on a line of their own), and the sentences of
+    `note_add`. Under `stars`, the legend of the stars follows on a line
+    of its own.
 
   - `FALSE`: the corresponding banner row is omitted from every output
-    engine. Use when the surrounding manuscript provides its own caption
-    / note.
+    engine, for `note` the legend of the stars included. Use when the
+    surrounding manuscript provides its own caption / note.
 
-  - character string (length 1): replaces the auto-built text verbatim.
-    The renderer applies no APA formatting on top – supply the exact
-    string you want displayed (multi- line notes accepted via embedded
-    `"\n"`).
+  - character string (length 1): replaces the auto-built text. A `title`
+    is printed verbatim. A `note` replaces the general note and is
+    printed as typed (multi-line notes accepted via embedded `"\n"`)
+    after the lead-in of the style, which a string opening with a
+    lead-in of its own does not repeat, the sentences of `note_add`
+    after it; the legend of the stars stays on its line below, and
+    `note = ""` keeps that legend alone.
 
   Validation messages, the spanner row, and the in-body change- stat
   rows are *not* affected – they belong to the table structure, not to
   the banner.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
 
 - output:
 
@@ -2251,7 +2287,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC              │ 1755.6                                 
 #>  BIC              │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 
 # Hierarchical mixed-effects comparison (nested LRT).
 if (requireNamespace("lme4", quietly = TRUE)) {
@@ -2315,7 +2351,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                             │  +42.14               
 #>  p (change)                      │    <.001              
 #> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }
 
 if (FALSE) { # \dontrun{

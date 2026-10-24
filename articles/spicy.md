@@ -318,22 +318,22 @@ table_categorical(
 #>    No              │       32.3             67         16.8       354   
 #>    Yes             │       67.7            333         83.2       846   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .14     
-#>    No              │  77.2                      
-#>    Yes             │  20.8                      
-#>    (Missing)       │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .21     
-#>    No              │  54.2                      
-#>    Yes             │  45.8                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │          <.001     .22     
-#>    No              │  29.5                      
-#>    Yes             │  70.5                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  smoking           │          <.001  .14 
+#>    No              │  77.2               
+#>    Yes             │  20.8               
+#>    (Missing)       │   2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001  .21 
+#>    No              │  54.2               
+#>    Yes             │  45.8               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │          <.001  .22 
+#>    No              │  29.5               
+#>    Yes             │  70.5               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -370,7 +370,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -388,17 +388,14 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
-#> ─────────────────┼────────────────────────────────────────────────────
-#>  wellbeing_score │   67.16      71.05          3.89           2.12    
-#>  bmi             │   25.69      26.20          0.51           0.09    
+#>                          M                                                      
+#>                    ─────────────                                                
+#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89    2.12       5.65     <.001  0.02  1200 
+#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 
 #> 
-#>  Variable        │ 95% CI UL    p     R²    n   
-#> ─────────────────┼──────────────────────────────
-#>  wellbeing_score │   5.65     <.001  0.02  1200 
-#>  bmi             │   0.93      .018  0.00  1188 
-#> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 By default every `table_*` helper formats to APA conventions. To match a

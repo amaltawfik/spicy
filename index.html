@@ -433,18 +433,18 @@
 <span><span class="co">#&gt;    No              │       57.5            163         40.8       650   </span></span>
 <span><span class="co">#&gt;    Yes             │       42.5            237         59.2       550   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          │ Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; ───────────────────┼────────────────────────────</span></span>
-<span><span class="co">#&gt;  Current smoker    │          &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No              │  77.2                      </span></span>
-<span><span class="co">#&gt;    Yes             │  20.8                      </span></span>
-<span><span class="co">#&gt;    (Missing)       │   2.1                      </span></span>
-<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Physical activity │          &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No              │  54.2                      </span></span>
-<span><span class="co">#&gt;    Yes             │  45.8                      </span></span>
+<span><span class="co">#&gt;  Variable          │ Total %    p     V  </span></span>
+<span><span class="co">#&gt; ───────────────────┼─────────────────────</span></span>
+<span><span class="co">#&gt;  Current smoker    │          &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    No              │  77.2               </span></span>
+<span><span class="co">#&gt;    Yes             │  20.8               </span></span>
+<span><span class="co">#&gt;    (Missing)       │   2.1               </span></span>
+<span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span><span class="co">#&gt;  Physical activity │          &lt;.001  .21 </span></span>
+<span><span class="co">#&gt;    No              │  54.2               </span></span>
+<span><span class="co">#&gt;    Yes             │  45.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Group comparison: Pearson chi-squared test.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -486,7 +486,7 @@
 <span><span class="co">#&gt;                  │ Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  │ Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -495,12 +495,12 @@
 <span>  vcov <span class="op">=</span> <span class="st">"HC3"</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;          variable           label M (Female) M (Male) Δ (Male − Female)</span></span>
-<span><span class="co">#&gt; 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576</span></span>
-<span><span class="co">#&gt; 2             bmi             bmi   25.68506 26.19685         0.5117882</span></span>
-<span><span class="co">#&gt;    95% CI LL 95% CI UL            p          R²    n</span></span>
-<span><span class="co">#&gt; 1 2.12265210 5.6510631 1.670572e-05 0.015475137 1200</span></span>
-<span><span class="co">#&gt; 2 0.08904596 0.9345305 1.769614e-02 0.004728908 1188</span></span></code></pre></div>
+<span><span class="co">#&gt;          variable           label M (Female) M (Male)         Δ  95% CI LL</span></span>
+<span><span class="co">#&gt; 1 wellbeing_score wellbeing_score   67.16194 71.04879 3.8868576 2.12265210</span></span>
+<span><span class="co">#&gt; 2             bmi             bmi   25.68506 26.19685 0.5117882 0.08904596</span></span>
+<span><span class="co">#&gt;   95% CI UL            p          R²    n</span></span>
+<span><span class="co">#&gt; 1 5.6510631 1.670572e-05 0.015475137 1200</span></span>
+<span><span class="co">#&gt; 2 0.9345305 1.769614e-02 0.004728908 1188</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -547,7 +547,7 @@
 <span><span class="co">#&gt;  AIC                             │ 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             │ 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Publication-ready regression tables</a> for <code><a href="reference/table_regression.html">table_regression()</a></code> across model families, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for reporting</a> for an overview of summary tables.</p>
 <p>The same numbers can be laid out outcome-first: one outcome, several groupings, one block per grouping.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -571,7 +571,7 @@
 <span><span class="co">#&gt;    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt;    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <p>A “check all that apply” question gets a table of its own, one row per item. In <code>sochealth</code>, five logical items record the sources of health information a respondent used in the past 12 months. The article <a href="https://amaltawfik.github.io/spicy/articles/table-multiresponse.html">Multiple-response questions</a> explains the bases, the percentages and the tests.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>

@@ -384,22 +384,22 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       32.3             67         16.8       354   </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8                      </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8               </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001  .21 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001  .22 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable; when
 <code>by</code> is supplied it also reports a group-comparison test (a
@@ -432,7 +432,7 @@ Welch test by default):</p>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers the same reporting
 territory when you want to stay in a linear-model framework, for example
 with robust or cluster-robust standard errors, case weights, or additive
@@ -446,17 +446,14 @@ covariate adjustment:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.12    </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span></span>
+<span><span class="co">#&gt;                          M                                                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ─────────────                                                </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.12       5.65     &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    n   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.65     &lt;.001  0.02  1200 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  1188 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>By default every <code>table_*</code> helper formats to APA
 conventions. To match a journal instead, pass <code>style =</code> —
 <code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>,

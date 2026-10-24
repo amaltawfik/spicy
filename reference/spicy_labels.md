@@ -155,12 +155,12 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │ 475   51.3   131   52.6        14            56.0         620   
 #>    Male   │ 451   48.7   118   47.4        11            44.0         580   
 #> 
-#>  Variable │ Total %   p    Phi 
+#>  Variable │ Total %   p     φ  
 #> ──────────┼────────────────────
 #>  sex      │          .713  .01 
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test.
 options(old)
 ```

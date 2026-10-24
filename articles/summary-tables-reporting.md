@@ -149,18 +149,18 @@ table_categorical(
 #>    No                      │        310               57.5            163     
 #>    Yes                     │        229               42.5            237     
 #> 
-#>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
-#> ───────────────────────────┼─────────────────────────────────────────────────
-#>  Smoking status            │                               <.001     .14     
-#>    No                      │    83.0       926     77.2                      
-#>    Yes                     │    14.8       249     20.8                      
-#>    (Missing)               │     2.2        25      2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │                               <.001     .21     
-#>    No                      │    40.8       650     54.2                      
-#>    Yes                     │    59.2       550     45.8                      
+#>  Variable                  │ Tertiary %  Total n  Total %    p     V  
+#> ───────────────────────────┼──────────────────────────────────────────
+#>  Smoking status            │                               <.001  .14 
+#>    No                      │    83.0       926     77.2               
+#>    Yes                     │    14.8       249     20.8               
+#>    (Missing)               │     2.2        25      2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                               <.001  .21 
+#>    No                      │    40.8       650     54.2               
+#>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ``` r
@@ -205,7 +205,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -219,19 +219,21 @@ table_continuous_lm(
 )
 #> Continuous outcomes by education
 #> 
-#>  Variable        │ M (Lower secondary)  M (Upper secondary)  M (Tertiary) 
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  bmi             │        27.85                25.79            24.23     
-#>  wellbeing_score │        57.71                68.39            76.55     
-#>  life_sat_health │         2.75                 3.50             4.09     
+#>                                        M                                   
+#>                    ──────────────────────────────────────────              
+#>  Variable        │ Lower secondary  Upper secondary  Tertiary    p     R²  
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  bmi             │      27.85            25.79        24.23    <.001  0.13 
+#>  wellbeing_score │      57.71            68.39        76.55    <.001  0.19 
+#>  life_sat_health │       2.75             3.50         4.09    <.001  0.15 
 #> 
-#>  Variable        │   p     R²    n   
-#> ─────────────────┼───────────────────
-#>  bmi             │ <.001  0.13  1188 
-#>  wellbeing_score │ <.001  0.19  1200 
-#>  life_sat_health │ <.001  0.15  1192 
+#>  Variable        │  n   
+#> ─────────────────┼──────
+#>  bmi             │ 1188 
+#>  wellbeing_score │ 1200 
+#>  life_sat_health │ 1192 
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12), life_sat_health (8). Group comparison: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12), life_sat_health (8). P-values: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -374,22 +376,22 @@ table_categorical(
 #>    No                                    │     67         16.8       354   
 #>    Yes                                   │    333         83.2       846   
 #> 
-#>  Variable                                │ Total %    p    Cramer's V 
-#> ─────────────────────────────────────────┼────────────────────────────
-#>  Smoking status                          │          <.001     .14     
-#>    No                                    │  77.2                      
-#>    Yes                                   │  20.8                      
-#>    (Missing)                             │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity               │          <.001     .21     
-#>    No                                    │  54.2                      
-#>    Yes                                   │  45.8                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Visited a dentist in the last 12 months │          <.001     .22     
-#>    No                                    │  29.5                      
-#>    Yes                                   │  70.5                      
+#>  Variable                                │ Total %    p     V  
+#> ─────────────────────────────────────────┼─────────────────────
+#>  Smoking status                          │          <.001  .14 
+#>    No                                    │  77.2               
+#>    Yes                                   │  20.8               
+#>    (Missing)                             │   2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity               │          <.001  .21 
+#>    No                                    │  54.2               
+#>    Yes                                   │  45.8               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Visited a dentist in the last 12 months │          <.001  .22 
+#>    No                                    │  29.5               
+#>    Yes                                   │  70.5               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ### Continuous variables
@@ -452,7 +454,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -471,19 +473,21 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
-#> ─────────────────┼────────────────────────────────────────────────────
-#>  bmi             │   25.69      26.20          0.51            0.09   
-#>  wellbeing_score │   67.16      71.05          3.89            2.12   
-#>  life_sat_health │    3.51       3.59          0.08           -0.06   
+#>                          M                                                      
+#>                    ─────────────                                                
+#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL   t      p     R²  
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  bmi             │ 25.69   26.20  0.51     0.09      0.93     2.38   .018  0.00 
+#>  wellbeing_score │ 67.16   71.05  3.89     2.12      5.65     4.32  <.001  0.02 
+#>  life_sat_health │  3.51    3.59  0.08    -0.06      0.22     1.11   .267  0.00 
 #> 
-#>  Variable        │ 95% CI UL   t      p     R²    n   
-#> ─────────────────┼────────────────────────────────────
-#>  bmi             │   0.93     2.38   .018  0.00  1188 
-#>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
-#>  life_sat_health │   0.22     1.11   .267  0.00  1192 
+#>  Variable        │  n   
+#> ─────────────────┼──────
+#>  bmi             │ 1188 
+#>  wellbeing_score │ 1200 
+#>  life_sat_health │ 1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 This is the better summary-table path when the article is already
@@ -545,7 +549,7 @@ table_categorical(
 )
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %  Phi 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   φ  
 #> ───────────────────┼───────────────────────────────────────────────────────────
 #>  smoking           │                                                       .01 
 #>    No              │   475       76.6     451     77.8     926     77.2        
@@ -785,14 +789,15 @@ guidelines:
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #> Categorical table by sex
 #> 
-#>  Variable    │ Female n  Female %  Male n  Male %  Total n  Total %   p   Phi 
+#>  Variable    │ Female n  Female %  Male n  Male %  Total n  Total %   p    φ  
 #> ─────────────┼────────────────────────────────────────────────────────────────
 #>  smoking     │                                                       .71  .01 
 #>    No        │   475       76.6     451     77.8     926     77.2             
 #>    Yes       │   131       21.1     118     20.3     249     20.8             
 #>    (Missing) │    14        2.3      11      1.9      25      2.1             
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Abbreviation: φ, phi coefficient.
+#> P-value: Pearson chi-squared test.
 ```
 
 Two things change here. JAMA rounds *p* values to two decimals (`.71`),
@@ -833,7 +838,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  bmi      │ Female  0,018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+#> Note. Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -871,7 +876,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>           │ Male        
 #> 
 #> Abréviations : LI, limite inférieure ; LS, limite supérieure.
-#> Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
+#> Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch.
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -901,7 +906,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  bmi      │ Female  0.018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+#> Note. Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -921,13 +926,13 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │ 475   51.3   131   52.6        14            56.0         620   
 #>    Male   │ 451   48.7   118   47.4        11            44.0         580   
 #> 
-#>  Variable │ Total %   p    Phi 
+#>  Variable │ Total %   p     φ  
 #> ──────────┼────────────────────
 #>  sex      │          .713  .01 
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test.
 options(spicy.labels = NULL)
 ```
 
@@ -1021,7 +1026,7 @@ tab |>
 
 [TABLE]
 
-*Note.* Group comparison: Pearson chi-squared test.
+*Note.* P-values: Pearson chi-squared test. V = Cramer’s V.
 
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
@@ -1049,7 +1054,7 @@ tab |>
   )
 ```
 
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | Cramer's V |
+| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | V |
 |----|----|----|----|----|----|----|----|----|----|----|
 |  | n | % | n | % | n | % | n | % |  |  |
 | Smoking status |     |      |     |      |     |      |     |      | \<.001 | .14 |
@@ -1059,9 +1064,9 @@ tab |>
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
+| *Note.* P-values: Pearson chi-squared test. V = Cramer's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_tb820uzcbnu30ig7hlyj .table
+Categorical table by education {#tinytable_qgd6t44pvgjhftp1c4al .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

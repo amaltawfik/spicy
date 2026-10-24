@@ -175,9 +175,11 @@ association measure.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   – one `"summary"` row per outcome. Tokens: `"emmean"` (a marginal
-  mean; the column says which level in `col_meta$<col>$level`),
-  `"delta"` (the contrast), `"b"` (a numeric predictor's slope), `"ci"`,
-  `"statistic"`, `"p"`, `"r2"`, `"es"`, `"n"`, `"weighted_n"`.
+  mean; the column says which level in `col_meta$<col>$level`, also its
+  `display_label`: the table heads each mean by its level under the mean
+  symbol), `"delta"` (the contrast), `"b"` (a numeric predictor's
+  slope), `"ci"`, `"statistic"`, `"p"`, `"r2"`, `"es"`, `"n"`,
+  `"weighted_n"`.
 
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   – one `"summary"` row per item, then the rows of `none_row`: a

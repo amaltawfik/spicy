@@ -568,7 +568,7 @@ table_regression(fit_mix, exponentiate = TRUE)
 #>  AIC                  │ 1741.4                             
 #>  BIC                  │ 1768.2                             
 #> 
-#> Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). p-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Negative-binomial mixed-effects regression (glmmTMB) (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs nbinom2 regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Among streams not in the structural-zero state, unmined ones host

@@ -83,16 +83,16 @@ table_categorical(stacked, select = source, by = sex)
 #>    info_family     │   219       20.3     141     15.3     360     18.0         
 #>    info_media      │    78        7.2      63      6.8     141      7.0         
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  source            │    .07     
-#>    info_doctor     │            
-#>    info_pharmacist │            
-#>    info_internet   │            
-#>    info_family     │            
-#>    info_media      │            
+#>  Variable          │  V  
+#> ───────────────────┼─────
+#>  source            │ .07 
+#>    info_doctor     │     
+#>    info_pharmacist │     
+#>    info_internet   │     
+#>    info_family     │     
+#>    info_media      │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 That table misreads the question in three ways.
@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_4zb0w2y7l5z72teydxxh .table
+Multiple responses by Sex {#tinytable_h9clix5tu6cgzqt1ci1r .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -50,12 +50,15 @@ table_continuous(
   smd = FALSE,
   ci = TRUE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -342,6 +345,24 @@ table_continuous(
   a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
   `NULL` included, is an error. A variable label documents the data
   file; a published table carries the wording you set here.
+  `note_labels` gives a variable a shorter label in the title and the
+  notes.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
 
 - ci_level:
 
@@ -423,6 +444,37 @@ table_continuous(
   default and same three values as
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   whose `excel` output still uses that convention at every `align`.
+
+- note:
+
+  The note under the table. `NULL` (the default) builds it: the general
+  note, one paragraph opened by the lead-in of the style ("Note." by
+  default, none under the `jama` and `lancet` themes; see `note_label`
+  in
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
+  then, in a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `stars`, the legend of the stars on a line of its own. A single
+  string replaces the general note, the sentences the table writes about
+  its data included. It is printed as typed, line breaks (`"\n"`)
+  included, after the lead-in of the style, which a string opening with
+  a lead-in of its own does not repeat
+  (`note = "Note. Data weighted."`), and the legend of the stars stays
+  below it. `""` keeps that legend alone, and no note at all without
+  stars. `FALSE` removes the note from every output, the legend
+  included.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
 
 - output:
 
@@ -587,11 +639,11 @@ with the table on every route, not just the console: `"default"` prints
 it under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
 `"word"` carry it as a table note, `"excel"` writes it below the body,
 and the default object and the data frames of `"data.frame"` / `"long"`
-keep the whole note as printed, "Note." included, in `attr(x, "note")`
-(`NULL` when there is nothing to say), so a pipeline that renders the
-numbers itself can still state what left the table. The default object
-also keeps the title it prints in `attr(x, "title")`. On the
-`"tinytable"` route the note is set one size down;
+keep the whole note as printed, its lead-in included, in
+`attr(x, "note")` (`NULL` when there is nothing to say), so a pipeline
+that renders the numbers itself can still state what left the table. The
+default object also keeps the title it prints in `attr(x, "title")`. On
+the `"tinytable"` route the note is set one size down;
 `options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
@@ -729,8 +781,8 @@ groups remain after dropping `NA`s, with every group contributing at
 least two observations. Choice of test family is driven by `test` (see
 the `@param` entry for the full dispatch and the underlying `stats::`
 functions called). Whenever the table shows *p*-values, its note names
-the test of each variable ("Group comparison: Welch t-test."), each
-variable beside its own test when they differ.
+the test behind them ("P-values: Welch t-test.", "P-value:" when the
+table shows one), each variable beside its own test when they differ.
 
 ## No data in a group
 
@@ -990,7 +1042,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -1031,7 +1083,7 @@ table_continuous(
 #>                  │ Upper secondary        
 #>                  │ Tertiary               
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -1090,7 +1142,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80                     620  <.001 
 #>                  │ Male    71.05  16.23                     580        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1115,7 +1167,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
 #> 
-#> Note. Group comparison: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # Explicit effect-size measure.
 table_continuous(
@@ -1146,7 +1198,7 @@ table_continuous(
 #>                  │ Upper secondary                            
 #>                  │ Tertiary                                   
 #> 
-#> Note. Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # --- Selection helpers --------------------------------------------------
 

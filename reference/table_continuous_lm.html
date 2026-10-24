@@ -166,6 +166,7 @@ covariate adjustment (see <code>effect_size</code>).</p>
 <span>  r2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"r2"</span>, <span class="st">"adj_r2"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  fit_digits <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -173,6 +174,8 @@ covariate adjustment (see <code>effect_size</code>).</p>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
+<span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  note_add <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  excel_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -227,7 +230,7 @@ level ordering (e.g. via <code><a href="https://forcats.tidyverse.org/reference/
 <code>factor(..., levels = ...)</code>).</p></li>
 <li><p><strong>logical</strong>: coerced to factor with levels <code>"FALSE"</code>, <code>"TRUE"</code> (in
 that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
-so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
+so the binary contrast is <code>TRUE</code> minus <code>FALSE</code>.</p></li>
 <li><p><strong>haven labelled with value labels</strong> (an SPSS / Stata import):
 treated as categorical, one level per observed code named by its
 value label (<code>"[1] Women"</code>, as the rows of a labelled variable of
@@ -438,8 +441,8 @@ typical values for inference are <code>500</code>-<code>2000</code>. Typed with 
 <dt id="arg-contrast">contrast<a class="anchor" aria-label="anchor" href="#arg-contrast"></a></dt>
 <dd><p>Contrast display for categorical predictors (typed with
 a numeric <code>by</code>, it is ignored with a warning, class
-<code>spicy_ignored_arg</code>). One of:</p><ul><li><p><code>"auto"</code> (default): show a single reference contrast
-<code>Delta (level2 - level1)</code> only when <code>by</code> has exactly two non-empty
+<code>spicy_ignored_arg</code>). One of:</p><ul><li><p><code>"auto"</code> (default): show a single reference contrast, the second
+level minus the first, only when <code>by</code> has exactly two non-empty
 levels. The reference level is the <strong>first level of the factor</strong>
 (R's default treatment-contrast convention,
 <code>getOption("contrasts")[1]</code>). To change which level acts as the
@@ -491,7 +494,8 @@ Note that for a single-predictor model, \(f^2\) is a monotone transform of
 the model coefficient (the displayed difference) and <code>sigma_hat</code> is the
 residual standard deviation from the fitted model. Defined only when
 <code>by</code> has exactly two non-empty levels; otherwise the function errors.
-The sign matches the displayed <code>Delta (level2 - level1)</code>.</p></li>
+The sign matches the displayed difference, the second level minus
+the first.</p></li>
 <li><p><code>"hedges_g"</code>: Hedges's <code>g = J * d</code> with the small-sample correction
 <code>J = 1 - 3 / (4 * df_resid - 1)</code>. Same domain as <code>"cohens_d"</code>.</p></li>
 <li><p><code>"omega2"</code>: Hays' <code>omega-squared</code>, a bias-corrected estimator of the
@@ -570,7 +574,24 @@ every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
 variable label documents the data file; a published table carries
-the wording you set here.</p></dd>
+the wording you set here. <code>note_labels</code> gives a variable a shorter
+label in the title and the notes.</p></dd>
+
+
+<dt id="arg-note-labels">note_labels<a class="anchor" aria-label="anchor" href="#arg-note-labels"></a></dt>
+<dd><p>The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+<code>labels</code> gives it: a named character vector,
+<code>note_labels = c(sex = "sex at birth")</code>, or a <code><a href="var_labels.html">var_labels()</a></code> object,
+which reads as one. <code>labels</code> can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of <code>labels</code>, and so do the title and the notes for a variable
+<code>note_labels</code> does not name. Names that match no column are ignored,
+as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+<code>spicy_label_collision</code>): choose another one, or relabel the other
+variable.</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -646,6 +667,33 @@ padded number pastes as text next to an unpadded number).</p></li>
 case: cell-string padding does not align decimals under
 proportional fonts, and writing raw numbers with a numeric
 format would require a separate refactor.</p></dd>
+
+
+<dt id="arg-note">note<a class="anchor" aria-label="anchor" href="#arg-note"></a></dt>
+<dd><p>The note under the table. <code>NULL</code> (the default) builds it:
+the general note, one paragraph opened by the lead-in of the style
+("Note." by default, none under the <code>jama</code> and <code>lancet</code> themes; see
+<code>note_label</code> in <code><a href="spicy_style.html">spicy_style()</a></code>), then, in a <code><a href="table_regression.html">table_regression()</a></code> with
+<code>stars</code>, the legend of the stars on a line of its own. A single string
+replaces the general note, the sentences the table writes about its
+data included. It is printed as typed, line breaks (<code>"\n"</code>) included,
+after the lead-in of the style, which a string opening with a lead-in
+of its own does not repeat (<code>note = "Note. Data weighted."</code>), and the
+legend of the stars stays below it. <code>""</code> keeps that legend alone, and
+no note at all without stars. <code>FALSE</code> removes the note from every
+output, the legend included.</p></dd>
+
+
+<dt id="arg-note-add">note_add<a class="anchor" aria-label="anchor" href="#arg-note-add"></a></dt>
+<dd><p>Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in <code>attr(x, "note")</code>, and the sentences the table
+writes stay. With a string in <code>note</code>, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An <code>NA</code> or an empty string is an error, and so is <code>note_add</code> with
+<code>note = FALSE</code>, which leaves no note to add to.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -759,8 +807,9 @@ invisibly.</p></li>
 </ul><p>The Excel sheet carries the same title the console prints on its
 first row; the table itself starts on row 3, and the note lines sit
 below the body. The default object and the data frames of
-<code>"data.frame"</code> and <code>"long"</code> carry the whole note as printed, "Note."
-included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is nothing to say).</p>
+<code>"data.frame"</code> and <code>"long"</code> carry the whole note as printed, its
+lead-in included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is nothing to
+say).</p>
 <p>If no numeric outcome columns remain after applying <code>select</code>, <code>exclude</code>,
 and <code>regex</code>, the function stops with an error (class
 <code>spicy_invalid_input</code>), as the other tables of the family do.</p>
@@ -822,7 +871,8 @@ non-empty levels.
 <code>d = beta_hat / sigma_hat</code> with <code>sigma_hat = summary(fit)$sigma</code> (the
 pooled within-group SD for the unweighted two-group case);
 <code>g = J * d</code> with <code>J = 1 - 3 / (4 * df_resid - 1)</code> (Hedges and Olkin
-1985). The sign matches the displayed <code>Delta (level2 - level1)</code>.
+1985). The sign matches the displayed difference, the second level
+minus the first.
 For published reports of two-group comparisons, <em>g</em> is the
 convention recommended by Hedges and Olkin (1985).</p></li>
 <li><p><code>"omega2"</code>: Hays' \(\omega^2\), computed from weighted
@@ -960,20 +1010,31 @@ analytic sample.</p>
     </div>
     <div class="section level2">
     <h2 id="display-conventions">Display conventions<a class="anchor" aria-label="anchor" href="#display-conventions"></a></h2>
-    <p>For dichotomous categorical predictors, the wide outputs report fitted
-means in reference-level order and label the contrast column
-explicitly as <code>Delta (level2 - level1)</code>. For categorical predictors
-with more than two levels, no single contrast or contrast CI is shown
-in the wide outputs; instead, the table reports level-specific means
-plus the overall <code>F</code> test when <code>statistic = TRUE</code> (or <code>F(df1, df2)</code>
-when the degrees of freedom are constant across outcomes).</p>
+    <p>With a categorical <code>by</code>, the headers have two levels (decked heads, APA
+Publication Manual, 7th ed., section 7.12): the mean symbol <code>M</code> spans
+the columns of the fitted means, each headed by its level alone, in
+reference-level order, in the console as in every rendering engine.
+For a dichotomous <code>by</code>, the contrast column is headed
+\(\Delta\) alone, and a sentence of the note, after those on
+the test and the standard errors, gives the order of the subtraction:
+the second level minus the first, written with the minus sign. Its
+confidence interval keeps its spanner, <code>95% CI</code> over <code>LL</code> and <code>UL</code>,
+which the console folds into the headers <code>95% CI LL</code> and <code>95% CI UL</code>,
+as in the other tables. In <code>output = "data.frame"</code>, a mean keeps both
+levels in its name, <code>M (&lt;level&gt;)</code>, and the contrast is named
+\(\Delta\) (the Greek capital delta, U+0394). For categorical
+predictors with more than two levels, no single contrast or contrast
+CI is shown in the wide outputs; instead, the table reports
+level-specific means plus the overall <code>F</code> test when
+<code>statistic = TRUE</code> (or <code>F(df1, df2)</code> when the degrees of freedom are
+constant across outcomes).</p>
 <p>When <code>covariates</code> is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
 <code>Note. Adjusted for age, education (proportional).</code> With p-values, the
 note also names the test behind them, read off each outcome's model:
-<code>Group comparison: t-test from the linear model.</code> (the F-test for a
-<code>by</code> with more than two levels), or <code>Slope test: ...</code> for a numeric
-<code>by</code>.</p>
+<code>P-values: t-test from the linear model.</code> (the F-test for a <code>by</code> with
+more than two levels, the t-test of the slope for a numeric <code>by</code>), in
+the singular, <code>P-value:</code>, when the table shows one.</p>
 <p>The rendering engines carry that same footer as a table note. On the
 <code>"tinytable"</code> route the note is set one size down;
 <code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
@@ -1150,17 +1211,14 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001  0.02  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  1188 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1173,17 +1231,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    d   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001  0.02  0.25 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  0.14 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    d     n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.25  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.14  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with weighted analysis and weighted n column.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1197,17 +1257,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.01      70.88          3.87           2.11    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.51      25.98          0.47           0.05    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL   t      p     R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.01   70.88  3.87    2.11       5.62     4.33  &lt;.001  0.02 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.51   25.98  0.47    0.05       0.89     2.18   .030  0.00 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL   t      p     R²    g     n    Weighted n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.62     4.33  &lt;.001  0.02  0.25  1200   1196.47   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.89     2.18   .030  0.00  0.13  1188   1183.32   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  g     n    Weighted n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.25  1200   1196.47   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.13  1188   1183.32   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with noncentral t confidence interval (bracket notation).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1219,17 +1281,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                          </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001  0.02 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²      g [95% CI]       n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.25 [0.14, 0.36]  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    g [95% CI]       n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.25 [0.14, 0.36]  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cohen's f-squared alongside R-squared (familiar power-analysis effect size).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1240,17 +1304,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    f²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001  0.02  0.02 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  0.00 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    f²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.02  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.00  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hays' omega-squared for a 3-level predictor ("cohens_d" and</span></span></span>
 <span class="r-in"><span><span class="co"># "hedges_g" need two groups).</span></span></span>
@@ -1262,17 +1328,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Lower secondary)  M (Upper secondary)  M (Tertiary) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>        57.22                68.97            76.85     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>        28.09                26.02            24.39     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                        M                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ──────────────────────────────────────────              </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Lower secondary  Upper secondary  Tertiary    p     R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>      57.22            68.97        76.85    &lt;.001  0.21 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>      28.09            26.02        24.39    &lt;.001  0.13 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   p     R²    ω²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> &lt;.001  0.21  0.21  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> &lt;.001  0.13  0.13  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  ω²    n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.21  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.13  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: F-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: F-test from the linear model.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Robust SE for a numeric predictor ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1291,7 +1359,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score   <span style="color: #9E9E9E;">│</span>  0.04     .176    0.00    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi               <span style="color: #9E9E9E;">│</span>  0.04    &lt;.001    0.02    1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cluster-robust SE for repeated-measures data: the `sleep` dataset</span></span></span>
 <span class="r-in"><span><span class="co"># has 10 subjects measured twice (one observation per group).</span></span></span>
@@ -1310,11 +1378,13 @@ design-based inference on complex-survey samples.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   model.frame.iv_robust estimatr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by group</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 − 1)  95% CI LL  95% CI UL   p     R²   n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 M                                                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">            ──────────                                             </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span>  1     2     Δ    95% CI LL  95% CI UL   p     R²   n  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75  2.33  1.58    0.70       2.46     .003  0.16  20 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Covariate adjustment ----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1330,17 +1400,14 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.08    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.27   70.93  3.65    2.08       5.23     &lt;.001  0.22  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.65   26.23  0.58    0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Same model with the emmeans / SPSS UNIANOVA convention (equal-weight</span></span></span>
 <span class="r-in"><span><span class="co"># marginal means on a synthetic covariate grid).</span></span></span>
@@ -1354,17 +1421,14 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   65.90      69.56          3.65           2.08    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.89      26.46          0.58           0.19    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 65.90   69.56  3.65    2.08       5.23     &lt;.001  0.22  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.89   26.46  0.58    0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Effect sizes adjust automatically: f2 / omega2 become partial</span></span></span>
 <span class="r-in"><span><span class="co"># effect sizes via the partial F restricted to the focal `by`.</span></span></span>
@@ -1379,17 +1443,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.09    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                          </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.27   70.93  3.65    2.09       5.22     &lt;.001  0.22 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.65   26.23  0.58    0.19       0.97      .004  0.16 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p     R²      f² [95% CI]      n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.22     &lt;.001  0.22  0.02 [0.01, 0.04]  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    f² [95% CI]      n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.02 [0.01, 0.04]  1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.01 [0.00, 0.02]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Article-style polish -----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1406,17 +1472,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                   M                                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                            ─────────────                                    </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> 95% CI UL    p    Adj. R²   n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001   0.01    1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   0.93      .018   0.00    1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> Adj. R²   n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼───────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>  0.01    1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>  0.00    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># European decimal comma.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1427,17 +1495,19 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67,16      71,05          3,89           2,13    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25,69      26,20          0,51           0,09    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          M                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────                                           </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p      R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67,16   71,05  3,89    2,13       5,64     &lt;0,001  0,02 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25,69   26,20  0,51    0,09       0,93      0,018  0,00 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 95% CI UL    p      R²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5,64     &lt;0,001  0,02  1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0,93      0,018  0,00  1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Regex selection of all columns starting with "life_sat".</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1448,21 +1518,23 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>    3.51       3.59          0.08           -0.06   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>    3.32       3.44          0.12           -0.01   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>    3.71       3.74          0.04           -0.09   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>    3.37       3.42          0.05           -0.08   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                M                                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                          ────────────                                         </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Female  Male   Δ    95% CI LL  95% CI UL   p     R²  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>  3.51   3.59  0.08    -0.06      0.22     .267  0.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>  3.32   3.44  0.12    -0.01      0.26     .073  0.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>  3.71   3.74  0.04    -0.09      0.16     .570  0.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>  3.37   3.42  0.05    -0.08      0.18     .453  0.00 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> 95% CI UL   p     R²    n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>   0.22     .267  0.00  1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>   0.26     .073  0.00  1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>   0.16     .570  0.00  1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>   0.18     .453  0.00  1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span>  n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼──────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span> 1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span> 1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span> 1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span> 1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1481,12 +1553,12 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label M (Female) M (Male) Δ (Male − Female)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   25.68506 26.19685         0.5117882</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    95% CI LL 95% CI UL            p          R²    n</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2.12952733 5.6441879 1.548898e-05 0.015475137 1200</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.08879857 0.9347778 1.776254e-02 0.004728908 1188</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label M (Female) M (Male)         Δ  95% CI LL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 wellbeing_score wellbeing_score   67.16194 71.04879 3.8868576 2.12952733</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   25.68506 26.19685 0.5117882 0.08879857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   95% CI UL            p          R²    n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 5.6441879 1.548898e-05 0.015475137 1200</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.9347778 1.776254e-02 0.004728908 1188</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Raw long data.frame (one block per outcome).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>

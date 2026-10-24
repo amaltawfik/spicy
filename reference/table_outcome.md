@@ -18,6 +18,7 @@ table_outcome(
   outcome,
   select,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
@@ -37,6 +38,8 @@ table_outcome(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -107,6 +110,24 @@ table_outcome(
   a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
   `NULL` included, is an error. A variable label documents the data
   file; a published table carries the wording you set here.
+  `note_labels` gives a variable a shorter label in the title and the
+  notes.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
 
 - overall:
 
@@ -300,6 +321,37 @@ table_outcome(
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   whose `excel` output still uses that convention at every `align`.
 
+- note:
+
+  The note under the table. `NULL` (the default) builds it: the general
+  note, one paragraph opened by the lead-in of the style ("Note." by
+  default, none under the `jama` and `lancet` themes; see `note_label`
+  in
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
+  then, in a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `stars`, the legend of the stars on a line of its own. A single
+  string replaces the general note, the sentences the table writes about
+  its data included. It is printed as typed, line breaks (`"\n"`)
+  included, after the lead-in of the style, which a string opening with
+  a lead-in of its own does not repeat
+  (`note = "Note. Data weighted."`), and the legend of the stars stays
+  below it. `""` keeps that legend alone, and no note at all without
+  stars. `FALSE` removes the note from every output, the legend
+  included.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
+
 - output:
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
@@ -407,8 +459,8 @@ Depends on `output`:
   invisibly.
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
-nothing to say). The default object also keeps the title it prints in
+printed, its lead-in included, in `attr(x, "note")` (`NULL` when there
+is nothing to say). The default object also keeps the title it prints in
 `attr(x, "title")`.
 
 ## Which shape do I need?
@@ -585,7 +637,7 @@ table_outcome(sochealth, bmi, select = c(sex, smoking))
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of wellbeing_score
 #> 
@@ -747,5 +799,5 @@ table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #>    High              │       
 #>    Very high         │       
 #> 
-#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```

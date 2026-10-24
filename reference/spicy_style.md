@@ -128,8 +128,9 @@ spicy_style_names()
   for no lead-in word (AMA Manual of Style 11, section 4.1.4.10). The
   language spells it: under `options(spicy.language = "fr")`, `"Note:"`
   is written "Note :", with the no-break space French puts before a
-  colon, in every output. A `note` you type is printed as typed; its
-  opening word is set in italics when it is the lead-in in force.
+  colon, in every output. A `note` you type is printed as typed after
+  it, unless it opens with a lead-in of its own, set in italics when it
+  is the lead-in in force.
 
 - abbreviations:
 

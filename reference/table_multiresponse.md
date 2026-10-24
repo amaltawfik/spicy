@@ -37,12 +37,14 @@ table_multiresponse(
   p_adjust = "holm",
   statistic = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -272,6 +274,24 @@ table_multiresponse(
   a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
   `NULL` included, is an error. A variable label documents the data
   file; a published table carries the wording you set here.
+  `note_labels` gives a variable a shorter label in the title and the
+  notes.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
 
 - percent_digits:
 
@@ -305,8 +325,9 @@ table_multiresponse(
 - title:
 
   The table title. `NULL` (the default) gives "Multiple responses",
-  followed by "by" and the `by` variable under the `labels` contract; a
-  single string replaces it, and `FALSE` removes it, as in
+  followed by "by" and the `by` variable under the `labels` contract (or
+  its label in `note_labels`); a single string replaces it, and `FALSE`
+  removes it, as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 
 - note:
@@ -314,8 +335,22 @@ table_multiresponse(
   The table note. `NULL` (the default) builds it, opening with "Note.":
   what the percentages sum to, the base with the respondents it holds or
   leaves out, the rows removed for a missing `by` and the items with no
-  data in a group, then the tests. A single string replaces it and is
-  printed as typed, and `FALSE` removes it.
+  data in a group, then the tests, and the sentences of `note_add`. A
+  single string replaces it, printed as typed after the lead-in
+  ("Note.", unless the string opens with one), `note_add` after it, and
+  `FALSE` removes it, as in every table function.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
 
 - output:
 
@@ -425,13 +460,12 @@ Depends on `output`:
   invisibly.
 
 The default object and the data frames carry the note as printed in
-`attr(x, "note")` ("Note." included, the `note` you typed verbatim,
-`NULL` under `note = FALSE`) and, when the table has a global test,
-`attr(x, "global_test")`: a one-row data frame with `test`, `statistic`,
-`df`, `p.value`, `boot_n`, `n_items` (the items tested), `n_groups`,
-`rs_mean` and `rs_cv` (the design-effect summary of
-`global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
-under `global_test = "bootstrap"`); see *Tests*.
+`attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`)
+and, when the table has a global test, `attr(x, "global_test")`: a
+one-row data frame with `test`, `statistic`, `df`, `p.value`, `boot_n`,
+`n_items` (the items tested), `n_groups`, `rs_mean` and `rs_cv` (the
+design-effect summary of `global_test = "rs2"`), and `boot_redraws` (the
+resamples drawn again under `global_test = "bootstrap"`); see *Tests*.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 reads the default object, with the same `.row_role` and a `.variable` of
 `"none"` and `"no_data"` on the rows of `none_row`;

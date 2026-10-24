@@ -23,6 +23,7 @@ table_categorical(
   select = tidyselect::everything(),
   by = NULL,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
   total_row = FALSE,
@@ -44,6 +45,8 @@ table_categorical(
   smd = FALSE,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -134,6 +137,24 @@ table_categorical(
   a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
   `NULL` included, is an error. A variable label documents the data
   file; a published table carries the wording you set here.
+  `note_labels` gives a variable a shorter label in the title and the
+  notes.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
 
 - levels_keep:
 
@@ -349,8 +370,16 @@ table_categorical(
     (`c("phi", "tau_b", "auto")`, paired up with `select`) are accepted.
     Named is more robust to reordering of `select`.
 
-  When a single measure is used for every row, the column header is that
-  measure's name (e.g. `"Cramer's V"`). When multiple measures are used
+  When a single measure is used for every row, its symbol heads the
+  column and names it in the data frames, as the effect size of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  is headed: \\V\\ (`cramer_v`), \\\phi\\ (`phi`), \\\tau_b\\ (`tau_b`)
+  or \\\gamma\\ (`gamma`), the three others keeping their name
+  (`"Lambda"`). The note defines the symbol as it defines any
+  abbreviation, under the `abbreviations` rule of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
+  "V = Cramer's V" by default, the Greek letters only under `"all"` and
+  in the `"jama"` and `"lancet"` themes. When multiple measures are used
   (typically with `"auto"` on a heterogeneous `select`), the header
   collapses to `"Effect size"` and the table note names the measure used
   for each variable.
@@ -369,8 +398,8 @@ table_categorical(
   in the long output (`"long"`) the bounds fill `es_ci_lower` /
   `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
   `"flextable"`, `"word"`), the CI is shown inline (e.g.,
-  `.14 [.08, .19]`) under a header that states its level
-  (`Cramer's V [95% CI]`). Defaults to `FALSE`.
+  `.14 [.08, .19]`) under a header that states its level (`V [95% CI]`).
+  Defaults to `FALSE`.
 
 - smd:
 
@@ -431,6 +460,37 @@ table_categorical(
   right-aligns only the counts and the *p*-value there, and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   applies that convention at every `align`.
+
+- note:
+
+  The note under the table. `NULL` (the default) builds it: the general
+  note, one paragraph opened by the lead-in of the style ("Note." by
+  default, none under the `jama` and `lancet` themes; see `note_label`
+  in
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
+  then, in a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `stars`, the legend of the stars on a line of its own. A single
+  string replaces the general note, the sentences the table writes about
+  its data included. It is printed as typed, line breaks (`"\n"`)
+  included, after the lead-in of the style, which a string opening with
+  a lead-in of its own does not repeat
+  (`note = "Note. Data weighted."`), and the legend of the stars stays
+  below it. `""` keeps that legend alone, and no note at all without
+  stars. `FALSE` removes the note from every output, the legend
+  included.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
 
 - output:
 
@@ -563,10 +623,11 @@ Depends on `output`:
   for the Total row of `total_row = TRUE`), then the printed columns:
   one pair `<group> n` / `<group> %` per group level (plus `Total` when
   `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
-  association measure (named after the measure, or `Effect size` when
-  the row variables do not share one), its bounds `95% CI LL` /
-  `95% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`. When
-  `by = NULL`, the printed columns are `n` and `%`.
+  association measure (named by its header: the symbol of the measure,
+  `V`, its name for a measure without one, or `Effect size` when the row
+  variables do not share one), its bounds `95% CI LL` / `95% CI UL` with
+  `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`. When `by = NULL`, the
+  printed columns are `n` and `%`.
 
 - `"long"`: a long `data.frame`, one row per variable, level and group,
   with columns `variable`, `label`, `level`, `.row_role` (the role of
@@ -608,7 +669,7 @@ table on every route, not just the console: `"default"` prints it under
 the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry
 it as a table note, `"excel"` writes it below the body, and the default
 object and the data frames of `"data.frame"` / `"long"` keep the whole
-note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
+note as printed, its lead-in included, in `attr(x, "note")` (`NULL` when
 there is nothing to say), so a pipeline that renders the numbers itself
 can still state what left the table. The default object also keeps the
 title the console prints, in `attr(x, "title")`. The same three objects
@@ -687,15 +748,16 @@ computes it. Campbell found the N-1 test close to its nominal level
 under that restriction, not without it. A variable whose table is not
 2x2 follows `"auto"`, and the note names the test of each variable.
 
-The note names the test of every variable, "Group comparison: Pearson
+The note names the test behind the *p*-values, "P-values: Pearson
 chi-squared test (sex, education); Fisher exact test (smoking).", or the
-one test when it covers them all. `test_type` in the long output gives
-the same per variable. See `@param correct` / `simulate_p` to switch on
-Yates' continuity correction or Monte Carlo *p*-values for the
-chi-squared test, and `@param assoc_measure` for the per-row dispatch
-table used by `"auto"` (2x2 -\> Phi, both ordered -\> Kendall's Tau-b,
-otherwise Cramer's V). Without `by`, the table reports the marginal
-frequency distribution of each variable with no inferential statistics.
+one test when it covers them all, "P-value:" when the table shows a
+single *p*-value. `test_type` in the long output gives the test of each
+variable. See `@param correct` / `simulate_p` to switch on Yates'
+continuity correction or Monte Carlo *p*-values for the chi-squared
+test, and `@param assoc_measure` for the per-row dispatch table used by
+`"auto"` (2x2 -\> Phi, both ordered -\> Kendall's Tau-b, otherwise
+Cramer's V). Without `by`, the table reports the marginal frequency
+distribution of each variable with no inferential statistics.
 
 The exact tests condition on counts. Under `weights`, they run on the
 weighted table when its cells are whole numbers (frequency weights);
@@ -954,7 +1016,7 @@ table_categorical(
 #>    No              │   334       53.9     316     54.5     650     54.2         
 #>    Yes             │   286       46.1     264     45.5     550     45.8         
 #> 
-#>  Variable          │ Phi 
+#>  Variable          │  φ  
 #> ───────────────────┼─────
 #>  smoking           │ .01 
 #>    No              │     
@@ -965,7 +1027,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test.
 
 # One-way frequency-style table (no `by`).
 table_categorical(
@@ -1025,7 +1087,7 @@ table_categorical(
 #>    No              │    11       50.0       8     44.4     19      47.5         
 #>    Yes             │    11       50.0      10     55.6     21      52.5         
 #> 
-#>  Variable          │ Phi 
+#>  Variable          │  φ  
 #> ───────────────────┼─────
 #>  smoking           │ .20 
 #>    No              │     
@@ -1035,7 +1097,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+#> Note. P-values: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
 
 # Pretty labels keyed by column name.
 table_categorical(
@@ -1071,18 +1133,18 @@ table_categorical(
 #>    No              │       57.5            163         40.8       650   
 #>    Yes             │       42.5            237         59.2       550   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  Current smoker    │          <.001     .14     
-#>    No              │  77.2                      
-#>    Yes             │  20.8                      
-#>    (Missing)       │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │          <.001     .21     
-#>    No              │  54.2                      
-#>    Yes             │  45.8                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  Current smoker    │          <.001  .14 
+#>    No              │  77.2               
+#>    Yes             │  20.8               
+#>    (Missing)       │   2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │          <.001  .21 
+#>    No              │  54.2               
+#>    Yes             │  45.8               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 
 # Survey weights with rescaling.
 table_categorical(
@@ -1116,18 +1178,18 @@ table_categorical(
 #>    No              │       57.7            166         41.9       655   
 #>    Yes             │       42.3            229         58.1       545   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .13     
-#>    No              │  76.6                      
-#>    Yes             │  21.1                      
-#>    (Missing)       │   2.2                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .19     
-#>    No              │  54.6                      
-#>    Yes             │  45.4                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  smoking           │          <.001  .13 
+#>    No              │  76.6               
+#>    Yes             │  21.1               
+#>    (Missing)       │   2.2               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001  .19 
+#>    No              │  54.6               
+#>    Yes             │  45.4               
 #> 
-#> Note. Statistics weighted by weight. Group comparison: Pearson chi-squared test.
+#> Note. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -1152,14 +1214,14 @@ table_categorical(
 #>    Yes       │       20.8             59         14.8       249     20.8   
 #>    (Missing) │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable    │   p    Cramer's V  95% CI LL  95% CI UL 
-#> ─────────────┼─────────────────────────────────────────
-#>  smoking     │ <.001     .14         .08        .19    
-#>    No        │                                         
-#>    Yes       │                                         
-#>    (Missing) │                                         
+#>  Variable    │   p     V   95% CI LL  95% CI UL 
+#> ─────────────┼──────────────────────────────────
+#>  smoking     │ <.001  .14     .08        .19    
+#>    No        │                                  
+#>    Yes       │                                  
+#>    (Missing) │                                  
 #> 
-#> Note. Group comparison: Pearson chi-squared test. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. P-value: Pearson chi-squared test. V = Cramer's V; CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Per-variable association measure ----------------------------------
 
@@ -1199,9 +1261,10 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education.
+#> Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education.
 
-# Force a uniform measure across all row variables.
+# Force a uniform measure across all row variables: its symbol, V,
+# heads the column, and the note defines it.
 table_categorical(
   sochealth,
   select = c(smoking, education),
@@ -1222,19 +1285,19 @@ table_categorical(
 #>    Upper secondary │   290       46.8     249     42.9     539     44.9         
 #>    Tertiary        │   196       31.6     204     35.2     400     33.3         
 #> 
-#>  Variable          │ Cramer's V 
-#> ───────────────────┼────────────
-#>  smoking           │    .01     
-#>    No              │            
-#>    Yes             │            
-#>    (Missing)       │            
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education         │    .04     
-#>    Lower secondary │            
-#>    Upper secondary │            
-#>    Tertiary        │            
+#>  Variable          │  V  
+#> ───────────────────┼─────
+#>  smoking           │ .01 
+#>    No              │     
+#>    Yes             │     
+#>    (Missing)       │     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
+#>  education         │ .04 
+#>    Lower secondary │     
+#>    Upper secondary │     
+#>    Tertiary        │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 
 # Per-variable override (recommended named form).
 table_categorical(
@@ -1287,7 +1350,7 @@ table_categorical(
 #>    Very good       │             
 #>    (Missing)       │             
 #> 
-#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health.
+#> Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health.
 
 # --- Output formats -----------------------------------------------------
 
@@ -1314,7 +1377,7 @@ table_categorical(
 #> 5 physical_activity physical_activity      <NA> factor_header       NA
 #> 6 physical_activity physical_activity        No         level      334
 #> 7 physical_activity physical_activity       Yes         level      286
-#>    Female % Male n    Male % Total n   Total %         p         Phi
+#>    Female % Male n    Male % Total n   Total %         p           φ
 #> 1        NA     NA        NA      NA        NA 0.7125196 0.010749501
 #> 2 76.612903    451 77.758621     926 77.166667        NA          NA
 #> 3 21.129032    118 20.344828     249 20.750000        NA          NA

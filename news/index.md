@@ -214,8 +214,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - The rendered formats of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  head the merged cell of the association measure `Cramer's V [95% CI]`,
-  stating the level.
+  head the merged cell of the association measure `V [95% CI]`, stating
+  the level.
 
 - The bounds of the association interval were `CI lower` and `CI upper`,
   and the keys `header_ci_lower` and `header_ci_upper` of
@@ -227,8 +227,7 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - In every output that names columns, the difference column of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  is `Δ (B − A)`, with the minus sign its header shows, where it was
-  `Δ (B - A)`.
+  is `Δ`, as its header reads, where it was `Δ (B - A)`.
 
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   reads contract version 4, and refuses a view built by an older spicy.
@@ -282,6 +281,16 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   is headed `Taille d'effet`, where it read `ES`, which now heads the
   standard errors of the regression tables.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  with a categorical `by` sets `M` over the group labels and heads the
+  difference `Δ` alone, the note giving its order (`Δ = B − A.`), where
+  it printed `M (A)`, `M (B)`, and `Δ (B - A)`.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  heads a single association measure with its symbol, V, φ, τb, or γ,
+  and names its data frame column so, where both read its name
+  (`Cramer's V`); the note defines it like any symbol.
 
 - The tables sort the groups of a character `by` in the C locale,
   capitals before lower case and the same on every machine, as
@@ -359,6 +368,10 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   say when the statistics are weighted.
 
+- The sentence naming the test opens with “P-values:” (“P-value:” when
+  the table shows one), where it read “Group comparison:” (“Slope test:”
+  for a numeric `by`), or “p-values:” in a mixed-model regression note.
+
 - By default, a table note defines the abbreviations of the headers, the
   spanners, and the fit-statistic rows (“AIC = Akaike information
   criterion”) at its end, in reading order.
@@ -392,6 +405,13 @@ the descriptive tables one contract for labels, p-values, and notes.
   “Note.” by default, as
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   does.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  print a string in `note` after the lead-in of the style, “Note.”
+  unless it opens with one, and keep the stars legend below it;
+  `note = FALSE` removes both.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   printed “Note.” in the middle of its note when `drop_na = TRUE`
@@ -688,6 +708,14 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   already did.
 
+- Every table function takes `note`, whose string replaces the general
+  note under the lead-in of the style, and `note_add`, which adds
+  sentences at the end of the note, before the stars legend.
+
+- Every table function gains `note_labels`, the label a variable takes
+  in the title and the notes, so `labels` can keep a whole question in
+  the rows: `note_labels = c(sex = "sex at birth")`.
+
 - The long output and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of the
   tables mark the rows they add by a key rather than by their label,
@@ -956,9 +984,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 ### Bug fixes
 
 - Labels that state a subtraction write the minus sign (U+2212), not a
-  hyphen: the header Δ (B − A) of
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
+  hyphen: the difference of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  (Δ = B − A), the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
   `vcov = "CR1S"`.
 
 - The table functions warn (class `spicy_ignored_arg`) when an argument
@@ -992,6 +1020,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 - The note’s lead-in (“Note.” or the `note_label` of the style) is in
   italics in Typst, LaTeX, Markdown documents, and Excel output, and in
   `gt`’s LaTeX, RTF, and Word output, as in HTML, Word, and PowerPoint.
+
+- A sentence of a note that ends on a label with its own “?”, “!”, or
+  “.” no longer doubles the mark (“Phi: Do you smoke?.”).
 
 - The LaTeX output of `tinytable` compiles when a note contains `%` or
   `_`, and centers each spanner over its columns.
@@ -1066,8 +1097,8 @@ the descriptive tables one contract for labels, p-values, and notes.
   adjusted for the column the object `age` named.
 
 - With `labels = TRUE`, a note reads “Missing values removed: Body mass
-  index (12)”, “Rows with missing Sex removed: 3”, or “Group comparison:
-  Welch t-test (Sex)”.
+  index (12), Sex (3)” or “P-values: Welch t-test (Sex); Welch one-way
+  ANOVA (Highest education level)”.
 
 - A list of variables in a note is joined with semicolons when one of
   the labels contains a comma.

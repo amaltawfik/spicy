@@ -150,7 +150,7 @@ table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 #>           │ H                            
 #>           │ M                            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The comparison is one design-based test on the whole design, not a set
@@ -242,7 +242,7 @@ table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #>    H        │    3     13.0      11      6.9        14        7.7            
 #>    M        │    8     34.8      17     10.6        25       13.7            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
 ```
 
 The `p` is [`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html):
@@ -638,10 +638,9 @@ table_continuous_svy(
 *Note.* N = 200 (weighted 6194). Design: stratified (stype), with finite
 population correction; degrees of freedom vary by group (49 to 99). Std.
 errors: Design-based (Taylor linearization). Confidence intervals and
-tests use the design degrees of freedom. Group comparison: design-based
-Wald test. The group comparison uses 195 degrees of freedom (observed
-groups only). CI = confidence interval; LL = lower limit; UL = upper
-limit.
+tests use the design degrees of freedom. P-values: design-based Wald
+test. The group comparison uses 195 degrees of freedom (observed groups
+only). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ## What is not here yet
 

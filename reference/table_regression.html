@@ -146,8 +146,10 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  padding <span class="op">=</span> <span class="fl">0L</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  note_add <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  excel_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -866,14 +868,33 @@ relabeled here.</p>
 <p>The default reads <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or
 <code>FALSE</code> typed in the call wins over it. Any other value, <code>NULL</code>
 included, is an error. A variable label documents the data file; a
-published table carries the wording you set here.</p></dd>
+published table carries the wording you set here. <code>note_labels</code> gives
+the outcome a shorter label in the title.</p></dd>
+
+
+<dt id="arg-note-labels">note_labels<a class="anchor" aria-label="anchor" href="#arg-note-labels"></a></dt>
+<dd><p>The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+<code>labels</code> gives it: a named character vector,
+<code>note_labels = c(sex = "sex at birth")</code>, or a <code><a href="var_labels.html">var_labels()</a></code> object,
+which reads as one. <code>labels</code> can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of <code>labels</code>, and so do the title and the notes for a variable
+<code>note_labels</code> does not name. Names that match no column are ignored,
+as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+<code>spicy_label_collision</code>): choose another one, or relabel the other
+variable.</p></dd>
 
 
 <dt id="arg-title-note">title, note<a class="anchor" aria-label="anchor" href="#arg-title-note"></a></dt>
 <dd><p>Override or suppress the auto-built caption /
-methodological footer. Three modes per argument:</p><ul><li><p><code>NULL</code> (default): the package builds the standard caption
+methodological footer. Three modes per argument, those <code>note</code> has in
+every table function:</p><ul><li><p><code>NULL</code> (default): the package builds the standard caption
 ("Linear regression on <code>&lt;DV&gt;</code>" / "Hierarchical linear
-regression on <code>&lt;DV&gt;</code>" / ...) and a methodological note, one
+regression on <code>&lt;DV&gt;</code>" / ..., the outcome named by its label in
+<code>note_labels</code>, else in <code>labels</code>) and a methodological note, one
 paragraph in the order of every table of the package: what
 the model is (its family, design, scale of the coefficients,
 reference categories, ...), the cases a univariable screen fits
@@ -882,19 +903,36 @@ of the blocks, then the abbreviations the column headers and the
 rows of the fit statistics and of the random effects show
 ("AIC = Akaike information criterion"), defined as the style in
 force asks (<code>spicy_style(abbreviations = )</code>; under <code>"jama"</code> they
-open the note on a line of their own).
+open the note on a line of their own), and the sentences of
+<code>note_add</code>.
 Under <code>stars</code>, the legend of the stars follows on a line of its
 own.</p></li>
 <li><p><code>FALSE</code>: the corresponding banner row is omitted from
-every output engine. Use when the surrounding manuscript
-provides its own caption / note.</p></li>
-<li><p>character string (length 1): replaces the auto-built
-text verbatim. The renderer applies no APA formatting on
-top – supply the exact string you want displayed (multi-
-line notes accepted via embedded <code>"\n"</code>).</p></li>
+every output engine, for <code>note</code> the legend of the stars
+included. Use when the surrounding manuscript provides its own
+caption / note.</p></li>
+<li><p>character string (length 1): replaces the auto-built text.
+A <code>title</code> is printed verbatim. A <code>note</code> replaces the general
+note and is printed as typed (multi-line notes accepted via
+embedded <code>"\n"</code>) after the lead-in of the style, which a string
+opening with a lead-in of its own does not repeat, the sentences
+of <code>note_add</code> after it; the legend of the stars stays on its line
+below, and <code>note = ""</code> keeps that legend alone.</p></li>
 </ul><p>Validation messages, the spanner row, and the in-body change-
 stat rows are <em>not</em> affected – they belong to the table
 structure, not to the banner.</p></dd>
+
+
+<dt id="arg-note-add">note_add<a class="anchor" aria-label="anchor" href="#arg-note-add"></a></dt>
+<dd><p>Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in <code>attr(x, "note")</code>, and the sentences the table
+writes stay. With a string in <code>note</code>, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An <code>NA</code> or an empty string is an error, and so is <code>note_add</code> with
+<code>note = FALSE</code>, which leaves no note to add to.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -2212,7 +2250,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC              <span style="color: #9E9E9E;">│</span> 1755.6                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  BIC              <span style="color: #9E9E9E;">│</span> 1774.8                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hierarchical mixed-effects comparison (nested LRT).</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
@@ -2276,7 +2314,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²                             <span style="color: #9E9E9E;">│</span>  +42.14               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)                      <span style="color: #9E9E9E;">│</span>    &lt;.001              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>

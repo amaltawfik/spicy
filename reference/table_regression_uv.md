@@ -23,7 +23,10 @@ table_regression_uv(
   show_intercept = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
-  ...
+  ...,
+  note_labels = NULL,
+  note = NULL,
+  note_add = NULL
 )
 ```
 
@@ -144,7 +147,8 @@ table_regression_uv(
   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
   wins over it. Any other value, `NULL` included, is an error. A
   variable label documents the data file; a published table carries the
-  wording you set here.
+  wording you set here. `note_labels` gives the outcome a shorter label
+  in the title.
 
 - title:
 
@@ -160,6 +164,53 @@ table_regression_uv(
   error. `nested` is not meaningful for a screen and is refused.
   `cluster` must be a single vector with one value per row of `data`; it
   is aligned to each fit's own estimation sample automatically.
+
+- note_labels:
+
+  The label a variable takes where the table names it in a sentence, in
+  the title and in the notes, in place of the one `labels` gives it: a
+  named character vector, `note_labels = c(sex = "sex at birth")`, or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  object, which reads as one. `labels` can then name a row with a whole
+  question while the note says "Missing values removed: sex at birth
+  (2).". The rows, the column headers and the spanners keep the labels
+  of `labels`, and so do the title and the notes for a variable
+  `note_labels` does not name. Names that match no column are ignored,
+  as in `labels`, and `NULL` (the default) renames nothing. A note label
+  that another variable of the table shows is an error (class
+  `spicy_label_collision`): choose another one, or relabel the other
+  variable.
+
+- note:
+
+  The note under the table. `NULL` (the default) builds it: the general
+  note, one paragraph opened by the lead-in of the style ("Note." by
+  default, none under the `jama` and `lancet` themes; see `note_label`
+  in
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
+  then, in a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `stars`, the legend of the stars on a line of its own. A single
+  string replaces the general note, the sentences the table writes about
+  its data included. It is printed as typed, line breaks (`"\n"`)
+  included, after the lead-in of the style, which a string opening with
+  a lead-in of its own does not repeat
+  (`note = "Note. Data weighted."`), and the legend of the stars stays
+  below it. `""` keeps that legend alone, and no note at all without
+  stars. `FALSE` removes the note from every output, the legend
+  included.
+
+- note_add:
+
+  Sentences to add to the note: a character vector of one or more
+  strings, each printed as typed (no period is added) and joined to the
+  note by a space. They close its paragraph, after the definitions of
+  the abbreviations and before the legend of the stars, in every output
+  and in `attr(x, "note")`, and the sentences the table writes stay.
+  With a string in `note`, they follow it, so a wrapper can add a house
+  sentence to every table while one table replaces its note. An `NA` or
+  an empty string is an error, and so is `note_add` with `note = FALSE`,
+  which leaves no note to add to.
 
 ## Value
 

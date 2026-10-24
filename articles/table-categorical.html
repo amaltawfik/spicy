@@ -173,22 +173,22 @@ variables, and a grouping variable:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       32.3             67         16.8       354   </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8                      </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  77.2               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  20.8               </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.1               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001  .21 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001  .22 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 <p>The default output is <code>"default"</code>, which prints a styled
 ASCII table to the console, folded into successive panels when it is
 wider than the console. Reading the table: each level of <code>by</code>
@@ -231,15 +231,15 @@ direction, and the note says the percentages are row percentages.</p>
 <span><span class="co">#&gt;    Tertiary        <span style="color: #9E9E9E;">│</span> 332   83.0    59   14.8        9           2.2     </span></span>
 <span><span class="co">#&gt;    Total           <span style="color: #9E9E9E;">│</span> 926   77.2   249   20.8       25           2.1     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total n  Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  education         <span style="color: #9E9E9E;">│</span>                   &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    Lower secondary <span style="color: #9E9E9E;">│</span>   261     100.0                     </span></span>
-<span><span class="co">#&gt;    Upper secondary <span style="color: #9E9E9E;">│</span>   539     100.0                     </span></span>
-<span><span class="co">#&gt;    Tertiary        <span style="color: #9E9E9E;">│</span>   400     100.0                     </span></span>
-<span><span class="co">#&gt;    Total           <span style="color: #9E9E9E;">│</span>  1200     100.0                     </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total n  Total %    p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  education         <span style="color: #9E9E9E;">│</span>                   &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    Lower secondary <span style="color: #9E9E9E;">│</span>   261     100.0              </span></span>
+<span><span class="co">#&gt;    Upper secondary <span style="color: #9E9E9E;">│</span>   539     100.0              </span></span>
+<span><span class="co">#&gt;    Tertiary        <span style="color: #9E9E9E;">│</span>   400     100.0              </span></span>
+<span><span class="co">#&gt;    Total           <span style="color: #9E9E9E;">│</span>  1200     100.0              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="one-way-tables">One-way tables<a class="anchor" aria-label="anchor" href="#one-way-tables"></a>
@@ -353,11 +353,11 @@ table returns the same frame:</p>
 <span><span class="co">#&gt; 2               415         76.994434        332      83.00     926 77.166667</span></span>
 <span><span class="co">#&gt; 3               112         20.779221         59      14.75     249 20.750000</span></span>
 <span><span class="co">#&gt; 4                12          2.226345          9       2.25      25  2.083333</span></span>
-<span><span class="co">#&gt;              p Cramer's V</span></span>
-<span><span class="co">#&gt; 1 2.012877e-05  0.1356677</span></span>
-<span><span class="co">#&gt; 2           NA         NA</span></span>
-<span><span class="co">#&gt; 3           NA         NA</span></span>
-<span><span class="co">#&gt; 4           NA         NA</span></span></code></pre></div>
+<span><span class="co">#&gt;              p         V</span></span>
+<span><span class="co">#&gt; 1 2.012877e-05 0.1356677</span></span>
+<span><span class="co">#&gt; 2           NA        NA</span></span>
+<span><span class="co">#&gt; 3           NA        NA</span></span>
+<span><span class="co">#&gt; 4           NA        NA</span></span></code></pre></div>
 <p>Use <code>output = "long"</code> for one row per level and group, the
 <code>Total</code> margin included and flagged by <code>total</code>,
 with the test of each variable (<code>test_type</code>,
@@ -439,18 +439,18 @@ before 0.13.0, now raise an error.)</p>
 <span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>        310               57.5            163     </span></span>
 <span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>        229               42.5            237     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Tertiary %  Total n  Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Smoking status            <span style="color: #9E9E9E;">│</span>                               &lt;.001     .14     </span></span>
-<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    83.0       926     77.2                      </span></span>
-<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    14.8       249     20.8                      </span></span>
-<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>     2.2        25      2.1                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                               &lt;.001     .21     </span></span>
-<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2                      </span></span>
-<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8                      </span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Tertiary %  Total n  Total %    p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Smoking status            <span style="color: #9E9E9E;">│</span>                               &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    83.0       926     77.2               </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    14.8       249     20.8               </span></span>
+<span><span class="co">#&gt;    (Missing)               <span style="color: #9E9E9E;">│</span>     2.2        25      2.1               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                               &lt;.001  .21 </span></span>
+<span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2               </span></span>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="association-measures-and-confidence-intervals">Association measures and confidence intervals<a class="anchor" aria-label="anchor" href="#association-measures-and-confidence-intervals"></a>
@@ -465,9 +465,14 @@ row variable based on the variable type
 <li>both ordered factors -&gt; Kendall’s <code>tau_b</code>,</li>
 <li>otherwise -&gt; Cramer’s <code>V</code>.</li>
 </ul>
-<p>When the chosen measures differ across rows, the column header
-collapses to <code>"Effect size"</code> and the table note names the
-measure used for each variable.</p>
+<p>A measure used for every row heads the column, and names it in the
+data frames, with its symbol (V for Cramer’s V, φ for phi, τb for
+Kendall’s tau-b, γ for gamma; the other measures keep their names). The
+note defines the symbol as it defines any abbreviation: V by default,
+the Greek letters under <code>spicy_style(abbreviations = "all")</code>.
+When the chosen measures differ across rows, the column header collapses
+to <code>"Effect size"</code> and the table note names the measure used
+for each variable.</p>
 <p>Seven measures are available: <code>"cramer_v"</code>,
 <code>"phi"</code>, <code>"gamma"</code>, <code>"tau_b"</code>,
 <code>"tau_c"</code>, <code>"somers_d"</code>, and
@@ -508,7 +513,7 @@ uniform application, or with a named vector to mix measures per row:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>               </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-value: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>A significant chi-squared <em>p</em>-value next to a lambda of
 exactly .00 is not a contradiction. Goodman-Kruskal lambda measures the
 proportional reduction in the error of predicting the row variable once
@@ -575,7 +580,7 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>  24.6                       </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   1.7                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.</span></span></span></code></pre></div>
 <p><code>smoking</code> keeps its automatic Cramer’s V (.14) while
 <code>self_rated_health</code> switches from the automatic Tau-b (.20)
 to Gamma (.31) – Gamma is larger on the same table because it ignores
@@ -586,8 +591,8 @@ choice.</p>
 rendered formats (<code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>word</code>) the CI is shown inline after
 the measure, e.g. <code>.14 [.08, .19]</code>, under a header that
-states its level, <code>Cramer's V [95% CI]</code> (demonstrated in the
-final section). In the default console table and in the
+states its level, <code>V [95% CI]</code> (demonstrated in the final
+section). In the default console table and in the
 <code>"data.frame"</code>, <code>"excel"</code> and
 <code>"clipboard"</code> outputs, separate columns named
 <code>95% CI LL</code> and <code>95% CI UL</code> are added, as the
@@ -612,11 +617,11 @@ other tables name their interval columns; in the long format
 <span><span class="co">#&gt; 2               415         76.994434        332      83.00     926 77.166667</span></span>
 <span><span class="co">#&gt; 3               112         20.779221         59      14.75     249 20.750000</span></span>
 <span><span class="co">#&gt; 4                12          2.226345          9       2.25      25  2.083333</span></span>
-<span><span class="co">#&gt;              p Cramer's V  95% CI LL 95% CI UL</span></span>
-<span><span class="co">#&gt; 1 2.012877e-05  0.1356677 0.07909264 0.1913716</span></span>
-<span><span class="co">#&gt; 2           NA         NA         NA        NA</span></span>
-<span><span class="co">#&gt; 3           NA         NA         NA        NA</span></span>
-<span><span class="co">#&gt; 4           NA         NA         NA        NA</span></span></code></pre></div>
+<span><span class="co">#&gt;              p         V  95% CI LL 95% CI UL</span></span>
+<span><span class="co">#&gt; 1 2.012877e-05 0.1356677 0.07909264 0.1913716</span></span>
+<span><span class="co">#&gt; 2           NA        NA         NA        NA</span></span>
+<span><span class="co">#&gt; 3           NA        NA         NA        NA</span></span>
+<span><span class="co">#&gt; 4           NA        NA         NA        NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="chi-squared-or-fishers-exact-test">Chi-squared or Fisher’s exact test<a class="anchor" aria-label="anchor" href="#chi-squared-or-fishers-exact-test"></a>
@@ -646,7 +651,7 @@ expected count of 3.6 and takes the exact test:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>    11       50.0       8     44.4     19      47.5         </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>    11       50.0      10     55.6     21      52.5         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  φ  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
 <span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .20 </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
@@ -656,7 +661,7 @@ expected count of 3.6 and takes the exact test:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span></span></code></pre></div>
 <p><code>test = "chisq"</code> tests every variable by the chi-squared,
 as before 0.14.0, and <code>test = "fisher"</code> tests every variable
 exactly. Fisher’s exact test of a table larger than 2x2 is the
@@ -705,7 +710,7 @@ variable:</p>
 <span><span class="co">#&gt;    Upper secondary <span style="color: #9E9E9E;">│</span>             </span></span>
 <span><span class="co">#&gt;    Tertiary        <span style="color: #9E9E9E;">│</span>             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="descriptive-tables-without-tests">Descriptive tables without tests<a class="anchor" aria-label="anchor" href="#descriptive-tables-without-tests"></a>
@@ -782,7 +787,7 @@ row beside <code>p</code>:</p>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| &gt; 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| &gt; 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.</span></span></span></code></pre></div>
 <p>Two categories give the Bernoulli form, <strong>signed</strong>,
 group 1 minus group 2 in the order the table displays them. Three or
 more give the multivariate (Mahalanobis) distance between the two
@@ -849,18 +854,18 @@ fractional weighted counts:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       57.7            166         41.9       655   </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       42.3            229         58.1       545   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001     .13     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  76.6                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  21.1                      </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.2                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001     .19     </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.6                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.4                      </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001  .13 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  76.6               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  21.1               </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>   2.2               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001  .19 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.6               </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.4               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
@@ -899,15 +904,15 @@ a table note rather than silent:</p>
 <span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>       25.5            135         34.3       328     27.7   </span></span>
 <span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>       17.7            104         26.4       219     18.5   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p    Kendall's Tau-b </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group   <span style="color: #9E9E9E;">│</span> &lt;.001        .22       </span></span>
-<span><span class="co">#&gt;    Low          <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Lower middle <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>                        </span></span>
+<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   p    τb  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼────────────</span></span></span>
+<span><span class="co">#&gt;  income_group   <span style="color: #9E9E9E;">│</span> &lt;.001  .22 </span></span>
+<span><span class="co">#&gt;    Low          <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Lower middle <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: income_group (18). Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: income_group (18). P-value: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>With several selected variables the note lists each variable’s
 removals separately: selecting <code>smoking</code> and
 <code>physical_activity</code> together under
@@ -951,14 +956,14 @@ placing “(Missing)” first to highlight missingness:</p>
 <span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>       21.3             45         11.2       247     20.6   </span></span>
 <span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>       17.4            104         26.0       219     18.2   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable     <span style="color: #9E9E9E;">│</span>   p    Kendall's Tau-b </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────┼────────────────────────</span></span></span>
-<span><span class="co">#&gt;  income_group <span style="color: #9E9E9E;">│</span> &lt;.001        .22       </span></span>
-<span><span class="co">#&gt;    (Missing)  <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>                        </span></span>
+<span><span class="co">#&gt;  Variable     <span style="color: #9E9E9E;">│</span>   p    τb  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────┼────────────</span></span></span>
+<span><span class="co">#&gt;  income_group <span style="color: #9E9E9E;">│</span> &lt;.001  .22 </span></span>
+<span><span class="co">#&gt;    (Missing)  <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-value: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p><code>levels_keep</code> filters the display only: counts,
 percentages, the chi-squared test, and the association measure are all
 still computed on the full cross-table. That is why the displayed
@@ -998,14 +1003,14 @@ association measure:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>       20.78            59        14.75       249     20.75  </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>        2.23             9         2.25        25      2.08  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   p     Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span> &lt;.0001     .136    </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>                    </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>                    </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>                    </span></span>
+<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   p      V   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────</span></span></span>
+<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span> &lt;.0001  .136 </span></span>
+<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>              </span></span>
+<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-value: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
 <p><code>p_digits</code> drives both the displayed precision of the
 <code>p</code> column and the small-<em>p</em> threshold
 (<code>p_digits = 3</code> -&gt; <code>&lt;.001</code>,
@@ -1056,7 +1061,7 @@ alignment:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>      334      53.9     316    54.5      650     54.2       </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>      286      46.1     264    45.5      550     45.8       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Phi </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   φ </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
 <span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> .01 </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
@@ -1067,7 +1072,7 @@ alignment:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
@@ -1372,7 +1377,7 @@ p
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
 <div class="gt_column_spanner">
-Cramer’s V
+V
 </div>
 </th>
 </tr>
@@ -1763,7 +1768,7 @@ dentist_12m
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Group comparison: Pearson chi-squared test.
+<em>Note.</em> P-values: Pearson chi-squared test. V = Cramer’s V.
 </div>
 </div>
 </div>
@@ -1781,54 +1786,54 @@ table by sex):</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_8k33zxwliff1vzat6zns = TinyTable.createTableFunctions("tinytable_8k33zxwliff1vzat6zns");
+      const tableFns_l7qhwhhyszx3hozivoe7 = TinyTable.createTableFunctions("tinytable_l7qhwhhyszx3hozivoe7");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_48cjf76qjldnsdvvg8uw',}, 
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_j3pcnqyevch93zpjix0e',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_almhhcnvsqm5zsivk5ab',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_xszq8pe2d6jdkinusz1x',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_wt1rn77mx6q8krqg14sz',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_yhmse2a51oiua6ahf5p7',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_9oq3b850o7w3hgg3icut',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_smj9duced32jctntne4v',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_bvpfjo6gjqmsiptzhecn',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_h6kgolzidi0m5vh5f72e',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_1zy8t2sthx491f7vz108',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_3vgcdabccxqz4nal7xsg',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_qef1aam16yyy5lavbmlz',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_rq25dszxmtff73q8fq68',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_vvba3mbplxmvo15bpgs9',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_qkbcsvcb6cb7zms2i4c0',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_28lf6xd26dfxr4c4d4kg',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_5ygb5f2jah0ycn2fghsp',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_cctnplnsnooznmoos57u',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_edjxdjgeefg92nfutkrq',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_zbkp70psyggpphbnt9sj',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_v1e8r2qrh15svelbl47a',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_7blaqgkasaeo7fxulukz',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_1dhxpve1achr3bwdpxvy',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_e08jcz8i51z7mss4spi7',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_j00rqk2n8gxwqiq0dk5f',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_q86387hjhtprk4kzs80z',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_w61k7p6sq72250nein86',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_8k33zxwliff1vzat6zns.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_l7qhwhhyszx3hozivoe7.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_48cjf76qjldnsdvvg8uw, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_48cjf76qjldnsdvvg8uw {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_j3pcnqyevch93zpjix0e, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_j3pcnqyevch93zpjix0e { text-align: center; white-space: nowrap; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_almhhcnvsqm5zsivk5ab, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_almhhcnvsqm5zsivk5ab {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_xszq8pe2d6jdkinusz1x, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_xszq8pe2d6jdkinusz1x {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_wt1rn77mx6q8krqg14sz, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_wt1rn77mx6q8krqg14sz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_yhmse2a51oiua6ahf5p7, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_yhmse2a51oiua6ahf5p7 { text-align: center }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_9oq3b850o7w3hgg3icut, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_9oq3b850o7w3hgg3icut {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_smj9duced32jctntne4v, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_smj9duced32jctntne4v {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_bvpfjo6gjqmsiptzhecn, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_bvpfjo6gjqmsiptzhecn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_h6kgolzidi0m5vh5f72e, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_h6kgolzidi0m5vh5f72e {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_1zy8t2sthx491f7vz108, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_1zy8t2sthx491f7vz108 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_3vgcdabccxqz4nal7xsg, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_3vgcdabccxqz4nal7xsg { text-align: left }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_qef1aam16yyy5lavbmlz, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_qef1aam16yyy5lavbmlz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_8k33zxwliff1vzat6zns td.tinytable_css_rq25dszxmtff73q8fq68, #tinytable_8k33zxwliff1vzat6zns th.tinytable_css_rq25dszxmtff73q8fq68 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_vvba3mbplxmvo15bpgs9, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_vvba3mbplxmvo15bpgs9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_qkbcsvcb6cb7zms2i4c0, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_qkbcsvcb6cb7zms2i4c0 { text-align: center; white-space: nowrap; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_28lf6xd26dfxr4c4d4kg, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_28lf6xd26dfxr4c4d4kg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_5ygb5f2jah0ycn2fghsp, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_5ygb5f2jah0ycn2fghsp {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_cctnplnsnooznmoos57u, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_cctnplnsnooznmoos57u {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_edjxdjgeefg92nfutkrq, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_edjxdjgeefg92nfutkrq { text-align: center }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_zbkp70psyggpphbnt9sj, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_zbkp70psyggpphbnt9sj {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_v1e8r2qrh15svelbl47a, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_v1e8r2qrh15svelbl47a {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_7blaqgkasaeo7fxulukz, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_7blaqgkasaeo7fxulukz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_1dhxpve1achr3bwdpxvy, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_1dhxpve1achr3bwdpxvy {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_e08jcz8i51z7mss4spi7, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_e08jcz8i51z7mss4spi7 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_j00rqk2n8gxwqiq0dk5f, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_j00rqk2n8gxwqiq0dk5f { text-align: left }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_q86387hjhtprk4kzs80z, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_q86387hjhtprk4kzs80z {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_l7qhwhhyszx3hozivoe7 td.tinytable_css_w61k7p6sq72250nein86, #tinytable_l7qhwhhyszx3hozivoe7 th.tinytable_css_w61k7p6sq72250nein86 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_8k33zxwliff1vzat6zns" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_l7qhwhhyszx3hozivoe7" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by sex</caption>
         <thead>
 <tr>
@@ -1837,7 +1842,7 @@ table by sex):</p>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="4">Male</th>
 <th scope="col" align="center" colspan="2" data-row="-1" data-col="6">Total</th>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="8">p</th>
-<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">Phi</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="9">φ</th>
 </tr>
 <tr>
 <th scope="col" data-row="0" data-col="1"></th>
@@ -1852,7 +1857,7 @@ table by sex):</p>
               </tr>
 </thead>
 <tfoot><tr><td colspan="9" style="font-size: 0.9em; ">
-<em>Note.</em> Group comparison: Pearson chi-squared test.</td></tr></tfoot>
+<em>Note.</em> P-values: Pearson chi-squared test.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">smoking</td>
@@ -2169,7 +2174,7 @@ p
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
 <div class="gt_column_spanner">
-Cramer’s V [95% CI]
+V [95% CI]
 </div>
 </th>
 </tr>
@@ -2455,7 +2460,7 @@ physical_activity
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Group comparison: Pearson chi-squared test. CI =
+<em>Note.</em> P-values: Pearson chi-squared test. V = Cramer’s V; CI =
 confidence interval; LL = lower limit; UL = upper limit.
 </div>
 </div>

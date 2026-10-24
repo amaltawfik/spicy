@@ -122,7 +122,7 @@ the margin included
 (`inline(tbl, smoking, "Yes", "pct", model = "Female")`), the per-group
 columns of
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-headed `M (Female)`, `M (Male)`
+headed `Female` and `Male` under the mean symbol `M`
 (`inline(tbl, bmi, column = "emmean", model = "Female")`), and the rows
 of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)

@@ -201,7 +201,8 @@ one univariable model per predictor. The long output of
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 has the same columns, `NA`: one shape for the class. The printed objects
 carry the `by` column and its label in the attributes `group_var` and
-`group_label`.
+`group_label`, the label the title gives it (its label in `note_labels`,
+when there is one).
 
 `output = "data.frame"` and
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) return

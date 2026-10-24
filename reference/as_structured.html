@@ -237,9 +237,10 @@ group. A statistic another variable displays is
 <code>"undefined"</code>.</p></li>
 <li><p><code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> – one <code>"summary"</code> row per outcome.
 Tokens: <code>"emmean"</code> (a marginal mean; the column says which level
-in <code>col_meta$&lt;col&gt;$level</code>), <code>"delta"</code> (the contrast), <code>"b"</code> (a
-numeric predictor's slope), <code>"ci"</code>, <code>"statistic"</code>, <code>"p"</code>,
-<code>"r2"</code>, <code>"es"</code>, <code>"n"</code>, <code>"weighted_n"</code>.</p></li>
+in <code>col_meta$&lt;col&gt;$level</code>, also its <code>display_label</code>: the table heads
+each mean by its level under the mean symbol), <code>"delta"</code> (the
+contrast), <code>"b"</code> (a numeric predictor's slope), <code>"ci"</code>,
+<code>"statistic"</code>, <code>"p"</code>, <code>"r2"</code>, <code>"es"</code>, <code>"n"</code>, <code>"weighted_n"</code>.</p></li>
 <li><p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> – one <code>"summary"</code> row per item, then the
 rows of <code>none_row</code>: a <code>"none"</code> row (<code>.variable == "none"</code>) for the
 respondents of the base with no item chosen and a <code>"missing"</code> row

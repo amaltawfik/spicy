@@ -100,6 +100,7 @@ gives the marginal summary of the whole analytic sample.</p>
 <span>  <span class="va">outcome</span>,</span>
 <span>  <span class="va">select</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overall <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -119,6 +120,8 @@ gives the marginal summary of the whole analytic sample.</p>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
+<span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  note_add <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  indent_text <span class="op">=</span> <span class="st">"  "</span>,</span>
@@ -182,7 +185,24 @@ every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
 variable label documents the data file; a published table carries
-the wording you set here.</p></dd>
+the wording you set here. <code>note_labels</code> gives a variable a shorter
+label in the title and the notes.</p></dd>
+
+
+<dt id="arg-note-labels">note_labels<a class="anchor" aria-label="anchor" href="#arg-note-labels"></a></dt>
+<dd><p>The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+<code>labels</code> gives it: a named character vector,
+<code>note_labels = c(sex = "sex at birth")</code>, or a <code><a href="var_labels.html">var_labels()</a></code> object,
+which reads as one. <code>labels</code> can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of <code>labels</code>, and so do the title and the notes for a variable
+<code>note_labels</code> does not name. Names that match no column are ignored,
+as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+<code>spicy_label_collision</code>): choose another one, or relabel the other
+variable.</p></dd>
 
 
 <dt id="arg-overall">overall<a class="anchor" aria-label="anchor" href="#arg-overall"></a></dt>
@@ -367,6 +387,33 @@ Same default and same three values as <code><a href="table_continuous_lm.html">t
 whose <code>excel</code> output still uses that convention at every <code>align</code>.</p></dd>
 
 
+<dt id="arg-note">note<a class="anchor" aria-label="anchor" href="#arg-note"></a></dt>
+<dd><p>The note under the table. <code>NULL</code> (the default) builds it:
+the general note, one paragraph opened by the lead-in of the style
+("Note." by default, none under the <code>jama</code> and <code>lancet</code> themes; see
+<code>note_label</code> in <code><a href="spicy_style.html">spicy_style()</a></code>), then, in a <code><a href="table_regression.html">table_regression()</a></code> with
+<code>stars</code>, the legend of the stars on a line of its own. A single string
+replaces the general note, the sentences the table writes about its
+data included. It is printed as typed, line breaks (<code>"\n"</code>) included,
+after the lead-in of the style, which a string opening with a lead-in
+of its own does not repeat (<code>note = "Note. Data weighted."</code>), and the
+legend of the stars stays below it. <code>""</code> keeps that legend alone, and
+no note at all without stars. <code>FALSE</code> removes the note from every
+output, the legend included.</p></dd>
+
+
+<dt id="arg-note-add">note_add<a class="anchor" aria-label="anchor" href="#arg-note-add"></a></dt>
+<dd><p>Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in <code>attr(x, "note")</code>, and the sentences the table
+writes stay. With a string in <code>note</code>, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An <code>NA</code> or an empty string is an error, and so is <code>note_add</code> with
+<code>note = FALSE</code>, which leaves no note to add to.</p></dd>
+
+
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
@@ -463,8 +510,8 @@ invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
 </ul><p>The default object and the two data frames carry the whole note as
-printed, "Note." included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is
-nothing to say). The default object also keeps the title it prints in
+printed, its lead-in included, in <code>attr(x, "note")</code> (<code>NULL</code> when there
+is nothing to say). The default object also keeps the title it prints in
 <code>attr(x, "title")</code>.</p>
     </div>
     <div class="section level2">
@@ -619,7 +666,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -781,7 +828,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -64,22 +64,22 @@ table_categorical(
 #>    No              │       32.3             67         16.8       354   
 #>    Yes             │       67.7            333         83.2       846   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .14     
-#>    No              │  77.2                      
-#>    Yes             │  20.8                      
-#>    (Missing)       │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .21     
-#>    No              │  54.2                      
-#>    Yes             │  45.8                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │          <.001     .22     
-#>    No              │  29.5                      
-#>    Yes             │  70.5                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  smoking           │          <.001  .14 
+#>    No              │  77.2               
+#>    Yes             │  20.8               
+#>    (Missing)       │   2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001  .21 
+#>    No              │  54.2               
+#>    Yes             │  45.8               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │          <.001  .22 
+#>    No              │  29.5               
+#>    Yes             │  70.5               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
@@ -126,15 +126,15 @@ table_categorical(
 #>    Tertiary        │ 332   83.0    59   14.8        9           2.2     
 #>    Total           │ 926   77.2   249   20.8       25           2.1     
 #> 
-#>  Variable          │ Total n  Total %    p    Cramer's V 
-#> ───────────────────┼─────────────────────────────────────
-#>  education         │                   <.001     .14     
-#>    Lower secondary │   261     100.0                     
-#>    Upper secondary │   539     100.0                     
-#>    Tertiary        │   400     100.0                     
-#>    Total           │  1200     100.0                     
+#>  Variable          │ Total n  Total %    p     V  
+#> ───────────────────┼──────────────────────────────
+#>  education         │                   <.001  .14 
+#>    Lower secondary │   261     100.0              
+#>    Upper secondary │   539     100.0              
+#>    Tertiary        │   400     100.0              
+#>    Total           │  1200     100.0              
 #> 
-#> Note. Percentages are row percentages. Group comparison: Pearson chi-squared test.
+#> Note. Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## One-way tables
@@ -221,11 +221,11 @@ table_categorical(
 #> 2               415         76.994434        332      83.00     926 77.166667
 #> 3               112         20.779221         59      14.75     249 20.750000
 #> 4                12          2.226345          9       2.25      25  2.083333
-#>              p Cramer's V
-#> 1 2.012877e-05  0.1356677
-#> 2           NA         NA
-#> 3           NA         NA
-#> 4           NA         NA
+#>              p         V
+#> 1 2.012877e-05 0.1356677
+#> 2           NA        NA
+#> 3           NA        NA
+#> 4           NA        NA
 ```
 
 Use `output = "long"` for one row per level and group, the `Total`
@@ -309,18 +309,18 @@ table_categorical(
 #>    No                      │        310               57.5            163     
 #>    Yes                     │        229               42.5            237     
 #> 
-#>  Variable                  │ Tertiary %  Total n  Total %    p    Cramer's V 
-#> ───────────────────────────┼─────────────────────────────────────────────────
-#>  Smoking status            │                               <.001     .14     
-#>    No                      │    83.0       926     77.2                      
-#>    Yes                     │    14.8       249     20.8                      
-#>    (Missing)               │     2.2        25      2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │                               <.001     .21     
-#>    No                      │    40.8       650     54.2                      
-#>    Yes                     │    59.2       550     45.8                      
+#>  Variable                  │ Tertiary %  Total n  Total %    p     V  
+#> ───────────────────────────┼──────────────────────────────────────────
+#>  Smoking status            │                               <.001  .14 
+#>    No                      │    83.0       926     77.2               
+#>    Yes                     │    14.8       249     20.8               
+#>    (Missing)               │     2.2        25      2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity │                               <.001  .21 
+#>    No                      │    40.8       650     54.2               
+#>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## Association measures and confidence intervals
@@ -333,8 +333,13 @@ type (`assoc_measure = "auto"`, the default):
 - both ordered factors -\> Kendall’s `tau_b`,
 - otherwise -\> Cramer’s `V`.
 
-When the chosen measures differ across rows, the column header collapses
-to `"Effect size"` and the table note names the measure used for each
+A measure used for every row heads the column, and names it in the data
+frames, with its symbol (V for Cramer’s V, φ for phi, τb for Kendall’s
+tau-b, γ for gamma; the other measures keep their names). The note
+defines the symbol as it defines any abbreviation: V by default, the
+Greek letters under `spicy_style(abbreviations = "all")`. When the
+chosen measures differ across rows, the column header collapses to
+`"Effect size"` and the table note names the measure used for each
 variable.
 
 Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
@@ -379,7 +384,7 @@ table_categorical(
 #>    Yes       │               
 #>    (Missing) │               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test.
 ```
 
 A significant chi-squared *p*-value next to a lambda of exactly .00 is
@@ -450,7 +455,7 @@ table_categorical(
 #>    Very good       │  24.6                       
 #>    (Missing)       │   1.7                       
 #> 
-#> Note. Group comparison: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
+#> Note. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
 ```
 
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
@@ -462,12 +467,11 @@ the per-row choice.
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
 (`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
 the measure, e.g. `.14 [.08, .19]`, under a header that states its
-level, `Cramer's V [95% CI]` (demonstrated in the final section). In the
-default console table and in the `"data.frame"`, `"excel"` and
-`"clipboard"` outputs, separate columns named `95% CI LL` and
-`95% CI UL` are added, as the other tables name their interval columns;
-in the long format (`"long"`) the bounds fill `es_ci_lower` /
-`es_ci_upper`:
+level, `V [95% CI]` (demonstrated in the final section). In the default
+console table and in the `"data.frame"`, `"excel"` and `"clipboard"`
+outputs, separate columns named `95% CI LL` and `95% CI UL` are added,
+as the other tables name their interval columns; in the long format
+(`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`:
 
 ``` r
 
@@ -488,11 +492,11 @@ table_categorical(
 #> 2               415         76.994434        332      83.00     926 77.166667
 #> 3               112         20.779221         59      14.75     249 20.750000
 #> 4                12          2.226345          9       2.25      25  2.083333
-#>              p Cramer's V  95% CI LL 95% CI UL
-#> 1 2.012877e-05  0.1356677 0.07909264 0.1913716
-#> 2           NA         NA         NA        NA
-#> 3           NA         NA         NA        NA
-#> 4           NA         NA         NA        NA
+#>              p         V  95% CI LL 95% CI UL
+#> 1 2.012877e-05 0.1356677 0.07909264 0.1913716
+#> 2           NA        NA         NA        NA
+#> 3           NA        NA         NA        NA
+#> 4           NA        NA         NA        NA
 ```
 
 ## Chi-squared or Fisher’s exact test
@@ -524,7 +528,7 @@ table_categorical(
 #>    No              │    11       50.0       8     44.4     19      47.5         
 #>    Yes             │    11       50.0      10     55.6     21      52.5         
 #> 
-#>  Variable          │ Phi 
+#>  Variable          │  φ  
 #> ───────────────────┼─────
 #>  smoking           │ .20 
 #>    No              │     
@@ -534,7 +538,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+#> Note. P-values: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
 ```
 
 `test = "chisq"` tests every variable by the chi-squared, as before
@@ -586,7 +590,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
+#> Note. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
 ```
 
 ## Descriptive tables without tests
@@ -664,7 +668,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
+#> Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -731,18 +735,18 @@ table_categorical(
 #>    No              │       57.7            166         41.9       655   
 #>    Yes             │       42.3            229         58.1       545   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  smoking           │          <.001     .13     
-#>    No              │  76.6                      
-#>    Yes             │  21.1                      
-#>    (Missing)       │   2.2                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001     .19     
-#>    No              │  54.6                      
-#>    Yes             │  45.4                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  smoking           │          <.001  .13 
+#>    No              │  76.6               
+#>    Yes             │  21.1               
+#>    (Missing)       │   2.2               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001  .19 
+#>    No              │  54.6               
+#>    Yes             │  45.4               
 #> 
-#> Note. Statistics weighted by weight. Group comparison: Pearson chi-squared test.
+#> Note. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## Handling missing values
@@ -782,15 +786,15 @@ table_categorical(
 #>    Upper middle │       25.5            135         34.3       328     27.7   
 #>    High         │       17.7            104         26.4       219     18.5   
 #> 
-#>  Variable       │   p    Kendall's Tau-b 
-#> ────────────────┼────────────────────────
-#>  income_group   │ <.001        .22       
-#>    Low          │                        
-#>    Lower middle │                        
-#>    Upper middle │                        
-#>    High         │                        
+#>  Variable       │   p    τb  
+#> ────────────────┼────────────
+#>  income_group   │ <.001  .22 
+#>    Low          │            
+#>    Lower middle │            
+#>    Upper middle │            
+#>    High         │            
 #> 
-#> Note. Missing values removed: income_group (18). Group comparison: Pearson chi-squared test.
+#> Note. Missing values removed: income_group (18). P-value: Pearson chi-squared test.
 ```
 
 With several selected variables the note lists each variable’s removals
@@ -836,14 +840,14 @@ table_categorical(
 #>    Low        │       21.3             45         11.2       247     20.6   
 #>    High       │       17.4            104         26.0       219     18.2   
 #> 
-#>  Variable     │   p    Kendall's Tau-b 
-#> ──────────────┼────────────────────────
-#>  income_group │ <.001        .22       
-#>    (Missing)  │                        
-#>    Low        │                        
-#>    High       │                        
+#>  Variable     │   p    τb  
+#> ──────────────┼────────────
+#>  income_group │ <.001  .22 
+#>    (Missing)  │            
+#>    Low        │            
+#>    High       │            
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test.
 ```
 
 `levels_keep` filters the display only: counts, percentages, the
@@ -887,14 +891,14 @@ table_categorical(
 #>    Yes       │       20.78            59        14.75       249     20.75  
 #>    (Missing) │        2.23             9         2.25        25      2.08  
 #> 
-#>  Variable    │   p     Cramer's V 
-#> ─────────────┼────────────────────
-#>  smoking     │ <.0001     .136    
-#>    No        │                    
-#>    Yes       │                    
-#>    (Missing) │                    
+#>  Variable    │   p      V   
+#> ─────────────┼──────────────
+#>  smoking     │ <.0001  .136 
+#>    No        │              
+#>    Yes       │              
+#>    (Missing) │              
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 `p_digits` drives both the displayed precision of the `p` column and the
@@ -948,7 +952,7 @@ table_categorical(
 #>    No              │      334      53.9     316    54.5      650     54.2       
 #>    Yes             │      286      46.1     264    45.5      550     45.8       
 #> 
-#>  Variable          │ Phi 
+#>  Variable          │   φ 
 #> ───────────────────┼─────
 #>  smoking           │ .01 
 #>    No              │     
@@ -959,7 +963,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test.
 ```
 
 ## Tidying for downstream pipelines
@@ -1051,7 +1055,7 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Group comparison: Pearson chi-squared test.
+*Note.* P-values: Pearson chi-squared test. V = Cramer’s V.
 
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
@@ -1066,7 +1070,7 @@ table_categorical(
 )
 ```
 
-| Variable | Female |  | Male |  | Total |  | p | Phi |
+| Variable | Female |  | Male |  | Total |  | p | φ |
 |----|----|----|----|----|----|----|----|----|
 |  | n | % | n | % | n | % |  |  |
 | smoking |     |      |     |      |     |      | .713 | .01 |
@@ -1076,9 +1080,9 @@ table_categorical(
 | physical_activity |     |      |     |      |     |      | .832 | .01 |
 |     No | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |     |
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
-| *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
+| *Note.* P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_8k33zxwliff1vzat6zns .table
+Categorical table by sex {#tinytable_l7qhwhhyszx3hozivoe7 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1100,8 +1104,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Group comparison: Pearson chi-squared test. CI = confidence
-interval; LL = lower limit; UL = upper limit.
+*Note.* P-values: Pearson chi-squared test. V = Cramer’s V; CI =
+confidence interval; LL = lower limit; UL = upper limit.
 
 For Excel export, provide a file path:
 

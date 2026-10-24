@@ -165,7 +165,7 @@ changes.</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>Four things to notice, because each is a decision:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -225,7 +225,7 @@ denominator, and the note reports the loss per variable:</p>
 <span><span class="co">#&gt;    No     <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
 <span><span class="co">#&gt;    Yes    <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), smoking (25). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), smoking (25). P-value: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="why-overall-and-not-total">Why “Overall” and not “Total”<a class="anchor" aria-label="anchor" href="#why-overall-and-not-total"></a>
 </h3>
@@ -275,7 +275,7 @@ changes here.</p>
 <span><span class="co">#&gt;    Upper secondary   <span style="color: #9E9E9E;">│</span>  26.10 [23.50, 28.50]     534           </span></span>
 <span><span class="co">#&gt;    Tertiary          <span style="color: #9E9E9E;">│</span>  24.50 [22.00, 26.78]     394           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test (sex); Kruskal-Wallis test (education). Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Wilcoxon rank-sum test (sex); Kruskal-Wallis test (education). Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile.</span></span></span></code></pre></div>
 <p>Only the character-vector form is accepted. The per-variable named
 list of <code><a href="../reference/table_continuous.html">table_continuous()</a></code> would name nothing here: there
 is one outcome.</p>
@@ -336,7 +336,7 @@ as many words.</p>
 <span><span class="co">#&gt;    South   <span style="color: #9E9E9E;">│</span>                                       </span></span>
 <span><span class="co">#&gt;    West    <span style="color: #9E9E9E;">│</span>                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span></span></code></pre></div>
 <p>Read that table as a set of bivariate descriptions. It is not a
 model, and the blocks are not independent of one another: sex and region
 are correlated in any real sample, so a difference visible in one block
@@ -383,7 +383,7 @@ untouched.</p>
 <span><span class="co">#&gt;    first         <span style="color: #9E9E9E;">│</span>  7.71  3.04   4.00  12.00    4.90       10.53    7        </span></span>
 <span><span class="co">#&gt;    last          <span style="color: #9E9E9E;">│</span> 14.00   –    14.00  14.00     –           –      1        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test. Each block compares score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-value: Welch t-test. Each block compares score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="choosing-the-select-columns">Choosing the <code>select</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-select-columns"></a>
@@ -478,7 +478,7 @@ forms are an explicit enumeration or <code>where(is.factor)</code>:</p>
 <span><span class="co">#&gt;    High                <span style="color: #9E9E9E;">│</span>  67.92    16.17     234           </span></span>
 <span><span class="co">#&gt;    Very high           <span style="color: #9E9E9E;">│</span>  67.69    16.15     128           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Negation (<code>select = -c(x, y)</code>) is <strong>not</strong>
 recommended, and the reason is worth a paragraph. It sweeps in every
 remaining column, and a numeric one becomes a block with one
@@ -734,7 +734,7 @@ does elsewhere in the family:</p>
 <span><span class="co">#&gt;    Female   <span style="color: #9E9E9E;">│</span>  25.69    3.78     616         </span></span>
 <span><span class="co">#&gt;    Male     <span style="color: #9E9E9E;">│</span>  26.20    3.64     572         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). P-value: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
@@ -1265,11 +1265,11 @@ education
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Missing values removed: bmi (12). Group comparison: Welch
-t-test (sex); Welch one-way ANOVA (education). Each block compares bmi
-across the levels of one variable, without controlling for the other
-variables. Overall = the whole analytic sample. CI = confidence
-interval; LL = lower limit; UL = upper limit; ES = effect size.
+<em>Note.</em> Missing values removed: bmi (12). P-values: Welch t-test
+(sex); Welch one-way ANOVA (education). Each block compares bmi across
+the levels of one variable, without controlling for the other variables.
+Overall = the whole analytic sample. CI = confidence interval; LL =
+lower limit; UL = upper limit; ES = effect size.
 </div>
 </div>
 </div>
@@ -1285,46 +1285,46 @@ interval; LL = lower limit; UL = upper limit; ES = effect size.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_rb7pgtnazbwtv5ymlb2r = TinyTable.createTableFunctions("tinytable_rb7pgtnazbwtv5ymlb2r");
+      const tableFns_3zzoxbi0bhopd8q10fgi = TinyTable.createTableFunctions("tinytable_3zzoxbi0bhopd8q10fgi");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_u9rnb4s3pgop63vnxq7k',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_9py178f3mvu0k9z4581e',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_th8oeyoh6kje0fmta47b',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_06ajx5mzm0cq9qie1cdu',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_eu6fiw51doa0vg2p5zpp',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_u8vnpuknc2c2q1qjpte8',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_p6ihr1tg95d1qgyl2tjr',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_w2qnatbp0n1a9jcl9idk',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_rwe8ouzoco0fjkxhwju3',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_1ge2xxfqsc8bv7ikytn0',}, 
+          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_ph6fr0ei9z0219rpt9z0',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_g69lvcc2ejsrihq4sjx0',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_uyw507484oxwr9hfuwwt',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_15cz8gc8wpahqxe2fdz4',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_089nuge3qtt3zgempgxs',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_fkwmmnebu1skjgcqnhe9',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_wq9f03pexg07obkym7kl',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_lh1pszxg20iii54dumqo',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_76huyv69sgqg9s0w4zp8',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_0yhk8egmj6fpdrzii15v',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_rb7pgtnazbwtv5ymlb2r.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_3zzoxbi0bhopd8q10fgi.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_u9rnb4s3pgop63vnxq7k, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_u9rnb4s3pgop63vnxq7k {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_9py178f3mvu0k9z4581e, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_9py178f3mvu0k9z4581e { text-align: center }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_th8oeyoh6kje0fmta47b, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_th8oeyoh6kje0fmta47b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_06ajx5mzm0cq9qie1cdu, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_06ajx5mzm0cq9qie1cdu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_eu6fiw51doa0vg2p5zpp, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_eu6fiw51doa0vg2p5zpp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_u8vnpuknc2c2q1qjpte8, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_u8vnpuknc2c2q1qjpte8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_p6ihr1tg95d1qgyl2tjr, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_p6ihr1tg95d1qgyl2tjr { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_w2qnatbp0n1a9jcl9idk, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_w2qnatbp0n1a9jcl9idk { text-align: left }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_rwe8ouzoco0fjkxhwju3, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_rwe8ouzoco0fjkxhwju3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_rb7pgtnazbwtv5ymlb2r td.tinytable_css_1ge2xxfqsc8bv7ikytn0, #tinytable_rb7pgtnazbwtv5ymlb2r th.tinytable_css_1ge2xxfqsc8bv7ikytn0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_ph6fr0ei9z0219rpt9z0, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_ph6fr0ei9z0219rpt9z0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_g69lvcc2ejsrihq4sjx0, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_g69lvcc2ejsrihq4sjx0 { text-align: center }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_uyw507484oxwr9hfuwwt, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_uyw507484oxwr9hfuwwt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_15cz8gc8wpahqxe2fdz4, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_15cz8gc8wpahqxe2fdz4 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_089nuge3qtt3zgempgxs, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_089nuge3qtt3zgempgxs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_fkwmmnebu1skjgcqnhe9, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_fkwmmnebu1skjgcqnhe9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_wq9f03pexg07obkym7kl, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_wq9f03pexg07obkym7kl { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_lh1pszxg20iii54dumqo, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_lh1pszxg20iii54dumqo { text-align: left }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_76huyv69sgqg9s0w4zp8, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_76huyv69sgqg9s0w4zp8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_3zzoxbi0bhopd8q10fgi td.tinytable_css_0yhk8egmj6fpdrzii15v, #tinytable_3zzoxbi0bhopd8q10fgi th.tinytable_css_0yhk8egmj6fpdrzii15v {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_rb7pgtnazbwtv5ymlb2r" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_3zzoxbi0bhopd8q10fgi" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics of wellbeing_score</caption>
         <thead><tr>
 <th scope="col" data-row="0" data-col="1">Variable</th>
@@ -1333,7 +1333,7 @@ interval; LL = lower limit; UL = upper limit; ES = effect size.
                 <th scope="col" data-row="0" data-col="4">p</th>
               </tr></thead>
 <tfoot><tr><td colspan="4" style="font-size: 0.9em; ">
-<em>Note.</em> Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile.</td></tr></tfoot>
+<em>Note.</em> P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Overall</td>
