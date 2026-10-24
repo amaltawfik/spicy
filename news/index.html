@@ -265,6 +265,7 @@
 <li><p>Typst output prints the note as text, as the other outputs do. The stars of the <code>stars = TRUE</code> legend turned into bold and vanished, and the <code>//</code> of a URL stopped the compilation.</p></li>
 <li><p>Typst output no longer breaks a label in the middle of a word (“Fe-male”), and widens the columns under a group label wider than them, where neighboring labels ran into each other (<a href="https://github.com/amaltawfik/spicy/issues/11" class="external-link">#11</a>).</p></li>
 <li><p>In Typst output, the second line of a wrapped level label starts under the first, not an em to its left: the level is indented by its cell, no longer by spaces in its text. An indented label also no longer wraps in a column wide enough for it.</p></li>
+<li><p>In Typst output, a variable’s label spans the columns before its p-value and effect size, where it wrapped at the width of the levels under it.</p></li>
 <li><p>LaTeX output of <code>output = "tinytable"</code> scales a table wider than the text block down to it, note included. It ran off the page. A table that fits keeps its size.</p></li>
 <li><p>In HTML, <code>output = "gt"</code> sets the title of every table at the size of the table text, as <code><a href="../reference/table_regression.html">table_regression()</a></code> did, where the descriptive tables used 125%.</p></li>
 <li><p>In a LaTeX document knitted with Quarto or R Markdown, the <code>gt</code> title is at the size of the table text and flush left, as in HTML.</p></li>

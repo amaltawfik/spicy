@@ -986,6 +986,10 @@ the descriptive tables one contract for labels, p-values, and notes.
   no longer by spaces in its text. An indented label also no longer
   wraps in a column wide enough for it.
 
+- In Typst output, a variable’s label spans the columns before its
+  p-value and effect size, where it wrapped at the width of the levels
+  under it.
+
 - LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table
   that fits keeps its size.
