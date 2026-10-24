@@ -792,6 +792,14 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   is purely descriptive.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains `percent`, as in
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
+  with `percent = "row"`, each level’s percentages sum to 100 across the
+  groups, and the note says so. `total_row = TRUE` closes each variable
+  with a Total row, which under row percentages gives the base rate they
+  are read against.
+
 - `table_categorical(test = "fisher")` applies Fisher’s exact test to
   every variable, by Monte Carlo for a table too large for the exact
   computation.
@@ -940,6 +948,9 @@ the descriptive tables one contract for labels, p-values, and notes.
   number strictly between 0 and 1.” and “`drop_na` must be TRUE or
   FALSE.”.
 
+- The table functions no longer draw a rule above a row whose label
+  holds the word “Total” (a level “Total score”) in the console.
+
 - Outside the data frame, an effect size printed with its interval is
   headed with the level: `ES [95% CI]` in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -969,6 +980,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   (“Fe-male”), and widens the columns under a group label wider than
   them, where neighboring labels ran into each other
   ([\#11](https://github.com/amaltawfik/spicy/issues/11)).
+
+- In Typst output, the second line of a wrapped level label starts under
+  the first, not an em to its left: the level is indented by its cell,
+  no longer by spaces in its text. An indented label also no longer
+  wraps in a column wide enough for it.
 
 - LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table

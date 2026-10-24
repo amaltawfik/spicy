@@ -491,7 +491,7 @@ table_continuous_lm(
   table and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`,
   `"word"`, `"excel"`, `"clipboard"`), the effect-size column shows the
   value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`), under
-  a header that states its level (`d [95\% CI]`). Defaults to `FALSE`.
+  a header that states its level (`d [95% CI]`). Defaults to `FALSE`.
   When `effect_size = "none"`, this argument is ignored with a warning.
 
 - r2:

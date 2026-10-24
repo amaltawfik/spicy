@@ -25,6 +25,7 @@ table_categorical(
   labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
+  total_row = FALSE,
   drop_na = FALSE,
   weights = NULL,
   rescale = getOption("spicy.rescale", FALSE),
@@ -34,6 +35,7 @@ table_categorical(
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
+  percent = c("column", "row"),
   percent_digits = 1,
   p_digits = 3,
   effect_size_digits = 2,
@@ -160,6 +162,20 @@ table_categorical(
   give the margin another label with
   `options(spicy.labels = list(header_margin_total = "All"))`.
 
+- total_row:
+
+  Logical. If `TRUE`, closes the block of each variable with a `Total`
+  row under its levels (after the `"(Missing)"` row when there is one):
+  the count of the variable in each group column and in the `Total`
+  column, and its percentage, 100 in every column under
+  `percent = "column"` and, under `percent = "row"`, the share of each
+  group in the variable's total, the base rate the row percentages are
+  compared with. Without `by`, the row holds the count of the variable
+  and 100. The row never enters the test, the association measure or the
+  SMD. It takes the label of the margin, so a level displayed with that
+  label is then an error (class `spicy_label_collision`), as beside the
+  `Total` column. `FALSE` (the default) adds no row.
+
 - drop_na:
 
   Logical. The rule of the family: a table that counts shows the missing
@@ -273,6 +289,21 @@ table_categorical(
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). Needs
   `by` and the `p` column. See *Multiple-comparison adjustment*.
 
+- percent:
+
+  The direction of the percentages under `by`, as in
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
+  `"column"` (the default), the distribution of each group over the
+  levels of the variable, summing to 100 down each group; or `"row"`,
+  the share of each level falling in each group, summing to 100 across
+  the groups, so that the `Total` column shows 100 on every level row.
+  Unique abbreviations are accepted (`"c"`, `"r"`). Only the displayed
+  shares change: the counts, the test, the association measure and the
+  SMD are the same in both directions. Under `"row"` the note says so
+  ("Percentages are row percentages."). Without `by`, each variable has
+  one distribution to show, and `percent = "row"` is ignored with a
+  warning (class `spicy_ignored_arg`).
+
 - percent_digits:
 
   Number of digits for percentages in report outputs. Defaults to `1`. A
@@ -331,13 +362,13 @@ table_categorical(
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
   If `TRUE`, includes the 95\\ and in the `"data.frame"`, `"excel"` and
-  `"clipboard"` outputs, two extra columns headed `95\% CI LL` /
-  `95\% CI UL` are added, the level stated as the other tables state it;
+  `"clipboard"` outputs, two extra columns headed `95% CI LL` /
+  `95% CI UL` are added, the level stated as the other tables state it;
   in the long output (`"long"`) the bounds fill `es_ci_lower` /
   `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
   `"flextable"`, `"word"`), the CI is shown inline (e.g.,
   `.14 [.08, .19]`) under a header that states its level
-  (`Cramer's V [95\% CI]`). Defaults to `FALSE`.
+  (`Cramer's V [95% CI]`). Defaults to `FALSE`.
 
 - smd:
 
@@ -525,37 +556,39 @@ Depends on `output`:
   row of each variable, which carries its *p*-value and its association
   measure, then one row per level. The key columns are `variable` (the
   column name), `label` (the label the rows display for it, see
-  `labels`), `level` and `.row_role` (`"factor_header"`, `"level"`, or
-  `"missing"` for the row of missing values the table adds), then the
-  printed columns: one pair `<group> n` / `<group> \%` per group level
-  (plus `Total` when `include_total = TRUE`), `p` (absent with
-  `p_value = FALSE`), the association measure (named after the measure,
-  or `Effect size` when the row variables do not share one), its bounds
-  `95\% CI LL` / `95\% CI UL` with `assoc_ci = TRUE`, and `SMD` with
-  `smd = TRUE`. When `by = NULL`, the printed columns are `n` and `\%`.
+  `labels`), `level` and `.row_role` (`"factor_header"`, `"level"`,
+  `"missing"` for the row of missing values the table adds, or `"total"`
+  for the Total row of `total_row = TRUE`), then the printed columns:
+  one pair `<group> n` / `<group> %` per group level (plus `Total` when
+  `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
+  association measure (named after the measure, or `Effect size` when
+  the row variables do not share one), its bounds `95% CI LL` /
+  `95% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`. When
+  `by = NULL`, the printed columns are `n` and `%`.
 
 - `"long"`: a long `data.frame`, one row per variable, level and group,
   with columns `variable`, `label`, `level`, `.row_role` (the role of
-  `level`: `"level"`, or `"missing"` for the row of missing values),
-  then, when `by` is used, `group`, `.group_role` (the role of `group`:
-  `"group"`, `"missing"` for the column of missing `by` values, or
-  `"total"` for the margin) and `total` (`TRUE` on the rows of the
-  margin), then `n`, `pct` (the percentage), then, with `by`, the test
-  of the variable unless `p_value = FALSE`: `test_type` (`"chi_squared"`
-  for Pearson's, `"n1_chi_squared"` for the N-1 chi-squared,
-  `"fisher_exact"`, `"fisher_midp"` for the Fisher mid-p test, or
-  `"fisher_exact_mc"` for the Monte Carlo estimate of Fisher's exact
-  test), `statistic` and `df` (the chi-squared, Pearson's or the N-1,
-  `NA` for a variable tested by an exact test), `p.value` (and
-  `p_unadjusted` under `p_adjust`); and the association measure,
-  whichever measure it is: `es_type` names it per row (`"cramer_v"`,
-  `"phi"`, ...), `es_value` holds it, `es_ci_lower` / `es_ci_upper` its
-  interval (`NA` unless `assoc_ci = TRUE`), and `smd_type` (`"binary"`
-  or `"multinomial"`, the kernel the value came from) / `smd_value` the
-  standardized mean difference. The measure and SMD columns are there
-  whether or not they were requested, `NA` when not, so the schema does
-  not move with an argument. The statistics of a variable sit on every
-  row of its block.
+  `level`: `"level"`, `"missing"` for the row of missing values, or
+  `"total"` for the Total row of `total_row = TRUE`), then, when `by` is
+  used, `group`, `.group_role` (the role of `group`: `"group"`,
+  `"missing"` for the column of missing `by` values, or `"total"` for
+  the margin) and `total` (`TRUE` on the rows of the margin and of the
+  Total row), then `n`, `pct` (the percentage the table displays, in the
+  direction of `percent`), then, with `by`, the test of the variable
+  unless `p_value = FALSE`: `test_type` (`"chi_squared"` for Pearson's,
+  `"n1_chi_squared"` for the N-1 chi-squared, `"fisher_exact"`,
+  `"fisher_midp"` for the Fisher mid-p test, or `"fisher_exact_mc"` for
+  the Monte Carlo estimate of Fisher's exact test), `statistic` and `df`
+  (the chi-squared, Pearson's or the N-1, `NA` for a variable tested by
+  an exact test), `p.value` (and `p_unadjusted` under `p_adjust`); and
+  the association measure, whichever measure it is: `es_type` names it
+  per row (`"cramer_v"`, `"phi"`, ...), `es_value` holds it,
+  `es_ci_lower` / `es_ci_upper` its interval (`NA` unless
+  `assoc_ci = TRUE`), and `smd_type` (`"binary"` or `"multinomial"`, the
+  kernel the value came from) / `smd_value` the standardized mean
+  difference. The measure and SMD columns are there whether or not they
+  were requested, `NA` when not, so the schema does not move with an
+  argument. The statistics of a variable sit on every row of its block.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -576,7 +609,13 @@ object and the data frames of `"data.frame"` / `"long"` keep the whole
 note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
 there is nothing to say), so a pipeline that renders the numbers itself
 can still state what left the table. The default object also keeps the
-title the console prints, in `attr(x, "title")`. On the `"tinytable"`
+title the console prints, in `attr(x, "title")`. The same three objects
+record the direction of their percentages in `attr(x, "percent")`:
+`"column"` or `"row"` (see `percent`), and `"column"` for a table
+without `by`. The percentage columns of `"data.frame"`, `pct` in
+`"long"` and the `proportion` of
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) hold
+the shares the table displays, in that direction. On the `"tinytable"`
 route the note is set one size down; `options(spicy.note_style)` governs
 that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).

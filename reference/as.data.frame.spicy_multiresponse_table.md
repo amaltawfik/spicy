@@ -9,7 +9,7 @@ then the base – with the key columns `variable` (the item's column, or
 the token of a row the table adds: `"none"`, `"no_data"`, `"nobs"` for
 the base), `label` (the label displayed) and `.row_role` (`"summary"`
 for an item, `"none"`, `"missing"`, or `"fit_stat"` for the base), then
-the printed columns under their names (`"<group> n"`, `"<group> \%"`,
+the printed columns under their names (`"<group> n"`, `"<group> %"`,
 ..., `"Test"` with `df` beside it under `statistic = TRUE`, `"p"`). The
 `"note"` and `"global_test"` attributes are kept. `as_tibble()` returns
 the same table as a tibble. The original `x` is unaffected, and

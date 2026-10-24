@@ -83,7 +83,10 @@ change the call. As a convenience, a `variable` that matches no source
 column is looked up among the displayed labels before erroring. The
 missing-value category is addressed by `level = "(Missing)"` whatever
 its displayed (possibly translated or relabeled) label, through its row
-role. Fit statistics are addressed by their token as `variable`
+role, and the Total row of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+under `total_row = TRUE` by `level = "Total"`, the same way. Fit
+statistics are addressed by their token as `variable`
 (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by their label
 (`inline(tbl, "n")`). The token is the one `show_fit_stats` takes
 (`"r2"`, `"adj_r2"`, `"aic"`, ...), the key of the row in the `variable`

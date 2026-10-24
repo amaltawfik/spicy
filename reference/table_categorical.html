@@ -117,6 +117,7 @@ or publication-ready tables (<code>"tinytable"</code>, <code>"gt"</code>, <code>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  levels_keep <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include_total <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  total_row <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.rescale"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
@@ -126,6 +127,7 @@ or publication-ready tables (<code>"tinytable"</code>, <code>"gt"</code>, <code>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"chisq"</span>, <span class="st">"fisher"</span>, <span class="st">"midp"</span>, <span class="st">"n1"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p_adjust <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  percent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"column"</span>, <span class="st">"row"</span><span class="op">)</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  effect_size_digits <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -238,6 +240,20 @@ level, or give the margin another label with
 <code>options(spicy.labels = list(header_margin_total = "All"))</code>.</p></dd>
 
 
+<dt id="arg-total-row">total_row<a class="anchor" aria-label="anchor" href="#arg-total-row"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, closes the block of each variable
+with a <code>Total</code> row under its levels (after the <code>"(Missing)"</code> row when
+there is one): the count of the variable in each group column and in
+the <code>Total</code> column, and its percentage, 100 in every column under
+<code>percent = "column"</code> and, under <code>percent = "row"</code>, the share of each
+group in the variable's total, the base rate the row percentages are
+compared with. Without <code>by</code>, the row holds the count of the variable
+and 100. The row never enters the test, the association measure or
+the SMD. It takes the label of the margin, so a level displayed with
+that label is then an error (class <code>spicy_label_collision</code>), as
+beside the <code>Total</code> column. <code>FALSE</code> (the default) adds no row.</p></dd>
+
+
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
 <dd><p>Logical. The rule of the family: a table that counts
 shows the missing values by default, as a frequency table reports
@@ -339,6 +355,21 @@ variable). One of <code>"none"</code> (default), <code>"holm"</code>, <code>"hoc
 <code>by</code> and the <code>p</code> column. See <em>Multiple-comparison adjustment</em>.</p></dd>
 
 
+<dt id="arg-percent">percent<a class="anchor" aria-label="anchor" href="#arg-percent"></a></dt>
+<dd><p>The direction of the percentages under <code>by</code>, as in
+<code><a href="cross_tab.html">cross_tab()</a></code>: <code>"column"</code> (the default), the distribution of each
+group over the levels of the variable, summing to 100 down each
+group; or <code>"row"</code>, the share of each level falling in each group,
+summing to 100 across the groups, so that the <code>Total</code> column shows
+100 on every level row. Unique abbreviations are accepted (<code>"c"</code>,
+<code>"r"</code>). Only the displayed shares change: the counts, the test, the
+association measure and the SMD are the same in both directions.
+Under <code>"row"</code> the note says so ("Percentages are row
+percentages."). Without <code>by</code>, each variable has one distribution to
+show, and <code>percent = "row"</code> is ignored with a warning (class
+<code>spicy_ignored_arg</code>).</p></dd>
+
+
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
 <dd><p>Number of digits for percentages in report outputs.
 Defaults to <code>1</code>. A whole number: a fraction is an error, as for
@@ -391,12 +422,12 @@ another measure or fall back to <code>"auto"</code>.</p></dd>
 <dd><p>Passed to <code><a href="cross_tab.html">cross_tab()</a></code>. If <code>TRUE</code>, includes the
 95\<!-- % confidence interval of the association measure. In the console -->
 and in the <code>"data.frame"</code>, <code>"excel"</code> and <code>"clipboard"</code> outputs, two
-extra columns headed <code>95\% CI LL</code> / <code>95\% CI UL</code> are added, the level
+extra columns headed <code>95% CI LL</code> / <code>95% CI UL</code> are added, the level
 stated as the other tables state it; in the long output (<code>"long"</code>)
 the bounds fill <code>es_ci_lower</code> / <code>es_ci_upper</code>. In rendered formats
 (<code>"gt"</code>, <code>"tinytable"</code>, <code>"flextable"</code>, <code>"word"</code>), the CI is shown
 inline (e.g., <code>.14 [.08, .19]</code>) under a header that states its level
-(<code>Cramer's V [95\% CI]</code>). Defaults to <code>FALSE</code>.</p></dd>
+(<code>Cramer's V [95% CI]</code>). Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-smd">smd<a class="anchor" aria-label="anchor" href="#arg-smd"></a></dt>
@@ -561,21 +592,25 @@ of each variable, which carries its <em>p</em>-value and its association
 measure, then one row per level. The key columns are <code>variable</code>
 (the column name), <code>label</code> (the label the rows display for it,
 see <code>labels</code>), <code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>,
-<code>"level"</code>, or <code>"missing"</code> for the row of missing values the table
-adds), then the printed columns: one pair <code>&lt;group&gt; n</code> /
-<code>&lt;group&gt; \%</code> per group level (plus <code>Total</code> when
+<code>"level"</code>, <code>"missing"</code> for the row of missing values the table
+adds, or <code>"total"</code> for the Total row of <code>total_row = TRUE</code>), then
+the printed columns: one pair <code>&lt;group&gt; n</code> /
+<code>&lt;group&gt; %</code> per group level (plus <code>Total</code> when
 <code>include_total = TRUE</code>), <code>p</code> (absent with <code>p_value = FALSE</code>), the
 association measure (named after the measure, or <code>Effect size</code>
-when the row variables do not share one), its bounds <code>95\% CI LL</code> /
-<code>95\% CI UL</code> with <code>assoc_ci = TRUE</code>, and <code>SMD</code> with <code>smd = TRUE</code>.
-When <code>by = NULL</code>, the printed columns are <code>n</code> and <code>\%</code>.</p></li>
+when the row variables do not share one), its bounds <code>95% CI LL</code> /
+<code>95% CI UL</code> with <code>assoc_ci = TRUE</code>, and <code>SMD</code> with <code>smd = TRUE</code>.
+When <code>by = NULL</code>, the printed columns are <code>n</code> and <code>%</code>.</p></li>
 <li><p><code>"long"</code>: a long <code>data.frame</code>, one row per variable, level and
 group, with columns <code>variable</code>, <code>label</code>, <code>level</code>, <code>.row_role</code> (the
-role of <code>level</code>: <code>"level"</code>, or <code>"missing"</code> for the row of missing
-values), then, when <code>by</code> is used, <code>group</code>, <code>.group_role</code> (the role
+role of <code>level</code>: <code>"level"</code>, <code>"missing"</code> for the row of missing
+values, or <code>"total"</code> for the Total row of <code>total_row = TRUE</code>), then,
+when <code>by</code> is used, <code>group</code>, <code>.group_role</code> (the role
 of <code>group</code>: <code>"group"</code>, <code>"missing"</code> for the column of missing <code>by</code>
 values, or <code>"total"</code> for the margin) and <code>total</code> (<code>TRUE</code> on the
-rows of the margin), then <code>n</code>, <code>pct</code> (the percentage),
+rows of the margin and of the Total row), then <code>n</code>, <code>pct</code> (the
+percentage the table
+displays, in the direction of <code>percent</code>),
 then, with <code>by</code>, the test of the variable unless
 <code>p_value = FALSE</code>: <code>test_type</code> (<code>"chi_squared"</code> for Pearson's,
 <code>"n1_chi_squared"</code> for the N-1 chi-squared, <code>"fisher_exact"</code>,
@@ -609,6 +644,11 @@ and the default object and the data frames of <code>"data.frame"</code> /
 that renders the numbers itself can still state what left the table.
 The default object also keeps the title the console prints, in
 <code>attr(x, "title")</code>.
+The same three objects record the direction of their percentages in
+<code>attr(x, "percent")</code>: <code>"column"</code> or <code>"row"</code> (see <code>percent</code>), and
+<code>"column"</code> for a table without <code>by</code>. The percentage columns of
+<code>"data.frame"</code>, <code>pct</code> in <code>"long"</code> and the <code>proportion</code> of
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> hold the shares the table displays, in that direction.
 On the <code>"tinytable"</code> route the note is set one size down;
 <code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
 <p>The Excel sheet carries the same title the console prints on its

@@ -96,6 +96,47 @@ final column is the association measure – here Cramer’s V (covered
 below). Use `output = "data.frame"` for a plain data frame suitable for
 further processing.
 
+`percent = "row"` reads the table the other way: each cell is the share
+of the row’s respondents that falls in the group, so the percentages sum
+to 100 across each row and the `Total` column shows 100.
+`total_row = TRUE` closes the block with a Total row, the share of each
+group overall, the base rate the rows are compared with. With smoking as
+`by`, 29.9% of the respondents with lower secondary education smoke and
+14.8% of those with tertiary education, against 20.8% overall. Only the
+percentages change: the counts, the test and the association measure are
+those of the column direction, and the note says the percentages are row
+percentages.
+
+``` r
+
+table_categorical(
+  sochealth,
+  select = education,
+  by = smoking,
+  percent = "row",
+  total_row = TRUE
+)
+#> Categorical table by smoking
+#> 
+#>  Variable          │ No n  No %  Yes n  Yes %  (Missing) n  (Missing) % 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  education         │                                                    
+#>    Lower secondary │ 179   68.6    78   29.9        4           1.5     
+#>    Upper secondary │ 415   77.0   112   20.8       12           2.2     
+#>    Tertiary        │ 332   83.0    59   14.8        9           2.2     
+#>    Total           │ 926   77.2   249   20.8       25           2.1     
+#> 
+#>  Variable          │ Total n  Total %    p    Cramer's V 
+#> ───────────────────┼─────────────────────────────────────
+#>  education         │                   <.001     .14     
+#>    Lower secondary │   261     100.0                     
+#>    Upper secondary │   539     100.0                     
+#>    Tertiary        │   400     100.0                     
+#>    Total           │  1200     100.0                     
+#> 
+#> Note. Percentages are row percentages. Group comparison: Pearson chi-squared test.
+```
+
 ## One-way tables
 
 Omit `by` to build a frequency-style table for the selected variables:
@@ -1037,7 +1078,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_ytwb78hv4dudg5enmbuk .table
+Categorical table by sex {#tinytable_xdog2nkoln6n78jef4fu .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

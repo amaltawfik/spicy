@@ -391,11 +391,11 @@ Depends on `output`:
   of
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
   then the printed columns: the count and the percentage of each group
-  of `by` and of the `Total` margin (`<group> n` and `<group> \%`, or
-  `<group> \% of cases` and `<group> \% of responses` under
-  `percent = "both"`; `n` and `\%` without `by`), `Test` (the
-  chi-squared of the item, with `df` beside it) under
-  `statistic = TRUE`, and `p` with `p_value`.
+  of `by` and of the `Total` margin (`<group> n` and `<group> %`, or
+  `<group> % of cases` and `<group> % of responses` under
+  `percent = "both"`; `n` and `%` without `by`), `Test` (the chi-squared
+  of the item, with `df` beside it) under `statistic = TRUE`, and `p`
+  with `p_value`.
 
 - `"long"`: one row per item and group, then one per row of `none_row`
   and group, with columns `variable` (the item's column, `"none"` or

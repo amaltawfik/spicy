@@ -377,10 +377,10 @@ key columns <code>variable</code> (the column name), <code>label</code> (the lab
 displayed), <code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>, <code>"level"</code>,
 or <code>"missing"</code> on the row of missing values the table adds), then
 the printed columns in their order: per block of <code>by</code> (and the
-<code>Total</code> margin) <code>&lt;group&gt; n</code>, <code>&lt;group&gt; \%</code>, with <code>proportion_ci</code> the
-interval bounds <code>&lt;group&gt; 95\% CI LL</code> and <code>&lt;group&gt; 95\% CI UL</code> (the
+<code>Total</code> margin) <code>&lt;group&gt; n</code>, <code>&lt;group&gt; %</code>, with <code>proportion_ci</code> the
+interval bounds <code>&lt;group&gt; 95% CI LL</code> and <code>&lt;group&gt; 95% CI UL</code> (the
 level of <code>ci_level</code>, as printed), with <code>deff</code> <code>&lt;group&gt; DEff</code>, and
-last <code>p</code>. Without <code>by</code>, the columns of the one block are <code>n</code>, <code>\%</code>,
+last <code>p</code>. Without <code>by</code>, the columns of the one block are <code>n</code>, <code>%</code>,
 ...</p></li>
 <li><p><code>"long"</code>: one row per variable, level and group, in the order
 of the table, with <code>variable</code>, <code>label</code>, <code>level</code>, <code>.row_role</code> (the
@@ -483,7 +483,10 @@ survey's and do not move with it.</p>
     <h2 id="what-is-absent-and-why">What is absent, and why<a class="anchor" aria-label="anchor" href="#what-is-absent-and-why"></a></h2>
     <p><code>weights</code> and <code>rescale</code> (the weighting <em>is</em> the design). <code>correct</code>
 (Yates), <code>simulate_p</code> and <code>simulate_B</code>, which have no meaning once
-the reference distribution is Rao-Scott's. And the association
+the reference distribution is Rao-Scott's. <code>percent</code>, not yet: a row
+percentage is estimated within its level, a domain of its own, so every
+level of every variable would bring its own degrees of freedom,
+intervals and design effects. And the association
 measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
 have no established design-based variance, and the intervals
 <code><a href="table_categorical.html">table_categorical()</a></code> gives them assume simple random sampling. The

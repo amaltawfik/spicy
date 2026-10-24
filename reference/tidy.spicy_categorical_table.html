@@ -119,11 +119,15 @@ table can be consumed by any downstream tidyverse-stats pipeline.</p>
 of <code>by</code> and the <code>Total</code> margin included, with columns <code>variable</code> (the
 column name), <code>label</code> (the label the rows display for it, see
 <code>labels</code>), <code>level</code>, <code>.row_role</code> (the role of <code>level</code>: <code>"missing"</code> on
-the row of missing values the table adds, <code>"level"</code> otherwise),
+the row of missing values the table adds, <code>"total"</code> on the Total row
+of <code>total_row = TRUE</code>, <code>"level"</code> otherwise),
 <code>group</code> (<code>NA</code> without <code>by</code>), <code>.group_role</code> (the role of <code>group</code>:
 <code>"missing"</code> on the column of missing <code>by</code> values, <code>"total"</code> on the
 margin, <code>"group"</code> otherwise, <code>NA</code> without <code>by</code>), <code>total</code> (<code>TRUE</code> on the
-rows of the margin), <code>n</code>, and <code>proportion</code> (between 0 and 1). Filter
+rows of the margin and of the Total row), <code>n</code>, and <code>proportion</code>
+(between 0 and 1, the share
+the table displays: within the group, or within the level under
+<code>percent = "row"</code>, as <code>attr(x, "percent")</code> records). Filter
 on the role columns and <code>total</code> rather than on the displayed labels,
 which follow the display language.</p>
 <p><code>glance()</code> returns one row per variable, in the order of <code>select</code>, with
@@ -135,8 +139,8 @@ the standardized mean difference: <code>variable</code>, <code>label</code>, <co
 N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>, <code>es_type</code> (the key of
 the measure the variable carries: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
 <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, and
-<code>nobs</code> (the observations of the variable, the margin not counted
-twice). Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>nobs</code> are
+<code>nobs</code> (the observations of the variable, the margin and the Total
+row not counted twice). Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>nobs</code> are
 populated; the other columns are <code>NA</code>. The interval bounds are <code>NA</code>
 unless the table was built with <code>assoc_ci = TRUE</code>, and the SMD columns
 unless it was built with <code>smd = TRUE</code>.</p>

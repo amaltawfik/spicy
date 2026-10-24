@@ -387,7 +387,7 @@ Depends on `output`:
   columns `variable`, `label` and, with `by`, `group` and `.row_role`
   (`"group"`, or `"missing"` for the group of missing `by` values), then
   the printed columns under their names (`"M"`, `"SD"`, `"SE"`,
-  `"95\% CI LL"`, ..., `"n"`, `"p"`), as in
+  `"95% CI LL"`, ..., `"n"`, `"p"`), as in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 
 - `"long"`: one row per `(variable x group)` (per variable without `by`)

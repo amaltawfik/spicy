@@ -160,8 +160,10 @@ row); <code>NA</code> outside a factor.</p></li>
 <code>"outcome"</code>, <code>"vc"</code> (variance component) in a regression table,
 plus <code>"summary"</code> (a row summarizing one variable), <code>"group"</code> (a
 row keyed by one level of <code>by</code>), <code>"missing"</code> (a row keyed by
-the <em>missing</em> value) and <code>"none"</code> (the respondents who chose no
-item of a multiple-response question) in the descriptive ones. The
+the <em>missing</em> value), <code>"none"</code> (the respondents who chose no
+item of a multiple-response question) and <code>"total"</code> (the Total row
+of <code><a href="table_categorical.html">table_categorical()</a></code> under <code>total_row = TRUE</code>) in the
+descriptive ones. The
 role is the key a consumer matches on: <code>"(Missing)"</code> is a display
 label – translatable, and relabeled through <code>options(spicy.labels)</code>
 – and the role survives both.</p></li>
@@ -213,8 +215,9 @@ per grouping and its <code>"level"</code> (or <code>"missing"</code>) rows. The 
 follow the table they twin, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> with the
 interval of each percentage (token <code>"prop_ci"</code>) and no association
 measure.</p><ul><li><p><code><a href="table_categorical.html">table_categorical()</a></code> – one <code>"factor_header"</code> row per variable
-then one <code>"level"</code> (or <code>"missing"</code>) row per category, exactly as
-the console lays them out. Tokens: <code>"n"</code>, <code>"pct"</code>, <code>"p"</code>,
+then one <code>"level"</code> (or <code>"missing"</code>) row per category, and under
+<code>total_row = TRUE</code> the <code>"total"</code> row that closes each block, exactly
+as the console lays them out. Tokens: <code>"n"</code>, <code>"pct"</code>, <code>"p"</code>,
 <code>"assoc"</code> (the association measure), <code>"assoc_ci"</code> (its bounds)
 and <code>"smd"</code> (the standardized mean difference, when
 <code>smd = TRUE</code>). In a <code>by</code> table each group owns an <code>n</code> / <code>%</code> pair with
@@ -282,7 +285,8 @@ that produced it. An object carrying a <em>newer</em> contract than the
 spicy reading it is refused as well.</p>
 <p>Version <code>3</code> also opened the accessor to the descriptive families,
 which had no typed view before: <code>.row_role</code> gained <code>"summary"</code>,
-<code>"group"</code> and <code>"missing"</code>, then <code>"none"</code> with <code><a href="table_multiresponse.html">table_multiresponse()</a></code>.
+<code>"group"</code> and <code>"missing"</code>, then <code>"none"</code> with <code><a href="table_multiresponse.html">table_multiresponse()</a></code>
+and <code>"total"</code> with the <code>total_row</code> of <code><a href="table_categorical.html">table_categorical()</a></code>.
 The vocabulary is extended by addition – an existing role never
 changes meaning.</p>
 <p>Version <code>4</code> renames one component: in the <code>format_spec</code> of

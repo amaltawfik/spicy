@@ -43,13 +43,15 @@ A `tbl_df`.
 `by` and the `Total` margin included, with columns `variable` (the
 column name), `label` (the label the rows display for it, see `labels`),
 `level`, `.row_role` (the role of `level`: `"missing"` on the row of
-missing values the table adds, `"level"` otherwise), `group` (`NA`
-without `by`), `.group_role` (the role of `group`: `"missing"` on the
-column of missing `by` values, `"total"` on the margin, `"group"`
-otherwise, `NA` without `by`), `total` (`TRUE` on the rows of the
-margin), `n`, and `proportion` (between 0 and 1). Filter on the role
-columns and `total` rather than on the displayed labels, which follow
-the display language.
+missing values the table adds, `"total"` on the Total row of
+`total_row = TRUE`, `"level"` otherwise), `group` (`NA` without `by`),
+`.group_role` (the role of `group`: `"missing"` on the column of missing
+`by` values, `"total"` on the margin, `"group"` otherwise, `NA` without
+`by`), `total` (`TRUE` on the rows of the margin and of the Total row),
+`n`, and `proportion` (between 0 and 1, the share the table displays:
+within the group, or within the level under `percent = "row"`, as
+`attr(x, "percent")` records). Filter on the role columns and `total`
+rather than on the displayed labels, which follow the display language.
 
 `glance()` returns one row per variable, in the order of `select`, with
 its test (when `by` is used), the requested association measure and the
@@ -61,11 +63,11 @@ or `"fisher_exact_mc"`, as in the long output of
 test), `df`, `p.value`, `es_type` (the key of the measure the variable
 carries: `"phi"`, `"cramer_v"`, ...), `es_value`, `es_ci_lower`,
 `es_ci_upper`, `smd_type`, `smd_value`, and `nobs` (the observations of
-the variable, the margin not counted twice). Without `by`, only
-`variable`, `label` and `nobs` are populated; the other columns are
-`NA`. The interval bounds are `NA` unless the table was built with
-`assoc_ci = TRUE`, and the SMD columns unless it was built with
-`smd = TRUE`.
+the variable, the margin and the Total row not counted twice). Without
+`by`, only `variable`, `label` and `nobs` are populated; the other
+columns are `NA`. The interval bounds are `NA` unless the table was
+built with `assoc_ci = TRUE`, and the SMD columns unless it was built
+with `smd = TRUE`.
 
 ## See also
 

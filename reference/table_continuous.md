@@ -282,7 +282,7 @@ table_continuous(
 
   Logical. If `TRUE`, appends the confidence interval of the effect size
   in brackets (e.g., `g = 0.45 [0.22, 0.68]`), under a header that
-  states its level (`ES [95\% CI]`). Implies a non-`"none"` effect size:
+  states its level (`ES [95% CI]`). Implies a non-`"none"` effect size:
   if left at the default `effect_size = "none"`, the function warns and
   promotes `effect_size` to `"auto"` so the requested CI can be shown.
   Defaults to `FALSE`.
@@ -513,8 +513,8 @@ Depends on `output`:
   columns `variable` (the column name), `label` (the label displayed for
   it) and, with `by`, `group` and `.row_role` (`"group"`, or `"missing"`
   for the group of missing `by` values), then the printed columns under
-  their names (`"M"`, `"SD"`, `"Min"`, `"Max"`, `"95\% CI LL"`,
-  `"95\% CI UL"`, `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the columns
+  their names (`"M"`, `"SD"`, `"Min"`, `"Max"`, `"95% CI LL"`,
+  `"95% CI UL"`, `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the columns
   `show_columns` asks for). A cell that prints several numbers keeps the
   first in its column and the others beside it under their names in the
   long output: `df` and `df.residual` after `"Test"`, `es_ci_lower` and

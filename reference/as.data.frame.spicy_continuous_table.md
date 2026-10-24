@@ -8,7 +8,7 @@ returns. One row per printed row, the key columns `variable` (the column
 name), `label` (the label displayed for it) and, with `by`, `group` and
 `.row_role` (`"group"`, or `"missing"` for the group of missing `by`
 values), then the printed columns under their names (`"M"`, `"SD"`,
-`"95\% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several numbers
+`"95% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several numbers
 keeps the first in its column and the others beside it under their names
 in the long output: `df` and `df.residual` after the test statistic
 `"Test"`, `es_ci_lower` and `es_ci_upper` after the effect size `"ES"`

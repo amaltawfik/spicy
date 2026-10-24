@@ -153,7 +153,9 @@ display never change the call. As a convenience, a <code>variable</code>
 that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
 <code>level = "(Missing)"</code> whatever its displayed (possibly translated or
-relabeled) label, through its row role. Fit statistics are addressed
+relabeled) label, through its row role, and the Total row of
+<code><a href="table_categorical.html">table_categorical()</a></code> under <code>total_row = TRUE</code> by <code>level = "Total"</code>,
+the same way. Fit statistics are addressed
 by their token as <code>variable</code> (<code>inline(tbl, "nobs")</code>,
 <code>inline(tbl, "r2")</code>) or by their label (<code>inline(tbl, "n")</code>). The token
 is the one <code>show_fit_stats</code> takes (<code>"r2"</code>, <code>"adj_r2"</code>, <code>"aic"</code>, ...),
