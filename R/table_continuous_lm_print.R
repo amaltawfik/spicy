@@ -210,7 +210,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #   (e) the abbreviations of the headers, read off `spec`, the column
 #       spec of the table (`.lm_column_spec()`), where the rule of the
 #       style in force puts them; the glyph of the difference, which (d)
-#       defines, is defined there under no rule.
+#       defines, is defined there under no rule;
+#
+# then the sentences of `note_add` (`add`). `outcome_labels`, named by
+# outcome, names the outcomes in the test sentence (their labels in the
+# apparatus); NULL reads the labels of their rows.
 #
 # NULL when there is nothing to disclose; otherwise one string opened by
 # the lead-in in force ("Note. " by default, see `.note_lead_keys()`).
@@ -219,7 +223,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   missing_note = NULL,
   covariates = attr(x, "covariates") %||% character(),
   weighted_by = NULL,
-  spec = NULL
+  spec = NULL,
+  outcome_labels = NULL,
+  add = NULL
 ) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
@@ -256,7 +262,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
-  inference <- if (isTRUE(attr(x, "show_p_value"))) .tclm_test_note(x)
+  inference <- if (isTRUE(attr(x, "show_p_value"))) {
+    .tclm_test_note(x, outcome_labels)
+  }
   if (!identical(vcov_type, "classical")) {
     inference <- c(
       inference,
@@ -277,7 +285,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     abbreviations = .note_abbreviations(
       .lm_abbrev_items(spec, partial = length(covariates) > 0L),
       defined = if (!is.null(delta_note)) "delta"
-    )
+    ),
+    add = add
   )
 }
 
@@ -375,8 +384,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # for every outcome is named once; otherwise each test is followed by the
 # outcomes it covers, as the rows name them, in the order of the test
 # vocabulary. An outcome whose model did not run carries no test and is
-# not named; NULL when none ran.
-.tclm_test_note <- function(x) {
+# not named; NULL when none ran. `outcome_labels`, named by outcome, names
+# them in the apparatus; NULL reads the labels of their rows.
+.tclm_test_note <- function(x, outcome_labels = NULL) {
   vars <- unique(x$variable)
   types <- vapply(
     vars,
@@ -411,7 +421,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (length(used) == 1L) {
     return(.p_values_test_sentence(spicy_str(keys[[used]]), n_p))
   }
-  labels <- x$label[match(vars, x$variable)]
+  labels <- if (is.null(outcome_labels)) {
+    x$label[match(vars, x$variable)]
+  } else {
+    unname(outcome_labels[vars])
+  }
   items <- vapply(
     used,
     function(k) {

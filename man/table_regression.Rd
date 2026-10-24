@@ -46,8 +46,10 @@ table_regression(
   align = c("decimal", "center", "right"),
   padding = 0L,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -717,14 +719,31 @@ relabeled here.
 The default reads \code{options(spicy.var_labels)}, and a \code{TRUE} or
 \code{FALSE} typed in the call wins over it. Any other value, \code{NULL}
 included, is an error. A variable label documents the data file; a
-published table carries the wording you set here.}
+published table carries the wording you set here. \code{note_labels} gives
+the outcome a shorter label in the title.}
+
+\item{note_labels}{The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+\code{labels} gives it: a named character vector,
+\code{note_labels = c(sex = "sex at birth")}, or a \code{\link[=var_labels]{var_labels()}} object,
+which reads as one. \code{labels} can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of \code{labels}, and so do the title and the notes for a variable
+\code{note_labels} does not name. Names that match no column are ignored,
+as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+\code{spicy_label_collision}): choose another one, or relabel the other
+variable.}
 
 \item{title, note}{Override or suppress the auto-built caption /
-methodological footer. Three modes per argument:
+methodological footer. Three modes per argument, those \code{note} has in
+every table function:
 \itemize{
 \item \code{NULL} (default): the package builds the standard caption
 ("Linear regression on \verb{<DV>}" / "Hierarchical linear
-regression on \verb{<DV>}" / ...) and a methodological note, one
+regression on \verb{<DV>}" / ..., the outcome named by its label in
+\code{note_labels}, else in \code{labels}) and a methodological note, one
 paragraph in the order of every table of the package: what
 the model is (its family, design, scale of the coefficients,
 reference categories, ...), the cases a univariable screen fits
@@ -733,20 +752,35 @@ of the blocks, then the abbreviations the column headers and the
 rows of the fit statistics and of the random effects show
 ("AIC = Akaike information criterion"), defined as the style in
 force asks (\code{spicy_style(abbreviations = )}; under \code{"jama"} they
-open the note on a line of their own).
+open the note on a line of their own), and the sentences of
+\code{note_add}.
 Under \code{stars}, the legend of the stars follows on a line of its
 own.
 \item \code{FALSE}: the corresponding banner row is omitted from
-every output engine. Use when the surrounding manuscript
-provides its own caption / note.
-\item character string (length 1): replaces the auto-built
-text verbatim. The renderer applies no APA formatting on
-top -- supply the exact string you want displayed (multi-
-line notes accepted via embedded \code{"\\n"}).
+every output engine, for \code{note} the legend of the stars
+included. Use when the surrounding manuscript provides its own
+caption / note.
+\item character string (length 1): replaces the auto-built text.
+A \code{title} is printed verbatim. A \code{note} replaces the general
+note and is printed as typed (multi-line notes accepted via
+embedded \code{"\\n"}) after the lead-in of the style, which a string
+opening with a lead-in of its own does not repeat, the sentences
+of \code{note_add} after it; the legend of the stars stays on its line
+below, and \code{note = ""} keeps that legend alone.
 }
 Validation messages, the spanner row, and the in-body change-
 stat rows are \emph{not} affected -- they belong to the table
 structure, not to the banner.}
+
+\item{note_add}{Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in \code{attr(x, "note")}, and the sentences the table
+writes stay. With a string in \code{note}, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An \code{NA} or an empty string is an error, and so is \code{note_add} with
+\code{note = FALSE}, which leaves no note to add to.}
 
 \item{output}{Output type. \code{"default"} (a printable
 \code{spicy_regression_table}); \code{"data.frame"} (the displayed table

@@ -125,7 +125,11 @@ test_that("output = 'tinytable' escapes cells and the note for each backend", {
   # prints as typed. Escaped by spicy's finalizer, not by tinytable's
   # escaper, which would also escape the `text([...])` around it and
   # leave that call without a body ("missing argument: body").
-  expect_match(typ, "[\\#text(8pt)\\[a\\_note\\_\\]])", fixed = TRUE)
+  expect_match(
+    typ,
+    "[#emph[Note.] \\#text(8pt)\\[a\\_note\\_\\]])",
+    fixed = TRUE
+  )
   # Cells are still escaped on both backends.
   expect_match(typ, "\\<.001", fixed = TRUE)
   html <- tinytable::save_tt(tt, output = "html")
@@ -345,8 +349,92 @@ test_that("`title = FALSE` and `note = FALSE` suppress both banners", {
 test_that("`title = \"...\"` and `note = \"...\"` override the auto banners", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, title = "Custom title", note = "Custom note.")
+  # The title verbatim; the note under the lead-in of the style.
   expect_identical(attr(out, "title"), "Custom title")
-  expect_identical(attr(out, "note"), "Custom note.")
+  expect_identical(attr(out, "note"), "Note. Custom note.")
+})
+
+test_that("`note_add` closes the auto note before the stars legend", {
+  fit <- lm(mpg ~ wt, data = mt)
+  auto <- strsplit(
+    attr(table_regression(fit, stars = TRUE), "note"),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  out <- table_regression(fit, stars = TRUE, note_add = c("Data: mtcars.", "B"))
+  expect_identical(
+    attr(out, "note"),
+    paste0(auto[[1L]], " Data: mtcars. B\n", auto[[2L]])
+  )
+  # A typed note replaces the general note; the legend of the stars stays
+  # below it, and the sentences follow the typed note.
+  typed <- table_regression(
+    fit,
+    stars = TRUE,
+    note = "Own note.",
+    note_add = "Data: mtcars."
+  )
+  expect_identical(
+    attr(typed, "note"),
+    paste0("Note. Own note. Data: mtcars.\n", auto[[2L]])
+  )
+  # "" keeps the legend alone, and no note at all without stars; FALSE
+  # removes the legend too.
+  expect_identical(
+    attr(table_regression(fit, stars = TRUE, note = ""), "note"),
+    auto[[2L]]
+  )
+  expect_null(attr(table_regression(fit, note = ""), "note"))
+  expect_null(attr(table_regression(fit, stars = TRUE, note = FALSE), "note"))
+  # Under the lancet theme, no lead-in: the typed note and the legend.
+  lancet <- table_regression(
+    fit,
+    stars = TRUE,
+    note = "Own note.",
+    style = "lancet"
+  )
+  expect_identical(
+    strsplit(attr(lancet, "note"), "\n", fixed = TRUE)[[1L]][[1L]],
+    "Own note."
+  )
+  expect_length(strsplit(attr(lancet, "note"), "\n", fixed = TRUE)[[1L]], 2L)
+  expect_error(
+    table_regression(fit, note = FALSE, note_add = "Data: mtcars."),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("`note_labels` names the outcome in the title, not above its columns", {
+  fit <- lm(mpg ~ wt, data = mt)
+  out <- table_regression(
+    fit,
+    labels = c(mpg = "Miles per US gallon", wt = "Weight"),
+    note_labels = c(mpg = "fuel economy")
+  )
+  expect_identical(attr(out, "title"), "Linear regression: fuel economy")
+  expect_true("Weight" %in% out$Variable)
+  # Two outcomes: the column groups keep the labels of `labels`, and the
+  # title names neither.
+  fits <- list(lm(mpg ~ wt, data = mt), lm(qsec ~ wt, data = mt))
+  two <- table_regression(
+    fits,
+    labels = c(mpg = "Miles per US gallon"),
+    note_labels = c(mpg = "fuel economy")
+  )
+  expect_identical(
+    names(as_structured(two)$spanners),
+    c("Miles per US gallon", "qsec")
+  )
+  expect_false(grepl("fuel economy", attr(two, "title"), fixed = TRUE))
+  # The label a term shows is taken.
+  expect_error(
+    table_regression(
+      fit,
+      labels = c(wt = "Weight"),
+      note_labels = c(mpg = "Weight")
+    ),
+    class = "spicy_label_collision"
+  )
 })
 
 

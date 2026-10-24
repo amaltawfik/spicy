@@ -371,7 +371,8 @@
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
 #' @param ci_level Confidence level for coefficient and model-based mean
 #'   intervals (default: `0.95`): a number strictly between 0 and 1.
 #' @param digits Number of decimal places of the numbers on each outcome's
@@ -469,6 +470,7 @@
 #'   abbreviations the note defines, not full editorial conformity;
 #'   `?spicy_style` lists the exact rules each one encodes and the
 #'   official document they come from. An unknown name is an error.
+#' @inheritParams table_categorical
 #'
 #' @inheritSection freq Declared missing values
 #'
@@ -521,8 +523,9 @@
 #' The Excel sheet carries the same title the console prints on its
 #' first row; the table itself starts on row 3, and the note lines sit
 #' below the body. The default object and the data frames of
-#' `"data.frame"` and `"long"` carry the whole note as printed, "Note."
-#' included, in `attr(x, "note")` (`NULL` when there is nothing to say).
+#' `"data.frame"` and `"long"` carry the whole note as printed, its
+#' lead-in included, in `attr(x, "note")` (`NULL` when there is nothing to
+#' say).
 #'
 #' If no numeric outcome columns remain after applying `select`, `exclude`,
 #' and `regex`, the function stops with an error (class
@@ -1184,6 +1187,7 @@ table_continuous_lm <- function(
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   ci_level = 0.95,
   digits = 2,
   fit_digits = 2,
@@ -1191,6 +1195,8 @@ table_continuous_lm <- function(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -1236,6 +1242,8 @@ table_continuous_lm <- function(
   boot_n <- validate_boot_n(boot_n)
   validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
   # `p_value = NULL` is the family's automatic default: the p-value is
   # shown whenever `by` is supplied, and `by` is required here.
   if (
@@ -1581,6 +1589,28 @@ table_continuous_lm <- function(
 
   outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
   by_label <- resolve_variable_labels(data, by_name, labels)
+  # A covariate takes the label `labels` gives it, as an outcome does: the
+  # "Adjusted for" line names it.
+  covariate_labels <- resolve_variable_labels(data, covariates_names, labels)
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  outcome_notes <- .note_labels_of(
+    numeric_outcomes,
+    outcome_labels,
+    note_labels
+  )
+  by_note <- .note_labels_of(by_name, by_label, note_labels)
+  covariate_notes <- .note_labels_of(
+    covariates_names,
+    covariate_labels,
+    note_labels
+  )
+  .check_note_label_collisions(
+    c(numeric_outcomes, by_name, covariates_names),
+    c(outcome_labels, by_label, covariate_labels),
+    c(outcome_notes, by_note, covariate_notes),
+    note_labels
+  )
   outcome_values <- lapply(numeric_outcomes, function(nm) {
     resolve_user_na(data[[nm]])
   })
@@ -1649,12 +1679,12 @@ table_continuous_lm <- function(
   result <- .style_stamp(result)
   # The names of the family (decision 1 of the ADR of 2026-10-20): the
   # five sibling tables carry the `by` column and its label as
-  # `group_var` / `group_label`.
+  # `group_var` / `group_label`, the label the title gives it.
   attr(result, "group_var") <- by_name
-  attr(result, "group_label") <- by_label
+  attr(result, "group_label") <- by_note
   # The title the console prints and every engine sets, as
   # table_multiresponse() and table_regression() store theirs.
-  attr(result, "title") <- .continuous_lm_title(by_label)
+  attr(result, "title") <- .continuous_lm_title(by_note)
   # Read by the display frame: the cells of a level in which an outcome
   # has no data show the undefined mark (NULL for a numeric `by`).
   attr(result, "no_data_levels") <- no_data_levels
@@ -1703,17 +1733,16 @@ table_continuous_lm <- function(
       na_dropped[[.nm]] <- .nd
     }
   }
-  # An outcome is named as its row names it, and a covariate by its label
-  # too, as in the "Adjusted for" line.
-  covariate_labels <- resolve_variable_labels(data, covariates_names, labels)
+  # An outcome and a covariate are named by their labels in the apparatus,
+  # as in the "Adjusted for" line.
   label_of <- stats::setNames(
-    c(outcome_labels, covariate_labels),
+    c(outcome_notes, covariate_notes),
     c(numeric_outcomes, covariates_names)
   )
   # `by` closes the list, named as the title names it.
   na_dropped <- .with_group_counts(
     .label_counts(na_dropped, label_of),
-    by_label,
+    by_note,
     sum(is.na(by_vector))
   )
   user_na_dropped <- .label_counts(user_na_dropped, label_of)
@@ -1760,11 +1789,11 @@ table_continuous_lm <- function(
     }
   }
   # Then the levels in which an outcome has no data, one sentence per set
-  # of levels, each outcome named as its row names it.
+  # of levels, each outcome named by its label in the apparatus.
   if (!is.null(no_data_levels)) {
     missing_parts <- c(
       missing_parts,
-      .no_data_sentences(outcome_labels, unname(no_data_levels))
+      .no_data_sentences(outcome_notes, unname(no_data_levels))
     )
   }
   # The ordered columns of this table -- frozen key, displayed header,
@@ -1787,15 +1816,22 @@ table_continuous_lm <- function(
     decimal_mark = decimal_mark
   )
 
-  # The whole note, for every route: print() shows it as it is here.
-  table_note <- .tclm_note_text(
-    result,
-    missing_note = missing_parts,
-    covariates = covariate_labels,
-    weighted_by = if (!is.null(weights_vec)) {
-      weights_name %||% spicy_str("note_weights_fallback")
-    },
-    spec = spec
+  # The whole note, for every route: print() shows it as it is here, and
+  # `note` replaces or removes it.
+  table_note <- .table_note(
+    .tclm_note_text(
+      result,
+      missing_note = missing_parts,
+      covariates = covariate_notes,
+      weighted_by = if (!is.null(weights_vec)) {
+        weights_name %||% spicy_str("note_weights_fallback")
+      },
+      spec = spec,
+      outcome_labels = stats::setNames(outcome_notes, numeric_outcomes),
+      add = note_add
+    ),
+    note,
+    note_add
   )
   attr(result, "note") <- table_note
 
@@ -1887,7 +1923,7 @@ table_continuous_lm <- function(
     clipboard_delim = clipboard_delim,
     word_path = word_path,
     note = table_note,
-    title = .continuous_lm_title(by_label),
+    title = .continuous_lm_title(by_note),
     labels = .lm_spec_labels(spec),
     mean_keys = .lm_spec_mean_keys(spec)
   )

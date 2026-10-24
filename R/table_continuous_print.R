@@ -165,8 +165,8 @@ print.spicy_continuous_table <- function(x, ...) {
   spicy_print_table(
     display_df,
     title = title,
-    # The note table_continuous() assembled, "Note." included; NULL when
-    # there is nothing to say.
+    # The note table_continuous() assembled, its lead-in included; NULL
+    # when there is nothing to say.
     note = attr(x, "note"),
     padding = padding,
     first_column_line = TRUE,

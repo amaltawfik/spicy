@@ -207,13 +207,16 @@
 #'   or `"right"`, as in [table_categorical()].
 #' @param title The table title. `NULL` (the default) gives "Multiple
 #'   responses", followed by "by" and the `by` variable under the `labels`
-#'   contract; a single string replaces it, and `FALSE` removes it, as in
-#'   [table_regression()].
+#'   contract (or its label in `note_labels`); a single string replaces
+#'   it, and `FALSE` removes it, as in [table_regression()].
 #' @param note The table note. `NULL` (the default) builds it, opening
 #'   with "Note.": what the percentages sum to, the base with the
 #'   respondents it holds or leaves out, the rows removed for a missing
-#'   `by` and the items with no data in a group, then the tests. A single
-#'   string replaces it and is printed as typed, and `FALSE` removes it.
+#'   `by` and the items with no data in a group, then the tests, and the
+#'   sentences of `note_add`. A single string replaces it, printed as typed
+#'   after the lead-in ("Note.", unless the string opens with one),
+#'   `note_add` after it, and `FALSE` removes it, as in every table
+#'   function.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the default)
 #'   uses `"Multiple responses"`.
 #' @param word_path File path for `output = "word"`. Defaults to `NULL`.
@@ -263,8 +266,8 @@
 #' }
 #'
 #' The default object and the data frames carry the note as printed in
-#' `attr(x, "note")` ("Note." included, the `note` you typed verbatim,
-#' `NULL` under `note = FALSE`) and, when the table has a global test,
+#' `attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`)
+#' and, when the table has a global test,
 #' `attr(x, "global_test")`: a one-row data frame with
 #' `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
 #' tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
@@ -546,12 +549,14 @@ table_multiresponse <- function(
   p_adjust = "holm",
   statistic = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -586,6 +591,7 @@ table_multiresponse <- function(
 
   .check_data_frame(data, "table_multiresponse")
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
   percent <- spicy_match_arg(percent)
   base <- spicy_match_arg(base)
   # An explicit `""` is taken as typed: `match.arg()` cannot match it,
@@ -614,9 +620,9 @@ table_multiresponse <- function(
     p_digits = p_digits,
     decimal_mark = decimal_mark,
     title = title,
-    note = note,
     counted = counted
   )
+  .check_note_args(note, note_add)
   .warn_ignored_output_args(output, names(match.call()))
   boot_n <- as.integer(boot_n)
   percent_digits <- as.integer(percent_digits)
@@ -673,6 +679,16 @@ table_multiresponse <- function(
   # ---- the indicators, the groups, the base --------------------------------
   item_labels <- resolve_variable_labels(data, select_names, labels)
   by_label <- if (has_group) resolve_variable_labels(data, by_name, labels)
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  item_notes <- .note_labels_of(select_names, item_labels, note_labels)
+  by_note <- if (has_group) .note_labels_of(by_name, by_label, note_labels)
+  .check_note_label_collisions(
+    c(select_names, by_name),
+    c(item_labels, by_label),
+    c(item_notes, by_note),
+    note_labels
+  )
   chosen <- .mr_read_items(data, select_names, counted)
 
   n_by_na <- 0L
@@ -968,42 +984,42 @@ table_multiresponse <- function(
   untested <- if (is.null(test_res)) {
     character(0)
   } else {
-    item_labels[ord][test_res$testable[ord] & !test_res$tested[ord]]
+    item_notes[ord][test_res$testable[ord] & !test_res$tested[ord]]
   }
   # The items with no data in a group, in the order of the rows: one
   # sentence per set of groups, in the order of `by`.
   no_data_note <- if (has_group) {
     .no_data_sentences(
-      item_labels[ord],
+      item_notes[ord],
       lapply(ord, function(j) group_levels[no_data[, j]])
     )
   } else {
-    .no_data_sentences(item_labels[ord][no_data[1L, ord]])
+    .no_data_sentences(item_notes[ord][no_data[1L, ord]])
   }
-  title_txt <- if (isFALSE(title)) NULL else title %||% .mr_title(by_label)
-  note_txt <- if (isFALSE(note)) {
-    NULL
-  } else {
-    note %||%
-      .mr_note(
-        by_label = by_label,
-        n_by_na = n_by_na,
-        percent = percent,
-        base = base,
-        n_nodata = n_nodata,
-        n_none = n_none,
-        none_row = none_row,
-        test_res = test_res,
-        p_value = p_value,
-        n_p = sum(!is.na(item_df[["p"]])),
-        item_types = stats::setNames(item_df$test_type, item_labels[ord]),
-        untested = untested,
-        p_adjust_info = p_adjust_info,
-        decimal_mark = decimal_mark,
-        p_digits = p_digits,
-        no_data_note = no_data_note
-      )
-  }
+  title_txt <- if (isFALSE(title)) NULL else title %||% .mr_title(by_note)
+  note_txt <- .table_note(
+    .mr_note(
+      by_label = by_note,
+      n_by_na = n_by_na,
+      percent = percent,
+      base = base,
+      n_nodata = n_nodata,
+      n_none = n_none,
+      none_row = none_row,
+      test_res = test_res,
+      p_value = p_value,
+      n_p = sum(!is.na(item_df[["p"]])),
+      item_types = stats::setNames(item_df$test_type, item_notes[ord]),
+      untested = untested,
+      p_adjust_info = p_adjust_info,
+      decimal_mark = decimal_mark,
+      p_digits = p_digits,
+      no_data_note = no_data_note,
+      add = note_add
+    ),
+    note,
+    note_add
+  )
 
   # The long output, in the vocabulary of the family (decision 1 of the
   # ADR of 2026-10-20): each percentage named by its base whatever
@@ -1111,7 +1127,8 @@ table_multiresponse <- function(
   attr(out, "items") <- select_names[ord]
   attr(out, "margin_key") <- margin_key
   attr(out, "group_var") <- by_name
-  attr(out, "group_label") <- by_label
+  # The label the title gives `by`, its label in the apparatus.
+  attr(out, "group_label") <- by_note
   attr(out, "align") <- align
   attr(out, "decimal_mark") <- decimal_mark
   out <- .style_stamp(out)
@@ -1138,7 +1155,6 @@ table_multiresponse <- function(
   p_digits,
   decimal_mark,
   title,
-  note,
   counted,
   call = rlang::caller_env()
 ) {
@@ -1146,9 +1162,6 @@ table_multiresponse <- function(
     spicy_abort(msg, class = "spicy_invalid_input", call = call)
   }
   is_flag <- function(x) is.logical(x) && length(x) == 1L && !is.na(x)
-  is_string <- function(x) {
-    is.character(x) && length(x) == 1L && !is.na(x) && nzchar(x)
-  }
   validate_logical_scalar(none_row, "none_row", call = call)
   if (!is.null(p_value) && !is_flag(p_value)) {
     bad("`p_value` must be TRUE, FALSE, or NULL.")
@@ -1159,11 +1172,9 @@ table_multiresponse <- function(
   validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
   validate_decimal_mark(decimal_mark, call = call)
   # The `title` contract of `table_regression()`: NULL builds it, FALSE
-  # removes it, a string (`""` included) replaces it.
+  # removes it, a string (`""` included) replaces it. The `note` contract
+  # is the family's, checked with `note_add` (`.check_note_args()`).
   validate_caption_arg(title, "title", call = call)
-  if (!is.null(note) && !isFALSE(note) && !is_string(note)) {
-    bad("`note` must be NULL, FALSE, or a single non-empty string.")
-  }
   if (
     !is.null(counted) &&
       !(is.atomic(counted) && length(counted) == 1L && !is.na(counted))
@@ -2030,9 +2041,10 @@ table_multiresponse <- function(
 #       under an adjustment, by the family's sentence naming the method
 #       and the number of tests (with `p_value`), the items without variation
 #       (whenever the item tests show, p-values or statistic), and the
-#       global test (with `p_value`; `test_res$global` is NULL otherwise).
-# It opens with "Note.", as every automatic note of the family does; a
-# `note` the user typed never comes here.
+#       global test (with `p_value`; `test_res$global` is NULL otherwise);
+# then the sentences of `note_add` (`add`). It opens with "Note.", as
+# every automatic note of the family does; a `note` the user typed never
+# comes here.
 .mr_note <- function(
   by_label,
   n_by_na,
@@ -2049,7 +2061,8 @@ table_multiresponse <- function(
   p_adjust_info,
   decimal_mark,
   p_digits,
-  no_data_note = NULL
+  no_data_note = NULL,
+  add = NULL
 ) {
   what <- c(
     spicy_str(switch(
@@ -2121,7 +2134,8 @@ table_multiresponse <- function(
     what = what,
     missing = missing,
     inference = inference,
-    abbreviations = .note_abbreviations(list())
+    abbreviations = .note_abbreviations(list()),
+    add = add
   )
 }
 

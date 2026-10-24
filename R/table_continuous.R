@@ -230,7 +230,8 @@
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
 #' @param ci_level Confidence level for the mean confidence interval
 #'   (default: `0.95`): a number strictly between 0 and 1.
 #' @param digits Number of decimal places of the statistics on each
@@ -329,6 +330,7 @@
 #'   abbreviations the note defines, not full editorial conformity;
 #'   `?spicy_style` lists the exact rules each one encodes and the
 #'   official document they come from. An unknown name is an error.
+#' @inheritParams table_categorical
 #'
 #' @inheritSection freq Declared missing values
 #' @inheritSection table_categorical Multiple-comparison adjustment
@@ -407,7 +409,7 @@
 #' `"default"` prints it under the ASCII table, `"tinytable"` / `"gt"` /
 #' `"flextable"` / `"word"` carry it as a table note, `"excel"` writes
 #' it below the body, and the default object and the data frames of
-#' `"data.frame"` / `"long"` keep the whole note as printed, "Note."
+#' `"data.frame"` / `"long"` keep the whole note as printed, its lead-in
 #' included, in `attr(x, "note")` (`NULL` when there is nothing to say),
 #' so a pipeline that renders the numbers itself can still state what
 #' left the table. The default object also keeps the title it prints in
@@ -872,12 +874,15 @@ table_continuous <- function(
   smd = FALSE,
   ci = TRUE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -919,6 +924,8 @@ table_continuous <- function(
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
   validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
   for (.lname in c(
     "statistic",
     "effect_size_ci",
@@ -1180,12 +1187,12 @@ table_continuous <- function(
   }
   by_na_dropped <- 0L
   build_missing_note <- function() {
-    # Each variable is named as its rows name it (`var_labels` below), and
-    # `by`, last, as the title names it (`group_label` below).
-    label_of <- stats::setNames(var_labels, numeric_cols)
+    # Each variable is named by its label in the apparatus (`note_labs`
+    # below), and `by`, last, as the title names it (`by_note` below).
+    label_of <- stats::setNames(note_labs, numeric_cols)
     na_dropped <- .with_group_counts(
       .label_counts(na_dropped, label_of),
-      resolve_variable_labels(data, group_col_name, labels),
+      by_note,
       by_na_dropped
     )
     user_na_dropped <- .label_counts(user_na_dropped, label_of)
@@ -1229,13 +1236,13 @@ table_continuous <- function(
       )
     }
     # Last, the variables with no data in a group (or, without `by`, no
-    # observed value at all), each named as its rows name it.
+    # observed value at all), each named by its label in the apparatus.
     parts <- c(
       parts,
       if (has_group) {
-        .no_data_sentences(var_labels, unname(nodata_groups))
+        .no_data_sentences(note_labs, unname(nodata_groups))
       } else if (length(nodata_vars)) {
-        .no_data_sentences(var_labels[match(nodata_vars, numeric_cols)])
+        .no_data_sentences(note_labs[match(nodata_vars, numeric_cols)])
       }
     )
     if (length(parts)) paste(parts, collapse = " ") else NULL
@@ -1340,6 +1347,21 @@ table_continuous <- function(
 
   # --- label detection (shared family contract) ---
   var_labels <- resolve_variable_labels(data, numeric_cols, labels)
+  by_label <- if (has_group) {
+    resolve_variable_labels(data, group_col_name, labels)
+  }
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  note_labs <- .note_labels_of(numeric_cols, var_labels, note_labels)
+  by_note <- if (has_group) {
+    .note_labels_of(group_col_name, by_label, note_labels)
+  }
+  .check_note_label_collisions(
+    c(numeric_cols, group_col_name),
+    c(var_labels, by_label),
+    c(note_labs, by_note),
+    note_labels
+  )
 
   # --- computation ---
   # Statistics per vector: `.continuous_compute_one()`, shared with
@@ -1837,15 +1859,12 @@ table_continuous <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
-  # Label of the grouping variable (resolved like table_continuous_lm's
-  # by_label), for the "Descriptive statistics by <label>" title: the
-  # by variable must be stated in the rendered caption, like the other
-  # by tables of the family.
-  attr(result, "group_label") <- if (has_group) {
-    resolve_variable_labels(data, group_col_name, labels)
-  } else {
-    NULL
-  }
+  # Label of the grouping variable, for the "Descriptive statistics by
+  # <label>" title: the by variable must be stated in the rendered
+  # caption, like the other by tables of the family, by its label in the
+  # apparatus (`by_note`), and print() words the title in the language of
+  # the moment.
+  attr(result, "group_label") <- by_note
   attr(result, "test") <- if (do_test) test else NA_character_
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
@@ -1878,7 +1897,7 @@ table_continuous <- function(
         test_used,
         auto_rank,
         n_test_groups,
-        stats::setNames(var_labels, numeric_cols),
+        stats::setNames(note_labs, numeric_cols),
         show_p = p_value && has_group,
         n_p = .n_p_shown(result[["p.value"]], result$variable)
       ),
@@ -1895,8 +1914,11 @@ table_continuous <- function(
         es_ci = attr(result, "show_effect_size_ci"),
         smd = do_smd
       )
-    ))
+    )),
+    add = note_add
   )
+  # `note` replaces or removes it, for every route.
+  table_note <- .table_note(table_note, note, note_add)
 
   if (identical(output, "long")) {
     # The raw frame keeps the note as an attribute: a pipeline that
@@ -1949,7 +1971,7 @@ table_continuous <- function(
         } else {
           integer(0)
         },
-        title = .continuous_title(attr(result, "group_label", exact = TRUE)),
+        title = .continuous_title(by_note),
         excel_path = excel_path,
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
@@ -2004,9 +2026,7 @@ table_continuous <- function(
   )
   # The title the console prints, from the helper every engine reads,
   # for a pipeline that renders the table itself.
-  attr(result, "title") <- .continuous_title(
-    attr(result, "group_label", exact = TRUE)
-  )
+  attr(result, "title") <- .continuous_title(by_note)
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   # `output = "data.frame"` is the displayed table with its numbers,
   # `as.data.frame()` of the object the call would print (decision 5 of

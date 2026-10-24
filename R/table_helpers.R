@@ -136,6 +136,105 @@ resolve_variable_labels <- function(data, cols, labels) {
 
 .LABELS_ARG_HINT <- "`TRUE` shows each column's `label` attribute, `FALSE` its name."
 
+# Internal: the one validator of `note_labels`, called beside the one of
+# `labels` in each table function so that the error is the same
+# everywhere. `note_labels` takes the form `labels` takes for a vector of
+# labels: a named character vector, a `var_labels()` object reading as
+# one. `NULL` leaves every variable the label `labels` gives it, so
+# `TRUE`, `FALSE` and the option have nothing to say here. A label is a
+# string, never NA, which a note would print as "NA".
+.check_note_labels_arg <- function(note_labels, call = rlang::caller_env()) {
+  if (is.null(note_labels)) {
+    return(invisible(NULL))
+  }
+  nms <- names(note_labels)
+  named <- is.character(note_labels) &&
+    !is.null(nms) &&
+    !anyNA(nms) &&
+    all(nzchar(nms))
+  if (named && !anyNA(note_labels)) {
+    return(invisible(note_labels))
+  }
+  spicy_abort(
+    c(
+      "`note_labels` must be NULL or a named character vector.",
+      "x" = if (named) {
+        "Every label must be a string, not NA."
+      } else if (is.character(note_labels)) {
+        "Every label must be named by its column."
+      },
+      "i" = "Name the labels by column: `note_labels = c(sex = \"sex at birth\")`.",
+      "i" = "A variable it does not name keeps the label `labels` gives it."
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
+# Internal: the label each column of `cols` takes in the apparatus of a
+# table, the sentences of its note and its title: the one `note_labels`
+# gives it, else `shown`, the one `labels` gives it (parallel to `cols`).
+# Names that match no column are ignored, as in `labels`.
+.note_labels_of <- function(cols, shown, note_labels) {
+  out <- unname(shown)
+  if (length(note_labels) && length(cols)) {
+    given <- unclass(note_labels)
+    hit <- cols %in% names(given)
+    out[hit] <- unname(given[cols[hit]])
+  }
+  out
+}
+
+# Internal: refuse a note label another variable of the table shows,
+# under the policy of the labels a table generates (ADR
+# dev/decisions/2026-10-20-generated-label-collisions.md): a note naming
+# two variables alike, or a title naming a variable by the label another
+# one shows in the rows, cannot be read. `cols` are the variables of the
+# table, `shown` the label each displays (`labels`), `noted` the label
+# each takes in the apparatus (`.note_labels_of()`). Only a label
+# `note_labels` gives is checked: two variables `labels` names alike keep
+# that label, as they always have.
+.check_note_label_collisions <- function(
+  cols,
+  shown,
+  noted,
+  note_labels,
+  call = rlang::caller_env()
+) {
+  if (!length(note_labels)) {
+    return(invisible(NULL))
+  }
+  for (i in which(cols %in% names(note_labels))) {
+    others <- setdiff(seq_along(cols), i)
+    in_rows <- others[shown[others] == noted[[i]]]
+    in_notes <- others[noted[others] == noted[[i]]]
+    clash <- c(in_rows, in_notes)
+    if (!length(clash)) {
+      next
+    }
+    w <- clash[[1L]]
+    spicy_abort(
+      c(
+        sprintf(
+          "The note label %s of `%s` is also the label of `%s`.",
+          .quote_val(noted[[i]]),
+          cols[[i]],
+          cols[[w]]
+        ),
+        "i" = sprintf(
+          "Choose another label for `%s` in `note_labels`, or another label for `%s` in `%s`.",
+          cols[[i]],
+          cols[[w]],
+          if (w %in% in_rows) "labels" else "note_labels"
+        )
+      ),
+      class = c("spicy_label_collision", "spicy_invalid_input"),
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
 # Internal: a missing-values ledger (counts named by column) re-keyed by
 # the label each variable shows in the table's rows, so that the
 # "Missing values removed: ..." note names a row the reader can find.
@@ -1514,33 +1613,43 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # general note (APA section 7.14: the explanations of abbreviations come at
 # the end of the general note), or opens the note on a line of its own
 # under the rule of "jama" (AMA Manual of Style 11, section 4.1.4.10).
+# `add`, the sentences of `note_add`, close the general note, after the
+# abbreviations wherever these stand: the user's words follow the
+# table's, and the probability note stays the last line.
 #
 # Each builder hands every kind its sentences in their own order (NULL
 # and empty strings drop), so the order of a note is written here once
 # and no option can move one kind before another. NULL when there is
 # nothing to say, so a table with nothing to disclose prints no bare
 # "Note.". The lead-in is the one of the style in force
-# (`.note_with_prefix()`).
+# (`.note_with_prefix()`). The sentences of the table pass through
+# `.note_end_marks()` here, the one exit every builder shares; those of
+# `add` are printed as typed.
 .compose_note <- function(
   what = NULL,
   missing = NULL,
   inference = NULL,
   definitions = NULL,
   abbreviations = NULL,
-  probability = NULL
+  probability = NULL,
+  add = NULL
 ) {
   keep <- function(x) {
     x <- unlist(x, use.names = FALSE)
     x[!is.na(x) & nzchar(x)]
   }
   first_line <- identical(.abbrev_rule(), "jama")
-  general <- keep(list(
+  auto <- keep(list(
     what,
     missing,
     inference,
     definitions,
     if (!first_line) abbreviations
   ))
+  general <- c(
+    if (length(auto)) .note_end_marks(paste(auto, collapse = " ")),
+    keep(add)
+  )
   lines <- c(
     if (first_line) keep(abbreviations),
     if (length(general)) paste(general, collapse = " "),
@@ -1550,6 +1659,115 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     return(NULL)
   }
   .note_with_prefix(paste(lines, collapse = "\n"))
+}
+
+# A sentence of a note that ends on a label with a closing mark of its
+# own -- a question, an exclamation, an abbreviation -- would close twice:
+# "Phi: Do you smoke?." The mark of the label closes the sentence: "?."
+# becomes "?", "!." becomes "!", ".." becomes ".", wherever a sentence
+# ends (before a space or at the end of the text). An ellipsis keeps its
+# three points, and the no-break space French puts before "?", "!" and
+# ":" stays where it is.
+.note_end_marks <- function(text) {
+  text <- gsub("([?!])\\.(?=\\s|$)", "\\1", text, perl = TRUE)
+  gsub("(?<!\\.)\\.\\.(?=\\s|$)", ".", text, perl = TRUE)
+}
+
+# The `note` and `note_add` arguments of the table functions, checked at
+# the top of each so that the errors are the same everywhere. `note` is
+# the caption contract of `table_regression()` (`validate_caption_arg()`):
+# NULL builds the note, FALSE removes it, a string replaces it.
+# `note_add` holds sentences for the note: NULL, or a character vector
+# with no NA and no empty string. With `note = FALSE` there is no note to
+# add them to.
+.check_note_args <- function(note, note_add, call = rlang::caller_env()) {
+  validate_caption_arg(note, "note", call = call)
+  if (is.null(note_add)) {
+    return(invisible(NULL))
+  }
+  if (
+    !is.character(note_add) ||
+      length(note_add) == 0L ||
+      anyNA(note_add) ||
+      !all(nzchar(note_add))
+  ) {
+    spicy_abort(
+      c(
+        "`note_add` must be a character vector of one or more sentences, with no `NA` and no empty string.",
+        "i" = "For example `note_add = \"Data: Swiss Health Survey 2022.\"`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (isFALSE(note)) {
+    spicy_abort(
+      c(
+        "`note_add` cannot be used with `note = FALSE`: there is no note to add to.",
+        "i" = "Drop `note = FALSE` to add the sentences to the note the table builds, or give the whole note as a string in `note`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
+# The note a table prints, from the one it built (`built`, which the
+# sentences of `note_add` already close, see `.compose_note()`) and the two
+# arguments (decision of 2026-10-24, point 15 of
+# dev/decisions/2026-10-23-sorties-publiables-fr.md).
+#   * `note = FALSE`: no note at all, the legend of the stars included --
+#     the explicit request to print nothing.
+#   * A string replaces the general note. It is printed as typed, after the
+#     lead-in of the style in force ("Note." by default, nothing under
+#     jama and lancet), unless it opens with a lead-in of its own, and the
+#     sentences of `note_add` follow it. The legend of the stars,
+#     `probability`, is no part of the general note: it keeps its line
+#     below. `""` leaves that line alone, and no note without it.
+#   * NULL: the note the table built.
+.table_note <- function(
+  built,
+  note = NULL,
+  note_add = NULL,
+  probability = NULL
+) {
+  if (isFALSE(note)) {
+    return(NULL)
+  }
+  if (!is.character(note)) {
+    return(built)
+  }
+  general <- paste(c(note[nzchar(note)], note_add), collapse = " ")
+  if (nzchar(general) && !.note_opens_with_lead(general)) {
+    general <- paste0(.note_prefix_text(), general)
+  }
+  lines <- c(general, probability)
+  lines <- lines[!is.na(lines) & nzchar(lines)]
+  if (!length(lines)) {
+    return(NULL)
+  }
+  paste(lines, collapse = "\n")
+}
+
+# Does a typed note open with a lead-in of its own? Any lead-in of the
+# registry counts ("Note." and "Note:", "Note :" in French), so that a
+# user who typed one, whatever the style in force, does not read it twice.
+# Compared without their spaces: a no-break space typed as an ordinary
+# one still counts.
+.note_opens_with_lead <- function(text) {
+  leads <- c(
+    spicy_str("note_prefix_emphasis"),
+    spicy_str("note_prefix_colon_emphasis")
+  )
+  squash <- function(x) {
+    for (sp in c(" ", "\t", intToUtf8(c(0xA0, 0x202F), multiple = TRUE))) {
+      x <- gsub(sp, "", x, fixed = TRUE)
+    }
+    x
+  }
+  leads <- squash(leads[nzchar(leads)])
+  any(startsWith(squash(text), leads))
 }
 
 # The lines of a note, each a paragraph of its own in every rendering

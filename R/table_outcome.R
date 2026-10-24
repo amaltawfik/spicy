@@ -682,7 +682,8 @@ abort_outcome_by_renamed <- function() {
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
 #' @param overall Show the marginal `Overall` row (default `TRUE`).
 #' @param drop_na Drop rows with a missing `select` value from that
 #'   block. The rule of the family: the categories a table counts keep
@@ -782,8 +783,8 @@ abort_outcome_by_renamed <- function() {
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
-#' nothing to say). The default object also keeps the title it prints in
+#' printed, its lead-in included, in `attr(x, "note")` (`NULL` when there
+#' is nothing to say). The default object also keeps the title it prints in
 #' `attr(x, "title")`.
 #'
 #' @seealso [table_continuous()] for the transposed shape,
@@ -798,6 +799,7 @@ table_outcome <- function(
   outcome,
   select,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
@@ -824,6 +826,8 @@ table_outcome <- function(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -901,6 +905,8 @@ table_outcome <- function(
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
   validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
   for (.lname in c(
     "overall",
     "drop_na",
@@ -1183,6 +1189,19 @@ table_outcome <- function(
   )
   names(all_labels) <- c(outcome_name, select_names)
   outcome_label <- all_labels[[outcome_name]]
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  all_notes <- stats::setNames(
+    .note_labels_of(names(all_labels), all_labels, note_labels),
+    names(all_labels)
+  )
+  outcome_note <- all_notes[[outcome_name]]
+  .check_note_label_collisions(
+    names(all_labels),
+    unname(all_labels),
+    unname(all_notes),
+    note_labels
+  )
   # The marginal row and the variables' own rows share the stub at the
   # same indent: a variable displaying the row's label is refused.
   if (overall) {
@@ -1262,12 +1281,13 @@ table_outcome <- function(
   result <- .desc_drop_test_block(result, p_value, do_test)
 
   n_na_weights <- if (is.null(weights_vec)) 0L else sum(is.na(weights_vec))
-  note <- .outcome_note(
+  # Each variable named by its label in the apparatus.
+  table_note <- .outcome_note(
     outcome_name = outcome_name,
-    outcome_label = outcome_label,
+    outcome_label = outcome_note,
     n_outcome_na = n_outcome_na,
     n_user_na = n_user_na,
-    select_na_dropped = .label_counts(select_na_dropped, all_labels),
+    select_na_dropped = .label_counts(select_na_dropped, all_notes),
     weights_name = weights_name,
     n_na_weights = n_na_weights,
     weighted = !is.null(weights_vec),
@@ -1277,7 +1297,7 @@ table_outcome <- function(
     decimal_mark = decimal_mark,
     test_used = test_used,
     n_groups = n_groups,
-    var_labels = all_labels[select_names],
+    var_labels = all_notes[select_names],
     # The RESULT, not the request. A table whose every block was too
     # thin to compare shows an empty `p` column, and a note promising
     # that "each block compares ..." describes something the reader
@@ -1289,11 +1309,14 @@ table_outcome <- function(
     overall = overall,
     p_adjust_info = p_adjust_info,
     no_data = if (length(nodata_shown)) {
-      .no_data_sentences(outcome_label, list(nodata_shown))
+      .no_data_sentences(outcome_note, list(nodata_shown))
     },
     show_es = has_es_request,
-    es_ci = effect_size_ci
+    es_ci = effect_size_ci,
+    add = note_add
   )
+  # `note` replaces or removes it, for every route.
+  table_note <- .table_note(table_note, note, note_add)
 
   # The two machine shapes of the family (decision 5 of the ADR of
   # 2026-10-20): `"long"` is the compute frame -- one row per level, plus
@@ -1307,7 +1330,7 @@ table_outcome <- function(
     )
     rownames(out) <- NULL
     # The one attribute kept: the note, as print() shows it.
-    attr(out, "note") <- note
+    attr(out, "note") <- table_note
     return(out)
   }
 
@@ -1319,7 +1342,9 @@ table_outcome <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "outcome") <- outcome_name
-  attr(result, "outcome_label") <- outcome_label
+  # The label the title gives the outcome, which print() words in the
+  # language of the moment: its label in the apparatus.
+  attr(result, "outcome_label") <- outcome_note
   attr(result, "select") <- select_names
   attr(result, "show_columns") <- tokens
   attr(result, "show_p") <- p_value
@@ -1331,9 +1356,9 @@ table_outcome <- function(
   attr(result, "overall") <- overall
   attr(result, "indent_text") <- indent_text
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
-  attr(result, "note") <- note
+  attr(result, "note") <- table_note
   # The title the console prints, from the helper every engine reads.
-  attr(result, "title") <- .outcome_title(outcome_label)
+  attr(result, "title") <- .outcome_title(outcome_note)
   attr(result, "missing_labels") <- missing_labels
   class(result) <- c("spicy_outcome_table", "spicy_table", "data.frame")
 
@@ -1378,12 +1403,12 @@ table_outcome <- function(
       ),
       indent_text = indent_text,
       indent_text_excel_clipboard = indent_text_excel_clipboard,
-      title = .outcome_title(outcome_label),
+      title = .outcome_title(outcome_note),
       excel_path = excel_path,
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
-      note = note,
+      note = table_note,
       es_ci = isTRUE(effect_size_ci)
     ))
   }
@@ -1528,7 +1553,8 @@ table_outcome <- function(
 # data (`no_data`); how the blocks were compared, how their p-values were
 # adjusted, and that no block is adjusted for another; what the columns
 # and the Overall row mean; then the abbreviations of the headers, the
-# effect size (`show_es`, `es_ci`) included.
+# effect size (`show_es`, `es_ci`) included; last, the sentences of
+# `note_add` (`add`).
 .outcome_note <- function(
   outcome_name,
   outcome_label,
@@ -1550,7 +1576,8 @@ table_outcome <- function(
   p_adjust_info = NULL,
   no_data = NULL,
   show_es = FALSE,
-  es_ci = FALSE
+  es_ci = FALSE,
+  add = NULL
 ) {
   # The outcome, then each `select` variable that lost rows, in the order
   # of the blocks: the reader must be able to see which block lost which
@@ -1621,7 +1648,8 @@ table_outcome <- function(
     abbreviations = .note_abbreviations(c(
       .continuous_abbrev_items(tokens, ci_level, decimal_mark),
       .continuous_abbrev_compare(es = show_es, es_ci = es_ci)
-    ))
+    )),
+    add = add
   )
 }
 

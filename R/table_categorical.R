@@ -1019,7 +1019,21 @@
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
+#' @param note_labels The label a variable takes where the table names it
+#'   in a sentence, in the title and in the notes, in place of the one
+#'   `labels` gives it: a named character vector,
+#'   `note_labels = c(sex = "sex at birth")`, or a [var_labels()] object,
+#'   which reads as one. `labels` can then name a row with a whole
+#'   question while the note says "Missing values removed: sex at birth
+#'   (2).". The rows, the column headers and the spanners keep the labels
+#'   of `labels`, and so do the title and the notes for a variable
+#'   `note_labels` does not name. Names that match no column are ignored,
+#'   as in `labels`, and `NULL` (the default) renames nothing. A note label
+#'   that another variable of the table shows is an error (class
+#'   `spicy_label_collision`): choose another one, or relabel the other
+#'   variable.
 #' @param levels_keep Levels to keep, in the order to display them. If
 #'   `NULL` (the default), all observed levels are kept. Entries must
 #'   match the level strings the table displays (for labelled columns
@@ -1239,6 +1253,27 @@
 #'   workbooks resolve `"decimal"` differently: `table_continuous()`
 #'   right-aligns only the counts and the *p*-value there, and
 #'   `table_continuous_lm()` applies that convention at every `align`.
+#' @param note The note under the table. `NULL` (the default) builds it:
+#'   the general note, one paragraph opened by the lead-in of the style
+#'   ("Note." by default, none under the `jama` and `lancet` themes; see
+#'   `note_label` in [spicy_style()]), then, in a [table_regression()] with
+#'   `stars`, the legend of the stars on a line of its own. A single string
+#'   replaces the general note, the sentences the table writes about its
+#'   data included. It is printed as typed, line breaks (`"\n"`) included,
+#'   after the lead-in of the style, which a string opening with a lead-in
+#'   of its own does not repeat (`note = "Note. Data weighted."`), and the
+#'   legend of the stars stays below it. `""` keeps that legend alone, and
+#'   no note at all without stars. `FALSE` removes the note from every
+#'   output, the legend included.
+#' @param note_add Sentences to add to the note: a character vector of one
+#'   or more strings, each printed as typed (no period is added) and joined
+#'   to the note by a space. They close its paragraph, after the
+#'   definitions of the abbreviations and before the legend of the stars,
+#'   in every output and in `attr(x, "note")`, and the sentences the table
+#'   writes stay. With a string in `note`, they follow it, so a wrapper can
+#'   add a house sentence to every table while one table replaces its note.
+#'   An `NA` or an empty string is an error, and so is `note_add` with
+#'   `note = FALSE`, which leaves no note to add to.
 #' @param output Output format. One of:
 #'   - `"default"` (an ASCII table object, printed when the call is bare)
 #'   - `"data.frame"` (the displayed table, numeric)
@@ -1369,7 +1404,7 @@
 #' under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
 #' `"word"` carry it as a table note, `"excel"` writes it below the body,
 #' and the default object and the data frames of `"data.frame"` /
-#' `"long"` keep the whole note as printed, "Note." included, in
+#' `"long"` keep the whole note as printed, its lead-in included, in
 #' `attr(x, "note")` (`NULL` when there is nothing to say), so a pipeline
 #' that renders the numbers itself can still state what left the table.
 #' The default object also keeps the title the console prints, in
@@ -1805,6 +1840,7 @@ table_categorical <- function(
   select = tidyselect::everything(),
   by = NULL,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
   total_row = FALSE,
@@ -1826,6 +1862,8 @@ table_categorical <- function(
   smd = FALSE,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -1875,6 +1913,8 @@ table_categorical <- function(
 
   .check_data_frame(data, "table_categorical")
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
   by_quo <- rlang::enquo(by)
   has_group <- !rlang::quo_is_null(by_quo)
   by_name <- NULL
@@ -1965,6 +2005,18 @@ table_categorical <- function(
     resolve_variable_labels(data, by_name, labels)
   }
   labels <- resolve_variable_labels(data, select_names, labels)
+  # The labels of the apparatus: the title and every sentence of the note
+  # name a variable as `note_labels` names it, else as the rows do.
+  note_labs <- .note_labels_of(select_names, labels, note_labels)
+  by_note <- if (!is.null(by_name)) {
+    .note_labels_of(by_name, by_label, note_labels)
+  }
+  .check_note_label_collisions(
+    c(select_names, by_name),
+    c(labels, by_label),
+    c(note_labs, by_note),
+    note_labels
+  )
   # `levels_keep` as one entry per variable: a vector applies to all of
   # them, a named list to the variables it names.
   levels_keep <- .cat_levels_keep_spec(levels_keep, select_names)
@@ -2065,12 +2117,12 @@ table_categorical <- function(
   # there is nothing to say. Read lazily at assembly time, after the
   # tabulation loops have filled the ledger.
   build_missing_note <- function() {
-    # Each variable is named as its rows name it (`labels` above), and
-    # `by` closes the list.
-    label_of <- stats::setNames(labels, select_names)
+    # Each variable is named by its label in the apparatus (`note_labs`
+    # above), and `by` closes the list.
+    label_of <- stats::setNames(note_labs, select_names)
     na_dropped <- .with_group_counts(
       .label_counts(na_dropped, label_of),
-      by_label,
+      by_note,
       by_na_dropped
     )
     user_na_dropped <- .label_counts(user_na_dropped, label_of)
@@ -2122,10 +2174,10 @@ table_categorical <- function(
     no_data <- if (has_group) {
       shown <- intersect(select_names, names(no_data_groups))
       if (length(shown)) {
-        .no_data_sentences(label_of_key(shown), no_data_groups[shown])
+        .no_data_sentences(unname(label_of[shown]), no_data_groups[shown])
       }
     } else if (length(no_data_vars)) {
-      .no_data_sentences(label_of_key(no_data_vars))
+      .no_data_sentences(unname(label_of[no_data_vars]))
     }
     parts <- c(parts, no_data)
     if (length(parts)) paste(parts, collapse = " ") else NULL
@@ -2741,9 +2793,14 @@ table_categorical <- function(
       long_raw <- with_keys(with_label(long_raw))
       # Every data frame carries the note as print() shows it, and the
       # direction of its percentages.
-      attr(long_raw, "note") <- .categorical_note(
-        build_what_note(),
-        build_missing_note()
+      attr(long_raw, "note") <- .table_note(
+        .categorical_note(
+          build_what_note(),
+          build_missing_note(),
+          add = note_add
+        ),
+        note,
+        note_add
       )
       attr(long_raw, "percent") <- percent
       return(long_raw)
@@ -2865,7 +2922,11 @@ table_categorical <- function(
     # assembled (and opened with "Note.") by `.categorical_note()`.
     what_note <- build_what_note()
     missing_note <- build_missing_note()
-    oneway_note <- .categorical_note(what_note, missing_note)
+    oneway_note <- .table_note(
+      .categorical_note(what_note, missing_note, add = note_add),
+      note,
+      note_add
+    )
 
     # Typed view of the SAME rows the display frames hold, built from
     # the compute frame, never parsed back from a label string. Every
@@ -4169,7 +4230,7 @@ table_categorical <- function(
   # explain when every column is signed.
   definitions_note <- .assoc_note_apa(
     assoc_measures_per_row,
-    labels,
+    note_labs,
     no_value = c(no_value_vars, untested_vars)
   )
   if (do_smd) {
@@ -4267,7 +4328,7 @@ table_categorical <- function(
   if (p_value) {
     phrase <- .cat_test_phrase(
       test_types,
-      labels[match(names(test_types), select_names)],
+      note_labs[match(names(test_types), select_names)],
       simulated = simulate_p,
       B = simulate_B
     )
@@ -4313,11 +4374,16 @@ table_categorical <- function(
     )
     # Every data frame carries the note as print() shows it, and the
     # direction of its percentages.
-    attr(out, "note") <- .categorical_note(
-      build_what_note(),
-      build_missing_note(),
-      assoc_note_text,
-      abbrev_note
+    attr(out, "note") <- .table_note(
+      .categorical_note(
+        build_what_note(),
+        build_missing_note(),
+        assoc_note_text,
+        abbrev_note,
+        add = note_add
+      ),
+      note,
+      note_add
     )
     attr(out, "percent") <- percent
     return(out)
@@ -4414,11 +4480,16 @@ table_categorical <- function(
   # by `.categorical_note()`.
   what_note <- build_what_note()
   missing_note <- build_missing_note()
-  table_note <- .categorical_note(
-    what_note,
-    missing_note,
-    assoc_note_text,
-    abbrev_note
+  table_note <- .table_note(
+    .categorical_note(
+      what_note,
+      missing_note,
+      assoc_note_text,
+      abbrev_note,
+      add = note_add
+    ),
+    note,
+    note_add
   )
 
   # ---------------- REPORT WIDE ----------------
@@ -4657,13 +4728,15 @@ table_categorical <- function(
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
     # The title the console prints, from the helper every engine uses.
-    attr(out, "title") <- .categorical_title(by_label)
+    attr(out, "title") <- .categorical_title(by_note)
     # The whole note, as print() shows it; `what_note`, `assoc_note` and
     # `abbrev_note` stay three of its parts, unprefixed.
     attr(out, "note") <- table_note
     attr(out, "what_note") <- what_note
     attr(out, "group_var") <- by_name
-    attr(out, "group_label") <- by_label
+    # The label the title gives `by`, which print() words in the language
+    # of the moment: its label in the apparatus.
+    attr(out, "group_label") <- by_note
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
@@ -4858,7 +4931,7 @@ table_categorical <- function(
 
     tt <- tinytable::tt(
       dat_tt,
-      caption = .categorical_title(by_label),
+      caption = .categorical_title(by_note),
       # The association-measure gloss belongs to the rendered table as
       # much as to the console: it names which measure each row
       # carries.
@@ -5237,7 +5310,7 @@ table_categorical <- function(
     tbl <- gt::opt_css(tbl, css = apa_css)
 
     # The same title the five other engines print.
-    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_label))
+    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_note))
 
     # The note, as the five other routes print it.
     return(.spicy_gt_attach_note(tbl, table_note, decimal_mark = decimal_mark))
@@ -5355,14 +5428,14 @@ table_categorical <- function(
     # the rendered table states.
     return(.spicy_ft_html_caption(
       build_flextable(merge_ci_inline(report_wide_char)),
-      .categorical_title(by_label)
+      .categorical_title(by_note)
     ))
   }
 
   if (output == "word") {
     .check_output_path(word_path, output)
     ft <- build_flextable(merge_ci_inline(report_wide_char))
-    ft <- .spicy_ft_word_caption(ft, .categorical_title(by_label))
+    ft <- .spicy_ft_word_caption(ft, .categorical_title(by_note))
     flextable::save_as_docx(ft, path = word_path)
     return(invisible(word_path))
   }
@@ -5429,7 +5502,7 @@ table_categorical <- function(
     # rows two lines below.
     wb <- .spicy_xl_add_data(
       wb,
-      x = .categorical_title(by_label),
+      x = .categorical_title(by_note),
       start_row = 1
     )
     top_header_row <- 3L
@@ -5640,7 +5713,7 @@ table_categorical <- function(
     txt <- .clipboard_payload_desc(
       clip_mat,
       clipboard_delim,
-      title = .categorical_title(by_label),
+      title = .categorical_title(by_note),
       note = table_note
     )
     clipr::write_clip(txt)

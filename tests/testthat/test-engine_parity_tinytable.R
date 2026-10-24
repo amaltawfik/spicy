@@ -515,10 +515,30 @@ test_that("a tinytable printed in a terminal keeps its note plain", {
   expect_match(.pt_markdown(tt), "| *Note.* Linear regression.", fixed = TRUE)
 })
 
-test_that("a note that does not open with the prefix is left as typed", {
+test_that("a typed note opens with the lead-in of the style, in italics", {
   skip_if_not_installed("tinytable")
   fit <- stats::lm(wellbeing_score ~ age, data = .pt_data())
   tt <- table_regression(fit, note = "Source: a survey.", output = "tinytable")
+  expect_match(
+    .pt_typst(tt),
+    "text(size: 0.9em, [#emph[Note.] Source: a survey.])",
+    fixed = TRUE
+  )
+  expect_match(.pt_latex(tt), "\\emph{Note.} Source: a survey.", fixed = TRUE)
+  expect_match(.pt_markdown(tt), "| *Note.* Source: a survey.", fixed = TRUE)
+  expect_match(.pt_html(tt), "<em>Note.</em> Source: a survey.", fixed = TRUE)
+})
+
+test_that("a note that does not open with the prefix is left as typed", {
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(wellbeing_score ~ age, data = .pt_data())
+  # No lead-in under `note_label = ""`: the typed note stands alone.
+  tt <- table_regression(
+    fit,
+    note = "Source: a survey.",
+    style = spicy_style(note_label = ""),
+    output = "tinytable"
+  )
   expect_match(
     .pt_typst(tt),
     "text(size: 0.9em, [Source: a survey.])",
@@ -1139,6 +1159,90 @@ test_that("the Typst source of a note listing a missing `by` last", {
     d,
     y,
     by = g,
+    show_columns = c("m", "sd", "n"),
+    p_value = FALSE,
+    output = "tinytable"
+  ))))
+})
+
+
+# ---- the sentences a call adds to the note, and the labels of the note ---
+
+.pt_note_add_fit <- function() {
+  set.seed(15)
+  d <- data.frame(x = stats::rnorm(50), g = factor(rep(c("a", "b"), 25L)))
+  d$y <- 0.5 * d$x + stats::rnorm(50)
+  stats::lm(y ~ x + g, data = d)
+}
+
+test_that("the sentences of `note_add` come before the stars legend in Typst and Word", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  fit <- .pt_note_add_fit()
+  add <- "Data: simulated for this example."
+  lines <- strsplit(
+    attr(table_regression(fit, stars = TRUE, note_add = add), "note"),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  expect_length(lines, 2L)
+  expect_true(endsWith(lines[[1L]], paste0("interval. ", add)))
+  expect_true(startsWith(lines[[2L]], "*** p"))
+  typ <- .pt_typst(table_regression(
+    fit,
+    stars = TRUE,
+    note_add = add,
+    output = "tinytable"
+  ))
+  # Typst escapes the stars of the legend.
+  at_add <- regexpr(add, typ, fixed = TRUE)
+  at_stars <- regexpr("\\*\\*\\* p", typ, fixed = TRUE)
+  expect_true(at_add > 0L && at_stars > at_add)
+  docx <- withr::local_tempfile(fileext = ".docx")
+  table_regression(
+    fit,
+    stars = TRUE,
+    note_add = add,
+    output = "word",
+    word_path = docx
+  )
+  word <- officer::docx_summary(officer::read_docx(docx))$text
+  at_add <- grep(add, word, fixed = TRUE)
+  at_stars <- grep("*** p", word, fixed = TRUE)
+  expect_length(at_add, 1L)
+  expect_true(endsWith(word[[at_add]], add))
+  expect_identical(at_stars, at_add + 1L)
+})
+
+test_that("the Typst source of a note with a sentence added before the stars legend", {
+  skip_if_not_installed("tinytable")
+  expect_snapshot(cat(.pt_typst(table_regression(
+    .pt_note_add_fit(),
+    stars = TRUE,
+    note_add = "Data: simulated for this example.",
+    output = "tinytable"
+  ))))
+})
+
+test_that("the Typst source of a note naming a variable by its note label", {
+  skip_if_not_installed("tinytable")
+  set.seed(4)
+  d <- data.frame(
+    bmi = round(stats::rnorm(20, 24, 4), 1),
+    sex = factor(rep(c("Female", "Male"), 10L))
+  )
+  d$bmi[1:2] <- NA
+  d$sex[3] <- NA
+  expect_snapshot(cat(.pt_typst(table_continuous(
+    d,
+    bmi,
+    by = sex,
+    labels = c(
+      bmi = "Body mass index computed from self-reported height and weight",
+      sex = "Which sex were you assigned at birth?"
+    ),
+    note_labels = c(bmi = "BMI", sex = "sex at birth"),
     show_columns = c("m", "sd", "n"),
     p_value = FALSE,
     output = "tinytable"

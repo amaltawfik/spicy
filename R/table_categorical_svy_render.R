@@ -467,9 +467,9 @@
 # with no data (`no_data`, its sentences); (c) the inference -- where the
 # standard errors come from, the degrees of freedom of the intervals and
 # tests, how the percentages were bounded, the test, the adjustment
-# (`p_adjust_info`); (d) the glosses of the columns. `n_p` is the number
-# of p-values the table shows. The whole note, opened by the lead-in, or
-# NULL.
+# (`p_adjust_info`); (d) the glosses of the columns; then the sentences
+# of `note_add` (`add`). `n_p` is the number of p-values the table shows.
+# The whole note, opened by the lead-in, or NULL.
 .cat_svy_note <- function(
   meta,
   degf_dom_used,
@@ -489,7 +489,8 @@
   test_refused = "none",
   ci_bound = FALSE,
   no_data = NULL,
-  p_adjust_info = NULL
+  p_adjust_info = NULL,
+  add = NULL
 ) {
   # The df span the DOMAINS carry, never the caller's `df`: the design
   # line states a fact about the design, and the caller cannot change
@@ -579,6 +580,7 @@
     missing = missing,
     inference = inference,
     definitions = definitions,
-    abbreviations = abbreviations
+    abbreviations = abbreviations,
+    add = add
   )
 }

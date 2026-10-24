@@ -2005,7 +2005,7 @@ spicy_labels <- function(language = NULL) {
 # attribute), the way `table_regression()` and `table_continuous_lm()` open
 # theirs. Nothing to say stays nothing: NULL or "" comes back as it went
 # in, so a table with no disclosure prints no bare "Note.". A note the user
-# typed never comes through here: it is printed as typed.
+# typed takes the same lead-in in `.table_note()`, unless it opens with one.
 .note_with_prefix <- function(note) {
   if (is.null(note) || !nzchar(note)) {
     return(note)

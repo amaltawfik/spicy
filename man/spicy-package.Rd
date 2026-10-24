@@ -152,7 +152,8 @@ on the first row of the outcome, its size on every row), and in
 \code{\link[=table_regression_uv]{table_regression_uv()}}, one univariable model per predictor. The long
 output of \code{\link[=table_regression]{table_regression()}} has the same columns, \code{NA}: one shape
 for the class. The printed objects carry the \code{by} column and its
-label in the attributes \code{group_var} and \code{group_label}.
+label in the attributes \code{group_var} and \code{group_label}, the label the
+title gives it (its label in \code{note_labels}, when there is one).
 
 \code{output = "data.frame"} and \code{as.data.frame()} return the table as it
 is displayed, one row per printed row, with numbers: the key columns

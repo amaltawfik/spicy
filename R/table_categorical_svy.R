@@ -452,7 +452,8 @@
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
 #' @param levels_keep Levels to keep, as a character vector (all
 #'   variables) or a named list (per variable).
 #' @param include_total Add a `Total` column block with the whole
@@ -553,7 +554,7 @@
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, "Note." included, in `attr(x, "note")`. The default object
+#' printed, its lead-in included, in `attr(x, "note")`. The default object
 #' also keeps the title the console prints, in `attr(x, "title")`.
 #' [tidy()][tidy.spicy_categorical_svy_table] reports the proportions
 #' between 0 and 1.
@@ -589,6 +590,7 @@ table_categorical_svy <- function(
   select = tidyselect::everything(),
   by = NULL,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
   drop_na = FALSE,
@@ -612,6 +614,8 @@ table_categorical_svy <- function(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -673,6 +677,8 @@ table_categorical_svy <- function(
   excel_sheet <- cfg$excel_sheet
   p_digits <- cfg$p_digits
   df_user <- cfg$df
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
 
   percent_digits <- validate_digit_arg(percent_digits, "percent_digits")
   for (.lname in c(
@@ -783,6 +789,18 @@ table_categorical_svy <- function(
   by_label <- if (has_group) {
     resolve_variable_labels(vars, group_col_name, labels)
   }
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  note_labs <- .note_labels_of(select_names, var_labels, note_labels)
+  by_note <- if (has_group) {
+    .note_labels_of(group_col_name, by_label, note_labels)
+  }
+  .check_note_label_collisions(
+    c(select_names, group_col_name),
+    c(var_labels, by_label),
+    c(note_labs, by_note),
+    note_labels
+  )
   # A labelled `by` names its domains by their value labels, as the rows
   # of a labelled variable name its levels (`.group_display()`).
   if (has_group) {
@@ -1108,8 +1126,8 @@ table_categorical_svy <- function(
   )
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
-  # The note names each variable as its rows name it.
-  label_of <- stats::setNames(var_labels, select_names)
+  # The note names each variable by its label in the apparatus.
+  label_of <- stats::setNames(note_labs, select_names)
   # The variables with no data, in the order of `select`: one sentence per
   # set of groups.
   no_data_note <- if (has_group) {
@@ -1121,26 +1139,31 @@ table_categorical_svy <- function(
     .no_data_sentences(label_of[no_data_vars])
   }
   # The whole note, for every route: it opens with "Note." there, once.
-  note <- .cat_svy_note(
-    meta = meta,
-    degf_dom_used = degf_dom_used,
-    df_user = df_user,
-    na_dropped = .label_counts(na_dropped, label_of),
-    user_na_dropped = .label_counts(user_na_dropped, label_of),
-    by_na_dropped = by_na_dropped,
-    group_col_name = by_label,
-    decimal_mark = decimal_mark,
-    proportion_ci = proportion_ci,
-    ci_method = ci_method,
-    ci_bound = ci_bound,
-    deff = deff,
-    p_value = p_value && n_test_ran > 0L,
-    chisq_statistic = chisq_statistic,
-    n_p = .n_p_shown(result[[.CAT_KEY_P]], result$variable),
-    n_negative_weights = .design_negative_weights(design),
-    test_refused = test_refused,
-    no_data = no_data_note,
-    p_adjust_info = p_adjust_info
+  table_note <- .table_note(
+    .cat_svy_note(
+      meta = meta,
+      degf_dom_used = degf_dom_used,
+      df_user = df_user,
+      na_dropped = .label_counts(na_dropped, label_of),
+      user_na_dropped = .label_counts(user_na_dropped, label_of),
+      by_na_dropped = by_na_dropped,
+      group_col_name = by_note,
+      decimal_mark = decimal_mark,
+      proportion_ci = proportion_ci,
+      ci_method = ci_method,
+      ci_bound = ci_bound,
+      deff = deff,
+      p_value = p_value && n_test_ran > 0L,
+      chisq_statistic = chisq_statistic,
+      n_p = .n_p_shown(result[[.CAT_KEY_P]], result$variable),
+      n_negative_weights = .design_negative_weights(design),
+      test_refused = test_refused,
+      no_data = no_data_note,
+      p_adjust_info = p_adjust_info,
+      add = note_add
+    ),
+    note,
+    note_add
   )
   .warn_negative_weights_no_test(test_refused)
 
@@ -1151,7 +1174,9 @@ table_categorical_svy <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
-  attr(result, "group_label") <- by_label
+  # The label the title gives `by`, which print() words in the language of
+  # the moment: its label in the apparatus.
+  attr(result, "group_label") <- by_note
   attr(result, "blocks") <- blocks
   attr(result, "margin_key") <- margin_key
   attr(result, "missing_group_label") <- missing_group_label
@@ -1161,8 +1186,8 @@ table_categorical_svy <- function(
   attr(result, "indent_text") <- indent_text
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
   # The title the console prints, from the helper every engine uses.
-  attr(result, "title") <- .categorical_svy_title(by_label)
-  attr(result, "note") <- note
+  attr(result, "title") <- .categorical_svy_title(by_note)
+  attr(result, "note") <- table_note
   attr(result, "design_meta") <- meta
   attr(result, "chisq_statistic") <- chisq_statistic
   class(result) <- c("spicy_categorical_svy_table", "spicy_table", "data.frame")
@@ -1173,7 +1198,7 @@ table_categorical_svy <- function(
   # numbers, `as.data.frame()` of the object below.
   if (identical(output, "long")) {
     out <- .cat_svy_publish_long(result)
-    attr(out, "note") <- note
+    attr(out, "note") <- table_note
     return(out)
   }
 
@@ -1206,7 +1231,7 @@ table_categorical_svy <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
-      note = note,
+      note = table_note,
       header_layout = layout,
       clipboard_label = "Categorical table copied to clipboard."
     ))

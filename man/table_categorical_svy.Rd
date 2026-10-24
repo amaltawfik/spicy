@@ -9,6 +9,7 @@ table_categorical_svy(
   select = tidyselect::everything(),
   by = NULL,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   levels_keep = NULL,
   include_total = TRUE,
   drop_na = FALSE,
@@ -24,6 +25,8 @@ table_categorical_svy(
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   indent_text = "  ",
@@ -86,7 +89,22 @@ every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
 variable label documents the data file; a published table carries
-the wording you set here.}
+the wording you set here. \code{note_labels} gives a variable a shorter
+label in the title and the notes.}
+
+\item{note_labels}{The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+\code{labels} gives it: a named character vector,
+\code{note_labels = c(sex = "sex at birth")}, or a \code{\link[=var_labels]{var_labels()}} object,
+which reads as one. \code{labels} can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of \code{labels}, and so do the title and the notes for a variable
+\code{note_labels} does not name. Names that match no column are ignored,
+as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+\code{spicy_label_collision}): choose another one, or relabel the other
+variable.}
 
 \item{levels_keep}{Levels to keep, as a character vector (all
 variables) or a named list (per variable).}
@@ -166,6 +184,29 @@ default) or \code{","} in most styles; the Lancet style of
 \item{align}{Horizontal alignment of the numeric columns: \code{"decimal"}
 (the default), \code{"center"} or \code{"right"}, as in \code{\link[=table_continuous]{table_continuous()}},
 whose rendering engines this table shares, its Excel output included.}
+
+\item{note}{The note under the table. \code{NULL} (the default) builds it:
+the general note, one paragraph opened by the lead-in of the style
+("Note." by default, none under the \code{jama} and \code{lancet} themes; see
+\code{note_label} in \code{\link[=spicy_style]{spicy_style()}}), then, in a \code{\link[=table_regression]{table_regression()}} with
+\code{stars}, the legend of the stars on a line of its own. A single string
+replaces the general note, the sentences the table writes about its
+data included. It is printed as typed, line breaks (\code{"\\n"}) included,
+after the lead-in of the style, which a string opening with a lead-in
+of its own does not repeat (\code{note = "Note. Data weighted."}), and the
+legend of the stars stays below it. \code{""} keeps that legend alone, and
+no note at all without stars. \code{FALSE} removes the note from every
+output, the legend included.}
+
+\item{note_add}{Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in \code{attr(x, "note")}, and the sentences the table
+writes stay. With a string in \code{note}, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An \code{NA} or an empty string is an error, and so is \code{note_add} with
+\code{note = FALSE}, which leaves no note to add to.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
@@ -252,7 +293,7 @@ invisibly.
 }
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in \code{attr(x, "note")}. The default object
+printed, its lead-in included, in \code{attr(x, "note")}. The default object
 also keeps the title the console prints, in \code{attr(x, "title")}.
 \link[=tidy.spicy_categorical_svy_table]{tidy()} reports the proportions
 between 0 and 1.

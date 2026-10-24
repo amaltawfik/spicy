@@ -290,6 +290,10 @@ p-values, and notes.
   their survey twins open their notes with the lead-in of the style,
   "Note." by default, as `table_regression()` does.
 
+* `table_regression()` and `table_regression_uv()` print a string in
+  `note` after the lead-in of the style, "Note." unless it opens with
+  one, and keep the stars legend below it; `note = FALSE` removes both.
+
 * `table_categorical()` printed "Note." in the middle of its note when
   `drop_na = TRUE` removed values (#11).
 
@@ -507,6 +511,14 @@ p-values, and notes.
 
 * Every table function keeps the title it prints in `attr(x, "title")`,
   as `table_regression()` already did.
+
+* Every table function takes `note`, whose string replaces the general
+  note under the lead-in of the style, and `note_add`, which adds
+  sentences at the end of the note, before the stars legend.
+
+* Every table function gains `note_labels`, the label a variable takes
+  in the title and the notes, so `labels` can keep a whole question in
+  the rows: `note_labels = c(sex = "sex at birth")`.
 
 * The long output and `tidy()` of the tables mark the rows they add by a
   key rather than by their label, which follows the display language.
@@ -729,6 +741,9 @@ p-values, and notes.
 * The note's lead-in ("Note." or the `note_label` of the style) is in
   italics in Typst, LaTeX, Markdown documents, and Excel output, and in
   `gt`'s LaTeX, RTF, and Word output, as in HTML, Word, and PowerPoint.
+
+* A sentence of a note that ends on a label with its own "?", "!", or
+  "." no longer doubles the mark ("Phi: Do you smoke?.").
 
 * The LaTeX output of `tinytable` compiles when a note contains `%` or
   `_`, and centers each spanner over its columns.

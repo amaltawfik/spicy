@@ -19,8 +19,8 @@ print.spicy_categorical_table <- function(x, ...) {
   indent_text <- attr(x, "indent_text") %||% "  "
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
-  # The note table_categorical() assembled, "Note." included; NULL when
-  # there is nothing to say.
+  # The note table_categorical() assembled, its lead-in included; NULL
+  # when there is nothing to say.
   assoc_note <- attr(x, "note", exact = TRUE)
 
   if (is.null(display_df)) {
@@ -197,7 +197,8 @@ print.spicy_categorical_table <- function(x, ...) {
 # each variable, Yates' correction and the adjustment, then the measure
 # each variable carries and the direction of the SMD; `abbrev_note`, the
 # abbreviations of the headers (`.note_abbreviations()`), placed by the
-# rule of the style in force. Any part may be absent; `NULL` when all are.
+# rule of the style in force; `add`, the sentences of `note_add`, last.
+# Any part may be absent; `NULL` when all are.
 #
 # The one place the note is assembled, for every route (console, the
 # rich engines, Excel, the clipboard), so the one place it opens with
@@ -209,13 +210,15 @@ print.spicy_categorical_table <- function(x, ...) {
   what_note = NULL,
   missing_note = NULL,
   assoc_note = NULL,
-  abbrev_note = NULL
+  abbrev_note = NULL,
+  add = NULL
 ) {
   .compose_note(
     what = what_note,
     missing = missing_note,
     inference = assoc_note,
-    abbreviations = abbrev_note
+    abbreviations = abbrev_note,
+    add = add
   )
 }
 

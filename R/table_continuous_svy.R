@@ -673,7 +673,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
-#'   the wording you set here.
+#'   the wording you set here. `note_labels` gives a variable a shorter
+#'   label in the title and the notes.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
@@ -713,7 +714,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, "Note." included, in `attr(x, "note")`. The default object
+#' printed, its lead-in included, in `attr(x, "note")`. The default object
 #' also keeps the title it prints in `attr(x, "title")`.
 #'
 #' @seealso [table_continuous()] for the data-frame sibling,
@@ -752,11 +753,14 @@ table_continuous_svy <- function(
   show_columns = NULL,
   ci = TRUE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   ci_level = 0.95,
   digits = 2,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
+  note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -798,6 +802,8 @@ table_continuous_svy <- function(
   excel_sheet <- cfg$excel_sheet
   p_digits <- cfg$p_digits
   df_user <- cfg$df
+  .check_note_labels_arg(note_labels)
+  .check_note_args(note, note_add)
 
   # One number of decimals for the table, or one per variable, as in the
   # sibling.
@@ -1029,6 +1035,18 @@ table_continuous_svy <- function(
   by_label <- if (has_group) {
     resolve_variable_labels(vars, group_col_name, labels)
   }
+  # The labels of the apparatus: the title and the note name a variable as
+  # `note_labels` names it, else as the rows do.
+  note_labs <- .note_labels_of(numeric_cols, var_labels, note_labels)
+  by_note <- if (has_group) {
+    .note_labels_of(group_col_name, by_label, note_labels)
+  }
+  .check_note_label_collisions(
+    c(numeric_cols, group_col_name),
+    c(var_labels, by_label),
+    c(note_labs, by_note),
+    note_labels
+  )
   by_na_dropped <- 0L
   group_levels <- character(0)
   domains <- list()
@@ -1235,9 +1253,9 @@ table_continuous_svy <- function(
   result <- .desc_drop_test_block(result, p_value, do_test)
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
-  # The note names each variable as its rows name it.
-  label_of <- stats::setNames(var_labels, numeric_cols)
-  note <- .svy_continuous_note(
+  # The note names each variable by its label in the apparatus.
+  label_of <- stats::setNames(note_labs, numeric_cols)
+  table_note <- .svy_continuous_note(
     meta = meta,
     degf_used = degf_used,
     degf_dom_used = degf_dom_used,
@@ -1245,7 +1263,7 @@ table_continuous_svy <- function(
     na_dropped = .label_counts(na_dropped, label_of),
     user_na_dropped = .label_counts(user_na_dropped, label_of),
     by_na_dropped = by_na_dropped,
-    group_col_name = by_label,
+    group_col_name = by_note,
     tokens = tokens,
     result = result,
     ci_level = ci_level,
@@ -1260,12 +1278,15 @@ table_continuous_svy <- function(
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused,
     no_data = if (has_group) {
-      .no_data_sentences(var_labels, unname(nodata_groups))
+      .no_data_sentences(note_labs, unname(nodata_groups))
     } else if (length(nodata_vars)) {
-      .no_data_sentences(var_labels[match(nodata_vars, numeric_cols)])
+      .no_data_sentences(note_labs[match(nodata_vars, numeric_cols)])
     },
-    p_adjust_info = p_adjust_info
+    p_adjust_info = p_adjust_info,
+    add = note_add
   )
+  # `note` replaces or removes it, for every route.
+  table_note <- .table_note(table_note, note, note_add)
   .warn_negative_weights_no_test(test_refused)
 
   # The two machine shapes of the family (decision 5 of the ADR of
@@ -1278,7 +1299,7 @@ table_continuous_svy <- function(
       missing_group_label,
       effect_size = FALSE
     )
-    attr(out, "note") <- note
+    attr(out, "note") <- table_note
     return(out)
   }
 
@@ -1291,7 +1312,9 @@ table_continuous_svy <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
-  attr(result, "group_label") <- by_label
+  # The label the title gives `by`, which print() words in the language of
+  # the moment: its label in the apparatus.
+  attr(result, "group_label") <- by_note
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
   attr(result, "show_n") <- show_n
@@ -1301,9 +1324,9 @@ table_continuous_svy <- function(
     rep(list(tokens), length(numeric_cols)),
     numeric_cols
   )
-  attr(result, "note") <- note
+  attr(result, "note") <- table_note
   # The title the console prints, from the helper every engine reads.
-  attr(result, "title") <- .continuous_title(by_label)
+  attr(result, "title") <- .continuous_title(by_note)
   attr(result, "design_meta") <- meta
   class(result) <- c("spicy_continuous_svy_table", "spicy_table", "data.frame")
 
@@ -1344,12 +1367,12 @@ table_continuous_svy <- function(
       } else {
         integer(0)
       },
-      title = .continuous_title(attr(result, "group_label", exact = TRUE)),
+      title = .continuous_title(by_note),
       excel_path = excel_path,
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
-      note = note
+      note = table_note
     ))
   }
 
@@ -1624,9 +1647,9 @@ table_continuous_svy <- function(
 # the sample is, what design produced them, the negative weights, which
 # quantile rule and which design effect were in force), what left the
 # sample, how the estimates were referred and the groups compared, and
-# what the abbreviations mean. `test_labels` is the comparison of each
-# variable, named by column, NA where none ran; `var_labels` is named by
-# column too.
+# what the abbreviations mean, then the sentences of `note_add` (`add`).
+# `test_labels` is the comparison of each variable, named by column, NA
+# where none ran; `var_labels` is named by column too.
 .svy_continuous_note <- function(
   meta,
   degf_used,
@@ -1649,7 +1672,8 @@ table_continuous_svy <- function(
   n_negative_weights = 0L,
   test_refused = "none",
   no_data = NULL,
-  p_adjust_info = NULL
+  p_adjust_info = NULL,
+  add = NULL
 ) {
   # The df span the ROWS actually carry, not the design's own: a
   # grouped table refers each interval to its domain's degrees of
@@ -1721,6 +1745,7 @@ table_continuous_svy <- function(
     # were computed, so their definitions stay under every rule.
     abbreviations = .note_abbreviations(
       .continuous_abbrev_items(tokens, ci_level, decimal_mark, svy = TRUE)
-    )
+    ),
+    add = add
   )
 }

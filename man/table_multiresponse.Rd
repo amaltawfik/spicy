@@ -20,12 +20,14 @@ table_multiresponse(
   p_adjust = "holm",
   statistic = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
@@ -205,7 +207,22 @@ every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
 variable label documents the data file; a published table carries
-the wording you set here.}
+the wording you set here. \code{note_labels} gives a variable a shorter
+label in the title and the notes.}
+
+\item{note_labels}{The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+\code{labels} gives it: a named character vector,
+\code{note_labels = c(sex = "sex at birth")}, or a \code{\link[=var_labels]{var_labels()}} object,
+which reads as one. \code{labels} can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of \code{labels}, and so do the title and the notes for a variable
+\code{note_labels} does not name. Names that match no column are ignored,
+as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+\code{spicy_label_collision}): choose another one, or relabel the other
+variable.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
@@ -229,14 +246,27 @@ or \code{"right"}, as in \code{\link[=table_categorical]{table_categorical()}}.}
 
 \item{title}{The table title. \code{NULL} (the default) gives "Multiple
 responses", followed by "by" and the \code{by} variable under the \code{labels}
-contract; a single string replaces it, and \code{FALSE} removes it, as in
-\code{\link[=table_regression]{table_regression()}}.}
+contract (or its label in \code{note_labels}); a single string replaces
+it, and \code{FALSE} removes it, as in \code{\link[=table_regression]{table_regression()}}.}
 
 \item{note}{The table note. \code{NULL} (the default) builds it, opening
 with "Note.": what the percentages sum to, the base with the
 respondents it holds or leaves out, the rows removed for a missing
-\code{by} and the items with no data in a group, then the tests. A single
-string replaces it and is printed as typed, and \code{FALSE} removes it.}
+\code{by} and the items with no data in a group, then the tests, and the
+sentences of \code{note_add}. A single string replaces it, printed as typed
+after the lead-in ("Note.", unless the string opens with one),
+\code{note_add} after it, and \code{FALSE} removes it, as in every table
+function.}
+
+\item{note_add}{Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in \code{attr(x, "note")}, and the sentences the table
+writes stay. With a string in \code{note}, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An \code{NA} or an empty string is an error, and so is \code{note_add} with
+\code{note = FALSE}, which leaves no note to add to.}
 
 \item{output}{Output format. One of:
 \itemize{
@@ -320,8 +350,8 @@ invisibly.
 }
 
 The default object and the data frames carry the note as printed in
-\code{attr(x, "note")} ("Note." included, the \code{note} you typed verbatim,
-\code{NULL} under \code{note = FALSE}) and, when the table has a global test,
+\code{attr(x, "note")} (its lead-in included, \code{NULL} under \code{note = FALSE})
+and, when the table has a global test,
 \code{attr(x, "global_test")}: a one-row data frame with
 \code{test}, \code{statistic}, \code{df}, \code{p.value}, \code{boot_n}, \code{n_items} (the items
 tested), \code{n_groups}, \code{rs_mean} and \code{rs_cv} (the design-effect summary of

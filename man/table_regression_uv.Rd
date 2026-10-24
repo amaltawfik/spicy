@@ -16,7 +16,10 @@ table_regression_uv(
   show_intercept = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
-  ...
+  ...,
+  note_labels = NULL,
+  note = NULL,
+  note_add = NULL
 )
 }
 \arguments{
@@ -110,7 +113,8 @@ names (\code{"sexMale"} names the row of one level), as in
 default reads \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE}
 typed in the call wins over it. Any other value, \code{NULL} included, is
 an error. A variable label documents the data file; a published
-table carries the wording you set here.}
+table carries the wording you set here. \code{note_labels} gives the
+outcome a shorter label in the title.}
 
 \item{title}{Table title; \code{NULL} (default) builds
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}
@@ -122,6 +126,43 @@ name: an unknown or abbreviated name is an error.
 meaningful for a screen and is refused. \code{cluster} must be a
 single vector with one value per row of \code{data}; it is aligned to
 each fit's own estimation sample automatically.}
+
+\item{note_labels}{The label a variable takes where the table names it
+in a sentence, in the title and in the notes, in place of the one
+\code{labels} gives it: a named character vector,
+\code{note_labels = c(sex = "sex at birth")}, or a \code{\link[=var_labels]{var_labels()}} object,
+which reads as one. \code{labels} can then name a row with a whole
+question while the note says "Missing values removed: sex at birth
+(2).". The rows, the column headers and the spanners keep the labels
+of \code{labels}, and so do the title and the notes for a variable
+\code{note_labels} does not name. Names that match no column are ignored,
+as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+that another variable of the table shows is an error (class
+\code{spicy_label_collision}): choose another one, or relabel the other
+variable.}
+
+\item{note}{The note under the table. \code{NULL} (the default) builds it:
+the general note, one paragraph opened by the lead-in of the style
+("Note." by default, none under the \code{jama} and \code{lancet} themes; see
+\code{note_label} in \code{\link[=spicy_style]{spicy_style()}}), then, in a \code{\link[=table_regression]{table_regression()}} with
+\code{stars}, the legend of the stars on a line of its own. A single string
+replaces the general note, the sentences the table writes about its
+data included. It is printed as typed, line breaks (\code{"\\n"}) included,
+after the lead-in of the style, which a string opening with a lead-in
+of its own does not repeat (\code{note = "Note. Data weighted."}), and the
+legend of the stars stays below it. \code{""} keeps that legend alone, and
+no note at all without stars. \code{FALSE} removes the note from every
+output, the legend included.}
+
+\item{note_add}{Sentences to add to the note: a character vector of one
+or more strings, each printed as typed (no period is added) and joined
+to the note by a space. They close its paragraph, after the
+definitions of the abbreviations and before the legend of the stars,
+in every output and in \code{attr(x, "note")}, and the sentences the table
+writes stay. With a string in \code{note}, they follow it, so a wrapper can
+add a house sentence to every table while one table replaces its note.
+An \code{NA} or an empty string is an error, and so is \code{note_add} with
+\code{note = FALSE}, which leaves no note to add to.}
 }
 \value{
 See \code{\link[=table_regression]{table_regression()}} (same output contract).

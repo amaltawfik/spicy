@@ -144,7 +144,8 @@
 #' [table_regression_uv()], one univariable model per predictor. The long
 #' output of [table_regression()] has the same columns, `NA`: one shape
 #' for the class. The printed objects carry the `by` column and its
-#' label in the attributes `group_var` and `group_label`.
+#' label in the attributes `group_var` and `group_label`, the label the
+#' title gives it (its label in `note_labels`, when there is one).
 #'
 #' `output = "data.frame"` and `as.data.frame()` return the table as it
 #' is displayed, one row per printed row, with numbers: the key columns

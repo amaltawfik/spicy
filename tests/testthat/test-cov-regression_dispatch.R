@@ -311,11 +311,13 @@ test_that("print.spicy_flextable interactive branch renders browsable HTML with 
 test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
   skip_if_not_installed("flextable")
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  # A note NOT starting with "Note." hits the non-italic single-chunk arm.
+  # A note NOT starting with "Note." hits the non-italic single-chunk arm:
+  # a style with no lead-in leaves the typed note without one.
   ft <- table_regression(
     fit,
     output = "flextable",
-    note = "Custom footer, no prefix."
+    note = "Custom footer, no prefix.",
+    style = spicy_style(note_label = "")
   )
   expect_s3_class(ft, "flextable")
   expect_identical(attr(ft, "spicy_note"), "Custom footer, no prefix.")

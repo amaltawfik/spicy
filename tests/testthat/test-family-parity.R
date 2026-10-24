@@ -559,11 +559,14 @@ test_that("every table of the family carries its printed note as `note`", {
   expect_null(.fp_note_block(plain))
   expect_null(attr(plain, "note"))
   expect_null(attr(table_continuous(mtcars, select = mpg, ci = FALSE), "note"))
-  # A note the user typed is the note, verbatim; `note = FALSE` removes it.
+  # A note the user typed replaces the general note, printed as typed under
+  # the lead-in; `note = FALSE` removes it.
   d <- .fp_note_data()
   typed <- table_multiresponse(d, c(mq1, mq3), note = "Source: survey.")
-  expect_identical(attr(typed, "note"), "Source: survey.")
-  expect_true("Source: survey." %in% utils::capture.output(print(typed)))
+  expect_identical(attr(typed, "note"), "Note. Source: survey.")
+  expect_true(
+    "Note. Source: survey." %in% utils::capture.output(print(typed))
+  )
   expect_null(attr(table_multiresponse(d, c(mq1, mq3), note = FALSE), "note"))
 })
 
@@ -619,6 +622,246 @@ test_that("in French the colon lead-in takes its no-break space, in every table"
         expect_true(any(startsWith(out, lead)), info = info)
       }
     }
+  }
+})
+
+# ---- `note`, `note_add` and `note_labels` across the nine ------------------
+#
+# One builder per table function on the data of the notes above, each
+# variable labelled; `...` reaches the call. `rename` and `clash` name, for
+# the collision, a variable the note names and another variable whose
+# label it would then show.
+.fp_note_arg_builders <- function() {
+  d <- .fp_note_data()
+  lab <- .fp_note_labels
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  fit <- stats::lm(qa1 ~ qb2 + qe5, data = d)
+  out <- list(
+    table_categorical = list(
+      build = function(...) {
+        q(table_categorical(
+          d,
+          select = c(qc3, qd4),
+          by = qe5,
+          labels = lab,
+          drop_na = TRUE,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qc3"
+    ),
+    table_continuous = list(
+      build = function(...) {
+        q(table_continuous(
+          d,
+          select = c(qa1, qb2),
+          by = qe5,
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qa1"
+    ),
+    table_continuous_lm = list(
+      build = function(...) {
+        q(table_continuous_lm(
+          d,
+          select = qa1,
+          by = qe5,
+          covariates = qf6,
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qf6"
+    ),
+    table_outcome = list(
+      build = function(...) {
+        q(table_outcome(
+          d,
+          outcome = qa1,
+          select = c(qe5, qd4),
+          labels = lab,
+          drop_na = TRUE,
+          ...
+        ))
+      },
+      rename = "qa1",
+      clash = "qd4"
+    ),
+    table_multiresponse = list(
+      build = function(...) {
+        q(table_multiresponse(
+          d,
+          select = c(mq1, mq3),
+          by = qe5,
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "mq1"
+    ),
+    table_regression = list(
+      build = function(...) q(table_regression(fit, labels = lab, ...)),
+      rename = "qa1",
+      clash = "qb2"
+    ),
+    table_regression_uv = list(
+      build = function(...) {
+        q(table_regression_uv(
+          d,
+          outcome = qa1,
+          predictors = c(qb2, qe5),
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qa1",
+      clash = "qb2"
+    )
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~ww, data = d)
+    out$table_categorical_svy <- list(
+      build = function(...) {
+        q(table_categorical_svy(
+          des,
+          select = c(qc3, qd4),
+          by = qe5,
+          labels = lab,
+          drop_na = TRUE,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qd4"
+    )
+    out$table_continuous_svy <- list(
+      build = function(...) {
+        q(table_continuous_svy(
+          des,
+          select = c(qa1, qb2),
+          by = qe5,
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qb2"
+    )
+  }
+  out
+}
+
+test_that("the nine table functions take `note` and `note_add`, alike", {
+  builders <- .fp_note_arg_builders()
+  expect_length(builders, 9L)
+  add <- c("Data: a survey.", "Weights not applied")
+  for (fn in names(builders)) {
+    b <- builders[[fn]]$build
+    expect_true(
+      all(
+        c("note", "note_add") %in% names(formals(getExportedValue("spicy", fn)))
+      ),
+      info = fn
+    )
+    built <- attr(b(), "note")
+    expect_true(startsWith(built, "Note. "), info = fn)
+    # The sentences close the note the table builds, as typed.
+    x <- b(note_add = add)
+    expect_identical(
+      attr(x, "note"),
+      paste(c(built, add), collapse = " "),
+      info = fn
+    )
+    expect_true(attr(x, "note") %in% utils::capture.output(print(x)), info = fn)
+    expect_identical(
+      attr(b(note_add = add, output = "data.frame"), "note"),
+      attr(x, "note"),
+      info = fn
+    )
+    # A string replaces the general note under the lead-in, which it does
+    # not repeat, the sentences after it; "" leaves no note (no stars
+    # here), FALSE none.
+    expect_identical(
+      attr(b(note = "Source: a survey."), "note"),
+      "Note. Source: a survey.",
+      info = fn
+    )
+    expect_identical(
+      attr(b(note = "Note. Source: a survey."), "note"),
+      "Note. Source: a survey.",
+      info = fn
+    )
+    expect_identical(
+      attr(b(note = "Source: a survey.", note_add = add[[1L]]), "note"),
+      "Note. Source: a survey. Data: a survey.",
+      info = fn
+    )
+    expect_null(attr(b(note = ""), "note"), info = fn)
+    expect_null(attr(b(note = FALSE), "note"), info = fn)
+    # One refusal, one class, in the name of the function called.
+    for (bad in list(
+      quote(b(note = FALSE, note_add = "A.")),
+      quote(b(note_add = NA_character_)),
+      quote(b(note_add = "")),
+      quote(b(note = TRUE))
+    )) {
+      err <- tryCatch(eval(bad), error = identity)
+      expect_s3_class(err, "spicy_invalid_input")
+      expect_identical(rlang::call_name(conditionCall(err)), fn, info = fn)
+    }
+  }
+})
+
+test_that("the nine table functions take `note_labels`, alike", {
+  builders <- .fp_note_arg_builders()
+  lab <- .fp_note_labels
+  short <- c(qa1 = "alpha", qc3 = "gamma", qe5 = "epsilon")
+  swap <- function(s) {
+    for (v in names(short)) {
+      s <- gsub(lab[[v]], short[[v]], s, fixed = TRUE)
+    }
+    s
+  }
+  # The printed table without its title and its note: the rows, the
+  # headers and the spanners.
+  body_of <- function(x) {
+    out <- utils::capture.output(print(x))
+    out[!out %in% c(attr(x, "title"), strsplit(attr(x, "note"), "\n")[[1L]])]
+  }
+  for (fn in names(builders)) {
+    b <- builders[[fn]]$build
+    expect_true(
+      "note_labels" %in% names(formals(getExportedValue("spicy", fn))),
+      info = fn
+    )
+    base <- b()
+    x <- b(note_labels = short)
+    # The title and the note name a variable by its note label, and only
+    # there: the rest of the table keeps the labels of `labels`.
+    expect_identical(attr(x, "title"), swap(attr(base, "title")), info = fn)
+    expect_identical(attr(x, "note"), swap(attr(base, "note")), info = fn)
+    expect_false(identical(attr(x, "title"), attr(base, "title")), info = fn)
+    expect_identical(body_of(x), body_of(base), info = fn)
+    # A note label another variable of the table shows is a collision.
+    clash <- stats::setNames(
+      lab[[builders[[fn]]$clash]],
+      builders[[fn]]$rename
+    )
+    err <- tryCatch(b(note_labels = clash), error = identity)
+    expect_s3_class(err, "spicy_label_collision")
+    expect_identical(rlang::call_name(conditionCall(err)), fn, info = fn)
+    err <- tryCatch(b(note_labels = TRUE), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_identical(rlang::call_name(conditionCall(err)), fn, info = fn)
   }
 })
 

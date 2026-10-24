@@ -5906,3 +5906,338 @@ test_that("the note never names a test that failed", {
   expect_false(grepl("Welch", note, fixed = TRUE))
   expect_true(all(is.na(out$p.value[out$variable == "k"])))
 })
+
+# ---- the note: built, replaced, removed, added to (point 15) --------------
+
+.tc_note_data <- function() {
+  set.seed(15)
+  d <- data.frame(
+    y = round(stats::rnorm(40, 50, 10), 1),
+    g = factor(rep(c("A", "B"), 20L))
+  )
+  d$y[1:3] <- NA
+  d
+}
+
+test_that("`note` builds the note, replaces it under the lead-in, or removes it", {
+  d <- .tc_note_data()
+  built <- table_continuous(d, y, by = g)
+  expect_true(startsWith(attr(built, "note"), "Note. Missing values removed"))
+  expect_true(attr(built, "note") %in% utils::capture.output(print(built)))
+  # A string replaces the general note, the disclosures included, and is
+  # printed as typed after the lead-in of the style.
+  typed <- table_continuous(d, y, by = g, note = "Source: a survey.")
+  expect_identical(attr(typed, "note"), "Note. Source: a survey.")
+  out <- utils::capture.output(print(typed))
+  expect_true("Note. Source: a survey." %in% out)
+  expect_false(any(grepl("Missing values removed", out, fixed = TRUE)))
+  expect_identical(
+    attr(
+      table_continuous(d, y, by = g, note = "Source.", output = "long"),
+      "note"
+    ),
+    "Note. Source."
+  )
+  # A string that opens with a lead-in of its own does not get a second.
+  expect_identical(
+    attr(table_continuous(d, y, by = g, note = "Note. Source."), "note"),
+    "Note. Source."
+  )
+  # The lead-in is the one of the style: the colon, French with its
+  # no-break space (typed or not), none under jama.
+  expect_identical(
+    attr(
+      table_continuous(
+        d,
+        y,
+        by = g,
+        note = "Source.",
+        style = spicy_style(note_label = "Note:")
+      ),
+      "note"
+    ),
+    "Note: Source."
+  )
+  withr::with_options(list(spicy.language = "fr"), {
+    colon <- spicy_style(note_label = "Note:")
+    lead <- spicy_str("note_prefix_colon")
+    expect_identical(
+      attr(
+        table_continuous(d, y, by = g, note = "Source.", style = colon),
+        "note"
+      ),
+      paste0(lead, "Source.")
+    )
+    expect_identical(
+      attr(
+        table_continuous(d, y, by = g, note = "Note : Source.", style = colon),
+        "note"
+      ),
+      "Note : Source."
+    )
+  })
+  expect_identical(
+    attr(
+      table_continuous(d, y, by = g, note = "Source.", style = "jama"),
+      "note"
+    ),
+    "Source."
+  )
+  # FALSE: no note on any route.
+  none <- table_continuous(d, y, by = g, note = FALSE)
+  expect_null(attr(none, "note"))
+  expect_false(any(grepl("^Note", utils::capture.output(print(none)))))
+  expect_null(attr(as.data.frame(none), "note"))
+  # "": no general note, and no empty line printed for it either.
+  empty <- table_continuous(d, y, by = g, note = "")
+  expect_null(attr(empty, "note"))
+  expect_identical(
+    utils::capture.output(print(empty)),
+    utils::capture.output(print(none))
+  )
+})
+
+test_that("`note_add` closes the note the table builds, or follows a typed one", {
+  d <- .tc_note_data()
+  built <- attr(table_continuous(d, y, by = g), "note")
+  added <- table_continuous(
+    d,
+    y,
+    by = g,
+    note_add = c("Data: survey 2022.", "Weights not applied")
+  )
+  # Printed as typed, no period added, after every sentence of the table:
+  # under APA the definitions of the abbreviations close the general note.
+  expect_identical(
+    attr(added, "note"),
+    paste(built, "Data: survey 2022.", "Weights not applied")
+  )
+  expect_match(
+    attr(added, "note"),
+    "UL = upper limit. Data: survey 2022. Weights not applied$"
+  )
+  expect_true(attr(added, "note") %in% utils::capture.output(print(added)))
+  # With a replacement string, the sentences follow it.
+  both <- table_continuous(
+    d,
+    y,
+    by = g,
+    note = "Note. Our own note.",
+    note_add = "Data: survey 2022."
+  )
+  expect_identical(attr(both, "note"), "Note. Our own note. Data: survey 2022.")
+  # Under the jama rule the abbreviations open the note: the sentences
+  # close the paragraph below them.
+  jama <- attr(
+    table_continuous(
+      d,
+      y,
+      by = g,
+      note_add = "Data: survey 2022.",
+      style = "jama"
+    ),
+    "note"
+  )
+  lines <- strsplit(jama, "\n", fixed = TRUE)[[1L]]
+  expect_length(lines, 2L)
+  expect_true(startsWith(lines[[1L]], "Abbreviations: "))
+  expect_true(endsWith(lines[[2L]], "Welch t-test. Data: survey 2022."))
+  # A table with nothing to say opens a note for the sentences alone.
+  quiet <- table_continuous(
+    d[!is.na(d$y), ],
+    y,
+    ci = FALSE,
+    note_add = "Data: survey 2022."
+  )
+  expect_identical(attr(quiet, "note"), "Note. Data: survey 2022.")
+})
+
+test_that("`note_add` is refused when empty, NA, or with `note = FALSE`", {
+  d <- .tc_note_data()
+  for (bad in list(NA_character_, "", character(0), 1, c("A.", NA))) {
+    expect_error(
+      table_continuous(d, y, by = g, note_add = bad),
+      class = "spicy_invalid_input"
+    )
+  }
+  err <- expect_error(
+    table_continuous(d, y, by = g, note = FALSE, note_add = "A."),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_continuous")
+  expect_match(conditionMessage(err), "note = FALSE", fixed = TRUE)
+  expect_error(
+    table_continuous(d, y, by = g, note = TRUE),
+    class = "spicy_invalid_input"
+  )
+})
+
+
+# ---- the labels of the apparatus (point 4) ---------------------------------
+
+.tc_note_label_data <- function() {
+  set.seed(4)
+  d <- data.frame(
+    bmi = round(stats::rnorm(40, 24, 4), 1),
+    age = round(stats::runif(40, 20, 60)),
+    sex = factor(rep(c("Female", "Male"), 20L))
+  )
+  d$bmi[1:3] <- NA
+  d$sex[4:5] <- NA
+  d
+}
+.tc_long_labels <- c(
+  bmi = "Body mass index computed from self-reported height and weight",
+  sex = "Which sex were you assigned at birth?"
+)
+
+test_that("`note_labels` names a variable in the note and the title, not in the rows", {
+  d <- .tc_note_label_data()
+  tbl <- table_continuous(
+    d,
+    bmi,
+    by = sex,
+    labels = .tc_long_labels,
+    note_labels = c(bmi = "BMI", sex = "sex at birth")
+  )
+  out <- utils::capture.output(print(tbl))
+  # The rows keep the label of `labels`.
+  expect_true(any(grepl(.tc_long_labels[["bmi"]], out, fixed = TRUE)))
+  expect_identical(
+    unique(as.data.frame(tbl)$label),
+    .tc_long_labels[["bmi"]]
+  )
+  # The note and the title name each variable by its note label.
+  expect_match(
+    attr(tbl, "note"),
+    "Missing values removed: BMI (3), sex at birth (2).",
+    fixed = TRUE
+  )
+  expect_identical(attr(tbl, "title"), "Descriptive statistics by sex at birth")
+  expect_identical(out[nzchar(trimws(out))][[1L]], attr(tbl, "title"))
+  expect_no_match(attr(tbl, "note"), "self-reported", fixed = TRUE)
+  # A variable `note_labels` does not name keeps its label; a name that
+  # matches no column is ignored.
+  part <- table_continuous(
+    d,
+    bmi,
+    by = sex,
+    labels = .tc_long_labels,
+    note_labels = c(sex = "sex at birth", weight = "kg")
+  )
+  expect_match(
+    attr(part, "note"),
+    paste0("removed: ", .tc_long_labels[["bmi"]], " (3), sex at birth (2)."),
+    fixed = TRUE
+  )
+  # NULL renames nothing.
+  expect_identical(
+    attr(table_continuous(d, bmi, by = sex, labels = .tc_long_labels), "note"),
+    attr(
+      table_continuous(
+        d,
+        bmi,
+        by = sex,
+        labels = .tc_long_labels,
+        note_labels = NULL
+      ),
+      "note"
+    )
+  )
+})
+
+test_that("`note_labels` speaks the language of the note", {
+  d <- .tc_note_label_data()
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    tbl <- table_continuous(
+      d,
+      bmi,
+      by = sex,
+      labels = .tc_long_labels,
+      note_labels = c(bmi = "BMI", sex = "sex at birth")
+    )
+    expect_match(
+      attr(tbl, "note"),
+      paste0(
+        spicy_str("note_missing_removed"),
+        spicy_fmt("note_missing_item", "BMI", 3L),
+        spicy_str("note_list_sep_comma"),
+        spicy_fmt("note_missing_item", "sex at birth", 2L),
+        "."
+      ),
+      fixed = TRUE,
+      info = lang
+    )
+    expect_identical(
+      attr(tbl, "title"),
+      spicy_fmt("title_continuous_by", "sex at birth"),
+      info = lang
+    )
+  }
+})
+
+test_that("a note label another variable shows is refused, as a collision", {
+  d <- .tc_note_label_data()
+  labs <- c(bmi = "BMI", age = "Age")
+  # The label of another variable's rows.
+  err <- expect_error(
+    table_continuous(
+      d,
+      c(bmi, age),
+      by = sex,
+      labels = labs,
+      note_labels = c(sex = "Age")
+    ),
+    class = "spicy_label_collision"
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_identical(rlang::call_name(conditionCall(err)), "table_continuous")
+  expect_match(conditionMessage(err), "`labels`", fixed = TRUE)
+  # The note label of another variable.
+  err <- expect_error(
+    table_continuous(
+      d,
+      c(bmi, age),
+      by = sex,
+      note_labels = c(bmi = "size", age = "size")
+    ),
+    class = "spicy_label_collision"
+  )
+  expect_match(
+    conditionMessage(err),
+    "in `note_labels`, or another",
+    fixed = TRUE
+  )
+  # A note label equal to the variable's own label is no collision.
+  expect_no_error(table_continuous(
+    d,
+    c(bmi, age),
+    by = sex,
+    labels = labs,
+    note_labels = c(bmi = "BMI")
+  ))
+})
+
+test_that("`note_labels` takes the named forms of `labels`, nothing else", {
+  d <- .tc_note_label_data()
+  for (bad in list(
+    TRUE,
+    FALSE,
+    "BMI",
+    c(bmi = NA_character_),
+    list(bmi = "x")
+  )) {
+    expect_error(
+      table_continuous(d, bmi, by = sex, note_labels = bad),
+      class = "spicy_invalid_input"
+    )
+  }
+  via <- table_continuous(
+    d,
+    bmi,
+    by = sex,
+    note_labels = var_labels(sex = "sex at birth")
+  )
+  expect_identical(attr(via, "title"), "Descriptive statistics by sex at birth")
+})

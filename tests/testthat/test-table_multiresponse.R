@@ -1355,7 +1355,7 @@ test_that("the note says what the percentages sum to, in both languages", {
   }
 })
 
-test_that("the automatic note opens with \"Note.\" once, a typed note is printed as typed", {
+test_that("the automatic note opens with \"Note.\" once, a typed note under it too", {
   tbl <- .mr_farm_tbl()
   note <- attr(tbl, "note")
   expect_true(startsWith(note, "Note. Multiple answers possible:"))
@@ -1363,12 +1363,16 @@ test_that("the automatic note opens with \"Note.\" once, a typed note is printed
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
   expect_identical(sum(startsWith(printed, "Note. ")), 1L)
-  # A note the user typed: no prefix added, on any route.
+  # A note the user typed: printed as typed, under the prefix, once.
   typed <- .mr_farm_tbl(note = "Source: L&S.")
-  expect_identical(attr(typed, "note"), "Source: L&S.")
+  expect_identical(attr(typed, "note"), "Note. Source: L&S.")
   printed <- utils::capture.output(print(typed))
-  expect_true("Source: L&S." %in% printed)
-  expect_false(any(grepl("Note.", printed, fixed = TRUE)))
+  expect_true("Note. Source: L&S." %in% printed)
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(
+    attr(.mr_farm_tbl(note = "Note. Source: L&S."), "note"),
+    "Note. Source: L&S."
+  )
   # `note = FALSE`: no note at all.
   none <- .mr_farm_tbl(note = FALSE)
   expect_null(attr(none, "note"))
@@ -1384,7 +1388,7 @@ test_that("the automatic note opens with \"Note.\" once, a typed note is printed
   ))
 })
 
-test_that("the engines set the automatic \"Note.\" in italics, a typed note in regular type", {
+test_that("the engines set the \"Note.\" of a note in italics, typed or not", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
@@ -1395,8 +1399,9 @@ test_that("the engines set the automatic \"Note.\" in italics, a typed note in r
   expect_true(startsWith(chunks$txt[[2L]], " Multiple answers possible:"))
   typed <- .mr_farm_tbl(note = "Source: L&S.", output = "flextable")
   typed <- typed$footer$content$data[[1L, 1L]]
-  expect_identical(typed$txt, "Source: L&S.")
-  expect_false(isTRUE(typed$italic))
+  expect_identical(typed$txt, c("Note.", " Source: L&S."))
+  expect_true(typed$italic[[1L]])
+  expect_false(isTRUE(typed$italic[[2L]]))
   html <- tinytable::save_tt(
     .mr_farm_tbl(output = "tinytable"),
     output = "html"
@@ -1406,7 +1411,7 @@ test_that("the engines set the automatic \"Note.\" in italics, a typed note in r
     .mr_farm_tbl(note = "Source: L&S.", output = "tinytable"),
     output = "html"
   )
-  expect_false(grepl("<em>", html, fixed = TRUE))
+  expect_match(html, "<em>Note.</em> Source:", fixed = TRUE)
   g <- .mr_farm_tbl(output = "gt")
   expect_match(
     spicy:::.spicy_gt_html_postprocess(
@@ -2706,7 +2711,7 @@ test_that("labels: names by default, the attribute with TRUE, a named vector, va
 test_that("title and note can be replaced, and the note removed", {
   tbl <- .mr_farm_tbl(title = "Sources of information", note = "Source: L&S.")
   expect_identical(attr(tbl, "title"), "Sources of information")
-  expect_identical(attr(tbl, "note"), "Source: L&S.")
+  expect_identical(attr(tbl, "note"), "Note. Source: L&S.")
   expect_null(attr(.mr_farm_tbl(note = FALSE), "note"))
   expect_error(.mr_farm_tbl(note = TRUE), class = "spicy_invalid_input")
   # The `title` contract of table_regression(): FALSE removes it, a string

@@ -52,7 +52,8 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   }
   # The outcome's NAME tells whether the models share it; the title
   # prints its DISPLAY, the name or the label `labels` gives it (decision
-  # 54), which table_regression() stores as `info$dv_display`.
+  # 54), which table_regression() stores as `info$dv_display`, or the
+  # label `note_labels` gives it there, `info$dv_note`.
   outcomes <- vapply(
     frames,
     function(f) {
@@ -63,7 +64,7 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   shown <- vapply(
     frames,
     function(f) {
-      f$info$dv_display %||% f$info$dv %||% NA_character_
+      f$info$dv_note %||% f$info$dv_display %||% f$info$dv %||% NA_character_
     },
     character(1)
   )
@@ -160,7 +161,8 @@ build_regression_footer_from_frames <- function(
   displayed_parent_vars = NULL,
   frames_display = frames,
   decimal_mark = ".",
-  model_labels = NULL
+  model_labels = NULL,
+  note_add = NULL
 ) {
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
@@ -292,7 +294,10 @@ build_regression_footer_from_frames <- function(
       show_fit_stats = show_fit_stats,
       re_scale = re_scale
     ),
-    probability = build_stars_footer_block(stars, decimal_mark)
+    probability = build_stars_footer_block(stars, decimal_mark),
+    # The sentences of `note_add`, last in the general note, before the
+    # legend of the stars.
+    add = note_add
   )
 }
 

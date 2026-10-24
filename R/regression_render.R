@@ -1561,6 +1561,64 @@ resolve_label <- function(term, labels) {
   list(outcomes = outcomes, terms = if (length(terms) > 0L) terms)
 }
 
+# The label each frame's outcome takes in the title, `note_labels`: the
+# one it gives the outcome, keyed as `labels` keys it (the outcome as the
+# model names it, or its bare variable), else the outcome's display
+# (`var_labs$outcomes`, from `.reg_variable_labels()`). The title is the
+# one sentence of a regression table that names a variable through
+# `labels`, so it is the one `note_labels` reaches. A note label that
+# another variable of the table shows -- another outcome, or a term of
+# the rows -- is refused (`.check_note_label_collisions()`).
+.reg_outcome_notes <- function(
+  frames,
+  var_labs,
+  models,
+  note_labels,
+  call = rlang::caller_env()
+) {
+  shown <- var_labs$outcomes
+  if (!length(note_labels)) {
+    return(shown)
+  }
+  given <- unclass(note_labels)
+  dvs <- vapply(
+    frames,
+    function(f) f$info$dv %||% NA_character_,
+    character(1)
+  )
+  keys <- vapply(
+    dvs,
+    function(dv) {
+      hit <- intersect(c(dv, .reg_bare_var(dv)), names(given))
+      if (length(hit)) hit[[1L]] else dv
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  notes <- ifelse(keys %in% names(given), unname(given[keys]), shown)
+  # Each outcome once, then the terms of the rows, as they show.
+  once <- !is.na(dvs) & !duplicated(dvs)
+  terms <- unique(unlist(lapply(models, function(fit) {
+    tryCatch(
+      attr(.spicy_get_terms(fit), "term.labels"),
+      error = function(e) character(0)
+    )
+  })))
+  terms <- setdiff(terms, c(dvs, keys))
+  term_shown <- terms
+  relabeled <- terms %in% names(var_labs$terms)
+  term_shown[relabeled] <- unname(var_labs$terms[terms[relabeled]])
+  # Only the outcomes take a note label; one given to a term is ignored.
+  .check_note_label_collisions(
+    c(keys[once], terms),
+    c(shown[once], term_shown),
+    c(notes[once], term_shown),
+    given[names(given) %in% keys],
+    call = call
+  )
+  notes
+}
+
 # The `label` attribute of each variable of one fit, named by variable.
 # Read off the model frame first. A variable whose label the model frame
 # lacks is then looked up in the data the fit was given: through

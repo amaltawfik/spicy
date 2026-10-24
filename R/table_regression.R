@@ -1437,13 +1437,16 @@
 #'   The default reads `options(spicy.var_labels)`, and a `TRUE` or
 #'   `FALSE` typed in the call wins over it. Any other value, `NULL`
 #'   included, is an error. A variable label documents the data file; a
-#'   published table carries the wording you set here.
+#'   published table carries the wording you set here. `note_labels` gives
+#'   the outcome a shorter label in the title.
 #' @param title,note Override or suppress the auto-built caption /
-#'   methodological footer. Three modes per argument:
+#'   methodological footer. Three modes per argument, those `note` has in
+#'   every table function:
 #'   \itemize{
 #'     \item `NULL` (default): the package builds the standard caption
 #'       ("Linear regression on `<DV>`" / "Hierarchical linear
-#'       regression on `<DV>`" / ...) and a methodological note, one
+#'       regression on `<DV>`" / ..., the outcome named by its label in
+#'       `note_labels`, else in `labels`) and a methodological note, one
 #'       paragraph in the order of every table of the package: what
 #'       the model is (its family, design, scale of the coefficients,
 #'       reference categories, ...), the cases a univariable screen fits
@@ -1452,16 +1455,21 @@
 #'       rows of the fit statistics and of the random effects show
 #'       ("AIC = Akaike information criterion"), defined as the style in
 #'       force asks (`spicy_style(abbreviations = )`; under `"jama"` they
-#'       open the note on a line of their own).
+#'       open the note on a line of their own), and the sentences of
+#'       `note_add`.
 #'       Under `stars`, the legend of the stars follows on a line of its
 #'       own.
 #'     \item `FALSE`: the corresponding banner row is omitted from
-#'       every output engine. Use when the surrounding manuscript
-#'       provides its own caption / note.
-#'     \item character string (length 1): replaces the auto-built
-#'       text verbatim. The renderer applies no APA formatting on
-#'       top -- supply the exact string you want displayed (multi-
-#'       line notes accepted via embedded `"\n"`).
+#'       every output engine, for `note` the legend of the stars
+#'       included. Use when the surrounding manuscript provides its own
+#'       caption / note.
+#'     \item character string (length 1): replaces the auto-built text.
+#'       A `title` is printed verbatim. A `note` replaces the general
+#'       note and is printed as typed (multi-line notes accepted via
+#'       embedded `"\n"`) after the lead-in of the style, which a string
+#'       opening with a lead-in of its own does not repeat, the sentences
+#'       of `note_add` after it; the legend of the stars stays on its line
+#'       below, and `note = ""` keeps that legend alone.
 #'   }
 #'   Validation messages, the spanner row, and the in-body change-
 #'   stat rows are *not* affected -- they belong to the table
@@ -1551,6 +1559,7 @@
 #'   abbreviations the note defines, not full editorial conformity;
 #'   `?spicy_style` lists the exact rules each one encodes and the
 #'   official document they come from. An unknown name is an error.
+#' @inheritParams table_categorical
 #'
 #' @return A `spicy_regression_table` object (a `data.frame`
 #'   subclass with classes `c("spicy_regression_table",
@@ -1832,8 +1841,10 @@ table_regression <- function(
   align = c("decimal", "center", "right"),
   padding = 0L,
   labels = getOption("spicy.var_labels", FALSE),
+  note_labels = NULL,
   title = NULL,
   note = NULL,
+  note_add = NULL,
   output = c(
     "default",
     "data.frame",
@@ -1915,8 +1926,10 @@ table_regression <- function(
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
   # The `labels` contract of the descriptive tables (decision 54), checked
-  # by their validator so that the error is the same everywhere.
+  # by their validator so that the error is the same everywhere, and so
+  # is `note_labels`.
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
 
   # ====================================================================
   # Validation cascade (Q21 -- 6 phases, ~29 steps, fail-fast).
@@ -2561,7 +2574,7 @@ table_regression <- function(
   validate_logical_scalar(show_intercept, "show_intercept")
   validate_logical_scalar(nested, "nested")
   validate_caption_arg(title, "title")
-  validate_caption_arg(note, "note")
+  .check_note_args(note, note_add)
   validate_digit_arg(digits, "digits")
   # At least one decimal, as in the descriptive tables: a p-value with
   # none printed ".015" in the table and "<1" in `inline()`.
@@ -3446,6 +3459,13 @@ table_regression <- function(
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
   }
+  # The outcome as the title names it, `info$dv_note`: the label
+  # `note_labels` gives it, else its display. The column groups the
+  # outcomes head keep the display.
+  dv_notes <- .reg_outcome_notes(frames, var_labs, models, note_labels)
+  for (i in seq_along(frames)) {
+    frames[[i]]$info$dv_note <- dv_notes[[i]]
+  }
 
   # ---- Multinomial outcome-as-columns explode (display only) -------------
   # The publication layout for a single multinom model: one column
@@ -3606,7 +3626,8 @@ table_regression <- function(
     re_test = re_test_val,
     displayed_parent_vars = displayed_parent_vars,
     decimal_mark = decimal_mark,
-    model_labels = named_model_labels
+    model_labels = named_model_labels,
+    note_add = note_add
   )
 
   # "none" + flat: silent information loss flag. Inform-level
@@ -3647,13 +3668,16 @@ table_regression <- function(
     )
   }
 
-  full_footer_str <- if (is.null(note)) {
-    if (length(footer_main)) footer_main else NULL # nocov -- NULL arm unreachable: the type footer block always emits
-  } else if (isFALSE(note)) {
-    NULL
-  } else {
-    as.character(note)
-  }
+  # The note the family builds (`footer_main`, the sentences of
+  # `note_add` closing its general note), or the general note `note`
+  # types, under the lead-in, `note_add` after it and the legend of the
+  # stars below, or none.
+  full_footer_str <- .table_note(
+    footer_main,
+    note,
+    note_add,
+    probability = build_stars_footer_block(stars, decimal_mark)
+  )
 
   # ---- Render (Layer 3) --------------------------------------------------
   # Q1: model_labels precedence is explicit > names(list) > default.

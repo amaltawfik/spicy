@@ -6932,3 +6932,83 @@ test_that("the notes name the 2 x 2 tests in French", {
     )
   )
 })
+
+# ---- a label that closes its own sentence ---------------------------------
+
+test_that("a sentence ending on a label with its own mark closes once", {
+  # The helper: "?." and "!." keep the label's mark, ".." one point, at a
+  # sentence end only; an ellipsis keeps its three points.
+  expect_identical(
+    .note_end_marks("Phi: Do you smoke?. V: Level!. W: approx.. End."),
+    "Phi: Do you smoke? V: Level! W: approx. End."
+  )
+  expect_identical(
+    .note_end_marks("Wait... then (Is it?). Done?."),
+    "Wait... then (Is it?). Done?"
+  )
+  set.seed(4)
+  n <- 60
+  d <- data.frame(
+    smoke = factor(sample(c("no", "yes"), n, TRUE)),
+    educ = factor(sample(c("low", "mid", "high"), n, TRUE)),
+    sex = factor(sample(c("F", "M"), n, TRUE))
+  )
+  labs <- c(smoke = "Do you smoke?", educ = "Highest level!")
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    note <- attr(
+      table_categorical(d, c(smoke, educ), by = sex, labels = labs),
+      "note"
+    )
+    # Each association item ends on the label's own mark, the no-break
+    # space of the French colon in place.
+    for (item in list(
+      c("phi", "Do you smoke?"),
+      c("cramer_v", "Highest level!")
+    )) {
+      expect_match(
+        note,
+        sub(
+          "[.]$",
+          "",
+          spicy_fmt(
+            "note_assoc_measure_item",
+            .assoc_label(item[[1L]]),
+            item[[2L]]
+          )
+        ),
+        fixed = TRUE,
+        info = lang
+      )
+    }
+    expect_no_match(note, "?.", fixed = TRUE)
+    expect_no_match(note, "!.", fixed = TRUE)
+    # "No data for X." with a label that ends on a point of its own.
+    d0 <- d
+    d0$late <- factor(NA, levels = c("a", "b"))
+    none <- attr(
+      table_categorical(
+        d0,
+        c(smoke, late),
+        labels = c(late = "Score, approx."),
+        drop_na = TRUE
+      ),
+      "note"
+    )
+    expect_match(none, spicy_fmt("note_no_data", "Score, approx"), fixed = TRUE)
+    expect_no_match(none, "approx..", fixed = TRUE)
+  }
+  # The user's words are printed as typed.
+  typed <- table_categorical(
+    d,
+    c(smoke, educ),
+    by = sex,
+    labels = labs,
+    note_add = "Data: survey.."
+  )
+  expect_true(endsWith(attr(typed, "note"), "Data: survey.."))
+  expect_identical(
+    attr(table_categorical(d, smoke, note = "Source.."), "note"),
+    "Note. Source.."
+  )
+})

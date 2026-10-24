@@ -164,7 +164,8 @@
 #'   default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
 #'   typed in the call wins over it. Any other value, `NULL` included, is
 #'   an error. A variable label documents the data file; a published
-#'   table carries the wording you set here.
+#'   table carries the wording you set here. `note_labels` gives the
+#'   outcome a shorter label in the title.
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
@@ -174,6 +175,7 @@
 #'   meaningful for a screen and is refused. `cluster` must be a
 #'   single vector with one value per row of `data`; it is aligned to
 #'   each fit's own estimation sample automatically.
+#' @inheritParams table_categorical
 #'
 #' @return See [table_regression()] (same output contract).
 #'
@@ -223,7 +225,13 @@ table_regression_uv <- function(
   show_intercept = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
-  ...
+  ...,
+  # After `...`, so a value typed by position still lands there, and a
+  # name must be typed in full: `note =` would otherwise partially match
+  # `note_labels`.
+  note_labels = NULL,
+  note = NULL,
+  note_add = NULL
 ) {
   # The frame and the call every error of the screen names, the errors
   # of the `table_regression()` it calls included.
@@ -246,6 +254,7 @@ table_regression_uv <- function(
   method <- spicy_match_arg(method)
   .check_data_frame(data, "table_regression_uv")
   .check_labels_arg(labels)
+  .check_note_labels_arg(note_labels)
   validate_logical_scalar(multivariable, "multivariable")
   validate_logical_scalar(complete_cases, "complete_cases")
   if (identical(method, "coxph") && family_supplied) {
@@ -391,8 +400,20 @@ table_regression_uv <- function(
   # The outcome as the title names it under `labels` (decision 54),
   # resolved on `data` as given: the 0/1 recode of a binary outcome below
   # would cost the column its `label` attribute. A `Surv()` outcome is
-  # no column and keeps its expression unless `labels` names it.
+  # no column and keeps its expression unless `labels` names it. The
+  # title names it by its label in `note_labels` when there is one, and a
+  # note label another variable of the table shows is refused.
   outcome_display <- resolve_variable_labels(data, outcome_name, labels)
+  outcome_note <- .note_labels_of(outcome_name, outcome_display, note_labels)
+  pred_shown <- resolve_variable_labels(data, pred_names, labels)
+  # Only the outcome takes a note label; one given to a predictor is
+  # ignored.
+  .check_note_label_collisions(
+    c(outcome_name, pred_names),
+    c(outcome_display, pred_shown),
+    c(outcome_note, pred_shown),
+    note_labels[names(note_labels) %in% outcome_name]
+  )
 
   dots <- list(...)
   # Cluster contract for the screen: ONE value per row of `data`. The
@@ -690,9 +711,9 @@ table_regression_uv <- function(
       "title_uv_screen"
     }
     title <- if (is.null(disp)) {
-      .spicy_fmt_en(key, prefix, outcome_display)
+      .spicy_fmt_en(key, prefix, outcome_note)
     } else {
-      spicy_fmt(key, disp, outcome_display)
+      spicy_fmt(key, disp, outcome_note)
     }
   }
 
@@ -708,7 +729,9 @@ table_regression_uv <- function(
           models,
           show_columns = show_columns,
           labels = labels,
-          title = title
+          title = title,
+          note = note,
+          note_add = note_add
         ),
         dots
       )

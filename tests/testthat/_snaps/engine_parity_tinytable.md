@@ -1146,6 +1146,257 @@
       ] // end block
       ) // end figure
 
+# the Typst source of a note with a sentence added before the stars legend
+
+    Code
+      cat(.pt_typst(table_regression(.pt_note_add_fit(), stars = TRUE, note_add = "Data: simulated for this example.",
+      output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Linear regression: y]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_1": 0, "1_1": 0, "2_1": 0, "3_1": 0, "4_1": 0, "5_1": 0, "6_1": 0, "7_1": 0, "8_1": 0, "9_1": 0, "0_2": 0, "1_2": 0, "2_2": 0, "3_2": 0, "4_2": 0, "5_2": 0, "6_2": 0, "7_2": 0, "8_2": 0, "9_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "3_3": 0, "4_3": 0, "5_3": 0, "6_3": 0, "7_3": 0, "8_3": 0, "9_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "3_4": 0, "4_4": 0, "5_4": 0, "6_4": 0, "7_4": 0, "8_4": 0, "9_4": 0, "0_5": 0, "1_5": 0, "2_5": 0, "3_5": 0, "4_5": 0, "5_5": 0, "6_5": 0, "7_5": 0, "8_5": 0, "9_5": 0, "0_0": 1, "1_0": 1, "2_0": 1, "3_0": 1, "4_0": 1, "7_0": 1, "8_0": 1, "9_0": 1, "5_0": 2, "6_0": 2
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+          (align: left, indent: 1em,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([], [(Intercept)], [x], [g:], [a (ref.)], [b], [n], [R²], [Adj. R²]),
+          ([], [−0.29   ], [ 0.71\*\*\*], [], [ –      ], [ 0.34   ], [50      ], [ 0.29   ], [ 0.26   ]),
+          ([], [0.22], [0.17], [], [–   ], [0.30], [], [], []),
+          ([LL], [−0.72], [ 0.38], [], [ –   ], [−0.25], [], [], []),
+          ([UL], [0.15], [1.04], [], [–   ], [0.94], [], [], []),
+          ([], [ .190], [\<.001], [], [–    ], [ .254], [], [], []),
+        )
+      
+        #context layout(size => {
+          // spicy: an indented cell is measured with its indent
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            let spicy_style = get-style(spicy_x, spicy_k + 1)
+            if spicy_style != none and "indent" in spicy_style { pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }
+          }))
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          // spicy: a column-group label wider than its columns widens them
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 1, [B]), (2, 2, [SE]), (3, 4, [95% CI]), (5, 5, [p]),) {
+            let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
+            let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
+            if spicy_need > spicy_have {
+              for k in range(spicy_from, spicy_to + 1) {
+                tinytable-naturals.at(k) += (spicy_need - spicy_have) / (spicy_to - spicy_from + 1)
+              }
+            }
+          }
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 7, start: 0, end: 6, stroke: 0.03em + rgb("#cccccc")),
+       table.hline(y: 1, start: 3, end: 5, stroke: 0.06em),
+       table.hline(y: 2, start: 0, end: 6, stroke: 0.06em),
+       table.hline(y: 10, start: 0, end: 6, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 6, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [B], [SE], table.cell(colspan: 2, align: center)[95% CI], [p],
+      [], [], [], [LL], [UL], [],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [(Intercept)], [−0.29   ], [0.22], [−0.72], [0.15], [ .190],
+      [x], [ 0.71\*\*\*], [0.17], [ 0.38], [1.04], [\<.001],
+      [g:], [], [], [], [], [],
+      [a (ref.)], [ –      ], [–   ], [ –   ], [–   ], [–    ],
+      [b], [ 0.34   ], [0.30], [−0.25], [0.94], [ .254],
+      [n], [50      ], [], [], [], [],
+      [R²], [ 0.29   ], [], [], [], [],
+      [Adj. R²], [ 0.26   ], [], [], [], [],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] Linear regression. Std. errors: classical (OLS). CI \= confidence interval. Data: simulated for this example. \
+      \*\*\* p \< .001, \*\* p \< .01, \* p \< .05.])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of a note naming a variable by its note label
+
+    Code
+      cat(.pt_typst(table_continuous(d, bmi, by = sex, labels = c(bmi = "Body mass index computed from self-reported height and weight",
+        sex = "Which sex were you assigned at birth?"), note_labels = c(bmi = "BMI",
+        sex = "sex at birth"), show_columns = c("m", "sd", "n"), p_value = FALSE,
+      output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Descriptive statistics by sex at birth]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_2": 0, "1_2": 0, "2_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "0_0": 1, "1_0": 1, "2_0": 1, "0_1": 1, "1_1": 1, "2_1": 1
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([Variable], [Body mass index computed from self\-reported height and weight], []),
+          ([Group], [Female], [Male]),
+          ([M], [26.15], [25.19]),
+          ([SD], [4.12], [2.60]),
+          ([n], [8], [9]),
+        )
+      
+        #context layout(size => {
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 3, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 5, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [Group], [M], [SD], [n],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [Body mass index computed from self\-reported height and weight], [Female], [26.15], [4.12], [8],
+      [], [Male], [25.19], [2.60], [9],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Missing values removed: BMI (2), sex at birth (1).])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
 # the Typst source of a table with decimal places per variable
 
     Code

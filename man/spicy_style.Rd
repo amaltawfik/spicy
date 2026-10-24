@@ -94,8 +94,8 @@ paragraphs 3.77-3.81), or \code{""} for no lead-in word (AMA Manual of
 Style 11, section 4.1.4.10). The language spells it: under
 \code{options(spicy.language = "fr")}, \code{"Note:"} is written "Note :",
 with the no-break space French puts before a colon, in every output.
-A \code{note} you type is printed as typed; its opening word is set in
-italics when it is the lead-in in force.}
+A \code{note} you type is printed as typed after it, unless it opens with a
+lead-in of its own, set in italics when it is the lead-in in force.}
 
 \item{abbreviations}{Which abbreviations the note under the table
 defines: those of its headers, its spanners and the labels of its
