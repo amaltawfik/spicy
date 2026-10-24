@@ -281,3 +281,46 @@ test_that("latex target: spicy_gt matches its HTML header and fits the line", {
   expect_match(s2, "\n\\cmidrule(lr){2-2} \\cmidrule(lr){3-3}\n", fixed = TRUE)
   expect_no_match(s2, "\\cmidrule(lr){1-1}", fixed = TRUE)
 })
+
+test_that("latex target: spicy_gt prints a negative statistic with the minus sign", {
+  skip_if_not_installed("gt")
+  # A difference and a lower bound below zero, an upper bound above it.
+  set.seed(3)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), each = 20L)),
+    y = c(stats::rnorm(20L, 5, 1), stats::rnorm(20L, 4.7, 1))
+  )
+  latex <- function(gtb) {
+    paste(
+      as.character(.with_pandoc_to("latex", knitr::knit_print(gtb))),
+      collapse = ""
+    )
+  }
+  s <- latex(table_continuous_lm(d, select = y, by = g, output = "gt"))
+  ascii <- latex(table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    output = "gt",
+    style = spicy_style(minus_sign = "ascii")
+  ))
+  # The difference and the lower bound, in both copies of the body: the box
+  # measured at its natural width and the table as gt set it.
+  row <- paste0(
+    "{y} & {4.83} & {4.75} & {\\ensuremath{-}0.08} & ",
+    "{\\ensuremath{-}0.61} & {0.46} & "
+  )
+  expect_length(gregexpr(row, s, fixed = TRUE)[[1L]], 2L)
+  # Nothing else moves, and "ascii" leaves the hyphen gt writes.
+  expect_identical(s, gsub("{-", "{\\ensuremath{-}", ascii, fixed = TRUE))
+  expect_match(
+    ascii,
+    "{y} & {4.83} & {4.75} & {-0.08} & {-0.61} &",
+    fixed = TRUE
+  )
+  # The label columns keep the hyphen the user typed: a group "-1".
+  d$lvl <- factor(rep(c("-1", "1"), 20L))
+  d$z <- d$y - 6
+  s <- latex(table_continuous(d, z, by = lvl, output = "gt"))
+  expect_match(s, "\nz & -1 & \\ensuremath{-}1.", fixed = TRUE)
+})

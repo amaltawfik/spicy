@@ -832,7 +832,7 @@ export_continuous_lm_table <- function(
     if (has_ci) {
       tt <- tinytable::group_tt(tt, j = gspec)
     }
-    tt <- .spicy_tt_bare(tt)
+    tt <- .spicy_tt_bare(tt, decimal_mark = decimal_mark)
     # User data reaches the cells (level labels, variable labels):
     # escape it, like every other engine of the family does.
     tt <- .spicy_tt_escape(tt)
@@ -1137,7 +1137,7 @@ export_continuous_lm_table <- function(
     # stashed alone, it reached none of them -- and as the `spicy_gt`
     # tag, whose HTML display path moves it into a `<div>` outside the
     # table. Same helper as the descriptive families.
-    return(.spicy_gt_attach_note(tbl, note))
+    return(.spicy_gt_attach_note(tbl, note, decimal_mark = decimal_mark))
   }
 
   if (output %in% c("flextable", "word")) {

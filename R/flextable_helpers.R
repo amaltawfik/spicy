@@ -63,7 +63,10 @@
 #    table in HTML -- gt's own `<tfoot>` colspan cell widens the table
 #    in narrow viewports. Those methods drop the native note when they
 #    take over, so the two never print together.
-.spicy_gt_attach_note <- function(tbl, note) {
+#
+# `stub` and `decimal_mark` are the label columns and the mark of the
+# table, for the minus sign of its LaTeX (`.spicy_gt_minus_attr()`).
+.spicy_gt_attach_note <- function(tbl, note, stub = 1L, decimal_mark = ".") {
   if (is.null(note) || !nzchar(note)) {
     return(tbl)
   }
@@ -72,7 +75,23 @@
   # The lead-in the note was built with, for the display methods, which
   # run after the table function returns (`.note_lead_keys()`, R/i18n.R).
   attr(tbl, "spicy_note_lead") <- .note_lead()
+  tbl <- .spicy_gt_minus_attr(tbl, stub, decimal_mark)
   class(tbl) <- c("spicy_gt", class(tbl))
+  tbl
+}
+
+# The sign of the negative numbers in the LaTeX of a gt table
+# (`spicy_style(minus_sign = )`), decided by the style in force where the
+# table is built and kept with it, as the lead-in of its note is, for
+# `knit_print.spicy_gt()`, which runs later: with the label columns that
+# open the table (`stub`) and its `decimal_mark`, which the rewrite of
+# its body needs (`.spicy_gt_latex_minus()`).
+.spicy_gt_minus_attr <- function(tbl, stub = 1L, decimal_mark = ".") {
+  attr(tbl, "spicy_minus_sign") <- list(
+    sign = .style_minus_sign(),
+    stub = stub,
+    decimal_mark = decimal_mark
+  )
   tbl
 }
 

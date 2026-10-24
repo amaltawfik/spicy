@@ -101,6 +101,15 @@ code_book_typst_data <- function(cb) {
   v <- cb$variables
   look <- attr(cb, "appearance", exact = TRUE)
   mark <- attr(cb, "decimal_mark", exact = TRUE)
+  # A negative statistic takes the minus sign of a printed table
+  # (`spicy_style(minus_sign = )`, `.spicy_minus_sign()`). The codes keep
+  # the hyphen the data has: a reader types them back into a filter, where
+  # the minus sign is not a number.
+  sign <- if (identical(.style_minus_sign(), "typographic")) {
+    function(s) .spicy_minus_sign(s, "typst", mark)
+  } else {
+    identity
+  }
   num <- function(x, digits) {
     out <- formatC(x, format = "f", digits = digits, decimal.mark = mark)
     replace(out, is.na(x), "")
@@ -191,7 +200,7 @@ code_book_typst_data <- function(cb) {
       stats[[key]] <- if (is.character(x)) {
         x
       } else {
-        fmt(x, if (k %in% c("min", "max")) d else e)
+        sign(fmt(x, if (k %in% c("min", "max")) d else e))
       }
     }
     r <- rows[[i]]

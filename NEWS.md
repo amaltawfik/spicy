@@ -502,6 +502,10 @@ p-values, and notes.
   `table_continuous()`, `table_multiresponse()`, and the survey twins)
   always has a `group` column, `NA` without `by`.
 
+* Typst and LaTeX output, from tinytable and gt alike, and the PDF of
+  `code_book()` write a negative number with the minus sign (U+2212);
+  `spicy_style(minus_sign = "ascii")` keeps the hyphen.
+
 * `code_book()` builds a codebook in three parts, `header`, `variables`,
   and `values` (unweighted counts and percentages per category), and
   prints it as the list of variables.

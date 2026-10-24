@@ -4129,7 +4129,11 @@ export_desc_table <- function(
     if (hdrs$spanned) {
       tt <- tinytable::group_tt(tt, j = gspec)
     }
-    tt <- .spicy_tt_bare(tt)
+    tt <- .spicy_tt_bare(
+      tt,
+      stub = length(stub_keys),
+      decimal_mark = decimal_mark
+    )
     # User data reaches the cells (level labels, variable labels):
     # escape it, like every other engine of the family does.
     tt <- .spicy_tt_escape(tt)
@@ -4451,7 +4455,12 @@ export_desc_table <- function(
     # engine of the descriptive families to carry none.
     tbl <- .spicy_gt_apa_title(tbl, title)
 
-    return(.spicy_gt_attach_note(tbl, note))
+    return(.spicy_gt_attach_note(
+      tbl,
+      note,
+      stub = length(stub_keys),
+      decimal_mark = decimal_mark
+    ))
   }
 
   # ---- flextable / word ----

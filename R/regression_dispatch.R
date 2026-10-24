@@ -549,7 +549,7 @@ output_tinytable <- function(rendered) {
   #      decimal alignment in any digit-width-figure-space font).
   #   4. spanner-row centering.
   #   5. APA borders LAST.
-  tt <- .spicy_tt_bare(tt)
+  tt <- .spicy_tt_bare(tt, decimal_mark = struct$format_spec$decimal_mark)
   tt <- .spicy_tt_escape(tt)
 
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
@@ -1117,6 +1117,10 @@ output_gt <- function(rendered) {
     # run after this call (`.note_lead_keys()`, R/i18n.R).
     attr(tbl, "spicy_note_lead") <- .note_lead()
   }
+  tbl <- .spicy_gt_minus_attr(
+    tbl,
+    decimal_mark = struct$format_spec$decimal_mark
+  )
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
 }
@@ -1400,10 +1404,48 @@ print.spicy_gt <- function(x, ...) {
   paste(lines, collapse = "\n")
 }
 
+# The minus sign in the body of the LaTeX gt writes, its rows between
+# `\midrule` and `\bottomrule`, in the cells after the label columns, as
+# in the tinytable output (`.spicy_tt_minus()`); `minus` is the
+# `spicy_minus_sign` attribute of the table (`.spicy_gt_minus_attr()`).
+# gt writes the hyphen of a cell as it is, and an escaped `\&` of a label
+# is not a cell boundary. Before `.spicy_latex_unicode()`, which sets the
+# sign in math mode. A table built with `"ascii"`, or with no attribute,
+# is left as gt wrote it.
+.spicy_gt_latex_minus <- function(s, minus) {
+  if (!identical(minus$sign, "typographic")) {
+    return(s)
+  }
+  lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
+  from <- grep("^\\\\midrule", lines)[1L]
+  to <- grep("^\\\\bottomrule", lines)
+  to <- to[!is.na(from) & to > from][1L]
+  if (is.na(to)) {
+    return(s)
+  }
+  for (i in seq_len(to - from - 1L) + from) {
+    amp <- gregexpr("(?<!\\\\)&", lines[i], perl = TRUE)[[1L]]
+    if (length(amp) < minus$stub || amp[[1L]] < 0L) {
+      next
+    }
+    at <- amp[[minus$stub]]
+    lines[i] <- paste0(
+      substring(lines[i], 1L, at),
+      .spicy_minus_sign(
+        substring(lines[i], at + 1L),
+        "latex",
+        minus$decimal_mark
+      )
+    )
+  }
+  paste(lines, collapse = "\n")
+}
+
 #' @exportS3Method knitr::knit_print spicy_gt
 knit_print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
   lead <- attr(x, "spicy_note_lead") %||% .note_lead()
+  minus <- attr(x, "spicy_minus_sign")
   class(x) <- setdiff(class(x), "spicy_gt")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
@@ -1435,6 +1477,7 @@ knit_print.spicy_gt <- function(x, ...) {
     # are mapped as in the tinytable output. The knit metadata (gt's
     # LaTeX packages) is kept.
     if (latex) {
+      out[] <- .spicy_gt_latex_minus(out, minus)
       out[] <- .spicy_latex_unicode(out)
       # The note goes through markdown, where `.spicy_gt_note_md()`
       # escapes the apostrophe so it prints as typed; gt's LaTeX writer

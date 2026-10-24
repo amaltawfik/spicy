@@ -24,6 +24,7 @@ spicy_style(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  minus_sign = NULL,
   v_digits
 )
 
@@ -114,6 +115,21 @@ symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
 Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
 standard error). Either way the definitions take the form and the
 place of the theme in force. A \code{note} you type is printed as typed.}
+
+\item{minus_sign}{The sign of a negative number in the outputs that are
+printed: the Typst and LaTeX of \code{output = "tinytable"}, the LaTeX of
+\code{output = "gt"}, and the PDF of \code{\link[=code_book]{code_book()}}, which reads the lever
+from \code{options(spicy.style)}. \code{"typographic"} (the default) sets the
+minus sign (Unicode U+2212, as wide as the plus sign) in place of the
+hyphen-minus, \code{"ascii"} keeps the hyphen-minus. It applies to the
+cells of the statistics (estimates, intervals, differences, effect
+sizes, the summaries of a codebook), not to the labels, the codes of
+a codebook, the headers or the note. LaTeX sets the sign in math mode,
+which every engine and font has. Every other output keeps the
+hyphen-minus -- the console, the data frame, Excel, the clipboard,
+Word, HTML and markdown: their text is copied and recomputed, and a
+spreadsheet or a parser reads a minus sign as text, not as part of a
+number. No theme sets it.}
 
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}
@@ -376,7 +392,7 @@ Not encoded: the percentage rule ("Report percentages to one decimal
 place ... when sample size is \eqn{\ge}{>=} 200", no decimals below
 200) is conditional on a per-group sample size that the style layer
 does not see; set \code{percent_digits} yourself. The \code{mean (SD)}
-notation the journal asks for, and its refusal of \verb{\eqn{\pm}{+/-}},
+notation the journal asks for, and its refusal of \eqn{\pm}{+/-},
 are already how spicy renders dispersion. No rule on the
 abbreviations of a table note was found, so the note defines them as
 spicy's default does.

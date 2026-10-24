@@ -603,6 +603,31 @@ test_that("the abbreviations lever is validated, printed, and carried", {
   )
 })
 
+test_that("the minus_sign lever is validated and printed, and no theme sets it", {
+  expect_identical(spicy_style(minus_sign = "ascii")$minus_sign, "ascii")
+  expect_identical(
+    spicy_style(minus_sign = "typographic")$minus_sign,
+    "typographic"
+  )
+  expect_null(spicy_style()$minus_sign)
+  for (bad in list("unicode", NA_character_, c("ascii", "typographic"), TRUE)) {
+    expect_error(spicy_style(minus_sign = bad), class = "spicy_invalid_input")
+  }
+  expect_match(console(spicy_style(minus_sign = "ascii")), "minus_sign +ascii")
+  for (th in spicy_style_names()) {
+    expect_null(spicy_style(th)$minus_sign, info = th)
+  }
+  # The default, unless the style in force asks for the hyphen; outside a
+  # table call (`code_book()`), the style of the option.
+  expect_identical(spicy:::.style_minus_sign(), "typographic")
+  withr::with_options(
+    list(spicy.style = spicy_style(minus_sign = "ascii")),
+    expect_identical(spicy:::.style_minus_sign(), "ascii")
+  )
+  local_style(spicy_style(minus_sign = "ascii"))
+  expect_identical(spicy:::.style_minus_sign(), "ascii")
+})
+
 
 # ---- The language's locale -----------------------------------------------
 

@@ -48,7 +48,8 @@
 # format context and are read by the formatters -- and, for
 # `note_label` and `abbreviations`, by the note builders
 # (`.note_lead_keys()`, R/i18n.R; `.note_abbreviations()`,
-# R/table_helpers.R).
+# R/table_helpers.R), for `minus_sign`, by the tinytable builder
+# (`.spicy_tt_bare()`, R/tt_theme.R).
 .STYLE_FMT_FIELDS <- c(
   "p_style",
   "p_floor",
@@ -57,7 +58,8 @@
   "ci_sep",
   "ci_brackets",
   "note_label",
-  "abbreviations"
+  "abbreviations",
+  "minus_sign"
 )
 
 .STYLE_FIELDS <- c(.STYLE_ARG_FIELDS, .STYLE_FMT_FIELDS)
@@ -313,7 +315,7 @@
 #' place ... when sample size is \eqn{\ge}{>=} 200", no decimals below
 #' 200) is conditional on a per-group sample size that the style layer
 #' does not see; set `percent_digits` yourself. The `mean (SD)`
-#' notation the journal asks for, and its refusal of `\eqn{\pm}{+/-}`,
+#' notation the journal asks for, and its refusal of \eqn{\pm}{+/-},
 #' are already how spicy renders dispersion. No rule on the
 #' abbreviations of a table note was found, so the note defines them as
 #' spicy's default does.
@@ -497,6 +499,20 @@
 #'   Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
 #'   standard error). Either way the definitions take the form and the
 #'   place of the theme in force. A `note` you type is printed as typed.
+#' @param minus_sign The sign of a negative number in the outputs that are
+#'   printed: the Typst and LaTeX of `output = "tinytable"`, the LaTeX of
+#'   `output = "gt"`, and the PDF of [code_book()], which reads the lever
+#'   from `options(spicy.style)`. `"typographic"` (the default) sets the
+#'   minus sign (Unicode U+2212, as wide as the plus sign) in place of the
+#'   hyphen-minus, `"ascii"` keeps the hyphen-minus. It applies to the
+#'   cells of the statistics (estimates, intervals, differences, effect
+#'   sizes, the summaries of a codebook), not to the labels, the codes of
+#'   a codebook, the headers or the note. LaTeX sets the sign in math mode,
+#'   which every engine and font has. Every other output keeps the
+#'   hyphen-minus -- the console, the data frame, Excel, the clipboard,
+#'   Word, HTML and markdown: their text is copied and recomputed, and a
+#'   spreadsheet or a parser reads a minus sign as text, not as part of a
+#'   number. No theme sets it.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
 #'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'
@@ -554,6 +570,7 @@ spicy_style <- function(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  minus_sign = NULL,
   v_digits
 ) {
   # Renamed in 0.14.0; refused with the new name before anything else.
@@ -613,6 +630,11 @@ spicy_style <- function(
     "abbreviations",
     c("all", "none")
   )
+  minus_sign <- .style_check_enum(
+    minus_sign,
+    "minus_sign",
+    c("typographic", "ascii")
+  )
 
   if (!is.null(p_bands) && !is.null(p_sigfig)) {
     spicy_abort(
@@ -643,7 +665,8 @@ spicy_style <- function(
     ic_digits = ic_digits,
     percent_digits = percent_digits,
     note_label = note_label,
-    abbreviations = abbreviations
+    abbreviations = abbreviations,
+    minus_sign = minus_sign
   )
   out <- out[!vapply(out, is.null, logical(1))]
 
@@ -1623,4 +1646,14 @@ print.spicy_style <- function(x, ...) {
     return(fmt$ci_brackets)
   }
   c("[", "]")
+}
+
+# The sign of a negative number in the printed outputs: "typographic",
+# the minus sign, unless a style asks for "ascii". Inside a table call,
+# the style in force; outside one, the style of `options(spicy.style)`:
+# `code_book()` has no style argument, and takes its decimal mark from
+# that option too. Read where a table or a codebook is built.
+.style_minus_sign <- function() {
+  fmt <- .style_fmt() %||% .style_resolve(NULL)
+  fmt$minus_sign %||% "typographic"
 }

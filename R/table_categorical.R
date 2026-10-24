@@ -2931,7 +2931,7 @@ table_categorical <- function(
         caption = .categorical_title(NULL),
         notes = oneway_note
       )
-      tt <- .spicy_tt_bare(tt)
+      tt <- .spicy_tt_bare(tt, decimal_mark = decimal_mark)
       # User data reaches the cells (level labels, variable labels):
       # escape it, like every other engine of the family does.
       tt <- .spicy_tt_escape(tt)
@@ -3087,7 +3087,11 @@ table_categorical <- function(
       }
       # The same title the five other engines print.
       tbl <- .spicy_gt_apa_title(tbl, .categorical_title(NULL))
-      return(.spicy_gt_attach_note(tbl, oneway_note))
+      return(.spicy_gt_attach_note(
+        tbl,
+        oneway_note,
+        decimal_mark = decimal_mark
+      ))
     }
 
     build_flextable_oneway <- function(df) {
@@ -4813,7 +4817,7 @@ table_categorical <- function(
       notes = table_note
     )
     tt <- tinytable::group_tt(tt, j = gspec)
-    tt <- .spicy_tt_bare(tt)
+    tt <- .spicy_tt_bare(tt, decimal_mark = decimal_mark)
     # User data reaches the cells (level labels, variable labels):
     # escape it, like every other engine of the family does.
     tt <- .spicy_tt_escape(tt)
@@ -5188,7 +5192,7 @@ table_categorical <- function(
     tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_label))
 
     # The note, as the five other routes print it.
-    return(.spicy_gt_attach_note(tbl, table_note))
+    return(.spicy_gt_attach_note(tbl, table_note, decimal_mark = decimal_mark))
   }
 
   # ---------------- flextable / word ----------------

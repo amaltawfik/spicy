@@ -1056,6 +1056,163 @@ test_that("the Typst source of a table with decimal places per variable", {
   ))))
 })
 
+# ---- the minus sign of negative numbers ----------------------------------
+
+test_that("a negative number takes the minus sign, every other hyphen stays", {
+  cp <- function(...) intToUtf8(c(...))
+  rule <- spicy:::.spicy_minus_sign
+  esc <- spicy:::.spicy_typst_escape
+  signed <- c(
+    "-0.8",
+    "[-0.8, 0.3]",
+    "(-1.2 to 0.4)",
+    # A difference padded for the decimal alignment, an interval under
+    # the Lancet's en dash and under a comma mark, no leading zero.
+    paste0(cp(0x2007), "-0.08"),
+    paste0("[-5.17", cp(0x2013), "-2.58]"),
+    "[-0,61; -0,10]",
+    "-.45"
+  )
+  kept <- c("COVID-19", "1-5", "2026-10-24", "1e-05", "Non-smoker", "Q3 - Q1")
+  minus <- gsub("-", cp(0x2212), signed, fixed = TRUE)
+  # LaTeX gets the cells as typed, Typst escaped (`\-`).
+  expect_identical(rule(c(signed, kept), "latex"), c(minus, kept))
+  expect_identical(rule(esc(c(signed, kept)), "typst"), esc(c(minus, kept)))
+  # A discretionary hyphen of LaTeX is not a sign.
+  expect_identical(rule("x \\-5", "latex"), "x \\-5")
+  # Before a mark other than the point and the comma, the sign is read
+  # with the table's own mark.
+  dot <- paste0("-", cp(0x00B7), "25")
+  expect_identical(rule(dot, "latex"), dot)
+  expect_identical(
+    rule(dot, "latex", decimal_mark = cp(0x00B7)),
+    paste0(cp(0x2212), cp(0x00B7), "25")
+  )
+})
+
+# A difference and a lower bound below zero, an upper bound above it.
+.pt_negative <- function(...) {
+  set.seed(3)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), each = 20L)),
+    y = c(stats::rnorm(20L, 5, 1), stats::rnorm(20L, 4.7, 1))
+  )
+  table_continuous_lm(d, select = y, by = g, ...)
+}
+
+# The lines of a Typst table between two of tinytable's markers.
+.pt_typst_lines <- function(typ, from, to) {
+  ln <- strsplit(typ, "\n", fixed = TRUE)[[1L]]
+  a <- grep(from, ln, fixed = TRUE)[1L]
+  b <- grep(to, ln, fixed = TRUE)[1L]
+  ln[seq.int(a + 1L, b - 1L)]
+}
+
+test_that("Typst and LaTeX print a negative statistic with the minus sign", {
+  skip_if_not_installed("tinytable")
+  minus <- intToUtf8(0x2212)
+  tt <- .pt_negative(output = "tinytable")
+  ascii <- .pt_negative(
+    output = "tinytable",
+    style = spicy_style(minus_sign = "ascii")
+  )
+  # The difference and the lower bound, in the table and in the natural
+  # widths Typst measures its columns with: the same character in both.
+  typ <- .pt_typst(tt)
+  expect_match(
+    typ,
+    paste0("\n[y], [4.83], [4.75], [", minus, "0.08], [", minus, "0.61], "),
+    fixed = TRUE
+  )
+  expect_match(typ, paste0("\n    ([], [", minus, "0.08]),"), fixed = TRUE)
+  expect_match(typ, paste0("\n    ([LL], [", minus, "0.61]),"), fixed = TRUE)
+  cells <- c(
+    .pt_typst_lines(typ, "cell content after", "footer after"),
+    .pt_typst_lines(typ, "tinytable-coldata = (", "#context layout(")
+  )
+  expect_false(any(grepl("-[0-9]", cells)))
+  # Nothing else moves -- the headers, the note, the code around the
+  # cells -- and `minus_sign = "ascii"` gives the table as it was.
+  expect_identical(
+    typ,
+    gsub("[\\-", paste0("[", minus), .pt_typst(ascii), fixed = TRUE)
+  )
+  tex <- .pt_latex(tt)
+  expect_match(
+    tex,
+    "\ny & 4.83 & 4.75 & \\ensuremath{-}0.08 & \\ensuremath{-}0.61 & 0.46 & ",
+    fixed = TRUE
+  )
+  expect_identical(
+    tex,
+    gsub("& -", "& \\ensuremath{-}", .pt_latex(ascii), fixed = TRUE)
+  )
+  expect_match(.pt_latex(ascii), "& -0.08 & -0.61 &", fixed = TRUE)
+  # The option carries the lever, as the argument does.
+  withr::with_options(
+    list(spicy.style = spicy_style(minus_sign = "ascii")),
+    expect_identical(
+      .pt_typst(.pt_negative(output = "tinytable")),
+      .pt_typst(ascii)
+    )
+  )
+  # The outputs whose text is copied or recomputed keep the hyphen.
+  for (out in list(.pt_html(tt), .pt_markdown(tt))) {
+    expect_match(out, "-0.08", fixed = TRUE)
+    expect_no_match(out, minus, fixed = TRUE)
+  }
+  console <- utils::capture.output(print(.pt_negative()))
+  expect_true(any(grepl("-0.08", console, fixed = TRUE)))
+  expect_false(any(grepl(minus, console, fixed = TRUE)))
+  df <- .pt_negative(output = "data.frame")
+  expect_true(any(unlist(Filter(is.numeric, df)) < 0))
+  expect_false(any(grepl(minus, unlist(df), fixed = TRUE)))
+})
+
+test_that("Word and Excel keep the hyphen of a negative statistic", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx2")
+  minus <- intToUtf8(0x2212)
+  docx <- withr::local_tempfile(fileext = ".docx")
+  .pt_negative(output = "word", word_path = docx)
+  word <- officer::docx_summary(officer::read_docx(docx))$text
+  xlsx <- withr::local_tempfile(fileext = ".xlsx")
+  .pt_negative(output = "excel", excel_path = xlsx)
+  excel <- unlist(openxlsx2::wb_to_df(
+    openxlsx2::wb_load(xlsx),
+    col_names = FALSE
+  ))
+  for (text in list(word, excel)) {
+    expect_true(all(c("-0.08", "-0.61") %in% text))
+    expect_false(any(grepl(minus, text, fixed = TRUE)))
+  }
+})
+
+test_that("the labels keep the hyphen the user typed", {
+  skip_if_not_installed("tinytable")
+  minus <- intToUtf8(0x2212)
+  set.seed(3)
+  d <- data.frame(
+    g = factor(rep(c("-1", "1"), each = 20L)),
+    y = stats::rnorm(40L, -5, 1)
+  )
+  # A level "-1" in the group column of a descriptive table and in the
+  # stub of a regression table stays as typed; the statistics beside it
+  # take the sign.
+  typ <- .pt_typst(table_continuous(d, y, by = g, output = "tinytable"))
+  expect_match(typ, paste0("\n[y], [\\-1], [", minus, "5."), fixed = TRUE)
+  fit <- stats::lm(y ~ g, data = d)
+  typ <- .pt_typst(table_regression(fit, output = "tinytable"))
+  expect_match(typ, paste0("\n[(Intercept)], [", minus, "5."), fixed = TRUE)
+  expect_match(typ, "\n[\\-1 (ref.)], ", fixed = TRUE)
+})
+
+test_that("the Typst source of a table with negative statistics", {
+  skip_if_not_installed("tinytable")
+  expect_snapshot(cat(.pt_typst(.pt_negative(output = "tinytable"))))
+})
+
 
 # ---- compiled documents (local only) --------------------------------------
 #
@@ -1294,4 +1451,28 @@ test_that("a variable label spans the groups and sizes no column in a PDF", {
   short <- layout("Parents", "16cm", include_total = FALSE)
   expect_gt(long$lines, 1L)
   expect_identical(long$level, short$level)
+})
+
+test_that("a PDF compiled through Typst prints the minus sign", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("pdftools")
+  skip_if(is.null(quarto::quarto_path()), "the Quarto CLI is not installed")
+  dir <- withr::local_tempdir()
+  src <- file.path(dir, "t.typ")
+  pdf <- file.path(dir, "t.pdf")
+  typ <- .pt_typst(.pt_negative(output = "tinytable"))
+  writeLines(typ, src, useBytes = TRUE)
+  system2(
+    quarto::quarto_path(),
+    c("typst", "compile", shQuote(src), shQuote(pdf)),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+  words <- pdftools::pdf_data(pdf)[[1L]]$text
+  minus <- intToUtf8(0x2212)
+  expect_true(all(paste0(minus, c("0.08", "0.61")) %in% words))
+  expect_false(any(grepl("^-[0-9]", words)))
 })

@@ -7,8 +7,10 @@
 # (field report, dev/theme_empty_efface_les_finaliseurs.md). This bare
 # variant strips only the APPEARANCE slots -- the actual intent of the
 # five call sites -- and leaves the format finalizers alive. Every
-# spicy tinytable path must use it instead of theme_empty().
-.spicy_tt_bare <- function(x) {
+# spicy tinytable path must use it instead of theme_empty(). `stub` is
+# the number of label columns that open the table, `decimal_mark` the
+# mark of its numbers.
+.spicy_tt_bare <- function(x, stub = 1L, decimal_mark = ".") {
   x@lazy_format <- list()
   # A column spanner (`group_tt(j = )`) is merged across its columns by
   # styles tinytable registers itself, which the appearance wipe below
@@ -31,6 +33,16 @@
   # (`.spicy_tt_note_markdown()`), and the fit of a LaTeX table to the
   # text block (`.spicy_tt_latex_fit`).
   x@lazy_prepare <- list(.spicy_tt_note_markdown(lead), .spicy_tt_latex_fit)
+
+  # The sign of the negative numbers in Typst and LaTeX, decided by the
+  # style in force in this call too (`spicy_style(minus_sign = )`), and
+  # set in the cells after the label columns (`.spicy_tt_minus()`).
+  if (identical(.style_minus_sign(), "typographic")) {
+    x@lazy_prepare <- c(
+      x@lazy_prepare,
+      list(.spicy_tt_minus(stub, decimal_mark))
+    )
+  }
   # tinytable hard-codes `column-gutter: 5pt` into the Typst #table()
   # call whenever the table has column groups (group_tt(j = )) -- an
   # argument-level value no document `#set` rule can override. In a
@@ -360,6 +372,73 @@
   last <- length(x@lazy_style)
   attr(x@lazy_style[[last]], "output") <- "typst"
   x
+}
+
+# The minus sign (U+2212) for the hyphen-minus of a negative number, in
+# the cells `x` as tinytable is about to write them for `engine`.
+#
+# spicy formats a negative number with the hyphen-minus ("-0.8"), which
+# every output whose text is copied or recomputed needs: a spreadsheet
+# or a parser reads the minus sign as text. A printed table sets the
+# minus sign, as wide as the plus sign, where the hyphen is short.
+#
+# A hyphen is a sign when a digit follows it, or a decimal mark and a
+# digit (a bounded measure drops its leading zero: "-.25"), and no
+# letter, digit or backslash precedes it: the start of the cell, a
+# space, a bracket, the separator of an interval. So "-0.8",
+# "[-0.8, 0.3]" and "(-1.2 to 0.4)" take the sign, "COVID-19", "1-5",
+# "2026-10-24", "1e-05", "Non-smoker" and "Q3 - Q1" keep their hyphen.
+# The marks are the point, the comma and the table's `decimal_mark`.
+#
+# The cells come escaped. tinytable writes the Typst hyphen as `\-`,
+# which the sign replaces whole: the minus sign needs no escape. In
+# LaTeX, `\-` is a discretionary hyphen and stays one; the minus sign
+# is set in math mode, which every engine and font has, by the
+# finalizer (`.spicy_latex_unicode()`).
+.spicy_minus_sign <- function(
+  x,
+  engine = c("typst", "latex"),
+  decimal_mark = "."
+) {
+  engine <- match.arg(engine)
+  hyphen <- if (identical(engine, "typst")) "\\\\?-" else "-"
+  marks <- paste(unique(c(".", ",", decimal_mark)), collapse = "")
+  pattern <- paste0(
+    "(?<![\\p{L}\\p{N}\\\\])",
+    hyphen,
+    "(?=[0-9]|[",
+    gsub("([]\\\\^-])", "\\\\\\1", marks),
+    "][0-9])"
+  )
+  # The replacement is UTF-8, which runs PCRE in UTF mode: `\p{L}` is
+  # any letter, an accented one included.
+  gsub(pattern, intToUtf8(0x2212), x, perl = TRUE)
+}
+
+# The preparation step that sets the minus sign in Typst and LaTeX
+# (`.spicy_minus_sign()`), in the cells after the `stub` label columns:
+# the labels keep the text the user typed, as the headers and the note
+# do. It runs on the cells tinytable is about to write, so the table and
+# the natural widths Typst measures its columns with
+# (`tinytable-coldata`) carry the same character, and no Typst or LaTeX
+# code around the cells is touched.
+.spicy_tt_minus <- function(stub = 1L, decimal_mark = ".") {
+  structure(
+    function(tbl) {
+      for (j in setdiff(seq_along(tbl@data_body), seq_len(stub))) {
+        cells <- tbl@data_body[[j]]
+        if (is.character(cells)) {
+          tbl@data_body[[j]] <- .spicy_minus_sign(
+            cells,
+            tbl@output,
+            decimal_mark
+          )
+        }
+      }
+      tbl
+    },
+    output = c("typst", "latex")
+  )
 }
 
 # LaTeX: a table wider than the text block is scaled down to it, a

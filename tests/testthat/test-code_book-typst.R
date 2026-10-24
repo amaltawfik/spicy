@@ -98,6 +98,8 @@ test_that("a note typed with a dash or an asterisk is a list item", {
 })
 
 test_that("statistics: min and max as the data, summaries at the SD's precision", {
+  # The sign of a negative statistic has a test of its own, below.
+  withr::local_options(spicy.style = spicy_style(minus_sign = "ascii"))
   d <- data.frame(
     rate = c(-0.001, 0.0034, 0.0051),
     z = as.vector(scale(c(0.1, 0.2, 0.7))),
@@ -127,6 +129,40 @@ test_that("statistics: min and max as the data, summaries at the SD's precision"
     c(min = "-Inf", max = "Inf", median = "1.50")
   )
   expect_identical(typst_literal("a\tb"), "\"a b\"")
+})
+
+test_that("a negative statistic takes the minus sign, a code keeps its hyphen", {
+  minus <- intToUtf8(0x2212)
+  d <- data.frame(
+    temp = c(-2.5, -1, 0.5),
+    q = labelled::labelled_spss(
+      c(1, -9, 1),
+      labels = c(Yes = 1, Refused = -9),
+      na_values = -9
+    )
+  )
+  data <- function() code_book_typst_data(code_book(d))$data
+  x <- data()
+  expect_identical(
+    unlist(x$vars[[1L]]$stats),
+    c(
+      min = paste0(minus, "2.5"),
+      max = "0.5",
+      mean = paste0(minus, "1.00"),
+      sd = "1.50",
+      median = paste0(minus, "1.00")
+    )
+  )
+  # A code is what a reader types back into a filter: as the data has it.
+  expect_identical(x$vars[[2L]]$values$code, c("1", "-9"))
+  expect_identical(x$vars[[2L]]$declared_codes, "-9")
+  expect_identical(x$declared[[1L]]$code, "-9")
+  # `options(spicy.style)` carries the lever, as it carries the mark.
+  withr::local_options(spicy.style = spicy_style(minus_sign = "ascii"))
+  expect_identical(
+    unlist(data()$vars[[1L]]$stats),
+    c(min = "-2.5", max = "0.5", mean = "-1.00", sd = "1.50", median = "-1.00")
+  )
 })
 
 test_that("a time of day has its own row labels on its sheet", {
