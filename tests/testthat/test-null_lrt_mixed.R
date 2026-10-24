@@ -449,8 +449,18 @@ test_that("glmer gaussian(log): the null keeps the family and the link", {
     2 * (ll - as.numeric(stats::logLik(g0))),
     tolerance = 1e-6
   )
-  expect_equal(out$chi2, 150.601796603, tolerance = 1e-6)
-  # The identity-link lm() null, which this fit does not nest, gave 150.46.
+  # lme4 2.1-0 (2026-10-23) changed how an estimated dispersion enters the
+  # PIRLS fit (`glmerControl(disp_method = "moment")`): the fit and its
+  # log-likelihood moved, and the statistic with them, under both the
+  # oracle above and this pin, which holds one value per lme4.
+  pinned <- if (utils::packageVersion("lme4") >= "2.1-0") {
+    159.991912675595
+  } else {
+    150.601796603
+  }
+  expect_equal(out$chi2, pinned, tolerance = 1e-6)
+  # The identity-link lm() null, which this fit does not nest, gives a
+  # statistic about 0.14 lower under either lme4 (150.46, then 159.85).
   lm0 <- stats::lm(bmi ~ age_c, data = mf)
   expect_gt(abs(out$chi2 - 2 * (ll - as.numeric(stats::logLik(lm0)))), 0.1)
   expect_identical(out$family_label, "gaussian regression")
