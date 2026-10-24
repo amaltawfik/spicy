@@ -747,8 +747,8 @@ build_abbreviations_footer_block_from_frames <- function(
   }
   # The method of a standardized beta, and its dummy convention: five
   # methods give visibly different betas (a dummy's refit beta is 0.247
-  # where its basic beta is 0.123 on the same fit). A definition that says
-  # how the number was computed, kept under every rule.
+  # where its basic beta is 0.123 on the same fit). A disambiguation, kept
+  # under every rule: the gloss names the method by its formula.
   beta_gloss <- switch(
     standardized,
     refit = spicy_str("note_beta_refit"),
@@ -1350,6 +1350,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
   if (is.na(corstr) || !nzchar(corstr)) {
     return(NULL) # nocov -- a valid geeglm always carries corstr
   }
+  corstr <- .gee_corstr_display(corstr)
   alpha <- frame$info$extras$gee_alpha
   alpha <- alpha[is.finite(alpha)]
   if (length(alpha) == 1L) {
@@ -1366,6 +1367,22 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
     return(spicy_fmt("note_gee_corstr_params", corstr, length(alpha)))
   }
   spicy_fmt("note_gee_corstr_plain", corstr)
+}
+
+# The name a note gives geepack's `corstr` value. geepack completes a
+# partial `corstr` to one of these six before it stores it in the fit; a
+# value outside them (a later geepack) is printed as the fit holds it.
+.gee_corstr_display <- function(corstr) {
+  switch(
+    corstr,
+    independence = spicy_str("note_gee_structure_independence"),
+    exchangeable = spicy_str("note_gee_structure_exchangeable"),
+    ar1 = spicy_str("note_gee_structure_ar1"),
+    unstructured = spicy_str("note_gee_structure_unstructured"),
+    fixed = spicy_str("note_gee_structure_fixed"),
+    userdefined = spicy_str("note_gee_structure_userdefined"),
+    corstr
+  )
 }
 
 

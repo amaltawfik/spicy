@@ -156,11 +156,11 @@
 #'   outputs. One of:
 #'   - `"none"` (default): no effect-size column.
 #'   - `"auto"`: auto-select the canonical measure for the chosen
-#'     `test` and group count -- Hedges' *g* (parametric, 2 groups),
+#'     `test` and group count -- Hedges's *g* (parametric, 2 groups),
 #'     eta-squared (parametric, 3+ groups), rank-biserial *r*
 #'     (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 #'     groups).
-#'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardized mean
+#'   - `"hedges_g"`: Hedges's *g* (bias-corrected standardized mean
 #'     difference, 2 groups, parametric). CI via the Hedges & Olkin
 #'     normal approximation.
 #'   - `"eta2"`: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
@@ -2820,7 +2820,7 @@ build_test_note <- function(
 # The concepts the statistic columns of a continuous table show, in the
 # order of the columns (`tokens` is in display order), for
 # `.note_abbreviations()`: ids of `.abbrev_registry()`, or `.abbr()`
-# items for the definitions that say more. One vocabulary, so one list,
+# items for the disambiguations. One vocabulary, so one list,
 # for table_continuous(), table_outcome() and the survey twin.
 #
 # "IQR" is used in the literature for both the interval and its width, so

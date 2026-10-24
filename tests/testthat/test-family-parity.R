@@ -595,6 +595,33 @@ test_that("every table of the family opens its note with the lead-in in force", 
   }
 })
 
+test_that("in French the colon lead-in takes its no-break space, in every table", {
+  # French puts a no-break space before a colon, so "Note:" opens the note
+  # attribute and the print with "Note\u00a0: "; "Note." and English
+  # are written as typed.
+  builders <- .fp_note_builders()
+  fit <- stats::lm(qa1 ~ qb2 + qe5, data = .fp_note_data())
+  builders$table_regression <- function(o) table_regression(fit, output = o)
+  leads <- list(
+    fr = c("Note:" = "Note\u00a0: ", "Note." = "Note. "),
+    en = c("Note:" = "Note: ", "Note." = "Note. ")
+  )
+  for (lang in names(leads)) {
+    withr::local_options(spicy.language = lang)
+    for (lab in names(leads[[lang]])) {
+      withr::local_options(spicy.style = spicy_style(note_label = lab))
+      lead <- leads[[lang]][[lab]]
+      for (fn in names(builders)) {
+        info <- paste(lang, lab, fn)
+        x <- builders[[fn]]("default")
+        expect_true(startsWith(attr(x, "note"), lead), info = info)
+        out <- utils::capture.output(print(x))
+        expect_true(any(startsWith(out, lead)), info = info)
+      }
+    }
+  }
+})
+
 test_that("every export belongs to exactly one API-stability tier in ?spicy", {
   # Doc-consistency guard: parse the tier lists out of
   # R/spicy-package.R and compare with the actual exports, so a new
@@ -3897,9 +3924,9 @@ test_that("every table function refuses data with no rows, first", {
   lancet = c("sd", "se", "iqr", "ci")
 )
 # Abbreviated words, defined under "all" only; and the concepts whose
-# definition always says more than the symbol.
+# definition is always a disambiguation: the symbol alone is ambiguous.
 .fa_words <- c("min", "max")
-.fa_says_more <- c("deff", "pd", "mcse")
+.fa_disambiguations <- c("pd", "mcse")
 
 # The block a note must carry, computed from the specification above: the
 # symbols and the terms are the registry's words, in the language in force.
@@ -3910,8 +3937,8 @@ test_that("every table function refuses data with no rows, first", {
     if (is.character(it)) {
       it <- list(id = it)
     }
-    says_more <- !is.null(it$term) || it$id %in% .fa_says_more
-    if (!says_more) {
+    disambiguates <- !is.null(it$term) || it$id %in% .fa_disambiguations
+    if (!disambiguates) {
       if (identical(lever, "none")) {
         next
       }
@@ -4198,7 +4225,7 @@ test_that("every note defines the abbreviations of its headers, as its rule asks
   }
 })
 
-test_that("n, N, p and the test statistics are never defined, and what says more always is", {
+test_that("n, N, p and the test statistics are never defined, and a disambiguation always is", {
   skip_if_not_installed("survey")
   d <- .fn_data()
   for (lang in c("en", "fr")) {
@@ -4248,8 +4275,8 @@ test_that("n, N, p and the test statistics are never defined, and what says more
       paste(spicy_str("fitstat_aic"), "=", spicy_str("abbrev_aic")),
       fixed = TRUE
     )
-    # "none" keeps the IQR as the width Q3 - Q1, and the partial
-    # eta-squared of a regression: they say how the number was computed.
+    # "none" keeps the IQR as the width Q3 - Q1, and the partial eta
+    # squared of a regression: without them the symbol is ambiguous.
     withr::local_options(spicy.style = spicy_style(abbreviations = "none"))
     tc <- suppressWarnings(table_continuous(
       d,
@@ -4294,6 +4321,108 @@ test_that("n, N, p and the test statistics are never defined, and what says more
       fixed = TRUE
     )
   }
+})
+
+test_that("a definition names the quantity and never explains it", {
+  # The standard name, in one expression, the author included when the
+  # name carries one: no clause on what the quantity measures, no
+  # formula, no citation. Read off the notes of tables that show each
+  # symbol, under "all"; pd and MCSE off the block the footer builds for
+  # their columns, which only a Bayesian fit can fill.
+  skip_if_not_installed("survey")
+  set.seed(8)
+  d <- data.frame(
+    y = stats::rnorm(60),
+    cov1 = stats::rnorm(60),
+    g = factor(rep(c("a", "b"), 30L)),
+    h = factor(rep(c("a", "b", "c"), 20L)),
+    w = stats::runif(60, 0.5, 2)
+  )
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  note <- function(x) attr(suppressMessages(suppressWarnings(x)), "note")
+  svy_note <- function() {
+    note(table_continuous_svy(
+      des,
+      y,
+      by = g,
+      show_columns = c("m", "se", "deff"),
+      deff = TRUE
+    ))
+  }
+  omega <- "\u03C9\u00B2"
+  expected <- list(
+    en = c(
+      g = "g = Hedges's g",
+      omega2 = paste0(omega, " = omega squared"),
+      omega2_partial = paste0(omega, " = partial omega squared"),
+      deff = "DEff = design effect",
+      pd = "pd = probability of direction",
+      mcse = "MCSE = Monte Carlo standard error of the posterior median"
+    ),
+    fr = c(
+      g = "g = g de Hedges",
+      omega2 = paste0(omega, " = om\u00E9ga-carr\u00E9 de Hays"),
+      omega2_partial = paste0(omega, " = om\u00E9ga-carr\u00E9 partiel"),
+      deff = "DEff = effet de plan",
+      pd = "pd = probabilit\u00E9 de direction",
+      mcse = "MCSE = erreur standard de Monte-Carlo de la m\u00E9diane a posteriori"
+    )
+  )
+  for (lang in names(expected)) {
+    withr::local_options(
+      spicy.language = lang,
+      spicy.style = spicy_style(abbreviations = "all")
+    )
+    e <- expected[[lang]]
+    sep <- spicy_str("note_abbrev_sep")
+    ends <- function(x, def) {
+      expect_true(endsWith(x, paste0(def, ".")), info = lang)
+    }
+    ends(
+      note(table_continuous_lm(d, y, by = g, effect_size = "hedges_g")),
+      e[["g"]]
+    )
+    ends(
+      note(table_continuous_lm(d, y, by = h, effect_size = "omega2")),
+      e[["omega2"]]
+    )
+    ends(
+      note(table_continuous_lm(
+        d,
+        y,
+        by = h,
+        covariates = cov1,
+        effect_size = "omega2"
+      )),
+      e[["omega2_partial"]]
+    )
+    expect_match(
+      note(table_regression(
+        stats::lm(y ~ cov1 + h, data = d),
+        show_columns = c("b", "partial_omega2")
+      )),
+      paste0(e[["omega2_partial"]], sep),
+      fixed = TRUE,
+      info = lang
+    )
+    ends(svy_note(), e[["deff"]])
+    expect_identical(
+      build_abbreviations_footer_block_from_frames(c("pd", "mcse"), list()),
+      paste0(e[["pd"]], sep, e[["mcse"]], "."),
+      info = lang
+    )
+  }
+  # The design effect is named, not disambiguated: "none" drops it with the
+  # plain definitions and keeps the design-based SE.
+  withr::local_options(
+    spicy.language = "en",
+    spicy.style = spicy_style(abbreviations = "none")
+  )
+  expect_true(endsWith(
+    svy_note(),
+    "SE = design-based standard error of the mean."
+  ))
+  expect_no_match(svy_note(), "DEff = ", fixed = TRUE)
 })
 
 test_that("a pseudo-R2 row is defined as a pseudo coefficient of determination", {

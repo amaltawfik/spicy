@@ -17,7 +17,7 @@
 #' Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
 #' (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 #' requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling.
-#' Effect sizes (Cohen's *d* `"cohens_d"`, Hedges' *g* `"hedges_g"`,
+#' Effect sizes (Cohen's *d* `"cohens_d"`, Hedges's *g* `"hedges_g"`,
 #' Hays' `"omega2"`, Cohen's `"f2"`) are reported with optional
 #' noncentral *t* / *F*
 #' confidence intervals via `effect_size_ci`, and adapt under
@@ -295,7 +295,7 @@
 #'     residual standard deviation from the fitted model. Defined only when
 #'     `by` has exactly two non-empty levels; otherwise the function errors.
 #'     The sign matches the displayed `Delta (level2 - level1)`.
-#'   - `"hedges_g"`: Hedges' `g = J * d` with the small-sample correction
+#'   - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
 #'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 #'   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
 #'     population variance explained, less optimistic than \eqn{R^2}{R^2} for small
@@ -318,7 +318,7 @@
 #'     For numeric `by`, partial *\eqn{f^2}{f^2}* equals the squared partial
 #'     correlation of `by` with the outcome, divided by `(1 - r^2_partial)`.
 #'   - `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported` error:
-#'     Cohen's *d* and Hedges' *g* have no canonical extension to adjusted
+#'     Cohen's *d* and Hedges's *g* have no canonical extension to adjusted
 #'     models
 #'     (the pooled SD is undefined under adjustment). Use `"f2"` or
 #'     `"omega2"` instead -- both generalize via partial *F*.
@@ -581,7 +581,7 @@
 #'     monotone transform of \eqn{R^2}{R^2} and adds no information beyond it; its
 #'     primary use is in *a priori* power analysis (e.g. G*Power).
 #'   \item `"cohens_d"`, `"hedges_g"`: standardized mean difference
-#'     (Cohen's *d* or Hedges' *g*), defined only when `by` has exactly two
+#'     (Cohen's *d* or Hedges's *g*), defined only when `by` has exactly two
 #'     non-empty levels.
 #'     `d = beta_hat / sigma_hat` with `sigma_hat = summary(fit)$sigma` (the
 #'     pooled within-group SD for the unweighted two-group case);
@@ -610,7 +610,7 @@
 #' this additive setting). `"cohens_d"` and `"hedges_g"` raise a
 #' `spicy_unsupported` error: the pooled
 #' standard deviation has no canonical extension under adjustment, so
-#' Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
+#' Cohen's *d* and Hedges's *g* are undefined for adjusted models. See
 #' `effect_size` for the full dispatch.
 #'
 #' Confidence intervals for the effect size are available via
@@ -625,7 +625,7 @@
 #'     Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 #'     across sample sizes (Fitts 2021), unlike the
 #'     older Hedges-Olkin normal approximation which is biased for small
-#'     samples. For Hedges' *g* the bounds inherit the *J* small-sample
+#'     samples. For Hedges's *g* the bounds inherit the *J* small-sample
 #'     correction.
 #'   \item `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004).
 #'     Without covariates (model-level effect sizes), bounds are
@@ -720,7 +720,7 @@
 #' least-squares estimates and contrasts and slopes are weighted. The
 #' fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays' `omega^2`
 #' and Cohen's \eqn{f^2}{f^2}, use the corresponding **weighted sums of squares**
-#' from the WLS fit. Cohen's `d` and Hedges' `g` use the **WLS
+#' from the WLS fit. Cohen's `d` and Hedges's `g` use the **WLS
 #' coefficient and the model's weighted residual standard deviation**
 #' (`summary(fit)$sigma`), which is the standard convention for
 #' case-weighted regression-style reporting (DuMouchel and Duncan

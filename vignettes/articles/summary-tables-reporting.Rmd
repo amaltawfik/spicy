@@ -66,7 +66,7 @@ Use the function that matches the unit you want to report:
 | Function | Reports | Selection grammar | Typical additions |
 |:--|:--|:--|:--|
 | `table_categorical()` | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared or Fisher's exact test, association measure (`phi`, `cramer_v`, `tau_b`, ...), confidence interval |
-| `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges' *g*, η², rank-biserial *r*, ε²) |
+| `table_continuous()` | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges's *g*, η², rank-biserial *r*, ε²) |
 | `table_continuous_lm()` | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | `table_outcome()` | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as `table_continuous()` |
 | `table_multiresponse()` (experimental) | A "check all that apply" question, one row per item | `select` (the items), `by` | Chi-squared or Fisher's exact test per item with a Holm adjustment, a global test that allows for several answers per respondent |

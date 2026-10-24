@@ -356,7 +356,7 @@
 #'     statistics are left undefined ("Do not define symbols or
 #'     abbreviations that represent statistics (e.g., M, SD, F, t, df, p,
 #'     N, n, OR, r)", section 6.44; section 7.15 adds *SE*), and spicy
-#'     counts *Mdn* (the median of Table 6.5) and Hedges' *g* among them.
+#'     counts *Mdn* (the median of Table 6.5) and Hedges's *g* among them.
 #'     So are the symbols composed of Greek letters (the same two
 #'     sections) and those its sample tables leave undefined (*B*,
 #'     \eqn{\beta}{beta}, \eqn{R^2}{R^2}, \eqn{\Delta R^2}{Delta R2},
@@ -475,25 +475,28 @@
 #'   Manual 7 section 7.14), `"Note:"` (Chicago Manual of Style 18,
 #'   paragraphs 3.77-3.81), or `""` for no lead-in word (AMA Manual of
 #'   Style 11, section 4.1.4.10). The language spells it: under
-#'   `options(spicy.language = "fr")`, `"Note:"` prints with the
-#'   no-break space French puts before a colon. A `note` you type is
-#'   printed as typed; its opening word is set in italics when it is the
-#'   lead-in in force.
+#'   `options(spicy.language = "fr")`, `"Note:"` is written "Note :",
+#'   with the no-break space French puts before a colon, in every output.
+#'   A `note` you type is printed as typed; its opening word is set in
+#'   italics when it is the lead-in in force.
 #' @param abbreviations Which abbreviations the note under the table
 #'   defines: those of its headers, its spanners and the labels of its
 #'   stub (the fit statistics and the random effects of a regression),
-#'   not the symbols inside its cells. `NULL` (the default) follows the
-#'   rule of the theme in force, the APA rule when there is none (see
-#'   *Themes*). `"all"` defines every abbreviation and symbol the table
-#'   shows, abbreviated words such as Min and Max included, except *n*,
-#'   *N*, *p* and the test statistics (*t*, *z*, *F*,
-#'   \eqn{\chi^2}{chi-squared}), which no style and no journal defines:
-#'   the setting for readers outside the field. `"none"` defines none, but
-#'   keeps the definitions that say how a number was computed (partial
-#'   eta-squared, the IQR as the width Q3 - Q1, the method of a
-#'   standardized \eqn{\beta}{beta}, the design effect). Either way the
-#'   definitions take the form and the place of the theme in force. A
-#'   `note` you type is printed as typed.
+#'   not the symbols inside its cells. A definition identifies the
+#'   quantity by its standard name, in one expression, the author included
+#'   when the name carries one (*g* = Hedges's *g*); it never explains what
+#'   the quantity measures or how to read it, which belongs to the text.
+#'   `NULL` (the default) follows the rule of the theme in force, the APA
+#'   rule when there is none (see *Themes*). `"all"` defines every
+#'   abbreviation and symbol the table shows, abbreviated words such as Min
+#'   and Max included, except *n*, *N*, *p* and the test statistics (*t*,
+#'   *z*, *F*, \eqn{\chi^2}{chi-squared}), which no style and no journal
+#'   defines: the setting for readers outside the field. `"none"` defines
+#'   none, but keeps the disambiguations, the definitions without which the
+#'   symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
+#'   Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
+#'   standard error). Either way the definitions take the form and the
+#'   place of the theme in force. A `note` you type is printed as typed.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
 #'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'

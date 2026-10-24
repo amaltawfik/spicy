@@ -187,11 +187,11 @@ outputs. One of:
 \itemize{
 \item \code{"none"} (default): no effect-size column.
 \item \code{"auto"}: auto-select the canonical measure for the chosen
-\code{test} and group count -- Hedges' \emph{g} (parametric, 2 groups),
+\code{test} and group count -- Hedges's \emph{g} (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial \emph{r}
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 groups).
-\item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardized mean
+\item \code{"hedges_g"}: Hedges's \emph{g} (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges & Olkin
 normal approximation.
 \item \code{"eta2"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style

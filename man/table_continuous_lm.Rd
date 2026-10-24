@@ -341,7 +341,7 @@ the model coefficient (the displayed difference) and \code{sigma_hat} is the
 residual standard deviation from the fitted model. Defined only when
 \code{by} has exactly two non-empty levels; otherwise the function errors.
 The sign matches the displayed \code{Delta (level2 - level1)}.
-\item \code{"hedges_g"}: Hedges' \code{g = J * d} with the small-sample correction
+\item \code{"hedges_g"}: Hedges's \code{g = J * d} with the small-sample correction
 \code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
 \item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
 population variance explained, less optimistic than \eqn{R^2}{R^2} for small
@@ -366,7 +366,7 @@ the correctly-defined effect size when the model is adjusted.
 For numeric \code{by}, partial \emph{\eqn{f^2}{f^2}} equals the squared partial
 correlation of \code{by} with the outcome, divided by \verb{(1 - r^2_partial)}.
 \item \code{"cohens_d"} and \code{"hedges_g"} raise a \code{spicy_unsupported} error:
-Cohen's \emph{d} and Hedges' \emph{g} have no canonical extension to adjusted
+Cohen's \emph{d} and Hedges's \emph{g} have no canonical extension to adjusted
 models
 (the pooled SD is undefined under adjustment). Use \code{"f2"} or
 \code{"omega2"} instead -- both generalize via partial \emph{F}.
@@ -615,7 +615,7 @@ interval.
 Inference adapts via \code{vcov}: classical OLS, \code{"HC0"}-\code{"HC5"}
 (heteroscedasticity-consistent), \code{"CR0"}-\code{"CR3"} (cluster-robust,
 requires \code{cluster}), or \code{"bootstrap"} / \code{"jackknife"} resampling.
-Effect sizes (Cohen's \emph{d} \code{"cohens_d"}, Hedges' \emph{g} \code{"hedges_g"},
+Effect sizes (Cohen's \emph{d} \code{"cohens_d"}, Hedges's \emph{g} \code{"hedges_g"},
 Hays' \code{"omega2"}, Cohen's \code{"f2"}) are reported with optional
 noncentral \emph{t} / \emph{F}
 confidence intervals via \code{effect_size_ci}, and adapt under
@@ -681,7 +681,7 @@ for any predictor type. For a single-predictor model, \eqn{f^2}{f^2} is a
 monotone transform of \eqn{R^2}{R^2} and adds no information beyond it; its
 primary use is in \emph{a priori} power analysis (e.g. G*Power).
 \item \code{"cohens_d"}, \code{"hedges_g"}: standardized mean difference
-(Cohen's \emph{d} or Hedges' \emph{g}), defined only when \code{by} has exactly two
+(Cohen's \emph{d} or Hedges's \emph{g}), defined only when \code{by} has exactly two
 non-empty levels.
 \code{d = beta_hat / sigma_hat} with \code{sigma_hat = summary(fit)$sigma} (the
 pooled within-group SD for the unweighted two-group case);
@@ -709,7 +709,7 @@ test of \code{by} after all covariates, equal to \code{\link[stats:drop1]{stats:
 this additive setting). \code{"cohens_d"} and \code{"hedges_g"} raise a
 \code{spicy_unsupported} error: the pooled
 standard deviation has no canonical extension under adjustment, so
-Cohen's \emph{d} and Hedges' \emph{g} are undefined for adjusted models. See
+Cohen's \emph{d} and Hedges's \emph{g} are undefined for adjusted models. See
 \code{effect_size} for the full dispatch.
 
 Confidence intervals for the effect size are available via
@@ -724,7 +724,7 @@ and Fouladi 1997;
 Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 across sample sizes (Fitts 2021), unlike the
 older Hedges-Olkin normal approximation which is biased for small
-samples. For Hedges' \emph{g} the bounds inherit the \emph{J} small-sample
+samples. For Hedges's \emph{g} the bounds inherit the \emph{J} small-sample
 correction.
 \item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
 Without covariates (model-level effect sizes), bounds are
@@ -819,7 +819,7 @@ linear models via \code{lm(..., weights = ...)}. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
 fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays' \code{omega^2}
 and Cohen's \eqn{f^2}{f^2}, use the corresponding \strong{weighted sums of squares}
-from the WLS fit. Cohen's \code{d} and Hedges' \code{g} use the \strong{WLS
+from the WLS fit. Cohen's \code{d} and Hedges's \code{g} use the \strong{WLS
 coefficient and the model's weighted residual standard deviation}
 (\code{summary(fit)$sigma}), which is the standard convention for
 case-weighted regression-style reporting (DuMouchel and Duncan

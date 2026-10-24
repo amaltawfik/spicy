@@ -465,12 +465,21 @@
   # sentence states a property of the model the reader wrote. The row
   # stays absent -- there is no single number it could hold.
   note_icc_multi_group = "ICC is not reported: several grouping factors define several ICCs.",
-  # The GEE working correlation. The first hole is geepack's `corstr`
-  # (an identifier); then the estimated alpha, or the count of
-  # correlation parameters.
+  # The GEE working correlation. The first hole is the name of the
+  # structure (`note_gee_structure_*`); then the estimated alpha, or the
+  # count of correlation parameters.
   note_gee_corstr_alpha = "GEE working correlation: %s (alpha = %s).",
   note_gee_corstr_params = "GEE working correlation: %s (%d correlation parameters).",
   note_gee_corstr_plain = "GEE working correlation: %s.",
+  # The name of each of geepack's `corstr` values. The value stays an
+  # identifier of the fit, and English prints it as geepack spells it;
+  # another language names the structure in its own words.
+  note_gee_structure_independence = "independence",
+  note_gee_structure_exchangeable = "exchangeable",
+  note_gee_structure_ar1 = "ar1",
+  note_gee_structure_unstructured = "unstructured",
+  note_gee_structure_fixed = "fixed",
+  note_gee_structure_userdefined = "userdefined",
   # The survival footer: the Cox concordance, the parametric
   # distribution (one hole: its display name) and the survreg scale,
   # joined by the separator.
@@ -540,7 +549,10 @@
   # key the header displays, so a translated header can never leave the
   # note defining the English one. Lowercase but for a proper name (AMA
   # Manual of Style, 11th ed., section 13.0). Where APA's Table 6.5 words a
-  # symbol, the expansion follows it.
+  # symbol, the expansion follows it. Each one identifies the quantity by
+  # its standard name, in one expression, the author included when the
+  # name carries one, and never explains what it measures or how to read
+  # it: that belongs to the text (the principle of 2026-10-24 in the ADR).
   abbrev_mean = "mean",
   abbrev_sd = "standard deviation",
   abbrev_se = "standard error",
@@ -574,15 +586,16 @@
   abbrev_pseudo_r2 = "pseudo coefficient of determination",
   abbrev_adj_r2 = "adjusted coefficient of determination",
   abbrev_d = "Cohen's d",
-  abbrev_g = "Hedges' g",
+  abbrev_g = "Hedges's g",
   abbrev_f2 = "Cohen's f\u00B2",
-  abbrev_eta2 = "eta-squared",
-  abbrev_omega2 = "omega-squared",
+  abbrev_eta2 = "eta squared",
+  abbrev_omega2 = "omega squared",
   abbrev_es = "effect size",
   abbrev_smd = "standardized mean difference",
   abbrev_ame = "average marginal effect",
   abbrev_rhat = "potential scale reduction factor",
   abbrev_ess = "effective sample size",
+  abbrev_deff = "design effect",
   # The fit-statistic rows of a regression table, and its random-effect
   # rows (the standard deviation, the variance and the correlation of a
   # random effect, the residual standard deviation).
@@ -606,9 +619,9 @@
   note_abbrev_symbol_ess = "ESS",
   note_abbrev_symbol_elpd = "ELPD",
   note_abbrev_symbol_loo = "LOO",
-  # The definitions that say more than the expansion (decision 3 of the
-  # ADR): they tell how the number was computed, so they stay under every
-  # value of `spicy_style(abbreviations = )`, "none" included. Two holes in
+  # The disambiguations (decision 3 of the ADR): the symbol alone is
+  # ambiguous, so `abbreviations = "none"` keeps them too. Like any
+  # definition, they name the quantity and never explain it. Two holes in
   # `_iqr_width`: the headers of Q3 and Q1, in the order the subtraction
   # reads. One hole in `_beta_method`: one of the `note_beta_*` glosses,
   # each led by its `standardized` token (an identifier). The chi-squared
@@ -616,14 +629,13 @@
   abbrev_iqr_width = "interquartile range (%s - %s)",
   abbrev_beta_method = "standardized coefficient (%s)",
   abbrev_f2_partial = "Cohen's partial f\u00B2",
-  abbrev_eta2_partial = "partial eta-squared",
-  abbrev_omega2_partial = "bias-corrected partial omega-squared",
+  abbrev_eta2_partial = "partial eta squared",
+  abbrev_omega2_partial = "partial omega squared",
   abbrev_chi2_lrt = "partial likelihood-ratio chi-squared",
   abbrev_chi2_wald = "partial Wald chi-squared",
   abbrev_ame_category = "average marginal effect on a response-category probability",
-  abbrev_pd = "probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
-  abbrev_mcse = "Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
-  abbrev_deff = "design effect (design-based variance / simple-random-sample variance at the same n)",
+  abbrev_pd = "probability of direction",
+  abbrev_mcse = "Monte Carlo standard error of the posterior median",
   abbrev_se_design = "design-based standard error of the mean",
   # The form of a definition under each rule (decision 2). APA: "X = term"
   # pairs joined by `note_abbrev_sep`, closed by a period (Publication
@@ -640,7 +652,7 @@
   note_beta_refit = "\"refit\": outcome and numeric predictors z-scored, factor dummies on 0/1",
   note_beta_posthoc = "\"posthoc\": B \u00D7 SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies",
   note_beta_basic = "\"basic\": every design column scaled by its SD, dummies included (SPSS / Stata Beta)",
-  note_beta_smart = "\"smart\": numeric predictors \u00F7 2 SD (Gelman 2008), binaries and dummies on 0/1",
+  note_beta_smart = "\"smart\": numeric predictors \u00F7 2 SD, binaries and dummies on 0/1",
   note_beta_pseudo = "\"pseudo\": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies",
   # The caveat of a standardized table with interaction or transformed
   # terms: one lead (one hole) over three bodies. The fallback body

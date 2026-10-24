@@ -108,16 +108,13 @@ test_that("abbreviations footer defines partial f-squared", {
   expect_identical(out, paste0("f", sup2, " = Cohen's partial f", sup2, "."))
 })
 
-test_that("abbreviations footer defines bias-corrected partial omega-squared", {
+test_that("abbreviations footer defines partial omega squared", {
   out <- spicy:::build_abbreviations_footer_block_from_frames(
     c("partial_omega2"),
     list()
   )
   omega_sq <- intToUtf8(c(0x3C9, 0xB2)) # omega + superscript two
-  expect_identical(
-    out,
-    paste0(omega_sq, " = bias-corrected partial omega-squared.")
-  )
+  expect_identical(out, paste0(omega_sq, " = partial omega squared."))
 })
 
 

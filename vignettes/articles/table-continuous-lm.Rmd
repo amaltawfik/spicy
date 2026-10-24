@@ -5,7 +5,7 @@ description: >
   table_continuous_lm(): estimated marginal means, robust /
   cluster-robust / bootstrap / jackknife standard errors, case
   weights, additive covariate adjustment (G-computation or
-  equal-weight), four effect-size families (f2, Cohen's d, Hedges'
+  equal-weight), four effect-size families (f2, Cohen's d, Hedges's
   g, Hays' omega2) with noncentral CIs, and journal-styled output
   (APA by default; JAMA, NEJM, The Lancet, ... by name) to console,
   gt, tinytable, flextable, Excel, Word, or clipboard.
@@ -39,7 +39,7 @@ reporting table. This is the right choice when you want to stay in
 a linear-model workflow with heteroskedasticity-consistent or
 cluster-robust standard errors, bootstrap / jackknife variance,
 case weights, additive covariate adjustment, or one of four
-effect-size families (`f2`, Cohen's *d*, Hedges' *g*, Hays'
+effect-size families (`f2`, Cohen's *d*, Hedges's *g*, Hays'
 \(\omega^2\)) with noncentral CIs. Formatting follows APA
 conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
 `"annals"`, `"aer"`) switches the whole table to that journal's
@@ -275,7 +275,7 @@ Adding covariates changes which effect sizes remain meaningful:
   generalization of the bivariate effect size to a
   covariate-adjusted model.
 * `effect_size = "cohens_d"` and `"hedges_g"` raise `spicy_unsupported`: Cohen's
-  *d* and Hedges' *g* have no defined extension under adjustment
+  *d* and Hedges's *g* have no defined extension under adjustment
   (the pooled SD has no canonical analog). The error message
   points to `f2` / `omega2` as the partial-F generalizations.
 
@@ -304,7 +304,7 @@ consistent — and all are **invariant to `vcov`** (the choice of
 classical or `HC*` standard errors changes the contrast SE, CI, and
 test statistic but not the standardized effect size itself).
 
-Cohen's *d* and Hedges' *g* are the conventions for two-group
+Cohen's *d* and Hedges's *g* are the conventions for two-group
 comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and require
 `by` to have exactly two non-empty levels:
 
@@ -317,7 +317,7 @@ table_continuous_lm(
 )
 ```
 
-Hedges' *g* applies the small-sample correction
+Hedges's *g* applies the small-sample correction
 `J = 1 - 3/(4·df_resid - 1)`. It is generally preferred over raw *d*
 in published reports (Goulet-Pelletier and Cousineau 2018):
 

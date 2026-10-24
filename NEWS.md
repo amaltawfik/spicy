@@ -255,8 +255,8 @@ p-values, and notes.
   criterion") at its end, in reading order.
 
 * The default note leaves M, Mdn, SD, SE, B, OR, R², *d*, *g*, and the
-  Greek letters undefined; a definition that says how the number was
-  computed (partial η², a standardized β) stays in every style.
+  Greek letters undefined; a definition without which the symbol is
+  ambiguous (partial η², a standardized β) stays in every style.
 
 * *n*, *N*, *p*, and test statistics are never defined, but for the
   partial χ² of `table_regression()`, which names its test; the notes of
@@ -544,8 +544,8 @@ p-values, and notes.
   respondents who skipped the question.
 
 * `spicy_style()` gains `note_label`, the word that opens the note under
-  a table: "Note." (APA, the default), "Note:" (Chicago), or `""` for
-  none.
+  a table: "Note." (APA, the default), "Note:" (Chicago, "Note :" with a
+  no-break space in French), or `""` for none.
 
 * `spicy_style()` gains `abbreviations`, which abbreviations a note
   defines: unset, the rule of the theme (`apa` by default);
@@ -556,8 +556,8 @@ p-values, and notes.
   *n*, *N*, *p*, and the test statistics, for readers outside the field.
 
 * In `spicy_style()`, `abbreviations = "none"` keeps only the
-  definitions that say how a number was computed, such as partial
-  eta-squared.
+  definitions without which a symbol is ambiguous, such as partial eta
+  squared.
 
 * The long output of `table_categorical()` and `table_continuous()`
   keeps the effect-size and SMD columns when they were not requested,
@@ -1052,7 +1052,7 @@ p-values, and notes.
 
 * In French, `table_regression()` also writes the likelihood-ratio test
   of the random effects, the REML refit note of `nested = TRUE`, and the
-  title and every note of Bayesian models.
+  title and every note of Bayesian and GEE models.
 
 * In French, `table_regression()` calls nested models `modèles emboîtés`
   in the title and glosses RR `risque relatif`, and

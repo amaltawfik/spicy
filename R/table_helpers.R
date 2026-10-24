@@ -1169,7 +1169,15 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # note's own sentences (ANOVA, OLS, GEE, REML) are not collected: the first
 # are values, the second prose. `spicy_style(abbreviations = )` moves the
 # rule: "all" defines every abbreviation shown, "none" keeps only the
-# definitions that say more than the expansion.
+# disambiguations.
+#
+# What a definition says (the principle of 2026-10-24 in the ADR): it
+# identifies the quantity by its standard name, in one expression, the
+# author included when the name carries one (Cohen's d, Hedges's g), and
+# never explains what the quantity measures or how to read it, which
+# belongs to the text. A disambiguation is a definition kept under every
+# rule because the symbol alone is ambiguous (partial eta squared, a
+# design-based SE, pd, MCSE): it still only names the quantity.
 #
 # The registry is keyed by CONCEPT, never by the string a header shows,
 # which changes with the language. Each entry names the registry key of
@@ -1178,7 +1186,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #
 #   apa     the symbols that represent statistics (section 6.44, whose list
 #           -- M, SD, F, t, df, p, N, n, OR, r -- is an "e.g.": Mdn, which
-#           Table 6.5 lists as the median, and Hedges' g are read as two
+#           Table 6.5 lists as the median, and Hedges's g are read as two
 #           more of them; section 7.15 adds SE), the symbols composed of
 #           Greek letters (sections 6.44 and 7.15), and the symbols the
 #           sample tables leave undefined (B, beta, R2 and Delta-R2 in the
@@ -1196,8 +1204,8 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #
 # n, N and p have no entry, and neither have the test statistics (t, z, F,
 # W, H): no style and no journal observed defines them, so no rule does,
-# "all" included. The chi-squared has an entry only for the definitions of
-# table_regression() that say which test it is (decision 3). Neither has
+# "all" included. The chi-squared has an entry only for the disambiguations
+# of table_regression() that name its test (decision 3). Neither has
 # the percent sign, which APA 7.15 lets every table use undefined. Three
 # fit-statistic rows define themselves in their label and are not
 # collected: "theta (dispersion)", "alpha (= 1/theta)", "phi (precision)".
@@ -1205,13 +1213,13 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # Per entry:
 #   symbol     the key of the displayed symbol (a header key);
 #   term       the key of the expansion; NULL for a test statistic, which
-#              only a definition that says more ever defines;
+#              only a disambiguation ever defines;
 #   exempt     the rules that leave the concept undefined;
 #   word       an abbreviated word (Min, Max), defined under "all" only
 #              (decision 4: JAMA Network Open expands "No." in none of its
 #              tables);
-#   says_more  the expansion says how the number was computed (decision
-#              3), so the definition is kept under every rule.
+#   disambiguates  the symbol alone is ambiguous (decision 3), so the
+#              definition is kept under every rule.
 .abbrev_registry <- function() {
   e <- function(symbol, term, exempt = character(0), word = FALSE) {
     list(
@@ -1219,12 +1227,12 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
       term = term,
       exempt = exempt,
       word = word,
-      says_more = FALSE
+      disambiguates = FALSE
     )
   }
-  says_more <- function(symbol, term) {
+  disambiguation <- function(symbol, term) {
     out <- e(symbol, term)
-    out$says_more <- TRUE
+    out$disambiguates <- TRUE
     out
   }
   list(
@@ -1285,18 +1293,18 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     sigma = e("symbol_sigma", "abbrev_sigma", c("apa", "jama")),
     sigma2 = e("symbol_sigma_sq", "abbrev_sigma2", c("apa", "jama")),
     rho = e("symbol_rho", "abbrev_rho", c("apa", "jama")),
-    deff = says_more("header_deff", "abbrev_deff"),
-    pd = says_more("header_pd", "abbrev_pd"),
-    mcse = says_more("header_mcse", "abbrev_mcse")
+    deff = e("header_deff", "abbrev_deff"),
+    pd = disambiguation("header_pd", "abbrev_pd"),
+    mcse = disambiguation("header_mcse", "abbrev_mcse")
   )
 }
 
 # One item of `.note_abbreviations()` the caller words itself: `term`, a
-# definition that says more than the expansion (decision 3: partial
-# eta-squared, the width Q3 - Q1 of the IQR, the method of a standardized
-# beta), kept under every rule; `symbol`, the symbol the header shows when
-# it is not the registry's key (the adjusted R2 row label of a
-# regression).
+# disambiguation (decision 3: partial eta squared, the width Q3 - Q1 of
+# the IQR, the method of a standardized beta), kept under every rule and,
+# like every definition, naming the quantity without explaining it;
+# `symbol`, the symbol the header shows when it is not the registry's key
+# (the adjusted R2 row label of a regression).
 .abbr <- function(id, term = NULL, symbol = NULL) {
   list(id = id, term = term, symbol = symbol)
 }
@@ -1321,8 +1329,8 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #
 # What is defined (decision 2): under the rule of the theme, every concept
 # it does not exempt and no abbreviated word; under "all", every concept;
-# under "none", none -- and under every rule the definitions that say
-# more. A symbol written out in the language of the table (the French
+# under "none", none -- and under every rule the disambiguations. A
+# symbol written out in the language of the table (the French
 # "Taille d'effet") needs no definition and gets none.
 #
 # How (decision 2): APA in the order of appearance, "X = term" pairs
@@ -1340,7 +1348,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   id <- character(0)
   sym <- character(0)
   term <- character(0)
-  said <- logical(0)
+  disambiguated <- logical(0)
   for (it in items) {
     if (is.character(it)) {
       it <- .abbr(it)
@@ -1349,12 +1357,12 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     if (is.null(entry)) {
       stop("Unknown abbreviation concept: ", it$id, call. = FALSE) # nocov
     }
-    says_more <- !is.null(it$term) || isTRUE(entry$says_more)
+    disambiguates <- !is.null(it$term) || isTRUE(entry$disambiguates)
     # A test statistic has no simple definition under any rule.
-    if (!says_more && is.null(entry$term)) {
+    if (!disambiguates && is.null(entry$term)) {
       next
     }
-    keep <- says_more ||
+    keep <- disambiguates ||
       identical(lever, "all") ||
       (is.null(lever) && !entry$word && !rule %in% entry$exempt)
     if (!keep) {
@@ -1373,10 +1381,10 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     id <- c(id, it$id)
     sym <- c(sym, s)
     term <- c(term, t)
-    said <- c(said, says_more)
+    disambiguated <- c(disambiguated, disambiguates)
   }
-  # A definition that says more replaces the bare one of its concept.
-  bare <- !said & id %in% id[said]
+  # A disambiguation replaces the bare definition of its concept.
+  bare <- !disambiguated & id %in% id[disambiguated]
   sym <- sym[!bare]
   term <- term[!bare]
   if (!length(sym)) {

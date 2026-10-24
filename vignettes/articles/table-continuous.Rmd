@@ -122,7 +122,7 @@ table_continuous(
 ```
 
 `effect_size = "auto"` selects the canonical measure for the
-chosen `test` and number of groups: Hedges' *g* (parametric, 2
+chosen `test` and number of groups: Hedges's *g* (parametric, 2
 groups), eta-squared (parametric, 3+ groups), rank-biserial *r*
 (nonparametric, 2 groups), or epsilon-squared (nonparametric, 3+
 groups). To pick a specific measure explicitly, pass its character
@@ -196,7 +196,7 @@ under 0.1 while one pair sits well over it.
 
 ### It is not the effect size
 
-The SMD and Hedges' *g* look alike and are never the same number. On
+The SMD and Hedges's *g* look alike and are never the same number. On
 `sochealth` the two agree to two decimals, which hides the point, so
 here they are on a small unbalanced sample where they cannot hide:
 

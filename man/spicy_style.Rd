@@ -91,26 +91,29 @@ in italics in every rendered output: \code{"Note."} (the default, APA
 Manual 7 section 7.14), \code{"Note:"} (Chicago Manual of Style 18,
 paragraphs 3.77-3.81), or \code{""} for no lead-in word (AMA Manual of
 Style 11, section 4.1.4.10). The language spells it: under
-\code{options(spicy.language = "fr")}, \code{"Note:"} prints with the
-no-break space French puts before a colon. A \code{note} you type is
-printed as typed; its opening word is set in italics when it is the
-lead-in in force.}
+\code{options(spicy.language = "fr")}, \code{"Note:"} is written "Note :",
+with the no-break space French puts before a colon, in every output.
+A \code{note} you type is printed as typed; its opening word is set in
+italics when it is the lead-in in force.}
 
 \item{abbreviations}{Which abbreviations the note under the table
 defines: those of its headers, its spanners and the labels of its
 stub (the fit statistics and the random effects of a regression),
-not the symbols inside its cells. \code{NULL} (the default) follows the
-rule of the theme in force, the APA rule when there is none (see
-\emph{Themes}). \code{"all"} defines every abbreviation and symbol the table
-shows, abbreviated words such as Min and Max included, except \emph{n},
-\emph{N}, \emph{p} and the test statistics (\emph{t}, \emph{z}, \emph{F},
-\eqn{\chi^2}{chi-squared}), which no style and no journal defines:
-the setting for readers outside the field. \code{"none"} defines none, but
-keeps the definitions that say how a number was computed (partial
-eta-squared, the IQR as the width Q3 - Q1, the method of a
-standardized \eqn{\beta}{beta}, the design effect). Either way the
-definitions take the form and the place of the theme in force. A
-\code{note} you type is printed as typed.}
+not the symbols inside its cells. A definition identifies the
+quantity by its standard name, in one expression, the author included
+when the name carries one (\emph{g} = Hedges's \emph{g}); it never explains what
+the quantity measures or how to read it, which belongs to the text.
+\code{NULL} (the default) follows the rule of the theme in force, the APA
+rule when there is none (see \emph{Themes}). \code{"all"} defines every
+abbreviation and symbol the table shows, abbreviated words such as Min
+and Max included, except \emph{n}, \emph{N}, \emph{p} and the test statistics (\emph{t},
+\emph{z}, \emph{F}, \eqn{\chi^2}{chi-squared}), which no style and no journal
+defines: the setting for readers outside the field. \code{"none"} defines
+none, but keeps the disambiguations, the definitions without which the
+symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
+Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
+standard error). Either way the definitions take the form and the
+place of the theme in force. A \code{note} you type is printed as typed.}
 
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}
@@ -417,7 +420,7 @@ BIC are among those section 6.44 names. The symbols that represent
 statistics are left undefined ("Do not define symbols or
 abbreviations that represent statistics (e.g., M, SD, F, t, df, p,
 N, n, OR, r)", section 6.44; section 7.15 adds \emph{SE}), and spicy
-counts \emph{Mdn} (the median of Table 6.5) and Hedges' \emph{g} among them.
+counts \emph{Mdn} (the median of Table 6.5) and Hedges's \emph{g} among them.
 So are the symbols composed of Greek letters (the same two
 sections) and those its sample tables leave undefined (\emph{B},
 \eqn{\beta}{beta}, \eqn{R^2}{R^2}, \eqn{\Delta R^2}{Delta R2},

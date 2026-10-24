@@ -45,5 +45,5 @@
       ──────────┼───────────────────────────────────────────────────────────────
        api00    │ 644.17  23.54  652.00 [552.00, 719.00]  183   6194.00    9.35 
       
-      Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+      Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; DEff = design effect.
 

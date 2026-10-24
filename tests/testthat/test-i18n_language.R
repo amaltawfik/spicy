@@ -1453,7 +1453,7 @@ test_that("the abbreviation and association-measure notes join in the language",
   }
   expect_identical(
     abbrev(),
-    "AME = average marginal effect; \u03B7\u00B2 = partial eta-squared."
+    "AME = average marginal effect; \u03B7\u00B2 = partial eta squared."
   )
   expect_identical(
     assoc(),
@@ -1869,7 +1869,7 @@ test_that("the GEE and quantile-regression notes follow the language", {
   )
   expect_identical(
     .note_line(x, "Corr\u00E9lation"),
-    "Corr\u00E9lation de travail GEE\u00A0: exchangeable (alpha = 0,02)."
+    "Corr\u00E9lation de travail GEE\u00A0: \u00E9changeable (alpha = 0,02)."
   )
   gee_stub <- function(corstr, alpha) {
     list(
@@ -1881,11 +1881,11 @@ test_that("the GEE and quantile-regression notes follow the language", {
   }
   expect_identical(
     spicy:::.format_gee_for_frame(gee_stub("unstructured", c(0.1, 0.2, 0.3))),
-    "Corr\u00E9lation de travail GEE\u00A0: unstructured (3 param\u00E8tres de corr\u00E9lation)."
+    "Corr\u00E9lation de travail GEE\u00A0: non structur\u00E9e (3 param\u00E8tres de corr\u00E9lation)."
   )
   expect_identical(
     spicy:::.format_gee_for_frame(gee_stub("independence", numeric(0))),
-    "Corr\u00E9lation de travail GEE\u00A0: independence."
+    "Corr\u00E9lation de travail GEE\u00A0: ind\u00E9pendance."
   )
   expect_identical(
     spicy:::.geeglm_vcov_label("jack", "wool"),

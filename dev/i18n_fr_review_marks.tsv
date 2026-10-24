@@ -266,7 +266,7 @@ note_estimand_skipped_terms	reviewed	2026-10-17	 Les termes transformés (%s) n'
 note_beta_refit	reviewed	2026-10-17	"refit"<NBSP>: variable dépendante et prédicteurs numériques centrés-réduits, indicatrices des facteurs en 0/1	
 note_beta_posthoc	reviewed	2026-10-17	"posthoc"<NBSP>: B × ET(X)/ET(Y) pour les prédicteurs numériques, B/ET(Y) pour les indicatrices des facteurs	
 note_beta_basic	reviewed	2026-10-17	"basic"<NBSP>: chaque colonne de la matrice du modèle réduite par son écart-type, indicatrices comprises (Beta de SPSS / Stata)	
-note_beta_smart	reviewed	2026-10-17	"smart"<NBSP>: prédicteurs numériques ÷ 2 ET (Gelman 2008), variables binaires et indicatrices en 0/1	
+note_beta_smart	corrected	2026-10-24	"smart"<NBSP>: prédicteurs numériques ÷ 2 ET, variables binaires et indicatrices en 0/1	
 note_beta_pseudo	reviewed	2026-10-17	"pseudo"<NBSP>: ET(X)/ET(Y*) sur l'échelle latente pour les prédicteurs numériques, 1/ET(Y*) pour les indicatrices des facteurs	
 note_standardized_caveat	reviewed	2026-10-17	β standardisé<NBSP>: %s	
 note_standardized_caveat_algebraic	reviewed	2026-10-17	les termes d'interaction ou transformés sont réduits par l'écart-type de la colonne produit (ou transformée) de la matrice du modèle<NBSP>; diffère de "refit" lorsque les composantes sont corrélées.	
@@ -449,3 +449,18 @@ row_multiresponse_nodata	reviewed	2026-10-19	(Sans donnée pour la question)
 note_outcome_overall_relabeled	reviewed	2026-10-20	%s = l'échantillon d'analyse complet.	
 note_prefix_colon	reviewed	2026-10-20	Note<NBSP>: 	
 note_prefix_colon_emphasis	reviewed	2026-10-20	Note<NBSP>:	
+note_gee_structure_independence	reviewed	2026-10-24	indépendance	
+note_gee_structure_exchangeable	reviewed	2026-10-24	échangeable	
+note_gee_structure_ar1	reviewed	2026-10-24	AR(1)	
+note_gee_structure_unstructured	reviewed	2026-10-24	non structurée	
+note_gee_structure_fixed	reviewed	2026-10-24	fixée	
+note_gee_structure_userdefined	reviewed	2026-10-24	définie par l'utilisateur	
+bridge:population_averaged_linear_regression_gee	reviewed	2026-10-24	Régression linéaire moyennée sur la population (GEE)	
+bridge:population_averaged_logistic_regression_gee	reviewed	2026-10-24	Régression logistique moyennée sur la population (GEE)	
+bridge:population_averaged_probit_regression_gee	reviewed	2026-10-24	Régression probit moyennée sur la population (GEE)	
+bridge:population_averaged_complementary_log_log_regression_gee	reviewed	2026-10-24	Régression log-log complémentaire moyennée sur la population (GEE)	
+bridge:population_averaged_log_binomial_regression_gee	reviewed	2026-10-24	Régression log-binomiale moyennée sur la population (GEE)	
+bridge:population_averaged_binomial_regression_gee	reviewed	2026-10-24	Régression binomiale moyennée sur la population (GEE)	
+bridge:population_averaged_poisson_regression_gee	reviewed	2026-10-24	Régression de Poisson moyennée sur la population (GEE)	
+bridge:population_averaged_gamma_regression_gee	reviewed	2026-10-24	Régression gamma moyennée sur la population (GEE)	
+bridge:population_averaged_inverse_gaussian_regression_gee	reviewed	2026-10-24	Régression gaussienne inverse moyennée sur la population (GEE)	

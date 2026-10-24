@@ -535,6 +535,45 @@ test_that("a note that does not open with the prefix is left as typed", {
   expect_no_match(.pt_html(tt), "<em>", fixed = TRUE)
 })
 
+# A French source with its no-break spaces made visible: in the file they
+# look like any other space, and a snapshot must show which one it is.
+.pt_nbsp <- function(x) gsub("\u00A0", "<U+00A0>", x, fixed = TRUE)
+
+test_that("the Typst source of a French note opened by the colon lead-in", {
+  skip_if_not_installed("tinytable")
+  withr::local_options(spicy.language = "fr")
+  set.seed(6)
+  d <- data.frame(
+    x = factor(sample(c("oui", "non"), 40L, TRUE)),
+    g = factor(rep(c("A", "B"), 20L))
+  )
+  expect_snapshot(cat(.pt_nbsp(.pt_typst(table_categorical(
+    d,
+    x,
+    by = g,
+    style = spicy_style(note_label = "Note:"),
+    output = "tinytable"
+  )))))
+})
+
+test_that("the Typst source of a note that defines every abbreviation", {
+  skip_if_not_installed("tinytable")
+  withr::local_options(spicy.language = "fr")
+  set.seed(8)
+  d <- data.frame(
+    y = round(stats::rnorm(30, 50, 10), 1),
+    g = factor(rep(c("A", "B", "C"), 10L))
+  )
+  expect_snapshot(cat(.pt_nbsp(.pt_typst(table_continuous_lm(
+    d,
+    y,
+    by = g,
+    effect_size = "omega2",
+    style = spicy_style(abbreviations = "all"),
+    output = "tinytable"
+  )))))
+})
+
 test_that("the LaTeX note is escaped like the cells around it", {
   skip_if_not_installed("tinytable")
   # The multiple-response note says "more than 100%": unescaped, the

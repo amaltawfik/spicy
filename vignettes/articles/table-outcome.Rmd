@@ -177,7 +177,7 @@ Each block chooses its own test from its own level count. With
 `test = "welch"` — the default — a two-level block gets the Welch
 *t*-test and a three-or-more-level block gets the Welch one-way
 ANOVA, which is why the note above names both. `effect_size = "auto"`
-follows the test the block actually ran: Hedges' *g* beside a
+follows the test the block actually ran: Hedges's *g* beside a
 *t*-test, eta-squared beside an ANOVA, their rank homologs beside a
 rank test. A column can therefore mix measures from row to row, and
 each cell prefixes its own glyph.

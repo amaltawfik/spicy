@@ -141,9 +141,8 @@ test_that("abbreviations footer defines pd and MCSE for posterior columns", {
   expect_identical(
     both,
     paste0(
-      "pd = probability of direction (share of the posterior on the ",
-      "dominant side of zero; Makowski et al. 2019); MCSE = Monte Carlo ",
-      "standard error of the posterior median (Vehtari et al. 2021)."
+      "pd = probability of direction; MCSE = Monte Carlo standard error ",
+      "of the posterior median."
     )
   )
   # The columns the other way round: MCSE first.

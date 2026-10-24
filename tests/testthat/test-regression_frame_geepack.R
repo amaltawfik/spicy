@@ -405,6 +405,66 @@ test_that("geeglm: multi-model tables get per-model GEE footer lines", {
   )
 })
 
+test_that("geeglm: the title and the working correlation follow the language", {
+  skip_if_not_installed("geepack")
+  set.seed(7)
+  d <- data.frame(id = rep(1:20, each = 4), x = stats::rnorm(80))
+  d$y <- 0.5 * d$x + rep(stats::rnorm(20), each = 4) + stats::rnorm(80)
+  fit <- geepack::geeglm(y ~ x, id = id, data = d, corstr = "exchangeable")
+  out <- table_regression(fit)
+  expect_identical(
+    attr(out, "title"),
+    "Population-averaged linear regression (GEE): y"
+  )
+  expect_match(
+    attr(out, "note"),
+    paste0(
+      "^Note\\. Population-averaged linear regression \\(GEE\\)\\. ",
+      "GEE working correlation: exchangeable \\(alpha = "
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  out <- table_regression(fit)
+  expect_identical(
+    attr(out, "title"),
+    "R\u00E9gression lin\u00E9aire moyenn\u00E9e sur la population (GEE)\u00A0: y"
+  )
+  expect_true(startsWith(
+    attr(out, "note"),
+    paste0(
+      "Note. R\u00E9gression lin\u00E9aire moyenn\u00E9e sur la population (GEE). ",
+      "Corr\u00E9lation de travail GEE\u00A0: \u00E9changeable (alpha = "
+    )
+  ))
+  # Every structure geepack stores has its French name; English keeps
+  # geepack's spelling, and a value outside the six passes as stored.
+  tokens <- c(
+    "independence",
+    "exchangeable",
+    "ar1",
+    "unstructured",
+    "fixed",
+    "userdefined"
+  )
+  shown <- function() {
+    vapply(tokens, spicy:::.gee_corstr_display, character(1), USE.NAMES = FALSE)
+  }
+  expect_identical(
+    shown(),
+    c(
+      "ind\u00E9pendance",
+      "\u00E9changeable",
+      "AR(1)",
+      "non structur\u00E9e",
+      "fix\u00E9e",
+      "d\u00E9finie par l'utilisateur"
+    )
+  )
+  withr::local_options(spicy.language = "en")
+  expect_identical(shown(), tokens)
+  expect_identical(spicy:::.gee_corstr_display("stat_M_dep"), "stat_M_dep")
+})
+
 test_that("geeglm: opt-in qic / qicu / scale rows render", {
   fit <- .fit_gee_gaussian()
   out <- table_regression(
