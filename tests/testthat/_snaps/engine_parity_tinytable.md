@@ -74,7 +74,7 @@
           }))
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [Phi]),) {
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [φ]),) {
             let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
@@ -107,7 +107,7 @@
           // tinytable header start
           table.header(
             repeat: true,
-      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [Phi],
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [φ],
       [], [n], [%], [n], [%], [n], [%], [], [],
           ),
           // tinytable header end
@@ -122,7 +122,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note<U+00A0>:] Comparaison des groupes<U+00A0>: test du khi\-deux de Pearson.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note<U+00A0>:] Valeur p<U+00A0>: test du khi\-deux de Pearson.])),
           ),
           
       
@@ -247,7 +247,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] Comparaison des groupes<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré de Hays.])),
+          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] Valeur p<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré de Hays.])),
           ),
           
       
@@ -336,7 +336,7 @@
           }))
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [Phi]),) {
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [φ]),) {
             let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
@@ -369,7 +369,7 @@
           // tinytable header start
           table.header(
             repeat: true,
-      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [Phi],
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [φ],
       [], [n], [%], [n], [%], [n], [%], [], [],
           ),
           // tinytable header end
@@ -384,7 +384,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Group comparison: Pearson chi\-squared test.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test.])),
           ),
           
       
@@ -474,7 +474,7 @@
           }))
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [Phi]),) {
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [φ]),) {
             let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
@@ -507,7 +507,7 @@
           // tinytable header start
           table.header(
             repeat: true,
-      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [Phi],
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [φ],
       [], [n], [%], [n], [%], [n], [%], [], [],
           ),
           // tinytable header end
@@ -522,7 +522,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Group comparison: Pearson chi\-squared test.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test.])),
           ),
           
       
@@ -644,7 +644,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Group comparison: t\-test from the linear model. Δ \= B − A.])),
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] P\-value: t\-test from the linear model. Δ \= B − A.])),
           ),
           
       
@@ -770,7 +770,258 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Group comparison: t\-test from the linear model. Δ \= Current smoker − Never smoker. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-values: t\-test from the linear model. Δ \= Current smoker − Never smoker. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of an association measure headed by its symbol
+
+    Code
+      cat(.pt_typst(table_categorical(d, x, by = g, assoc_measure = "cramer_v",
+        output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Categorical table by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_1": 0, "1_1": 0, "2_1": 0, "3_1": 0, "4_1": 0, "5_1": 0, "0_2": 0, "1_2": 0, "2_2": 0, "3_2": 0, "4_2": 0, "5_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "3_3": 0, "4_3": 0, "5_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "3_4": 0, "4_4": 0, "5_4": 0, "0_5": 0, "1_5": 0, "2_5": 0, "3_5": 0, "4_5": 0, "5_5": 0, "0_6": 0, "1_6": 0, "2_6": 0, "3_6": 0, "4_6": 0, "5_6": 0, "0_7": 0, "1_7": 0, "2_7": 0, "3_7": 0, "4_7": 0, "5_7": 0, "0_8": 0, "1_8": 0, "2_8": 0, "3_8": 0, "4_8": 0, "5_8": 0, "0_0": 1, "1_0": 1, "2_0": 1, "3_0": 2, "4_0": 2, "5_0": 2
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+          (align: left, indent: 1em,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([], [x], [hi], [lo], [mid]),
+          ([n], [ ], [6], [8], [6]),
+          ([%], [    ], [30.0], [40.0], [30.0]),
+          ([n], [ ], [8], [3], [9]),
+          ([%], [    ], [40.0], [15.0], [45.0]),
+          ([n], [  ], [14], [11], [15]),
+          ([%], [    ], [35.0], [27.5], [37.5]),
+          ([], [.206], [    ], [    ], [    ]),
+          ([], [.28], [   ], [   ], [   ]),
+        )
+      
+        #context layout(size => {
+          // spicy: an indented cell is measured with its indent
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            let spicy_style = get-style(spicy_x, spicy_k + 1)
+            if spicy_style != none and "indent" in spicy_style { pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }
+          }))
+          // spicy: a cell that spans columns is measured with none of them
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            if (spicy_x, spicy_k) in ((0, 1),) { [] } else { spicy_cell }
+          }))
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          // spicy: a column-group label wider than its columns widens them
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [V]),) {
+            let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
+            let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
+            if spicy_need > spicy_have {
+              for k in range(spicy_from, spicy_to + 1) {
+                tinytable-naturals.at(k) += (spicy_need - spicy_have) / (spicy_to - spicy_from + 1)
+              }
+            }
+          }
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 1, end: 7, stroke: 0.06em),
+       table.hline(y: 2, start: 0, end: 9, stroke: 0.06em),
+       table.hline(y: 6, start: 0, end: 9, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 9, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [V],
+      [], [n], [%], [n], [%], [n], [%], [], [],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      table.cell(colspan: 7)[x], [.206], [.28],
+      [hi], [6], [30.0], [8], [40.0], [14], [35.0], [    ], [   ],
+      [lo], [8], [40.0], [3], [15.0], [11], [27.5], [    ], [   ],
+      [mid], [6], [30.0], [9], [45.0], [15], [37.5], [    ], [   ],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of a note naming the test of its one p-value
+
+    Code
+      cat(.pt_typst(table_continuous(d, y, by = g, show_columns = c("m", "sd", "n"),
+      output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Descriptive statistics by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_2": 0, "1_2": 0, "2_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "0_5": 0, "1_5": 0, "2_5": 0, "0_0": 1, "1_0": 1, "2_0": 1, "0_1": 1, "1_1": 1, "2_1": 1
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([Variable], [y], []),
+          ([Group], [A], [B]),
+          ([M], [55.00], [44.58]),
+          ([SD], [8.73], [8.47]),
+          ([n], [12], [12]),
+          ([p], [.007], [    ]),
+        )
+      
+        #context layout(size => {
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 0, end: 6, stroke: 0.06em),
+       table.hline(y: 3, start: 0, end: 6, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 6, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [Group], [M], [SD], [n], [p],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [y], [A], [55.00], [8.73], [12], [.007],
+      [], [B], [44.58], [8.47], [12], [    ],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] P\-value: Welch t\-test.])),
           ),
           
       
@@ -1012,7 +1263,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 10, text(size: 0.9em, [#emph[Note.] Group comparison: Welch t\-test. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 10, text(size: 0.9em, [#emph[Note.] P\-values: Welch t\-test. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
           ),
           
       
@@ -1137,7 +1388,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Group comparison: t\-test from the linear model. Δ \= B − A. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: t\-test from the linear model. Δ \= B − A. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
           ),
           
       

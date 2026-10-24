@@ -1196,7 +1196,7 @@ test_that("negative weights refuse svychisq too, and say so", {
   expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
   expect_match(note, "The group comparison is not reported", fixed = TRUE)
   # And no method line above it: no test ran to be named.
-  expect_false(grepl("Group comparison:", note, fixed = TRUE))
+  expect_false(grepl("Group comparison:|P-value", note))
 })
 
 test_that("the categorical refusal clause says how far it reached", {
@@ -1234,7 +1234,8 @@ test_that("the categorical refusal clause says how far it reached", {
   )
   expect_false(anyNA(mixed$p.value[mixed$variable == "awardsb"]))
   note <- attr(mixed, "note")
-  expect_match(note, "Group comparison:", fixed = TRUE)
+  # One variable tested, one p-value shown: the singular.
+  expect_match(note, "P-value: design-based", fixed = TRUE)
   expect_match(
     note,
     "For variables whose complete cases include negatively weighted rows",
@@ -1865,8 +1866,9 @@ test_that("the note names the test only when a test ran", {
   d <- .svycat_design("strat")
   d$variables$one <- factor("a")
   d$variables$const <- factor("x")
+  # One variable tested at most: one p-value, the singular.
   test_line <- spicy_fmt(
-    "note_group_comparison",
+    "note_p_values_test_one",
     spicy:::.cat_svy_test_label("F")
   )
   one <- table_categorical_svy(d, select = stype, by = one, output = "long")
@@ -2096,7 +2098,7 @@ test_that("with fewer than two groups with data, the variable is not tested", {
   expect_false(hp[[1L]] %in% c("", mark))
   expect_identical(hp[[2L]], mark)
   alone <- table_categorical_svy(des, select = physical_activity, by = sex)
-  expect_false(grepl("Group comparison", attr(alone, "note"), fixed = TRUE))
+  expect_false(grepl("Group comparison|P-value", attr(alone, "note")))
   expect_match(
     attr(alone, "note"),
     "No data for physical_activity in Male.",
@@ -2174,7 +2176,7 @@ test_that("the note gives its sentences in the four kinds, whatever the language
       "Std. errors",
       "Confidence intervals use 10",
       "Percentage CIs",
-      "Group comparison",
+      "P-value: ",
       "P-values adjusted",
       "% = ",
       "n = observed",

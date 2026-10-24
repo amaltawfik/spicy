@@ -458,7 +458,7 @@ test_that("the disclosures follow the arguments that cause them", {
   # No comparison: no sentence about blocks that compare nothing.
   tbl3 <- .to_quiet(table_outcome(d, bmi, select = sex, p_value = FALSE))
   expect_false(grepl("not adjusted", attr(tbl3, "note"), fixed = TRUE))
-  expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
+  expect_false(grepl("Group comparison|P-value", attr(tbl3, "note")))
 })
 
 test_that("a select displayed as Overall is refused, with both ways out", {
@@ -670,7 +670,7 @@ test_that("the block compares the levels with data, and the note says why", {
     attr(tbl, "note"),
     paste(
       "Note. No data for y in high.",
-      "Group comparison: Welch t-test.",
+      "P-values: Welch t-test.",
       "Each block compares y across the levels of one variable,",
       "without controlling for the other variables.",
       "Overall = the whole analytic sample.",
@@ -719,11 +719,12 @@ test_that("a block with one level of data has no test, and names none", {
   headers <- long[long$.row_role == "factor_header", ]
   expect_true(is.na(headers$p.value[[1L]]))
   expect_false(is.na(headers$p.value[[2L]]))
+  # One block compared: one p-value, the singular.
   expect_identical(
     attr(table_outcome(d, y, select = c(g, h)), "note"),
     paste(
       "Note. No data for y in b.",
-      "Group comparison: Welch t-test.",
+      "P-value: Welch t-test.",
       "Each block compares y across the levels of one variable,",
       "without controlling for the other variables.",
       "Overall = the whole analytic sample.",
@@ -1054,14 +1055,14 @@ test_that("the block note is owed only when a block compared", {
   expect_identical(p[header], spicy_str("cell_undefined"))
   expect_true(all(!nzchar(p[!header])))
   expect_false(grepl("Each block compares", attr(thin, "note"), fixed = TRUE))
-  expect_false(grepl("Group comparison", attr(thin, "note"), fixed = TRUE))
+  expect_false(grepl("P-value", attr(thin, "note"), fixed = TRUE))
   # The marginal-row gloss is a different sentence and stays.
   expect_match(attr(thin, "note"), "whole analytic sample", fixed = TRUE)
 
   # A table that did compare still says so.
   real <- .to_quiet(table_outcome(.to_sh(), bmi, select = sex))
   expect_match(attr(real, "note"), "Each block compares", fixed = TRUE)
-  expect_match(attr(real, "note"), "Group comparison", fixed = TRUE)
+  expect_match(attr(real, "note"), "P-value: Welch t-test.", fixed = TRUE)
 })
 
 
@@ -1337,11 +1338,7 @@ test_that("the note names a block's test only when it ran", {
   d <- data.frame(y = rep(5, 8), g = factor(rep(c("a", "b"), each = 4)))
   out <- suppressWarnings(table_outcome(d, y, select = g, output = "long"))
   expect_true(all(is.na(out$p.value)))
-  expect_false(grepl(
-    "Group comparison",
-    attr(out, "note") %||% "",
-    fixed = TRUE
-  ))
+  expect_false(grepl("Group comparison|P-value", attr(out, "note") %||% ""))
 })
 
 test_that("the comparison cells of a block with no variance are undefined", {

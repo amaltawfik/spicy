@@ -1616,7 +1616,7 @@ test_that("the missing-values note names each variable by its row label", {
   expect_identical(
     attr(out, "note"),
     paste(
-      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      "Note. Missing values removed: bmi (12). P-values: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -1630,7 +1630,7 @@ test_that("the missing-values note names each variable by its row label", {
     attr(attr_lab, "note"),
     paste(
       "Note. Missing values removed: Body mass index (12).",
-      "Group comparison: Welch t-test.",
+      "P-values: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -1690,7 +1690,7 @@ test_that("the by title and the missing-by note follow labels", {
       sprintf(
         paste(
           "Note. Missing values removed: %s (12), %s (18).",
-          "Group comparison: Welch one-way ANOVA.",
+          "P-value: Welch one-way ANOVA.",
           "CI = confidence interval; LL = lower limit; UL = upper limit."
         ),
         row,
@@ -1738,7 +1738,7 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
     attr(out, "note"),
     paste(
       "Note. Missing values removed: x (1), g (2).",
-      "Group comparison: Welch t-test.",
+      "P-value: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -1749,7 +1749,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   expect_identical(
     attr(tbl, "note"),
     paste(
-      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      "Note. Missing values removed: bmi (12). P-values: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -1770,7 +1770,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     note,
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: Welch t-test. P-values"
+      "P-values: Welch t-test. P-values adjusted"
     )
   ))
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
@@ -1788,7 +1788,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     ),
     paste(
       "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12).",
-      "Comparaison des groupes\u00a0: test t de Welch.",
+      "Valeurs p\u00a0: test t de Welch.",
       "IC = intervalle de confiance\u00a0; LI = limite inf\u00e9rieure\u00a0;",
       "LS = limite sup\u00e9rieure."
     )
@@ -1979,7 +1979,7 @@ test_that("the rows of a no-data group leave the missing-value count", {
     note,
     paste(
       "Note. Missing values removed: x (1). No data for y in c.",
-      "Group comparison: Welch one-way ANOVA (x); Welch t-test (y).",
+      "P-values: Welch one-way ANOVA (x); Welch t-test (y).",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -2045,7 +2045,7 @@ test_that("the comparison runs on the groups with data, and on two at least", {
   expect_identical(
     attr(tbl2, "note"),
     paste(
-      "Note. No data for y in b. Group comparison: Welch t-test.",
+      "Note. No data for y in b. P-value: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit;",
       "ES = effect size."
     )
@@ -2092,7 +2092,7 @@ test_that("an empty group and the missing-by group are not no-data groups", {
   expect_identical(
     attr(out, "note"),
     paste(
-      "Note. Missing values removed: y (2). Group comparison: Welch t-test.",
+      "Note. Missing values removed: y (2). P-value: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -2112,7 +2112,7 @@ test_that("declared missing values of a no-data group leave their count too", {
     note,
     paste(
       "Note. Declared missing values removed: y (1). No data for y in c.",
-      "Group comparison: Welch t-test.",
+      "P-value: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -2169,7 +2169,7 @@ test_that("the note names the test of each variable whenever p is shown", {
   expect_identical(
     note(by = sex),
     paste(
-      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      "Note. Missing values removed: bmi (12). P-values: Welch t-test.",
       ci_defs
     )
   )
@@ -2177,7 +2177,7 @@ test_that("the note names the test of each variable whenever p is shown", {
     note(by = education, test = "nonparametric"),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: Kruskal-Wallis test.",
+      "P-values: Kruskal-Wallis test.",
       ci_defs
     )
   )
@@ -2190,6 +2190,57 @@ test_that("the note names the test of each variable whenever p is shown", {
   expect_identical(
     note(),
     paste("Note. Missing values removed: bmi (12).", ci_defs)
+  )
+})
+
+test_that("a test named with no p-value shown is the group comparison", {
+  # A variable shown as a median takes the rank test whatever `p_value`
+  # says, and the note names it for the statistic it shows: the
+  # sentence cannot open on p-values the table does not show.
+  d <- data.frame(
+    y = c(1, 3, 2, 5, 4, 9, 7, 8, 12, 10),
+    g = rep(c("a", "b"), 5L)
+  )
+  hidden <- table_continuous(
+    d,
+    select = y,
+    by = g,
+    show_columns = c("med_iqr", "n"),
+    p_value = FALSE,
+    statistic = TRUE
+  )
+  expect_match(
+    attr(hidden, "note"),
+    spicy_fmt("note_group_comparison", spicy_str("test_wilcoxon_rank_sum")),
+    fixed = TRUE
+  )
+  expect_false(grepl("P-value", attr(hidden, "note"), fixed = TRUE))
+  shown <- table_continuous(
+    d,
+    select = y,
+    by = g,
+    show_columns = c("med_iqr", "n")
+  )
+  expect_match(
+    attr(shown, "note"),
+    spicy_fmt("note_p_values_test_one", spicy_str("test_wilcoxon_rank_sum")),
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(
+      table_continuous(
+        d,
+        select = y,
+        by = g,
+        show_columns = c("med_iqr", "n"),
+        p_value = FALSE,
+        statistic = TRUE
+      ),
+      "note"
+    ),
+    "Comparaison des groupes\u00a0: test de Wilcoxon-Mann-Whitney.",
+    fixed = TRUE
   )
 })
 
@@ -2218,7 +2269,7 @@ test_that("the note gives its sentences in the order of the family", {
     paste(
       "Note. Missing values removed: x (1), g (1).",
       "No data for z in b.",
-      "Group comparison: Wilcoxon rank-sum test (x); Welch t-test (y).",
+      "P-values: Wilcoxon rank-sum test (x); Welch t-test (y).",
       "P-values adjusted for 2 tests (Holm method).",
       "SMD direction: a \u2212 b. The usual imbalance threshold is |SMD| > 0.1.",
       "Q1 = first quartile; Q3 = third quartile;",
@@ -4572,7 +4623,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
 
   note <- paste(
     "Note. Missing values removed: sex_na (40).",
-    "Group comparison: Welch t-test.",
+    "P-value: Welch t-test.",
     "CI = confidence interval; LL = lower limit; UL = upper limit."
   )
   x <- suppressWarnings(
@@ -4721,7 +4772,7 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
   # names the test behind its p-values and defines the abbreviations of
   # the interval columns, and nothing else.
   note <- paste(
-    "Note. Group comparison: Welch t-test.",
+    "Note. P-value: Welch t-test.",
     "CI = confidence interval; LL = lower limit; UL = upper limit."
   )
   expect_identical(attr(out, "note"), note)
@@ -4961,7 +5012,7 @@ test_that("a variable shown as a median is tested as one, per variable", {
   expect_identical(out3$test_type[1], "kruskal")
   expect_match(
     attr(out3, "note"),
-    "Group comparison: Kruskal-Wallis test.",
+    "P-value: Kruskal-Wallis test.",
     fixed = TRUE
   )
 })
@@ -5005,7 +5056,7 @@ test_that("an explicit test stays sovereign but raises a caveat", {
   # and never claims a rank test it did not run.
   expect_match(
     attr(out, "note"),
-    "Group comparison: Welch t-test.",
+    "P-value: Welch t-test.",
     fixed = TRUE
   )
   expect_false(grepl("Wilcoxon", attr(out, "note"), fixed = TRUE))

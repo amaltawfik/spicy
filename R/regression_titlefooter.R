@@ -1672,7 +1672,7 @@ build_random_effects_footer_block_from_frames <- function(
 # approximation), or nlme's containment df.
 #
 # Single-model output (no prefix):
-#   "p-values: Satterthwaite t-test (lmerTest)."
+#   "P-values: Satterthwaite t-test (lmerTest)."
 # Multi-model: prefixed "Model k: ...".
 build_mixed_inference_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
@@ -1693,7 +1693,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     return(per_model[[1L]]$text)
   }
   # Consolidate when every model produced the SAME annotation -- avoids
-  # printing three identical "p-values: Wald-z, ..." lines when the
+  # printing three identical "P-values: Wald-z, ..." lines when the
   # whole list is, say, lme4::lmer without lmerTest. Mirrors the
   # consolidation done by build_regression_type_footer_block_from_frames().
   texts <- vapply(per_model, function(pm) pm$text, character(1))

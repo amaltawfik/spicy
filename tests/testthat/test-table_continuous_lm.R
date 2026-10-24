@@ -52,7 +52,7 @@ test_that("table_continuous_lm returns expected raw structure", {
   )
   expect_identical(
     attr(out, "note"),
-    "Note. Group comparison: F-test from the linear model."
+    "Note. P-values: F-test from the linear model."
   )
 })
 
@@ -5150,7 +5150,7 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     paste(
       "Note. Statistics weighted by w.",
       "Missing values removed: grp (1). Rows with missing w removed: 1.",
-      "Group comparison: t-test from the linear model.",
+      "P-value: t-test from the linear model.",
       "\u0394 = b \u2212 a.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -5168,7 +5168,7 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
   expect_identical(
     attr(clean, "note"),
     paste(
-      "Note. Group comparison: t-test from the linear model.",
+      "Note. P-value: t-test from the linear model.",
       "\u0394 = b \u2212 a.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -6457,7 +6457,7 @@ test_that("an outcome with no data in a level is fit on the other levels", {
     paste(
       "Note. Missing values removed: bmi (12), wellbeing_score (3).",
       "No data for wellbeing_score in Tertiary.",
-      "Group comparison: F-test from the linear model."
+      "P-values: F-test from the linear model."
     )
   )
   withr::local_options(spicy.language = "fr")
@@ -6532,13 +6532,13 @@ test_that("an outcome with data in one level only keeps the mean of that level",
   )
   expect_equal(adj$emmean[[1L]], unname(pr$fit), tolerance = 1e-10)
   expect_equal(adj$emmean_se[[1L]], unname(pr$se.fit), tolerance = 1e-10)
-  # Only the test that ran is named.
+  # Only the test that ran is named, after its one p-value.
   expect_identical(
     attr(x, "note"),
     paste(
       "Note. Missing values removed: bmi (12).",
       "No data for wellbeing_score in Male.",
-      "Group comparison: t-test from the linear model.",
+      "P-value: t-test from the linear model.",
       "\u0394 = Male \u2212 Female.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -6669,7 +6669,7 @@ test_that("the note names the test behind the p-values", {
     note_of(by = sex),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: t-test from the linear model.",
+      "P-values: t-test from the linear model.",
       delta,
       ci_defs
     )
@@ -6678,16 +6678,23 @@ test_that("the note names the test behind the p-values", {
     note_of(by = education),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: F-test from the linear model."
+      "P-values: F-test from the linear model."
     )
   )
+  # The slope of a numeric `by` takes the same lead: the p column is the
+  # product of its test too.
   expect_identical(
     note_of(by = age),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Slope test: t-test from the linear model.",
+      "P-values: t-test from the linear model.",
       ci_defs
     )
+  )
+  # One outcome, one p-value: the singular.
+  expect_identical(
+    attr(table_continuous_lm(d, select = wellbeing_score, by = age), "note"),
+    paste("Note. P-value: t-test from the linear model.", ci_defs)
   )
   # The asymptotic test of a resampling variance, before the estimator.
   small <- d[1:120, ]
@@ -6702,7 +6709,7 @@ test_that("the note names the test behind the p-values", {
       "note"
     ),
     paste(
-      "Group comparison: Wald chi-squared test from the linear model.",
+      "P-value: Wald chi-squared test from the linear model.",
       "Std. errors: jackknife."
     ),
     fixed = TRUE
@@ -6715,9 +6722,15 @@ test_that("the note names the test behind the p-values", {
   withr::local_options(spicy.language = "fr")
   expect_match(
     note_of(by = education),
-    "test F issu du mod",
+    "Note. Valeurs manquantes retir",
     fixed = TRUE
   )
+  expect_match(note_of(by = education), ". Valeurs p", fixed = TRUE)
+  expect_match(note_of(by = education), "test F issu du mod", fixed = TRUE)
+  expect_true(startsWith(
+    attr(table_continuous_lm(d, select = wellbeing_score, by = age), "note"),
+    "Note. Valeur p"
+  ))
 })
 
 test_that("outcomes tested differently are each named with their test", {
@@ -6727,15 +6740,20 @@ test_that("outcomes tested differently are each named with their test", {
     predictor_type = "categorical",
     level = c("l1", "l2", "l1", "l2"),
     estimate = c(NA, 1, NA, NA),
-    test_type = c("F", "t", "F", NA)
+    test_type = c("F", "t", "F", NA),
+    p.value = c(NA, 0.01, 0.2, NA)
   )
   expect_identical(
     spicy:::.tclm_test_note(x),
     paste(
-      "Group comparison: t-test from the linear model (Alpha);",
+      "P-values: t-test from the linear model (Alpha);",
       "F-test from the linear model (Beta)."
     )
   )
+  # The lead counts the p-values shown, read on the row each outcome is
+  # tested on: one left, the singular.
+  x$p.value[[3L]] <- NA
+  expect_match(spicy:::.tclm_test_note(x), "^P-value: ")
   x$test_type <- NA_character_
   expect_null(spicy:::.tclm_test_note(x))
 })
@@ -6758,7 +6776,7 @@ test_that("the weights are named, and the note is one paragraph", {
       "Note. Statistics weighted by weight.",
       "Adjusted for age (proportional).",
       "Missing values removed: bmi (12).",
-      "Group comparison: t-test from the linear model.",
+      "P-values: t-test from the linear model.",
       "Std. errors: heteroskedasticity-robust (HC3).",
       "\u0394 = Male \u2212 Female.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."

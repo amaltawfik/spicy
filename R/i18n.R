@@ -142,8 +142,8 @@
   header_margin_total = "Total",
 
   # -- association measures: one key per measure, shared by the three
-  #    families that name it (cross_tab() note, table_categorical() header,
-  #    assoc_measures() row labels) ------------------------------------------
+  #    families that name it (cross_tab() note, table_categorical() note
+  #    and header, assoc_measures() row labels) ------------------------------
   stat_cramer_v = "Cramer's V",
   stat_phi = "Phi",
   stat_gamma = "Goodman-Kruskal Gamma",
@@ -153,6 +153,16 @@
   stat_tau_c = "Stuart's Tau-c",
   stat_somers_d = "Somers' D",
   stat_lambda = "Lambda",
+  # The symbol over the measure column of `table_categorical()` when every
+  # variable carries the same measure, as `table_continuous_lm()` heads its
+  # column with d or g (decision of 2026-10-24), and the name of that
+  # column; the note defines it as any displayed symbol (`.abbrev_registry()`).
+  # The three measures above without one keep their name over the column.
+  # Glyphs: the French set inherits them.
+  header_assoc_cramer_v = "V",
+  header_assoc_phi = "\u03C6",
+  header_assoc_tau_b = "\u03C4b",
+  header_assoc_gamma = "\u03B3",
 
   # -- cross_tab() statistics note ------------------------------------------
   note_p_prefix_lt = "p < %s",
@@ -594,6 +604,14 @@
   abbrev_adj_r2 = "adjusted coefficient of determination",
   abbrev_d = "Cohen's d",
   abbrev_g = "Hedges's g",
+  # The association measures of `table_categorical()`, in the sentence case
+  # of a definition: the `stat_*` names are headers and row labels, in
+  # title case, and `stat_phi` ("Phi") names the letter. The phi
+  # coefficient as APA's Table 6.5 words it. V is expanded by
+  # `stat_cramer_v`, the same in both cases.
+  abbrev_phi = "phi coefficient",
+  abbrev_tau_b = "Kendall's tau-b",
+  abbrev_gamma = "Goodman-Kruskal gamma",
   abbrev_f2 = "Cohen's f\u00B2",
   abbrev_eta2 = "eta squared",
   abbrev_omega2 = "omega squared",
@@ -817,10 +835,20 @@
   test_kruskal_wallis = "Kruskal-Wallis test",
   test_student_t = "Student t-test",
   # Lowercase because the template puts it mid-sentence: the case belongs to
-  # `note_group_comparison`, not to the label.
+  # the sentence (`note_p_values_test`), not to the label.
   test_oneway_anova = "one-way ANOVA",
   test_welch_t = "Welch t-test",
   test_welch_oneway_anova = "Welch one-way ANOVA",
+  # The sentence that names the test behind the p column, whose numbers
+  # it says the test produced (decision of 2026-10-24): the test alone
+  # when it covers every row, or each test followed by the rows it covers
+  # (`note_group_comparison_item`, joined by `_sep`). `_one` when the table
+  # shows a single p-value, a variable without a test showing none, so
+  # that no language needs a plural rule. `note_group_comparison` names
+  # the test of a table that shows its statistic or its effect size but
+  # none of its p-values.
+  note_p_values_test = "P-values: %s.",
+  note_p_values_test_one = "P-value: %s.",
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
   # The joiner of those items.
@@ -830,14 +858,13 @@
   # The test behind the p-value of an outcome, read off the fitted linear
   # model: the t (or z) of the difference or of the slope, the global F
   # (or Wald chi-squared) of a `by` with more than two groups. Named in
-  # `note_group_comparison` for a categorical `by`, in `note_slope_test`
-  # for a numeric one; a non-classical `vcov` adds the regression
-  # family's `note_std_errors_single`.
+  # `note_p_values_test`, for a categorical and a numeric `by` alike; a
+  # non-classical `vcov` adds the regression family's
+  # `note_std_errors_single`.
   test_lm_t = "t-test from the linear model",
   test_lm_z = "z-test from the linear model",
   test_lm_f = "F-test from the linear model",
   test_lm_chi2 = "Wald chi-squared test from the linear model",
-  note_slope_test = "Slope test: %s.",
   # The order of the subtraction of the contrast column, whose header,
   # the increment glyph alone, no longer states it: a definition of the
   # note, right after the sentence that names the test. Three holes: the
@@ -849,7 +876,7 @@
   note_lm_delta = "%s = %s \u2212 %s.",
 
   # -- table_categorical() / table_multiresponse(): the tests of a table ---
-  # The test behind each p-value, named in `note_group_comparison` (or in
+  # The test behind each p-value, named in `note_p_values_test` (or in
   # `note_multiresponse_items_p`) with the variables it covers. The Monte
   # Carlo name takes the number of replicates; a simulated chi-squared
   # keeps `note_chisq_simulated` after its name.
@@ -990,9 +1017,10 @@
   # decimal mark. An adjustment of the item p-values is told by the
   # family's `note_p_adjusted`, after `note_multiresponse_items_p`, whose
   # hole is the name of the one test every item took
-  # (`test_pearson_chisq`, ...); when the items took several,
+  # (`test_pearson_chisq`, ...), and `note_multiresponse_items_p_one` when
+  # the table shows the p-value of one item; when the items took several,
   # `note_multiresponse_items_p_mixed` receives each test with the items it
-  # covers, joined as in `note_group_comparison`.
+  # covers, joined as in `note_p_values_test`.
   # `note_multiresponse_not_tested` quotes the en dash of `cell_undefined`,
   # the marker the cells of those items show.
   # Under `none_row` (the default), the respondents of the two counts that
@@ -1023,9 +1051,10 @@
   note_multiresponse_n_none = "%d with no item chosen",
   note_multiresponse_and = " and ",
   note_multiresponse_items_p = "Item p-values: %s of each item by group.",
+  note_multiresponse_items_p_one = "Item p-value: %s by group.",
   note_multiresponse_items_p_mixed = "Item p-values: %s.",
   # "Overall": the test of the whole question, after the item tests.
-  # `table_categorical()` keeps its own `note_group_comparison`.
+  # `table_categorical()` keeps its own `note_p_values_test`.
   note_multiresponse_global_rs2 = "Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, %s.",
   note_multiresponse_global_boot = "Overall group comparison: bootstrap test of multiple marginal independence (%d resamples), %s.",
   note_multiresponse_not_tested = "Not tested (no variation, shown as \u2013): %s.",
@@ -1117,7 +1146,7 @@
   # this names the ones that did not.
   note_negative_weights_no_test_some = "For variables whose complete cases include negatively weighted rows, the group comparison is not reported: a design-based test is not defined when the weights change sign.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
-  # The design-based comparisons, named for `note_group_comparison`.
+  # The design-based comparisons, named for `note_p_values_test`.
   test_design_t = "design-based t-test",
   test_design_wald = "design-based Wald test",
   test_design_wilcoxon = "design-based Wilcoxon rank-sum test",
@@ -1230,11 +1259,11 @@
   # The fixed-effect inference line of a mixed model: the distribution,
   # the df and the package that computed them. One hole on the Wald
   # line: the engine (lme4, glmmTMB), a package name, never translated.
-  note_pvalues_satterthwaite_cr = "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
-  note_pvalues_satterthwaite = "p-values: Satterthwaite t-test (lmerTest).",
-  note_pvalues_wald_lmer = "p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.",
-  note_pvalues_wald = "p-values: Wald-z asymptotic (%s).",
-  note_pvalues_containment = "p-values: t-test with containment df (nlme).",
+  note_pvalues_satterthwaite_cr = "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+  note_pvalues_satterthwaite = "P-values: Satterthwaite t-test (lmerTest).",
+  note_pvalues_wald_lmer = "P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.",
+  note_pvalues_wald = "P-values: Wald-z asymptotic (%s).",
+  note_pvalues_containment = "P-values: t-test with containment df (nlme).",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d: %s%% CI is an equal-tailed posterior credible interval.",

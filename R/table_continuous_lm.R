@@ -767,9 +767,9 @@
 #' APA-style footer naming the covariates and the chosen estimand, e.g.
 #' `Note. Adjusted for age, education (proportional).` With p-values, the
 #' note also names the test behind them, read off each outcome's model:
-#' `Group comparison: t-test from the linear model.` (the F-test for a
-#' `by` with more than two levels), or `Slope test: ...` for a numeric
-#' `by`.
+#' `P-values: t-test from the linear model.` (the F-test for a `by` with
+#' more than two levels, the t-test of the slope for a numeric `by`), in
+#' the singular, `P-value:`, when the table shows one.
 #'
 #' The rendering engines carry that same footer as a table note. On the
 #' `"tinytable"` route the note is set one size down;

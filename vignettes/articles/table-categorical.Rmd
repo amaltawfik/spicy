@@ -197,9 +197,14 @@ based on the variable type (`assoc_measure = "auto"`, the default):
 * both ordered factors -> Kendall's `tau_b`,
 * otherwise -> Cramer's `V`.
 
+A measure used for every row heads the column, and names it in the
+data frames, with its symbol (V for Cramer's V, φ for phi, τb for
+Kendall's tau-b, γ for gamma; the other measures keep their names).
+The note defines the symbol as it defines any abbreviation: V by
+default, the Greek letters under `spicy_style(abbreviations = "all")`.
 When the chosen measures differ across rows, the column header
-collapses to `"Effect size"` and the table note names the measure
-used for each variable.
+collapses to `"Effect size"` and the table note names the measure used
+for each variable.
 
 Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`; `assoc_measure =
@@ -256,7 +261,7 @@ pairs. Since the two measures differ, the header collapses to
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered
 formats (`gt`, `tinytable`, `flextable`, `word`) the CI is shown
 inline after the measure, e.g. `.14 [.08, .19]`, under a header that
-states its level, `Cramer's V [95% CI]` (demonstrated in the final
+states its level, `V [95% CI]` (demonstrated in the final
 section). In the default console table and in the `"data.frame"`,
 `"excel"` and `"clipboard"` outputs, separate columns named
 `95% CI LL` and `95% CI UL` are added, as the other tables name

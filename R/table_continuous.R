@@ -541,9 +541,9 @@
 #' contributing at least two observations. Choice of test family is
 #' driven by `test` (see the `@param` entry for the full dispatch
 #' and the underlying `stats::` functions called). Whenever the table
-#' shows *p*-values, its note names the test of each variable ("Group
-#' comparison: Welch t-test."), each variable beside its own test when
-#' they differ.
+#' shows *p*-values, its note names the test behind them ("P-values:
+#' Welch t-test.", "P-value:" when the table shows one), each variable
+#' beside its own test when they differ.
 #'
 #' # No data in a group
 #'
@@ -1879,7 +1879,8 @@ table_continuous <- function(
         auto_rank,
         n_test_groups,
         stats::setNames(var_labels, numeric_cols),
-        show_p = p_value && has_group
+        show_p = p_value && has_group,
+        n_p = .n_p_shown(result[["p.value"]], result$variable)
       ),
       .desc_p_adjust_note(p_adjust_info)
     ),
@@ -2735,13 +2736,16 @@ continuous_test_label <- function(method, n_groups) {
 # `test_used` (the method each variable's test ran with, NA where none
 # ran) and `n_groups` (the groups that test compared: a variable with no
 # data in a group is tested on fewer) are named by column; so is
-# `var_labels`, the label each variable's rows display.
+# `var_labels`, the label each variable's rows display. `n_p`, the number
+# of p-values the table shows, leads the sentence
+# (`.p_values_test_sentence()`).
 build_test_note <- function(
   test_used,
   auto_rank,
   n_groups,
   var_labels,
-  show_p = FALSE
+  show_p = FALSE,
+  n_p = 0L
 ) {
   if (!isTRUE(show_p) && !any(auto_rank)) {
     return(NULL)
@@ -2753,32 +2757,32 @@ build_test_note <- function(
       function(nm) continuous_test_label(test_used[[nm]], n_groups[[nm]]),
       character(1)
     ),
-    var_labels
+    var_labels,
+    n_p
   )
 }
 
-# The group-comparison sentence of a table that names the test of each
-# variable (or block): "Group comparison: Welch t-test." when every test
-# that ran is the same, "Group comparison: Welch one-way ANOVA (bmi);
-# Welch t-test (wellbeing)." when they differ, each test with the
-# variables it covers. `tests` holds the reader-facing name of each
-# test, named by column, NA where no test ran (that variable is not
-# named); `var_labels` is named by column. The tests come in the order of
-# the table -- the order of their first variable -- whatever the
-# language or the locale, so the note reads in the order of the rows.
-# NULL when no test ran.
-.group_comparison_note <- function(tests, var_labels) {
+# The sentence that names the test of each variable (or block): "P-values:
+# Welch t-test." when every test that ran is the same, "P-values: Welch
+# one-way ANOVA (bmi); Welch t-test (wellbeing)." when they differ, each
+# test with the variables it covers. `tests` holds the reader-facing name
+# of each test, named by column, NA where no test ran (that variable is
+# not named); `var_labels` is named by column; `n_p`, the number of
+# p-values the table shows, leads the sentence (`.p_values_test_sentence()`).
+# The tests come in the order of the table -- the order of their first
+# variable -- whatever the language or the locale, so the note reads in
+# the order of the rows. NULL when no test ran.
+.group_comparison_note <- function(tests, var_labels, n_p) {
   tests <- tests[!is.na(tests)]
   if (length(tests) == 0L) {
     return(NULL)
   }
   names_of <- unname(tests)
   if (length(unique(names_of)) == 1L) {
-    return(spicy_fmt("note_group_comparison", names_of[[1L]]))
+    return(.p_values_test_sentence(names_of[[1L]], n_p))
   }
   by_test <- split(names(tests), factor(names_of, levels = unique(names_of)))
-  spicy_fmt(
-    "note_group_comparison",
+  .p_values_test_sentence(
     paste(
       vapply(
         names(by_test),
@@ -2792,7 +2796,8 @@ build_test_note <- function(
         character(1)
       ),
       collapse = spicy_str("note_group_comparison_sep")
-    )
+    ),
+    n_p
   )
 }
 

@@ -73,7 +73,7 @@
           }))
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [Cramer's V]),) {
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [V]),) {
             let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
@@ -106,7 +106,7 @@
           // tinytable header start
           table.header(
             repeat: true,
-      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [Cramer's V],
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total], [p], [V],
       [], [n], [%], [n], [%], [n], [%], [], [],
           ),
           // tinytable header end
@@ -123,7 +123,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Percentages are row percentages. Group comparison: Pearson chi\-squared test.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Percentages are row percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
           ),
           
       
@@ -160,7 +160,7 @@
          0        │  12     63.2     6     46.2      18        56.2                            
          1        │   7     36.8     7     53.8      14        43.8                            
       
-      Note. Group comparison: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
+      Note. P-values: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
 
 ---
 
@@ -185,7 +185,7 @@
          0        │  12     63,2     6     46,2      18        56,2                                
          1        │   7     36,8     7     53,8      14        43,8                                
       
-      Note. Comparaison des groupes : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
+      Note. Valeurs p : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
 
 # p_value = FALSE with assoc_measure = "none": a purely descriptive table
 

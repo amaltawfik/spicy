@@ -575,6 +575,10 @@ test_that("the frozen tokens and glyphs do not translate", {
     symbol_beta = "\u03B2",
     symbol_delta = "\u0394",
     symbol_r2 = "R\u00B2",
+    header_assoc_cramer_v = "V",
+    header_assoc_phi = "\u03C6",
+    header_assoc_tau_b = "\u03C4b",
+    header_assoc_gamma = "\u03B3",
     cell_undefined = "\u2013",
     marker_na = "<NA>",
     marker_nan = "<NaN>",
@@ -894,12 +898,12 @@ test_that("the p_adjust sentence names every method and counts in the language",
 # paragraph: a sentence starts at the head of the note, after a line break
 # or after the period of the sentence before, and ends at the first period
 # followed by the end of the note, a line break, or a space and the next
-# sentence (a capital, or the lower-case "p-values").
+# sentence (a capital: the mixed models' "P-values" too, since 0.14.0).
 .note_sentence <- function(note, start) {
   pat <- paste0(
     "(?:^|(?<=\\. )|(?<=\\n))\\Q",
     start,
-    "\\E.*?[.](?=$|\\n| (?:\\p{Lu}|p-values))"
+    "\\E.*?[.](?=$|\\n| \\p{Lu})"
   )
   regmatches(note, regexpr(pat, note, perl = TRUE))
 }
@@ -945,10 +949,10 @@ test_that("the robust-SE and mixed p-value lines follow the language", {
     se_line(en$tmb),
     "Std. errors: cluster-robust (CR0), clusters by site."
   )
-  expect_match(en$tmb, "p-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
+  expect_match(en$tmb, "P-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
   expect_match(
     en$lmer,
-    "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
     fixed = TRUE
   )
   expect_identical(
@@ -1230,14 +1234,14 @@ test_that("the group-comparison note of table_continuous() joins in the language
   }
   expect_match(
     note(),
-    "Group comparison: Wilcoxon rank-sum test (skewed); Welch t-test (age).",
+    "P-values: Wilcoxon rank-sum test (skewed); Welch t-test (age).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     note(),
     paste0(
-      "Comparaison des groupes\u00A0: test de Wilcoxon-Mann-Whitney ",
+      "Valeurs p\u00A0: test de Wilcoxon-Mann-Whitney ",
       "(skewed)\u00A0; test t de Welch (age)."
     ),
     fixed = TRUE

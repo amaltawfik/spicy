@@ -485,7 +485,7 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
   expect_match(note, "group comparison is not reported", fixed = TRUE)
   # And the test sentence a normal table carries is absent -- the note
   # never claims a comparison it refused.
-  expect_false(grepl("Group comparison:", note, fixed = TRUE))
+  expect_false(grepl("Group comparison:|P-value", note))
 })
 
 test_that("the refusal clause says how far the refusal reached", {
@@ -520,7 +520,8 @@ test_that("the refusal clause says how far the refusal reached", {
   note <- attr(mixed, "note")
   # The method line is TRUE of the comparison that ran, so it stays --
   # and the refusal names who it applies to instead of contradicting it.
-  expect_match(note, "Group comparison:", fixed = TRUE)
+  # One p-value shown: the singular.
+  expect_match(note, "P-value: design-based", fixed = TRUE)
   expect_match(
     note,
     "For variables whose complete cases include negatively weighted rows",
@@ -551,7 +552,7 @@ test_that("the refusal clause says how far the refusal reached", {
   expect_true(all(is.na(all_ref$p.value)))
   note_all <- attr(all_ref, "note")
   expect_match(note_all, "The group comparison is not reported", fixed = TRUE)
-  expect_false(grepl("Group comparison:", note_all, fixed = TRUE))
+  expect_false(grepl("Group comparison:|P-value", note_all))
   expect_false(grepl("For variables whose", note_all, fixed = TRUE))
 })
 
@@ -594,7 +595,7 @@ test_that("a calibrated design with no negative weight says nothing", {
   expect_match(note, "calibrated / post-stratified", fixed = TRUE)
   expect_false(grepl("negative weight", note, fixed = TRUE))
   # And the comparison still runs.
-  expect_match(note, "Group comparison:", fixed = TRUE)
+  expect_match(note, "P-value: design-based", fixed = TRUE)
   out <- .svyc_long(d, select = api00, by = stype, show_columns = c("m", "n"))
   expect_false(all(is.na(out$p.value)))
 })
@@ -1280,7 +1281,7 @@ test_that("the comparison of a no-data variable runs on the domains with data", 
   )
   expect_match(
     note,
-    "Group comparison: design-based Wald test (x); design-based t-test (y).",
+    "P-values: design-based Wald test (x); design-based t-test (y).",
     fixed = TRUE
   )
   # Two domains, one without data: no comparison, and none named.
@@ -1289,9 +1290,8 @@ test_that("the comparison of a no-data variable runs on the domains with data", 
   out <- .svyc_long(two, select = y, by = g)
   expect_true(all(is.na(out$p.value)))
   expect_false(grepl(
-    "Group comparison",
-    attr(table_continuous_svy(two, select = y, by = g), "note"),
-    fixed = TRUE
+    "Group comparison|P-value",
+    attr(table_continuous_svy(two, select = y, by = g), "note")
   ))
 })
 
@@ -1345,7 +1345,7 @@ test_that("the note gives the design, then the missing data, then the inference"
     "No data for y in c.",
     "Std. errors: ",
     "Confidence intervals and tests use",
-    "Group comparison: ",
+    "P-values: ",
     "P-values adjusted for 2 tests (Holm method).",
     "SE = "
   )
@@ -1984,7 +1984,10 @@ test_that("a variable with no variance gets no comparison, with a warning", {
       output = "long"
     ))
     expect_true(all(is.na(out$p.value)), info = tst)
-    expect_false(grepl("Group comparison", attr(out, "note")), info = tst)
+    expect_false(
+      grepl("Group comparison|P-value", attr(out, "note")),
+      info = tst
+    )
   }
 })
 

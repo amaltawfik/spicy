@@ -1089,6 +1089,35 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   list(df = df, info = list(method = method, m = length(raw), raw = raw))
 }
 
+# The sentence that names the test behind the p column of a table
+# (decision of 2026-10-24): "P-values: Welch t-test.", in the singular
+# when the table shows one p-value. `text` is the test, or each test with
+# the rows it covers; `n_p` is the number of p-values the table shows
+# (`.n_p_shown()`). A table that shows none, only the statistic or the
+# effect size of its test, names it as the group comparison.
+.p_values_test_sentence <- function(text, n_p) {
+  key <- if (n_p == 0L) {
+    "note_group_comparison"
+  } else if (n_p == 1L) {
+    "note_p_values_test_one"
+  } else {
+    "note_p_values_test"
+  }
+  spicy_fmt(key, text)
+}
+
+# The number of p-values a table shows: one per variable (or block, or
+# outcome) whose `p` is not NA, the rows of one variable sharing it or
+# leaving it NA. `by` names the variable of each row. A variable without
+# a test, or with no p-value, shows none.
+.n_p_shown <- function(p, by) {
+  if (!length(p)) {
+    return(0L)
+  }
+  shown <- tapply(!is.na(p), factor(by, levels = unique(by)), any)
+  sum(shown, na.rm = TRUE)
+}
+
 # The footer sentence, shared with `table_regression()`. NULL when no
 # test was adjusted.
 .desc_p_adjust_note <- function(info) {
@@ -1287,6 +1316,17 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     eta2 = e("symbol_eta_sq_partial", "abbrev_eta2", "apa"),
     omega2 = e("symbol_omega_sq_partial", "abbrev_omega2", "apa"),
     es = e("header_effect_size_short", "abbrev_es"),
+    # The symbol over the association measure of table_categorical() when
+    # every variable carries it. V is expanded by the name the measure has
+    # in the note and in assoc_measures() (`stat_cramer_v`); phi, tau-b and
+    # gamma by keys of their own, in the sentence case of a definition (the
+    # `stat_*` names are headers and row labels, in title case, and
+    # `stat_phi` names the letter). The Greek letters are the APA's to leave
+    # undefined (sections 6.44 and 7.15).
+    cramer_v = e("header_assoc_cramer_v", "stat_cramer_v"),
+    phi = e("header_assoc_phi", "abbrev_phi", "apa"),
+    tau_b = e("header_assoc_tau_b", "abbrev_tau_b", "apa"),
+    gamma = e("header_assoc_gamma", "abbrev_gamma", "apa"),
     smd = e("header_smd", "abbrev_smd"),
     ame = e("header_ame", "abbrev_ame"),
     rhat = e("header_rhat", "abbrev_rhat"),

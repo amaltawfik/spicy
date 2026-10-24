@@ -1,11 +1,8 @@
 # -- Internal helpers for per-row association measure -------------------------
 
-# Pretty label for an association measure. Always ASCII so the
-# resulting string is safe to use as a data.frame column name (the
-# `out[["Kendall's Tau-b"]]` contract works on every platform) and as
-# a `glance()` value. A locale-aware Unicode upgrade (`tau`, `gamma`)
-# could be added later as a display-only print option without
-# affecting these data-side names.
+# The name of an association measure, as the note of a table of mixed
+# measures gives it ("Phi: smoking. Cramer's V: education."), and as the
+# header of a measure without a symbol shows it (`.assoc_symbol_key()`).
 .assoc_label <- function(measure) {
   switch(
     measure,
@@ -20,22 +17,40 @@
   )
 }
 
-# Frozen twin of `.assoc_label()`: the COLUMN NAME a measure gives the
-# public wide output. Same switch, English literals typed here rather
-# than read from the registry -- the programmatic contract never follows
-# the display language (decision 13). The two tables must agree at the
-# English default; nothing but the pin in test-i18n.R can catch a drift.
+# Frozen twin of the header: the COLUMN NAME a measure gives the
+# displayed table (`output = "data.frame"`, the typed view), its symbol
+# when it has one, as the difference column of `table_continuous_lm()` is
+# named by its header, its name otherwise. Typed here rather than read
+# from the registry -- the programmatic contract never follows the
+# display language (decision 13), and a symbol is the same in every
+# language. The two must agree at the English default; nothing but the
+# pin in test-i18n.R can catch a drift.
 .assoc_key <- function(measure) {
   switch(
     measure,
-    cramer_v = "Cramer's V",
-    phi = "Phi",
-    tau_b = "Kendall's Tau-b",
+    cramer_v = "V",
+    phi = "\u03C6",
+    tau_b = "\u03C4b",
     tau_c = "Stuart's Tau-c",
-    gamma = "Goodman-Kruskal Gamma",
+    gamma = "\u03B3",
     somers_d = "Somers' D",
     lambda = "Lambda",
     measure
+  )
+}
+
+# The registry key of the symbol that heads the measure column when every
+# variable carries the same measure (decision of 2026-10-24), as
+# `table_continuous_lm()` heads its column with d or g. NULL for a measure
+# without one, whose name heads the column.
+.assoc_symbol_key <- function(measure) {
+  switch(
+    measure,
+    cramer_v = "header_assoc_cramer_v",
+    phi = "header_assoc_phi",
+    tau_b = "header_assoc_tau_b",
+    gamma = "header_assoc_gamma",
+    NULL
   )
 }
 
@@ -665,7 +680,8 @@
 # data in any group) has no measure, and is not named; the others still
 # are, since the header stays generic. It carries no "Note." prefix: the
 # note opens with it once, in `.categorical_note()`, whatever sentence
-# comes first.
+# comes first. One measure for every variable needs no sentence: the
+# header shows it, and the abbreviations of the note define its symbol.
 #
 # Example output:
 #   "Cramer's V: smoking, education. Kendall's Tau-b: self_rated_health."
@@ -1155,11 +1171,18 @@
 #'     `select`) are accepted. Named is more robust to reordering of
 #'     `select`.
 #'
-#'   When a single measure is used for every row, the column header is
-#'   that measure's name (e.g. `"Cramer's V"`). When multiple measures
-#'   are used (typically with `"auto"` on a heterogeneous `select`),
-#'   the header collapses to `"Effect size"` and the table note names
-#'   the measure used for each variable.
+#'   When a single measure is used for every row, its symbol heads the
+#'   column and names it in the data frames, as the effect size of
+#'   [table_continuous_lm()] is headed: \eqn{V}{V} (`cramer_v`),
+#'   \eqn{\phi}{phi} (`phi`), \eqn{\tau_b}{tau-b} (`tau_b`) or
+#'   \eqn{\gamma}{gamma} (`gamma`), the three others keeping their name
+#'   (`"Lambda"`). The note defines the symbol as it defines any
+#'   abbreviation, under the `abbreviations` rule of [spicy_style()]:
+#'   "V = Cramer's V" by default, the Greek letters only under `"all"` and
+#'   in the `"jama"` and `"lancet"` themes. When multiple measures are used
+#'   (typically with `"auto"` on a heterogeneous `select`), the header
+#'   collapses to `"Effect size"` and the table note names the measure
+#'   used for each variable.
 #'
 #'   `phi` requires a 2x2 table; if explicitly requested for a
 #'   non-2x2 variable, an error is raised so the user can choose
@@ -1172,7 +1195,7 @@
 #'   the bounds fill `es_ci_lower` / `es_ci_upper`. In rendered formats
 #'   (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the CI is shown
 #'   inline (e.g., `.14 [.08, .19]`) under a header that states its level
-#'   (`Cramer's V [95% CI]`). Defaults to `FALSE`.
+#'   (`V [95% CI]`). Defaults to `FALSE`.
 #' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
@@ -1301,7 +1324,8 @@
 #'     the printed columns: one pair `<group> n` /
 #'     `<group> %` per group level (plus `Total` when
 #'     `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
-#'     association measure (named after the measure, or `Effect size`
+#'     association measure (named by its header: the symbol of the
+#'     measure, `V`, its name for a measure without one, or `Effect size`
 #'     when the row variables do not share one), its bounds `95% CI LL` /
 #'     `95% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
 #'     When `by = NULL`, the printed columns are `n` and `%`.
@@ -1422,10 +1446,11 @@
 #' variable whose table is not 2x2 follows `"auto"`, and the note names
 #' the test of each variable.
 #'
-#' The note names the test of every variable, "Group comparison:
-#' Pearson chi-squared test (sex, education); Fisher exact test
-#' (smoking).", or the one test when it covers them all. `test_type` in
-#' the long output gives the same per variable. See `@param correct` /
+#' The note names the test behind the *p*-values, "P-values: Pearson
+#' chi-squared test (sex, education); Fisher exact test (smoking).", or
+#' the one test when it covers them all, "P-value:" when the table shows
+#' a single *p*-value. `test_type` in the long output gives the test of
+#' each variable. See `@param correct` /
 #' `simulate_p` to switch on Yates' continuity correction or Monte Carlo
 #' *p*-values for the chi-squared test, and `@param assoc_measure` for
 #' the per-row dispatch table used by `"auto"` (2x2 -> Phi, both ordered
@@ -1675,7 +1700,8 @@
 #'   by = sex
 #' )
 #'
-#' # Force a uniform measure across all row variables.
+#' # Force a uniform measure across all row variables: its symbol, V,
+#' # heads the column, and the note defines it.
 #' table_categorical(
 #'   sochealth,
 #'   select = c(smoking, education),
@@ -4088,9 +4114,9 @@ table_categorical <- function(
     }
   }
 
-  # Collapse the per-variable measure vector into the column header
-  # the printed / wide outputs will use:
-  #   * one measure used everywhere -> that measure's name
+  # Collapse the per-variable measure vector into the column name
+  # the wide outputs will use, the header the column shows:
+  #   * one measure used everywhere -> its symbol, or its name without one
   #   * mixed measures              -> the generic effect-size name
   # Row-level `.assoc` cells are then renamed once, below.
   shown_measures <- assoc_measures_per_row[assoc_measures_per_row != "none"]
@@ -4104,19 +4130,35 @@ table_categorical <- function(
     # frozen key, or it would drift from its twin.
     .assoc_key("cramer_v")
   }
+  # The one measure every variable carries, when a symbol heads its
+  # column: a concept of the abbreviations of the note as well.
+  measure_symbol <- if (
+    show_assoc &&
+      length(unique_shown) == 1L &&
+      !is.null(.assoc_symbol_key(unique_shown))
+  ) {
+    unique_shown
+  }
   # The word printed OVER that column. The name above is frozen; this
-  # follows the registry, and the two are the same string in English.
-  measure_label <- if (length(unique_shown) == 1L) {
+  # follows the registry: the symbol of the one measure every variable
+  # carries ("V"), or its name when it has no symbol ("Lambda"), and the
+  # generic header over mixed measures. In English the two are the same.
+  measure_label <- if (!is.null(measure_symbol)) {
+    spicy_str(.assoc_symbol_key(measure_symbol))
+  } else if (length(unique_shown) == 1L) {
     .assoc_label(unique_shown)
   } else if (length(unique_shown) > 1L) {
     spicy_str("header_effect_size")
   } else {
     .assoc_label("cramer_v")
   }
-  # The abbreviations of the headers, where the rule in force puts them:
-  # the interval of the measure ("95% CI LL", "95% CI UL"), then the SMD.
-  # The measures themselves are named in full ("Cramer's V", "Phi").
+  # The abbreviations of the headers, where the rule in force puts them,
+  # in the order a reader meets them: the symbol of the measure, defined
+  # as any symbol is (V under the default rule, the Greek letters under
+  # "all", jama and lancet), the interval of the measure ("95% CI LL",
+  # "95% CI UL"), then the SMD.
   abbrev_note <- .note_abbreviations(c(
+    if (!is.null(measure_symbol)) list(measure_symbol),
     if (show_assoc && assoc_ci) as.list(.abbrev_ci_bounds()),
     if (do_smd) list("smd")
   ))
@@ -4230,7 +4272,12 @@ table_categorical <- function(
       B = simulate_B
     )
     inference_note <- c(
-      if (!is.null(phrase)) spicy_fmt("note_group_comparison", phrase$text),
+      if (!is.null(phrase)) {
+        .p_values_test_sentence(
+          phrase$text,
+          .n_p_shown(long_raw$p, long_raw$variable)
+        )
+      },
       if (any(yates_used)) spicy_str("note_yates_applied")
     )
   }
@@ -4694,10 +4741,10 @@ table_categorical <- function(
     df
   }
   # The header over that merged cell states the level of its interval
-  # ("Cramer's V [95% CI]"), as the console's bound headers do ("95% CI
-  # LL"): the interval label is theirs, read from the typed view. The
-  # console, the sheet and the clipboard keep the bounds in columns of
-  # their own and the measure's bare header.
+  # ("V [95% CI]"), as the console's bound headers do ("95% CI LL"): the
+  # interval label is theirs, read from the typed view. The console, the
+  # sheet and the clipboard keep the bounds in columns of their own and
+  # the measure's bare header.
   measure_label_merged <- measure_label
   if (show_assoc && assoc_ci) {
     assoc_ci_label <- structured$col_meta[[.CAT_KEY_CI_LL]]$ci_label

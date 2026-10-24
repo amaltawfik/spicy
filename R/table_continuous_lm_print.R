@@ -369,8 +369,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # linear model -- the `test_type` of the row the table reads the p-value
 # from (`get_test_row_index_lm()`): the t (or z) of the difference of a
 # two-group `by` or of the slope of a numeric one, the global F (or Wald
-# chi-squared) of a `by` with more groups. A categorical `by` names it in
-# `note_group_comparison`, a numeric one in `note_slope_test`. One test
+# chi-squared) of a `by` with more groups, named after "P-values:" for a
+# categorical and a numeric `by` alike (`.p_values_test_sentence()`), in
+# the singular when the table shows the p-value of one outcome. One test
 # for every outcome is named once; otherwise each test is followed by the
 # outcomes it covers, as the rows name them, in the order of the test
 # vocabulary. An outcome whose model did not run carries no test and is
@@ -386,6 +387,16 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     character(1),
     USE.NAMES = FALSE
   )
+  # The p-value each outcome shows, read on the row the table reads it from.
+  n_p <- sum(vapply(
+    vars,
+    function(v) {
+      block <- x[x$variable == v, , drop = FALSE]
+      p <- block[["p.value"]]
+      !is.null(p) && !is.na(p[get_test_row_index_lm(block)])
+    },
+    logical(1)
+  ))
   keys <- c(
     t = "test_lm_t",
     z = "test_lm_z",
@@ -396,14 +407,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (!any(ran)) {
     return(NULL)
   }
-  template <- if (identical(x$predictor_type[[1L]], "continuous")) {
-    "note_slope_test"
-  } else {
-    "note_group_comparison"
-  }
   used <- intersect(names(keys), types[ran])
   if (length(used) == 1L) {
-    return(spicy_fmt(template, spicy_str(keys[[used]])))
+    return(.p_values_test_sentence(spicy_str(keys[[used]]), n_p))
   }
   labels <- x$label[match(vars, x$variable)]
   items <- vapply(
@@ -417,9 +423,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     },
     character(1)
   )
-  spicy_fmt(
-    template,
-    paste(items, collapse = spicy_str("note_group_comparison_sep"))
+  .p_values_test_sentence(
+    paste(items, collapse = spicy_str("note_group_comparison_sep")),
+    n_p
   )
 }
 

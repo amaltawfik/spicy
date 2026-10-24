@@ -273,11 +273,18 @@ positional (\code{c("phi", "tau_b", "auto")}, paired up with
 \code{select}.
 }
 
-When a single measure is used for every row, the column header is
-that measure's name (e.g. \code{"Cramer's V"}). When multiple measures
-are used (typically with \code{"auto"} on a heterogeneous \code{select}),
-the header collapses to \code{"Effect size"} and the table note names
-the measure used for each variable.
+When a single measure is used for every row, its symbol heads the
+column and names it in the data frames, as the effect size of
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} is headed: \eqn{V}{V} (\code{cramer_v}),
+\eqn{\phi}{phi} (\code{phi}), \eqn{\tau_b}{tau-b} (\code{tau_b}) or
+\eqn{\gamma}{gamma} (\code{gamma}), the three others keeping their name
+(\code{"Lambda"}). The note defines the symbol as it defines any
+abbreviation, under the \code{abbreviations} rule of \code{\link[=spicy_style]{spicy_style()}}:
+"V = Cramer's V" by default, the Greek letters only under \code{"all"} and
+in the \code{"jama"} and \code{"lancet"} themes. When multiple measures are used
+(typically with \code{"auto"} on a heterogeneous \code{select}), the header
+collapses to \code{"Effect size"} and the table note names the measure
+used for each variable.
 
 \code{phi} requires a 2x2 table; if explicitly requested for a
 non-2x2 variable, an error is raised so the user can choose
@@ -291,7 +298,7 @@ stated as the other tables state it; in the long output (\code{"long"})
 the bounds fill \code{es_ci_lower} / \code{es_ci_upper}. In rendered formats
 (\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}), the CI is shown
 inline (e.g., \code{.14 [.08, .19]}) under a header that states its level
-(\verb{Cramer's V [95\% CI]}). Defaults to \code{FALSE}.}
+(\verb{V [95\% CI]}). Defaults to \code{FALSE}.}
 
 \item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
 standardized mean difference between the two groups of \code{by},
@@ -437,7 +444,8 @@ adds, or \code{"total"} for the Total row of \code{total_row = TRUE}), then
 the printed columns: one pair \verb{<group> n} /
 \verb{<group> \%} per group level (plus \code{Total} when
 \code{include_total = TRUE}), \code{p} (absent with \code{p_value = FALSE}), the
-association measure (named after the measure, or \verb{Effect size}
+association measure (named by its header: the symbol of the
+measure, \code{V}, its name for a measure without one, or \verb{Effect size}
 when the row variables do not share one), its bounds \verb{95\% CI LL} /
 \verb{95\% CI UL} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
 When \code{by = NULL}, the printed columns are \code{n} and \verb{\%}.
@@ -572,10 +580,11 @@ to its nominal level under that restriction, not without it. A
 variable whose table is not 2x2 follows \code{"auto"}, and the note names
 the test of each variable.
 
-The note names the test of every variable, "Group comparison:
-Pearson chi-squared test (sex, education); Fisher exact test
-(smoking).", or the one test when it covers them all. \code{test_type} in
-the long output gives the same per variable. See \verb{@param correct} /
+The note names the test behind the \emph{p}-values, "P-values: Pearson
+chi-squared test (sex, education); Fisher exact test (smoking).", or
+the one test when it covers them all, "P-value:" when the table shows
+a single \emph{p}-value. \code{test_type} in the long output gives the test of
+each variable. See \verb{@param correct} /
 \code{simulate_p} to switch on Yates' continuity correction or Monte Carlo
 \emph{p}-values for the chi-squared test, and \verb{@param assoc_measure} for
 the per-row dispatch table used by \code{"auto"} (2x2 -> Phi, both ordered
@@ -835,7 +844,8 @@ table_categorical(
   by = sex
 )
 
-# Force a uniform measure across all row variables.
+# Force a uniform measure across all row variables: its symbol, V,
+# heads the column, and the note defines it.
 table_categorical(
   sochealth,
   select = c(smoking, education),

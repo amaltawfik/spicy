@@ -422,7 +422,12 @@ test_that("a grouped variable with no observed value keeps its one row", {
   expect_true(all(is.na(out_long$n)))
   expect_equal(nrow(out_wide), 1L)
   expect_true("variable" %in% names(out_wide))
-  expect_identical(attr(out_wide, "note"), "Note. No data for v1 in A and B.")
+  # The column of the measure is shown, headed by its symbol, which the
+  # note defines.
+  expect_identical(
+    attr(out_wide, "note"),
+    "Note. No data for v1 in A and B. V = Cramer's V."
+  )
 })
 
 test_that("table_categorical warns about ignored grouped options without by", {
@@ -722,7 +727,7 @@ test_that("table_categorical default column is Cramer's V", {
   # 2x2 -> auto rule now picks phi (see NEWS for 0.11.0).
   expect_true("es_value" %in% names(out))
   expect_identical(unique(out$es_type), "phi")
-  # The data.frame output names the column after the measure.
+  # The data.frame output names the column by the symbol of the measure.
   wide <- table_categorical(
     df,
     "v1",
@@ -730,7 +735,7 @@ test_that("table_categorical default column is Cramer's V", {
     labels = c(v1 = "Var 1"),
     output = "data.frame"
   )
-  expect_true("Phi" %in% names(wide))
+  expect_true("\u03c6" %in% names(wide))
 })
 
 test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (mixed -> Effect size header)", {
@@ -746,13 +751,13 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
   expect_true("es_value" %in% names(out))
   expect_setequal(unique(out$es_type), c("phi", "cramer_v"))
   # The long output's column names do not depend on the measure at all,
-  # so a negative membership on "Phi" / "Cramer's V" over `names(out)`
-  # could not fail at any setting. The data.frame output is where a
-  # measure names a column -- single-measure tables carry the measure's
-  # own name, and only the mixed case collapses to the generic header --
-  # so that is where both halves of this assertion belong.
+  # so a negative membership on the measure over `names(out)` could not
+  # fail at any setting. The data.frame output is where a measure names a
+  # column -- single-measure tables carry the measure's symbol, as their
+  # header, and only the mixed case collapses to the generic header -- so
+  # that is where both halves of this assertion belong.
   expect_true(
-    "Phi" %in%
+    "\u03c6" %in%
       names(
         table_categorical(
           sochealth,
@@ -763,7 +768,7 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
       )
   )
   expect_true(
-    "Cramer's V" %in%
+    "V" %in%
       names(
         table_categorical(
           sochealth,
@@ -780,7 +785,7 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
     by = sex,
     output = "data.frame"
   )
-  expect_false(any(c("Phi", "Cramer's V") %in% names(wide)))
+  expect_false(any(c("\u03c6", "V") %in% names(wide)))
   expect_true("Effect size" %in% names(wide))
 })
 
@@ -800,8 +805,8 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     "test\\. Phi: smoking\\. Cramer's V: education\\.$"
   )
 
-  # Force uniform Cramer's V via single-string -> no measure note; the
-  # sentence naming the test is all that is left.
+  # Force uniform Cramer's V via single-string -> no measure note: the
+  # header shows the symbol, which the abbreviations of the note define.
   out_uniform <- table_categorical(
     sochealth,
     select = c(smoking, education),
@@ -811,8 +816,9 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
   )
   expect_identical(
     attr(out_uniform, "assoc_note"),
-    "Group comparison: Pearson chi-squared test."
+    "P-values: Pearson chi-squared test."
   )
+  expect_identical(attr(out_uniform, "abbrev_note"), "V = Cramer's V.")
 })
 
 test_that("table_categorical accepts unnamed positional `assoc_measure` and validates length", {
@@ -929,8 +935,8 @@ test_that("table_categorical drops association column when assoc_measure is none
     output = "data.frame"
   )
 
-  expect_false("Cramer's V" %in% names(out_long))
-  expect_false(any(grepl("Cramer's V", names(out_wide), fixed = TRUE)))
+  expect_false("V" %in% names(out_long))
+  expect_false("V" %in% names(out_wide))
   # The long output keeps its measure columns, empty (stable schema).
   expect_true(all(is.na(out_long$es_value)))
   expect_true(all(is.na(out_long$es_type)))
@@ -954,10 +960,10 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
   expect_identical(unique(out$es_type), "gamma")
   # As above: the long output never names a column after the measure,
   # so the exclusion has to be asserted on the data.frame, where the
-  # default measure WOULD have produced "Cramer's V". The positive
-  # control is the same table's own column name.
+  # default measure WOULD have produced "V". The positive control is the
+  # same table's own column name.
   expect_true(
-    "Cramer's V" %in%
+    "V" %in%
       names(
         table_categorical(
           sochealth,
@@ -975,8 +981,115 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     assoc_measure = "gamma",
     output = "data.frame"
   )
-  expect_false("Cramer's V" %in% names(wide))
-  expect_true("Goodman-Kruskal Gamma" %in% names(wide))
+  expect_false("V" %in% names(wide))
+  expect_true("\u03b3" %in% names(wide))
+})
+
+test_that("a single measure heads and names its column with its symbol", {
+  set.seed(5)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), 30L)),
+    x = factor(sample(c("no", "yes"), 60L, TRUE)),
+    y = factor(sample(c("lo", "mid", "hi"), 60L, TRUE))
+  )
+  symbols <- c(
+    cramer_v = "V",
+    phi = "\u03c6",
+    tau_b = "\u03c4b",
+    gamma = "\u03b3"
+  )
+  one <- function(m, ...) {
+    table_categorical(d, select = x, by = g, assoc_measure = m, ...)
+  }
+  for (m in names(symbols)) {
+    tbl <- one(m)
+    sym <- symbols[[m]]
+    # The symbol heads the column and names it, in the typed view and the
+    # data frames; the long output keeps the measure as a value.
+    s <- as_structured(tbl)
+    expect_identical(s$col_meta[[sym]]$display_label, sym, info = m)
+    expect_true(sym %in% names(s$body), info = m)
+    expect_true(sym %in% names(as.data.frame(tbl)), info = m)
+    expect_identical(
+      names(one(m, output = "data.frame")),
+      names(as.data.frame(tbl)),
+      info = m
+    )
+    long <- one(m, output = "long")
+    expect_identical(unique(long$es_type), m, info = m)
+    expect_false(sym %in% names(long), info = m)
+    # One measure needs no sentence naming it: the header shows it.
+    expect_no_match(
+      attr(tbl, "note"),
+      paste0(.assoc_label(m), ": "),
+      fixed = TRUE,
+      info = m
+    )
+  }
+  # Mixed measures keep the generic header, as their column name too, and
+  # the sentence naming each measure.
+  mixed <- table_categorical(d, select = c(x, y), by = g)
+  expect_identical(
+    as_structured(mixed)$col_meta[["Effect size"]]$display_label,
+    "Effect size"
+  )
+  expect_true("Effect size" %in% names(as.data.frame(mixed)))
+  expect_match(attr(mixed, "note"), "Phi: x. Cramer's V: y.", fixed = TRUE)
+  # A measure with no symbol keeps its name over the column.
+  expect_identical(
+    as_structured(one("lambda"))$col_meta[["Lambda"]]$display_label,
+    "Lambda"
+  )
+  # The note defines the symbol as any symbol, by the rule in force. The
+  # default (APA) defines V and leaves the Greek letters undefined.
+  expect_match(attr(one("cramer_v"), "note"), "V = Cramer's V.", fixed = TRUE)
+  expect_no_match(attr(one("phi"), "note"), "\u03c6 = ", fixed = TRUE)
+  # "all" defines the Greek letters too.
+  withr::with_options(
+    list(spicy.style = spicy_style(abbreviations = "all")),
+    {
+      expect_match(
+        attr(one("phi"), "note"),
+        "\u03c6 = phi coefficient.",
+        fixed = TRUE
+      )
+      expect_match(
+        attr(one("tau_b"), "note"),
+        "\u03c4b = Kendall's tau-b.",
+        fixed = TRUE
+      )
+      expect_match(
+        attr(one("gamma"), "note"),
+        "\u03b3 = Goodman-Kruskal gamma.",
+        fixed = TRUE
+      )
+    }
+  )
+  # "none" defines none of them.
+  withr::with_options(
+    list(spicy.style = spicy_style(abbreviations = "none")),
+    for (m in names(symbols)) {
+      expect_no_match(
+        attr(one(m), "note"),
+        paste0(symbols[[m]], " = "),
+        fixed = TRUE,
+        info = m
+      )
+    }
+  )
+  # The Lancet in its own form, the French by the French name.
+  withr::with_options(
+    list(spicy.style = "lancet"),
+    expect_match(attr(one("cramer_v"), "note"), "V=Cramer's V.", fixed = TRUE)
+  )
+  withr::with_options(
+    list(spicy.language = "fr"),
+    expect_match(
+      attr(one("cramer_v"), "note"),
+      "V = V de Cram\u00e9r.",
+      fixed = TRUE
+    )
+  )
 })
 
 test_that("assoc_ci adds CI columns in the data.frame output", {
@@ -2602,7 +2715,7 @@ test_that("clipboard payload carries the console title and notes", {
     lines[length(lines)],
     paste0(
       "^Note\\. Missing values removed: smoking \\(65\\)\\. ",
-      "Group comparison: Pearson chi-squared test\\. ",
+      "P-values: Pearson chi-squared test\\. ",
       "Phi: smoking\\. Cramer's V: education\\."
     )
   )
@@ -2901,7 +3014,7 @@ test_that("glance() names the measure column from the typed view", {
   expect_identical(broom::glance(out)$es_type, "cramer_v")
   expect_equal(
     broom::glance(out)$es_value,
-    out[["Cramer's V"]][!is.na(out[["Cramer's V"]])][[1L]]
+    out[["V"]][!is.na(out[["V"]])][[1L]]
   )
   # Stripped of its typed view, the exclusion rule answers the same.
   bare <- out
@@ -3648,7 +3761,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
   whole <- paste(
     "Note. Missing values removed: smoking (25).",
-    "Group comparison: Pearson chi-squared test.",
+    "P-values: Pearson chi-squared test.",
     "Phi: smoking. Cramer's V: education."
   )
   expect_identical(printed[grepl("Note.", printed, fixed = TRUE)], whole)
@@ -3664,7 +3777,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
   # Without drop_na, the statistics part opens the note.
   printed <- utils::capture.output(print(by_sex()))
   expect_true(
-    "Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education." %in%
+    "Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education." %in%
       printed
   )
   # One-way, drop_na alone; nothing to say, no note.
@@ -3809,10 +3922,10 @@ test_that("with fewer than two groups with data, the variable is not compared", 
   disp <- attr(tbl, "display_df")
   pa <- disp$Variable == "physical_activity"
   expect_identical(disp$p[pa], mark)
-  expect_identical(disp$Phi[pa], mark)
+  expect_identical(disp[["\u03c6"]][pa], mark)
   expect_identical(disp$SMD[pa], mark)
   s <- as_structured(tbl)
-  for (nm in c("p", "Phi", "SMD")) {
+  for (nm in c("p", "\u03c6", "SMD")) {
     expect_identical(s$cell_status[[nm]][pa], "undefined", info = nm)
     expect_identical(
       s$cell_status[[nm]][disp$Variable == "smoking"],
@@ -3926,7 +4039,7 @@ test_that("the no-data sentence follows the language, the label and the order", 
   expect_true(startsWith(fr, "Note. Aucune donn"))
   expect_match(
     fr,
-    "pour physical_activity dans Tertiary. Comparaison",
+    "pour physical_activity dans Tertiary. Valeur p",
     fixed = TRUE
   )
 })
@@ -3967,7 +4080,7 @@ test_that("the note names no association measure for a variable with no value", 
     attr(tbl, "note"),
     paste(
       "Note. No data for empty in Female and Male.",
-      "Group comparison: Pearson chi-squared test.",
+      "P-values: Pearson chi-squared test.",
       "Phi: smoking. Cramer's V: education."
     )
   )
@@ -4006,7 +4119,7 @@ test_that("a weighted table says so first, by and without by", {
   w <- table_categorical(sochealth, smoking, by = sex, weights = weight)
   expect_true(startsWith(
     attr(w, "note"),
-    "Note. Statistics weighted by weight. Group comparison:"
+    "Note. Statistics weighted by weight. P-value:"
   ))
   expect_identical(attr(w, "what_note"), "Statistics weighted by weight.")
   # print() rebuilds the same note from its parts.
@@ -4489,11 +4602,14 @@ test_that("percent = \"row\" gives row shares and leaves the statistics alone", 
   )
   expect_identical(
     attr(tbl, "note"),
-    "Note. Percentages are row percentages. Group comparison: Pearson chi-squared test."
+    paste(
+      "Note. Percentages are row percentages.",
+      "P-value: Pearson chi-squared test. V = Cramer's V."
+    )
   )
   expect_identical(
     attr(table_categorical(d, x, by = g), "note"),
-    "Note. Group comparison: Pearson chi-squared test."
+    "Note. P-value: Pearson chi-squared test. V = Cramer's V."
   )
   fr <- withr::with_options(
     list(spicy.language = "fr"),
@@ -5400,7 +5516,7 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
   expect_identical(attr(tbl, "assoc_note"), measure_note)
   expect_identical(
     attr(ref, "assoc_note"),
-    paste("Group comparison: Pearson chi-squared test.", measure_note)
+    paste("P-values: Pearson chi-squared test.", measure_note)
   )
   printed <- utils::capture.output(print(tbl))
   header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]
@@ -5445,7 +5561,7 @@ test_that("p_value = FALSE removes the p column from every rendered engine", {
   expect_identical(
     attr(g, "spicy_note"),
     sub(
-      " Group comparison: Pearson chi-squared test.",
+      " P-values: Pearson chi-squared test.",
       "",
       attr(g_ref, "spicy_note"),
       fixed = TRUE
@@ -5735,7 +5851,7 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
   expect_identical(
     attr(tbl, "assoc_note"),
     paste(
-      "Group comparison: Pearson chi-squared test (dentist_12m,",
+      "P-values: Pearson chi-squared test (dentist_12m,",
       "physical_activity); Fisher exact test (smoking)."
     )
   )
@@ -5823,7 +5939,7 @@ test_that("a table the exact enumeration cannot handle takes the Monte Carlo tes
   expect_lt(abs(long$p.value[[1L]] - big), 4 * sqrt(big * (1 - big) / 2000))
   expect_identical(
     attr(tbl, "assoc_note"),
-    "Group comparison: Fisher exact test (Monte Carlo, 2000 replicates)."
+    "P-value: Fisher exact test (Monte Carlo, 2000 replicates)."
   )
   # `simulate_B` sets the replicates, and the note says how many.
   set.seed(5)
@@ -5874,7 +5990,7 @@ test_that("test = \"chisq\" gives the 0.13.0 p-values, test = \"fisher\" tests e
   }
   expect_identical(
     attr(table_categorical(d, vars, by = sex, test = "fisher"), "assoc_note"),
-    "Group comparison: Fisher exact test."
+    "P-values: Fisher exact test."
   )
   expect_error(
     table_categorical(d, smoking, by = sex, test = "exact"),
@@ -5936,7 +6052,7 @@ test_that("correct and simulate_p reach only the variables the chi-squared tests
       table_categorical(d, dentist_12m, by = sex, simulate_p = TRUE),
       "assoc_note"
     ),
-    "Group comparison: Pearson chi-squared test (simulated)."
+    "P-value: Pearson chi-squared test (simulated)."
   )
   # Under test = "fisher" neither reaches a variable.
   ref <- table_categorical(d, vars, by = sex, test = "fisher")
@@ -6064,10 +6180,11 @@ test_that("a variable with nothing to test carries no test type", {
   out <- .first_rows(table_categorical(d, c(x, y), by = g, output = "long"))
   expect_true(is.na(out$test_type[[1L]]) && is.na(out$p.value[[1L]]))
   expect_identical(out$test_type[[2L]], "fisher_exact")
-  # One test ran: the note names it alone, with no list of variables.
+  # One test ran: the note names it alone, with no list of variables, after
+  # the one p-value the table shows.
   expect_match(
     attr(table_categorical(d, c(x, y), by = g), "assoc_note"),
-    "Group comparison: Fisher exact test.",
+    "P-value: Fisher exact test.",
     fixed = TRUE
   )
   # No test ran: no sentence, and no test type in the typed view.
@@ -6122,7 +6239,7 @@ test_that("the note names the tests in French", {
       "assoc_note"
     ),
     paste0(
-      "Comparaison des groupes\u00a0: test du khi-deux de Pearson ",
+      "Valeurs p\u00a0: test du khi-deux de Pearson ",
       "(dentist_12m, physical_activity)\u00a0; test exact de Fisher (smoking)."
     )
   )
@@ -6131,7 +6248,62 @@ test_that("the note names the tests in French", {
   set.seed(1)
   expect_identical(
     attr(table_categorical(d300, region, by = sex_age), "assoc_note"),
-    "Comparaison des groupes\u00a0: test exact de Fisher (Monte-Carlo, 2000 r\u00e9plications)."
+    "Valeur p\u00a0: test exact de Fisher (Monte-Carlo, 2000 r\u00e9plications)."
+  )
+})
+
+test_that("the note names the test after the p-values, singular for one", {
+  set.seed(11)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), 40L)),
+    x = factor(sample(c("no", "yes"), 80L, TRUE)),
+    y = factor(sample(c("lo", "mid", "hi"), 80L, TRUE)),
+    k = factor(rep("same", 80L))
+  )
+  note <- function(...) {
+    attr(
+      suppressWarnings(table_categorical(
+        d,
+        by = g,
+        assoc_measure = "none",
+        ...
+      )),
+      "note"
+    )
+  }
+  expect_identical(
+    note(select = c(x, y)),
+    "Note. P-values: Pearson chi-squared test."
+  )
+  expect_identical(
+    note(select = x),
+    "Note. P-value: Pearson chi-squared test."
+  )
+  # A variable without a test shows no p-value: one p-value in the table.
+  expect_identical(
+    note(select = c(x, k)),
+    "Note. P-value: Pearson chi-squared test."
+  )
+  # The list of the tests, and its separator, are unchanged.
+  expect_identical(
+    note(select = c(x, y), test = "midp"),
+    "Note. P-values: Pearson chi-squared test (y); Fisher mid-p test (x)."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note(select = c(x, y)),
+    "Note. Valeurs p\u00a0: test du khi-deux de Pearson."
+  )
+  expect_identical(
+    note(select = x),
+    "Note. Valeur p\u00a0: test du khi-deux de Pearson."
+  )
+  expect_identical(
+    note(select = c(x, y), test = "midp"),
+    paste0(
+      "Note. Valeurs p\u00a0: test du khi-deux de Pearson (y)\u00a0; ",
+      "test mid-p de Fisher (x)."
+    )
   )
 })
 
@@ -6149,7 +6321,7 @@ test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
   expect_identical(
     attr(table_categorical(d, c(x, y), by = g, test = "fisher"), "assoc_note"),
     paste(
-      "Group comparison: Fisher exact test (y); Fisher exact test, Monte",
+      "P-values: Fisher exact test (y); Fisher exact test, Monte",
       "Carlo with 2000 replicates (x)."
     )
   )
@@ -6158,7 +6330,7 @@ test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
   expect_identical(
     attr(table_categorical(d, c(x, y), by = g, test = "fisher"), "assoc_note"),
     paste0(
-      "Comparaison des groupes\u00a0: test exact de Fisher (y)\u00a0; test ",
+      "Valeurs p\u00a0: test exact de Fisher (y)\u00a0; test ",
       "exact de Fisher, Monte-Carlo avec 2000 r\u00e9plications (x)."
     )
   )
@@ -6195,7 +6367,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   expect_identical(
     attr(out, "assoc_note"),
     paste(
-      "Group comparison: Pearson chi-squared test (Dentist, past 12 months;",
+      "P-values: Pearson chi-squared test (Dentist, past 12 months;",
       "physical_activity); Fisher exact test (smoking)."
     )
   )
@@ -6214,7 +6386,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   expect_identical(
     attr(out, "assoc_note"),
     paste0(
-      "Comparaison des groupes\u00a0: test du khi-deux de Pearson (Dentist, ",
+      "Valeurs p\u00a0: test du khi-deux de Pearson (Dentist, ",
       "past 12 months\u00a0; physical_activity)\u00a0; test exact de Fisher ",
       "(smoking)."
     )
@@ -6242,7 +6414,7 @@ test_that("labels without a comma keep the comma join in the notes", {
   expect_identical(
     attr(out, "assoc_note"),
     paste(
-      "Group comparison: Pearson chi-squared test (Dentist in the past 12",
+      "P-values: Pearson chi-squared test (Dentist in the past 12",
       "months, physical_activity); Fisher exact test (smoking)."
     )
   )
@@ -6256,7 +6428,7 @@ test_that("labels without a comma keep the comma join in the notes", {
   expect_identical(
     attr(out, "assoc_note"),
     paste0(
-      "Comparaison des groupes\u00a0: test du khi-deux de Pearson (Dentist ",
+      "Valeurs p\u00a0: test du khi-deux de Pearson (Dentist ",
       "in the past 12 months, physical_activity)\u00a0; test exact de Fisher ",
       "(smoking)."
     )
@@ -6340,7 +6512,7 @@ test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
       table_categorical(.mp_2x2(3, 1, 1, 3), x, by = g, test = "midp"),
       "assoc_note"
     ),
-    "Group comparison: Fisher mid-p test."
+    "P-value: Fisher mid-p test."
   )
 })
 
@@ -6449,7 +6621,7 @@ test_that("test = \"n1\" is the N-1 chi-squared of Campbell (2007)", {
       table_categorical(.mp_2x2(4, 16, 1, 21), x, by = g, test = "n1"),
       "assoc_note"
     ),
-    "Group comparison: N\u22121 chi-squared test."
+    "P-value: N\u22121 chi-squared test."
   )
 })
 
@@ -6479,7 +6651,7 @@ test_that("Campbell's rule sends a table with an expected count below 1 to Fishe
   )
   expect_identical(
     attr(tbl, "assoc_note"),
-    "Group comparison: N\u22121 chi-squared test (x); Fisher exact test (y)."
+    "P-values: N\u22121 chi-squared test (x); Fisher exact test (y)."
   )
   # The rule at its boundary: an expected count of exactly 1 keeps the
   # N-1 test.
@@ -6545,7 +6717,7 @@ test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
       "assoc_note"
     ),
     paste(
-      "Group comparison: Pearson chi-squared test (z); Fisher exact test",
+      "P-values: Pearson chi-squared test (z); Fisher exact test",
       "(w); Fisher mid-p test (x)."
     )
   )
@@ -6560,7 +6732,7 @@ test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
       ),
       "assoc_note"
     ),
-    "Group comparison: Pearson chi-squared test (z); N\u22121 chi-squared test (x)."
+    "P-values: Pearson chi-squared test (z); N\u22121 chi-squared test (x)."
   )
   # A binary variable by three groups is not 2 x 2 either.
   d3 <- data.frame(
@@ -6656,7 +6828,7 @@ test_that("correct is ignored under midp and n1; simulate_p reaches a larger tab
   expect_identical(
     attr(sim, "assoc_note"),
     paste(
-      "Group comparison: Pearson chi-squared test, simulated (z); Fisher",
+      "P-values: Pearson chi-squared test, simulated (z); Fisher",
       "mid-p test (x)."
     )
   )
@@ -6730,7 +6902,7 @@ test_that("the notes name the 2 x 2 tests in French", {
   expect_identical(
     attr(table_categorical(d, c(x, y), by = g, test = "n1"), "assoc_note"),
     paste0(
-      "Comparaison des groupes\u00a0: test du khi-deux N\u22121 (x)\u00a0; ",
+      "Valeurs p\u00a0: test du khi-deux N\u22121 (x)\u00a0; ",
       "test exact de Fisher (y)."
     )
   )
@@ -6739,7 +6911,7 @@ test_that("the notes name the 2 x 2 tests in French", {
       table_categorical(.mp_2x2(3, 1, 1, 3), x, by = g, test = "midp"),
       "assoc_note"
     ),
-    "Comparaison des groupes\u00a0: test mid-p de Fisher."
+    "Valeur p\u00a0: test mid-p de Fisher."
   )
   set.seed(4)
   expect_identical(
@@ -6755,7 +6927,7 @@ test_that("the notes name the 2 x 2 tests in French", {
       "assoc_note"
     ),
     paste0(
-      "Comparaison des groupes\u00a0: test du khi-deux de Pearson, ",
+      "Valeurs p\u00a0: test du khi-deux de Pearson, ",
       "simul\u00e9 (z)\u00a0; test mid-p de Fisher (x)."
     )
   )

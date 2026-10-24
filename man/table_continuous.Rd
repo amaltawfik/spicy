@@ -618,9 +618,9 @@ least two groups remain after dropping \code{NA}s, with every group
 contributing at least two observations. Choice of test family is
 driven by \code{test} (see the \verb{@param} entry for the full dispatch
 and the underlying \verb{stats::} functions called). Whenever the table
-shows \emph{p}-values, its note names the test of each variable ("Group
-comparison: Welch t-test."), each variable beside its own test when
-they differ.
+shows \emph{p}-values, its note names the test behind them ("P-values:
+Welch t-test.", "P-value:" when the table shows one), each variable
+beside its own test when they differ.
 }
 
 \section{No data in a group}{

@@ -1603,7 +1603,14 @@ table_outcome <- function(
     },
     missing = c(parts, no_data),
     inference = c(
-      if (show_comparison) .outcome_test_note(test_used, n_groups, var_labels),
+      if (show_comparison) {
+        .outcome_test_note(
+          test_used,
+          n_groups,
+          var_labels,
+          .n_p_shown(result[["p.value"]], result$variable)
+        )
+      },
       .desc_p_adjust_note(p_adjust_info),
       .outcome_structure_notes(outcome_label, show_comparison, FALSE)
     ),
@@ -1625,8 +1632,9 @@ table_outcome <- function(
 # reader is owed that, always, not only after a switch. The sentence is
 # the one `table_continuous()` writes (`.group_comparison_note()`). Each
 # block is named as its header row names it: `var_labels` is named by
-# column, like `test_used`.
-.outcome_test_note <- function(test_used, n_groups, var_labels) {
+# column, like `test_used`. `n_p` is the number of p-values the table
+# shows.
+.outcome_test_note <- function(test_used, n_groups, var_labels, n_p) {
   ran <- names(test_used)[!is.na(test_used)]
   .group_comparison_note(
     vapply(
@@ -1634,6 +1642,7 @@ table_outcome <- function(
       function(nm) continuous_test_label(test_used[[nm]], n_groups[[nm]]),
       character(1)
     ),
-    var_labels
+    var_labels,
+    n_p
   )
 }

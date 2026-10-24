@@ -154,7 +154,7 @@ p-values, and notes.
   clipboard outputs, as the other tables do.
 
 * The rendered formats of `table_categorical()` head the merged cell of
-  the association measure `Cramer's V [95% CI]`, stating the level.
+  the association measure `V [95% CI]`, stating the level.
 
 * The bounds of the association interval were `CI lower` and `CI upper`,
   and the keys `header_ci_lower` and `header_ci_upper` of
@@ -207,6 +207,10 @@ p-values, and notes.
   labels and heads the difference `Δ` alone, the note giving its order
   (`Δ = B − A.`), where it printed `M (A)`, `M (B)`, and `Δ (B - A)`.
 
+* `table_categorical()` heads a single association measure with its
+  symbol, V, φ, τb, or γ, and names its data frame column so, where both
+  read its name (`Cramer's V`); the note defines it like any symbol.
+
 * The tables sort the groups of a character `by` in the C locale,
   capitals before lower case and the same on every machine, as
   `cross_tab()` does.
@@ -257,6 +261,10 @@ p-values, and notes.
 * `table_continuous()` and `table_continuous_lm()` now name the test
   behind their p-values, and `table_categorical()` and
   `table_continuous_lm()` say when the statistics are weighted.
+
+* The sentence naming the test opens with "P-values:" ("P-value:" when
+  the table shows one), where it read "Group comparison:" ("Slope test:"
+  for a numeric `by`), or "p-values:" in a mixed-model regression note.
 
 * By default, a table note defines the abbreviations of the headers, the
   spanners, and the fit-statistic rows ("AIC = Akaike information
@@ -783,8 +791,8 @@ p-values, and notes.
   adjusted for the column the object `age` named.
 
 * With `labels = TRUE`, a note reads "Missing values removed: Body mass
-  index (12)", "Rows with missing Sex removed: 3", or "Group comparison:
-  Welch t-test (Sex)".
+  index (12), Sex (3)" or "P-values: Welch t-test (Sex); Welch one-way
+  ANOVA (Highest education level)".
 
 * A list of variables in a note is joined with semicolons when one of
   the labels contains a comma.

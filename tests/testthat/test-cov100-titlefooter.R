@@ -114,7 +114,7 @@ test_that("glmmTMB frame labels Wald-z asymptotic under a CR* vcov_kind", {
   )
   expect_identical(
     spicy:::.mixed_inference_label_for_frame(fr),
-    "p-values: Wald-z asymptotic (glmmTMB)."
+    "P-values: Wald-z asymptotic (glmmTMB)."
   )
 })
 

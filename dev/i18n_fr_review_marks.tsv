@@ -463,3 +463,5 @@ bridge:population_averaged_binomial_regression_gee	reviewed	2026-10-24	Régressi
 bridge:population_averaged_poisson_regression_gee	reviewed	2026-10-24	Régression de Poisson moyennée sur la population (GEE)	
 bridge:population_averaged_gamma_regression_gee	reviewed	2026-10-24	Régression gamma moyennée sur la population (GEE)	
 bridge:population_averaged_inverse_gaussian_regression_gee	reviewed	2026-10-24	Régression gaussienne inverse moyennée sur la population (GEE)	
+note_p_values_test	reviewed	2026-10-24	Valeurs p<NBSP>: %s.	
+note_p_values_test_one	reviewed	2026-10-24	Valeur p<NBSP>: %s.	

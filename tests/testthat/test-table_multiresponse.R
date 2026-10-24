@@ -1436,7 +1436,7 @@ test_that("the global test is the overall group comparison, in both languages", 
       table_categorical(sochealth, select = smoking, by = sex),
       "assoc_note"
     ),
-    "Group comparison: Pearson chi-squared test."
+    "P-value: Pearson chi-squared test."
   )
   withr::local_options(spicy.language = "fr")
   expect_match(

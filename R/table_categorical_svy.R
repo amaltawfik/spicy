@@ -1136,6 +1136,7 @@ table_categorical_svy <- function(
     deff = deff,
     p_value = p_value && n_test_ran > 0L,
     chisq_statistic = chisq_statistic,
+    n_p = .n_p_shown(result[[.CAT_KEY_P]], result$variable),
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused,
     no_data = no_data_note,

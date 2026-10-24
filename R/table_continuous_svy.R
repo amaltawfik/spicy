@@ -1675,7 +1675,11 @@ table_continuous_svy <- function(
       as.integer(df_user)
     )
   }
-  comparison <- .group_comparison_note(test_labels, var_labels)
+  comparison <- .group_comparison_note(
+    test_labels,
+    var_labels,
+    .n_p_shown(result[["p.value"]], result$variable)
+  )
   .compose_note(
     what = c(
       .design_n_note(

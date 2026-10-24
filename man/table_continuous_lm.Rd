@@ -866,9 +866,9 @@ When \code{covariates} is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
 \verb{Note. Adjusted for age, education (proportional).} With p-values, the
 note also names the test behind them, read off each outcome's model:
-\verb{Group comparison: t-test from the linear model.} (the F-test for a
-\code{by} with more than two levels), or \verb{Slope test: ...} for a numeric
-\code{by}.
+\verb{P-values: t-test from the linear model.} (the F-test for a \code{by} with
+more than two levels, the t-test of the slope for a numeric \code{by}), in
+the singular, \verb{P-value:}, when the table shows one.
 
 The rendering engines carry that same footer as a table note. On the
 \code{"tinytable"} route the note is set one size down;

@@ -71,7 +71,7 @@ test_that("footer annotates lmerModLmerTest fits with Satterthwaite line", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence, not just the method fragments.
-  expect_identical(out, "p-values: Satterthwaite t-test (lmerTest).")
+  expect_identical(out, "P-values: Satterthwaite t-test (lmerTest).")
 })
 
 
@@ -86,7 +86,7 @@ test_that("footer annotates lmerMod (no lmerTest) with Wald-z recommendation", {
   expect_identical(
     out,
     paste0(
-      "p-values: Wald-z, large-sample approximation. ",
+      "P-values: Wald-z, large-sample approximation. ",
       "Load `lmerTest` for Satterthwaite t-tests."
     )
   )
@@ -105,7 +105,7 @@ test_that("footer annotates glmer with Wald-z (lme4)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the glmer class.
-  expect_identical(out, "p-values: Wald-z asymptotic (lme4).")
+  expect_identical(out, "P-values: Wald-z asymptotic (lme4).")
 })
 
 test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
@@ -117,7 +117,7 @@ test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the glmmTMB class.
-  expect_identical(out, "p-values: Wald-z asymptotic (glmmTMB).")
+  expect_identical(out, "P-values: Wald-z asymptotic (glmmTMB).")
 })
 
 test_that("footer annotates lme with containment df (nlme)", {
@@ -130,7 +130,7 @@ test_that("footer annotates lme with containment df (nlme)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the nlme class.
-  expect_identical(out, "p-values: t-test with containment df (nlme).")
+  expect_identical(out, "P-values: t-test with containment df (nlme).")
 })
 
 
@@ -175,7 +175,7 @@ test_that("footer consolidates identical per-model lines (no 'Model k:' prefix)"
   expect_identical(
     out,
     paste0(
-      "p-values: Wald-z, large-sample approximation. ",
+      "P-values: Wald-z, large-sample approximation. ",
       "Load `lmerTest` for Satterthwaite t-tests."
     )
   )
@@ -200,9 +200,9 @@ test_that("footer prefixes per model in multi-model lists", {
   expect_identical(
     out,
     paste0(
-      "Model 1: p-values: Wald-z, large-sample approximation. ",
+      "Model 1: P-values: Wald-z, large-sample approximation. ",
       "Load `lmerTest` for Satterthwaite t-tests.\n",
-      "Model 2: p-values: t-test with containment df (nlme)."
+      "Model 2: P-values: t-test with containment df (nlme)."
     )
   )
 })
@@ -219,7 +219,7 @@ test_that("table_regression() footer surfaces the inference annotation", {
   expect_match(
     combined,
     paste0(
-      "p-values: Wald-z, large-sample approximation. ",
+      "P-values: Wald-z, large-sample approximation. ",
       "Load `lmerTest` for Satterthwaite t-tests."
     ),
     fixed = TRUE
@@ -238,7 +238,7 @@ test_that("orchestrator path keeps the Satterthwaite footer (default ci_method)"
   )
   out <- table_regression(fit)
   note <- paste(attr(out, "note"), collapse = "\n")
-  expect_match(note, "p-values: Satterthwaite t-test (lmerTest).", fixed = TRUE)
+  expect_match(note, "P-values: Satterthwaite t-test (lmerTest).", fixed = TRUE)
   expect_false(grepl("Load `lmerTest`", note, fixed = TRUE))
 })
 
@@ -253,7 +253,7 @@ test_that("CR* on mixed fits attributes the Satterthwaite df to clubSandwich", {
   note <- paste(attr(out, "note"), collapse = "\n")
   expect_match(
     note,
-    "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
     fixed = TRUE
   )
   expect_false(grepl("Satterthwaite t-test (lmerTest)", note, fixed = TRUE))

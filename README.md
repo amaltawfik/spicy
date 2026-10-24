@@ -398,18 +398,18 @@ table_categorical(
 #>    No              │       57.5            163         40.8       650   
 #>    Yes             │       42.5            237         59.2       550   
 #> 
-#>  Variable          │ Total %    p    Cramer's V 
-#> ───────────────────┼────────────────────────────
-#>  Current smoker    │          <.001     .14     
-#>    No              │  77.2                      
-#>    Yes             │  20.8                      
-#>    (Missing)       │   2.1                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │          <.001     .21     
-#>    No              │  54.2                      
-#>    Yes             │  45.8                      
+#>  Variable          │ Total %    p     V  
+#> ───────────────────┼─────────────────────
+#>  Current smoker    │          <.001  .14 
+#>    No              │  77.2               
+#>    Yes             │  20.8               
+#>    (Missing)       │   2.1               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │          <.001  .21 
+#>    No              │  54.2               
+#>    Yes             │  45.8               
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ``` r
@@ -455,7 +455,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -527,7 +527,7 @@ table_regression(fit_mixed)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 See [Categorical summary
@@ -568,7 +568,7 @@ table_outcome(
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 A “check all that apply” question gets a table of its own, one row per

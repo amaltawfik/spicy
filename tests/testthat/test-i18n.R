@@ -185,11 +185,17 @@ test_that("every frozen categorical key equals its English display label", {
   expect_identical(.cat_key_n("G"), .cat_label_n("G"))
   expect_identical(.cat_key_pct("G"), .cat_label_pct("G"))
 
-  # `.assoc_key()` names the public column of `table_categorical()`,
-  # `.assoc_label()` names the header a reader sees. Two switch tables
+  # `.assoc_key()` names the public column of `table_categorical()`, the
+  # header a reader sees names it on screen: the symbol of the measure
+  # when it has one, its name (`.assoc_label()`) otherwise. Two tables
   # that must stay equal at the English default.
   for (k in .assoc_measure_keys) {
-    expect_identical(.assoc_key(k), .assoc_label(k))
+    sym <- .assoc_symbol_key(k)
+    expect_identical(
+      .assoc_key(k),
+      if (is.null(sym)) .assoc_label(k) else spicy_str(sym),
+      info = k
+    )
   }
   # Both pass an unknown measure through unchanged.
   expect_identical(.assoc_key("no_such_measure"), "no_such_measure")

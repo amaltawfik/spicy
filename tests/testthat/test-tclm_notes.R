@@ -124,7 +124,7 @@ test_that("a classical unadjusted table names its test, and only that", {
   expect_false(grepl("Std. errors:", txt, fixed = TRUE))
   expect_match(
     txt,
-    "Note. Group comparison: t-test from the linear model.",
+    "Note. P-value: t-test from the linear model.",
     fixed = TRUE
   )
   # Without p-values there is no test to name. The contrast keeps the
@@ -173,7 +173,7 @@ test_that("bootstrap SEs are disclosed in the console note", {
   expect_match(
     txt,
     paste(
-      "Note. Group comparison: z-test from the linear model.",
+      "Note. P-value: z-test from the linear model.",
       "Std. errors: nonparametric bootstrap ("
     ),
     fixed = TRUE
@@ -503,7 +503,7 @@ test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
   expect_identical(
     attr(out, "note"),
     paste(
-      "Note. Group comparison: t-test from the linear model.",
+      "Note. P-value: t-test from the linear model.",
       "\u0394 = Yes \u2212 No.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )

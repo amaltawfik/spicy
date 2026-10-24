@@ -66,6 +66,8 @@
   "Missing values removed",
   "Rows with missing",
   "Group comparison:",
+  "P-values:",
+  "P-value:",
   "DEff",
   "Weighted n",
   "(Missing)",

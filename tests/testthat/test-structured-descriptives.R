@@ -215,7 +215,7 @@ test_that("as_structured() types a categorical table by a group", {
       "Total n",
       "Total %",
       "p",
-      "Cramer's V"
+      "V"
     )
   )
   # One spanner per group, on the (n, %) pair -- body column indices,
@@ -241,8 +241,8 @@ test_that("as_structured() types a categorical table by a group", {
   expect_true(all(is.na(s$body$p[-hdr])))
   expect_identical(s$col_meta$p$p_style, "apa")
   expect_equal(s$col_meta$p$threshold, 1e-3)
-  expect_identical(s$col_meta[["Cramer's V"]]$token, "assoc")
-  expect_equal(s$col_meta[["Cramer's V"]]$value_range, c(-1, 1))
+  expect_identical(s$col_meta[["V"]]$token, "assoc")
+  expect_equal(s$col_meta[["V"]]$value_range, c(-1, 1))
 
   expect_faithful(s, cat_display(tbl))
 })
@@ -269,7 +269,7 @@ test_that("p_value = FALSE leaves no test column in the typed view", {
       "Tertiary %",
       "Total n",
       "Total %",
-      "Cramer's V"
+      "V"
     )
   )
   # The group spanners do not move: the test sat to their right.
@@ -299,10 +299,10 @@ test_that("a signed association measure is not read as a bad p-value", {
   # The APA leading-zero strip applies (it is a bounded measure), but
   # the validated range is [-1, 1]: a negative tau is data, not a
   # broken p-value.
-  expect_identical(s$col_meta[["Kendall's Tau-b"]]$p_style, "apa")
+  expect_identical(s$col_meta[["\u03c4b"]]$p_style, "apa")
   expect_silent(spicy:::.validate_structured(s))
   s_bad <- s
-  s_bad$body[["Kendall's Tau-b"]][1L] <- -1.5
+  s_bad$body[["\u03c4b"]][1L] <- -1.5
   expect_warning(
     spicy:::.validate_structured(s_bad),
     class = "spicy_internal_invariant"

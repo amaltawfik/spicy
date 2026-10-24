@@ -677,7 +677,7 @@ test_that("Typst widens the columns under a group label wider than them", {
     paste0(
       "for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), ",
       "(1, 2, [Employeurs]), (3, 4, [Participants]), (5, 6, [Etudiants]), ",
-      "(7, 8, [Total]), (9, 9, [p]), (10, 10, [Cramer's V]),) {"
+      "(7, 8, [Total]), (9, 9, [p]), (10, 10, [V]),) {"
     ),
     fixed = TRUE
   )
@@ -1092,6 +1092,38 @@ test_that("the Typst source of a difference column, its order in the note", {
 test_that("the Typst source of decked heads, M over the groups and the difference alone", {
   skip_if_not_installed("tinytable")
   expect_snapshot(cat(.pt_typst(.pt_decked(output = "tinytable"))))
+})
+
+test_that("the Typst source of an association measure headed by its symbol", {
+  skip_if_not_installed("tinytable")
+  set.seed(5)
+  d <- data.frame(
+    x = factor(sample(c("lo", "mid", "hi"), 40L, TRUE)),
+    g = factor(rep(c("A", "B"), 20L))
+  )
+  expect_snapshot(cat(.pt_typst(table_categorical(
+    d,
+    x,
+    by = g,
+    assoc_measure = "cramer_v",
+    output = "tinytable"
+  ))))
+})
+
+test_that("the Typst source of a note naming the test of its one p-value", {
+  skip_if_not_installed("tinytable")
+  set.seed(9)
+  d <- data.frame(
+    y = round(stats::rnorm(24, 50, 10)),
+    g = factor(rep(c("A", "B"), 12L))
+  )
+  expect_snapshot(cat(.pt_typst(table_continuous(
+    d,
+    y,
+    by = g,
+    show_columns = c("m", "sd", "n"),
+    output = "tinytable"
+  ))))
 })
 
 test_that("the Typst source of a note listing a missing `by` last", {

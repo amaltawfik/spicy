@@ -467,8 +467,9 @@
 # with no data (`no_data`, its sentences); (c) the inference -- where the
 # standard errors come from, the degrees of freedom of the intervals and
 # tests, how the percentages were bounded, the test, the adjustment
-# (`p_adjust_info`); (d) the glosses of the columns. The whole note,
-# opened by the lead-in, or NULL.
+# (`p_adjust_info`); (d) the glosses of the columns. `n_p` is the number
+# of p-values the table shows. The whole note, opened by the lead-in, or
+# NULL.
 .cat_svy_note <- function(
   meta,
   degf_dom_used,
@@ -483,6 +484,7 @@
   deff,
   p_value,
   chisq_statistic,
+  n_p = 0L,
   n_negative_weights = 0L,
   test_refused = "none",
   ci_bound = FALSE,
@@ -555,7 +557,7 @@
   if (isTRUE(p_value) && !identical(test_refused, "all")) {
     inference <- c(
       inference,
-      spicy_fmt("note_group_comparison", .cat_svy_test_label(chisq_statistic))
+      .p_values_test_sentence(.cat_svy_test_label(chisq_statistic), n_p)
     )
   }
   inference <- c(inference, .desc_p_adjust_note(p_adjust_info))

@@ -2690,7 +2690,7 @@ test_that("the interval of an estimate states its level in every header", {
   skip_if_not_installed("flextable")
   header <- function(ft) unlist(ft$header$dataset, use.names = FALSE)
   expect_true(
-    "Cramer's V [95% CI]" %in%
+    "V [95% CI]" %in%
       header(q(table_categorical(
         d,
         select = education,
@@ -2864,7 +2864,10 @@ test_that("the sentences of every note come in the four kinds, in order", {
     withr::local_options(spicy.language = lang)
     weighted <- spicy_fmt("note_weighted_by", "w")
     removed <- spicy_str("note_missing_removed")
-    compared <- .fn_lead("note_group_comparison")
+    # The sentence naming the test opens on the p-values the table shows:
+    # one, or several.
+    one <- .fn_lead("note_p_values_test_one")
+    many <- .fn_lead("note_p_values_test")
     std_err <- .fn_lead("note_std_errors_single")
     cases <- list(
       table_categorical = list(
@@ -2877,7 +2880,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           drop_na = TRUE,
           smd = TRUE
         )),
-        c(weighted, removed, compared, paste0(spicy_str("header_smd"), " ="))
+        c(weighted, removed, one, paste0(spicy_str("header_smd"), " ="))
       ),
       table_categorical_svy = list(
         q(table_categorical_svy(des, select = xc, by = g2, drop_na = TRUE)),
@@ -2885,7 +2888,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           .fn_lead("note_design_n"),
           removed,
           std_err,
-          compared,
+          one,
           paste0(spicy_str("header_percent_symbol"), " =")
         )
       ),
@@ -2910,7 +2913,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
         )),
         c(
           removed,
-          compared,
+          many,
           .fn_lead("note_p_adjusted"),
           paste0(spicy_str("header_smd"), " =")
         )
@@ -2926,7 +2929,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           .fn_lead("note_design_n"),
           removed,
           std_err,
-          compared,
+          one,
           paste0(spicy_str("header_se"), " =")
         )
       ),
@@ -2939,7 +2942,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           covariates = age,
           vcov = "HC3"
         )),
-        c(weighted, .fn_lead("note_adjusted_for"), removed, compared, std_err)
+        c(weighted, .fn_lead("note_adjusted_for"), removed, one, std_err)
       ),
       table_outcome_weighted = list(
         q(table_outcome(
@@ -2955,7 +2958,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
         q(table_outcome(d, outcome = xn, select = c(g2, g), p_adjust = "holm")),
         c(
           removed,
-          compared,
+          many,
           .fn_lead("note_p_adjusted"),
           spicy_str("note_outcome_overall")
         )
@@ -3196,47 +3199,80 @@ test_that("the general note is one paragraph, the stars legend a line of its own
   }
 })
 
-test_that("every table that shows a p-value names its test", {
+test_that("every table that shows a p-value names its test, after the p-values", {
   skip_if_not_installed("survey")
   d <- .fn_data()
   des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
   q <- function(e) suppressMessages(suppressWarnings(e))
   for (lang in c("en", "fr")) {
     withr::local_options(spicy.language = lang)
-    compared <- .fn_lead("note_group_comparison")
+    # "P-value:" when the table shows one p-value, "P-values:" otherwise.
+    one <- function(test) spicy_fmt("note_p_values_test_one", spicy_str(test))
+    many <- function(test) spicy_fmt("note_p_values_test", spicy_str(test))
     named <- list(
       table_categorical = list(
         q(table_categorical(d, select = xc, by = g)),
-        spicy_fmt("note_group_comparison", spicy_str("test_pearson_chisq"))
+        one("test_pearson_chisq")
+      ),
+      table_categorical_two = list(
+        q(table_categorical(d, select = c(xc, g2), by = g)),
+        many("test_pearson_chisq")
       ),
       table_categorical_svy = list(
         q(table_categorical_svy(des, select = xc, by = g)),
-        compared
+        .fn_lead("note_p_values_test_one")
+      ),
+      table_categorical_svy_two = list(
+        q(table_categorical_svy(des, select = c(xc, g2), by = g)),
+        .fn_lead("note_p_values_test")
       ),
       # Named whatever the display, not only after a rank switch.
       table_continuous = list(
         q(table_continuous(d, select = xn, by = g)),
-        spicy_fmt("note_group_comparison", spicy_str("test_welch_oneway_anova"))
+        one("test_welch_oneway_anova")
+      ),
+      table_continuous_two = list(
+        q(table_continuous(d, select = c(xn, age), by = g)),
+        many("test_welch_oneway_anova")
       ),
       table_continuous_svy = list(
         q(table_continuous_svy(des, select = xn, by = g)),
-        compared
+        .fn_lead("note_p_values_test_one")
+      ),
+      table_continuous_svy_two = list(
+        q(table_continuous_svy(des, select = c(xn, age), by = g)),
+        .fn_lead("note_p_values_test")
       ),
       table_continuous_lm = list(
         q(table_continuous_lm(d, select = xn, by = g)),
-        spicy_fmt("note_group_comparison", spicy_str("test_lm_f"))
+        one("test_lm_f")
+      ),
+      table_continuous_lm_two = list(
+        q(table_continuous_lm(d, select = c(xn, age), by = g)),
+        many("test_lm_f")
       ),
       table_continuous_lm_slope = list(
         q(table_continuous_lm(d, select = xn, by = age)),
-        spicy_fmt("note_slope_test", spicy_str("test_lm_t"))
+        one("test_lm_t")
       ),
       table_outcome = list(
         q(table_outcome(d, outcome = xn, select = g)),
-        spicy_fmt("note_group_comparison", spicy_str("test_welch_oneway_anova"))
+        one("test_welch_oneway_anova")
+      ),
+      table_outcome_two = list(
+        q(table_outcome(d, outcome = xn, select = c(g, g2))),
+        .fn_lead("note_p_values_test")
       ),
       table_multiresponse = list(
         q(table_multiresponse(d, select = c(m1, m2), by = g)),
         .fn_lead("note_multiresponse_items_p")
+      ),
+      table_multiresponse_one = list(
+        q(table_multiresponse(d, select = m1, by = g)),
+        spicy_fmt(
+          "note_multiresponse_items_p_one",
+          spicy_str("test_pearson_chisq")
+        )
       )
     )
     for (fn in names(named)) {
@@ -3488,11 +3524,17 @@ test_that("a variable with data in fewer than two groups is not compared", {
         grepl(.no_data_sentences(label, list("q")), note, fixed = TRUE),
         info = paste(lang, fn)
       )
-      # No test ran, so none is named.
-      expect_false(
-        grepl(.fn_lead("note_group_comparison"), note, fixed = TRUE),
-        info = paste(lang, fn)
-      )
+      # No test ran, so none is named, under any lead.
+      for (k in c(
+        "note_p_values_test",
+        "note_p_values_test_one",
+        "note_group_comparison"
+      )) {
+        expect_false(
+          grepl(.fn_lead(k), note, fixed = TRUE),
+          info = paste(lang, fn, k)
+        )
+      }
       p <- as.data.frame(x)[["p"]]
       expect_true(is.null(p) || all(is.na(p)), info = paste(lang, fn))
     }
@@ -4019,7 +4061,10 @@ test_that("every table function refuses data with no rows, first", {
     "sigma",
     "sigma2",
     "sigma_hat",
-    "rho"
+    "rho",
+    "phi",
+    "tau_b",
+    "gamma"
   ),
   jama = c(
     "mean",
@@ -4121,6 +4166,16 @@ test_that("every table function refuses data with no rows, first", {
         smd = TRUE
       )),
       list("ci", "ll", "ul", "smd")
+    ),
+    # One measure for every variable: its symbol heads the column, before
+    # the interval of the measure. Phi is a Greek letter, V is not.
+    table_categorical_phi = list(
+      q(table_categorical(d, select = xc, by = g2, assoc_ci = TRUE)),
+      list("phi", "ci", "ll", "ul")
+    ),
+    table_categorical_v = list(
+      q(table_categorical(d, select = g, by = g2)),
+      list("cramer_v")
     ),
     table_categorical_svy = list(
       q(table_categorical_svy(

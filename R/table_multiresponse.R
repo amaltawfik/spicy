@@ -995,6 +995,7 @@ table_multiresponse <- function(
         none_row = none_row,
         test_res = test_res,
         p_value = p_value,
+        n_p = sum(!is.na(item_df[["p"]])),
         item_types = stats::setNames(item_df$test_type, item_labels[ord]),
         untested = untested,
         p_adjust_info = p_adjust_info,
@@ -2024,9 +2025,10 @@ table_multiresponse <- function(
 #       items with no data in a group (`no_data_note`, one sentence per
 #       set of groups);
 #   (c) the tests: the item p-values, named by their test (`item_types`,
-#       named by the labels the rows print), followed, under an
-#       adjustment, by the family's sentence naming the method and the
-#       number of tests (with `p_value`), the items without variation
+#       named by the labels the rows print; `n_p`, the number of item
+#       p-values the table shows, puts one in the singular), followed,
+#       under an adjustment, by the family's sentence naming the method
+#       and the number of tests (with `p_value`), the items without variation
 #       (whenever the item tests show, p-values or statistic), and the
 #       global test (with `p_value`; `test_res$global` is NULL otherwise).
 # It opens with "Note.", as every automatic note of the family does; a
@@ -2041,6 +2043,7 @@ table_multiresponse <- function(
   none_row,
   test_res,
   p_value,
+  n_p,
   item_types,
   untested,
   p_adjust_info,
@@ -2081,10 +2084,12 @@ table_multiresponse <- function(
         inference,
         if (!is.null(phrase)) {
           spicy_fmt(
-            if (phrase$single) {
-              "note_multiresponse_items_p"
-            } else {
+            if (!phrase$single) {
               "note_multiresponse_items_p_mixed"
+            } else if (n_p == 1L) {
+              "note_multiresponse_items_p_one"
+            } else {
+              "note_multiresponse_items_p"
             },
             phrase$text
           )

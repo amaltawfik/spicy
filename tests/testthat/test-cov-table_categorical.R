@@ -166,9 +166,9 @@ test_that("single-level select variable renders undefined p / assoc cells (defau
   mark <- spicy:::spicy_str("cell_undefined")
   head <- disp$Variable == "V1"
   expect_identical(disp$p[head], mark)
-  expect_identical(disp[["Cramer's V"]][head], mark)
+  expect_identical(disp[["V"]][head], mark)
   expect_true(all(disp$p[!head] == ""))
-  expect_true(all(disp[["Cramer's V"]][!head] == ""))
+  expect_true(all(disp[["V"]][!head] == ""))
 })
 
 # ---- one-way gt alignment branches ----------------------------------------
