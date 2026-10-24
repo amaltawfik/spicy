@@ -123,6 +123,7 @@ institution.</p>
 <span>  percent_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  note_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  abbreviations <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  minus_sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">v_digits</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -221,28 +222,48 @@ in italics in every rendered output: <code>"Note."</code> (the default, APA
 Manual 7 section 7.14), <code>"Note:"</code> (Chicago Manual of Style 18,
 paragraphs 3.77-3.81), or <code>""</code> for no lead-in word (AMA Manual of
 Style 11, section 4.1.4.10). The language spells it: under
-<code>options(spicy.language = "fr")</code>, <code>"Note:"</code> prints with the
-no-break space French puts before a colon. A <code>note</code> you type is
-printed as typed; its opening word is set in italics when it is the
-lead-in in force.</p></dd>
+<code>options(spicy.language = "fr")</code>, <code>"Note:"</code> is written "Note :",
+with the no-break space French puts before a colon, in every output.
+A <code>note</code> you type is printed as typed; its opening word is set in
+italics when it is the lead-in in force.</p></dd>
 
 
 <dt id="arg-abbreviations">abbreviations<a class="anchor" aria-label="anchor" href="#arg-abbreviations"></a></dt>
 <dd><p>Which abbreviations the note under the table
 defines: those of its headers, its spanners and the labels of its
 stub (the fit statistics and the random effects of a regression),
-not the symbols inside its cells. <code>NULL</code> (the default) follows the
-rule of the theme in force, the APA rule when there is none (see
-<em>Themes</em>). <code>"all"</code> defines every abbreviation and symbol the table
-shows, abbreviated words such as Min and Max included, except <em>n</em>,
-<em>N</em>, <em>p</em> and the test statistics (<em>t</em>, <em>z</em>, <em>F</em>,
-\(\chi^2\)), which no style and no journal defines:
-the setting for readers outside the field. <code>"none"</code> defines none, but
-keeps the definitions that say how a number was computed (partial
-eta-squared, the IQR as the width Q3 - Q1, the method of a
-standardized \(\beta\), the design effect). Either way the
-definitions take the form and the place of the theme in force. A
-<code>note</code> you type is printed as typed.</p></dd>
+not the symbols inside its cells. A definition identifies the
+quantity by its standard name, in one expression, the author included
+when the name carries one (<em>g</em> = Hedges's <em>g</em>); it never explains what
+the quantity measures or how to read it, which belongs to the text.
+<code>NULL</code> (the default) follows the rule of the theme in force, the APA
+rule when there is none (see <em>Themes</em>). <code>"all"</code> defines every
+abbreviation and symbol the table shows, abbreviated words such as Min
+and Max included, except <em>n</em>, <em>N</em>, <em>p</em> and the test statistics (<em>t</em>,
+<em>z</em>, <em>F</em>, \(\chi^2\)), which no style and no journal
+defines: the setting for readers outside the field. <code>"none"</code> defines
+none, but keeps the disambiguations, the definitions without which the
+symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
+Q1, the method of a standardized \(\beta\), the design-based
+standard error). Either way the definitions take the form and the
+place of the theme in force. A <code>note</code> you type is printed as typed.</p></dd>
+
+
+<dt id="arg-minus-sign">minus_sign<a class="anchor" aria-label="anchor" href="#arg-minus-sign"></a></dt>
+<dd><p>The sign of a negative number in the outputs that are
+printed: the Typst and LaTeX of <code>output = "tinytable"</code>, the LaTeX of
+<code>output = "gt"</code>, and the PDF of <code><a href="code_book.html">code_book()</a></code>, which reads the lever
+from <code>options(spicy.style)</code>. <code>"typographic"</code> (the default) sets the
+minus sign (Unicode U+2212, as wide as the plus sign) in place of the
+hyphen-minus, <code>"ascii"</code> keeps the hyphen-minus. It applies to the
+cells of the statistics (estimates, intervals, differences, effect
+sizes, the summaries of a codebook), not to the labels, the codes of
+a codebook, the headers or the note. LaTeX sets the sign in math mode,
+which every engine and font has. Every other output keeps the
+hyphen-minus – the console, the data frame, Excel, the clipboard,
+Word, HTML and markdown: their text is copied and recomputed, and a
+spreadsheet or a parser reads a minus sign as text, not as part of a
+number. No theme sets it.</p></dd>
 
 
 <dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
@@ -482,7 +503,7 @@ report as 'P&lt;0.001.'"</p></li>
 place ... when sample size is \(\ge\) 200", no decimals below
 200) is conditional on a per-group sample size that the style layer
 does not see; set <code>percent_digits</code> yourself. The <code>mean (SD)</code>
-notation the journal asks for, and its refusal of <code>\eqn{\pm}{+/-}</code>,
+notation the journal asks for, and its refusal of \(\pm\),
 are already how spicy renders dispersion. No rule on the
 abbreviations of a table note was found, so the note defines them as
 spicy's default does.</p>
@@ -525,7 +546,7 @@ BIC are among those section 6.44 names. The symbols that represent
 statistics are left undefined ("Do not define symbols or
 abbreviations that represent statistics (e.g., M, SD, F, t, df, p,
 N, n, OR, r)", section 6.44; section 7.15 adds <em>SE</em>), and spicy
-counts <em>Mdn</em> (the median of Table 6.5) and Hedges' <em>g</em> among them.
+counts <em>Mdn</em> (the median of Table 6.5) and Hedges's <em>g</em> among them.
 So are the symbols composed of Greek letters (the same two
 sections) and those its sample tables leave undefined (<em>B</em>,
 \(\beta\), \(R^2\), \(\Delta R^2\),

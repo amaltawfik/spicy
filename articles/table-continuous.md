@@ -271,7 +271,7 @@ table_continuous(
 ```
 
 `effect_size = "auto"` selects the canonical measure for the chosen
-`test` and number of groups: Hedges’ *g* (parametric, 2 groups),
+`test` and number of groups: Hedges’s *g* (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
 groups), or epsilon-squared (nonparametric, 3+ groups). To pick a
 specific measure explicitly, pass its character name:
@@ -389,7 +389,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Note. Missing values removed: bmi (12). SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 The two arguments are independent — turning the SMD on turns nothing
@@ -406,7 +406,7 @@ because an average over pairs has no published reading and can sit under
 
 ### It is not the effect size
 
-The SMD and Hedges’ *g* look alike and are never the same number. On
+The SMD and Hedges’s *g* look alike and are never the same number. On
 `sochealth` the two agree to two decimals, which hides the point, so
 here they are on a small unbalanced sample where they cannot hide:
 
@@ -433,7 +433,7 @@ table_continuous(
 #>  bmi      │ Female  g = -1.3057  -1.5194 
 #>           │ Male                         
 #> 
-#> Note. Group comparison: Welch t-test. SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size; SMD = standardized mean difference.
+#> Note. Group comparison: Welch t-test. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size; SMD = standardized mean difference.
 ```
 
 Both standardize a mean difference, but by different denominators.
@@ -623,7 +623,7 @@ table_continuous(
 #>           │ Upper middle        
 #>           │ High                
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing income_group removed: 18. Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), income_group (18). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Set `drop_na = FALSE` to display those rows as a dedicated “(Missing)”
@@ -754,7 +754,7 @@ table_continuous(
 #>  bmi      │ Female  -0.13 
 #>           │ Male          
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 It is a descriptive balance diagnostic with no *p* and no interval —
@@ -1004,7 +1004,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_m5iyswcwd2ocelo69hp2
+Descriptive statistics by education {#tinytable_1hrqmix7ycvq600dgh9j
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

@@ -58,7 +58,11 @@ cross_tab(
 - by:
 
   Optional grouping variable or expression. Can be a single variable or
-  a combination of multiple variables (e.g. `interaction(vs, am)`).
+  a combination of multiple variables (e.g. `interaction(vs, am)`). A
+  row with a missing `by` belongs to no group and leaves every table,
+  where a missing `x` or `y` leaves only its own; each note lists `by`
+  with that count after `x` and `y` ("Missing values removed: x (2), grp
+  (3).").
 
 - weights:
 

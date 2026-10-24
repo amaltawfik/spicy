@@ -242,7 +242,7 @@ Makowski et al. 2019) — is opt-in:</li>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction.</span></span></span></code></pre></div>
 <p>Read against the table: <code>Male</code>, at .617, is barely better
 than a coin flip on sign; <code>age</code>, at .886, leans positive
 without settling the direction; the education contrasts show 1.000 and
@@ -313,7 +313,7 @@ posterior median:</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                                    </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median.</span></span></span></code></pre></div>
 <p>The <code>mcse</code> column answers a question the other diagnostics
 do not: <em>how many of the printed digits are real?</em> MCMC output is
 stochastic — rerun the sampler with another seed and the third

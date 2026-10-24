@@ -57,7 +57,7 @@
   table_continuous_lm(): estimated marginal means, robust /
   cluster-robust / bootstrap / jackknife standard errors, case weights,
   additive covariate adjustment (G-computation or equal-weight), four
-  effect-size families (f2, Cohen’s d, Hedges’ g, Hays’ omega2) with
+  effect-size families (f2, Cohen’s d, Hedges’s g, Hays’ omega2) with
   noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM,
   The Lancet, … by name) to console, gt, tinytable, flextable, Excel,
   Word, or clipboard.

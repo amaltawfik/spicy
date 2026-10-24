@@ -115,7 +115,7 @@ table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
 #>    No     │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
 #>    Yes    │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), smoking (25). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ### Why “Overall” and not “Total”
@@ -247,7 +247,7 @@ Each block chooses its own test from its own level count. With
 `test = "welch"` — the default — a two-level block gets the Welch
 *t*-test and a three-or-more-level block gets the Welch one-way ANOVA,
 which is why the note above names both. `effect_size = "auto"` follows
-the test the block actually ran: Hedges’ *g* beside a *t*-test,
+the test the block actually ran: Hedges’s *g* beside a *t*-test,
 eta-squared beside an ANOVA, their rank homologs beside a rank test. A
 column can therefore mix measures from row to row, and each cell
 prefixes its own glyph.
@@ -703,7 +703,7 @@ table_outcome(
 | *Note.* Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_lklix2o81gr83ae0w330 .table .tinytable
+{#tinytable_rb7pgtnazbwtv5ymlb2r .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

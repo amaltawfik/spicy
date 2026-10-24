@@ -270,9 +270,11 @@ another label with
 <code>options(spicy.labels = list(row_missing_level = "(Not stated)"))</code>.
 If <code>TRUE</code>, rows with <code>NA</code> in the tabulated variable (and in <code>by</code>,
 when supplied) are removed BEFORE each cross-tabulation, and the
-removal is disclosed in a table note ("Missing values removed: ...")
-rather than silent; a <code>by</code> that no observation holds is then an
-error (class <code>spicy_invalid_data</code>).</p></dd>
+removal is disclosed in a table note, <code>by</code> last ("Missing values
+removed: smoking (25), sex (40).") rather than silent: a missing <code>by</code>
+takes the row out of every variable of the table, a missing value
+only out of its own variable. A <code>by</code> that no observation holds is
+then an error (class <code>spicy_invalid_data</code>).</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>

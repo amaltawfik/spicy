@@ -136,7 +136,7 @@ table_regression(fit, show_columns = c("b", "ci", "pd"))
 #>  n                        │ 1175                           
 #>  R² (Bayes)               │    0.02                        
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019).
+#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction.
 ```
 
 Read against the table: `Male`, at .617, is barely better than a coin
@@ -209,7 +209,7 @@ table_regression(fit, show_columns = c("b", "ci", "rhat", "mcse"))
 #>  n                        │ 1175                                    
 #>  R² (Bayes)               │    0.02                                 
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021).
+#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median.
 ```
 
 The `mcse` column answers a question the other diagnostics do not: *how

@@ -300,7 +300,7 @@ table_regression(
 #>    Upper secondary        │ [0.17, 0.25] 
 #>    Tertiary               │ [0.17, 0.25] 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; CI = confidence interval; ω² = bias-corrected partial omega-squared.
+#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared; CI = confidence interval; ω² = partial omega squared.
 ```
 
 Methodology notes:

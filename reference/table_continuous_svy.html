@@ -194,7 +194,9 @@ expression.</p></dd>
 that computes removes the missing values by default and counts them
 in the note, the rule of <code><a href="table_continuous.html">table_continuous()</a></code>: <code>TRUE</code> (the default)
 removes them, and the missing values of each summarized variable are
-always removed. With <code>FALSE</code> they form a <code>(Missing)</code> domain of
+always removed. The note lists both, <code>by</code> last: a missing <code>by</code> takes
+the observation out of the whole table, a missing value only out of
+its own variable. With <code>FALSE</code> they form a <code>(Missing)</code> domain of
 their own – an ordinary subpopulation, with its own degrees of
 freedom – which is excluded from the group comparison. Ignored
 (with a warning) when <code>by</code> is not used.</p></dd>
@@ -314,9 +316,18 @@ the wording you set here.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimal places for descriptive values and test
-statistics (default: <code>2</code>). A whole number: a fraction is an error,
-as for every <code>*_digits</code> argument.</p></dd>
+<dd><p>Number of decimal places of the statistics on each
+variable's own scale: the mean, SD, standard error, median, IQR,
+quartiles, minimum and maximum, and the confidence interval of the
+mean. One non-negative whole number sets them for every variable
+(default: <code>2</code>), and the weighted <em>n</em> and the design effect with them.
+A vector named by column, not by label, gives each variable it names
+its own, <code>digits = c(height = 0, bmi = 1)</code>; the other variables, the
+weighted <em>n</em> and the design effect keep the default, the <code>digits</code> of
+a <code><a href="spicy_style.html">spicy_style()</a></code> in force included. Names that match no variable are
+ignored, as in <code>labels</code>. A fraction is an error, as for every
+<code>*_digits</code> argument. The <em>p</em>-values (<code>p_digits</code>), the test statistics
+(two decimals) and the counts keep their own decimals.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -623,7 +634,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  api00      <span style="color: #9E9E9E;">│</span>  644.17    23.54     593.68       694.66      183    9.35  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -182,8 +182,9 @@ ordered by its value labels as there. The
 missing answers to the question are counted (see <code>base</code> and
 <code>none_row</code>), as a table that counts does (see <code>drop_na</code> in
 <code><a href="table_categorical.html">table_categorical()</a></code>), but a missing <code>by</code> has no group to be counted
-in: rows with a missing <code>by</code> are removed, and the note says how
-many, so this table has no <code>drop_na</code>; a <code>by</code>
+in: rows with a missing <code>by</code> are removed from the whole table, and
+the note lists <code>by</code> with their count ("Missing values removed: sex
+(2)."), so this table has no <code>drop_na</code>; a <code>by</code>
 that no observation holds is an error (class <code>spicy_invalid_data</code>).
 A level displayed with the label of the <code>Total</code> margin is an error,
 as in <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>

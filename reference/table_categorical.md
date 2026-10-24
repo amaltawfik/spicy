@@ -194,8 +194,10 @@ table_categorical(
   `options(spicy.labels = list(row_missing_level = "(Not stated)"))`. If
   `TRUE`, rows with `NA` in the tabulated variable (and in `by`, when
   supplied) are removed BEFORE each cross-tabulation, and the removal is
-  disclosed in a table note ("Missing values removed: ...") rather than
-  silent; a `by` that no observation holds is then an error (class
+  disclosed in a table note, `by` last ("Missing values removed: smoking
+  (25), sex (40).") rather than silent: a missing `by` takes the row out
+  of every variable of the table, a missing value only out of its own
+  variable. A `by` that no observation holds is then an error (class
   `spicy_invalid_data`).
 
 - weights:

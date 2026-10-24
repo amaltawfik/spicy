@@ -53,7 +53,7 @@ Use the function that matches the unit you want to report:
 | Function | Reports | Selection grammar | Typical additions |
 |:---|:---|:---|:---|
 | [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared or Fisher’s exact test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
-| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
+| [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’s *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
 | [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md) (experimental) | A “check all that apply” question, one row per item | `select` (the items), `by` | Chi-squared or Fisher’s exact test per item with a Holm adjustment, a global test that allows for several answers per respondent |
@@ -471,7 +471,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  bmi             │   25.69      26.20          0.51            0.09   
 #>  wellbeing_score │   67.16      71.05          3.89            2.12   
@@ -531,7 +531,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Note. Missing values removed: bmi (12). SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 ``` r
@@ -567,7 +567,7 @@ table_categorical(
 #>    No              │      
 #>    Yes             │      
 #> 
-#> Note. SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. SMD = standardized mean difference.
+#> Note. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. SMD = standardized mean difference.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
@@ -1061,7 +1061,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_jb937sf5yq3zu0kg6ym5 .table
+Categorical table by education {#tinytable_tb820uzcbnu30ig7hlyj .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Model-based continuous summary tables">
-<meta name="description" content="Build model-based summary tables for continuous outcomes in R with table_continuous_lm(): estimated marginal means, robust / cluster-robust / bootstrap / jackknife standard errors, case weights, additive covariate adjustment (G-computation or equal-weight), four effect-size families (f2, Cohen's d, Hedges' g, Hays' omega2) with noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM, The Lancet, ... by name) to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta name="description" content="Build model-based summary tables for continuous outcomes in R with table_continuous_lm(): estimated marginal means, robust / cluster-robust / bootstrap / jackknife standard errors, case weights, additive covariate adjustment (G-computation or equal-weight), four effect-size families (f2, Cohen's d, Hedges's g, Hays' omega2) with noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM, The Lancet, ... by name) to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
-<meta property="og:description" content="Build model-based summary tables for continuous outcomes in R with table_continuous_lm(): estimated marginal means, robust / cluster-robust / bootstrap / jackknife standard errors, case weights, additive covariate adjustment (G-computation or equal-weight), four effect-size families (f2, Cohen's d, Hedges' g, Hays' omega2) with noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM, The Lancet, ... by name) to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:description" content="Build model-based summary tables for continuous outcomes in R with table_continuous_lm(): estimated marginal means, robust / cluster-robust / bootstrap / jackknife standard errors, case weights, additive covariate adjustment (G-computation or equal-weight), four effect-size families (f2, Cohen's d, Hedges's g, Hays' omega2) with noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM, The Lancet, ... by name) to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -126,7 +126,7 @@ want to stay in a linear-model workflow with
 heteroskedasticity-consistent or cluster-robust standard errors,
 bootstrap / jackknife variance, case weights, additive covariate
 adjustment, or one of four effect-size families (<code>f2</code>,
-Cohen’s <em>d</em>, Hedges’ <em>g</em>, Hays’ <span class="math inline">\(\omega^2\)</span>) with noncentral CIs. Formatting
+Cohen’s <em>d</em>, Hedges’s <em>g</em>, Hays’ <span class="math inline">\(\omega^2\)</span>) with noncentral CIs. Formatting
 follows APA conventions by default; <code>style = "jama"</code> (or
 <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>,
 <code>"aer"</code>) switches the whole table to that journal’s published
@@ -146,7 +146,7 @@ every rule.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89            2.13   </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51            0.09   </span></span>
@@ -178,7 +178,7 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.12    </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span></span>
@@ -219,7 +219,7 @@ dispatched to <code>clubSandwich</code>:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by group</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 − 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 </span></span>
 <span><span class="co">#&gt; </span></span>
@@ -256,7 +256,7 @@ estimators in pure base R (no dependency added):</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.12    </span></span>
 <span><span class="co">#&gt; </span></span>
@@ -351,7 +351,7 @@ which estimand they are reading.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.08    </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span></span>
@@ -426,7 +426,7 @@ equally.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   65.90      69.56          3.65           2.08    </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   25.89      26.46          0.58           0.19    </span></span>
@@ -453,7 +453,7 @@ generalization of the bivariate effect size to a covariate-adjusted
 model.</li>
 <li>
 <code>effect_size = "cohens_d"</code> and <code>"hedges_g"</code>
-raise <code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’
+raise <code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’s
 <em>g</em> have no defined extension under adjustment (the pooled SD has
 no canonical analog). The error message points to <code>f2</code> /
 <code>omega2</code> as the partial-F generalizations.</li>
@@ -488,7 +488,7 @@ so the table stays internally consistent — and all are <strong>invariant
 to <code>vcov</code></strong> (the choice of classical or
 <code>HC*</code> standard errors changes the contrast SE, CI, and test
 statistic but not the standardized effect size itself).</p>
-<p>Cohen’s <em>d</em> and Hedges’ <em>g</em> are the conventions for
+<p>Cohen’s <em>d</em> and Hedges’s <em>g</em> are the conventions for
 two-group comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and
 require <code>by</code> to have exactly two non-empty levels:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -500,7 +500,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91      0.47     .124 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55      0.49     .905 </span></span>
@@ -510,8 +510,8 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
-<p>Hedges’ <em>g</em> applies the small-sample correction
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<p>Hedges’s <em>g</em> applies the small-sample correction
 <code>J = 1 - 3/(4·df_resid - 1)</code>. It is generally preferred over
 raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 2018):</p>
@@ -524,7 +524,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91      0.47     .124 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55      0.49     .905 </span></span>
@@ -534,7 +534,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>For categorical predictors with three or more levels (or numeric
 predictors), use Hays’ <code>omega²</code> for a less biased estimate of
 the population variance explained (Hays 1963; Olejnik and Algina 2003;
@@ -612,7 +612,7 @@ with the bracketed CI (article-ready):</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.36    67.65      -1.72        -3.91      0.47     .124 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.96    25.93      -0.03        -0.55      0.49     .905 </span></span>
@@ -622,7 +622,7 @@ with the bracketed CI (article-ready):</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11 [-0.25, 0.03]  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01 [-0.15, 0.13]  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The CI level follows <code>ci_level</code> (default
 <code>0.95</code>). For programmatic access,
 <code>output = "data.frame"</code> keeps the bounds beside the effect
@@ -637,7 +637,7 @@ them:</p>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;          variable           label   M (No)  M (Yes) Δ (Yes - No) 95% CI LL</span></span>
+<span><span class="co">#&gt;          variable           label   M (No)  M (Yes) Δ (Yes − No) 95% CI LL</span></span>
 <span><span class="co">#&gt; 1 wellbeing_score wellbeing_score 69.36317 67.64538    -1.717793 -3.906437</span></span>
 <span><span class="co">#&gt;   95% CI UL         p          R²          g es_ci_lower es_ci_upper    n</span></span>
 <span><span class="co">#&gt; 1 0.4708504 0.1238546 0.002017481 -0.1098571  -0.2497291  0.03006164 1175</span></span></code></pre></div>
@@ -683,7 +683,7 @@ European reporting):</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   67,16      71,05          3,89           2,13    </span></span>
 <span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   25,69      26,20          0,51           0,09    </span></span>
@@ -919,7 +919,7 @@ M (Male)
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_Δ..Male...Female.">
 <div class="gt_column_spanner">
-Δ (Male - Female)
+Δ (Male − Female)
 </div>
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_CI">
@@ -955,7 +955,7 @@ n
 </th>
 <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="M-(Male)">
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male---Female)">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="aΔ-(Male-−-Female)">
 </th>
 <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor; text-align: center;" scope="col" id="LL">
 LL
@@ -984,7 +984,7 @@ wellbeing_score
 <td headers="M-(Male)" class="gt_row gt_center">
 71.05
 </td>
-<td headers="aΔ-(Male---Female)" class="gt_row gt_center">
+<td headers="aΔ-(Male-−-Female)" class="gt_row gt_center">
 3.89
 </td>
 <td headers="LL" class="gt_row gt_center">
@@ -1016,7 +1016,7 @@ bmi
 <td headers="M-(Male)" class="gt_row gt_center">
 26.20
 </td>
-<td headers="aΔ-(Male---Female)" class="gt_row gt_center">
+<td headers="aΔ-(Male-−-Female)" class="gt_row gt_center">
 0.51
 </td>
 <td headers="LL" class="gt_row gt_center">
@@ -1048,7 +1048,7 @@ life_sat_health
 <td headers="M-(Male)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
  3.59
 </td>
-<td headers="aΔ-(Male---Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+<td headers="aΔ-(Male-−-Female)" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
 0.08
 </td>
 <td headers="LL" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">

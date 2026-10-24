@@ -129,13 +129,15 @@ table_continuous(
   variable's statistics, and the exclusion is disclosed in a table note
   ("Missing values removed: ...") rather than silent. If `TRUE` (the
   default), rows with `NA` in `by` are removed from the grouped
-  summaries, and a note line says so ("Rows with missing ... removed").
-  If `FALSE`, rows with `NA` in `by` form a dedicated `"(Missing)"`
-  group – the field convention for descriptive tables (gtsummary's
-  "Unknown" row; see the Epidemiologist R Handbook, Descriptive tables)
-  – while the group-comparison test and effect size are still computed
-  on the observed groups only (show the missing, test the observed,
-  matching
+  summaries and counted in the same note, `by` after the variables
+  ("Missing values removed: bmi (3), sex (2)."): a missing `by` takes
+  the row out of the whole table, a missing value only out of its own
+  variable's statistics. If `FALSE`, rows with `NA` in `by` form a
+  dedicated `"(Missing)"` group – the field convention for descriptive
+  tables (gtsummary's "Unknown" row; see the Epidemiologist R Handbook,
+  Descriptive tables) – while the group-comparison test and effect size
+  are still computed on the observed groups only (show the missing, test
+  the observed, matching
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md));
   a level of `by` displayed with the label of that group is an error, as
   there. Under `drop_na = TRUE`, a `by` that no observation holds is an
@@ -247,11 +249,11 @@ table_continuous(
   - `"none"` (default): no effect-size column.
 
   - `"auto"`: auto-select the canonical measure for the chosen `test`
-    and group count – Hedges' *g* (parametric, 2 groups), eta-squared
+    and group count – Hedges's *g* (parametric, 2 groups), eta-squared
     (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
     groups), epsilon-squared (nonparametric, 3+ groups).
 
-  - `"hedges_g"`: Hedges' *g* (bias-corrected standardized mean
+  - `"hedges_g"`: Hedges's *g* (bias-corrected standardized mean
     difference, 2 groups, parametric). CI via the Hedges & Olkin normal
     approximation.
 
@@ -348,9 +350,20 @@ table_continuous(
 
 - digits:
 
-  Number of decimal places for descriptive values and test statistics
-  (default: `2`). A whole number: a fraction is an error, as for every
-  `*_digits` argument.
+  Number of decimal places of the statistics on each variable's own
+  scale: the mean, SD, median, IQR, quartiles, minimum and maximum, and
+  the confidence intervals of the mean and of the median. One
+  non-negative whole number sets them for every variable (default: `2`),
+  and the weighted *n* with them. A vector named by column, not by
+  label, gives each variable it names its own,
+  `digits = c(height = 0, bmi = 1)`; the other variables and the
+  weighted *n* keep the default, the `digits` of a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  in force included. Names that match no variable are ignored, as in
+  `labels`. A fraction is an error, as for every `*_digits` argument.
+  The other numbers keep their own decimals: *p*-values (`p_digits`),
+  effect sizes and the SMD (`effect_size_digits`), test statistics (two
+  decimals) and counts (none).
 
 - effect_size_digits:
 
@@ -1049,7 +1062,7 @@ table_continuous(
 #> ────────────┼───────────────────────────────────────────────────────────
 #>  bmi        │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 - Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to

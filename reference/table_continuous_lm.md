@@ -14,7 +14,7 @@ produces the slope and its confidence interval.
 Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
 (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling. Effect
-sizes (Cohen's *d* `"cohens_d"`, Hedges' *g* `"hedges_g"`, Hays'
+sizes (Cohen's *d* `"cohens_d"`, Hedges's *g* `"hedges_g"`, Hays'
 `"omega2"`, Cohen's `"f2"`) are reported with optional noncentral *t* /
 *F* confidence intervals via `effect_size_ci`, and adapt under covariate
 adjustment (see `effect_size`).
@@ -141,7 +141,10 @@ table_continuous_lm(
   outcome (NAs in `y` and `weights` are also excluded; see Details), the
   rule of a table that computes (see `drop_na` in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md));
-  this table has no `drop_na`.
+  this table has no `drop_na`. The note lists `by` after the outcomes
+  and covariates ("Missing values removed: bmi (3), sex (2)."): a
+  missing `by` or covariate takes the row out of the model of every
+  outcome, a missing outcome only out of its own.
 
   An outcome with no observed value in a level of a categorical `by`
   (typically a question not asked in that group) has no data there: it
@@ -256,10 +259,9 @@ table_continuous_lm(
   outcome: `select = everything()` skips it, and naming it in `select`,
   or giving its position, is an error. When supplied, weights are passed
   to `lm(..., weights = ...)`, so coefficients become weighted
-  least-squares estimates and `\eqn{R^2}{R^2}`, adjusted
-  `\eqn{R^2}{R^2}`, and the four effect sizes are computed from the
-  corresponding weighted sums of squares (see the *Weights* section in
-  Details).
+  least-squares estimates and \\R^2\\, adjusted \\R^2\\, and the four
+  effect sizes are computed from the corresponding weighted sums of
+  squares (see the *Weights* section in Details).
 
 - vcov:
 
@@ -324,11 +326,11 @@ table_continuous_lm(
 
   The `HC*` variants are computed via
   [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html).
-  Coefficients (means, contrasts, slopes), `\eqn{R^2}{R^2}`, and the
-  standardized effect sizes (`f2`, `cohens_d`, `hedges_g`, `omega2`) are
-  point estimates from the OLS/WLS fit and are not affected by `vcov`;
-  only their standard errors, CIs, and the test statistic of the
-  contrast change.
+  Coefficients (means, contrasts, slopes), \\R^2\\, and the standardized
+  effect sizes (`f2`, `cohens_d`, `hedges_g`, `omega2`) are point
+  estimates from the OLS/WLS fit and are not affected by `vcov`; only
+  their standard errors, CIs, and the test statistic of the contrast
+  change.
 
 - cluster:
 
@@ -433,12 +435,10 @@ table_continuous_lm(
 
   - `"none"` (the default): no effect-size column.
 
-  - `"f2"`: Cohen's
-    `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})`. Defined
-    for any predictor type. Familiar from Cohen (1988); standard input
-    for a-priori power analysis. Note that for a single-predictor model,
-    `\eqn{f^2}{f^2}` is a monotone transform of `\eqn{R^2}{R^2}` and
-    adds no information beyond it.
+  - `"f2"`: Cohen's `f^2 = R^2 / (1 - R^2)`. Defined for any predictor
+    type. Familiar from Cohen (1988); standard input for a-priori power
+    analysis. Note that for a single-predictor model, \\f^2\\ is a
+    monotone transform of \\R^2\\ and adds no information beyond it.
 
   - `"cohens_d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat`
     is the model coefficient (the displayed difference) and `sigma_hat`
@@ -447,13 +447,12 @@ table_continuous_lm(
     function errors. The sign matches the displayed
     `Delta (level2 - level1)`.
 
-  - `"hedges_g"`: Hedges' `g = J * d` with the small-sample correction
+  - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 
   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
-    population variance explained, less optimistic than `\eqn{R^2}{R^2}`
-    for small samples. Defined for any predictor type and truncated at
-    0.
+    population variance explained, less optimistic than \\R^2\\ for
+    small samples. Defined for any predictor type and truncated at 0.
 
   When `weights` is supplied, `"cohens_d"`, `"hedges_g"`, and `"omega2"`
   are derived from the weighted least-squares fit (using weighted sums
@@ -474,7 +473,7 @@ table_continuous_lm(
     `(1 - r^2_partial)`.
 
   - `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported` error:
-    Cohen's *d* and Hedges' *g* have no canonical extension to adjusted
+    Cohen's *d* and Hedges's *g* have no canonical extension to adjusted
     models (the pooled SD is undefined under adjustment). Use `"f2"` or
     `"omega2"` instead – both generalize via partial *F*.
 
@@ -499,16 +498,15 @@ table_continuous_lm(
   Character. Fit statistic to include in the wide and rendered outputs.
   One of:
 
-  - `"r2"` (default): the model `\eqn{R^2}{R^2}`
-    (`summary(lm)$r.squared`).
+  - `"r2"` (default): the model \\R^2\\ (`summary(lm)$r.squared`).
 
-  - `"adj_r2"`: adjusted `\eqn{R^2}{R^2}`, penalizing for `df_effect`
-    relative to the residual degrees of freedom.
+  - `"adj_r2"`: adjusted \\R^2\\, penalizing for `df_effect` relative to
+    the residual degrees of freedom.
 
   - `"none"`: omit the fit-statistic column.
 
-  When `weights` is supplied, `\eqn{R^2}{R^2}` and adjusted
-  `\eqn{R^2}{R^2}` are the weighted least-squares versions reported by
+  When `weights` is supplied, \\R^2\\ and adjusted \\R^2\\ are the
+  weighted least-squares versions reported by
   `summary(lm(..., weights = ...))`.
 
 - ci:
@@ -554,16 +552,25 @@ table_continuous_lm(
 
 - digits:
 
-  Number of decimal places for descriptive values, regression
-  coefficients, and test statistics (default: `2`). Must be a single
-  non-negative whole number: a fraction (`2.9`) is an error. Same
-  constraint for `fit_digits` and `effect_size_digits`.
+  Number of decimal places of the numbers on each outcome's own scale:
+  the means of the groups, adjusted or not, the difference or the slope,
+  and its confidence interval. One non-negative whole number sets them
+  for every outcome (default: `2`), and the test statistic and the
+  weighted *n* with them. A vector named by column, not by label, gives
+  each outcome it names its own, `digits = c(height = 0, bmi = 1)`; the
+  other outcomes, the test statistic and the weighted *n* keep the
+  default, the `digits` of a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  in force included. Names that match no outcome are ignored, as in
+  `labels`. A fraction (`2.9`) is an error, as for `fit_digits` and
+  `effect_size_digits`. The *p*-value (`p_digits`), the \\R^2\\
+  (`fit_digits`), the effect size (`effect_size_digits`) and the counts
+  keep their own decimals.
 
 - fit_digits:
 
-  Number of decimal places for model-fit columns (`\eqn{R^2}{R^2}` or
-  adjusted `\eqn{R^2}{R^2}`) in wide and rendered outputs (default:
-  `2`).
+  Number of decimal places for model-fit columns (\\R^2\\ or adjusted
+  \\R^2\\) in wide and rendered outputs (default: `2`).
 
 - effect_size_digits:
 
@@ -799,18 +806,16 @@ cell at all.
 
 Effect size is selected explicitly via `effect_size` (defaults to
 `"none"`). All variants are derived from the same fitted model as the
-displayed coefficients, `\eqn{R^2}{R^2}`, and CIs, so the effect size
-stays internally consistent with the rest of the table.
+displayed coefficients, \\R^2\\, and CIs, so the effect size stays
+internally consistent with the rest of the table.
 
-- `"f2"`: Cohen's
-  `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})` (Cohen 1988).
-  Defined for any predictor type. For a single-predictor model,
-  `\eqn{f^2}{f^2}` is a monotone transform of `\eqn{R^2}{R^2}` and adds
-  no information beyond it; its primary use is in *a priori* power
-  analysis (e.g. G\*Power).
+- `"f2"`: Cohen's `f^2 = R^2 / (1 - R^2)` (Cohen 1988). Defined for any
+  predictor type. For a single-predictor model, \\f^2\\ is a monotone
+  transform of \\R^2\\ and adds no information beyond it; its primary
+  use is in *a priori* power analysis (e.g. G\*Power).
 
 - `"cohens_d"`, `"hedges_g"`: standardized mean difference (Cohen's *d*
-  or Hedges' *g*), defined only when `by` has exactly two non-empty
+  or Hedges's *g*), defined only when `by` has exactly two non-empty
   levels. `d = beta_hat / sigma_hat` with
   `sigma_hat = summary(fit)$sigma` (the pooled within-group SD for the
   unweighted two-group case); `g = J * d` with
@@ -838,7 +843,7 @@ Type-II test of `by` after all covariates, equal to
 [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) in this additive
 setting). `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported`
 error: the pooled standard deviation has no canonical extension under
-adjustment, so Cohen's *d* and Hedges' *g* are undefined for adjusted
+adjustment, so Cohen's *d* and Hedges's *g* are undefined for adjusted
 models. See `effect_size` for the full dispatch.
 
 Confidence intervals for the effect size are available via
@@ -852,17 +857,16 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
   Fouladi 1997; Goulet-Pelletier and Cousineau 2018). Empirical coverage
   is nominal across sample sizes (Fitts 2021), unlike the older
   Hedges-Olkin normal approximation which is biased for small samples.
-  For Hedges' *g* the bounds inherit the *J* small-sample correction.
+  For Hedges's *g* the bounds inherit the *J* small-sample correction.
 
 - `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Without
   covariates (model-level effect sizes), bounds are converted from the
   noncentrality parameter using `omega^2 = ncp / (ncp + N)` and
-  `\eqn{f^2}{f^2} = ncp / N` respectively, with `N = df1 + df2 + 1`
-  (total sample size). Under covariate adjustment (partial effect
-  sizes), the bounds use the partial transforms instead: partial
-  `\eqn{f^2}{f^2} = ncp / df2`, and for partial `omega^2` the inversion
-  runs at the *F*-value equivalent of the omega-squared point estimate
-  with bounds `ncp / (ncp + df2)` – the
+  `f^2 = ncp / N` respectively, with `N = df1 + df2 + 1` (total sample
+  size). Under covariate adjustment (partial effect sizes), the bounds
+  use the partial transforms instead: partial `f^2 = ncp / df2`, and for
+  partial `omega^2` the inversion runs at the *F*-value equivalent of
+  the omega-squared point estimate with bounds `ncp / (ncp + df2)` – the
   [`effectsize::omega_squared()`](https://easystats.github.io/effectsize/reference/eta_squared.html)
   `partial = TRUE` convention, which is narrower than the partial
   eta-squared CI because omega-squared shrinks the point estimate.
@@ -939,27 +943,27 @@ categorical predictors), reflected in the displayed test header. Use the
 bootstrap when the residual distribution is non-standard or the sample
 is small; use the jackknife as a closed-form, deterministic alternative.
 
-`\eqn{R^2}{R^2}`, adjusted `\eqn{R^2}{R^2}`, and the effect sizes remain
-ordinary least-squares (or weighted least-squares) statistics regardless
-of `vcov`.
+\\R^2\\, adjusted \\R^2\\, and the effect sizes remain ordinary
+least-squares (or weighted least-squares) statistics regardless of
+`vcov`.
 
 ## Weights
 
 When `weights` is supplied, `table_continuous_lm()` fits weighted linear
 models via `lm(..., weights = ...)`. Means become weighted least-squares
 estimates and contrasts and slopes are weighted. The fit statistics
-`\eqn{R^2}{R^2}` and adjusted `\eqn{R^2}{R^2}`, as well as Hays'
-`omega^2` and Cohen's `\eqn{f^2}{f^2}`, use the corresponding **weighted
-sums of squares** from the WLS fit. Cohen's `d` and Hedges' `g` use the
-**WLS coefficient and the model's weighted residual standard deviation**
-(`summary(fit)$sigma`), which is the standard convention for
-case-weighted regression-style reporting (DuMouchel and Duncan 1983);
-the noncentral *t* CI for `d` / `g` uses the raw (unweighted) group
-counts and the residual degrees of freedom of the WLS fit (`n - p`).
-This case-weighted workflow is appropriate for weighted article tables,
-but is **not** a substitute for a full complex-survey design (see e.g.
-the `survey` package), nor for propensity-score balance assessment under
-the Austin and Stuart (2015) convention (see e.g. `cobalt::bal.tab()`).
+\\R^2\\ and adjusted \\R^2\\, as well as Hays' `omega^2` and Cohen's
+\\f^2\\, use the corresponding **weighted sums of squares** from the WLS
+fit. Cohen's `d` and Hedges's `g` use the **WLS coefficient and the
+model's weighted residual standard deviation** (`summary(fit)$sigma`),
+which is the standard convention for case-weighted regression-style
+reporting (DuMouchel and Duncan 1983); the noncentral *t* CI for `d` /
+`g` uses the raw (unweighted) group counts and the residual degrees of
+freedom of the WLS fit (`n - p`). This case-weighted workflow is
+appropriate for weighted article tables, but is **not** a substitute for
+a full complex-survey design (see e.g. the `survey` package), nor for
+propensity-score balance assessment under the Austin and Stuart (2015)
+convention (see e.g. `cobalt::bal.tab()`).
 
 The `n` column always reports the unweighted analytic sample size for
 each outcome. When `show_weighted_n = TRUE`, an additional `Weighted n`
@@ -1186,7 +1190,7 @@ Other spicy tables:
 ``` r
 # --- Basic usage ---------------------------------------------------------
 
-# Default: ASCII table with model-based means, p, and \eqn{R^2}{R^2}.
+# Default: ASCII table with model-based means, p, and R-squared.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1194,7 +1198,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.13    
 #>  bmi             │   25.69      26.20          0.51           0.09    
@@ -1217,7 +1221,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.13    
 #>  bmi             │   25.69      26.20          0.51           0.09    
@@ -1241,7 +1245,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.01      70.88          3.87           2.11    
 #>  bmi             │   25.51      25.98          0.47           0.05    
@@ -1263,7 +1267,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.13    
 #>  bmi             │   25.69      26.20          0.51           0.09    
@@ -1275,7 +1279,7 @@ table_continuous_lm(
 #> 
 #> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
-# Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
+# Cohen's f-squared alongside R-squared (familiar power-analysis effect size).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1284,7 +1288,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.13    
 #>  bmi             │   25.69      26.20          0.51           0.09    
@@ -1354,7 +1358,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>   model.frame.iv_robust estimatr
 #> Continuous outcomes by group
 #> 
-#>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  
+#>  Variable │ M (1)  M (2)  Δ (2 − 1)  95% CI LL  95% CI UL   p     R²   n  
 #> ──────────┼───────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
 #> 
@@ -1374,7 +1378,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.27      70.93          3.65           2.08    
 #>  bmi             │   25.65      26.23          0.58           0.19    
@@ -1398,7 +1402,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   65.90      69.56          3.65           2.08    
 #>  bmi             │   25.89      26.46          0.58           0.19    
@@ -1423,7 +1427,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.27      70.93          3.65           2.09    
 #>  bmi             │   25.65      26.23          0.58           0.19    
@@ -1437,7 +1441,7 @@ table_continuous_lm(
 
 # --- Article-style polish -----------------------------------------------
 
-# Pretty outcome labels and adjusted \eqn{R^2}{R^2}.
+# Pretty outcome labels and adjusted R-squared.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1450,7 +1454,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable                 │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable                 │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ──────────────────────────┼────────────────────────────────────────────────────
 #>  WHO-5 wellbeing (0-100)  │   67.16      71.05          3.89           2.13    
 #>  Body-mass index (kg/m^2) │   25.69      26.20          0.51           0.09    
@@ -1471,7 +1475,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67,16      71,05          3,89           2,13    
 #>  bmi             │   25,69      26,20          0,51           0,09    
@@ -1492,7 +1496,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable               │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable               │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ────────────────────────┼────────────────────────────────────────────────────
 #>  life_sat_health        │    3.51       3.59          0.08           -0.06   
 #>  life_sat_work          │    3.32       3.44          0.12           -0.01   
@@ -1525,7 +1529,7 @@ table_continuous_lm(
   by = sex,
   output = "data.frame"
 )
-#>          variable           label M (Female) M (Male) Δ (Male - Female)
+#>          variable           label M (Female) M (Male) Δ (Male − Female)
 #> 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576
 #> 2             bmi             bmi   25.68506 26.19685         0.5117882
 #>    95% CI LL 95% CI UL            p          R²    n

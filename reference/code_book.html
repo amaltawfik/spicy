@@ -398,11 +398,14 @@ and of the Excel workbook only. On a sheet that lists declared missing
 codes, a Missing column marks them with <code>M</code>; the row of the system
 missing values reads "System missing". Minimum and maximum are written
 at the precision of the data; mean, SD, and median at three significant
-digits of the SD. A sheet breaks across pages only when it does not fit
-on one; its table of values then repeats its header under
-"name (continued)". An index of the variables closes the document,
-sorted by name in byte order, where uppercase letters come before
-lowercase ones.</p>
+digits of the SD. A negative statistic takes the minus sign of a printed
+table, and a code keeps the hyphen the data has, since a reader types it
+back into a filter; <code>spicy_style(minus_sign = "ascii")</code>, set through
+<code>options(spicy.style)</code>, keeps the hyphen on the statistics too. A sheet
+breaks across pages only when it does not fit on one; its table of
+values then repeats its header under "name (continued)". An index of
+the variables closes the document, sorted by name in byte order, where
+uppercase letters come before lowercase ones.</p>
 <p><code>code_book()</code> writes the Typst source and compiles it with the Typst
 that Quarto bundles; Typst warnings, such as a character missing from
 the fonts, arrive as one R warning of class <code>spicy_typst_warning</code>.

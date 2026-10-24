@@ -82,7 +82,8 @@ table_multiresponse(
   counts does (see `drop_na` in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
   but a missing `by` has no group to be counted in: rows with a missing
-  `by` are removed, and the note says how many, so this table has no
+  `by` are removed from the whole table, and the note lists `by` with
+  their count ("Missing values removed: sex (2)."), so this table has no
   `drop_na`; a `by` that no observation holds is an error (class
   `spicy_invalid_data`). A level displayed with the label of the `Total`
   margin is an error, as in

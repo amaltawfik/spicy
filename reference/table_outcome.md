@@ -126,8 +126,12 @@ table_outcome(
   label is an error, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
   the missing values of the outcome are always removed and counted in
-  the note. Under `drop_na = TRUE`, a grouping that no observation holds
-  is an error (class `spicy_invalid_data`).
+  the note. `TRUE` removes those of a `select` variable from its block,
+  and the note lists the variable after the outcome ("Missing values
+  removed: bmi (3), sex (2)."): a missing outcome takes the row out of
+  every block, a missing `select` value only out of its own block. Under
+  `drop_na = TRUE`, a grouping that no observation holds is an error
+  (class `spicy_invalid_data`).
 
 - weights:
 
@@ -233,9 +237,9 @@ table_outcome(
 
 - digits:
 
-  Number of decimal places for descriptive values and test statistics
-  (default: `2`). A whole number: a fraction is an error, as for every
-  `*_digits` argument.
+  Number of decimal places of the descriptive statistics (default: `2`).
+  A whole number: a fraction is an error, as for every `*_digits`
+  argument. Test statistics keep two decimals.
 
 - effect_size_digits:
 

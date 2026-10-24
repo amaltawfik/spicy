@@ -32,6 +32,7 @@ spicy_style(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  minus_sign = NULL,
   v_digits
 )
 
@@ -126,26 +127,48 @@ spicy_style_names()
   `"Note:"` (Chicago Manual of Style 18, paragraphs 3.77-3.81), or `""`
   for no lead-in word (AMA Manual of Style 11, section 4.1.4.10). The
   language spells it: under `options(spicy.language = "fr")`, `"Note:"`
-  prints with the no-break space French puts before a colon. A `note`
-  you type is printed as typed; its opening word is set in italics when
-  it is the lead-in in force.
+  is written "Note :", with the no-break space French puts before a
+  colon, in every output. A `note` you type is printed as typed; its
+  opening word is set in italics when it is the lead-in in force.
 
 - abbreviations:
 
   Which abbreviations the note under the table defines: those of its
   headers, its spanners and the labels of its stub (the fit statistics
   and the random effects of a regression), not the symbols inside its
-  cells. `NULL` (the default) follows the rule of the theme in force,
-  the APA rule when there is none (see *Themes*). `"all"` defines every
-  abbreviation and symbol the table shows, abbreviated words such as Min
-  and Max included, except *n*, *N*, *p* and the test statistics (*t*,
-  *z*, *F*, \\\chi^2\\), which no style and no journal defines: the
-  setting for readers outside the field. `"none"` defines none, but
-  keeps the definitions that say how a number was computed (partial
-  eta-squared, the IQR as the width Q3 - Q1, the method of a
-  standardized \\\beta\\, the design effect). Either way the definitions
-  take the form and the place of the theme in force. A `note` you type
-  is printed as typed.
+  cells. A definition identifies the quantity by its standard name, in
+  one expression, the author included when the name carries one (*g* =
+  Hedges's *g*); it never explains what the quantity measures or how to
+  read it, which belongs to the text. `NULL` (the default) follows the
+  rule of the theme in force, the APA rule when there is none (see
+  *Themes*). `"all"` defines every abbreviation and symbol the table
+  shows, abbreviated words such as Min and Max included, except *n*,
+  *N*, *p* and the test statistics (*t*, *z*, *F*, \\\chi^2\\), which no
+  style and no journal defines: the setting for readers outside the
+  field. `"none"` defines none, but keeps the disambiguations, the
+  definitions without which the symbol is ambiguous (partial eta
+  squared, the IQR as the width Q3 - Q1, the method of a standardized
+  \\\beta\\, the design-based standard error). Either way the
+  definitions take the form and the place of the theme in force. A
+  `note` you type is printed as typed.
+
+- minus_sign:
+
+  The sign of a negative number in the outputs that are printed: the
+  Typst and LaTeX of `output = "tinytable"`, the LaTeX of
+  `output = "gt"`, and the PDF of
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+  which reads the lever from `options(spicy.style)`. `"typographic"`
+  (the default) sets the minus sign (Unicode U+2212, as wide as the plus
+  sign) in place of the hyphen-minus, `"ascii"` keeps the hyphen-minus.
+  It applies to the cells of the statistics (estimates, intervals,
+  differences, effect sizes, the summaries of a codebook), not to the
+  labels, the codes of a codebook, the headers or the note. LaTeX sets
+  the sign in math mode, which every engine and font has. Every other
+  output keeps the hyphen-minus – the console, the data frame, Excel,
+  the clipboard, Word, HTML and markdown: their text is copied and
+  recomputed, and a spreadsheet or a parser reads a minus sign as text,
+  not as part of a number. No theme sets it.
 
 - v_digits:
 
@@ -397,9 +420,9 @@ Not encoded: the percentage rule ("Report percentages to one decimal
 place ... when sample size is \\\ge\\ 200", no decimals below 200) is
 conditional on a per-group sample size that the style layer does not
 see; set `percent_digits` yourself. The `mean (SD)` notation the journal
-asks for, and its refusal of `\eqn{\pm}{+/-}`, are already how spicy
-renders dispersion. No rule on the abbreviations of a table note was
-found, so the note defines them as spicy's default does.
+asks for, and its refusal of \\\pm\\, are already how spicy renders
+dispersion. No rule on the abbreviations of a table note was found, so
+the note defines them as spicy's default does.
 
 ### `"apa"` – APA Style, 7th edition
 
@@ -441,7 +464,7 @@ change of those defaults will not move an APA-formatted table.
   undefined ("Do not define symbols or abbreviations that represent
   statistics (e.g., M, SD, F, t, df, p, N, n, OR, r)", section 6.44;
   section 7.15 adds *SE*), and spicy counts *Mdn* (the median of Table
-  6.5) and Hedges' *g* among them. So are the symbols composed of Greek
+  6.5) and Hedges's *g* among them. So are the symbols composed of Greek
   letters (the same two sections) and those its sample tables leave
   undefined (*B*, \\\beta\\, \\R^2\\, \\\Delta R^2\\, Cohen's *d*). This
   is also spicy's default rule, the one `"nejm"`, `"annals"` and `"aer"`

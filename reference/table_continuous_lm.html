@@ -19,7 +19,7 @@ interval.
 Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
 (heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
 requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
-Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges' g &quot;hedges_g&quot;,
+Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges's g &quot;hedges_g&quot;,
 Hays' &quot;omega2&quot;, Cohen's &quot;f2&quot;) are reported with optional
 noncentral t / F
 confidence intervals via effect_size_ci, and adapt under
@@ -41,7 +41,7 @@ interval.
 Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
 (heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
 requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
-Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges' g &quot;hedges_g&quot;,
+Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges's g &quot;hedges_g&quot;,
 Hays' &quot;omega2&quot;, Cohen's &quot;f2&quot;) are reported with optional
 noncentral t / F
 confidence intervals via effect_size_ci, and adapt under
@@ -130,7 +130,7 @@ interval.</p>
 <p>Inference adapts via <code>vcov</code>: classical OLS, <code>"HC0"</code>-<code>"HC5"</code>
 (heteroscedasticity-consistent), <code>"CR0"</code>-<code>"CR3"</code> (cluster-robust,
 requires <code>cluster</code>), or <code>"bootstrap"</code> / <code>"jackknife"</code> resampling.
-Effect sizes (Cohen's <em>d</em> <code>"cohens_d"</code>, Hedges' <em>g</em> <code>"hedges_g"</code>,
+Effect sizes (Cohen's <em>d</em> <code>"cohens_d"</code>, Hedges's <em>g</em> <code>"hedges_g"</code>,
 Hays' <code>"omega2"</code>, Cohen's <code>"f2"</code>) are reported with optional
 noncentral <em>t</em> / <em>F</em>
 confidence intervals via <code>effect_size_ci</code>, and adapt under
@@ -241,7 +241,10 @@ regressor. Declared missing values follow <code>user_na</code> as usual.</p></li
 </ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
 outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details), the
 rule of a table that computes (see <code>drop_na</code> in
-<code><a href="table_continuous.html">table_continuous()</a></code>); this table has no <code>drop_na</code>.</p>
+<code><a href="table_continuous.html">table_continuous()</a></code>); this table has no <code>drop_na</code>. The note lists
+<code>by</code> after the outcomes and covariates ("Missing values removed: bmi
+(3), sex (2)."): a missing <code>by</code> or covariate takes the row out of the
+model of every outcome, a missing outcome only out of its own.</p>
 <p>An outcome with no observed value in a level of a categorical <code>by</code>
 (typically a question not asked in that group) has no data there: it
 is fit on the other levels, the cells of that level show a dash, its
@@ -343,7 +346,7 @@ alongside rows with <code>NA</code> in <code>y</code> or <code>by</code>. A weig
 outcome: <code>select = everything()</code> skips it, and naming it in
 <code>select</code>, or giving its position, is an error. When supplied, weights are
 passed to <code>lm(..., weights = ...)</code>, so coefficients become weighted
-least-squares estimates and <code>\eqn{R^2}{R^2}</code>, adjusted <code>\eqn{R^2}{R^2}</code>, and the four effect
+least-squares estimates and \(R^2\), adjusted \(R^2\), and the four effect
 sizes are computed from the corresponding weighted sums of squares
 (see the <em>Weights</em> section in Details).</p></dd>
 
@@ -392,7 +395,7 @@ Wald test); CIs are Wald-type around the point estimate.</p></li>
 when <code>cluster</code> is supplied (Quenouille 1956; MacKinnon and White
 1985). Inference is asymptotic (<code>z</code> / <code>chi^2(q)</code>).</p></li>
 </ul><p>The <code>HC*</code> variants are computed via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
-Coefficients (means, contrasts, slopes), <code>\eqn{R^2}{R^2}</code>, and the standardized
+Coefficients (means, contrasts, slopes), \(R^2\), and the standardized
 effect sizes (<code>f2</code>, <code>cohens_d</code>, <code>hedges_g</code>, <code>omega2</code>) are point
 estimates from the
 OLS/WLS fit and are not affected by <code>vcov</code>; only their standard errors,
@@ -480,19 +483,19 @@ estimator named after its author carries the name, as <code>"hedges_g"</code>
 does in <code><a href="table_continuous.html">table_continuous()</a></code>: <code>"d"</code> and <code>"g"</code>, the spellings before
 0.14.0, are an error of the same class that gives the new one. One
 of:</p><ul><li><p><code>"none"</code> (the default): no effect-size column.</p></li>
-<li><p><code>"f2"</code>: Cohen's <code>\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})</code>. Defined for any predictor type.
+<li><p><code>"f2"</code>: Cohen's <code>f^2 = R^2 / (1 - R^2)</code>. Defined for any predictor type.
 Familiar from Cohen (1988); standard input for a-priori power analysis.
-Note that for a single-predictor model, <code>\eqn{f^2}{f^2}</code> is a monotone transform of
-<code>\eqn{R^2}{R^2}</code> and adds no information beyond it.</p></li>
+Note that for a single-predictor model, \(f^2\) is a monotone transform of
+\(R^2\) and adds no information beyond it.</p></li>
 <li><p><code>"cohens_d"</code>: Cohen's <code>d = beta_hat / sigma_hat</code>, where <code>beta_hat</code> is
 the model coefficient (the displayed difference) and <code>sigma_hat</code> is the
 residual standard deviation from the fitted model. Defined only when
 <code>by</code> has exactly two non-empty levels; otherwise the function errors.
 The sign matches the displayed <code>Delta (level2 - level1)</code>.</p></li>
-<li><p><code>"hedges_g"</code>: Hedges' <code>g = J * d</code> with the small-sample correction
+<li><p><code>"hedges_g"</code>: Hedges's <code>g = J * d</code> with the small-sample correction
 <code>J = 1 - 3 / (4 * df_resid - 1)</code>. Same domain as <code>"cohens_d"</code>.</p></li>
 <li><p><code>"omega2"</code>: Hays' <code>omega-squared</code>, a bias-corrected estimator of the
-population variance explained, less optimistic than <code>\eqn{R^2}{R^2}</code> for small
+population variance explained, less optimistic than \(R^2\) for small
 samples. Defined for any predictor type and truncated at 0.</p></li>
 </ul><p>When <code>weights</code> is supplied, <code>"cohens_d"</code>, <code>"hedges_g"</code>, and <code>"omega2"</code>
 are derived from
@@ -509,7 +512,7 @@ the correctly-defined effect size when the model is adjusted.
 For numeric <code>by</code>, partial <em>\(f^2\)</em> equals the squared partial
 correlation of <code>by</code> with the outcome, divided by <code>(1 - r^2_partial)</code>.</p></li>
 <li><p><code>"cohens_d"</code> and <code>"hedges_g"</code> raise a <code>spicy_unsupported</code> error:
-Cohen's <em>d</em> and Hedges' <em>g</em> have no canonical extension to adjusted
+Cohen's <em>d</em> and Hedges's <em>g</em> have no canonical extension to adjusted
 models
 (the pooled SD is undefined under adjustment). Use <code>"f2"</code> or
 <code>"omega2"</code> instead – both generalize via partial <em>F</em>.</p></li>
@@ -535,11 +538,11 @@ When <code>effect_size = "none"</code>, this argument is ignored with a warning.
 
 <dt id="arg-r-">r2<a class="anchor" aria-label="anchor" href="#arg-r-"></a></dt>
 <dd><p>Character. Fit statistic to include in the wide and rendered
-outputs. One of:</p><ul><li><p><code>"r2"</code> (default): the model <code>\eqn{R^2}{R^2}</code> (<code>summary(lm)$r.squared</code>).</p></li>
-<li><p><code>"adj_r2"</code>: adjusted <code>\eqn{R^2}{R^2}</code>, penalizing for <code>df_effect</code> relative to the
+outputs. One of:</p><ul><li><p><code>"r2"</code> (default): the model \(R^2\) (<code>summary(lm)$r.squared</code>).</p></li>
+<li><p><code>"adj_r2"</code>: adjusted \(R^2\), penalizing for <code>df_effect</code> relative to the
 residual degrees of freedom.</p></li>
 <li><p><code>"none"</code>: omit the fit-statistic column.</p></li>
-</ul><p>When <code>weights</code> is supplied, <code>\eqn{R^2}{R^2}</code> and adjusted <code>\eqn{R^2}{R^2}</code> are the weighted
+</ul><p>When <code>weights</code> is supplied, \(R^2\) and adjusted \(R^2\) are the weighted
 least-squares versions reported by <code>summary(lm(..., weights = ...))</code>.</p></dd>
 
 
@@ -576,15 +579,23 @@ intervals (default: <code>0.95</code>): a number strictly between 0 and 1.</p></
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimal places for descriptive values, regression
-coefficients, and test statistics (default: <code>2</code>). Must be a single
-non-negative whole number: a fraction (<code>2.9</code>) is an error. Same
-constraint for <code>fit_digits</code> and <code>effect_size_digits</code>.</p></dd>
+<dd><p>Number of decimal places of the numbers on each outcome's
+own scale: the means of the groups, adjusted or not, the difference or
+the slope, and its confidence interval. One non-negative whole number
+sets them for every outcome (default: <code>2</code>), and the test statistic and
+the weighted <em>n</em> with them. A vector named by column, not by label,
+gives each outcome it names its own, <code>digits = c(height = 0, bmi = 1)</code>;
+the other outcomes, the test statistic and the weighted <em>n</em> keep the
+default, the <code>digits</code> of a <code><a href="spicy_style.html">spicy_style()</a></code> in force included. Names
+that match no outcome are ignored, as in <code>labels</code>. A fraction (<code>2.9</code>)
+is an error, as for <code>fit_digits</code> and <code>effect_size_digits</code>. The
+<em>p</em>-value (<code>p_digits</code>), the \(R^2\) (<code>fit_digits</code>), the effect
+size (<code>effect_size_digits</code>) and the counts keep their own decimals.</p></dd>
 
 
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
-<dd><p>Number of decimal places for model-fit columns (<code>\eqn{R^2}{R^2}</code> or
-adjusted <code>\eqn{R^2}{R^2}</code>) in wide and rendered outputs (default: <code>2</code>).</p></dd>
+<dd><p>Number of decimal places for model-fit columns (\(R^2\) or
+adjusted \(R^2\)) in wide and rendered outputs (default: <code>2</code>).</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
@@ -799,14 +810,14 @@ cell at all.</p>
     <h2 id="effect-sizes">Effect sizes<a class="anchor" aria-label="anchor" href="#effect-sizes"></a></h2>
     <p>Effect size is selected explicitly via <code>effect_size</code> (defaults to
 <code>"none"</code>). All variants are derived from the same fitted model as the
-displayed coefficients, <code>\eqn{R^2}{R^2}</code>, and CIs, so the effect size stays
+displayed coefficients, \(R^2\), and CIs, so the effect size stays
 internally consistent with the rest of the table.</p>
-<ul><li><p><code>"f2"</code>: Cohen's <code>\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})</code> (Cohen 1988). Defined
-for any predictor type. For a single-predictor model, <code>\eqn{f^2}{f^2}</code> is a
-monotone transform of <code>\eqn{R^2}{R^2}</code> and adds no information beyond it; its
+<ul><li><p><code>"f2"</code>: Cohen's <code>f^2 = R^2 / (1 - R^2)</code> (Cohen 1988). Defined
+for any predictor type. For a single-predictor model, \(f^2\) is a
+monotone transform of \(R^2\) and adds no information beyond it; its
 primary use is in <em>a priori</em> power analysis (e.g. G*Power).</p></li>
 <li><p><code>"cohens_d"</code>, <code>"hedges_g"</code>: standardized mean difference
-(Cohen's <em>d</em> or Hedges' <em>g</em>), defined only when <code>by</code> has exactly two
+(Cohen's <em>d</em> or Hedges's <em>g</em>), defined only when <code>by</code> has exactly two
 non-empty levels.
 <code>d = beta_hat / sigma_hat</code> with <code>sigma_hat = summary(fit)$sigma</code> (the
 pooled within-group SD for the unweighted two-group case);
@@ -831,7 +842,7 @@ test of <code>by</code> after all covariates, equal to <code><a href="https://rd
 this additive setting). <code>"cohens_d"</code> and <code>"hedges_g"</code> raise a
 <code>spicy_unsupported</code> error: the pooled
 standard deviation has no canonical extension under adjustment, so
-Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
+Cohen's <em>d</em> and Hedges's <em>g</em> are undefined for adjusted models. See
 <code>effect_size</code> for the full dispatch.</p>
 <p>Confidence intervals for the effect size are available via
 <code>effect_size_ci = TRUE</code> and use the modern noncentral-distribution
@@ -843,15 +854,15 @@ and Fouladi 1997;
 Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 across sample sizes (Fitts 2021), unlike the
 older Hedges-Olkin normal approximation which is biased for small
-samples. For Hedges' <em>g</em> the bounds inherit the <em>J</em> small-sample
+samples. For Hedges's <em>g</em> the bounds inherit the <em>J</em> small-sample
 correction.</p></li>
 <li><p><code>"omega2"</code>, <code>"f2"</code>: noncentral <em>F</em> inversion (Steiger 2004).
 Without covariates (model-level effect sizes), bounds are
 converted from the noncentrality parameter using
-<code>omega^2 = ncp / (ncp + N)</code> and <code>\eqn{f^2}{f^2} = ncp / N</code> respectively, with
+<code>omega^2 = ncp / (ncp + N)</code> and <code>f^2 = ncp / N</code> respectively, with
 <code>N = df1 + df2 + 1</code> (total sample size). Under covariate
 adjustment (partial effect sizes), the bounds use the partial
-transforms instead: partial <code>\eqn{f^2}{f^2} = ncp / df2</code>, and for partial
+transforms instead: partial <code>f^2 = ncp / df2</code>, and for partial
 <code>omega^2</code> the inversion runs at the <em>F</em>-value equivalent of the
 omega-squared point estimate with bounds <code>ncp / (ncp + df2)</code> –
 the <code><a href="https://easystats.github.io/effectsize/reference/eta_squared.html" class="external-link">effectsize::omega_squared()</a></code> <code>partial = TRUE</code> convention,
@@ -920,7 +931,7 @@ predictors), reflected in the displayed test header. Use the
 bootstrap when the residual distribution is non-standard or the
 sample is small; use the jackknife as a closed-form, deterministic
 alternative.</p>
-<p><code>\eqn{R^2}{R^2}</code>, adjusted <code>\eqn{R^2}{R^2}</code>, and the effect sizes remain ordinary
+<p>\(R^2\), adjusted \(R^2\), and the effect sizes remain ordinary
 least-squares (or weighted least-squares) statistics regardless of
 <code>vcov</code>.</p>
     </div>
@@ -929,9 +940,9 @@ least-squares (or weighted least-squares) statistics regardless of
     <p>When <code>weights</code> is supplied, <code>table_continuous_lm()</code> fits weighted
 linear models via <code>lm(..., weights = ...)</code>. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
-fit statistics <code>\eqn{R^2}{R^2}</code> and adjusted <code>\eqn{R^2}{R^2}</code>, as well as Hays' <code>omega^2</code>
-and Cohen's <code>\eqn{f^2}{f^2}</code>, use the corresponding <strong>weighted sums of squares</strong>
-from the WLS fit. Cohen's <code>d</code> and Hedges' <code>g</code> use the <strong>WLS
+fit statistics \(R^2\) and adjusted \(R^2\), as well as Hays' <code>omega^2</code>
+and Cohen's \(f^2\), use the corresponding <strong>weighted sums of squares</strong>
+from the WLS fit. Cohen's <code>d</code> and Hedges's <code>g</code> use the <strong>WLS
 coefficient and the model's weighted residual standard deviation</strong>
 (<code>summary(fit)$sigma</code>), which is the standard convention for
 case-weighted regression-style reporting (DuMouchel and Duncan
@@ -1131,7 +1142,7 @@ design-based inference on complex-survey samples.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># --- Basic usage ---------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Default: ASCII table with model-based means, p, and \eqn{R^2}{R^2}.</span></span></span>
+<span class="r-in"><span><span class="co"># Default: ASCII table with model-based means, p, and R-squared.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
@@ -1139,7 +1150,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
@@ -1162,7 +1173,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
@@ -1186,7 +1197,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.01      70.88          3.87           2.11    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.51      25.98          0.47           0.05    </span>
@@ -1208,7 +1219,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
@@ -1220,7 +1231,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).</span></span></span>
+<span class="r-in"><span><span class="co"># Cohen's f-squared alongside R-squared (familiar power-analysis effect size).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
@@ -1229,7 +1240,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
@@ -1299,7 +1310,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   model.frame.iv_robust estimatr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by group</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> M (1)  M (2)  Δ (2 − 1)  95% CI LL  95% CI UL   p     R²   n  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1319,7 +1330,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.08    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span>
@@ -1343,7 +1354,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   65.90      69.56          3.65           2.08    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.89      26.46          0.58           0.19    </span>
@@ -1368,7 +1379,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67.27      70.93          3.65           2.09    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25.65      26.23          0.58           0.19    </span>
@@ -1382,7 +1393,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Article-style polish -----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Pretty outcome labels and adjusted \eqn{R^2}{R^2}.</span></span></span>
+<span class="r-in"><span><span class="co"># Pretty outcome labels and adjusted R-squared.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
@@ -1395,7 +1406,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                 <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   67.16      71.05          3.89           2.13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   25.69      26.20          0.51           0.09    </span>
@@ -1416,7 +1427,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   67,16      71,05          3,89           2,13    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   25,69      26,20          0,51           0,09    </span>
@@ -1437,7 +1448,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male - Female)  95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> M (Female)  M (Male)  Δ (Male − Female)  95% CI LL </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>    3.51       3.59          0.08           -0.06   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>    3.32       3.44          0.12           -0.01   </span>
@@ -1470,7 +1481,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label M (Female) M (Male) Δ (Male - Female)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label M (Female) M (Male) Δ (Male − Female)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   25.68506 26.19685         0.5117882</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    95% CI LL 95% CI UL            p          R²    n</span>

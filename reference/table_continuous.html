@@ -241,8 +241,10 @@ the <code>NA</code>s of each summarized variable are always excluded from that
 variable's statistics, and the exclusion is disclosed in a table
 note ("Missing values removed: ...") rather than silent. If <code>TRUE</code>
 (the default), rows with <code>NA</code> in <code>by</code> are removed from the grouped
-summaries, and a note line says so ("Rows with missing ...
-removed"). If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
+summaries and counted in the same note, <code>by</code> after the variables
+("Missing values removed: bmi (3), sex (2)."): a missing <code>by</code> takes
+the row out of the whole table, a missing value only out of its own
+variable's statistics. If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
 dedicated <code>"(Missing)"</code> group – the field convention for
 descriptive tables (gtsummary's "Unknown" row; see the
 Epidemiologist R Handbook, Descriptive tables) – while the
@@ -353,11 +355,11 @@ per-variable form, and the test that follows a median.</p></dd>
 <dd><p>Effect-size measure to include in the rendered
 outputs. One of:</p><ul><li><p><code>"none"</code> (default): no effect-size column.</p></li>
 <li><p><code>"auto"</code>: auto-select the canonical measure for the chosen
-<code>test</code> and group count – Hedges' <em>g</em> (parametric, 2 groups),
+<code>test</code> and group count – Hedges's <em>g</em> (parametric, 2 groups),
 eta-squared (parametric, 3+ groups), rank-biserial <em>r</em>
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 groups).</p></li>
-<li><p><code>"hedges_g"</code>: Hedges' <em>g</em> (bias-corrected standardized mean
+<li><p><code>"hedges_g"</code>: Hedges's <em>g</em> (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges &amp; Olkin
 normal approximation.</p></li>
 <li><p><code>"eta2"</code>: Eta-squared (\(\eta^2\), parametric ANOVA-style
@@ -443,9 +445,19 @@ the wording you set here.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of decimal places for descriptive values and test
-statistics (default: <code>2</code>). A whole number: a fraction is an error,
-as for every <code>*_digits</code> argument.</p></dd>
+<dd><p>Number of decimal places of the statistics on each
+variable's own scale: the mean, SD, median, IQR, quartiles, minimum
+and maximum, and the confidence intervals of the mean and of the
+median. One non-negative whole number sets them for every variable
+(default: <code>2</code>), and the weighted <em>n</em> with them. A vector named by
+column, not by label, gives each variable it names its own,
+<code>digits = c(height = 0, bmi = 1)</code>; the other variables and the
+weighted <em>n</em> keep the default, the <code>digits</code> of a <code><a href="spicy_style.html">spicy_style()</a></code> in
+force included. Names that match no variable are ignored, as in
+<code>labels</code>. A fraction is an error, as for every <code>*_digits</code> argument.
+The other numbers keep their own decimals: <em>p</em>-values (<code>p_digits</code>),
+effect sizes and the SMD (<code>effect_size_digits</code>), test statistics (two
+decimals) and counts (none).</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
@@ -1038,7 +1050,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi        <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 - Q1); CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One selection per variable. A skewed variable that a scoring</span></span></span>
 <span class="r-in"><span><span class="co"># protocol requires in median and IQR (the IPAQ case) sits next to</span></span></span>

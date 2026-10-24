@@ -109,7 +109,7 @@ table_continuous_svy(
 #> ──────────┼──────────────────
 #>  api00    │  6194.00    9.35 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```
 
 The design effect of 9.35 is the point of the whole exercise: the
@@ -217,7 +217,7 @@ table_categorical_svy(
 #>    H        │   14     7.7       3.5         15.8       1.91  
 #>    M        │   25    13.7       8.4         21.3       1.40  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```
 
 The percentage always comes from

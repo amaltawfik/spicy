@@ -1430,8 +1430,8 @@ normal posterior), and the interval an equal-tailed credible interval
 (header `95% CrI`; `ci_method = "hdi"` opts into the highest-density
 interval, header `95% HDI`). There is no p-value or t-statistic; group
 presets (`"all_b"`, ...) expand without them, and the opt-in `"pd"`
-column reports the probability of direction with a footer definition
-(Makowski et al. 2019). Under `exponentiate = TRUE` all quantities are
+column reports the probability of direction (Makowski et al. 2019), with
+a footer definition. Under `exponentiate = TRUE` all quantities are
 computed from the exponentiated draws directly (the SE is the posterior
 MAD SD on the ratio scale, not a delta-method approximation). The AME
 columns are equally draws-native: `avg_slopes()` computes the marginal

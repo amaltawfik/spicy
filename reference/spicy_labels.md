@@ -133,7 +133,7 @@ head(spicy_labels())
 #>                         "(Missing)"          "Missing values removed: " 
 #>       note_declared_missing_removed                   note_missing_item 
 #> "Declared missing values removed: "                           "%s (%d)" 
-#>             note_missing_rows_total        note_rows_missing_by_removed 
+#>             note_missing_rows_total           note_rows_missing_weights 
 #>                "; %d rows in total" "Rows with missing %s removed: %d." 
 
 # The same keys in French.

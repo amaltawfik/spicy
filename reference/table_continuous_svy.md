@@ -125,7 +125,9 @@ table_continuous_svy(
   rule of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
   `TRUE` (the default) removes them, and the missing values of each
-  summarized variable are always removed. With `FALSE` they form a
+  summarized variable are always removed. The note lists both, `by`
+  last: a missing `by` takes the observation out of the whole table, a
+  missing value only out of its own variable. With `FALSE` they form a
   `(Missing)` domain of their own – an ordinary subpopulation, with its
   own degrees of freedom – which is excluded from the group comparison.
   Ignored (with a warning) when `by` is not used.
@@ -255,9 +257,19 @@ table_continuous_svy(
 
 - digits:
 
-  Number of decimal places for descriptive values and test statistics
-  (default: `2`). A whole number: a fraction is an error, as for every
-  `*_digits` argument.
+  Number of decimal places of the statistics on each variable's own
+  scale: the mean, SD, standard error, median, IQR, quartiles, minimum
+  and maximum, and the confidence interval of the mean. One non-negative
+  whole number sets them for every variable (default: `2`), and the
+  weighted *n* and the design effect with them. A vector named by
+  column, not by label, gives each variable it names its own,
+  `digits = c(height = 0, bmi = 1)`; the other variables, the weighted
+  *n* and the design effect keep the default, the `digits` of a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  in force included. Names that match no variable are ignored, as in
+  `labels`. A fraction is an error, as for every `*_digits` argument.
+  The *p*-values (`p_digits`), the test statistics (two decimals) and
+  the counts keep their own decimals.
 
 - p_digits:
 
@@ -616,5 +628,5 @@ table_continuous_svy(
 #> ────────────┼────────────────────────────────────────────────────────────
 #>  api00      │  644.17    23.54     593.68       694.66      183    9.35  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

@@ -388,7 +388,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.12    
 #>  bmi             │   25.69      26.20          0.51           0.09    

@@ -149,8 +149,11 @@ table_categorical_svy(
   dropped, they never enter the test: the p-value is computed on the
   complete cases either way, which is the convention
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  applies. Under `drop_na = TRUE`, a `by` that no observation holds is
-  an error (class `spicy_invalid_data`).
+  applies. Dropped, they are counted in the note, `by` last: a missing
+  `by` takes the observation out of every variable of the table, a
+  missing value only out of its own variable. Under `drop_na = TRUE`, a
+  `by` that no observation holds is an error (class
+  `spicy_invalid_data`).
 
 - proportion_ci:
 
@@ -545,5 +548,5 @@ table_categorical_svy(
 #>    H        │   14     7.7       3.5         15.8       1.91  
 #>    M        │   25    13.7       8.4         21.3       1.40  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

@@ -15,10 +15,11 @@ table. This is the right choice when you want to stay in a linear-model
 workflow with heteroskedasticity-consistent or cluster-robust standard
 errors, bootstrap / jackknife variance, case weights, additive covariate
 adjustment, or one of four effect-size families (`f2`, Cohen’s *d*,
-Hedges’ *g*, Hays’ \\\omega^2\\) with noncentral CIs. Formatting follows
-APA conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
-`"annals"`, `"aer"`) switches the whole table to that journal’s
-published rules — the *House styles* section of [*Summary tables for
+Hedges’s *g*, Hays’ \\\omega^2\\) with noncentral CIs. Formatting
+follows APA conventions by default; `style = "jama"` (or `"nejm"`,
+`"lancet"`, `"annals"`, `"aer"`) switches the whole table to that
+journal’s published rules — the *House styles* section of [*Summary
+tables for
 reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
 shows each style and the guideline sentence behind every rule.
 
@@ -36,7 +37,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89            2.13   
 #>  bmi             │   25.69      26.20          0.51            0.09   
@@ -71,7 +72,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.12    
 #>  bmi             │   25.69      26.20          0.51           0.09    
@@ -114,7 +115,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by group
 #> 
-#>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  
+#>  Variable │ M (1)  M (2)  Δ (2 − 1)  95% CI LL  95% CI UL  t(9)   p     R²   n  
 #> ──────────┼─────────────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 
 #> 
@@ -152,7 +153,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.16      71.05          3.89           2.12    
 #> 
@@ -253,7 +254,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   67.27      70.93          3.65           2.08    
 #>  bmi             │   25.65      26.23          0.58           0.19    
@@ -327,7 +328,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable        │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────┼────────────────────────────────────────────────────
 #>  wellbeing_score │   65.90      69.56          3.65           2.08    
 #>  bmi             │   25.89      26.46          0.58           0.19    
@@ -351,9 +352,9 @@ Adding covariates changes which effect sizes remain meaningful:
   setting) — the correct generalization of the bivariate effect size to
   a covariate-adjusted model.
 - `effect_size = "cohens_d"` and `"hedges_g"` raise `spicy_unsupported`:
-  Cohen’s *d* and Hedges’ *g* have no defined extension under adjustment
-  (the pooled SD has no canonical analog). The error message points to
-  `f2` / `omega2` as the partial-F generalizations.
+  Cohen’s *d* and Hedges’s *g* have no defined extension under
+  adjustment (the pooled SD has no canonical analog). The error message
+  points to `f2` / `omega2` as the partial-F generalizations.
 
 Both effect-size variants and their noncentral CIs (when
 `effect_size_ci = TRUE`) are computed from the same fitted model as the
@@ -383,7 +384,7 @@ to `vcov`** (the choice of classical or `HC*` standard errors changes
 the contrast SE, CI, and test statistic but not the standardized effect
 size itself).
 
-Cohen’s *d* and Hedges’ *g* are the conventions for two-group
+Cohen’s *d* and Hedges’s *g* are the conventions for two-group
 comparisons (Cohen 1988; Hedges and Olkin 1985; APA 2020) and require
 `by` to have exactly two non-empty levels:
 
@@ -397,7 +398,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by smoking
 #> 
-#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   
 #> ─────────────────┼───────────────────────────────────────────────────────────
 #>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
 #>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
@@ -407,10 +408,10 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
-Hedges’ *g* applies the small-sample correction
+Hedges’s *g* applies the small-sample correction
 `J = 1 - 3/(4·df_resid - 1)`. It is generally preferred over raw *d* in
 published reports (Goulet-Pelletier and Cousineau 2018):
 
@@ -424,7 +425,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by smoking
 #> 
-#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   
 #> ─────────────────┼───────────────────────────────────────────────────────────
 #>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
 #>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
@@ -434,7 +435,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -518,7 +519,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by smoking
 #> 
-#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes − No)  95% CI LL  95% CI UL   p   
 #> ─────────────────┼───────────────────────────────────────────────────────────
 #>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
 #>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
@@ -528,7 +529,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11 [-0.25, 0.03]  1175 
 #>  bmi             │ 0.00  -0.01 [-0.15, 0.13]  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. Missing values removed: bmi (12), smoking (25). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -545,7 +546,7 @@ table_continuous_lm(
   effect_size_ci = TRUE,
   output = "data.frame"
 )
-#>          variable           label   M (No)  M (Yes) Δ (Yes - No) 95% CI LL
+#>          variable           label   M (No)  M (Yes) Δ (Yes − No) 95% CI LL
 #> 1 wellbeing_score wellbeing_score 69.36317 67.64538    -1.717793 -3.906437
 #>   95% CI UL         p          R²          g es_ci_lower es_ci_upper    n
 #> 1 0.4708504 0.1238546 0.002017481 -0.1098571  -0.2497291  0.03006164 1175
@@ -596,7 +597,7 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>  Variable                │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#>  Variable                │ M (Female)  M (Male)  Δ (Male − Female)  95% CI LL 
 #> ─────────────────────────┼────────────────────────────────────────────────────
 #>  WHO-5 wellbeing (0-100) │   67,16      71,05          3,89           2,13    
 #>  Body-mass index (kg/m²) │   25,69      26,20          0,51           0,09    

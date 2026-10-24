@@ -225,6 +225,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   keep their names, `CI lower` and `CI upper`.
 
+- In every output that names columns, the difference column of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  is `Δ (B − A)`, with the minus sign its header shows, where it was
+  `Δ (B - A)`.
+
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   reads contract version 4, and refuses a view built by an older spicy.
 
@@ -359,8 +364,8 @@ the descriptive tables one contract for labels, p-values, and notes.
   criterion”) at its end, in reading order.
 
 - The default note leaves M, Mdn, SD, SE, B, OR, R², *d*, *g*, and the
-  Greek letters undefined; a definition that says how the number was
-  computed (partial η², a standardized β) stays in every style.
+  Greek letters undefined; a definition without which the symbol is
+  ambiguous (partial η², a standardized β) stays in every style.
 
 - *n*, *N*, *p*, and test statistics are never defined, but for the
   partial χ² of
@@ -420,6 +425,11 @@ the descriptive tables one contract for labels, p-values, and notes.
 - The `p_adjust` note of a
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   table of several models says the adjustment ran within each model.
+
+- The notes list the missing values of `by`, and of the groupings of
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  after the others (“Missing values removed: score (3), sex (2).”),
+  where each had a sentence (“Rows with missing …”).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -665,6 +675,14 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 ### New features
 
+- In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  `digits` takes a named vector: one value per variable for the numbers
+  on its scale, the others at the default.
+
 - Every table function keeps the title it prints in `attr(x, "title")`,
   as
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -688,6 +706,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   and the survey twins) always has a `group` column, `NA` without `by`.
+
+- Typst and LaTeX output, from tinytable and gt alike, and the PDF of
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  write a negative number with the minus sign (U+2212);
+  `spicy_style(minus_sign = "ascii")` keeps the hyphen.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   builds a codebook in three parts, `header`, `variables`, and `values`
@@ -742,7 +765,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   gains `note_label`, the word that opens the note under a table:
-  “Note.” (APA, the default), “Note:” (Chicago), or `""` for none.
+  “Note.” (APA, the default), “Note:” (Chicago, “Note :” with a no-break
+  space in French), or `""` for none.
 
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   gains `abbreviations`, which abbreviations a note defines: unset, the
@@ -757,8 +781,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - In
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md),
-  `abbreviations = "none"` keeps only the definitions that say how a
-  number was computed, such as partial eta-squared.
+  `abbreviations = "none"` keeps only the definitions without which a
+  symbol is ambiguous, such as partial eta squared.
 
 - The long output of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
@@ -930,6 +954,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   others: `labels = var_labels(bmi = "IMC")`.
 
 ### Bug fixes
+
+- Labels that state a subtraction write the minus sign (U+2212), not a
+  hyphen: the header Δ (B − A) of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
+  `vcov = "CR1S"`.
 
 - The table functions warn (class `spicy_ignored_arg`) when an argument
   typed in the call has no effect, and name only the arguments typed.
@@ -1104,6 +1134,14 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   table, the statistic without its degrees of freedom, where it refused
   it as a token of two columns, with `model` or not.
+
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  and the functions whose `digits` is one number refuse a named
+  `digits`, with a hint, and a name on any other `*_digits`; they
+  accepted it and dropped the name.
+
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  names itself in its errors, where some named an internal helper.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
@@ -1427,7 +1465,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   also writes the likelihood-ratio test of the random effects, the REML
   refit note of `nested = TRUE`, and the title and every note of
-  Bayesian models.
+  Bayesian and GEE models.
 
 - In French,
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

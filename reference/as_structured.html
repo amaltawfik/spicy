@@ -252,7 +252,9 @@ margin is flagged <code>col_meta$&lt;col&gt;$total</code>.</p></li>
 </ul><p>Cells the console builds from more than one number – a
 <code>"Med [Q1, Q3]"</code>, a test gloss, an effect size with its interval –
 keep their numeric anchor in <code>body</code> and their exact printed string
-in <code>col_meta$&lt;col&gt;$display_cells</code>. <code>stars</code> is always <code>NULL</code>:
+in <code>col_meta$&lt;col&gt;$display_cells</code>. So does a cell of a variable that a
+named <code>digits</code> gives decimals other than the column's <code>precision</code>,
+which stays the table's <code>digits</code>. <code>stars</code> is always <code>NULL</code>:
 descriptive tables carry no significance markers.</p>
 <p>Under <code>p_adjust</code>, the p-value column holds the adjusted values and its
 <code>col_meta</code> adds <code>p_adjust</code> (the method), <code>p_adjust_m</code> (the number of
