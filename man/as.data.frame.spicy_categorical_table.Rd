@@ -28,10 +28,11 @@ with its numbers: exactly what \code{output = "data.frame"} returns. One
 row per printed row -- the header row of each variable, which
 carries its \emph{p}-value and its association measure, then one row per
 level -- and the printed columns under their names (\code{"Female n"},
-\code{"Female \\\%"}, ..., \code{"p"}, the measure), plus the key columns
+\code{"Female \%"}, ..., \code{"p"}, the measure), plus the key columns
 \code{variable} (the column name), \code{label} (the label displayed for it),
-\code{level}, and \code{.row_role} (\code{"factor_header"}, \code{"level"}, or
-\code{"missing"} for the row of missing values the table adds). The note,
+\code{level}, and \code{.row_role} (\code{"factor_header"}, \code{"level"}, \code{"missing"}
+for the row of missing values the table adds, or \code{"total"} for the
+Total row of \code{total_row = TRUE}). The note,
 as printed, is kept in \code{attr(, "note")}. \code{as_tibble()} returns the
 same table as a tibble.
 }

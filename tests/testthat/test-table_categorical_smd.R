@@ -407,7 +407,7 @@ test_that("the SMD is the last column on every engine, and moves no other", {
   )
   expect_identical(names(on), c(names(off), .CAT_KEY_SMD))
   # The note glosses the SMD; nothing else moves.
-  expect_identical(on[names(off)], structure(off, note = NULL))
+  expect_identical(on[names(off)], structure(off, note = NULL, percent = NULL))
 
   keys_off <- names(
     as_structured(table_categorical(

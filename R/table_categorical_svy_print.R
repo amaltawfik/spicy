@@ -73,6 +73,9 @@ print.spicy_categorical_svy_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = .struct_block_sep_rows(geom),
+    # No total row: without an index the printer looks for the word
+    # "Total" in the rows and rules off a level "Total score".
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
 
@@ -235,8 +238,8 @@ unclass_spicy_categorical_svy_table <- function(x) {
 #' displays, with its numbers: exactly what `output = "data.frame"`
 #' returns. One row per printed row -- the header row of each variable,
 #' which carries its *p*-value, then one row per level -- and the printed
-#' columns under their names (`"Female n"`, `"Female \%"`, the interval
-#' bounds `"Female 95\% CI LL"` and `"Female 95\% CI UL"`, `"Female
+#' columns under their names (`"Female n"`, `"Female %"`, the interval
+#' bounds `"Female 95% CI LL"` and `"Female 95% CI UL"`, `"Female
 #' DEff"`, ..., `"p"`), plus the key columns `variable`, `label`,
 #' `level` and `.row_role` (`"factor_header"`, `"level"`, or `"missing"`).
 #' The note, as printed, is kept in `attr(, "note")`. `as_tibble()`

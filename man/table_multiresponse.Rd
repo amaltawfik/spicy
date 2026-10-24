@@ -289,9 +289,9 @@ is: \code{"summary"} for an item, \code{"none"} for "(No item chosen)",
 \code{"missing"} for "(No data for the question)", \code{"fit_stat"} for the
 base, the roles of \code{\link[=as_structured]{as_structured()}}), then the printed columns:
 the count and the percentage of each group of \code{by} and of the
-\code{Total} margin (\verb{<group> n} and \verb{<group> \\\%}, or
-\verb{<group> \\\% of cases} and \verb{<group> \\\% of responses} under
-\code{percent = "both"}; \code{n} and \verb{\\\%} without \code{by}), \code{Test} (the
+\code{Total} margin (\verb{<group> n} and \verb{<group> \%}, or
+\verb{<group> \% of cases} and \verb{<group> \% of responses} under
+\code{percent = "both"}; \code{n} and \verb{\%} without \code{by}), \code{Test} (the
 chi-squared of the item, with \code{df} beside it) under
 \code{statistic = TRUE}, and \code{p} with \code{p_value}.
 \item \code{"long"}: one row per item and group, then one per row of

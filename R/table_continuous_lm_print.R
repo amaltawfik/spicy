@@ -150,6 +150,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = integer(0),
+    # No total row: without an index the printer looks for the word
+    # "Total" in the rows and rules off an outcome labeled "Total score".
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
 

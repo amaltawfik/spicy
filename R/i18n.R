@@ -44,6 +44,10 @@
   note_weights_fallback = "weights",
   # Decision 17: the weighted table names its weights up front.
   note_weighted_by = "Statistics weighted by %s.",
+  # `table_categorical(by = , percent = "row")`: what the percentages
+  # are, said after the weights. The column percentages of the default
+  # take no sentence.
+  note_percent_row = "Percentages are row percentages.",
   # A variable with no observed value in a group (every value missing
   # there, typically a question not asked in that group) has no data in
   # it, which is not a missing answer: its cells in that group show

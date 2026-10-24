@@ -218,7 +218,7 @@ triggers an actionable error. Ignored when \code{by} is not used.}
 \item{effect_size_ci}{Logical. If \code{TRUE}, appends the confidence
 interval of the effect size in brackets (e.g.,
 \code{g = 0.45 [0.22, 0.68]}), under a header that states its level
-(\verb{ES [95\\\% CI]}). Implies a non-\code{"none"} effect size: if
+(\verb{ES [95\% CI]}). Implies a non-\code{"none"} effect size: if
 left at the default \code{effect_size = "none"}, the function warns
 and promotes \code{effect_size} to \code{"auto"} so the requested CI can
 be shown. Defaults to \code{FALSE}.}
@@ -393,7 +393,7 @@ default object returns: one row per printed row, the key columns
 it) and, with \code{by}, \code{group} and \code{.row_role} (\code{"group"}, or
 \code{"missing"} for the group of missing \code{by} values), then the
 printed columns under their names (\code{"M"}, \code{"SD"}, \code{"Min"},
-\code{"Max"}, \code{"95\\\% CI LL"}, \code{"95\\\% CI UL"}, \code{"n"}, \code{"Test"}, \code{"p"},
+\code{"Max"}, \code{"95\% CI LL"}, \code{"95\% CI UL"}, \code{"n"}, \code{"Test"}, \code{"p"},
 \code{"ES"}, \code{"SMD"}, the columns \code{show_columns} asks for). A cell that
 prints several numbers keeps the first in its column and the
 others beside it under their names in the long output: \code{df} and

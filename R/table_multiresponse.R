@@ -232,9 +232,9 @@
 #'     `"missing"` for "(No data for the question)", `"fit_stat"` for the
 #'     base, the roles of [as_structured()]), then the printed columns:
 #'     the count and the percentage of each group of `by` and of the
-#'     `Total` margin (`<group> n` and `<group> \%`, or
-#'     `<group> \% of cases` and `<group> \% of responses` under
-#'     `percent = "both"`; `n` and `\%` without `by`), `Test` (the
+#'     `Total` margin (`<group> n` and `<group> %`, or
+#'     `<group> % of cases` and `<group> % of responses` under
+#'     `percent = "both"`; `n` and `%` without `by`), `Test` (the
 #'     chi-squared of the item, with `df` beside it) under
 #'     `statistic = TRUE`, and `p` with `p_value`.
 #'   \item `"long"`: one row per item and group, then one per row of

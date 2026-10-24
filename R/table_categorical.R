@@ -216,6 +216,44 @@
   )
 }
 
+# The Total row of `total_row = TRUE` closes the block of `var` under the
+# label of the margin (`header_margin_total`): a row the variable displays
+# with that label, among `levels`, is refused, as a level of `by` beside
+# the margin column is (`.cat_margin_key()`).
+.cat_total_row_guard <- function(
+  levels,
+  var,
+  label,
+  call = rlang::caller_env()
+) {
+  if (label %in% levels) {
+    .abort_label_collision(
+      label,
+      var,
+      "level",
+      "the Total row spicy adds",
+      "row",
+      "header_margin_total",
+      "All",
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
+# The rows of a block, in display order, from its rows `sv` of the compute
+# frame: the levels `keep` keeps (all of them when it is NULL), then the
+# Total row, flagged in `.total_row`, which `levels_keep` does not filter:
+# it is not a level.
+.cat_block_levels <- function(sv, keep = NULL) {
+  tot <- unique(sv$level[sv$.total_row %in% TRUE])
+  lv <- setdiff(unique(sv$level), tot)
+  if (!is.null(keep)) {
+    lv <- intersect(keep, lv)
+  }
+  c(lv, tot)
+}
+
 # The columns a select-less call tabulates, among `select_names` (the
 # `everything()` default, its role and design columns left out): the
 # categorical ones, factor, character, logical and labelled. A number, a
@@ -985,6 +1023,17 @@
 #'   margin is then an error (class `spicy_label_collision`): rename the
 #'   level, or give the margin another label with
 #'   `options(spicy.labels = list(header_margin_total = "All"))`.
+#' @param total_row Logical. If `TRUE`, closes the block of each variable
+#'   with a `Total` row under its levels (after the `"(Missing)"` row when
+#'   there is one): the count of the variable in each group column and in
+#'   the `Total` column, and its percentage, 100 in every column under
+#'   `percent = "column"` and, under `percent = "row"`, the share of each
+#'   group in the variable's total, the base rate the row percentages are
+#'   compared with. Without `by`, the row holds the count of the variable
+#'   and 100. The row never enters the test, the association measure or
+#'   the SMD. It takes the label of the margin, so a level displayed with
+#'   that label is then an error (class `spicy_label_collision`), as
+#'   beside the `Total` column. `FALSE` (the default) adds no row.
 #' @param drop_na Logical. The rule of the family: a table that counts
 #'   shows the missing values by default, as a frequency table reports
 #'   how many answers are missing; a table that computes a statistic
@@ -1061,6 +1110,18 @@
 #'   `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs
 #'   `by` and the `p` column. See *Multiple-comparison adjustment*.
+#' @param percent The direction of the percentages under `by`, as in
+#'   [cross_tab()]: `"column"` (the default), the distribution of each
+#'   group over the levels of the variable, summing to 100 down each
+#'   group; or `"row"`, the share of each level falling in each group,
+#'   summing to 100 across the groups, so that the `Total` column shows
+#'   100 on every level row. Unique abbreviations are accepted (`"c"`,
+#'   `"r"`). Only the displayed shares change: the counts, the test, the
+#'   association measure and the SMD are the same in both directions.
+#'   Under `"row"` the note says so ("Percentages are row
+#'   percentages."). Without `by`, each variable has one distribution to
+#'   show, and `percent = "row"` is ignored with a warning (class
+#'   `spicy_ignored_arg`).
 #' @param percent_digits Number of digits for percentages in report outputs.
 #'   Defaults to `1`. A whole number: a fraction is an error, as for
 #'   every `*_digits` argument.
@@ -1104,12 +1165,12 @@
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
 #'   95\% confidence interval of the association measure. In the console
 #'   and in the `"data.frame"`, `"excel"` and `"clipboard"` outputs, two
-#'   extra columns headed `95\% CI LL` / `95\% CI UL` are added, the level
+#'   extra columns headed `95% CI LL` / `95% CI UL` are added, the level
 #'   stated as the other tables state it; in the long output (`"long"`)
 #'   the bounds fill `es_ci_lower` / `es_ci_upper`. In rendered formats
 #'   (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the CI is shown
 #'   inline (e.g., `.14 [.08, .19]`) under a header that states its level
-#'   (`Cramer's V [95\% CI]`). Defaults to `FALSE`.
+#'   (`Cramer's V [95% CI]`). Defaults to `FALSE`.
 #' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
@@ -1233,21 +1294,25 @@
 #'     measure, then one row per level. The key columns are `variable`
 #'     (the column name), `label` (the label the rows display for it,
 #'     see `labels`), `level` and `.row_role` (`"factor_header"`,
-#'     `"level"`, or `"missing"` for the row of missing values the table
-#'     adds), then the printed columns: one pair `<group> n` /
-#'     `<group> \%` per group level (plus `Total` when
+#'     `"level"`, `"missing"` for the row of missing values the table
+#'     adds, or `"total"` for the Total row of `total_row = TRUE`), then
+#'     the printed columns: one pair `<group> n` /
+#'     `<group> %` per group level (plus `Total` when
 #'     `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
 #'     association measure (named after the measure, or `Effect size`
-#'     when the row variables do not share one), its bounds `95\% CI LL` /
-#'     `95\% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
-#'     When `by = NULL`, the printed columns are `n` and `\%`.
+#'     when the row variables do not share one), its bounds `95% CI LL` /
+#'     `95% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
+#'     When `by = NULL`, the printed columns are `n` and `%`.
 #'   \item `"long"`: a long `data.frame`, one row per variable, level and
 #'     group, with columns `variable`, `label`, `level`, `.row_role` (the
-#'     role of `level`: `"level"`, or `"missing"` for the row of missing
-#'     values), then, when `by` is used, `group`, `.group_role` (the role
+#'     role of `level`: `"level"`, `"missing"` for the row of missing
+#'     values, or `"total"` for the Total row of `total_row = TRUE`), then,
+#'     when `by` is used, `group`, `.group_role` (the role
 #'     of `group`: `"group"`, `"missing"` for the column of missing `by`
 #'     values, or `"total"` for the margin) and `total` (`TRUE` on the
-#'     rows of the margin), then `n`, `pct` (the percentage),
+#'     rows of the margin and of the Total row), then `n`, `pct` (the
+#'     percentage the table
+#'     displays, in the direction of `percent`),
 #'     then, with `by`, the test of the variable unless
 #'     `p_value = FALSE`: `test_type` (`"chi_squared"` for Pearson's,
 #'     `"n1_chi_squared"` for the N-1 chi-squared, `"fisher_exact"`,
@@ -1283,6 +1348,11 @@
 #' that renders the numbers itself can still state what left the table.
 #' The default object also keeps the title the console prints, in
 #' `attr(x, "title")`.
+#' The same three objects record the direction of their percentages in
+#' `attr(x, "percent")`: `"column"` or `"row"` (see `percent`), and
+#' `"column"` for a table without `by`. The percentage columns of
+#' `"data.frame"`, `pct` in `"long"` and the `proportion` of
+#' [broom::tidy()] hold the shares the table displays, in that direction.
 #' On the `"tinytable"` route the note is set one size down;
 #' `options(spicy.note_style)` governs that (see [table_regression()]).
 #'
@@ -1709,6 +1779,7 @@ table_categorical <- function(
   labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
+  total_row = FALSE,
   drop_na = FALSE,
   weights = NULL,
   rescale = getOption("spicy.rescale", FALSE),
@@ -1718,6 +1789,7 @@ table_categorical <- function(
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
+  percent = c("column", "row"),
   percent_digits = 1,
   p_digits = 3,
   effect_size_digits = 2,
@@ -1771,6 +1843,7 @@ table_categorical <- function(
   }
   align <- spicy_match_arg(align)
   test <- spicy_match_arg(test)
+  percent <- spicy_match_arg(percent)
 
   .check_data_frame(data, "table_categorical")
   .check_labels_arg(labels)
@@ -1881,41 +1954,55 @@ table_categorical <- function(
   # The fixed keys of the rows a long frame carries (O10 of the coherence
   # audit), each beside the key column it describes: `.row_role` is the
   # role of `level` ("missing" on the row of missing values the table
-  # adds, "level" elsewhere), `.group_role` the role of `group` ("missing"
-  # on the column of missing `by` values, "total" on the margin, "group"
-  # elsewhere), and `total` flags the margin. The KEY, never the label: a
-  # translated "(Missing)" still reads as "missing", and a level of
+  # adds, "total" on the Total row of `total_row = TRUE`, "level"
+  # elsewhere), `.group_role` the role of `group` ("missing" on the column
+  # of missing `by` values, "total" on the margin, "group" elsewhere), and
+  # `total` flags the margin and the Total row. The KEY, never the label:
+  # a translated "(Missing)" still reads as "missing", and a level of
   # another variable that happens to read the same as "level" -- the rule
-  # of the typed view. `missing_vars`, `missing_group`, `missing_label`
-  # and `margin_key` are read when the frame is built.
+  # of the typed view. The Total row is the `.total_row` flag of the
+  # compute frame, which leaves the frame here. `missing_vars`,
+  # `missing_group`, `missing_label` and `margin_key` are read when the
+  # frame is built.
   with_keys <- function(df) {
+    total_row_cells <- if (is.null(df[[".total_row"]])) {
+      rep(FALSE, nrow(df))
+    } else {
+      df[[".total_row"]] %in% TRUE
+    }
+    df[[".total_row"]] <- NULL
     role <- ifelse(
-      df$variable %in% missing_vars & df$level == missing_label,
-      "missing",
-      "level"
+      total_row_cells,
+      "total",
+      ifelse(
+        df$variable %in% missing_vars & df$level == missing_label,
+        "missing",
+        "level"
+      )
     )
     df <- .insert_cols_after(df, list(.row_role = role), "level")
     if (!"group" %in% names(df)) {
       return(df)
     }
-    total <- if (isTRUE(include_total)) {
+    margin <- if (isTRUE(include_total)) {
       df$group == margin_key
     } else {
       rep(FALSE, nrow(df))
     }
     group_role <- ifelse(
-      total,
+      margin,
       "total",
       ifelse(missing_group & df$group == missing_label, "missing", "group")
     )
     .insert_cols_after(
       df,
-      list(.group_role = group_role, total = total),
+      list(.group_role = group_role, total = margin | total_row_cells),
       "group"
     )
   }
 
   validate_logical_scalar(include_total, "include_total")
+  validate_logical_scalar(total_row, "total_row")
   validate_logical_scalar(drop_na, "drop_na")
   validate_logical_scalar(user_na, "user_na")
   # Declared missing values (see the "Declared missing values" section
@@ -2017,15 +2104,20 @@ table_categorical <- function(
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
   # What the numbers are, (a) of `.compose_note()`: a weighted table says
-  # so, in the words of `table_continuous()` (decision 17).
-  build_weights_note <- function() {
-    if (is.null(weights_vec)) {
-      return(NULL)
-    }
-    spicy_fmt(
-      "note_weighted_by",
-      weights_name %||% spicy_str("note_weights_fallback")
+  # so, in the words of `table_continuous()` (decision 17), and row
+  # percentages say so after it. The column percentages of the default
+  # take no sentence. NULL when there is nothing to say.
+  build_what_note <- function() {
+    parts <- c(
+      if (!is.null(weights_vec)) {
+        spicy_fmt(
+          "note_weighted_by",
+          weights_name %||% spicy_str("note_weights_fallback")
+        )
+      },
+      if (identical(percent, "row")) spicy_str("note_percent_row")
     )
+    if (length(parts)) paste(parts, collapse = " ")
   }
   validate_logical_scalar(rescale, "rescale")
   validate_logical_scalar(correct, "correct")
@@ -2085,6 +2177,12 @@ table_categorical <- function(
         class = "spicy_ignored_arg"
       )
     }
+    if (identical(percent, "row")) {
+      spicy_warn(
+        "`percent` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
+    }
     if (!isTRUE(all(as.character(assoc_measure) == "auto"))) {
       spicy_warn(
         "`assoc_measure` is ignored when `by` is not used.",
@@ -2098,6 +2196,8 @@ table_categorical <- function(
       )
     }
     include_total <- TRUE
+    # The one direction a one-way table has: each variable's distribution.
+    percent <- "column"
   }
   # Yates' correction and the Monte Carlo p-value change the chi-squared
   # test and nothing else (the association measures are computed apart),
@@ -2179,6 +2279,10 @@ table_categorical <- function(
   missing_vars <- character(0)
   # Whether `by` has a column of missing values (set where it is added).
   missing_group <- FALSE
+  # The label of the Total row of `total_row = TRUE`: the margin's, the
+  # word a categorical table puts over its count margin. The row itself is
+  # flagged in the compute frame (`.total_row`), never matched on it.
+  total_label <- spicy_str("header_margin_total")
 
   # `measure_key` is the measure the caller ASKED this row for, as a key
   # ("cramer_v", ..., or "none"). It rides through in `measure` so the
@@ -2445,16 +2549,24 @@ table_categorical <- function(
           next
         }
         no_data_vars <- c(no_data_vars, select_names[i])
+        if (total_row) {
+          .cat_total_row_guard(lv_use, select_names[i], total_label)
+        }
+        # The Total row closes the declared levels, with no count either;
+        # a variable that declares none is its one row.
+        has_total <- total_row && length(lv_use) > 0L
         if (length(lv_use) == 0L) {
           lv_use <- NA_character_
         }
-        for (k in seq_along(lv_use)) {
+        shown <- c(lv_use, if (has_total) total_label)
+        for (k in seq_along(shown)) {
           rows[[rr]] <- data.frame(
             variable = select_names[i],
-            level = lv_use[[k]],
+            level = shown[[k]],
             .lvrank = k,
             n = NA_real_,
             pct = NA_real_,
+            .total_row = k > length(lv_use),
             stringsAsFactors = FALSE,
             check.names = FALSE
           )
@@ -2522,6 +2634,9 @@ table_categorical <- function(
         .warn_levels_keep_no_match(select_names[i], raw_levels)
         next
       }
+      if (total_row) {
+        .cat_total_row_guard(lv_use, select_names[i], total_label)
+      }
       all_level_order <- c(all_level_order, lv_use)
 
       for (lv in lv_use) {
@@ -2540,6 +2655,23 @@ table_categorical <- function(
           .lvrank = match(lv, lv_use),
           n = suppressWarnings(as.numeric(ft$n[idx])),
           pct = 100 * suppressWarnings(as.numeric(ft$prop[idx])),
+          .total_row = FALSE,
+          stringsAsFactors = FALSE,
+          check.names = FALSE
+        )
+        rr <- rr + 1L
+      }
+      # The Total row: every level of the variable, those `levels_keep`
+      # hides included, as in the percentages above it.
+      if (total_row) {
+        n_all <- sum(suppressWarnings(as.numeric(ft$n[!is.na(vals)])))
+        rows[[rr]] <- data.frame(
+          variable = select_names[i],
+          level = total_label,
+          .lvrank = length(lv_use) + 1L,
+          n = n_all,
+          pct = 100 * (n_all > 0),
+          .total_row = TRUE,
           stringsAsFactors = FALSE,
           check.names = FALSE
         )
@@ -2553,6 +2685,7 @@ table_categorical <- function(
         level = character(0),
         n = numeric(0),
         pct = numeric(0),
+        .total_row = logical(0),
         stringsAsFactors = FALSE,
         check.names = FALSE
       )
@@ -2579,11 +2712,13 @@ table_categorical <- function(
 
     if (output == "long") {
       long_raw <- with_keys(with_label(long_raw))
-      # Every data frame carries the note as print() shows it.
+      # Every data frame carries the note as print() shows it, and the
+      # direction of its percentages.
       attr(long_raw, "note") <- .categorical_note(
-        build_weights_note(),
+        build_what_note(),
         build_missing_note()
       )
+      attr(long_raw, "percent") <- percent
       return(long_raw)
     }
 
@@ -2648,10 +2783,8 @@ table_categorical <- function(
         keep_k <- levels_keep[[select_names[[k]]]]
         lv_use <- if (no_level) {
           character(0)
-        } else if (is.null(keep_k)) {
-          unique(sv$level)
         } else {
-          intersect(keep_k, unique(sv$level))
+          .cat_block_levels(sv, keep_k)
         }
 
         if (mode == "char") {
@@ -2703,7 +2836,7 @@ table_categorical <- function(
     # the same disclosure, not print() alone. `oneway_note` is that
     # disclosure as the note every route prints, print() included,
     # assembled (and opened with "Note.") by `.categorical_note()`.
-    what_note <- build_weights_note()
+    what_note <- build_what_note()
     missing_note <- build_missing_note()
     oneway_note <- .categorical_note(what_note, missing_note)
 
@@ -2740,6 +2873,7 @@ table_categorical <- function(
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
+      attr(out, "percent") <- percent
       # The long frame of `output = "long"`, for tidy() and glance().
       attr(out, "long_data") <- with_keys(with_label(long_raw))
       attr(out, "structured") <- structured
@@ -3366,7 +3500,8 @@ table_categorical <- function(
 
   # One row of the compute frame: one variable, level and group. `st`
   # holds the statistics of the variable (`parse_stats()`), which every
-  # row of its block carries.
+  # row of its block carries, the Total row of `total_row = TRUE`
+  # (`total`) included.
   cat_row <- function(
     var,
     lv,
@@ -3377,7 +3512,8 @@ table_categorical <- function(
     test_type,
     st,
     smd_val,
-    smd_kind
+    smd_kind,
+    total = FALSE
   ) {
     row_df <- data.frame(
       variable = var,
@@ -3388,6 +3524,7 @@ table_categorical <- function(
       group = gr,
       n = n,
       pct = pct,
+      .total_row = total,
       test_type = test_type,
       chi2 = st$chi2 %||% NA_real_,
       df = st$df %||% NA_real_,
@@ -3494,6 +3631,12 @@ table_categorical <- function(
         .warn_levels_keep_no_match(select_names[i], var_level_order)
         next
       }
+      if (total_row) {
+        .cat_total_row_guard(lv_use, select_names[i], total_label)
+      }
+      # The Total row closes the declared levels, with the cells of a
+      # level; a variable that declares none is its one row.
+      has_total <- total_row && length(lv_use) > 0L
       if (length(lv_use) == 0L) {
         lv_use <- NA_character_
       }
@@ -3511,12 +3654,13 @@ table_categorical <- function(
         ci_lower = NA_real_,
         ci_upper = NA_real_
       )
-      for (k in seq_along(lv_use)) {
+      shown <- c(lv_use, if (has_total) total_label)
+      for (k in seq_along(shown)) {
         for (gr in group_levels) {
           void <- gr %in% nd_i || identical(gr, margin_key)
           rows[[rr]] <- cat_row(
             select_names[i],
-            lv_use[[k]],
+            shown[[k]],
             k,
             gr,
             n = if (void) NA_real_ else 0,
@@ -3528,7 +3672,8 @@ table_categorical <- function(
               .smd_categorical_type(length(var_level_order))
             } else {
               NA_character_
-            }
+            },
+            total = k > length(lv_use)
           )
           rr <- rr + 1L
         }
@@ -3648,10 +3793,12 @@ table_categorical <- function(
     }
     chi_correct <- correct && identical(test_kind, "chisq")
     chi_simulate <- simulate_p && identical(test_kind, "chisq")
+    # The percentages in the direction of `percent`. The statistics read
+    # from this call come from the table of counts, whatever the direction.
     ct_pct <- quiet_margin(spicy::cross_tab(
       x,
       g,
-      percent = "c",
+      percent = percent,
       weights = w,
       rescale = rescale,
       correct = chi_correct,
@@ -3814,6 +3961,9 @@ table_categorical <- function(
       .warn_levels_keep_no_match(select_names[i], raw_levels)
       next
     }
+    if (total_row) {
+      .cat_total_row_guard(lv_use, select_names[i], total_label)
+    }
     all_level_order <- c(all_level_order, lv_use)
     # For the note: the test of each variable the table shows, and
     # whether Yates' correction reached it (cross_tab() applies it to a
@@ -3851,7 +4001,15 @@ table_categorical <- function(
           0
         }
         pct_val <- if (identical(gr, margin_key)) {
-          ct_pct[in_p, ncol(ct_pct)]
+          # Under row percentages the margin is the row over itself: the
+          # 100 cross_tab() prints, which its sum of shares reaches only up
+          # to the last bit of a double, and 0 on a row that holds nothing,
+          # as there.
+          if (identical(percent, "row")) {
+            100 * (n_val > 0)
+          } else {
+            ct_pct[in_p, ncol(ct_pct)]
+          }
         } else if (gr %in% groups_present) {
           ct_pct[in_p, gr]
         } else {
@@ -3874,6 +4032,51 @@ table_categorical <- function(
           st = st,
           smd_val = smd_val,
           smd_kind = smd_kind
+        )
+        rr <- rr + 1L
+      }
+    }
+    # The Total row: the counts of cross_tab()'s own total row (every level,
+    # those `levels_keep` hides and the row of missing values included), and
+    # their percentage. Under column percentages, the 100 of each column;
+    # under row percentages, the share of each group in the variable's
+    # total, the base rate the rows above are read against. It is built
+    # after the statistics and enters none of them.
+    if (total_row) {
+      n_all <- suppressWarnings(as.numeric(ct_n[margin_rows_n, ncol(ct_n)]))
+      for (gr in groups_use) {
+        n_val <- if (identical(gr, margin_key)) {
+          n_all
+        } else if (gr %in% groups_present) {
+          suppressWarnings(as.numeric(ct_n[margin_rows_n, gr]))
+        } else {
+          0
+        }
+        pct_val <- if (
+          identical(gr, margin_key) || identical(percent, "column")
+        ) {
+          100 * (n_val > 0)
+        } else if (n_all > 0) {
+          100 * n_val / n_all
+        } else {
+          0
+        }
+        if (gr %in% nd_i) {
+          n_val <- NA_real_
+          pct_val <- NA_real_
+        }
+        rows[[rr]] <- cat_row(
+          select_names[i],
+          total_label,
+          length(lv_use) + 1L,
+          gr,
+          n = n_val,
+          pct = pct_val,
+          test_type = test_type,
+          st = st,
+          smd_val = smd_val,
+          smd_kind = smd_kind,
+          total = TRUE
         )
         rr <- rr + 1L
       }
@@ -3950,6 +4153,7 @@ table_categorical <- function(
       group = character(0),
       n = numeric(0),
       pct = numeric(0),
+      .total_row = logical(0),
       test_type = character(0),
       p = numeric(0),
       p_op = character(0),
@@ -4055,13 +4259,15 @@ table_categorical <- function(
       measure_col = if (show_assoc) measure_col,
       assoc_ci = show_assoc && assoc_ci
     )
-    # Every data frame carries the note as print() shows it.
+    # Every data frame carries the note as print() shows it, and the
+    # direction of its percentages.
     attr(out, "note") <- .categorical_note(
-      build_weights_note(),
+      build_what_note(),
       build_missing_note(),
       assoc_note_text,
       abbrev_note
     )
+    attr(out, "percent") <- percent
     return(out)
   }
   # Only the long output publishes the per-row measure and SMD keys; the
@@ -4154,7 +4360,7 @@ table_categorical <- function(
   # same disclosure, not print() alone. `table_note` is the whole note
   # every route prints, print() included, assembled from its four parts
   # by `.categorical_note()`.
-  what_note <- build_weights_note()
+  what_note <- build_what_note()
   missing_note <- build_missing_note()
   table_note <- .categorical_note(
     what_note,
@@ -4269,10 +4475,8 @@ table_categorical <- function(
       keep_k <- levels_keep[[select_names[[k]]]]
       lv_use <- if (no_level) {
         character(0)
-      } else if (is.null(keep_k)) {
-        unique(sv$level)
       } else {
-        intersect(keep_k, unique(sv$level))
+        .cat_block_levels(sv, keep_k)
       }
 
       # variable row
@@ -4411,6 +4615,9 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
+    # The direction of the percentages (`percent`), which the data frames
+    # of `output = "data.frame"` and `"long"` carry too.
+    attr(out, "percent") <- percent
     # The compute frame of `output = "long"`, under its internal names,
     # for tidy() and glance(), with the measure and SMD keys of each row
     # (`.assoc_type`, `.smd_type`), which glance() reports per variable.

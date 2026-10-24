@@ -11,6 +11,7 @@ table_categorical(
   labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
+  total_row = FALSE,
   drop_na = FALSE,
   weights = NULL,
   rescale = getOption("spicy.rescale", FALSE),
@@ -20,6 +21,7 @@ table_categorical(
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
+  percent = c("column", "row"),
   percent_digits = 1,
   p_digits = 3,
   effect_size_digits = 2,
@@ -122,6 +124,18 @@ margin is then an error (class \code{spicy_label_collision}): rename the
 level, or give the margin another label with
 \code{options(spicy.labels = list(header_margin_total = "All"))}.}
 
+\item{total_row}{Logical. If \code{TRUE}, closes the block of each variable
+with a \code{Total} row under its levels (after the \code{"(Missing)"} row when
+there is one): the count of the variable in each group column and in
+the \code{Total} column, and its percentage, 100 in every column under
+\code{percent = "column"} and, under \code{percent = "row"}, the share of each
+group in the variable's total, the base rate the row percentages are
+compared with. Without \code{by}, the row holds the count of the variable
+and 100. The row never enters the test, the association measure or
+the SMD. It takes the label of the margin, so a level displayed with
+that label is then an error (class \code{spicy_label_collision}), as
+beside the \code{Total} column. \code{FALSE} (the default) adds no row.}
+
 \item{drop_na}{Logical. The rule of the family: a table that counts
 shows the missing values by default, as a frequency table reports
 how many answers are missing; a table that computes a statistic
@@ -209,6 +223,19 @@ variable). One of \code{"none"} (default), \code{"holm"}, \code{"hochberg"},
 \code{\link[=table_regression]{table_regression()}}; delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs
 \code{by} and the \code{p} column. See \emph{Multiple-comparison adjustment}.}
 
+\item{percent}{The direction of the percentages under \code{by}, as in
+\code{\link[=cross_tab]{cross_tab()}}: \code{"column"} (the default), the distribution of each
+group over the levels of the variable, summing to 100 down each
+group; or \code{"row"}, the share of each level falling in each group,
+summing to 100 across the groups, so that the \code{Total} column shows
+100 on every level row. Unique abbreviations are accepted (\code{"c"},
+\code{"r"}). Only the displayed shares change: the counts, the test, the
+association measure and the SMD are the same in both directions.
+Under \code{"row"} the note says so ("Percentages are row
+percentages."). Without \code{by}, each variable has one distribution to
+show, and \code{percent = "row"} is ignored with a warning (class
+\code{spicy_ignored_arg}).}
+
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
 every \verb{*_digits} argument.}
@@ -257,12 +284,12 @@ another measure or fall back to \code{"auto"}.}
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
 95\\% confidence interval of the association measure. In the console
 and in the \code{"data.frame"}, \code{"excel"} and \code{"clipboard"} outputs, two
-extra columns headed \verb{95\\\% CI LL} / \verb{95\\\% CI UL} are added, the level
+extra columns headed \verb{95\% CI LL} / \verb{95\% CI UL} are added, the level
 stated as the other tables state it; in the long output (\code{"long"})
 the bounds fill \code{es_ci_lower} / \code{es_ci_upper}. In rendered formats
 (\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}), the CI is shown
 inline (e.g., \code{.14 [.08, .19]}) under a header that states its level
-(\verb{Cramer's V [95\\\% CI]}). Defaults to \code{FALSE}.}
+(\verb{Cramer's V [95\% CI]}). Defaults to \code{FALSE}.}
 
 \item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
 standardized mean difference between the two groups of \code{by},
@@ -403,21 +430,25 @@ of each variable, which carries its \emph{p}-value and its association
 measure, then one row per level. The key columns are \code{variable}
 (the column name), \code{label} (the label the rows display for it,
 see \code{labels}), \code{level} and \code{.row_role} (\code{"factor_header"},
-\code{"level"}, or \code{"missing"} for the row of missing values the table
-adds), then the printed columns: one pair \verb{<group> n} /
-\verb{<group> \\\%} per group level (plus \code{Total} when
+\code{"level"}, \code{"missing"} for the row of missing values the table
+adds, or \code{"total"} for the Total row of \code{total_row = TRUE}), then
+the printed columns: one pair \verb{<group> n} /
+\verb{<group> \%} per group level (plus \code{Total} when
 \code{include_total = TRUE}), \code{p} (absent with \code{p_value = FALSE}), the
 association measure (named after the measure, or \verb{Effect size}
-when the row variables do not share one), its bounds \verb{95\\\% CI LL} /
-\verb{95\\\% CI UL} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
-When \code{by = NULL}, the printed columns are \code{n} and \verb{\\\%}.
+when the row variables do not share one), its bounds \verb{95\% CI LL} /
+\verb{95\% CI UL} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
+When \code{by = NULL}, the printed columns are \code{n} and \verb{\%}.
 \item \code{"long"}: a long \code{data.frame}, one row per variable, level and
 group, with columns \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
-role of \code{level}: \code{"level"}, or \code{"missing"} for the row of missing
-values), then, when \code{by} is used, \code{group}, \code{.group_role} (the role
+role of \code{level}: \code{"level"}, \code{"missing"} for the row of missing
+values, or \code{"total"} for the Total row of \code{total_row = TRUE}), then,
+when \code{by} is used, \code{group}, \code{.group_role} (the role
 of \code{group}: \code{"group"}, \code{"missing"} for the column of missing \code{by}
 values, or \code{"total"} for the margin) and \code{total} (\code{TRUE} on the
-rows of the margin), then \code{n}, \code{pct} (the percentage),
+rows of the margin and of the Total row), then \code{n}, \code{pct} (the
+percentage the table
+displays, in the direction of \code{percent}),
 then, with \code{by}, the test of the variable unless
 \code{p_value = FALSE}: \code{test_type} (\code{"chi_squared"} for Pearson's,
 \code{"n1_chi_squared"} for the N-1 chi-squared, \code{"fisher_exact"},
@@ -453,6 +484,11 @@ and the default object and the data frames of \code{"data.frame"} /
 that renders the numbers itself can still state what left the table.
 The default object also keeps the title the console prints, in
 \code{attr(x, "title")}.
+The same three objects record the direction of their percentages in
+\code{attr(x, "percent")}: \code{"column"} or \code{"row"} (see \code{percent}), and
+\code{"column"} for a table without \code{by}. The percentage columns of
+\code{"data.frame"}, \code{pct} in \code{"long"} and the \code{proportion} of
+\code{\link[broom:tidy]{broom::tidy()}} hold the shares the table displays, in that direction.
 On the \code{"tinytable"} route the note is set one size down;
 \code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
 

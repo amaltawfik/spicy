@@ -397,7 +397,10 @@
 #'
 #' `weights` and `rescale` (the weighting *is* the design). `correct`
 #' (Yates), `simulate_p` and `simulate_B`, which have no meaning once
-#' the reference distribution is Rao-Scott's. And the association
+#' the reference distribution is Rao-Scott's. `percent`, not yet: a row
+#' percentage is estimated within its level, a domain of its own, so every
+#' level of every variable would bring its own degrees of freedom,
+#' intervals and design effects. And the association
 #' measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
 #' have no established design-based variance, and the intervals
 #' [table_categorical()] gives them assume simple random sampling. The
@@ -523,10 +526,10 @@
 #'     displayed), `level` and `.row_role` (`"factor_header"`, `"level"`,
 #'     or `"missing"` on the row of missing values the table adds), then
 #'     the printed columns in their order: per block of `by` (and the
-#'     `Total` margin) `<group> n`, `<group> \%`, with `proportion_ci` the
-#'     interval bounds `<group> 95\% CI LL` and `<group> 95\% CI UL` (the
+#'     `Total` margin) `<group> n`, `<group> %`, with `proportion_ci` the
+#'     interval bounds `<group> 95% CI LL` and `<group> 95% CI UL` (the
 #'     level of `ci_level`, as printed), with `deff` `<group> DEff`, and
-#'     last `p`. Without `by`, the columns of the one block are `n`, `\%`,
+#'     last `p`. Without `by`, the columns of the one block are `n`, `%`,
 #'     ...
 #'   \item `"long"`: one row per variable, level and group, in the order
 #'     of the table, with `variable`, `label`, `level`, `.row_role` (the

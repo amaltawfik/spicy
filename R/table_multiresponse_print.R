@@ -85,6 +85,9 @@ print.spicy_multiresponse_table <- function(x, ...) {
     align_center_cols = align_center,
     # The base row is ruled off from the rows above, from its typed role.
     group_sep_rows = which(s$body$.row_role == "fit_stat"),
+    # No total row: without an index the printer looks for the word
+    # "Total" in the rows and rules off an item "Total score".
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
   invisible(x)
@@ -138,7 +141,7 @@ print.spicy_multiresponse_table <- function(x, ...) {
 #' row the table adds: `"none"`, `"no_data"`, `"nobs"` for the base),
 #' `label` (the label displayed) and `.row_role` (`"summary"` for an item,
 #' `"none"`, `"missing"`, or `"fit_stat"` for the base), then the printed
-#' columns under their names (`"<group> n"`, `"<group> \%"`, ...,
+#' columns under their names (`"<group> n"`, `"<group> %"`, ...,
 #' `"Test"` with `df` beside it under `statistic = TRUE`, `"p"`). The
 #' `"note"` and `"global_test"` attributes are kept. `as_tibble()`
 #' returns the same table as a tibble. The original `x` is unaffected,

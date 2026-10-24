@@ -2938,8 +2938,10 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   `"outcome"`, `"vc"` (variance component) in a regression table,
 #'   plus `"summary"` (a row summarizing one variable), `"group"` (a
 #'   row keyed by one level of `by`), `"missing"` (a row keyed by
-#'   the *missing* value) and `"none"` (the respondents who chose no
-#'   item of a multiple-response question) in the descriptive ones. The
+#'   the *missing* value), `"none"` (the respondents who chose no
+#'   item of a multiple-response question) and `"total"` (the Total row
+#'   of [table_categorical()] under `total_row = TRUE`) in the
+#'   descriptive ones. The
 #'   role is the key a consumer matches on: `"(Missing)"` is a display
 #'   label -- translatable, and relabeled through `options(spicy.labels)`
 #'   -- and the role survives both.
@@ -2990,8 +2992,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' measure.
 #'
 #' * [table_categorical()] -- one `"factor_header"` row per variable
-#'   then one `"level"` (or `"missing"`) row per category, exactly as
-#'   the console lays them out. Tokens: `"n"`, `"pct"`, `"p"`,
+#'   then one `"level"` (or `"missing"`) row per category, and under
+#'   `total_row = TRUE` the `"total"` row that closes each block, exactly
+#'   as the console lays them out. Tokens: `"n"`, `"pct"`, `"p"`,
 #'   `"assoc"` (the association measure), `"assoc_ci"` (its bounds)
 #'   and `"smd"` (the standardized mean difference, when
 #'   `smd = TRUE`). In a `by` table each group owns an `n` / `%` pair with
@@ -3062,7 +3065,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' Version `3` also opened the accessor to the descriptive families,
 #' which had no typed view before: `.row_role` gained `"summary"`,
-#' `"group"` and `"missing"`, then `"none"` with [table_multiresponse()].
+#' `"group"` and `"missing"`, then `"none"` with [table_multiresponse()]
+#' and `"total"` with the `total_row` of [table_categorical()].
 #' The vocabulary is extended by addition -- an existing role never
 #' changes meaning.
 #'

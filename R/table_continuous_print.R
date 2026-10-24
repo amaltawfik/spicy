@@ -174,6 +174,9 @@ print.spicy_continuous_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = sep_rows,
+    # No total row: without an index the printer looks for the word
+    # "Total" in the rows and rules off a variable labeled "Total score".
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
 
@@ -246,7 +249,7 @@ unclass_spicy_continuous_table <- function(x) {
 #' `label` (the label displayed for it) and, with `by`, `group` and
 #' `.row_role` (`"group"`, or `"missing"` for the group of missing `by`
 #' values), then the printed columns under their names (`"M"`, `"SD"`,
-#' `"95\% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several
+#' `"95% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several
 #' numbers keeps the first in its column and the others beside it under
 #' their names in the long output: `df` and `df.residual` after the test
 #' statistic `"Test"`, `es_ci_lower` and `es_ci_upper` after the effect

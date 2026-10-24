@@ -225,10 +225,10 @@ key columns \code{variable} (the column name), \code{label} (the label
 displayed), \code{level} and \code{.row_role} (\code{"factor_header"}, \code{"level"},
 or \code{"missing"} on the row of missing values the table adds), then
 the printed columns in their order: per block of \code{by} (and the
-\code{Total} margin) \verb{<group> n}, \verb{<group> \\\%}, with \code{proportion_ci} the
-interval bounds \verb{<group> 95\\\% CI LL} and \verb{<group> 95\\\% CI UL} (the
+\code{Total} margin) \verb{<group> n}, \verb{<group> \%}, with \code{proportion_ci} the
+interval bounds \verb{<group> 95\% CI LL} and \verb{<group> 95\% CI UL} (the
 level of \code{ci_level}, as printed), with \code{deff} \verb{<group> DEff}, and
-last \code{p}. Without \code{by}, the columns of the one block are \code{n}, \verb{\\\%},
+last \code{p}. Without \code{by}, the columns of the one block are \code{n}, \verb{\%},
 ...
 \item \code{"long"}: one row per variable, level and group, in the order
 of the table, with \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
@@ -348,7 +348,10 @@ survey's and do not move with it.
 \section{What is absent, and why}{
 \code{weights} and \code{rescale} (the weighting \emph{is} the design). \code{correct}
 (Yates), \code{simulate_p} and \code{simulate_B}, which have no meaning once
-the reference distribution is Rao-Scott's. And the association
+the reference distribution is Rao-Scott's. \code{percent}, not yet: a row
+percentage is estimated within its level, a domain of its own, so every
+level of every variable would bring its own degrees of freedom,
+intervals and design effects. And the association
 measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
 have no established design-based variance, and the intervals
 \code{\link[=table_categorical]{table_categorical()}} gives them assume simple random sampling. The

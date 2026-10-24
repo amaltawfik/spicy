@@ -2211,3 +2211,20 @@ test_that("the default object carries the title the console prints", {
     "Categorical table"
   )
 })
+
+test_that("a level holding the word \"Total\" takes no rule in the console", {
+  skip_if_not_installed("survey", "4.5")
+  set.seed(3)
+  d <- data.frame(
+    x = factor(
+      sample(c("a", "b", "Total score"), 60, replace = TRUE),
+      levels = c("a", "b", "Total score")
+    ),
+    w = runif(60, 1, 2)
+  )
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  out <- utils::capture.output(print(table_categorical_svy(des, select = x)))
+  at <- grep("Total score", out, fixed = TRUE)
+  expect_length(at, 1L)
+  expect_false(grepl("─", out[at - 1L]))
+})

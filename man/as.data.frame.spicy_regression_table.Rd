@@ -35,8 +35,8 @@ variable, or the text of a fit-statistic row), \code{level} (the level of a
 factor row) and \code{.row_role} (\code{"coef"}, \code{"factor_header"}, \code{"level"},
 \code{"reference"}, \code{"fit_stat"}, ..., the roles of \code{\link[=as_structured]{as_structured()}}),
 then the printed columns under their names, numeric: the interval of
-a coefficient is split into its two bounds (\code{"95\\\% CI LL"},
-\code{"95\\\% CI UL"}), a fit statistic sits in the first column of its
+a coefficient is split into its two bounds (\code{"95\% CI LL"},
+\code{"95\% CI UL"}), a fit statistic sits in the first column of its
 model, and a cell of events over a total (\code{n_events}) keeps the
 events in its column and the total beside it (\code{"<column>: N"}). With
 several models each column name starts with the model's label. The

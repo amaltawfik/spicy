@@ -37,10 +37,11 @@
 #                                   #                "fit_stat" |
 #                                   #                "outcome" | "vc" |
 #                                   #                "summary" | "group" |
-#                                   #                "missing" | "none"
-#                                   #                (the last four are
-#                                   #                emitted by the
-#                                   #                descriptive families)
+#                                   #                "missing" | "none" |
+#                                   #                "total" (the last
+#                                   #                five are emitted by
+#                                   #                the descriptive
+#                                   #                families)
 #                                   #  .indent   int display indent (0/1)
 #                                   #
 #                                   # The identity of a row is DATA, filled
@@ -221,7 +222,7 @@
 }
 
 # The row roles a v3 body may carry. Regression roles first, then the
-# four the descriptive tables add (R/tables_structured.R). The
+# five the descriptive tables add (R/tables_structured.R). The
 # vocabulary is EXTENDED, never re-worded: a role says what a row IS,
 # so it is the key a consumer matches on -- never the displayed label,
 # which is a display string ("(Missing)", translatable, relabeled
@@ -236,6 +237,8 @@
 #            `group`: what the row is, is the missing key.
 #   none     the respondents of the base of a multiple-response table
 #            who chose no item.
+#   total    the Total row that closes a block of a categorical table
+#            under `total_row = TRUE`, its label the margin's.
 .STRUCT_ROW_ROLES <- c(
   "coef",
   "factor_header",
@@ -247,7 +250,8 @@
   "summary",
   "group",
   "missing",
-  "none"
+  "none",
+  "total"
 )
 
 # Value (displayable) columns of a structured body: everything but the

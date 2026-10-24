@@ -2637,12 +2637,13 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
   expect_null(attr(df, "display_df"))
   expect_null(attr(df, "long_data"))
   expect_null(attr(df, "align"))
-  # Only the note rides along (no `group_var` any more), and the frame is
-  # the `output = "data.frame"` of the same call.
+  # Only the note and the direction of the percentages ride along (no
+  # `group_var` any more), and the frame is the `output = "data.frame"` of
+  # the same call.
   expect_null(attr(df, "group_var"))
   expect_identical(
     setdiff(names(attributes(df)), c("names", "row.names", "class")),
-    "note"
+    c("note", "percent")
   )
   expect_identical(
     df,
@@ -4421,6 +4422,193 @@ test_that("percent_digits >= 2 renders true decimals with by", {
   expect_identical(rc[["g2 %"]], "66.67")
 })
 
+test_that("percent = \"row\" gives row shares and leaves the statistics alone", {
+  set.seed(14)
+  n <- 120
+  d <- data.frame(
+    g = factor(sample(c("A", "B"), n, replace = TRUE)),
+    x = factor(
+      sample(c("low", "mid", "high"), n, replace = TRUE),
+      levels = c("low", "mid", "high")
+    ),
+    y = factor(ifelse(rbinom(n, 1, 0.4) == 1, "yes", "no"))
+  )
+  d$y[sample(n, 8)] <- NA
+  col <- table_categorical(d, c(x, y), by = g, assoc_ci = TRUE, output = "long")
+  row <- table_categorical(
+    d,
+    c(x, y),
+    by = g,
+    percent = "row",
+    assoc_ci = TRUE,
+    output = "long"
+  )
+  rx <- row[row$variable == "x" & !row$total, ]
+  expect_equal(
+    rx$pct,
+    100 * as.vector(t(prop.table(table(d$x, d$g), margin = 1)))
+  )
+  expect_identical(row$pct[row$total], rep(100, 6))
+  stats <- c(
+    "variable",
+    "level",
+    "group",
+    "n",
+    "test_type",
+    "statistic",
+    "df",
+    "p.value",
+    "es_type",
+    "es_value",
+    "es_ci_lower",
+    "es_ci_upper"
+  )
+  expect_false(anyNA(row$p.value))
+  expect_identical(row[stats], col[stats])
+  smd <- function(percent) {
+    table_categorical(
+      d,
+      y,
+      by = g,
+      smd = TRUE,
+      percent = percent,
+      output = "long"
+    )$smd_value
+  }
+  expect_false(anyNA(smd("row")))
+  expect_identical(smd("row"), smd("column"))
+  expect_identical(attr(row, "percent"), "row")
+  expect_identical(attr(col, "percent"), "column")
+
+  tbl <- table_categorical(d, x, by = g, percent = "r")
+  expect_identical(attr(tbl, "percent"), "row")
+  expect_identical(attr(as.data.frame(tbl), "percent"), "row")
+  expect_identical(attr(table_categorical(d, x, by = g), "percent"), "column")
+  expect_identical(
+    inline(tbl, x, "low", "pct", model = "A"),
+    sprintf("%.1f", 100 * prop.table(table(d$x, d$g), 1)["low", "A"])
+  )
+  expect_identical(
+    attr(tbl, "note"),
+    "Note. Percentages are row percentages. Group comparison: Pearson chi-squared test."
+  )
+  expect_identical(
+    attr(table_categorical(d, x, by = g), "note"),
+    "Note. Group comparison: Pearson chi-squared test."
+  )
+  fr <- withr::with_options(
+    list(spicy.language = "fr"),
+    attr(table_categorical(d, x, by = g, percent = "row"), "note")
+  )
+  expect_true(startsWith(fr, "Note. Pourcentages en ligne. "))
+
+  expect_warning(
+    one <- table_categorical(d, x, percent = "row"),
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(attr(one, "percent"), "column")
+  expect_null(attr(one, "note"))
+})
+
+test_that("total_row closes each variable with its total, in both directions", {
+  set.seed(15)
+  n <- 90L
+  d <- data.frame(
+    g = factor(sample(c("A", "B"), n, replace = TRUE)),
+    x = factor(
+      sample(c("low", "mid", "high"), n, replace = TRUE),
+      levels = c("low", "mid", "high")
+    ),
+    y = factor(ifelse(rbinom(n, 1, 0.3) == 1, "yes", "no"))
+  )
+  d$y[sample(n, 5)] <- NA
+  long <- function(...) {
+    table_categorical(d, c(x, y), by = g, output = "long", ...)
+  }
+  col <- long(total_row = TRUE)
+  expect_identical(
+    unique(col$.row_role[col$variable == "y"]),
+    c("level", "missing", "total")
+  )
+  tot <- col[col$.row_role == "total", ]
+  expect_true(all(tot$total))
+  expect_equal(tot$n, rep(c(as.vector(table(d$g)), n), 2))
+  expect_identical(tot$pct, rep(100, 6))
+  rtot <- long(total_row = TRUE, percent = "row")
+  rtot <- rtot[rtot$.row_role == "total", ]
+  expect_equal(
+    rtot$pct,
+    rep(c(100 * as.vector(prop.table(table(d$g))), 100), 2)
+  )
+  dropped <- table_categorical(
+    d,
+    y,
+    by = g,
+    total_row = TRUE,
+    drop_na = TRUE,
+    output = "long"
+  )
+  expect_equal(
+    dropped$n[dropped$.row_role == "total"],
+    c(as.vector(table(d$g[!is.na(d$y)])), sum(!is.na(d$y)))
+  )
+  expect_equal(col[col$.row_role != "total", ], long(), ignore_attr = TRUE)
+
+  tbl <- table_categorical(d, x, by = g, total_row = TRUE, percent = "row")
+  expect_identical(
+    as.data.frame(tbl)$.row_role,
+    c("factor_header", "level", "level", "level", "total")
+  )
+  expect_identical(
+    inline(tbl, x, "Total", "pct", model = "A"),
+    sprintf("%.1f", 100 * mean(d$g == "A"))
+  )
+  rules <- function(x) sum(grepl("┼", utils::capture.output(print(x))))
+  expect_identical(
+    rules(tbl),
+    rules(table_categorical(d, x, by = g, percent = "row"))
+  )
+
+  expect_no_warning(one <- table_categorical(d, y, total_row = TRUE))
+  expect_identical(
+    as.data.frame(one)$.row_role,
+    c("factor_header", "level", "level", "missing", "total")
+  )
+  expect_identical(inline(one, y, "Total", "n"), as.character(n))
+
+  d$z <- factor(ifelse(d$x == "low", "Total", "Other"))
+  expect_error(
+    table_categorical(d, z, by = g, total_row = TRUE),
+    class = "spicy_label_collision"
+  )
+  expect_s3_class(table_categorical(d, z, by = g), "spicy_categorical_table")
+
+  skip_if_not_installed("broom")
+  expect_identical(broom::tidy(one)$total, c(FALSE, FALSE, FALSE, TRUE))
+  expect_identical(broom::glance(tbl)$nobs, n)
+})
+
+test_that("row percentages and the Total row reach the Typst cells and the note", {
+  skip_if_not_installed("tinytable")
+  set.seed(14)
+  d <- data.frame(
+    group = factor(sample(c("A", "B"), 80, replace = TRUE)),
+    level = factor(
+      sample(c("low", "mid", "high"), 80, replace = TRUE),
+      levels = c("low", "mid", "high")
+    )
+  )
+  tt <- table_categorical(
+    d,
+    level,
+    by = group,
+    percent = "row",
+    total_row = TRUE,
+    output = "tinytable"
+  )
+  expect_snapshot(cat(tinytable::save_tt(tt, output = "typst"), sep = "\n"))
+})
+
 test_that("a declared-but-unobserved by level is a zero column in wide and long", {
   # Audit phase 2, finding 29: the wide output used to carry NA cells
   # under the empty group's columns while the long output omitted the
@@ -5168,7 +5356,10 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
     attr(out, "note"),
     "Note. Phi: smoking. Cramer's V: education."
   )
-  expect_identical(structure(out, note = NULL), ref[names(out)])
+  expect_identical(
+    structure(out, note = NULL, percent = NULL),
+    ref[names(out)]
+  )
 
   ref_l <- .pv_tbl(output = "long")
   out_l <- .pv_tbl(p_value = FALSE, output = "long")
@@ -5177,7 +5368,10 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
     setdiff(names(ref_l), c("test_type", "statistic", "df", "p.value"))
   )
   expect_identical(attr(out_l, "note"), attr(out, "note"))
-  expect_identical(structure(out_l, note = NULL), ref_l[names(out_l)])
+  expect_identical(
+    structure(out_l, note = NULL, percent = NULL),
+    ref_l[names(out_l)]
+  )
 })
 
 test_that("p_value = FALSE: the console table, its typed view and glance()", {

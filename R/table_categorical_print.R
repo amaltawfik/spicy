@@ -134,6 +134,11 @@ print.spicy_categorical_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = sep_rows,
+    # No total rule: the Total row of `total_row = TRUE` is set apart no
+    # more than the margin column, and without an index the printer would
+    # look for the word "Total" in the rows, so a level "Total score"
+    # took a rule above it.
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
 
@@ -246,6 +251,8 @@ print.spicy_categorical_table <- function(x, ...) {
       c(.CON_KEY_CI_LL, .CON_KEY_CI_UL)
     )
   }
+  # The direction of the percentages, as the object records it.
+  attr(df, "percent") <- attr(x, "percent", exact = TRUE)
   df
 }
 
@@ -320,10 +327,11 @@ print.spicy_categorical_table <- function(x, ...) {
 #' row per printed row -- the header row of each variable, which
 #' carries its *p*-value and its association measure, then one row per
 #' level -- and the printed columns under their names (`"Female n"`,
-#' `"Female \%"`, ..., `"p"`, the measure), plus the key columns
+#' `"Female %"`, ..., `"p"`, the measure), plus the key columns
 #' `variable` (the column name), `label` (the label displayed for it),
-#' `level`, and `.row_role` (`"factor_header"`, `"level"`, or
-#' `"missing"` for the row of missing values the table adds). The note,
+#' `level`, and `.row_role` (`"factor_header"`, `"level"`, `"missing"`
+#' for the row of missing values the table adds, or `"total"` for the
+#' Total row of `total_row = TRUE`). The note,
 #' as printed, is kept in `attr(, "note")`. `as_tibble()` returns the
 #' same table as a tibble.
 #'
@@ -384,11 +392,15 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' of `by` and the `Total` margin included, with columns `variable` (the
 #' column name), `label` (the label the rows display for it, see
 #' `labels`), `level`, `.row_role` (the role of `level`: `"missing"` on
-#' the row of missing values the table adds, `"level"` otherwise),
+#' the row of missing values the table adds, `"total"` on the Total row
+#' of `total_row = TRUE`, `"level"` otherwise),
 #' `group` (`NA` without `by`), `.group_role` (the role of `group`:
 #' `"missing"` on the column of missing `by` values, `"total"` on the
 #' margin, `"group"` otherwise, `NA` without `by`), `total` (`TRUE` on the
-#' rows of the margin), `n`, and `proportion` (between 0 and 1). Filter
+#' rows of the margin and of the Total row), `n`, and `proportion`
+#' (between 0 and 1, the share
+#' the table displays: within the group, or within the level under
+#' `percent = "row"`, as `attr(x, "percent")` records). Filter
 #' on the role columns and `total` rather than on the displayed labels,
 #' which follow the display language.
 #'
@@ -401,8 +413,8 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' N-1, `NA` for an exact test), `df`, `p.value`, `es_type` (the key of
 #' the measure the variable carries: `"phi"`, `"cramer_v"`, ...),
 #' `es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, and
-#' `nobs` (the observations of the variable, the margin not counted
-#' twice). Without `by`, only `variable`, `label` and `nobs` are
+#' `nobs` (the observations of the variable, the margin and the Total
+#' row not counted twice). Without `by`, only `variable`, `label` and `nobs` are
 #' populated; the other columns are `NA`. The interval bounds are `NA`
 #' unless the table was built with `assoc_ci = TRUE`, and the SMD columns
 #' unless it was built with `smd = TRUE`.
@@ -444,8 +456,10 @@ tidy.spicy_categorical_table <- function(x, ...) {
   # relabeled margin or another display language changes. `total` was set
   # from the margin's KEY ("Total", or "Total_<i>" when a `by` level holds
   # that key beside a relabeled margin), so a user group named "Total" is
-  # never mistaken for it.
-  total <- long[["total"]] %||% rep(FALSE, n_rows)
+  # never mistaken for it. The Total row of `total_row = TRUE` is flagged
+  # the same way, by its role, with or without `by`.
+  row_role <- long[[".row_role"]] %||% rep("level", n_rows)
+  total <- (long[["total"]] %||% rep(FALSE, n_rows)) | row_role %in% "total"
   # The role of `group` ("group", "missing", "total"), `NA` without `by`.
   group_role <- long[[".group_role"]]
   if (is.null(group_role)) {
@@ -459,7 +473,7 @@ tidy.spicy_categorical_table <- function(x, ...) {
     variable = long$variable,
     label = long[["label"]] %||% long$variable,
     level = long$level,
-    .row_role = long[[".row_role"]] %||% rep("level", n_rows),
+    .row_role = row_role,
     group = if (has_group) long$group else rep(NA_character_, n_rows),
     .group_role = group_role,
     total = total,
@@ -560,6 +574,10 @@ glance.spicy_categorical_table <- function(x, ...) {
     function(b) {
       if ("group" %in% names(b) && !is.null(glance_margin)) {
         b <- b[b$group != glance_margin, , drop = FALSE]
+      }
+      # The Total row of `total_row = TRUE` repeats the counts above it.
+      if (".row_role" %in% names(b)) {
+        b <- b[!b$.row_role %in% "total", , drop = FALSE]
       }
       as.integer(round(sum(b$n, na.rm = TRUE)))
     },

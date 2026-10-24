@@ -31,7 +31,7 @@ with the key columns \code{variable} (the item's column, or the token of a
 row the table adds: \code{"none"}, \code{"no_data"}, \code{"nobs"} for the base),
 \code{label} (the label displayed) and \code{.row_role} (\code{"summary"} for an item,
 \code{"none"}, \code{"missing"}, or \code{"fit_stat"} for the base), then the printed
-columns under their names (\code{"<group> n"}, \code{"<group> \\\%"}, ...,
+columns under their names (\code{"<group> n"}, \code{"<group> \%"}, ...,
 \code{"Test"} with \code{df} beside it under \code{statistic = TRUE}, \code{"p"}). The
 \code{"note"} and \code{"global_test"} attributes are kept. \code{as_tibble()}
 returns the same table as a tibble. The original \code{x} is unaffected,

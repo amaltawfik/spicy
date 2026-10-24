@@ -41,7 +41,9 @@
 #' that matches no source column is looked up among the displayed
 #' labels before erroring. The missing-value category is addressed by
 #' `level = "(Missing)"` whatever its displayed (possibly translated or
-#' relabeled) label, through its row role. Fit statistics are addressed
+#' relabeled) label, through its row role, and the Total row of
+#' [table_categorical()] under `total_row = TRUE` by `level = "Total"`,
+#' the same way. Fit statistics are addressed
 #' by their token as `variable` (`inline(tbl, "nobs")`,
 #' `inline(tbl, "r2")`) or by their label (`inline(tbl, "n")`). The token
 #' is the one `show_fit_stats` takes (`"r2"`, `"adj_r2"`, `"aic"`, ...),
@@ -531,6 +533,12 @@ inline <- function(
   if (length(hit) != 1L && .inline_addresses_missing(level)) {
     hit <- rows[body$.row_role[rows] == "missing"]
   }
+  # The Total row of a categorical table (`total_row = TRUE`), the same
+  # way: its label is the margin's, which `options(spicy.labels)` can
+  # change.
+  if (length(hit) != 1L && .inline_addresses_total(level)) {
+    hit <- rows[body$.row_role[rows] %in% "total"]
+  }
   if (length(hit) != 1L) {
     spicy_abort(
       c(
@@ -606,6 +614,12 @@ inline <- function(
 .inline_addresses_missing <- function(level) {
   identical(level, "(Missing)") ||
     identical(level, spicy_str("row_missing_level"))
+}
+
+# Is `level` an address for the Total row? The same two spellings.
+.inline_addresses_total <- function(level) {
+  identical(level, "Total") ||
+    identical(level, spicy_str("header_margin_total"))
 }
 
 # The tokens a `column` argument asks for. A plain token asks for

@@ -25,8 +25,8 @@ identical to the \code{output = "data.frame"} of the same call.
 displays, with its numbers: exactly what \code{output = "data.frame"}
 returns. One row per printed row -- the header row of each variable,
 which carries its \emph{p}-value, then one row per level -- and the printed
-columns under their names (\code{"Female n"}, \code{"Female \\\%"}, the interval
-bounds \code{"Female 95\\\% CI LL"} and \code{"Female 95\\\% CI UL"}, \code{"Female DEff"}, ..., \code{"p"}), plus the key columns \code{variable}, \code{label},
+columns under their names (\code{"Female n"}, \code{"Female \%"}, the interval
+bounds \code{"Female 95\% CI LL"} and \code{"Female 95\% CI UL"}, \code{"Female DEff"}, ..., \code{"p"}), plus the key columns \code{variable}, \code{label},
 \code{level} and \code{.row_role} (\code{"factor_header"}, \code{"level"}, or \code{"missing"}).
 The note, as printed, is kept in \code{attr(, "note")}. \code{as_tibble()}
 returns the same table as a tibble.

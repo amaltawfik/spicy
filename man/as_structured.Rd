@@ -70,8 +70,10 @@ row); \code{NA} outside a factor.
 \code{"outcome"}, \code{"vc"} (variance component) in a regression table,
 plus \code{"summary"} (a row summarizing one variable), \code{"group"} (a
 row keyed by one level of \code{by}), \code{"missing"} (a row keyed by
-the \emph{missing} value) and \code{"none"} (the respondents who chose no
-item of a multiple-response question) in the descriptive ones. The
+the \emph{missing} value), \code{"none"} (the respondents who chose no
+item of a multiple-response question) and \code{"total"} (the Total row
+of \code{\link[=table_categorical]{table_categorical()}} under \code{total_row = TRUE}) in the
+descriptive ones. The
 role is the key a consumer matches on: \code{"(Missing)"} is a display
 label -- translatable, and relabeled through \code{options(spicy.labels)}
 -- and the role survives both.
@@ -125,8 +127,9 @@ interval of each percentage (token \code{"prop_ci"}) and no association
 measure.
 \itemize{
 \item \code{\link[=table_categorical]{table_categorical()}} -- one \code{"factor_header"} row per variable
-then one \code{"level"} (or \code{"missing"}) row per category, exactly as
-the console lays them out. Tokens: \code{"n"}, \code{"pct"}, \code{"p"},
+then one \code{"level"} (or \code{"missing"}) row per category, and under
+\code{total_row = TRUE} the \code{"total"} row that closes each block, exactly
+as the console lays them out. Tokens: \code{"n"}, \code{"pct"}, \code{"p"},
 \code{"assoc"} (the association measure), \code{"assoc_ci"} (its bounds)
 and \code{"smd"} (the standardized mean difference, when
 \code{smd = TRUE}). In a \code{by} table each group owns an \code{n} / \verb{\%} pair with
@@ -201,7 +204,8 @@ spicy reading it is refused as well.
 
 Version \code{3} also opened the accessor to the descriptive families,
 which had no typed view before: \code{.row_role} gained \code{"summary"},
-\code{"group"} and \code{"missing"}, then \code{"none"} with \code{\link[=table_multiresponse]{table_multiresponse()}}.
+\code{"group"} and \code{"missing"}, then \code{"none"} with \code{\link[=table_multiresponse]{table_multiresponse()}}
+and \code{"total"} with the \code{total_row} of \code{\link[=table_categorical]{table_categorical()}}.
 The vocabulary is extended by addition -- an existing role never
 changes meaning.
 

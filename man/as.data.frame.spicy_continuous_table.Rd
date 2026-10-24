@@ -29,7 +29,7 @@ row per printed row, the key columns \code{variable} (the column name),
 \code{label} (the label displayed for it) and, with \code{by}, \code{group} and
 \code{.row_role} (\code{"group"}, or \code{"missing"} for the group of missing \code{by}
 values), then the printed columns under their names (\code{"M"}, \code{"SD"},
-\code{"95\\\% CI LL"}, ..., \code{"n"}, \code{"p"}). A cell that prints several
+\code{"95\% CI LL"}, ..., \code{"n"}, \code{"p"}). A cell that prints several
 numbers keeps the first in its column and the others beside it under
 their names in the long output: \code{df} and \code{df.residual} after the test
 statistic \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper} after the effect

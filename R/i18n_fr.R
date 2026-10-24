@@ -70,6 +70,7 @@
   note_rows_missing_weights = "Lignes retir\u00E9es pour valeur manquante sur %s\u00A0: %d.",
   note_weights_fallback = "les poids",
   note_weighted_by = "Statistiques pond\u00E9r\u00E9es par %s.",
+  note_percent_row = "Pourcentages en ligne.",
   note_no_data = "Aucune donn\u00E9e pour %s.",
   note_no_data_in = "Aucune donn\u00E9e pour %s dans %s.",
   excel_sheet_regression = "R\u00E9gression",

@@ -257,7 +257,9 @@
 #
 # Row geometry is the console's: one `factor_header` row per variable,
 # then one row per displayed level -- `level`, or `missing` when the
-# level is the missing-value display category. The role is the KEY,
+# level is the missing-value display category -- and, under
+# `total_row = TRUE`, the `total` row that closes the block (flagged
+# `.total_row` in the compute frame, indented like a level). The role is the KEY,
 # never the label: `missing_vars` names the variables whose row of
 # missing values the table added, so a translated `(Missing)` still
 # reads as `missing`, and a level with that label in another variable
@@ -475,15 +477,15 @@
       # carries the cells of the groups itself.
       no_level <- all(is.na(sv$level))
       # `levels_keep` is resolved to one entry per variable (NULL when it
-      # filters none): `.cat_levels_keep_spec()`.
+      # filters none): `.cat_levels_keep_spec()`. The Total row of
+      # `total_row = TRUE` closes the block whatever it keeps.
       keep_var <- levels_keep[[var_name]]
       lv_use <- if (no_level) {
         character(0)
-      } else if (is.null(keep_var)) {
-        unique(sv$level)
       } else {
-        intersect(keep_var, unique(sv$level))
+        .cat_block_levels(sv, keep_var)
       }
+      total_lv <- unique(sv$level[sv$.total_row %in% TRUE])
 
       header_values <- list()
       header_status <- character(0)
@@ -559,7 +561,9 @@
           values = cells$values,
           variable = var_name,
           level = lv,
-          role = if (
+          role = if (lv %in% total_lv) {
+            "total"
+          } else if (
             var_name %in% missing_vars && identical(lv, missing_label)
           ) {
             "missing"

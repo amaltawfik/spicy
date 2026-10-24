@@ -88,6 +88,10 @@ print.spicy_outcome_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = sep_rows,
+    # No total row (the margin is the "Overall" row): without an index the
+    # printer looks for the word "Total" in the rows and rules off a level
+    # "Total score".
+    total_row_idx = integer(0),
     display_labels = header_labels
   )
 

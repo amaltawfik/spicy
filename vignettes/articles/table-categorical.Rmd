@@ -67,6 +67,27 @@ below), and the final column is the association measure -- here
 Cramer's V (covered below). Use `output = "data.frame"` for a plain
 data frame suitable for further processing.
 
+`percent = "row"` reads the table the other way: each cell is the share
+of the row's respondents that falls in the group, so the percentages sum
+to 100 across each row and the `Total` column shows 100.
+`total_row = TRUE` closes the block with a Total row, the share of each
+group overall, the base rate the rows are compared with. With smoking
+as `by`, 29.9% of the respondents with lower secondary education smoke
+and 14.8% of those with tertiary education, against 20.8% overall. Only
+the percentages change: the counts, the test and the association
+measure are those of the column direction, and the note says the
+percentages are row percentages.
+
+```{r row-percent}
+table_categorical(
+  sochealth,
+  select = education,
+  by = smoking,
+  percent = "row",
+  total_row = TRUE
+)
+```
+
 ## One-way tables
 
 Omit `by` to build a frequency-style table for the selected variables:

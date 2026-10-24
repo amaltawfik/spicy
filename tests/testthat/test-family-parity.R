@@ -1835,10 +1835,11 @@ test_that("`output = \"data.frame\"` is the displayed table, as.data.frame() of 
     # One row per printed row: the typed view the engines render.
     expect_identical(nrow(df), nrow(as_structured(x)$body), info = fn)
     # The note is the one attribute of the family's data frames (the
-    # global test of a multiple-response table aside).
+    # global test of a multiple-response table and the direction of the
+    # percentages of a categorical one aside).
     extra <- setdiff(
       names(attributes(df)),
-      c("names", "row.names", "class", "note", "global_test")
+      c("names", "row.names", "class", "note", "global_test", "percent")
     )
     expect_identical(extra, character(0), info = fn)
     expect_identical(attr(df, "note"), attr(x, "note"), info = fn)
@@ -4441,4 +4442,56 @@ test_that("every table that takes weights says the rows a missing weight removed
   expect_no_warning(
     table_continuous_lm(d, select = bmi, by = sex, weights = weight)
   )
+})
+
+test_that("no builder rules off a row that holds the word \"Total\"", {
+  # Given no index of a total row, the console printer looked for the word
+  # "Total" in the rows and drew the rule of a total row above the one row
+  # that held it. The heavy rule is U+2500; block separators are dashed.
+  set.seed(16)
+  n <- 60L
+  d <- data.frame(
+    g = factor(sample(c("u", "v"), n, replace = TRUE)),
+    x = factor(
+      sample(c("a", "Total score"), n, replace = TRUE),
+      levels = c("a", "Total score")
+    ),
+    a = rnorm(n),
+    v = rnorm(n),
+    i1 = sample(c(TRUE, FALSE), n, replace = TRUE),
+    i2 = sample(c(TRUE, FALSE), n, replace = TRUE),
+    w = runif(n, 1, 2)
+  )
+  lab <- c(v = "Total score", i2 = "Total score")
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  tabs <- list(
+    table_categorical = q(table_categorical(d, x, by = g)),
+    table_continuous = q(table_continuous(d, c(a, v), labels = lab)),
+    table_continuous_lm = q(table_continuous_lm(
+      d,
+      c(a, v),
+      by = g,
+      labels = lab
+    )),
+    table_outcome = q(table_outcome(d, outcome = a, select = x)),
+    table_multiresponse = q(table_multiresponse(d, c(i1, i2), labels = lab))
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+    tabs$table_categorical_svy <- q(table_categorical_svy(des, x))
+    tabs$table_continuous_svy <- q(table_continuous_svy(
+      des,
+      c(a, v),
+      labels = lab
+    ))
+  }
+  for (fn in names(tabs)) {
+    out <- utils::capture.output(print(tabs[[fn]]))
+    at <- grep("Total score", out, fixed = TRUE)
+    expect_true(length(at) > 0L, info = fn)
+    expect_false(any(grepl("─", out[at - 1L])), info = fn)
+  }
 })

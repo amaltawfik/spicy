@@ -576,6 +576,12 @@ p-values, and notes.
 * With `p_value = FALSE` and `assoc_measure = "none"`,
   `table_categorical()` is purely descriptive.
 
+* `table_categorical()` gains `percent`, as in `cross_tab()`: with
+  `percent = "row"`, each level's percentages sum to 100 across the
+  groups, and the note says so. `total_row = TRUE` closes each variable
+  with a Total row, which under row percentages gives the base rate
+  they are read against.
+
 * `table_categorical(test = "fisher")` applies Fisher's exact test to
   every variable, by Monte Carlo for a table too large for the exact
   computation.
@@ -679,6 +685,9 @@ p-values, and notes.
 * Across the table functions, the checks read "`ci_level` must be a
   number strictly between 0 and 1." and "`drop_na` must be TRUE or
   FALSE.".
+
+* The table functions no longer draw a rule above a row whose label
+  holds the word "Total" (a level "Total score") in the console.
 
 * Outside the data frame, an effect size printed with its interval is
   headed with the level: `ES [95% CI]` in `table_continuous()` and

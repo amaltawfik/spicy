@@ -278,7 +278,7 @@ default object returns: one row per printed row, the key columns
 \code{variable}, \code{label} and, with \code{by}, \code{group} and \code{.row_role}
 (\code{"group"}, or \code{"missing"} for the group of missing \code{by} values),
 then the printed columns under their names (\code{"M"}, \code{"SD"}, \code{"SE"},
-\code{"95\\\% CI LL"}, ..., \code{"n"}, \code{"p"}), as in \code{\link[=table_continuous]{table_continuous()}}.
+\code{"95\% CI LL"}, ..., \code{"n"}, \code{"p"}), as in \code{\link[=table_continuous]{table_continuous()}}.
 \item \code{"long"}: one row per \verb{(variable x group)} (per variable
 without \code{by}) with every statistic the table computes, whatever it
 displays: \code{variable}, \code{label}, \code{group} and \code{.group_role} (with

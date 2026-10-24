@@ -30,11 +30,15 @@ table can be consumed by any downstream tidyverse-stats pipeline.
 of \code{by} and the \code{Total} margin included, with columns \code{variable} (the
 column name), \code{label} (the label the rows display for it, see
 \code{labels}), \code{level}, \code{.row_role} (the role of \code{level}: \code{"missing"} on
-the row of missing values the table adds, \code{"level"} otherwise),
+the row of missing values the table adds, \code{"total"} on the Total row
+of \code{total_row = TRUE}, \code{"level"} otherwise),
 \code{group} (\code{NA} without \code{by}), \code{.group_role} (the role of \code{group}:
 \code{"missing"} on the column of missing \code{by} values, \code{"total"} on the
 margin, \code{"group"} otherwise, \code{NA} without \code{by}), \code{total} (\code{TRUE} on the
-rows of the margin), \code{n}, and \code{proportion} (between 0 and 1). Filter
+rows of the margin and of the Total row), \code{n}, and \code{proportion}
+(between 0 and 1, the share
+the table displays: within the group, or within the level under
+\code{percent = "row"}, as \code{attr(x, "percent")} records). Filter
 on the role columns and \code{total} rather than on the displayed labels,
 which follow the display language.
 
@@ -47,8 +51,8 @@ the standardized mean difference: \code{variable}, \code{label}, \code{test_type
 N-1, \code{NA} for an exact test), \code{df}, \code{p.value}, \code{es_type} (the key of
 the measure the variable carries: \code{"phi"}, \code{"cramer_v"}, ...),
 \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, and
-\code{nobs} (the observations of the variable, the margin not counted
-twice). Without \code{by}, only \code{variable}, \code{label} and \code{nobs} are
+\code{nobs} (the observations of the variable, the margin and the Total
+row not counted twice). Without \code{by}, only \code{variable}, \code{label} and \code{nobs} are
 populated; the other columns are \code{NA}. The interval bounds are \code{NA}
 unless the table was built with \code{assoc_ci = TRUE}, and the SMD columns
 unless it was built with \code{smd = TRUE}.
