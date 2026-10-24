@@ -249,6 +249,26 @@ un rapport mesuré à tinytable selon le protocole upstream, rien côté spicy.
   `labels` affiche ; même validation que `labels` (nom inconnu ignoré) ; une
   collision avec un autre libellé affiché suit la politique des collisions.
 
+## 15. Univarié : ligne manquante visible OU pourcentages valides, jamais les deux
+
+Constat du 2026-10-24 (tableau univarié de la variable construite,
+note exploratoire) : `.add_missing_level()` fait des NA un niveau
+d'affichage ordinaire avant le comptage, donc `drop_na = FALSE` montre
+la ligne « (Manquant) » avec des pourcentages sur la base totale, et
+`drop_na = TRUE` donne les pourcentages valides mais relègue les
+manquantes à la note. Le cas d'usage typique — décrire une variable
+construite en montrant ses manquantes ET la part valide (58/360 = 16 %,
+pas 58/378 = 15.3 %) — n'est pas couvert. Piste : `na_percent =
+c("total", "valid")`, ou une colonne « % valides » à la SPSS quand la
+ligne manquante est affichée. La note du tableau devrait alors dire la
+base de chaque colonne.
+
+Même chantier (2026-10-24) : pas de ligne Total dans l'univarié —
+`include_total` est la colonne Total du croisé (ignorée sans `by`) et
+`row_total_line` un simple filet ASCII de `cross_tab`. Une ligne Total
+(n, 100.0) fermerait naturellement le tableau d'une variable construite,
+et son n dirait la base des pourcentages.
+
 ## Résolu depuis le dépôt du spec
 
 Les trois défauts historiques de `table_regression_uv()` (lignes n/AIC
@@ -279,3 +299,88 @@ non standardisé ; IC = … ; η² = êta-carré partiel »).
   argument structurel de `#table()` qu'aucune règle `show` n'atteint — la
   typographie de la note (corps, couleur, italique du « Note. ») ne peut se
   poser que par du balisage dans la chaîne.
+
+## 16. Base des pourcentages de `table_categorical()` : en réflexion, à trancher la semaine du 27 octobre 2026
+
+Question d'Amal (2026-10-24, nuit) : faut-il un « % valide » dans
+`table_categorical()`, pertinent dès qu'une variable a des manquants, et
+comment l'afficher quand une variable en a et une autre non ?
+
+**État.** Le défaut est `drop_na = FALSE` : la ligne « (Manquant) »
+apparaît avec son n et son %, et tous les pourcentages ont pour base
+l'ensemble des répondants, manquants compris (exemple simulé, 60 personnes,
+6 manquants : no 40,0 ; yes 50,0 ; (Manquant) 10,0). Avec `drop_na = TRUE`
+les manquants sont retirés et comptés dans la note : les pourcentages sont
+valides par construction (44,4 ; 55,6) mais la ligne disparaît. Aucune
+colonne « % valide » dans la famille `table_*` ; le vocabulaire n'existe que
+dans `freq()` et le codebook (outils d'exploration).
+
+**Références.** gtsummary et SAS PROC FREQ (et le EpiRHandbook, notre
+arbitre) calculent les pourcentages sur les réponses observées et montrent
+les manquants en effectif seulement, hors base. SPSS, Stata `tab, missing`,
+tableone et janitor donnent le pourcentage du total ; janitor et SPSS
+ajoutent une seconde colonne « valid percent ». Pour un tableau publiable, la
+première convention domine.
+
+**L'en-tête.** La base d'un pourcentage ne peut pas changer d'une variable
+à l'autre dans une même colonne : c'est une règle de tableau, dite une fois
+en note. Une variable sans manquant a les mêmes pourcentages sous les deux
+bases. Jamais de colonne « % valide » à côté de « % ».
+
+**Design proposé.** Un argument `percent_base = c("all", "observed")`
+(vocabulaire du paquet : « valeurs observées »), orthogonal à
+`percent = c("column", "row")`. Sous `"observed"` : pourcentages sur les
+réponses observées ; la ligne « (Manquant) » garde son effectif et montre le
+tiret dans les colonnes % (base non définie : règle de la marque) ; une
+phrase de note quand au moins une ligne (Manquant) est affichée
+(« Pourcentages calculés sur les valeurs observées ; les manquants sont
+comptés hors base. ») ; tests et mesures inchangés (déjà sur les observés) ;
+la base enregistrée en attribut des sorties machine, comme `percent`.
+
+**La décision à prendre : le défaut.** Pour `"observed"` : cohérence de
+famille (`table_continuous(drop_na = FALSE)` montre les manquants et calcule
+les statistiques sur les observés) et convention gtsummary/SAS. Pour garder
+`"all"` : les chiffres publiés en 0.13 ne bougent pas, et le point 14 (ligne
+Total, pourcentages en ligne) a été pensé sur la base de tous les
+répondants. Recommandation du 24.10 : `"observed"` par défaut avec une puce
+de rupture. À régler dans la mise en œuvre : l'interaction avec `total_row`
+et `percent = "row"` (sous base observée, la ligne Total et la part de
+chaque groupe se calculent sur les observés). Coût estimé : un lot d'agent
+d'une demi-journée.
+
+**Variante d'Amal (2026-10-24, nuit).** Nommer le levier par ce qu'il règle,
+les manquants : `na_percent = c("total", "valid")`. La ligne « (Manquant) »
+est gardée dans les deux cas, son n affiché ; sous `"valid"` son % est vide
+(ou donné sur le total, à trancher) et une note dit la base. Les deux noms
+(`percent_base` / `na_percent`) et le contenu de la cellule % de la ligne
+(Manquant) sous base valide (vide, tiret ou part du total) sont à arbitrer en
+même temps que le défaut.
+
+## 17. Ligne Total du tableau univarié de `table_categorical()` : couvert par `total_row`, reste le défaut (à trancher la semaine du 27 octobre 2026)
+
+Note transmise par Amal (2026-10-24, nuit ; « second volet » de son point 15,
+qui numérote na_percent comme premier volet) : sans `by`, aucun moyen
+d'afficher une ligne Total ; proposition de faire porter `include_total`
+sur l'univarié (défaut TRUE, donc ligne Total partout au prochain rendu),
+ligne en dernier après « (Manquant) », n = base affichée et 100,0, selon
+`drop_na` et la pondération, hors calculs, filet fin au-dessus, tests
+univariés et croisé inchangé.
+
+**Constat du 24.10 au soir : le point 14 (complément `total_row`, livré le
+matin, de70ed3b) couvre déjà l'univarié.** `table_categorical(d, smoke,
+total_row = TRUE)` sans `by` donne la ligne Total en dernier, après
+« (Manquant) », n = 60 et 100,0 ; avec `drop_na = TRUE`, n = 54 (base
+valide) ; pondéré, total pondéré (75 pour 60 lignes). Même libellé i18n
+que la colonne Total, rôle `total`, hors tests et mesures.
+`include_total` reste la colonne Total du croisé et est ignoré sans `by`.
+
+**Reste à trancher avec le point 16 :**
+
+- le défaut : `total_row = FALSE` (décision du 24.10 : jamais par défaut,
+  un seul argument pour le croisé et l'univarié) ou ligne Total par défaut
+  dans l'univarié (la note transmise) — un changement de sortie de tous les
+  tableaux univariés publiés, à dire dans NEWS ;
+- un filet fin au-dessus de la ligne Total (console et tinytable), aujourd'hui
+  absent ;
+- la cohérence avec la base des pourcentages (point 16) : Total = 100,0 sur
+  la base retenue (valide ou totale), la ligne (Manquant) gardée.
