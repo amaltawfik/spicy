@@ -1364,6 +1364,12 @@ table_outcome <- function(
       show_n = show_n,
       sep_rows = .struct_block_sep_rows(geom),
       indent_rows = .struct_indent_rows(geom),
+      # Each variable's label spans the columns of the outcome's
+      # statistics; the test, the p and the effect size keep their own.
+      span_rows = which(geom$body$.row_role == "factor_header"),
+      span_cols = sum(
+        !names(display_df) %in% c(.CON_KEY_TEST, .CON_KEY_P, .CON_KEY_ES)
+      ),
       indent_text = indent_text,
       indent_text_excel_clipboard = indent_text_excel_clipboard,
       title = .outcome_title(outcome_label),

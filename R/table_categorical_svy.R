@@ -1188,6 +1188,14 @@ table_categorical_svy <- function(
       decimal_mark = decimal_mark,
       sep_rows = .struct_block_sep_rows(geom_rows),
       indent_rows = .struct_indent_rows(geom_rows),
+      # With `by`, each variable's label spans the columns of the domains,
+      # beside its p.
+      span_rows = if (has_group) {
+        which(geom_rows$body$.row_role == "factor_header")
+      } else {
+        integer(0)
+      },
+      span_cols = ncol(display_df) - as.integer(isTRUE(p_value)),
       indent_text = indent_text,
       indent_text_excel_clipboard = indent_text_excel_clipboard,
       title = .categorical_svy_title(attr(result, "group_label", exact = TRUE)),

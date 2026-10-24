@@ -3798,6 +3798,12 @@ export_desc_table <- function(
   # without rules -- never a table with the wrong ones.
   sep_rows = integer(0),
   indent_rows = integer(0),
+  # The group rows of a family that crosses its variables, and the
+  # columns their label spans in Typst: the stub and the columns of the
+  # groups, before the statistics of the crossing
+  # (`.spicy_tt_span_label()`). None by default.
+  span_rows = integer(0),
+  span_cols = 0L,
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
   title = NULL,
@@ -4053,6 +4059,7 @@ export_desc_table <- function(
         html_css = "padding-left: 0.8em;"
       )
     }
+    tt <- .spicy_tt_span_label(tt, span_rows, span_cols)
 
     return(tt)
   }

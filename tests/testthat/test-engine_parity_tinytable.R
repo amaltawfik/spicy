@@ -870,6 +870,134 @@ test_that("the Typst source of a table with a long level label", {
 })
 
 
+# ---- group rows -----------------------------------------------------------
+
+# A variable label wider than its two short levels, by two groups, in a
+# table with a note (Typst measures its columns).
+.pt_long_group <- function() {
+  data.frame(
+    parents = factor(
+      rep(
+        c("At least one", "None", "At least one", "None"),
+        c(14L, 6L, 10L, 10L)
+      ),
+      levels = c("At least one", "None")
+    ),
+    grp = factor(rep(c("A", "B"), each = 20L))
+  )
+}
+.pt_group_label <- "Parents holding a university degree"
+
+test_that("Typst spans a variable's label over the columns of its groups", {
+  skip_if_not_installed("tinytable")
+  long <- .pt_group_label
+  d <- .pt_long_group()
+  d$none <- NA_character_
+  tt <- table_categorical(
+    d,
+    c(parents, none),
+    by = grp,
+    labels = c(parents = long),
+    output = "tinytable"
+  )
+  typ <- .pt_typst(tt)
+  # The label was a cell of the first column, which wrapped it at the
+  # width of the levels. It spans the stub and the n and % of A, B and
+  # Total, seven columns; the p and the Phi keep their own. A variable
+  # with no data carries the mark of each group on its row, which keeps
+  # its cells.
+  expect_match(
+    typ,
+    paste0(
+      "\ntable\\.cell\\(colspan: 7\\)\\[",
+      long,
+      "\\], \\[[^]]*\\.197\\], \\[[^]]*\\.20\\],\n"
+    )
+  )
+  expect_match(typ, "\n[none], [", fixed = TRUE)
+  expect_length(gregexpr("table.cell(colspan: 7)", typ, fixed = TRUE)[[1L]], 1L)
+  # The natural widths leave the label out of the first column, before
+  # they are measured, and nothing gives it room: it sizes no column.
+  blank <- "if (spicy_x, spicy_k) in ((0, 1),) { [] } else { spicy_cell }"
+  expect_match(typ, blank, fixed = TRUE)
+  expect_lt(
+    as.integer(regexpr(blank, typ, fixed = TRUE)),
+    as.integer(regexpr("let tinytable-naturals", typ, fixed = TRUE))
+  )
+  # The levels keep their indent; the spanning label carries none.
+  lv <- as_structured(table_categorical(d, c(parents, none), by = grp))
+  expect_identical(.pt_typst_indent_rows(typ), which(lv$body$.indent > 0L) + 1L)
+  # The other outputs keep their cells, and a one-way table its rows.
+  expect_no_match(.pt_html(tt), "colspan='7'", fixed = TRUE)
+  expect_no_match(.pt_latex(tt), "c=7", fixed = TRUE)
+  expect_no_match(
+    .pt_typst(table_categorical(d, parents, output = "tinytable")),
+    "table.cell(colspan",
+    fixed = TRUE
+  )
+  # table_outcome() spans the columns of the outcome's statistics, the
+  # stub to n, eight columns; its p keeps its own.
+  o <- data.frame(
+    y = rep(c(48, 52, 50, 55, 45), 8L),
+    g = factor(rep(c("Yes", "No"), 20L))
+  )
+  expect_match(
+    .pt_typst(table_outcome(
+      o,
+      y,
+      select = g,
+      labels = c(g = long),
+      output = "tinytable"
+    )),
+    paste0("\ntable\\.cell\\(colspan: 8\\)\\[", long, "\\], \\[[^]]*\\],\n")
+  )
+  # Strings without the measure, tables without a span: left as they are.
+  expect_identical(spicy:::.spicy_tt_typst_colspans("x", NULL), "x")
+  expect_null(spicy:::.spicy_tt_colspan_cells(NULL))
+  expect_null(spicy:::.spicy_tt_colspan_cells(
+    data.frame(i = c(0, NA), j = 1, colspan = 2)
+  ))
+  bare <- tinytable::tt(data.frame(a = c("x", "y"), b = c("1", "")))
+  expect_identical(spicy:::.spicy_tt_span_label(bare, 1L, 2L), bare)
+  expect_identical(spicy:::.spicy_tt_span_label(bare, 2L, 1L), bare)
+})
+
+test_that("the design table spans its labels like the plain one", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("survey")
+  long <- .pt_group_label
+  d <- .pt_long_group()
+  d$w <- rep(c(1, 2), 20L)
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  typ <- function(...) {
+    .pt_typst(table_categorical_svy(
+      des,
+      parents,
+      labels = c(parents = long),
+      output = "tinytable",
+      ...
+    ))
+  }
+  expect_match(
+    typ(by = grp),
+    paste0("\ntable\\.cell\\(colspan: 7\\)\\[", long, "\\], \\[[^]]*\\],\n")
+  )
+  # Without `by`, the row carries no statistic of a crossing: as before.
+  expect_no_match(typ(), "table.cell(colspan", fixed = TRUE)
+})
+
+test_that("the Typst source of a table whose variable label spans its groups", {
+  skip_if_not_installed("tinytable")
+  expect_snapshot(cat(.pt_typst(table_categorical(
+    .pt_long_group(),
+    parents,
+    by = grp,
+    labels = c(parents = .pt_group_label),
+    output = "tinytable"
+  ))))
+})
+
+
 # ---- compiled documents (local only) --------------------------------------
 #
 # The sources above are the contract; a compiled document is the proof.
@@ -1050,4 +1178,61 @@ test_that("a wrapped level label lines up under its first line in a PDF", {
   expect_gt(narrow$lines[[1L]], narrow$header)
   # Measured with its indent, the label fits a column wide enough for it.
   expect_length(starts("20cm")$lines, 1L)
+})
+
+test_that("a variable label spans the groups and sizes no column in a PDF", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("pdftools")
+  skip_if(is.null(quarto::quarto_path()), "the Quarto CLI is not installed")
+  d <- .pt_long_group()
+  # On a page `width` wide, the table set flush left: the lines of the
+  # label and the x of every word of the first level row.
+  layout <- function(label, width, ...) {
+    typ <- .pt_typst(table_categorical(
+      d,
+      parents,
+      by = grp,
+      labels = c(parents = label),
+      output = "tinytable",
+      ...
+    ))
+    dir <- withr::local_tempdir()
+    src <- file.path(dir, "t.typ")
+    pdf <- file.path(dir, "t.pdf")
+    page <- c(
+      sprintf("#set page(width: %s, height: auto, margin: 0.5cm)", width),
+      "#show figure: set align(left)"
+    )
+    writeLines(c(page, typ), src, useBytes = TRUE)
+    system2(
+      quarto::quarto_path(),
+      c("typst", "compile", shQuote(src), shQuote(pdf)),
+      stdout = FALSE,
+      stderr = FALSE
+    )
+    w <- pdftools::pdf_data(pdf)[[1L]]
+    heads <- w$y[w$text == "n"][1L]
+    level <- w$y[w$text == "At"][1L]
+    words <- strsplit(label, " ", fixed = TRUE)[[1L]]
+    lab <- w[w$text %in% words & w$y > heads & w$y < level, ]
+    list(lines = length(unique(lab$y)), level = w$x[w$y == level])
+  }
+  # tinytable measured the label as a cell of the first column, which
+  # wrapped it there at 12cm. It spans the groups on one line, and every
+  # word of the level row sits where it sits under a one-word label: the
+  # first column keeps the width of the levels.
+  long <- layout(.pt_group_label, "12cm")
+  short <- layout("Parents", "12cm")
+  expect_identical(long$lines, 1L)
+  expect_identical(long$level, short$level)
+  # Longer than all the columns of the groups, the label wraps inside
+  # them, as a section head does: it widens none of them.
+  wide <- "Parents holding a university or an applied sciences degree"
+  long <- layout(wide, "16cm", include_total = FALSE)
+  short <- layout("Parents", "16cm", include_total = FALSE)
+  expect_gt(long$lines, 1L)
+  expect_identical(long$level, short$level)
 })

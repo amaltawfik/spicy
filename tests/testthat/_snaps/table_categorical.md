@@ -67,6 +67,10 @@
             let spicy_style = get-style(spicy_x, spicy_k + 1)
             if spicy_style != none and "indent" in spicy_style { pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }
           }))
+          // spicy: a cell that spans columns is measured with none of them
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            if (spicy_x, spicy_k) in ((0, 1),) { [] } else { spicy_cell }
+          }))
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
           for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [Cramer's V]),) {
@@ -108,7 +112,7 @@
           // tinytable header end
       
           // tinytable cell content after
-      [level], [  ], [    ], [  ], [    ], [  ], [     ], [.186], [.20],
+      table.cell(colspan: 7)[level], [.186], [.20],
       [low], [10], [38.5], [16], [61.5], [26], [100.0], [    ], [   ],
       [mid], [10], [37.0], [17], [63.0], [27], [100.0], [    ], [   ],
       [high], [16], [59.3], [11], [40.7], [27], [100.0], [    ], [   ],

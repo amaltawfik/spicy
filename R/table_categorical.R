@@ -4849,6 +4849,13 @@ table_categorical <- function(
         html_css = "padding-left: 0.8em;"
       )
     }
+    # In Typst, each variable's label spans the columns of the groups;
+    # its p, measure and SMD keep their own (`.spicy_tt_span_label()`).
+    tt <- .spicy_tt_span_label(
+      tt,
+      which(structured$body$.row_role == "factor_header"),
+      ncol(dat_tt) - n_stat_cols_merged
+    )
 
     # Lines
     grp_j <- 2:(1 + 2 * length(group_levels))

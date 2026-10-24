@@ -55,7 +55,8 @@
     if (identical(tbl@output, "typst")) {
       s <- sub("\\s*column-gutter: 5pt,", "", tbl@table_string)
       groups <- tryCatch(tbl@group_data_j, error = function(e) NULL)
-      s <- .spicy_tt_typst_layout(s, groups)
+      spans <- .spicy_tt_colspan_cells(tbl@style)
+      s <- .spicy_tt_typst_layout(s, groups, spans)
       tbl@table_string <- .spicy_tt_note_typst(s, notes, lead)
     } else if (identical(tbl@output, "html")) {
       tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string, notes, lead)
@@ -66,7 +67,7 @@
   })
 }
 
-# Typst: four repairs of the layout tinytable writes for a table with a
+# Typst: five repairs of the layout tinytable writes for a table with a
 # note, all behind words broken in the middle ("Fe-male", "(No item
 # cho-sen)"), run into each other ("EmployeursParticipants") or wrapped
 # in a column wide enough for them.
@@ -90,6 +91,11 @@
 #   it by its indent: the widest indented label of a column wrapped on
 #   a page wide enough for it. Each such cell is measured padded
 #   (`.spicy_tt_typst_indents()`).
+# * The same measure reads a cell that spans columns (`spans`: the label
+#   of a group row, `.spicy_tt_span_label()`) as an entry of its first
+#   column, which it kept as wide as the label. It is left out of the
+#   measure: a section head never sizes the columns, and one longer than
+#   the columns it spans wraps inside them (`.spicy_tt_typst_colspans()`).
 # * Quarto's template justifies paragraphs, and Typst hyphenates
 #   justified text, table cells and notes included. No other engine
 #   justifies a cell. The table is set ragged right, which also stops the
@@ -99,7 +105,7 @@
 #
 # Each is a substitution on a line of tinytable's template; on another
 # template it matches nothing and the table is left as it came.
-.spicy_tt_typst_layout <- function(s, groups = NULL) {
+.spicy_tt_typst_layout <- function(s, groups = NULL, spans = NULL) {
   s <- gsub(
     "measure(grid(columns: 1, inset: 5pt, ..col))",
     "measure(grid(columns: 1, inset: table.inset, ..col))",
@@ -107,6 +113,7 @@
     fixed = TRUE
   )
   s <- .spicy_tt_typst_indents(s, groups)
+  s <- .spicy_tt_typst_colspans(s, spans)
   s <- .spicy_tt_typst_spans(s, groups)
   sub(
     "// start block\n",
@@ -230,6 +237,65 @@
   sub(anchor, paste0(paste(code, collapse = "\n"), anchor), s, fixed = TRUE)
 }
 
+# The cells of `tinytable-coldata` that span columns, out of the measure
+# of the natural widths. tinytable measures such a cell as an entry of
+# its first column: the label of a group row, which spans the columns
+# of the groups (`.spicy_tt_span_label()`), kept the first column as
+# wide as itself. A group label is a section head, which never sizes
+# the columns: longer than the columns it spans, it wraps inside them.
+# `cells` are those of the built table's styles
+# (`.spicy_tt_colspan_cells()`), each found by its position, as in
+# `.spicy_tt_typst_indents()`: its column, and its body row, the row
+# counted from the column names that open each column of the measure.
+# Emptied after the indents, it weighs nothing. The cells it covers stay
+# in the measure: blank in a spicy table, which spans no other row.
+.spicy_tt_typst_colspans <- function(s, cells) {
+  anchor <- "    let tinytable-naturals = tinytable-coldata.map("
+  if (
+    !is.data.frame(cells) ||
+      nrow(cells) == 0L ||
+      !grepl(anchor, s, fixed = TRUE)
+  ) {
+    return(s)
+  }
+  at <- sprintf("(%d, %d)", as.integer(cells$j) - 1L, as.integer(cells$i))
+  code <- c(
+    "    // spicy: a cell that spans columns is measured with none of them",
+    paste0(
+      "    let tinytable-coldata = tinytable-coldata.enumerate().map(",
+      "((spicy_x, spicy_col)) => spicy_col.enumerate().map(",
+      "((spicy_k, spicy_cell)) => {"
+    ),
+    sprintf(
+      "      if (spicy_x, spicy_k) in (%s,) { [] } else { spicy_cell }",
+      paste(at, collapse = ", ")
+    ),
+    "    }))",
+    ""
+  )
+  sub(anchor, paste0(paste(code, collapse = "\n"), anchor), s, fixed = TRUE)
+}
+
+# The body cells of a built tinytable that span columns, from its
+# styles (`style_tt(colspan = )`, its `style` slot when it is
+# finalized): their body row `i` and their first column `j`. `NULL`
+# when there is none.
+.spicy_tt_colspan_cells <- function(style) {
+  if (
+    !is.data.frame(style) ||
+      !all(c("i", "j", "colspan") %in% names(style))
+  ) {
+    return(NULL)
+  }
+  i <- suppressWarnings(as.integer(style$i))
+  span <- suppressWarnings(as.integer(style$colspan))
+  hit <- !is.na(i) & i > 0L & !is.na(span) & span > 1L
+  if (!any(hit)) {
+    return(NULL)
+  }
+  unique(data.frame(i = i[hit], j = as.integer(style$j[hit])))
+}
+
 # Indent the label cell of `rows`, the rows the console indents
 # (`.struct_indent_rows()`), in a descriptive table.
 #
@@ -257,6 +323,42 @@
     x@lazy_prepare,
     list(structure(drop_prefix, output = "typst"))
   )
+  x
+}
+
+# Span the label of a group row over the first `k` columns, in Typst.
+#
+# A group row opens the block of a variable in a table that crosses it:
+# the variable's label in the first column, the statistics of the
+# crossing (the p, the effect size, the SMD) in their own columns, and
+# blank cells under the groups and their margin. Written as a cell of
+# the first column, the label wrapped at the width of the levels under
+# it, however wide the table: a section head is not an entry of the
+# column. `rows` are the group rows and `k` the columns the label spans,
+# the stub and the columns of the groups (their counts, percentages and
+# intervals). A row whose cells under the label are not all blank -- a
+# variable with no data, whose row carries the mark of each group --
+# keeps its cells. The span is set for Typst only, the other outputs
+# keep their cells, and the natural widths Typst measures leave the
+# label out (`.spicy_tt_typst_colspans()`). The spanning cell carries no
+# indent; the level rows keep theirs (`.spicy_tt_indent()`).
+.spicy_tt_span_label <- function(x, rows, k) {
+  if (length(rows) == 0L || k < 2L) {
+    return(x)
+  }
+  under <- as.matrix(x@data[rows, seq_len(k)[-1L], drop = FALSE])
+  blank <- !nzchar(trimws(under, whitespace = "[\\h\\v]"))
+  dim(blank) <- dim(under)
+  rows <- rows[rowSums(!blank) == 0L]
+  if (length(rows) == 0L) {
+    return(x)
+  }
+  # Typst only, tagged as `.spicy_tt_bare()` tags the LaTeX spans: every
+  # tinytable this package runs on honors the tag, while the `output`
+  # argument of `style_tt()` dates from tinytable 0.17.0.
+  x <- tinytable::style_tt(x, i = rows, j = 1, colspan = k)
+  last <- length(x@lazy_style)
+  attr(x@lazy_style[[last]], "output") <- "typst"
   x
 }
 
