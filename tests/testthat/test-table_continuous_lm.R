@@ -6733,6 +6733,58 @@ test_that("the note names the test behind the p-values", {
   ))
 })
 
+test_that("a statistic shown without its p-value names its test: group comparison or slope test", {
+  set.seed(11)
+  d <- data.frame(
+    y = rnorm(90),
+    g2 = factor(rep(c("a", "b"), 45)),
+    g3 = factor(rep(c("a", "b", "c"), 30)),
+    x = rnorm(90)
+  )
+  note_of <- function(...) {
+    attr(table_continuous_lm(d, select = y, ci = FALSE, ...), "note")
+  }
+  expect_identical(
+    note_of(by = g3, p_value = FALSE, statistic = TRUE),
+    "Note. Group comparison: F-test from the linear model."
+  )
+  expect_identical(
+    note_of(by = g2, p_value = FALSE, statistic = TRUE),
+    "Note. Group comparison: t-test from the linear model. \u0394 = b \u2212 a."
+  )
+  # The slope of a numeric `by` compares no groups.
+  expect_identical(
+    note_of(by = x, p_value = FALSE, statistic = TRUE),
+    "Note. Slope test: t-test from the linear model."
+  )
+  # The p-value shown leads the sentence, for a slope too; neither shown,
+  # no test named.
+  expect_identical(
+    note_of(by = g3, statistic = TRUE),
+    "Note. P-value: F-test from the linear model."
+  )
+  expect_identical(
+    note_of(by = x, statistic = TRUE),
+    "Note. P-value: t-test from the linear model."
+  )
+  expect_null(note_of(by = g3, p_value = FALSE))
+  expect_null(note_of(by = x, p_value = FALSE))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note_of(by = x, p_value = FALSE, statistic = TRUE),
+    "Note. Test de la pente\u00A0: test t issu du mod\u00E8le lin\u00E9aire."
+  )
+  expect_identical(
+    note_of(by = g3, p_value = FALSE, statistic = TRUE),
+    "Note. Comparaison des groupes\u00A0: test F issu du mod\u00E8le lin\u00E9aire."
+  )
+  expect_identical(
+    note_of(by = g3, statistic = TRUE),
+    "Note. Valeur p\u00A0: test F issu du mod\u00E8le lin\u00E9aire."
+  )
+  expect_null(note_of(by = g3, p_value = FALSE))
+})
+
 test_that("outcomes tested differently are each named with their test", {
   x <- data.frame(
     variable = c("a", "a", "b", "b"),
@@ -6747,6 +6799,14 @@ test_that("outcomes tested differently are each named with their test", {
     spicy:::.tclm_test_note(x),
     paste(
       "P-values: t-test from the linear model (Alpha);",
+      "F-test from the linear model (Beta)."
+    )
+  )
+  # The statistics shown without their p-values: the group comparison.
+  expect_identical(
+    spicy:::.tclm_test_note(x, p_shown = FALSE),
+    paste(
+      "Group comparison: t-test from the linear model (Alpha);",
       "F-test from the linear model (Beta)."
     )
   )

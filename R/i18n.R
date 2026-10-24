@@ -849,7 +849,8 @@
   # shows a single p-value, a variable without a test showing none, so
   # that no language needs a plural rule. `note_group_comparison` names
   # the test of a table that shows its statistic or its effect size but
-  # none of its p-values.
+  # none of its p-values (`note_slope_test` for the slope of a numeric
+  # `by` in table_continuous_lm()).
   note_p_values_test = "P-values: %s.",
   note_p_values_test_one = "P-value: %s.",
   note_group_comparison = "Group comparison: %s.",
@@ -861,13 +862,17 @@
   # The test behind the p-value of an outcome, read off the fitted linear
   # model: the t (or z) of the difference or of the slope, the global F
   # (or Wald chi-squared) of a `by` with more than two groups. Named in
-  # `note_p_values_test`, for a categorical and a numeric `by` alike; a
-  # non-classical `vcov` adds the regression family's
+  # `note_p_values_test`, for a categorical and a numeric `by` alike. A
+  # statistic shown without its p-value is named in
+  # `note_group_comparison` for a categorical `by`, and in
+  # `note_slope_test` for a numeric one, whose slope compares no groups;
+  # a non-classical `vcov` adds the regression family's
   # `note_std_errors_single`.
   test_lm_t = "t-test from the linear model",
   test_lm_z = "z-test from the linear model",
   test_lm_f = "F-test from the linear model",
   test_lm_chi2 = "Wald chi-squared test from the linear model",
+  note_slope_test = "Slope test: %s.",
   # The order of the subtraction of the contrast column, whose header,
   # the increment glyph alone, no longer states it: a definition of the
   # note, right after the sentence that names the test. Three holes: the

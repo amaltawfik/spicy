@@ -394,6 +394,7 @@
   test_lm_z = "test z issu du mod\u00E8le lin\u00E9aire",
   test_lm_f = "test F issu du mod\u00E8le lin\u00E9aire",
   test_lm_chi2 = "test du khi-deux de Wald issu du mod\u00E8le lin\u00E9aire",
+  note_slope_test = "Test de la pente\u00A0: %s.",
   test_pearson_chisq = "test du khi-deux de Pearson",
   test_fisher_exact = "test exact de Fisher",
   test_fisher_mc = "test exact de Fisher (Monte-Carlo, %s r\u00E9plications)",

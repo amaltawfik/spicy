@@ -318,6 +318,6 @@ test_that("the singular caveat stays self-contained for glmmTMB and lme", {
 test_that("the singular caveat names both boundary regimes, never 'exactly zero'", {
   msg <- .caveat_message(.fit_singular_lme())
   expect_match(msg, "at or near the boundary", fixed = TRUE)
-  expect_match(msg, "a correlation of +/-1", fixed = TRUE)
+  expect_match(msg, "a correlation of \u00B11", fixed = TRUE)
   expect_false(grepl("exactly zero", msg, fixed = TRUE))
 })

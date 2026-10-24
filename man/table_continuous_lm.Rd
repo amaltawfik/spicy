@@ -910,7 +910,11 @@ APA-style footer naming the covariates and the chosen estimand, e.g.
 note also names the test behind them, read off each outcome's model:
 \verb{P-values: t-test from the linear model.} (the F-test for a \code{by} with
 more than two levels, the t-test of the slope for a numeric \code{by}), in
-the singular, \verb{P-value:}, when the table shows one.
+the singular, \verb{P-value:}, when the table shows one. A test shown by its
+statistic alone (\verb{p_value = FALSE, statistic = TRUE}) is named as the
+group comparison, \verb{Group comparison: t-test from the linear model.},
+or, for a numeric \code{by}, as the slope test:
+\verb{Slope test: t-test from the linear model.}
 
 The rendering engines carry that same footer as a table note. On the
 \code{"tinytable"} route the note is set one size down;

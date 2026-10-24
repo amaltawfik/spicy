@@ -199,9 +199,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #   (b) the missing data, `missing_note`: the sentences assembled by
 #       table_continuous_lm() -- values and rows removed, the levels
 #       with no data;
-#   (c) the inference: the test behind the p-values when the table
-#       shows them (`.tclm_test_note()`), then the SE estimator of a
-#       non-classical `vcov` -- robust and resampling standard errors
+#   (c) the inference: the test behind the p-values or the statistic
+#       the table shows (`.tclm_test_note()`), then the SE estimator of
+#       a non-classical `vcov` -- robust and resampling standard errors
 #       are never silently labeled, the doctrine of table_regression()'s
 #       footers;
 #   (d) the definitions: the order of the subtraction the contrast
@@ -262,8 +262,13 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
-  inference <- if (isTRUE(attr(x, "show_p_value"))) {
-    .tclm_test_note(x, outcome_labels)
+  # The test is named whenever the table shows its p-value or its
+  # statistic, as in table_continuous() (`build_test_note()`): a test
+  # shown by its statistic alone is the group comparison, or the slope
+  # test of a numeric `by`.
+  show_p <- isTRUE(attr(x, "show_p_value"))
+  inference <- if (show_p || isTRUE(attr(x, "show_statistic"))) {
+    .tclm_test_note(x, outcome_labels, p_shown = show_p)
   }
   if (!identical(vcov_type, "classical")) {
     inference <- c(
@@ -378,13 +383,16 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # two-group `by` or of the slope of a numeric one, the global F (or Wald
 # chi-squared) of a `by` with more groups, named after "P-values:" for a
 # categorical and a numeric `by` alike (`.p_values_test_sentence()`), in
-# the singular when the table shows the p-value of one outcome. One test
-# for every outcome is named once; otherwise each test is followed by the
-# outcomes it covers, as the rows name them, in the order of the test
-# vocabulary. An outcome whose model did not run carries no test and is
-# not named; NULL when none ran. `outcome_labels`, named by outcome, names
-# them in the apparatus; NULL reads the labels of their rows.
-.tclm_test_note <- function(x, outcome_labels = NULL) {
+# the singular when the table shows the p-value of one outcome. A table
+# that shows the statistic without the p-value (`p_shown = FALSE`) names
+# it as the group comparison, or as the slope test of a numeric `by`
+# ("Slope test:"), whose slope compares no groups. One test for every
+# outcome is named once; otherwise each test is followed by the outcomes
+# it covers, as the rows name them, in the order of the test vocabulary.
+# An outcome whose model did not run carries no test and is not named;
+# NULL when none ran. `outcome_labels`, named by outcome, names them in
+# the apparatus; NULL reads the labels of their rows.
+.tclm_test_note <- function(x, outcome_labels = NULL, p_shown = TRUE) {
   vars <- unique(x$variable)
   types <- vapply(
     vars,
@@ -395,16 +403,22 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     character(1),
     USE.NAMES = FALSE
   )
-  # The p-value each outcome shows, read on the row the table reads it from.
-  n_p <- sum(vapply(
-    vars,
-    function(v) {
-      block <- x[x$variable == v, , drop = FALSE]
-      p <- block[["p.value"]]
-      !is.null(p) && !is.na(p[get_test_row_index_lm(block)])
-    },
-    logical(1)
-  ))
+  # The p-value each outcome shows, read on the row the table reads it
+  # from; none when the table hides the p column, whose values the compute
+  # frame keeps.
+  n_p <- if (!p_shown) {
+    0L
+  } else {
+    sum(vapply(
+      vars,
+      function(v) {
+        block <- x[x$variable == v, , drop = FALSE]
+        p <- block[["p.value"]]
+        !is.null(p) && !is.na(p[get_test_row_index_lm(block)])
+      },
+      logical(1)
+    ))
+  }
   keys <- c(
     t = "test_lm_t",
     z = "test_lm_z",
@@ -415,9 +429,19 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (!any(ran)) {
     return(NULL)
   }
+  # The lead of the sentence: the p-values shown, else the group
+  # comparison, or the slope test of a numeric `by`.
+  slope <- !p_shown && "continuous" %in% x$predictor_type
+  sentence <- function(text) {
+    if (slope) {
+      spicy_fmt("note_slope_test", text)
+    } else {
+      .p_values_test_sentence(text, n_p)
+    }
+  }
   used <- intersect(names(keys), types[ran])
   if (length(used) == 1L) {
-    return(.p_values_test_sentence(spicy_str(keys[[used]]), n_p))
+    return(sentence(spicy_str(keys[[used]])))
   }
   labels <- if (is.null(outcome_labels)) {
     x$label[match(vars, x$variable)]
@@ -435,10 +459,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     },
     character(1)
   )
-  .p_values_test_sentence(
-    paste(items, collapse = spicy_str("note_group_comparison_sep")),
-    n_p
-  )
+  sentence(paste(items, collapse = spicy_str("note_group_comparison_sep")))
 }
 
 # Internal: human-readable label for a non-classical SE estimator.

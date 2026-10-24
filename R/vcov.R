@@ -1306,6 +1306,15 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
       "The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust ",
       "estimator, with no small-sample factor: CR0."
     )
+  } else if (inherits(fit, "gam")) {
+    # spicy forms the score and the bread itself (R/vcov_mgcv.R);
+    # sandwich::vcovCL() only does the clustering arithmetic. `bam`
+    # inherits "gam".
+    paste0(
+      "spicy computes one cluster-robust estimator for mgcv fits, from ",
+      "their GLM score and penalized covariance: CR1, the CR0 sandwich ",
+      "scaled by G/(G-1)."
+    )
   } else {
     paste0(
       "sandwich::vcovCL() computes one cluster-robust estimator for this ",

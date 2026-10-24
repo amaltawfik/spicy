@@ -3226,7 +3226,7 @@ table_regression <- function(
           paste0(
             "Singular fit (%s): the random-effect structure is estimated ",
             "at or near the boundary of the parameter space -- a variance ",
-            "of 0, or a correlation of +/-1."
+            "of 0, or a correlation of \u00B11."
           ),
           paste(mod_labels[singular_mixed], collapse = ", ")
         ),

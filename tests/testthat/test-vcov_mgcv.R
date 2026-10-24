@@ -273,12 +273,19 @@ test_that("a gam takes CR1 alone, and the note names it", {
       spicy:::compute_model_vcov(m, type = t, cluster = d$g),
       class = "spicy_unsupported_vcov"
     )
-    expect_error(
+    err <- expect_error(
       table_regression(m, vcov = t, cluster = d$g),
       "This class supports: classical, CR1.",
       fixed = TRUE,
       class = "spicy_unsupported_vcov"
     )
+    # The reason is what spicy computes, not sandwich's own gam route.
+    expect_match(
+      conditionMessage(err),
+      "spicy computes one cluster-robust estimator for mgcv fits",
+      fixed = TRUE
+    )
+    expect_no_match(conditionMessage(err), "vcovCL", fixed = TRUE)
   }
   tbl <- table_regression(m, vcov = "CR1", cluster = d$g)
   expect_match(attr(tbl, "note"), "(CR1)", fixed = TRUE)

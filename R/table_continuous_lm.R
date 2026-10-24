@@ -772,7 +772,11 @@
 #' note also names the test behind them, read off each outcome's model:
 #' `P-values: t-test from the linear model.` (the F-test for a `by` with
 #' more than two levels, the t-test of the slope for a numeric `by`), in
-#' the singular, `P-value:`, when the table shows one.
+#' the singular, `P-value:`, when the table shows one. A test shown by its
+#' statistic alone (`p_value = FALSE, statistic = TRUE`) is named as the
+#' group comparison, `Group comparison: t-test from the linear model.`,
+#' or, for a numeric `by`, as the slope test:
+#' `Slope test: t-test from the linear model.`
 #'
 #' The rendering engines carry that same footer as a table note. On the
 #' `"tinytable"` route the note is set one size down;

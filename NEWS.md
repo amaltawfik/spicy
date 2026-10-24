@@ -266,8 +266,8 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   missing values, and the order changed from table to table (#11).
 
 * `table_continuous()` and `table_continuous_lm()` now name the test
-  behind their p-values, and `table_continuous()` the test of a statistic
-  shown without them ("Group comparison: Welch t-test.").
+  behind their p-values, and the test of a statistic shown without them
+  ("Group comparison: Welch t-test.", "Slope test:" for a slope).
 
 * `table_categorical()` and `table_continuous_lm()` say when the
   statistics are weighted.
