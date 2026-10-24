@@ -64,11 +64,13 @@
     Output
       Variables dépendantes continues selon sex
       
-       Variable   │  M (F)    M (M)    Δ (M − F)    IC à 95 % LI    IC à 95 % LS      p       R²     n  
-      ────────────┼─────────────────────────────────────────────────────────────────────────────────────
-       bmi        │  26,87    23,17      -3,70         -9,09            1,69        0,144    0,32    8  
+                           M                                                                        
+                    ────────────────                                                                
+       Variable   │    F        M        Δ      IC à 95 % LI    IC à 95 % LS      p       R²     n  
+      ────────────┼─────────────────────────────────────────────────────────────────────────────────
+       bmi        │  26,87    23,17    -3,70       -9,09            1,69        0,144    0,32    8  
       
-      Note. Comparaison des groupes : test t issu du modèle linéaire. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+      Note. Comparaison des groupes : test t issu du modèle linéaire. Δ = M − F. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
     Code
       print(table_outcome(d, outcome = bmi, select = c(sex, smoke)))
     Output

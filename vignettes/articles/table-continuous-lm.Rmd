@@ -215,7 +215,8 @@ as are the `by` and `weights` columns, and so is a covariate equal to
 
 Two methodologically distinct conventions exist for computing the
 covariate-adjusted per-group means displayed in the table (the
-`M (level)` columns of the printed output, and the `emmean` /
+columns under `M` in the printed output, `M (level)` in
+`output = "data.frame"`, and the `emmean` /
 `emmean_se` / `emmean_ci_lower` / `emmean_ci_upper` columns of the
 `output = "long"` data frame) when `by` is categorical.
 `table_continuous_lm()` exposes the choice via `adjustment`; both

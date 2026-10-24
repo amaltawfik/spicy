@@ -311,12 +311,11 @@ test_that("latex target: spicy_gt prints a negative statistic with the minus sig
     "{\\ensuremath{-}0.61} & {0.46} & "
   )
   expect_length(gregexpr(row, s, fixed = TRUE)[[1L]], 2L)
-  # Nothing else moves, and "ascii" leaves the hyphen gt writes. Only the
-  # cells are compared: the header's subtraction sign (point 2) is set as
-  # \\ensuremath{-} under both levers.
+  # Nothing else moves, and "ascii" leaves the hyphen gt writes. The
+  # subtraction the note states keeps its minus sign under both.
   expect_identical(
     s,
-    gsub("& {-", "& {\\ensuremath{-}", ascii, fixed = TRUE)
+    gsub("\\{-(?=[0-9])", "{\\\\ensuremath{-}", ascii, perl = TRUE)
   )
   expect_match(
     ascii,

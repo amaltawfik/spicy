@@ -250,9 +250,11 @@ test_that("table_continuous_lm clipboard carries the title, without a blank row"
     strsplit(lines[1L], "\t", fixed = TRUE)[[1L]][1L],
     "Continuous outcomes by education"
   )
-  expect_match(lines[2L], "^Variable\t")
-  # Line 3 used to be an all-blank second header row.
-  expect_match(lines[3L], "^bmi\t")
+  expect_match(lines[2L], "^Variable\tM\tM\tM\t")
+  # Line 3 used to be an all-blank second header row. It heads the means
+  # under their spanner now, and the body follows it.
+  expect_match(lines[3L], "^\tLower secondary\tUpper secondary\tTertiary\t")
+  expect_match(lines[4L], "^bmi\t")
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))
 })
 

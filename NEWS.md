@@ -164,8 +164,8 @@ p-values, and notes.
   names, `CI lower` and `CI upper`.
 
 * In every output that names columns, the difference column of
-  `table_continuous_lm()` is `Δ (B − A)`, with the minus sign its header
-  shows, where it was `Δ (B - A)`.
+  `table_continuous_lm()` is `Δ`, as its header reads, where it was
+  `Δ (B - A)`.
 
 * `as_structured()` reads contract version 4, and refuses a view built
   by an older spicy.
@@ -202,6 +202,10 @@ p-values, and notes.
 * In French, the effect size of `table_continuous()` is headed
   `Taille d'effet`, where it read `ES`, which now heads the standard
   errors of the regression tables.
+
+* `table_continuous_lm()` with a categorical `by` sets `M` over the group
+  labels and heads the difference `Δ` alone, the note giving its order
+  (`Δ = B − A.`), where it printed `M (A)`, `M (B)`, and `Δ (B - A)`.
 
 * The tables sort the groups of a character `by` in the C locale,
   capitals before lower case and the same on every machine, as
@@ -686,7 +690,7 @@ p-values, and notes.
 ## Bug fixes
 
 * Labels that state a subtraction write the minus sign (U+2212), not a
-  hyphen: the header Δ (B − A) of `table_continuous_lm()`, the IQR
+  hyphen: the difference of `table_continuous_lm()` (Δ = B − A), the IQR
   (Q3 − Q1), the SMD direction, and the t(G−1) of `vcov = "CR1S"`.
 
 * The table functions warn (class `spicy_ignored_arg`) when an argument

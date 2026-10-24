@@ -1341,12 +1341,16 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #          to right and top to bottom (APA Publication Manual 7, section
 #          7.15): ids of `.abbrev_registry()`, or `.abbr()` items. A
 #          concept met twice under one symbol is defined once.
+#   defined  the concepts a sentence of the note defines on its own, the
+#          order of the difference of `table_continuous_lm()` ("Delta = B
+#          - A.", `note_lm_delta`): that sentence identifies the quantity,
+#          so no rule defines it again, a disambiguation included.
 #
 # What is defined (decision 2): under the rule of the theme, every concept
 # it does not exempt and no abbreviated word; under "all", every concept;
-# under "none", none -- and under every rule the disambiguations. A
-# symbol written out in the language of the table (the French
-# "Taille d'effet") needs no definition and gets none.
+# under "none", none -- and under every rule the disambiguations, but for
+# the concepts in `defined`. A symbol written out in the language of the
+# table (the French "Taille d'effet") needs no definition and gets none.
 #
 # How (decision 2): APA in the order of appearance, "X = term" pairs
 # joined by `note_abbrev_sep` and closed by a period, at the end of the
@@ -1356,7 +1360,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # general note. Alphabetical is the order of the symbols in lower case,
 # compared byte by byte, so it is the same on every machine.
 # `.compose_note()` puts the block in its place.
-.note_abbreviations <- function(items) {
+.note_abbreviations <- function(items, defined = character(0)) {
   rule <- .abbrev_rule()
   lever <- .style_fmt()$abbreviations
   reg <- .abbrev_registry()
@@ -1371,6 +1375,9 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     entry <- reg[[it$id]]
     if (is.null(entry)) {
       stop("Unknown abbreviation concept: ", it$id, call. = FALSE) # nocov
+    }
+    if (it$id %in% defined) {
+      next
     }
     disambiguates <- !is.null(it$term) || isTRUE(entry$disambiguates)
     # A test statistic has no simple definition under any rule.

@@ -72,8 +72,9 @@
 #' spanners of [table_categorical()], [table_categorical_svy()] and
 #' [table_multiresponse()], the margin included
 #' (`inline(tbl, smoking, "Yes", "pct", model = "Female")`), the
-#' per-group columns of [table_continuous_lm()], headed `M (Female)`,
-#' `M (Male)` (`inline(tbl, bmi, column = "emmean", model = "Female")`),
+#' per-group columns of [table_continuous_lm()], headed `Female` and
+#' `Male` under the mean symbol `M`
+#' (`inline(tbl, bmi, column = "emmean", model = "Female")`),
 #' and the rows of [table_continuous()] and [table_continuous_svy()],
 #' one per group (`inline(tbl, bmi, model = "Female")`). The group of
 #' missing `by` values is `model = "(Missing)"`. In a multi-model table,
@@ -639,9 +640,11 @@ inline <- function(
 # ADR of 2026-10-20). Three layouts carry the groups:
 #   * spanners over the columns (`table_categorical()`, its survey twin,
 #     `table_multiresponse()`), read by `.inline_model_cols()`;
-#   * per-group columns with no spanner (`table_continuous_lm()`, whose
-#     headers read "M (Female)", "M (Male)"), the group carried as data in
-#     `col_meta$level` so that no consumer parses a header back;
+#   * per-group columns with no group spanner (`table_continuous_lm()`,
+#     keyed "M (Female)", "M (Male)" and headed by the group under the
+#     mean's spanner, a statistic's, which `spanners` does not hold), the
+#     group carried as data in `col_meta$level` so that no consumer parses
+#     a header back;
 #   * one row per group (`table_continuous()`, `table_continuous_svy()`),
 #     rows of role "group", and "missing" for the group of missing `by`
 #     values.

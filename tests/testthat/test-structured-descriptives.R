@@ -630,7 +630,13 @@ test_that("as_structured() types a two-level bivariate model table", {
   expect_identical(s$col_meta[["M (Female)"]]$token, "emmean")
   expect_identical(s$col_meta[["M (Female)"]]$level, "Female")
   expect_identical(s$col_meta[["M (Male)"]]$level, "Male")
-  expect_identical(s$col_meta[["Δ (Male \u2212 Female)"]]$token, "delta")
+  expect_identical(s$col_meta[["\u0394"]]$token, "delta")
+  # The headers are decked: each mean is headed by its level under the
+  # mean's spanner, which `spanners` does not hold (it is no group of
+  # `by`), and the contrast by its glyph alone.
+  expect_identical(s$col_meta[["M (Female)"]]$display_label, "Female")
+  expect_identical(s$col_meta[["\u0394"]]$display_label, "\u0394")
+  expect_null(s$spanners)
   expect_identical(s$col_meta$t$token, "statistic")
   expect_identical(s$col_meta[["R²"]]$token, "r2")
   expect_identical(s$col_meta$n$precision, 0L)
@@ -894,14 +900,28 @@ test_that("descriptive col_meta carries display_label, defaulting to the key", {
   s_cat <- as_structured(quiet(table_categorical(sh, sex, by = education)))
   s_con <- as_structured(quiet(table_continuous(sh, select = bmi)))
   s_lm <- as_structured(quiet(table_continuous_lm(sh, select = bmi, by = sex)))
-  for (s in list(s_cat, s_con, s_lm)) {
-    labels <- vapply(
+  label_of <- function(s) {
+    vapply(
       names(s$col_meta),
       function(nm) s$col_meta[[nm]]$display_label,
       character(1)
     )
-    expect_identical(unname(labels), names(s$col_meta))
   }
+  for (s in list(s_cat, s_con)) {
+    expect_identical(unname(label_of(s)), names(s$col_meta))
+  }
+  # The means of the linear-model table are headed by their level, under
+  # the mean's spanner; every other column by its key.
+  is_mean <- vapply(
+    s_lm$col_meta,
+    function(m) identical(m$token, "emmean"),
+    logical(1)
+  )
+  expect_identical(unname(label_of(s_lm)[is_mean]), c("Female", "Male"))
+  expect_identical(
+    unname(label_of(s_lm)[!is_mean]),
+    names(s_lm$col_meta)[!is_mean]
+  )
 })
 
 

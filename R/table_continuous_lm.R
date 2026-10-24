@@ -60,7 +60,7 @@
 #'     `factor(..., levels = ...)`).
 #'   - **logical**: coerced to factor with levels `"FALSE"`, `"TRUE"` (in
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
-#'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
+#'     so the binary contrast is `TRUE` minus `FALSE`.
 #'   - **haven labelled with value labels** (an SPSS / Stata import):
 #'     treated as categorical, one level per observed code named by its
 #'     value label (`"[1] Women"`, as the rows of a labelled variable of
@@ -259,8 +259,8 @@
 #' @param contrast Contrast display for categorical predictors (typed with
 #'   a numeric `by`, it is ignored with a warning, class
 #'   `spicy_ignored_arg`). One of:
-#'   - `"auto"` (default): show a single reference contrast
-#'     `Delta (level2 - level1)` only when `by` has exactly two non-empty
+#'   - `"auto"` (default): show a single reference contrast, the second
+#'     level minus the first, only when `by` has exactly two non-empty
 #'     levels. The reference level is the **first level of the factor**
 #'     (R's default treatment-contrast convention,
 #'     `getOption("contrasts")[1]`). To change which level acts as the
@@ -297,7 +297,8 @@
 #'     the model coefficient (the displayed difference) and `sigma_hat` is the
 #'     residual standard deviation from the fitted model. Defined only when
 #'     `by` has exactly two non-empty levels; otherwise the function errors.
-#'     The sign matches the displayed `Delta (level2 - level1)`.
+#'     The sign matches the displayed difference, the second level minus
+#'     the first.
 #'   - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
 #'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 #'   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
@@ -589,7 +590,8 @@
 #'     `d = beta_hat / sigma_hat` with `sigma_hat = summary(fit)$sigma` (the
 #'     pooled within-group SD for the unweighted two-group case);
 #'     `g = J * d` with `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin
-#'     1985). The sign matches the displayed `Delta (level2 - level1)`.
+#'     1985). The sign matches the displayed difference, the second level
+#'     minus the first.
 #'     For published reports of two-group comparisons, *g* is the
 #'     convention recommended by Hedges and Olkin (1985).
 #'   \item `"omega2"`: Hays' \eqn{\omega^2}, computed from weighted
@@ -742,13 +744,24 @@
 #'
 #' # Display conventions
 #'
-#' For dichotomous categorical predictors, the wide outputs report fitted
-#' means in reference-level order and label the contrast column
-#' explicitly as `Delta (level2 - level1)`. For categorical predictors
-#' with more than two levels, no single contrast or contrast CI is shown
-#' in the wide outputs; instead, the table reports level-specific means
-#' plus the overall `F` test when `statistic = TRUE` (or `F(df1, df2)`
-#' when the degrees of freedom are constant across outcomes).
+#' With a categorical `by`, the headers have two levels (decked heads, APA
+#' Publication Manual, 7th ed., section 7.12): the mean symbol `M` spans
+#' the columns of the fitted means, each headed by its level alone, in
+#' reference-level order, in the console as in every rendering engine.
+#' For a dichotomous `by`, the contrast column is headed
+#' \eqn{\Delta}{Delta} alone, and a sentence of the note, after those on
+#' the test and the standard errors, gives the order of the subtraction:
+#' the second level minus the first, written with the minus sign. Its
+#' confidence interval keeps its spanner, `95% CI` over `LL` and `UL`,
+#' which the console folds into the headers `95% CI LL` and `95% CI UL`,
+#' as in the other tables. In `output = "data.frame"`, a mean keeps both
+#' levels in its name, `M (<level>)`, and the contrast is named
+#' \eqn{\Delta}{Delta} (the Greek capital delta, U+0394). For categorical
+#' predictors with more than two levels, no single contrast or contrast
+#' CI is shown in the wide outputs; instead, the table reports
+#' level-specific means plus the overall `F` test when
+#' `statistic = TRUE` (or `F(df1, df2)` when the degrees of freedom are
+#' constant across outcomes).
 #'
 #' When `covariates` is non-empty, the printed ASCII table appends an
 #' APA-style footer naming the covariates and the chosen estimand, e.g.
@@ -1875,7 +1888,8 @@ table_continuous_lm <- function(
     word_path = word_path,
     note = table_note,
     title = .continuous_lm_title(by_label),
-    labels = .lm_spec_labels(spec)
+    labels = .lm_spec_labels(spec),
+    mean_keys = .lm_spec_mean_keys(spec)
   )
 }
 
@@ -1928,8 +1942,8 @@ fit_outcome_lm_rows <- function(
   adjustment <- match.arg(adjustment)
   # Level template for a categorical predictor, captured BEFORE the
   # per-outcome complete-case filtering (`.tclm_by_levels()`): every
-  # outcome's rows span these levels, so the wide `M (<level>)` header
-  # is the same for all of them (no spurious `M (NA)` column, no level
+  # outcome's rows span these levels, so the wide `M (<level>)` columns
+  # are the same for all of them (no spurious `M (NA)` column, no level
   # of one outcome missing from another).
   by_levels <- by_levels %||%
     .tclm_by_levels(predictor, weights, cluster, covariates)
@@ -2891,7 +2905,7 @@ fit_categorical_predictor_lm_rows <- function(
 # per level). They keep the degenerate outcome's rows aligned with the
 # `M (<level>)` columns the other outcomes render -- a single
 # `level = NA` row would grow a spurious `M (NA)` column in the wide
-# header. The default single NA row is for continuous predictors,
+# frame. The default single NA row is for continuous predictors,
 # whose wide layout has no per-level columns.
 make_empty_lm_rows <- function(
   outcome_name,

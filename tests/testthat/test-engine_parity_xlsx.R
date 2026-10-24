@@ -778,7 +778,7 @@ test_that("a descriptive table with no spanner writes one header row", {
   expect_equal(.xl_at(m_ci, 5L, "A"), "extra")
 })
 
-test_that("table_continuous_lm without a CI writes one header row", {
+test_that("table_continuous_lm without a spanner writes one header row", {
   .xl_skip()
   write_lm <- function(ci) {
     .xl_grid(.xl_write(function(p) {
@@ -792,9 +792,26 @@ test_that("table_continuous_lm without a CI writes one header row", {
       )
     }))
   }
-  m <- write_lm(FALSE)
+  # A numeric `by` without its interval: no spanner, one header row.
+  m <- .xl_grid(.xl_write(function(p) {
+    table_continuous_lm(
+      sochealth,
+      bmi,
+      by = age,
+      ci = FALSE,
+      output = "excel",
+      excel_path = p
+    )
+  }))
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "A"), "bmi")
+  # The means of a categorical `by` sit under their spanner, interval or
+  # not: the groups head the second row.
+  m_mean <- write_lm(FALSE)
+  expect_equal(.xl_at(m_mean, 3L, "B"), "M")
+  expect_equal(.xl_at(m_mean, 4L, "B"), "Female")
+  expect_equal(.xl_at(m_mean, 4L, "C"), "Male")
+  expect_equal(.xl_at(m_mean, 5L, "A"), "bmi")
   # The CI spanner keeps its second row.
   expect_equal(.xl_at(write_lm(TRUE), 5L, "A"), "bmi")
 })

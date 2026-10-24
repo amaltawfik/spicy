@@ -799,21 +799,12 @@
   # HEADER a reader sees. `header_variable`, `header_b`, `header_p`,
   # `header_n_lower`, `header_weighted_n`, `header_mean`, `header_ci_ll` /
   # `header_ci_ul`, `header_ci_bound` and `header_ci_spanner` are shared
-  # with lots A and B and are not restated here.
-  # Two holes: the mean glyph, then the `by` level (DATA). The glyph
-  # travels as an ARGUMENT, resolved from `header_mean`, so one
-  # translation of "M" serves the whole package. Third key to carry the
-  # value "%s (%s)": the other two are `header_companion_qualified` (an
-  # orphaned column qualified by its carrier) and, further down this
-  # file, `note_group_comparison_item` (a test named in a note). One key
-  # per ROLE is the registry's rule, not one key per string.
-  header_lm_mean_level = "%s (%s)",
-  # Three holes: the increment glyph, then the two levels in the order
-  # the subtraction reads. The minus sign between them, U+2212 as Chicago
-  # and APA set a subtraction, is typographic punctuation, not a word, so
-  # it stays in the template. The column KEY (`get_delta_label_lm()`)
-  # writes the same sign: it is the English header.
-  header_lm_delta = "%s (%s \u2212 %s)",
+  # with lots A and B and are not restated here. The headers of a
+  # categorical `by` are decked: its levels (DATA) head the marginal means
+  # under one spanner, `header_mean`, and the increment glyph alone,
+  # `symbol_delta`, heads the contrast, the order of whose subtraction the
+  # note states (`note_lm_delta`).
+  #
   # The adjusted coefficient of determination as a COLUMN header of
   # `table_continuous_lm()`, distinct from `fitstat_adj_r2`, the
   # fit-statistic ROW label of `table_regression()`: same string, two
@@ -847,6 +838,15 @@
   test_lm_f = "F-test from the linear model",
   test_lm_chi2 = "Wald chi-squared test from the linear model",
   note_slope_test = "Slope test: %s.",
+  # The order of the subtraction of the contrast column, whose header,
+  # the increment glyph alone, no longer states it: a definition of the
+  # note, right after the sentence that names the test. Three holes: the
+  # glyph, resolved from `symbol_delta`, then the two levels (DATA) in
+  # the order the subtraction reads. The minus sign between them, U+2212
+  # as Chicago and APA set a subtraction, is typographic punctuation, not
+  # a word, so it stays in the template, and so does the equals sign,
+  # spaced as in the definitions (`note_abbrev_pair`).
+  note_lm_delta = "%s = %s \u2212 %s.",
 
   # -- table_categorical() / table_multiresponse(): the tests of a table ---
   # The test behind each p-value, named in `note_group_comparison` (or in
@@ -956,7 +956,7 @@
   # 29-C) and is built by `format_number()` at the call site -- never
   # written "0.1" here, because `spicy_fmt()` substitutes no decimal mark.
   # The minus sign (U+2212) between the group labels is punctuation, like
-  # `header_lm_delta`'s.
+  # `note_lm_delta`'s.
   note_smd_direction = "%1$s direction: %2$s \u2212 %3$s. The usual imbalance threshold is |%1$s| > %4$s.",
   # Why one column of the table has no sign while its neighbors do.
   # Only shown when a variable has more than two categories.

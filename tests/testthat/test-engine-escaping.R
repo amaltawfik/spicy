@@ -410,9 +410,10 @@ test_that("the hostile name still reads verbatim in the rendered header", {
   ))
   # Sanitizing the ID must not touch the LABEL: gt escapes the angle
   # brackets, leaves the quote and the backslash as themselves, and the
-  # reader sees the level exactly as it stands in the data.
-  expect_true(grepl("M (Q\"&lt;b&gt;\\x)", html, fixed = TRUE))
-  expect_false(grepl("M (Q\"<b>\\x)", html, fixed = TRUE))
+  # reader sees the level, which heads its mean under the M spanner,
+  # exactly as it stands in the data.
+  expect_true(grepl(">Q\"&lt;b&gt;\\x</th>", html, fixed = TRUE))
+  expect_false(grepl("Q\"<b>\\x", html, fixed = TRUE))
 })
 
 test_that("a quoted by level no longer aborts the survey gt render", {
@@ -463,7 +464,7 @@ test_that("an ordinary column name reaches gt untouched", {
       "Variable",
       "M (Lo)",
       "M (Hi)",
-      "\u0394 (Hi \u2212 Lo)",
+      "\u0394",
       "LL",
       "UL",
       "p",

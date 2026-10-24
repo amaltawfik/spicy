@@ -80,7 +80,17 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   # console: `.lm_labels()` maps `names(display_df)` to a vector of the
   # same length by construction, so `spicy_print_table()`'s abort on a
   # mismatched label vector is unreachable from here.
-  header_labels <- .lm_labels(names(display_df), .lm_spec_labels(spec))
+  labels <- .lm_spec_labels(spec)
+  header_labels <- .lm_labels(names(display_df), labels)
+  # The marginal means are headed by their levels under the mean's
+  # spanner, as in every engine (none when the glyph is emptied through
+  # `options(spicy.labels)`). The interval keeps its flat headers
+  # ("95% CI LL"), as in the console of every descriptive table.
+  mean_label <- .lm_labels(.LM_KEY_MEAN, labels)
+  mean_j <- which(names(display_df) %in% .lm_spec_mean_keys(spec))
+  spanners <- if (length(mean_j) > 0L && nzchar(mean_label)) {
+    stats::setNames(list(mean_j), mean_label)
+  }
 
   align_left <- 1L
   if (identical(align, "decimal")) {
@@ -150,6 +160,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = align_left,
     align_center_cols = align_center,
+    spanners = spanners,
     group_sep_rows = integer(0),
     # No total row: without an index the printer looks for the word
     # "Total" in the rows and rules off an outcome labeled "Total score".
@@ -193,9 +204,13 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #       non-classical `vcov` -- robust and resampling standard errors
 #       are never silently labeled, the doctrine of table_regression()'s
 #       footers;
-#   (d) the abbreviations of the headers, read off `spec`, the column
+#   (d) the definitions: the order of the subtraction the contrast
+#       column reports (`.tclm_delta_note()`), which its header no longer
+#       states;
+#   (e) the abbreviations of the headers, read off `spec`, the column
 #       spec of the table (`.lm_column_spec()`), where the rule of the
-#       style in force puts them.
+#       style in force puts them; the glyph of the difference, which (d)
+#       defines, is defined there under no rule.
 #
 # NULL when there is nothing to disclose; otherwise one string opened by
 # the lead-in in force ("Note. " by default, see `.note_lead_keys()`).
@@ -251,14 +266,38 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
+  # The order of the difference defines its glyph under every rule, so the
+  # abbreviations do not define it again ("Delta = difference").
+  delta_note <- .tclm_delta_note(spec)
   .compose_note(
     what = what,
     missing = missing_note,
     inference = inference,
+    definitions = delta_note,
     abbreviations = .note_abbreviations(
-      .lm_abbrev_items(spec, partial = length(covariates) > 0L)
+      .lm_abbrev_items(spec, partial = length(covariates) > 0L),
+      defined = if (!is.null(delta_note)) "delta"
     )
   )
+}
+
+# The order of the subtraction of the contrast column, headed by the
+# increment glyph alone: "Delta = Male - Female.", with the minus sign
+# (`note_lm_delta`). The levels are those of the header of each mean, in
+# the order the spec recorded them; NULL when the table shows no
+# contrast (more than two levels, `contrast = "none"`, a numeric `by`).
+.tclm_delta_note <- function(spec) {
+  for (col in spec) {
+    if (identical(col$token, "delta")) {
+      return(spicy_fmt(
+        "note_lm_delta",
+        spicy_str("symbol_delta"),
+        col$contrast[[1L]],
+        col$contrast[[2L]]
+      ))
+    }
+  }
+  NULL
 }
 
 # The concepts the headers of a linear-model table show, in the order of
@@ -687,8 +726,8 @@ tidy.spicy_continuous_lm_table <- function(x, ...) {
     types <- long$estimate_type[effect_idx]
     is_slope <- types == "slope"
     # A tidy VALUE, not a header: a contrast named in a data column keeps
-    # the hyphen code filters on, and never follows the template of the
-    # delta header and its key.
+    # the hyphen code filters on, and never follows the note sentence
+    # that states the order of the subtraction (`note_lm_delta`).
     term_strings <- ifelse(
       is_slope,
       long$predictor_label[effect_idx],

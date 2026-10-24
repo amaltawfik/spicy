@@ -1039,7 +1039,7 @@ test_that("the Typst source of a table whose variable label spans its groups", {
 
 # ---- the words of a header and of a note ----------------------------------
 
-test_that("the Typst source of a difference header, with its minus sign", {
+test_that("the Typst source of a difference column, its order in the note", {
   skip_if_not_installed("tinytable")
   set.seed(42)
   d <- data.frame(
@@ -1055,6 +1055,43 @@ test_that("the Typst source of a difference header, with its minus sign", {
     show_n = FALSE,
     output = "tinytable"
   ))))
+})
+
+# The minimal example of the decked heads of `table_continuous_lm()`: two
+# groups labelled with 12 and 14 characters, two outcomes with 30.
+.pt_decked_labels <- c(
+  wellbeing = "Well-being score (WHO-5 index)",
+  stress = "Perceived stress, PSS-10 score"
+)
+.pt_decked <- function(...) {
+  set.seed(20261024)
+  smoking <- factor(
+    rep(c("Never smoker", "Current smoker"), each = 40L),
+    levels = c("Never smoker", "Current smoker")
+  )
+  d <- data.frame(
+    smoking = smoking,
+    wellbeing = round(
+      60 + 5 * (smoking == "Current smoker") + stats::rnorm(80L, 0, 12),
+      1
+    ),
+    stress = round(
+      18 - 2 * (smoking == "Current smoker") + stats::rnorm(80L, 0, 6),
+      1
+    )
+  )
+  table_continuous_lm(
+    d,
+    select = c(wellbeing, stress),
+    by = smoking,
+    labels = .pt_decked_labels,
+    ...
+  )
+}
+
+test_that("the Typst source of decked heads, M over the groups and the difference alone", {
+  skip_if_not_installed("tinytable")
+  expect_snapshot(cat(.pt_typst(.pt_decked(output = "tinytable"))))
 })
 
 test_that("the Typst source of a note listing a missing `by` last", {
@@ -1516,4 +1553,49 @@ test_that("a PDF compiled through Typst prints the minus sign", {
   minus <- intToUtf8(0x2212)
   expect_true(all(paste0(minus, c("0.08", "0.61")) %in% words))
   expect_false(any(grepl("^-[0-9]", words)))
+})
+
+test_that("decked heads give the stub the width the difference took, in a PDF", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("pdftools")
+  skip_if(is.null(quarto::quarto_path()), "the Quarto CLI is not installed")
+  typ <- .pt_typst(.pt_decked(output = "tinytable"))
+  # The words of the page, the table compiled on a text block `width`
+  # centimeters wide.
+  words_at <- function(width) {
+    dir <- withr::local_tempdir()
+    src <- file.path(dir, "t.typ")
+    pdf <- file.path(dir, "t.pdf")
+    page <- sprintf(
+      "#set page(width: %scm, height: auto, margin: 0.5cm)",
+      width + 1
+    )
+    writeLines(c(page, typ), src, useBytes = TRUE)
+    system2(
+      quarto::quarto_path(),
+      c("typst", "compile", shQuote(src), shQuote(pdf)),
+      stdout = FALSE,
+      stderr = FALSE
+    )
+    pdftools::pdf_data(pdf)[[1L]]
+  }
+  # The lines of the label of the first outcome, in the stub.
+  stub_lines <- function(w) {
+    lab <- strsplit(.pt_decked_labels[["wellbeing"]], " ", fixed = TRUE)[[1L]]
+    from <- w$y[w$text == "Well-being"][1L]
+    to <- w$y[w$text == "Perceived"][1L]
+    length(unique(w$y[w$text %in% lab & w$y >= from & w$y < to]))
+  }
+  # On a 16 cm block every number is a word of its own: the two bounds
+  # and the p ran into one another ("2.3813.44.006") while the header of
+  # the difference held 118 of the 454 points.
+  w16 <- words_at(16)
+  body <- w16[w16$y >= w16$y[w16$text == "Well-being"][1L], ]
+  expect_false(any(grepl("[0-9][.][0-9]{2}[^ ]*[0-9][.][0-9]", body$text)))
+  # The stub label holds on one line from a 17.3 cm block, where the
+  # composite headers needed 23.4 cm.
+  expect_identical(stub_lines(words_at(18)), 1L)
 })

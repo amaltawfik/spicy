@@ -81,7 +81,7 @@ level ordering (e.g. via \code{\link[forcats:fct_relevel]{forcats::fct_relevel()
 \code{factor(..., levels = ...)}).
 \item \strong{logical}: coerced to factor with levels \code{"FALSE"}, \code{"TRUE"} (in
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
-so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
+so the binary contrast is \code{TRUE} minus \code{FALSE}.
 \item \strong{haven labelled with value labels} (an SPSS / Stata import):
 treated as categorical, one level per observed code named by its
 value label (\code{"[1] Women"}, as the rows of a labelled variable of
@@ -298,8 +298,8 @@ typical values for inference are \code{500}-\code{2000}. Typed with another
 a numeric \code{by}, it is ignored with a warning, class
 \code{spicy_ignored_arg}). One of:
 \itemize{
-\item \code{"auto"} (default): show a single reference contrast
-\code{Delta (level2 - level1)} only when \code{by} has exactly two non-empty
+\item \code{"auto"} (default): show a single reference contrast, the second
+level minus the first, only when \code{by} has exactly two non-empty
 levels. The reference level is the \strong{first level of the factor}
 (R's default treatment-contrast convention,
 \code{getOption("contrasts")[1]}). To change which level acts as the
@@ -343,7 +343,8 @@ Note that for a single-predictor model, \eqn{f^2}{f^2} is a monotone transform o
 the model coefficient (the displayed difference) and \code{sigma_hat} is the
 residual standard deviation from the fitted model. Defined only when
 \code{by} has exactly two non-empty levels; otherwise the function errors.
-The sign matches the displayed \code{Delta (level2 - level1)}.
+The sign matches the displayed difference, the second level minus
+the first.
 \item \code{"hedges_g"}: Hedges's \code{g = J * d} with the small-sample correction
 \code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
 \item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
@@ -689,7 +690,8 @@ non-empty levels.
 \code{d = beta_hat / sigma_hat} with \code{sigma_hat = summary(fit)$sigma} (the
 pooled within-group SD for the unweighted two-group case);
 \code{g = J * d} with \code{J = 1 - 3 / (4 * df_resid - 1)} (Hedges and Olkin
-1985). The sign matches the displayed \code{Delta (level2 - level1)}.
+1985). The sign matches the displayed difference, the second level
+minus the first.
 For published reports of two-group comparisons, \emph{g} is the
 convention recommended by Hedges and Olkin (1985).
 \item \code{"omega2"}: Hays' \eqn{\omega^2}, computed from weighted
@@ -841,13 +843,24 @@ analytic sample.
 }
 
 \section{Display conventions}{
-For dichotomous categorical predictors, the wide outputs report fitted
-means in reference-level order and label the contrast column
-explicitly as \code{Delta (level2 - level1)}. For categorical predictors
-with more than two levels, no single contrast or contrast CI is shown
-in the wide outputs; instead, the table reports level-specific means
-plus the overall \code{F} test when \code{statistic = TRUE} (or \code{F(df1, df2)}
-when the degrees of freedom are constant across outcomes).
+With a categorical \code{by}, the headers have two levels (decked heads, APA
+Publication Manual, 7th ed., section 7.12): the mean symbol \code{M} spans
+the columns of the fitted means, each headed by its level alone, in
+reference-level order, in the console as in every rendering engine.
+For a dichotomous \code{by}, the contrast column is headed
+\eqn{\Delta}{Delta} alone, and a sentence of the note, after those on
+the test and the standard errors, gives the order of the subtraction:
+the second level minus the first, written with the minus sign. Its
+confidence interval keeps its spanner, \verb{95\% CI} over \code{LL} and \code{UL},
+which the console folds into the headers \verb{95\% CI LL} and \verb{95\% CI UL},
+as in the other tables. In \code{output = "data.frame"}, a mean keeps both
+levels in its name, \verb{M (<level>)}, and the contrast is named
+\eqn{\Delta}{Delta} (the Greek capital delta, U+0394). For categorical
+predictors with more than two levels, no single contrast or contrast
+CI is shown in the wide outputs; instead, the table reports
+level-specific means plus the overall \code{F} test when
+\code{statistic = TRUE} (or \code{F(df1, df2)} when the degrees of freedom are
+constant across outcomes).
 
 When \code{covariates} is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.

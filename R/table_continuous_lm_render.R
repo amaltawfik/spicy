@@ -30,7 +30,10 @@
 # never move a public column name. The two are pinned equal in English
 # by test-i18n.R.
 .LM_KEY_CI <- "CI"
-# The two glyphs a composite column key opens with.
+# The glyph the marginal-mean keys open with ("M (Female)"), which also
+# keys the label of the spanner over those columns, then the key of the
+# contrast column: the increment glyph alone, as its header reads since
+# the order of the subtraction moved to the note.
 .LM_KEY_MEAN <- "M"
 .LM_KEY_DELTA <- "\u0394"
 # The frozen glyph of each global test, keyed by `test_type`. The KEY
@@ -57,7 +60,10 @@
 
 # The column key of one `by` level's marginal mean ("M (Female)"). The
 # level is DATA; it travels in `col_meta$level` so a consumer never
-# parses the key back. Vectorized over `level`.
+# parses the key back. The key spells the two levels of the header, the
+# spanner and the head, in one name, as the bounds of an interval do
+# ("95% CI LL"): a data frame has one row of names. Vectorized over
+# `level`.
 .lm_key_emmean <- function(level) {
   paste0(.LM_KEY_MEAN, " (", level, ")")
 }
@@ -126,22 +132,13 @@
   )
 }
 
-# The header of one `by` level's marginal mean ("M (Female)"). The level
-# is DATA and travels as an argument, so a level containing a percent
-# sign is safe.
-.lm_label_emmean <- function(level) {
-  spicy_fmt("header_lm_mean_level", spicy_str("header_mean"), level)
-}
-
-# The header of the difference between the two `by` levels.
-.lm_label_delta <- function(block) {
-  spicy_fmt(
-    "header_lm_delta",
-    spicy_str("symbol_delta"),
-    block$level[2],
-    block$level[1]
-  )
-}
+# The headers of a categorical `by` are decked (APA 7, section 7.12): the
+# mean glyph (`header_mean`) spans the marginal-mean columns, each headed
+# by its level alone, DATA; the contrast is headed by the increment glyph
+# alone (`symbol_delta`), and the note states the order of its
+# subtraction (`.tclm_delta_note()`). A level that wraps then wraps in its
+# own column, where "M (level)" and "Delta (B - A)" made every one of
+# these columns as wide as its whole header.
 
 # The glyph table of `.lm_test_render()`'s label twin.
 .lm_test_glyph_labels <- function() {
@@ -197,7 +194,9 @@
 # `raw_only` marks the two effect-size interval columns: they exist in
 # `output = "data.frame"` and nowhere else, so they never reach a header.
 # `contrast = "none"` leaves out the contrast of a two-level `by` and its
-# interval, which would otherwise be columns with no value.
+# interval, which would otherwise be columns with no value. A mean
+# carries `spanner_label`, the glyph its level is headed under, and the
+# contrast `contrast`, its two levels in the order of the subtraction.
 .lm_column_spec <- function(
   x,
   ci_level = 0.95,
@@ -255,14 +254,25 @@
   }
 
   if (identical(by_type, "categorical")) {
+    # Each mean is headed by its level, under `spanner_label`.
+    mean_hdr <- spicy_str("header_mean")
     for (lev in first_block$level) {
-      add(.lm_key_emmean(lev), .lm_label_emmean(lev), "emmean", level = lev)
+      add(
+        .lm_key_emmean(lev),
+        lev,
+        "emmean",
+        level = lev,
+        spanner_label = mean_hdr
+      )
     }
     if (nrow(first_block) == 2L && !identical(contrast, "none")) {
+      # `contrast`: the two levels in the order the subtraction reads,
+      # which the note states (`.tclm_delta_note()`).
       add(
-        get_delta_label_lm(first_block),
-        .lm_label_delta(first_block),
-        "delta"
+        .LM_KEY_DELTA,
+        spicy_str("symbol_delta"),
+        "delta",
+        contrast = c(first_block$level[2L], first_block$level[1L])
       )
       if (isTRUE(ci)) {
         add_bounds()
@@ -329,7 +339,8 @@
 # The headers of a spec as one vector NAMED by frozen key -- the carrier
 # every engine reads, since `col_meta` reaches only the default output.
 # Each interval bound appears twice: under its full key and under the
-# short key `rename_ci_cols_lm()` leaves behind.
+# short key `rename_ci_cols_lm()` leaves behind. The spanner over the
+# marginal means comes under the key of its glyph, `.LM_KEY_MEAN`.
 .lm_spec_labels <- function(spec) {
   labels <- vapply(spec, function(e) e$label, character(1))
   names(labels) <- .lm_spec_keys(spec)
@@ -337,8 +348,18 @@
     if (!is.null(e$ci_role)) {
       labels[[e$ci_role]] <- e$short_label
     }
+    if (!is.null(e$spanner_label)) {
+      labels[[.LM_KEY_MEAN]] <- e$spanner_label
+    }
   }
   labels
+}
+
+# The keys of the marginal-mean columns, the columns the mean's spanner
+# covers, in column order (empty for a numeric `by`).
+.lm_spec_mean_keys <- function(spec) {
+  is_mean <- vapply(spec, function(e) identical(e$token, "emmean"), logical(1))
+  .lm_spec_keys(spec)[is_mean]
 }
 
 # The key of the single column carrying `token`, or NULL when the table
@@ -709,6 +730,7 @@ export_continuous_lm_table <- function(
   note = NULL,
   title = NULL,
   labels = NULL,
+  mean_keys = NULL,
   call = rlang::caller_env()
 ) {
   # The file is checked before any engine runs, and the errors name the
@@ -731,6 +753,18 @@ export_continuous_lm_table <- function(
   # Membership, not a flag from upstream: the exporter is also reached
   # with a hand-built frame that carries no interval at all.
   has_ci <- all(c(ci_ll, ci_ul) %in% names(display_df))
+  # The marginal means (`.lm_spec_mean_keys()`) sit under the mean's
+  # spanner, each headed by its level, the way the bounds sit under the
+  # interval's. Either spanner sets the header on two rows; a column
+  # under none is headed on the first, its cell of the second blank. A
+  # glyph emptied through `options(spicy.labels)` sets no spanner: the
+  # levels then head their means as any other column.
+  mean_spanner_label <- lab(.LM_KEY_MEAN)
+  mean_keys <- if (nzchar(mean_spanner_label)) {
+    intersect(mean_keys, names(display_df))
+  }
+  has_mean <- length(mean_keys) > 0L
+  decked <- has_ci || has_mean
 
   # For engines without native decimal alignment (flextable, word),
   # pre-pad numeric cells with leading/trailing spaces so decimal
@@ -790,19 +824,23 @@ export_continuous_lm_table <- function(
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    ll_pos <- which(col_keys == .LM_KEY_CI_LL)
-    ul_pos <- which(col_keys == .LM_KEY_CI_UL)
+    ll_pos <- if (has_ci) which(col_keys == .LM_KEY_CI_LL) else integer(0)
+    ul_pos <- if (has_ci) which(col_keys == .LM_KEY_CI_UL) else integer(0)
+    mean_pos <- which(col_keys %in% mean_keys)
 
     sub_labels <- rep("", nc)
-    if (has_ci) {
-      sub_labels[ll_pos] <- lab(.LM_KEY_CI_LL)
-      sub_labels[ul_pos] <- lab(.LM_KEY_CI_UL)
+    if (decked) {
+      sub_labels[mean_pos] <- lab(col_keys[mean_pos])
+      if (has_ci) {
+        sub_labels[ll_pos] <- lab(.LM_KEY_CI_LL)
+        sub_labels[ul_pos] <- lab(.LM_KEY_CI_UL)
+      }
     } else {
-      # No CI spanner: the labels are the column names, one header row.
+      # No spanner: the labels are the column names, one header row.
       sub_labels <- lab(col_keys)
     }
     colnames(display_df) <- sub_labels
-    top_i <- if (has_ci) -1 else 0
+    top_i <- if (decked) -1 else 0
 
     # `tinytable::group_tt(j = )` wants the printed spanner text as the
     # NAME of the list, so a name here IS an index: two columns whose
@@ -810,10 +848,13 @@ export_continuous_lm_table <- function(
     # header. Inherent to the upstream API, not a choice made here.
     gspec <- list()
     for (j in seq_along(col_keys)) {
-      if (has_ci && col_keys[j] %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)) {
+      if (j %in% c(ll_pos, ul_pos, mean_pos)) {
         next
       }
       gspec[[lab(col_keys[j])]] <- j
+    }
+    if (has_mean) {
+      gspec[[mean_spanner_label]] <- mean_pos
     }
     if (has_ci) {
       gspec[[ci_spanner_label]] <- c(ll_pos, ul_pos)
@@ -829,7 +870,7 @@ export_continuous_lm_table <- function(
       caption = if (!is.null(title) && nzchar(title)) title else NULL,
       notes = if (!is.null(note) && nzchar(note)) note else NULL
     )
-    if (has_ci) {
+    if (decked) {
       tt <- tinytable::group_tt(tt, j = gspec)
     }
     tt <- .spicy_tt_bare(tt, decimal_mark = decimal_mark)
@@ -881,14 +922,17 @@ export_continuous_lm_table <- function(
         line = "t",
         line_width = 0.06
       )
-      if (has_ci) {
-        tt <- tinytable::style_tt(
-          tt,
-          i = -1,
-          j = c(ll_pos, ul_pos),
-          line = "b",
-          line_width = 0.06
-        )
+      # A rule under each spanner, over its columns only.
+      for (span_j in list(mean_pos, c(ll_pos, ul_pos))) {
+        if (length(span_j) > 0L) {
+          tt <- tinytable::style_tt(
+            tt,
+            i = -1,
+            j = span_j,
+            line = "b",
+            line_width = 0.06
+          )
+        }
       }
       tt <- tinytable::style_tt(
         tt,
@@ -951,35 +995,48 @@ export_continuous_lm_table <- function(
     names(display_df) <- unname(gt_ids)
     tbl <- gt::gt(display_df)
 
-    # No CI spanner: the labels are the column labels, one header row.
+    # The columns under a spanner, headed on the second row: the means,
+    # then the bounds of the interval.
+    spanned <- c(
+      mean_keys,
+      if (has_ci) intersect(c(.LM_KEY_CI_LL, .LM_KEY_CI_UL), col_keys)
+    )
+    # No spanner: the labels are the column labels, one header row.
     label_list <- stats::setNames(
-      as.list(if (has_ci) rep("", length(col_keys)) else lab(col_keys)),
+      as.list(if (decked) rep("", length(col_keys)) else lab(col_keys)),
       unname(gt_ids)
     )
-    if (has_ci && .LM_KEY_CI_LL %in% col_keys) {
-      label_list[[gt_ids[[.LM_KEY_CI_LL]]]] <- lab(.LM_KEY_CI_LL)
-    }
-    if (has_ci && .LM_KEY_CI_UL %in% col_keys) {
-      label_list[[gt_ids[[.LM_KEY_CI_UL]]]] <- lab(.LM_KEY_CI_UL)
+    for (key in spanned) {
+      label_list[[gt_ids[[key]]]] <- lab(key)
     }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
-    single_cols <- setdiff(col_keys, c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
+    single_cols <- setdiff(col_keys, c(.LM_KEY_CI_LL, .LM_KEY_CI_UL, mean_keys))
     # The ids are DOM state that `cells_column_spanners()` addresses
     # below: generated from the frozen KEYS, never from the labels, and
     # generated ONCE so the two sites cannot disagree. The interval
     # spanner is in the same vector under `.LM_KEY_CI`: left without an
     # id, gt derives one from the LABEL, so a translated table or a
     # fractional `ci_level` would move the id ("95% CI" -> "97.5% CI").
-    # The other two descriptive families already name every spanner.
-    span_ids <- .lm_spanner_ids(c(single_cols, .LM_KEY_CI))
-    # One-column spanners only above a CI spanner's row.
-    for (col in if (has_ci) single_cols else character(0)) {
+    # The mean's spanner is there under `.LM_KEY_MEAN`, for the same
+    # reason. The other two descriptive families already name every
+    # spanner.
+    span_ids <- .lm_spanner_ids(c(single_cols, .LM_KEY_CI, .LM_KEY_MEAN))
+    # One-column spanners only above another spanner's row.
+    for (col in if (decked) single_cols else character(0)) {
       tbl <- gt::tab_spanner(
         tbl,
         label = lab(col),
         columns = gt_ids[[col]],
         id = span_ids[[col]]
+      )
+    }
+    if (has_mean) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = mean_spanner_label,
+        columns = unname(gt_ids[mean_keys]),
+        id = span_ids[[.LM_KEY_MEAN]]
       )
     }
     if (has_ci) {
@@ -1032,18 +1089,18 @@ export_continuous_lm_table <- function(
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
-      locations = if (has_ci) {
+      locations = if (decked) {
         gt::cells_column_spanners()
       } else {
         gt::cells_column_labels()
       }
     )
-    if (has_ci) {
+    if (decked) {
       tbl <- gt::tab_style(
         tbl,
         style = rule_top,
         locations = gt::cells_column_labels(
-          columns = unname(gt_ids[c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)])
+          columns = unname(gt_ids[spanned])
         )
       )
     }
@@ -1072,7 +1129,7 @@ export_continuous_lm_table <- function(
         locations = gt::cells_column_labels(columns = non_variable_cols)
       )
     }
-    if (has_ci) {
+    if (decked) {
       tbl <- gt::tab_style(
         tbl,
         style = gt::cell_text(align = "left"),
@@ -1082,13 +1139,19 @@ export_continuous_lm_table <- function(
       )
     }
 
-    # Interpolated into a CSS attribute selector: the ids are the frozen
-    # ASCII keys, so no display label ever reaches this string.
-    ci_css_sel <- if (has_ci) {
+    # Interpolated into a CSS attribute selector: the ids come from the
+    # frozen keys, never from a display label, and a mean's key holds its
+    # level, user data, escaped as the other families escape theirs.
+    ci_css_sel <- if (decked) {
       paste(
         vapply(
-          unname(gt_ids[c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)]),
-          function(id) sprintf('.gt_table thead tr:last-child th[id="%s"]', id),
+          unname(gt_ids[spanned]),
+          function(id) {
+            sprintf(
+              '.gt_table thead tr:last-child th[id="%s"]',
+              .css_escape_string(id)
+            )
+          },
           character(1)
         ),
         collapse = ",\n"
@@ -1106,9 +1169,9 @@ export_continuous_lm_table <- function(
       ".gt_table thead th, .gt_table thead td {",
       "  background-color: transparent !important;",
       "}",
-      if (has_ci) paste0(ci_css_sel, " {") else "",
-      if (has_ci) "  border-top: 1px solid currentColor !important;" else "",
-      if (has_ci) "}" else "",
+      if (decked) paste0(ci_css_sel, " {") else "",
+      if (decked) "  border-top: 1px solid currentColor !important;" else "",
+      if (decked) "}" else "",
       ".gt_table thead tr:last-child {",
       "  border-bottom: 1px solid currentColor !important;",
       "}",
@@ -1161,7 +1224,7 @@ export_continuous_lm_table <- function(
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
-    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels, mean_keys)
     map <- data.frame(
       col_keys = col_keys,
       top = hdrs$top,
@@ -1169,8 +1232,8 @@ export_continuous_lm_table <- function(
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
-    # No CI spanner: one header row, no empty second row under it.
-    if (!has_ci) {
+    # No spanner: one header row, no empty second row under it.
+    if (!decked) {
       map$bottom <- NULL
     }
 
@@ -1186,6 +1249,7 @@ export_continuous_lm_table <- function(
 
     bd <- spicy_fp_border(color = "black", width = 1)
     ci_j <- which(col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
+    mean_j <- which(col_keys %in% mean_keys)
     left_j <- 1L
     numeric_j <- setdiff(seq_along(col_keys), left_j)
 
@@ -1221,11 +1285,12 @@ export_continuous_lm_table <- function(
     }
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
-    if (has_ci) {
+    # A rule under each spanner, over its columns only.
+    if (decked) {
       ft <- flextable::hline(
         ft,
         i = 1,
-        j = ci_j,
+        j = c(mean_j, if (has_ci) ci_j),
         part = "header",
         border = bd
       )
@@ -1315,8 +1380,13 @@ export_continuous_lm_table <- function(
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)
-    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels, mean_keys)
     ci_j <- which(col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))
+    # The column ranges of the spanners: the means, the interval.
+    span_js <- Filter(
+      length,
+      list(which(col_keys %in% mean_keys), if (has_ci) ci_j)
+    )
 
     wb <- openxlsx2::wb_workbook()
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
@@ -1325,9 +1395,9 @@ export_continuous_lm_table <- function(
     if (!is.null(title) && nzchar(title)) {
       wb <- .spicy_xl_add_data(wb, x = title, start_row = 1)
     }
-    # Without a CI spanner, one header row: the "bottom" row is the top one.
+    # Without a spanner, one header row: the "bottom" row is the top one.
     top_header_row <- 3L
-    bot_header_row <- top_header_row + as.integer(has_ci)
+    bot_header_row <- top_header_row + as.integer(decked)
     first_body_row <- bot_header_row + 1L
     wb <- .spicy_xl_add_data(
       wb,
@@ -1335,7 +1405,7 @@ export_continuous_lm_table <- function(
       start_row = top_header_row,
       col_names = FALSE
     )
-    if (has_ci) {
+    if (decked) {
       wb <- .spicy_xl_add_data(
         wb,
         x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
@@ -1352,10 +1422,10 @@ export_continuous_lm_table <- function(
       col_names = FALSE,
       row_names = FALSE
     )
-    if (has_ci) {
+    for (span_j in span_js) {
       wb <- openxlsx2::wb_merge_cells(
         wb,
-        dims = openxlsx2::wb_dims(rows = top_header_row, cols = ci_j)
+        dims = openxlsx2::wb_dims(rows = top_header_row, cols = span_j)
       )
     }
     last_row <- bot_header_row + nrow(display_df)
@@ -1420,19 +1490,21 @@ export_continuous_lm_table <- function(
       wb,
       dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
-      bottom_border = if (has_ci) NULL else "thin",
+      bottom_border = if (decked) NULL else "thin",
       left_border = NULL,
       right_border = NULL
     )
-    if (has_ci) {
-      wb <- openxlsx2::wb_add_border(
-        wb,
-        dims = openxlsx2::wb_dims(rows = top_header_row, cols = ci_j),
-        bottom_border = "thin",
-        top_border = NULL,
-        left_border = NULL,
-        right_border = NULL
-      )
+    if (decked) {
+      for (span_j in span_js) {
+        wb <- openxlsx2::wb_add_border(
+          wb,
+          dims = openxlsx2::wb_dims(rows = top_header_row, cols = span_j),
+          bottom_border = "thin",
+          top_border = NULL,
+          left_border = NULL,
+          right_border = NULL
+        )
+      }
       wb <- openxlsx2::wb_add_border(
         wb,
         dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
@@ -1472,13 +1544,14 @@ export_continuous_lm_table <- function(
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
-    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels)
-    # The sub-label row carries the LL / UL labels of the CI pair;
-    # with no CI column it is empty and is dropped rather than
-    # pasted as a blank line (same rule as `clipboard_payload()`).
-    # Asked of the STRUCTURE, not of the emptiness of a rendered
-    # label: the sub-row is non-empty exactly where the pair is.
-    clip_mat <- if (has_ci) {
+    hdrs <- build_header_rows_lm(col_keys, ci_spanner_label, labels, mean_keys)
+    # The sub-label row carries the heads under the spanners, the levels
+    # of the means and the LL / UL of the CI pair; with no spanner it is
+    # empty and is dropped rather than pasted as a blank line (same rule
+    # as `clipboard_payload()`). Asked of the STRUCTURE, not of the
+    # emptiness of a rendered label: the sub-row is non-empty exactly
+    # where a spanner is.
+    clip_mat <- if (decked) {
       rbind(hdrs$top, hdrs$bottom, as.matrix(display_df))
     } else {
       rbind(hdrs$top, as.matrix(display_df))
@@ -1525,21 +1598,26 @@ rename_ci_cols_lm <- function(display_df, ci_ll, ci_ul) {
 # The two printed header rows of the flextable / Word, Excel and
 # clipboard routes -- the only place those three read a header from, and
 # the place the Excel column WIDTHS are measured on. `top` used to be
-# `col_keys` verbatim: this is the seam between key and text.
-build_header_rows_lm <- function(col_keys, ci_spanner_label, labels = NULL) {
+# `col_keys` verbatim: this is the seam between key and text. A spanner
+# is repeated over each of its columns, which flextable merges by their
+# equal text and Excel by their range; the heads under it take the
+# bottom row.
+build_header_rows_lm <- function(
+  col_keys,
+  ci_spanner_label,
+  labels = NULL,
+  mean_keys = NULL
+) {
   nc <- length(col_keys)
   top <- .lm_labels(col_keys, labels)
-  top[col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)] <- ci_spanner_label
   bottom <- rep("", nc)
+  is_mean <- col_keys %in% mean_keys
+  bottom[is_mean] <- top[is_mean]
+  top[is_mean] <- .lm_labels(.LM_KEY_MEAN, labels)
+  top[col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)] <- ci_spanner_label
   bottom[col_keys == .LM_KEY_CI_LL] <- .lm_labels(.LM_KEY_CI_LL, labels)
   bottom[col_keys == .LM_KEY_CI_UL] <- .lm_labels(.LM_KEY_CI_UL, labels)
   list(top = top, bottom = bottom)
-}
-
-# The key is the English header, minus sign (U+2212) included: a reader
-# who copies the printed header finds the column by it.
-get_delta_label_lm <- function(block) {
-  paste0(.LM_KEY_DELTA, " (", block$level[2], " \u2212 ", block$level[1], ")")
 }
 
 get_test_row_index_lm <- function(block) {

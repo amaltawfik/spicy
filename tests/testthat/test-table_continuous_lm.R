@@ -176,9 +176,12 @@ test_that("contrast = \"none\" leaves the contrast and its interval out of every
     statistic = TRUE
   )
   txt <- paste(capture.output(print(tb)), collapse = "\n")
+  # No contrast column, and no sentence of the note gives its order.
   expect_no_match(txt, "Δ", fixed = TRUE)
   expect_no_match(txt, "95% CI", fixed = TRUE)
-  expect_match(txt, "M (Female)", fixed = TRUE)
+  # The means keep their decked heads: the groups under M.
+  expect_match(txt, " Female ", fixed = TRUE)
+  expect_no_match(txt, "M (Female)", fixed = TRUE)
   expect_match(txt, "F(1, 1186)", fixed = TRUE)
   df <- table_continuous_lm(
     sochealth,
@@ -464,7 +467,7 @@ test_that("table_continuous_lm data.frame output puts >2 categorical levels in c
   expect_true(is.numeric(out$p))
 })
 
-test_that("table_continuous_lm data.frame output labels binary contrasts explicitly", {
+test_that("table_continuous_lm data.frame output names the binary contrast, its note the order", {
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -478,12 +481,18 @@ test_that("table_continuous_lm data.frame output labels binary contrasts explici
 
   expect_true("M (setosa)" %in% names(out))
   expect_true("M (versicolor)" %in% names(out))
-  expect_true("Δ (versicolor \u2212 setosa)" %in% names(out))
+  expect_true("\u0394" %in% names(out))
   expect_true("95% CI LL" %in% names(out))
   expect_true("95% CI UL" %in% names(out))
   expect_true(any(grepl("^t\\([0-9]+\\)$", names(out))))
   expect_true("R²" %in% names(out))
-  expect_true(is.numeric(out[["Δ (versicolor \u2212 setosa)"]]))
+  expect_true(is.numeric(out[["\u0394"]]))
+  # The order of the subtraction travels with the frame, in its note.
+  expect_match(
+    attr(out, "note"),
+    "\u0394 = versicolor \u2212 setosa.",
+    fixed = TRUE
+  )
 })
 
 test_that("table_continuous_lm data.frame output honors optional columns", {
@@ -930,13 +939,13 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
   )
 
   expect_true(all(
-    c("M (Female)", "M (Male)", "Δ (Male \u2212 Female)") %in% names(wide_raw)
+    c("M (Female)", "M (Male)", "\u0394") %in% names(wide_raw)
   ))
   expect_false(any(
     c("p", "n", "f²", "R²", "Adj. R²", "95% CI LL") %in% names(wide_raw)
   ))
   expect_true(all(
-    c("Variable", "M (Female)", "M (Male)", "Δ (Male \u2212 Female)") %in%
+    c("Variable", "M (Female)", "M (Male)", "\u0394") %in%
       names(wide_display)
   ))
   expect_false(any(
@@ -990,7 +999,20 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   hdr <- spicy:::build_header_rows_lm(c("Variable", "LL", "UL"), "95% CI")
   expect_equal(hdr$top, c("Variable", "95% CI", "95% CI"))
   expect_equal(hdr$bottom, c("", "LL", "UL"))
-  expect_match(spicy:::get_delta_label_lm(block), "versicolor \u2212 setosa")
+  # The headers of the means come under one spanner, and the order of the
+  # contrast is a sentence of the note.
+  hdr <- spicy:::build_header_rows_lm(
+    c("Variable", "M (a)", "M (b)", "LL", "UL"),
+    "95% CI",
+    labels = c(`M (a)` = "a", `M (b)` = "b"),
+    mean_keys = c("M (a)", "M (b)")
+  )
+  expect_equal(hdr$top, c("Variable", "M", "M", "95% CI", "95% CI"))
+  expect_equal(hdr$bottom, c("", "a", "b", "LL", "UL"))
+  expect_identical(
+    spicy:::.tclm_delta_note(spicy:::.lm_column_spec(block)),
+    "\u0394 = versicolor \u2212 setosa."
+  )
   expect_equal(spicy:::get_test_row_index_lm(block), 2L)
   expect_equal(spicy:::get_test_header_lm(block, TRUE, FALSE), "t")
   expect_null(spicy:::get_test_header_lm(block, FALSE, TRUE))
@@ -1065,17 +1087,20 @@ test_that("the console and every engine print the registry header, not the key",
     capture.output(print(out))
   })
   expect_true(any(grepl("<Variable>", txt, fixed = TRUE)))
-  expect_true(any(grepl("<M (a)>", txt, fixed = TRUE)))
+  # The head of a mean and the spanner over the means.
+  expect_true(any(grepl("<a>", txt, fixed = TRUE)))
+  expect_true(any(grepl("<M>", txt, fixed = TRUE)))
   # The frozen key no longer stands alone in the header row.
   expect_false(any(grepl(" Variable ", txt, fixed = TRUE)))
 
   # 2. The two-row header builder: flextable / Word, Excel and the
-  #    clipboard all print `hdrs$top`.
+  #    clipboard all print `hdrs$top` and `hdrs$bottom`.
   skip_if_not_installed("flextable")
   ft <- table_continuous_lm(d, select = y, by = g, output = "flextable")
   hdr <- unlist(ft$header$dataset, use.names = FALSE)
   expect_true(any(grepl("<Variable>", hdr, fixed = TRUE)))
-  expect_true(any(grepl("<M (a)>", hdr, fixed = TRUE)))
+  expect_true(any(grepl("<M>", hdr, fixed = TRUE)))
+  expect_true(any(grepl("<a>", hdr, fixed = TRUE)))
 
   skip_if_not_installed("clipr")
   cap <- new.env(parent = emptyenv())
@@ -1088,7 +1113,8 @@ test_that("the console and every engine print the registry header, not the key",
     },
     .package = "clipr"
   )
-  expect_true(any(grepl("<M (a)>", cap$text, fixed = TRUE)))
+  expect_true(any(grepl("<M>", cap$text, fixed = TRUE)))
+  expect_true(any(grepl("<a>", cap$text, fixed = TRUE)))
 
   # 3. The two engines that resolve column by column through `lab()`.
   skip_if_not_installed("gt")
@@ -1099,17 +1125,305 @@ test_that("the console and every engine print the registry header, not the key",
     character(1)
   )
   expect_true("<Variable>" %in% spanners)
-  expect_true("<M (a)>" %in% spanners)
+  expect_true("<M>" %in% spanners)
+  heads <- vapply(
+    g_tbl[["_boxhead"]]$column_label,
+    function(z) as.character(z)[[1L]],
+    character(1)
+  )
+  expect_true("<a>" %in% heads)
   # The gt column ids stay on the frozen keys: only the labels moved.
   expect_true("Variable" %in% as.data.frame(g_tbl[["_boxhead"]])$var)
 
   skip_if_not_installed("tinytable")
   tt <- table_continuous_lm(d, select = y, by = g, output = "tinytable")
   # `group_tt()` stores the spanner texts as the row of `group_data_j`;
-  # the names it keeps are the bare bound keys the exporter left.
+  # the names it keeps are the heads under the spanners.
   spans <- unlist(tt@group_data_j, use.names = FALSE)
   expect_true(any(grepl("<Variable>", spans, fixed = TRUE)))
-  expect_true(any(grepl("<M (a)>", spans, fixed = TRUE)))
+  expect_true(any(grepl("<M>", spans, fixed = TRUE)))
+  expect_true("<a>" %in% tt@names)
+})
+
+# ---- decked heads -----------------------------------------------------------
+
+# Two groups labelled with 12 and 14 characters, two outcomes.
+.lm_decked_data <- function() {
+  set.seed(20261024)
+  g <- factor(
+    rep(c("Never smoker", "Current smoker"), each = 20L),
+    levels = c("Never smoker", "Current smoker")
+  )
+  data.frame(
+    g = g,
+    y = round(60 + 5 * (g == "Current smoker") + stats::rnorm(40L, 0, 12), 1),
+    z = round(18 - 2 * (g == "Current smoker") + stats::rnorm(40L, 0, 6), 1)
+  )
+}
+
+# The headers of a console header row, right of the stub's bar.
+.lm_console_heads <- function(line) {
+  strsplit(trimws(sub("^.*\u2502", "", line)), " {2,}")[[1L]]
+}
+
+test_that("a categorical by decks its headers in the console, Typst, Word and the typed view", {
+  d <- .lm_decked_data()
+  tbl <- table_continuous_lm(d, select = c(y, z), by = g)
+
+  # Console: the spanner row, M over the two groups and its rule under
+  # them, then the header row: each mean headed by its group, the
+  # difference by its glyph, the interval as every console prints it.
+  txt <- withr::with_options(list(width = 200L), capture.output(print(tbl)))
+  at <- grep("Variable", txt, fixed = TRUE)
+  expect_identical(trimws(txt[[at - 2L]]), "M")
+  expect_match(txt[[at - 1L]], "^ +\u2500+ *$")
+  expect_identical(
+    .lm_console_heads(txt[[at]]),
+    c(
+      "Never smoker",
+      "Current smoker",
+      "\u0394",
+      "95% CI LL",
+      "95% CI UL",
+      "p",
+      "R\u00b2",
+      "n"
+    )
+  )
+  m_at <- regexpr("M", txt[[at - 2L]], fixed = TRUE)
+  expect_gt(m_at, regexpr("Never smoker", txt[[at]], fixed = TRUE))
+  expect_lt(m_at, regexpr("Current smoker", txt[[at]], fixed = TRUE) + 14L)
+
+  # Typst: the spanners on the first row, the heads under them.
+  skip_if_not_installed("tinytable")
+  typ <- tinytable::save_tt(
+    table_continuous_lm(d, select = c(y, z), by = g, output = "tinytable"),
+    output = "typst"
+  )
+  expect_match(
+    typ,
+    paste0(
+      "\n[Variable], table.cell(colspan: 2, align: center)[M], [\u0394], ",
+      "table.cell(colspan: 2, align: center)[95% CI], [p], [R\u00b2], ",
+      "[n],\n",
+      "[], [Never smoker], [Current smoker], [], [LL], [UL], [], [], [],\n"
+    ),
+    fixed = TRUE
+  )
+
+  # Word: the same two rows, each spanner merged over its columns.
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  docx <- withr::local_tempfile(fileext = ".docx")
+  table_continuous_lm(
+    d,
+    select = c(y, z),
+    by = g,
+    output = "word",
+    word_path = docx
+  )
+  cells <- officer::docx_summary(officer::read_docx(docx))
+  cells <- cells[cells$content_type %in% "table cell", ]
+  expect_identical(
+    cells$text[cells$row_id == 1L],
+    c("Variable", "M", "\u0394", "95% CI", "p", "R\u00b2", "n")
+  )
+  # The blank cells of p, R2 and n merge, as the row of the interval
+  # alone merged them.
+  expect_identical(
+    cells$text[cells$row_id == 2L],
+    c("", "Never smoker", "Current smoker", "", "LL", "UL", "")
+  )
+
+  # The typed view: each mean headed by its group (its `level` too), the
+  # contrast by its glyph, the pair of the interval intact. `spanners`
+  # stays empty: the mean's spanner groups no level of `by`.
+  s <- as_structured(tbl)
+  expect_identical(
+    s$col_meta[["M (Never smoker)"]]$display_label,
+    "Never smoker"
+  )
+  expect_identical(s$col_meta[["M (Current smoker)"]]$level, "Current smoker")
+  expect_identical(s$col_meta[["\u0394"]]$display_label, "\u0394")
+  expect_identical(s$ci_pairs[[1L]]$label, "95% CI")
+  expect_null(s$spanners)
+})
+
+test_that("the note gives the order of the difference after the test, in English and French", {
+  d <- .lm_decked_data()
+  delta <- "\u0394 = Current smoker \u2212 Never smoker."
+  for (lang in c("en", "fr")) {
+    withr::with_options(list(spicy.language = lang), {
+      note <- attr(table_continuous_lm(d, select = y, by = g), "note")
+      expect_match(
+        note,
+        paste0(spicy_str("test_lm_t"), ". ", delta),
+        fixed = TRUE,
+        info = lang
+      )
+    })
+  }
+  # The definitions follow the whole inference, the standard errors of a
+  # `vcov` included, and stay without a p-value to name a test for.
+  hc3 <- attr(table_continuous_lm(d, select = y, by = g, vcov = "HC3"), "note")
+  expect_match(hc3, paste0("(HC3). ", delta), fixed = TRUE)
+  no_p <- table_continuous_lm(d, select = y, by = g, p_value = FALSE)
+  expect_match(attr(no_p, "note"), paste0("Note. ", delta), fixed = TRUE)
+  # The sentence defines the glyph under every rule, so no list defines it
+  # again: neither "all", which defines every other header (M still reads
+  # as the mean), nor the Lancet's, which exempts no glyph.
+  n_delta <- function(x) sum(gregexpr("\u0394", x, fixed = TRUE)[[1L]] > 0L)
+  note_in <- function(style) {
+    attr(table_continuous_lm(d, select = y, by = g, style = style), "note")
+  }
+  all_abbr <- note_in(spicy_style(abbreviations = "all"))
+  expect_match(
+    all_abbr,
+    paste0(delta, " M = mean; CI = confidence interval"),
+    fixed = TRUE
+  )
+  expect_no_match(all_abbr, "\u0394 = difference", fixed = TRUE)
+  lancet <- note_in("lancet")
+  expect_match(lancet, paste0(delta, " LL=lower limit."), fixed = TRUE)
+  expect_no_match(lancet, "\u0394=difference.", fixed = TRUE)
+  # One glyph in the note of every theme: the sentence's.
+  themes <- list(
+    NULL,
+    "apa",
+    "jama",
+    "lancet",
+    spicy_style(abbreviations = "none")
+  )
+  for (style in themes) {
+    expect_identical(n_delta(note_in(style)), 1L)
+  }
+  expect_identical(n_delta(all_abbr), 1L)
+  # No contrast shown, no order to give, and the definitions as they were.
+  none <- table_continuous_lm(d, select = y, by = g, contrast = "none")
+  expect_no_match(attr(none, "note"), "\u0394", fixed = TRUE)
+  none_all <- table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    contrast = "none",
+    style = spicy_style(abbreviations = "all")
+  )
+  expect_true(endsWith(
+    attr(none_all, "note"),
+    " M = mean; R\u00b2 = coefficient of determination."
+  ))
+})
+
+test_that("a numeric by keeps one header row and states no subtraction", {
+  set.seed(3)
+  d <- data.frame(x = stats::rnorm(30L), y = stats::rnorm(30L))
+  tbl <- table_continuous_lm(d, select = y, by = x)
+  txt <- capture.output(print(tbl))
+  at <- grep("Variable", txt, fixed = TRUE)
+  # The title, a blank line, the header: no spanner row above it.
+  expect_identical(at, 3L)
+  expect_identical(
+    .lm_console_heads(txt[[at]]),
+    c("B", "95% CI LL", "95% CI UL", "p", "R\u00b2", "n")
+  )
+  expect_no_match(attr(tbl, "note"), "\u0394", fixed = TRUE)
+  # No glyph to leave out of the definitions: a slope keeps them all, the
+  # coefficient's and the interval's, under "all" and the Lancet's list.
+  note_in <- function(style) {
+    attr(table_continuous_lm(d, select = y, by = x, style = style), "note")
+  }
+  all_abbr <- note_in(spicy_style(abbreviations = "all"))
+  expect_true(endsWith(
+    all_abbr,
+    paste(
+      " B = unstandardized regression coefficient; CI = confidence interval;",
+      "LL = lower limit; UL = upper limit; R\u00b2 = coefficient of determination."
+    )
+  ))
+  lancet <- note_in("lancet")
+  expect_true(endsWith(
+    lancet,
+    paste(
+      " B=unstandardized regression coefficient. LL=lower limit.",
+      "R\u00b2=coefficient of determination. UL=upper limit."
+    )
+  ))
+  expect_no_match(paste(all_abbr, lancet), "\u0394", fixed = TRUE)
+  expect_identical(
+    names(as.data.frame(tbl)),
+    c("variable", "label", "B", "95% CI LL", "95% CI UL", "p", "R\u00b2", "n")
+  )
+  skip_if_not_installed("tinytable")
+  typ <- tinytable::save_tt(
+    table_continuous_lm(d, select = y, by = x, output = "tinytable"),
+    output = "typst"
+  )
+  expect_match(
+    typ,
+    paste0(
+      "\n[Variable], [B], table.cell(colspan: 2, align: center)[95% CI], ",
+      "[p], [R\u00b2], [n],\n[], [], [LL], [UL], [], [], [],\n"
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("labels = TRUE with long group labels: each heads its own mean", {
+  set.seed(5)
+  a <- "Assigned female at birth (self-report)"
+  b <- "Assigned male at birth (self-report)"
+  d <- data.frame(
+    g = factor(rep(c(a, b), each = 15L), levels = c(a, b)),
+    y = round(stats::rnorm(30L, 50, 10), 1)
+  )
+  attr(d$y, "label") <- "Well-being score (WHO-5 index)"
+  attr(d$g, "label") <- "Sex assigned at birth"
+  tbl <- table_continuous_lm(d, select = y, by = g, labels = TRUE)
+  txt <- withr::with_options(list(width = 250L), capture.output(print(tbl)))
+  expect_identical(txt[[1L]], "Continuous outcomes by Sex assigned at birth")
+  at <- grep("Variable", txt, fixed = TRUE)
+  expect_identical(.lm_console_heads(txt[[at]])[1:3], c(a, b, "\u0394"))
+  expect_true(any(grepl("Well-being score (WHO-5 index)", txt, fixed = TRUE)))
+  expect_match(
+    attr(tbl, "note"),
+    paste0("\u0394 = ", b, " \u2212 ", a, "."),
+    fixed = TRUE
+  )
+  # The data frame keeps both levels of the header in each name.
+  expect_true(all(paste0("M (", c(a, b), ")") %in% names(as.data.frame(tbl))))
+  skip_if_not_installed("flextable")
+  ft <- table_continuous_lm(
+    d,
+    select = y,
+    by = g,
+    labels = TRUE,
+    output = "flextable"
+  )
+  expect_identical(unname(unlist(ft$header$dataset[1L, 2:3])), c("M", "M"))
+  expect_identical(unname(unlist(ft$header$dataset[2L, 2:3])), c(a, b))
+})
+
+test_that("a mean glyph emptied through spicy.labels sets no spanner", {
+  withr::local_options(spicy.labels = list(header_mean = ""), width = 200L)
+  d <- .lm_decked_data()
+  txt <- capture.output(print(table_continuous_lm(d, select = y, by = g)))
+  # The title, a blank line, the header: the groups head their means.
+  at <- grep("Variable", txt, fixed = TRUE)
+  expect_identical(at, 3L)
+  expect_identical(
+    .lm_console_heads(txt[[at]])[1:3],
+    c("Never smoker", "Current smoker", "\u0394")
+  )
+  skip_if_not_installed("tinytable")
+  typ <- tinytable::save_tt(
+    table_continuous_lm(d, select = y, by = g, output = "tinytable"),
+    output = "typst"
+  )
+  expect_match(
+    typ,
+    "\n[Variable], [Never smoker], [Current smoker], ",
+    fixed = TRUE
+  )
 })
 
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
@@ -1839,7 +2153,7 @@ test_that("as.data.frame.spicy_continuous_lm_table returns the displayed table",
       "label",
       "M (Female)",
       "M (Male)",
-      "Δ (Male \u2212 Female)",
+      "\u0394",
       "95% CI LL",
       "95% CI UL",
       "p",
@@ -3774,7 +4088,13 @@ test_that("table_continuous_lm clipboard output can be exercised with a mocked w
   expect_true(is.character(captured))
   expect_match(
     captured,
-    "Variable;M \\(Female\\);M \\(Male\\);Δ \\(Male \u2212 Female\\)"
+    "Variable;M;M;\u0394;95% CI;95% CI;t;p;R²;n"
+  )
+  expect_match(captured, ";Female;Male;;LL;UL;;;;", fixed = TRUE)
+  expect_match(
+    captured,
+    "\u0394 = Male \u2212 Female.",
+    fixed = TRUE
   )
   expect_match(captured, "95% CI;95% CI")
   expect_match(captured, "LL;UL")
@@ -4823,13 +5143,15 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
   )
   out <- table_continuous_lm(d, select = y, by = grp, weights = w)
   # The weights first, then the rows removed, then the test, then the
-  # abbreviations of the headers: one paragraph.
+  # order of the difference and the abbreviations of the headers: one
+  # paragraph.
   expect_equal(
     attr(out, "note"),
     paste(
       "Note. Statistics weighted by w.",
       "Missing values removed: grp (1). Rows with missing w removed: 1.",
       "Group comparison: t-test from the linear model.",
+      "\u0394 = b \u2212 a.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -4847,6 +5169,7 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     attr(clean, "note"),
     paste(
       "Note. Group comparison: t-test from the linear model.",
+      "\u0394 = b \u2212 a.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -5857,12 +6180,13 @@ test_that("declared missing values are disclosed separately (decision 14)", {
 })
 
 
-test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
+test_that("a table with no spanner renders one header row in tinytable / gt / flextable", {
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
+  # A numeric `by` without its interval: no spanner over any column.
   render <- function(output, ci = FALSE) {
-    table_continuous_lm(sochealth, bmi, by = sex, ci = ci, output = output)
+    table_continuous_lm(sochealth, bmi, by = age, ci = ci, output = output)
   }
   tt <- render("tinytable")
   expect_equal(tt@nhead, 1)
@@ -5874,6 +6198,12 @@ test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
   # The CI spanner still takes the second row.
   expect_equal(render("tinytable", ci = TRUE)@nhead, 2)
   expect_equal(flextable::nrow_part(render("flextable", TRUE), "header"), 2)
+  # So does the mean's spanner of a categorical `by`, interval or not.
+  by_sex <- function(output) {
+    table_continuous_lm(sochealth, bmi, by = sex, ci = FALSE, output = output)
+  }
+  expect_equal(by_sex("tinytable")@nhead, 2)
+  expect_equal(flextable::nrow_part(by_sex("flextable"), "header"), 2)
 })
 
 # ---- gt spanner ids survive a make.names() collision ----------------------
@@ -5888,7 +6218,9 @@ test_that("two `by` levels that differ only in punctuation still render", {
   )
   # The marginal-mean columns are keyed "M (a b)" / "M (a.b)", and
   # make.names() maps BOTH to "M..a.b.". gt aborts on a duplicate
-  # spanner id, so the whole table used to be unrenderable.
+  # spanner id, so the whole table used to be unrenderable while each
+  # mean was a spanner of its own; under the decked heads they share the
+  # mean's spanner, and the two column ids must still part.
   g1 <- suppressWarnings(table_continuous_lm(
     d,
     select = y,
@@ -5896,9 +6228,9 @@ test_that("two `by` levels that differ only in punctuation still render", {
     output = "gt"
   ))
   html <- expect_no_error(as.character(gt::as_raw_html(g1)))
-  # Both group spanners are present, each with its own label.
-  expect_true(grepl("M (a b)", html, fixed = TRUE))
-  expect_true(grepl("M (a.b)", html, fixed = TRUE))
+  # Both groups head their mean, each with its own label, under M.
+  expect_true(grepl(">a b</th>", html, fixed = TRUE))
+  expect_true(grepl(">a.b</th>", html, fixed = TRUE))
 
   # Same collision through a non-ASCII level.
   d2 <- d
@@ -6207,6 +6539,7 @@ test_that("an outcome with data in one level only keeps the mean of that level",
       "Note. Missing values removed: bmi (12).",
       "No data for wellbeing_score in Male.",
       "Group comparison: t-test from the linear model.",
+      "\u0394 = Male \u2212 Female.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
@@ -6328,12 +6661,16 @@ test_that("the note names the test behind the p-values", {
     attr(table_continuous_lm(d, select = c(bmi, wellbeing_score), ...), "note")
   }
   # A contrast or a slope shows its interval, which the note defines last.
+  # A contrast is headed by its glyph alone: the order of its subtraction
+  # follows the test.
   ci_defs <- "CI = confidence interval; LL = lower limit; UL = upper limit."
+  delta <- "\u0394 = Male \u2212 Female."
   expect_identical(
     note_of(by = sex),
     paste(
       "Note. Missing values removed: bmi (12).",
       "Group comparison: t-test from the linear model.",
+      delta,
       ci_defs
     )
   )
@@ -6370,10 +6707,10 @@ test_that("the note names the test behind the p-values", {
     ),
     fixed = TRUE
   )
-  # No p-value, no test named.
+  # No p-value, no test named; the order of the difference stays.
   expect_identical(
     note_of(by = sex, p_value = FALSE),
-    paste("Note. Missing values removed: bmi (12).", ci_defs)
+    paste("Note. Missing values removed: bmi (12).", delta, ci_defs)
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
@@ -6423,6 +6760,7 @@ test_that("the weights are named, and the note is one paragraph", {
       "Missing values removed: bmi (12).",
       "Group comparison: t-test from the linear model.",
       "Std. errors: heteroskedasticity-robust (HC3).",
+      "\u0394 = Male \u2212 Female.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )

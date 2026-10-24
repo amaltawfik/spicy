@@ -294,11 +294,14 @@ test_that("every frozen linear-model key equals its English display label", {
     expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
   }
 
-  # The four composition rules: `paste0()` on the key side, a registry
-  # template on the label side.
-  expect_identical(.lm_key_emmean("Female"), .lm_label_emmean("Female"))
-  blk <- data.frame(level = c("Female", "Male"), stringsAsFactors = FALSE)
-  expect_identical(get_delta_label_lm(blk), .lm_label_delta(blk))
+  # The composition rules, `paste0()` on the key side. A mean's key spells
+  # the two levels of its decked header, the spanner then the head, as a
+  # bound's key spells its interval then the bound; the contrast's key is
+  # its header, the increment glyph alone (`couples` above).
+  expect_identical(
+    .lm_key_emmean("Female"),
+    paste0(spicy_str("header_mean"), " (Female)")
+  )
   expect_identical(.lm_key_ci_ll("95%"), "95% CI LL")
   expect_identical(.lm_key_ci_ul("95%"), "95% CI UL")
   expect_identical(.lm_ci_label(0.95), "95% CI")
@@ -407,7 +410,7 @@ test_that("every frozen linear-model key equals its English display label", {
       "Variable",
       "M (x)",
       "M (y)",
-      "Δ (y \u2212 x)",
+      "\u0394",
       "95% CI LL",
       "95% CI UL",
       "t(4)",
@@ -426,15 +429,25 @@ test_that("every frozen linear-model key equals its English display label", {
     names(wide)
   )
   # Every displayed column carries a header equal to its key in English,
-  # but the effect size printed with its interval: its header states the
-  # level ("f2 [95% CI]") while its key, the data frame's name, stays the
-  # measure's.
+  # but two kinds. A mean is headed by its level under the mean's spanner,
+  # and its key spells both. The effect size printed with its interval is
+  # headed with the level ("f2 [95% CI]") while its key, the data frame's
+  # name, stays the measure's.
   shown <- Filter(function(e) !isTRUE(e$raw_only), spec)
   shown_keys <- vapply(shown, function(e) e$key, character(1))
   shown_labels <- vapply(shown, function(e) e$label, character(1))
   is_es <- vapply(shown, function(e) identical(e$token, "es"), logical(1))
-  expect_identical(shown_labels[!is_es], shown_keys[!is_es])
+  is_mean <- vapply(shown, function(e) identical(e$token, "emmean"), logical(1))
+  plain <- !is_es & !is_mean
+  expect_identical(shown_labels[plain], shown_keys[plain])
   expect_identical(shown_labels[is_es], paste0(shown_keys[is_es], " [95% CI]"))
+  expect_identical(shown_labels[is_mean], c("x", "y"))
+  expect_identical(
+    shown_keys[is_mean],
+    paste0(.LM_KEY_MEAN, " (", shown_labels[is_mean], ")")
+  )
+  expect_identical(.lm_spec_labels(spec)[[.LM_KEY_MEAN]], "M")
+  expect_identical(.lm_spec_mean_keys(spec), c("M (x)", "M (y)"))
   # `.lm_labels()` is a total function of its input: an unknown key and
   # a NULL label map both come back unchanged, so a hand-built frame
   # still exports.
@@ -445,8 +458,8 @@ test_that("every frozen linear-model key equals its English display label", {
 
 test_that("a label that states a subtraction writes the minus sign", {
   # Chicago and APA set a subtraction with the minus sign, U+2212, not a
-  # hyphen: the header of the difference column and the width of the
-  # IQR, in every language.
+  # hyphen: the order of the difference column, which the note states,
+  # and the width of the IQR, in every language.
   set.seed(42)
   d <- data.frame(
     g = factor(rep(c("A", "B"), each = 10)),
@@ -454,11 +467,9 @@ test_that("a label that states a subtraction writes the minus sign", {
   )
   for (lang in c("en", "fr")) {
     withr::local_options(spicy.language = lang)
-    out <- utils::capture.output(print(table_continuous_lm(d, y, by = g)))
-    header <- out[grepl("\u0394", out, fixed = TRUE)]
-    expect_length(header, 1L)
-    expect_match(header, "\u0394 (B \u2212 A)", fixed = TRUE, info = lang)
-    expect_no_match(header, "B - A", fixed = TRUE, info = lang)
+    note <- attr(table_continuous_lm(d, y, by = g), "note")
+    expect_match(note, "\u0394 = B \u2212 A.", fixed = TRUE, info = lang)
+    expect_no_match(note, "B - A", fixed = TRUE, info = lang)
     note <- attr(table_continuous(d, y, show_columns = c("med", "iqr")), "note")
     expect_match(note, "(Q3 \u2212 Q1)", fixed = TRUE, info = lang)
     expect_no_match(note, "Q3 - Q1", fixed = TRUE, info = lang)

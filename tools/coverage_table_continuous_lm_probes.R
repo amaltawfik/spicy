@@ -200,11 +200,6 @@ rename_ci_cols_lm(
   "95% CI UL"
 )
 build_header_rows_lm(c("Variable", "LL", "UL"), "95%")
-get_delta_label_lm(long_cat[
-  long_cat$variable == "wellbeing_score",
-  ,
-  drop = FALSE
-])
 get_test_row_index_lm(long_cat[
   long_cat$variable == "wellbeing_score",
   ,

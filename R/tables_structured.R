@@ -894,9 +894,12 @@
 # Structured view of a bivariate linear-model table.
 #
 # One `summary` row per outcome: the console lays this family out one
-# row per variable, with the `by` levels as COLUMNS (`M (<level>)`),
-# so the level of a marginal-mean column travels in that column's
-# `col_meta$level` and the groups span nothing.
+# row per variable, with the `by` levels as COLUMNS (keyed `M (<level>)`,
+# headed by the level under the mean's spanner), so the level of a
+# marginal-mean column travels in that column's `col_meta$level`, its
+# `display_label`, and the groups span nothing: `spanners` stays empty,
+# the mean's spanner being a statistic's, not a group's, and `inline()`
+# reads `spanners` as the groups `model` selects.
 #
 # `wide_raw` and `wide_display` are the two frames the function has
 # already built for the raw and the console outputs, so the typed

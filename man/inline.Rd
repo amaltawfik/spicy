@@ -90,8 +90,9 @@ position, wherever the table sets the groups out: the column
 spanners of \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
 \code{\link[=table_multiresponse]{table_multiresponse()}}, the margin included
 (\code{inline(tbl, smoking, "Yes", "pct", model = "Female")}), the
-per-group columns of \code{\link[=table_continuous_lm]{table_continuous_lm()}}, headed \code{M (Female)},
-\code{M (Male)} (\code{inline(tbl, bmi, column = "emmean", model = "Female")}),
+per-group columns of \code{\link[=table_continuous_lm]{table_continuous_lm()}}, headed \code{Female} and
+\code{Male} under the mean symbol \code{M}
+(\code{inline(tbl, bmi, column = "emmean", model = "Female")}),
 and the rows of \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_svy]{table_continuous_svy()}},
 one per group (\code{inline(tbl, bmi, model = "Female")}). The group of
 missing \code{by} values is \code{model = "(Missing)"}. In a multi-model table,

@@ -4195,7 +4195,9 @@ test_that("every table function refuses data with no rows, first", {
         r2 = "adj_r2"
       )),
       # The t of the statistic column is a test statistic: never defined.
-      list("mean", "delta", "ci", "ll", "ul", "adj_r2", "d")
+      # Nor is the difference in this list: the sentence of the note that
+      # gives its order defines it, under every rule.
+      list("mean", "ci", "ll", "ul", "adj_r2", "d")
     ),
     table_outcome = list(
       q(table_outcome(
@@ -4632,10 +4634,12 @@ test_that("a labelled grouping names its groups by their value labels, in every 
       info = lab
     )
   }
-  # The first group is the reference of the model.
-  expect_true(
-    "\u0394 ([1] Women \u2212 [2] Men)" %in%
-      names(table_continuous_lm(d, select = y, by = g, output = "data.frame"))
+  # The first group is the reference of the model, which the note
+  # subtracts from the other.
+  expect_match(
+    attr(table_continuous_lm(d, select = y, by = g), "note"),
+    "\u0394 = [1] Women \u2212 [2] Men.",
+    fixed = TRUE
   )
   # The rows of the same column, as a variable, read the same, in the
   # same order.
