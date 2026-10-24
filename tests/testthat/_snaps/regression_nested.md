@@ -55,7 +55,7 @@
     Output
       Régression linéaire — modèles emboîtés : y
       
-                                     Model 1                Model 2
+                                     Modèle 1              Modèle 2
                                ────────────────────  ─────────────────────
        Variable              │   B      ES     p        B      ES     p
       ───────────────────────┼─────────────────────────────────────────────
@@ -80,7 +80,7 @@
     Output
       Régression logistique — modèles emboîtés : yb
       
-                                      Model 1              Model 2
+                                     Modèle 1              Modèle 2
                                 ───────────────────  ────────────────────
        Variable               │   B      ES     p       B      ES     p
       ────────────────────────┼───────────────────────────────────────────

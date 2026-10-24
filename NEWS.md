@@ -250,6 +250,10 @@ p-values, and notes.
   refused the table's own *p*; without a level, the continuous tables
   asked for one, though the first group's row alone carries the value.
 
+* In French, `inline()` selects an unnamed model of `table_regression()`
+  by the name its columns show, `"Modèle 1"`, or by its position, where
+  it took `"Model 1"`.
+
 * Every table note is one paragraph: what the numbers are (weights,
   design, model), the missing data, the tests and inference, the
   definitions, in that order. The stars legend follows on its own line.
@@ -323,6 +327,10 @@ p-values, and notes.
 * The notes list the missing values of `by`, and of the groupings of
   `table_outcome()`, after the others ("Missing values removed: score
   (3), sex (2)."), where each had a sentence ("Rows with missing ...").
+
+* The `note_ci_posterior_mixed` label of `options(spicy.labels)` takes
+  one hole, the coverage: the model's label now opens the sentence, as
+  in the other per-model notes.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins show column names by default:
@@ -713,6 +721,10 @@ p-values, and notes.
   hyphen: the difference of `table_continuous_lm()` (Δ = B − A), the IQR
   (Q3 − Q1), the SMD direction, and the t(G−1) of `vcov = "CR1S"`.
 
+* A range in a note takes an en dash, "N varies by predictor (12–30)"
+  or "(487–500 replicates)", and the singular-fit note writes ±1, where
+  they wrote 12-30 and +/-1.
+
 * The table functions warn (class `spicy_ignored_arg`) when an argument
   typed in the call has no effect, and name only the arguments typed.
 
@@ -985,6 +997,10 @@ p-values, and notes.
   render one header row in `tinytable`, `gt`, `flextable`, Word, and
   Excel output, as documented, where an empty row sat under the labels.
 
+* `table_continuous()` names the test whose statistic it shows without
+  its p-value ("Group comparison: Welch t-test."), as its survey twin
+  and `table_outcome()` do.
+
 * `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, and
   the survey twins write the French headers of `table_regression()`,
   such as `IC à 95 %` over `LI` and `LS`.
@@ -1076,10 +1092,10 @@ p-values, and notes.
 
 * `table_regression()` and `table_regression_uv()` write their headers
   in French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %`
-  over `LI` and `LS`, and `R² ajusté`.
+  over `LI` and `LS`, `R² ajusté`, and `Modèle 1`, which the notes cite.
 
-* The column names of `table_regression()` stay `SE`, `95% CI`, and
-  `Adj. R²` in every language.
+* The column names of `table_regression()` stay `SE`, `95% CI`,
+  `Adj. R²`, and `Model 1: B` in every language.
 
 * In French, `table_regression()` writes the robust standard-error line
   of every model class, not only `lm` and `glm`, and the model-based one
@@ -1104,6 +1120,14 @@ p-values, and notes.
 * `table_regression()` speaks of the confidence interval in its
   exponentiation note only when the table shows one. The compact layout
   of several models (B, SE, p) said "CI bounds exponentiated".
+
+* `table_regression()` sets the formula of the note on a cumulative
+  cloglog hazard ratio in math signs, `P(Y ≤ j) = ζ_j − xβ` and
+  `exp(−B)`, where it wrote `P(Y <= j) = zeta_j - xB` and `exp(-B)`.
+
+* `table_regression()` opens the note on the credible interval of a
+  Bayesian model beside frequentist ones with the model's column label,
+  where it wrote "Model 2" whatever `model_labels` said.
 
 * `table_regression()` now handles `glmer()` fits with a Gamma,
   inverse-Gaussian, or non-identity gaussian family, testing their

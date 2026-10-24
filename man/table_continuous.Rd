@@ -661,7 +661,9 @@ driven by \code{test} (see the \verb{@param} entry for the full dispatch
 and the underlying \verb{stats::} functions called). Whenever the table
 shows \emph{p}-values, its note names the test behind them ("P-values:
 Welch t-test.", "P-value:" when the table shows one), each variable
-beside its own test when they differ.
+beside its own test when they differ. A test shown by its statistic
+alone (\verb{p_value = FALSE, statistic = TRUE}) is named as the group
+comparison ("Group comparison: Welch t-test.").
 }
 
 \section{No data in a group}{
@@ -697,7 +699,7 @@ number generator state: call \code{set.seed()} before the table for
 reproducible \eqn{\varepsilon^2} intervals (the other three CIs
 are closed-form and deterministic).
 
-For Cohen's \emph{d}, Hays' \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}
+For Cohen's \emph{d}, Hays's \eqn{\omega^2}, and Cohen's \emph{f}\eqn{^2}
 (derived from a fitted, possibly weighted \code{lm()}), use the
 model-based companion \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 }

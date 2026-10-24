@@ -320,9 +320,11 @@ capitalize_first <- function(s) {
 
 # The reference a footer prints for model `idx`: the spanner label when
 # the dispatcher stamped one (user-supplied `model_labels` / list
-# names), the historical "Model <idx>" otherwise.
-.model_ref <- function(frames, idx) {
-  frames[[idx]]$info$model_label %||% spicy_fmt("label_model_name", idx)
+# names), the default name of the language otherwise ("Model <idx>",
+# "Modele <idx>"), which the spanner shows too. `fmt` resolves that
+# default: `.spicy_fmt_en()` for a sentence that stays English.
+.model_ref <- function(frames, idx, fmt = spicy_fmt) {
+  frames[[idx]]$info$model_label %||% fmt("label_model_name", idx)
 }
 
 # One per-model footer sentence: "<label>: <text>". The default label IS
@@ -360,11 +362,11 @@ build_regression_type_footer_block_from_frames <- function(frames) {
   )
   # Decision 42: the single-model and same-family arms translate (the
   # prefix through the bridge, the plural through its whole-sentence
-  # key). The mixed-family arm below embeds the frozen "Model %d:"
-  # labels and stays English wholesale -- coherent or nothing --
-  # including its line TEMPLATE and its separator: `.spicy_fmt_en()`
-  # and `.spicy_str_en()` bypass the language so a French NBSP colon or
-  # semicolon never lands inside the English fallback sentence. The
+  # key). The mixed-family arm below stays English wholesale --
+  # coherent or nothing -- including its default model names, its line
+  # TEMPLATE and its separator: `.spicy_fmt_en()` and `.spicy_str_en()`
+  # bypass the language so a French name, NBSP colon or semicolon never
+  # lands inside the English fallback sentence. The
   # plural English arm routes through the registry too, so a
   # `spicy.labels` override of `note_type_models` works in English, as
   # `spicy_labels()` advertises.
@@ -386,7 +388,7 @@ build_regression_type_footer_block_from_frames <- function(frames) {
     function(i) {
       .spicy_fmt_en(
         "note_model_line",
-        .model_ref(frames, i),
+        .model_ref(frames, i, .spicy_fmt_en),
         lowercase_first(types[i])
       )
     },
@@ -695,7 +697,7 @@ build_ci_method_footer_block_from_frames <- function(
       vapply(
         which(is_post),
         function(k) {
-          spicy_fmt("note_ci_posterior_mixed", k, .pct(k))
+          .model_line(frames, k, spicy_fmt("note_ci_posterior_mixed", .pct(k)))
         },
         character(1)
       )

@@ -439,6 +439,53 @@ test_that("a regression table translates its headers, not its column names", {
   )
 })
 
+test_that("the default model names follow the language, the column names do not", {
+  set.seed(42)
+  d <- data.frame(x = stats::rnorm(40), z = stats::rnorm(40))
+  d$y <- 1 + 0.5 * d$x + stats::rnorm(40)
+  m1 <- stats::lm(y ~ x, data = d)
+  m2 <- stats::lm(y ~ x + z, data = d)
+  build <- function(models = list(m1, m2)) {
+    table_regression(models, vcov = list("classical", "HC3"))
+  }
+  en <- build()
+  expect_named(attr(en, "spanners"), c("Model 1", "Model 2"))
+  expect_match(
+    attr(en, "note"),
+    "Std. errors: Model 1: classical (OLS), Model 2: heteroskedasticity",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  fr <- build()
+  # The spanners, and the notes that cite them.
+  expect_named(attr(fr, "spanners"), c("Mod\u00E8le 1", "Mod\u00E8le 2"))
+  expect_named(as_structured(fr)$spanners, c("Mod\u00E8le 1", "Mod\u00E8le 2"))
+  expect_match(
+    attr(fr, "note"),
+    paste0(
+      "Erreurs standards\u00A0: Mod\u00E8le 1\u00A0: classiques (MCO), ",
+      "Mod\u00E8le 2\u00A0: robustes"
+    ),
+    fixed = TRUE
+  )
+  # The column names stay those of the English table.
+  expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
+  expect_identical(names(as_structured(fr)$body), names(as_structured(en)$body))
+  expect_true("Model 2: B" %in% names(as.data.frame(fr)))
+  # An unnamed model beside a named one: the name of the language over its
+  # columns, the English one in its column names.
+  part <- build(list("Step 1" = m1, m2))
+  expect_named(attr(part, "spanners"), c("Step 1", "Mod\u00E8le 2"))
+  expect_true(all(c("Step 1: B", "Model 2: B") %in% names(as.data.frame(part))))
+  # A slot named "Model 2" collides with those column names in French too.
+  expect_error(build(list("Model 2" = m1, m2)), class = "spicy_invalid_input")
+  # `inline()` reaches a model by the label it shows, or by its position.
+  expect_identical(
+    inline(fr, "x", column = "b", model = "Mod\u00E8le 2"),
+    inline(fr, "x", column = "b", model = 2)
+  )
+})
+
 test_that("the credible interval header follows the language, its name does not", {
   spec <- function(key) {
     spicy:::build_column_spec(
@@ -592,7 +639,6 @@ test_that("the frozen tokens and glyphs do not translate", {
     header_exp_hr = "HR",
     label_total = "Total",
     header_margin_total = "Total",
-    label_model_name = "Model %d",
     note_prefix = "Note. ",
     note_prefix_emphasis = "Note."
   )
@@ -603,15 +649,21 @@ test_that("the frozen tokens and glyphs do not translate", {
 
 test_that("a cross-reference matches the thing it points at", {
   withr::local_options(spicy.language = "fr")
-  # The spanner over a model's columns is `label_model_name`, frozen
-  # English because it becomes a column name. A footnote that cites a
-  # model by index has to spell it the way the spanner does, or the
-  # reader is sent to a "Modele 1" no column carries.
-  expect_identical(spicy_fmt("label_model_name", 1L), "Model 1")
-  expect_true(startsWith(
-    spicy_fmt("note_ci_posterior_mixed", 1L, "95"),
-    "Model 1"
-  ))
+  # The spanner over a model's columns is `label_model_name`, and a note
+  # that cites a model is led by the same name (`.model_line()`), so the
+  # reader is never sent to a "Model 1" no column carries.
+  expect_identical(spicy_fmt("label_model_name", 1L), "Mod\u00E8le 1")
+  frames <- list(
+    list(info = list(ci_method = "wald", ci_level = 0.95)),
+    list(info = list(ci_method = "posterior_quantile", ci_level = 0.95))
+  )
+  expect_identical(
+    build_ci_method_footer_block_from_frames(frames, "ci"),
+    paste0(
+      "Mod\u00E8le 2\u00A0: L'IC \u00E0 95\u00A0% est un intervalle de ",
+      "cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales."
+    )
+  )
 })
 
 test_that("a condition message is English whatever the language", {
@@ -1523,16 +1575,17 @@ test_that("the exponentiation note follows the language", {
       "de l'IC exponenti\u00E9es."
     )
   )
-  # A table mixing an identity-link model names the exponentiated one.
+  # A table mixing an identity-link model names the exponentiated one,
+  # as its spanner does.
   mixed <- table_regression(
     list(stats::lm(mpg ~ wt, data = mtcars), fit),
     exponentiate = TRUE,
     show_columns = c("b", "ci", "p")
   )
   expect_identical(
-    .note_line(mixed, "Model 2"),
+    .note_line(mixed, "Mod\u00E8le 2"),
     paste0(
-      "Model 2\u00A0: coefficients exponenti\u00E9s et affich\u00E9s en ",
+      "Mod\u00E8le 2\u00A0: coefficients exponenti\u00E9s et affich\u00E9s en ",
       "OR\u00A0; bornes de l'IC exponenti\u00E9es."
     )
   )
@@ -1654,7 +1707,8 @@ test_that("the threshold and scale-effect notes follow the language", {
     note(cloglog),
     paste0(
       " HR est le rapport de risques proportionnels en temps group\u00E9 ",
-      "exp(-B)\u00A0: la param\u00E9trisation cumulative cloglog"
+      "exp(\u2212B)\u00A0: la param\u00E9trisation cumulative cloglog ",
+      "P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 place le risque sur \u2212B"
     ),
     fixed = TRUE
   )
@@ -1775,7 +1829,7 @@ test_that("the random-effects notes follow the language", {
     paste0(
       "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires ",
       "est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s ",
-      "de celle-ci (une variance de 0 ou une corr\u00E9lation de +/-1)\u00A0; ",
+      "de celle-ci (une variance de 0 ou une corr\u00E9lation de \u00B11)\u00A0; ",
       "l'erreur standard de Wald et l'IC des composantes de la variance ",
       "sont omis."
     )
@@ -2011,7 +2065,7 @@ test_that("the univariable table title and sample note follow the language", {
     attr(own, "note"),
     paste0(
       "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas ",
-      "complets. N varie selon le pr\u00E9dicteur \\([0-9]+-[0-9]+\\)[.]"
+      "complets. N varie selon le pr\u00E9dicteur \\([0-9]+\u2013[0-9]+\\)[.]"
     )
   )
   screen <- table_regression_uv(

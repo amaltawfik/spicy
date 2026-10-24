@@ -51,8 +51,16 @@ test_that("CI-method footer discloses posterior CIs per model in a mixed table",
   expect_identical(
     out,
     paste(
-      spicy_fmt("note_ci_posterior_mixed", 2L, "95"),
-      spicy_fmt("note_ci_posterior_mixed", 3L, "95"),
+      spicy:::.model_line(
+        frames,
+        2L,
+        spicy_fmt("note_ci_posterior_mixed", "95")
+      ),
+      spicy:::.model_line(
+        frames,
+        3L,
+        spicy_fmt("note_ci_posterior_mixed", "95")
+      ),
       sep = "\n"
     )
   )
@@ -85,6 +93,15 @@ test_that("posterior CI disclosure needs a displayed CI column and a mixed set",
   )
   expect_null(
     spicy:::build_ci_method_footer_block_from_frames(all_post, c("ci"))
+  )
+})
+
+test_that("the posterior CI line names a model by the label of its columns", {
+  frames <- list(.mk_ci_frame("wald"), .mk_ci_frame("posterior_quantile"))
+  frames[[2L]]$info$model_label <- "Bayes"
+  expect_identical(
+    spicy:::build_ci_method_footer_block_from_frames(frames, c("ci")),
+    "Bayes: 95% CI is an equal-tailed posterior credible interval."
   )
 })
 

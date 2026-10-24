@@ -1403,7 +1403,6 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     tr = e("header_exp_tr", "abbrev_tr"),
     exp_b = e("header_exp_generic", "abbrev_exp_b"),
     chi2 = e("symbol_chi_sq", NULL),
-    delta = e("symbol_delta", "abbrev_delta", c("apa", "jama")),
     change = e("symbol_delta", "abbrev_change", c("apa", "jama")),
     r2 = e("symbol_r2", "abbrev_r2", c("apa", "jama")),
     # Its symbol is the row label, the author's name included.
@@ -1479,17 +1478,16 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #          show, in the order a reader meets them, from the top left, left
 #          to right and top to bottom (APA Publication Manual 7, section
 #          7.15): ids of `.abbrev_registry()`, or `.abbr()` items. A
-#          concept met twice under one symbol is defined once.
-#   defined  the concepts a sentence of the note defines on its own, the
-#          order of the difference of `table_continuous_lm()` ("Delta = B
-#          - A.", `note_lm_delta`): that sentence identifies the quantity,
-#          so no rule defines it again, a disambiguation included.
+#          concept met twice under one symbol is defined once. The
+#          difference of `table_continuous_lm()` is not among them: the
+#          sentence that gives its order ("Delta = B - A.",
+#          `note_lm_delta`) identifies it under every rule.
 #
 # What is defined (decision 2): under the rule of the theme, every concept
 # it does not exempt and no abbreviated word; under "all", every concept;
-# under "none", none -- and under every rule the disambiguations, but for
-# the concepts in `defined`. A symbol written out in the language of the
-# table (the French "Taille d'effet") needs no definition and gets none.
+# under "none", none -- and under every rule the disambiguations. A
+# symbol written out in the language of the table (the French "Taille
+# d'effet") needs no definition and gets none.
 #
 # How (decision 2): APA in the order of appearance, "X = term" pairs
 # joined by `note_abbrev_sep` and closed by a period, at the end of the
@@ -1499,7 +1497,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # general note. Alphabetical is the order of the symbols in lower case,
 # compared byte by byte, so it is the same on every machine.
 # `.compose_note()` puts the block in its place.
-.note_abbreviations <- function(items, defined = character(0)) {
+.note_abbreviations <- function(items) {
   rule <- .abbrev_rule()
   lever <- .style_fmt()$abbreviations
   reg <- .abbrev_registry()
@@ -1514,9 +1512,6 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     entry <- reg[[it$id]]
     if (is.null(entry)) {
       stop("Unknown abbreviation concept: ", it$id, call. = FALSE) # nocov
-    }
-    if (it$id %in% defined) {
-      next
     }
     disambiguates <- !is.null(it$term) || isTRUE(entry$disambiguates)
     # A test statistic has no simple definition under any rule.

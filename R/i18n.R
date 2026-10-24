@@ -432,7 +432,7 @@
   # Their SE and CI skipped for size. One hole: the sample size.
   note_re_se_skipped = "Random-effect variance components: SE and CI not computed (n = %s exceeds the spicy.re_se_max_n cap).",
   # A mixed fit on the boundary of its parameter space.
-  note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.",
+  note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11); the Wald SE and CI of the variance components are omitted.",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
   # refits by ML before it compares, so the change rows and the per-model
   # criteria rows are two different criteria. No hole: the sentence names
@@ -527,7 +527,7 @@
   # The sample disclosure of that table: the common complete-case count,
   # or the range of the per-predictor N.
   note_uv_common_complete_cases = "All models fit on the %d common complete cases.",
-  note_uv_varying_n = "Each univariable model is fit on its own complete cases; N varies by predictor (%d-%d).",
+  note_uv_varying_n = "Each univariable model is fit on its own complete cases; N varies by predictor (%d\u2013%d).",
   # The type footer's same-family plural ("Linear regression models.").
   # French inverts the construction, so the whole sentence is the unit.
   note_type_models = "%s models.",
@@ -553,8 +553,10 @@
   note_estimand_method = "; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (%s replicates).",
   note_estimand_method_stratified = "; adjusted by g-computation from the fitted model (within-stratum baselines), SEs by nonparametric bootstrap (%s replicates).",
   # Two holes: the replicates that produced a usable estimate, and the
-  # replicates asked for. Written as a range only when they differ.
-  note_estimand_boot_range = "%d-%d",
+  # replicates asked for. Written as a range only when they differ, with
+  # the en dash Chicago sets in a range of numbers, closed up, as
+  # `note_vcov_bootstrap_reps_range` and `note_uv_varying_n` do.
+  note_estimand_boot_range = "%d\u2013%d",
   # One hole: the transformed term labels that got no estimand row.
   # Appended to the sentence above, hence the leading space.
   note_estimand_skipped_terms = " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
@@ -593,9 +595,10 @@
   abbrev_mr = "mean ratio",
   abbrev_tr = "time ratio",
   abbrev_exp_b = "exponentiated coefficient",
-  abbrev_delta = "difference",
-  # The Delta prefix of a nested-comparison row ("DeltaAIC"): a change,
-  # not the difference between two groups of `abbrev_delta`.
+  # The Delta prefix of a nested-comparison row ("DeltaAIC"): a change.
+  # The Delta over the difference of `table_continuous_lm()` has no
+  # entry: the sentence that gives the order of its subtraction defines
+  # it (`note_lm_delta`).
   abbrev_change = "change",
   abbrev_r2 = "coefficient of determination",
   # A pseudo-R2 (McFadden, Nagelkerke, Tjur, Bayes) is no coefficient of
@@ -709,7 +712,7 @@
   note_exp_ci_gloss_hdi_asym = "CI: highest-density interval of the exponentiated draws (asymmetric)",
   # Appended to the sentence for a cumulative-cloglog fit, hence the
   # leading space.
-  note_exp_hr_negated = " HR is the grouped-time proportional-hazards ratio exp(-B): the cumulative parametrization cloglog P(Y <= j) = zeta_j - xB places the hazard on -B (Prentice & Gloeckler 1978; McCullagh 1980).",
+  note_exp_hr_negated = " HR is the grouped-time proportional-hazards ratio exp(\u2212B): the cumulative parametrization cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 places the hazard on \u2212B (Prentice & Gloeckler 1978; McCullagh 1980).",
   # The sentence itself. Holes, in order: the scope, the header (twice
   # in `_with_se_single`; the headers joined in the `_multi` forms), the
   # SE gloss (`_with_se_*` only), the CI gloss, the cloglog sentence
@@ -1186,7 +1189,10 @@
   # The name of a model with no user-supplied label. It is the DEFAULT
   # column spanner as well as what a footer line prints for it, so
   # custom `model_labels` substitute cleanly in both places -- which
-  # is why it is `label_`, not `note_`. One hole: the model index.
+  # is why it is `label_`, not `note_`. One hole: the model index. A
+  # language translates it, over the columns and in the notes alike; the
+  # column NAMES keep the English one ("Model 1: B"), which
+  # `build_column_spec()` words from the English registry.
   label_model_name = "Model %d",
   # Footer per-model lines cite the label the column spanners display
   # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
@@ -1214,7 +1220,7 @@
   note_vcov_bootstrap = "nonparametric bootstrap%s",
   note_vcov_bootstrap_cluster = "cluster bootstrap%s, clusters by %s",
   note_vcov_bootstrap_reps = " (%d replicates)",
-  note_vcov_bootstrap_reps_range = " (%d-%d replicates)",
+  note_vcov_bootstrap_reps_range = " (%d\u2013%d replicates)",
   note_vcov_jackknife = "jackknife (leave-one-out)",
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
@@ -1266,7 +1272,11 @@
   note_pvalues_containment = "P-values: t-test with containment df (nlme).",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
-  note_ci_posterior_mixed = "Model %d: %s%% CI is an equal-tailed posterior credible interval.",
+  # The interval of a Bayesian model in a table that also holds
+  # frequentist ones, under a header that says "CI". One hole: the
+  # coverage. The model it concerns leads the sentence, as it leads every
+  # per-model line (`.model_line()`).
+  note_ci_posterior_mixed = "%s%% CI is an equal-tailed posterior credible interval.",
 
   # -- table_regression(): Bayesian footer notes ----------------------------
   # The SE label of a Stan fit and its two notes (R/regression_frame_stan.R).

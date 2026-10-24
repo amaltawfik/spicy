@@ -998,10 +998,17 @@ test_that("the collision is detected against the registry, not a literal", {
     table_regression(list("Modele 2" = m1, m2)),
     class = "spicy_invalid_input"
   )
-  # And the English literal is no longer a collision under that registry.
+  # The column names keep the English default under every registry, so
+  # the English literal collides there and is refused too, rather than
+  # renamed "Model 2: B.2".
+  expect_error(
+    table_regression(list("Model 2" = m1, m2)),
+    class = "spicy_invalid_input"
+  )
+  # A name that collides with neither sits beside the localized default.
   expect_equal(
-    names(attr(table_regression(list("Model 2" = m1, m2)), "spanners")),
-    c("Model 2", "Modele 2")
+    names(attr(table_regression(list("Step 1" = m1, m2)), "spanners")),
+    c("Step 1", "Modele 2")
   )
 })
 

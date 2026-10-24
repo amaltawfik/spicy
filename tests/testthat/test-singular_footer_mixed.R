@@ -46,7 +46,7 @@ test_that("singular glmer footer message names the boundary of the parameter spa
   # Both regimes are named, and the omission is stated as a fact.
   expect_match(
     combined,
-    "a variance of 0, or a correlation of +/-1",
+    "a variance of 0, or a correlation of \u00B11",
     fixed = TRUE
   )
   expect_match(

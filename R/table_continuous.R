@@ -545,7 +545,9 @@
 #' and the underlying `stats::` functions called). Whenever the table
 #' shows *p*-values, its note names the test behind them ("P-values:
 #' Welch t-test.", "P-value:" when the table shows one), each variable
-#' beside its own test when they differ.
+#' beside its own test when they differ. A test shown by its statistic
+#' alone (`p_value = FALSE, statistic = TRUE`) is named as the group
+#' comparison ("Group comparison: Welch t-test.").
 #'
 #' # No data in a group
 #'
@@ -581,7 +583,7 @@
 #' reproducible \eqn{\varepsilon^2} intervals (the other three CIs
 #' are closed-form and deterministic).
 #'
-#' For Cohen's *d*, Hays' \eqn{\omega^2}, and Cohen's *f*\eqn{^2}
+#' For Cohen's *d*, Hays's \eqn{\omega^2}, and Cohen's *f*\eqn{^2}
 #' (derived from a fitted, possibly weighted `lm()`), use the
 #' model-based companion [table_continuous_lm()].
 #'
@@ -1886,9 +1888,9 @@ table_continuous <- function(
   # same disclosure, not print() alone. The whole note is assembled
   # here, in the order of the family (`.compose_note()`): what the
   # numbers are (the weights), the missing data, the comparison (the
-  # test of each variable, whenever the table shows p-values, and the
-  # adjustment), the method sentences of the columns, then the
-  # abbreviations of the headers. It opens with "Note." here.
+  # test of each variable, whenever the table shows its p-value or its
+  # statistic, and the adjustment), the method sentences of the columns,
+  # then the abbreviations of the headers. It opens with "Note." here.
   table_note <- .compose_note(
     what = build_weights_note(),
     missing = build_missing_note(),
@@ -1898,7 +1900,7 @@ table_continuous <- function(
         auto_rank,
         n_test_groups,
         stats::setNames(note_labs, numeric_cols),
-        show_p = p_value && has_group,
+        show_test = (p_value || statistic) && has_group,
         n_p = .n_p_shown(result[["p.value"]], result$variable)
       ),
       .desc_p_adjust_note(p_adjust_info)
@@ -2750,24 +2752,26 @@ continuous_test_label <- function(method, n_groups) {
   )
 }
 
-# Name the test of each variable whenever the table shows p-values, and
-# whenever the display forced a variable onto the rank family (the note
-# then says which variables carry which test, p-values shown or not).
-# `test_used` (the method each variable's test ran with, NA where none
-# ran) and `n_groups` (the groups that test compared: a variable with no
-# data in a group is tested on fewer) are named by column; so is
-# `var_labels`, the label each variable's rows display. `n_p`, the number
-# of p-values the table shows, leads the sentence
-# (`.p_values_test_sentence()`).
+# Name the test of each variable whenever the table shows its p-values
+# or its statistic (`show_test`), as the survey twin and table_outcome()
+# do, and whenever the display forced a variable onto the rank family
+# (the note then says which variables carry which test, p-values shown
+# or not). `test_used` (the method each variable's test ran with, NA
+# where none ran) and `n_groups` (the groups that test compared: a
+# variable with no data in a group is tested on fewer) are named by
+# column; so is `var_labels`, the label each variable's rows display.
+# `n_p`, the number of p-values the table shows, leads the sentence
+# (`.p_values_test_sentence()`): a test shown by its statistic alone is
+# the group comparison.
 build_test_note <- function(
   test_used,
   auto_rank,
   n_groups,
   var_labels,
-  show_p = FALSE,
+  show_test = FALSE,
   n_p = 0L
 ) {
-  if (!isTRUE(show_p) && !any(auto_rank)) {
+  if (!isTRUE(show_test) && !any(auto_rank)) {
     return(NULL)
   }
   ran <- names(test_used)[!is.na(test_used)]

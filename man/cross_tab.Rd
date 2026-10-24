@@ -118,9 +118,10 @@ matches the \code{p_digits} argument of the \verb{table_*()} family.}
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values in \code{x}, \code{y}, or \code{by} are treated as missing: they are
 excluded from the table and its statistics like \code{NA}, and the
-exclusion is disclosed in the table note (\verb{Declared missing values removed: ...}). If \code{FALSE}, the declared codes tabulate
-as categories (and, in \code{by}, define groups). See the "Declared
-missing values" section of \code{\link[=freq]{freq()}}.}
+exclusion is disclosed in the table note, under \verb{Declared missing values removed: ...} for \code{x} and \code{y}. Those of \code{by} are counted
+with its other missing values, under \verb{Missing values removed: ...}. If \code{FALSE}, the declared codes tabulate as categories (and,
+in \code{by}, define groups). See the "Declared missing values" section
+of \code{\link[=freq]{freq()}}.}
 
 \item{styled}{Defunct. \code{styled = TRUE} is now \code{output = "default"}
 (the default) and \code{styled = FALSE} is now \code{output = "data.frame"};

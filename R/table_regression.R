@@ -222,6 +222,11 @@
 #'   \item `model_labels = c("A", "B")` overrides everything.
 #' }
 #'
+#' A default label is worded in the language of the table
+#' (`options(spicy.language)`), over the columns and in the notes that
+#' cite the model; the column names of `as.data.frame()` and
+#' [as_structured()] keep the English one (`"Model 1: B"`).
+#'
 #' Duplicate explicit names in the list are rejected
 #' (`spicy_invalid_input`) -- they would silently collide in the
 #' internal model_id key. So is a name that collides with the
@@ -2621,6 +2626,12 @@ table_regression <- function(
     .resolve_model_labels(models, model_labels),
     models
   )
+  # The column names carry the English default of an unnamed slot in
+  # every language, so a slot named "Model 2" collides with it there too.
+  validate_resolved_model_labels(
+    .resolve_model_labels(models, model_labels, .spicy_fmt_en),
+    models
+  )
   if (!mn_columns_active) {
     # Multinomial columns layout: `outcome_labels` relabels the
     # category spanners instead of the per-model Outcome row; its
@@ -3604,6 +3615,13 @@ table_regression <- function(
   } else {
     .resolve_model_labels(models, model_labels)
   }
+  # The same labels for the column names: the English default where the
+  # registry fills a slot ("Model 2: B" under every language).
+  named_model_keys <- if (mn_exploded) {
+    NULL
+  } else {
+    .resolve_model_labels(models, model_labels, .spicy_fmt_en)
+  }
 
   # Footer: model-facing themes read `frames` (one entry per model);
   # the label-reading themes (reference categories, polynomial
@@ -3703,6 +3721,7 @@ table_regression <- function(
     show_columns = show_columns,
     show_fit_stats = show_fit_stats,
     model_labels = effective_model_labels,
+    model_keys = named_model_keys,
     reference_label = reference_label,
     reference_style = reference_style,
     factor_layout = factor_layout,

@@ -2923,8 +2923,10 @@ validate_model_labels <- function(
 # Partial naming auto-fills the unnamed slots from the registry, which is
 # the only way a duplicate can survive the two guards above: the name the
 # user typed and the label the auto-fill writes are compared against each
-# other nowhere else.
-.resolve_model_labels <- function(models, model_labels) {
+# other nowhere else. `fmt` words the auto-fill: the language of the
+# table for the spanners and the notes, `.spicy_fmt_en()` for the column
+# names, which keep the English default.
+.resolve_model_labels <- function(models, model_labels, fmt = spicy_fmt) {
   if (!is.null(model_labels)) {
     return(model_labels)
   }
@@ -2936,7 +2938,7 @@ validate_model_labels <- function(
     return(NULL)
   }
   missing_idx <- which(!nzchar(nms))
-  nms[missing_idx] <- spicy_fmt("label_model_name", missing_idx)
+  nms[missing_idx] <- fmt("label_model_name", missing_idx)
   nms
 }
 

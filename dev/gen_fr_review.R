@@ -494,7 +494,9 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "symbol_star_05"
   ),
   # The exponentiated headers are resolved in the model frame and reach the
-  # column name as text; "Model N" is frozen by decision 42.
+  # column name as text. "Model N" (`label_model_name`) left this list on
+  # 2026-10-24: the column names now take it from the English registry,
+  # so it has a French entry.
   "frozen: column name" = c(
     "header_exp_or",
     "header_exp_irr",
@@ -503,7 +505,6 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_exp_mr",
     "header_exp_tr",
     "header_exp_generic",
-    "label_model_name",
     "header_model_prefixed"
   ),
   # "frozen: column name" on 2026-08-23. Since b8d07195 the column name
@@ -642,7 +643,7 @@ ARBITRATED_38 <- c(
   "same in French" = "the French word IS the English one; the fallback serves it",
   "frozen: notation" = "a glyph or a marker; notation is international",
   "frozen: template" = "the value is holes and punctuation only",
-  "frozen: column name" = "translating it would move a public column name (exponentiated headers, resolved in the model frame) or Model N (decision 42)"
+  "frozen: column name" = "translating it would move a public column name (exponentiated headers, resolved in the model frame)"
 )
 TO_REVIEW <- c(
   "to review",
@@ -1405,7 +1406,7 @@ out <- c(
   "",
   "* `excel_sheet_continuous` (\"Descriptives\") is the one Excel sheet name left untranslated: the French word is the same, so the fallback serves it.",
   "* `note_model_prefix` reads like a table note and is the lead line of a `spicy_abort()` (`regression_frame_geepack.R`): errors stay English, so a French version would give \"Modèle 1 : `cluster` is not used ...\".",
-  "* `note_ci_posterior_mixed` opens \"Model %d\" in French too: it cross-references the column spanner, which `label_model_name` keeps English (decision 42).",
+  "* `note_ci_posterior_mixed` opened \"Model %d\" in French too, as `label_model_name` stayed English (decision 42). Since 2026-10-24 the model name has a French entry, the column names keep the English one, and the note is led by the name of its column like every per-model line (`.model_line()`).",
   "",
   "## Pairs that move together",
   "",
@@ -1414,7 +1415,6 @@ out <- c(
   "* `row_overall` / `note_outcome_overall`: the note quotes the row.",
   "* `header_effect_size` / `header_effect_size_short`: one French string for both, by choice.",
   "* The standard-error vocabulary: `header_se` (\"ES\"), `abbrev_se`, `abbrev_se_design`, `abbrev_mcse`, `note_std_errors_single`, `note_estimand_method`, `note_estimand_method_stratified` all say \"erreur(s) standard(s)\".",
-  "* `note_ci_posterior_mixed` / `label_model_name`: the note names the spanner.",
   ""
 )
 

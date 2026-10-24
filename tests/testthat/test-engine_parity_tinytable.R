@@ -795,6 +795,15 @@ test_that("LaTeX output sets the characters spicy writes in every engine", {
     "\\ensuremath{\\bar{\\chi}^{2}}"
   )
   expect_identical(map(cp(0x2212)), "\\ensuremath{-}")
+  # The signs and the letters of a formula in a note, and the gamma of an
+  # association header: math in every engine. The plus-minus sign, which
+  # every engine sets, takes the font of the minus sign beside it.
+  expect_identical(map(cp(0x2264)), "\\ensuremath{\\leq}")
+  expect_identical(map(cp(0x00B1)), "\\ensuremath{\\pm}")
+  expect_identical(map(cp(0x03B6)), "\\ensuremath{\\zeta}")
+  expect_identical(map(cp(0x03B3)), "\\ensuremath{\\gamma}")
+  # The en dash of a range or of an undefined cell is left to the engine,
+  # which sets it under pdflatex, xelatex and lualatex alike.
   expect_identical(
     map(cp(c(0x00E9, 0x2013, 0x00A0))),
     cp(c(0x00E9, 0x2013, 0x00A0))
@@ -819,6 +828,31 @@ test_that("LaTeX output sets the characters spicy writes in every engine", {
   ))
   expect_match(tex, "\\ensuremath{f^{2}}", fixed = TRUE)
   expect_no_match(tex, f2, fixed = TRUE)
+  # The formula of the hazard ratio of a cumulative cloglog model.
+  skip_if_not_installed("MASS")
+  set.seed(5)
+  dd <- data.frame(x = stats::rnorm(300))
+  lat <- 0.6 * dd$x + log(stats::rexp(300))
+  dd$y <- cut(
+    lat,
+    c(-Inf, stats::quantile(lat, c(0.3, 0.6)), Inf),
+    ordered_result = TRUE
+  )
+  fit <- MASS::polr(y ~ x, data = dd, method = "cloglog", Hess = TRUE)
+  tex <- .pt_latex(table_regression(
+    fit,
+    exponentiate = TRUE,
+    output = "tinytable"
+  ))
+  expect_match(
+    tex,
+    paste0(
+      "exp(\\ensuremath{-}B): the cumulative parametrization cloglog ",
+      "P(Y \\ensuremath{\\leq} j) = \\ensuremath{\\zeta}\\_j \\ensuremath{-} ",
+      "x\\ensuremath{\\beta}"
+    ),
+    fixed = TRUE
+  )
 })
 
 test_that("LaTeX merges a spanner across its columns, as HTML and Typst do", {

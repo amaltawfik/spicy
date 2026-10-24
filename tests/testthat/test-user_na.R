@@ -279,11 +279,14 @@ test_that("cross_tab() by honors user_na for declared-missing group values", {
   )
   res <- cross_tab(d, x, y, by = byv, include_stats = FALSE)
   expect_named(res, c("1", "2"))
+  # The declared codes of `by` count with its other missing values, as
+  # ?cross_tab says: no "Declared missing values removed" for them.
   expect_match(
     attr(res[[1]], "note"),
     "Missing values removed: byv (4).",
     fixed = TRUE
   )
+  expect_false(grepl("Declared missing", attr(res[[1]], "note"), fixed = TRUE))
 
   res_off <- cross_tab(
     d,

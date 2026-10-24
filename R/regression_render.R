@@ -62,6 +62,7 @@ render_regression_table <- function(
   show_columns = c("b", "se", "ci", "p"),
   show_fit_stats = c("nobs", "r2", "adj_r2"),
   model_labels = NULL,
+  model_keys = NULL,
   reference_label = spicy_str("label_ref"),
   reference_style = c("row", "annotation", "footer", "none"),
   factor_layout = c("grouped", "flat"),
@@ -157,13 +158,23 @@ render_regression_table <- function(
       labels_from_outcomes <- TRUE
     }
   }
+  # `model_keys`: the labels the column NAMES carry ("Model 1: B"), the
+  # labels of the spanners wherever the user gave them, but the English
+  # default where the registry names a model: the spanner and the notes
+  # follow the language, a column name stays what user code indexes.
   if (is.null(model_labels)) {
     model_labels <- if (n_models == 1L) {
       ""
     } else {
       spicy_fmt("label_model_name", seq_len(n_models))
     }
+    model_keys <- if (n_models == 1L) {
+      ""
+    } else {
+      .spicy_fmt_en("label_model_name", seq_len(n_models))
+    }
   }
+  model_keys <- model_keys %||% model_labels
   if (length(model_labels) != n_models) {
     spicy_abort(
       sprintf(
@@ -238,6 +249,7 @@ render_regression_table <- function(
     show_columns,
     model_ids,
     label_map,
+    key_map = setNames(model_keys, model_ids),
     ci_level = ci_level,
     ci_label_key = ci_label_key,
     model_exp_headers = aligned$exp_headers_auto,
@@ -598,6 +610,8 @@ build_model_spanners <- function(body, col_spec, label_map) {
 #        outcome_level)
 # `model_ids`     : vector of model IDs (long format keys)
 # `label_map`     : named character vector mapping model_id \u2192 label
+# `key_map`       : the same for the column NAMES (`model_keys` of
+#                   render_regression_table(), English defaults)
 #
 # `col_name` is the column's programmatic name -- what `as.data.frame()`
 # publishes, the key of `col_meta`, the stem of the typed sub-columns
@@ -609,14 +623,27 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # live, so an English table is byte-identical. The name keeps the point
 # in its coverage percentage ("97.5% CI") whatever `decimal_mark`; the
 # header follows the mark ("97,5% CI").
-build_column_spec <- function(..., decimal_mark = ".") {
+build_column_spec <- function(
+  show_columns,
+  model_ids,
+  label_map,
+  ...,
+  decimal_mark = ".",
+  key_map = label_map
+) {
   shown <- .column_spec_pass(
+    show_columns,
+    model_ids,
+    label_map,
     ...,
     decimal_mark = decimal_mark,
     lab = spicy_str,
     lab_fmt = spicy_fmt
   )
   named <- .column_spec_pass(
+    show_columns,
+    model_ids,
+    key_map,
     ...,
     decimal_mark = ".",
     lab = .spicy_str_en,

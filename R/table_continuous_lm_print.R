@@ -274,17 +274,15 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
-  # The order of the difference defines its glyph under every rule, so the
-  # abbreviations do not define it again ("Delta = difference").
-  delta_note <- .tclm_delta_note(spec)
   .compose_note(
     what = what,
     missing = missing_note,
     inference = inference,
-    definitions = delta_note,
+    # The order of the difference defines its glyph under every rule
+    # ("Delta = B - A."), so the abbreviations leave it out.
+    definitions = .tclm_delta_note(spec),
     abbreviations = .note_abbreviations(
-      .lm_abbrev_items(spec, partial = length(covariates) > 0L),
-      defined = if (!is.null(delta_note)) "delta"
+      .lm_abbrev_items(spec, partial = length(covariates) > 0L)
     ),
     add = add
   )
@@ -327,7 +325,6 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       switch(
         col$token,
         emmean = list("mean"),
-        delta = list("delta"),
         b = list("b"),
         ci = list(
           "ci",
@@ -344,9 +341,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
           list(.lm_abbrev_effect_size(col$effect_size, partial)),
           if (es_ci) list("ci")
         ),
-        # variable, the test statistic (t, z, F, chi-squared), p, n,
-        # weighted_n and the raw-only interval of the effect size: nothing
-        # to define.
+        # variable, the difference (the sentence that gives its order
+        # defines it, `.tclm_delta_note()`), the test statistic (t, z, F,
+        # chi-squared), p, n, weighted_n and the raw-only interval of the
+        # effect size: nothing to define.
         NULL
       )
     )

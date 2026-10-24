@@ -18,7 +18,7 @@
 key	mark	date	fr_at_mark	note
 title_regression_hierarchical	corrected	2026-10-17	%s — modèles emboîtés<NBSP>: %s	
 note_adjusted_for	corrected	2026-10-17	Ajusté sur %s (%s).	
-note_outcome_blocks	corrected	2026-10-17	Chaque bloc compare %s entre les modalités d'une variable<NBSP>; les blocs ne sont pas ajustés les uns sur les autres.	
+note_outcome_blocks	reviewed	2026-10-24	Chaque bloc compare %s entre les modalités d'une variable, sans tenir compte des autres variables.	
 note_nested_ml_refit	corrected	2026-10-17	Les statistiques de variation sont calculées à partir de modèles réestimés par maximum de vraisemblance et ne correspondent pas nécessairement aux écarts entre les critères REML affichés.	
 title_continuous_lm_by	corrected	2026-10-17	Variables dépendantes continues selon %s	
 title_percent_row	corrected	2026-10-17	 (% en ligne)	
@@ -57,7 +57,7 @@ header_events_n	corrected	2026-10-17	Événements/N
 note_p_prefix_eq	corrected	2026-10-17	p<NBSP>=<NBSP>%s	
 note_stars_legend_entry	corrected	2026-10-17	%s p<NBSP><<NBSP>%s	
 note_re_test_lrt	corrected	2026-10-17	Valeurs p des effets aléatoires<NBSP>: test du rapport de vraisemblance contre la structure aléatoire réduite, loi de référence χ̄² (mélange de khi-deux).	
-note_singular_mixed	corrected	2026-10-17	Ajustement singulier<NBSP>: la structure des effets aléatoires est à la frontière de l'espace des paramètres ou près de celle-ci (une variance de 0 ou une corrélation de +/-1)<NBSP>; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.	
+note_singular_mixed	corrected	2026-10-24	Ajustement singulier<NBSP>: la structure des effets aléatoires est à la frontière de l'espace des paramètres ou près de celle-ci (une variance de 0 ou une corrélation de ±1)<NBSP>; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.	
 note_ame_satterthwaite_qual_both	corrected	2026-10-17	 (formule exacte pour lm<NBSP>; approximation par le coefficient dominant pour glm)	
 title_categorical	reviewed	2026-10-17	Tableau des variables catégorielles	
 title_categorical_by	reviewed	2026-10-17	Tableau des variables catégorielles selon %s	
@@ -72,8 +72,8 @@ title_varlist_anonymous	reviewed	2026-10-17	vl<NBSP>: <données>
 title_varlist_empty	reviewed	2026-10-17	vl<NBSP>: (aucune colonne sélectionnée)	
 title_regression_fallback	reviewed	2026-10-17	Régression	
 title_regression_single	reviewed	2026-10-17	%s<NBSP>: %s	
-title_uv_multivariable	corrected	2026-10-17	%s univariée et multivariable<NBSP>: %s	
-title_uv_screen	corrected	2026-10-17	%s univariée (présélection)<NBSP>: %s	
+title_uv_multivariable	reviewed	2026-10-24	%s univariable et multivariable<NBSP>: %s	
+title_uv_screen	reviewed	2026-10-24	%s univariable (présélection)<NBSP>: %s	
 cover_months	reviewed	2026-10-17	janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre	
 cover_day_first	reviewed	2026-10-17	1er	
 note_field_line	reviewed	2026-10-17	%s<NBSP>: %s	
@@ -256,7 +256,7 @@ note_survival_distribution	reviewed	2026-10-17	Distribution<NBSP>: %s
 note_survival_scale	reviewed	2026-10-17	échelle = %s	
 note_survival_sep	reviewed	2026-10-17	<NBSP>; 	
 note_uv_common_complete_cases	reviewed	2026-10-17	Tous les modèles sont estimés sur les %d mêmes cas complets.	
-note_uv_varying_n	corrected	2026-10-17	Chaque modèle univarié est estimé sur ses propres cas complets<NBSP>; N varie selon le prédicteur (%d-%d).	
+note_uv_varying_n	corrected	2026-10-24	Chaque modèle univariable est estimé sur ses propres cas complets. N varie selon le prédicteur (%d–%d).	
 note_type_models	reviewed	2026-10-17	Modèles de %s.	
 note_type_models_sep	reviewed	2026-10-17	<NBSP>; 	
 note_estimand_rmst	reviewed	2026-10-17	dRMST = différence de temps de survie moyen restreint sur [0, %s]	
@@ -282,7 +282,7 @@ note_exp_ci_gloss_standard	reviewed	2026-10-17	bornes de l'IC exponentiées
 note_exp_ci_gloss_standard_asym	reviewed	2026-10-17	bornes de l'IC exponentiées (asymétriques)	
 note_exp_ci_gloss_hdi	reviewed	2026-10-17	IC<NBSP>: intervalle de plus haute densité des tirages exponentiés	
 note_exp_ci_gloss_hdi_asym	reviewed	2026-10-17	IC<NBSP>: intervalle de plus haute densité des tirages exponentiés (asymétrique)	
-note_exp_hr_negated	reviewed	2026-10-17	 HR est le rapport de risques proportionnels en temps groupé exp(-B)<NBSP>: la paramétrisation cumulative cloglog P(Y <= j) = zeta_j - xB place le risque sur -B (Prentice et Gloeckler 1978<NBSP>; McCullagh 1980).	
+note_exp_hr_negated	corrected	2026-10-24	 HR est le rapport de risques proportionnels en temps groupé exp(−B)<NBSP>: la paramétrisation cumulative cloglog P(Y ≤ j) = ζ_j − xβ place le risque sur −B (Prentice et Gloeckler 1978<NBSP>; McCullagh 1980).	
 note_exp_with_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<NBSP>; erreur standard sur l'échelle des %s (%s)<NBSP>; %s.%s	
 note_exp_with_se_multi	reviewed	2026-10-17	%s exponentiés et affichés en %s (selon la famille)<NBSP>; erreur standard sur l'échelle du rapport affiché (%s)<NBSP>; %s.%s	
 note_exp_no_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<NBSP>; %s.%s	
@@ -309,7 +309,7 @@ note_design_degf_resid	reviewed	2026-10-17	%d degrés de liberté résiduels
 note_design_degf_resid_only	reviewed	2026-10-17	Les tests utilisent %d degrés de liberté résiduels.	
 note_design_df_used	reviewed	2026-10-17	Les intervalles de confiance et les tests utilisent les degrés de liberté du plan de sondage.	
 note_design_df_supplied	reviewed	2026-10-17	Les intervalles de confiance utilisent %d degrés de liberté (fournis dans `df`)<NBSP>; les tests utilisent ceux du plan de sondage.	
-note_design_df_test_differs	reviewed	2026-10-17	La comparaison des groupes utilise %d degrés de liberté (groupes observés uniquement).	
+note_design_df_test_differs	reviewed	2026-10-24	La comparaison des groupes utilise %s degrés de liberté (groupes observés uniquement).	
 note_quantile_rule	reviewed	2026-10-17	Quantiles<NBSP>: qrule = "%s" (survey).	
 note_negative_weights	reviewed	2026-10-17	Le calage a donné un poids négatif à %d lignes sur %d<NBSP>: une moyenne pondérée peut sortir de l'intervalle observé, et une variance peut devenir négative, laissant sa cellule indéfinie.	
 note_negative_weights_no_test	reviewed	2026-10-17	La comparaison des groupes n'est pas rapportée<NBSP>: un test fondé sur le plan de sondage n'est pas défini lorsque les poids changent de signe.	
@@ -339,7 +339,7 @@ note_vcov_cr1s	reviewed	2026-10-24	robustes aux grappes (CR1S, Stata vce(cluster
 note_vcov_bootstrap	reviewed	2026-10-17	bootstrap non paramétrique%s	
 note_vcov_bootstrap_cluster	reviewed	2026-10-17	bootstrap par grappes%s, grappes définies par %s	
 note_vcov_bootstrap_reps	reviewed	2026-10-17	 (%d réplications)	
-note_vcov_bootstrap_reps_range	reviewed	2026-10-17	 (%d-%d réplications)	
+note_vcov_bootstrap_reps_range	corrected	2026-10-24	 (%d–%d réplications)	
 note_vcov_jackknife	reviewed	2026-10-17	jackknife (suppression d'une observation)	
 note_vcov_jackknife_cluster	reviewed	2026-10-17	jackknife (suppression d'une grappe), grappes définies par %s	
 note_vcov_wald_asymptotic	reviewed	2026-10-17	Wald asymptotique (z)	
@@ -368,7 +368,7 @@ note_pvalues_wald	reviewed	2026-10-17	Valeurs p<NBSP>: z de Wald asymptotique (%
 note_pvalues_containment	reviewed	2026-10-17	Valeurs p<NBSP>: test t, degrés de liberté «<NBSP>containment<NBSP>» (nlme).	
 note_ci_profile	reviewed	2026-10-17	IC à %s<NBSP>%%<NBSP>: vraisemblance profilée.	
 note_ci_bootstrap_percentile	reviewed	2026-10-17	IC à %s<NBSP>%%<NBSP>: bootstrap percentile.	
-note_ci_posterior_mixed	reviewed	2026-10-17	Model %d<NBSP>: l'IC à %s<NBSP>%% est un intervalle de crédibilité a posteriori à queues égales.	
+note_ci_posterior_mixed	corrected	2026-10-24	L'IC à %s<NBSP>%% est un intervalle de crédibilité a posteriori à queues égales.	
 note_codebook_unweighted	reviewed	2026-10-17	Les effectifs et les pourcentages ne sont pas pondérés<NBSP>: ils décrivent le fichier de données et ne sont pas des estimations pour la population.	
 excel_sheet_regression	reviewed	2026-10-17	Régression	
 excel_sheet_categorical	reviewed	2026-10-17	Catégorielles	
@@ -397,7 +397,7 @@ title_codebook	reviewed	2026-10-17	Codebook
 excel_sheet_codebook	reviewed	2026-10-17	codebook	
 header_ci_label_credible	corrected	2026-10-17	ICr	
 header_ci_label_hdi	reviewed	2026-10-17	HDI	
-label_model_name	reviewed	2026-10-17	Model %d	
+label_model_name	corrected	2026-10-24	Modèle %d	
 note_vcov_classical_plain	reviewed	2026-10-17	classiques	
 note_vcov_bayesian_mgcv	reviewed	2026-10-17	bayésiennes (covariance a posteriori de mgcv)	
 title_multiresponse	reviewed	2026-10-17	Réponses multiples	

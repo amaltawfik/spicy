@@ -18,7 +18,7 @@
 #' (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 #' requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling.
 #' Effect sizes (Cohen's *d* `"cohens_d"`, Hedges's *g* `"hedges_g"`,
-#' Hays' `"omega2"`, Cohen's `"f2"`) are reported with optional
+#' Hays's `"omega2"`, Cohen's `"f2"`) are reported with optional
 #' noncentral *t* / *F*
 #' confidence intervals via `effect_size_ci`, and adapt under
 #' covariate adjustment (see `effect_size`).
@@ -301,7 +301,7 @@
 #'     the first.
 #'   - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
 #'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
-#'   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
+#'   - `"omega2"`: Hays's `omega-squared`, a bias-corrected estimator of the
 #'     population variance explained, less optimistic than \eqn{R^2}{R^2} for small
 #'     samples. Defined for any predictor type and truncated at 0.
 #'
@@ -597,7 +597,7 @@
 #'     minus the first.
 #'     For published reports of two-group comparisons, *g* is the
 #'     convention recommended by Hedges and Olkin (1985).
-#'   \item `"omega2"`: Hays' \eqn{\omega^2}, computed from weighted
+#'   \item `"omega2"`: Hays's \eqn{\omega^2}, computed from weighted
 #'     sums of squares as `(SS_effect - df_effect * MSE) / (SS_total
 #'     + MSE)` and truncated at 0 for small or null effects (Hays
 #'     1963; Olejnik and Algina 2003). Less biased than
@@ -726,7 +726,7 @@
 #' When `weights` is supplied, `table_continuous_lm()` fits weighted
 #' linear models via `lm(..., weights = ...)`. Means become weighted
 #' least-squares estimates and contrasts and slopes are weighted. The
-#' fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays' `omega^2`
+#' fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays's `omega^2`
 #' and Cohen's \eqn{f^2}{f^2}, use the corresponding **weighted sums of squares**
 #' from the WLS fit. Cohen's `d` and Hedges's `g` use the **WLS
 #' coefficient and the model's weighted residual standard deviation**
@@ -973,7 +973,7 @@
 #'   effect_size = "f2"
 #' )
 #'
-#' # Hays' omega-squared for a 3-level predictor ("cohens_d" and
+#' # Hays's omega-squared for a 3-level predictor ("cohens_d" and
 #' # "hedges_g" need two groups).
 #' table_continuous_lm(
 #'   sochealth,

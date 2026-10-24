@@ -575,8 +575,9 @@ pivot_aligned_wide <- function(
   # alphabetical order, which de-aligns label_map (B5 audit fix).
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
+  # Column names, worded from the English registry in every language.
   if (is.null(model_labels)) {
-    model_labels <- spicy_fmt("label_model_name", seq_len(n_models))
+    model_labels <- .spicy_fmt_en("label_model_name", seq_len(n_models))
   } else if (length(model_labels) != n_models) {
     spicy_abort(
       sprintf(

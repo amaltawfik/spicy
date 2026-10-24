@@ -350,7 +350,7 @@ The sign matches the displayed difference, the second level minus
 the first.
 \item \code{"hedges_g"}: Hedges's \code{g = J * d} with the small-sample correction
 \code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
-\item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
+\item \code{"omega2"}: Hays's \code{omega-squared}, a bias-corrected estimator of the
 population variance explained, less optimistic than \eqn{R^2}{R^2} for small
 samples. Defined for any predictor type and truncated at 0.
 }
@@ -662,7 +662,7 @@ Inference adapts via \code{vcov}: classical OLS, \code{"HC0"}-\code{"HC5"}
 (heteroscedasticity-consistent), \code{"CR0"}-\code{"CR3"} (cluster-robust,
 requires \code{cluster}), or \code{"bootstrap"} / \code{"jackknife"} resampling.
 Effect sizes (Cohen's \emph{d} \code{"cohens_d"}, Hedges's \emph{g} \code{"hedges_g"},
-Hays' \code{"omega2"}, Cohen's \code{"f2"}) are reported with optional
+Hays's \code{"omega2"}, Cohen's \code{"f2"}) are reported with optional
 noncentral \emph{t} / \emph{F}
 confidence intervals via \code{effect_size_ci}, and adapt under
 covariate adjustment (see \code{effect_size}).
@@ -736,7 +736,7 @@ pooled within-group SD for the unweighted two-group case);
 minus the first.
 For published reports of two-group comparisons, \emph{g} is the
 convention recommended by Hedges and Olkin (1985).
-\item \code{"omega2"}: Hays' \eqn{\omega^2}, computed from weighted
+\item \code{"omega2"}: Hays's \eqn{\omega^2}, computed from weighted
 sums of squares as \code{(SS_effect - df_effect * MSE) / (SS_total + MSE)} and truncated at 0 for small or null effects (Hays
 1963; Olejnik and Algina 2003). Less biased than
 \eqn{\eta^2} (which equals \code{R^2} in this single-predictor
@@ -864,7 +864,7 @@ least-squares (or weighted least-squares) statistics regardless of
 When \code{weights} is supplied, \code{table_continuous_lm()} fits weighted
 linear models via \code{lm(..., weights = ...)}. Means become weighted
 least-squares estimates and contrasts and slopes are weighted. The
-fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays' \code{omega^2}
+fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays's \code{omega^2}
 and Cohen's \eqn{f^2}{f^2}, use the corresponding \strong{weighted sums of squares}
 from the WLS fit. Cohen's \code{d} and Hedges's \code{g} use the \strong{WLS
 coefficient and the model's weighted residual standard deviation}
@@ -1009,7 +1009,7 @@ table_continuous_lm(
   effect_size = "f2"
 )
 
-# Hays' omega-squared for a 3-level predictor ("cohens_d" and
+# Hays's omega-squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
 table_continuous_lm(
   sochealth,

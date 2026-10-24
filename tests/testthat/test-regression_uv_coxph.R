@@ -73,7 +73,7 @@ test_that("per-fit N uses the subject count, not the coxph event count", {
   # returns the event count under censoring -- the caught bug).
   expect_match(out, "228")
   expect_match(out, "227")
-  expect_match(out, "N varies by predictor (227-228)", fixed = TRUE)
+  expect_match(out, "N varies by predictor (227\u2013228)", fixed = TRUE)
 })
 
 

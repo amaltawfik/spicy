@@ -1129,6 +1129,20 @@ test_that("the rows in total of cross_tab count the rows of a missing `by`", {
   )
 })
 
+test_that("cross_tab joins its missing values as the table functions do", {
+  df <- data.frame(
+    a = c("A", "B", NA, "A", "B", "A"),
+    y = c("Y", "N", "Y", NA, "Y", "N")
+  )
+  names(df)[1L] <- "Region, coded"
+  # A name holding a comma: the items take a semicolon (`.join_note_vars()`).
+  expect_match(
+    attr(suppressWarnings(cross_tab(df, `Region, coded`, y)), "note"),
+    "Missing values removed: Region, coded (1); y (1); 2 rows in total.",
+    fixed = TRUE
+  )
+})
+
 test_that("cross_tab warns when a third positional argument is given in vector mode", {
   df <- data.frame(
     x = c("A", "B", "A", "B"),

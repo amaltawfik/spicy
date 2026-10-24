@@ -513,10 +513,15 @@ test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
 test_that(".tclm_vcov_label ranges heterogeneous replicate counts", {
   expect_identical(
     spicy:::.tclm_vcov_label("bootstrap", boot_valid = c(198L, 200L)),
-    "nonparametric bootstrap (198-200 replicates)"
+    "nonparametric bootstrap (198\u2013200 replicates)"
   )
   expect_identical(
     spicy:::.tclm_vcov_label("bootstrap", boot_valid = NULL),
     "nonparametric bootstrap"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::.tclm_vcov_label("bootstrap", boot_valid = c(198L, 200L)),
+    "bootstrap non param\u00E9trique (198\u2013200 r\u00E9plications)"
   )
 })

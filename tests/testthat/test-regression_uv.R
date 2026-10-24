@@ -120,7 +120,7 @@ test_that("per-predictor N is shown and the differing-N note fires", {
     collapse = "\n"
   )
   # bmi has 12 missing values -> its own complete cases differ.
-  expect_match(out, "N varies by predictor (1163-1175)", fixed = TRUE)
+  expect_match(out, "N varies by predictor (1163\u20131175)", fixed = TRUE)
   expect_match(out, "1175")
   expect_match(out, "1163")
 })

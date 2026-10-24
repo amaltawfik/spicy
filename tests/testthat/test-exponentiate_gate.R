@@ -353,7 +353,9 @@ test_that("cumulative cloglog HR is exp(-B): direction, delta SE, swapped CI", {
     attr(table_regression(fit, exponentiate = TRUE), "note"),
     collapse = "\n"
   )
-  expect_match(note, "exp(-B)", fixed = TRUE)
+  expect_match(note, "exp(\u2212B)", fixed = TRUE)
+  expect_match(note, "P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2", fixed = TRUE)
+  expect_match(note, "places the hazard on \u2212B", fixed = TRUE)
   expect_match(note, "Prentice", fixed = TRUE)
 })
 
@@ -397,7 +399,7 @@ test_that("clm cloglog negates too; logit and binomial cloglog stay exp(+B)", {
     attr(table_regression(fit_glm, exponentiate = TRUE), "note"),
     collapse = "\n"
   )
-  expect_false(grepl("exp(-B)", no_note, fixed = TRUE))
+  expect_false(grepl("exp(\u2212B)", no_note, fixed = TRUE))
 })
 
 test_that("cloglog clm with nominal terms refuses exponentiate", {

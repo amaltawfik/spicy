@@ -225,7 +225,7 @@
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
   note_re_profile_ci = "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles asym\u00E9triques).",
   note_re_se_skipped = "Composantes de la variance des effets al\u00E9atoires\u00A0: erreur standard et IC non calcul\u00E9s (n = %s d\u00E9passe le plafond spicy.re_se_max_n).",
-  note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de +/-1)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
+  note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de \u00B11)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
   note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",
   note_component_gloss_zero_inflation = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
   note_component_gloss_dispersion = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: \u00E9chelle logarithmique.",
@@ -287,7 +287,6 @@
   abbrev_mr = "rapport de moyennes",
   abbrev_tr = "rapport de temps",
   abbrev_exp_b = "coefficient exponenti\u00E9",
-  abbrev_delta = "diff\u00E9rence",
   abbrev_change = "variation",
   abbrev_aic = "crit\u00E8re d'information d'Akaike",
   abbrev_aicc = "crit\u00E8re d'information d'Akaike corrig\u00E9 pour les petits \u00E9chantillons",
@@ -354,7 +353,7 @@
   note_exp_ci_gloss_standard_asym = "bornes de l'IC exponenti\u00E9es (asym\u00E9triques)",
   note_exp_ci_gloss_hdi = "IC\u00A0: intervalle de plus haute densit\u00E9 des tirages exponenti\u00E9s",
   note_exp_ci_gloss_hdi_asym = "IC\u00A0: intervalle de plus haute densit\u00E9 des tirages exponenti\u00E9s (asym\u00E9trique)",
-  note_exp_hr_negated = " HR est le rapport de risques proportionnels en temps group\u00E9 exp(-B)\u00A0: la param\u00E9trisation cumulative cloglog P(Y <= j) = zeta_j - xB place le risque sur -B (Prentice et Gloeckler 1978\u00A0; McCullagh 1980).",
+  note_exp_hr_negated = " HR est le rapport de risques proportionnels en temps group\u00E9 exp(\u2212B)\u00A0: la param\u00E9trisation cumulative cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 place le risque sur \u2212B (Prentice et Gloeckler 1978\u00A0; McCullagh 1980).",
   note_exp_with_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; erreur standard sur l'\u00E9chelle des %s (%s)\u00A0; %s.%s",
   note_exp_with_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s)\u00A0; %s.%s",
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
@@ -498,6 +497,7 @@
   note_adjustment_proportional = "proportionnel",
   note_adjustment_balanced = "\u00E9quilibr\u00E9",
   note_std_errors_single = "Erreurs standards\u00A0: %s.",
+  label_model_name = "Mod\u00E8le %d",
   note_model_line = "%s\u00A0: %s",
   note_vcov_classical_glm = "classiques (information de Fisher)",
   note_vcov_classical_lm = "classiques (MCO)",
@@ -512,7 +512,7 @@
   note_vcov_bootstrap = "bootstrap non param\u00E9trique%s",
   note_vcov_bootstrap_cluster = "bootstrap par grappes%s, grappes d\u00E9finies par %s",
   note_vcov_bootstrap_reps = " (%d r\u00E9plications)",
-  note_vcov_bootstrap_reps_range = " (%d-%d r\u00E9plications)",
+  note_vcov_bootstrap_reps_range = " (%d\u2013%d r\u00E9plications)",
   note_vcov_jackknife = "jackknife (suppression d'une observation)",
   note_vcov_jackknife_cluster = "jackknife (suppression d'une grappe), grappes d\u00E9finies par %s",
   note_vcov_wald_asymptotic = "Wald asymptotique (z)",
@@ -541,7 +541,7 @@
   note_pvalues_containment = "Valeurs p\u00A0: test t, degr\u00E9s de libert\u00E9 \u00AB\u00A0containment\u00A0\u00BB (nlme).",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
-  note_ci_posterior_mixed = "Model %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
+  note_ci_posterior_mixed = "L'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
 
   # -- table_regression(): Bayesian footer notes ----------------------------
   # The targets and thresholds are rendered numbers and follow the decimal
@@ -583,7 +583,7 @@
   title_uv_multivariable = "%s univariable et multivariable\u00A0: %s",
   title_uv_screen = "%s univariable (pr\u00E9s\u00E9lection)\u00A0: %s",
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
-  note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets. N varie selon le pr\u00E9dicteur (%d-%d).",
+  note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets. N varie selon le pr\u00E9dicteur (%d\u2013%d).",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
   # (le prefixe arrive en minuscule initiale, regle du site d'appel).
   note_type_models = "Mod\u00E8les de %s.",

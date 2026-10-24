@@ -1113,6 +1113,11 @@ the labels default to \code{"Model 1, 2, ..."}.
 \item \code{model_labels = c("A", "B")} overrides everything.
 }
 
+A default label is worded in the language of the table
+(\code{options(spicy.language)}), over the columns and in the notes that
+cite the model; the column names of \code{as.data.frame()} and
+\code{\link[=as_structured]{as_structured()}} keep the English one (\code{"Model 1: B"}).
+
 Duplicate explicit names in the list are rejected
 (\code{spicy_invalid_input}) -- they would silently collide in the
 internal model_id key. So is a name that collides with the

@@ -261,7 +261,7 @@ test_that("the estimand footnote reads word for word off the registry", {
       "[0, 365]; dRisk = difference in cumulative incidence at 200; ",
       "adjusted by g-computation from the fitted model ",
       "(within-stratum baselines), SEs by nonparametric bootstrap ",
-      "(480-500 replicates)."
+      "(480\u2013500 replicates)."
     )
   )
   # The transformed-term note, appended and standing alone.
@@ -298,7 +298,7 @@ test_that("the estimand footnote reads word for word off the registry", {
   )
   expect_identical(
     spicy:::spicy_fmt("note_estimand_boot_range", 480L, 500L),
-    "480-500"
+    "480\u2013500"
   )
 })
 
@@ -326,7 +326,7 @@ test_that("differing estimand notes cite user model labels when present", {
     fixed = TRUE
   )
   # A degraded bootstrap reports the valid range, not the nominal count.
-  expect_match(lines[2L], "(480-500 replicates)", fixed = TRUE)
+  expect_match(lines[2L], "(480\u2013500 replicates)", fixed = TRUE)
 })
 
 

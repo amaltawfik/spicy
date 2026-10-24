@@ -20,5 +20,5 @@
        R² (Nagelkerke) │                                     0.00                      
        AIC             │                                  1212.3                       
       
-      Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Each univariable model is fit on its own complete cases; N varies by predictor (1163-1175). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
+      Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Each univariable model is fit on its own complete cases; N varies by predictor (1163–1175). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 

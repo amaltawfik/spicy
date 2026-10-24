@@ -2161,7 +2161,7 @@ test_that("the variables with no data in the same groups share one sentence", {
   )
 })
 
-test_that("the note names the test of each variable whenever p is shown", {
+test_that("the note names the test whenever its p-value or its statistic shows", {
   note <- function(...) {
     attr(table_continuous(sochealth, select = c(bmi, age), ...), "note")
   }
@@ -2181,9 +2181,19 @@ test_that("the note names the test of each variable whenever p is shown", {
       ci_defs
     )
   )
-  # No p-value, no test sentence.
+  # No p-value: a statistic shown alone names its test as the group
+  # comparison, as the survey twin and table_outcome() do. Neither shown,
+  # no test sentence.
   expect_identical(
     note(by = sex, p_value = FALSE, statistic = TRUE),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Group comparison: Welch t-test.",
+      ci_defs
+    )
+  )
+  expect_identical(
+    note(by = sex, p_value = FALSE),
     paste("Note. Missing values removed: bmi (12).", ci_defs)
   )
   # No `by`, nothing compared.
@@ -2226,7 +2236,31 @@ test_that("a test named with no p-value shown is the group comparison", {
     spicy_fmt("note_p_values_test_one", spicy_str("test_wilcoxon_rank_sum")),
     fixed = TRUE
   )
+  # A mean shown with the statistic of its test and no p-value: the test
+  # it took is named too.
+  stat <- function() {
+    attr(
+      table_continuous(
+        d,
+        select = y,
+        by = g,
+        p_value = FALSE,
+        statistic = TRUE
+      ),
+      "note"
+    )
+  }
+  expect_match(
+    stat(),
+    spicy_fmt("note_group_comparison", spicy_str("test_welch_t")),
+    fixed = TRUE
+  )
   withr::local_options(spicy.language = "fr")
+  expect_match(
+    stat(),
+    "Comparaison des groupes\u00A0: test t de Welch.",
+    fixed = TRUE
+  )
   expect_match(
     attr(
       table_continuous(

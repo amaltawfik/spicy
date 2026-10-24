@@ -130,7 +130,7 @@ test_that("a rarely-resampled factor level yields a replicate range note", {
     table_regression(fit, show_columns = c("b", "rmst"), tau = 20, boot_n = 20)
   )
   out <- paste(capture.output(print(tr)), collapse = "\n")
-  expect_match(out, "\\d+-20 replicates")
+  expect_match(out, "\\d+\u201320 replicates")
 })
 
 
