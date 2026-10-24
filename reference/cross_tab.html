@@ -247,9 +247,10 @@ matches the <code>p_digits</code> argument of the <code>table_*()</code> family.
 <dd><p>Logical. If <code>TRUE</code> (the default), declared missing
 values in <code>x</code>, <code>y</code>, or <code>by</code> are treated as missing: they are
 excluded from the table and its statistics like <code>NA</code>, and the
-exclusion is disclosed in the table note (<code>Declared missing values removed: ...</code>). If <code>FALSE</code>, the declared codes tabulate
-as categories (and, in <code>by</code>, define groups). See the "Declared
-missing values" section of <code><a href="freq.html">freq()</a></code>.</p></dd>
+exclusion is disclosed in the table note, under <code>Declared missing values removed: ...</code> for <code>x</code> and <code>y</code>. Those of <code>by</code> are counted
+with its other missing values, under <code>Missing values removed: ...</code>. If <code>FALSE</code>, the declared codes tabulate as categories (and,
+in <code>by</code>, define groups). See the "Declared missing values" section
+of <code><a href="freq.html">freq()</a></code>.</p></dd>
 
 
 <dt id="arg-styled">styled<a class="anchor" aria-label="anchor" href="#arg-styled"></a></dt>

@@ -375,6 +375,6 @@ table_regression_uv(
 #>    Male          │ [ 2.52,  6.02]  <.001 
 #>  bmi             │ [-0.91, -0.44]  <.001 
 #> 
-#> Note. Linear regression models. Each univariable model is fit on its own complete cases; N varies by predictor (1188-1200). Std. errors: classical (OLS). CI = confidence interval.
+#> Note. Linear regression models. Each univariable model is fit on its own complete cases; N varies by predictor (1188–1200). Std. errors: classical (OLS). CI = confidence interval.
 # }
 ```

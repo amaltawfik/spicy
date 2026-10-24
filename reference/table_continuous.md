@@ -782,7 +782,9 @@ least two observations. Choice of test family is driven by `test` (see
 the `@param` entry for the full dispatch and the underlying `stats::`
 functions called). Whenever the table shows *p*-values, its note names
 the test behind them ("P-values: Welch t-test.", "P-value:" when the
-table shows one), each variable beside its own test when they differ.
+table shows one), each variable beside its own test when they differ. A
+test shown by its statistic alone (`p_value = FALSE, statistic = TRUE`)
+is named as the group comparison ("Group comparison: Welch t-test.").
 
 ## No data in a group
 
@@ -819,9 +821,10 @@ depend on the random number generator state: call
 reproducible \\\varepsilon^2\\ intervals (the other three CIs are
 closed-form and deterministic).
 
-For Cohen's *d*, Hays' \\\omega^2\\, and Cohen's *f*\\^2\\ (derived from
-a fitted, possibly weighted [`lm()`](https://rdrr.io/r/stats/lm.html)),
-use the model-based companion
+For Cohen's *d*, Hays's \\\omega^2\\, and Cohen's *f*\\^2\\ (derived
+from a fitted, possibly weighted
+[`lm()`](https://rdrr.io/r/stats/lm.html)), use the model-based
+companion
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 
 ## Standardized mean difference

@@ -1252,7 +1252,11 @@ is named as in the title: its name (from <code>formula(fit)[[2]]</code>),
 or its <code>label</code> attribute under <code>labels = TRUE</code>. If DVs match,
 the labels default to <code>"Model 1, 2, ..."</code>.</p></li>
 <li><p><code>model_labels = c("A", "B")</code> overrides everything.</p></li>
-</ul><p>Duplicate explicit names in the list are rejected
+</ul><p>A default label is worded in the language of the table
+(<code>options(spicy.language)</code>), over the columns and in the notes that
+cite the model; the column names of <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> and
+<code><a href="as_structured.html">as_structured()</a></code> keep the English one (<code>"Model 1: B"</code>).</p>
+<p>Duplicate explicit names in the list are rejected
 (<code>spicy_invalid_input</code>) – they would silently collide in the
 internal model_id key. So is a name that collides with the
 auto-filled label of another slot (<code>list("Model 2" = m1, m2)</code>):

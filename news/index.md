@@ -8,16 +8,19 @@ for “check all that apply” questions, makes
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 a codebook you can deliver (an object, an Excel workbook, or a PDF),
 lets the categorical tables choose their test per variable, and gives
-the descriptive tables one contract for labels, p-values, and notes.
+the descriptive tables one contract for labels, p-values, and notes. The
+tables also come out ready to publish, with decked heads, the minus sign
+in Typst and LaTeX, row percentages in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+decimals per variable, and notes you can replace, extend, or relabel
+(`note`, `note_add`, `note_labels`).
 
 ### Breaking changes
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  stops with an error (class `spicy_label_collision`) when a level of a
-  variable or of `by` reads like the row or column it adds for missing
-  values, or like its `Total` margin, which it renamed `"(Missing_1)"`
-  or `"Total_1"`. Rename the level, or relabel the added row or column
-  with `options(spicy.labels)`, as the message shows.
+  refuses (class `spicy_label_collision`) a level that reads like its
+  row or column of missing values or its `Total` margin, which it
+  renamed `"(Missing_1)"` or `"Total_1"`.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -25,6 +28,9 @@ the descriptive tables one contract for labels, p-values, and notes.
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   refuse such a level the same way.
+
+- Rename such a level, or relabel the added row or column with
+  `options(spicy.labels)`, as the message shows.
 
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   also refuses a `select` variable displayed as “Overall”, the label of
@@ -107,10 +113,9 @@ the descriptive tables one contract for labels, p-values, and notes.
   reports the test the table shows: with a two-level `by`, the *t* of
   the contrast, where it gave the *F* of the model.
 
-- In every table, `output = "data.frame"` is the displayed table with
-  its numbers: one row per printed row, the keys (`variable`, `label`,
-  and `level`, `group`, `.row_role` where they apply), then the printed
-  columns.
+- In every table, `output = "data.frame"` is the printed table with its
+  numbers: one row per printed row, the keys (`variable`, `label`, and
+  `level`, `group`, `.row_role` where they apply), then the columns.
 
 - In `output = "data.frame"`, the bounds of an interval are named as
   printed, `95% CI LL` and `95% CI UL` (`Female 95% CI LL` in
@@ -191,8 +196,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  name an interval column with a point whatever `decimal_mark`: they
-  wrote `97,5% CI` under `decimal_mark = ","`.
+  name an interval column with a point whatever `decimal_mark` (the
+  header follows it): they wrote `97,5% CI` under `decimal_mark = ","`.
 
 - The interval columns of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -200,7 +205,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
   `97.5% CI: LL` and `97.5% CI: UL` in
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
-  `97.5% CI` in the printed object; the header still follows the mark.
+  and `97.5% CI` in the printed object.
 
 - The median columns of the continuous tables are `Med`, `Med [Q1, Q3]`,
   and `Med 95% CI LL` in `output = "data.frame"` and
@@ -338,14 +343,24 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites a statistic of the variable (*p*, test, effect size, association
   measure, SMD) without `model`.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites it with a group too in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  and its survey twin cite it with a group too, which
+  and its survey twin, which
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and its survey twin refuse, giving the call without `model`.
 
 - With a group, the categorical tables dropped these statistics and
   refused the table’s own *p*; without a level, the continuous tables
   asked for one, though the first group’s row alone carries the value.
+
+- In French,
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  selects an unnamed model of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  by the label over its columns, `"Modèle 1"`, or by its position, where
+  it took `"Model 1"`.
 
 - Every table note is one paragraph: what the numbers are (weights,
   design, model), the missing data, the tests and inference, the
@@ -363,14 +378,18 @@ the descriptive tables one contract for labels, p-values, and notes.
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   now name the test behind their p-values, and
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  the test of a statistic shown without them (“Group comparison: Welch
+  t-test.”).
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   say when the statistics are weighted.
 
-- The sentence naming the test opens with “P-values:” (“P-value:” when
-  the table shows one), where it read “Group comparison:” (“Slope test:”
-  for a numeric `by`), or “p-values:” in a mixed-model regression note.
+- The sentence naming the test behind the p-values opens with
+  “P-values:” (“P-value:” when the table shows one), where it read
+  “Group comparison:”, or “p-values:” in a mixed-model regression note.
 
 - By default, a table note defines the abbreviations of the headers, the
   spanners, and the fit-statistic rows (“AIC = Akaike information
@@ -409,9 +428,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  print a string in `note` after the lead-in of the style, “Note.”
-  unless it opens with one, and keep the stars legend below it;
-  `note = FALSE` removes both.
+  print a string in `note` after the lead-in of the style (“Note.”
+  unless it opens with one) and above the stars legend, where it
+  replaced both.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   printed “Note.” in the middle of its note when `drop_na = TRUE`
@@ -450,6 +469,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   after the others (“Missing values removed: score (3), sex (2).”),
   where each had a sentence (“Rows with missing …”).
+
+- In
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  the credible-interval note of a Bayesian model opens with the model’s
+  label, where it wrote “Model 2” whatever `model_labels` said;
+  `note_ci_posterior_mixed` takes only the coverage.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -515,8 +540,11 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - `table_regression(nested = TRUE)` with a robust or cluster-robust
   `vcov` tests each added block with a Wald test on that matrix, labeled
-  as such: a Wald F-change for `lm`, a Wald χ² for `glm` and `coxph`,
-  and the regime of the coefficient tests for the other classes.
+  as such.
+
+- That test is a Wald F-change for `lm`, a Wald χ² for `glm` and
+  `coxph`, and follows the regime of the coefficient tests for the other
+  classes.
 
 - Tables of 0.13.0 built with a robust `vcov` and `nested = TRUE` show
   different change statistics. Under the classical `vcov`, the partial F
@@ -533,8 +561,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   and the covariates in the `select` of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  which were dropped, as it did the outcome in the `select` of
-  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
+  which were dropped.
 
 - The same error refuses the weights column, which
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -567,8 +594,10 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - The table functions refuse a column that is not in the data, in
   `select`, `by`, `exclude`, `outcome`, or `predictors`, with an error
-  of class `spicy_missing_column` that names it, and the column it is
-  likely a typo of when one name is close.
+  of class `spicy_missing_column` that names it.
+
+- The error also names the column the missing one is likely a typo of,
+  when one name is close.
 
 - The class and the wording of these errors varied, some were not
   classed, and a name in a character `exclude` was ignored. A `by` of
@@ -681,27 +710,20 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses `vcov = "CR0"`, `"CR2"`, and `"CR3"` for `survreg`, `gam`,
   `bam`, `polr`, `clm`, `betareg`, `mlogit`, `multinom`, `zeroinfl`, and
-  `hurdle` fits (class `spicy_unsupported_vcov`):
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-  computes one estimator for them, `"CR1"`, which the note now names. It
-  refuses `"CR1"` to `"CR3"` for `coxph` and the `rms` fits (`ols`,
+  `hurdle` fits, whose estimator is `"CR1"`.
+
+- It refuses `"CR1"` to `"CR3"` for `coxph` and the `rms` fits (`ols`,
   `lrm`, `cph`, `Glm`), whose Lin-Wei or `robcov()` sandwich is `"CR0"`.
-  Each class accepted all four tokens and computed its one estimator
-  under each, and the note of the `vcovCL()` classes called it `CL`.
+
+- These classes computed their one estimator under all four tokens. The
+  refusals have the class `spicy_unsupported_vcov`, and the note says
+  `CR1` where it said `CL`.
 
 - `sochealth` gains five columns after `dentist_12m`: the later columns
   move five places, and `table_categorical(sochealth)` tabulates 18
   variables by default, where it tabulated 13.
 
 ### New features
-
-- In
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
-  and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  `digits` takes a named vector: one value per variable for the numbers
-  on its scale, the others at the default.
 
 - Every table function keeps the title it prints in `attr(x, "title")`,
   as
@@ -735,7 +757,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   and the survey twins) always has a `group` column, `NA` without `by`.
 
-- Typst and LaTeX output, from tinytable and gt alike, and the PDF of
+- Typst and LaTeX output (only LaTeX for `gt`) and the PDF of
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   write a negative number with the minus sign (U+2212);
   `spicy_style(minus_sign = "ascii")` keeps the hyphen.
@@ -793,7 +815,7 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   gains `note_label`, the word that opens the note under a table:
-  “Note.” (APA, the default), “Note:” (Chicago, “Note :” with a no-break
+  “Note.” (APA, the default), “Note:” (Chicago, “Note :” with a no-break
   space in French), or `""` for none.
 
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
@@ -848,9 +870,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   gains `percent`, as in
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
   with `percent = "row"`, each level’s percentages sum to 100 across the
-  groups, and the note says so. `total_row = TRUE` closes each variable
-  with a Total row, which under row percentages gives the base rate they
-  are read against.
+  groups, and the note says so.
+
+- `table_categorical(total_row = TRUE)` closes each variable with a
+  Total row, which under row percentages gives the base rate they are
+  read against.
 
 - `table_categorical(test = "fisher")` applies Fisher’s exact test to
   every variable, by Monte Carlo for a table too large for the exact
@@ -871,6 +895,14 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   results inherit the class `spicy_table`, as the other tables do.
 
+- In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  `digits` takes a named vector: one value per variable for the numbers
+  on its scale, the others at the default.
+
 - The [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
@@ -883,10 +915,13 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   experimental in this release, tabulates a “check all that apply”
   question: one row per item with the count and the percentage of
-  respondents who chose it (`percent` also gives percentages of
-  responses, or both)
+  respondents who chose it
   ([\#10](https://github.com/amaltawfik/spicy/issues/10),
   [\#11](https://github.com/amaltawfik/spicy/issues/11)).
+
+- In
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  `percent` also gives the percentages of responses, or both.
 
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   adds a row with the number of respondents in the base (`base`), and
@@ -984,10 +1019,13 @@ the descriptive tables one contract for labels, p-values, and notes.
 ### Bug fixes
 
 - Labels that state a subtraction write the minus sign (U+2212), not a
-  hyphen: the difference of
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  (Δ = B − A), the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
+  hyphen: the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
   `vcov = "CR1S"`.
+
+- The regression notes and those of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  write a range with an en dash (“N varies by predictor (12–30)”), and
+  the singular-fit note ±1, where they wrote 12-30 and +/-1.
 
 - The table functions warn (class `spicy_ignored_arg`) when an argument
   typed in the call has no effect, and name only the arguments typed.
@@ -1014,7 +1052,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  `d [95% CI]` (or `f²`, `g`, `ω²`) in
+  and `d [95% CI]` in
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 
 - The note’s lead-in (“Note.” or the `note_label` of the style) is in
@@ -1044,12 +1082,10 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - In Typst output, the second line of a wrapped level label starts under
   the first, not an em to its left: the level is indented by its cell,
-  no longer by spaces in its text. An indented label also no longer
-  wraps in a column wide enough for it.
+  no longer by spaces in its text.
 
 - In Typst output, a variable’s label spans the columns before its
-  p-value and effect size, where it wrapped at the width of the levels
-  under it.
+  p-value and effect size, rather than widening the first column.
 
 - LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table
@@ -1067,14 +1103,13 @@ the descriptive tables one contract for labels, p-values, and notes.
   under it, and a `gt` table wider than the text block is scaled down to
   it.
 
-- Every error of a table function names it, where some named an internal
-  helper,
+- Every error of a table function names it, where some named a helper,
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   or [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) (a
   negative weight in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
-  or an anonymous function (an unknown argument of
-  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
+  or an anonymous function
+  ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
 
 - A survey design handed to a plain table is a `spicy_invalid_data`
   error, and
@@ -1096,10 +1131,6 @@ the descriptive tables one contract for labels, p-values, and notes.
   weighted by `w` while the note named `z`, and `covariates = age`
   adjusted for the column the object `age` named.
 
-- With `labels = TRUE`, a note reads “Missing values removed: Body mass
-  index (12), Sex (3)” or “P-values: Welch t-test (Sex); Welch one-way
-  ANOVA (Highest education level)”.
-
 - A list of variables in a note is joined with semicolons when one of
   the labels contains a comma.
 
@@ -1107,7 +1138,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   held an empty text, which Excel counted and refused in a formula.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  sets `<` apart in its note: `p < .001`, and in French `p < 0,001` with
+  sets `<` apart in its note: `p < .001`, and in French `p < 0,001` with
   no-break spaces. It wrote `p <.001`.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
@@ -1167,7 +1198,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   it as a token of two columns, with `model` or not.
 
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  and the functions whose `digits` is one number refuse a named
+  and the table functions whose `digits` is one number refuse a named
   `digits`, with a hint, and a name on any other `*_digits`; they
   accepted it and dropped the name.
 
@@ -1226,7 +1257,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   and the survey twins name each variable of their notes as the rows and
-  the title do, where they used the column name whatever `labels` said.
+  the title do, where they used its column name.
 
 - The rendered formats of
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
@@ -1350,7 +1381,7 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   and the survey twins write the French headers of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
-  such as `IC à 95 %` over `LI` and `LS`.
+  such as `IC à 95 %` over `LI` and `LS`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   warns that `adjustment` without covariates and `contrast` with a
@@ -1380,10 +1411,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   does the same for an outcome that is an exact linear function of `by`
-  and the covariates: it keeps the slope, or the adjusted means and the
-  contrast, and the R² of 1, and shows a dash for the interval, the
-  test, and the effect size, where it printed a t of 5.20e+16 and R’s
-  warning.
+  and the covariates, keeping R² = 1 and showing a dash for the test and
+  effect size, where it printed rounding noise.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   accepts `p_value = NULL`, now its default as in the rest of the
@@ -1461,18 +1490,19 @@ the descriptive tables one contract for labels, p-values, and notes.
 - In
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   a `reference_label` you supply is printed as typed, and the footer of
-  `reference_style = "footer"` is translated (“Modalités de référence :
+  `reference_style = "footer"` is translated (“Modalités de référence :
   …”).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   write their headers in French under `options(spicy.language = "fr")`:
-  `ES`, `IC à 95 %` over `LI` and `LS`, and `R² ajusté`.
+  `ES`, `IC à 95 %` over `LI` and `LS`, `R² ajusté`, and `Modèle 1`,
+  which the notes cite.
 
 - The column names of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  stay `SE`, `95% CI`, and `Adj. R²` in every language.
+  stay `SE`, `95% CI`, `Adj. R²`, and `Model 1: B` in every language.
 
 - In French,
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -1511,6 +1541,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   speaks of the confidence interval in its exponentiation note only when
   the table shows one. The compact layout of several models (B, SE, p)
   said “CI bounds exponentiated”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  sets the formula of the note on a cumulative cloglog hazard ratio in
+  math signs, `P(Y ≤ j) = ζ_j − xβ` and `exp(−B)`, where it wrote
+  `P(Y <= j) = zeta_j - xB` and `exp(-B)`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   now handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits
@@ -1582,9 +1617,8 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - `table_regression(nested = TRUE)` divides the deviance difference by
   the dispersion for [`glm()`](https://rdrr.io/r/stats/glm.html) fits
-  whose family estimates it (gaussian, Gamma, inverse Gaussian, quasi),
-  so that the Δχ² row is the statistic its p-value is computed on. It
-  showed the raw difference.
+  that estimate one (gaussian, Gamma, inverse Gaussian, quasi), where
+  the Δχ² row showed the raw difference.
 
 - `table_regression(nested = TRUE)` does the same for
   [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) and

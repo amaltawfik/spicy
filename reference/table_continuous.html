@@ -795,7 +795,9 @@ driven by <code>test</code> (see the <code>@param</code> entry for the full disp
 and the underlying <code>stats::</code> functions called). Whenever the table
 shows <em>p</em>-values, its note names the test behind them ("P-values:
 Welch t-test.", "P-value:" when the table shows one), each variable
-beside its own test when they differ.</p>
+beside its own test when they differ. A test shown by its statistic
+alone (<code>p_value = FALSE, statistic = TRUE</code>) is named as the group
+comparison ("Group comparison: Welch t-test.").</p>
     </div>
     <div class="section level2">
     <h2 id="no-data-in-a-group">No data in a group<a class="anchor" aria-label="anchor" href="#no-data-in-a-group"></a></h2>
@@ -828,7 +830,7 @@ and percentile bootstrap (2,000 replicates) for
 number generator state: call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before the table for
 reproducible \(\varepsilon^2\) intervals (the other three CIs
 are closed-form and deterministic).</p>
-<p>For Cohen's <em>d</em>, Hays' \(\omega^2\), and Cohen's <em>f</em>\(^2\)
+<p>For Cohen's <em>d</em>, Hays's \(\omega^2\), and Cohen's <em>f</em>\(^2\)
 (derived from a fitted, possibly weighted <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), use the
 model-based companion <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.</p>
     </div>

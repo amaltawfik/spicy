@@ -587,7 +587,7 @@ table_regression(sfit)
 #>  AIC               │ 342.0                             
 #>  BIC               │ 353.1                             
 #> 
-#> Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test (lmerTest). Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The chi-bar-squared test reads p = 1.000 — the boundary case. The
@@ -925,7 +925,7 @@ table_regression(
 #>  AIC                    │ 9890.8                9884.6                
 #>  BIC                    │ 9916.2                9915.1                
 #> 
-#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test (lmerTest). Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap). ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test (lmerTest). Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap). ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the table:

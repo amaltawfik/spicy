@@ -426,7 +426,7 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 #>  AIC                      │ 1200.9                       –                   
 #>  R² (Bayes)               │     –                       0.02                 
 #> 
-#> Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression (stanreg). Std. errors: ML (glm): classical (Fisher information), Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation). Model 2: 95% CI is an equal-tailed posterior credible interval. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression (stanreg). Std. errors: ML (glm): classical (Fisher information), Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation). Bayes (stan_glm): 95% CI is an equal-tailed posterior credible interval. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The intervals differ in *reading*, not much in width: the frequentist

@@ -166,9 +166,11 @@ cross_tab(
   Logical. If `TRUE` (the default), declared missing values in `x`, `y`,
   or `by` are treated as missing: they are excluded from the table and
   its statistics like `NA`, and the exclusion is disclosed in the table
-  note (`Declared missing values removed: ...`). If `FALSE`, the
-  declared codes tabulate as categories (and, in `by`, define groups).
-  See the "Declared missing values" section of
+  note, under `Declared missing values removed: ...` for `x` and `y`.
+  Those of `by` are counted with its other missing values, under
+  `Missing values removed: ...`. If `FALSE`, the declared codes tabulate
+  as categories (and, in `by`, define groups). See the "Declared missing
+  values" section of
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
 
 - styled:

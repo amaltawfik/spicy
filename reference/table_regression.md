@@ -1200,6 +1200,13 @@ model's sub-columns:
 
 - `model_labels = c("A", "B")` overrides everything.
 
+A default label is worded in the language of the table
+(`options(spicy.language)`), over the columns and in the notes that cite
+the model; the column names of
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+keep the English one (`"Model 1: B"`).
+
 Duplicate explicit names in the list are rejected
 (`spicy_invalid_input`) – they would silently collide in the internal
 model_id key. So is a name that collides with the auto-filled label of

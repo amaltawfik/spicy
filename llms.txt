@@ -59,7 +59,7 @@ extraction, and row-wise summaries.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /
   bootstrap / jackknife variance, four effect-size families (f², Cohen’s
-  d, Hedges’s g, Hays’ omega²) with noncentral CIs, additive covariate
+  d, Hedges’s g, Hays’s omega²) with noncentral CIs, additive covariate
   adjustment with G-computation (Stata `margins` style) or equal-weight
   (`emmeans` style) marginal means, and weighted comparisons.
 - **Regression tables** with
@@ -1118,7 +1118,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   table_continuous_lm(): estimated marginal means, robust /
   cluster-robust / bootstrap / jackknife standard errors, case weights,
   additive covariate adjustment (G-computation or equal-weight), four
-  effect-size families (f2, Cohen’s d, Hedges’s g, Hays’ omega2) with
+  effect-size families (f2, Cohen’s d, Hedges’s g, Hays’s omega2) with
   noncentral CIs, and journal-styled output (APA by default; JAMA, NEJM,
   The Lancet, … by name) to console, gt, tinytable, flextable, Excel,
   Word, or clipboard.

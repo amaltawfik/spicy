@@ -15,7 +15,7 @@ table. This is the right choice when you want to stay in a linear-model
 workflow with heteroskedasticity-consistent or cluster-robust standard
 errors, bootstrap / jackknife variance, case weights, additive covariate
 adjustment, or one of four effect-size families (`f2`, Cohen’s *d*,
-Hedges’s *g*, Hays’ \\\omega^2\\) with noncentral CIs. Formatting
+Hedges’s *g*, Hays’s \\\omega^2\\) with noncentral CIs. Formatting
 follows APA conventions by default; `style = "jama"` (or `"nejm"`,
 `"lancet"`, `"annals"`, `"aer"`) switches the whole table to that
 journal’s published rules — the *House styles* section of [*Summary
@@ -441,7 +441,7 @@ table_continuous_lm(
 ```
 
 For categorical predictors with three or more levels (or numeric
-predictors), use Hays’ `omega²` for a less biased estimate of the
+predictors), use Hays’s `omega²` for a less biased estimate of the
 population variance explained (Hays 1963; Olejnik and Algina 2003;
 Lakens 2013):
 

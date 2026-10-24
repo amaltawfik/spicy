@@ -14,7 +14,7 @@ produces the slope and its confidence interval.
 Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
 (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling. Effect
-sizes (Cohen's *d* `"cohens_d"`, Hedges's *g* `"hedges_g"`, Hays'
+sizes (Cohen's *d* `"cohens_d"`, Hedges's *g* `"hedges_g"`, Hays's
 `"omega2"`, Cohen's `"f2"`) are reported with optional noncentral *t* /
 *F* confidence intervals via `effect_size_ci`, and adapt under covariate
 adjustment (see `effect_size`).
@@ -453,8 +453,8 @@ table_continuous_lm(
   - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 
-  - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
-    population variance explained, less optimistic than \\R^2\\ for
+  - `"omega2"`: Hays's `omega-squared`, a bias-corrected estimator of
+    the population variance explained, less optimistic than \\R^2\\ for
     small samples. Defined for any predictor type and truncated at 0.
 
   When `weights` is supplied, `"cohens_d"`, `"hedges_g"`, and `"omega2"`
@@ -876,12 +876,12 @@ internally consistent with the rest of the table.
   For published reports of two-group comparisons, *g* is the convention
   recommended by Hedges and Olkin (1985).
 
-- `"omega2"`: Hays' \\\omega^2\\, computed from weighted sums of squares
-  as `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and truncated at
-  0 for small or null effects (Hays 1963; Olejnik and Algina 2003). Less
-  biased than \\\eta^2\\ (which equals `R^2` in this single-predictor
-  design) and recommended for reporting variance explained in
-  ANOVA-style designs (Olejnik and Algina 2003).
+- `"omega2"`: Hays's \\\omega^2\\, computed from weighted sums of
+  squares as `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and
+  truncated at 0 for small or null effects (Hays 1963; Olejnik and
+  Algina 2003). Less biased than \\\eta^2\\ (which equals `R^2` in this
+  single-predictor design) and recommended for reporting variance
+  explained in ANOVA-style designs (Olejnik and Algina 2003).
 
 All four effect sizes are point estimates derived from the OLS/WLS fit
 and are **invariant to `vcov`**: choosing `HC*` changes the SE, CI, and
@@ -1004,7 +1004,7 @@ least-squares (or weighted least-squares) statistics regardless of
 When `weights` is supplied, `table_continuous_lm()` fits weighted linear
 models via `lm(..., weights = ...)`. Means become weighted least-squares
 estimates and contrasts and slopes are weighted. The fit statistics
-\\R^2\\ and adjusted \\R^2\\, as well as Hays' `omega^2` and Cohen's
+\\R^2\\ and adjusted \\R^2\\, as well as Hays's `omega^2` and Cohen's
 \\f^2\\, use the corresponding **weighted sums of squares** from the WLS
 fit. Cohen's `d` and Hedges's `g` use the **WLS coefficient and the
 model's weighted residual standard deviation** (`summary(fit)$sigma`),
@@ -1368,7 +1368,7 @@ table_continuous_lm(
 #> 
 #> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 
-# Hays' omega-squared for a 3-level predictor ("cohens_d" and
+# Hays's omega-squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
 table_continuous_lm(
   sochealth,
