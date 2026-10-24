@@ -40,6 +40,10 @@ Aujourd'hui spicy ne suit aucune de ces règles. La note des régressions défin
 - **Les clés de colonnes gardent « Med »** (contrat de la 0.13.0) ; seul l'en-tête affiché devient « Mdn ».
 - Un `note_label` saisi sous jama précède la ligne des abréviations.
 
+## Principe du contenu d'une définition (Amal, 2026-10-24)
+
+Une définition de note **identifie** la grandeur par son nom standard, en une expression, auteur compris quand il fait partie du nom (g de Hedges, V de Cramér, d de Cohen, ω² de Hays). Elle n'explique jamais ce que la grandeur mesure ni comment la lire : cela relève du texte, pour tout lectorat. `abbreviations = "all"` développe ainsi toutes les abréviations affichées, sauf n, N, p et les statistiques de test. La catégorie « dit plus que le sigle » (décision 3) est une **désambiguïsation**, gardée sous toutes les règles parce que le symbole seul est ambigu : η² partiel ou total, erreur standard fondée sur le plan ou sur le modèle, pd, MCSE. Les développements qui n'identifient rien (« oméga-carré », « êta-carré » seul pour le partiel) sont à corriger.
+
 ## Conséquences
 
 Ruptures visibles, chacune dans NEWS :
