@@ -634,7 +634,7 @@ test_that("CR1S reproduces Stata regress vce(cluster): vcovCL(HC1) SE + t(G-1)",
   )
   expect_match(
     note,
-    "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), clusters by g",
+    "cluster-robust (CR1S, Stata vce(cluster), t(G\u22121)), clusters by g",
     fixed = TRUE
   )
   # glm is refused with the Stata-ML explanation.

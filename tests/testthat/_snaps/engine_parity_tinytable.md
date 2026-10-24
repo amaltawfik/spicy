@@ -524,6 +524,227 @@
       ] // end block
       ) // end figure
 
+# the Typst source of a difference header, with its minus sign
+
+    Code
+      cat(.pt_typst(table_continuous_lm(d, y, by = g, ci = FALSE, r2 = "none",
+        show_n = FALSE, output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Continuous outcomes by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_1": 0, "1_1": 0, "0_2": 0, "1_2": 0, "0_3": 0, "1_3": 0, "0_4": 0, "1_4": 0, "0_0": 1, "1_0": 1
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([Variable], [y]),
+          ([M (A)], [55.40]),
+          ([M (B)], [48.30]),
+          ([Δ (B − A)], [−7.10]),
+          ([p], [.237]),
+        )
+      
+        #context layout(size => {
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 2, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 5, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [M (A)], [M (B)], [Δ (B − A)], [p],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [y], [55.40], [48.30], [−7.10], [.237],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Group comparison: t\-test from the linear model.])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of a note listing a missing `by` last
+
+    Code
+      cat(.pt_typst(table_continuous(d, y, by = g, show_columns = c("m", "sd", "n"),
+      p_value = FALSE, output = "tinytable")))
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Descriptive statistics by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_2": 0, "1_2": 0, "2_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "0_0": 1, "1_0": 1, "2_0": 1, "0_1": 1, "1_1": 1, "2_1": 1
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([Variable], [y], []),
+          ([Group], [A], [B]),
+          ([M], [56.00], [48.22]),
+          ([SD], [ 9.25], [17.30]),
+          ([n], [6], [9]),
+        )
+      
+        #context layout(size => {
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 3, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 5, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [Group], [M], [SD], [n],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [y], [A], [56.00], [ 9.25], [6],
+      [], [B], [48.22], [17.30], [9],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Missing values removed: y (3), g (2).])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
 # the Typst source of a table with decimal places per variable
 
     Code
@@ -720,7 +941,7 @@
         #context layout(size => {
           let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 1, [M (A)]), (2, 2, [M (B)]), (3, 3, [Δ (B \- A)]), (4, 5, [95% CI]), (6, 6, [p]), (7, 7, [R²]), (8, 8, [n]),) {
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 1, [M (A)]), (2, 2, [M (B)]), (3, 3, [Δ (B − A)]), (4, 5, [95% CI]), (6, 6, [p]), (7, 7, [R²]), (8, 8, [n]),) {
             let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
@@ -753,7 +974,7 @@
           // tinytable header start
           table.header(
             repeat: true,
-      [Variable], [M (A)], [M (B)], [Δ (B \- A)], table.cell(colspan: 2, align: center)[95% CI], [p], [R²], [n],
+      [Variable], [M (A)], [M (B)], [Δ (B − A)], table.cell(colspan: 2, align: center)[95% CI], [p], [R²], [n],
       [], [], [], [], [LL], [UL], [], [], [],
           ),
           // tinytable header end

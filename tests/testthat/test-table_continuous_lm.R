@@ -478,12 +478,12 @@ test_that("table_continuous_lm data.frame output labels binary contrasts explici
 
   expect_true("M (setosa)" %in% names(out))
   expect_true("M (versicolor)" %in% names(out))
-  expect_true("Δ (versicolor - setosa)" %in% names(out))
+  expect_true("Δ (versicolor \u2212 setosa)" %in% names(out))
   expect_true("95% CI LL" %in% names(out))
   expect_true("95% CI UL" %in% names(out))
   expect_true(any(grepl("^t\\([0-9]+\\)$", names(out))))
   expect_true("R²" %in% names(out))
-  expect_true(is.numeric(out$`Δ (versicolor - setosa)`))
+  expect_true(is.numeric(out[["Δ (versicolor \u2212 setosa)"]]))
 })
 
 test_that("table_continuous_lm data.frame output honors optional columns", {
@@ -930,13 +930,13 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
   )
 
   expect_true(all(
-    c("M (Female)", "M (Male)", "Δ (Male - Female)") %in% names(wide_raw)
+    c("M (Female)", "M (Male)", "Δ (Male \u2212 Female)") %in% names(wide_raw)
   ))
   expect_false(any(
     c("p", "n", "f²", "R²", "Adj. R²", "95% CI LL") %in% names(wide_raw)
   ))
   expect_true(all(
-    c("Variable", "M (Female)", "M (Male)", "Δ (Male - Female)") %in%
+    c("Variable", "M (Female)", "M (Male)", "Δ (Male \u2212 Female)") %in%
       names(wide_display)
   ))
   expect_false(any(
@@ -990,7 +990,7 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   hdr <- spicy:::build_header_rows_lm(c("Variable", "LL", "UL"), "95% CI")
   expect_equal(hdr$top, c("Variable", "95% CI", "95% CI"))
   expect_equal(hdr$bottom, c("", "LL", "UL"))
-  expect_match(spicy:::get_delta_label_lm(block), "versicolor - setosa")
+  expect_match(spicy:::get_delta_label_lm(block), "versicolor \u2212 setosa")
   expect_equal(spicy:::get_test_row_index_lm(block), 2L)
   expect_equal(spicy:::get_test_header_lm(block, TRUE, FALSE), "t")
   expect_null(spicy:::get_test_header_lm(block, FALSE, TRUE))
@@ -1839,7 +1839,7 @@ test_that("as.data.frame.spicy_continuous_lm_table returns the displayed table",
       "label",
       "M (Female)",
       "M (Male)",
-      "Δ (Male - Female)",
+      "Δ (Male \u2212 Female)",
       "95% CI LL",
       "95% CI UL",
       "p",
@@ -3774,7 +3774,7 @@ test_that("table_continuous_lm clipboard output can be exercised with a mocked w
   expect_true(is.character(captured))
   expect_match(
     captured,
-    "Variable;M \\(Female\\);M \\(Male\\);Δ \\(Male - Female\\)"
+    "Variable;M \\(Female\\);M \\(Male\\);Δ \\(Male \u2212 Female\\)"
   )
   expect_match(captured, "95% CI;95% CI")
   expect_match(captured, "LL;UL")
@@ -4828,13 +4828,13 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     attr(out, "note"),
     paste(
       "Note. Statistics weighted by w.",
-      "Rows with missing grp removed: 1. Rows with missing w removed: 1.",
+      "Missing values removed: grp (1). Rows with missing w removed: 1.",
       "Group comparison: t-test from the linear model.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   printed <- paste(utils::capture.output(print(out)), collapse = "\n")
-  expect_match(printed, "Rows with missing grp removed: 1.", fixed = TRUE)
+  expect_match(printed, "Missing values removed: grp (1).", fixed = TRUE)
   expect_match(printed, "Rows with missing w removed: 1.", fixed = TRUE)
   # No missing by / weights -> no ledger line: the note names the test
   # and defines the headers.
@@ -5720,9 +5720,9 @@ test_that("missing values are disclosed in the table note (decision 14)", {
   d$sex[1:3] <- NA
   n_bmi <- sum(is.na(d$bmi))
   n_age <- sum(is.na(d$age))
-  # Per-variable counts for outcomes AND covariates, then the by rows
-  # -- the same ledger wording as table_continuous(). The n column
-  # shows the effect of the exclusions; the note shows the cause.
+  # Per-variable counts for outcomes AND covariates, then `by` -- the
+  # same ledger wording as table_continuous(). The n column shows the
+  # effect of the exclusions; the note shows the cause.
   txt <- paste(
     capture.output(print(suppressMessages(
       table_continuous_lm(
@@ -5740,19 +5740,18 @@ test_that("missing values are disclosed in the table note (decision 14)", {
   expect_match(
     txt,
     sprintf(
-      "Missing values removed: Body mass index (%d), Age (years) (%d).",
+      "Missing values removed: Body mass index (%d), Age (years) (%d), Sex (3).",
       n_bmi,
       n_age
     ),
     fixed = TRUE
   )
-  expect_match(txt, "Rows with missing Sex removed: 3.", fixed = TRUE)
   relabelled <- suppressMessages(
     table_continuous_lm(d, select = bmi, by = sex, labels = c(bmi = "BMI"))
   )
   expect_match(
     attr(relabelled, "note"),
-    sprintf("Missing values removed: BMI (%d).", n_bmi),
+    sprintf("Missing values removed: BMI (%d), sex (3).", n_bmi),
     fixed = TRUE
   )
   # One note, at the bottom -- not repeated.
@@ -5795,11 +5794,8 @@ test_that("labels names the outcomes and the by variable (title, note)", {
   check <- function(out, by, rows) {
     expect_identical(attr(out, "group_label"), by)
     expect_identical(unique(out$label), c(rows, "plain", "na_lab", "empty"))
-    expect_match(
-      attr(out, "note"),
-      sprintf("Rows with missing %s removed: 3.", by),
-      fixed = TRUE
-    )
+    # `by` closes the list of the missing values removed.
+    expect_match(attr(out, "note"), sprintf("%s (3).", by), fixed = TRUE)
   }
   check(build(), "sex", "bmi")
   # No attribute, an NA one and an empty one fall back to the name.

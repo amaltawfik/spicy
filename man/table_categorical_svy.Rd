@@ -102,8 +102,10 @@ shows them as a \code{(Missing)} level, and a level displayed with that
 label beside them is an error, as there. Shown or dropped, they
 never enter the test: the p-value is computed on the complete cases
 either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.
-Under \code{drop_na = TRUE}, a \code{by} that no observation holds is an error
-(class \code{spicy_invalid_data}).}
+Dropped, they are counted in the note, \code{by} last: a missing \code{by} takes
+the observation out of every variable of the table, a missing value
+only out of its own variable. Under \code{drop_na = TRUE}, a \code{by} that no
+observation holds is an error (class \code{spicy_invalid_data}).}
 
 \item{proportion_ci}{Add the confidence interval of each percentage.}
 

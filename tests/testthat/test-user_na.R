@@ -281,7 +281,7 @@ test_that("cross_tab() by honors user_na for declared-missing group values", {
   expect_named(res, c("1", "2"))
   expect_match(
     attr(res[[1]], "note"),
-    "Rows with missing byv removed: 4.",
+    "Missing values removed: byv (4).",
     fixed = TRUE
   )
 

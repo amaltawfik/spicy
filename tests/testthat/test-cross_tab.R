@@ -1092,29 +1092,40 @@ test_that("cross_tab NA disclosure stands alone without a stats note", {
   expect_identical(attr(res, "note"), "Missing values removed: x (1).")
 })
 
-test_that("cross_tab discloses rows dropped for a missing `by`", {
+test_that("cross_tab lists the rows dropped for a missing `by` last", {
   df <- data.frame(
     x = c("A", "B", "A", "B", "A", NA),
     y = c("Y", "N", "Y", "N", "Y", "N"),
     g = c("g1", "g1", "g2", "g2", NA, "g1")
   )
   res <- suppressWarnings(cross_tab(df, x, y, by = g))
-  for (nm in names(res)) {
-    expect_match(
-      attr(res[[nm]], "note"),
-      "Rows with missing g removed: 1.",
-      fixed = TRUE,
-      info = paste("group", nm)
-    )
-  }
-  # The x NA lives in group g1, so only g1 reports it.
+  # The row with no `g` leaves both tables, and both list it; the x NA
+  # lives in group g1, so only g1 lists x.
   expect_match(
     attr(res[["g1"]], "note"),
-    "Missing values removed: x (1).",
+    "Missing values removed: x (1), g (1).",
     fixed = TRUE
   )
-  expect_false(
-    grepl("Missing values removed", attr(res[["g2"]], "note"), fixed = TRUE)
+  expect_match(
+    attr(res[["g2"]], "note"),
+    "Missing values removed: g (1).",
+    fixed = TRUE
+  )
+})
+
+test_that("the rows in total of cross_tab count the rows of a missing `by`", {
+  df <- data.frame(
+    x = c("A", "B", NA, "A", "B", NA, "A", "B"),
+    y = c("Y", "N", "Y", "N", "Y", NA, "N", "Y"),
+    g = c("g1", "g1", "g1", "g1", "g1", "g1", NA, NA)
+  )
+  res <- suppressWarnings(cross_tab(df, x, y, by = g))
+  # Rows 3 and 6 miss x, row 6 y too: two rows, which overlap. Rows 7 and
+  # 8 miss g, which took them out before x and y were counted: four rows.
+  expect_match(
+    attr(res[["g1"]], "note"),
+    "Missing values removed: x (2), y (1), g (2); 4 rows in total.",
+    fixed = TRUE
   )
 })
 

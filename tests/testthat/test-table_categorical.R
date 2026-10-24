@@ -3270,7 +3270,7 @@ test_that("the by title and the missing-values notes follow labels", {
     expect_match(
       attr(out, "note"),
       sprintf(
-        "Note. Missing values removed: %s (25). Rows with missing %s removed: 40.",
+        "Note. Missing values removed: %s (25), %s (40).",
         row,
         by
       ),
@@ -3569,7 +3569,7 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
   out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   expect_match(
     attr(out, "note"),
-    "Note. Missing values removed: smoking (25). Rows with missing sex_na removed: 40.",
+    "Note. Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
   expect_null(attr(out, "missing_note"))
@@ -3618,8 +3618,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     output = "default"
   )
   note <- attr(out_by, "note")
-  expect_match(note, "Missing values removed: v1 (2).", fixed = TRUE)
-  expect_match(note, "Rows with missing grp removed: 1.", fixed = TRUE)
+  expect_match(note, "Missing values removed: v1 (2), grp (1).", fixed = TRUE)
 
   # Nothing dropped -> no note at all (nothing to disclose).
   df_full <- data.frame(v1 = factor(c("a", "b", "a")))
@@ -4893,10 +4892,9 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   note <- paste(unlist(x_by@notes), collapse = " ")
   expect_match(
     note,
-    "Missing values removed: smoking (25).",
+    "Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
-  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
 
   # Nothing removed -> no note at all.
   clean <- table_categorical(
@@ -4935,7 +4933,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   )
   expect_match(
     attr(g_by, "spicy_note"),
-    "Rows with missing sex_na removed: 40.",
+    "Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
 
@@ -4979,7 +4977,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
   )
   expect_match(
     as.character(flextable::htmltools_value(f_by)),
-    "Rows with missing sex_na removed: 40.",
+    "Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
 
@@ -5019,7 +5017,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_match(
     attr(out_by, "note"),
-    "Rows with missing sex_na removed: 40.",
+    "Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
 

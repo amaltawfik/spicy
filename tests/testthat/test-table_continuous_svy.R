@@ -672,7 +672,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
   tbl <- table_continuous_svy(des, select = api00, by = stype)
   expect_match(
     attr(tbl, "note"),
-    "Rows with missing stype removed: 3.",
+    "Missing values removed: stype (3).",
     fixed = TRUE
   )
   # A labelled `by` is named by its label under `labels = TRUE`, as in
@@ -699,7 +699,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
   )
   expect_match(
     attr(tbl_lab, "note"),
-    "Rows with missing School type removed: 3.",
+    "Missing values removed: School type (3).",
     fixed = TRUE
   )
   # Dropping those rows does not cost the title its label.
@@ -1444,7 +1444,12 @@ test_that("the missing-values note names each variable by its row label", {
     expect_identical(attr(grouped, "group_label"), by)
     expect_match(
       attr(grouped, "note"),
-      sprintf("Rows with missing %s removed: 1.", by),
+      sprintf(
+        "Missing values removed: %s (1), %s (1), %s (1).",
+        row_y,
+        row_z,
+        by
+      ),
       fixed = TRUE
     )
   }

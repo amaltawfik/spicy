@@ -1049,9 +1049,11 @@
 #'   `options(spicy.labels = list(row_missing_level = "(Not stated)"))`.
 #'   If `TRUE`, rows with `NA` in the tabulated variable (and in `by`,
 #'   when supplied) are removed BEFORE each cross-tabulation, and the
-#'   removal is disclosed in a table note ("Missing values removed: ...")
-#'   rather than silent; a `by` that no observation holds is then an
-#'   error (class `spicy_invalid_data`).
+#'   removal is disclosed in a table note, `by` last ("Missing values
+#'   removed: smoking (25), sex (40).") rather than silent: a missing `by`
+#'   takes the row out of every variable of the table, a missing value
+#'   only out of its own variable. A `by` that no observation holds is
+#'   then an error (class `spicy_invalid_data`).
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
 #'   unquoted name or a character string. Rows with an `NA` weight leave
@@ -2037,9 +2039,14 @@ table_categorical <- function(
   # there is nothing to say. Read lazily at assembly time, after the
   # tabulation loops have filled the ledger.
   build_missing_note <- function() {
-    # Each variable is named as its rows name it (`labels` above).
+    # Each variable is named as its rows name it (`labels` above), and
+    # `by` closes the list.
     label_of <- stats::setNames(labels, select_names)
-    na_dropped <- .label_counts(na_dropped, label_of)
+    na_dropped <- .with_group_counts(
+      .label_counts(na_dropped, label_of),
+      by_label,
+      by_na_dropped
+    )
     user_na_dropped <- .label_counts(user_na_dropped, label_of)
     parts <- character(0)
     if (drop_na && length(na_dropped)) {
@@ -2068,12 +2075,6 @@ table_categorical <- function(
           ),
           "."
         )
-      )
-    }
-    if (drop_na && by_na_dropped > 0L) {
-      parts <- c(
-        parts,
-        spicy_fmt("note_rows_missing_by_removed", by_label, by_na_dropped)
       )
     }
     # The rows a missing weight removed, whatever `drop_na`: the

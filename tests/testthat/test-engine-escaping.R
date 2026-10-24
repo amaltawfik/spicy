@@ -463,7 +463,7 @@ test_that("an ordinary column name reaches gt untouched", {
       "Variable",
       "M (Lo)",
       "M (Hi)",
-      "\u0394 (Hi - Lo)",
+      "\u0394 (Hi \u2212 Lo)",
       "LL",
       "UL",
       "p",

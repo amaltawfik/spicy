@@ -693,9 +693,12 @@ abort_outcome_by_renamed <- function() {
 #'   `select` variable as a `(Missing)` level, excluded from the
 #'   comparison, and a level displayed with that label is an error, as in
 #'   [table_categorical()]; the missing values of the outcome are always
-#'   removed and counted in the note. Under `drop_na = TRUE`, a
-#'   grouping that no observation holds is an error (class
-#'   `spicy_invalid_data`).
+#'   removed and counted in the note. `TRUE` removes those of a `select`
+#'   variable from its block, and the note lists the variable after the
+#'   outcome ("Missing values removed: bmi (3), sex (2)."): a missing
+#'   outcome takes the row out of every block, a missing `select` value
+#'   only out of its own block. Under `drop_na = TRUE`, a grouping that
+#'   no observation holds is an error (class `spicy_invalid_data`).
 #' @param test Group comparison for every block: `"welch"` (default),
 #'   `"student"` or `"nonparametric"`. An outcome with no variance in a
 #'   block has no test there, whichever is chosen, with a warning (class
@@ -1549,13 +1552,24 @@ table_outcome <- function(
   show_es = FALSE,
   es_ci = FALSE
 ) {
+  # The outcome, then each `select` variable that lost rows, in the order
+  # of the blocks: the reader must be able to see which block lost which
+  # rows. By position: the names are the blocks' labels, and two blocks
+  # may share one.
+  removed <- .with_group_counts(
+    if (n_outcome_na > 0L) stats::setNames(n_outcome_na, outcome_label),
+    names(select_na_dropped),
+    unname(select_na_dropped)
+  )
   parts <- character(0)
-  if (n_outcome_na > 0L) {
+  if (length(removed)) {
     parts <- c(
       parts,
       paste0(
         spicy_str("note_missing_removed"),
-        spicy_fmt("note_missing_item", outcome_label, n_outcome_na),
+        .join_note_vars(
+          spicy_fmt("note_missing_item", names(removed), removed)
+        ),
         "."
       )
     )
@@ -1569,21 +1583,6 @@ table_outcome <- function(
         "."
       )
     )
-  }
-  # One occurrence per `select` variable: the reader must be able to see
-  # which block lost which rows. By position: the names are the blocks'
-  # labels, and two blocks may share one.
-  for (i in seq_along(select_na_dropped)) {
-    if (select_na_dropped[[i]] > 0L) {
-      parts <- c(
-        parts,
-        spicy_fmt(
-          "note_rows_missing_by_removed",
-          names(select_na_dropped)[[i]],
-          select_na_dropped[[i]]
-        )
-      )
-    }
   }
   if (n_na_weights > 0L) {
     parts <- c(

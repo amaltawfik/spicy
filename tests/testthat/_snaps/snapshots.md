@@ -265,7 +265,7 @@
     Output
       Continuous outcomes by sex
       
-       Variable │ M (F)  M (M)  Δ (M - F)  95% CI LL  95% CI UL   p     R²   n  
+       Variable │ M (F)  M (M)  Δ (M − F)  95% CI LL  95% CI UL   p     R²   n  
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 70.66  75.26    4.60       -0.85      10.06    .092  0.19  16 
       
@@ -279,7 +279,7 @@
     Output
       Continuous outcomes by sex
       
-       Variable │ M (F)  M (M)  Δ (M - F)  95% CI LL  95% CI UL   p     R²   n  
+       Variable │ M (F)  M (M)  Δ (M − F)  95% CI LL  95% CI UL   p     R²   n  
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 70.38  75.59    5.22       -7.00      17.44    .373  0.20  16 
       
@@ -293,7 +293,7 @@
     Output
       Continuous outcomes by sex
       
-       Variable │ M (F)  M (M)  Δ (M - F)  95% CI LL  95% CI UL   p     R²   n  
+       Variable │ M (F)  M (M)  Δ (M − F)  95% CI LL  95% CI UL   p     R²   n  
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 66.70  76.99    10.29      -2.79      23.37    .112  0.33  16 
       

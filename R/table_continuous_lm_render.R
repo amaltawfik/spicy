@@ -1536,8 +1536,10 @@ build_header_rows_lm <- function(col_keys, ci_spanner_label, labels = NULL) {
   list(top = top, bottom = bottom)
 }
 
+# The key is the English header, minus sign (U+2212) included: a reader
+# who copies the printed header finds the column by it.
 get_delta_label_lm <- function(block) {
-  paste0(.LM_KEY_DELTA, " (", block$level[2], " - ", block$level[1], ")")
+  paste0(.LM_KEY_DELTA, " (", block$level[2], " \u2212 ", block$level[1], ")")
 }
 
 get_test_row_index_lm <- function(block) {

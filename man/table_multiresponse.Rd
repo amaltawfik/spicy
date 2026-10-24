@@ -55,8 +55,9 @@ ordered by its value labels as there. The
 missing answers to the question are counted (see \code{base} and
 \code{none_row}), as a table that counts does (see \code{drop_na} in
 \code{\link[=table_categorical]{table_categorical()}}), but a missing \code{by} has no group to be counted
-in: rows with a missing \code{by} are removed, and the note says how
-many, so this table has no \code{drop_na}; a \code{by}
+in: rows with a missing \code{by} are removed from the whole table, and
+the note lists \code{by} with their count ("Missing values removed: sex
+(2)."), so this table has no \code{drop_na}; a \code{by}
 that no observation holds is an error (class \code{spicy_invalid_data}).
 A level displayed with the label of the \code{Total} margin is an error,
 as in \code{\link[=table_categorical]{table_categorical()}}.}

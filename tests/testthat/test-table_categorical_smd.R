@@ -127,7 +127,7 @@ test_that("the SMD sits on the variable row, never on a level row", {
   txt <- paste(capture.output(print(tb)), collapse = "\n")
   expect_match(txt, "-0.92", fixed = TRUE)
   expect_false(grepl(" -.92", txt, fixed = TRUE))
-  expect_match(txt, "SMD direction: A - B.", fixed = TRUE)
+  expect_match(txt, "SMD direction: A \u2212 B.", fixed = TRUE)
   expect_match(txt, "SMD = standardized mean difference.", fixed = TRUE)
   # The unsigned sentence appears because `k3` has three categories.
   expect_match(txt, "is therefore unsigned", fixed = TRUE)

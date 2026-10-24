@@ -686,9 +686,9 @@ tidy.spicy_continuous_lm_table <- function(x, ...) {
   if (any(effect_idx)) {
     types <- long$estimate_type[effect_idx]
     is_slope <- types == "slope"
-    # A tidy VALUE, not a header: the " - " reads like the one in the
-    # delta column key but names a contrast in a data column, so it must
-    # never follow that header's template.
+    # A tidy VALUE, not a header: a contrast named in a data column keeps
+    # the hyphen code filters on, and never follows the template of the
+    # delta header and its key.
     term_strings <- ifelse(
       is_slope,
       long$predictor_label[effect_idx],

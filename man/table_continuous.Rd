@@ -87,8 +87,10 @@ the \code{NA}s of each summarized variable are always excluded from that
 variable's statistics, and the exclusion is disclosed in a table
 note ("Missing values removed: ...") rather than silent. If \code{TRUE}
 (the default), rows with \code{NA} in \code{by} are removed from the grouped
-summaries, and a note line says so ("Rows with missing ...
-removed"). If \code{FALSE}, rows with \code{NA} in \code{by} form a
+summaries and counted in the same note, \code{by} after the variables
+("Missing values removed: bmi (3), sex (2)."): a missing \code{by} takes
+the row out of the whole table, a missing value only out of its own
+variable's statistics. If \code{FALSE}, rows with \code{NA} in \code{by} form a
 dedicated \code{"(Missing)"} group -- the field convention for
 descriptive tables (gtsummary's "Unknown" row; see the
 Epidemiologist R Handbook, Descriptive tables) -- while the

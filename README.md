@@ -466,7 +466,7 @@ table_continuous_lm(
   vcov = "HC3",
   output = "data.frame"
 )
-#>          variable           label M (Female) M (Male) Δ (Male - Female)
+#>          variable           label M (Female) M (Male) Δ (Male − Female)
 #> 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576
 #> 2             bmi             bmi   25.68506 26.19685         0.5117882
 #>    95% CI LL 95% CI UL            p          R²    n

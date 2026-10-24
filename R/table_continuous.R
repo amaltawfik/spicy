@@ -68,8 +68,10 @@
 #'   variable's statistics, and the exclusion is disclosed in a table
 #'   note ("Missing values removed: ...") rather than silent. If `TRUE`
 #'   (the default), rows with `NA` in `by` are removed from the grouped
-#'   summaries, and a note line says so ("Rows with missing ...
-#'   removed"). If `FALSE`, rows with `NA` in `by` form a
+#'   summaries and counted in the same note, `by` after the variables
+#'   ("Missing values removed: bmi (3), sex (2)."): a missing `by` takes
+#'   the row out of the whole table, a missing value only out of its own
+#'   variable's statistics. If `FALSE`, rows with `NA` in `by` form a
 #'   dedicated `"(Missing)"` group -- the field convention for
 #'   descriptive tables (gtsummary's "Unknown" row; see the
 #'   Epidemiologist R Handbook, Descriptive tables) -- while the
@@ -1178,9 +1180,14 @@ table_continuous <- function(
   }
   by_na_dropped <- 0L
   build_missing_note <- function() {
-    # Each variable is named as its rows name it (`var_labels` below).
+    # Each variable is named as its rows name it (`var_labels` below), and
+    # `by`, last, as the title names it (`group_label` below).
     label_of <- stats::setNames(var_labels, numeric_cols)
-    na_dropped <- .label_counts(na_dropped, label_of)
+    na_dropped <- .with_group_counts(
+      .label_counts(na_dropped, label_of),
+      resolve_variable_labels(data, group_col_name, labels),
+      by_na_dropped
+    )
     user_na_dropped <- .label_counts(user_na_dropped, label_of)
     parts <- character(0)
     if (length(na_dropped)) {
@@ -1208,17 +1215,6 @@ table_continuous <- function(
             )
           ),
           "."
-        )
-      )
-    }
-    if (by_na_dropped > 0L) {
-      parts <- c(
-        parts,
-        spicy_fmt(
-          "note_rows_missing_by_removed",
-          # The label the title prints (`group_label` below).
-          resolve_variable_labels(data, group_col_name, labels),
-          by_na_dropped
         )
       )
     }

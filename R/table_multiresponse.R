@@ -88,8 +88,9 @@
 #'   missing answers to the question are counted (see `base` and
 #'   `none_row`), as a table that counts does (see `drop_na` in
 #'   [table_categorical()]), but a missing `by` has no group to be counted
-#'   in: rows with a missing `by` are removed, and the note says how
-#'   many, so this table has no `drop_na`; a `by`
+#'   in: rows with a missing `by` are removed from the whole table, and
+#'   the note lists `by` with their count ("Missing values removed: sex
+#'   (2)."), so this table has no `drop_na`; a `by`
 #'   that no observation holds is an error (class `spicy_invalid_data`).
 #'   A level displayed with the label of the `Total` margin is an error,
 #'   as in [table_categorical()].
@@ -2056,9 +2057,15 @@ table_multiresponse <- function(
     )),
     .mr_base_sentence(base, n_nodata, n_none, none_row)
   )
+  # The items' missing answers belong to the base, in `what`: the list of
+  # the values removed names `by` alone.
   missing <- c(
     if (n_by_na > 0L) {
-      spicy_fmt("note_rows_missing_by_removed", by_label, n_by_na)
+      paste0(
+        spicy_str("note_missing_removed"),
+        spicy_fmt("note_missing_item", by_label, n_by_na),
+        "."
+      )
     },
     no_data_note
   )

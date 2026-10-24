@@ -79,7 +79,9 @@ expression.}
 that computes removes the missing values by default and counts them
 in the note, the rule of \code{\link[=table_continuous]{table_continuous()}}: \code{TRUE} (the default)
 removes them, and the missing values of each summarized variable are
-always removed. With \code{FALSE} they form a \code{(Missing)} domain of
+always removed. The note lists both, \code{by} last: a missing \code{by} takes
+the observation out of the whole table, a missing value only out of
+its own variable. With \code{FALSE} they form a \code{(Missing)} domain of
 their own -- an ordinary subpopulation, with its own degrees of
 freedom -- which is excluded from the group comparison. Ignored
 (with a warning) when \code{by} is not used.}

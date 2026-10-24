@@ -48,13 +48,13 @@ test_that(".robust_vcov_label names the Stata convention for CR1S", {
   # instead of the generic "cluster-robust (<type>)" one.
   expect_identical(
     spicy:::.robust_vcov_label("CR1S", cluster_name = "firm"),
-    "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), clusters by firm"
+    "cluster-robust (CR1S, Stata vce(cluster), t(G\u22121)), clusters by firm"
   )
   # No cluster NAME (a bare vector was passed): same CR1S wording, the
   # generic clause replaces the "clusters by <var>" one.
   expect_identical(
     spicy:::.robust_vcov_label("CR1S", cluster_name = NA_character_),
-    "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), cluster vector supplied"
+    "cluster-robust (CR1S, Stata vce(cluster), t(G\u22121)), cluster vector supplied"
   )
   # Contrast: any other CR* token keeps the generic label, so the
   # branch above is genuinely CR1S-specific.

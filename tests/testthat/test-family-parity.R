@@ -2965,7 +2965,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
         c(
           spicy_str("note_multiresponse_pct_cases"),
           .fn_lead("note_multiresponse_base"),
-          .fn_lead("note_rows_missing_by_removed"),
+          removed,
           .fn_lead("note_multiresponse_items_p")
         )
       ),
@@ -3003,6 +3003,123 @@ test_that("the sentences of every note come in the four kinds, in order", {
         attr(cases[[fn]][[1L]], "note"),
         cases[[fn]][[2L]],
         paste(lang, fn)
+      )
+    }
+  }
+})
+
+test_that("the missing values of `by` close the list of the values removed", {
+  # One sentence for every variable that lost values, the grouping
+  # variable last with its count, in every table and both languages. That
+  # a missing `by` takes the row out of the whole table is said in the
+  # help pages, not in the note.
+  skip_if_not_installed("survey")
+  set.seed(11)
+  n <- 40
+  d <- data.frame(
+    y = round(stats::rnorm(n, 50, 10)),
+    x = factor(sample(c("no", "yes"), n, TRUE)),
+    g = factor(rep(c("a", "b"), n / 2)),
+    m1 = sample(c(TRUE, FALSE), n, TRUE),
+    m2 = sample(c(TRUE, FALSE), n, TRUE),
+    w = 1
+  )
+  d$y[1:3] <- NA
+  d$x[c(3, 6)] <- NA
+  d$g[4:5] <- NA
+  labs <- c(y = "Well-being (WHO-5)", x = "Smoker", g = "Sex at birth")
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  note <- function(tbl) attr(tbl, "note")
+  expect_match(
+    note(q(table_continuous(d, y, by = g, labels = labs))),
+    "Missing values removed: Well-being (WHO-5) (3), Sex at birth (2).",
+    fixed = TRUE
+  )
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    # The sentence of (label, count) pairs, in the words of the registry.
+    removed <- function(...) {
+      items <- vapply(
+        list(...),
+        function(e) spicy_fmt("note_missing_item", e[[1L]], e[[2L]]),
+        character(1)
+      )
+      paste0(
+        spicy_str("note_missing_removed"),
+        paste(items, collapse = spicy_str("note_list_sep_comma")),
+        "."
+      )
+    }
+    y3 <- list(labs[["y"]], 3L)
+    x2 <- list(labs[["x"]], 2L)
+    g2 <- list(labs[["g"]], 2L)
+    cases <- list(
+      table_continuous = list(
+        q(table_continuous(d, y, by = g, labels = labs)),
+        removed(y3, g2)
+      ),
+      table_continuous_lm = list(
+        q(table_continuous_lm(d, y, by = g, labels = labs)),
+        removed(y3, g2)
+      ),
+      table_categorical = list(
+        q(table_categorical(d, x, by = g, labels = labs, drop_na = TRUE)),
+        removed(x2, g2)
+      ),
+      # The outcome first, then each block's variable, in block order.
+      table_outcome = list(
+        q(table_outcome(
+          d,
+          y,
+          select = c(g, x),
+          labels = labs,
+          drop_na = TRUE
+        )),
+        removed(y3, g2, x2)
+      ),
+      table_multiresponse = list(
+        q(table_multiresponse(d, c(m1, m2), by = g, labels = labs)),
+        removed(g2)
+      ),
+      table_continuous_svy = list(
+        q(table_continuous_svy(des, y, by = g, labels = labs)),
+        removed(y3, g2)
+      ),
+      table_categorical_svy = list(
+        q(table_categorical_svy(
+          des,
+          x,
+          by = g,
+          labels = labs,
+          drop_na = TRUE
+        )),
+        removed(x2, g2)
+      )
+    )
+    # cross_tab() names its variables, one note per group: the x NA of
+    # each group, then the rows no group holds.
+    ct <- q(cross_tab(d, x, m1, by = g))
+    for (gr in names(ct)) {
+      cases[[paste("cross_tab", gr)]] <- list(
+        ct[[gr]],
+        removed(list("x", 1L), list("g", 2L))
+      )
+    }
+    for (fn in names(cases)) {
+      got <- note(cases[[fn]][[1L]])
+      info <- paste(lang, fn)
+      expect_match(got, cases[[fn]][[2L]], fixed = TRUE, info = info)
+      expect_length(
+        gregexpr(spicy_str("note_missing_removed"), got, fixed = TRUE)[[1L]],
+        1L
+      )
+      # No sentence of the grouping variable's own (no weight is missing).
+      expect_no_match(
+        got,
+        .fn_lead("note_rows_missing_weights"),
+        fixed = TRUE,
+        info = info
       )
     }
   }
@@ -4517,7 +4634,7 @@ test_that("a labelled grouping names its groups by their value labels, in every 
   }
   # The first group is the reference of the model.
   expect_true(
-    "\u0394 ([1] Women - [2] Men)" %in%
+    "\u0394 ([1] Women \u2212 [2] Men)" %in%
       names(table_continuous_lm(d, select = y, by = g, output = "data.frame"))
   )
   # The rows of the same column, as a variable, read the same, in the

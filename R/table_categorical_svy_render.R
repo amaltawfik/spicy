@@ -532,11 +532,11 @@
     if (identical(deff, "replace")) spicy_str("note_deff_replace")
   )
   missing <- c(
-    .svy_missing_note(na_dropped, "note_missing_removed"),
+    .svy_missing_note(
+      .with_group_counts(na_dropped, group_col_name, by_na_dropped),
+      "note_missing_removed"
+    ),
     .svy_missing_note(user_na_dropped, "note_declared_missing_removed"),
-    if (by_na_dropped > 0L) {
-      spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
-    },
     no_data
   )
   inference <- lines[-1L]

@@ -151,9 +151,11 @@ another label with
 \code{options(spicy.labels = list(row_missing_level = "(Not stated)"))}.
 If \code{TRUE}, rows with \code{NA} in the tabulated variable (and in \code{by},
 when supplied) are removed BEFORE each cross-tabulation, and the
-removal is disclosed in a table note ("Missing values removed: ...")
-rather than silent; a \code{by} that no observation holds is then an
-error (class \code{spicy_invalid_data}).}
+removal is disclosed in a table note, \code{by} last ("Missing values
+removed: smoking (25), sex (40).") rather than silent: a missing \code{by}
+takes the row out of every variable of the table, a missing value
+only out of its own variable. A \code{by} that no observation holds is
+then an error (class \code{spicy_invalid_data}).}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
 of length \code{nrow(data)}, or a single column in \code{data} supplied as an

@@ -17,6 +17,10 @@
 #'   unset (use [freq()] for one-way tables).
 #' @param by Optional grouping variable or expression. Can be a single variable
 #'   or a combination of multiple variables (e.g. `interaction(vs, am)`).
+#'   A row with a missing `by` belongs to no group and leaves every table,
+#'   where a missing `x` or `y` leaves only its own; each note lists `by`
+#'   with that count after `x` and `y` ("Missing values removed: x (2),
+#'   grp (3).").
 #' @param weights Optional numeric weights. A logical vector is also
 #'   accepted and coerced to 1/0 (include / exclude).
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
@@ -1172,16 +1176,25 @@ cross_tab <- function(
     if (n_na_y > 0L) {
       na_parts <- c(na_parts, spicy_fmt("note_missing_item", y_name, n_na_y))
     }
+    # The rows a missing `by` removed from every table close the list.
+    if (n_by_dropped > 0L) {
+      na_parts <- c(
+        na_parts,
+        spicy_fmt("note_missing_item", by_name, n_by_dropped)
+      )
+    }
     if (length(na_parts) > 0L) {
       # With NAs on BOTH variables the per-variable counts overlap
       # (a row missing both is counted in each), so a reader summing
       # them overstates the loss. Disclose the deduplicated row count
       # once -- the SPSS Case Processing Summary convention. With a
       # single affected variable, values = rows and the suffix would
-      # be noise.
+      # be noise. The rows of a missing `by` add to that count: split()
+      # took them out before `x` and `y` were counted here, so they
+      # never overlap with theirs.
       na_suffix <- ""
       if (n_na_x > 0L && n_na_y > 0L) {
-        n_rows_na <- sum(sys_na_x | sys_na_y)
+        n_rows_na <- sum(sys_na_x | sys_na_y) + n_by_dropped
         na_suffix <- spicy_fmt("note_missing_rows_total", n_rows_na)
       }
       na_text <- paste0(
@@ -1231,18 +1244,6 @@ cross_tab <- function(
         note <- user_text
       } else {
         note <- paste0(note, "\n", user_text)
-      }
-    }
-    if (n_by_dropped > 0L) {
-      by_text <- spicy_fmt(
-        "note_rows_missing_by_removed",
-        by_name,
-        n_by_dropped
-      )
-      if (is.null(note) || note == "") {
-        note <- by_text
-      } else {
-        note <- paste0(note, "\n", by_text)
       }
     }
 

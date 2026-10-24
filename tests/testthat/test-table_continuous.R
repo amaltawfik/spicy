@@ -1588,7 +1588,7 @@ test_that("table_continuous discloses NA in the by column in the note only", {
   expect_equal(sort(unique(out$group)), c("A", "B"))
   expect_match(
     attr(out, "note"),
-    "Rows with missing g removed: 2.",
+    "Missing values removed: g (2).",
     fixed = TRUE
   )
 })
@@ -1689,8 +1689,7 @@ test_that("the by title and the missing-by note follow labels", {
       attr(out, "note"),
       sprintf(
         paste(
-          "Note. Missing values removed: %s (12).",
-          "Rows with missing %s removed: 18.",
+          "Note. Missing values removed: %s (12), %s (18).",
           "Group comparison: Welch one-way ANOVA.",
           "CI = confidence interval; LL = lower limit; UL = upper limit."
         ),
@@ -1738,7 +1737,7 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
   expect_equal(
     attr(out, "note"),
     paste(
-      "Note. Missing values removed: x (1). Rows with missing g removed: 2.",
+      "Note. Missing values removed: x (1), g (2).",
       "Group comparison: Welch t-test.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -2217,11 +2216,11 @@ test_that("the note gives its sentences in the order of the family", {
   expect_identical(
     attr(tbl, "note"),
     paste(
-      "Note. Missing values removed: x (1). Rows with missing g removed: 1.",
+      "Note. Missing values removed: x (1), g (1).",
       "No data for z in b.",
       "Group comparison: Wilcoxon rank-sum test (x); Welch t-test (y).",
       "P-values adjusted for 2 tests (Holm method).",
-      "SMD direction: a - b. The usual imbalance threshold is |SMD| > 0.1.",
+      "SMD direction: a \u2212 b. The usual imbalance threshold is |SMD| > 0.1.",
       "Q1 = first quartile; Q3 = third quartile;",
       "SMD = standardized mean difference."
     )
@@ -4572,7 +4571,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   d$sex_na[1:40] <- NA
 
   note <- paste(
-    "Note. Rows with missing sex_na removed: 40.",
+    "Note. Missing values removed: sex_na (40).",
     "Group comparison: Welch t-test.",
     "CI = confidence interval; LL = lower limit; UL = upper limit."
   )
@@ -4582,7 +4581,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_identical(paste(unlist(x@notes), collapse = " "), note)
   expect_match(
     tinytable::save_tt(x, output = "html"),
-    "Rows with missing sex_na removed: 40.",
+    "Missing values removed: sex_na (40).",
     fixed = TRUE
   )
 
@@ -4598,7 +4597,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_identical(nrow(f$footer$dataset), 1L)
   expect_match(
     as.character(flextable::htmltools_value(f)),
-    "Rows with missing sex_na removed: 40.",
+    "Missing values removed: sex_na (40).",
     fixed = TRUE
   )
 })
@@ -4646,7 +4645,7 @@ test_that("an existing table note is joined, never overwritten", {
   )
   note <- paste(unlist(z@notes), collapse = " ")
   expect_match(note, "HC3", fixed = TRUE)
-  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
+  expect_match(note, "Missing values removed: sex_na (40).", fixed = TRUE)
 })
 
 # ---- show_columns: statistic selection -----------------------------------
@@ -5184,7 +5183,7 @@ test_that("the note glosses only the columns actually displayed", {
     table_continuous(d, show_columns = c("med", "iqr"), output = "long"),
     "note"
   )
-  expect_match(n_iqr, "IQR = interquartile range (Q3 - Q1).", fixed = TRUE)
+  expect_match(n_iqr, "IQR = interquartile range (Q3 \u2212 Q1).", fixed = TRUE)
   expect_false(grepl("order-statistic", n_iqr, fixed = TRUE))
 
   n_full <- attr(

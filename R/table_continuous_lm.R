@@ -75,7 +75,10 @@
 #'   Rows with `NA` in `by` are excluded from the analytic sample for each
 #'   outcome (NAs in `y` and `weights` are also excluded; see Details), the
 #'   rule of a table that computes (see `drop_na` in
-#'   [table_continuous()]); this table has no `drop_na`.
+#'   [table_continuous()]); this table has no `drop_na`. The note lists
+#'   `by` after the outcomes and covariates ("Missing values removed: bmi
+#'   (3), sex (2)."): a missing `by` or covariate takes the row out of the
+#'   model of every outcome, a missing outcome only out of its own.
 #'
 #'   An outcome with no observed value in a level of a categorical `by`
 #'   (typically a question not asked in that group) has no data there: it
@@ -1669,8 +1672,8 @@ table_continuous_lm <- function(
   # in the table note. Per-variable NA counts (outcomes and
   # covariates, regular vs declared missing -- the same split
   # table_continuous() reports; decision 14, 2026-08-15: the `n`
-  # column shows the effect but not the cause), then rows dropped for
-  # a missing `by` value or a missing weight.
+  # column shows the effect but not the cause), the rows dropped for a
+  # missing `by` value closing the list, then those of a missing weight.
   na_dropped <- integer(0)
   user_na_dropped <- integer(0)
   for (.nm in c(numeric_outcomes, covariates_names)) {
@@ -1694,7 +1697,12 @@ table_continuous_lm <- function(
     c(outcome_labels, covariate_labels),
     c(numeric_outcomes, covariates_names)
   )
-  na_dropped <- .label_counts(na_dropped, label_of)
+  # `by` closes the list, named as the title names it.
+  na_dropped <- .with_group_counts(
+    .label_counts(na_dropped, label_of),
+    by_label,
+    sum(is.na(by_vector))
+  )
   user_na_dropped <- .label_counts(user_na_dropped, label_of)
   missing_parts <- character(0)
   if (length(na_dropped)) {
@@ -1723,13 +1731,6 @@ table_continuous_lm <- function(
         ),
         "."
       )
-    )
-  }
-  n_na_by <- sum(is.na(by_vector))
-  if (n_na_by > 0L) {
-    missing_parts <- c(
-      missing_parts,
-      spicy_fmt("note_rows_missing_by_removed", by_label, n_na_by)
     )
   }
   if (!is.null(weights_vec)) {

@@ -1037,6 +1037,46 @@ test_that("the Typst source of a table whose variable label spans its groups", {
 })
 
 
+# ---- the words of a header and of a note ----------------------------------
+
+test_that("the Typst source of a difference header, with its minus sign", {
+  skip_if_not_installed("tinytable")
+  set.seed(42)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), each = 10)),
+    y = round(stats::rnorm(20, 50, 10))
+  )
+  expect_snapshot(cat(.pt_typst(table_continuous_lm(
+    d,
+    y,
+    by = g,
+    ci = FALSE,
+    r2 = "none",
+    show_n = FALSE,
+    output = "tinytable"
+  ))))
+})
+
+test_that("the Typst source of a note listing a missing `by` last", {
+  skip_if_not_installed("tinytable")
+  set.seed(42)
+  d <- data.frame(
+    y = round(stats::rnorm(20, 50, 10)),
+    g = factor(rep(c("A", "B"), each = 10))
+  )
+  d$y[1:3] <- NA
+  d$g[c(4, 15)] <- NA
+  expect_snapshot(cat(.pt_typst(table_continuous(
+    d,
+    y,
+    by = g,
+    show_columns = c("m", "sd", "n"),
+    p_value = FALSE,
+    output = "tinytable"
+  ))))
+})
+
+
 # ---- decimal places per variable ------------------------------------------
 
 test_that("the Typst source of a table with decimal places per variable", {
@@ -1156,14 +1196,15 @@ test_that("Typst and LaTeX print a negative statistic with the minus sign", {
       .pt_typst(ascii)
     )
   )
-  # The outputs whose text is copied or recomputed keep the hyphen.
+  # The outputs whose text is copied or recomputed keep the hyphen of a
+  # number; the subtraction sign of the header is not a number (point 2).
   for (out in list(.pt_html(tt), .pt_markdown(tt))) {
     expect_match(out, "-0.08", fixed = TRUE)
-    expect_no_match(out, minus, fixed = TRUE)
+    expect_no_match(out, paste0(minus, "0."), fixed = TRUE)
   }
   console <- utils::capture.output(print(.pt_negative()))
   expect_true(any(grepl("-0.08", console, fixed = TRUE)))
-  expect_false(any(grepl(minus, console, fixed = TRUE)))
+  expect_false(any(grepl(paste0(minus, "0."), console, fixed = TRUE)))
   df <- .pt_negative(output = "data.frame")
   expect_true(any(unlist(Filter(is.numeric, df)) < 0))
   expect_false(any(grepl(minus, unlist(df), fixed = TRUE)))
@@ -1185,7 +1226,7 @@ test_that("Word and Excel keep the hyphen of a negative statistic", {
   ))
   for (text in list(word, excel)) {
     expect_true(all(c("-0.08", "-0.61") %in% text))
-    expect_false(any(grepl(minus, text, fixed = TRUE)))
+    expect_false(any(grepl(paste0(minus, "0."), text, fixed = TRUE)))
   }
 })
 

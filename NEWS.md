@@ -163,6 +163,10 @@ p-values, and notes.
 * The association interval columns of `as_structured()` keep their
   names, `CI lower` and `CI upper`.
 
+* In every output that names columns, the difference column of
+  `table_continuous_lm()` is `Δ (B − A)`, with the minus sign its header
+  shows, where it was `Δ (B - A)`.
+
 * `as_structured()` reads contract version 4, and refuses a view built
   by an older spicy.
 
@@ -299,6 +303,10 @@ p-values, and notes.
 
 * The `p_adjust` note of a `table_regression()` table of several models
   says the adjustment ran within each model.
+
+* The notes list the missing values of `by`, and of the groupings of
+  `table_outcome()`, after the others ("Missing values removed: score
+  (3), sex (2)."), where each had a sentence ("Rows with missing ...").
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins show column names by default:
@@ -676,6 +684,10 @@ p-values, and notes.
   `label` attribute of the others: `labels = var_labels(bmi = "IMC")`.
 
 ## Bug fixes
+
+* Labels that state a subtraction write the minus sign (U+2212), not a
+  hyphen: the header Δ (B − A) of `table_continuous_lm()`, the IQR
+  (Q3 − Q1), the SMD direction, and the t(G−1) of `vcov = "CR1S"`.
 
 * The table functions warn (class `spicy_ignored_arg`) when an argument
   typed in the call has no effect, and name only the arguments typed.

@@ -191,7 +191,6 @@ cell_other_categories	reviewed	2026-10-17	Autres modalités (%d)
 note_missing_removed	reviewed	2026-10-17	Valeurs manquantes retirées<NBSP>: 	
 note_declared_missing_removed	reviewed	2026-10-17	Valeurs manquantes déclarées retirées<NBSP>: 	
 note_missing_rows_total	reviewed	2026-10-17	<NBSP>; %d lignes au total	
-note_rows_missing_by_removed	reviewed	2026-10-17	Lignes retirées pour valeur manquante sur %s<NBSP>: %d.	
 note_rows_missing_weights	reviewed	2026-10-17	Lignes retirées pour valeur manquante sur %s<NBSP>: %d.	
 note_weighted_by	reviewed	2026-10-17	Statistiques pondérées par %s.	
 note_label	reviewed	2026-10-17	Libellé<NBSP>: %s	
@@ -336,7 +335,7 @@ note_vcov_cluster_vector	reviewed	2026-10-17	vecteur de grappes fourni
 note_vcov_cluster_named	reviewed	2026-10-17	grappes définies par %s	
 note_vcov_cr	reviewed	2026-10-17	robustes aux grappes (%s), %s	
 note_vcov_cr_bare	reviewed	2026-10-17	robustes aux grappes (%s)	
-note_vcov_cr1s	reviewed	2026-10-17	robustes aux grappes (CR1S, Stata vce(cluster), t(G-1)), %s	
+note_vcov_cr1s	reviewed	2026-10-24	robustes aux grappes (CR1S, Stata vce(cluster), t(G−1)), %s	
 note_vcov_bootstrap	reviewed	2026-10-17	bootstrap non paramétrique%s	
 note_vcov_bootstrap_cluster	reviewed	2026-10-17	bootstrap par grappes%s, grappes définies par %s	
 note_vcov_bootstrap_reps	reviewed	2026-10-17	 (%d réplications)	

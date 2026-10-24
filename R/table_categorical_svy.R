@@ -465,8 +465,10 @@
 #'   label beside them is an error, as there. Shown or dropped, they
 #'   never enter the test: the p-value is computed on the complete cases
 #'   either way, which is the convention [table_categorical()] applies.
-#'   Under `drop_na = TRUE`, a `by` that no observation holds is an error
-#'   (class `spicy_invalid_data`).
+#'   Dropped, they are counted in the note, `by` last: a missing `by` takes
+#'   the observation out of every variable of the table, a missing value
+#'   only out of its own variable. Under `drop_na = TRUE`, a `by` that no
+#'   observation holds is an error (class `spicy_invalid_data`).
 #' @param proportion_ci Add the confidence interval of each percentage.
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,

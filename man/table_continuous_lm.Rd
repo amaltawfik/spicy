@@ -97,7 +97,10 @@ regressor. Declared missing values follow \code{user_na} as usual.
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
 outcome (NAs in \code{y} and \code{weights} are also excluded; see Details), the
 rule of a table that computes (see \code{drop_na} in
-\code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}.
+\code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}. The note lists
+\code{by} after the outcomes and covariates ("Missing values removed: bmi
+(3), sex (2)."): a missing \code{by} or covariate takes the row out of the
+model of every outcome, a missing outcome only out of its own.
 
 An outcome with no observed value in a level of a categorical \code{by}
 (typically a question not asked in that group) has no data there: it

@@ -1178,7 +1178,7 @@ test_that("none_row = FALSE: the base sentence puts each count in the base or ou
   opening <- paste(
     "Note. Multiple answers possible: percentages can sum to more than 100%.",
     "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
-    "Rows with missing g removed: 1.",
+    "Missing values removed: g (1).",
     "Item p-values:"
   )
   expect_identical(substr(with_by, 1L, nchar(opening)), opening)
@@ -1733,7 +1733,7 @@ test_that("rows with a missing `by` are removed, and the note says how many", {
   expect_identical(out[["Total n"]][out$.row_role == "fit_stat"], 6)
   expect_match(
     attr(out, "note"),
-    "Rows with missing g removed: 1.",
+    "Missing values removed: g (1).",
     fixed = TRUE
   )
 })
@@ -2356,7 +2356,7 @@ test_that("the note names the items with no data in a group, after the base", {
     note(),
     paste(
       "Base: respondents with data for the question.",
-      "Rows with missing g removed: 1.",
+      "Missing values removed: g (1).",
       "No data for x2 in c.",
       "Item p-values:"
     ),
@@ -2367,7 +2367,7 @@ test_that("the note names the items with no data in a group, after the base", {
   d2$x3[d2$g %in% "c"] <- NA
   expect_match(
     note(d2),
-    "removed: 1. No data for x2 and x3 in c. Item p-values:",
+    "removed: g (1). No data for x2 and x3 in c. Item p-values:",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")

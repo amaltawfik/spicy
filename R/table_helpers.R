@@ -151,6 +151,21 @@ resolve_variable_labels <- function(data, cols, labels) {
   counts
 }
 
+# Internal: the counts of the grouping variables appended to a
+# missing-values ledger, after the variables, so that the note lists
+# every variable that lost values in one sentence ("Missing values
+# removed: score (3), sex (2)."). `labels` names each grouping variable
+# as the table names it, and is read only when a count is positive; a
+# count of 0 drops its entry. By position: two blocks of
+# `table_outcome()` may share a label.
+.with_group_counts <- function(counts, labels, n) {
+  keep <- n > 0L
+  if (!any(keep)) {
+    return(counts)
+  }
+  c(counts, stats::setNames(n[keep], labels[keep]))
+}
+
 # Internal: join the variable names or labels that a note lists, as in
 # "Missing values removed: sex (2), education (1)." or "Pearson
 # chi-squared test (sex, education)". The items take a comma unless one

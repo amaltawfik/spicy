@@ -630,7 +630,7 @@ test_that("as_structured() types a two-level bivariate model table", {
   expect_identical(s$col_meta[["M (Female)"]]$token, "emmean")
   expect_identical(s$col_meta[["M (Female)"]]$level, "Female")
   expect_identical(s$col_meta[["M (Male)"]]$level, "Male")
-  expect_identical(s$col_meta[["Δ (Male - Female)"]]$token, "delta")
+  expect_identical(s$col_meta[["Δ (Male \u2212 Female)"]]$token, "delta")
   expect_identical(s$col_meta$t$token, "statistic")
   expect_identical(s$col_meta[["R²"]]$token, "r2")
   expect_identical(s$col_meta$n$precision, 0L)

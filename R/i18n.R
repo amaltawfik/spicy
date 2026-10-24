@@ -32,14 +32,21 @@
 .spicy_strings <- c(
   # -- missing values: display level and disclosure notes ------------------
   row_missing_level = "(Missing)",
+  # One list for every variable that lost values: the variables of the
+  # rows first, in display order, then the grouping variables (the `by`,
+  # or the `select` variables of `table_outcome()`), each item a
+  # `note_missing_item`. A missing grouping value takes the row out of
+  # more than its own variable -- the whole table, or a block -- which the
+  # help page of each function states and the n column shows.
   note_missing_removed = "Missing values removed: ",
   note_declared_missing_removed = "Declared missing values removed: ",
   note_missing_item = "%s (%d)",
+  # The distinct rows behind a list whose counts can overlap (a row
+  # missing both variables of `cross_tab()`), the rows of a missing `by`
+  # included.
   note_missing_rows_total = "; %d rows in total",
-  note_rows_missing_by_removed = "Rows with missing %s removed: %d.",
-  # Same text as `note_rows_missing_by_removed`, different subject (the
-  # weights column, not the grouping variable): an inflected language needs
-  # the two apart.
+  # The rows a missing weight removed: a sentence of its own, as the
+  # weights column is not a variable the table displays.
   note_rows_missing_weights = "Rows with missing %s removed: %d.",
   note_weights_fallback = "weights",
   # Decision 17: the weighted table names its weights up front.
@@ -626,7 +633,7 @@
   # reads. One hole in `_beta_method`: one of the `note_beta_*` glosses,
   # each led by its `standardized` token (an identifier). The chi-squared
   # of a mixed model is a Wald test, that of a glm a likelihood-ratio test.
-  abbrev_iqr_width = "interquartile range (%s - %s)",
+  abbrev_iqr_width = "interquartile range (%s \u2212 %s)",
   abbrev_beta_method = "standardized coefficient (%s)",
   abbrev_f2_partial = "Cohen's partial f\u00B2",
   abbrev_eta2_partial = "partial eta squared",
@@ -802,9 +809,11 @@
   # per ROLE is the registry's rule, not one key per string.
   header_lm_mean_level = "%s (%s)",
   # Three holes: the increment glyph, then the two levels in the order
-  # the subtraction reads. The " - " is typographic punctuation, not a
-  # word, so it stays in the template.
-  header_lm_delta = "%s (%s - %s)",
+  # the subtraction reads. The minus sign between them, U+2212 as Chicago
+  # and APA set a subtraction, is typographic punctuation, not a word, so
+  # it stays in the template. The column KEY (`get_delta_label_lm()`)
+  # writes the same sign: it is the English header.
+  header_lm_delta = "%s (%s \u2212 %s)",
   # The adjusted coefficient of determination as a COLUMN header of
   # `table_continuous_lm()`, distinct from `fitstat_adj_r2`, the
   # fit-statistic ROW label of `table_regression()`: same string, two
@@ -946,9 +955,9 @@
   # last one is a displayed number, so it follows `decimal_mark` (decision
   # 29-C) and is built by `format_number()` at the call site -- never
   # written "0.1" here, because `spicy_fmt()` substitutes no decimal mark.
-  # The "-" between the group labels is punctuation, like
+  # The minus sign (U+2212) between the group labels is punctuation, like
   # `header_lm_delta`'s.
-  note_smd_direction = "%1$s direction: %2$s - %3$s. The usual imbalance threshold is |%1$s| > %4$s.",
+  note_smd_direction = "%1$s direction: %2$s \u2212 %3$s. The usual imbalance threshold is |%1$s| > %4$s.",
   # Why one column of the table has no sign while its neighbors do.
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
@@ -959,10 +968,8 @@
   # percentage column keeps the family's bare `header_percent_symbol`.
   # The percentage sentences (`note_multiresponse_pct_*`) are display
   # literals read through `spicy_str()`, hence their bare "%".
-  # After the rows removed for a missing `by` (the family's
-  # `note_rows_missing_by_removed`), the note says what the percentages
-  # sum to, then gives the base in one sentence that `.mr_base_sentence()`
-  # assembles from the inside out:
+  # The note says what the percentages sum to, then gives the base in one
+  # sentence that `.mr_base_sentence()` assembles from the inside out:
   #   1. the population of the base, `note_multiresponse_population_*`;
   #   2. `note_multiresponse_base_including` adds the counts the base
   #      holds, then `note_multiresponse_base_excluded` the counts it
@@ -1173,7 +1180,8 @@
   # Same opening without the cluster fragment: `table_continuous_lm()` may
   # have no cluster name to append.
   note_vcov_cr_bare = "cluster-robust (%s)",
-  note_vcov_cr1s = "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
+  # A t on G-1 degrees of freedom, with the minus sign of `test_n1_chisq`.
+  note_vcov_cr1s = "cluster-robust (CR1S, Stata vce(cluster), t(G\u22121)), %s",
   note_vcov_bootstrap = "nonparametric bootstrap%s",
   note_vcov_bootstrap_cluster = "cluster bootstrap%s, clusters by %s",
   note_vcov_bootstrap_reps = " (%d replicates)",

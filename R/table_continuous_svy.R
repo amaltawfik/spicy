@@ -609,7 +609,9 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   that computes removes the missing values by default and counts them
 #'   in the note, the rule of [table_continuous()]: `TRUE` (the default)
 #'   removes them, and the missing values of each summarized variable are
-#'   always removed. With `FALSE` they form a `(Missing)` domain of
+#'   always removed. The note lists both, `by` last: a missing `by` takes
+#'   the observation out of the whole table, a missing value only out of
+#'   its own variable. With `FALSE` they form a `(Missing)` domain of
 #'   their own -- an ordinary subpopulation, with its own degrees of
 #'   freedom -- which is excluded from the group comparison. Ignored
 #'   (with a warning) when `by` is not used.
@@ -1560,20 +1562,15 @@ table_continuous_svy <- function(
 # One "<something> removed: x (3), y (1)." sentence from a named count
 # vector, empty when nothing was removed. The two kinds of missing
 # value get their own sentence -- the family has two registry keys for
-# exactly that reason.
+# exactly that reason. By position: `by`, which closes the list, may
+# share a label with a variable.
 .svy_missing_note <- function(counts, prefix_key) {
   if (length(counts) == 0L) {
     return(NULL)
   }
   paste0(
     spicy_str(prefix_key),
-    .join_note_vars(
-      vapply(
-        names(counts),
-        function(nm) spicy_fmt("note_missing_item", nm, counts[[nm]]),
-        character(1)
-      )
-    ),
+    .join_note_vars(spicy_fmt("note_missing_item", names(counts), counts)),
     "."
   )
 }
@@ -1699,11 +1696,11 @@ table_continuous_svy <- function(
       if (identical(deff, "replace")) spicy_str("note_deff_replace")
     ),
     missing = c(
-      .svy_missing_note(na_dropped, "note_missing_removed"),
+      .svy_missing_note(
+        .with_group_counts(na_dropped, group_col_name, by_na_dropped),
+        "note_missing_removed"
+      ),
       .svy_missing_note(user_na_dropped, "note_declared_missing_removed"),
-      if (by_na_dropped > 0L) {
-        spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
-      },
       no_data
     ),
     inference = c(

@@ -797,7 +797,7 @@ test_that("`drop_na` also governs the missing-`by` domain", {
       table_categorical_svy(des, select = stype, by = sch.wide, drop_na = TRUE),
       "note"
     ),
-    "Rows with missing sch.wide removed: 4.",
+    "Missing values removed: sch.wide (4).",
     fixed = TRUE
   )
   # A labelled `by` is named by its label under `labels = TRUE`, as in
@@ -818,7 +818,7 @@ test_that("`drop_na` also governs the missing-`by` domain", {
   )
   expect_match(
     attr(tbl_lab, "note"),
-    "Rows with missing School-wide target met removed: 4.",
+    "Missing values removed: School-wide target met (4).",
     fixed = TRUE
   )
   # Dropping those rows does not cost the title its label.
@@ -873,11 +873,8 @@ test_that("labels names the rows, the by title and the notes", {
       sprintf("Missing values removed: %s (", row),
       fixed = TRUE
     )
-    expect_match(
-      note,
-      sprintf("Rows with missing %s removed: 4.", by),
-      fixed = TRUE
-    )
+    # `by` closes the same list.
+    expect_match(note, sprintf(", %s (4).", by), fixed = TRUE)
   }
   check(build(), "sch.wide", "stype")
   # An empty attribute, an NA one and none at all fall back to the name.

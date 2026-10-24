@@ -61,7 +61,7 @@ test_that("the SMD cell, the typed body and the note agree", {
   # abbreviations that close the note.
   expect_match(
     txt,
-    "SMD direction: A - B. The usual imbalance threshold is |SMD| > 0.1.",
+    "SMD direction: A \u2212 B. The usual imbalance threshold is |SMD| > 0.1.",
     fixed = TRUE
   )
   expect_match(txt, "SMD = standardized mean difference.", fixed = TRUE)
@@ -376,7 +376,7 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
       "; SMD = standardized mean difference.",
       ".",
       sub(
-        " SMD direction: A - B. The usual imbalance threshold is |SMD| > 0.1.",
+        " SMD direction: A \u2212 B. The usual imbalance threshold is |SMD| > 0.1.",
         "",
         note_on,
         fixed = TRUE

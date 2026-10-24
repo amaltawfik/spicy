@@ -265,10 +265,10 @@ test_that("an override that would not render is a classed error", {
   # Caught at option-read time, not inside the next table call: the
   # message can still name the key and quote the default it must match.
   withr::local_options(
-    spicy.labels = list(note_rows_missing_by_removed = "Rows removed.")
+    spicy.labels = list(note_rows_missing_weights = "Rows removed.")
   )
   expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
-  expect_error(spicy_str("header_mean"), "note_rows_missing_by_removed")
+  expect_error(spicy_str("header_mean"), "note_rows_missing_weights")
 
   withr::local_options(spicy.labels = list(header_mean = "Mean of %s"))
   expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
@@ -280,11 +280,11 @@ test_that("an override that would not render is a classed error", {
 
   # A correct override of a template is accepted and renders.
   withr::local_options(
-    spicy.labels = list(note_rows_missing_by_removed = "Dropped %s: %d.")
+    spicy.labels = list(note_rows_missing_weights = "Dropped %s: %d.")
   )
   expect_identical(
-    spicy_fmt("note_rows_missing_by_removed", "age", 3L),
-    "Dropped age: 3."
+    spicy_fmt("note_rows_missing_weights", "w", 3L),
+    "Dropped w: 3."
   )
 })
 

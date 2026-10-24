@@ -407,7 +407,7 @@ test_that("every frozen linear-model key equals its English display label", {
       "Variable",
       "M (x)",
       "M (y)",
-      "Δ (y - x)",
+      "Δ (y \u2212 x)",
       "95% CI LL",
       "95% CI UL",
       "t(4)",
@@ -441,6 +441,28 @@ test_that("every frozen linear-model key equals its English display label", {
   labs <- .lm_spec_labels(spec)
   expect_identical(.lm_labels("Estimate", labs), "Estimate")
   expect_identical(.lm_labels(c("Estimate", "p"), NULL), c("Estimate", "p"))
+})
+
+test_that("a label that states a subtraction writes the minus sign", {
+  # Chicago and APA set a subtraction with the minus sign, U+2212, not a
+  # hyphen: the header of the difference column and the width of the
+  # IQR, in every language.
+  set.seed(42)
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), each = 10)),
+    y = round(stats::rnorm(20, 50, 10))
+  )
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    out <- utils::capture.output(print(table_continuous_lm(d, y, by = g)))
+    header <- out[grepl("\u0394", out, fixed = TRUE)]
+    expect_length(header, 1L)
+    expect_match(header, "\u0394 (B \u2212 A)", fixed = TRUE, info = lang)
+    expect_no_match(header, "B - A", fixed = TRUE, info = lang)
+    note <- attr(table_continuous(d, y, show_columns = c("med", "iqr")), "note")
+    expect_match(note, "(Q3 \u2212 Q1)", fixed = TRUE, info = lang)
+    expect_no_match(note, "Q3 - Q1", fixed = TRUE, info = lang)
+  }
 })
 
 test_that("every frozen block identity equals its English caption", {

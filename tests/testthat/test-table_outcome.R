@@ -444,11 +444,13 @@ test_that("the note discloses the comparison, the missing and the shape", {
 
 test_that("the disclosures follow the arguments that cause them", {
   d <- .to_sh()
-  # `drop_na = TRUE`: one sentence per `select` variable that lost rows.
+  # `drop_na = TRUE`: a `select` variable that lost rows joins the list
+  # of the missing values removed, after the outcome.
   tbl <- .to_quiet(table_outcome(d, bmi, select = smoking, drop_na = TRUE))
   expect_match(
     attr(tbl, "note"),
-    "Rows with missing smoking removed: 25."
+    "Missing values removed: bmi (12), smoking (25).",
+    fixed = TRUE
   )
   # `overall = FALSE`: no sentence about a row that is not there.
   tbl2 <- .to_quiet(table_outcome(d, bmi, select = sex, overall = FALSE))
@@ -777,12 +779,7 @@ test_that("labels names the outcome and the blocks: title, rows, notes", {
     )
     expect_match(
       attr(tbl, "note"),
-      sprintf("Missing values removed: %s (12).", outcome),
-      fixed = TRUE
-    )
-    expect_match(
-      attr(tbl, "note"),
-      sprintf("Rows with missing %s removed: 25.", block),
+      sprintf("Missing values removed: %s (12), %s (25).", outcome, block),
       fixed = TRUE
     )
   }
