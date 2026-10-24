@@ -4,20 +4,23 @@ This release adds `table_multiresponse()` for "check all that apply"
 questions, makes `code_book()` a codebook you can deliver (an object, an
 Excel workbook, or a PDF), lets the categorical tables choose their test
 per variable, and gives the descriptive tables one contract for labels,
-p-values, and notes.
+p-values, and notes. The tables also come out ready to publish, with
+decked heads, the minus sign in Typst and LaTeX, row percentages in
+`table_categorical()`, decimals per variable, and notes you can replace,
+extend, or relabel (`note`, `note_add`, `note_labels`).
 
 ## Breaking changes
 
-* `table_categorical()` stops with an error (class
-  `spicy_label_collision`) when a level of a variable or of `by` reads
-  like the row or column it adds for missing values, or like its `Total`
-  margin, which it renamed `"(Missing_1)"` or `"Total_1"`. Rename the
-  level, or relabel the added row or column with `options(spicy.labels)`,
-  as the message shows.
+* `table_categorical()` refuses (class `spicy_label_collision`) a level
+  that reads like its row or column of missing values or its `Total`
+  margin, which it renamed `"(Missing_1)"` or `"Total_1"`.
 
 * `table_categorical_svy()`, `table_continuous()`,
   `table_continuous_svy()`, and `table_outcome()` refuse such a level
   the same way.
+
+* Rename such a level, or relabel the added row or column with
+  `options(spicy.labels)`, as the message shows.
 
 * `table_outcome()` also refuses a `select` variable displayed as
   "Overall", the label of its marginal row, where it showed two such
@@ -81,10 +84,9 @@ p-values, and notes.
   shows: with a two-level `by`, the *t* of the contrast, where it gave
   the *F* of the model.
 
-* In every table, `output = "data.frame"` is the displayed table with
-  its numbers: one row per printed row, the keys (`variable`, `label`,
-  and `level`, `group`, `.row_role` where they apply), then the printed
-  columns.
+* In every table, `output = "data.frame"` is the printed table with its
+  numbers: one row per printed row, the keys (`variable`, `label`, and
+  `level`, `group`, `.row_role` where they apply), then the columns.
 
 * In `output = "data.frame"`, the bounds of an interval are named as
   printed, `95% CI LL` and `95% CI UL` (`Female 95% CI LL` in
@@ -137,13 +139,12 @@ p-values, and notes.
   tables do. They returned the table.
 
 * `table_regression()` and `table_regression_uv()` name an interval
-  column with a point whatever `decimal_mark`: they wrote `97,5% CI`
-  under `decimal_mark = ","`.
+  column with a point whatever `decimal_mark` (the header follows it):
+  they wrote `97,5% CI` under `decimal_mark = ","`.
 
 * The interval columns of `table_regression()` are `97.5% CI LL` and
   `97.5% CI UL` in `as.data.frame()`, `97.5% CI: LL` and `97.5% CI: UL`
-  in `as_structured()`, `97.5% CI` in the printed object; the header
-  still follows the mark.
+  in `as_structured()`, and `97.5% CI` in the printed object.
 
 * The median columns of the continuous tables are `Med`, `Med [Q1, Q3]`,
   and `Med 95% CI LL` in `output = "data.frame"` and `as.data.frame()`,
@@ -242,16 +243,18 @@ p-values, and notes.
   `spicy_defunct`) that gives the call to use.
 
 * `inline()` cites a statistic of the variable (*p*, test, effect size,
-  association measure, SMD) without `model`. `table_categorical()` and
-  its survey twin cite it with a group too, which `table_continuous()`
-  and its survey twin refuse, giving the call without `model`.
+  association measure, SMD) without `model`.
+
+* `inline()` cites it with a group too in `table_categorical()` and its
+  survey twin, which `table_continuous()` and its survey twin refuse,
+  giving the call without `model`.
 
 * With a group, the categorical tables dropped these statistics and
   refused the table's own *p*; without a level, the continuous tables
   asked for one, though the first group's row alone carries the value.
 
 * In French, `inline()` selects an unnamed model of `table_regression()`
-  by the name its columns show, `"Modèle 1"`, or by its position, where
+  by the label over its columns, `"Modèle 1"`, or by its position, where
   it took `"Model 1"`.
 
 * Every table note is one paragraph: what the numbers are (weights,
@@ -263,12 +266,15 @@ p-values, and notes.
   missing values, and the order changed from table to table (#11).
 
 * `table_continuous()` and `table_continuous_lm()` now name the test
-  behind their p-values, and `table_categorical()` and
-  `table_continuous_lm()` say when the statistics are weighted.
+  behind their p-values, and `table_continuous()` the test of a statistic
+  shown without them ("Group comparison: Welch t-test.").
 
-* The sentence naming the test opens with "P-values:" ("P-value:" when
-  the table shows one), where it read "Group comparison:" ("Slope test:"
-  for a numeric `by`), or "p-values:" in a mixed-model regression note.
+* `table_categorical()` and `table_continuous_lm()` say when the
+  statistics are weighted.
+
+* The sentence naming the test behind the p-values opens with
+  "P-values:" ("P-value:" when the table shows one), where it read
+  "Group comparison:", or "p-values:" in a mixed-model regression note.
 
 * By default, a table note defines the abbreviations of the headers, the
   spanners, and the fit-statistic rows ("AIC = Akaike information
@@ -295,8 +301,8 @@ p-values, and notes.
   "Note." by default, as `table_regression()` does.
 
 * `table_regression()` and `table_regression_uv()` print a string in
-  `note` after the lead-in of the style, "Note." unless it opens with
-  one, and keep the stars legend below it; `note = FALSE` removes both.
+  `note` after the lead-in of the style ("Note." unless it opens with
+  one) and above the stars legend, where it replaced both.
 
 * `table_categorical()` printed "Note." in the middle of its note when
   `drop_na = TRUE` removed values (#11).
@@ -328,9 +334,9 @@ p-values, and notes.
   `table_outcome()`, after the others ("Missing values removed: score
   (3), sex (2)."), where each had a sentence ("Rows with missing ...").
 
-* The `note_ci_posterior_mixed` label of `options(spicy.labels)` takes
-  one hole, the coverage: the model's label now opens the sentence, as
-  in the other per-model notes.
+* In `table_regression()`, the credible-interval note of a Bayesian model
+  opens with the model's label, where it wrote "Model 2" whatever
+  `model_labels` said; `note_ci_posterior_mixed` takes only the coverage.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins show column names by default:
@@ -379,8 +385,11 @@ p-values, and notes.
 
 * `table_regression(nested = TRUE)` with a robust or cluster-robust
   `vcov` tests each added block with a Wald test on that matrix, labeled
-  as such: a Wald F-change for `lm`, a Wald χ² for `glm` and `coxph`,
-  and the regime of the coefficient tests for the other classes.
+  as such.
+
+* That test is a Wald F-change for `lm`, a Wald χ² for `glm` and
+  `coxph`, and follows the regime of the coefficient tests for the other
+  classes.
 
 * Tables of 0.13.0 built with a robust `vcov` and `nested = TRUE` show
   different change statistics. Under the classical `vcov`, the partial F
@@ -392,8 +401,7 @@ p-values, and notes.
 
 * The same error refuses the outcome in the `predictors` of
   `table_regression_uv()` and the covariates in the `select` of
-  `table_continuous_lm()`, which were dropped, as it did the outcome in
-  the `select` of `table_outcome()`.
+  `table_continuous_lm()`, which were dropped.
 
 * The same error refuses the weights column, which `table_continuous()`
   and `table_categorical()` described as a variable, and the cluster
@@ -417,8 +425,10 @@ p-values, and notes.
 
 * The table functions refuse a column that is not in the data, in
   `select`, `by`, `exclude`, `outcome`, or `predictors`, with an error
-  of class `spicy_missing_column` that names it, and the column it is
-  likely a typo of when one name is close.
+  of class `spicy_missing_column` that names it.
+
+* The error also names the column the missing one is likely a typo of,
+  when one name is close.
 
 * The class and the wording of these errors varied, some were not
   classed, and a name in a character `exclude` was ignored. A `by` of
@@ -499,23 +509,20 @@ p-values, and notes.
 
 * `table_regression()` refuses `vcov = "CR0"`, `"CR2"`, and `"CR3"` for
   `survreg`, `gam`, `bam`, `polr`, `clm`, `betareg`, `mlogit`,
-  `multinom`, `zeroinfl`, and `hurdle` fits (class
-  `spicy_unsupported_vcov`): `sandwich::vcovCL()` computes one estimator
-  for them, `"CR1"`, which the note now names. It refuses `"CR1"` to
-  `"CR3"` for `coxph` and the `rms` fits (`ols`, `lrm`, `cph`, `Glm`),
-  whose Lin-Wei or `robcov()` sandwich is `"CR0"`. Each class accepted
-  all four tokens and computed its one estimator under each, and the
-  note of the `vcovCL()` classes called it `CL`.
+  `multinom`, `zeroinfl`, and `hurdle` fits, whose estimator is `"CR1"`.
+
+* It refuses `"CR1"` to `"CR3"` for `coxph` and the `rms` fits (`ols`,
+  `lrm`, `cph`, `Glm`), whose Lin-Wei or `robcov()` sandwich is `"CR0"`.
+
+* These classes computed their one estimator under all four tokens. The
+  refusals have the class `spicy_unsupported_vcov`, and the note says
+  `CR1` where it said `CL`.
 
 * `sochealth` gains five columns after `dentist_12m`: the later columns
   move five places, and `table_categorical(sochealth)` tabulates 18
   variables by default, where it tabulated 13.
 
 ## New features
-
-* In `table_continuous()`, `table_continuous_svy()`, and
-  `table_continuous_lm()`, `digits` takes a named vector: one value per
-  variable for the numbers on its scale, the others at the default.
 
 * Every table function keeps the title it prints in `attr(x, "title")`,
   as `table_regression()` already did.
@@ -542,7 +549,7 @@ p-values, and notes.
   `table_continuous()`, `table_multiresponse()`, and the survey twins)
   always has a `group` column, `NA` without `by`.
 
-* Typst and LaTeX output, from tinytable and gt alike, and the PDF of
+* Typst and LaTeX output (only LaTeX for `gt`) and the PDF of
   `code_book()` write a negative number with the minus sign (U+2212);
   `spicy_style(minus_sign = "ascii")` keeps the hyphen.
 
@@ -588,7 +595,7 @@ p-values, and notes.
   respondents who skipped the question.
 
 * `spicy_style()` gains `note_label`, the word that opens the note under
-  a table: "Note." (APA, the default), "Note:" (Chicago, "Note :" with a
+  a table: "Note." (APA, the default), "Note:" (Chicago, "Note :" with a
   no-break space in French), or `""` for none.
 
 * `spicy_style()` gains `abbreviations`, which abbreviations a note
@@ -626,9 +633,11 @@ p-values, and notes.
 
 * `table_categorical()` gains `percent`, as in `cross_tab()`: with
   `percent = "row"`, each level's percentages sum to 100 across the
-  groups, and the note says so. `total_row = TRUE` closes each variable
-  with a Total row, which under row percentages gives the base rate
-  they are read against.
+  groups, and the note says so.
+
+* `table_categorical(total_row = TRUE)` closes each variable with a
+  Total row, which under row percentages gives the base rate they are
+  read against.
 
 * `table_categorical(test = "fisher")` applies Fisher's exact test to
   every variable, by Monte Carlo for a table too large for the exact
@@ -645,14 +654,20 @@ p-values, and notes.
   `table_outcome()` results inherit the class `spicy_table`, as the
   other tables do.
 
+* In `table_continuous()`, `table_continuous_svy()`, and
+  `table_continuous_lm()`, `digits` takes a named vector: one value per
+  variable for the numbers on its scale, the others at the default.
+
 * The `tidy()` of `table_continuous()` and `table_outcome()` gains
   `weighted_n`, `median`, `q1`, and `q3`, as the survey twin has, and
   `glance()` of `table_categorical()` gains `smd_type` and `smd_value`.
 
 * `table_multiresponse()`, experimental in this release, tabulates a
   "check all that apply" question: one row per item with the count and
-  the percentage of respondents who chose it (`percent` also gives
-  percentages of responses, or both) (#10, #11).
+  the percentage of respondents who chose it (#10, #11).
+
+* In `table_multiresponse()`, `percent` also gives the percentages of
+  responses, or both.
 
 * `table_multiresponse()` adds a row with the number of respondents in
   the base (`base`), and one for those who chose no item (`none_row`).
@@ -718,12 +733,12 @@ p-values, and notes.
 ## Bug fixes
 
 * Labels that state a subtraction write the minus sign (U+2212), not a
-  hyphen: the difference of `table_continuous_lm()` (Δ = B − A), the IQR
-  (Q3 − Q1), the SMD direction, and the t(G−1) of `vcov = "CR1S"`.
+  hyphen: the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
+  `vcov = "CR1S"`.
 
-* A range in a note takes an en dash, "N varies by predictor (12–30)"
-  or "(487–500 replicates)", and the singular-fit note writes ±1, where
-  they wrote 12-30 and +/-1.
+* The regression notes and those of `table_continuous_lm()` write a
+  range with an en dash ("N varies by predictor (12–30)"), and the
+  singular-fit note ±1, where they wrote 12-30 and +/-1.
 
 * The table functions warn (class `spicy_ignored_arg`) when an argument
   typed in the call has no effect, and name only the arguments typed.
@@ -747,8 +762,7 @@ p-values, and notes.
 
 * Outside the data frame, an effect size printed with its interval is
   headed with the level: `ES [95% CI]` in `table_continuous()` and
-  `table_outcome()`, `d [95% CI]` (or `f²`, `g`, `ω²`) in
-  `table_continuous_lm()`.
+  `table_outcome()`, and `d [95% CI]` in `table_continuous_lm()`.
 
 * The note's lead-in ("Note." or the `note_label` of the style) is in
   italics in Typst, LaTeX, Markdown documents, and Excel output, and in
@@ -776,12 +790,10 @@ p-values, and notes.
 
 * In Typst output, the second line of a wrapped level label starts under
   the first, not an em to its left: the level is indented by its cell,
-  no longer by spaces in its text. An indented label also no longer
-  wraps in a column wide enough for it.
+  no longer by spaces in its text.
 
 * In Typst output, a variable's label spans the columns before its
-  p-value and effect size, where it wrapped at the width of the levels
-  under it.
+  p-value and effect size, rather than widening the first column.
 
 * LaTeX output of `output = "tinytable"` scales a table wider than the
   text block down to it, note included. It ran off the page. A table
@@ -798,10 +810,9 @@ p-values, and notes.
   under it, and a `gt` table wider than the text block is scaled down to
   it.
 
-* Every error of a table function names it, where some named an internal
-  helper, `cross_tab()` or `freq()` (a negative weight in
-  `table_categorical()`), or an anonymous function (an unknown argument
-  of `table_regression_uv()`).
+* Every error of a table function names it, where some named a helper,
+  `cross_tab()` or `freq()` (a negative weight in `table_categorical()`),
+  or an anonymous function (`table_regression_uv()`).
 
 * A survey design handed to a plain table is a `spicy_invalid_data`
   error, and `?spicy` lists every class.
@@ -817,10 +828,6 @@ p-values, and notes.
   weighted by `w` while the note named `z`, and `covariates = age`
   adjusted for the column the object `age` named.
 
-* With `labels = TRUE`, a note reads "Missing values removed: Body mass
-  index (12), Sex (3)" or "P-values: Welch t-test (Sex); Welch one-way
-  ANOVA (Highest education level)".
-
 * A list of variables in a note is joined with semicolons when one of
   the labels contains a comma.
 
@@ -828,7 +835,7 @@ p-values, and notes.
   held an empty text, which Excel counted and refused in a formula.
 
 * `cross_tab()` sets `<` apart in its note: `p < .001`, and in French
-  `p < 0,001` with no-break spaces. It wrote `p <.001`.
+  `p < 0,001` with no-break spaces. It wrote `p <.001`.
 
 * `cross_tab()` prints its corner header in French ("Valeurs") under
   `options(spicy.language = "fr")`. The column keeps its name, `Values`.
@@ -869,9 +876,9 @@ p-values, and notes.
   the statistic without its degrees of freedom, where it refused it as
   a token of two columns, with `model` or not.
 
-* `spicy_style()` and the functions whose `digits` is one number refuse
-  a named `digits`, with a hint, and a name on any other `*_digits`;
-  they accepted it and dropped the name.
+* `spicy_style()` and the table functions whose `digits` is one number
+  refuse a named `digits`, with a hint, and a name on any other
+  `*_digits`; they accepted it and dropped the name.
 
 * `spicy_style()` names itself in its errors, where some named an
   internal helper.
@@ -912,8 +919,7 @@ p-values, and notes.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins name each variable of their
-  notes as the rows and the title do, where they used the column name
-  whatever `labels` said.
+  notes as the rows and the title do, where they used its column name.
 
 * The rendered formats of `table_categorical_svy()` head the bounds of a
   proportion `95% CI LL` and `95% CI UL` under each group, where they
@@ -997,13 +1003,9 @@ p-values, and notes.
   render one header row in `tinytable`, `gt`, `flextable`, Word, and
   Excel output, as documented, where an empty row sat under the labels.
 
-* `table_continuous()` names the test whose statistic it shows without
-  its p-value ("Group comparison: Welch t-test."), as its survey twin
-  and `table_outcome()` do.
-
 * `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, and
   the survey twins write the French headers of `table_regression()`,
-  such as `IC à 95 %` over `LI` and `LS`.
+  such as `IC à 95 %` over `LI` and `LS`.
 
 * `table_continuous_lm()` warns that `adjustment` without covariates and
   `contrast` with a numeric `by` have no effect.
@@ -1026,10 +1028,8 @@ p-values, and notes.
   perfect fit" warning through.
 
 * `table_continuous_lm()` does the same for an outcome that is an exact
-  linear function of `by` and the covariates: it keeps the slope, or the
-  adjusted means and the contrast, and the R² of 1, and shows a dash for
-  the interval, the test, and the effect size, where it printed a t of
-  5.20e+16 and R's warning.
+  linear function of `by` and the covariates, keeping R² = 1 and showing
+  a dash for the test and effect size, where it printed rounding noise.
 
 * `table_continuous_lm()` accepts `p_value = NULL`, now its default as in
   the rest of the family: the p-value is shown, `by` being required.
@@ -1088,10 +1088,10 @@ p-values, and notes.
 
 * In `table_regression()`, a `reference_label` you supply is printed as
   typed, and the footer of `reference_style = "footer"` is translated
-  ("Modalités de référence : ...").
+  ("Modalités de référence : ...").
 
 * `table_regression()` and `table_regression_uv()` write their headers
-  in French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %`
+  in French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %`
   over `LI` and `LS`, `R² ajusté`, and `Modèle 1`, which the notes cite.
 
 * The column names of `table_regression()` stay `SE`, `95% CI`,
@@ -1124,10 +1124,6 @@ p-values, and notes.
 * `table_regression()` sets the formula of the note on a cumulative
   cloglog hazard ratio in math signs, `P(Y ≤ j) = ζ_j − xβ` and
   `exp(−B)`, where it wrote `P(Y <= j) = zeta_j - xB` and `exp(-B)`.
-
-* `table_regression()` opens the note on the credible interval of a
-  Bayesian model beside frequentist ones with the model's column label,
-  where it wrote "Model 2" whatever `model_labels` said.
 
 * `table_regression()` now handles `glmer()` fits with a Gamma,
   inverse-Gaussian, or non-identity gaussian family, testing their
@@ -1178,9 +1174,8 @@ p-values, and notes.
   non-canonical link or a non-Gaussian `bam()` were wrong too.
 
 * `table_regression(nested = TRUE)` divides the deviance difference by
-  the dispersion for `glm()` fits whose family estimates it (gaussian,
-  Gamma, inverse Gaussian, quasi), so that the Δχ² row is the statistic
-  its p-value is computed on. It showed the raw difference.
+  the dispersion for `glm()` fits that estimate one (gaussian, Gamma,
+  inverse Gaussian, quasi), where the Δχ² row showed the raw difference.
 
 * `table_regression(nested = TRUE)` does the same for `mgcv::gam()` and
   `mgcv::bam()` fits, whose test is no longer dropped when rounding
