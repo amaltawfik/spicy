@@ -269,7 +269,7 @@ design’s.</p>
 <span><span class="co">#&gt;    No       <span style="color: #9E9E9E;">│</span>   53    29.0  </span></span>
 <span><span class="co">#&gt;    Yes      <span style="color: #9E9E9E;">│</span>  130    71.0  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p><code>n</code> is the <em>observed</em> count: 144 schools of type E
 were sampled. The <code>78.7%</code> beside it is an <em>estimate</em>
 of the population share, and the two answer different questions – which
@@ -291,7 +291,7 @@ population (6194) beside the sample size (183).</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7       3.5         15.8       1.91  </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7       8.4         21.3       1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
 <p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
 interval from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. That is deliberate:
 <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the transformed scale its method
@@ -309,7 +309,7 @@ interval and not of the proportion.</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>    3     13.0      11      6.9        14        7.7            </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>    8     34.8      17     10.6        25       13.7            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The <code>p</code> is <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">svychisq()</a></code>: Pearson’s chi-square
 with the Rao-Scott second-order correction, referred to <em>F</em>(ndf,
 <code>degf(design)</code>). <code>chisq_statistic</code> offers

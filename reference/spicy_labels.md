@@ -161,6 +161,6 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Note. P-value: Pearson chi-squared test.
+#> Note. N = 1200: No (n = 926), Yes (n = 249), (No answer) (n = 25). Percentages are column percentages. P-value: Pearson chi-squared test.
 options(old)
 ```

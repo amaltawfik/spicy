@@ -573,7 +573,7 @@ table_categorical_svy(dclus1, select = c(stype, awards))
 #>    No       │   53    29.0  
 #>    Yes      │  130    71.0  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage. n = observed (unweighted) count.
 table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #> Categorical table by sch.wide
 #> 
@@ -584,7 +584,7 @@ table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #>    H        │    3     13.0      11      6.9        14        7.7            
 #>    M        │    8     34.8      17     10.6        25       13.7            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 table_categorical_svy(
   dclus1,
   select = stype,
@@ -600,5 +600,5 @@ table_categorical_svy(
 #>    H        │   14     7.7       3.5         15.8       1.91  
 #>    M        │   25    13.7       8.4         21.3       1.40  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

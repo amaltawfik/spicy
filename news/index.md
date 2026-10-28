@@ -173,6 +173,11 @@ decimals per variable, and notes you can replace, extend, or relabel
   `"cramer_v"`), as the long output does, where it gave the header
   (`Effect size` when measures differed).
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  computes its percentages on the observed values: the `(Missing)` row
+  shows its count and no percentage. `percent_base = "total"` gives back
+  the percentages of 0.13.0.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -385,6 +390,18 @@ decimals per variable, and notes you can replace, extend, or relabel
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   say when the statistics are weighted.
+
+- The note of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  opens with the sample size, the rows it describes: “N = 159.” or “N =
+  159: Women (n = 80), Men (n = 79).”, “(unweighted)” under `weights`.
+
+- Under `by`, the notes of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  say the direction of the percentages, “Percentages are column
+  percentages.” or row percentages.
 
 - The sentence naming the test behind the p-values opens with
   “P-values:” (“P-value:” when the table shows one), where it read
@@ -871,9 +888,14 @@ decimals per variable, and notes you can replace, extend, or relabel
   with `percent = "row"`, each level’s percentages sum to 100 across the
   groups, and the note says so.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains `percent_base`: `"valid"`, the default, computes the percentages
+  on the observed values, `"total"` on every row, the `(Missing)` row
+  included.
+
 - `table_categorical(total_row = TRUE)` closes each variable with a
-  Total row, which under row percentages gives the base rate they are
-  read against.
+  Total row, set apart by a thin rule, which under row percentages gives
+  the base rate they are read against.
 
 - `table_categorical(test = "fisher")` applies Fisher’s exact test to
   every variable, by Monte Carlo for a table too large for the exact

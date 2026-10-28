@@ -216,7 +216,7 @@ inline(tbl, "n")
 # columns or as rows.
 ct <- table_categorical(sochealth, select = smoking, by = sex)
 inline(ct, smoking, "Yes", "pct", model = "Female")
-#> [1] "21.1"
+#> [1] "21.6"
 cn <- table_continuous(sochealth, select = bmi, by = sex)
 inline(cn, bmi, model = "Female")
 #> [1] "25.69"

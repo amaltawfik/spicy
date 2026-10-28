@@ -50,8 +50,11 @@ missing values the table adds, `"total"` on the Total row of
 `by`), `total` (`TRUE` on the rows of the margin and of the Total row),
 `n`, and `proportion` (between 0 and 1, the share the table displays:
 within the group, or within the level under `percent = "row"`, as
-`attr(x, "percent")` records). Filter on the role columns and `total`
-rather than on the displayed labels, which follow the display language.
+`attr(x, "percent")` records; `NA` on the row of missing values under
+`percent_base = "valid"`, which leaves them out of the base, as
+`attr(x, "percent_base")` records). Filter on the role columns and
+`total` rather than on the displayed labels, which follow the display
+language.
 
 `glance()` returns one row per variable, in the order of `select`, with
 its test (when `by` is used), the requested association measure and the

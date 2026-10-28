@@ -92,7 +92,7 @@ table_categorical(stacked, select = source, by = sex)
 #>    info_family     │     
 #>    info_media      │     
 #> 
-#> Note. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 2001: Female (n = 1079), Male (n = 922). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 That table misreads the question in three ways.
@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_10b8n4ydnn09l6qd7w83 .table
+Multiple responses by Sex {#tinytable_63hi22o5353rihl6m26m .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -37,9 +37,9 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  smoking           │                                                         
-#>    No              │        179               68.6                415        
-#>    Yes             │         78               29.9                112        
-#>    (Missing)       │          4                1.5                 12        
+#>    No              │        179               69.6                415        
+#>    Yes             │         78               30.4                112        
+#>    (Missing)       │          4                                    12        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                         
 #>    No              │        177               67.8                310        
@@ -52,9 +52,9 @@ table_categorical(
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  smoking           │                                                    
-#>    No              │       77.0            332         83.0       926   
-#>    Yes             │       20.8             59         14.8       249   
-#>    (Missing)       │        2.2              9          2.2        25   
+#>    No              │       78.7            332         84.9       926   
+#>    Yes             │       21.3             59         15.1       249   
+#>    (Missing)       │                         9                     25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                    
 #>    No              │       57.5            163         40.8       650   
@@ -67,9 +67,9 @@ table_categorical(
 #>  Variable          │ Total %    p     V  
 #> ───────────────────┼─────────────────────
 #>  smoking           │          <.001  .14 
-#>    No              │  77.2               
-#>    Yes             │  20.8               
-#>    (Missing)       │   2.1               
+#>    No              │  78.8               
+#>    Yes             │  21.2               
+#>    (Missing)       │                     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │          <.001  .21 
 #>    No              │  54.2               
@@ -79,7 +79,7 @@ table_categorical(
 #>    No              │  29.5               
 #>    Yes             │  70.5               
 #> 
-#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
@@ -87,14 +87,16 @@ the console, folded into successive panels when it is wider than the
 console. Reading the table: each level of `by` gets a pair of columns,
 the count `n` and the **column percentage** computed within that group –
 percentages sum to 100 down each education group (for smoking within
-“Lower secondary”: 68.6 + 29.9 + 1.5 = 100.0) – and the `Total` pair is
-the margin over all groups combined. In the last panel, `p` is the
-*p*-value of the test of association between the row variable and `by`,
-computed once per variable on its full cross-table (Pearson’s
-chi-squared here, as the note says; see the test section below), and the
-final column is the association measure – here Cramer’s V (covered
-below). Use `output = "data.frame"` for a plain data frame suitable for
-further processing.
+“Lower secondary”: 69.6 + 30.4 = 100.0, the four missing answers counted
+in their own row, out of the base) – and the `Total` pair is the margin
+over all groups combined. The note opens with the sample size and the
+size of each group, then says the direction of the percentages. In the
+last panel, `p` is the *p*-value of the test of association between the
+row variable and `by`, computed once per variable on its full
+cross-table (Pearson’s chi-squared here, as the note says; see the test
+section below), and the final column is the association measure – here
+Cramer’s V (covered below). Use `output = "data.frame"` for a plain data
+frame suitable for further processing.
 
 `percent = "row"` reads the table the other way: each cell is the share
 of the row’s respondents that falls in the group, so the percentages sum
@@ -124,6 +126,7 @@ table_categorical(
 #>    Lower secondary │ 179   68.6    78   29.9        4           1.5     
 #>    Upper secondary │ 415   77.0   112   20.8       12           2.2     
 #>    Tertiary        │ 332   83.0    59   14.8        9           2.2     
+#> ───────────────────┼────────────────────────────────────────────────────
 #>    Total           │ 926   77.2   249   20.8       25           2.1     
 #> 
 #>  Variable          │ Total n  Total %    p     V  
@@ -132,9 +135,10 @@ table_categorical(
 #>    Lower secondary │   261     100.0              
 #>    Upper secondary │   539     100.0              
 #>    Tertiary        │   400     100.0              
+#> ───────────────────┼──────────────────────────────
 #>    Total           │  1200     100.0              
 #> 
-#> Note. Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: No (n = 926), Yes (n = 249), (Missing) (n = 25). Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## One-way tables
@@ -152,13 +156,15 @@ table_categorical(
 #>  Variable            │   n      %    
 #> ─────────────────────┼───────────────
 #>  smoking             │               
-#>    No                │  926    77.2  
-#>    Yes               │  249    20.8  
-#>    (Missing)         │   25     2.1  
+#>    No                │  926    78.8  
+#>    Yes               │  249    21.2  
+#>    (Missing)         │   25          
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity   │               
 #>    No                │  650    54.2  
-#>    Yes               │  550    45.8
+#>    Yes               │  550    45.8  
+#> 
+#> Note. N = 1200.
 ```
 
 `select` itself is optional: when omitted, the table includes every
@@ -213,14 +219,14 @@ table_categorical(
 )
 #>   variable   label     level     .row_role Lower secondary n Lower secondary %
 #> 1  smoking smoking      <NA> factor_header                NA                NA
-#> 2  smoking smoking        No         level               179         68.582375
-#> 3  smoking smoking       Yes         level                78         29.885057
-#> 4  smoking smoking (Missing)       missing                 4          1.532567
-#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n   Total %
-#> 1                NA                NA         NA         NA      NA        NA
-#> 2               415         76.994434        332      83.00     926 77.166667
-#> 3               112         20.779221         59      14.75     249 20.750000
-#> 4                12          2.226345          9       2.25      25  2.083333
+#> 2  smoking smoking        No         level               179          69.64981
+#> 3  smoking smoking       Yes         level                78          30.35019
+#> 4  smoking smoking (Missing)       missing                 4                NA
+#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n  Total %
+#> 1                NA                NA         NA         NA      NA       NA
+#> 2               415          78.74763        332   84.91049     926 78.80851
+#> 3               112          21.25237         59   15.08951     249 21.19149
+#> 4                12                NA          9         NA      25       NA
 #>              p         V
 #> 1 2.012877e-05 0.1356677
 #> 2           NA        NA
@@ -247,10 +253,10 @@ head(table_categorical(
 #> 3  smoking smoking    No     level        Tertiary       group FALSE 332
 #> 4  smoking smoking    No     level           Total       total  TRUE 926
 #>        pct   test_type statistic df      p.value  es_type  es_value es_ci_lower
-#> 1 68.58238 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
-#> 2 76.99443 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
-#> 3 83.00000 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
-#> 4 77.16667 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 1 69.64981 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 2 78.74763 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 3 84.91049 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 4 78.80851 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
 #>   es_ci_upper smd_type smd_value
 #> 1          NA     <NA>        NA
 #> 2          NA     <NA>        NA
@@ -290,9 +296,9 @@ table_categorical(
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
 #>  Smoking status            │                                      
-#>    No                      │        179               68.6        
-#>    Yes                     │         78               29.9        
-#>    (Missing)               │          4                1.5        
+#>    No                      │        179               69.6        
+#>    Yes                     │         78               30.4        
+#>    (Missing)               │          4                           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                                      
 #>    No                      │        177               67.8        
@@ -301,9 +307,9 @@ table_categorical(
 #>  Variable                  │ Upper secondary n  Upper secondary %  Tertiary n 
 #> ───────────────────────────┼──────────────────────────────────────────────────
 #>  Smoking status            │                                                  
-#>    No                      │        415               77.0            332     
-#>    Yes                     │        112               20.8             59     
-#>    (Missing)               │         12                2.2              9     
+#>    No                      │        415               78.7            332     
+#>    Yes                     │        112               21.3             59     
+#>    (Missing)               │         12                                 9     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                                                  
 #>    No                      │        310               57.5            163     
@@ -312,15 +318,15 @@ table_categorical(
 #>  Variable                  │ Tertiary %  Total n  Total %    p     V  
 #> ───────────────────────────┼──────────────────────────────────────────
 #>  Smoking status            │                               <.001  .14 
-#>    No                      │    83.0       926     77.2               
-#>    Yes                     │    14.8       249     20.8               
-#>    (Missing)               │     2.2        25      2.1               
+#>    No                      │    84.9       926     78.8               
+#>    Yes                     │    15.1       249     21.2               
+#>    (Missing)               │                25                        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                               <.001  .21 
 #>    No                      │    40.8       650     54.2               
 #>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## Association measures and confidence intervals
@@ -366,16 +372,16 @@ table_categorical(
 #>  Variable    │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ─────────────┼─────────────────────────────────────────────────────────
 #>  smoking     │                                                         
-#>    No        │        179               68.6                415        
-#>    Yes       │         78               29.9                112        
-#>    (Missing) │          4                1.5                 12        
+#>    No        │        179               69.6                415        
+#>    Yes       │         78               30.4                112        
+#>    (Missing) │          4                                    12        
 #> 
 #>  Variable    │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
 #> ─────────────┼─────────────────────────────────────────────────────────────
 #>  smoking     │                                                             
-#>    No        │       77.0            332         83.0       926     77.2   
-#>    Yes       │       20.8             59         14.8       249     20.8   
-#>    (Missing) │        2.2              9          2.2        25      2.1   
+#>    No        │       78.7            332         84.9       926     78.8   
+#>    Yes       │       21.3             59         15.1       249     21.2   
+#>    (Missing) │                         9                     25            
 #> 
 #>  Variable    │   p    Lambda 
 #> ─────────────┼───────────────
@@ -384,7 +390,7 @@ table_categorical(
 #>    Yes       │               
 #>    (Missing) │               
 #> 
-#> Note. P-value: Pearson chi-squared test.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test.
 ```
 
 A significant chi-squared *p*-value next to a lambda of exactly .00 is
@@ -416,46 +422,46 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  smoking           │                                                         
-#>    No              │        179               68.6                415        
-#>    Yes             │         78               29.9                112        
-#>    (Missing)       │          4                1.5                 12        
+#>    No              │        179               69.6                415        
+#>    Yes             │         78               30.4                112        
+#>    (Missing)       │          4                                    12        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  self_rated_health │                                                         
-#>    Poor            │         28               10.7                 28        
-#>    Fair            │         86               33.0                118        
-#>    Good            │        102               39.1                263        
+#>    Poor            │         28               10.8                 28        
+#>    Fair            │         86               33.1                118        
+#>    Good            │        102               39.2                263        
 #>    Very good       │         44               16.9                118        
-#>    (Missing)       │          1                0.4                 12        
+#>    (Missing)       │          1                                    12        
 #> 
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  smoking           │                                                    
-#>    No              │       77.0            332         83.0       926   
-#>    Yes             │       20.8             59         14.8       249   
-#>    (Missing)       │        2.2              9          2.2        25   
+#>    No              │       78.7            332         84.9       926   
+#>    Yes             │       21.3             59         15.1       249   
+#>    (Missing)       │                         9                     25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  self_rated_health │                                                    
-#>    Poor            │        5.2              5          1.2        61   
-#>    Fair            │       21.9             62         15.5       266   
-#>    Good            │       48.8            193         48.2       558   
-#>    Very good       │       21.9            133         33.2       295   
-#>    (Missing)       │        2.2              7          1.8        20   
+#>    Poor            │        5.3              5          1.3        61   
+#>    Fair            │       22.4             62         15.8       266   
+#>    Good            │       49.9            193         49.1       558   
+#>    Very good       │       22.4            133         33.8       295   
+#>    (Missing)       │                         7                     20   
 #> 
 #>  Variable          │ Total %    p    Effect size 
 #> ───────────────────┼─────────────────────────────
 #>  smoking           │          <.001      .14     
-#>    No              │  77.2                       
-#>    Yes             │  20.8                       
-#>    (Missing)       │   2.1                       
+#>    No              │  78.8                       
+#>    Yes             │  21.2                       
+#>    (Missing)       │                             
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  self_rated_health │          <.001      .31     
-#>    Poor            │   5.1                       
-#>    Fair            │  22.2                       
-#>    Good            │  46.5                       
-#>    Very good       │  24.6                       
-#>    (Missing)       │   1.7                       
+#>    Poor            │   5.2                       
+#>    Fair            │  22.5                       
+#>    Good            │  47.3                       
+#>    Very good       │  25.0                       
+#>    (Missing)       │                             
 #> 
-#> Note. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
 ```
 
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
@@ -484,14 +490,14 @@ table_categorical(
 )
 #>   variable   label     level     .row_role Lower secondary n Lower secondary %
 #> 1  smoking smoking      <NA> factor_header                NA                NA
-#> 2  smoking smoking        No         level               179         68.582375
-#> 3  smoking smoking       Yes         level                78         29.885057
-#> 4  smoking smoking (Missing)       missing                 4          1.532567
-#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n   Total %
-#> 1                NA                NA         NA         NA      NA        NA
-#> 2               415         76.994434        332      83.00     926 77.166667
-#> 3               112         20.779221         59      14.75     249 20.750000
-#> 4                12          2.226345          9       2.25      25  2.083333
+#> 2  smoking smoking        No         level               179          69.64981
+#> 3  smoking smoking       Yes         level                78          30.35019
+#> 4  smoking smoking (Missing)       missing                 4                NA
+#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n  Total %
+#> 1                NA                NA         NA         NA      NA       NA
+#> 2               415          78.74763        332   84.91049     926 78.80851
+#> 3               112          21.25237         59   15.08951     249 21.19149
+#> 4                12                NA          9         NA      25       NA
 #>              p         V  95% CI LL 95% CI UL
 #> 1 2.012877e-05 0.1356677 0.07909264 0.1913716
 #> 2           NA        NA         NA        NA
@@ -538,7 +544,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. P-values: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+#> Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
 ```
 
 `test = "chisq"` tests every variable by the chi-squared, as before
@@ -590,7 +596,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
+#> Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
 ```
 
 ## Descriptive tables without tests
@@ -615,13 +621,15 @@ table_categorical(
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total % 
 #> ───────────────────┼──────────────────────────────────────────────────────
 #>  smoking           │                                                      
-#>    No              │   475       76.6     451     77.8     926     77.2   
-#>    Yes             │   131       21.1     118     20.3     249     20.8   
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1   
+#>    No              │   475       78.4     451     79.3     926     78.8   
+#>    Yes             │   131       21.6     118     20.7     249     21.2   
+#>    (Missing)       │    14                 11               25            
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                      
 #>    No              │   334       53.9     316     54.5     650     54.2   
-#>    Yes             │   286       46.1     264     45.5     550     45.8
+#>    Yes             │   286       46.1     264     45.5     550     45.8   
+#> 
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages.
 ```
 
 ## Balance: the standardized mean difference
@@ -643,16 +651,16 @@ table_categorical(
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
 #> ───────────────────┼────────────────────────────────────────────────────────────
 #>  smoking           │                                                       .713 
-#>    No              │   475       76.6     451     77.8     926     77.2         
-#>    Yes             │   131       21.1     118     20.3     249     20.8         
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
+#>    No              │   475       78.4     451     79.3     926     78.8         
+#>    Yes             │   131       21.6     118     20.7     249     21.2         
+#>    (Missing)       │    14                 11               25                  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  self_rated_health │                                                       .849 
-#>    Poor            │    31        5.0      30      5.2      61      5.1         
-#>    Fair            │   143       23.1     123     21.2     266     22.2         
-#>    Good            │   282       45.5     276     47.6     558     46.5         
-#>    Very good       │   154       24.8     141     24.3     295     24.6         
-#>    (Missing)       │    10        1.6      10      1.7      20      1.7         
+#>    Poor            │    31        5.1      30      5.3      61      5.2         
+#>    Fair            │   143       23.4     123     21.6     266     22.5         
+#>    Good            │   282       46.2     276     48.4     558     47.3         
+#>    Very good       │   154       25.2     141     24.7     295     25.0         
+#>    (Missing)       │    10                 10               20                  
 #> 
 #>  Variable          │ Effect size  SMD  
 #> ───────────────────┼───────────────────
@@ -668,7 +676,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -716,9 +724,9 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  smoking           │                                                         
-#>    No              │        176               68.1                419        
-#>    Yes             │         79               30.6                114        
-#>    (Missing)       │          4                1.4                 13        
+#>    No              │        176               69.0                419        
+#>    Yes             │         79               31.0                114        
+#>    (Missing)       │          4                                    13        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                         
 #>    No              │        174               67.2                315        
@@ -727,9 +735,9 @@ table_categorical(
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  smoking           │                                                    
-#>    No              │       76.6            325         82.2       919   
-#>    Yes             │       21.0             60         15.2       254   
-#>    (Missing)       │        2.4             10          2.6        27   
+#>    No              │       78.5            325         84.4       919   
+#>    Yes             │       21.5             60         15.6       254   
+#>    (Missing)       │                        10                     27   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                    
 #>    No              │       57.7            166         41.9       655   
@@ -738,24 +746,27 @@ table_categorical(
 #>  Variable          │ Total %    p     V  
 #> ───────────────────┼─────────────────────
 #>  smoking           │          <.001  .13 
-#>    No              │  76.6               
-#>    Yes             │  21.1               
-#>    (Missing)       │   2.2               
+#>    No              │  78.4               
+#>    Yes             │  21.6               
+#>    (Missing)       │                     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │          <.001  .19 
 #>    No              │  54.6               
 #>    Yes             │  45.4               
 #> 
-#> Note. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ## Handling missing values
 
 By default, missing values are displayed as a “(Missing)” category
-(`drop_na = FALSE`), so the percentages sum over every observation. Set
-`drop_na = TRUE` to remove them. The removal happens before each
-cross-tabulation, variable by variable: each row variable keeps its own
-complete cases (on itself and on `by`), so the total N can differ across
+(`drop_na = FALSE`), with their count and no percentage: the percentages
+are computed on the observed values. `percent_base = "total"` puts the
+missing values back in the base, the percentages then summing over every
+observation, as before 0.14.0. Set `drop_na = TRUE` to remove them. The
+removal happens before each cross-tabulation, variable by variable: each
+row variable keeps its own complete cases (on itself and on `by`), so
+the count of a variable can differ from the N of the note and across
 variables within the same table – this is available-case analysis per
 cross-table, not listwise deletion over the whole selection. The removal
 is disclosed in a table note rather than silent:
@@ -794,7 +805,7 @@ table_categorical(
 #>    Upper middle │            
 #>    High         │            
 #> 
-#> Note. Missing values removed: income_group (18). P-value: Pearson chi-squared test.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Missing values removed: income_group (18). P-value: Pearson chi-squared test.
 ```
 
 With several selected variables the note lists each variable’s removals
@@ -829,16 +840,16 @@ table_categorical(
 #>  Variable     │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ──────────────┼─────────────────────────────────────────────────────────
 #>  income_group │                                                         
-#>    (Missing)  │         3                 1.1                  9        
-#>    Low        │        87                33.3                115        
-#>    High       │        21                 8.0                 94        
+#>    (Missing)  │         3                                      9        
+#>    Low        │        87                33.7                115        
+#>    High       │        21                 8.1                 94        
 #> 
 #>  Variable     │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
 #> ──────────────┼─────────────────────────────────────────────────────────────
 #>  income_group │                                                             
-#>    (Missing)  │        1.7              6          1.5        18      1.5   
-#>    Low        │       21.3             45         11.2       247     20.6   
-#>    High       │       17.4            104         26.0       219     18.2   
+#>    (Missing)  │                         6                     18            
+#>    Low        │       21.7             45         11.4       247     20.9   
+#>    High       │       17.7            104         26.4       219     18.5   
 #> 
 #>  Variable     │   p    τb  
 #> ──────────────┼────────────
@@ -847,14 +858,14 @@ table_categorical(
 #>    Low        │            
 #>    High       │            
 #> 
-#> Note. P-value: Pearson chi-squared test.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test.
 ```
 
 `levels_keep` filters the display only: counts, percentages, the
 chi-squared test, and the association measure are all still computed on
 the full cross-table. That is why the displayed percentages no longer
-sum to 100 (within “Lower secondary”: 1.1 + 33.3 + 8.0 = 42.4 – the
-hidden “Lower middle” and “Upper middle” levels still count in the
+sum to 100 (within “Lower secondary”: 33.7 + 8.1 = 41.8 – the hidden
+“Lower middle” and “Upper middle” levels still count in the
 denominator), and why *p* and Tau-b are identical to the unfiltered
 table. To recompute the statistics on a subset of levels, filter the
 data before calling
@@ -880,16 +891,16 @@ table_categorical(
 #>  Variable    │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ─────────────┼─────────────────────────────────────────────────────────
 #>  smoking     │                                                         
-#>    No        │        179               68.58               415        
-#>    Yes       │         78               29.89               112        
-#>    (Missing) │          4                1.53                12        
+#>    No        │        179               69.65               415        
+#>    Yes       │         78               30.35               112        
+#>    (Missing) │          4                                    12        
 #> 
 #>  Variable    │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
 #> ─────────────┼─────────────────────────────────────────────────────────────
 #>  smoking     │                                                             
-#>    No        │       76.99           332        83.00       926     77.17  
-#>    Yes       │       20.78            59        14.75       249     20.75  
-#>    (Missing) │        2.23             9         2.25        25      2.08  
+#>    No        │       78.75           332        84.91       926     78.81  
+#>    Yes       │       21.25            59        15.09       249     21.19  
+#>    (Missing) │                         9                     25            
 #> 
 #>  Variable    │   p      V   
 #> ─────────────┼──────────────
@@ -898,7 +909,7 @@ table_categorical(
 #>    Yes       │              
 #>    (Missing) │              
 #> 
-#> Note. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V.
 ```
 
 `p_digits` drives both the displayed precision of the `p` column and the
@@ -944,9 +955,9 @@ table_categorical(
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %     p 
 #> ───────────────────┼────────────────────────────────────────────────────────────
 #>  smoking           │                                                       .713 
-#>    No              │      475      76.6     451    77.8      926     77.2       
-#>    Yes             │      131      21.1     118    20.3      249     20.8       
-#>    (Missing)       │       14       2.3      11     1.9       25      2.1       
+#>    No              │      475      78.4     451    79.3      926     78.8       
+#>    Yes             │      131      21.6     118    20.7      249     21.2       
+#>    (Missing)       │       14                11               25                
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                       .832 
 #>    No              │      334      53.9     316    54.5      650     54.2       
@@ -963,7 +974,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Note. P-values: Pearson chi-squared test.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test.
 ```
 
 ## Tidying for downstream pipelines
@@ -992,21 +1003,21 @@ broom::tidy(out)
 #> # A tibble: 15 × 9
 #>    variable       label level .row_role group .group_role total     n proportion
 #>    <chr>          <chr> <chr> <chr>     <chr> <chr>       <lgl> <int>      <dbl>
-#>  1 smoking        smok… No    level     Fema… group       FALSE   475     0.766 
-#>  2 smoking        smok… No    level     Male  group       FALSE   451     0.778 
-#>  3 smoking        smok… No    level     Total total       TRUE    926     0.772 
-#>  4 smoking        smok… Yes   level     Fema… group       FALSE   131     0.211 
-#>  5 smoking        smok… Yes   level     Male  group       FALSE   118     0.203 
-#>  6 smoking        smok… Yes   level     Total total       TRUE    249     0.208 
-#>  7 smoking        smok… (Mis… missing   Fema… group       FALSE    14     0.0226
-#>  8 smoking        smok… (Mis… missing   Male  group       FALSE    11     0.0190
-#>  9 smoking        smok… (Mis… missing   Total total       TRUE     25     0.0208
-#> 10 physical_acti… phys… No    level     Fema… group       FALSE   334     0.539 
-#> 11 physical_acti… phys… No    level     Male  group       FALSE   316     0.545 
-#> 12 physical_acti… phys… No    level     Total total       TRUE    650     0.542 
-#> 13 physical_acti… phys… Yes   level     Fema… group       FALSE   286     0.461 
-#> 14 physical_acti… phys… Yes   level     Male  group       FALSE   264     0.455 
-#> 15 physical_acti… phys… Yes   level     Total total       TRUE    550     0.458
+#>  1 smoking        smok… No    level     Fema… group       FALSE   475      0.784
+#>  2 smoking        smok… No    level     Male  group       FALSE   451      0.793
+#>  3 smoking        smok… No    level     Total total       TRUE    926      0.788
+#>  4 smoking        smok… Yes   level     Fema… group       FALSE   131      0.216
+#>  5 smoking        smok… Yes   level     Male  group       FALSE   118      0.207
+#>  6 smoking        smok… Yes   level     Total total       TRUE    249      0.212
+#>  7 smoking        smok… (Mis… missing   Fema… group       FALSE    14     NA    
+#>  8 smoking        smok… (Mis… missing   Male  group       FALSE    11     NA    
+#>  9 smoking        smok… (Mis… missing   Total total       TRUE     25     NA    
+#> 10 physical_acti… phys… No    level     Fema… group       FALSE   334      0.539
+#> 11 physical_acti… phys… No    level     Male  group       FALSE   316      0.545
+#> 12 physical_acti… phys… No    level     Total total       TRUE    650      0.542
+#> 13 physical_acti… phys… Yes   level     Fema… group       FALSE   286      0.461
+#> 14 physical_acti… phys… Yes   level     Male  group       FALSE   264      0.455
+#> 15 physical_acti… phys… Yes   level     Total total       TRUE    550      0.458
 
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
@@ -1055,7 +1066,9 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* P-values: Pearson chi-squared test. V = Cramer’s V.
+*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
+Tertiary (n = 400). Percentages are column percentages. P-values:
+Pearson chi-squared test. V = Cramer’s V.
 
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
@@ -1074,15 +1087,15 @@ table_categorical(
 |----|----|----|----|----|----|----|----|----|
 |  | n | % | n | % | n | % |  |  |
 | smoking |     |      |     |      |     |      | .713 | .01 |
-|     No | 475 | 76.6 | 451 | 77.8 | 926 | 77.2 |      |     |
-|     Yes | 131 | 21.1 | 118 | 20.3 | 249 | 20.8 |      |     |
-|     (Missing) |  14 |  2.3 |  11 |  1.9 |  25 |  2.1 |      |     |
+|     No | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |     |
+|     Yes | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |     |
+|     (Missing) |  14 |      |  11 |      |  25 |      |      |     |
 | physical_activity |     |      |     |      |     |      | .832 | .01 |
 |     No | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |     |
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
-| *Note.* P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
+| *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_xb1nn8ba754fs4b0f0qk .table
+Categorical table by sex {#tinytable_ztmsnr2gdvbqmrtprjym .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1104,8 +1117,10 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* P-values: Pearson chi-squared test. V = Cramer’s V; CI =
-confidence interval; LL = lower limit; UL = upper limit.
+*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
+Tertiary (n = 400). Percentages are column percentages. P-values:
+Pearson chi-squared test. V = Cramer’s V; CI = confidence interval; LL =
+lower limit; UL = upper limit.
 
 For Excel export, provide a file path:
 

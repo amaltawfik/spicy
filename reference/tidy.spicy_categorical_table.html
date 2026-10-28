@@ -127,7 +127,9 @@ margin, <code>"group"</code> otherwise, <code>NA</code> without <code>by</code>)
 rows of the margin and of the Total row), <code>n</code>, and <code>proportion</code>
 (between 0 and 1, the share
 the table displays: within the group, or within the level under
-<code>percent = "row"</code>, as <code>attr(x, "percent")</code> records). Filter
+<code>percent = "row"</code>, as <code>attr(x, "percent")</code> records; <code>NA</code> on the row of
+missing values under <code>percent_base = "valid"</code>, which leaves them out of
+the base, as <code>attr(x, "percent_base")</code> records). Filter
 on the role columns and <code>total</code> rather than on the displayed labels,
 which follow the display language.</p>
 <p><code>glance()</code> returns one row per variable, in the order of <code>select</code>, with

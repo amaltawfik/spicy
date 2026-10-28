@@ -130,9 +130,9 @@ table_categorical(
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
 #>  Smoking status            │                                      
-#>    No                      │        179               68.6        
-#>    Yes                     │         78               29.9        
-#>    (Missing)               │          4                1.5        
+#>    No                      │        179               69.6        
+#>    Yes                     │         78               30.4        
+#>    (Missing)               │          4                           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                                      
 #>    No                      │        177               67.8        
@@ -141,9 +141,9 @@ table_categorical(
 #>  Variable                  │ Upper secondary n  Upper secondary %  Tertiary n 
 #> ───────────────────────────┼──────────────────────────────────────────────────
 #>  Smoking status            │                                                  
-#>    No                      │        415               77.0            332     
-#>    Yes                     │        112               20.8             59     
-#>    (Missing)               │         12                2.2              9     
+#>    No                      │        415               78.7            332     
+#>    Yes                     │        112               21.3             59     
+#>    (Missing)               │         12                                 9     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                                                  
 #>    No                      │        310               57.5            163     
@@ -152,15 +152,15 @@ table_categorical(
 #>  Variable                  │ Tertiary %  Total n  Total %    p     V  
 #> ───────────────────────────┼──────────────────────────────────────────
 #>  Smoking status            │                               <.001  .14 
-#>    No                      │    83.0       926     77.2               
-#>    Yes                     │    14.8       249     20.8               
-#>    (Missing)               │     2.2        25      2.1               
+#>    No                      │    84.9       926     78.8               
+#>    Yes                     │    15.1       249     21.2               
+#>    (Missing)               │                25                        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                               <.001  .21 
 #>    No                      │    40.8       650     54.2               
 #>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ``` r
@@ -334,9 +334,9 @@ table_categorical(
 #>  Variable                                │ Lower secondary n  Lower secondary % 
 #> ─────────────────────────────────────────┼──────────────────────────────────────
 #>  Smoking status                          │                                      
-#>    No                                    │        179               68.6        
-#>    Yes                                   │         78               29.9        
-#>    (Missing)                             │          4                1.5        
+#>    No                                    │        179               69.6        
+#>    Yes                                   │         78               30.4        
+#>    (Missing)                             │          4                           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity               │                                      
 #>    No                                    │        177               67.8        
@@ -349,9 +349,9 @@ table_categorical(
 #>  Variable                                │ Upper secondary n  Upper secondary % 
 #> ─────────────────────────────────────────┼──────────────────────────────────────
 #>  Smoking status                          │                                      
-#>    No                                    │        415               77.0        
-#>    Yes                                   │        112               20.8        
-#>    (Missing)                             │         12                2.2        
+#>    No                                    │        415               78.7        
+#>    Yes                                   │        112               21.3        
+#>    (Missing)                             │         12                           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity               │                                      
 #>    No                                    │        310               57.5        
@@ -364,9 +364,9 @@ table_categorical(
 #>  Variable                                │ Tertiary n  Tertiary %  Total n 
 #> ─────────────────────────────────────────┼─────────────────────────────────
 #>  Smoking status                          │                                 
-#>    No                                    │    332         83.0       926   
-#>    Yes                                   │     59         14.8       249   
-#>    (Missing)                             │      9          2.2        25   
+#>    No                                    │    332         84.9       926   
+#>    Yes                                   │     59         15.1       249   
+#>    (Missing)                             │      9                     25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity               │                                 
 #>    No                                    │    163         40.8       650   
@@ -379,9 +379,9 @@ table_categorical(
 #>  Variable                                │ Total %    p     V  
 #> ─────────────────────────────────────────┼─────────────────────
 #>  Smoking status                          │          <.001  .14 
-#>    No                                    │  77.2               
-#>    Yes                                   │  20.8               
-#>    (Missing)                             │   2.1               
+#>    No                                    │  78.8               
+#>    Yes                                   │  21.2               
+#>    (Missing)                             │                     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity               │          <.001  .21 
 #>    No                                    │  54.2               
@@ -391,7 +391,7 @@ table_categorical(
 #>    No                                    │  29.5               
 #>    Yes                                   │  70.5               
 #> 
-#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ### Continuous variables
@@ -552,9 +552,9 @@ table_categorical(
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   φ  
 #> ───────────────────┼───────────────────────────────────────────────────────────
 #>  smoking           │                                                       .01 
-#>    No              │   475       76.6     451     77.8     926     77.2        
-#>    Yes             │   131       21.1     118     20.3     249     20.8        
-#>    (Missing)       │    14        2.3      11      1.9      25      2.1        
+#>    No              │   475       78.4     451     79.3     926     78.8        
+#>    Yes             │   131       21.6     118     20.7     249     21.2        
+#>    (Missing)       │    14                 11               25                 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │                                                       .01 
 #>    No              │   334       53.9     316     54.5     650     54.2        
@@ -571,7 +571,7 @@ table_categorical(
 #>    No              │      
 #>    Yes             │      
 #> 
-#> Note. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. SMD = standardized mean difference.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. SMD = standardized mean difference.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
@@ -792,12 +792,12 @@ table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #>  Variable    │ Female n  Female %  Male n  Male %  Total n  Total %   p    φ  
 #> ─────────────┼────────────────────────────────────────────────────────────────
 #>  smoking     │                                                       .71  .01 
-#>    No        │   475       76.6     451     77.8     926     77.2             
-#>    Yes       │   131       21.1     118     20.3     249     20.8             
-#>    (Missing) │    14        2.3      11      1.9      25      2.1             
+#>    No        │   475       78.4     451     79.3     926     78.8             
+#>    Yes       │   131       21.6     118     20.7     249     21.2             
+#>    (Missing) │    14                 11               25                      
 #> 
 #> Abbreviation: φ, phi coefficient.
-#> P-value: Pearson chi-squared test.
+#> N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-value: Pearson chi-squared test.
 ```
 
 Two things change here. JAMA rounds *p* values to two decimals (`.71`),
@@ -932,7 +932,7 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Note. P-value: Pearson chi-squared test.
+#> Note. N = 1200: No (n = 926), Yes (n = 249), (No answer) (n = 25). Percentages are column percentages. P-value: Pearson chi-squared test.
 options(spicy.labels = NULL)
 ```
 
@@ -1026,7 +1026,9 @@ tab |>
 
 [TABLE]
 
-*Note.* P-values: Pearson chi-squared test. V = Cramer’s V.
+*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
+Tertiary (n = 400). Percentages are column percentages. P-values:
+Pearson chi-squared test. V = Cramer’s V.
 
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
@@ -1058,15 +1060,15 @@ tab |>
 |----|----|----|----|----|----|----|----|----|----|----|
 |  | n | % | n | % | n | % | n | % |  |  |
 | Smoking status |     |      |     |      |     |      |     |      | \<.001 | .14 |
-|     No | 179 | 68.6 | 415 | 77.0 | 332 | 83.0 | 926 | 77.2 |       |     |
-|     Yes |  78 | 29.9 | 112 | 20.8 |  59 | 14.8 | 249 | 20.8 |       |     |
-|     (Missing) |   4 |  1.5 |  12 |  2.2 |   9 |  2.2 |  25 |  2.1 |       |     |
+|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |       |     |
+|     Yes |  78 | 30.4 | 112 | 21.3 |  59 | 15.1 | 249 | 21.2 |       |     |
+|     (Missing) |   4 |      |  12 |      |   9 |      |  25 |      |       |     |
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| *Note.* P-values: Pearson chi-squared test. V = Cramer's V. |  |  |  |  |  |  |  |  |  |  |
+| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_deztl4t7y4ekz9igqhr7 .table
+Categorical table by education {#tinytable_t19rr4d03acyhdbzki2i .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
