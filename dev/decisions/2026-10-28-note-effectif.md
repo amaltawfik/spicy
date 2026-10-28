@@ -38,11 +38,11 @@ Les conventions du domaine :
 
 ## À trancher par Amal
 
-- **(a) Les effectifs des groupes dans les chapeaux de colonnes** (« Women (n = 80) », la convention de gtsummary et de table1), à la place de la note ou en plus. Cela passe mieux à l'échelle quand les groupes sont nombreux, mais change des en-têtes publiés et élargit les chapeaux en Typst.
-- **(b) Retirer la phrase quand `total_row = TRUE`** montre déjà la base de chaque variable.
-- **(c) Étendre la règle à `table_continuous()`, `table_outcome()` et `table_categorical_svy()`** : une phrase N pour toute la famille.
-- **(d) Un N par variable sous `drop_na = TRUE`** (« N varies by variable (154–159) »), écarté ici (décision 3).
-- **(e) Un levier pour retirer la phrase.** Aujourd'hui seul `note =` le permet, en remplaçant la note entière.
+- **(a) Les effectifs des groupes dans les chapeaux de colonnes** (« Women (n = 80) », la convention de gtsummary et de table1), à la place de la note ou en plus. Cela passe mieux à l'échelle quand les groupes sont nombreux, mais change des en-têtes publiés et élargit les chapeaux en Typst. **Tranché le 2026-10-28 (Amal) : la note seule.** Si le guide d'une revue demande l'effectif dans les chapeaux (à vérifier dans `dev/journal_styles/` pour Nature, Lancet, JAMA quand les thèmes seront repris), le thème de cette revue pourra le porter, en plus de la note.
+- **(b) Retirer la phrase quand `total_row = TRUE`** montre déjà la base de chaque variable. **Tranché le 2026-10-28 (Amal) : la phrase reste dans tous les cas.** Une règle, un endroit : le lecteur trouve N au même endroit d'un tableau à l'autre, et la ligne Total donne le N de chaque variable, qui diffère de celui du tableau sous `drop_na = TRUE`.
+- **(c) Étendre la règle à `table_continuous()`, `table_outcome()` et `table_categorical_svy()`** : une phrase N pour toute la famille. **Tranché le 2026-10-28 (Amal) : règle de famille.** `table_continuous()`, `table_outcome()` et `table_continuous_lm()` ouvrent leur note sur la même phrase (même définition de N, mêmes clés, groupes sous `by` pour les deux premières) ; `table_categorical_svy()` et `table_continuous_svy()` gardent leur phrase propre aux plans de sondage (effectif et N pondéré) ; `table_multiresponse()` garde sa ligne Base. À mettre en œuvre dans un lot à part (lot M), avec une attente de parité de famille.
+- **(d) Un N par variable sous `drop_na = TRUE`** (« N varies by variable (154–159) »), écarté ici (décision 3). **Confirmé le 2026-10-28 (Amal) : un seul N**, celui des lignes que décrit le tableau ; les cas complets par variable se lisent dans la colonne n ou dans la phrase des manquants retirés.
+- **(e) Un levier pour retirer la phrase.** Aujourd'hui seul `note =` le permet, en remplaçant la note entière. **Tranché le 2026-10-28 (Amal) : pas de levier pour l'instant.** Si un besoin réel apparaît (le guide d'une revue qui place N ailleurs, une demande d'utilisateur), ce sera un réglage de `spicy_style()`, par exemple `sample_size = c("note", "none")`, réglé une fois pour un rapport comme `note_label` et `abbreviations`, jamais un argument des fonctions. Noté pour la 0.15.
 
 ## Sens des pourcentages sous `by`
 

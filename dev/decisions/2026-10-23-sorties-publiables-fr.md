@@ -215,7 +215,10 @@ un rapport mesuré à tinytable selon le protocole upstream, rien côté spicy.
   couvre.
 - **8**, redéfini : une définition de note **identifie** la grandeur par son
   nom standard, en une expression, auteur compris quand il fait partie du nom
-  (g de Hedges, V de Cramér, d de Cohen, ω² de Hays), et n'explique jamais ;
+  (g de Hedges, V de Cramér, d de Cohen), et n'explique jamais ; tranché le
+  2026-10-28 (Amal) : ω² est « omega squared » / « oméga-carré » sans Hays
+  dans les deux langues, le nom standard de la statistique ne portant pas
+  d'auteur ;
   ce qu'une grandeur mesure relève du texte. `abbreviations = "all"` =
   toutes les abréviations affichées, développées ainsi, sauf n, N, p et les
   statistiques de test. La catégorie « dit plus que le sigle » devient
@@ -227,7 +230,13 @@ un rapport mesuré à tinytable selon le protocole upstream, rien côté spicy.
   distinctes.
 - **1** : tranché sur rendu, dès qu'un exemple existe ; l'ordre de
   soustraction du Δ reste visible en chapeau, et ce chapeau couvre l'IC de
-  la différence.
+  la différence. **Tranché sur rendu le 2026-10-28 (Amal) : l'ordre va en
+  note** (« Δ = Current smoker − Never smoker. »), comme livré par le point 1
+  (chapeau « M » sur les groupes, « Δ » seul) : aucun guide des captures
+  `dev/journal_styles/` (APA table setup et tableaux modèles, Lancet, JAMA)
+  ne demande la direction d'une différence dans un chapeau, et un chapeau
+  « Δ (B − A) » sur Δ et son IC coûterait environ 70 pt ou un troisième rang
+  d'en-tête. À rouvrir seulement si un guide de revue l'exige.
 - **14, complément du 2026-10-24** : `table_categorical()` gagne aussi
   `total_row = FALSE`, une ligne Total facultative sous les modalités de
   chaque variable (après « (Manquant) »), jamais par défaut : effectifs par

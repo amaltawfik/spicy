@@ -316,7 +316,7 @@
   abbrev_gamma = "gamma de Goodman-Kruskal",
   abbrev_f2 = "f\u00B2 de Cohen",
   abbrev_eta2 = "\u00EAta-carr\u00E9",
-  abbrev_omega2 = "om\u00E9ga-carr\u00E9 de Hays",
+  abbrev_omega2 = "om\u00E9ga-carr\u00E9",
   abbrev_es = "taille d'effet",
   abbrev_smd = "diff\u00E9rence de moyennes standardis\u00E9e",
   abbrev_ame = "effet marginal moyen",

@@ -4800,7 +4800,7 @@ test_that("a definition names the quantity and never explains it", {
     ),
     fr = c(
       g = "g = g de Hedges",
-      omega2 = paste0(omega, " = om\u00E9ga-carr\u00E9 de Hays"),
+      omega2 = paste0(omega, " = om\u00E9ga-carr\u00E9"),
       omega2_partial = paste0(omega, " = om\u00E9ga-carr\u00E9 partiel"),
       deff = "DEff = effet de plan",
       pd = "pd = probabilit\u00E9 de direction",

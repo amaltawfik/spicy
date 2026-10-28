@@ -247,7 +247,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] Valeur p<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré de Hays.])),
+          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] Valeur p<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré.])),
           ),
           
       
