@@ -928,7 +928,11 @@ decimals per variable, and notes you can replace, extend, or relabel
 
 - The note of
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-  says what the percentages sum to and who is in the base.
+  says what the percentages sum to and who is in the base, in words a
+  reader can follow: “respondents who answered the question” (in French,
+  “personnes ayant répondu à la question”), with the others counted
+  “with no answer to the question”. The row of the base is labeled
+  “Base” in both languages and points to that sentence.
 
 - With `by`,
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)

@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-24
+#> Date: 2026-10-28
 #> Observations: 1200
 #> Variables: 4
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -450,9 +450,9 @@ table_multiresponse(
 #>  Television, radio or newspapers       │   141    12.1  
 #>  (No item chosen)                      │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents                           │  1164          
+#>  Base                                  │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 ```
 
 With `by`, the counts and percentages are given per group and in a
@@ -482,9 +482,9 @@ table_multiresponse(
 #>  info_media       │    78       13.0      63     11.2     141     12.1   
 #>  (No item chosen) │    31        5.2      36      6.4      67      5.8   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   599                565             1164            
+#>  Base             │   599                565             1164            
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 ```
 
 ## Regression tables

@@ -145,16 +145,16 @@ table_multiresponse(
 
   Logical. If `TRUE` (the default), the respondents of the base who
   chose no item get a row of their own, after the items and before the
-  `Respondents` row: "(No item chosen)" under `base = "valid"` and
-  `"all"`, and, under `"all"`, "(No data for the question)" for the
-  respondents with every indicator missing. Each row appears only when
-  its count is above 0. `base = "answered"` leaves both groups out of
-  the base and shows neither row. A row gives the count and the
-  percentage of cases of each group and of the margin, on the base of
-  the column, as the items do. Its percentage of responses and its test
-  cells show a dash: these respondents gave no answer, and the rows take
-  no part in the tests or in `sort`. The note then no longer counts the
-  respondents a row shows. `FALSE` gives these counts in the note only.
+  `Base` row: "(No item chosen)" under `base = "valid"` and `"all"`,
+  and, under `"all"`, "(No data for the question)" for the respondents
+  with every indicator missing. Each row appears only when its count is
+  above 0. `base = "answered"` leaves both groups out of the base and
+  shows neither row. A row gives the count and the percentage of cases
+  of each group and of the margin, on the base of the column, as the
+  items do. Its percentage of responses and its test cells show a dash:
+  these respondents gave no answer, and the rows take no part in the
+  tests or in `sort`. The note then no longer counts the respondents a
+  row shows. `FALSE` gives these counts in the note only.
 
 - sort:
 
@@ -589,12 +589,12 @@ the same respondents: those with at least one non-missing indicator
 under `base = "valid"`, those who chose at least one item under
 `base = "answered"`, every row under `base = "all"`. The counts are the
 same under the three bases; the percentages of cases and the tests are
-not. The `Respondents` row gives the base of each group, and the note
-says which base the table uses, with two counts, all groups together:
-the respondents with no data for the question (every indicator missing)
-and those with no item chosen (data, but no item chosen). The base holds
-the second and leaves out the first under `"valid"`, leaves out both
-under `"answered"`, and holds both under `"all"`; a count of zero is not
+not. The `Base` row gives the base of each group, and the note says
+which base the table uses, with two counts, all groups together: the
+respondents with no data for the question (every indicator missing) and
+those with no item chosen (data, but no item chosen). The base holds the
+second and leaves out the first under `"valid"`, leaves out both under
+`"answered"`, and holds both under `"all"`; a count of zero is not
 mentioned. Under `none_row = TRUE`, the default, the respondents of
 these two kinds that the base holds are rows of the table, "(No item
 chosen)" and "(No data for the question)", with their count and
@@ -602,9 +602,9 @@ percentage in each group, and the note counts only those the base leaves
 out. An item displayed with the label of a row the table adds is an
 error (class `spicy_label_collision`): choose another label in `labels`,
 or give the row another label, for example
-`options(spicy.labels = list(row_multiresponse_base = "Base"))`.
-Declared missing values of a labelled column (`na_values`, `na_range`)
-are missing, as under the `user_na = TRUE` default of
+`options(spicy.labels = list(row_multiresponse_base = "N"))`. Declared
+missing values of a labelled column (`na_values`, `na_range`) are
+missing, as under the `user_na = TRUE` default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 An item missing for every respondent of a group (typically an item not
@@ -612,10 +612,9 @@ asked there) has no data in that group: its cells there show a dash, its
 `Total` counts the other groups only, and the note says so, in one
 sentence for the items with no data in the same groups. Without `by`, an
 item with no observed value at all shows a dash. A group with no data
-for any item was not asked the question: all its cells, `Respondents`
-included, show a dash, and its respondents leave the base, the `Total`,
-the tests and the count of the respondents with no data for the
-question.
+for any item was not asked the question: all its cells, `Base` included,
+show a dash, and its respondents leave the base, the `Total`, the tests
+and the count of the respondents with no data for the question.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical
@@ -687,9 +686,9 @@ table_multiresponse(sochealth, select = starts_with("info_"))
 #>  info_media         │   141    12.1  
 #>  (No item chosen)   │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents        │  1164          
+#>  Base               │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 
 # The labels of the items, sorted by decreasing count.
 table_multiresponse(
@@ -709,9 +708,9 @@ table_multiresponse(
 #>  Television, radio or newspapers       │   141    12.1  
 #>  (No item chosen)                      │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents                           │  1164          
+#>  Base                                  │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 
 # By age group: a test per item and a global test of the question.
 table_multiresponse(
@@ -730,7 +729,7 @@ table_multiresponse(
 #>  info_media       │     9      3.9       36      9.6       41     12.9   
 #>  (No item chosen) │    12      5.2       22      5.9       22      6.9   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   233               374               317            
+#>  Base             │   233               374               317            
 #> 
 #>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
 #> ──────────────────┼───────────────────────────────────────────
@@ -741,9 +740,9 @@ table_multiresponse(
 #>  info_media       │    55     22.9      141     12.1    <.001 
 #>  (No item chosen) │    11      4.6       67      5.8     –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   240              1164                   
+#>  Base             │   240              1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 
 # A descriptive table by sex, on the respondents who chose at least one
 # source: percentages of cases and of responses, no tests.
@@ -765,7 +764,7 @@ table_multiresponse(
 #>  info_family     │   219           38.6                 20.3            141   
 #>  info_media      │    78           13.7                  7.2             63   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   568                                                529   
+#>  Base            │   568                                                529   
 #> 
 #>  Variable        │ Male % of cases  Male % of responses  Total n 
 #> ─────────────────┼───────────────────────────────────────────────
@@ -775,7 +774,7 @@ table_multiresponse(
 #>  info_family     │      26.7               15.3            360   
 #>  info_media      │      11.9                6.8            141   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │                                        1097   
+#>  Base            │                                        1097   
 #> 
 #>  Variable        │ Total % of cases  Total % of responses 
 #> ─────────────────┼────────────────────────────────────────
@@ -785,9 +784,9 @@ table_multiresponse(
 #>  info_family     │       32.8                18.0         
 #>  info_media      │       12.9                 7.0         
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │                                        
+#>  Base            │                                        
 #> 
-#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with at least one item chosen (excluded: 36 with no data for the question and 67 with no item chosen).
+#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with at least one item chosen (excluded: 36 with no answer to the question and 67 with no item chosen).
 
 # Items coded "Yes" and "No" need `counted`, the value that marks a choice.
 yes_no <- as.data.frame(lapply(
@@ -806,9 +805,9 @@ table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #>  info_media         │   141    12.1  
 #>  (No item chosen)   │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents        │  1164          
+#>  Base               │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
@@ -830,9 +829,9 @@ table_multiresponse(
 #>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
 #>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   599                565             1164                   
+#>  Base             │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 
 # Wide data frame.
 table_multiresponse(
@@ -848,7 +847,7 @@ table_multiresponse(
 #> 4     info_family      info_family   summary      219 36.560935    141
 #> 5      info_media       info_media   summary       78 13.021703     63
 #> 6            none (No item chosen)      none       31  5.175292     36
-#> 7            nobs      Respondents  fit_stat      599        NA    565
+#> 7            nobs             Base  fit_stat      599        NA    565
 #>      Male % Total n   Total %            p
 #> 1 60.884956     721 61.941581 1.000000e+00
 #> 2 21.061947     256 21.993127 1.000000e+00

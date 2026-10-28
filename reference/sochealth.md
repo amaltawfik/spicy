@@ -244,7 +244,7 @@ table_multiresponse(
 #>  info_media       │     9      3.9       36      9.6       41     12.9   
 #>  (No item chosen) │    12      5.2       22      5.9       22      6.9   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   233               374               317            
+#>  Base             │   233               374               317            
 #> 
 #>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
 #> ──────────────────┼───────────────────────────────────────────
@@ -255,7 +255,7 @@ table_multiresponse(
 #>  info_media       │    55     22.9      141     12.1    <.001 
 #>  (No item chosen) │    11      4.6       67      5.8     –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   240              1164                   
+#>  Base             │   240              1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 ```

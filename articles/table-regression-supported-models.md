@@ -51,7 +51,7 @@ whichever defensible model you fit.
 | Any of the above | a complex survey design | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | design-based SEs are the inference |
 | Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` |  |
 | Any of the above | a Bayesian analysis | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html) / [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | posterior medians, MAD SD, credible intervals – no p-values |
-| Any of the above | an endogenous predictor, an instrument | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) / [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) |  |
+| Any of the above | an endogenous predictor, an instrument | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) / [`estimatr::iv_robust()`](https://rdrr.io/pkg/estimatr/man/iv_robust.html) |  |
 
 Three distinctions the table cannot compress:
 
@@ -111,8 +111,8 @@ to get it as a data frame.
 |  | `negbin` | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | yes | IRR | \- |
 |  | `rlm` | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | yes | \- | \- |
 |  | `nls` | [`stats::nls()`](https://rdrr.io/r/stats/nls.html) | no | \- | \- |
-| Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- |
-|  | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- |
+| Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://rdrr.io/pkg/estimatr/man/lm_robust.html) | yes | \- | \- |
+|  | `iv_robust` | [`estimatr::iv_robust()`](https://rdrr.io/pkg/estimatr/man/iv_robust.html) | yes | \- | \- |
 |  | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- |
 |  | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- |
 |  | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- |
@@ -296,7 +296,7 @@ and [*Categorical
 predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 
 **Robust, IV, quantile, panel.**
-[`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+[`estimatr::lm_robust()`](https://rdrr.io/pkg/estimatr/man/lm_robust.html)
 / `iv_robust()`,
 [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
 [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html),
