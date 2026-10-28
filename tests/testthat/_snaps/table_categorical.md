@@ -97,6 +97,7 @@
             let style = get-style(x, y)
             if style != none and "background" in style { style.background }
           },
+       table.hline(y: 6, start: 0, end: 9, stroke: 0.03em),
        table.hline(y: 1, start: 1, end: 7, stroke: 0.06em),
        table.hline(y: 2, start: 0, end: 9, stroke: 0.06em),
        table.hline(y: 7, start: 0, end: 9, stroke: 0.06em),
@@ -123,7 +124,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] Percentages are row percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 80: A (n \= 36), B (n \= 44). Percentages are row percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
           ),
           
       
@@ -160,7 +161,7 @@
          0        │  12     63.2     6     46.2      18        56.2                            
          1        │   7     36.8     7     53.8      14        43.8                            
       
-      Note. P-values: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
+      Note. N = 32: 0 (n = 19), 1 (n = 13). Percentages are column percentages. P-values: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
 
 ---
 
@@ -185,7 +186,7 @@
          0        │  12     63,2     6     46,2      18        56,2                                
          1        │   7     36,8     7     53,8      14        43,8                                
       
-      Note. Valeurs p : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
+      Note. N = 32 : 0 (n = 19), 1 (n = 13). Pourcentages en colonne. Valeurs p : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
 
 # p_value = FALSE with assoc_measure = "none": a purely descriptive table
 
@@ -197,12 +198,57 @@
        Variable            │  Female n    Female %    Male n    Male %    Total n    Total %  
       ─────────────────────┼──────────────────────────────────────────────────────────────────
        smoking             │                                                                  
-         No                │    475         76.6       451       77.8       926       77.2    
-         Yes               │    131         21.1       118       20.3       249       20.8    
-         (Missing)         │     14          2.3        11        1.9        25        2.1    
+         No                │    475         78.4       451       79.3       926       78.8    
+         Yes               │    131         21.6       118       20.7       249       21.2    
+         (Missing)         │     14                     11                   25               
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        education           │                                                                  
          Lower secondary   │    134         21.6       127       21.9       261       21.8    
          Upper secondary   │    290         46.8       249       42.9       539       44.9    
          Tertiary          │    196         31.6       204       35.2       400       33.3    
+      
+      Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages.
+
+# a thin rule sits above each Total row on the console
+
+    Code
+      print(one)
+    Output
+      Categorical table
+      
+       Variable      │  n       %    
+      ───────────────┼───────────────
+       x             │               
+         no          │  33     61.1  
+         yes         │  21     38.9  
+         (Missing)   │   6           
+      ───────────────┼───────────────
+         Total       │  60    100.0  
+      
+      Note. N = 60.
+
+---
+
+    Code
+      print(both)
+    Output
+      Categorical table by g
+      
+       Variable      │  Women n    Women %    Men n    Men %    Total n    Total %  
+      ───────────────┼──────────────────────────────────────────────────────────────
+       x             │                                                              
+         no          │    12         52.2      21       67.7      33         61.1   
+         yes         │    11         47.8      10       32.3      21         38.9   
+         (Missing)   │     4                    2                  6                
+      ───────────────┼──────────────────────────────────────────────────────────────
+         Total       │    27        100.0      33      100.0      60        100.0   
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       y             │                                                              
+         lo          │     9         33.3      14       42.4      23         38.3   
+         mid         │     8         29.6      11       33.3      19         31.7   
+         hi          │    10         37.0       8       24.2      18         30.0   
+      ───────────────┼──────────────────────────────────────────────────────────────
+         Total       │    27        100.0      33      100.0      60        100.0   
+      
+      Note. N = 60: Women (n = 27), Men (n = 33). Percentages are column percentages.
 

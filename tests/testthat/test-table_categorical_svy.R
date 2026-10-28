@@ -782,6 +782,24 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   ))
 })
 
+test_that("under by, the note says the percentages are column percentages", {
+  # After the sample size, as `table_categorical()` says it (decision of
+  # 2026-10-28); a table without `by` has one direction and says nothing.
+  skip_if_not_installed("survey")
+  note <- function(...) {
+    attr(table_categorical_svy(.svycat_design(), select = stype, ...), "note")
+  }
+  expect_match(
+    note(by = awards),
+    "). Percentages are column percentages. Design: ",
+    fixed = TRUE
+  )
+  expect_no_match(note(), "column percentages", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  expect_match(note(by = awards), "). Pourcentages en colonne. ", fixed = TRUE)
+  expect_no_match(note(), "Pourcentages en colonne", fixed = TRUE)
+})
+
 test_that("`drop_na` also governs the missing-`by` domain", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())

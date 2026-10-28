@@ -302,6 +302,8 @@ non standardisé ; IC = … ; η² = êta-carré partiel »).
 
 ## 16. Base des pourcentages de `table_categorical()` : en réflexion, à trancher la semaine du 27 octobre 2026
 
+Tranché le 2026-10-28 : voir dev/decisions/2026-10-28-note-effectif.md.
+
 Question d'Amal (2026-10-24, nuit) : faut-il un « % valide » dans
 `table_categorical()`, pertinent dès qu'une variable a des manquants, et
 comment l'afficher quand une variable en a et une autre non ?
@@ -357,6 +359,8 @@ est gardée dans les deux cas, son n affiché ; sous `"valid"` son % est vide
 même temps que le défaut.
 
 ## 17. Ligne Total du tableau univarié de `table_categorical()` : couvert par `total_row`, reste le défaut (à trancher la semaine du 27 octobre 2026)
+
+Tranché le 2026-10-28 : voir dev/decisions/2026-10-28-note-effectif.md.
 
 Note transmise par Amal (2026-10-24, nuit ; « second volet » de son point 15,
 qui numérote na_percent comme premier volet) : sans `by`, aucun moyen

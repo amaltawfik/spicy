@@ -58,8 +58,11 @@ to the console, folded into successive panels when it is wider than
 the console. Reading the table: each level of `by` gets a pair of
 columns, the count `n` and the **column percentage** computed within
 that group -- percentages sum to 100 down each education group (for
-smoking within "Lower secondary": 68.6 + 29.9 + 1.5 = 100.0) -- and
-the `Total` pair is the margin over all groups combined. In the last
+smoking within "Lower secondary": 69.6 + 30.4 = 100.0, the four
+missing answers counted in their own row, out of the base) -- and
+the `Total` pair is the margin over all groups combined. The note
+opens with the sample size and the size of each group, then says the
+direction of the percentages. In the last
 panel, `p` is the *p*-value of the test of association between the row
 variable and `by`, computed once per variable on its full cross-table
 (Pearson's chi-squared here, as the note says; see the test section
@@ -400,11 +403,15 @@ table_categorical(
 ## Handling missing values
 
 By default, missing values are displayed as a "(Missing)" category
-(`drop_na = FALSE`), so the percentages sum over every observation.
+(`drop_na = FALSE`), with their count and no percentage: the
+percentages are computed on the observed values.
+`percent_base = "total"` puts the missing values back in the base, the
+percentages then summing over every observation, as before 0.14.0.
 Set `drop_na = TRUE` to remove them. The removal happens before each
 cross-tabulation, variable by variable: each row variable keeps its
-own complete cases (on itself and on `by`), so the total N can differ
-across variables within the same table -- this is available-case
+own complete cases (on itself and on `by`), so the count of a variable
+can differ from the N of the note and across variables within the
+same table -- this is available-case
 analysis per cross-table, not listwise deletion over the whole
 selection. The removal is disclosed in a table note rather than
 silent:
@@ -449,9 +456,9 @@ table_categorical(
 `levels_keep` filters the display only: counts, percentages, the
 chi-squared test, and the association measure are all still computed
 on the full cross-table. That is why the displayed percentages no
-longer sum to 100 (within "Lower secondary": 1.1 + 33.3 + 8.0 =
-42.4 -- the hidden "Lower middle" and "Upper middle" levels still
-count in the denominator), and why *p* and Tau-b are identical to the
+longer sum to 100 (within "Lower secondary": 33.7 + 8.1 = 41.8 -- the
+hidden "Lower middle" and "Upper middle" levels still count in the
+denominator), and why *p* and Tau-b are identical to the
 unfiltered table. To recompute the statistics on a subset of levels,
 filter the data before calling `table_categorical()`.
 

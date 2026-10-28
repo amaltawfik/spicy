@@ -69,6 +69,10 @@
   note_rows_missing_weights = "Lignes retir\u00E9es pour valeur manquante sur %s\u00A0: %d.",
   note_weights_fallback = "les poids",
   note_weighted_by = "Statistiques pond\u00E9r\u00E9es par %s.",
+  note_sample_size_groups = "N = %s\u00A0: %s.",
+  note_sample_size_unweighted = "N = %s (non pond\u00E9r\u00E9).",
+  note_sample_size_groups_unweighted = "N = %s (non pond\u00E9r\u00E9)\u00A0: %s.",
+  note_percent_column = "Pourcentages en colonne.",
   note_percent_row = "Pourcentages en ligne.",
   note_no_data = "Aucune donn\u00E9e pour %s.",
   note_no_data_in = "Aucune donn\u00E9e pour %s dans %s.",
@@ -490,7 +494,7 @@
   test_design_saddlepoint = "khi-deux (approximation du point de selle) fond\u00E9 sur le plan de sondage",
   note_ci_prop_method = "IC des pourcentages\u00A0: %s (survey::svyciprop).",
   note_ci_prop_bound = "Pourcentages de 0 ou 100\u00A0: intervalle binomial exact sur l'effectif non pond\u00E9r\u00E9.",
-  note_gloss_pct_svy = "%s = pourcentage estim\u00E9 au sein de la colonne (survey::svymean).",
+  note_gloss_pct_svy = "%s = pourcentage estim\u00E9.",
   note_gloss_n_svy = "%s = effectif observ\u00E9 (non pond\u00E9r\u00E9).",
 
   # -- table_regression(): standard-error and interval notes ----------------

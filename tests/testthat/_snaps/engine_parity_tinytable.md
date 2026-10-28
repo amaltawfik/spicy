@@ -122,7 +122,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note<U+00A0>:] Valeur p<U+00A0>: test du khi\-deux de Pearson.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note<U+00A0>:] N \= 40<U+00A0>: A (n \= 20), B (n \= 20). Pourcentages en colonne. Valeur p<U+00A0>: test du khi\-deux de Pearson.])),
           ),
           
       
@@ -384,7 +384,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). Percentages are column percentages. P\-value: Pearson chi\-squared test.])),
           ),
           
       
@@ -522,7 +522,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). Percentages are column percentages. P\-value: Pearson chi\-squared test.])),
           ),
           
       
@@ -909,7 +909,145 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). Percentages are column percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of the sample size, the base and the Total rule
+
+    Code
+      cat(typ)
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Categorical table by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_1": 0, "1_1": 0, "2_1": 0, "3_1": 0, "4_1": 0, "5_1": 0, "6_1": 0, "0_2": 0, "1_2": 0, "2_2": 0, "3_2": 0, "4_2": 0, "5_2": 0, "6_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "3_3": 0, "4_3": 0, "5_3": 0, "6_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "3_4": 0, "4_4": 0, "5_4": 0, "6_4": 0, "0_5": 0, "1_5": 0, "2_5": 0, "3_5": 0, "4_5": 0, "5_5": 0, "6_5": 0, "0_6": 0, "1_6": 0, "2_6": 0, "3_6": 0, "4_6": 0, "5_6": 0, "6_6": 0, "0_0": 1, "1_0": 1, "2_0": 1, "3_0": 2, "4_0": 2, "5_0": 2, "6_0": 2
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+          (align: left, indent: 1em,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([], [x], [no], [yes], [(Missing)], [Total]),
+          ([n], [  ], [ 6], [ 8], [ 1], [15]),
+          ([%], [     ], [ 42.9], [ 57.1], [     ], [100.0]),
+          ([n], [  ], [ 5], [ 8], [ 2], [15]),
+          ([%], [     ], [ 38.5], [ 61.5], [     ], [100.0]),
+          ([n], [  ], [11], [16], [ 3], [30]),
+          ([%], [     ], [ 40.7], [ 59.3], [     ], [100.0]),
+        )
+      
+        #context layout(size => {
+          // spicy: an indented cell is measured with its indent
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            let spicy_style = get-style(spicy_x, spicy_k + 1)
+            if spicy_style != none and "indent" in spicy_style { pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }
+          }))
+          // spicy: a cell that spans columns is measured with none of them
+          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
+            if (spicy_x, spicy_k) in ((0, 1),) { [] } else { spicy_cell }
+          }))
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          // spicy: a column-group label wider than its columns widens them
+          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]),) {
+            let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
+            let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
+            if spicy_need > spicy_have {
+              for k in range(spicy_from, spicy_to + 1) {
+                tinytable-naturals.at(k) += (spicy_need - spicy_have) / (spicy_to - spicy_from + 1)
+              }
+            }
+          }
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 6, start: 0, end: 7, stroke: 0.03em),
+       table.hline(y: 1, start: 1, end: 7, stroke: 0.06em),
+       table.hline(y: 2, start: 0, end: 7, stroke: 0.06em),
+       table.hline(y: 7, start: 0, end: 7, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 7, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], table.cell(colspan: 2, align: center)[A], table.cell(colspan: 2, align: center)[B], table.cell(colspan: 2, align: center)[Total],
+      [], [n], [%], [n], [%], [n], [%],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      table.cell(colspan: 7)[x],
+      [no], [ 6], [ 42.9], [ 5], [ 38.5], [11], [ 40.7],
+      [yes], [ 8], [ 57.1], [ 8], [ 61.5], [16], [ 59.3],
+      [(Missing)], [ 1], [     ], [ 2], [     ], [ 3], [     ],
+      [Total], [15], [100.0], [15], [100.0], [30], [100.0],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 7, text(size: 0.9em, [#emph[Note.] N \= 30: A (n \= 15), B (n \= 15). Percentages are column percentages.])),
           ),
           
       

@@ -223,6 +223,8 @@
        smoking    │             
          No       │  7    70.0  
          Yes      │  3    30.0  
+      
+      Note. N = 10.
 
 # print.spicy_continuous_table: numeric + group
 
@@ -256,7 +258,7 @@
          mid    │  2   33.3   2   33.3     4      33.3                       
          hi     │  2   33.3   2   33.3     4      33.3                       
       
-      Note. P-values: Fisher exact test. Phi: smoking. Cramer's V: health.
+      Note. N = 12: F (n = 6), M (n = 6). Percentages are column percentages. P-values: Fisher exact test. Phi: smoking. Cramer's V: health.
 
 # print.spicy_continuous_lm_table: bivariate fit by group
 

@@ -355,13 +355,15 @@ table_categorical(
 #>  Variable            │   n      %    
 #> ─────────────────────┼───────────────
 #>  Current smoker      │               
-#>    No                │  926    77.2  
-#>    Yes               │  249    20.8  
-#>    (Missing)         │   25     2.1  
+#>    No                │  926    78.8  
+#>    Yes               │  249    21.2  
+#>    (Missing)         │   25          
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity   │               
 #>    No                │  650    54.2  
-#>    Yes               │  550    45.8
+#>    Yes               │  550    45.8  
+#> 
+#> Note. N = 1200.
 ```
 
 ``` r
@@ -379,9 +381,9 @@ table_categorical(
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
 #>  Current smoker    │                                                         
-#>    No              │        179               68.6                415        
-#>    Yes             │         78               29.9                112        
-#>    (Missing)       │          4                1.5                 12        
+#>    No              │        179               69.6                415        
+#>    Yes             │         78               30.4                112        
+#>    (Missing)       │          4                                    12        
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                         
 #>    No              │        177               67.8                310        
@@ -390,9 +392,9 @@ table_categorical(
 #>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
 #> ───────────────────┼────────────────────────────────────────────────────
 #>  Current smoker    │                                                    
-#>    No              │       77.0            332         83.0       926   
-#>    Yes             │       20.8             59         14.8       249   
-#>    (Missing)       │        2.2              9          2.2        25   
+#>    No              │       78.7            332         84.9       926   
+#>    Yes             │       21.3             59         15.1       249   
+#>    (Missing)       │                         9                     25   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │                                                    
 #>    No              │       57.5            163         40.8       650   
@@ -401,15 +403,15 @@ table_categorical(
 #>  Variable          │ Total %    p     V  
 #> ───────────────────┼─────────────────────
 #>  Current smoker    │          <.001  .14 
-#>    No              │  77.2               
-#>    Yes             │  20.8               
-#>    (Missing)       │   2.1               
+#>    No              │  78.8               
+#>    Yes             │  21.2               
+#>    (Missing)       │                     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │          <.001  .21 
 #>    No              │  54.2               
 #>    Yes             │  45.8               
 #> 
-#> Note. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
 ```
 
 ``` r

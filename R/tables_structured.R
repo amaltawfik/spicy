@@ -285,6 +285,7 @@
   group_levels = NULL,
   margin_key = NULL,
   missing_vars = character(0),
+  blank_pct_vars = character(0),
   measure_col = NULL,
   measure_label = NULL,
   show_p = TRUE,
@@ -443,21 +444,32 @@
   # The count and percentage cells of one row, `sl` its rows of the
   # compute frame. A count with no number is a group in which the
   # variable has no data (`table_categorical()`): NA in the body, an
-  # undefined cell, shown as `cell_undefined`.
+  # undefined cell, shown as `cell_undefined`. With `blank_pct`, the row
+  # of missing values of a variable in `blank_pct_vars`, a percentage
+  # beside a count is outside the base: NA in the body and a blank cell,
+  # which does not apply.
   undefined <- spicy_str("cell_undefined")
-  count_cells <- function(sl) {
+  count_cells <- function(sl, blank_pct = FALSE) {
     values <- list()
+    out_of_base <- character(0)
     if (has_group) {
       for (g in group_levels) {
         sx <- sl[sl$group == g, , drop = FALSE]
         values[[.cat_key_n(g)]] <- if (nrow(sx)) sx$n[1L] else NA_real_
         values[[.cat_key_pct(g)]] <- if (nrow(sx)) sx$pct[1L] else NA_real_
+        if (blank_pct && !is.na(values[[.cat_key_n(g)]])) {
+          out_of_base <- c(out_of_base, .cat_key_pct(g))
+        }
       }
     } else {
       values[["n"]] <- sl$n[1L]
       values[["%"]] <- sl$pct[1L]
+      if (blank_pct && !is.na(values[["n"]])) {
+        out_of_base <- "%"
+      }
     }
     void <- names(values)[vapply(values, is.na, logical(1))]
+    void <- setdiff(void, out_of_base)
     list(
       values = values,
       status = stats::setNames(rep("undefined", length(void)), void),
@@ -551,11 +563,13 @@
       )
 
       for (lv in lv_use) {
-        cells <- count_cells(sv[
-          !is.na(sv$level) & sv$level == lv,
-          ,
-          drop = FALSE
-        ])
+        out_of_base <- var_name %in%
+          blank_pct_vars &&
+          identical(lv, missing_label)
+        cells <- count_cells(
+          sv[!is.na(sv$level) & sv$level == lv, , drop = FALSE],
+          blank_pct = out_of_base
+        )
         rows[[length(rows) + 1L]] <- list(
           label = paste0(indent_text, lv),
           values = cells$values,

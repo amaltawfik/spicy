@@ -33,5 +33,5 @@
          b      │  1   25.0   2   66.7     3      42.9                       
          c      │  1   25.0   0    0.0     1      14.3                       
       
-      Note. P-values: Fisher exact test. Phi: bin. Cramer's V: k3.
+      Note. N = 7: A (n = 4), B (n = 3). Percentages are column percentages. P-values: Fisher exact test. Phi: bin. Cramer's V: k3.
 

@@ -1160,7 +1160,8 @@ table_categorical_svy <- function(
       test_refused = test_refused,
       no_data = no_data_note,
       p_adjust_info = p_adjust_info,
-      add = note_add
+      add = note_add,
+      percent_column = has_group
     ),
     note,
     note_add

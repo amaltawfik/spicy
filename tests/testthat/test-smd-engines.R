@@ -108,7 +108,7 @@ test_that("smd = TRUE changes nothing but the column it adds", {
   # The note glosses the SMD; nothing else moves.
   expect_identical(
     cat_on[names(cat_off)],
-    structure(cat_off, note = NULL, percent = NULL)
+    structure(cat_off, note = NULL, percent = NULL, percent_base = NULL)
   )
   expect_identical(names(cat_on), c(names(cat_off), .CAT_KEY_SMD))
 

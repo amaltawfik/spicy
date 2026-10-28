@@ -38,7 +38,9 @@ margin, \code{"group"} otherwise, \code{NA} without \code{by}), \code{total} (\c
 rows of the margin and of the Total row), \code{n}, and \code{proportion}
 (between 0 and 1, the share
 the table displays: within the group, or within the level under
-\code{percent = "row"}, as \code{attr(x, "percent")} records). Filter
+\code{percent = "row"}, as \code{attr(x, "percent")} records; \code{NA} on the row of
+missing values under \code{percent_base = "valid"}, which leaves them out of
+the base, as \code{attr(x, "percent_base")} records). Filter
 on the role columns and \code{total} rather than on the displayed labels,
 which follow the display language.
 

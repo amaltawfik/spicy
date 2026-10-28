@@ -322,7 +322,7 @@ test_design_kruskal	reviewed	2026-10-17	test de Kruskal-Wallis fondé sur le pla
 test_design_rao_scott	reviewed	2026-10-17	khi-deux de Pearson fondé sur le plan de sondage (correction de Rao-Scott du second ordre)	
 test_design_rao_scott_chisq	reviewed	2026-10-17	khi-deux de Pearson fondé sur le plan de sondage (correction de Rao-Scott, référence khi-deux)	
 note_ci_prop_method	reviewed	2026-10-17	IC des pourcentages<NBSP>: %s (survey::svyciprop).	
-note_gloss_pct_svy	reviewed	2026-10-17	%s = pourcentage estimé au sein de la colonne (survey::svymean).	
+note_gloss_pct_svy	corrected	2026-10-28	%s = pourcentage estimé.	
 note_gloss_n_svy	reviewed	2026-10-17	%s = effectif observé (non pondéré).	
 note_adjustment_proportional	reviewed	2026-10-17	proportionnel	
 note_adjustment_balanced	reviewed	2026-10-17	équilibré	
@@ -466,3 +466,9 @@ bridge:population_averaged_inverse_gaussian_regression_gee	reviewed	2026-10-24	R
 note_p_values_test	reviewed	2026-10-24	Valeurs p<NBSP>: %s.	
 note_p_values_test_one	reviewed	2026-10-24	Valeur p<NBSP>: %s.	
 note_slope_test	reviewed	2026-10-24	Test de la pente<NBSP>: %s.	
+note_sample_size_groups	reviewed	2026-10-28	N = %s<NBSP>: %s.	
+note_sample_size_unweighted	reviewed	2026-10-28	N = %s (non pondéré).	
+note_sample_size_groups_unweighted	reviewed	2026-10-28	N = %s (non pondéré)<NBSP>: %s.	
+note_percent_column	reviewed	2026-10-28	Pourcentages en colonne.	
+note_sample_size	reviewed	2026-10-28	N = %s.	
+note_sample_size_group_item	reviewed	2026-10-28	%s (n = %s)	

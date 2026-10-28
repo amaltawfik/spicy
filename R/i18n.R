@@ -51,9 +51,23 @@
   note_weights_fallback = "weights",
   # Decision 17: the weighted table names its weights up front.
   note_weighted_by = "Statistics weighted by %s.",
-  # `table_categorical(by = , percent = "row")`: what the percentages
-  # are, said after the weights. The column percentages of the default
-  # take no sentence.
+  # The sample size of `table_categorical()`, the first sentence of its
+  # note (the APA sample table gives N in the general note): the rows of
+  # the data the table describes, a row missing `by` out under `drop_na =
+  # TRUE`. Under `by`, the groups follow in the order of their columns,
+  # each a `note_sample_size_group_item`, the column of missing `by`
+  # values included, so their n add up to N. Weighted counts fill the
+  # cells, so under `weights` the sentence says that N counts rows.
+  note_sample_size = "N = %s.",
+  note_sample_size_groups = "N = %s: %s.",
+  note_sample_size_unweighted = "N = %s (unweighted).",
+  note_sample_size_groups_unweighted = "N = %s (unweighted): %s.",
+  note_sample_size_group_item = "%s (n = %s)",
+  # The direction of the percentages under `by`, said after the sample
+  # size in both directions, so that two tables of one report never
+  # leave the reader to add up the cells to know which one is which.
+  # `table_categorical_svy()` says the column one too.
+  note_percent_column = "Percentages are column percentages.",
   note_percent_row = "Percentages are row percentages.",
   # A variable with no observed value in a group (every value missing
   # there, typically a question not asked in that group) has no data in
@@ -1177,8 +1191,11 @@
   # percentage is an ESTIMATE and the count is not. They say what the
   # numbers are, so they stay under every value of
   # `spicy_style(abbreviations = )`; the two symbols themselves are never
-  # defined (APA Publication Manual 7, section 7.15).
-  note_gloss_pct_svy = "%s = estimated percentage within the column (survey::svymean).",
+  # defined (APA Publication Manual 7, section 7.15). The gloss names the
+  # quantity and not its computation (ADR of 2026-10-20 on the note
+  # abbreviations); the direction sentence says where it is taken
+  # (`note_percent_column`, 2026-10-28).
+  note_gloss_pct_svy = "%s = estimated percentage.",
   note_gloss_n_svy = "%s = observed (unweighted) count.",
 
   # -- table_regression(): standard-error and interval notes ----------------

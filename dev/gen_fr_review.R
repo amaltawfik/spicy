@@ -465,7 +465,10 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "note_group_comparison_item",
     "note_list_sep_comma",
     "value_summary_units",
-    "header_pct_total"
+    "header_pct_total",
+    # The group of the sample-size sentence of table_categorical()
+    # (2026-10-28): a label and a count, "Women (n = 80)".
+    "note_sample_size_group_item"
   ),
   "frozen: notation" = c(
     "symbol_t",
@@ -576,6 +579,8 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "note_p_adjust_method_bh",
     "note_p_adjust_method_by",
     "note_exp_scope_all",
+    # The sample size of table_categorical() (2026-10-28), "N = 159.".
+    "note_sample_size",
     # code_book(), added after 2026-08-23
     "excel_sheet_codebook",
     "excel_sheet_codebook_variables",

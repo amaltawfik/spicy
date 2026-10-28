@@ -707,13 +707,15 @@ test_that("Typst widens the columns under a group label wider than them", {
     as.integer(regexpr("let tinytable-total", typ, fixed = TRUE))
   )
   # No note, no measure: tinytable gives Typst `auto` columns, which
-  # Typst widens for a spanning cell itself.
+  # Typst widens for a spanning cell itself. The note says N whenever the
+  # table builds it, so `note = FALSE` takes it away.
   bare <- .pt_typst(table_categorical(
     d,
     sex,
     by = role,
     p_value = FALSE,
     assoc_measure = "none",
+    note = FALSE,
     output = "tinytable"
   ))
   expect_match(bare, "columns: (auto,", fixed = TRUE)
@@ -1162,6 +1164,34 @@ test_that("the Typst source of an association measure headed by its symbol", {
     assoc_measure = "cramer_v",
     output = "tinytable"
   ))))
+})
+
+test_that("the Typst source of the sample size, the base and the Total rule", {
+  # The note opens on N and the group sizes, then the direction of the
+  # percentages; the `(Missing)` row, outside the base, leaves its
+  # percentage cells blank, and a thin rule sits above the Total row.
+  skip_if_not_installed("tinytable")
+  set.seed(6)
+  d <- data.frame(
+    x = factor(sample(c("no", "yes"), 30L, TRUE)),
+    g = factor(rep(c("A", "B"), 15L))
+  )
+  d$x[c(2L, 9L, 20L)] <- NA
+  typ <- .pt_typst(table_categorical(
+    d,
+    x,
+    by = g,
+    p_value = FALSE,
+    assoc_measure = "none",
+    total_row = TRUE,
+    output = "tinytable"
+  ))
+  expect_match(
+    typ,
+    "table.hline(y: 6, start: 0, end: 7, stroke: 0.03em)",
+    fixed = TRUE
+  )
+  expect_snapshot(cat(typ))
 })
 
 test_that("the Typst source of a note naming the test of its one p-value", {

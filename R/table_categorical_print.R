@@ -63,11 +63,16 @@ print.spicy_categorical_table <- function(x, ...) {
   # (every table_categorical() return does); the string derivation
   # remains only for a degraded object printed without its attributes.
   s <- attr(x, "structured", exact = TRUE)
-  sep_rows <- if (is.null(s) || nrow(s$body) != nrow(display_df)) {
-    .categorical_var_sep_rows(display_df[[1]], indent_text)
-  } else {
+  typed <- !is.null(s) && nrow(s$body) == nrow(display_df)
+  sep_rows <- if (typed) {
     .categorical_sep_rows_typed(s)
+  } else {
+    .categorical_var_sep_rows(display_df[[1]], indent_text)
   }
+  # The rule above each Total row of `total_row = TRUE`, read from its
+  # role: never from the word "Total" in the rows, which a level "Total
+  # score" holds too. A degraded object without its typed view draws none.
+  total_rows <- if (typed) .categorical_total_rows_typed(s) else integer(0)
 
   # The header a reader sees is the col_meta display_label, never the
   # frozen column key (decision 13). Guarded on SHAPE like `sep_rows`
@@ -134,11 +139,9 @@ print.spicy_categorical_table <- function(x, ...) {
     align_left_cols = align_left,
     align_center_cols = align_center,
     group_sep_rows = sep_rows,
-    # No total rule: the Total row of `total_row = TRUE` is set apart no
-    # more than the margin column, and without an index the printer would
-    # look for the word "Total" in the rows, so a level "Total score"
-    # took a rule above it.
-    total_row_idx = integer(0),
+    # The index, never NULL: without one the printer would look for the
+    # word "Total" in the rows, so a level "Total score" took a rule.
+    total_row_idx = total_rows,
     display_labels = header_labels
   )
 
@@ -188,6 +191,15 @@ print.spicy_categorical_table <- function(x, ...) {
 
 .categorical_level_rows_typed <- function(structured) {
   .struct_indent_rows(structured)
+}
+
+# Internal: the Total rows of `total_row = TRUE`, one per variable block,
+# from their typed role. Every route draws a thin rule above each
+# (decision of 2026-10-28, point 17 of
+# dev/decisions/2026-10-23-sorties-publiables-fr.md): the row sums the
+# rows above it, the `(Missing)` row included.
+.categorical_total_rows_typed <- function(structured) {
+  which(structured$body$.row_role == "total")
 }
 
 # Internal: the note of a categorical summary table, one paragraph in
@@ -254,8 +266,10 @@ print.spicy_categorical_table <- function(x, ...) {
       c(.CON_KEY_CI_LL, .CON_KEY_CI_UL)
     )
   }
-  # The direction of the percentages, as the object records it.
+  # The direction and the base of the percentages, as the object records
+  # them.
   attr(df, "percent") <- attr(x, "percent", exact = TRUE)
+  attr(df, "percent_base") <- attr(x, "percent_base", exact = TRUE)
   df
 }
 
@@ -403,7 +417,9 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' rows of the margin and of the Total row), `n`, and `proportion`
 #' (between 0 and 1, the share
 #' the table displays: within the group, or within the level under
-#' `percent = "row"`, as `attr(x, "percent")` records). Filter
+#' `percent = "row"`, as `attr(x, "percent")` records; `NA` on the row of
+#' missing values under `percent_base = "valid"`, which leaves them out of
+#' the base, as `attr(x, "percent_base")` records). Filter
 #' on the role columns and `total` rather than on the displayed labels,
 #' which follow the display language.
 #'

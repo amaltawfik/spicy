@@ -269,6 +269,21 @@
   c(lv, tot)
 }
 
+# A percentage on the observed values (`percent_base = "valid"`): `n` of
+# the `base` observed values of a column that holds `all` rows. A column
+# with no observed value has no base: an empty one (no row at all) keeps
+# the 0 of the empty columns of "total", and one that holds only missing
+# values gets NA, the undefined cell.
+.cat_valid_pct <- function(n, base, all) {
+  if (base > 0) {
+    100 * n / base
+  } else if (all > 0) {
+    NA_real_
+  } else {
+    0
+  }
+}
+
 # The columns a select-less call tabulates, among `select_names` (the
 # `everything()` default, its role and design columns left out): the
 # categorical ones, factor, character, logical and labelled. A number, a
@@ -344,6 +359,26 @@
         start_row = first_row + i - 1L
       )
     }
+  }
+  wb
+}
+
+# The rule above each Total row of `total_row = TRUE` in the sheet, the
+# console's: the light rule the sheets of the family draw inside a body,
+# a "hair" bottom border on the row above (`table_continuous()`'s block
+# separators). `rows` are the positions of the Total rows in the body,
+# whose first line is the sheet row `first_row`; the row above one is
+# never the last row, so the closing rule stays untouched.
+.cat_xl_total_rules <- function(wb, rows, first_row, nc) {
+  for (r in first_row + rows - 2L) {
+    wb <- openxlsx2::wb_add_border(
+      wb,
+      dims = openxlsx2::wb_dims(rows = r, cols = seq_len(nc)),
+      bottom_border = "hair",
+      top_border = NULL,
+      left_border = NULL,
+      right_border = NULL
+    )
   }
   wb
 }
@@ -1056,14 +1091,17 @@
 #' @param total_row Logical. If `TRUE`, closes the block of each variable
 #'   with a `Total` row under its levels (after the `"(Missing)"` row when
 #'   there is one): the count of the variable in each group column and in
-#'   the `Total` column, and its percentage, 100 in every column under
-#'   `percent = "column"` and, under `percent = "row"`, the share of each
-#'   group in the variable's total, the base rate the row percentages are
-#'   compared with. Without `by`, the row holds the count of the variable
-#'   and 100. The row never enters the test, the association measure or
-#'   the SMD. It takes the label of the margin, so a level displayed with
-#'   that label is then an error (class `spicy_label_collision`), as
-#'   beside the `Total` column. `FALSE` (the default) adds no row.
+#'   the `Total` column, the `"(Missing)"` row included, and its
+#'   percentage, 100 in every column under `percent = "column"` and, under
+#'   `percent = "row"`, the share of each group in the variable's total,
+#'   the base rate the row percentages are compared with (on the observed
+#'   values under the default `percent_base`). Without `by`, the row holds
+#'   the count of the variable and 100. A thin rule sets the row apart, in
+#'   the console and in the rendered outputs. The row never enters the
+#'   test, the association measure or the SMD. It takes the label of the
+#'   margin, so a level displayed with that label is then an error (class
+#'   `spicy_label_collision`), as beside the `Total` column. `FALSE` (the
+#'   default) adds no row: the note gives the sample size.
 #' @param drop_na Logical. The rule of the family: a table that counts
 #'   shows the missing values by default, as a frequency table reports
 #'   how many answers are missing; a table that computes a statistic
@@ -1072,7 +1110,10 @@
 #'   displays the missing values as a dedicated `"(Missing)"` level (and,
 #'   under `by`, a `"(Missing)"` group column) -- the field convention for
 #'   descriptive tables (gtsummary's "Unknown" row, janitor's `NA` row;
-#'   see the Epidemiologist R Handbook, Descriptive tables). A level
+#'   see the Epidemiologist R Handbook, Descriptive tables). Under the
+#'   default `percent_base = "valid"`, the row shows their count and no
+#'   percentage: the percentages are on the observed values, and the Total
+#'   row of row percentages too. A level
 #'   displayed beside that row or column with its label is an error
 #'   (class `spicy_label_collision`): rename the level, or give the row
 #'   another label with
@@ -1150,10 +1191,27 @@
 #'   100 on every level row. Unique abbreviations are accepted (`"c"`,
 #'   `"r"`). Only the displayed shares change: the counts, the test, the
 #'   association measure and the SMD are the same in both directions.
-#'   Under `"row"` the note says so ("Percentages are row
-#'   percentages."). Without `by`, each variable has one distribution to
-#'   show, and `percent = "row"` is ignored with a warning (class
-#'   `spicy_ignored_arg`).
+#'   The note says the direction in both cases ("Percentages are column
+#'   percentages.", "Percentages are row percentages."). Without `by`,
+#'   each variable has one distribution to show, and `percent = "row"` is
+#'   ignored with a warning (class `spicy_ignored_arg`).
+#' @param percent_base The base of the percentages of a variable whose
+#'   missing values the `"(Missing)"` row shows (`drop_na = FALSE`).
+#'   `"valid"` (the default) computes them on the observed values of the
+#'   variable, as gtsummary does: the levels sum to 100, and the
+#'   `"(Missing)"` row shows its count and no percentage (a blank cell,
+#'   `NA` in the data frames). `"total"` computes them on every row, the
+#'   `"(Missing)"` row included, as SPSS does and as this function did
+#'   before 0.14.0. Under `by`, the base is the observed values of each
+#'   column, the `Total` column and the column of missing `by` values
+#'   included. Row percentages keep each row as its base, the `"(Missing)"`
+#'   row included, which keeps its row percentages; the Total row of
+#'   `total_row = TRUE` gives the share of each group on the observed
+#'   values under `"valid"`. The test, the association measure and the
+#'   SMD run on the observed values whatever the base. Without missing
+#'   values to show (`drop_na = TRUE`, or a variable with none) the two
+#'   bases give the same percentages. Unique abbreviations are accepted
+#'   (`"v"`, `"t"`).
 #' @param percent_digits Number of digits for percentages in report outputs.
 #'   Defaults to `1`. A whole number: a fraction is an error, as for
 #'   every `*_digits` argument.
@@ -1399,6 +1457,18 @@
 #'     invisibly.
 #' }
 #'
+#' The note opens with the sample size, "N = 159." or, with `by`,
+#' "N = 159: Women (n = 80), Men (n = 79).": the rows of the data the table
+#' describes, and those of each group column in column order, the column
+#' of missing `by` values included, so that the n add up to N. A row
+#' missing `by` under `drop_na = TRUE` and a row with a missing weight
+#' leave the table and are not counted; the note says how many. Under
+#' `weights` the cells hold weighted counts and N counts rows: "N = 60
+#' (unweighted).". One N per table, the missing values of a variable in
+#' its `"(Missing)"` row or in the note. With `by`, the direction of the
+#' percentages follows, then the weights. Their base takes no sentence:
+#' the table shows it (see `percent_base`).
+#'
 #' The note, the `drop_na = TRUE` disclosure included, travels with the
 #' table on every route, not just the console: `"default"` prints it
 #' under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
@@ -1411,9 +1481,11 @@
 #' `attr(x, "title")`.
 #' The same three objects record the direction of their percentages in
 #' `attr(x, "percent")`: `"column"` or `"row"` (see `percent`), and
-#' `"column"` for a table without `by`. The percentage columns of
-#' `"data.frame"`, `pct` in `"long"` and the `proportion` of
-#' [broom::tidy()] hold the shares the table displays, in that direction.
+#' `"column"` for a table without `by`; and their base in
+#' `attr(x, "percent_base")`, `"valid"` or `"total"`. The percentage
+#' columns of `"data.frame"`, `pct` in `"long"` and the `proportion` of
+#' [broom::tidy()] hold the shares the table displays, in that direction
+#' and on that base: `NA` on the `"(Missing)"` row under `"valid"`.
 #' On the `"tinytable"` route the note is set one size down;
 #' `options(spicy.note_style)` governs that (see [table_regression()]).
 #'
@@ -1854,6 +1926,7 @@ table_categorical <- function(
   p_value = NULL,
   p_adjust = "none",
   percent = c("column", "row"),
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   effect_size_digits = 2,
@@ -1910,6 +1983,7 @@ table_categorical <- function(
   align <- spicy_match_arg(align)
   test <- spicy_match_arg(test)
   percent <- spicy_match_arg(percent)
+  percent_base <- spicy_match_arg(percent_base)
 
   .check_data_frame(data, "table_categorical")
   .check_labels_arg(labels)
@@ -2182,21 +2256,84 @@ table_categorical <- function(
     parts <- c(parts, no_data)
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
-  # What the numbers are, (a) of `.compose_note()`: a weighted table says
-  # so, in the words of `table_continuous()` (decision 17), and row
-  # percentages say so after it. The column percentages of the default
-  # take no sentence. NULL when there is nothing to say.
+  # The sample size, the first sentence of the note (decision of
+  # 2026-10-28, dev/decisions/2026-10-28-note-effectif.md): the rows of the
+  # data the table describes, less those a missing weight takes out of the
+  # table, and under `by` the rows of each group column, in column order
+  # and under the label its spanner shows, the column of missing `by`
+  # values included, so that the n add up to N. Under `drop_na = TRUE` a
+  # row missing `by` leaves every variable and is not in N (the
+  # missing-values sentence counts it). One N per table: a variable's own
+  # missing values are in its `(Missing)` row or in that sentence. Rows,
+  # never weights, so a weighted table says N is unweighted. `size_groups`,
+  # `missing_group` and `g_fac` are read when the note is built.
+  build_size_note <- function() {
+    rows_in <- if (is.null(weights_vec)) {
+      rep(TRUE, nrow(data))
+    } else {
+      !is.na(weights_vec)
+    }
+    weighted <- !is.null(weights_vec)
+    if (!has_group) {
+      return(spicy_fmt(
+        if (weighted) "note_sample_size_unweighted" else "note_sample_size",
+        fmt_n(sum(rows_in))
+      ))
+    }
+    g_chr <- as.character(g_fac)
+    n_groups <- vapply(
+      size_groups,
+      function(lev) {
+        at <- if (missing_group && identical(lev, missing_label)) {
+          is.na(g_chr)
+        } else {
+          !is.na(g_chr) & g_chr == lev
+        }
+        sum(rows_in & at)
+      },
+      integer(1)
+    )
+    spicy_fmt(
+      if (weighted) {
+        "note_sample_size_groups_unweighted"
+      } else {
+        "note_sample_size_groups"
+      },
+      fmt_n(sum(n_groups)),
+      .join_note_vars(spicy_fmt(
+        "note_sample_size_group_item",
+        size_groups,
+        fmt_n(n_groups)
+      ))
+    )
+  }
+  # What the numbers are, (a) of `.compose_note()`, in this order: the
+  # sample size; under `by`, the direction of the percentages, column or
+  # row (decision of 2026-10-28: one table of a report that says it and
+  # the next that does not leave the reader to add up the cells); then the
+  # weights, in the words of `table_continuous()` (decision 17). The base
+  # of the percentages takes no sentence: the table shows it, the levels
+  # summing to 100 and the `(Missing)` row with a count and no percentage.
   build_what_note <- function() {
     parts <- c(
+      build_size_note(),
+      if (has_group) {
+        spicy_str(
+          if (identical(percent, "row")) {
+            "note_percent_row"
+          } else {
+            "note_percent_column"
+          }
+        )
+      },
       if (!is.null(weights_vec)) {
         spicy_fmt(
           "note_weighted_by",
           weights_name %||% spicy_str("note_weights_fallback")
         )
-      },
-      if (identical(percent, "row")) spicy_str("note_percent_row")
+      }
     )
-    if (length(parts)) paste(parts, collapse = " ")
+    paste(parts, collapse = " ")
   }
   validate_logical_scalar(rescale, "rescale")
   validate_logical_scalar(correct, "correct")
@@ -2358,6 +2495,11 @@ table_categorical <- function(
   missing_vars <- character(0)
   # Whether `by` has a column of missing values (set where it is added).
   missing_group <- FALSE
+  # The variables whose row of missing values stands outside the base of
+  # their column percentages (`percent_base = "valid"`): its percentage
+  # cells are blank on every route, the cell of a quantity that does not
+  # apply, and NA in the machine outputs. Set in the tabulation loops.
+  blank_pct_vars <- character(0)
   # The label of the Total row of `total_row = TRUE`: the margin's, the
   # word a categorical table puts over its count margin. The row itself is
   # flagged in the compute frame (`.total_row`), never matched on it.
@@ -2463,6 +2605,18 @@ table_categorical <- function(
   # count and the percentage of a group in which the variable has no data
   # (`no_data_groups`), and an SMD that cannot be estimated.
   undefined_cell <- spicy_str("cell_undefined")
+  # What a percentage cell with no number shows: blank on the row of
+  # missing values of a variable in `blank_pct_vars`, a row outside the
+  # base, which is not applicable rather than not computable; the mark
+  # elsewhere. A count with no number (a group with no data) keeps the
+  # mark on that row too.
+  pct_na_cell <- function(var, lv, n) {
+    if (var %in% blank_pct_vars && identical(lv, missing_label) && !is.na(n)) {
+      ""
+    } else {
+      undefined_cell
+    }
+  }
 
   # `decimal.mark` pinned on every `formatC()` of this file that can
   # write one -- the exception is `fmt_n()` below, whose `digits = 0`
@@ -2696,6 +2850,22 @@ table_categorical <- function(
       }
       vals <- as.character(ft$value)
       raw_levels <- vals[!is.na(vals)]
+      # The base of the percentages (`percent_base`). Under "total", every
+      # row, as `freq()` gives it; under "valid", the observed values of
+      # the variable, those of the levels `levels_keep` hides included,
+      # and the row of missing values keeps its count with no percentage
+      # (`blank_pct_vars`). The Total row below reads 100 under both.
+      pct_lv <- 100 * suppressWarnings(as.numeric(ft$prop))
+      valid_base <- x_has_na && identical(percent_base, "valid")
+      if (valid_base) {
+        n_lv <- suppressWarnings(as.numeric(ft$n))
+        is_miss <- !is.na(vals) & vals == missing_label
+        pct_lv <- ifelse(
+          is_miss,
+          NA_real_,
+          100 * n_lv / sum(n_lv[!is.na(vals) & !is_miss])
+        )
+      }
 
       keep_i <- levels_keep[[select_names[i]]]
       lv_use <- if (is.null(keep_i)) {
@@ -2717,6 +2887,9 @@ table_categorical <- function(
         .cat_total_row_guard(lv_use, select_names[i], total_label)
       }
       all_level_order <- c(all_level_order, lv_use)
+      if (valid_base) {
+        blank_pct_vars <- c(blank_pct_vars, select_names[i])
+      }
 
       for (lv in lv_use) {
         idx <- match(lv, vals)
@@ -2733,7 +2906,7 @@ table_categorical <- function(
           # dev/bug_missing_order_multivar.md).
           .lvrank = match(lv, lv_use),
           n = suppressWarnings(as.numeric(ft$n[idx])),
-          pct = 100 * suppressWarnings(as.numeric(ft$prop[idx])),
+          pct = pct_lv[idx],
           .total_row = FALSE,
           stringsAsFactors = FALSE,
           check.names = FALSE
@@ -2792,7 +2965,7 @@ table_categorical <- function(
     if (output == "long") {
       long_raw <- with_keys(with_label(long_raw))
       # Every data frame carries the note as print() shows it, and the
-      # direction of its percentages.
+      # direction and the base of its percentages.
       attr(long_raw, "note") <- .table_note(
         .categorical_note(
           build_what_note(),
@@ -2803,6 +2976,7 @@ table_categorical <- function(
         note_add
       )
       attr(long_raw, "percent") <- percent
+      attr(long_raw, "percent_base") <- percent_base
       return(long_raw)
     }
 
@@ -2894,7 +3068,11 @@ table_categorical <- function(
             r1 <- as.list(setNames(rep("", length(report_cols)), report_cols))
             # A count with no number is a variable with no data.
             r1$n <- fmt_n(sl$n[1], na = undefined_cell)
-            r1[["%"]] <- fmt_num(sl$pct[1], percent_digits, na = undefined_cell)
+            r1[["%"]] <- fmt_num(
+              sl$pct[1],
+              percent_digits,
+              na = pct_na_cell(select_names[[k]], lv, sl$n[1])
+            )
           } else {
             r1 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
             r1$n <- sl$n[1]
@@ -2941,6 +3119,7 @@ table_categorical <- function(
       levels_keep = levels_keep,
       missing_label = missing_label,
       missing_vars = missing_vars,
+      blank_pct_vars = blank_pct_vars,
       indent_text = indent_text,
       percent_digits = percent_digits,
       p_digits = p_digits,
@@ -2962,6 +3141,7 @@ table_categorical <- function(
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
       attr(out, "percent") <- percent
+      attr(out, "percent_base") <- percent_base
       # The long frame of `output = "long"`, for tidy() and glance().
       attr(out, "long_data") <- with_keys(with_label(long_raw))
       attr(out, "structured") <- structured
@@ -3078,6 +3258,17 @@ table_categorical <- function(
           line_width = 0.03
         )
       }
+      # A thin rule above each Total row (`total_row = TRUE`), as the
+      # console draws one.
+      for (tr in .categorical_total_rows_typed(structured)) {
+        tt <- tinytable::style_tt(
+          tt,
+          i = tr - 1L,
+          j = seq_len(ncol(dat_tt)),
+          line = "b",
+          line_width = 0.03
+        )
+      }
       return(tt)
     }
 
@@ -3173,6 +3364,20 @@ table_categorical <- function(
           locations = gt::cells_body(rows = sr - 1L)
         )
       }
+      # A thin rule above each Total row (`total_row = TRUE`), as the
+      # console draws one.
+      total_rule <- gt::cell_borders(
+        sides = "bottom",
+        color = "currentColor",
+        weight = gt::px(0.5)
+      )
+      for (tr in .categorical_total_rows_typed(structured)) {
+        tbl <- gt::tab_style(
+          tbl,
+          style = total_rule,
+          locations = gt::cells_body(rows = tr - 1L)
+        )
+      }
       # The same title the five other engines print.
       tbl <- .spicy_gt_apa_title(tbl, .categorical_title(NULL))
       return(.spicy_gt_attach_note(
@@ -3258,6 +3463,17 @@ table_categorical <- function(
           i = sr - 1L,
           part = "body",
           border = bd_light
+        )
+      }
+      # A thin rule above each Total row (`total_row = TRUE`), as the
+      # console draws one.
+      bd_total <- spicy_fp_border(color = "black", width = 0.5)
+      for (tr in .categorical_total_rows_typed(structured)) {
+        ft <- flextable::hline(
+          ft,
+          i = tr - 1L,
+          part = "body",
+          border = bd_total
         )
       }
       if (length(id_mod)) {
@@ -3412,6 +3628,12 @@ table_categorical <- function(
           left_border = NULL,
           right_border = NULL
         )
+        wb <- .cat_xl_total_rules(
+          wb,
+          .categorical_total_rows_typed(structured),
+          first_body_row,
+          nc
+        )
       }
 
       # Disclosure note (what left the table) two rows below the body,
@@ -3559,6 +3781,8 @@ table_categorical <- function(
     check = include_total,
     missing_label = if (!drop_na && any(is.na(g0))) missing_label
   )
+  # The group columns the sample-size sentence names, the margin aside.
+  size_groups <- group_levels
   if (include_total) {
     group_levels <- c(group_levels, margin_key)
   }
@@ -4067,6 +4291,35 @@ table_categorical <- function(
     if (length(nd_i)) {
       no_data_groups[[select_names[i]]] <- nd_i
     }
+    # The base of the percentages (`percent_base`). Under "total", every
+    # row, as `cross_tab()` gives them. Under "valid", the observed values
+    # of the variable in each column, those of the levels `levels_keep`
+    # hides included: the row of missing values keeps its count with no
+    # percentage (`blank_pct_vars`), and the Total row keeps 100. Row
+    # percentages keep each row as its base, that row included, so only
+    # the shares of the Total row move. `col_count()` reads a row of the
+    # count table in one column, `obs_count()` the observed values of the
+    # column: its total less its row of missing values.
+    valid_base <- x_has_na && identical(percent_base, "valid")
+    miss_at <- if (x_has_na) match(missing_label, vals_n) else NA_integer_
+    col_count <- function(gr, at) {
+      v <- if (is.na(at)) {
+        0
+      } else if (identical(gr, margin_key)) {
+        ct_n[at, ncol(ct_n)]
+      } else if (gr %in% groups_present) {
+        ct_n[at, gr]
+      } else {
+        0
+      }
+      suppressWarnings(as.numeric(v))
+    }
+    obs_count <- function(gr) {
+      col_count(gr, margin_rows_n) - col_count(gr, miss_at)
+    }
+    if (valid_base && identical(percent, "column")) {
+      blank_pct_vars <- c(blank_pct_vars, select_names[i])
+    }
 
     for (lv in lv_use) {
       in_n <- match(lv, vals_n)
@@ -4107,6 +4360,17 @@ table_categorical <- function(
         } else {
           0
         }
+        if (valid_base && identical(percent, "column")) {
+          pct_val <- if (identical(lv, missing_label)) {
+            NA_real_
+          } else {
+            .cat_valid_pct(
+              suppressWarnings(as.numeric(n_val)),
+              obs_count(gr),
+              col_count(gr, margin_rows_n)
+            )
+          }
+        }
         # A group in which the variable has no data has no count: NA,
         # which every route shows as `cell_undefined`.
         if (gr %in% nd_i) {
@@ -4132,8 +4396,9 @@ table_categorical <- function(
     # those `levels_keep` hides and the row of missing values included), and
     # their percentage. Under column percentages, the 100 of each column;
     # under row percentages, the share of each group in the variable's
-    # total, the base rate the rows above are read against. It is built
-    # after the statistics and enters none of them.
+    # total, the base rate the rows above are read against, on the observed
+    # values under `percent_base = "valid"`. It is built after the
+    # statistics and enters none of them.
     if (total_row) {
       n_all <- suppressWarnings(as.numeric(ct_n[margin_rows_n, ncol(ct_n)]))
       for (gr in groups_use) {
@@ -4144,9 +4409,13 @@ table_categorical <- function(
         } else {
           0
         }
-        pct_val <- if (
-          identical(gr, margin_key) || identical(percent, "column")
-        ) {
+        closes_column <- identical(gr, margin_key) ||
+          identical(percent, "column")
+        pct_val <- if (valid_base && closes_column) {
+          .cat_valid_pct(obs_count(gr), obs_count(gr), n_val)
+        } else if (valid_base) {
+          .cat_valid_pct(obs_count(gr), obs_count(margin_key), n_all)
+        } else if (closes_column) {
           100 * (n_val > 0)
         } else if (n_all > 0) {
           100 * n_val / n_all
@@ -4373,7 +4642,7 @@ table_categorical <- function(
       assoc_ci = show_assoc && assoc_ci
     )
     # Every data frame carries the note as print() shows it, and the
-    # direction of its percentages.
+    # direction and the base of its percentages.
     attr(out, "note") <- .table_note(
       .categorical_note(
         build_what_note(),
@@ -4386,6 +4655,7 @@ table_categorical <- function(
       note_add
     )
     attr(out, "percent") <- percent
+    attr(out, "percent_base") <- percent_base
     return(out)
   }
   # Only the long output publishes the per-row measure and SMD keys; the
@@ -4564,7 +4834,8 @@ table_categorical <- function(
     z <- 1L
     # The count and percentage cells of one row, `sl` its rows of the
     # compute frame: a count with no number is a group in which the
-    # variable has no data, shown as `cell_undefined`.
+    # variable has no data, shown as `cell_undefined`, and a percentage
+    # with none shows what `pct_na_cell()` says.
     fill_groups <- function(r, sl) {
       for (gr in group_levels) {
         sx <- sl[sl$group == gr, , drop = FALSE]
@@ -4575,7 +4846,7 @@ table_categorical <- function(
           r[[.cat_key_pct(gr)]] <- fmt_num(
             p_val,
             percent_digits,
-            na = undefined_cell
+            na = pct_na_cell(sl$variable[1], sl$level[1], n_val)
           )
         } else {
           r[[.cat_key_n(gr)]] <- n_val
@@ -4704,6 +4975,7 @@ table_categorical <- function(
     levels_keep = levels_keep,
     missing_label = missing_label,
     missing_vars = missing_vars,
+    blank_pct_vars = blank_pct_vars,
     indent_text = indent_text,
     percent_digits = percent_digits,
     p_digits = p_digits,
@@ -4740,9 +5012,11 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
-    # The direction of the percentages (`percent`), which the data frames
-    # of `output = "data.frame"` and `"long"` carry too.
+    # The direction and the base of the percentages (`percent`,
+    # `percent_base`), which the data frames of `output = "data.frame"` and
+    # `"long"` carry too.
     attr(out, "percent") <- percent
+    attr(out, "percent_base") <- percent_base
     # The compute frame of `output = "long"`, under its internal names,
     # for tidy() and glance(), with the measure and SMD keys of each row
     # (`.assoc_type`, `.smd_type`), which glance() reports per variable.
@@ -5028,6 +5302,17 @@ table_categorical <- function(
         line_width = 0.03
       )
     }
+    # A thin rule above each Total row (`total_row = TRUE`), as the
+    # console draws one.
+    for (tr in .categorical_total_rows_typed(structured)) {
+      tt <- tinytable::style_tt(
+        tt,
+        i = tr - 1L,
+        j = seq_len(ncol(dat_tt)),
+        line = "b",
+        line_width = 0.03
+      )
+    }
     # Prevent p-value and measure columns from wrapping
     if (length(stat_j)) {
       tt <- tinytable::style_tt(
@@ -5259,6 +5544,20 @@ table_categorical <- function(
         locations = gt::cells_body(rows = sr - 1L)
       )
     }
+    # A thin rule above each Total row (`total_row = TRUE`), as the
+    # console draws one.
+    total_rule <- gt::cell_borders(
+      sides = "bottom",
+      color = "currentColor",
+      weight = gt::px(0.5)
+    )
+    for (tr in .categorical_total_rows_typed(structured)) {
+      tbl <- gt::tab_style(
+        tbl,
+        style = total_rule,
+        locations = gt::cells_body(rows = tr - 1L)
+      )
+    }
 
     # 3) opt_css rules (override gt's hidden borders in normal
     #    renderers: RStudio viewer, Quarto, pkgdown)
@@ -5401,6 +5700,12 @@ table_categorical <- function(
     bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)
     for (sr in var_sep_rows) {
       ft <- flextable::hline(ft, i = sr - 1L, part = "body", border = bd_light)
+    }
+    # A thin rule above each Total row (`total_row = TRUE`), as the
+    # console draws one.
+    bd_total <- spicy_fp_border(color = "black", width = 0.5)
+    for (tr in .categorical_total_rows_typed(structured)) {
+      ft <- flextable::hline(ft, i = tr - 1L, part = "body", border = bd_total)
     }
 
     if (length(id_mod)) {
@@ -5653,6 +5958,12 @@ table_categorical <- function(
         top_border = NULL,
         left_border = NULL,
         right_border = NULL
+      )
+      wb <- .cat_xl_total_rules(
+        wb,
+        .categorical_total_rows_typed(structured),
+        first_body_row,
+        nc
       )
     }
 

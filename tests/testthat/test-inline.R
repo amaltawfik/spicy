@@ -131,7 +131,8 @@ test_that("categorical and continuous families answer by token", {
   d <- as.data.frame(sochealth)
   tc <- .il_quiet(table_categorical(d, select = smoking, by = sex))
   expect_identical(inline(tc, smoking, "Yes", "n", model = "Female"), "131")
-  expect_identical(inline(tc, smoking, "Yes", "pct", model = "Total"), "20.8")
+  # On the observed values of smoking, the default base: 249 of 1175.
+  expect_identical(inline(tc, smoking, "Yes", "pct", model = "Total"), "21.2")
   tw <- .il_quiet(table_continuous(d, select = bmi))
   expect_identical(inline(tw, bmi, column = "m"), "25.93")
   tl <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
@@ -1215,7 +1216,7 @@ test_that("`model` keeps the columns that belong to no group", {
   )
   expect_identical(
     inline(tc, smoking, "Yes", "{n} ({pct}%)", model = "Female"),
-    "131 (21.1%)"
+    "131 (21.6%)"
   )
   mr <- .il_mr(by = sex, statistic = TRUE)
   expect_identical(

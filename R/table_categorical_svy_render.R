@@ -469,6 +469,9 @@
 # tests, how the percentages were bounded, the test, the adjustment
 # (`p_adjust_info`); (d) the glosses of the columns; then the sentences
 # of `note_add` (`add`). `n_p` is the number of p-values the table shows.
+# `percent_column`: a table with `by`, whose percentages are column
+# percentages within each domain, says so after the sample size, as
+# `table_categorical()` does (decision of 2026-10-28).
 # The whole note, opened by the lead-in, or NULL.
 .cat_svy_note <- function(
   meta,
@@ -490,7 +493,8 @@
   ci_bound = FALSE,
   no_data = NULL,
   p_adjust_info = NULL,
-  add = NULL
+  add = NULL,
+  percent_column = FALSE
 ) {
   # The df span the DOMAINS carry, never the caller's `df`: the design
   # line states a fact about the design, and the caller cannot change
@@ -522,6 +526,7 @@
       digits = 0L,
       decimal_mark = decimal_mark
     ),
+    if (isTRUE(percent_column)) spicy_str("note_percent_column"),
     lines[[1L]],
     # The same three regimes as the continuous twin, from the same
     # helper: `svychisq()` is refused under negative weights too

@@ -553,11 +553,12 @@ test_that("every table of the family carries its printed note as `note`", {
       info = paste(fn, "as.data.frame()")
     )
   }
+  # A categorical table always gives its sample size, printed and attached.
+  plain <- table_categorical(mtcars, select = cyl)
+  expect_identical(.fp_note_block(plain), "Note. N = 32.")
+  expect_identical(attr(plain, "note"), "Note. N = 32.")
   # Nothing to say: no note, printed or attached. Without its interval a
   # table of means shows no abbreviation to define either.
-  plain <- table_categorical(mtcars, select = cyl)
-  expect_null(.fp_note_block(plain))
-  expect_null(attr(plain, "note"))
   expect_null(attr(table_continuous(mtcars, select = mpg, ci = FALSE), "note"))
   # A note the user typed replaces the general note, printed as typed under
   # the lead-in; `note = FALSE` removes it.
@@ -2105,11 +2106,19 @@ test_that("`output = \"data.frame\"` is the displayed table, as.data.frame() of 
     # One row per printed row: the typed view the engines render.
     expect_identical(nrow(df), nrow(as_structured(x)$body), info = fn)
     # The note is the one attribute of the family's data frames (the
-    # global test of a multiple-response table and the direction of the
-    # percentages of a categorical one aside).
+    # global test of a multiple-response table and the direction and the
+    # base of the percentages of a categorical one aside).
     extra <- setdiff(
       names(attributes(df)),
-      c("names", "row.names", "class", "note", "global_test", "percent")
+      c(
+        "names",
+        "row.names",
+        "class",
+        "note",
+        "global_test",
+        "percent",
+        "percent_base"
+      )
     )
     expect_identical(extra, character(0), info = fn)
     expect_identical(attr(df, "note"), attr(x, "note"), info = fn)
@@ -3577,10 +3586,25 @@ test_that("every table that accepts weights says it is weighted", {
       ))
     )
     for (fn in names(weighted)) {
-      expect_true(
-        startsWith(attr(weighted[[fn]], "note"), opening),
-        info = paste(lang, fn)
-      )
+      note <- attr(weighted[[fn]], "note")
+      if (startsWith(fn, "table_categorical")) {
+        # A categorical table opens on its unweighted sample size and its
+        # percentages (decision of 2026-10-28); the weights follow.
+        expect_true(
+          startsWith(note, paste0(.note_prefix_text(), "N = ")),
+          info = paste(lang, fn)
+        )
+        expect_true(
+          grepl(
+            paste0(". ", spicy_fmt("note_weighted_by", "w")),
+            note,
+            fixed = TRUE
+          ),
+          info = paste(lang, fn)
+        )
+      } else {
+        expect_true(startsWith(note, opening), info = paste(lang, fn))
+      }
     }
   }
 })

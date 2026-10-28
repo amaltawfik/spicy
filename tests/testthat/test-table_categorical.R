@@ -393,7 +393,7 @@ test_that("a one-way variable with no observed value keeps its one row", {
   expect_true(is.na(out_long$level) && is.na(out_long$n))
   expect_equal(nrow(out_wide), 1L)
   expect_named(out_wide, c("variable", "label", "level", ".row_role", "n", "%"))
-  expect_identical(attr(out_wide, "note"), "Note. No data for v1.")
+  expect_identical(attr(out_wide, "note"), "Note. N = 2. No data for v1.")
 })
 
 test_that("a grouped variable with no observed value keeps its one row", {
@@ -426,7 +426,10 @@ test_that("a grouped variable with no observed value keeps its one row", {
   # note defines.
   expect_identical(
     attr(out_wide, "note"),
-    "Note. No data for v1 in A and B. V = Cramer's V."
+    paste(
+      "Note. N = 2: A (n = 1), B (n = 1). Percentages are column percentages.",
+      "No data for v1 in A and B. V = Cramer's V."
+    )
   )
 })
 
@@ -2714,7 +2717,9 @@ test_that("clipboard payload carries the console title and notes", {
   expect_match(
     lines[length(lines)],
     paste0(
-      "^Note\\. Missing values removed: smoking \\(65\\)\\. ",
+      "^Note\\. N = 1200: Female \\(n = 620\\), Male \\(n = 580\\)\\. ",
+      "Percentages are column percentages\\. ",
+      "Missing values removed: smoking \\(65\\)\\. ",
       "P-values: Pearson chi-squared test\\. ",
       "Phi: smoking\\. Cramer's V: education\\."
     )
@@ -2750,13 +2755,13 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
   expect_null(attr(df, "display_df"))
   expect_null(attr(df, "long_data"))
   expect_null(attr(df, "align"))
-  # Only the note and the direction of the percentages ride along (no
-  # `group_var` any more), and the frame is the `output = "data.frame"` of
-  # the same call.
+  # Only the note and the direction and base of the percentages ride along
+  # (no `group_var` any more), and the frame is the `output = "data.frame"`
+  # of the same call.
   expect_null(attr(df, "group_var"))
   expect_identical(
     setdiff(names(attributes(df)), c("names", "row.names", "class")),
-    c("note", "percent")
+    c("note", "percent", "percent_base")
   )
   expect_identical(
     df,
@@ -2797,7 +2802,11 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
       "proportion"
     )
   )
-  expect_true(all(td$proportion >= 0 & td$proportion <= 1))
+  # The row of missing values has no share under the default base, the
+  # observed values (`percent_base = "valid"`).
+  expect_true(all(is.na(td$proportion[td$.row_role == "missing"])))
+  shares <- td$proportion[td$.row_role != "missing"]
+  expect_true(all(shares >= 0 & shares <= 1))
   # `variable` carries the column names, `label` the labels displayed:
   # the column names too by default.
   expect_equal(unique(td$variable), c("smoking", "physical_activity"))
@@ -3383,7 +3392,7 @@ test_that("the by title and the missing-values notes follow labels", {
     expect_match(
       attr(out, "note"),
       sprintf(
-        "Note. Missing values removed: %s (25), %s (40).",
+        ". Missing values removed: %s (25), %s (40).",
         row,
         by
       ),
@@ -3619,8 +3628,9 @@ test_that("default drop_na = FALSE shows the (Missing) level", {
   out <- table_categorical(sochealth, select = income_group)
   df <- as.data.frame(attr(out, "display_df"))
   expect_true(any(grepl("(Missing)", df$Variable, fixed = TRUE)))
-  # No disclosure note under the default: nothing was removed.
-  expect_null(attr(out, "note"))
+  # No removal to disclose under the default: the note gives the sample
+  # size alone.
+  expect_identical(attr(out, "note"), "Note. N = 1200.")
 })
 
 test_that("drop_na = TRUE discloses removals in the note", {
@@ -3634,7 +3644,10 @@ test_that("drop_na = TRUE discloses removals in the note", {
   # Each variable is named by its row label (here its `label` attribute).
   expect_identical(
     note,
-    "Note. Missing values removed: Household income group (18), Current smoker (25)."
+    paste(
+      "Note. N = 1200. Missing values removed:",
+      "Household income group (18), Current smoker (25)."
+    )
   )
   # The whole note is `note`: the part it was assembled from is no
   # attribute of its own any more.
@@ -3657,7 +3670,7 @@ test_that("drop_na = TRUE discloses removals in the note", {
   )
   expect_identical(
     attr(relabelled, "note"),
-    "Note. Missing values removed: Smoker (25)."
+    "Note. N = 1200. Missing values removed: Smoker (25)."
   )
 })
 
@@ -3682,7 +3695,7 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
   out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   expect_match(
     attr(out, "note"),
-    "Note. Missing values removed: smoking (25), sex_na (40).",
+    ". Missing values removed: smoking (25), sex_na (40).",
     fixed = TRUE
   )
   expect_null(attr(out, "missing_note"))
@@ -3719,7 +3732,10 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     grp = factor(c("A", "B", "A", NA, "B"))
   )
   out <- table_categorical(df, select = v1, drop_na = TRUE, output = "default")
-  expect_identical(attr(out, "note"), "Note. Missing values removed: v1 (2).")
+  expect_identical(
+    attr(out, "note"),
+    "Note. N = 5. Missing values removed: v1 (2)."
+  )
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: v1 (2).", fixed = TRUE)
 
@@ -3733,7 +3749,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
   note <- attr(out_by, "note")
   expect_match(note, "Missing values removed: v1 (2), grp (1).", fixed = TRUE)
 
-  # Nothing dropped -> no note at all (nothing to disclose).
+  # Nothing dropped -> no removal sentence, the sample size alone.
   df_full <- data.frame(v1 = factor(c("a", "b", "a")))
   out_full <- table_categorical(
     df_full,
@@ -3741,7 +3757,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     drop_na = TRUE,
     output = "default"
   )
-  expect_null(attr(out_full, "note"))
+  expect_identical(attr(out_full, "note"), "Note. N = 3.")
 })
 
 test_that("the note opens with \"Note.\" once, drop_na disclosure first or not", {
@@ -3753,14 +3769,17 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
       ...
     )
   }
-  # drop_na = TRUE: the missing-values sentence comes first, and the
-  # prefix opens the note there, never between its parts (issue #11). The
-  # note is one paragraph: the missing data, the test, then the measures.
+  # drop_na = TRUE: the prefix opens the note once, never between its
+  # parts (issue #11). The note is one paragraph: the sample size and the
+  # direction of the percentages, the missing data, the test, then the
+  # measures.
   tbl <- by_sex(drop_na = TRUE)
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
   whole <- paste(
-    "Note. Missing values removed: smoking (25).",
+    "Note. N = 1200: Female (n = 620), Male (n = 580).",
+    "Percentages are column percentages.",
+    "Missing values removed: smoking (25).",
     "P-values: Pearson chi-squared test.",
     "Phi: smoking. Cramer's V: education."
   )
@@ -3774,32 +3793,42 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     attr(by_sex(drop_na = TRUE, output = "gt"), "spicy_note"),
     whole
   )
-  # Without drop_na, the statistics part opens the note.
+  # Without drop_na, the statistics follow the direction of the
+  # percentages.
   printed <- utils::capture.output(print(by_sex()))
   expect_true(
-    "Note. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education." %in%
+    paste(
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages.",
+      "P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education."
+    ) %in%
       printed
   )
-  # One-way, drop_na alone; nothing to say, no note.
+  # One-way, drop_na alone: the sample size, then the removal.
   printed <- utils::capture.output(print(
     table_categorical(sochealth, select = smoking, drop_na = TRUE)
   ))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
-  expect_true("Note. Missing values removed: smoking (25)." %in% printed)
-  expect_false(any(grepl(
-    "Note.",
-    utils::capture.output(print(table_categorical(
-      sochealth,
-      select = smoking
-    ))),
-    fixed = TRUE
-  )))
+  expect_true(
+    "Note. N = 1200. Missing values removed: smoking (25)." %in% printed
+  )
+  expect_true(
+    "Note. N = 1200." %in%
+      utils::capture.output(print(table_categorical(
+        sochealth,
+        select = smoking
+      )))
+  )
   withr::local_options(spicy.language = "fr")
   printed <- utils::capture.output(print(by_sex(drop_na = TRUE)))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
   expect_true(any(startsWith(
     printed,
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (25). "
+    paste0(
+      "Note. N = 1200\u00a0: Female (n = 620), Male (n = 580). ",
+      "Pourcentages en colonne. ",
+      "Valeurs manquantes retir\u00e9es\u00a0: smoking (25). "
+    )
   )))
 })
 
@@ -3883,7 +3912,8 @@ test_that("the missing answers of a variable leave out its groups with no data",
   expect_match(
     attr(out, "note"),
     paste(
-      "Note. Missing values removed: smoking (25), physical_activity (7).",
+      "Percentages are column percentages.",
+      "Missing values removed: smoking (25), physical_activity (7).",
       "No data for physical_activity in Tertiary."
     ),
     fixed = TRUE
@@ -3941,7 +3971,11 @@ test_that("with fewer than two groups with data, the variable is not compared", 
   alone <- table_categorical(d, physical_activity, by = sex)
   expect_identical(
     attr(alone, "note"),
-    "Note. No data for physical_activity in Male."
+    paste(
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages.",
+      "No data for physical_activity in Male."
+    )
   )
 })
 
@@ -4029,14 +4063,15 @@ test_that("the no-data sentence follows the language, the label and the order", 
   expect_match(
     attr(out, "note"),
     paste(
-      "Note. No data for alcohol and tobacco in Lower secondary.",
+      "Percentages are column percentages.",
+      "No data for alcohol and tobacco in Lower secondary.",
       "No data for Physical activity in Tertiary."
     ),
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   fr <- attr(table_categorical(d, physical_activity, by = education), "note")
-  expect_true(startsWith(fr, "Note. Aucune donn"))
+  expect_match(fr, "en colonne. Aucune donn", fixed = TRUE)
   expect_match(
     fr,
     "pour physical_activity dans Tertiary. Valeur p",
@@ -4079,7 +4114,9 @@ test_that("the note names no association measure for a variable with no value", 
   expect_identical(
     attr(tbl, "note"),
     paste(
-      "Note. No data for empty in Female and Male.",
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages.",
+      "No data for empty in Female and Male.",
       "P-values: Pearson chi-squared test.",
       "Phi: smoking. Cramer's V: education."
     )
@@ -4115,22 +4152,33 @@ test_that("the default object carries the title the console prints", {
   )
 })
 
-test_that("a weighted table says so first, by and without by", {
+test_that("a weighted table says so after its sample size and percentages", {
   w <- table_categorical(sochealth, smoking, by = sex, weights = weight)
-  expect_true(startsWith(
-    attr(w, "note"),
-    "Note. Statistics weighted by weight. P-value:"
-  ))
-  expect_identical(attr(w, "what_note"), "Statistics weighted by weight.")
+  what <- paste(
+    "N = 1200 (unweighted): Female (n = 620), Male (n = 580).",
+    "Percentages are column percentages.",
+    "Statistics weighted by weight."
+  )
+  expect_true(startsWith(attr(w, "note"), paste("Note.", what, "P-value:")))
+  expect_identical(attr(w, "what_note"), what)
   # print() rebuilds the same note from its parts.
   printed <- utils::capture.output(print(w))
   expect_true(attr(w, "note") %in% printed)
   one <- table_categorical(sochealth, smoking, weights = sochealth$weight)
-  expect_identical(attr(one, "note"), "Note. Statistics weighted by weights.")
-  expect_null(attr(
-    table_categorical(sochealth, smoking, by = sex),
-    "what_note"
-  ))
+  expect_identical(
+    attr(one, "note"),
+    paste(
+      "Note. N = 1200 (unweighted).",
+      "Statistics weighted by weights."
+    )
+  )
+  expect_identical(
+    attr(table_categorical(sochealth, smoking, by = sex), "what_note"),
+    paste(
+      "N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages."
+    )
+  )
 })
 
 test_that("the Excel sheet writes the mark in the cells of a group with no data", {
@@ -4303,8 +4351,20 @@ test_that("weighted grouped table is exact in machine outputs, coherent on displ
   a <- lg[lg$level == "A", ]
   expect_identical(a$n[a$group == "g1"], 3.75)
   expect_identical(a$n[a$group == "Total"], 3.75)
+  # The observed values of g1 are all A; with its missing value in the
+  # base (`percent_base = "total"`), A is 3.75 of 5.75.
+  expect_equal(a$pct[a$group == "g1"], 100, tolerance = 1e-12)
+  lg_total <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    weights = w,
+    test = "chisq",
+    percent_base = "total",
+    output = "long"
+  )
   expect_equal(
-    a$pct[a$group == "g1"],
+    lg_total$pct[lg_total$level == "A" & lg_total$group == "g1"],
     3.75 / 5.75 * 100,
     tolerance = 1e-12
   )
@@ -4600,29 +4660,47 @@ test_that("percent = \"row\" gives row shares and leaves the statistics alone", 
     inline(tbl, x, "low", "pct", model = "A"),
     sprintf("%.1f", 100 * prop.table(table(d$x, d$g), 1)["low", "A"])
   )
+  # The note says the direction in both cases, after the sample size.
   expect_identical(
     attr(tbl, "note"),
     paste(
-      "Note. Percentages are row percentages.",
+      "Note. N = 120: A (n = 57), B (n = 63).",
+      "Percentages are row percentages.",
       "P-value: Pearson chi-squared test. V = Cramer's V."
     )
   )
   expect_identical(
     attr(table_categorical(d, x, by = g), "note"),
-    "Note. P-value: Pearson chi-squared test. V = Cramer's V."
+    paste(
+      "Note. N = 120: A (n = 57), B (n = 63).",
+      "Percentages are column percentages.",
+      "P-value: Pearson chi-squared test. V = Cramer's V."
+    )
   )
   fr <- withr::with_options(
     list(spicy.language = "fr"),
-    attr(table_categorical(d, x, by = g, percent = "row"), "note")
+    vapply(
+      c("row", "column"),
+      function(p) attr(table_categorical(d, x, by = g, percent = p), "note"),
+      character(1)
+    )
   )
-  expect_true(startsWith(fr, "Note. Pourcentages en ligne. "))
+  expect_true(startsWith(
+    fr[["row"]],
+    "Note. N = 120\u00a0: A (n = 57), B (n = 63). Pourcentages en ligne. "
+  ))
+  expect_true(startsWith(
+    fr[["column"]],
+    "Note. N = 120\u00a0: A (n = 57), B (n = 63). Pourcentages en colonne. "
+  ))
 
   expect_warning(
     one <- table_categorical(d, x, percent = "row"),
     class = "spicy_ignored_arg"
   )
   expect_identical(attr(one, "percent"), "column")
-  expect_null(attr(one, "note"))
+  # One distribution per variable without `by`: no direction to say.
+  expect_identical(attr(one, "note"), "Note. N = 120.")
 })
 
 test_that("total_row closes each variable with its total, in both directions", {
@@ -4649,12 +4727,16 @@ test_that("total_row closes each variable with its total, in both directions", {
   expect_true(all(tot$total))
   expect_equal(tot$n, rep(c(as.vector(table(d$g)), n), 2))
   expect_identical(tot$pct, rep(100, 6))
+  # Under row percentages the Total row gives the share of each group, on
+  # the observed values of the variable by default (`y` has missing
+  # values), on every row under `percent_base = "total"`.
+  share <- function(g) c(100 * as.vector(prop.table(table(g))), 100)
   rtot <- long(total_row = TRUE, percent = "row")
   rtot <- rtot[rtot$.row_role == "total", ]
-  expect_equal(
-    rtot$pct,
-    rep(c(100 * as.vector(prop.table(table(d$g))), 100), 2)
-  )
+  expect_equal(rtot$pct, c(share(d$g), share(d$g[!is.na(d$y)])))
+  rtot_all <- long(total_row = TRUE, percent = "row", percent_base = "total")
+  rtot_all <- rtot_all[rtot_all$.row_role == "total", ]
+  expect_equal(rtot_all$pct, rep(share(d$g), 2))
   dropped <- table_categorical(
     d,
     y,
@@ -4678,10 +4760,11 @@ test_that("total_row closes each variable with its total, in both directions", {
     inline(tbl, x, "Total", "pct", model = "A"),
     sprintf("%.1f", 100 * mean(d$g == "A"))
   )
+  # A rule above the Total row, one more than the table without it.
   rules <- function(x) sum(grepl("┼", utils::capture.output(print(x))))
   expect_identical(
     rules(tbl),
-    rules(table_categorical(d, x, by = g, percent = "row"))
+    rules(table_categorical(d, x, by = g, percent = "row")) + 1L
   )
 
   expect_no_warning(one <- table_categorical(d, y, total_row = TRUE))
@@ -4989,7 +5072,7 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Note. Missing values removed: income_group (18), smoking (25)."
+    "Note. N = 1200. Missing values removed: income_group (18), smoking (25)."
   )
   # And it survives rendering, not just the slot.
   expect_match(
@@ -5012,14 +5095,14 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
     fixed = TRUE
   )
 
-  # Nothing removed -> no note at all.
+  # Nothing removed -> no removal sentence, the sample size alone.
   clean <- table_categorical(
     data.frame(v = factor(c("a", "b", "a"))),
     select = v,
     drop_na = TRUE,
     output = "tinytable"
   )
-  expect_length(clean@notes, 0L)
+  expect_identical(paste(unlist(clean@notes), collapse = " "), "Note. N = 3.")
 })
 
 test_that("the missing disclosure reaches gt, one-way and by", {
@@ -5037,7 +5120,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Note. Missing values removed: income_group (18), smoking (25)."
+    "Note. N = 1200. Missing values removed: income_group (18), smoking (25)."
   )
 
   g_by <- table_categorical(
@@ -5053,15 +5136,15 @@ test_that("the missing disclosure reaches gt, one-way and by", {
     fixed = TRUE
   )
 
-  # Nothing removed -> the gt object stays untagged.
+  # Nothing removed -> the sample size alone.
   clean <- table_categorical(
     data.frame(v = factor(c("a", "b", "a"))),
     select = v,
     drop_na = TRUE,
     output = "gt"
   )
-  expect_false(inherits(clean, "spicy_gt"))
-  expect_null(attr(clean, "spicy_note"))
+  expect_s3_class(clean, "spicy_gt")
+  expect_identical(attr(clean, "spicy_note"), "Note. N = 3.")
 })
 
 test_that("the missing disclosure reaches flextable, one-way and by", {
@@ -5097,14 +5180,14 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
     fixed = TRUE
   )
 
-  # Nothing removed -> no footer row.
+  # Nothing removed -> the sample size alone, one footer row.
   clean <- table_categorical(
     data.frame(v = factor(c("a", "b", "a"))),
     select = v,
     drop_na = TRUE,
     output = "flextable"
   )
-  expect_identical(nrow(clean$footer$dataset), 0L)
+  expect_identical(nrow(clean$footer$dataset), 1L)
 })
 
 test_that("the missing disclosure rides along on output = 'data.frame'", {
@@ -5120,7 +5203,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_identical(
     attr(out, "note"),
-    "Note. Missing values removed: income_group (18), smoking (25)."
+    "Note. N = 1200. Missing values removed: income_group (18), smoking (25)."
   )
   expect_null(attr(out, "missing_note"))
 
@@ -5143,7 +5226,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
     drop_na = TRUE,
     output = "data.frame"
   )
-  expect_null(attr(clean, "note"))
+  expect_identical(attr(clean, "note"), "Note. N = 3.")
 })
 
 
@@ -5468,10 +5551,14 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   # The note loses the test too.
   expect_identical(
     attr(out, "note"),
-    "Note. Phi: smoking. Cramer's V: education."
+    paste(
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages.",
+      "Phi: smoking. Cramer's V: education."
+    )
   )
   expect_identical(
-    structure(out, note = NULL, percent = NULL),
+    structure(out, note = NULL, percent = NULL, percent_base = NULL),
     ref[names(out)]
   )
 
@@ -5483,7 +5570,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   )
   expect_identical(attr(out_l, "note"), attr(out, "note"))
   expect_identical(
-    structure(out_l, note = NULL, percent = NULL),
+    structure(out_l, note = NULL, percent = NULL, percent_base = NULL),
     ref_l[names(out_l)]
   )
 })
@@ -5680,13 +5767,20 @@ test_that("a descriptive table leaves the engines no statistic column", {
   tt <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "tinytable")
   expect_identical(ncol(tt@data), 7L)
   g <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "gt")
-  expect_null(attr(g, "spicy_note"))
+  # No test and no measure: the note says what the numbers are, no more.
+  expect_identical(
+    attr(g, "spicy_note"),
+    paste(
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Percentages are column percentages."
+    )
+  )
   expect_identical(
     g[["_spanners"]]$spanner_id,
     c("spn_variable", paste0("spn_", c("Female", "Male", "Total"), "_n"))
   )
   ft <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "flextable")
-  expect_identical(nrow(ft$footer$dataset), 0L)
+  expect_identical(nrow(ft$footer$dataset), 1L)
   # With no statistic left, the count of text columns taken from the
   # right is zero: the sheet stops at the last percentage (column G)
   # instead of styling an empty column beyond it.
@@ -6271,37 +6365,44 @@ test_that("the note names the test after the p-values, singular for one", {
       "note"
     )
   }
+  # The sample size and the direction of the percentages come first.
+  lead <- "Note. N = 80: A (n = 40), B (n = 40). Percentages are column percentages. "
   expect_identical(
     note(select = c(x, y)),
-    "Note. P-values: Pearson chi-squared test."
+    paste0(lead, "P-values: Pearson chi-squared test.")
   )
   expect_identical(
     note(select = x),
-    "Note. P-value: Pearson chi-squared test."
+    paste0(lead, "P-value: Pearson chi-squared test.")
   )
   # A variable without a test shows no p-value: one p-value in the table.
   expect_identical(
     note(select = c(x, k)),
-    "Note. P-value: Pearson chi-squared test."
+    paste0(lead, "P-value: Pearson chi-squared test.")
   )
   # The list of the tests, and its separator, are unchanged.
   expect_identical(
     note(select = c(x, y), test = "midp"),
-    "Note. P-values: Pearson chi-squared test (y); Fisher mid-p test (x)."
+    paste0(
+      lead,
+      "P-values: Pearson chi-squared test (y); Fisher mid-p test (x)."
+    )
   )
   withr::local_options(spicy.language = "fr")
+  lead <- "Note. N = 80\u00a0: A (n = 40), B (n = 40). Pourcentages en colonne. "
   expect_identical(
     note(select = c(x, y)),
-    "Note. Valeurs p\u00a0: test du khi-deux de Pearson."
+    paste0(lead, "Valeurs p\u00a0: test du khi-deux de Pearson.")
   )
   expect_identical(
     note(select = x),
-    "Note. Valeur p\u00a0: test du khi-deux de Pearson."
+    paste0(lead, "Valeur p\u00a0: test du khi-deux de Pearson.")
   )
   expect_identical(
     note(select = c(x, y), test = "midp"),
     paste0(
-      "Note. Valeurs p\u00a0: test du khi-deux de Pearson (y)\u00a0; ",
+      lead,
+      "Valeurs p\u00a0: test du khi-deux de Pearson (y)\u00a0; ",
       "test mid-p de Fisher (x)."
     )
   )
@@ -6373,7 +6474,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   )
   expect_match(
     attr(out, "note"),
-    "Note. Missing values removed: smoking (1); Dentist, past 12 months (2).",
+    "Missing values removed: smoking (1); Dentist, past 12 months (2).",
     fixed = TRUE
   )
   expect_match(
@@ -6394,7 +6495,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   expect_match(
     attr(out, "note"),
     paste0(
-      "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (1)\u00a0; Dentist, ",
+      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1)\u00a0; Dentist, ",
       "past 12 months (2)."
     ),
     fixed = TRUE
@@ -6420,7 +6521,7 @@ test_that("labels without a comma keep the comma join in the notes", {
   )
   expect_match(
     attr(out, "note"),
-    "Note. Missing values removed: smoking (1), Dentist in the past 12 months (2).",
+    "Missing values removed: smoking (1), Dentist in the past 12 months (2).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -6436,7 +6537,7 @@ test_that("labels without a comma keep the comma join in the notes", {
   expect_match(
     attr(out, "note"),
     paste0(
-      "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (1), Dentist in the ",
+      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1), Dentist in the ",
       "past 12 months (2)."
     ),
     fixed = TRUE
@@ -7011,4 +7112,553 @@ test_that("a sentence ending on a label with its own mark closes once", {
     attr(table_categorical(d, smoke, note = "Source.."), "note"),
     "Note. Source.."
   )
+})
+
+# ---- The sample size, the base of the percentages, the Total rule ---------
+#
+# Decisions of 2026-10-28 (dev/decisions/2026-10-28-note-effectif.md): the
+# note opens on N, under `by` with the n of each group column, then says
+# the direction of the percentages under `by`; `percent_base = "valid"`
+# (the default) computes the percentages on the observed values, the
+# `(Missing)` row keeping its count and no percentage, with no sentence;
+# a thin rule sits above each Total row.
+
+.ss_data <- function() {
+  set.seed(42)
+  n <- 60L
+  d <- data.frame(
+    g = factor(sample(c("Women", "Men"), n, TRUE), levels = c("Women", "Men")),
+    g3 = factor(sample(c("a", "b", "c"), n, TRUE)),
+    x = factor(
+      sample(c("no", "yes"), n, TRUE, prob = c(0.6, 0.4)),
+      levels = c("no", "yes")
+    ),
+    y = factor(sample(c("lo", "mid", "hi"), n, TRUE), c("lo", "mid", "hi")),
+    w = round(stats::runif(n, 0.5, 2), 2)
+  )
+  d$x[c(3L, 11L, 25L, 40L, 52L, 58L)] <- NA
+  d$g_na <- d$g
+  d$g_na[c(7L, 19L)] <- NA
+  d
+}
+
+.ss_note <- function(x) attr(x, "note", exact = TRUE)
+
+# The note of a table with `by`, with no test and no measure to name.
+.ss_by <- function(d, ...) {
+  .ss_note(table_categorical(
+    d,
+    ...,
+    p_value = FALSE,
+    assoc_measure = "none"
+  ))
+}
+
+test_that("the note opens on the sample size, without by", {
+  d <- .ss_data()
+  expect_identical(.ss_note(table_categorical(d, y)), "Note. N = 60.")
+  # The `(Missing)` row shows the base itself: no sentence for it.
+  shown <- table_categorical(d, x)
+  expect_identical(.ss_note(shown), "Note. N = 60.")
+  expect_true(.ss_note(shown) %in% utils::capture.output(print(shown)))
+  # One N per table: the missing values of a variable are in its
+  # `(Missing)` row, or in the note under `drop_na = TRUE`.
+  expect_identical(
+    .ss_note(table_categorical(d, c(x, y), drop_na = TRUE)),
+    "Note. N = 60. Missing values removed: x (6)."
+  )
+  # A Total row gives the base of each variable; the sentence stays.
+  expect_identical(
+    .ss_note(table_categorical(d, y, total_row = TRUE)),
+    "Note. N = 60."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(.ss_note(table_categorical(d, y)), "Note. N = 60.")
+  expect_identical(
+    .ss_note(table_categorical(d, x, by = g, p_value = FALSE)),
+    sprintf(
+      "Note. N = 60\u00a0: Women (n = %d), Men (n = %d). Pourcentages en colonne.",
+      sum(d$g == "Women"),
+      sum(d$g == "Men")
+    )
+  )
+})
+
+test_that("under by, the note gives N and the n of each group column", {
+  d <- .ss_data()
+  n_of <- function(g) as.vector(table(g, useNA = "ifany"))
+  two <- table_categorical(
+    d,
+    y,
+    by = g,
+    p_value = FALSE,
+    assoc_measure = "none"
+  )
+  expect_identical(
+    .ss_note(two),
+    sprintf(
+      paste(
+        "Note. N = 60: Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages."
+      ),
+      n_of(d$g)[[1L]],
+      n_of(d$g)[[2L]]
+    )
+  )
+  # First in the console as in the attribute, before the test.
+  printed <- utils::capture.output(print(table_categorical(d, y, by = g)))
+  expect_true(any(startsWith(printed, "Note. N = 60: Women (n = ")))
+  # Three groups, in the order of their columns; the n add up to N.
+  three <- .ss_by(d, y, by = g3)
+  n3 <- as.integer(regmatches(
+    three,
+    gregexpr("(?<=n = )[0-9]+", three, perl = TRUE)
+  )[[1L]])
+  expect_identical(n3, n_of(d$g3))
+  expect_identical(sum(n3), 60L)
+  expect_true(startsWith(three, "Note. N = 60: a (n = "))
+  # The column of missing `by` values is a group of the sentence.
+  expect_identical(
+    .ss_by(d, y, by = g_na),
+    sprintf(
+      paste(
+        "Note. N = 60: Women (n = %d), Men (n = %d), (Missing) (n = 2).",
+        "Percentages are column percentages."
+      ),
+      sum(d$g_na %in% "Women"),
+      sum(d$g_na %in% "Men")
+    )
+  )
+  # Under `drop_na = TRUE` a row missing `by` leaves the table and N; the
+  # missing-values sentence counts it.
+  expect_identical(
+    .ss_by(d, y, by = g_na, drop_na = TRUE),
+    sprintf(
+      paste(
+        "Note. N = 58: Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages.",
+        "Missing values removed: g_na (2)."
+      ),
+      sum(d$g_na %in% "Women"),
+      sum(d$g_na %in% "Men")
+    )
+  )
+  # A group label with a comma turns the list to semicolons.
+  d$gc <- factor(
+    ifelse(d$g == "Women", "Women, adult", "Men"),
+    levels = c("Women, adult", "Men")
+  )
+  expect_match(
+    .ss_by(d, y, by = gc),
+    sprintf(
+      "N = 60: Women, adult (n = %d); Men (n = %d).",
+      n_of(d$g)[[1L]],
+      n_of(d$g)[[2L]]
+    ),
+    fixed = TRUE
+  )
+  # The Total row leaves the sentence as it is.
+  expect_identical(.ss_by(d, y, by = g, total_row = TRUE), .ss_note(two))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .ss_by(d, y, by = g_na),
+    sprintf(
+      paste(
+        "Note. N = 60\u00a0: Women (n = %d), Men (n = %d), (Manquant) (n = 2).",
+        "Pourcentages en colonne."
+      ),
+      sum(d$g_na %in% "Women"),
+      sum(d$g_na %in% "Men")
+    )
+  )
+  expect_match(
+    .ss_by(d, y, by = g, percent = "row"),
+    "). Pourcentages en ligne.",
+    fixed = TRUE
+  )
+})
+
+test_that("a weighted table gives its unweighted N, rows with a weight", {
+  d <- .ss_data()
+  expect_identical(
+    .ss_note(table_categorical(d, y, weights = w)),
+    "Note. N = 60 (unweighted). Statistics weighted by w."
+  )
+  expect_identical(
+    .ss_by(d, y, by = g, weights = w),
+    sprintf(
+      paste(
+        "Note. N = 60 (unweighted): Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages. Statistics weighted by w."
+      ),
+      sum(d$g == "Women"),
+      sum(d$g == "Men")
+    )
+  )
+  # A row with no weight leaves the table, and N with it.
+  d$w[d$g == "Men"][1:3] <- NA
+  expect_identical(
+    .ss_by(d, y, by = g, weights = w),
+    sprintf(
+      paste(
+        "Note. N = 57 (unweighted): Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages. Statistics weighted by w.",
+        "Rows with missing w removed: 3."
+      ),
+      sum(d$g == "Women"),
+      sum(d$g == "Men") - 3L
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(
+    .ss_by(d, y, by = g, weights = w),
+    "Note. N = 57 (non pond\u00e9r\u00e9)\u00a0: Women (n = "
+  ))
+  expect_true(startsWith(
+    .ss_note(table_categorical(d, y, weights = w)),
+    "Note. N = 57 (non pond\u00e9r\u00e9). "
+  ))
+})
+
+test_that("the sample size goes with the note the table builds", {
+  d <- .ss_data()
+  expect_identical(
+    .ss_note(table_categorical(d, y, note = "Source: survey.")),
+    "Note. Source: survey."
+  )
+  expect_null(.ss_note(table_categorical(d, y, note = FALSE)))
+  expect_identical(
+    .ss_note(table_categorical(d, y, note_add = "Source: survey.")),
+    "Note. N = 60. Source: survey."
+  )
+  # table_multiresponse() gives its base in a row of the table: its note
+  # has no sample-size sentence.
+  d$q1 <- as.integer(d$x == "yes")
+  d$q2 <- as.integer(d$y == "hi")
+  mr <- table_multiresponse(d, c(q1, q2), counted = 1)
+  expect_false(grepl("N = ", .ss_note(mr), fixed = TRUE))
+})
+
+test_that("percent_base = \"valid\" puts the percentages on the observed values", {
+  d <- .ss_data()
+  v <- table_categorical(d, x, output = "long")
+  expect_equal(
+    v$pct[v$.row_role == "level"],
+    100 * as.vector(prop.table(table(d$x)))
+  )
+  expect_true(is.na(v$pct[v$.row_role == "missing"]))
+  expect_identical(v$n[v$.row_role == "missing"], 6)
+  # "total": every row in the base, the numbers of 0.13.0.
+  tot <- table_categorical(d, x, percent_base = "total", output = "long")
+  expect_equal(
+    tot$pct,
+    100 * as.vector(prop.table(table(d$x, useNA = "ifany")))
+  )
+  expect_identical(tot$n, v$n)
+  # The display: a blank percentage cell on the `(Missing)` row, outside
+  # the base (a cell that does not apply, not the dash of a value that
+  # cannot be computed), NA in the data frame.
+  disp <- attr(table_categorical(d, x), "display_df")
+  expect_identical(disp[["%"]][disp$Variable == "  (Missing)"], "")
+  s <- as_structured(table_categorical(d, x))
+  miss <- s$body$.row_role == "missing"
+  expect_true(is.na(s$body[["%"]][miss]))
+  expect_false(identical(s$cell_status[["%"]][miss], "undefined"))
+  df <- table_categorical(d, x, output = "data.frame")
+  expect_true(is.na(df[["%"]][df$.row_role == "missing"]))
+  expect_identical(df$n[df$.row_role == "missing"], 6)
+  # The base is recorded beside the direction, on every machine output.
+  for (o in list(table_categorical(d, x), df, v)) {
+    expect_identical(attr(o, "percent_base"), "valid")
+  }
+  expect_identical(attr(tot, "percent_base"), "total")
+  expect_identical(
+    attr(table_categorical(d, x, percent_base = "t"), "percent_base"),
+    "total"
+  )
+  expect_error(
+    table_categorical(d, x, percent_base = "observed"),
+    class = "spicy_invalid_input"
+  )
+  # The base takes no sentence: the table shows it, under both values.
+  expect_identical(.ss_note(table_categorical(d, x)), "Note. N = 60.")
+  expect_identical(
+    .ss_note(table_categorical(d, x, percent_base = "total")),
+    "Note. N = 60."
+  )
+  # Under "total", the `(Missing)` row keeps its percentage.
+  disp_t <- attr(table_categorical(d, x, percent_base = "total"), "display_df")
+  expect_identical(disp_t[["%"]][disp_t$Variable == "  (Missing)"], "10.0")
+  # `drop_na = TRUE` takes the missing values out of every base already.
+  expect_identical(
+    table_categorical(d, x, drop_na = TRUE, output = "long")$pct,
+    table_categorical(
+      d,
+      x,
+      drop_na = TRUE,
+      percent_base = "total",
+      output = "long"
+    )$pct
+  )
+  # A `(Missing)` row `levels_keep` hides still leaves its values out of
+  # the base.
+  kept <- table_categorical(d, x, levels_keep = c("no", "yes"))
+  expect_equal(sum(as.data.frame(kept)[["%"]], na.rm = TRUE), 100)
+})
+
+test_that("under by, the base is the observed values of each column", {
+  d <- .ss_data()
+  long <- table_categorical(d, x, by = g_na, output = "long")
+  tot <- table_categorical(
+    d,
+    x,
+    by = g_na,
+    percent_base = "total",
+    output = "long"
+  )
+  in_group <- list(
+    Women = d$g_na %in% "Women",
+    Men = d$g_na %in% "Men",
+    "(Missing)" = is.na(d$g_na),
+    Total = rep(TRUE, nrow(d))
+  )
+  for (gr in names(in_group)) {
+    rows <- in_group[[gr]]
+    lv <- long[long$group == gr & long$.row_role == "level", ]
+    expect_equal(
+      lv$pct,
+      100 * as.vector(prop.table(table(d$x[rows]))),
+      info = gr
+    )
+    expect_equal(sum(lv$pct), 100, info = gr)
+    all_rows <- tot[tot$group == gr, ]
+    expect_equal(
+      all_rows$pct,
+      100 * as.vector(prop.table(table(d$x[rows], useNA = "always"))),
+      info = gr
+    )
+  }
+  expect_true(all(is.na(long$pct[long$.row_role == "missing"])))
+  expect_identical(long$n, tot$n)
+  # The test and the measure run on the observed values under both bases.
+  expect_false(anyNA(long$p.value))
+  expect_identical(long$p.value, tot$p.value)
+  expect_identical(long$es_value, tot$es_value)
+  expect_identical(attr(long, "percent_base"), "valid")
+  expect_identical(attr(tot, "percent_base"), "total")
+  # The `(Missing)` row: a count in every column, no percentage.
+  disp <- attr(table_categorical(d, x, by = g_na), "display_df")
+  miss <- disp$Variable == "  (Missing)"
+  for (gr in names(in_group)) {
+    expect_identical(disp[[paste(gr, "%")]][miss], "", info = gr)
+    expect_true(nzchar(disp[[paste(gr, "n")]][miss]), info = gr)
+  }
+  # The note: N and the direction; the base takes no sentence.
+  expect_identical(
+    .ss_by(d, x, by = g),
+    sprintf(
+      paste(
+        "Note. N = 60: Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages."
+      ),
+      sum(d$g == "Women"),
+      sum(d$g == "Men")
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    .ss_by(d, x, by = g),
+    "Pourcentages en colonne.",
+    fixed = TRUE
+  )
+})
+
+test_that("row percentages keep their rows; only the Total row moves", {
+  d <- .ss_data()
+  rv <- table_categorical(
+    d,
+    x,
+    by = g,
+    percent = "row",
+    total_row = TRUE,
+    output = "long"
+  )
+  rt <- table_categorical(
+    d,
+    x,
+    by = g,
+    percent = "row",
+    total_row = TRUE,
+    percent_base = "total",
+    output = "long"
+  )
+  body <- rv$.row_role != "total"
+  expect_identical(rv$pct[body], rt$pct[body])
+  # The `(Missing)` row is its own base: its shares are defined.
+  expect_false(anyNA(rv$pct[rv$.row_role == "missing"]))
+  share <- function(g) c(100 * as.vector(prop.table(table(g))), 100)
+  expect_equal(rv$pct[!body], share(d$g[!is.na(d$x)]))
+  expect_equal(rt$pct[!body], share(d$g))
+  # Its row percentages are shown, under both bases.
+  disp <- attr(
+    table_categorical(d, x, by = g, percent = "row", total_row = TRUE),
+    "display_df"
+  )
+  miss <- disp$Variable == "  (Missing)"
+  expect_true(all(nzchar(unlist(disp[miss, c("Women %", "Men %")]))))
+})
+
+test_that("the Total row closes the observed base, weighted or not", {
+  d <- .ss_data()
+  check <- function(long) {
+    for (gr in unique(long$group)) {
+      s <- long[long$group %in% gr, ]
+      expect_equal(sum(s$pct[s$.row_role == "level"]), 100, info = gr)
+      expect_identical(s$pct[s$.row_role == "total"], 100, info = gr)
+      expect_equal(
+        s$n[s$.row_role == "total"],
+        sum(s$n[s$.row_role != "total"]),
+        info = gr
+      )
+    }
+  }
+  check(table_categorical(d, x, by = g_na, total_row = TRUE, output = "long"))
+  check(table_categorical(
+    d,
+    x,
+    by = g_na,
+    total_row = TRUE,
+    weights = w,
+    output = "long"
+  ))
+  check(table_categorical(d, x, total_row = TRUE, weights = w, output = "long"))
+  # The note: N, the direction, the weights, then the rest.
+  expect_identical(
+    .ss_by(d, x, by = g_na, total_row = TRUE, weights = w),
+    sprintf(
+      paste(
+        "Note. N = 60 (unweighted): Women (n = %d), Men (n = %d),",
+        "(Missing) (n = 2). Percentages are column percentages.",
+        "Statistics weighted by w."
+      ),
+      sum(d$g_na %in% "Women"),
+      sum(d$g_na %in% "Men")
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    .ss_by(d, x, by = g_na, total_row = TRUE, weights = w),
+    paste(
+      "(Manquant) (n = 2). Pourcentages en colonne.",
+      "Statistiques pond\u00e9r\u00e9es par w."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("a column with no observed value has no base, an empty one keeps 0", {
+  # The rows missing `by` all miss `x`: their column has no observed value,
+  # so its percentages are undefined. "c" is declared and holds no row.
+  d <- data.frame(
+    x = factor(c("a", "b", "a", "b", NA, NA)),
+    g = factor(c("A", "A", "B", "B", NA, NA), levels = c("A", "B", "c"))
+  )
+  long <- table_categorical(
+    d,
+    x,
+    by = g,
+    total_row = TRUE,
+    p_value = FALSE,
+    assoc_measure = "none",
+    output = "long"
+  )
+  miss_col <- long[long$group == "(Missing)", ]
+  expect_true(all(is.na(miss_col$pct)))
+  expect_identical(miss_col$n, c(0, 0, 2, 2))
+  expect_identical(long$pct[long$group == "c"], c(0, 0, NA, 0))
+  expect_identical(long$pct[long$group == "A"], c(50, 50, NA, 100))
+  row <- table_categorical(
+    d,
+    x,
+    by = g,
+    percent = "row",
+    total_row = TRUE,
+    p_value = FALSE,
+    assoc_measure = "none",
+    output = "long"
+  )
+  expect_equal(
+    row$pct[row$.row_role == "total"],
+    c(50, 50, 0, 0, 100)
+  )
+})
+
+test_that("a thin rule sits above each Total row on the console", {
+  d <- .ss_data()
+  one <- table_categorical(d, x, total_row = TRUE)
+  expect_snapshot(print(one))
+  both <- table_categorical(
+    d,
+    c(x, y),
+    by = g,
+    total_row = TRUE,
+    p_value = FALSE,
+    assoc_measure = "none"
+  )
+  expect_snapshot(print(both))
+  printed <- utils::capture.output(print(both))
+  at <- which(startsWith(trimws(printed), "Total "))
+  expect_length(at, 2L)
+  expect_true(all(startsWith(printed[at - 1L], "\u2500")))
+  # The light rule still parts the two variables.
+  expect_true(any(startsWith(printed, "\u254c")))
+})
+
+test_that("the engines draw the rule above the Total row", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("openxlsx2")
+  d <- .ss_data()
+  build <- function(by, output, ...) {
+    if (by) {
+      table_categorical(d, x, by = g, total_row = TRUE, output = output, ...)
+    } else {
+      table_categorical(d, x, total_row = TRUE, output = output, ...)
+    }
+  }
+  # x: its header row, two levels, the `(Missing)` row, the Total row.
+  tr <- 5L
+  for (by in c(FALSE, TRUE)) {
+    typ <- tinytable::save_tt(build(by, "tinytable"), output = "typst")
+    expect_match(
+      typ,
+      sprintf("table.hline(y: %d, ", tr + by),
+      fixed = TRUE,
+      info = by
+    )
+    ft <- build(by, "flextable")
+    bw <- ft$body$styles$cells$border.width.bottom$data[, 1L]
+    expect_identical(unname(bw[tr - 1L]), 0.5, info = by)
+    g <- build(by, "gt")
+    st <- g[["_styles"]]
+    above <- st$styles[st$locname == "data" & st$rownum == tr - 1L]
+    widths <- vapply(above, function(s) s$cell_border_bottom$width, "")
+    expect_true(all(widths == "0.5px"), info = by)
+    xl <- tempfile(fileext = ".xlsx")
+    build(by, "excel", excel_path = xl)
+    wb <- openxlsx2::wb_load(xl)
+    cc <- wb$worksheets[[1L]]$sheet_data$cc
+    first_body <- if (by) 5L else 4L
+    ref <- paste0("A", first_body + tr - 2L)
+    xf <- wb$styles_mgr$styles$cellXfs[[as.integer(cc$c_s[cc$r == ref]) + 1L]]
+    id <- as.integer(sub('.*borderId="([0-9]+)".*', "\\1", xf))
+    expect_match(
+      wb$styles_mgr$styles$borders[[id + 1L]],
+      '<bottom style="hair">',
+      fixed = TRUE,
+      info = by
+    )
+    unlink(xl)
+  }
 })

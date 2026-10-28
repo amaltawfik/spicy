@@ -491,6 +491,17 @@ build_ascii_table <- function(
       out <- c(out, rows_txt[r])
     }
     out <- c(out, total_rule, rows_txt[total_idx:length(rows_txt)])
+  } else if (length(total_idx) > 1L) {
+    # Several totals rows, one per block (`table_categorical(total_row =
+    # TRUE)`): the rule above each, the light separators between blocks.
+    for (r in seq_along(rows_txt)) {
+      if (r %in% total_idx && r > 1L) {
+        out <- c(out, total_rule)
+      } else if (r %in% sep_set) {
+        out <- c(out, light_rule)
+      }
+      out <- c(out, rows_txt[r])
+    }
   } else if (length(sep_set) > 0L && length(rows_txt) > 0L) {
     for (r in seq_along(rows_txt)) {
       if (r %in% sep_set) {

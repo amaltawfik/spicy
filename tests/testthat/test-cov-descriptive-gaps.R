@@ -299,7 +299,7 @@ test_that("table_categorical() discloses declared missing under drop_na", {
   )
   expect_match(
     attr(res, "note"),
-    "Note. Declared missing values removed: v1 (2).",
+    "percentages. Declared missing values removed: v1 (2).",
     fixed = TRUE
   )
   # The displayed table: a header row, then one row per level shown.

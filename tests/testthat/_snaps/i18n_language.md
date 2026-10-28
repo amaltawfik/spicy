@@ -40,11 +40,11 @@
        Variable       │  F n    F %     M n    M %     Total n    Total %      p       φ    
       ────────────────┼─────────────────────────────────────────────────────────────────────
        smoke          │                                                      1,000    0,17  
-         No           │   2     50,0     2     50,0       4        50,0                     
-         Yes          │   2     50,0     1     25,0       3        37,5                     
-         (Manquant)   │   0      0,0     1     25,0       1        12,5                     
+         No           │   2     50,0     2     66,7       4        57,1                     
+         Yes          │   2     50,0     1     33,3       3        42,9                     
+         (Manquant)   │   0              1                1                                 
       
-      Note. Valeur p : test exact de Fisher.
+      Note. N = 8 : F (n = 4), M (n = 4). Pourcentages en colonne. Valeur p : test exact de Fisher.
     Code
       print(table_continuous(d, select = c(bmi, age), by = sex))
     Output
@@ -128,5 +128,5 @@
          F      │            
          M      │            
       
-      Note. P-value: Fisher exact test.
+      Note. N = 6: Campus (n = 2), Control (n = 2), (No answer) (n = 2). Percentages are column percentages. P-value: Fisher exact test.
 

@@ -23,6 +23,7 @@ table_categorical(
   p_value = NULL,
   p_adjust = "none",
   percent = c("column", "row"),
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   effect_size_digits = 2,
@@ -145,14 +146,17 @@ level, or give the margin another label with
 \item{total_row}{Logical. If \code{TRUE}, closes the block of each variable
 with a \code{Total} row under its levels (after the \code{"(Missing)"} row when
 there is one): the count of the variable in each group column and in
-the \code{Total} column, and its percentage, 100 in every column under
-\code{percent = "column"} and, under \code{percent = "row"}, the share of each
-group in the variable's total, the base rate the row percentages are
-compared with. Without \code{by}, the row holds the count of the variable
-and 100. The row never enters the test, the association measure or
-the SMD. It takes the label of the margin, so a level displayed with
-that label is then an error (class \code{spicy_label_collision}), as
-beside the \code{Total} column. \code{FALSE} (the default) adds no row.}
+the \code{Total} column, the \code{"(Missing)"} row included, and its
+percentage, 100 in every column under \code{percent = "column"} and, under
+\code{percent = "row"}, the share of each group in the variable's total,
+the base rate the row percentages are compared with (on the observed
+values under the default \code{percent_base}). Without \code{by}, the row holds
+the count of the variable and 100. A thin rule sets the row apart, in
+the console and in the rendered outputs. The row never enters the
+test, the association measure or the SMD. It takes the label of the
+margin, so a level displayed with that label is then an error (class
+\code{spicy_label_collision}), as beside the \code{Total} column. \code{FALSE} (the
+default) adds no row: the note gives the sample size.}
 
 \item{drop_na}{Logical. The rule of the family: a table that counts
 shows the missing values by default, as a frequency table reports
@@ -162,7 +166,10 @@ removes them by default and counts them in the note (see
 displays the missing values as a dedicated \code{"(Missing)"} level (and,
 under \code{by}, a \code{"(Missing)"} group column) -- the field convention for
 descriptive tables (gtsummary's "Unknown" row, janitor's \code{NA} row;
-see the Epidemiologist R Handbook, Descriptive tables). A level
+see the Epidemiologist R Handbook, Descriptive tables). Under the
+default \code{percent_base = "valid"}, the row shows their count and no
+percentage: the percentages are on the observed values, and the Total
+row of row percentages too. A level
 displayed beside that row or column with its label is an error
 (class \code{spicy_label_collision}): rename the level, or give the row
 another label with
@@ -251,10 +258,28 @@ summing to 100 across the groups, so that the \code{Total} column shows
 100 on every level row. Unique abbreviations are accepted (\code{"c"},
 \code{"r"}). Only the displayed shares change: the counts, the test, the
 association measure and the SMD are the same in both directions.
-Under \code{"row"} the note says so ("Percentages are row
-percentages."). Without \code{by}, each variable has one distribution to
-show, and \code{percent = "row"} is ignored with a warning (class
-\code{spicy_ignored_arg}).}
+The note says the direction in both cases ("Percentages are column
+percentages.", "Percentages are row percentages."). Without \code{by},
+each variable has one distribution to show, and \code{percent = "row"} is
+ignored with a warning (class \code{spicy_ignored_arg}).}
+
+\item{percent_base}{The base of the percentages of a variable whose
+missing values the \code{"(Missing)"} row shows (\code{drop_na = FALSE}).
+\code{"valid"} (the default) computes them on the observed values of the
+variable, as gtsummary does: the levels sum to 100, and the
+\code{"(Missing)"} row shows its count and no percentage (a blank cell,
+\code{NA} in the data frames). \code{"total"} computes them on every row, the
+\code{"(Missing)"} row included, as SPSS does and as this function did
+before 0.14.0. Under \code{by}, the base is the observed values of each
+column, the \code{Total} column and the column of missing \code{by} values
+included. Row percentages keep each row as its base, the \code{"(Missing)"}
+row included, which keeps its row percentages; the Total row of
+\code{total_row = TRUE} gives the share of each group on the observed
+values under \code{"valid"}. The test, the association measure and the
+SMD run on the observed values whatever the base. Without missing
+values to show (\code{drop_na = TRUE}, or a variable with none) the two
+bases give the same percentages. Unique abbreviations are accepted
+(\code{"v"}, \code{"t"}).}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
@@ -525,6 +550,18 @@ path invisibly.
 invisibly.
 }
 
+The note opens with the sample size, "N = 159." or, with \code{by},
+"N = 159: Women (n = 80), Men (n = 79).": the rows of the data the table
+describes, and those of each group column in column order, the column
+of missing \code{by} values included, so that the n add up to N. A row
+missing \code{by} under \code{drop_na = TRUE} and a row with a missing weight
+leave the table and are not counted; the note says how many. Under
+\code{weights} the cells hold weighted counts and N counts rows: "N = 60
+(unweighted).". One N per table, the missing values of a variable in
+its \code{"(Missing)"} row or in the note. With \code{by}, the direction of the
+percentages follows, then the weights. Their base takes no sentence:
+the table shows it (see \code{percent_base}).
+
 The note, the \code{drop_na = TRUE} disclosure included, travels with the
 table on every route, not just the console: \code{"default"} prints it
 under the ASCII table, \code{"tinytable"} / \code{"gt"} / \code{"flextable"} /
@@ -537,9 +574,11 @@ The default object also keeps the title the console prints, in
 \code{attr(x, "title")}.
 The same three objects record the direction of their percentages in
 \code{attr(x, "percent")}: \code{"column"} or \code{"row"} (see \code{percent}), and
-\code{"column"} for a table without \code{by}. The percentage columns of
-\code{"data.frame"}, \code{pct} in \code{"long"} and the \code{proportion} of
-\code{\link[broom:tidy]{broom::tidy()}} hold the shares the table displays, in that direction.
+\code{"column"} for a table without \code{by}; and their base in
+\code{attr(x, "percent_base")}, \code{"valid"} or \code{"total"}. The percentage
+columns of \code{"data.frame"}, \code{pct} in \code{"long"} and the \code{proportion} of
+\code{\link[broom:tidy]{broom::tidy()}} hold the shares the table displays, in that direction
+and on that base: \code{NA} on the \code{"(Missing)"} row under \code{"valid"}.
 On the \code{"tinytable"} route the note is set one size down;
 \code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
 

@@ -450,10 +450,15 @@ test_that("the by-table carries its title, missing note and assoc gloss", {
   expect_equal(.xl_at(m, 4L, "B"), "n")
   col_a <- m[, "A"]
   # The note is one paragraph on one row below the body, as printed: it
-  # opens with "Note.", the missing values, then the test and the
-  # measures.
+  # opens with "Note.", the sample size and the percentages, the missing
+  # values, then the test and the measures.
   note_line <- attr(obj, "note")
-  expect_true(startsWith(note_line, "Note. Missing values removed: "))
+  expect_true(startsWith(note_line, "Note. N = "))
+  expect_match(
+    note_line,
+    "Percentages are column percentages. Missing values removed: ",
+    fixed = TRUE
+  )
   expect_true(endsWith(note_line, attr(obj, "assoc_note")))
   expect_true(note_line %in% col_a)
   expect_gt(which(col_a == note_line), which(col_a == "Variable"))
