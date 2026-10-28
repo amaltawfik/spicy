@@ -673,7 +673,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   the base (`base`), and one for those who chose no item (`none_row`).
 
 * The note of `table_multiresponse()` says what the percentages sum to
-  and who is in the base.
+  and who is in the base, in words a reader can follow: "respondents
+  who answered the question" (in French, "personnes ayant répondu à la
+  question"), with the others counted "with no answer to the question".
 
 * With `by`, `table_multiresponse()` tests each item (`test`, as in
   `table_categorical()`), with the Holm adjustment by default

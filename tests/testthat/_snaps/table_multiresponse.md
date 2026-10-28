@@ -15,7 +15,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Respondents │  88          16          31            113            14                262                  
       
-      Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question. Item p-values: Pearson chi-squared test (C, D); Fisher exact test (A, B, E). P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(18.60) = 28.68, p = .063.
+      Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question. Item p-values: Pearson chi-squared test (C, D); Fisher exact test (A, B, E). P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(18.60) = 28.68, p = .063.
 
 ---
 
@@ -42,7 +42,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Respondents │                                   
       
-      Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 1 with no data for the question). Missing values removed: g (1). Item p-values: Fisher exact test of each item by group. P-values adjusted for 2 tests (Holm method). Not tested (no variation, shown as –): x3, x4. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(5.06) = 16.87, p = .005.
+      Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 1 with no answer to the question). Missing values removed: g (1). Item p-values: Fisher exact test of each item by group. P-values adjusted for 2 tests (Holm method). Not tested (no variation, shown as –): x3, x4. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(5.06) = 16.87, p = .005.
 
 ---
 
@@ -59,7 +59,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Personnes   │   3              3                 6                         
       
-      Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant des données pour la question, dont 1 sans aucun item coché (hors base : 1 sans donnée pour la question). Valeurs manquantes retirées : g (1). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
+      Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant répondu à la question, dont 1 sans aucun item coché (hors base : 1 sans réponse à la question). Valeurs manquantes retirées : g (1). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
 
 ---
 
@@ -77,7 +77,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Personnes            │   3              3                 6                         
       
-      Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant des données pour la question (hors base : 1 sans donnée pour la question). Valeurs manquantes retirées : g (1). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
+      Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant répondu à la question (hors base : 1 sans réponse à la question). Valeurs manquantes retirées : g (1). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
 
 ---
 

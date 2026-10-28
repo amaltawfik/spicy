@@ -1071,7 +1071,7 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
   expect_match(attr(all, "note"), "Base: all respondents.", fixed = TRUE)
   expect_match(
     attr(valid, "note"),
-    "Base: respondents with data for the question (excluded: 1 with no data for the question).",
+    "Base: respondents who answered the question (excluded: 1 with no answer to the question).",
     fixed = TRUE
   )
 })
@@ -1107,13 +1107,13 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
   expect_equal(answered$pct_cases, 100 * answered$n / answered$base)
   expect_match(
     attr(answered, "note"),
-    "Base: respondents with at least one item chosen (excluded: 1 with no data for the question and 2 with no item chosen).",
+    "Base: respondents with at least one item chosen (excluded: 1 with no answer to the question and 2 with no item chosen).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     attr(long("answered"), "note"),
-    "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans donn\u00e9e pour la question et 2 sans aucun item coch\u00e9).",
+    "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans r\u00e9ponse \u00e0 la question et 2 sans aucun item coch\u00e9).",
     fixed = TRUE
   )
 })
@@ -1154,21 +1154,21 @@ test_that("none_row = FALSE: the base sentence puts each count in the base or ou
     .mr_none_note(),
     paste(
       .mr_cases_en,
-      "Base: respondents with data for the question, including 3 with no item chosen (excluded: 1 with no data for the question)."
+      "Base: respondents who answered the question, including 3 with no item chosen (excluded: 1 with no answer to the question)."
     )
   )
   expect_identical(
     .mr_none_note(base = "answered"),
     paste(
       .mr_cases_en,
-      "Base: respondents with at least one item chosen (excluded: 1 with no data for the question and 3 with no item chosen)."
+      "Base: respondents with at least one item chosen (excluded: 1 with no answer to the question and 3 with no item chosen)."
     )
   )
   expect_identical(
     .mr_none_note(base = "all"),
     paste(
       .mr_cases_en,
-      "Base: all respondents, including 1 with no data for the question and 3 with no item chosen."
+      "Base: all respondents, including 1 with no answer to the question and 3 with no item chosen."
     )
   )
   # With `by`: one count of each for all groups together, then the rows a
@@ -1177,7 +1177,7 @@ test_that("none_row = FALSE: the base sentence puts each count in the base or ou
   with_by <- .mr_none_note(by = g)
   opening <- paste(
     "Note. Multiple answers possible: percentages can sum to more than 100%.",
-    "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
+    "Base: respondents who answered the question, including 2 with no item chosen (excluded: 1 with no answer to the question).",
     "Missing values removed: g (1).",
     "Item p-values:"
   )
@@ -1207,13 +1207,13 @@ test_that("under base = \"all\", no data for the question is not counted as no i
   note <- attr(mr(base = "all", none_row = FALSE), "note")
   expect_match(
     note,
-    "Base: all respondents, including 36 with no data for the question and 67 with no item chosen.",
+    "Base: all respondents, including 36 with no answer to the question and 67 with no item chosen.",
     fixed = TRUE
   )
   expect_false(grepl("103", note, fixed = TRUE))
   expect_match(
     attr(mr(none_row = FALSE), "note"),
-    "including 67 with no item chosen (excluded: 36 with no data for the question).",
+    "including 67 with no item chosen (excluded: 36 with no answer to the question).",
     fixed = TRUE
   )
   # By default the two counts are two rows of the table.
@@ -1230,7 +1230,7 @@ test_that("none_row = FALSE: a count of zero drops its clause, and the parenthes
     .mr_none_note(no_nodata),
     paste(
       .mr_cases_en,
-      "Base: respondents with data for the question, including 3 with no item chosen."
+      "Base: respondents who answered the question, including 3 with no item chosen."
     )
   )
   expect_identical(
@@ -1253,28 +1253,28 @@ test_that("none_row = FALSE: a count of zero drops its clause, and the parenthes
     .mr_none_note(no_none),
     paste(
       .mr_cases_en,
-      "Base: respondents with data for the question (excluded: 1 with no data for the question)."
+      "Base: respondents who answered the question (excluded: 1 with no answer to the question)."
     )
   )
   expect_identical(
     .mr_none_note(no_none, base = "answered"),
     paste(
       .mr_cases_en,
-      "Base: respondents with at least one item chosen (excluded: 1 with no data for the question)."
+      "Base: respondents with at least one item chosen (excluded: 1 with no answer to the question)."
     )
   )
   expect_identical(
     .mr_none_note(no_none, base = "all"),
     paste(
       .mr_cases_en,
-      "Base: all respondents, including 1 with no data for the question."
+      "Base: all respondents, including 1 with no answer to the question."
     )
   )
   # Neither: the sentence names the base alone.
   neither <- d[c(1L, 4L, 6L), ]
   expect_identical(
     .mr_none_note(neither),
-    paste(.mr_cases_en, "Base: respondents with data for the question.")
+    paste(.mr_cases_en, "Base: respondents who answered the question.")
   )
   expect_identical(
     .mr_none_note(neither, base = "answered"),
@@ -1293,28 +1293,28 @@ test_that("none_row = FALSE: the French base sentence assembles the same clauses
     .mr_none_note(),
     paste(
       cases,
-      "Base\u00a0: personnes ayant des donn\u00e9es pour la question, dont 3 sans aucun item coch\u00e9 (hors base\u00a0: 1 sans donn\u00e9e pour la question)."
+      "Base\u00a0: personnes ayant r\u00e9pondu \u00e0 la question, dont 3 sans aucun item coch\u00e9 (hors base\u00a0: 1 sans r\u00e9ponse \u00e0 la question)."
     )
   )
   expect_identical(
     .mr_none_note(base = "answered"),
     paste(
       cases,
-      "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans donn\u00e9e pour la question et 3 sans aucun item coch\u00e9)."
+      "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans r\u00e9ponse \u00e0 la question et 3 sans aucun item coch\u00e9)."
     )
   )
   expect_identical(
     .mr_none_note(base = "all"),
     paste(
       cases,
-      "Base\u00a0: toutes les personnes, dont 1 sans donn\u00e9e pour la question et 3 sans aucun item coch\u00e9."
+      "Base\u00a0: toutes les personnes, dont 1 sans r\u00e9ponse \u00e0 la question et 3 sans aucun item coch\u00e9."
     )
   )
   expect_identical(
     .mr_none_note(.mr_none()[-3L, ]),
     paste(
       cases,
-      "Base\u00a0: personnes ayant des donn\u00e9es pour la question, dont 3 sans aucun item coch\u00e9."
+      "Base\u00a0: personnes ayant r\u00e9pondu \u00e0 la question, dont 3 sans aucun item coch\u00e9."
     )
   )
   expect_identical(
@@ -1849,12 +1849,12 @@ test_that("none_row = FALSE gives the table without the rows, and its note", {
   # The note of none_row = FALSE counts both groups, as before the rows.
   expect_match(
     attr(.mr_none_tbl(none_row = FALSE), "note"),
-    "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
+    "Base: respondents who answered the question, including 2 with no item chosen (excluded: 1 with no answer to the question).",
     fixed = TRUE
   )
   expect_match(
     attr(.mr_none_tbl(base = "all", none_row = FALSE), "note"),
-    "Base: all respondents, including 1 with no data for the question and 2 with no item chosen.",
+    "Base: all respondents, including 1 with no answer to the question and 2 with no item chosen.",
     fixed = TRUE
   )
 })
@@ -1928,7 +1928,7 @@ test_that("the note no longer counts the respondents a row shows", {
     note(),
     paste(
       .mr_cases_en,
-      "Base: respondents with data for the question (excluded: 1 with no data for the question)."
+      "Base: respondents who answered the question (excluded: 1 with no answer to the question)."
     )
   )
   # "all": both rows show, and the whole "including" clause goes.
@@ -1953,7 +1953,7 @@ test_that("the note no longer counts the respondents a row shows", {
     note(),
     paste(
       "Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %.",
-      "Base : personnes ayant des données pour la question (hors base : 1 sans donnée pour la question)."
+      "Base : personnes ayant répondu à la question (hors base : 1 sans réponse à la question)."
     )
   )
 })
@@ -2360,7 +2360,7 @@ test_that("the note names the items with no data in a group, after the base", {
   expect_match(
     note(),
     paste(
-      "Base: respondents with data for the question.",
+      "Base: respondents who answered the question.",
       "Missing values removed: g (1).",
       "No data for x2 in c.",
       "Item p-values:"
@@ -2424,7 +2424,7 @@ test_that("a group with no data for any item leaves the base, margin and tests",
     # Its rows are not respondents with no data for the question.
     expect_false(any(df$.row_role == "missing"), info = b)
     expect_false(
-      grepl("no data for the question", attr(tbl, "note"), fixed = TRUE),
+      grepl("no answer to the question", attr(tbl, "note"), fixed = TRUE),
       info = b
     )
     expect_identical(attr(tbl, "global_test")$n_groups, 2L, info = b)

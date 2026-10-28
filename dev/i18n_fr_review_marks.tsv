@@ -425,10 +425,10 @@ note_multiresponse_pct_both	reviewed	2026-10-19	Plusieurs réponses possibles<NB
 note_multiresponse_base	reviewed	2026-10-19	Base<NBSP>: %s.	
 note_multiresponse_base_including	reviewed	2026-10-19	%s, dont %s	
 note_multiresponse_base_excluded	reviewed	2026-10-19	%s (hors base<NBSP>: %s)	
-note_multiresponse_population_valid	reviewed	2026-10-19	personnes ayant des données pour la question	
+note_multiresponse_population_valid	corrected	2026-10-28	personnes ayant répondu à la question	
 note_multiresponse_population_answered	reviewed	2026-10-19	personnes ayant coché au moins un item	
 note_multiresponse_population_all	reviewed	2026-10-19	toutes les personnes	
-note_multiresponse_n_nodata	reviewed	2026-10-19	%d sans donnée pour la question	
+note_multiresponse_n_nodata	corrected	2026-10-28	%d sans réponse à la question	
 note_multiresponse_n_none	reviewed	2026-10-19	%d sans aucun item coché	
 note_multiresponse_and	reviewed	2026-10-19	 et 	
 note_p_adjusted_one	reviewed	2026-10-19	Valeurs p ajustées pour 1 test (méthode de %s).	
