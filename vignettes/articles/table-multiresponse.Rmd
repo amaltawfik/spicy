@@ -125,7 +125,7 @@ tbl
 ```
 
 Each percentage is now a share of the respondents of its group, and the
-`Respondents` row gives those bases. The note explains the percentages
+`Base` row gives those bases. The note explains the percentages
 and names the tests. Its global test finds the difference the stacked
 table missed: p = .002, against .053. The rest of the article reads
 this table piece by piece.
@@ -146,7 +146,7 @@ Four things to notice:
 2. **The percentages sum to more than 100.** Here they add up to 171.9
    before rounding, the mean number of choices per respondent times 100
    (Jann, 2005, p. 107).
-3. **The `Respondents` row is the base**, the number of respondents
+3. **The `Base` row gives the base**, the number of respondents
    every percentage is computed on. The `(No item chosen)` row above it
    counts the 67 of them who answered without choosing a source. Its
    parentheses, like those of `(Missing)` in `table_categorical()`, mark
@@ -506,7 +506,7 @@ JAMA's instructions for tables ask authors to "explain any empty
 cells". They also ask to "add a footnote to explain why numbers may not
 sum to group totals or percentages do not add to 100%" (JAMA Network,
 2016, p. 2). The note says why the percentages of cases exceed 100, and
-what the dash of an untested item means. The `Respondents` row gives
+what the dash of an untested item means. The `Base` row gives
 the denominator once for all the items, as the AMA manual allows for "a
 series of proportions or percentages drawn from the same sample"
 (section 18.7.3).
@@ -524,7 +524,7 @@ inline(tbl, info_family, column = "{n} ({pct}%)", model = "Male")
 ```
 
 The item `p` belongs to no group and is cited without `model`. The
-`Respondents` row is the fit statistic `"nobs"`:
+`Base` row is the fit statistic `"nobs"`:
 
 ```{r inline-p-nobs}
 inline(tbl, info_family, column = "p")

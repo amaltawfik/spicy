@@ -402,7 +402,7 @@ note_vcov_classical_plain	reviewed	2026-10-17	classiques
 note_vcov_bayesian_mgcv	reviewed	2026-10-17	bayésiennes (covariance a posteriori de mgcv)	
 title_multiresponse	reviewed	2026-10-17	Réponses multiples	
 title_multiresponse_by	reviewed	2026-10-17	Réponses multiples selon %s	
-row_multiresponse_base	reviewed	2026-10-19	Personnes	
+row_multiresponse_base	corrected	2026-10-28	Base	
 header_pct_cases	reviewed	2026-10-17	% des cas	
 header_pct_responses	reviewed	2026-10-17	% des réponses	
 note_multiresponse_items_p	reviewed	2026-10-18	Valeurs p des items<NBSP>: %s de chaque item selon le groupe.	

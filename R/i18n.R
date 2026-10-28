@@ -1041,7 +1041,7 @@
   # (`.abort_label_collision()`).
   title_multiresponse = "Multiple responses",
   title_multiresponse_by = "Multiple responses by %s",
-  row_multiresponse_base = "Respondents",
+  row_multiresponse_base = "Base",
   row_multiresponse_none = "(No item chosen)",
   row_multiresponse_nodata = "(No data for the question)",
   header_pct_cases = "% of cases",

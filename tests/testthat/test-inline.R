@@ -1193,7 +1193,7 @@ test_that("the rows of none_row leave the items and the base row addressable", {
       inline(ref, "nobs", model = m)
     )
   }
-  expect_identical(inline(tbl, "Respondents", model = "Total"), "1200")
+  expect_identical(inline(tbl, "Base", model = "Total"), "1200")
   expect_identical(
     inline(tbl, smoking, column = "p"),
     inline(ref, smoking, column = "p")
@@ -1286,10 +1286,10 @@ test_that("a column the table does not carry is named before any level hint", {
 test_that("the base row of a multiple-response table is the fit statistic nobs", {
   # The row's `.variable` is the token of table_regression()'s number of
   # observations, so the address does not move with the translated label
-  # ("Respondents"), which is accepted as a convenience.
+  # ("Base"), which is accepted as a convenience.
   one <- .il_mr()
   expect_identical(inline(one, "nobs"), "1200")
-  expect_identical(inline(one, "Respondents"), "1200")
+  expect_identical(inline(one, "Base"), "1200")
   tbl <- .il_mr(by = region)
   expect_identical(inline(tbl, "nobs", model = "Central"), "245")
   expect_identical(inline(tbl, "nobs", model = "Total"), "1200")
@@ -1333,7 +1333,7 @@ test_that("a French multiple-response table cites its cells as displayed", {
   ))
   expect_identical(inline(tbl, "nobs", model = "Central"), "245")
   expect_identical(
-    inline(tbl, "Personnes", model = "Central"),
+    inline(tbl, "Base", model = "Central"),
     "245"
   )
 })
@@ -1455,7 +1455,7 @@ test_that("an untested item and an empty group refuse with the reason", {
 # ---- identity first: tokens, labels, and their collisions -----------------
 
 # Two items, the second named `nm`: x1 = 4, the item = 3, "(No item
-# chosen)" = 2, "(No data for the question)" = 1, "Respondents" = 7. In
+# chosen)" = 2, "(No data for the question)" = 1, "Base" = 7. In
 # group "a" (rows 1 to 3), one respondent chose no item.
 .il_token_item <- function(nm, ...) {
   d <- data.frame(
@@ -1480,7 +1480,7 @@ test_that("an item column named like a generated row's token keeps both rows", {
     }
     expect_identical(inline(tbl, "(No item chosen)"), "2")
     expect_identical(inline(tbl, "(No data for the question)"), "1")
-    expect_identical(inline(tbl, "Respondents"), "7")
+    expect_identical(inline(tbl, "Base"), "7")
   }
   # The token names the item, which has no level.
   expect_error(
@@ -1521,14 +1521,14 @@ test_that("an exact label wins over a fit statistic's label read regardless of c
     d,
     c(x1, x2),
     base = "all",
-    labels = c(x1 = "respondents")
+    labels = c(x1 = "base")
   )
-  expect_identical(inline(tbl, "respondents"), "4")
-  expect_identical(inline(tbl, "Respondents"), "7")
+  expect_identical(inline(tbl, "base"), "4")
+  expect_identical(inline(tbl, "Base"), "7")
   # Both labels fold to the request: refused, not settled for the base.
-  expect_error(inline(tbl, "RESPONDENTS"), class = "spicy_invalid_input")
+  expect_error(inline(tbl, "BASE"), class = "spicy_invalid_input")
   plain <- table_multiresponse(d, c(x1, x2), base = "all")
-  expect_identical(inline(plain, "RESPONDENTS"), "7")
+  expect_identical(inline(plain, "BASE"), "7")
   # The same order on a released family: a term labeled "N" (nitrogen)
   # was answered with the number of observations, "n".
   tr <- table_regression(lm(mpg ~ wt + hp, data = mtcars), labels = c(wt = "N"))

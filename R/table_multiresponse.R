@@ -135,7 +135,7 @@
 #'   as such are already read as missing).
 #' @param none_row Logical. If `TRUE` (the default), the respondents of the
 #'   base who chose no item get a row of their own, after the items and
-#'   before the `Respondents` row: "(No item chosen)" under `base = "valid"`
+#'   before the `Base` row: "(No item chosen)" under `base = "valid"`
 #'   and `"all"`, and, under `"all"`, "(No data for the question)" for the
 #'   respondents with every indicator missing. Each row appears only when
 #'   its count is above 0. `base = "answered"` leaves both groups out of
@@ -390,7 +390,7 @@
 #' indicator under `base = "valid"`, those who chose at least one item
 #' under `base = "answered"`, every row under `base = "all"`. The counts
 #' are the same under the three bases; the percentages of cases and the
-#' tests are not. The `Respondents` row gives the base of each group, and
+#' tests are not. The `Base` row gives the base of each group, and
 #' the note says which base the table uses, with two counts, all groups
 #' together: the respondents with no data for the question (every
 #' indicator missing) and those with no item chosen (data, but no item
@@ -403,7 +403,7 @@
 #' those the base leaves out. An item displayed with the label of a row the
 #' table adds is an error (class `spicy_label_collision`): choose another
 #' label in `labels`, or give the row another label, for example
-#' `options(spicy.labels = list(row_multiresponse_base = "Base"))`.
+#' `options(spicy.labels = list(row_multiresponse_base = "N"))`.
 #' Declared missing values of a labelled column (`na_values`, `na_range`)
 #' are missing, as under the `user_na = TRUE` default of
 #' [table_categorical()].
@@ -414,7 +414,7 @@
 #' sentence for the items with no data in the same groups. Without `by`,
 #' an item with no observed value at all
 #' shows a dash. A group with no data for any item was not asked the
-#' question: all its cells, `Respondents` included, show a dash, and its
+#' question: all its cells, `Base` included, show a dash, and its
 #' respondents leave the base, the `Total`, the tests and the count of
 #' the respondents with no data for the question.
 #'
@@ -1205,7 +1205,7 @@ table_multiresponse <- function(
   example <- c(
     row_multiresponse_none = "(None of these)",
     row_multiresponse_nodata = "(Question skipped)",
-    row_multiresponse_base = "Base"
+    row_multiresponse_base = "N"
   )
   for (k in keys) {
     hit <- match(spicy_str(k), item_labels)

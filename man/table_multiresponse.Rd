@@ -110,7 +110,7 @@ as such are already read as missing).}
 
 \item{none_row}{Logical. If \code{TRUE} (the default), the respondents of the
 base who chose no item get a row of their own, after the items and
-before the \code{Respondents} row: "(No item chosen)" under \code{base = "valid"}
+before the \code{Base} row: "(No item chosen)" under \code{base = "valid"}
 and \code{"all"}, and, under \code{"all"}, "(No data for the question)" for the
 respondents with every indicator missing. Each row appears only when
 its count is above 0. \code{base = "answered"} leaves both groups out of
@@ -492,7 +492,7 @@ describe the same respondents: those with at least one non-missing
 indicator under \code{base = "valid"}, those who chose at least one item
 under \code{base = "answered"}, every row under \code{base = "all"}. The counts
 are the same under the three bases; the percentages of cases and the
-tests are not. The \code{Respondents} row gives the base of each group, and
+tests are not. The \code{Base} row gives the base of each group, and
 the note says which base the table uses, with two counts, all groups
 together: the respondents with no data for the question (every
 indicator missing) and those with no item chosen (data, but no item
@@ -505,7 +505,7 @@ with their count and percentage in each group, and the note counts only
 those the base leaves out. An item displayed with the label of a row the
 table adds is an error (class \code{spicy_label_collision}): choose another
 label in \code{labels}, or give the row another label, for example
-\code{options(spicy.labels = list(row_multiresponse_base = "Base"))}.
+\code{options(spicy.labels = list(row_multiresponse_base = "N"))}.
 Declared missing values of a labelled column (\code{na_values}, \code{na_range})
 are missing, as under the \code{user_na = TRUE} default of
 \code{\link[=table_categorical]{table_categorical()}}.
@@ -516,7 +516,7 @@ its \code{Total} counts the other groups only, and the note says so, in one
 sentence for the items with no data in the same groups. Without \code{by},
 an item with no observed value at all
 shows a dash. A group with no data for any item was not asked the
-question: all its cells, \code{Respondents} included, show a dash, and its
+question: all its cells, \code{Base} included, show a dash, and its
 respondents leave the base, the \code{Total}, the tests and the count of
 the respondents with no data for the question.
 

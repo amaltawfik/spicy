@@ -1554,10 +1554,10 @@ test_that("sort = \"-\" and \"+\" order the items by total count", {
     sort = "+",
     output = "data.frame"
   )
-  expect_identical(q$label, c("a", "b", "c", "e", "Respondents"))
-  expect_identical(s$label, c("b", "c", "e", "a", "Respondents"))
+  expect_identical(q$label, c("a", "b", "c", "e", "Base"))
+  expect_identical(s$label, c("b", "c", "e", "a", "Base"))
   expect_identical(s$n, c(3, 2, 2, 1, 4))
-  expect_identical(up$label, c("a", "c", "e", "b", "Respondents"))
+  expect_identical(up$label, c("a", "c", "e", "b", "Base"))
   expect_identical(up$n, c(1, 2, 2, 3, 4))
   # With `by`, the total count decides, not the first group.
   g <- data.frame(
@@ -1573,7 +1573,7 @@ test_that("sort = \"-\" and \"+\" order the items by total count", {
     p_value = FALSE,
     output = "data.frame"
   )
-  expect_identical(by_grp$label, c("y", "x", "Respondents"))
+  expect_identical(by_grp$label, c("y", "x", "Base"))
 })
 
 test_that("items tied on their count keep the order of select", {
@@ -1593,8 +1593,8 @@ test_that("items tied on their count keep the order of select", {
       output = "data.frame"
     )$label
   }
-  expect_identical(rows_of("-"), c("b", "e", "c", "a", "Respondents"))
-  expect_identical(rows_of("+"), c("a", "e", "c", "b", "Respondents"))
+  expect_identical(rows_of("-"), c("b", "e", "c", "a", "Base"))
+  expect_identical(rows_of("+"), c("a", "e", "c", "b", "Base"))
 })
 
 test_that("sort = \"\" keeps the order in which select delivers the columns", {
@@ -1603,13 +1603,13 @@ test_that("sort = \"\" keeps the order in which select delivers the columns", {
     table_multiresponse(d, ..., output = "data.frame")$label
   }
   # Row 2 chose neither q_c nor q_a: its row follows the items.
-  q_ca <- c("q_c", "q_a", "(No item chosen)", "Respondents")
+  q_ca <- c("q_c", "q_a", "(No item chosen)", "Base")
   expect_identical(rows_of(c(q_c, q_a)), q_ca)
   expect_identical(rows_of(c(q_c, q_a), sort = ""), q_ca)
   expect_identical(rows_of(c("q_c", "q_a")), q_ca)
   expect_identical(
     rows_of(tidyselect::starts_with("q_")),
-    c("q_a", "q_b", "q_c", "Respondents")
+    c("q_a", "q_b", "q_c", "Base")
   )
 })
 
@@ -1625,11 +1625,11 @@ test_that("sort = \"name+\" and \"name-\" order the labels shown, in the C local
   }
   expect_identical(
     rows_of(sort = "name+"),
-    c("health", "standard", "work", "Respondents")
+    c("health", "standard", "work", "Base")
   )
   expect_identical(
     rows_of(sort = "name-"),
-    c("work", "standard", "health", "Respondents")
+    c("work", "standard", "health", "Base")
   )
   # The labels are sorted, not the names, in the C locale whatever the
   # session's: capitals before lower case, an accented letter after z.
@@ -1645,11 +1645,11 @@ test_that("sort = \"name+\" and \"name-\" order the labels shown, in the C local
   expect_identical(up_locale, up)
   expect_identical(
     up,
-    c("Work", "standard", "\u00e9tat de sant\u00e9", "Respondents")
+    c("Work", "standard", "\u00e9tat de sant\u00e9", "Base")
   )
   expect_identical(
     rows_of(labels = lab, sort = "name-"),
-    c("\u00e9tat de sant\u00e9", "standard", "Work", "Respondents")
+    c("\u00e9tat de sant\u00e9", "standard", "Work", "Base")
   )
 })
 
@@ -1668,7 +1668,7 @@ test_that("an item nobody chose keeps its row, at zero", {
   out <- table_multiresponse(d, c(x1, x3), by = g, output = "data.frame")
   expect_identical(
     out$label,
-    c("x1", "x3", "(No item chosen)", "Respondents")
+    c("x1", "x3", "(No item chosen)", "Base")
   )
   expect_identical(
     unlist(out[2L, c("a n", "b n", "Total n")], use.names = FALSE),
@@ -1760,7 +1760,7 @@ test_that("each base shows its rows: valid one, all two, answered none", {
   valid <- .mr_none_tbl()
   expect_identical(
     valid$label,
-    c("x1", "x2", "(No item chosen)", "Respondents")
+    c("x1", "x2", "(No item chosen)", "Base")
   )
   expect_identical(valid$variable, c("x1", "x2", "none", "nobs"))
   expect_identical(valid$.row_role, c("summary", "summary", "none", "fit_stat"))
@@ -1778,7 +1778,7 @@ test_that("each base shows its rows: valid one, all two, answered none", {
       "x2",
       "(No item chosen)",
       "(No data for the question)",
-      "Respondents"
+      "Base"
     )
   )
   expect_identical(
@@ -1967,7 +1967,7 @@ test_that("sort never moves the rows of none_row", {
   }
   expect_identical(
     .mr_none_tbl(sort = "+")$label,
-    c("x2", "x1", "(No item chosen)", "Respondents")
+    c("x2", "x1", "(No item chosen)", "Base")
   )
 })
 
@@ -1978,7 +1978,7 @@ test_that("the rows of none_row are translated", {
     c(
       "(Aucun item coché)",
       "(Sans donnée pour la question)",
-      "Personnes"
+      "Base"
     )
   )
 })
@@ -2010,7 +2010,7 @@ test_that("data.frame, long and the typed view mark the rows of none_row by role
   # The console rules off the base row alone: the rows follow the items
   # unruled, as "(Missing)" follows the levels in table_categorical().
   printed <- utils::capture.output(print(tbl))
-  resp <- grep("Respondents", printed, fixed = TRUE)
+  resp <- grep("^\\s*Base\\s", printed)
   first <- grep("x1", printed, fixed = TRUE)[[1L]]
   expect_true(all(grepl("[[:alpha:]]", printed[first:(resp - 2L)])))
   expect_false(grepl("[[:alpha:]]", printed[[resp - 1L]]))
@@ -2035,7 +2035,7 @@ test_that("tidy() reads the items only, and glance() does not move", {
 # base row.
 .mr_none_order <- function(cells) {
   pos <- match(
-    c("x2", "(No item chosen)", "(No data for the question)", "Respondents"),
+    c("x2", "(No item chosen)", "(No data for the question)", "Base"),
     trimws(cells)
   )
   !anyNA(pos) && !is.unsorted(pos)
@@ -2108,7 +2108,7 @@ test_that("the clipboard carries the rows of none_row", {
 test_that("an item displaying a label the table adds is refused", {
   cases <- list(
     list(
-      labels = c(x2 = "Respondents"),
+      labels = c(x2 = "Base"),
       key = "row_multiresponse_base",
       what = "the row spicy adds for the base"
     ),
@@ -2142,7 +2142,7 @@ test_that("an item displaying a label the table adds is refused", {
 })
 
 test_that("both ways out of the refusal work", {
-  labs <- c(x1 = "(No item chosen)", x2 = "Respondents")
+  labs <- c(x1 = "(No item chosen)", x2 = "Base")
   # Way out 1: other labels in `labels`.
   ok <- .mr_none_tbl(
     base = "all",
@@ -2155,7 +2155,7 @@ test_that("both ways out of the refusal work", {
       "Respondent count",
       "(No item chosen)",
       "(No data for the question)",
-      "Respondents"
+      "Base"
     )
   )
   # Way out 2: other labels for the rows the table adds.
@@ -2167,7 +2167,7 @@ test_that("both ways out of the refusal work", {
   )
   shown <- c(
     "(No item chosen)",
-    "Respondents",
+    "Base",
     "(None of these)",
     "(No data for the question)",
     "All respondents"
@@ -2197,7 +2197,7 @@ test_that("both ways out of the refusal work", {
   expect_identical(unique(td$label), shown[1:2])
   # inline() reaches an item by its label, and each row by its token.
   expect_identical(
-    inline(tbl, "Respondents", model = "Total"),
+    inline(tbl, "Base", model = "Total"),
     inline(tbl, x2, model = "Total")
   )
   expect_identical(
@@ -2216,21 +2216,21 @@ test_that("only a displayed row collides, and the French labels do", {
   # `"answered"` no row at all, and `none_row = FALSE` shows neither.
   expect_identical(
     .mr_none_tbl(labels = c(x2 = "(No data for the question)"))$label,
-    c("x1", "(No data for the question)", "(No item chosen)", "Respondents")
+    c("x1", "(No data for the question)", "(No item chosen)", "Base")
   )
   none <- c(x1 = "(No item chosen)")
   expect_identical(
     .mr_none_tbl(base = "answered", labels = none)$label,
-    c("(No item chosen)", "x2", "Respondents")
+    c("(No item chosen)", "x2", "Base")
   )
   expect_identical(
     .mr_none_tbl(none_row = FALSE, labels = none)$label,
-    c("(No item chosen)", "x2", "Respondents")
+    c("(No item chosen)", "x2", "Base")
   )
   withr::local_options(spicy.language = "fr")
   for (labs in list(
     c(x1 = "(Aucun item coché)"),
-    c(x2 = "Personnes"),
+    c(x2 = "Base"),
     c(x2 = "(Sans donnée pour la question)")
   )) {
     expect_error(
@@ -2241,16 +2241,16 @@ test_that("only a displayed row collides, and the French labels do", {
   # The English labels are not displayed in French: nothing collides.
   en <- .mr_none_tbl(
     base = "all",
-    labels = c(x1 = "(No item chosen)", x2 = "Respondents")
+    labels = c(x1 = "(No item chosen)")
   )
   expect_identical(
     en$label,
     c(
       "(No item chosen)",
-      "Respondents",
+      "x2",
       "(Aucun item coché)",
       "(Sans donnée pour la question)",
-      "Personnes"
+      "Base"
     )
   )
 })
@@ -2258,21 +2258,21 @@ test_that("only a displayed row collides, and the French labels do", {
 test_that("an engine renders the relabeled rows", {
   skip_if_not_installed("gt")
   withr::local_options(
-    spicy.labels = list(row_multiresponse_base = "Base")
+    spicy.labels = list(row_multiresponse_base = "All respondents")
   )
   g <- .mr_none_tbl(
     base = "all",
-    labels = c(x2 = "Respondents"),
+    labels = c(x2 = "Base"),
     output = "gt"
   )
   expect_identical(
     trimws(g[["_data"]][[1L]]),
     c(
       "x1",
-      "Respondents",
+      "Base",
       "(No item chosen)",
       "(No data for the question)",
-      "Base"
+      "All respondents"
     )
   )
 })
@@ -2418,7 +2418,7 @@ test_that("a group with no data for any item leaves the base, margin and tests",
       test = "chisq"
     )
     df <- as.data.frame(tbl)
-    # Every cell of c is the mark, its Respondents row included.
+    # Every cell of c is the mark, its Base row included.
     expect_true(all(is.na(df[["c n"]])), info = b)
     expect_identical(df[["Total n"]][df$.row_role == "fit_stat"], 12, info = b)
     # Its rows are not respondents with no data for the question.
@@ -2732,7 +2732,7 @@ test_that("the French table translates its title, headers, base row and notes", 
   expect_identical(attr(tbl, "title"), "R\u00e9ponses multiples selon ed")
   expect_identical(
     utils::tail(tbl$Variable, 1L),
-    "Personnes"
+    "Base"
   )
   s <- as_structured(tbl)
   expect_identical(s$col_meta[["HS % of cases"]]$display_label, "HS % des cas")

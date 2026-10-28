@@ -62,3 +62,20 @@ Les deux bases restent distinctes pour le lecteur : « ayant répondu »
 Les deux clés changent dans `R/i18n_fr.R` et `R/i18n.R`. Les attentes de
 `test-table_multiresponse.R` et les instantanés suivent, et les deux clés
 françaises sont marquées `corrected` dans `dev/i18n_fr_review_marks.tsv`.
+
+## Ligne de base : « Base » dans les deux langues
+
+Ajouté le 2026-10-28. La ligne `row_multiresponse_base` s'appelait
+« Respondents » en anglais et « Personnes » en français. Elle s'appelle
+désormais « Base » dans les deux langues.
+
+Cette ligne donne l'effectif sur lequel les pourcentages sont calculés. Ce
+n'est pas une catégorie. Son libellé doit renvoyer à la note, qui commence
+par « Base: » (« Base : » en français). « Respondents » est faux sous
+`base = "all"`, où la base compte aussi les personnes qui n'ont pas répondu.
+« Personnes » ne dit pas ce qui est compté.
+
+La clé française est marquée `corrected` dans
+`dev/i18n_fr_review_marks.tsv`. Les attentes des tests (`test-table_multiresponse.R`,
+`test-inline.R`) et les instantanés suivent. Le test de `inline()` sur la
+casse emploie désormais un item libellé « base ».
