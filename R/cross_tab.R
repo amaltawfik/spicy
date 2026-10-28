@@ -31,7 +31,7 @@
 #'   and an association measure (see `assoc_measure`).
 #' @param assoc_measure Character. Which association measure to report.
 #'   `"auto"` (default) selects Kendall's Tau-b when both variables are
-#'   ordered factors and Cramer's V otherwise. Other choices:
+#'   ordered factors and Cram&eacute;r's V otherwise. Other choices:
 #'   `"cramer_v"`, `"phi"`, `"gamma"`, `"tau_b"`, `"tau_c"`,
 #'   `"somers_d"`, `"lambda"`, `"none"`.
 #' @param assoc_ci Logical. If `TRUE`, includes the 95 percent confidence
@@ -309,6 +309,28 @@ cross_tab <- function(
         "You must specify a `y` variable (e.g., cross_tab(data, x, y)).",
         class = "spicy_invalid_input"
       )
+    }
+    # A column is named unquoted. A string evaluates to itself, a constant
+    # that the table would tabulate as one category, in silence.
+    for (arg in c("x", "y", "by")) {
+      e <- switch(arg, x = call_x, y = call_y, by = call_by)
+      if (is.character(e)) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`%s` must name a column of `data` unquoted, not the string %s.",
+              arg,
+              .quote_val(e[[1L]])
+            ),
+            "i" = sprintf(
+              "Write the column without quotes: `%s = %s`.",
+              arg,
+              deparse1(as.name(e[[1L]]), backtick = TRUE)
+            )
+          ),
+          class = "spicy_invalid_input"
+        )
+      }
     }
   }
 

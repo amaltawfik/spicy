@@ -283,13 +283,17 @@ test_that("labels accepts coefficient-level keys on mixed fits", {
   df <- table_regression(m, labels = c(period2 = "Period 2"))
   expect_true(any(grepl("Period 2", df$Variable, fixed = TRUE)))
   # A key that is no term or coefficient name -- a grouping factor, a
-  # bogus key -- is ignored (decision 54): the random-effect rows keep
-  # the text the package sets.
+  # bogus key -- warns and is left out (decision 54, and decision 14 of
+  # the ADR of 2026-10-20): the random-effect rows keep the text the
+  # package sets.
   base <- table_regression(m)$Variable
-  ignored <- table_regression(
-    m,
-    labels = c(herd = "Herd", bogus_key = "X")
-  )$Variable
+  expect_warning(
+    ignored <- table_regression(
+      m,
+      labels = c(herd = "Herd", bogus_key = "X")
+    )$Variable,
+    class = "spicy_unknown_name"
+  )
   expect_identical(ignored, base)
 })
 

@@ -363,13 +363,15 @@
   wb
 }
 
-# The rule above each Total row of `total_row = TRUE` in the sheet, the
-# console's: the light rule the sheets of the family draw inside a body,
-# a "hair" bottom border on the row above (`table_continuous()`'s block
-# separators). `rows` are the positions of the Total rows in the body,
-# whose first line is the sheet row `first_row`; the row above one is
-# never the last row, so the closing rule stays untouched.
-.cat_xl_total_rules <- function(wb, rows, first_row, nc) {
+# The light rules inside the body of the sheet, the console's: above the
+# header row of each variable block but the first (the separators every
+# other engine draws, as `table_continuous()`'s sheet does) and above each
+# Total row of `total_row = TRUE`. One rule for both, the "hair" bottom
+# border on the row above, the family's rule inside a body. `rows` are the
+# positions of those rows in the body, whose first line is the sheet row
+# `first_row`; the row above one is never the last row, so the closing
+# rule stays untouched.
+.cat_xl_rules_above <- function(wb, rows, first_row, nc) {
   for (r in first_row + rows - 2L) {
     wb <- openxlsx2::wb_add_border(
       wb,
@@ -1049,7 +1051,8 @@
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -1064,8 +1067,9 @@
 #'   question while the note says "Missing values removed: sex at birth
 #'   (2).". The rows, the column headers and the spanners keep the labels
 #'   of `labels`, and so do the title and the notes for a variable
-#'   `note_labels` does not name. Names that match no column are ignored,
-#'   as in `labels`, and `NULL` (the default) renames nothing. A note label
+#'   `note_labels` does not name. A name that matches no column warns and
+#'   is left out, as in `labels`, and `NULL` (the default) renames nothing.
+#'   A note label
 #'   that another variable of the table shows is an error (class
 #'   `spicy_label_collision`): choose another one, or relabel the other
 #'   variable.
@@ -1250,7 +1254,7 @@
 #'   \eqn{\gamma}{gamma} (`gamma`), the three others keeping their name
 #'   (`"Lambda"`). The note defines the symbol as it defines any
 #'   abbreviation, under the `abbreviations` rule of [spicy_style()]:
-#'   "V = Cramer's V" by default, the Greek letters only under `"all"` and
+#'   "V = Cram&eacute;r's V" by default, the Greek letters only under `"all"` and
 #'   in the `"jama"` and `"lancet"` themes. When multiple measures are used
 #'   (typically with `"auto"` on a heterogeneous `select`), the header
 #'   collapses to `"Effect size"` and the table note names the measure
@@ -1561,7 +1565,7 @@
 #' `simulate_p` to switch on Yates' continuity correction or Monte Carlo
 #' *p*-values for the chi-squared test, and `@param assoc_measure` for
 #' the per-row dispatch table used by `"auto"` (2x2 -> Phi, both ordered
-#' -> Kendall's Tau-b, otherwise Cramer's V). Without `by`, the table
+#' -> Kendall's Tau-b, otherwise Cram&eacute;r's V). Without `by`, the table
 #' reports the marginal frequency distribution of each variable with no
 #' inferential statistics.
 #'
@@ -2070,6 +2074,9 @@ table_categorical <- function(
     c(select_names, by_name),
     "table_categorical"
   )
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(c(select_names, by_name), labels, note_labels)
   # The "by" title names the grouping variable under the same `labels`
   # as the rows (see `resolve_variable_labels()`), as table_continuous()
   # does. Resolved first: `labels` then becomes the rows' labels.
@@ -2275,10 +2282,7 @@ table_categorical <- function(
     }
     weighted <- !is.null(weights_vec)
     if (!has_group) {
-      return(spicy_fmt(
-        if (weighted) "note_sample_size_unweighted" else "note_sample_size",
-        fmt_n(sum(rows_in))
-      ))
+      return(.sample_size_sentence(sum(rows_in), weighted = weighted))
     }
     g_chr <- as.character(g_fac)
     n_groups <- vapply(
@@ -2293,18 +2297,9 @@ table_categorical <- function(
       },
       integer(1)
     )
-    spicy_fmt(
-      if (weighted) {
-        "note_sample_size_groups_unweighted"
-      } else {
-        "note_sample_size_groups"
-      },
-      fmt_n(sum(n_groups)),
-      .join_note_vars(spicy_fmt(
-        "note_sample_size_group_item",
-        size_groups,
-        fmt_n(n_groups)
-      ))
+    .sample_size_sentence(
+      groups = stats::setNames(n_groups, size_groups),
+      weighted = weighted
     )
   }
   # What the numbers are, (a) of `.compose_note()`, in this order: the
@@ -3628,9 +3623,12 @@ table_categorical <- function(
           left_border = NULL,
           right_border = NULL
         )
-        wb <- .cat_xl_total_rules(
+        wb <- .cat_xl_rules_above(
           wb,
-          .categorical_total_rows_typed(structured),
+          c(
+            .categorical_sep_rows_typed(structured),
+            .categorical_total_rows_typed(structured)
+          ),
           first_body_row,
           nc
         )
@@ -4591,9 +4589,11 @@ table_categorical <- function(
   # the rows and of the typed view's `.variable`.
   # The inference of the note, (c) of `.compose_note()`: the test behind
   # each p-value (decision of 2026-10-18), one sentence naming the test of
-  # every variable, then Yates' correction where it reached one, then the
-  # adjustment.
-  inference_note <- NULL
+  # every variable, then the adjustment, whose subject is that sentence's
+  # lead (decision of 2026-10-28), then Yates' correction where it reached
+  # one.
+  test_sentence <- NULL
+  yates_sentence <- NULL
   if (p_value) {
     phrase <- .cat_test_phrase(
       test_types,
@@ -4601,20 +4601,24 @@ table_categorical <- function(
       simulated = simulate_p,
       B = simulate_B
     )
-    inference_note <- c(
-      if (!is.null(phrase)) {
-        .p_values_test_sentence(
-          phrase$text,
-          .n_p_shown(long_raw$p, long_raw$variable)
-        )
-      },
-      if (any(yates_used)) spicy_str("note_yates_applied")
-    )
+    if (!is.null(phrase)) {
+      test_sentence <- .p_values_test_sentence(
+        phrase$text,
+        .n_p_shown(long_raw$p, long_raw$variable)
+      )
+    }
+    if (any(yates_used)) {
+      yates_sentence <- spicy_str("note_yates_applied")
+    }
   }
   adj <- .desc_apply_p_adjust(long_raw, "p", long_raw$variable, p_adjust)
   long_raw <- adj$df
   p_adjust_info <- adj$info
-  inference_note <- c(inference_note, .desc_p_adjust_note(p_adjust_info))
+  inference_note <- c(
+    test_sentence,
+    .desc_p_adjust_note(p_adjust_info),
+    yates_sentence
+  )
   # The statistics part of the note, (c) then (d): the `assoc_note`
   # attribute, NULL when empty.
   stat_sentences <- c(inference_note, definitions_note)
@@ -5959,9 +5963,12 @@ table_categorical <- function(
         left_border = NULL,
         right_border = NULL
       )
-      wb <- .cat_xl_total_rules(
+      wb <- .cat_xl_rules_above(
         wb,
-        .categorical_total_rows_typed(structured),
+        c(
+          .categorical_sep_rows_typed(structured),
+          .categorical_total_rows_typed(structured)
+        ),
         first_body_row,
         nc
       )

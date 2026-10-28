@@ -312,7 +312,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  N        │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p < .001
-#> Cramer's V = 0.14
+#> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
 
@@ -335,7 +335,7 @@ cramer_v(tbl, detail = TRUE)
 #>    0.176   –     0.120     0.231  <.001
 ```
 
-See [Cramer’s V, Phi, and association
+See [Cramér’s V, Phi, and association
 measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 for a guide on choosing the right measure.
 
@@ -411,7 +411,7 @@ table_categorical(
 #>    No              │  54.2               
 #>    Yes             │  45.8               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ``` r
@@ -426,7 +426,7 @@ table_continuous(
 #>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
 #>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -457,7 +457,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -570,7 +570,7 @@ table_outcome(
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 A “check all that apply” question gets a table of its own, one row per
@@ -597,9 +597,9 @@ table_multiresponse(
 #>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
 #>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents      │   599                565             1164                   
+#>  Base             │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ### Row-wise summaries
@@ -656,7 +656,7 @@ Each workflow has a dedicated article on the package site:
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
 - [Frequency tables and
   cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
-- [Cramer’s V, Phi, and association
+- [Cramér’s V, Phi, and association
   measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 - [Categorical summary
   tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html)

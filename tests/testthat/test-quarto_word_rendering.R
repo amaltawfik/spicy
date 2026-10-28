@@ -328,3 +328,39 @@ test_that("latex target: spicy_gt prints a negative statistic with the minus sig
   s <- latex(table_continuous(d, z, by = lvl, output = "gt"))
   expect_match(s, "\nz & -1 & \\ensuremath{-}1.", fixed = TRUE)
 })
+
+test_that("latex target: a gt table without a note keeps the minus sign", {
+  skip_if_not_installed("gt")
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), each = 3L)),
+    z = c(-1.5, -2.25, -3, -1, -2, -4)
+  )
+  latex <- function(...) {
+    gtb <- table_continuous(
+      d,
+      z,
+      by = g,
+      p_value = FALSE,
+      ci = FALSE,
+      note = FALSE,
+      output = "gt",
+      ...
+    )
+    expect_s3_class(gtb, "spicy_gt")
+    paste(
+      as.character(.with_pandoc_to("latex", knitr::knit_print(gtb))),
+      collapse = ""
+    )
+  }
+  s <- latex()
+  ascii <- latex(style = spicy_style(minus_sign = "ascii"))
+  # The body's negative numbers take the minus sign, as with a note
+  # (section 19 of dev/decisions/2026-10-23-sorties-publiables-fr.md: a
+  # plain gt table kept the hyphen); the "ascii" lever keeps the hyphen.
+  expect_match(s, "& \\ensuremath{-}2.25 &", fixed = TRUE)
+  expect_no_match(ascii, "\\ensuremath{-}", fixed = TRUE)
+  expect_identical(
+    s,
+    gsub("(?<=& |\\{)-(?=[0-9])", "\\\\ensuremath{-}", ascii, perl = TRUE)
+  )
+})

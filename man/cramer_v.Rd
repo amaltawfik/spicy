@@ -2,7 +2,7 @@
 % Please edit documentation in R/assoc.R
 \name{cramer_v}
 \alias{cramer_v}
-\title{Cramer's V}
+\title{Cramér's V}
 \usage{
 cramer_v(x, detail = FALSE, conf_level = 0.95, digits = 3L)
 }
@@ -33,11 +33,11 @@ The p-value tests the null hypothesis of no association
 (Pearson chi-squared test).
 }
 \description{
-\code{cramer_v()} computes Cramer's V for a two-way contingency table,
+\code{cramer_v()} computes Cramér's V for a two-way contingency table,
 measuring the strength of association between two categorical variables.
 }
 \details{
-Cramer's V is computed as
+Cramér's V is computed as
 \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}}, where \eqn{\chi^2}
 is the Pearson chi-squared statistic, \eqn{n} is the total count,
 and \eqn{k = \min(r, c)}. The point estimate matches the

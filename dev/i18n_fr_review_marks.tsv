@@ -473,3 +473,4 @@ note_percent_column	reviewed	2026-10-28	Pourcentages en colonne.
 note_sample_size	reviewed	2026-10-28	N = %s.	
 note_sample_size_group_item	reviewed	2026-10-28	%s (n = %s)	
 abbrev_omega2	corrected	2026-10-28	oméga-carré	
+note_p_adjusted_desc	reviewed	2026-10-28	Ajustées pour %s tests (méthode de %s).	

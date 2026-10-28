@@ -650,8 +650,9 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   A vector named by column, not by label, gives each variable it names
 #'   its own, `digits = c(height = 0, bmi = 1)`; the other variables, the
 #'   weighted *n* and the design effect keep the default, the `digits` of
-#'   a [spicy_style()] in force included. Names that match no variable are
-#'   ignored, as in `labels`. A fraction is an error, as for every
+#'   a [spicy_style()] in force included. A name that matches no variable
+#'   warns and is left out, as in `labels`. A fraction is an error, as for
+#'   every
 #'   `*_digits` argument. The *p*-values (`p_digits`), the test statistics
 #'   (two decimals) and the counts keep their own decimals.
 #' @param labels How each variable is named in the table: in the rows,
@@ -668,7 +669,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -1029,6 +1031,13 @@ table_continuous_svy <- function(
   w_full <- .design_weights(design)
 
   # --- domains -------------------------------------------------------------
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(numeric_cols, group_col_name),
+    labels,
+    note_labels
+  )
   var_labels <- resolve_variable_labels(vars, numeric_cols, labels)
   # Before any row leaves the design (`[` drops a column's attributes):
   # the title and the missing-`by` note name the grouping variable so.
@@ -1735,10 +1744,11 @@ table_continuous_svy <- function(
       lines[[2L]],
       lines[[3L]],
       comparison,
+      # The adjustment right after the sentence whose lead is its subject.
+      .desc_p_adjust_note(p_adjust_info),
       if (!is.null(comparison)) {
         .svy_test_df_note(test_ddf, degf_used, var_labels)
-      },
-      .desc_p_adjust_note(p_adjust_info)
+      }
     ),
     definitions = build_column_glosses(tokens, result, ci_level, decimal_mark),
     # The design-based standard error and the design effect say how they

@@ -113,7 +113,7 @@ test_that(".fit_stat_merge_ranges single-model spans cols 2..n per fit-stat row"
 # gt: HTML note post-processor + print / knit_print methods
 # ============================================================================
 
-test_that(".spicy_gt_html_postprocess injects an escaped note div and is a no-op for NULL/empty", {
+test_that(".spicy_gt_html_postprocess injects an escaped note div, and wraps a table without one", {
   h <- "<table border=\"1\"><tr><td>x</td></tr></table>"
   out <- spicy:::.spicy_gt_html_postprocess(h, "Note. a < b & c > d")
   expect_match(out, "spicy-gt-note", fixed = TRUE)
@@ -129,9 +129,15 @@ test_that(".spicy_gt_html_postprocess injects an escaped note div and is a no-op
     "<em>Note.</em> a &lt; b &amp; c &gt; d</div>",
     fixed = TRUE
   )
-  # NULL / empty note -> unchanged input
-  expect_identical(spicy:::.spicy_gt_html_postprocess(h, NULL), h)
-  expect_identical(spicy:::.spicy_gt_html_postprocess(h, ""), h)
+  # NULL / empty note -> the wrapper and its rules, no note div (one design
+  # for every table of the family, note or no note).
+  for (empty in list(NULL, "")) {
+    bare <- spicy:::.spicy_gt_html_postprocess(h, empty)
+    expect_match(bare, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
+    expect_match(bare, ".spicy-gt-outer .gt_col_heading", fixed = TRUE)
+    expect_match(bare, "</table></div></div>", fixed = TRUE)
+    expect_no_match(bare, "spicy-gt-note", fixed = TRUE)
+  }
 })
 
 test_that("knit_print.spicy_gt embeds the note via the post-processor", {

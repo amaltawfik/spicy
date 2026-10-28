@@ -66,15 +66,20 @@
 #
 # `stub` and `decimal_mark` are the label columns and the mark of the
 # table, for the minus sign of its LaTeX (`.spicy_gt_minus_attr()`).
+#
+# A table without a note takes the tag too (section 19 of
+# dev/decisions/2026-10-23-sorties-publiables-fr.md), as every
+# `table_regression()` gt table does: `knit_print.spicy_gt()` is where the
+# LaTeX of a gt table gets its minus sign and its Unicode mapping, and a
+# table of the family must not lose them because it has nothing to say.
 .spicy_gt_attach_note <- function(tbl, note, stub = 1L, decimal_mark = ".") {
-  if (is.null(note) || !nzchar(note)) {
-    return(tbl)
+  if (!is.null(note) && nzchar(note)) {
+    tbl <- .spicy_gt_add_source_notes(tbl, note)
+    attr(tbl, "spicy_note") <- note
+    # The lead-in the note was built with, for the display methods, which
+    # run after the table function returns (`.note_lead_keys()`, R/i18n.R).
+    attr(tbl, "spicy_note_lead") <- .note_lead()
   }
-  tbl <- .spicy_gt_add_source_notes(tbl, note)
-  attr(tbl, "spicy_note") <- note
-  # The lead-in the note was built with, for the display methods, which
-  # run after the table function returns (`.note_lead_keys()`, R/i18n.R).
-  attr(tbl, "spicy_note_lead") <- .note_lead()
   tbl <- .spicy_gt_minus_attr(tbl, stub, decimal_mark)
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl

@@ -12,7 +12,8 @@ var_labels(...)
 \arguments{
 \item{...}{\code{name = "label"} pairs, one per variable to rename, each
 label a single string. A named character vector can be spliced with
-\verb{!!!}. Names that match nothing in a table are ignored. For
+\verb{!!!}. A name that matches nothing in a table warns there and is
+left out. For
 \code{print()}, passed on to \code{\link[=print]{print()}}.}
 
 \item{x}{A \code{spicy_var_labels} object, for \code{print()}.}

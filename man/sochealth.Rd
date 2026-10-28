@@ -97,7 +97,7 @@ Every variable carries a \code{"label"} attribute (read by
 factors (\code{sex}, \code{region}, ...) and ordered factors (\code{education},
 \code{self_rated_health}, ...) live side by side so that
 \code{\link[=cross_tab]{cross_tab()}} and \code{\link[=table_categorical]{table_categorical()}} can demonstrate the
-automatic ordinal-vs-nominal dispatch (Cramer's V, Phi, Kendall's
+automatic ordinal-vs-nominal dispatch (Cramér's V, Phi, Kendall's
 Tau-b, Goodman-Kruskal Gamma) on the same dataset.
 
 Survey weights (\code{weight}) are calibrated: they average about 1

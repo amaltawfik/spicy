@@ -163,6 +163,10 @@ spicy_abort <- function(
 #                               the computation, e.g., NA weights)
 #   |- spicy_ignored_arg       (an argument is ignored due to context,
 #                               e.g., `correct = TRUE` on a non-2x2)
+#   |- spicy_unknown_name      (an argument named by variable -- `labels`,
+#                               `note_labels`, `digits`, `show_columns` --
+#                               holds a name that matches nothing in the
+#                               table; the table is built without it)
 #   |- spicy_no_selection      (a selection or a filter produced an
 #                               empty set; returning an empty result
 #                               rather than erroring. The table

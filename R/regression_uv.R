@@ -160,7 +160,8 @@
 #'
 #'   The names are the outcome and predictor columns and the coefficient
 #'   names (`"sexMale"` names the row of one level), as in
-#'   [table_regression()]. Names that match nothing are ignored. The
+#'   [table_regression()]. A name that matches nothing warns and is left
+#'   out. The
 #'   default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
 #'   typed in the call wins over it. Any other value, `NULL` included, is
 #'   an error. A variable label documents the data file; a published
@@ -403,6 +404,14 @@ table_regression_uv <- function(
   # no column and keeps its expression unless `labels` names it. The
   # title names it by its label in `note_labels` when there is one, and a
   # note label another variable of the table shows is refused.
+  # A name of `note_labels` that is no variable of the screen warns, and is
+  # left out (`.warn_unknown_names()`); `labels` goes to table_regression(),
+  # which checks it against the terms of every fit.
+  .warn_unknown_names(
+    "note_labels",
+    names(note_labels),
+    c(outcome_name, pred_names)
+  )
   outcome_display <- resolve_variable_labels(data, outcome_name, labels)
   outcome_note <- .note_labels_of(outcome_name, outcome_display, note_labels)
   pred_shown <- resolve_variable_labels(data, pred_names, labels)

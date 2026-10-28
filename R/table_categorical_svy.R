@@ -401,7 +401,7 @@
 #' percentage is estimated within its level, a domain of its own, so every
 #' level of every variable would bring its own degrees of freedom,
 #' intervals and design effects. And the association
-#' measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
+#' measures: Cram&eacute;r's V, phi, tau-b/c, gamma, Somers' D and lambda
 #' have no established design-based variance, and the intervals
 #' [table_categorical()] gives them assume simple random sampling. The
 #' design-based measure of association here is the Rao-Scott test in
@@ -447,7 +447,8 @@
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -783,6 +784,13 @@ table_categorical_svy <- function(
     }
   }
   vars <- design$variables
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(select_names, group_col_name),
+    labels,
+    note_labels
+  )
   # Before any row leaves the design (`[` drops a column's attributes):
   # the rows, the title and the notes name each variable by its label.
   var_labels <- resolve_variable_labels(vars, select_names, labels)

@@ -256,9 +256,9 @@ print.spicy_assoc_detail <- function(
 
 # -- Nominal measures ---------------------------------------------------------
 
-#' Cramer's V
+#' Cram&eacute;r's V
 #'
-#' `cramer_v()` computes Cramer's V for a two-way contingency table,
+#' `cramer_v()` computes Cram&eacute;r's V for a two-way contingency table,
 #' measuring the strength of association between two categorical variables.
 #'
 #' @param x A contingency table (of class `table`).
@@ -283,7 +283,7 @@ print.spicy_assoc_detail <- function(
 #'   (Pearson chi-squared test).
 #'
 #' @details
-#' Cramer's V is computed as
+#' Cram&eacute;r's V is computed as
 #' \eqn{V = \sqrt{\chi^2 / (n \cdot (k - 1))}}, where \eqn{\chi^2}
 #' is the Pearson chi-squared statistic, \eqn{n} is the total count,
 #' and \eqn{k = \min(r, c)}. The point estimate matches the
@@ -381,7 +381,7 @@ cramer_v <- function(
 #'
 #' @details
 #' The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}. It is
-#' equivalent to Cramer's V for 2x2 tables and equals the absolute
+#' equivalent to Cram&eacute;r's V for 2x2 tables and equals the absolute
 #' value of the Pearson correlation between the two binary
 #' variables -- spicy returns only the magnitude (always
 #' non-negative), matching the DescTools (Signorell et al., 2024)
@@ -1723,7 +1723,7 @@ somers_d <- function(
 #'   from two test families:
 #'   \itemize{
 #'     \item **Pearson chi-squared test of independence** for
-#'       Cramer's V, Phi, and the Contingency Coefficient (the
+#'       Cram&eacute;r's V, Phi, and the Contingency Coefficient (the
 #'       three chi-squared-derived nominal measures). All three
 #'       carry the same chi-squared *p*-value on a given table.
 #'     \item **Wald z-test of H0: measure = 0** for every other
@@ -1803,7 +1803,7 @@ assoc_measures <- function(
       yule_q(t, detail = TRUE, conf_level = conf_level)
     }
   }
-  nominal_fns[["Cramer's V"]] <- \(t) {
+  nominal_fns[["Cram\u00E9r's V"]] <- \(t) {
     cramer_v(t, detail = TRUE, conf_level = conf_level)
   }
   nominal_fns[["Contingency Coefficient"]] <- \(t) {

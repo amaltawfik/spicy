@@ -209,7 +209,7 @@ test_that("table_continuous clipboard carries the title and the note", {
   )
   expect_match(
     lines[length(lines)],
-    "^Note\\. Missing values removed: bmi \\(68\\)\\."
+    "^Note\\. N = [^.]*\\. Missing values removed: bmi \\(68\\)\\."
   )
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))
   # The sub-label row carries LL / UL under the CI spanner.
@@ -231,7 +231,7 @@ test_that("table_continuous drops the sub-label row when there is no CI", {
   expect_match(lines[3L], "^bmi\t")
   expect_match(
     lines[4L],
-    "^Note\\. Missing values removed: bmi \\(12\\)\\."
+    "^Note\\. N = 1200\\. Missing values removed: bmi \\(12\\)\\."
   )
 })
 

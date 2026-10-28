@@ -602,7 +602,10 @@ test_that("a level displayed beside the row of missing values is refused", {
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, region)))
   note <- attr(tbl, "note")
-  expect_true(startsWith(note, "Note. Missing values removed: bmi (12). "))
+  expect_true(startsWith(
+    note,
+    "Note. N = 1200. Missing values removed: bmi (12). "
+  ))
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
@@ -610,7 +613,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   withr::local_options(spicy.language = "fr")
   expect_true(startsWith(
     attr(.to_quiet(table_outcome(.to_sh(), bmi, select = sex)), "note"),
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12). "
+    "Note. N = 1200. Valeurs manquantes retir\u00e9es\u00a0: bmi (12). "
   ))
 })
 
@@ -669,7 +672,7 @@ test_that("the block compares the levels with data, and the note says why", {
   expect_identical(
     attr(tbl, "note"),
     paste(
-      "Note. No data for y in high.",
+      "Note. N = 12. No data for y in high.",
       "P-values: Welch t-test.",
       "Each block compares y across the levels of one variable,",
       "without controlling for the other variables.",
@@ -681,7 +684,7 @@ test_that("the block compares the levels with data, and the note says why", {
   d$y[[1L]] <- NA
   expect_match(
     attr(table_outcome(d, y, select = c(edu, sex)), "note"),
-    "Note. Missing values removed: y (1). No data for y in high.",
+    "Note. N = 12. Missing values removed: y (1). No data for y in high.",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -723,7 +726,7 @@ test_that("a block with one level of data has no test, and names none", {
   expect_identical(
     attr(table_outcome(d, y, select = c(g, h)), "note"),
     paste(
-      "Note. No data for y in b.",
+      "Note. N = 8. No data for y in b.",
       "P-value: Welch t-test.",
       "Each block compares y across the levels of one variable,",
       "without controlling for the other variables.",
@@ -733,7 +736,7 @@ test_that("a block with one level of data has no test, and names none", {
   )
 })
 
-test_that("the weights open the note", {
+test_that("the weights open the note, after the sample size", {
   d <- .to_nodata()
   d$w <- rep(c(1, 2), 6)
   note <- attr(
@@ -742,7 +745,42 @@ test_that("the weights open the note", {
   )
   expect_true(startsWith(
     note,
-    "Note. Statistics weighted by w. No data for y in high."
+    "Note. N = 12 (unweighted). Statistics weighted by w. No data for y in high."
+  ))
+})
+
+test_that("the note opens with the sample size, the rows of the data", {
+  d <- data.frame(
+    y = c(1, 2, NA, 4, 5, 6, 7, 8),
+    g = factor(c("A", "A", "A", "B", "B", NA, "A", "B")),
+    h = factor(c("u", "v", "u", "v", "u", "v", NA, NA)),
+    w = c(1, 2, 1, 1, NA, 1, 1, 2)
+  )
+  note <- function(...) attr(table_outcome(d, y, c(g, h), ...), "note")
+  # One N for every block: the rows of the data. The outcome's own
+  # missing value is in the Overall n and the missing-values sentence.
+  x <- table_outcome(d, y, c(g, h), output = "long")
+  expect_true(startsWith(
+    attr(x, "note"),
+    "Note. N = 8. Missing values removed: y (1)."
+  ))
+  expect_identical(x$n[x$.row_role == "summary"], 7L)
+  # Under drop_na = TRUE each block removes its own rows, which that
+  # sentence counts block by block; N stays the rows of the data.
+  expect_true(startsWith(
+    note(drop_na = TRUE),
+    "Note. N = 8. Missing values removed: y (1), g (1), h (2)."
+  ))
+  # Under weights, rows: a row with a missing weight leaves every block.
+  expect_true(startsWith(
+    note(weights = w, p_value = FALSE),
+    "Note. N = 7 (unweighted). Statistics weighted by w."
+  ))
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(note(), "Note. N = 8. Valeurs manquantes"))
+  expect_true(startsWith(
+    note(weights = w, p_value = FALSE),
+    "Note. N = 7 (non pondéré). "
   ))
 })
 
@@ -1182,7 +1220,7 @@ test_that("p_adjust: the typed view, the note and an engine agree", {
   expect_equal(meta$p_unadjusted[tested], raw_p)
   expect_identical(meta$p_adjust, "BH")
   expect_identical(meta$p_adjust_m, 3L)
-  note <- 'P-values adjusted for 3 tests (Benjamini-Hochberg method).'
+  note <- "Adjusted for 3 tests (Benjamini-Hochberg method)."
   expect_match(attr(tbl, "note"), note, fixed = TRUE)
 
   skip_if_not_installed("gt")
@@ -1205,7 +1243,7 @@ test_that("p_adjust: the adjustment follows the tests, before the blocks", {
     note,
     paste0(
       "Welch t-test (am, vs); Welch one-way ANOVA (cyl). ",
-      'P-values adjusted for 3 tests (Benjamini-Hochberg method). ',
+      "Adjusted for 3 tests (Benjamini-Hochberg method). ",
       "Each block compares mpg"
     ),
     fixed = TRUE

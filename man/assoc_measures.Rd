@@ -32,7 +32,7 @@ A data frame with columns \code{measure}, \code{estimate}, \code{se},
 from two test families:
 \itemize{
 \item \strong{Pearson chi-squared test of independence} for
-Cramer's V, Phi, and the Contingency Coefficient (the
+Cramér's V, Phi, and the Contingency Coefficient (the
 three chi-squared-derived nominal measures). All three
 carry the same chi-squared \emph{p}-value on a given table.
 \item \strong{Wald z-test of H0: measure = 0} for every other

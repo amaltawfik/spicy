@@ -189,8 +189,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # paragraph (`.compose_note()`), its sentences in the order of the
 # family:
 #
-#   (a) what the numbers are: the weights (`weighted_by`, the name the
-#       sentence gives them), then the covariates (`covariates`, as the
+#   (a) what the numbers are: the sample size (`sample_size`, the
+#       sentence table_continuous_lm() words with
+#       `.sample_size_sentence()`), the weights (`weighted_by`, the name
+#       the sentence gives them), then the covariates (`covariates`, as the
 #       note names them: their labels) and the adjustment estimand,
 #       named because the displayed `emmean` changes with it:
 #       "proportional" = G-computation over the observed covariate
@@ -225,7 +227,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   weighted_by = NULL,
   spec = NULL,
   outcome_labels = NULL,
-  add = NULL
+  add = NULL,
+  sample_size = NULL
 ) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
@@ -240,9 +243,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     NULL
   }
 
-  what <- character()
+  what <- as.character(sample_size)
   if (!is.null(weighted_by)) {
-    what <- spicy_fmt("note_weighted_by", weighted_by)
+    what <- c(what, spicy_fmt("note_weighted_by", weighted_by))
   }
   if (length(covariates) > 0L && !is.na(adjustment)) {
     # The `adjustment` TOKEN stays an API identifier; only its display form
@@ -262,12 +265,13 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
-  # The test is named whenever the table shows its p-value or its
-  # statistic, as in table_continuous() (`build_test_note()`): a test
-  # shown by its statistic alone is the group comparison, or the slope
-  # test of a numeric `by`.
+  # The test is named whenever the table shows its p-value, its statistic
+  # or its effect size, which belongs to the comparison, as in
+  # table_continuous() (`build_test_note()`): a test shown without its
+  # p-value is the group comparison, or the slope test of a numeric `by`.
   show_p <- isTRUE(attr(x, "show_p_value"))
-  inference <- if (show_p || isTRUE(attr(x, "show_statistic"))) {
+  show_es <- !identical(attr(x, "effect_size") %||% "none", "none")
+  inference <- if (show_p || isTRUE(attr(x, "show_statistic")) || show_es) {
     .tclm_test_note(x, outcome_labels, p_shown = show_p)
   }
   if (!identical(vcov_type, "classical")) {

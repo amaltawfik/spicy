@@ -4,7 +4,7 @@ home:
   title: "spicy: publication-ready summary and regression tables for R"
   description: >
     R package for frequency tables, cross-tabulations with
-    chi-squared tests and association measures (Cramer's V, Phi,
+    chi-squared tests and association measures (Cramér's V, Phi,
     Gamma, Kendall's Tau-b, Somers' D), categorical and continuous
     summary tables, model-based group comparisons for continuous
     outcomes, publication-ready regression tables for one or more
@@ -57,7 +57,7 @@ navbar:
           href: articles/variable-exploration.html
         - text: Frequency tables and cross-tabulations
           href: articles/frequency-tables.html
-        - text: "Cramer's V, Phi, and association measures"
+        - text: "Cramér's V, Phi, and association measures"
           href: articles/association-measures.html
         - text: Categorical summary tables
           href: articles/table-categorical.html

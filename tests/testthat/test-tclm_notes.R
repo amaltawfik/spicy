@@ -100,7 +100,7 @@ test_that("console note discloses adjustment and robust SEs together", {
   )
   expect_match(
     txt,
-    "Note. Adjusted for age, sex (proportional).",
+    "Note. N = 1200: No (n = 650), Yes (n = 550). Adjusted for age, sex (proportional).",
     fixed = TRUE
   )
   expect_match(
@@ -124,7 +124,7 @@ test_that("a classical unadjusted table names its test, and only that", {
   expect_false(grepl("Std. errors:", txt, fixed = TRUE))
   expect_match(
     txt,
-    "Note. P-value: t-test from the linear model.",
+    "Note. N = 1200: No (n = 650), Yes (n = 550). P-value: t-test from the linear model.",
     fixed = TRUE
   )
   # Without p-values there is no test to name. The contrast keeps the
@@ -136,9 +136,12 @@ test_that("a classical unadjusted table names its test, and only that", {
     p_value = FALSE,
     ci = FALSE
   )
-  expect_identical(attr(ordered, "note"), "Note. \u0394 = Yes \u2212 No.")
+  expect_identical(
+    attr(ordered, "note"),
+    "Note. N = 1200: No (n = 650), Yes (n = 550). \u0394 = Yes \u2212 No."
+  )
   # Without the contrast, no order to give and no interval columns to
-  # define: no note at all.
+  # define: the sample size alone.
   quiet <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
@@ -146,8 +149,10 @@ test_that("a classical unadjusted table names its test, and only that", {
     p_value = FALSE,
     contrast = "none"
   )
-  expect_null(attr(quiet, "note"))
-  expect_false(any(grepl("Note.", capture.output(print(quiet)), fixed = TRUE)))
+  expect_identical(
+    attr(quiet, "note"),
+    "Note. N = 1200: No (n = 650), Yes (n = 550)."
+  )
 })
 
 test_that("bootstrap SEs are disclosed in the console note", {
@@ -173,12 +178,53 @@ test_that("bootstrap SEs are disclosed in the console note", {
   expect_match(
     txt,
     paste(
-      "Note. P-value: z-test from the linear model.",
+      "Note. N = 150: No (n = 76), Yes (n = 74).",
+      "P-value: z-test from the linear model.",
       "Std. errors: nonparametric bootstrap ("
     ),
     fixed = TRUE
   )
   expect_match(txt, "replicates).", fixed = TRUE)
+})
+
+test_that("the note opens with the sample size, the rows with a `by` value", {
+  d <- data.frame(
+    g = factor(c("A", "A", "A", "B", "B", NA, "A", "B", "B", "A")),
+    z = c(1, 2, 3, 4, 5, 6, 7, 8, NA, 10),
+    y = c(1.2, 2.3, NA, 4.1, 5.6, 6.2, 7.7, 8.1, 9.4, 3.3),
+    w = c(1, 2, 1, 1, NA, 1, 1, 2, 1, 1)
+  )
+  note <- function(...) attr(table_continuous_lm(d, y, ...), "note")
+  # A categorical `by`: the groups, in the order of the mean columns, add
+  # up to N; the complete cases of the model are in its n column.
+  x <- table_continuous_lm(d, y, by = g)
+  s <- attr(x, "note")
+  expect_true(startsWith(
+    s,
+    "Note. N = 9: A (n = 5), B (n = 4). Missing values removed: y (1), g (1)."
+  ))
+  n <- as.integer(regmatches(
+    s,
+    gregexpr("(?<=\\(n = )[0-9]+", s, perl = TRUE)
+  )[[1L]])
+  expect_identical(sum(n), 9L)
+  expect_identical(
+    table_continuous_lm(d, y, by = g, output = "long")$nobs[[1L]],
+    8L
+  )
+  # A numeric `by` has no groups.
+  expect_true(startsWith(note(by = z), "Note. N = 9. "))
+  # Under weights, rows, a row with a missing weight left out.
+  expect_true(startsWith(
+    note(by = g, weights = w),
+    "Note. N = 8 (unweighted): A (n = 5), B (n = 3). Statistics weighted by w."
+  ))
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(note(by = g), "Note. N = 9 : A (n = 5), B (n = 4). "))
+  expect_true(startsWith(
+    note(by = g, weights = w),
+    "Note. N = 8 (non pondéré) : A (n = 5), B (n = 3). "
+  ))
 })
 
 # ---- cluster_name attribute ----
@@ -279,19 +325,73 @@ test_that("gt output stashes the note and injects it in rendered HTML", {
   )
 })
 
-test_that("gt output without a note keeps the plain gt class", {
+test_that("an effect size shown alone names its test, a comparison or a slope", {
+  set.seed(11)
+  d <- data.frame(
+    y = stats::rnorm(90),
+    g2 = factor(rep(c("a", "b"), 45)),
+    x = stats::rnorm(90)
+  )
+  note_of <- function(...) {
+    attr(
+      table_continuous_lm(d, y, ci = FALSE, p_value = FALSE, ...),
+      "note"
+    )
+  }
+  expect_match(
+    note_of(by = g2, effect_size = "hedges_g"),
+    "(n = 45). Group comparison: t-test from the linear model.",
+    fixed = TRUE
+  )
+  expect_match(
+    note_of(by = x, effect_size = "f2"),
+    "Note. N = 90. Slope test: t-test from the linear model.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note_of(by = g2, effect_size = "hedges_g"),
+    "Comparaison des groupes\u00a0: test t issu du mod\u00e8le lin\u00e9aire.",
+    fixed = TRUE
+  )
+  expect_match(
+    note_of(by = x, effect_size = "f2"),
+    "Test de la pente\u00a0: test t issu du mod\u00e8le lin\u00e9aire.",
+    fixed = TRUE
+  )
+})
+
+test_that("gt HTML without a note takes the spicy wrapper, without a note div", {
   skip_if_not_installed("gt")
-  # No p-value, nothing missing, classical SEs: nothing to disclose; no
-  # contrast: no order to give and no interval columns to define.
+  g <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    note = FALSE,
+    output = "gt"
+  )
+  html <- as.character(knit_print.spicy_gt(g))
+  expect_match(html, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
+  expect_match(html, "</table></div></div>", fixed = TRUE)
+  expect_no_match(html, "spicy-gt-note", fixed = TRUE)
+})
+
+test_that("gt output without a note keeps the spicy_gt class", {
+  skip_if_not_installed("gt")
+  # `note = FALSE`: no note. The class stays, so that the LaTeX of the table
+  # takes the minus sign and the Unicode mapping of the family (section 19
+  # of dev/decisions/2026-10-23-sorties-publiables-fr.md).
   g <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
     contrast = "none",
+    note = FALSE,
     output = "gt"
   )
-  expect_false(inherits(g, "spicy_gt"))
+  expect_s3_class(g, "spicy_gt")
+  expect_s3_class(g, "gt_tbl")
   expect_null(attr(g, "spicy_note"))
 })
 
@@ -338,13 +438,14 @@ test_that("flextable output adds the note footer and HTML note div", {
 
 test_that("flextable output without a note is wrapped, note attr absent", {
   skip_if_not_installed("flextable")
-  # No p-value and no contrast: nothing to disclose or define.
+  # `note = FALSE`: no note.
   ft <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
     contrast = "none",
+    note = FALSE,
     output = "flextable"
   )
   # Since the pandoc xmlns workaround the wrapper class is
@@ -382,13 +483,14 @@ test_that("tinytable HTML output injects the note div outside the table", {
 
 test_that("tinytable output without a note renders no note div", {
   skip_if_not_installed("tinytable")
-  # No p-value and no contrast: nothing to disclose or define.
+  # `note = FALSE`: no note.
   tt <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
     contrast = "none",
+    note = FALSE,
     output = "tinytable"
   )
   html <- tinytable::save_tt(tt, output = "html")
@@ -449,7 +551,7 @@ test_that("excel output writes the note lines below the table", {
   )
   expect_match(
     all_txt,
-    "Note. Adjusted for age, sex (proportional).",
+    "Note. N = 1200: No (n = 650), Yes (n = 550). Adjusted for age, sex (proportional).",
     fixed = TRUE
   )
   expect_match(
@@ -503,7 +605,8 @@ test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
   expect_identical(
     attr(out, "note"),
     paste(
-      "Note. P-value: t-test from the linear model.",
+      "Note. N = 1200: No (n = 650), Yes (n = 550).",
+      "P-value: t-test from the linear model.",
       "\u0394 = Yes \u2212 No.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )

@@ -16,7 +16,7 @@
        qsec       │ 0          18.18     1.75    15.41     22.90      17.34        19.03      19    .419  
                   │ 1          17.36     1.79    14.50     19.90      16.28        18.44      13          
       
-      Note. P-values: Welch t-test. P-values adjusted for 3 tests (Holm method). CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 32: 0 (n = 19), 1 (n = 13). P-values: Welch t-test. Adjusted for 3 tests (Holm method). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ---
 
@@ -36,5 +36,5 @@
        qsec     │ 0        18,18   1,75  15,41   22,90      17,34         19,03     19  0,419 
                 │ 1        17,36   1,79  14,50   19,90      16,28         18,44     13        
       
-      Note. Valeurs p : test t de Welch. Valeurs p ajustées pour 3 tests (méthode de Holm). IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+      Note. N = 32 : 0 (n = 19), 1 (n = 13). Valeurs p : test t de Welch. Ajustées pour 3 tests (méthode de Holm). IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 

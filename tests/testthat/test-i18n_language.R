@@ -1513,7 +1513,7 @@ test_that("the abbreviation and association-measure notes join in the language",
   )
   expect_identical(
     assoc(),
-    "Cramer's V: Smoking. Kendall's Tau-b: Education."
+    "Cram\u00e9r's V: Smoking. Kendall's Tau-b: Education."
   )
   withr::local_options(spicy.language = "fr")
   expect_identical(

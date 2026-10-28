@@ -67,7 +67,7 @@ panel, `p` is the *p*-value of the test of association between the row
 variable and `by`, computed once per variable on its full cross-table
 (Pearson's chi-squared here, as the note says; see the test section
 below), and the final column is the association measure -- here
-Cramer's V (covered below). Use `output = "data.frame"` for a plain
+Cramér's V (covered below). Use `output = "data.frame"` for a plain
 data frame suitable for further processing.
 
 `percent = "row"` reads the table the other way: each cell is the share
@@ -173,8 +173,10 @@ otherwise. A **named character vector** keyed by column name sets the
 labels you publish: the listed columns take them, and the others follow
 `options(spicy.var_labels)` (their name unless it is `TRUE`).
 `labels = var_labels(smoking = "Smoking status")` renames the same way
-while the others keep their label attribute. Names that match no column
-are ignored, so one vector can serve every table of a report. The `by`
+while the others keep their label attribute. A name that matches no
+column of the table warns and is left out, so one vector can still serve
+every table of a report (wrap the call in `suppressWarnings()` to quiet
+it). The `by`
 variable in the title follows the same rule, as in the other summary
 tables. (Unnamed positional label vectors, accepted before 0.13.0, now
 raise an error.)
@@ -198,10 +200,10 @@ based on the variable type (`assoc_measure = "auto"`, the default):
 
 * **2x2** (binary row variable vs. binary `by`) -> `phi`,
 * both ordered factors -> Kendall's `tau_b`,
-* otherwise -> Cramer's `V`.
+* otherwise -> Cramér's `V`.
 
 A measure used for every row heads the column, and names it in the
-data frames, with its symbol (V for Cramer's V, φ for phi, τb for
+data frames, with its symbol (V for Cramér's V, φ for phi, τb for
 Kendall's tau-b, γ for gamma; the other measures keep their names).
 The note defines the symbol as it defines any abbreviation: V by
 default, the Greek letters under `spicy_style(abbreviations = "all")`.
@@ -213,7 +215,7 @@ Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`; `assoc_measure =
 "none"` drops the column entirely. See `?table_categorical` for the
 dispatch details and
-[*Cramer's V, Phi, and association measures*](association-measures.html)
+[*Cramér's V, Phi, and association measures*](association-measures.html)
 for definitions and guidance on choosing among them.
 Override the automatic choice with a single string for uniform
 application, or with a named vector to mix measures per row:
@@ -240,7 +242,7 @@ test).
 
 In a named vector, variables you do not name keep the `"auto"`
 choice, so only the overrides need to be listed. Here `"auto"` would
-pick Cramer's V for `smoking` (binary x ordered, not 2x2) and
+pick Cramér's V for `smoking` (binary x ordered, not 2x2) and
 Kendall's Tau-b for `self_rated_health` (ordered x ordered); the
 named vector keeps the former and replaces the latter with
 Goodman-Kruskal Gamma:
@@ -255,7 +257,7 @@ table_categorical(
 )
 ```
 
-`smoking` keeps its automatic Cramer's V (.14) while
+`smoking` keeps its automatic Cramér's V (.14) while
 `self_rated_health` switches from the automatic Tau-b (.20) to Gamma
 (.31) -- Gamma is larger on the same table because it ignores tied
 pairs. Since the two measures differ, the header collapses to

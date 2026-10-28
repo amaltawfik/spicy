@@ -426,7 +426,8 @@ names these labels, and every other column its \code{label} attribute,
 whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
 }
 
-Names that match no column are ignored, so one vector can serve
+A name that matches no column of the table warns (class
+\code{spicy_unknown_name}) and is left out, so one vector can still serve
 every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
@@ -442,8 +443,9 @@ which reads as one. \code{labels} can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of \code{labels}, and so do the title and the notes for a variable
-\code{note_labels} does not name. Names that match no column are ignored,
-as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+\code{note_labels} does not name. A name that matches no column warns and
+is left out, as in \code{labels}, and \code{NULL} (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
@@ -458,8 +460,9 @@ sets them for every outcome (default: \code{2}), and the test statistic and
 the weighted \emph{n} with them. A vector named by column, not by label,
 gives each outcome it names its own, \code{digits = c(height = 0, bmi = 1)};
 the other outcomes, the test statistic and the weighted \emph{n} keep the
-default, the \code{digits} of a \code{\link[=spicy_style]{spicy_style()}} in force included. Names
-that match no outcome are ignored, as in \code{labels}. A fraction (\code{2.9})
+default, the \code{digits} of a \code{\link[=spicy_style]{spicy_style()}} in force included. A name
+that matches no outcome warns and is left out, as in \code{labels}. A
+fraction (\code{2.9})
 is an error, as for \code{fit_digits} and \code{effect_size_digits}. The
 \emph{p}-value (\code{p_digits}), the \eqn{R^2}{R^2} (\code{fit_digits}), the effect
 size (\code{effect_size_digits}) and the counts keep their own decimals.}
@@ -904,9 +907,16 @@ level-specific means plus the overall \code{F} test when
 \code{statistic = TRUE} (or \code{F(df1, df2)} when the degrees of freedom are
 constant across outcomes).
 
-When \code{covariates} is non-empty, the printed ASCII table appends an
-APA-style footer naming the covariates and the chosen estimand, e.g.
-\verb{Note. Adjusted for age, education (proportional).} With p-values, the
+The note opens with the sample size, as in \code{\link[=table_categorical]{table_categorical()}}:
+"N = 159." for a numeric \code{by},
+"N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
+rows with a \code{by} value, a row with a missing weight left out, rows
+rather than weights under \code{weights} ("N = 60 (unweighted)."), the
+complete cases of each model in its n column.
+
+When \code{covariates} is non-empty, the note then names the covariates and
+the chosen estimand, e.g.
+\verb{Adjusted for age, education (proportional).} With p-values, the
 note also names the test behind them, read off each outcome's model:
 \verb{P-values: t-test from the linear model.} (the F-test for a \code{by} with
 more than two levels, the t-test of the slope for a numeric \code{by}), in

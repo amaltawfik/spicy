@@ -1166,33 +1166,38 @@ output_gt <- function(rendered) {
 # note-styling mirror `output_tinytable` so the visual reading of
 # the note matches across engines.
 .spicy_gt_html_postprocess <- function(html_str, note, lead = .note_lead()) {
-  if (is.null(note) || !nzchar(note)) {
-    return(html_str)
+  # A table without a note takes the wrapper and its rules too, as it
+  # takes the `spicy_gt` class (section 19 of
+  # dev/decisions/2026-10-23-sorties-publiables-fr.md): one design for
+  # every table of the family; only the note `<div>` needs a note.
+  has_note <- !is.null(note) && nzchar(note)
+  note_div <- ""
+  if (has_note) {
+    note_lines <- .note_lines(note)
+    # The same note also sits on the gt object as native source notes
+    # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
+    # it); this display path moves it OUT of the table, so drop the
+    # `<tfoot>` rows carrying it. Source notes the user added themselves
+    # are left alone -- only the rows whose text is ours are removed.
+    html_str <- .spicy_gt_drop_source_note(html_str, note_lines)
+    note_html <- .spicy_note_html(note_lines, lead)
+    note_div <- paste0(
+      "<div class=\"spicy-gt-note\" style=\"",
+      "width: min-content; min-width: 100%; box-sizing: border-box; ",
+      "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
+      # Match gt's `#<id> table { font-family: ... }` rule by listing
+      # the same fallback stack. gt scopes the rule to `table`
+      # elements only, so a `<div>` sibling otherwise picks up the
+      # page default and reads in a different typeface.
+      "font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, ",
+      "sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', ",
+      "'Segoe UI Symbol', 'Noto Color Emoji'; ",
+      "font-size: 0.9em; line-height: 1.25; ",
+      "color: #333333; text-align: left;\">",
+      note_html,
+      "</div>"
+    )
   }
-  note_lines <- .note_lines(note)
-  # The same note also sits on the gt object as native source notes
-  # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
-  # it); this display path moves it OUT of the table, so drop the
-  # `<tfoot>` rows carrying it. Source notes the user added themselves
-  # are left alone -- only the rows whose text is ours are removed.
-  html_str <- .spicy_gt_drop_source_note(html_str, note_lines)
-  note_html <- .spicy_note_html(note_lines, lead)
-  note_div <- paste0(
-    "<div class=\"spicy-gt-note\" style=\"",
-    "width: min-content; min-width: 100%; box-sizing: border-box; ",
-    "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
-    # Match gt's `#<id> table { font-family: ... }` rule by listing
-    # the same fallback stack. gt scopes the rule to `table`
-    # elements only, so a `<div>` sibling otherwise picks up the
-    # page default and reads in a different typeface.
-    "font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, ",
-    "sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', ",
-    "'Segoe UI Symbol', 'Noto Color Emoji'; ",
-    "font-size: 0.9em; line-height: 1.25; ",
-    "color: #333333; text-align: left;\">",
-    note_html,
-    "</div>"
-  )
   open_outer <- paste0(
     "<div class=\"spicy-gt-outer\" ",
     "style=\"text-align: center;\">"

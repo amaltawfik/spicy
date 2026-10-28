@@ -214,7 +214,7 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 
 * `table_categorical()` heads a single association measure with its
   symbol, V, φ, τb, or γ, and names its data frame column so, where both
-  read its name (`Cramer's V`); the note defines it like any symbol.
+  read its name (`Cramér's V`); the note defines it like any symbol.
 
 * The tables sort the groups of a character `by` in the C locale,
   capitals before lower case and the same on every machine, as
@@ -270,15 +270,15 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   missing values, and the order changed from table to table (#11).
 
 * `table_continuous()` and `table_continuous_lm()` now name the test
-  behind their p-values, and the test of a statistic shown without them
-  ("Group comparison: Welch t-test.", "Slope test:" for a slope).
+  behind their p-values, and that of a statistic or an effect size shown
+  without them ("Group comparison: Welch t-test.", "Slope test:").
 
 * `table_categorical()` and `table_continuous_lm()` say when the
   statistics are weighted.
 
-* The note of `table_categorical()` opens with the sample size, the rows
-  it describes: "N = 159." or "N = 159: Women (n = 80), Men (n = 79).",
-  "(unweighted)" under `weights`.
+* The notes of `table_categorical()`, `table_continuous()`,
+  `table_outcome()`, and `table_continuous_lm()` open with the sample
+  size, unweighted: "N = 159: Women (n = 80), Men (n = 79)."
 
 * Under `by`, the notes of `table_categorical()` and
   `table_categorical_svy()` say the direction of the percentages,
@@ -332,7 +332,7 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   leaves SD, SE, and CI undefined.
 
 * `table_categorical()` gives each association measure of its note a
-  sentence of its own: "Phi: smoking. Cramer's V: education." A
+  sentence of its own: "Phi: smoking. Cramér's V: education." A
   semicolon joined them.
 
 * `table_regression()` words its `p_adjust` note for the reader,
@@ -357,12 +357,12 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * `labels = c(bmi = "Body mass index")` sets the labels you publish, and
   the other columns follow `options(spicy.var_labels)`.
 
-* Names in `labels` that match no column are ignored, where
-  `table_categorical()` refused them, and `labels = NULL` is an error.
+* A name in `labels` that matches no column warns and is left out,
+  where `table_categorical()` refused it; `labels = NULL` is an error.
 
 * `table_regression()` and `table_regression_uv()` keep their default
   output, but `labels = NULL` (their 0.13.0 default) is an error too,
-  and a name that matches no term is ignored, not refused.
+  and a name that matches no term warns and is left out, not refused.
 
 * A labeled `by` heads its groups with their value labels, as the rows
   of a labeled variable read (`[1] Women n`, not `1 n`), in every table;
@@ -547,6 +547,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   in the title and the notes, so `labels` can keep a whole question in
   the rows: `note_labels = c(sex = "sex at birth")`.
 
+* A name in `note_labels` or in a named `digits` that matches nothing in
+  the table warns (class `spicy_unknown_name`) and is left out.
+
 * The long output and `tidy()` of the tables mark the rows they add by a
   key rather than by their label, which follows the display language.
 
@@ -561,9 +564,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   `table_continuous()`, `table_multiresponse()`, and the survey twins)
   always has a `group` column, `NA` without `by`.
 
-* Typst and LaTeX output (only LaTeX for `gt`) and the PDF of
-  `code_book()` write a negative number with the minus sign (U+2212);
-  `spicy_style(minus_sign = "ascii")` keeps the hyphen.
+* Typst and LaTeX output (only LaTeX for `gt`, note or no note) and the
+  PDF of `code_book()` write a negative number with the minus sign
+  (U+2212); `spicy_style(minus_sign = "ascii")` keeps the hyphen.
 
 * `code_book()` builds a codebook in three parts, `header`, `variables`,
   and `values` (unweighted counts and percentages per category), and
@@ -631,8 +634,8 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
   of `table_regression()`, over all the tests of the table.
 
 * With `p_adjust`, the note of `table_categorical()` and its siblings
-  gives the method and the number of tests, and the raw p-values stay in
-  the object as `p_unadjusted`.
+  follows the test with "Adjusted for 3 tests (Holm method).", and the
+  raw p-values stay in the object as `p_unadjusted`.
 
 * `table_categorical()` gains `p_value`, as its siblings have (#9).
 
@@ -688,11 +691,14 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * `table_multiresponse()` adds a row with the number of respondents in
   the base (`base`), and one for those who chose no item (`none_row`).
 
-* The note of `table_multiresponse()` says what the percentages sum to
-  and who is in the base, in words a reader can follow: "respondents
-  who answered the question" (in French, "personnes ayant répondu à la
-  question"), with the others counted "with no answer to the question".
-  The row of the base is labeled "Base" in both languages and points to
+* The note of `table_multiresponse()` says, in words a reader can
+  follow, what the percentages sum to and who is in the base.
+
+* That base reads "respondents who answered the question" (in French,
+  "personnes ayant répondu à la question"), the others counted "with no
+  answer to the question".
+
+* The row of the base is labeled "Base" in both languages and points to
   that sentence.
 
 * With `by`, `table_multiresponse()` tests each item (`test`, as in
@@ -755,6 +761,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * Labels that state a subtraction write the minus sign (U+2212), not a
   hyphen: the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
   `vcov = "CR1S"`.
+
+* Cramér's V takes its accent in English, in the notes and headers, the
+  documentation, and the `measure` column of `assoc_measures()`.
 
 * The regression notes and those of `table_continuous_lm()` write a
   range with an en dash ("N varies by predictor (12–30)"), and the
@@ -860,6 +869,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * `cross_tab()` prints its corner header in French ("Valeurs") under
   `options(spicy.language = "fr")`. The column keeps its name, `Values`.
 
+* `cross_tab()` refuses a string where a column is expected, as in
+  `cross_tab(df, "sex", smoking)`, which tabulated the constant "sex".
+
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
 
@@ -936,6 +948,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * `table_categorical()` says in its note how many rows a missing weight
   removed, as the other tables do, where it warned once per internal
   tabulation, three times for one variable with `by`.
+
+* `table_categorical(output = "excel")` draws the light rule between the
+  variable blocks that its other outputs and `table_continuous()` draw.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins name each variable of their
@@ -1022,6 +1037,9 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in `tinytable`, `gt`, `flextable`, Word, and
   Excel output, as documented, where an empty row sat under the labels.
+
+* In `table_continuous()`, an unknown name in the `show_columns` list
+  warns (class `spicy_unknown_name`) instead of failing.
 
 * `table_continuous()`, `table_continuous_lm()`, `table_outcome()`, and
   the survey twins write the French headers of `table_regression()`,

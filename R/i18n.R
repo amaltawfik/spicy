@@ -158,7 +158,7 @@
   # -- association measures: one key per measure, shared by the three
   #    families that name it (cross_tab() note, table_categorical() note
   #    and header, assoc_measures() row labels) ------------------------------
-  stat_cramer_v = "Cramer's V",
+  stat_cramer_v = "Cram\u00E9r's V",
   stat_phi = "Phi",
   stat_gamma = "Goodman-Kruskal Gamma",
   stat_tau_b = "Kendall's Tau-b",
@@ -916,11 +916,11 @@
   test_pearson_chisq_simulated_in_list = "Pearson chi-squared test, simulated",
   test_fisher_mc_in_list = "Fisher exact test, Monte Carlo with %s replicates",
 
-  # -- p_adjust: one sentence for every family that adjusts ------------------
-  # `table_regression()` and the descriptive tables share the sentence,
-  # assembled by `.p_adjust_sentence()`. Two holes: the number of tests,
-  # then the name of the method (`note_p_adjust_method_*`). The family of
-  # a regression table is the coefficients of each model, so a table of
+  # -- p_adjust: the sentence of every family that adjusts -----------------
+  # `table_regression()` writes the sentence with its subject, assembled
+  # by `.p_adjust_sentence()`. Two holes: the number of tests, then the
+  # name of the method (`note_p_adjust_method_*`). The family of a
+  # regression table is the coefficients of each model, so a table of
   # several models says the adjustment ran within each model: one number
   # when the models agree, or (`_unequal`, method first) the numbers of the
   # models in order, joined by `.join_and()`, "2 and 1 tests
@@ -931,6 +931,13 @@
   note_p_adjusted_per_model = "P-values adjusted within each model for %s tests (%s method).",
   note_p_adjusted_per_model_one = "P-values adjusted within each model for 1 test (%s method).",
   note_p_adjusted_per_model_unequal = "P-values adjusted within each model (%s method), for %s tests respectively.",
+  # The descriptive tables (`.desc_p_adjust_note()`) put the sentence
+  # right after the one that names the test, whose lead ("P-values:",
+  # "Item p-values:") is its subject: the participle agrees with the
+  # p-values, plural, or singular in `_one`, where the table shows one.
+  # Same two holes.
+  note_p_adjusted_desc = "Adjusted for %s tests (%s method).",
+  note_p_adjusted_desc_one = "Adjusted for 1 test (%s method).",
   # The conjunction of a list (`.join_and()`), "2 and 1", "2, 1, and 3":
   # the joiner of two items, then the one before the last of three or more
   # (the others take `note_list_sep_comma`). US English writes the serial

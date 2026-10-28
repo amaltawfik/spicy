@@ -2733,8 +2733,10 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
   if (all(sizes == 0L)) {
     return(NULL)
   }
-  # The sentence of the descriptive tables (`.desc_p_adjust_note()`): each
-  # coefficient is a test, and the family is one model.
+  # Each coefficient is a test, and the family is one model. The sentence
+  # keeps its subject, "P-values adjusted ...": no "P-values:" lead comes
+  # before it here, unlike in the descriptive tables
+  # (`.desc_p_adjust_note()`).
   .p_adjust_sentence(p_adjust, sizes)
 }
 

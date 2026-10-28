@@ -411,6 +411,8 @@
   note_p_adjusted_per_model = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour %s tests (m\u00E9thode de %s).",
   note_p_adjusted_per_model_one = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour 1 test (m\u00E9thode de %s).",
   note_p_adjusted_per_model_unequal = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le (m\u00E9thode de %s), pour %s tests respectivement.",
+  note_p_adjusted_desc = "Ajust\u00E9es pour %s tests (m\u00E9thode de %s).",
+  note_p_adjusted_desc_one = "Ajust\u00E9e pour 1 test (m\u00E9thode de %s).",
   note_list_and_pair = " et ",
   note_list_and_last = " et ",
   note_list_and_last_semicolon = " et ",

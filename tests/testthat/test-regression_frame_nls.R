@@ -252,8 +252,11 @@ test_that("nls accepts `labels =` keyed on parameter names", {
   out <- table_regression(fit, labels = c(k = "Decay rate"))
   expect_true("Decay rate" %in% out$Variable)
   expect_false("k" %in% out$Variable)
-  # An unknown key is ignored (decision 54), the parameter key still
-  # applies next to it.
-  out2 <- table_regression(fit, labels = c(nope = "X", k = "Decay rate"))
+  # An unknown key warns and is left out (decision 54, and decision 14 of
+  # the ADR of 2026-10-20), the parameter key still applies next to it.
+  expect_warning(
+    out2 <- table_regression(fit, labels = c(nope = "X", k = "Decay rate")),
+    class = "spicy_unknown_name"
+  )
   expect_identical(out2$Variable, out$Variable)
 })

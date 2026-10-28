@@ -34,9 +34,12 @@ test_that("var_labels() reads the attributes whatever the option says", {
   attr(df$b, "label") <- "Beta"
   lab <- function(...) table_continuous(df, output = "data.frame", ...)$label
   expect_identical(lab(labels = var_labels()), lab(labels = TRUE))
-  expect_identical(
-    lab(labels = var_labels(b = "B", zz = "ignored")),
-    c("Alpha", "B", "n")
+  expect_warning(
+    expect_identical(
+      lab(labels = var_labels(b = "B", zz = "ignored")),
+      c("Alpha", "B", "n")
+    ),
+    class = "spicy_unknown_name"
   )
   withr::local_options(spicy.var_labels = FALSE)
   expect_identical(lab(labels = var_labels()), c("Alpha", "Beta", "n"))

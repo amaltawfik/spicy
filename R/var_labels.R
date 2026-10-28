@@ -25,7 +25,8 @@
 #'
 #' @param ... `name = "label"` pairs, one per variable to rename, each
 #'   label a single string. A named character vector can be spliced with
-#'   `!!!`. Names that match nothing in a table are ignored. For
+#'   `!!!`. A name that matches nothing in a table warns there and is
+#'   left out. For
 #'   `print()`, passed on to [print()].
 #' @param x A `spicy_var_labels` object, for `print()`.
 #'

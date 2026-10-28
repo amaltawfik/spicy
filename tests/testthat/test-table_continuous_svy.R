@@ -1346,7 +1346,7 @@ test_that("the note gives the design, then the missing data, then the inference"
     "Std. errors: ",
     "Confidence intervals and tests use",
     "P-values: ",
-    "P-values adjusted for 2 tests (Holm method).",
+    "Adjusted for 2 tests (Holm method).",
     "SE = "
   )
   at <- vapply(
@@ -1892,7 +1892,7 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
   expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
   expect_match(
     attr(tbl, "note"),
-    'P-values adjusted for 3 tests (Benjamini-Hochberg method).',
+    "Adjusted for 3 tests (Benjamini-Hochberg method).",
     fixed = TRUE
   )
 })

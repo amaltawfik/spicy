@@ -151,7 +151,7 @@ test_that("cross_tab() drops the association line on an unclassed error", {
   )
   # Baseline: the measure normally contributes its own note line.
   ok <- cross_tab(d, x, y, assoc_measure = "cramer_v")
-  expect_match(attr(ok, "note"), "Cramer", fixed = TRUE)
+  expect_match(attr(ok, "note"), "Cram\u00e9r", fixed = TRUE)
   # An error with no spicy class is not the measure's contract, so it
   # degrades to "no association line" while the chi-square line stays.
   out <- with_mocked_bindings(
@@ -160,7 +160,7 @@ test_that("cross_tab() drops the association line on an unclassed error", {
     .package = "spicy"
   )
   expect_match(attr(out, "note"), "Chi-2(2)", fixed = TRUE)
-  expect_false(grepl("Cramer", attr(out, "note"), fixed = TRUE))
+  expect_false(grepl("Cram\u00e9r", attr(out, "note"), fixed = TRUE))
   expect_true(all(is.na(attr(out, "assoc_estimate") %||% NA_real_)))
 })
 

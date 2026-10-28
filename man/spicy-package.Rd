@@ -289,6 +289,11 @@ weights).
 has no effect in its context (e.g., \code{correct = TRUE} on a
 non-2x2 table, \code{excel_path} without \code{output = "excel"}); the
 warning names that argument and no other.
+\item \code{spicy_unknown_name} -- an argument named by variable
+(\code{labels}, \code{note_labels}, a named \code{digits}, the named list of
+\code{show_columns}) holds a name that matches nothing in the
+table; the warning names the argument and the name, and the
+table is built without it.
 \item \code{spicy_no_selection} -- a selection or a filter
 matched nothing, and an empty result is returned rather than
 an error (the row-wise summaries, \code{\link[=varlist]{varlist()}}, a \code{levels_keep}

@@ -88,7 +88,7 @@ freq(sochealth, education, weights = weight, rescale = TRUE)
 ## Cross-tabulations
 
 `cross_tab()` crosses two categorical variables. By default it shows
-counts, a chi-squared test, and Cramer's V:
+counts, a chi-squared test, and Cramér's V:
 
 ```{r crosstab}
 cross_tab(sochealth, smoking, education)
@@ -107,7 +107,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 ```
 
 When both variables are ordered factors, `cross_tab()` automatically
-selects an ordinal measure (Kendall's Tau-b) instead of Cramer's V:
+selects an ordinal measure (Kendall's Tau-b) instead of Cramér's V:
 
 ```{r crosstab-ordinal}
 cross_tab(sochealth, self_rated_health, education)
@@ -286,7 +286,7 @@ kept alongside the reference pages and rebuilt with each release.
 - [Frequency tables and cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
   — `freq()` and `cross_tab()` in depth (weights, simulation,
   labelled data).
-- [Cramer's V, Phi, and association measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Cramér's V, Phi, and association measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
   — choosing the right effect size for a contingency table.
 
 **Summary tables**

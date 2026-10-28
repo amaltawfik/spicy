@@ -428,7 +428,7 @@ test_that("a grouped variable with no observed value keeps its one row", {
     attr(out_wide, "note"),
     paste(
       "Note. N = 2: A (n = 1), B (n = 1). Percentages are column percentages.",
-      "No data for v1 in A and B. V = Cramer's V."
+      "No data for v1 in A and B. V = Cram\u00e9r's V."
     )
   )
 })
@@ -805,7 +805,7 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
   # the test, then the measure of each variable.
   expect_match(
     attr(out_default, "assoc_note"),
-    "test\\. Phi: smoking\\. Cramer's V: education\\.$"
+    "test\\. Phi: smoking\\. Cram\u00e9r's V: education\\.$"
   )
 
   # Force uniform Cramer's V via single-string -> no measure note: the
@@ -821,7 +821,7 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     attr(out_uniform, "assoc_note"),
     "P-values: Pearson chi-squared test."
   )
-  expect_identical(attr(out_uniform, "abbrev_note"), "V = Cramer's V.")
+  expect_identical(attr(out_uniform, "abbrev_note"), "V = Cram\u00e9r's V.")
 })
 
 test_that("table_categorical accepts unnamed positional `assoc_measure` and validates length", {
@@ -1037,7 +1037,7 @@ test_that("a single measure heads and names its column with its symbol", {
     "Effect size"
   )
   expect_true("Effect size" %in% names(as.data.frame(mixed)))
-  expect_match(attr(mixed, "note"), "Phi: x. Cramer's V: y.", fixed = TRUE)
+  expect_match(attr(mixed, "note"), "Phi: x. Cram\u00e9r's V: y.", fixed = TRUE)
   # A measure with no symbol keeps its name over the column.
   expect_identical(
     as_structured(one("lambda"))$col_meta[["Lambda"]]$display_label,
@@ -1045,7 +1045,11 @@ test_that("a single measure heads and names its column with its symbol", {
   )
   # The note defines the symbol as any symbol, by the rule in force. The
   # default (APA) defines V and leaves the Greek letters undefined.
-  expect_match(attr(one("cramer_v"), "note"), "V = Cramer's V.", fixed = TRUE)
+  expect_match(
+    attr(one("cramer_v"), "note"),
+    "V = Cram\u00e9r's V.",
+    fixed = TRUE
+  )
   expect_no_match(attr(one("phi"), "note"), "\u03c6 = ", fixed = TRUE)
   # "all" defines the Greek letters too.
   withr::with_options(
@@ -1083,7 +1087,11 @@ test_that("a single measure heads and names its column with its symbol", {
   # The Lancet in its own form, the French by the French name.
   withr::with_options(
     list(spicy.style = "lancet"),
-    expect_match(attr(one("cramer_v"), "note"), "V=Cramer's V.", fixed = TRUE)
+    expect_match(
+      attr(one("cramer_v"), "note"),
+      "V=Cram\u00e9r's V.",
+      fixed = TRUE
+    )
   )
   withr::with_options(
     list(spicy.language = "fr"),
@@ -1633,7 +1641,7 @@ test_that("table_categorical grouped word and clipboard outputs work", {
     assoc_ci = TRUE
   ))
   expect_type(txt, "character")
-  expect_match(clip_text, "Cramer's V")
+  expect_match(clip_text, "Cram\u00e9r's V")
   # The bounds state the level of the interval, as in the other tables.
   expect_match(clip_text, "95% CI LL", fixed = TRUE)
   expect_match(clip_text, "95% CI UL", fixed = TRUE)
@@ -1862,10 +1870,10 @@ test_that("table_categorical gt output omits association header when assoc_measu
   boxhead <- gt_tbl[["_boxhead"]]
   spanners <- gt_tbl[["_spanners"]]
 
-  expect_false(any(boxhead$column_label == "Cramer's V"))
+  expect_false(any(boxhead$column_label == "Cram\u00e9r's V"))
   expect_false(any(boxhead$var == "assoc_col"))
   expect_false(any(spanners$spanner_id == "spn_assoc"))
-  expect_false(any(spanners$spanner_label == "Cramer's V"))
+  expect_false(any(spanners$spanner_label == "Cram\u00e9r's V"))
 })
 
 # --- Coverage tests: uncovered paths ---
@@ -2721,7 +2729,7 @@ test_that("clipboard payload carries the console title and notes", {
       "Percentages are column percentages\\. ",
       "Missing values removed: smoking \\(65\\)\\. ",
       "P-values: Pearson chi-squared test\\. ",
-      "Phi: smoking\\. Cramer's V: education\\."
+      "Phi: smoking\\. Cram\u00e9r's V: education\\."
     )
   )
   # Title / note rows are padded to the full grid, so every line of
@@ -3294,10 +3302,14 @@ test_that("labels: names by default, the label attribute under TRUE", {
     c("Current smoker", "act", "na_lab", "empty")
   )
   # A named vector sets the columns it names; the others follow the
-  # option (names when unset); a name matching no column is ignored.
-  expect_identical(
-    rows(labels = c(smk = "Override", bogus = "X")),
-    c("Override", "act", "na_lab", "empty")
+  # option (names when unset); a name matching no column warns and is
+  # left out.
+  expect_warning(
+    expect_identical(
+      rows(labels = c(smk = "Override", bogus = "X")),
+      c("Override", "act", "na_lab", "empty")
+    ),
+    class = "spicy_unknown_name"
   )
   withr::local_options(spicy.var_labels = TRUE)
   expect_identical(rows(), c("Current smoker", "act", "na_lab", "empty"))
@@ -3363,12 +3375,15 @@ test_that("named labels relabel a subset; the others keep their names", {
   expect_setequal(unique(out$label), c("CS only", "physical_activity"))
 })
 
-test_that("named labels with unknown names are ignored", {
-  out <- table_categorical(
-    sochealth,
-    select = smoking,
-    labels = c(bogus = "X"),
-    output = "long"
+test_that("named labels with unknown names warn and are left out", {
+  expect_warning(
+    out <- table_categorical(
+      sochealth,
+      select = smoking,
+      labels = c(bogus = "X"),
+      output = "long"
+    ),
+    class = "spicy_unknown_name"
   )
   expect_identical(unique(out$label), "smoking")
 })
@@ -3468,7 +3483,7 @@ test_that("two variables showing one label keep a block each", {
     build(output = "long")$n
   )
   adj <- build(by = sex, labels = same, p_adjust = "holm", output = "long")
-  expect_match(attr(adj, "note"), "adjusted for 2 tests", fixed = TRUE)
+  expect_match(attr(adj, "note"), "Adjusted for 2 tests", fixed = TRUE)
   # A column named twice is tabulated once.
   expect_identical(
     table_categorical(sochealth, select = c("smoking", "smoking"))$n,
@@ -3781,7 +3796,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     "Percentages are column percentages.",
     "Missing values removed: smoking (25).",
     "P-values: Pearson chi-squared test.",
-    "Phi: smoking. Cramer's V: education."
+    "Phi: smoking. Cram\u00e9r's V: education."
   )
   expect_identical(printed[grepl("Note.", printed, fixed = TRUE)], whole)
   expect_identical(attr(tbl, "note"), whole)
@@ -3800,7 +3815,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     paste(
       "Note. N = 1200: Female (n = 620), Male (n = 580).",
       "Percentages are column percentages.",
-      "P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education."
+      "P-values: Pearson chi-squared test. Phi: smoking. Cram\u00e9r's V: education."
     ) %in%
       printed
   )
@@ -4010,7 +4025,7 @@ test_that("a variable with nothing to compare has undefined cells and no measure
   # The tested variable keeps its numbers; the note names the measure of
   # that variable only (it named "Phi: smoking." and "Cramer's V: constf").
   expect_false(any(disp$p[disp$Variable == "education"] == mark))
-  expect_match(attr(tbl, "note"), "Cramer's V: education.", fixed = TRUE)
+  expect_match(attr(tbl, "note"), "Cram\u00e9r's V: education.", fixed = TRUE)
   expect_false(grepl("Phi", attr(tbl, "note"), fixed = TRUE))
   expect_false(grepl("constf", attr(tbl, "note"), fixed = TRUE))
   # The rendered engines keep the mark alone, with no interval beside it.
@@ -4118,7 +4133,7 @@ test_that("the note names no association measure for a variable with no value", 
       "Percentages are column percentages.",
       "No data for empty in Female and Male.",
       "P-values: Pearson chi-squared test.",
-      "Phi: smoking. Cramer's V: education."
+      "Phi: smoking. Cram\u00e9r's V: education."
     )
   )
   # The header stays generic, so the one measure left is still named.
@@ -4128,14 +4143,14 @@ test_that("the note names no association measure for a variable with no value", 
     "Pearson chi-squared test. Phi: smoking.",
     fixed = TRUE
   )
-  expect_false(grepl("Cramer", attr(tbl2, "note"), fixed = TRUE))
+  expect_false(grepl("Cram\u00e9r", attr(tbl2, "note"), fixed = TRUE))
   expect_identical(
     spicy:::.assoc_note_apa(
       c(a = "phi", b = "cramer_v", c = "cramer_v"),
       c("A", "B", "C"),
       no_value = "c"
     ),
-    "Phi: A. Cramer's V: B."
+    "Phi: A. Cram\u00e9r's V: B."
   )
 })
 
@@ -4666,7 +4681,7 @@ test_that("percent = \"row\" gives row shares and leaves the statistics alone", 
     paste(
       "Note. N = 120: A (n = 57), B (n = 63).",
       "Percentages are row percentages.",
-      "P-value: Pearson chi-squared test. V = Cramer's V."
+      "P-value: Pearson chi-squared test. V = Cram\u00e9r's V."
     )
   )
   expect_identical(
@@ -4674,7 +4689,7 @@ test_that("percent = \"row\" gives row shares and leaves the statistics alone", 
     paste(
       "Note. N = 120: A (n = 57), B (n = 63).",
       "Percentages are column percentages.",
-      "P-value: Pearson chi-squared test. V = Cramer's V."
+      "P-value: Pearson chi-squared test. V = Cram\u00e9r's V."
     )
   )
   fr <- withr::with_options(
@@ -5428,9 +5443,10 @@ test_that("p_adjust: the displayed p, the object and the note agree", {
   expect_identical(meta$p_adjust_m, sum(tested))
   expect_identical(meta$p_adjust_m, 3L)
 
+  # The adjustment follows the test, whose "P-values:" is its subject.
   expect_match(
     attr(tbl, "assoc_note"),
-    'P-values adjusted for 3 tests (Holm method).',
+    "(cyl, gear). Adjusted for 3 tests (Holm method).",
     fixed = TRUE
   )
 })
@@ -5477,7 +5493,7 @@ test_that("p_adjust needs `by`, and validates its method", {
 test_that("p_adjust: the note reaches the gt and flextable engines", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
-  note <- 'P-values adjusted for 3 tests (Benjamini-Hochberg method).'
+  note <- "Adjusted for 3 tests (Benjamini-Hochberg method)."
   g <- table_categorical(
     mtcars,
     c(cyl, gear, vs),
@@ -5490,7 +5506,7 @@ test_that("p_adjust: the note reaches the gt and flextable engines", {
   # the gt route dropped the measure note of a mixed table.
   expect_match(
     attr(g, "spicy_note"),
-    "Cramer's V: cyl, gear. Phi: vs.",
+    "Cram\u00e9r's V: cyl, gear. Phi: vs.",
     fixed = TRUE
   )
   ft <- table_categorical(
@@ -5504,6 +5520,48 @@ test_that("p_adjust: the note reaches the gt and flextable engines", {
   expect_match(
     paste(ft$footer$content$data[[1L, 1L]]$txt, collapse = ""),
     note,
+    fixed = TRUE
+  )
+})
+
+test_that("the adjustment follows the test sentence, its subject, in both languages", {
+  set.seed(5)
+  d <- data.frame(
+    g = factor(sample(c("a", "b"), 200, TRUE)),
+    x = factor(sample(c("u", "v"), 200, TRUE)),
+    y = factor(sample(c("p", "q", "r"), 200, TRUE))
+  )
+  note <- function(...) attr(table_categorical(d, by = g, ...), "note")
+  # One test: the singular, before Yates' correction, which the adjustment
+  # does not describe.
+  expect_match(
+    note(select = x, correct = TRUE, p_adjust = "holm"),
+    paste(
+      "P-value: Pearson chi-squared test. Adjusted for 1 test (Holm method).",
+      "Yates continuity correction applied."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(select = c(x, y), p_adjust = "bonferroni"),
+    "P-values: Pearson chi-squared test. Adjusted for 2 tests (Bonferroni method).",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(select = x, p_adjust = "holm"),
+    paste(
+      "Valeur p : test du khi-deux de Pearson.",
+      "Ajustée pour 1 test (méthode de Holm)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(select = c(x, y), p_adjust = "bonferroni"),
+    paste(
+      "Valeurs p : test du khi-deux de Pearson.",
+      "Ajustées pour 2 tests (méthode de Bonferroni)."
+    ),
     fixed = TRUE
   )
 })
@@ -5554,7 +5612,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
     paste(
       "Note. N = 1200: Female (n = 620), Male (n = 580).",
       "Percentages are column percentages.",
-      "Phi: smoking. Cramer's V: education."
+      "Phi: smoking. Cram\u00e9r's V: education."
     )
   )
   expect_identical(
@@ -5599,7 +5657,7 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
   # The measure note is the measure's: it stays. The sentence naming the
   # test leaves with the test (it comes first, an inference before the
   # definitions).
-  measure_note <- "Phi: smoking. Cramer's V: education."
+  measure_note <- "Phi: smoking. Cram\u00e9r's V: education."
   expect_identical(attr(tbl, "assoc_note"), measure_note)
   expect_identical(
     attr(ref, "assoc_note"),
@@ -6479,7 +6537,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   )
   expect_match(
     assoc(),
-    "Phi: smoking. Cramer's V: Education, highest level; self_rated_health.",
+    "Phi: smoking. Cram\u00e9r's V: Education, highest level; self_rated_health.",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -6899,7 +6957,7 @@ test_that("p_adjust adjusts the mid-p values", {
       table_categorical(d, c(x, y), by = g, test = "midp", p_adjust = "holm"),
       "assoc_note"
     ),
-    "Fisher mid-p test. P-values adjusted for 2 tests (Holm method).",
+    "P-values: Fisher mid-p test. Adjusted for 2 tests (Holm method).",
     fixed = TRUE
   )
 })

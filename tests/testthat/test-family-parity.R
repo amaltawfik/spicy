@@ -557,9 +557,12 @@ test_that("every table of the family carries its printed note as `note`", {
   plain <- table_categorical(mtcars, select = cyl)
   expect_identical(.fp_note_block(plain), "Note. N = 32.")
   expect_identical(attr(plain, "note"), "Note. N = 32.")
-  # Nothing to say: no note, printed or attached. Without its interval a
-  # table of means shows no abbreviation to define either.
-  expect_null(attr(table_continuous(mtcars, select = mpg, ci = FALSE), "note"))
+  # So does a table of means (decision (c) of the ADR of 2026-10-28):
+  # without its interval it has nothing else to say.
+  expect_identical(
+    attr(table_continuous(mtcars, select = mpg, ci = FALSE), "note"),
+    "Note. N = 32."
+  )
   # A note the user typed replaces the general note, printed as typed under
   # the lead-in; `note = FALSE` removes it.
   d <- .fp_note_data()
@@ -863,6 +866,190 @@ test_that("the nine table functions take `note_labels`, alike", {
     err <- tryCatch(b(note_labels = TRUE), error = identity)
     expect_s3_class(err, "spicy_invalid_input")
     expect_identical(rlang::call_name(conditionCall(err)), fn, info = fn)
+  }
+})
+
+test_that("every descriptive table but the survey twins and multiresponse opens its note with N", {
+  builders <- .fp_note_arg_builders()
+  d <- .fp_note_data()
+  # The rows the table describes: under `by` those with a `by` value (the
+  # builders of the categorical table and of table_outcome() remove the
+  # missing values), split by group so that the n add up to N.
+  n_ctl <- sum(d$qe5 == "ctl", na.rm = TRUE)
+  n_trt <- sum(d$qe5 == "trt", na.rm = TRUE)
+  by_size <- sprintf(
+    "Note. N = %d: ctl (n = %d), trt (n = %d). ",
+    n_ctl + n_trt,
+    n_ctl,
+    n_trt
+  )
+  for (fn in c(
+    "table_categorical",
+    "table_continuous",
+    "table_continuous_lm"
+  )) {
+    expect_true(
+      startsWith(attr(builders[[fn]]$build(), "note"), by_size),
+      info = fn
+    )
+  }
+  expect_true(startsWith(
+    attr(builders$table_outcome$build(), "note"),
+    sprintf("Note. N = %d. ", nrow(d))
+  ))
+  # The others keep their own opening: the Base row of the multiple-
+  # response table, the model of a regression table, the design of a
+  # survey twin ("N = 240 (weighted ...).").
+  for (fn in c(
+    "table_multiresponse",
+    "table_regression",
+    "table_regression_uv"
+  )) {
+    expect_false(
+      grepl(
+        "^Note\\. N = [0-9]+(: |\\. )",
+        attr(builders[[fn]]$build(), "note")
+      ),
+      info = fn
+    )
+  }
+  for (fn in intersect(
+    names(builders),
+    c("table_categorical_svy", "table_continuous_svy")
+  )) {
+    expect_match(
+      attr(builders[[fn]]$build(), "note"),
+      "^Note\\. N = [0-9]+ \\(weighted",
+      info = fn
+    )
+  }
+})
+
+test_that("a name that matches nothing in the table warns, alike, in every function", {
+  d <- .fp_note_data()
+  bogus <- c(zz_unknown = "Nothing")
+  fit <- stats::lm(qa1 ~ qb2 + qe5, data = d)
+  calls <- list(
+    table_categorical = function(...) {
+      table_categorical(d, c(qc3, qd4), by = qe5, ...)
+    },
+    table_continuous = function(...) {
+      table_continuous(d, c(qa1, qb2), by = qe5, ...)
+    },
+    table_continuous_lm = function(...) {
+      table_continuous_lm(d, qa1, by = qe5, ...)
+    },
+    table_outcome = function(...) table_outcome(d, qa1, c(qe5, qd4), ...),
+    table_multiresponse = function(...) {
+      table_multiresponse(d, c(mq1, mq3), by = qe5, ...)
+    },
+    table_regression = function(...) table_regression(fit, ...),
+    table_regression_uv = function(...) {
+      table_regression_uv(d, outcome = qa1, predictors = c(qb2, qe5), ...)
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~ww, data = d)
+    calls$table_categorical_svy <- function(...) {
+      table_categorical_svy(des, c(qc3, qd4), by = qe5, ...)
+    }
+    calls$table_continuous_svy <- function(...) {
+      table_continuous_svy(des, c(qa1, qb2), by = qe5, ...)
+    }
+  }
+  # One condition per argument, its class and its shape: the argument,
+  # then the names, then the call goes on without them.
+  catch <- function(expr) {
+    w <- NULL
+    out <- withCallingHandlers(
+      suppressMessages(expr),
+      spicy_unknown_name = function(cnd) {
+        w <<- c(w, list(cnd))
+        invokeRestart("muffleWarning")
+      },
+      warning = function(cnd) invokeRestart("muffleWarning")
+    )
+    list(out = out, w = w)
+  }
+  shape <- function(arg, names) {
+    sprintf(
+      "`%s` has a name that matches nothing in the table: \"%s\".",
+      arg,
+      names
+    )
+  }
+  for (fn in names(calls)) {
+    for (arg in c("labels", "note_labels")) {
+      args <- stats::setNames(list(bogus), arg)
+      res <- catch(do.call(calls[[fn]], args))
+      expect_length(res$w, 1L)
+      expect_s3_class(res$w[[1L]], "spicy_unknown_name")
+      expect_s3_class(res$w[[1L]], "spicy_warning")
+      expect_true(
+        startsWith(conditionMessage(res$w[[1L]]), shape(arg, "zz_unknown")),
+        info = paste(fn, arg)
+      )
+      # The table is the one the call builds without the name.
+      expect_identical(
+        attr(res$out, "note"),
+        attr(suppressWarnings(suppressMessages(calls[[fn]]())), "note"),
+        info = paste(fn, arg)
+      )
+    }
+    # A name the table shows is no stranger.
+    res <- catch(calls[[fn]](labels = c(qe5 = "Group")))
+    expect_null(res$w, info = fn)
+  }
+  # The named `digits` of the three continuous tables and the named list
+  # of `show_columns`, under the same policy.
+  digit_calls <- calls[intersect(
+    names(calls),
+    c("table_continuous", "table_continuous_lm", "table_continuous_svy")
+  )]
+  for (fn in names(digit_calls)) {
+    res <- catch(digit_calls[[fn]](digits = c(qa1 = 1, zz_unknown = 3)))
+    expect_length(res$w, 1L)
+    expect_true(
+      startsWith(conditionMessage(res$w[[1L]]), shape("digits", "zz_unknown")),
+      info = fn
+    )
+  }
+  res <- catch(calls$table_continuous(
+    show_columns = list(zz_unknown = "m", .default = c("m", "sd"))
+  ))
+  expect_length(res$w, 1L)
+  expect_true(startsWith(
+    conditionMessage(res$w[[1L]]),
+    shape("show_columns", "zz_unknown")
+  ))
+  # A name given twice stays the error it was.
+  expect_error(
+    calls$table_continuous(digits = c(qa1 = 1, qa1 = 2)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    calls$table_continuous(show_columns = list(qa1 = "m", qa1 = "sd")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("every table function's gt output is a spicy_gt, note or no note", {
+  skip_if_not_installed("gt")
+  builders <- .fp_note_arg_builders()
+  expect_length(builders, 9L)
+  for (fn in names(builders)) {
+    b <- builders[[fn]]$build
+    with_note <- b(output = "gt")
+    expect_s3_class(with_note, "spicy_gt")
+    expect_s3_class(with_note, "gt_tbl")
+    without <- b(output = "gt", note = FALSE)
+    expect_s3_class(without, "spicy_gt")
+    expect_null(attr(without, "spicy_note"))
+    # The minus sign of its LaTeX is decided where it is built.
+    expect_false(is.null(attr(without, "spicy_minus_sign")), info = fn)
   }
 })
 
@@ -3116,6 +3303,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
     withr::local_options(spicy.language = lang)
     weighted <- spicy_fmt("note_weighted_by", "w")
     removed <- spicy_str("note_missing_removed")
+    size <- .fn_lead("note_sample_size")
     # The sentence naming the test opens on the p-values the table shows:
     # one, or several.
     one <- .fn_lead("note_p_values_test_one")
@@ -3132,7 +3320,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           drop_na = TRUE,
           smd = TRUE
         )),
-        c(weighted, removed, one, paste0(spicy_str("header_smd"), " ="))
+        c(size, weighted, removed, one, paste0(spicy_str("header_smd"), " ="))
       ),
       table_categorical_svy = list(
         q(table_categorical_svy(des, select = xc, by = g2, drop_na = TRUE)),
@@ -3153,7 +3341,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           p_value = FALSE,
           show_columns = c("m", "iqr")
         )),
-        c(weighted, removed, paste0(spicy_str("header_iqr"), " ="))
+        c(size, weighted, removed, paste0(spicy_str("header_iqr"), " ="))
       ),
       table_continuous = list(
         q(table_continuous(
@@ -3164,9 +3352,10 @@ test_that("the sentences of every note come in the four kinds, in order", {
           p_adjust = "holm"
         )),
         c(
+          size,
           removed,
           many,
-          .fn_lead("note_p_adjusted"),
+          .fn_lead("note_p_adjusted_desc"),
           paste0(spicy_str("header_smd"), " =")
         )
       ),
@@ -3194,7 +3383,14 @@ test_that("the sentences of every note come in the four kinds, in order", {
           covariates = age,
           vcov = "HC3"
         )),
-        c(weighted, .fn_lead("note_adjusted_for"), removed, one, std_err)
+        c(
+          size,
+          weighted,
+          .fn_lead("note_adjusted_for"),
+          removed,
+          one,
+          std_err
+        )
       ),
       table_outcome_weighted = list(
         q(table_outcome(
@@ -3204,14 +3400,15 @@ test_that("the sentences of every note come in the four kinds, in order", {
           weights = w,
           p_value = FALSE
         )),
-        c(weighted, removed, spicy_str("note_outcome_overall"))
+        c(size, weighted, removed, spicy_str("note_outcome_overall"))
       ),
       table_outcome = list(
         q(table_outcome(d, outcome = xn, select = c(g2, g), p_adjust = "holm")),
         c(
+          size,
           removed,
           many,
-          .fn_lead("note_p_adjusted"),
+          .fn_lead("note_p_adjusted_desc"),
           spicy_str("note_outcome_overall")
         )
       ),
@@ -3534,15 +3731,16 @@ test_that("every table that shows a p-value names its test, after the p-values",
       )
     }
     # Without p-values, no test is named (and, without its interval, the
-    # table shows no abbreviation to define).
-    expect_null(attr(
+    # table shows no abbreviation to define): the sample size alone.
+    for (x in list(
       q(table_continuous(d, select = age, by = g, p_value = FALSE, ci = FALSE)),
-      "note"
-    ))
-    expect_null(attr(
-      q(table_continuous_lm(d, select = age, by = g, p_value = FALSE)),
-      "note"
-    ))
+      q(table_continuous_lm(d, select = age, by = g, p_value = FALSE))
+    )) {
+      expect_match(
+        attr(x, "note"),
+        paste0("^", .note_prefix_text(), "N = [0-9]+[^.]*\\.$")
+      )
+    }
   }
 })
 
@@ -3551,7 +3749,6 @@ test_that("every table that accepts weights says it is weighted", {
   q <- function(e) suppressMessages(suppressWarnings(e))
   for (lang in c("en", "fr")) {
     withr::local_options(spicy.language = lang)
-    opening <- paste0(.note_prefix_text(), spicy_fmt("note_weighted_by", "w"))
     weighted <- list(
       table_categorical = q(table_categorical(
         d,
@@ -3587,24 +3784,21 @@ test_that("every table that accepts weights says it is weighted", {
     )
     for (fn in names(weighted)) {
       note <- attr(weighted[[fn]], "note")
-      if (startsWith(fn, "table_categorical")) {
-        # A categorical table opens on its unweighted sample size and its
-        # percentages (decision of 2026-10-28); the weights follow.
-        expect_true(
-          startsWith(note, paste0(.note_prefix_text(), "N = ")),
-          info = paste(lang, fn)
-        )
-        expect_true(
-          grepl(
-            paste0(". ", spicy_fmt("note_weighted_by", "w")),
-            note,
-            fixed = TRUE
-          ),
-          info = paste(lang, fn)
-        )
-      } else {
-        expect_true(startsWith(note, opening), info = paste(lang, fn))
-      }
+      # Every table opens on its unweighted sample size (decision of
+      # 2026-10-28, extended to the family by its decision (c)), and a
+      # categorical table on its percentages; the weights follow.
+      expect_true(
+        startsWith(note, paste0(.note_prefix_text(), "N = ")),
+        info = paste(lang, fn)
+      )
+      expect_true(
+        grepl(
+          paste0(". ", spicy_fmt("note_weighted_by", "w")),
+          note,
+          fixed = TRUE
+        ),
+        info = paste(lang, fn)
+      )
     }
   }
 })

@@ -33,7 +33,7 @@ The p-value tests the null hypothesis of no association
 }
 \details{
 The phi coefficient is \eqn{\phi = \sqrt{\chi^2 / n}}. It is
-equivalent to Cramer's V for 2x2 tables and equals the absolute
+equivalent to Cramér's V for 2x2 tables and equals the absolute
 value of the Pearson correlation between the two binary
 variables -- spicy returns only the magnitude (always
 non-negative), matching the DescTools (Signorell et al., 2024)

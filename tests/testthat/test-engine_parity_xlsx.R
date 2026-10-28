@@ -681,6 +681,48 @@ test_that("a table with no subordinate block keeps its single fit-stats rule", {
 })
 
 
+test_that("the categorical sheet rules off each variable block, as the continuous one", {
+  .xl_skip()
+  d <- data.frame(
+    g = factor(rep(c("A", "B"), 6L)),
+    u = factor(rep(c("x", "y", "z"), 4L)),
+    v = factor(rep(c("p", "q"), each = 6L))
+  )
+  # The rows that open a block, the variable header of `v`; the rule is on
+  # the row above it, the last level of `u`. Nothing above `u`, the first.
+  for (by in list(NULL, quote(g))) {
+    path <- .xl_write(function(p) {
+      eval(bquote(table_categorical(
+        d,
+        c(u, v),
+        by = .(by),
+        output = "excel",
+        excel_path = p
+      )))
+    })
+    m <- .xl_grid(path)
+    rows <- as.integer(rownames(m))
+    v_row <- rows[which(trimws(m[, "A"]) == "v")]
+    u_row <- rows[which(trimws(m[, "A"]) == "u")]
+    expect_length(v_row, 1L)
+    expect_identical(.xl_bottom_border(path, paste0("A", v_row - 1L)), "hair")
+    expect_identical(.xl_bottom_border(path, paste0("B", v_row - 1L)), "hair")
+    expect_false(identical(
+      .xl_bottom_border(path, paste0("A", u_row - 1L)),
+      "hair"
+    ))
+    # The body: the block of `u` (header and three levels), then that of
+    # `v` (header and two levels); one rule inside it.
+    body <- u_row:(v_row + 2L)
+    hair <- vapply(
+      paste0("A", body),
+      function(r) identical(.xl_bottom_border(path, r), "hair"),
+      logical(1)
+    )
+    expect_identical(sum(hair), 1L)
+  }
+})
+
 test_that("excel_sheet = NULL resolves to the family sheet names (decision 16)", {
   skip_if_not_installed("openxlsx2")
   d <- as.data.frame(sochealth)

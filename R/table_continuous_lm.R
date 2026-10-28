@@ -366,7 +366,8 @@
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -382,8 +383,9 @@
 #'   the weighted *n* with them. A vector named by column, not by label,
 #'   gives each outcome it names its own, `digits = c(height = 0, bmi = 1)`;
 #'   the other outcomes, the test statistic and the weighted *n* keep the
-#'   default, the `digits` of a [spicy_style()] in force included. Names
-#'   that match no outcome are ignored, as in `labels`. A fraction (`2.9`)
+#'   default, the `digits` of a [spicy_style()] in force included. A name
+#'   that matches no outcome warns and is left out, as in `labels`. A
+#'   fraction (`2.9`)
 #'   is an error, as for `fit_digits` and `effect_size_digits`. The
 #'   *p*-value (`p_digits`), the \eqn{R^2}{R^2} (`fit_digits`), the effect
 #'   size (`effect_size_digits`) and the counts keep their own decimals.
@@ -766,9 +768,16 @@
 #' `statistic = TRUE` (or `F(df1, df2)` when the degrees of freedom are
 #' constant across outcomes).
 #'
-#' When `covariates` is non-empty, the printed ASCII table appends an
-#' APA-style footer naming the covariates and the chosen estimand, e.g.
-#' `Note. Adjusted for age, education (proportional).` With p-values, the
+#' The note opens with the sample size, as in [table_categorical()]:
+#' "N = 159." for a numeric `by`,
+#' "N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
+#' rows with a `by` value, a row with a missing weight left out, rows
+#' rather than weights under `weights` ("N = 60 (unweighted)."), the
+#' complete cases of each model in its n column.
+#'
+#' When `covariates` is non-empty, the note then names the covariates and
+#' the chosen estimand, e.g.
+#' `Adjusted for age, education (proportional).` With p-values, the
 #' note also names the test behind them, read off each outcome's model:
 #' `P-values: t-test from the linear model.` (the F-test for a `by` with
 #' more than two levels, the t-test of the slope for a numeric `by`), in
@@ -1591,6 +1600,13 @@ table_continuous_lm <- function(
     NULL
   }
 
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(numeric_outcomes, by_name, covariates_names),
+    labels,
+    note_labels
+  )
   outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
   by_label <- resolve_variable_labels(data, by_name, labels)
   # A covariate takes the label `labels` gives it, as an outcome does: the
@@ -1820,11 +1836,36 @@ table_continuous_lm <- function(
     decimal_mark = decimal_mark
   )
 
+  # The sample size, the first sentence of the note, as in the
+  # descriptive tables (decision (c) of
+  # dev/decisions/2026-10-28-note-effectif.md): the rows of the data with
+  # a `by` value, less those a missing weight takes out of the table, and
+  # under a categorical `by` the rows of each group, in the order and
+  # under the labels of the mean columns, so that the n add up to N. The
+  # complete cases of each model are in its n column and the
+  # missing-values sentence. A numeric `by` has no groups.
+  size_rows <- !is.na(by_vector)
+  if (!is.null(weights_vec)) {
+    size_rows <- size_rows & !is.na(weights_vec)
+  }
+  sample_size <- if (is.null(by_levels)) {
+    .sample_size_sentence(sum(size_rows), weighted = !is.null(weights_vec))
+  } else {
+    .sample_size_sentence(
+      groups = .group_row_counts(
+        coerce_lm_factor(by_vector),
+        by_levels,
+        size_rows
+      ),
+      weighted = !is.null(weights_vec)
+    )
+  }
   # The whole note, for every route: print() shows it as it is here, and
   # `note` replaces or removes it.
   table_note <- .table_note(
     .tclm_note_text(
       result,
+      sample_size = sample_size,
       missing_note = missing_parts,
       covariates = covariate_notes,
       weighted_by = if (!is.null(weights_vec)) {

@@ -710,8 +710,9 @@ form whatever the language of the table. Classes with no \code{terms}
 component (\code{nls()}, \code{sampleSelection::selection()}) are keyed on
 their coefficient (or parameter) names alone. With several models,
 a name is looked up in the terms of all of them and lands on the
-rows where it exists. Names that match nothing are ignored, so one
-vector can serve every table of a project. The headers of the
+rows where it exists. A name that matches nothing in the table warns
+(class \code{spicy_unknown_name}) and is left out, so one vector can still
+serve every table of a project. The headers of the
 subordinate blocks (\verb{Random effects}, \code{Thresholds},
 \code{Zero-inflation}, ...) are set by the package and cannot be
 relabeled here.
@@ -730,8 +731,9 @@ which reads as one. \code{labels} can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of \code{labels}, and so do the title and the notes for a variable
-\code{note_labels} does not name. Names that match no column are ignored,
-as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+\code{note_labels} does not name. A name that matches no column warns and
+is left out, as in \code{labels}, and \code{NULL} (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}

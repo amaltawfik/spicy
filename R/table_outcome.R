@@ -638,7 +638,11 @@ abort_outcome_by_renamed <- function() {
 #'
 #' # The table note
 #'
-#' One note sits under the table and states what left the analytic
+#' One note sits under the table. It opens with the sample size, as in
+#' [table_categorical()], "N = 159.": the rows of the data, a row with a
+#' missing weight left out, rows rather than weights under `weights`
+#' ("N = 60 (unweighted)."), the outcome's complete cases in the n of the
+#' `Overall` row. It then states what left the analytic
 #' sample, which group comparison ran in each block, what the displayed
 #' columns mean, and how the blocks and the `Overall` row are to be
 #' read. The rendering engines carry the same sentence as a table note.
@@ -677,7 +681,8 @@ abort_outcome_by_renamed <- function() {
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -1182,6 +1187,13 @@ table_outcome <- function(
   }
 
   # --- labels -------------------------------------------------------------
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(outcome_name, select_names),
+    labels,
+    note_labels
+  )
   all_labels <- resolve_variable_labels(
     data,
     c(outcome_name, select_names),
@@ -1283,6 +1295,17 @@ table_outcome <- function(
   n_na_weights <- if (is.null(weights_vec)) 0L else sum(is.na(weights_vec))
   # Each variable named by its label in the apparatus.
   table_note <- .outcome_note(
+    # The sample size, as in table_continuous() without `by` (decision
+    # (c) of dev/decisions/2026-10-28-note-effectif.md): the rows of the
+    # data, less those a missing weight takes out of the table, the only
+    # rows that leave every block. The missing values of the outcome are
+    # its own, in the n column and the missing-values sentence; under
+    # `drop_na = TRUE` each block removes its own, which that sentence
+    # counts block by block.
+    sample_size = .sample_size_sentence(
+      length(outcome_vec) - n_na_weights,
+      weighted = !is.null(weights_vec)
+    ),
     outcome_name = outcome_name,
     outcome_label = outcome_note,
     n_outcome_na = n_outcome_na,
@@ -1548,14 +1571,16 @@ table_outcome <- function(
 
 # Internal: the note under an outcome table, opened with "Note.".
 #
-# In the order of the family (`.compose_note()`): how the statistics were
-# weighted; what left the table, then the levels where the outcome has no
-# data (`no_data`); how the blocks were compared, how their p-values were
+# In the order of the family (`.compose_note()`): the sample size
+# (`sample_size`) and how the statistics were weighted; what left the
+# table, then the levels where the outcome has no data (`no_data`); how
+# the blocks were compared, how their p-values were
 # adjusted, and that no block is adjusted for another; what the columns
 # and the Overall row mean; then the abbreviations of the headers, the
 # effect size (`show_es`, `es_ci`) included; last, the sentences of
 # `note_add` (`add`).
 .outcome_note <- function(
+  sample_size = NULL,
   outcome_name,
   outcome_label,
   n_outcome_na,
@@ -1622,12 +1647,15 @@ table_outcome <- function(
     )
   }
   .compose_note(
-    what = if (weighted) {
-      spicy_fmt(
-        "note_weighted_by",
-        weights_name %||% spicy_str("note_weights_fallback")
-      )
-    },
+    what = c(
+      sample_size,
+      if (weighted) {
+        spicy_fmt(
+          "note_weighted_by",
+          weights_name %||% spicy_str("note_weights_fallback")
+        )
+      }
+    ),
     missing = c(parts, no_data),
     inference = c(
       if (show_comparison) {

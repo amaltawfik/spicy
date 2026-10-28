@@ -14,7 +14,7 @@
 #' factors (`sex`, `region`, ...) and ordered factors (`education`,
 #' `self_rated_health`, ...) live side by side so that
 #' [cross_tab()] and [table_categorical()] can demonstrate the
-#' automatic ordinal-vs-nominal dispatch (Cramer's V, Phi, Kendall's
+#' automatic ordinal-vs-nominal dispatch (Cram&eacute;r's V, Phi, Kendall's
 #' Tau-b, Goodman-Kruskal Gamma) on the same dataset.
 #'
 #' Survey weights (`weight`) are calibrated: they average about 1

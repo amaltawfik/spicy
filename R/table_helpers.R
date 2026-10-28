@@ -30,8 +30,9 @@
 #   * a `var_labels()` object: the same, on the attribute base whatever
 #     the option says (`var_labels()` alone is TRUE).
 # Names that match no column are ignored, so one vector can serve every
-# table of a project. A variable label documents the data file; a
-# published table carries the wording the user sets, hence the column
+# table of a project; each table function warns about them first
+# (`.warn_unknown_label_names()`). A variable label documents the data
+# file; a published table carries the wording the user sets, hence the column
 # name by default. Returns an unnamed character vector parallel to `cols`.
 # The regression tables apply the same contract to their outcomes and
 # terms (`.reg_variable_labels()`).
@@ -171,10 +172,59 @@ resolve_variable_labels <- function(data, cols, labels) {
   )
 }
 
+# Internal: the one policy for a name that matches nothing in the table,
+# in the arguments named by variable: `labels`, `note_labels`, the named
+# `digits`, the named list of `show_columns` (decision 14 of
+# dev/decisions/2026-10-20-family-coherence.md). A classed warning,
+# `spicy_unknown_name`, names the argument and the names, and the call
+# goes on without them: one vector can still serve every table of a
+# project, and a typo no longer passes in silence. `given` are the names
+# the argument holds, `known` what they can name in this table. A name
+# given twice is the error of each argument's own validator.
+.warn_unknown_names <- function(arg, given, known) {
+  unknown <- unique(setdiff(given, known))
+  if (!length(unknown)) {
+    return(invisible(character(0)))
+  }
+  one <- length(unknown) == 1L
+  spicy_warn(
+    c(
+      sprintf(
+        "`%s` has %s that %s nothing in the table: %s.",
+        arg,
+        if (one) "a name" else sprintf("%d names", length(unknown)),
+        if (one) "matches" else "match",
+        paste(.quote_val(unknown), collapse = ", ")
+      ),
+      "i" = paste(
+        if (one) "It is ignored." else "They are ignored.",
+        "Check the spelling, or wrap the call in `suppressWarnings()` when one vector serves several tables."
+      )
+    ),
+    class = "spicy_unknown_name"
+  )
+  invisible(unknown)
+}
+
+# Internal: `labels` and `note_labels` checked against `cols`, what they
+# can name in the table (`.warn_unknown_names()`): the variables of a
+# descriptive table, the outcomes, terms and coefficients of a regression
+# table. TRUE and FALSE name nothing.
+.warn_unknown_label_names <- function(cols, labels, note_labels) {
+  if (is.character(labels)) {
+    .warn_unknown_names("labels", names(labels), cols)
+  }
+  if (length(note_labels)) {
+    .warn_unknown_names("note_labels", names(note_labels), cols)
+  }
+  invisible(NULL)
+}
+
 # Internal: the label each column of `cols` takes in the apparatus of a
 # table, the sentences of its note and its title: the one `note_labels`
 # gives it, else `shown`, the one `labels` gives it (parallel to `cols`).
-# Names that match no column are ignored, as in `labels`.
+# A name that matches no column is left out, after the warning of
+# `.warn_unknown_label_names()`.
 .note_labels_of <- function(cols, shown, note_labels) {
   out <- unname(shown)
   if (length(note_labels) && length(cols)) {
@@ -279,6 +329,59 @@ resolve_variable_labels <- function(data, cols, labels) {
     "note_list_sep_comma"
   }
   paste(items, collapse = spicy_str(key))
+}
+
+# Internal: the sample-size sentence, the first sentence of the general
+# note of `table_categorical()`, `table_continuous()`, `table_outcome()`
+# and `table_continuous_lm()` (dev/decisions/2026-10-28-note-effectif.md,
+# decision (c) for the last three): "N = 159." or, with `groups`, "N =
+# 159: Women (n = 80), Men (n = 79).". `n` is the number of rows the table
+# describes; `groups`, the rows of each group named by the label the
+# table shows it under, in table order, N then being their sum. Rows,
+# never weights: under `weighted` the sentence says N is unweighted.
+# Integers, written as the counts of the tables, with no thousands
+# separator. Each table counts its own rows; this helper only words them.
+.sample_size_sentence <- function(n = NULL, groups = NULL, weighted = FALSE) {
+  fmt <- function(x) formatC(round(x), format = "f", digits = 0)
+  if (is.null(groups)) {
+    return(spicy_fmt(
+      if (weighted) "note_sample_size_unweighted" else "note_sample_size",
+      fmt(n)
+    ))
+  }
+  spicy_fmt(
+    if (weighted) {
+      "note_sample_size_groups_unweighted"
+    } else {
+      "note_sample_size_groups"
+    },
+    fmt(sum(groups)),
+    .join_note_vars(spicy_fmt(
+      "note_sample_size_group_item",
+      names(groups),
+      fmt(unname(groups))
+    ))
+  )
+}
+
+# Internal: the rows of each group of a table, for the sample-size
+# sentence (`.sample_size_sentence()`), named by group. `g` is the group
+# of each row as the table shows it (NA for a row in no group), `levels`
+# the groups in table order, a declared level nobody holds included (it
+# counts 0), and `rows` the rows the table keeps (FALSE for a row a
+# missing weight takes out of it).
+.group_row_counts <- function(g, levels, rows = rep(TRUE, length(g))) {
+  g <- as.character(g)
+  levels <- as.character(levels)
+  stats::setNames(
+    vapply(
+      levels,
+      function(lev) sum(rows & !is.na(g) & g == lev),
+      integer(1),
+      USE.NAMES = FALSE
+    ),
+    levels
+  )
 }
 
 # Internal: format a single numeric (or vector) with `formatC()` and
@@ -1217,24 +1320,26 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   sum(shown, na.rm = TRUE)
 }
 
-# The footer sentence, shared with `table_regression()`. NULL when no
-# test was adjusted.
+# The adjustment sentence of the descriptive tables, "Adjusted for 3
+# tests (Holm method).", right after the sentence that names the test,
+# whose lead ("P-values:", "Item p-values:") is its subject (decision of
+# 2026-10-28, dev/decisions/2026-09-18-p-adjust-hors-table-regression.md).
+# A family of one test has its own key, so no language needs a plural
+# rule. NULL when no test was adjusted.
 .desc_p_adjust_note <- function(info) {
   if (is.null(info) || info$m == 0L) {
     return(NULL)
   }
-  .p_adjust_sentence(info$method, info$m)
+  method_name <- .p_adjust_method_name(info$method)
+  if (info$m == 1L) {
+    return(spicy_fmt("note_p_adjusted_desc_one", method_name))
+  }
+  spicy_fmt("note_p_adjusted_desc", as.character(info$m), method_name)
 }
 
-# The p_adjust sentence of every family, "P-values adjusted for 5 tests
-# (Holm method).", worded for the reader of the table rather than for the
-# R call. `m` is the family size, one per model in a regression table:
-# several models are adjusted within each model, and when their counts
-# differ the sentence gives them in the order of the models, "2 and 1
-# tests respectively". A family of one test has its own keys, so no
-# language needs a plural rule.
-.p_adjust_sentence <- function(method, m) {
-  method_name <- switch(
+# The methods of `stats::p.adjust()` by the names a reader knows.
+.p_adjust_method_name <- function(method) {
+  switch(
     method,
     holm = spicy_str("note_p_adjust_method_holm"),
     hochberg = spicy_str("note_p_adjust_method_hochberg"),
@@ -1244,6 +1349,18 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     fdr = spicy_str("note_p_adjust_method_bh"),
     BY = spicy_str("note_p_adjust_method_by")
   )
+}
+
+# The p_adjust sentence of the regression tables, "P-values adjusted for
+# 5 tests (Holm method).", worded for the reader of the table rather than
+# for the R call: no "P-values:" lead precedes it there, so it keeps its
+# subject. `m` is the family size, one per model in a regression table:
+# several models are adjusted within each model, and when their counts
+# differ the sentence gives them in the order of the models, "2 and 1
+# tests respectively". A family of one test has its own keys, so no
+# language needs a plural rule.
+.p_adjust_sentence <- function(method, m) {
+  method_name <- .p_adjust_method_name(method)
   one <- all(m == 1L)
   if (length(m) == 1L) {
     if (one) {

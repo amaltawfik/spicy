@@ -172,7 +172,8 @@ names these labels, and every other column its \code{label} attribute,
 whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
 }
 
-Names that match no column are ignored, so one vector can serve
+A name that matches no column of the table warns (class
+\code{spicy_unknown_name}) and is left out, so one vector can still serve
 every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
@@ -188,8 +189,9 @@ which reads as one. \code{labels} can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of \code{labels}, and so do the title and the notes for a variable
-\code{note_labels} does not name. Names that match no column are ignored,
-as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+\code{note_labels} does not name. A name that matches no column warns and
+is left out, as in \code{labels}, and \code{NULL} (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
@@ -205,8 +207,9 @@ mean. One non-negative whole number sets them for every variable
 A vector named by column, not by label, gives each variable it names
 its own, \code{digits = c(height = 0, bmi = 1)}; the other variables, the
 weighted \emph{n} and the design effect keep the default, the \code{digits} of
-a \code{\link[=spicy_style]{spicy_style()}} in force included. Names that match no variable are
-ignored, as in \code{labels}. A fraction is an error, as for every
+a \code{\link[=spicy_style]{spicy_style()}} in force included. A name that matches no variable
+warns and is left out, as in \code{labels}. A fraction is an error, as for
+every
 \verb{*_digits} argument. The \emph{p}-values (\code{p_digits}), the test statistics
 (two decimals) and the counts keep their own decimals.}
 

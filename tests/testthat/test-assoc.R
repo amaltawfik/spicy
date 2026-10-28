@@ -226,7 +226,7 @@ test_that("assoc_measures returns data.frame with correct structure", {
 test_that("assoc_measures auto returns all measures", {
   tab <- tab_3x3()
   res <- suppressWarnings(assoc_measures(tab))
-  expect_true("Cramer's V" %in% res$measure)
+  expect_true("Cram\u00e9r's V" %in% res$measure)
   expect_true("Goodman-Kruskal Gamma" %in% res$measure)
   expect_true("Kendall's Tau-b" %in% res$measure)
 })
@@ -240,16 +240,16 @@ test_that("assoc_measures type ordinal returns ordinal measures only", {
   # nothing the day that name is renamed -- it simply stops matching and
   # stays green. Pin that the string names a real measure first.
   expect_true(
-    "Cramer's V" %in%
+    "Cram\u00e9r's V" %in%
       suppressWarnings(assoc_measures(tab, type = "nominal"))$measure
   )
-  expect_false("Cramer's V" %in% res$measure)
+  expect_false("Cram\u00e9r's V" %in% res$measure)
 })
 
 test_that("assoc_measures type nominal returns nominal measures only", {
   tab <- tab_3x3()
   res <- suppressWarnings(assoc_measures(tab, type = "nominal"))
-  expect_true("Cramer's V" %in% res$measure)
+  expect_true("Cram\u00e9r's V" %in% res$measure)
   # Positive control, as above: prove the absent name is a real one.
   expect_true(
     "Goodman-Kruskal Gamma" %in%
@@ -1028,7 +1028,8 @@ test_that("assoc_measures survives a zero-margin table and re-emits the chi-squa
     }
   )
   expect_s3_class(res, "spicy_assoc_table")
-  chi_rows <- res$measure %in% c("Phi", "Cramer's V", "Contingency Coefficient")
+  chi_rows <- res$measure %in%
+    c("Phi", "Cram\u00e9r's V", "Contingency Coefficient")
   expect_true(all(is.na(res$estimate[chi_rows])))
   msgs <- vapply(warns, conditionMessage, character(1))
   expect_identical(sum(grepl("chi-squared statistic is NaN", msgs)), 1L)

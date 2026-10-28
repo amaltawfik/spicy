@@ -897,11 +897,14 @@ test_that("labels names the rows, the by title and the notes", {
   check(build(), "sch.wide", "stype")
   # An empty attribute, an NA one and none at all fall back to the name.
   check(build(labels = TRUE), "School-wide target met", "Type of school")
-  check(
-    build(labels = c(stype = "School type", sch.wide = "Target", x = "X")),
-    "Target",
-    "School type"
+  # A name that is no variable of the table warns and is left out.
+  expect_warning(
+    relabeled <- build(
+      labels = c(stype = "School type", sch.wide = "Target", x = "X")
+    ),
+    class = "spicy_unknown_name"
   )
+  check(relabeled, "Target", "School type")
   withr::local_options(spicy.var_labels = TRUE)
   check(
     build(labels = c(stype = "School type")),
@@ -1823,7 +1826,7 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
   expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
   expect_match(
     attr(tbl, "note"),
-    'P-values adjusted for 3 tests (Holm method).',
+    "Adjusted for 3 tests (Holm method).",
     fixed = TRUE
   )
 })
@@ -2195,7 +2198,7 @@ test_that("the note gives its sentences in the four kinds, whatever the language
       "Confidence intervals use 10",
       "Percentage CIs",
       "P-value: ",
-      "P-values adjusted",
+      "Adjusted for",
       "% = ",
       "n = observed",
       "DEff = "

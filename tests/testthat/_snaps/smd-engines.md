@@ -13,7 +13,7 @@
        y        │ A      2.25  1.50  1.00  4.00    -0.14       4.64    4  .264 
                 │ B      5.33  3.51  2.00  9.00    -3.39      14.06    3       
       
-      Note. P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 7: A (n = 4), B (n = 3). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ---
 
@@ -33,5 +33,5 @@
          b      │  1   25.0   2   66.7     3      42.9                       
          c      │  1   25.0   0    0.0     1      14.3                       
       
-      Note. N = 7: A (n = 4), B (n = 3). Percentages are column percentages. P-values: Fisher exact test. Phi: bin. Cramer's V: k3.
+      Note. N = 7: A (n = 4), B (n = 3). Percentages are column percentages. P-values: Fisher exact test. Phi: bin. Cramér's V: k3.
 

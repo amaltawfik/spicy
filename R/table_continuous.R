@@ -225,7 +225,8 @@
 #'     names these labels, and every other column its `label` attribute,
 #'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
 #'
-#'   Names that match no column are ignored, so one vector can serve
+#'   A name that matches no column of the table warns (class
+#'   `spicy_unknown_name`) and is left out, so one vector can still serve
 #'   every table of a project. The default reads
 #'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
 #'   call wins over it. Any other value, `NULL` included, is an error. A
@@ -242,8 +243,9 @@
 #'   column, not by label, gives each variable it names its own,
 #'   `digits = c(height = 0, bmi = 1)`; the other variables and the
 #'   weighted *n* keep the default, the `digits` of a [spicy_style()] in
-#'   force included. Names that match no variable are ignored, as in
-#'   `labels`. A fraction is an error, as for every `*_digits` argument.
+#'   force included. A name that matches no variable warns and is left
+#'   out, as in `labels`. A fraction is an error, as for every `*_digits`
+#'   argument.
 #'   The other numbers keep their own decimals: *p*-values (`p_digits`),
 #'   effect sizes and the SMD (`effect_size_digits`), test statistics (two
 #'   decimals) and counts (none).
@@ -403,6 +405,14 @@
 #'     `data.frame` invisibly.
 #' }
 #'
+#' The note opens with the sample size, as in [table_categorical()]:
+#' "N = 159." or, with `by`, "N = 159: Women (n = 80), Men (n = 79).", the
+#' rows the table describes and those of each group (the group of missing
+#' `by` values included), a row missing `by` under `drop_na = TRUE` or a
+#' weight left out, rows rather than weights under `weights`
+#' ("N = 60 (unweighted)."), the complete cases of each variable in its n
+#' column.
+#'
 #' The missing-value disclosure (values excluded from the summaries,
 #' and rows removed for a missing `by` value under `drop_na = TRUE`)
 #' travels with the table on every route, not just the console:
@@ -505,6 +515,9 @@
 #'   .default = c("m", "sd", "n")
 #' )
 #' ```
+#'
+#' A name that is no variable of the table warns and is left out, as in
+#' `labels`.
 #'
 #' The table's columns are the union of the requested tokens; a cell of
 #' a column the variable did not ask for is left blank (structurally
@@ -1250,6 +1263,33 @@ table_continuous <- function(
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
 
+  # The sample size, the first sentence of the note, as in
+  # table_categorical() (decision (c) of
+  # dev/decisions/2026-10-28-note-effectif.md): the rows of the data the
+  # table describes, less those a missing weight takes out of it, and under
+  # `by` the rows of each group, in table order and under the label the
+  # rows show, the group of missing `by` values of `drop_na = FALSE`
+  # included, so that the n add up to N. Under `drop_na = TRUE` a row
+  # missing `by` leaves every variable and is not in N (the missing-values
+  # sentence counts it). One N per table: the complete cases of a variable
+  # are in its n column. `groups` and `group_levels` are read when the note
+  # is built.
+  build_size_note <- function() {
+    rows_in <- if (is.null(weights_vec)) {
+      rep(TRUE, nrow(data))
+    } else {
+      !is.na(weights_vec)
+    }
+    weighted <- !is.null(weights_vec)
+    if (!has_group) {
+      return(.sample_size_sentence(sum(rows_in), weighted = weighted))
+    }
+    .sample_size_sentence(
+      groups = .group_row_counts(groups, group_levels, rows_in),
+      weighted = weighted
+    )
+  }
+
   # Decision 17: a weighted table SAYS it is weighted (STROBE-style
   # disclosure -- the reader must know the estimates are not raw).
   build_weights_note <- function() {
@@ -1348,6 +1388,13 @@ table_continuous <- function(
   }
 
   # --- label detection (shared family contract) ---
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(numeric_cols, group_col_name),
+    labels,
+    note_labels
+  )
   var_labels <- resolve_variable_labels(data, numeric_cols, labels)
   by_label <- if (has_group) {
     resolve_variable_labels(data, group_col_name, labels)
@@ -1887,12 +1934,14 @@ table_continuous <- function(
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone. The whole note is assembled
   # here, in the order of the family (`.compose_note()`): what the
-  # numbers are (the weights), the missing data, the comparison (the
-  # test of each variable, whenever the table shows its p-value or its
-  # statistic, and the adjustment), the method sentences of the columns,
-  # then the abbreviations of the headers. It opens with "Note." here.
+  # numbers are (the sample size, then the weights), the missing data,
+  # the comparison (the test of each variable, whenever the table shows
+  # its p-value, its statistic or its effect size, which belongs to the
+  # comparison, as in table_outcome(); and the adjustment), the method
+  # sentences of the columns, then the abbreviations of the headers. It
+  # opens with "Note." here.
   table_note <- .compose_note(
-    what = build_weights_note(),
+    what = c(build_size_note(), build_weights_note()),
     missing = build_missing_note(),
     inference = c(
       build_test_note(
@@ -1900,7 +1949,8 @@ table_continuous <- function(
         auto_rank,
         n_test_groups,
         stats::setNames(note_labs, numeric_cols),
-        show_test = (p_value || statistic) && has_group,
+        show_test = has_group &&
+          (p_value || statistic || has_es_request),
         n_p = .n_p_shown(result[["p.value"]], result$variable)
       ),
       .desc_p_adjust_note(p_adjust_info)
@@ -2436,8 +2486,8 @@ order_continuous_tokens <- function(tokens) {
 # `NULL` reproduces `default_tokens` (the legacy display) for every
 # variable. A character vector applies globally. A named list applies
 # per variable, with `.default` covering the variables it does not
-# name; a variable named but absent from the table is an error, not a
-# silent no-op.
+# name; a variable named but absent from the table warns and is left
+# out, never a silent no-op.
 #
 # Two incoherent requests are pruned rather than rendered: a mean CI
 # without the mean, and a median CI without the median. Both are
@@ -2478,23 +2528,9 @@ resolve_continuous_show_columns <- function(
         call = call
       )
     }
-    unknown <- setdiff(nms, c(variables, ".default"))
-    if (length(unknown) > 0L) {
-      spicy_abort(
-        c(
-          sprintf(
-            "`show_columns` names variable(s) absent from the table: %s.",
-            paste(.quote_val(unknown), collapse = ", ")
-          ),
-          "i" = sprintf(
-            "Summarized variables: %s.",
-            paste(.quote_val(variables), collapse = ", ")
-          )
-        ),
-        class = "spicy_invalid_input",
-        call = call
-      )
-    }
+    # A variable the table does not show warns and is left out, the policy
+    # of every argument named by variable (`.warn_unknown_names()`).
+    .warn_unknown_names("show_columns", nms, c(variables, ".default"))
     for (nm in nms) {
       validate_token_vector(
         show_columns[[nm]],
@@ -3338,8 +3374,9 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
 # the style's when one is in force (`.style_arg_default()`), `default`
 # otherwise -- and it is what the variables not named keep, with the
 # numbers that are on no variable's scale. A name that matches no
-# variable is ignored, as in `labels`, so one vector can serve every
-# table of a project; an unnamed vector of several values, a vector named
+# variable warns and is left out, as in `labels`, so one vector can serve
+# every table of a project (`.continuous_digits_by_var()`); an unnamed
+# vector of several values, a vector named
 # in part or twice, and a value that is not a non-negative whole number
 # are errors that give both forms.
 .continuous_digits_arg <- function(
@@ -3414,11 +3451,13 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
 # by column: its own value when the vector names it, the table's `digits`
 # otherwise. NULL without a named vector, and when no variable of the
 # table takes a value of its own, so such a call builds the very table
-# the single number builds.
+# the single number builds. A name that is no variable of the table warns
+# and is left out (`.warn_unknown_names()`).
 .continuous_digits_by_var <- function(named, vars, digits) {
   if (is.null(named)) {
     return(NULL)
   }
+  .warn_unknown_names("digits", names(named), vars)
   out <- stats::setNames(rep(digits, length(vars)), vars)
   hit <- intersect(names(named), vars)
   out[hit] <- named[hit]

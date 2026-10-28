@@ -677,6 +677,13 @@ table_multiresponse <- function(
   }
 
   # ---- the indicators, the groups, the base --------------------------------
+  # A name of `labels` or `note_labels` that is no variable of the table
+  # warns, and is left out.
+  .warn_unknown_label_names(
+    c(select_names, if (has_group) by_name),
+    labels,
+    note_labels
+  )
   item_labels <- resolve_variable_labels(data, select_names, labels)
   by_label <- if (has_group) resolve_variable_labels(data, by_name, labels)
   # The labels of the apparatus: the title and the note name a variable as

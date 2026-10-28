@@ -1433,8 +1433,9 @@
 #'   component (`nls()`, `sampleSelection::selection()`) are keyed on
 #'   their coefficient (or parameter) names alone. With several models,
 #'   a name is looked up in the terms of all of them and lands on the
-#'   rows where it exists. Names that match nothing are ignored, so one
-#'   vector can serve every table of a project. The headers of the
+#'   rows where it exists. A name that matches nothing in the table warns
+#'   (class `spicy_unknown_name`) and is left out, so one vector can still
+#'   serve every table of a project. The headers of the
 #'   subordinate blocks (`Random effects`, `Thresholds`,
 #'   `Zero-inflation`, ...) are set by the package and cannot be
 #'   relabeled here.
@@ -3466,6 +3467,20 @@ table_regression <- function(
   # frame's outcome, which the title and the outcome-headed column groups
   # read from `info$dv_display`, and the row lookup the renderer takes as
   # its `labels`. Before the explode, which copies each frame's info.
+  # A name of `labels` or `note_labels` that is no outcome, term label or
+  # coefficient name of the table warns, and is left out, as in the
+  # descriptive tables (`.warn_unknown_label_names()`).
+  .warn_unknown_label_names(
+    c(
+      .reg_label_keys(models),
+      unlist(lapply(frames, function(f) {
+        dv <- f$info$dv %||% NA_character_
+        c(dv, .reg_bare_var(dv))
+      }))
+    ),
+    labels,
+    note_labels
+  )
   var_labs <- .reg_variable_labels(labels, models, frames)
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]

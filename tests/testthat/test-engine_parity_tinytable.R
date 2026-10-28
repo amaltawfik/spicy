@@ -1230,6 +1230,34 @@ test_that("the Typst source of a note listing a missing `by` last", {
 })
 
 
+test_that("the Typst source of the sample size of a continuous table by group", {
+  skip_if_not_installed("tinytable")
+  set.seed(42)
+  d <- data.frame(
+    y = round(stats::rnorm(20, 50, 10)),
+    g = factor(rep(c("A", "B"), each = 10))
+  )
+  d$g[c(4, 15)] <- NA
+  typ <- .pt_typst(table_continuous(
+    d,
+    y,
+    by = g,
+    show_columns = c("m", "sd", "n"),
+    drop_na = FALSE,
+    p_value = FALSE,
+    output = "tinytable"
+  ))
+  # The sample size opens the note, the groups as the rows name them, the
+  # group of missing `by` values included (decision (c) of the ADR of
+  # 2026-10-28).
+  expect_match(
+    typ,
+    "[#emph[Note.] N \\= 20: A (n \\= 9), B (n \\= 9), (Missing) (n \\= 2).]",
+    fixed = TRUE
+  )
+  expect_snapshot(cat(typ))
+})
+
 # ---- the sentences a call adds to the note, and the labels of the note ---
 
 .pt_note_add_fit <- function() {

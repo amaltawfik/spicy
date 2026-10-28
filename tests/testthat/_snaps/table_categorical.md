@@ -124,7 +124,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 80: A (n \= 36), B (n \= 44). Percentages are row percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 80: A (n \= 36), B (n \= 44). Percentages are row percentages. P\-value: Pearson chi\-squared test. V \= Cramér's V.])),
           ),
           
       
@@ -161,7 +161,7 @@
          0        │  12     63.2     6     46.2      18        56.2                            
          1        │   7     36.8     7     53.8      14        43.8                            
       
-      Note. N = 32: 0 (n = 19), 1 (n = 13). Percentages are column percentages. P-values: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
+      Note. N = 32: 0 (n = 19), 1 (n = 13). Percentages are column percentages. P-values: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). Adjusted for 3 tests (Holm method). Cramér's V: cyl, gear. Phi: vs.
 
 ---
 
@@ -186,7 +186,7 @@
          0        │  12     63,2     6     46,2      18        56,2                                
          1        │   7     36,8     7     53,8      14        43,8                                
       
-      Note. N = 32 : 0 (n = 19), 1 (n = 13). Pourcentages en colonne. Valeurs p : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
+      Note. N = 32 : 0 (n = 19), 1 (n = 13). Pourcentages en colonne. Valeurs p : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
 
 # p_value = FALSE with assoc_measure = "none": a purely descriptive table
 

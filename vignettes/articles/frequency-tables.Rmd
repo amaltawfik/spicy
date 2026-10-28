@@ -201,7 +201,7 @@ cross_tab(sochealth, smoking, education,
 ### Ordinal variables
 
 When both variables are ordered factors, `cross_tab()` automatically
-switches from Cramer's V to Kendall's Tau-b:
+switches from Cramér's V to Kendall's Tau-b:
 
 ```{r cross-ordinal}
 cross_tab(sochealth, self_rated_health, education)
@@ -294,7 +294,7 @@ options(
 
 ## Learn more
 
-- [*Cramer's V, Phi, and association measures*](association-measures.html) - choosing the right effect size
+- [*Cramér's V, Phi, and association measures*](association-measures.html) - choosing the right effect size
   for your contingency table.
 - [*Categorical summary tables*](table-categorical.html) - building publication-ready
   categorical tables.

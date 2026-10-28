@@ -512,12 +512,13 @@ test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
   )
 })
 
-test_that("labels - an unknown key is ignored (decision 54)", {
+test_that("labels - an unknown key warns and is left out (decision 54)", {
   fit <- lm(mpg ~ wt, data = mt)
-  expect_identical(
-    table_regression(fit, labels = c("nonexistent_predictor" = "Foo"))$Variable,
-    table_regression(fit)$Variable
+  expect_warning(
+    out <- table_regression(fit, labels = c("nonexistent_predictor" = "Foo")),
+    class = "spicy_unknown_name"
   )
+  expect_identical(out$Variable, table_regression(fit)$Variable)
 })
 
 test_that("nested = TRUE – different nobs errors spicy_invalid_input", {
@@ -653,9 +654,14 @@ test_that("labels – a key that exists in only ONE model applies there only", {
   # The Horsepower row is empty under the model that lacks the term.
   hp_row <- out[out$Variable == "Horsepower", , drop = FALSE]
   expect_identical(nrow(hp_row), 1L)
-  # A key absent from EVERY model is ignored, like any unknown key.
+  # A key absent from EVERY model warns and is left out, like any unknown
+  # key; one that a single model holds does not warn.
+  expect_warning(
+    out_nope <- table_regression(list(m1, m2), labels = c(nope = "X")),
+    class = "spicy_unknown_name"
+  )
   expect_identical(
-    table_regression(list(m1, m2), labels = c(nope = "X"))$Variable,
+    out_nope$Variable,
     table_regression(list(m1, m2))$Variable
   )
 })
@@ -733,8 +739,12 @@ test_that("labels = TRUE - lmer: the random-effect rows keep their text", {
   expect_true(all(c("Age (years)", "Sex:", "  Male") %in% out$Variable))
   other <- !base %in% c("age", "sex:")
   expect_identical(out$Variable[other], base[other])
-  # A block header is set by the package: its name as a key is ignored.
-  blocked <- table_regression(fit, labels = c("Random effects" = "RE"))
+  # A block header is set by the package: its name as a key matches no
+  # term, warns and is left out.
+  expect_warning(
+    blocked <- table_regression(fit, labels = c("Random effects" = "RE")),
+    class = "spicy_unknown_name"
+  )
   expect_identical(blocked$Variable, base)
 })
 

@@ -52,7 +52,10 @@ test_that("table_continuous_lm returns expected raw structure", {
   )
   expect_identical(
     attr(out, "note"),
-    "Note. P-values: F-test from the linear model."
+    paste(
+      "Note. N = 150: setosa (n = 50), versicolor (n = 50),",
+      "virginica (n = 50). P-values: F-test from the linear model."
+    )
   )
 })
 
@@ -1268,7 +1271,7 @@ test_that("the note gives the order of the difference after the test, in English
   hc3 <- attr(table_continuous_lm(d, select = y, by = g, vcov = "HC3"), "note")
   expect_match(hc3, paste0("(HC3). ", delta), fixed = TRUE)
   no_p <- table_continuous_lm(d, select = y, by = g, p_value = FALSE)
-  expect_match(attr(no_p, "note"), paste0("Note. ", delta), fixed = TRUE)
+  expect_match(attr(no_p, "note"), paste0("(n = 20). ", delta), fixed = TRUE)
   # The sentence defines the glyph under every rule, so no list defines it
   # again: neither "all", which defines every other header (M still reads
   # as the mean), nor the Lancet's, which exempts no glyph.
@@ -5142,13 +5145,14 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     w = c(1, 2, 1, 1, NA, 2, 1, 3)
   )
   out <- table_continuous_lm(d, select = y, by = grp, weights = w)
-  # The weights first, then the rows removed, then the test, then the
-  # order of the difference and the abbreviations of the headers: one
-  # paragraph.
+  # The sample size and the weights first, then the rows removed, then the
+  # test, then the order of the difference and the abbreviations of the
+  # headers: one paragraph.
   expect_equal(
     attr(out, "note"),
     paste(
-      "Note. Statistics weighted by w.",
+      "Note. N = 6 (unweighted): a (n = 3), b (n = 3).",
+      "Statistics weighted by w.",
       "Missing values removed: grp (1). Rows with missing w removed: 1.",
       "P-value: t-test from the linear model.",
       "\u0394 = b \u2212 a.",
@@ -5168,7 +5172,8 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
   expect_identical(
     attr(clean, "note"),
     paste(
-      "Note. P-value: t-test from the linear model.",
+      "Note. N = 10: a (n = 5), b (n = 5).",
+      "P-value: t-test from the linear model.",
       "\u0394 = b \u2212 a.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -6123,11 +6128,12 @@ test_that("labels names the outcomes and the by variable (title, note)", {
   check(build(), "sex", "bmi")
   # No attribute, an NA one and an empty one fall back to the name.
   check(build(labels = TRUE), "Sex", "Body mass index")
-  check(
-    build(labels = c(bmi = "BMI", sex = "Gender", nope = "X")),
-    "Gender",
-    "BMI"
+  # A name that is no variable of the table warns and is left out.
+  expect_warning(
+    relabeled <- build(labels = c(bmi = "BMI", sex = "Gender", nope = "X")),
+    class = "spicy_unknown_name"
   )
+  check(relabeled, "Gender", "BMI")
   withr::local_options(spicy.var_labels = TRUE)
   check(build(labels = c(bmi = "BMI")), "Sex", "BMI")
   check(build(labels = FALSE), "sex", "bmi")
@@ -6455,7 +6461,9 @@ test_that("an outcome with no data in a level is fit on the other levels", {
   expect_identical(
     attr(x, "note"),
     paste(
-      "Note. Missing values removed: bmi (12), wellbeing_score (3).",
+      "Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),",
+      "Tertiary (n = 400).",
+      "Missing values removed: bmi (12), wellbeing_score (3).",
       "No data for wellbeing_score in Tertiary.",
       "P-values: F-test from the linear model."
     )
@@ -6536,7 +6544,8 @@ test_that("an outcome with data in one level only keeps the mean of that level",
   expect_identical(
     attr(x, "note"),
     paste(
-      "Note. Missing values removed: bmi (12).",
+      "Note. N = 1200: Female (n = 620), Male (n = 580).",
+      "Missing values removed: bmi (12).",
       "No data for wellbeing_score in Male.",
       "P-value: t-test from the linear model.",
       "\u0394 = Male \u2212 Female.",
@@ -6665,10 +6674,16 @@ test_that("the note names the test behind the p-values", {
   # follows the test.
   ci_defs <- "CI = confidence interval; LL = lower limit; UL = upper limit."
   delta <- "\u0394 = Male \u2212 Female."
+  n_sex <- "Note. N = 1200: Female (n = 620), Male (n = 580)."
+  n_edu <- paste(
+    "Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),",
+    "Tertiary (n = 400)."
+  )
   expect_identical(
     note_of(by = sex),
     paste(
-      "Note. Missing values removed: bmi (12).",
+      n_sex,
+      "Missing values removed: bmi (12).",
       "P-values: t-test from the linear model.",
       delta,
       ci_defs
@@ -6677,7 +6692,8 @@ test_that("the note names the test behind the p-values", {
   expect_identical(
     note_of(by = education),
     paste(
-      "Note. Missing values removed: bmi (12).",
+      n_edu,
+      "Missing values removed: bmi (12).",
       "P-values: F-test from the linear model."
     )
   )
@@ -6686,7 +6702,8 @@ test_that("the note names the test behind the p-values", {
   expect_identical(
     note_of(by = age),
     paste(
-      "Note. Missing values removed: bmi (12).",
+      "Note. N = 1200.",
+      "Missing values removed: bmi (12).",
       "P-values: t-test from the linear model.",
       ci_defs
     )
@@ -6694,7 +6711,7 @@ test_that("the note names the test behind the p-values", {
   # One outcome, one p-value: the singular.
   expect_identical(
     attr(table_continuous_lm(d, select = wellbeing_score, by = age), "note"),
-    paste("Note. P-value: t-test from the linear model.", ci_defs)
+    paste("Note. N = 1200. P-value: t-test from the linear model.", ci_defs)
   )
   # The asymptotic test of a resampling variance, before the estimator.
   small <- d[1:120, ]
@@ -6717,19 +6734,19 @@ test_that("the note names the test behind the p-values", {
   # No p-value, no test named; the order of the difference stays.
   expect_identical(
     note_of(by = sex, p_value = FALSE),
-    paste("Note. Missing values removed: bmi (12).", delta, ci_defs)
+    paste(n_sex, "Missing values removed: bmi (12).", delta, ci_defs)
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     note_of(by = education),
-    "Note. Valeurs manquantes retir",
+    "(n = 400). Valeurs manquantes retir",
     fixed = TRUE
   )
   expect_match(note_of(by = education), ". Valeurs p", fixed = TRUE)
   expect_match(note_of(by = education), "test F issu du mod", fixed = TRUE)
   expect_true(startsWith(
     attr(table_continuous_lm(d, select = wellbeing_score, by = age), "note"),
-    "Note. Valeur p"
+    "Note. N = 1200. Valeur p"
   ))
 })
 
@@ -6744,45 +6761,60 @@ test_that("a statistic shown without its p-value names its test: group compariso
   note_of <- function(...) {
     attr(table_continuous_lm(d, select = y, ci = FALSE, ...), "note")
   }
+  # The sample size opens every note (decision (c) of the ADR of
+  # 2026-10-28); the sentence under test follows it.
+  n3 <- "Note. N = 90: a (n = 30), b (n = 30), c (n = 30)."
+  n2 <- "Note. N = 90: a (n = 45), b (n = 45)."
+  nx <- "Note. N = 90."
   expect_identical(
     note_of(by = g3, p_value = FALSE, statistic = TRUE),
-    "Note. Group comparison: F-test from the linear model."
+    paste(n3, "Group comparison: F-test from the linear model.")
   )
   expect_identical(
     note_of(by = g2, p_value = FALSE, statistic = TRUE),
-    "Note. Group comparison: t-test from the linear model. \u0394 = b \u2212 a."
+    paste(
+      n2,
+      "Group comparison: t-test from the linear model. \u0394 = b \u2212 a."
+    )
   )
   # The slope of a numeric `by` compares no groups.
   expect_identical(
     note_of(by = x, p_value = FALSE, statistic = TRUE),
-    "Note. Slope test: t-test from the linear model."
+    paste(nx, "Slope test: t-test from the linear model.")
   )
   # The p-value shown leads the sentence, for a slope too; neither shown,
   # no test named.
   expect_identical(
     note_of(by = g3, statistic = TRUE),
-    "Note. P-value: F-test from the linear model."
+    paste(n3, "P-value: F-test from the linear model.")
   )
   expect_identical(
     note_of(by = x, statistic = TRUE),
-    "Note. P-value: t-test from the linear model."
+    paste(nx, "P-value: t-test from the linear model.")
   )
-  expect_null(note_of(by = g3, p_value = FALSE))
-  expect_null(note_of(by = x, p_value = FALSE))
+  expect_identical(note_of(by = g3, p_value = FALSE), n3)
+  expect_identical(note_of(by = x, p_value = FALSE), nx)
   withr::local_options(spicy.language = "fr")
   expect_identical(
     note_of(by = x, p_value = FALSE, statistic = TRUE),
-    "Note. Test de la pente\u00A0: test t issu du mod\u00E8le lin\u00E9aire."
+    paste(
+      nx,
+      "Test de la pente\u00A0: test t issu du mod\u00E8le lin\u00E9aire."
+    )
   )
+  n3_fr <- "Note. N = 90\u00A0: a (n = 30), b (n = 30), c (n = 30)."
   expect_identical(
     note_of(by = g3, p_value = FALSE, statistic = TRUE),
-    "Note. Comparaison des groupes\u00A0: test F issu du mod\u00E8le lin\u00E9aire."
+    paste(
+      n3_fr,
+      "Comparaison des groupes\u00A0: test F issu du mod\u00E8le lin\u00E9aire."
+    )
   )
   expect_identical(
     note_of(by = g3, statistic = TRUE),
-    "Note. Valeur p\u00A0: test F issu du mod\u00E8le lin\u00E9aire."
+    paste(n3_fr, "Valeur p\u00A0: test F issu du mod\u00E8le lin\u00E9aire.")
   )
-  expect_null(note_of(by = g3, p_value = FALSE))
+  expect_identical(note_of(by = g3, p_value = FALSE), n3_fr)
 })
 
 test_that("outcomes tested differently are each named with their test", {
@@ -6833,7 +6865,8 @@ test_that("the weights are named, and the note is one paragraph", {
   expect_identical(
     note,
     paste(
-      "Note. Statistics weighted by weight.",
+      "Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580).",
+      "Statistics weighted by weight.",
       "Adjusted for age (proportional).",
       "Missing values removed: bmi (12).",
       "P-values: t-test from the linear model.",
@@ -6854,7 +6887,7 @@ test_that("the weights are named, and the note is one paragraph", {
       ),
       "note"
     ),
-    "Note. Statistics weighted by",
+    "(n = 580). Statistics weighted by",
     fixed = TRUE
   )
 })

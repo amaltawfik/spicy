@@ -114,19 +114,24 @@ test_that("weights = 1 collapses to the unweighted table, plus its disclosure", 
     expect_identical(w[[col]], u[[col]])
   }
   expect_identical(w$weighted_n, 7)
-  # The console differs by exactly one line, the note: the weighting
-  # disclosure opens it, right after its "Note." prefix, and the rest of
-  # the note (the definitions of the interval columns) is unchanged.
+  # The console differs by exactly one line, the note: the sample size
+  # says it counts rows, the weighting disclosure follows it, and the rest
+  # of the note (the definitions of the interval columns) is unchanged.
   ou <- capture.output(print(table_continuous(d, select = x)))
   ow <- capture.output(print(table_continuous(d, select = x, weights = one)))
   note_u <- setdiff(ou, ow)
   expect_identical(
     note_u,
-    "Note. CI = confidence interval; LL = lower limit; UL = upper limit."
+    "Note. N = 7. CI = confidence interval; LL = lower limit; UL = upper limit."
   )
   expect_identical(
     setdiff(ow, ou),
-    sub("Note. ", "Note. Statistics weighted by one. ", note_u, fixed = TRUE)
+    sub(
+      "Note. N = 7. ",
+      "Note. N = 7 (unweighted). Statistics weighted by one. ",
+      note_u,
+      fixed = TRUE
+    )
   )
 })
 

@@ -247,7 +247,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] Valeur p<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré.])),
+          table.cell(align: left, colspan: 8, text(size: 0.9em, [#emph[Note.] N \= 30<U+00A0>: A (n \= 10), B (n \= 10), C (n \= 10). Valeur p<U+00A0>: test F issu du modèle linéaire. M \= moyenne<U+00A0>; R² \= coefficient de détermination<U+00A0>; ω² \= oméga\-carré.])),
           ),
           
       
@@ -644,7 +644,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] P\-value: t\-test from the linear model. Δ \= B − A.])),
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] N \= 20: A (n \= 10), B (n \= 10). P\-value: t\-test from the linear model. Δ \= B − A.])),
           ),
           
       
@@ -770,7 +770,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-values: t\-test from the linear model. Δ \= Current smoker − Never smoker. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 80: Never smoker (n \= 40), Current smoker (n \= 40). P\-values: t\-test from the linear model. Δ \= Current smoker − Never smoker. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
           ),
           
       
@@ -909,7 +909,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). Percentages are column percentages. P\-value: Pearson chi\-squared test. V \= Cramer's V.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). Percentages are column percentages. P\-value: Pearson chi\-squared test. V \= Cramér's V.])),
           ),
           
       
@@ -1159,7 +1159,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] P\-value: Welch t\-test.])),
+          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] N \= 24: A (n \= 12), B (n \= 12). P\-value: Welch t\-test.])),
           ),
           
       
@@ -1270,7 +1270,118 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Missing values removed: y (3), g (2).])),
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] N \= 18: A (n \= 9), B (n \= 9). Missing values removed: y (3), g (2).])),
+          ),
+          
+      
+        ) // end table
+      
+        ]
+        })
+      
+        // tinytable align-figure after
+      
+      ] // end block
+      ) // end figure
+
+# the Typst source of the sample size of a continuous table by group
+
+    Code
+      cat(typ)
+    Output
+      #show figure: set block(breakable: false)
+      #figure( // start preamble figure
+        caption: text([Descriptive statistics by g]),
+        kind: table, // end preamble figure
+      
+      block[ // start block
+        #set par(justify: false)
+      
+        #let style-dict = (
+          // tinytable style-dict after
+          "0_2": 0, "1_2": 0, "2_2": 0, "3_2": 0, "0_3": 0, "1_3": 0, "2_3": 0, "3_3": 0, "0_4": 0, "1_4": 0, "2_4": 0, "3_4": 0, "0_0": 1, "1_0": 1, "2_0": 1, "3_0": 1, "0_1": 1, "1_1": 1, "2_1": 1, "3_1": 1
+        )
+      
+        #let style-array = ( 
+          // tinytable cell style after
+          (align: center,),
+          (align: left,),
+        )
+      
+        // Helper function to get cell style
+        #let get-style(x, y) = {
+          let key = str(y) + "_" + str(x)
+          if key in style-dict { style-array.at(style-dict.at(key)) } else { none }
+        }
+      
+        #show table.cell: it => {
+          if style-array.len() == 0 { return it }
+          
+          let style = get-style(it.x, it.y)
+          if style == none { return it }
+          
+          let tmp = it
+          if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
+          if ("color" in style) { tmp = text(fill: style.color, tmp) }
+          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("underline" in style) { tmp = underline(tmp) }
+          if ("italic" in style) { tmp = emph(tmp) }
+          if ("bold" in style) { tmp = strong(tmp) }
+          if ("mono" in style) { tmp = math.mono(tmp) }
+          if ("strikeout" in style) { tmp = strike(tmp) }
+          if ("smallcaps" in style) { tmp = smallcaps(tmp) }
+          tmp
+        }
+      
+        // tinytable align-figure before
+        #let tinytable-coldata = (
+          ([Variable], [y], [], []),
+          ([Group], [A], [B], [(Missing)]),
+          ([M], [55.33], [48.22], [52.50]),
+          ([SD], [ 8.92], [17.30], [ 4.95]),
+          ([n], [9], [9], [2]),
+        )
+      
+        #context layout(size => {
+          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)
+          block(width: tinytable-total)[
+      
+        #table( // tinytable table start
+          columns: tinytable-naturals.map(w => w.pt() * 1fr),
+          stroke: none,
+          rows: auto,
+          align: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "align" in style { style.align } else { left }
+          },
+          fill: (x, y) => {
+            let style = get-style(x, y)
+            if style != none and "background" in style { style.background }
+          },
+       table.hline(y: 1, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 4, start: 0, end: 5, stroke: 0.06em),
+       table.hline(y: 0, start: 0, end: 5, stroke: 0.06em),
+          // tinytable lines before
+      
+          // tinytable header start
+          table.header(
+            repeat: true,
+      [Variable], [Group], [M], [SD], [n],
+          ),
+          // tinytable header end
+      
+          // tinytable cell content after
+      [y], [A], [55.33], [ 8.92], [9],
+      [], [B], [48.22], [17.30], [9],
+      [], [(Missing)], [52.50], [ 4.95], [2],
+      
+          // tinytable footer after
+      
+          table.footer(
+            repeat: false,
+            // tinytable notes after
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] N \= 20: A (n \= 9), B (n \= 9), (Missing) (n \= 2).])),
           ),
           
       
@@ -1521,7 +1632,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] Missing values removed: BMI (2), sex at birth (1).])),
+          table.cell(align: left, colspan: 5, text(size: 0.9em, [#emph[Note.] N \= 19: Female (n \= 9), Male (n \= 10). Missing values removed: BMI (2), sex at birth (1).])),
           ),
           
       
@@ -1652,7 +1763,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 10, text(size: 0.9em, [#emph[Note.] P\-values: Welch t\-test. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 10, text(size: 0.9em, [#emph[Note.] N \= 20: A (n \= 10), B (n \= 10). P\-values: Welch t\-test. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
           ),
           
       
@@ -1777,7 +1888,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] P\-value: t\-test from the linear model. Δ \= B − A. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
+          table.cell(align: left, colspan: 9, text(size: 0.9em, [#emph[Note.] N \= 40: A (n \= 20), B (n \= 20). P\-value: t\-test from the linear model. Δ \= B − A. CI \= confidence interval; LL \= lower limit; UL \= upper limit.])),
           ),
           
       

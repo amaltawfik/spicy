@@ -154,7 +154,7 @@
        Total    │    3      3 │       6 
       
       Chi-2(2) = 1.3, p = .513
-      Cramer's V = 0.47
+      Cramér's V = 0.47
       Warning: 6 expected cells < 5 (100%). 2 expected cells < 1. Minimum expected = 0.5. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # print.spicy_cross_tab: data.frame with row percentages
@@ -173,7 +173,7 @@
        Total    │   50.0    50.0 │   100.0    12 
       
       Chi-2(2) = 0.0, p = 1.000
-      Cramer's V = 0.00
+      Cramér's V = 0.00
       Warning: 6 expected cells < 5 (100%). Minimum expected = 2. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
 # print.spicy_cross_tab: weighted + by interaction
@@ -192,7 +192,7 @@
        N        │       2        6 │       8 
       
       Chi-2(1) = 0.0, p = 1.000
-      Cramer's V = 0.00
+      Cramér's V = 0.00
       Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
       Weight: w
       
@@ -207,7 +207,7 @@
        N        │       2        6 │       8 
       
       Chi-2(1) = 0.0, p = 1.000
-      Cramer's V = 0.00
+      Cramér's V = 0.00
       Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
       Weight: w
 
@@ -238,7 +238,7 @@
        age      │ F      25.60  4.83  20.00  31.00    19.61      31.59    5  .001 
                 │ M      41.60  5.41  35.00  50.00    34.88      48.32    5       
       
-      Note. P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 10: F (n = 5), M (n = 5). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_categorical_table: by + auto assoc_measure (APA Note)
 
@@ -258,7 +258,7 @@
          mid    │  2   33.3   2   33.3     4      33.3                       
          hi     │  2   33.3   2   33.3     4      33.3                       
       
-      Note. N = 12: F (n = 6), M (n = 6). Percentages are column percentages. P-values: Fisher exact test. Phi: smoking. Cramer's V: health.
+      Note. N = 12: F (n = 6), M (n = 6). Percentages are column percentages. P-values: Fisher exact test. Phi: smoking. Cramér's V: health.
 
 # print.spicy_continuous_lm_table: bivariate fit by group
 
@@ -273,7 +273,7 @@
       ──────────┼──────────────────────────────────────────────────────────
        score    │ 70.66  75.26  4.60    -0.85      10.06    .092  0.19  16 
       
-      Note. P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 16: F (n = 8), M (n = 8). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_continuous_lm_table: covariate-adjusted footer (proportional)
 
@@ -289,7 +289,7 @@
       ──────────┼──────────────────────────────────────────────────────────
        score    │ 70.38  75.59  5.22    -7.00      17.44    .373  0.20  16 
       
-      Note. Adjusted for age (proportional). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 16: F (n = 8), M (n = 8). Adjusted for age (proportional). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_continuous_lm_table: covariate-adjusted footer (balanced)
 
@@ -305,7 +305,7 @@
       ──────────┼───────────────────────────────────────────────────────────
        score    │ 66.70  76.99  10.29    -2.79      23.37    .112  0.33  16 
       
-      Note. Adjusted for age, race (balanced). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 16: F (n = 8), M (n = 8). Adjusted for age, race (balanced). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_assoc_table: omnibus 2x3 table
 
@@ -313,7 +313,7 @@
       assoc_measures(tab)
     Output
       Measure                            Estimate     SE  CI lower  CI upper     p 
-      Cramer's V                            0.154      –     0.000     0.340  .304 
+      Cramér's V                            0.154      –     0.000     0.340  .304 
       Contingency Coefficient               0.152      –         –         –  .304 
       Lambda symmetric                      0.050  0.037     0.000     0.123  .179 
       Lambda R|C                            0.100  0.073     0.000     0.244  .174 

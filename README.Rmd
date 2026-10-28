@@ -306,7 +306,7 @@ cramer_v(tbl)
 cramer_v(tbl, detail = TRUE)
 ```
 
-See [Cramer's V, Phi, and association
+See [Cramér's V, Phi, and association
 measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 for a guide on choosing the right measure.
 
@@ -461,7 +461,7 @@ Each workflow has a dedicated article on the package site:
 - [Getting started with spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)
 - [Explore variables and build codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
 - [Frequency tables and cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
-- [Cramer's V, Phi, and association measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
+- [Cramér's V, Phi, and association measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
 - [Categorical summary tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
 - [Continuous summary tables](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Model-based continuous summary tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)

@@ -59,7 +59,7 @@ and an association measure (see \code{assoc_measure}).}
 
 \item{assoc_measure}{Character. Which association measure to report.
 \code{"auto"} (default) selects Kendall's Tau-b when both variables are
-ordered factors and Cramer's V otherwise. Other choices:
+ordered factors and Cramér's V otherwise. Other choices:
 \code{"cramer_v"}, \code{"phi"}, \code{"gamma"}, \code{"tau_b"}, \code{"tau_c"},
 \code{"somers_d"}, \code{"lambda"}, \code{"none"}.}
 

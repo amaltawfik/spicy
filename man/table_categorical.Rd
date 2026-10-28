@@ -98,7 +98,8 @@ names these labels, and every other column its \code{label} attribute,
 whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
 }
 
-Names that match no column are ignored, so one vector can serve
+A name that matches no column of the table warns (class
+\code{spicy_unknown_name}) and is left out, so one vector can still serve
 every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
@@ -114,8 +115,9 @@ which reads as one. \code{labels} can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of \code{labels}, and so do the title and the notes for a variable
-\code{note_labels} does not name. Names that match no column are ignored,
-as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+\code{note_labels} does not name. A name that matches no column warns and
+is left out, as in \code{labels}, and \code{NULL} (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
@@ -323,7 +325,7 @@ column and names it in the data frames, as the effect size of
 \eqn{\gamma}{gamma} (\code{gamma}), the three others keeping their name
 (\code{"Lambda"}). The note defines the symbol as it defines any
 abbreviation, under the \code{abbreviations} rule of \code{\link[=spicy_style]{spicy_style()}}:
-"V = Cramer's V" by default, the Greek letters only under \code{"all"} and
+"V = Cramér's V" by default, the Greek letters only under \code{"all"} and
 in the \code{"jama"} and \code{"lancet"} themes. When multiple measures are used
 (typically with \code{"auto"} on a heterogeneous \code{select}), the header
 collapses to \code{"Effect size"} and the table note names the measure
@@ -668,7 +670,7 @@ each variable. See \verb{@param correct} /
 \code{simulate_p} to switch on Yates' continuity correction or Monte Carlo
 \emph{p}-values for the chi-squared test, and \verb{@param assoc_measure} for
 the per-row dispatch table used by \code{"auto"} (2x2 -> Phi, both ordered
--> Kendall's Tau-b, otherwise Cramer's V). Without \code{by}, the table
+-> Kendall's Tau-b, otherwise Cramér's V). Without \code{by}, the table
 reports the marginal frequency distribution of each variable with no
 inferential statistics.
 

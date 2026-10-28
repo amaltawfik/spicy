@@ -168,7 +168,7 @@ second-order correction, referred to *F*(ndf, `degf(design)`).
 failing when the upper tail approaches machine epsilon, and
 `"wls-score"`, which has no reporting convention here.
 
-Association measures -- Cramer's *V*, phi, tau-b/c, gamma, Somers'
+Association measures -- Cramér's *V*, phi, tau-b/c, gamma, Somers'
 *D*, lambda -- are absent, and that absence is a decision. None has an
 established design-based variance, and the intervals
 `table_categorical()` gives them assume simple random sampling. The

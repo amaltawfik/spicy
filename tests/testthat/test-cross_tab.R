@@ -17,6 +17,22 @@ test_that("cross_tab basic two-way table works", {
 })
 
 
+test_that("a string where a column is expected is refused, naming the argument", {
+  df <- data.frame(a = c("x", "y", "x", "y"), b = c("u", "u", "v", "v"))
+  for (case in list(
+    list(quote(cross_tab(df, "a", b)), "`x`"),
+    list(quote(cross_tab(df, a, "b")), "`y`"),
+    list(quote(cross_tab(df, a, b, by = "a")), "`by`")
+  )) {
+    err <- expect_error(eval(case[[1L]]), class = "spicy_invalid_input")
+    expect_identical(rlang::call_name(conditionCall(err)), "cross_tab")
+    expect_true(startsWith(conditionMessage(err), case[[2L]]))
+  }
+  # The unquoted columns and the vector form are untouched.
+  expect_s3_class(cross_tab(df, a, b), "spicy_cross_table")
+  expect_s3_class(cross_tab(df$a, df$b), "spicy_cross_table")
+})
+
 test_that("cross_tab supports grouping with by", {
   data <- mtcars
   res <- cross_tab(data, cyl, gear, by = am, output = "data.frame")
@@ -208,7 +224,7 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
     note_b,
     paste(
       "Chi-2(1) = 0.0, p = 1.000",
-      "Cramer's V = 0.00",
+      "Cram\u00e9r's V = 0.00",
       "Yates continuity correction applied.",
       "Stats computed on 2x2 sub-table after dropping empty rows / columns.",
       paste0(
@@ -241,7 +257,7 @@ test_that("cross_tab stores numeric attributes", {
   expect_true(is.numeric(attr(res, "chi2")))
   expect_true(is.numeric(attr(res, "df")))
   expect_true(is.numeric(attr(res, "p_value")))
-  expect_equal(attr(res, "assoc_measure"), "Cramer's V")
+  expect_equal(attr(res, "assoc_measure"), "Cram\u00e9r's V")
   expect_true(is.numeric(attr(res, "assoc_value")))
   expect_true(length(attr(res, "assoc_result")) == 5)
 })
@@ -258,14 +274,14 @@ test_that("cross_tab assoc_ci adds CI to note", {
   res <- cross_tab(mtcars, cyl, gear, assoc_ci = TRUE)
   expect_match(
     attr(res, "note"),
-    "Cramer's V = 0.53, 95% CI [0.22, 0.74]",
+    "Cram\u00e9r's V = 0.53, 95% CI [0.22, 0.74]",
     fixed = TRUE
   )
 })
 
 test_that("cross_tab assoc_measure = 'none' omits coefficient line", {
   res <- cross_tab(mtcars, cyl, gear, assoc_measure = "none")
-  expect_false(grepl("Cramer", attr(res, "note")))
+  expect_false(grepl("Cram\u00e9r", attr(res, "note")))
   expect_match(attr(res, "note"), "Chi-2(4) = 18.0, p = .001", fixed = TRUE)
 })
 
@@ -396,7 +412,7 @@ test_that("cross_tab adds weight note", {
   # Pin the complete note (fully deterministic).
   expect_identical(
     attr(res, "note"),
-    "Chi-2(4) = 355.1, p < .001\nCramer's V = 0.53\nWeight: mpg"
+    "Chi-2(4) = 355.1, p < .001\nCram\u00e9r's V = 0.53\nWeight: mpg"
   )
 })
 
@@ -522,7 +538,7 @@ test_that("cross_tab `decimal_mark = ','` propagates to all printed numbers", {
   # Chi-2 value should use comma decimal
   expect_match(note, "Chi-2\\(\\d+\\) = \\d+,\\d")
   # Cramer's V estimate
-  expect_match(note, "Cramer's V = \\d+,\\d{2}")
+  expect_match(note, "Cram\u00e9r's V = \\d+,\\d{2}")
   # CI uses ";" separator under decimal_mark = ","
   expect_match(note, "95% CI \\[\\d+,\\d{2}; \\d+,\\d{2}\\]")
 })

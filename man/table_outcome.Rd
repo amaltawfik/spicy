@@ -82,7 +82,8 @@ names these labels, and every other column its \code{label} attribute,
 whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
 }
 
-Names that match no column are ignored, so one vector can serve
+A name that matches no column of the table warns (class
+\code{spicy_unknown_name}) and is left out, so one vector can still serve
 every table of a project. The default reads
 \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
 call wins over it. Any other value, \code{NULL} included, is an error. A
@@ -98,8 +99,9 @@ which reads as one. \code{labels} can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of \code{labels}, and so do the title and the notes for a variable
-\code{note_labels} does not name. Names that match no column are ignored,
-as in \code{labels}, and \code{NULL} (the default) renames nothing. A note label
+\code{note_labels} does not name. A name that matches no column warns and
+is left out, as in \code{labels}, and \code{NULL} (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
@@ -475,7 +477,11 @@ and as the rows of a labelled variable of \code{\link[=table_categorical]{table_
 }
 
 \section{The table note}{
-One note sits under the table and states what left the analytic
+One note sits under the table. It opens with the sample size, as in
+\code{\link[=table_categorical]{table_categorical()}}, "N = 159.": the rows of the data, a row with a
+missing weight left out, rows rather than weights under \code{weights}
+("N = 60 (unweighted)."), the outcome's complete cases in the n of the
+\code{Overall} row. It then states what left the analytic
 sample, which group comparison ran in each block, what the displayed
 columns mean, and how the blocks and the \code{Overall} row are to be
 read. The rendering engines carry the same sentence as a table note.
