@@ -208,7 +208,12 @@ un rapport mesuré à tinytable selon le protocole upstream, rien côté spicy.
   levier dans `spicy_style()`.
 - **5** : le symbole en en-tête pour les mesures d'association (V, φ, τb,
   γ), comme `table_continuous_lm()` écrit d ou g ; la note nomme déjà la
-  mesure de chaque variable ; rupture d'en-tête publié.
+  mesure de chaque variable ; rupture d'en-tête publié. Tranché le
+  2026-10-28 (Amal, « le plus pro et robuste ») : le symbole est aussi le nom
+  de colonne de `output = "data.frame"`, par la règle unique « le data.frame
+  est le tableau affiché, ses noms de colonnes sont les en-têtes anglais » ;
+  le code lit `long` ou `tidy()`, où la mesure est une valeur ASCII stable
+  (`es_type`, `es_value`).
 - **7** : « Valeurs p : test du khi-deux de Pearson. » / « P-values:
   Pearson's chi-squared test. », au singulier quand le tableau n'a qu'un p ;
   rien à ajouter pour l'IC de la différence, que le chapeau du point 1
@@ -397,3 +402,14 @@ que la colonne Total, rôle `total`, hors tests et mesures.
   absent ;
 - la cohérence avec la base des pourcentages (point 16) : Total = 100,0 sur
   la base retenue (valide ou totale), la ligne (Manquant) gardée.
+
+## 19. La classe `spicy_gt` pour toute table descriptive (tranché le 2026-10-28)
+
+Une table descriptive sans note rendait un `gt_tbl` nu (deux tests le
+fixaient), donc sans le finaliseur LaTeX du paquet : ni moins typographique
+(point 3) ni mise en forme des caractères Unicode, alors que le même
+tableau avec une note les reçoit. Décision d'Amal, sur recommandation : la
+classe `spicy_gt` toujours, note ou pas, pour les neuf fonctions. Une règle,
+le même rendu LaTeX pour toute la famille ; la classe hérite de `gt_tbl` et
+les fonctions de gt s'appliquent comme avant. Les deux tests sont
+retournés ; une attente de famille vérifie la classe. Lot M.

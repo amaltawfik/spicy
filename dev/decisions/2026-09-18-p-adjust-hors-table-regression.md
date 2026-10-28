@@ -71,3 +71,7 @@ documentation la section « Multiple-comparison adjustment » de
 justifiée, alors qu'à l'intérieur d'un modèle unique elle ne l'est
 généralement pas. Traiter la question de la famille inter-tables avant de
 figer l'API, car c'est elle qui décide si un simple argument suffit.
+
+## Complément du 2026-10-28 : la phrase d'ajustement après la tête « P-values: »
+
+Depuis le point 7 de la spec des sorties publiables, la phrase qui nomme le test ouvre sur « P-values: » ; la phrase d'ajustement qui la suit répétait ce sujet (« P-values: Pearson chi-squared test. P-values adjusted for 3 tests (Holm method). »). Décision d'Amal du 2026-10-28, sur recommandation : dans les tables descriptives, la phrase d'ajustement perd son sujet, qui est la phrase précédente : « Adjusted for 3 tests (Holm method). » / « Ajustées pour 3 tests (méthode de Holm). ». La régression garde la phrase complète (« P-values adjusted for … within each model (Holm method), for 2 and 1 tests respectively. »), qui n'est pas précédée d'une tête « P-values: ». L'alternative, une seule phrase (« …, adjusted for 3 tests (Holm method). »), aurait touché le mécanisme partagé avec la régression. À mettre en œuvre dans le lot M.

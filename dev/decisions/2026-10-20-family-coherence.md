@@ -25,3 +25,7 @@ Amal : « un package de 15 ans doit être cohérent, robuste et stable ». Un au
 ## Conséquences
 
 Puces de rupture dans NEWS 0.14.0 pour chaque contrat publié qui change. Un test de famille par règle (vocabulaire, ordre des groupes, sens d'`output`, retour des sorties fichier) empêche qu'un frère s'en écarte de nouveau.
+
+## Complément du 2026-10-28 : les noms inconnus des arguments par variable
+
+14. **Une seule politique pour les arguments nommés par variable** (`labels`, `note_labels`, `digits`, `show_columns`) : un nom qui ne correspond à aucune colonne du tableau déclenche un avertissement classé (`spicy_unknown_name`) qui nomme l'argument et le nom, puis l'appel continue sans lui. Décision d'Amal du 2026-10-28, sur recommandation. Jusque-là `labels` et `digits` ignoraient le nom en silence (un vecteur commun à tout un projet reste possible, mais une faute de frappe passait sans bruit) et `show_columns` le refusait par une erreur (la faute était vue, mais le vecteur commun devenait impossible). L'avertissement garde les deux avantages ; qui veut le silence le coupe par `suppressWarnings()`. La 0.14.0 n'étant pas publiée, aucune puce de rupture pour `labels`, `note_labels` et `digits` ; `show_columns` passe d'une erreur à un avertissement, à dire dans sa puce si le refus datait de 0.13.0. À mettre en œuvre dans le lot M, avec une attente de parité de famille.
