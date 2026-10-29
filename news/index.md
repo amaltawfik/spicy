@@ -424,7 +424,7 @@ decimals per variable, and notes you can replace, extend, or relabel
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   which names its test; the notes of
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  still say how % and *n* are computed.
+  still define % and *n*.
 
 - The default note of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

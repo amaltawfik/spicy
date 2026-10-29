@@ -136,9 +136,8 @@ reading error carried into every translation of the table.
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 takes, with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
-`"n"`, `"weighted_n"`. See the *Choosing which statistics to show*
-section of [*Continuous summary
-tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+`"n"`, `"weighted_n"`. See the *Choosing the statistics* section of
+[`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 for the vocabulary itself; nothing about it changes here.
 
 ``` r
@@ -247,8 +246,8 @@ Each block chooses its own test from its own level count. With
 `test = "welch"` — the default — a two-level block gets the Welch
 *t*-test and a three-or-more-level block gets the Welch one-way ANOVA,
 which is why the note above names both. `effect_size = "auto"` follows
-the test the block actually ran: Hedges’s *g* beside a *t*-test,
-eta-squared beside an ANOVA, their rank homologs beside a rank test. A
+the test the block actually ran: Hedges’s *g* beside a *t*-test, eta
+squared beside an ANOVA, their rank homologs beside a rank test. A
 column can therefore mix measures from row to row, and each cell
 prefixes its own glyph.
 
@@ -703,7 +702,7 @@ table_outcome(
 | *Note.* N = 1200. P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_yhx2iclrml1hxj2v4l1c .table .tinytable
+{#tinytable_l1obabylmw3a5s1u7r5s .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

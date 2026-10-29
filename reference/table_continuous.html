@@ -359,19 +359,19 @@ per-variable form, and the test that follows a median.</p></dd>
 outputs. One of:</p><ul><li><p><code>"none"</code> (default): no effect-size column.</p></li>
 <li><p><code>"auto"</code>: auto-select the canonical measure for the chosen
 <code>test</code> and group count – Hedges's <em>g</em> (parametric, 2 groups),
-eta-squared (parametric, 3+ groups), rank-biserial <em>r</em>
-(nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
+eta squared (parametric, 3+ groups), rank-biserial <em>r</em>
+(nonparametric, 2 groups), epsilon squared (nonparametric, 3+
 groups).</p></li>
 <li><p><code>"hedges_g"</code>: Hedges's <em>g</em> (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges &amp; Olkin
 normal approximation.</p></li>
-<li><p><code>"eta2"</code>: Eta-squared (\(\eta^2\), parametric ANOVA-style
+<li><p><code>"eta2"</code>: Eta squared (\(\eta^2\), parametric ANOVA-style
 <code>SS_between / SS_total</code>). CI via inversion of the noncentral
 <em>F</em> distribution.</p></li>
 <li><p><code>"r_rb"</code>: Rank-biserial <em>r</em> from the Wilcoxon / Mann-Whitney
 statistic (2 groups, nonparametric). CI via Fisher
 <em>z</em>-transform.</p></li>
-<li><p><code>"epsilon2"</code>: Epsilon-squared (\(\varepsilon^2\)) from the
+<li><p><code>"epsilon2"</code>: Epsilon squared (\(\varepsilon^2\)) from the
 Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).</p></li>
 </ul><p>A squared measure ends in <code>2</code>, as in <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and
@@ -1143,8 +1143,8 @@ contrasts, fitted means);
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Auto-selected effect size with confidence interval (Hedges' g for</span></span></span>
-<span class="r-in"><span><span class="co"># binary `by`, eta-squared for k &gt; 2).</span></span></span>
+<span class="r-in"><span><span class="co"># Auto-selected effect size with confidence interval (Hedges's g for</span></span></span>
+<span class="r-in"><span><span class="co"># binary `by`, eta squared for k &gt; 2).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span></span>

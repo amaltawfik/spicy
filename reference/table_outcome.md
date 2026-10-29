@@ -477,7 +477,7 @@ several outcomes and one grouping, the sibling is the table you want.
 
 `show_columns` takes the same tokens as
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-with the same meanings; see the `show_columns` section of
+with the same meanings; see the *Choosing the statistics* section of
 [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 for the vocabulary. Only the character-vector form is accepted here:
 there is one outcome, so a per-variable list would name nothing.

@@ -147,12 +147,13 @@ throughout:</p>
 <span><span class="co">#&gt;  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
-<p>Three sentences under the table, and each is there because the number
-above it cannot be read without them. The design is a one-stage cluster
-sample of 15 school districts with a finite population correction; the
-standard errors come from Taylor linearization; the interval is a
-<em>t</em> interval on 14 degrees of freedom – the number of clusters
-minus one, not the 183 schools.</p>
+<p>After the sample size, three sentences of the note describe the
+design, and each is there because the number above it cannot be read
+without them. The design is a one-stage cluster sample of 15 school
+districts with a finite population correction; the standard errors come
+from Taylor linearization; the interval is a <em>t</em> interval on 14
+degrees of freedom – the number of clusters minus one, not the 183
+schools.</p>
 <p>That last point is worth dwelling on. <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> on a
 survey object uses the <em>normal</em> distribution by default:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">

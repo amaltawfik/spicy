@@ -51,12 +51,12 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
-Three sentences under the table, and each is there because the number
-above it cannot be read without them. The design is a one-stage cluster
-sample of 15 school districts with a finite population correction; the
-standard errors come from Taylor linearization; the interval is a *t*
-interval on 14 degrees of freedom – the number of clusters minus one,
-not the 183 schools.
+After the sample size, three sentences of the note describe the design,
+and each is there because the number above it cannot be read without
+them. The design is a one-stage cluster sample of 15 school districts
+with a finite population correction; the standard errors come from
+Taylor linearization; the interval is a *t* interval on 14 degrees of
+freedom – the number of clusters minus one, not the 183 schools.
 
 That last point is worth dwelling on.
 [`confint()`](https://rdrr.io/r/stats/confint.html) on a survey object

@@ -273,9 +273,9 @@ table_continuous(
 ```
 
 `effect_size = "auto"` selects the canonical measure for the chosen
-`test` and number of groups: Hedges’s *g* (parametric, 2 groups),
-eta-squared (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
-groups), or epsilon-squared (nonparametric, 3+ groups). To pick a
+`test` and number of groups: Hedges’s *g* (parametric, 2 groups), eta
+squared (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
+groups), or epsilon squared (nonparametric, 3+ groups). To pick a
 specific measure explicitly, pass its character name:
 
 ``` r
@@ -1007,7 +1007,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_olotteain2py2uguriwo
+Descriptive statistics by education {#tinytable_ml7tk4gen96zy9yxpihc
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

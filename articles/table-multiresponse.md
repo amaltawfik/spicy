@@ -199,7 +199,7 @@ Four things to notice:
     [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
     mark it as not an item.
 4.  **The note says what the percentages sum to** and which respondents
-    form the base: the 36 with no data for the question are not in it.
+    form the base: the 36 with no answer to the question are not in it.
 
 `select` takes tidyselect syntax, so `select = info_doctor:info_media`
 and the five names written in [`c()`](https://rdrr.io/r/base/c.html)
@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_0yvb23n5eceohr2sxe08 .table
+Multiple responses by Sex {#tinytable_7ayp09a9e27qz84fefqp .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

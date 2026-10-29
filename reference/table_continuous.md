@@ -252,22 +252,22 @@ table_continuous(
   - `"none"` (default): no effect-size column.
 
   - `"auto"`: auto-select the canonical measure for the chosen `test`
-    and group count – Hedges's *g* (parametric, 2 groups), eta-squared
+    and group count – Hedges's *g* (parametric, 2 groups), eta squared
     (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
-    groups), epsilon-squared (nonparametric, 3+ groups).
+    groups), epsilon squared (nonparametric, 3+ groups).
 
   - `"hedges_g"`: Hedges's *g* (bias-corrected standardized mean
     difference, 2 groups, parametric). CI via the Hedges & Olkin normal
     approximation.
 
-  - `"eta2"`: Eta-squared (\\\eta^2\\, parametric ANOVA-style
+  - `"eta2"`: Eta squared (\\\eta^2\\, parametric ANOVA-style
     `SS_between / SS_total`). CI via inversion of the noncentral *F*
     distribution.
 
   - `"r_rb"`: Rank-biserial *r* from the Wilcoxon / Mann-Whitney
     statistic (2 groups, nonparametric). CI via Fisher *z*-transform.
 
-  - `"epsilon2"`: Epsilon-squared (\\\varepsilon^2\\) from the
+  - `"epsilon2"`: Epsilon squared (\\\varepsilon^2\\) from the
     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
     percentile bootstrap (2 000 replicates).
 
@@ -1161,8 +1161,8 @@ table_continuous(
 
 # --- Effect sizes -------------------------------------------------------
 
-# Auto-selected effect size with confidence interval (Hedges' g for
-# binary `by`, eta-squared for k > 2).
+# Auto-selected effect size with confidence interval (Hedges's g for
+# binary `by`, eta squared for k > 2).
 table_continuous(
   sochealth,
   select = wellbeing_score,

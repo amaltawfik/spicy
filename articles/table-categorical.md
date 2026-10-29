@@ -400,7 +400,7 @@ not a contradiction. Goodman-Kruskal lambda measures the proportional
 reduction in the error of predicting the row variable once the group is
 known, and it is exactly 0 whenever the modal category is the same in
 every group: here “No” is the most frequent answer at all three
-education levels (68.6%, 77.0%, 83.0%), so knowing education never
+education levels (69.6%, 78.7%, 84.9%), so knowing education never
 changes the best single guess, even though the distributions clearly
 differ (hence the significant chi-squared test).
 
@@ -1097,7 +1097,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_1fuj7hhdrg8x1go300lk .table
+Categorical table by sex {#tinytable_9zuwizscjaqrop1yghfg .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

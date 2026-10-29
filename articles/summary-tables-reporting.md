@@ -622,14 +622,11 @@ table_regression(
 #> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
 ```
 
-The default footer documents the variance estimator, flags standardized
-coefficients (`β = standardized coefficient`), and reports any
+The default footer documents the variance estimator, defines the
+standardized coefficients with the method that produced them
+(`β = standardized coefficient ("refit": ...)`), and reports any
 multiplicity correction, so the inferential regime is visible without
-leaving the table. One thing it does not carry: the *name* of the
-standardization method. Here `standardized = "refit"` produced the β
-column, but the footer would read the same under any of the five
-methods, so record the method in the table note or the text of the
-article.
+leaving the table.
 
 Side-by-side reporting of competing specifications (e.g., unadjusted
 vs. covariate-adjusted, or `lm` vs. `glm`) is supported by passing a
@@ -800,11 +797,12 @@ table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #> N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-value: Pearson chi-squared test.
 ```
 
-Two things change here. JAMA rounds *p* values to two decimals (`.71`),
-where the default reports three (`.713`), and the note opens without the
-word “Note.”, as the AMA manual sets table notes.
-`spicy_style(note_label = )` chooses that word for any style: “Note.”
-(APA), “Note:” (Chicago), or none.
+Three things change here. JAMA rounds *p* values to two decimals
+(`.71`), where the default reports three (`.713`), and the note opens
+without the word “Note.”, as the AMA manual sets table notes. Its first
+line defines the φ of the header, which the APA default leaves
+undefined. `spicy_style(note_label = )` chooses that word for any style:
+“Note.” (APA), “Note:” (Chicago), or none.
 
 Two properties make styles safe to adopt. A style only moves *display*
 defaults — decimals, *p* notation, interval punctuation, the word that
@@ -1020,7 +1018,7 @@ tab |>
     subtitle = "Categorical summary table"
   ) |>
   gt::tab_source_note(
-    gt::md("*Percentages are computed within each education group.*")
+    gt::md("*Source: sochealth, a simulated survey of 1,200 adults.*")
   )
 ```
 
@@ -1068,7 +1066,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_sfthdmc2okslvb1jbbbs .table
+Categorical table by education {#tinytable_a2ezzmtrqgqv0xd5r59h .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
