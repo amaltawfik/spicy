@@ -143,7 +143,7 @@ table_regression_uv(
   The names are the outcome and predictor columns and the coefficient
   names (`"sexMale"` names the row of one level), as in
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
-  Names that match nothing are ignored. The default reads
+  A name that matches nothing warns and is left out. The default reads
   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
   wins over it. Any other value, `NULL` included, is an error. A
   variable label documents the data file; a published table carries the
@@ -175,11 +175,11 @@ table_regression_uv(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - note:
 

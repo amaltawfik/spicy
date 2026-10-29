@@ -39,7 +39,7 @@ freq()."><meta property="og:image" content="https://amaltawfik.github.io/spicy/l
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -168,7 +168,7 @@ and an association measure (see <code>assoc_measure</code>).</p></dd>
 <dt id="arg-assoc-measure">assoc_measure<a class="anchor" aria-label="anchor" href="#arg-assoc-measure"></a></dt>
 <dd><p>Character. Which association measure to report.
 <code>"auto"</code> (default) selects Kendall's Tau-b when both variables are
-ordered factors and Cramer's V otherwise. Other choices:
+ordered factors and Cramér's V otherwise. Other choices:
 <code>"cramer_v"</code>, <code>"phi"</code>, <code>"gamma"</code>, <code>"tau_b"</code>, <code>"tau_c"</code>,
 <code>"somers_d"</code>, <code>"lambda"</code>, <code>"none"</code>.</p></dd>
 
@@ -359,7 +359,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Column percentages</span></span></span>
@@ -375,7 +375,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  N        <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Weighted (rescaled)</span></span></span>
@@ -390,7 +390,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               256                534         386 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt; .001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Weight: weight (rescaled)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
@@ -406,7 +406,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               133                282         191 <span style="color: #9E9E9E;">│</span>     606 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (14).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span>
@@ -419,7 +419,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               124                245         200 <span style="color: #9E9E9E;">│</span>     569 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; .001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.17</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (11).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by combination of variables</span></span></span>
@@ -434,7 +434,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                32                 58          36 <span style="color: #9E9E9E;">│</span>     126 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .356</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (4).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span>
@@ -447,7 +447,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                20                 53          36 <span style="color: #9E9E9E;">│</span>     109 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt; .001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.36</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.36</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span>
@@ -460,7 +460,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                34                 93          56 <span style="color: #9E9E9E;">│</span>     183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = .223</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (7).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span>
@@ -473,7 +473,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                47                 76          67 <span style="color: #9E9E9E;">│</span>     190 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = .032</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.19</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span>
@@ -486,7 +486,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                36                 79          51 <span style="color: #9E9E9E;">│</span>     166 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = .360</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (3).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span>
@@ -499,7 +499,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                36                 71          47 <span style="color: #9E9E9E;">│</span>     154 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .343</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.12</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (4).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span>
@@ -512,7 +512,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                31                 52          48 <span style="color: #9E9E9E;">│</span>     131 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 2.5, p = .282</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -524,7 +524,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>                21                 45          50 <span style="color: #9E9E9E;">│</span>     116 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = .499</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (1).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Ordinal variables: auto-selects Kendall's Tau-b</span></span></span>
@@ -555,7 +555,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>   639    536 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(1) = 0.0, p = .896</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0.01</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0.01</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Yates continuity correction applied.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
@@ -571,7 +571,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21,6, p &lt; 0,0001</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0,14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramér's V = 0,14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

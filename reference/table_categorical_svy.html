@@ -45,7 +45,7 @@ of freedom."><meta property="og:image" content="https://amaltawfik.github.io/spi
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -188,7 +188,8 @@ unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>T
 <li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
 names these labels, and every other column its <code>label</code> attribute,
 whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
-</ul><p>Names that match no column are ignored, so one vector can serve
+</ul><p>A name that matches no column of the table warns (class
+<code>spicy_unknown_name</code>) and is left out, so one vector can still serve
 every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
@@ -206,8 +207,9 @@ which reads as one. <code>labels</code> can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of <code>labels</code>, and so do the title and the notes for a variable
-<code>note_labels</code> does not name. Names that match no column are ignored,
-as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+<code>note_labels</code> does not name. A name that matches no column warns and
+is left out, as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
@@ -536,7 +538,7 @@ the reference distribution is Rao-Scott's. <code>percent</code>, not yet: a row
 percentage is estimated within its level, a domain of its own, so every
 level of every variable would bring its own degrees of freedom,
 intervals and design effects. And the association
-measures: Cramer's V, phi, tau-b/c, gamma, Somers' D and lambda
+measures: Cramér's V, phi, tau-b/c, gamma, Somers' D and lambda
 have no established design-based variance, and the intervals
 <code><a href="table_categorical.html">table_categorical()</a></code> gives them assume simple random sampling. The
 design-based measure of association here is the Rao-Scott test in

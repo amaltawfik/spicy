@@ -73,7 +73,7 @@ data.frame (&quot;long&quot;), or rendered outputs (&quot;tinytable&quot;, &quot
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -569,7 +569,8 @@ unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>T
 <li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
 names these labels, and every other column its <code>label</code> attribute,
 whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
-</ul><p>Names that match no column are ignored, so one vector can serve
+</ul><p>A name that matches no column of the table warns (class
+<code>spicy_unknown_name</code>) and is left out, so one vector can still serve
 every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
@@ -587,8 +588,9 @@ which reads as one. <code>labels</code> can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of <code>labels</code>, and so do the title and the notes for a variable
-<code>note_labels</code> does not name. Names that match no column are ignored,
-as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+<code>note_labels</code> does not name. A name that matches no column warns and
+is left out, as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
@@ -607,8 +609,9 @@ sets them for every outcome (default: <code>2</code>), and the test statistic an
 the weighted <em>n</em> with them. A vector named by column, not by label,
 gives each outcome it names its own, <code>digits = c(height = 0, bmi = 1)</code>;
 the other outcomes, the test statistic and the weighted <em>n</em> keep the
-default, the <code>digits</code> of a <code><a href="spicy_style.html">spicy_style()</a></code> in force included. Names
-that match no outcome are ignored, as in <code>labels</code>. A fraction (<code>2.9</code>)
+default, the <code>digits</code> of a <code><a href="spicy_style.html">spicy_style()</a></code> in force included. A name
+that matches no outcome warns and is left out, as in <code>labels</code>. A
+fraction (<code>2.9</code>)
 is an error, as for <code>fit_digits</code> and <code>effect_size_digits</code>. The
 <em>p</em>-value (<code>p_digits</code>), the \(R^2\) (<code>fit_digits</code>), the effect
 size (<code>effect_size_digits</code>) and the counts keep their own decimals.</p></dd>
@@ -1028,9 +1031,15 @@ CI is shown in the wide outputs; instead, the table reports
 level-specific means plus the overall <code>F</code> test when
 <code>statistic = TRUE</code> (or <code>F(df1, df2)</code> when the degrees of freedom are
 constant across outcomes).</p>
-<p>When <code>covariates</code> is non-empty, the printed ASCII table appends an
-APA-style footer naming the covariates and the chosen estimand, e.g.
-<code>Note. Adjusted for age, education (proportional).</code> With p-values, the
+<p>The note opens with the sample size, as in <code><a href="table_categorical.html">table_categorical()</a></code>:
+"N = 159." for a numeric <code>by</code>,
+"N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
+rows with a <code>by</code> value, a row with a missing weight left out, rows
+rather than weights under <code>weights</code> ("N = 60 (unweighted)."), the
+complete cases of each model in its n column.</p>
+<p>When <code>covariates</code> is non-empty, the note then names the covariates and
+the chosen estimand, e.g.
+<code>Adjusted for age, education (proportional).</code> With p-values, the
 note also names the test behind them, read off each outcome's model:
 <code>P-values: t-test from the linear model.</code> (the F-test for a <code>by</code> with
 more than two levels, the t-test of the slope for a numeric <code>by</code>), in
@@ -1222,7 +1231,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.13       5.64     &lt;.001  0.02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1247,7 +1256,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with weighted analysis and weighted n column.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1273,7 +1282,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.25  1200   1196.47   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.13  1188   1183.32   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580). Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with noncentral t confidence interval (bracket notation).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1297,7 +1306,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.25 [0.14, 0.36]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.14 [0.02, 0.25]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cohen's f-squared alongside R-squared (familiar power-analysis effect size).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1320,7 +1329,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hays's omega-squared for a 3-level predictor ("cohens_d" and</span></span></span>
 <span class="r-in"><span><span class="co"># "hedges_g" need two groups).</span></span></span>
@@ -1344,7 +1353,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.21  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.13  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: F-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: F-test from the linear model.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Robust SE for a numeric predictor ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1363,7 +1372,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score   <span style="color: #9E9E9E;">│</span>  0.04     .176    0.00    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi               <span style="color: #9E9E9E;">│</span>  0.04    &lt;.001    0.02    1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cluster-robust SE for repeated-measures data: the `sleep` dataset</span></span></span>
 <span class="r-in"><span><span class="co"># has 10 subjects measured twice (one observation per group).</span></span></span>
@@ -1388,7 +1397,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75  2.33  1.58    0.70       2.46     .003  0.16  20 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Covariate adjustment ----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1411,7 +1420,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.27   70.93  3.65    2.08       5.23     &lt;.001  0.22  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.65   26.23  0.58    0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Same model with the emmeans / SPSS UNIANOVA convention (equal-weight</span></span></span>
 <span class="r-in"><span><span class="co"># marginal means on a synthetic covariate grid).</span></span></span>
@@ -1432,7 +1441,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 65.90   69.56  3.65    2.08       5.23     &lt;.001  0.22  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.89   26.46  0.58    0.19       0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Effect sizes adjust automatically: f2 / omega2 become partial</span></span></span>
 <span class="r-in"><span><span class="co"># effect sizes via the partial F restricted to the focal `by`.</span></span></span>
@@ -1459,7 +1468,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.02 [0.01, 0.04]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 0.01 [0.00, 0.02]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Article-style polish -----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1488,7 +1497,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>  0.01    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>  0.00    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># European decimal comma.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1511,7 +1520,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Regex selection of all columns starting with "life_sat".</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1538,7 +1547,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span> 1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span> 1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

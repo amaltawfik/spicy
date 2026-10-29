@@ -56,7 +56,7 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -187,7 +187,7 @@ variables, and a grouping variable:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5               </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 <p>The default output is <code>"default"</code>, which prints a styled
 ASCII table to the console, folded into successive panels when it is
 wider than the console. Reading the table: each level of <code>by</code>
@@ -202,7 +202,7 @@ panel, <code>p</code> is the <em>p</em>-value of the test of association
 between the row variable and <code>by</code>, computed once per variable
 on its full cross-table (Pearson’s chi-squared here, as the note says;
 see the test section below), and the final column is the association
-measure – here Cramer’s V (covered below). Use
+measure – here Cramér’s V (covered below). Use
 <code>output = "data.frame"</code> for a plain data frame suitable for
 further processing.</p>
 <p><code>percent = "row"</code> reads the table the other way: each cell
@@ -243,7 +243,7 @@ direction, and the note says the percentages are row percentages.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼──────────────────────────────</span></span></span>
 <span><span class="co">#&gt;    Total           <span style="color: #9E9E9E;">│</span>  1200     100.0              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: No (n = 926), Yes (n = 249), (Missing) (n = 25). Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: No (n = 926), Yes (n = 249), (Missing) (n = 25). Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="one-way-tables">One-way tables<a class="anchor" aria-label="anchor" href="#one-way-tables"></a>
@@ -406,11 +406,13 @@ publish: the listed columns take them, and the others follow
 <code>options(spicy.var_labels)</code> (their name unless it is
 <code>TRUE</code>).
 <code>labels = var_labels(smoking = "Smoking status")</code> renames the
-same way while the others keep their label attribute. Names that match
-no column are ignored, so one vector can serve every table of a report.
-The <code>by</code> variable in the title follows the same rule, as in
-the other summary tables. (Unnamed positional label vectors, accepted
-before 0.13.0, now raise an error.)</p>
+same way while the others keep their label attribute. A name that
+matches no column of the table warns and is left out, so one vector can
+still serve every table of a report (wrap the call in
+<code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> to quiet it). The <code>by</code>
+variable in the title follows the same rule, as in the other summary
+tables. (Unnamed positional label vectors, accepted before 0.13.0, now
+raise an error.)</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -456,7 +458,7 @@ before 0.13.0, now raise an error.)</p>
 <span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2               </span></span>
 <span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="association-measures-and-confidence-intervals">Association measures and confidence intervals<a class="anchor" aria-label="anchor" href="#association-measures-and-confidence-intervals"></a>
@@ -469,10 +471,10 @@ row variable based on the variable type
 <strong>2x2</strong> (binary row variable vs. binary
 <code>by</code>) -&gt; <code>phi</code>,</li>
 <li>both ordered factors -&gt; Kendall’s <code>tau_b</code>,</li>
-<li>otherwise -&gt; Cramer’s <code>V</code>.</li>
+<li>otherwise -&gt; Cramér’s <code>V</code>.</li>
 </ul>
 <p>A measure used for every row heads the column, and names it in the
-data frames, with its symbol (V for Cramer’s V, φ for phi, τb for
+data frames, with its symbol (V for Cramér’s V, φ for phi, τb for
 Kendall’s tau-b, γ for gamma; the other measures keep their names). The
 note defines the symbol as it defines any abbreviation: V by default,
 the Greek letters under <code>spicy_style(abbreviations = "all")</code>.
@@ -484,7 +486,7 @@ for each variable.</p>
 <code>"tau_c"</code>, <code>"somers_d"</code>, and
 <code>"lambda"</code>; <code>assoc_measure = "none"</code> drops the
 column entirely. See <code><a href="../reference/table_categorical.html">?table_categorical</a></code> for the dispatch
-details and <a href="association-measures.html"><em>Cramer’s V, Phi, and
+details and <a href="association-measures.html"><em>Cramér’s V, Phi, and
 association measures</em></a> for definitions and guidance on choosing
 among them. Override the automatic choice with a single string for
 uniform application, or with a named vector to mix measures per row:</p>
@@ -530,7 +532,7 @@ changes the best single guess, even though the distributions clearly
 differ (hence the significant chi-squared test).</p>
 <p>In a named vector, variables you do not name keep the
 <code>"auto"</code> choice, so only the overrides need to be listed.
-Here <code>"auto"</code> would pick Cramer’s V for <code>smoking</code>
+Here <code>"auto"</code> would pick Cramér’s V for <code>smoking</code>
 (binary x ordered, not 2x2) and Kendall’s Tau-b for
 <code>self_rated_health</code> (ordered x ordered); the named vector
 keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
@@ -586,8 +588,8 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>  25.0                       </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.</span></span></span></code></pre></div>
-<p><code>smoking</code> keeps its automatic Cramer’s V (.14) while
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. Cramér's V: smoking. Goodman-Kruskal Gamma: self_rated_health.</span></span></span></code></pre></div>
+<p><code>smoking</code> keeps its automatic Cramér’s V (.14) while
 <code>self_rated_health</code> switches from the automatic Tau-b (.20)
 to Gamma (.31) – Gamma is larger on the same table because it ignores
 tied pairs. Since the two measures differ, the header collapses to
@@ -716,7 +718,7 @@ variable:</p>
 <span><span class="co">#&gt;    Upper secondary <span style="color: #9E9E9E;">│</span>             </span></span>
 <span><span class="co">#&gt;    Tertiary        <span style="color: #9E9E9E;">│</span>             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramér's V: education.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="descriptive-tables-without-tests">Descriptive tables without tests<a class="anchor" aria-label="anchor" href="#descriptive-tables-without-tests"></a>
@@ -795,7 +797,7 @@ row beside <code>p</code>:</p>
 <span><span class="co">#&gt;    Very good       <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| &gt; 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| &gt; 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.</span></span></span></code></pre></div>
 <p>Two categories give the Bernoulli form, <strong>signed</strong>,
 group 1 minus group 2 in the order the table displays them. Three or
 more give the multivariate (Mahalanobis) distance between the two
@@ -873,7 +875,7 @@ fractional weighted counts:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.6               </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.4               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
@@ -1022,7 +1024,7 @@ association measure:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 <p><code>p_digits</code> drives both the displayed precision of the
 <code>p</code> column and the small-<em>p</em> threshold
 (<code>p_digits = 3</code> -&gt; <code>&lt;.001</code>,
@@ -1782,7 +1784,7 @@ dentist_12m
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> N = 1200: Lower secondary (n = 261), Upper secondary (n =
 539), Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramer’s V.
+Pearson chi-squared test. V = Cramér’s V.
 </div>
 </div>
 </div>
@@ -1800,54 +1802,54 @@ table by sex):</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_ztmsnr2gdvbqmrtprjym = TinyTable.createTableFunctions("tinytable_ztmsnr2gdvbqmrtprjym");
+      const tableFns_1fuj7hhdrg8x1go300lk = TinyTable.createTableFunctions("tinytable_1fuj7hhdrg8x1go300lk");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_iu1g89v0zw5zqkp707gc',}, 
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_jqh66nx5kgd77a8lh68k',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_r1t91uuzc7udkipczsz5',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_7vg7i01ufmgbhmdjc175',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_sorebt3aodfdwt9lvnz3',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_olpo2r26trjdhbjhzv1k',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_xdiq9hsx7fc2ddz32qwf',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_vz6ec03ouv914vsd804s',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_hvynycy3228wmirzm3cv',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_ysww6g2pdo0a2dlzjcvx',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_ggdr7ll79rqyfz1cia3l',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_b4kohew9ar83613p5c36',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_1f6alb7eqgtar2zrg5tu',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_qtqbzcnd222mjv7y5wqw',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_cplejvxygp5i2bvriavp',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_olotteain2py2uguriwo',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_6ly3zbdg87ih5sxmk0b9',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_aq5t4gur4hwl0ngbx1fq',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_j987pjm37wpdsomyz2sa',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_rmnyky9c352l0odimnms',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_y6ccaxa255p6k0e0dt64',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_iduuufyrng55z5f3w3kt',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_0h7qz2dvzmpwl7f4n290',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_jjjdnyhrq5fw0ehke5av',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_s1fyaw9wbbzhqh8jf8t9',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_t8v5h4jaeepg74bcc1d4',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_8deym41izzxlb5db1hjc',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_leanossru1gfpyinhdsg',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_ztmsnr2gdvbqmrtprjym.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_1fuj7hhdrg8x1go300lk.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_iu1g89v0zw5zqkp707gc, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_iu1g89v0zw5zqkp707gc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_jqh66nx5kgd77a8lh68k, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_jqh66nx5kgd77a8lh68k { text-align: center; white-space: nowrap; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_r1t91uuzc7udkipczsz5, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_r1t91uuzc7udkipczsz5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_7vg7i01ufmgbhmdjc175, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_7vg7i01ufmgbhmdjc175 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_sorebt3aodfdwt9lvnz3, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_sorebt3aodfdwt9lvnz3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_olpo2r26trjdhbjhzv1k, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_olpo2r26trjdhbjhzv1k { text-align: center }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_xdiq9hsx7fc2ddz32qwf, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_xdiq9hsx7fc2ddz32qwf {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_vz6ec03ouv914vsd804s, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_vz6ec03ouv914vsd804s {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_hvynycy3228wmirzm3cv, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_hvynycy3228wmirzm3cv {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_ysww6g2pdo0a2dlzjcvx, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_ysww6g2pdo0a2dlzjcvx {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_ggdr7ll79rqyfz1cia3l, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_ggdr7ll79rqyfz1cia3l { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_b4kohew9ar83613p5c36, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_b4kohew9ar83613p5c36 { text-align: left }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_1f6alb7eqgtar2zrg5tu, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_1f6alb7eqgtar2zrg5tu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_ztmsnr2gdvbqmrtprjym td.tinytable_css_qtqbzcnd222mjv7y5wqw, #tinytable_ztmsnr2gdvbqmrtprjym th.tinytable_css_qtqbzcnd222mjv7y5wqw {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_cplejvxygp5i2bvriavp, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_cplejvxygp5i2bvriavp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_olotteain2py2uguriwo, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_olotteain2py2uguriwo { text-align: center; white-space: nowrap; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_6ly3zbdg87ih5sxmk0b9, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_6ly3zbdg87ih5sxmk0b9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_aq5t4gur4hwl0ngbx1fq, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_aq5t4gur4hwl0ngbx1fq {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_j987pjm37wpdsomyz2sa, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_j987pjm37wpdsomyz2sa {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_rmnyky9c352l0odimnms, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_rmnyky9c352l0odimnms { text-align: center }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_y6ccaxa255p6k0e0dt64, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_y6ccaxa255p6k0e0dt64 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_iduuufyrng55z5f3w3kt, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_iduuufyrng55z5f3w3kt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_0h7qz2dvzmpwl7f4n290, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_0h7qz2dvzmpwl7f4n290 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_jjjdnyhrq5fw0ehke5av, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_jjjdnyhrq5fw0ehke5av {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_s1fyaw9wbbzhqh8jf8t9, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_s1fyaw9wbbzhqh8jf8t9 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_t8v5h4jaeepg74bcc1d4, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_t8v5h4jaeepg74bcc1d4 { text-align: left }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_8deym41izzxlb5db1hjc, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_8deym41izzxlb5db1hjc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_1fuj7hhdrg8x1go300lk td.tinytable_css_leanossru1gfpyinhdsg, #tinytable_1fuj7hhdrg8x1go300lk th.tinytable_css_leanossru1gfpyinhdsg {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_ztmsnr2gdvbqmrtprjym" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_1fuj7hhdrg8x1go300lk" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by sex</caption>
         <thead>
 <tr>
@@ -2476,7 +2478,7 @@ physical_activity
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> N = 1200: Lower secondary (n = 261), Upper secondary (n =
 539), Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramer’s V; CI = confidence interval; LL =
+Pearson chi-squared test. V = Cramér’s V; CI = confidence interval; LL =
 lower limit; UL = upper limit.
 </div>
 </div>

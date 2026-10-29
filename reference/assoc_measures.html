@@ -31,7 +31,7 @@ two-way contingency table and returns them in a tidy data frame."><meta property
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -119,7 +119,7 @@ result (default <code>3</code>).</p></dd>
     <p>A data frame with columns <code>measure</code>, <code>estimate</code>, <code>se</code>,
 <code>ci_lower</code>, <code>ci_upper</code>, and <code>p_value</code>. The <code>p_value</code> comes
 from two test families:</p><ul><li><p><strong>Pearson chi-squared test of independence</strong> for
-Cramer's V, Phi, and the Contingency Coefficient (the
+Cramér's V, Phi, and the Contingency Coefficient (the
 three chi-squared-derived nominal measures). All three
 carry the same chi-squared <em>p</em>-value on a given table.</p></li>
 <li><p><strong>Wald z-test of H0: measure = 0</strong> for every other
@@ -186,7 +186,7 @@ Statistics</em>. R package.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">smoking</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">education</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Measure                            Estimate     SE  CI lower  CI upper      p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cramér's V                            0.136      –     0.079     0.191  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134      –         –         –  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000      – </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000      – </span>
@@ -203,7 +203,7 @@ Statistics</em>. R package.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  &lt;.001 </span>
 <span class="r-in"><span><span class="fu">assoc_measures</span><span class="op">(</span><span class="va">tab</span>, type <span class="op">=</span> <span class="st">"nominal"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Measure                            Estimate     SE  CI lower  CI upper      p </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cramér's V                            0.136      –     0.079     0.191  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Contingency Coefficient               0.134      –         –         –  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lambda symmetric                      0.000  0.000     0.000     0.000      – </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lambda R|C                            0.000  0.000     0.000     0.000      – </span>

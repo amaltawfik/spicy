@@ -247,13 +247,14 @@ table_continuous_svy(
     [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
     alone is `labels = TRUE`.
 
-  Names that match no column are ignored, so one vector can serve every
-  table of a project. The default reads `options(spicy.var_labels)`, and
-  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
-  `NULL` included, is an error. A variable label documents the data
-  file; a published table carries the wording you set here.
-  `note_labels` gives a variable a shorter label in the title and the
-  notes.
+  A name that matches no column of the table warns (class
+  `spicy_unknown_name`) and is left out, so one vector can still serve
+  every table of a project. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here. `note_labels` gives a variable a shorter label
+  in the title and the notes.
 
 - note_labels:
 
@@ -265,11 +266,11 @@ table_continuous_svy(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - ci_level:
 
@@ -287,10 +288,10 @@ table_continuous_svy(
   `digits = c(height = 0, bmi = 1)`; the other variables, the weighted
   *n* and the design effect keep the default, the `digits` of a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  in force included. Names that match no variable are ignored, as in
-  `labels`. A fraction is an error, as for every `*_digits` argument.
-  The *p*-values (`p_digits`), the test statistics (two decimals) and
-  the counts keep their own decimals.
+  in force included. A name that matches no variable warns and is left
+  out, as in `labels`. A fraction is an error, as for every `*_digits`
+  argument. The *p*-values (`p_digits`), the test statistics (two
+  decimals) and the counts keep their own decimals.
 
 - p_digits:
 

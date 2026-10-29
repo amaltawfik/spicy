@@ -24,9 +24,9 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="spicy: publication-ready summary and regression tables for R">
-<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, publication-ready regression tables for one or more fitted models side by side (30+ model classes), and codebooks in the console, Excel, or PDF. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
+<meta name="description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramér's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, publication-ready regression tables for one or more fitted models side by side (30+ model classes), and codebooks in the console, Excel, or PDF. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
-<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramer's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, publication-ready regression tables for one or more fitted models side by side (30+ model classes), and codebooks in the console, Excel, or PDF. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
+<meta property="og:description" content="R package for frequency tables, cross-tabulations with chi-squared tests and association measures (Cramér's V, Phi, Gamma, Kendall's Tau-b, Somers' D), categorical and continuous summary tables, model-based group comparisons for continuous outcomes, publication-ready regression tables for one or more fitted models side by side (30+ model classes), and codebooks in the console, Excel, or PDF. All table outputs follow rigorous reporting conventions (APA by default, with named journal styles), expose `broom`-compatible `tidy()` / `glance()` methods, and export to console, gt, tinytable, flextable, Excel, Word, or clipboard. A tidyverse-friendly alternative to SPSS and Stata for survey, social-science, and clinical reporting.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -56,7 +56,7 @@
 <li><a class="dropdown-item" href="articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -354,7 +354,7 @@
 <span><span class="co">#&gt;  N        │               257                527         391 │    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; .001</span></span>
-<span><span class="co">#&gt; Cramer's V = 0.14</span></span>
+<span><span class="co">#&gt; Cramér's V = 0.14</span></span>
 <span><span class="co">#&gt; Missing values removed: smoking (25).</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
 </div>
@@ -372,7 +372,7 @@
 <span><span class="fu"><a href="reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.176   –     0.120     0.231  &lt;.001</span></span></code></pre></div>
-<p>See <a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures</a> for a guide on choosing the right measure.</p>
+<p>See <a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramér’s V, Phi, and association measures</a> for a guide on choosing the right measure.</p>
 </div>
 <div class="section level3">
 <h3 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
@@ -445,7 +445,7 @@
 <span><span class="co">#&gt;    No              │  54.2               </span></span>
 <span><span class="co">#&gt;    Yes             │  45.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -458,7 +458,7 @@
 <span><span class="co">#&gt;  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
 <span><span class="co">#&gt;  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -487,7 +487,7 @@
 <span><span class="co">#&gt;                  │ Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  │ Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -572,7 +572,7 @@
 <span><span class="co">#&gt;    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt;    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <p>A “check all that apply” question gets a table of its own, one row per item. In <code>sochealth</code>, five logical items record the sources of health information a respondent used in the past 12 months. The article <a href="https://amaltawfik.github.io/spicy/articles/table-multiresponse.html">Multiple-response questions</a> explains the bases, the percentages and the tests.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
@@ -591,9 +591,9 @@
 <span><span class="co">#&gt;  info_media       │    78       13.0      63     11.2     141     12.1    1.000 </span></span>
 <span><span class="co">#&gt;  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span><span class="co">#&gt;  Respondents      │   599                565             1164                   </span></span>
+<span><span class="co">#&gt;  Base             │   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -641,7 +641,7 @@
 <li><a href="https://amaltawfik.github.io/spicy/articles/spicy.html">Getting started with spicy</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s V, Phi, and association measures</a></li>
+<li><a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramér’s V, Phi, and association measures</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a></li>
 <li><a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>

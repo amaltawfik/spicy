@@ -35,7 +35,7 @@ table_continuous(
 #>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #>  life_sat_health │  3.55   1.25   1.00    5.00     3.48       3.62    1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 If you omit `select`,
@@ -74,7 +74,7 @@ table_continuous(sochealth)
 #>  life_sat_standard      │     3.46   1192 
 #>  weight                 │     1.02   1200 
 #> 
-#> Note. Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Grouped summaries
@@ -119,7 +119,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 This is the main pattern for reporting continuous variables across
@@ -159,7 +159,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  life_sat_health │ 1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 ## Add test statistics and effect sizes
@@ -221,7 +221,7 @@ table_continuous(
 #>                  │ Upper secondary                                
 #>                  │ Tertiary                                       
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 Use `test = "student"` for equal-variance parametric tests or
@@ -269,7 +269,7 @@ table_continuous(
 #>                  │ Upper secondary            
 #>                  │ Tertiary                   
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Kruskal-Wallis test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Kruskal-Wallis test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 `effect_size = "auto"` selects the canonical measure for the chosen
@@ -299,7 +299,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
 #> 
-#> Note. P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 Allowed values are `"none"` (default), `"auto"`, `"hedges_g"`, `"eta2"`,
@@ -391,7 +391,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Note. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 The two arguments are independent — turning the SMD on turns nothing
@@ -435,7 +435,7 @@ table_continuous(
 #>  bmi      │ Female  g = -1.3057  -1.5194 
 #>           │ Male                         
 #> 
-#> Note. P-value: Welch t-test. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size; SMD = standardized mean difference.
+#> Note. N = 10: Female (n = 7), Male (n = 3). P-value: Welch t-test. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size; SMD = standardized mean difference.
 ```
 
 Both standardize a mean difference, but by different denominators.
@@ -496,7 +496,7 @@ table_continuous(
 #>  life_sat_standard      │ Female  615  .453 
 #>                         │ Male    577       
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For more programmatic selection, set `regex = TRUE`:
@@ -573,7 +573,7 @@ table_continuous(
 #>  life_sat_health │ Female  616   .267 
 #>                  │ Male    576        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Handling missing values
@@ -595,7 +595,7 @@ table_continuous(
 #>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
 #>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Missing values in `by` are removed by default (`drop_na = TRUE`), and
@@ -625,7 +625,7 @@ table_continuous(
 #>           │ Upper middle        
 #>           │ High                
 #> 
-#> Note. Missing values removed: bmi (12), income_group (18). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1182: Low (n = 247), Lower middle (n = 388), Upper middle (n = 328), High (n = 219). Missing values removed: bmi (12), income_group (18). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Set `drop_na = FALSE` to display those rows as a dedicated “(Missing)”
@@ -659,7 +659,7 @@ table_continuous(
 #>           │ High                
 #>           │ (Missing)           
 #> 
-#> Note. Missing values removed: bmi (12). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Low (n = 247), Lower middle (n = 388), Upper middle (n = 328), High (n = 219), (Missing) (n = 18). Missing values removed: bmi (12). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Weights
@@ -683,7 +683,7 @@ table_continuous(
 #>  bmi             │ 25.72   3.69  16.00   38.90    25.51      25.94    1188 
 #>  wellbeing_score │ 68.78  15.54  18.70  100.00    67.90      69.66    1200 
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200 (unweighted). Statistics weighted by weight. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Two conventions coexist for weighted statistics, and spicy makes the
@@ -756,7 +756,7 @@ table_continuous(
 #>  bmi      │ Female  -0.13 
 #>           │ Male          
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580). Statistics weighted by weight. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 It is a descriptive balance diagnostic with no *p* and no interval —
@@ -806,7 +806,7 @@ table_continuous(
 #>  life_sat_health          │ Female     3.61    616   .267 
 #>                           │ Male       3.69    576        
 #> 
-#> Note. Missing values removed: life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
@@ -839,7 +839,7 @@ table_continuous(
 #>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
 #>                                 │ Male       3.49       3.69    576        
 #> 
-#> Note. Missing values removed: Satisfaction with health (1-5) (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Satisfaction with health (1-5) (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Display options
@@ -882,7 +882,7 @@ table_continuous(
 #>  wellbeing_score   │ Female     67.16    14.80    19.60    100.00    <.0001  
 #>                    │ Male       71.05    16.23    18.70    100.00            
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Welch t-test.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: Welch t-test.
 ```
 
 ## Tidying for downstream pipelines
@@ -976,9 +976,10 @@ table_continuous(
 
 [TABLE]
 
-*Note.* Missing values removed: bmi (12), life_sat_health (8). P-values:
-Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL =
-upper limit.
+*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
+Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health
+(8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower
+limit; UL = upper limit.
 
 `output = "tinytable"` works well in Quarto and R Markdown documents:
 
@@ -1004,9 +1005,9 @@ table_continuous(
 | life_sat_health | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
 |  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
-| *Note.* Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
+| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_ljmjh4cy6b9nv2029je2
+Descriptive statistics by education {#tinytable_olotteain2py2uguriwo
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

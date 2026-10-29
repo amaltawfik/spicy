@@ -364,6 +364,11 @@ parent class plus a leaf class describing the specific cause:
     without `output = "excel"`); the warning names that argument and no
     other.
 
+  - `spicy_unknown_name` – an argument named by variable (`labels`,
+    `note_labels`, a named `digits`, the named list of `show_columns`)
+    holds a name that matches nothing in the table; the warning names
+    the argument and the name, and the table is built without it.
+
   - `spicy_no_selection` – a selection or a filter matched nothing, and
     an empty result is returned rather than an error (the row-wise
     summaries,

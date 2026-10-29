@@ -133,13 +133,14 @@ table_categorical(
     [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
     alone is `labels = TRUE`.
 
-  Names that match no column are ignored, so one vector can serve every
-  table of a project. The default reads `options(spicy.var_labels)`, and
-  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
-  `NULL` included, is an error. A variable label documents the data
-  file; a published table carries the wording you set here.
-  `note_labels` gives a variable a shorter label in the title and the
-  notes.
+  A name that matches no column of the table warns (class
+  `spicy_unknown_name`) and is left out, so one vector can still serve
+  every table of a project. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here. `note_labels` gives a variable a shorter label
+  in the title and the notes.
 
 - note_labels:
 
@@ -151,11 +152,11 @@ table_categorical(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - levels_keep:
 
@@ -404,7 +405,7 @@ table_categorical(
   (`"Lambda"`). The note defines the symbol as it defines any
   abbreviation, under the `abbreviations` rule of
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
-  "V = Cramer's V" by default, the Greek letters only under `"all"` and
+  "V = Cramér's V" by default, the Greek letters only under `"all"` and
   in the `"jama"` and `"lancet"` themes. When multiple measures are used
   (typically with `"auto"` on a heterogeneous `select`), the header
   collapses to `"Effect size"` and the table note names the measure used
@@ -795,7 +796,7 @@ variable. See `@param correct` / `simulate_p` to switch on Yates'
 continuity correction or Monte Carlo *p*-values for the chi-squared
 test, and `@param assoc_measure` for the per-row dispatch table used by
 `"auto"` (2x2 -\> Phi, both ordered -\> Kendall's Tau-b, otherwise
-Cramer's V). Without `by`, the table reports the marginal frequency
+Cramér's V). Without `by`, the table reports the marginal frequency
 distribution of each variable with no inferential statistics.
 
 The exact tests condition on counts. Under `weights`, they run on the
@@ -1187,7 +1188,7 @@ table_categorical(
 #>    No              │  54.2               
 #>    Yes             │  45.8               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 
 # Survey weights with rescaling.
 table_categorical(
@@ -1232,7 +1233,7 @@ table_categorical(
 #>    No              │  54.6               
 #>    Yes             │  45.4               
 #> 
-#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramér's V.
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -1264,7 +1265,7 @@ table_categorical(
 #>    Yes       │                                  
 #>    (Missing) │                                  
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V; CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V; CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Per-variable association measure ----------------------------------
 
@@ -1304,7 +1305,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: education.
 
 # Force a uniform measure across all row variables: its symbol, V,
 # heads the column, and the note defines it.
@@ -1340,7 +1341,7 @@ table_categorical(
 #>    Upper secondary │     
 #>    Tertiary        │     
 #> 
-#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 
 # Per-variable override (recommended named form).
 table_categorical(
@@ -1393,7 +1394,7 @@ table_categorical(
 #>    Very good       │             
 #>    (Missing)       │             
 #> 
-#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: education. Kendall's Tau-b: self_rated_health.
 
 # --- Output formats -----------------------------------------------------
 

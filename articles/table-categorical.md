@@ -79,7 +79,7 @@ table_categorical(
 #>    No              │  29.5               
 #>    Yes             │  70.5               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
@@ -95,7 +95,7 @@ last panel, `p` is the *p*-value of the test of association between the
 row variable and `by`, computed once per variable on its full
 cross-table (Pearson’s chi-squared here, as the note says; see the test
 section below), and the final column is the association measure – here
-Cramer’s V (covered below). Use `output = "data.frame"` for a plain data
+Cramér’s V (covered below). Use `output = "data.frame"` for a plain data
 frame suitable for further processing.
 
 `percent = "row"` reads the table the other way: each cell is the share
@@ -138,7 +138,7 @@ table_categorical(
 #> ───────────────────┼──────────────────────────────
 #>    Total           │  1200     100.0              
 #> 
-#> Note. N = 1200: No (n = 926), Yes (n = 249), (Missing) (n = 25). Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: No (n = 926), Yes (n = 249), (Missing) (n = 25). Percentages are row percentages. P-value: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ## One-way tables
@@ -274,11 +274,13 @@ variable’s label attribute when one is present (e.g. data imported with
 keyed by column name sets the labels you publish: the listed columns
 take them, and the others follow `options(spicy.var_labels)` (their name
 unless it is `TRUE`). `labels = var_labels(smoking = "Smoking status")`
-renames the same way while the others keep their label attribute. Names
-that match no column are ignored, so one vector can serve every table of
-a report. The `by` variable in the title follows the same rule, as in
-the other summary tables. (Unnamed positional label vectors, accepted
-before 0.13.0, now raise an error.)
+renames the same way while the others keep their label attribute. A name
+that matches no column of the table warns and is left out, so one vector
+can still serve every table of a report (wrap the call in
+[`suppressWarnings()`](https://rdrr.io/r/base/warning.html) to quiet
+it). The `by` variable in the title follows the same rule, as in the
+other summary tables. (Unnamed positional label vectors, accepted before
+0.13.0, now raise an error.)
 
 ``` r
 
@@ -326,7 +328,7 @@ table_categorical(
 #>    No                      │    40.8       650     54.2               
 #>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ## Association measures and confidence intervals
@@ -337,10 +339,10 @@ type (`assoc_measure = "auto"`, the default):
 
 - **2x2** (binary row variable vs. binary `by`) -\> `phi`,
 - both ordered factors -\> Kendall’s `tau_b`,
-- otherwise -\> Cramer’s `V`.
+- otherwise -\> Cramér’s `V`.
 
 A measure used for every row heads the column, and names it in the data
-frames, with its symbol (V for Cramer’s V, φ for phi, τb for Kendall’s
+frames, with its symbol (V for Cramér’s V, φ for phi, τb for Kendall’s
 tau-b, γ for gamma; the other measures keep their names). The note
 defines the symbol as it defines any abbreviation: V by default, the
 Greek letters under `spicy_style(abbreviations = "all")`. When the
@@ -352,7 +354,7 @@ Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`;
 `assoc_measure = "none"` drops the column entirely. See
 [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-for the dispatch details and [*Cramer’s V, Phi, and association
+for the dispatch details and [*Cramér’s V, Phi, and association
 measures*](https://amaltawfik.github.io/spicy/articles/association-measures.md)
 for definitions and guidance on choosing among them. Override the
 automatic choice with a single string for uniform application, or with a
@@ -404,7 +406,7 @@ differ (hence the significant chi-squared test).
 
 In a named vector, variables you do not name keep the `"auto"` choice,
 so only the overrides need to be listed. Here `"auto"` would pick
-Cramer’s V for `smoking` (binary x ordered, not 2x2) and Kendall’s Tau-b
+Cramér’s V for `smoking` (binary x ordered, not 2x2) and Kendall’s Tau-b
 for `self_rated_health` (ordered x ordered); the named vector keeps the
 former and replaces the latter with Goodman-Kruskal Gamma:
 
@@ -461,10 +463,10 @@ table_categorical(
 #>    Very good       │  25.0                       
 #>    (Missing)       │                             
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. Cramér's V: smoking. Goodman-Kruskal Gamma: self_rated_health.
 ```
 
-`smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
+`smoking` keeps its automatic Cramér’s V (.14) while `self_rated_health`
 switches from the automatic Tau-b (.20) to Gamma (.31) – Gamma is larger
 on the same table because it ignores tied pairs. Since the two measures
 differ, the header collapses to `"Effect size"` and the note documents
@@ -596,7 +598,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramer's V: education.
+#> Note. N = 40: Female (n = 22), Male (n = 18). Percentages are column percentages. P-values: Fisher exact test (education); Fisher mid-p test (smoking). Phi: smoking. Cramér's V: education.
 ```
 
 ## Descriptive tables without tests
@@ -676,7 +678,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: self_rated_health. SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -754,7 +756,7 @@ table_categorical(
 #>    No              │  54.6               
 #>    Yes             │  45.4               
 #> 
-#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ## Handling missing values
@@ -909,7 +911,7 @@ table_categorical(
 #>    Yes       │              
 #>    (Missing) │              
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V.
 ```
 
 `p_digits` drives both the displayed precision of the `p` column and the
@@ -1068,7 +1070,7 @@ pkgdown_dark_gt(
 
 *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
 Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramer’s V.
+Pearson chi-squared test. V = Cramér’s V.
 
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
@@ -1095,7 +1097,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_ztmsnr2gdvbqmrtprjym .table
+Categorical table by sex {#tinytable_1fuj7hhdrg8x1go300lk .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1119,7 +1121,7 @@ pkgdown_dark_gt(
 
 *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
 Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramer’s V; CI = confidence interval; LL =
+Pearson chi-squared test. V = Cramér’s V; CI = confidence interval; LL =
 lower limit; UL = upper limit.
 
 For Excel export, provide a file path:

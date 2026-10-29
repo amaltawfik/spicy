@@ -73,7 +73,7 @@ adjustment."><meta property="og:image" content="https://amaltawfik.github.io/spi
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -434,7 +434,8 @@ unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>T
 <li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
 names these labels, and every other column its <code>label</code> attribute,
 whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
-</ul><p>Names that match no column are ignored, so one vector can serve
+</ul><p>A name that matches no column of the table warns (class
+<code>spicy_unknown_name</code>) and is left out, so one vector can still serve
 every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
@@ -452,8 +453,9 @@ which reads as one. <code>labels</code> can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of <code>labels</code>, and so do the title and the notes for a variable
-<code>note_labels</code> does not name. Names that match no column are ignored,
-as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+<code>note_labels</code> does not name. A name that matches no column warns and
+is left out, as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
@@ -473,8 +475,9 @@ median. One non-negative whole number sets them for every variable
 column, not by label, gives each variable it names its own,
 <code>digits = c(height = 0, bmi = 1)</code>; the other variables and the
 weighted <em>n</em> keep the default, the <code>digits</code> of a <code><a href="spicy_style.html">spicy_style()</a></code> in
-force included. Names that match no variable are ignored, as in
-<code>labels</code>. A fraction is an error, as for every <code>*_digits</code> argument.
+force included. A name that matches no variable warns and is left
+out, as in <code>labels</code>. A fraction is an error, as for every <code>*_digits</code>
+argument.
 The other numbers keep their own decimals: <em>p</em>-values (<code>p_digits</code>),
 effect sizes and the SMD (<code>effect_size_digits</code>), test statistics (two
 decimals) and counts (none).</p></dd>
@@ -685,7 +688,14 @@ columns follow <code>p_value</code>.</p></li>
 path invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
-</ul><p>The missing-value disclosure (values excluded from the summaries,
+</ul><p>The note opens with the sample size, as in <code><a href="table_categorical.html">table_categorical()</a></code>:
+"N = 159." or, with <code>by</code>, "N = 159: Women (n = 80), Men (n = 79).", the
+rows the table describes and those of each group (the group of missing
+<code>by</code> values included), a row missing <code>by</code> under <code>drop_na = TRUE</code> or a
+weight left out, rows rather than weights under <code>weights</code>
+("N = 60 (unweighted)."), the complete cases of each variable in its n
+column.</p>
+<p>The missing-value disclosure (values excluded from the summaries,
 and rows removed for a missing <code>by</code> value under <code>drop_na = TRUE</code>)
 travels with the table on every route, not just the console:
 <code>"default"</code> prints it under the ASCII table, <code>"tinytable"</code> / <code>"gt"</code> /
@@ -759,6 +769,8 @@ others keep the mean:</p>
 <span>  sitting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
 <span>  .default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre><p></p></div>
+<p>A name that is no variable of the table warns and is left out, as in
+<code>labels</code>.</p>
 <p>The table's columns are the union of the requested tokens; a cell of
 a column the variable did not ask for is left blank (structurally
 empty, not an en dash, which is reserved for an undefined
@@ -997,7 +1009,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.93   3.72  16.00   38.90    25.72      26.14    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16      69.93    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by education (Welch p-value added by default).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1027,7 +1039,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Test statistic alongside the p-value.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1068,7 +1080,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Choosing the statistics --------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1085,7 +1097,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi               <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score   <span style="color: #9E9E9E;">│</span>  70.25 [58.90, 79.23]    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Median with its exact (order-statistic) confidence interval.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1099,7 +1111,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi        <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One selection per variable. A skewed variable that a scoring</span></span></span>
 <span class="r-in"><span><span class="co"># protocol requires in median and IQR (the IPAQ case) sits next to</span></span></span>
@@ -1127,7 +1139,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  67.16  14.80                     620  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    71.05  16.23                     580        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1152,7 +1164,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  &lt;.001  g = -0.25 [-0.36, -0.14] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    580                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Explicit effect-size measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1183,7 +1195,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary                                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Selection helpers --------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1202,7 +1214,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span> 3.72  1.10  1.00  5.00    3.66       3.79     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span> 3.40  1.16  1.00  5.00    3.33       3.46     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1225,7 +1237,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index          <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health <span style="color: #9E9E9E;">│</span> 1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

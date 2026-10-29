@@ -612,7 +612,7 @@ table_continuous(mtcars, c(mpg, wt))
 #>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
 #>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
 #> 
-#> Note. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 32. CI = confidence interval; LL = lower limit; UL = upper limit.
 options(old)
 
 # Every abbreviation defined, for readers outside the field.
@@ -625,7 +625,7 @@ table_continuous(mtcars, c(mpg, wt),
 #>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
 #>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
 #> 
-#> Note. M = mean; SD = standard deviation; Min = minimum; Max = maximum; CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 32. M = mean; SD = standard deviation; Min = minimum; Max = maximum; CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # What a theme encodes, and where it comes from.
 spicy_style("lancet")

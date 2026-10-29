@@ -1,6 +1,6 @@
-# Cramer's V
+# Cramér's V
 
-`cramer_v()` computes Cramer's V for a two-way contingency table,
+`cramer_v()` computes Cramér's V for a two-way contingency table,
 measuring the strength of association between two categorical variables.
 
 ## Usage
@@ -43,7 +43,7 @@ null hypothesis of no association (Pearson chi-squared test).
 
 ## Details
 
-Cramer's V is computed as \\V = \sqrt{\chi^2 / (n \cdot (k - 1))}\\,
+Cramér's V is computed as \\V = \sqrt{\chi^2 / (n \cdot (k - 1))}\\,
 where \\\chi^2\\ is the Pearson chi-squared statistic, \\n\\ is the
 total count, and \\k = \min(r, c)\\. The point estimate matches the
 DescTools (Signorell et al., 2024) and SPSS implementations. The

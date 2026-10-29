@@ -1,4 +1,4 @@
-# Cramer's V, Phi, and association measures
+# Cramér's V, Phi, and association measures
 
 ``` r
 
@@ -17,7 +17,7 @@ The table below summarizes the recommended measures by variable type.
 
 | Variable types | Recommended measure | Function |
 |----|----|----|
-| Nominal x Nominal | Cramer’s V | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md) |
+| Nominal x Nominal | Cramér’s V | [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md) |
 | Nominal x Nominal | Contingency Coefficient | [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md) |
 | Nominal x Nominal (2x2) | Phi | [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md) |
 | Ordinal x Ordinal | Kendall’s Tau-b | [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md) |
@@ -32,7 +32,7 @@ The table below summarizes the recommended measures by variable type.
 PRE = Proportional Reduction in Error. These measures quantify how much
 knowing one variable reduces prediction error for the other.
 
-Cramer’s V and the contingency coefficient are defined for tables of any
+Cramér’s V and the contingency coefficient are defined for tables of any
 dimension. For a nominal-by-ordinal pair they are the standard choice:
 the ordering is simply ignored, because the rank-based measures require
 both variables to be ordinal.
@@ -51,7 +51,7 @@ computes all available measures at once:
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Cramér's V                            0.136      –     0.079     0.191  <.001 
 #> Contingency Coefficient               0.134      –         –         –  <.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
 #> Lambda R|C                            0.000  0.000     0.000     0.000      – 
@@ -85,9 +85,9 @@ Chi-squared-based measures ignore any ordering of the categories, which
 makes them the reference choice when at least one of the two variables
 is nominal.
 
-### Cramer’s V
+### Cramér’s V
 
-Cramer’s V measures the strength of association between two categorical
+Cramér’s V measures the strength of association between two categorical
 variables. It ranges from 0 (no association) to 1 (perfect association).
 
 ``` r
@@ -97,7 +97,7 @@ cramer_v(tbl)
 #> [1] 0.1356677
 ```
 
-In this pair, `smoking` is nominal and `education` is ordinal: Cramer’s
+In this pair, `smoking` is nominal and `education` is ordinal: Cramér’s
 V treats `education` as an unordered set of categories, which is the
 standard treatment for a nominal-by-ordinal pair. When *both* variables
 are ordinal, the rank-based measures presented below use more of the
@@ -105,7 +105,7 @@ information in the data.
 
 Pass `detail = TRUE` for the confidence interval and p-value. The
 p-value tests the null hypothesis of no association using the Pearson
-chi-squared test. The chi-squared-based measures (Cramer’s V, Phi, the
+chi-squared test. The chi-squared-based measures (Cramér’s V, Phi, the
 contingency coefficient) have no standard asymptotic standard error, so
 the `SE` column prints `–` for them; the rank-based measures later in
 this article report their asymptotic SE in that column.
@@ -119,7 +119,7 @@ cramer_v(tbl, detail = TRUE)
 
 ### Phi coefficient
 
-For 2x2 tables, Phi is equivalent to Cramer’s V. spicy implements Phi as
+For 2x2 tables, Phi is equivalent to Cramér’s V. spicy implements Phi as
 \\\sqrt{\chi^2 / n}\\, matching the DescTools and PSPP conventions – the
 value is always non-negative and reports only the *strength* of
 association, not its direction. SPSS itself signs Phi on 2x2 tables
@@ -139,7 +139,7 @@ phi(tbl_22, detail = TRUE)
 
 ### Contingency coefficient
 
-The contingency coefficient is an alternative to Cramer’s V. Its upper
+The contingency coefficient is an alternative to Cramér’s V. Its upper
 bound depends on the table dimensions, which makes it harder to compare
 across tables of different sizes. The p-value tests H0: no association
 (Pearson chi-squared test).
@@ -154,9 +154,9 @@ contingency_coef(tbl, detail = TRUE)
 ## Ordinal variables
 
 When both variables are ordinal (ordered factors), measures that account
-for the ordering are more appropriate than Cramer’s V. Note that these
+for the ordering are more appropriate than Cramér’s V. Note that these
 measures are not on a common scale: on the health-by-education table
-used throughout this section, Cramer’s V is 0.176, Tau-b is 0.205 and
+used throughout this section, Cramér’s V is 0.176, Tau-b is 0.205 and
 Gamma is 0.310 for the very same association. Compare magnitudes within
 a measure, never across measures.
 
@@ -281,7 +281,7 @@ equal zero even when the variables are associated, if the modal category
 of the dependent variable does not change across the categories of the
 predictor. That is exactly what happens here – “Good” is the modal
 health category at every education level, so the row-dependent Lambda is
-exactly 0 even though the same table shows a clear association (Cramer’s
+exactly 0 even though the same table shows a clear association (Cramér’s
 V = 0.176, chi-squared p \< .001). When the estimate is zero its
 asymptotic SE is zero as well, and no test is printed (`–`). Otherwise
 the p-value tests H0: Lambda = 0 (Wald z-test).
@@ -335,11 +335,11 @@ yule_q(tbl_22, detail = TRUE)
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 can automatically select an appropriate measure via
 `assoc_measure = "auto"` (the default). When both variables are ordered
-factors, it picks Kendall’s Tau-b; otherwise it uses Cramer’s V.
+factors, it picks Kendall’s Tau-b; otherwise it uses Cramér’s V.
 
 ``` r
 
-# Nominal: Cramer's V
+# Nominal: Cramér's V
 cross_tab(sochealth, smoking, education)
 #> Crosstable: smoking x education (N)
 #> 
@@ -351,7 +351,7 @@ cross_tab(sochealth, smoking, education)
 #>  Total    │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p < .001
-#> Cramer's V = 0.14
+#> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 
 # Ordinal: Kendall's Tau-b (automatic)
@@ -400,7 +400,7 @@ two exceptions:
 [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
 never reports one (no standard asymptotic SE exists for the contingency
 coefficient), and `somers_d(direction = "symmetric")` reports the
-estimate only. Cramer’s V and Phi also omit the interval silently in
+estimate only. Cramér’s V and Phi also omit the interval silently in
 degenerate cases (estimate exactly 0, or n \<= 3). The confidence level
 defaults to 95% and can be changed with `conf_level` – here both levels
 on the smoking-by-education table from the beginning of the article:
@@ -449,7 +449,7 @@ The same `digits` argument works for
 
 assoc_measures(tbl, digits = 2)
 #> Measure                            Estimate    SE  CI lower  CI upper      p 
-#> Cramer's V                             0.14     –      0.08      0.19  <.001 
+#> Cramér's V                             0.14     –      0.08      0.19  <.001 
 #> Contingency Coefficient                0.13     –         –         –  <.001 
 #> Lambda symmetric                       0.00  0.00      0.00      0.00      – 
 #> Lambda R|C                             0.00  0.00      0.00      0.00      – 

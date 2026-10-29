@@ -174,7 +174,7 @@ side by side so that
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 and
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-can demonstrate the automatic ordinal-vs-nominal dispatch (Cramer's V,
+can demonstrate the automatic ordinal-vs-nominal dispatch (Cramér's V,
 Phi, Kendall's Tau-b, Goodman-Kruskal Gamma) on the same dataset.
 
 Survey weights (`weight`) are calibrated: they average about 1
@@ -257,5 +257,5 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Base             │   240              1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 ```

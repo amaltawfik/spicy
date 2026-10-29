@@ -796,11 +796,11 @@ table_regression(
   [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
   are keyed on their coefficient (or parameter) names alone. With
   several models, a name is looked up in the terms of all of them and
-  lands on the rows where it exists. Names that match nothing are
-  ignored, so one vector can serve every table of a project. The headers
-  of the subordinate blocks (`Random effects`, `Thresholds`,
-  `Zero-inflation`, ...) are set by the package and cannot be relabeled
-  here.
+  lands on the rows where it exists. A name that matches nothing in the
+  table warns (class `spicy_unknown_name`) and is left out, so one
+  vector can still serve every table of a project. The headers of the
+  subordinate blocks (`Random effects`, `Thresholds`, `Zero-inflation`,
+  ...) are set by the package and cannot be relabeled here.
 
   The default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
   typed in the call wins over it. Any other value, `NULL` included, is
@@ -818,11 +818,11 @@ table_regression(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - title, note:
 

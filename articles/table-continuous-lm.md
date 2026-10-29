@@ -45,7 +45,7 @@ table_continuous_lm(
 #>  bmi             │ 25.69   26.20  0.51     0.09      0.93      .018  0.00  1188 
 #>  life_sat_health │  3.51    3.59  0.08    -0.06      0.22      .267  0.00  1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For categorical predictors, the table reports estimated means by level.
@@ -80,7 +80,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  bmi             │ 1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The `HC*` family is computed via
@@ -119,7 +119,7 @@ table_continuous_lm(
 #> ──────────┼──────────────────────────────────────────────────────────────
 #>  extra    │ 0.75  2.33  1.58    0.70       2.46     4.06  .003  0.16  20 
 #> 
-#> Note. P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 `"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
@@ -163,7 +163,7 @@ table_continuous_lm(
 #> ─────────────────┼──────
 #>  wellbeing_score │ 1200 
 #> 
-#> Note. P-value: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). P-value: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 When `cluster` is supplied, bootstrap switches to a cluster bootstrap
@@ -201,7 +201,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200   1196.47   
 #>  bmi             │ 1188   1183.32   
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). P-values: F-test from the linear model.
+#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Statistics weighted by weight. Missing values removed: bmi (12). P-values: F-test from the linear model.
 ```
 
 This is often the most natural summary-table function when your
@@ -228,7 +228,7 @@ table_continuous_lm(
 #>  wellbeing_score   │  0.04      -0.02        0.10        .176    0.00    1200  
 #>  bmi               │  0.04       0.02        0.05       <.001    0.02    1188  
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 When you need the underlying returned data for further processing, use
@@ -265,7 +265,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 67.27   70.93  3.65    2.08       5.23     <.001  0.22  1200 
 #>  bmi             │ 25.65   26.23  0.58    0.19       0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
@@ -336,7 +336,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 65.90   69.56  3.65    2.08       5.23     <.001  0.22  1200 
 #>  bmi             │ 25.89   26.46  0.58    0.19       0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ### Effect sizes under adjustment
@@ -408,7 +408,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1175 
 #>  bmi             │ 1163 
 #> 
-#> Note. Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1175: No (n = 926), Yes (n = 249). Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Hedges’s *g* applies the small-sample correction
@@ -437,7 +437,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1175 
 #>  bmi             │ 1163 
 #> 
-#> Note. Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1175: No (n = 926), Yes (n = 249). Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -467,7 +467,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.21  1200 
 #>  bmi             │ 0.13  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: F-test from the linear model.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: F-test from the linear model.
 ```
 
 Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from
@@ -489,7 +489,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.04    -0.02      0.10      .177  0.00  0.00  1200 
 #>  bmi             │ 0.04     0.02      0.05     <.001  0.02  0.02  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
+#> Note. N = 1200. Missing values removed: bmi (12). P-values: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 ```
 
 ## Confidence intervals for effect sizes
@@ -535,7 +535,7 @@ table_continuous_lm(
 #>  wellbeing_score │ -0.11 [-0.25, 0.03]  1175 
 #>  bmi             │ -0.01 [-0.15, 0.13]  1163 
 #> 
-#> Note. Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1175: No (n = 926), Yes (n = 249). Missing values removed: bmi (12), smoking (25). P-values: t-test from the linear model. Δ = Yes − No. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -615,7 +615,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100) │ 0,02  0,25 [0,14; 0,36]  1200 
 #>  Body-mass index (kg/m²) │ 0,00  0,14 [0,02; 0,25]  1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m²) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Body-mass index (kg/m²) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Publication-ready output
@@ -640,10 +640,10 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Missing values removed: bmi (12), life_sat_health (8). P-values:
-t-test from the linear model. Std. errors: heteroskedasticity-robust
-(HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL
-= upper limit.
+*Note.* N = 1200: Female (n = 620), Male (n = 580). Missing values
+removed: bmi (12), life_sat_health (8). P-values: t-test from the linear
+model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female.
+CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ## Tidying for downstream pipelines
 

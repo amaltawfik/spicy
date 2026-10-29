@@ -300,7 +300,7 @@ decimals per variable, and notes you can replace, extend, or relabel
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   heads a single association measure with its symbol, V, φ, τb, or γ,
   and names its data frame column so, where both read its name
-  (`Cramer's V`); the note defines it like any symbol.
+  (`Cramér's V`); the note defines it like any symbol.
 
 - The tables sort the groups of a character `by` in the C locale,
   capitals before lower case and the same on every machine, as
@@ -382,19 +382,23 @@ decimals per variable, and notes you can replace, extend, or relabel
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  now name the test behind their p-values, and the test of a statistic
-  shown without them (“Group comparison: Welch t-test.”, “Slope test:”
-  for a slope).
+  now name the test behind their p-values, and that of a statistic or an
+  effect size shown without them (“Group comparison: Welch t-test.”,
+  “Slope test:”).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   say when the statistics are weighted.
 
-- The note of
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  opens with the sample size, the rows it describes: “N = 159.” or “N =
-  159: Women (n = 80), Men (n = 79).”, “(unweighted)” under `weights`.
+- The notes of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  open with the sample size, unweighted: “N = 159: Women (n = 80), Men
+  (n = 79).”
 
 - Under `by`, the notes of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
@@ -470,7 +474,7 @@ decimals per variable, and notes you can replace, extend, or relabel
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gives each association measure of its note a sentence of its own:
-  “Phi: smoking. Cramer’s V: education.” A semicolon joined them.
+  “Phi: smoking. Cramér’s V: education.” A semicolon joined them.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   words its `p_adjust` note for the reader, “P-values adjusted for 5
@@ -502,16 +506,16 @@ decimals per variable, and notes you can replace, extend, or relabel
 - `labels = c(bmi = "Body mass index")` sets the labels you publish, and
   the other columns follow `options(spicy.var_labels)`.
 
-- Names in `labels` that match no column are ignored, where
+- A name in `labels` that matches no column warns and is left out, where
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  refused them, and `labels = NULL` is an error.
+  refused it; `labels = NULL` is an error.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   keep their default output, but `labels = NULL` (their 0.13.0 default)
-  is an error too, and a name that matches no term is ignored, not
-  refused.
+  is an error too, and a name that matches no term warns and is left
+  out, not refused.
 
 - A labeled `by` heads its groups with their value labels, as the rows
   of a labeled variable read (`[1] Women n`, not `1 n`), in every table;
@@ -754,6 +758,9 @@ decimals per variable, and notes you can replace, extend, or relabel
   in the title and the notes, so `labels` can keep a whole question in
   the rows: `note_labels = c(sex = "sex at birth")`.
 
+- A name in `note_labels` or in a named `digits` that matches nothing in
+  the table warns (class `spicy_unknown_name`) and is left out.
+
 - The long output and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of the
   tables mark the rows they add by a key rather than by their label,
@@ -773,7 +780,8 @@ decimals per variable, and notes you can replace, extend, or relabel
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   and the survey twins) always has a `group` column, `NA` without `by`.
 
-- Typst and LaTeX output (only LaTeX for `gt`) and the PDF of
+- Typst and LaTeX output (only LaTeX for `gt`, note or no note) and the
+  PDF of
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   write a negative number with the minus sign (U+2212);
   `spicy_style(minus_sign = "ascii")` keeps the hyphen.
@@ -867,8 +875,8 @@ decimals per variable, and notes you can replace, extend, or relabel
 
 - With `p_adjust`, the note of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  and its siblings gives the method and the number of tests, and the raw
-  p-values stay in the object as `p_unadjusted`.
+  and its siblings follows the test with “Adjusted for 3 tests (Holm
+  method).”, and the raw p-values stay in the object as `p_unadjusted`.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `p_value`, as its siblings have
@@ -950,11 +958,15 @@ decimals per variable, and notes you can replace, extend, or relabel
 
 - The note of
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-  says what the percentages sum to and who is in the base, in words a
-  reader can follow: “respondents who answered the question” (in French,
-  “personnes ayant répondu à la question”), with the others counted
-  “with no answer to the question”. The row of the base is labeled
-  “Base” in both languages and points to that sentence.
+  says, in words a reader can follow, what the percentages sum to and
+  who is in the base.
+
+- That base reads “respondents who answered the question” (in French,
+  “personnes ayant répondu à la question”), the others counted “with no
+  answer to the question”.
+
+- The row of the base is labeled “Base” in both languages and points to
+  that sentence.
 
 - With `by`,
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
@@ -1046,6 +1058,10 @@ decimals per variable, and notes you can replace, extend, or relabel
 - Labels that state a subtraction write the minus sign (U+2212), not a
   hyphen: the IQR (Q3 − Q1), the SMD direction, and the t(G−1) of
   `vcov = "CR1S"`.
+
+- Cramér’s V takes its accent in English, in the notes and headers, the
+  documentation, and the `measure` column of
+  [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md).
 
 - The regression notes and those of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -1170,6 +1186,10 @@ decimals per variable, and notes you can replace, extend, or relabel
   prints its corner header in French (“Valeurs”) under
   `options(spicy.language = "fr")`. The column keeps its name, `Values`.
 
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  refuses a string where a column is expected, as in
+  `cross_tab(df, "sex", smoking)`, which tabulated the constant “sex”.
+
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   writes a large declared missing code as it is, `100000`, not `1e+05`.
 
@@ -1276,6 +1296,11 @@ decimals per variable, and notes you can replace, extend, or relabel
   says in its note how many rows a missing weight removed, as the other
   tables do, where it warned once per internal tabulation, three times
   for one variable with `by`.
+
+- `table_categorical(output = "excel")` draws the light rule between the
+  variable blocks that its other outputs and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  draw.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -1400,6 +1425,11 @@ decimals per variable, and notes you can replace, extend, or relabel
 - `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in `tinytable`, `gt`, `flextable`, Word, and
   Excel output, as documented, where an empty row sat under the labels.
+
+- In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  an unknown name in the `show_columns` list warns (class
+  `spicy_unknown_name`) instead of failing.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),

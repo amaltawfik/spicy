@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Cramer's V, Phi, and association measures • spicy</title>
+<title>Cramér's V, Phi, and association measures • spicy</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -23,10 +23,10 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Cramer's V, Phi, and association measures">
-<meta name="description" content="Calculate Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D, and other effect sizes for contingency tables in R, with confidence intervals and p-values.
+<meta property="og:title" content="Cramér's V, Phi, and association measures">
+<meta name="description" content="Calculate Cramér's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D, and other effect sizes for contingency tables in R, with confidence intervals and p-values.
 ">
-<meta property="og:description" content="Calculate Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D, and other effect sizes for contingency tables in R, with confidence intervals and p-values.
+<meta property="og:description" content="Calculate Cramér's V, Phi, Goodman-Kruskal Gamma, Kendall's Tau-b, Somers' D, and other effect sizes for contingency tables in R, with confidence intervals and p-values.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -56,7 +56,7 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -104,7 +104,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Cramer's V, Phi, and association measures</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Cramér's V, Phi, and association measures</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/association-measures.Rmd" class="external-link"><code>vignettes/articles/association-measures.Rmd</code></a></small>
@@ -139,7 +139,7 @@ type.</p>
 <tbody>
 <tr class="odd">
 <td>Nominal x Nominal</td>
-<td>Cramer’s V</td>
+<td>Cramér’s V</td>
 <td><code><a href="../reference/cramer_v.html">cramer_v()</a></code></td>
 </tr>
 <tr class="even">
@@ -196,7 +196,7 @@ type.</p>
 </table>
 <p>PRE = Proportional Reduction in Error. These measures quantify how
 much knowing one variable reduces prediction error for the other.</p>
-<p>Cramer’s V and the contingency coefficient are defined for tables of
+<p>Cramér’s V and the contingency coefficient are defined for tables of
 any dimension. For a nominal-by-ordinal pair they are the standard
 choice: the ordering is simply ignored, because the rank-based measures
 require both variables to be ordinal.</p>
@@ -212,7 +212,7 @@ once:</p>
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span></span>
+<span><span class="co">#&gt; Cramér's V                            0.136      –     0.079     0.191  &lt;.001 </span></span>
 <span><span class="co">#&gt; Contingency Coefficient               0.134      –         –         –  &lt;.001 </span></span>
 <span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000      – </span></span>
 <span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000      – </span></span>
@@ -245,9 +245,9 @@ the measure that matches them.</p>
 which makes them the reference choice when at least one of the two
 variables is nominal.</p>
 <div class="section level3">
-<h3 id="cramers-v">Cramer’s V<a class="anchor" aria-label="anchor" href="#cramers-v"></a>
+<h3 id="cramérs-v">Cramér’s V<a class="anchor" aria-label="anchor" href="#cram%C3%A9rs-v"></a>
 </h3>
-<p>Cramer’s V measures the strength of association between two
+<p>Cramér’s V measures the strength of association between two
 categorical variables. It ranges from 0 (no association) to 1 (perfect
 association).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -255,14 +255,14 @@ association).</p>
 <span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.1356677</span></span></code></pre></div>
 <p>In this pair, <code>smoking</code> is nominal and
-<code>education</code> is ordinal: Cramer’s V treats
+<code>education</code> is ordinal: Cramér’s V treats
 <code>education</code> as an unordered set of categories, which is the
 standard treatment for a nominal-by-ordinal pair. When <em>both</em>
 variables are ordinal, the rank-based measures presented below use more
 of the information in the data.</p>
 <p>Pass <code>detail = TRUE</code> for the confidence interval and
 p-value. The p-value tests the null hypothesis of no association using
-the Pearson chi-squared test. The chi-squared-based measures (Cramer’s
+the Pearson chi-squared test. The chi-squared-based measures (Cramér’s
 V, Phi, the contingency coefficient) have no standard asymptotic
 standard error, so the <code>SE</code> column prints <code>–</code> for
 them; the rank-based measures later in this article report their
@@ -275,7 +275,7 @@ asymptotic SE in that column.</p>
 <div class="section level3">
 <h3 id="phi-coefficient">Phi coefficient<a class="anchor" aria-label="anchor" href="#phi-coefficient"></a>
 </h3>
-<p>For 2x2 tables, Phi is equivalent to Cramer’s V. spicy implements Phi
+<p>For 2x2 tables, Phi is equivalent to Cramér’s V. spicy implements Phi
 as <span class="math inline">\(\sqrt{\chi^2 / n}\)</span>, matching the
 DescTools and PSPP conventions – the value is always non-negative and
 reports only the <em>strength</em> of association, not its direction.
@@ -295,7 +295,7 @@ test).</p>
 <div class="section level3">
 <h3 id="contingency-coefficient">Contingency coefficient<a class="anchor" aria-label="anchor" href="#contingency-coefficient"></a>
 </h3>
-<p>The contingency coefficient is an alternative to Cramer’s V. Its
+<p>The contingency coefficient is an alternative to Cramér’s V. Its
 upper bound depends on the table dimensions, which makes it harder to
 compare across tables of different sizes. The p-value tests H0: no
 association (Pearson chi-squared test).</p>
@@ -309,9 +309,9 @@ association (Pearson chi-squared test).</p>
 <h2 id="ordinal-variables">Ordinal variables<a class="anchor" aria-label="anchor" href="#ordinal-variables"></a>
 </h2>
 <p>When both variables are ordinal (ordered factors), measures that
-account for the ordering are more appropriate than Cramer’s V. Note that
+account for the ordering are more appropriate than Cramér’s V. Note that
 these measures are not on a common scale: on the health-by-education
-table used throughout this section, Cramer’s V is 0.176, Tau-b is 0.205
+table used throughout this section, Cramér’s V is 0.176, Tau-b is 0.205
 and Gamma is 0.310 for the very same association. Compare magnitudes
 within a measure, never across measures.</p>
 <div class="section level3">
@@ -423,7 +423,7 @@ equal zero even when the variables are associated, if the modal category
 of the dependent variable does not change across the categories of the
 predictor. That is exactly what happens here – “Good” is the modal
 health category at every education level, so the row-dependent Lambda is
-exactly 0 even though the same table shows a clear association (Cramer’s
+exactly 0 even though the same table shows a clear association (Cramér’s
 V = 0.176, chi-squared p &lt; .001). When the estimate is zero its
 asymptotic SE is zero as well, and no test is printed (<code>–</code>).
 Otherwise the p-value tests H0: Lambda = 0 (Wald z-test).</p>
@@ -473,9 +473,9 @@ z-test).</p>
 <p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> can automatically select an appropriate
 measure via <code>assoc_measure = "auto"</code> (the default). When both
 variables are ordered factors, it picks Kendall’s Tau-b; otherwise it
-uses Cramer’s V.</p>
+uses Cramér’s V.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Nominal: Cramer's V</span></span>
+<code class="sourceCode R"><span><span class="co"># Nominal: Cramér's V</span></span>
 <span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -487,7 +487,7 @@ uses Cramer’s V.</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span>
 <span></span>
 <span><span class="co"># Ordinal: Kendall's Tau-b (automatic)</span></span>
@@ -532,7 +532,7 @@ uses Cramer’s V.</p>
 <code><a href="../reference/contingency_coef.html">contingency_coef()</a></code> never reports one (no standard
 asymptotic SE exists for the contingency coefficient), and
 <code>somers_d(direction = "symmetric")</code> reports the estimate
-only. Cramer’s V and Phi also omit the interval silently in degenerate
+only. Cramér’s V and Phi also omit the interval silently in degenerate
 cases (estimate exactly 0, or n &lt;= 3). The confidence level defaults
 to 95% and can be changed with <code>conf_level</code> – here both
 levels on the smoking-by-education table from the beginning of the
@@ -571,7 +571,7 @@ places with the leading zero stripped (<code>.045</code>) or
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate    SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                             0.14     –      0.08      0.19  &lt;.001 </span></span>
+<span><span class="co">#&gt; Cramér's V                             0.14     –      0.08      0.19  &lt;.001 </span></span>
 <span><span class="co">#&gt; Contingency Coefficient                0.13     –         –         –  &lt;.001 </span></span>
 <span><span class="co">#&gt; Lambda symmetric                       0.00  0.00      0.00      0.00      – </span></span>
 <span><span class="co">#&gt; Lambda R|C                             0.00  0.00      0.00      0.00      – </span></span>

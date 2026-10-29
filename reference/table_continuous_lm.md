@@ -542,13 +542,14 @@ table_continuous_lm(
     [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
     alone is `labels = TRUE`.
 
-  Names that match no column are ignored, so one vector can serve every
-  table of a project. The default reads `options(spicy.var_labels)`, and
-  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
-  `NULL` included, is an error. A variable label documents the data
-  file; a published table carries the wording you set here.
-  `note_labels` gives a variable a shorter label in the title and the
-  notes.
+  A name that matches no column of the table warns (class
+  `spicy_unknown_name`) and is left out, so one vector can still serve
+  every table of a project. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here. `note_labels` gives a variable a shorter label
+  in the title and the notes.
 
 - note_labels:
 
@@ -560,11 +561,11 @@ table_continuous_lm(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - ci_level:
 
@@ -582,11 +583,11 @@ table_continuous_lm(
   other outcomes, the test statistic and the weighted *n* keep the
   default, the `digits` of a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  in force included. Names that match no outcome are ignored, as in
-  `labels`. A fraction (`2.9`) is an error, as for `fit_digits` and
-  `effect_size_digits`. The *p*-value (`p_digits`), the \\R^2\\
-  (`fit_digits`), the effect size (`effect_size_digits`) and the counts
-  keep their own decimals.
+  in force included. A name that matches no outcome warns and is left
+  out, as in `labels`. A fraction (`2.9`) is an error, as for
+  `fit_digits` and `effect_size_digits`. The *p*-value (`p_digits`), the
+  \\R^2\\ (`fit_digits`), the effect size (`effect_size_digits`) and the
+  counts keep their own decimals.
 
 - fit_digits:
 
@@ -1041,17 +1042,23 @@ the table reports level-specific means plus the overall `F` test when
 `statistic = TRUE` (or `F(df1, df2)` when the degrees of freedom are
 constant across outcomes).
 
-When `covariates` is non-empty, the printed ASCII table appends an
-APA-style footer naming the covariates and the chosen estimand, e.g.
-`Note. Adjusted for age, education (proportional).` With p-values, the
-note also names the test behind them, read off each outcome's model:
-`P-values: t-test from the linear model.` (the F-test for a `by` with
-more than two levels, the t-test of the slope for a numeric `by`), in
-the singular, `P-value:`, when the table shows one. A test shown by its
-statistic alone (`p_value = FALSE, statistic = TRUE`) is named as the
-group comparison, `Group comparison: t-test from the linear model.`, or,
-for a numeric `by`, as the slope test:
-`Slope test: t-test from the linear model.`
+The note opens with the sample size, as in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+"N = 159." for a numeric `by`, "N = 159: Women (n = 80), Men (n = 79)."
+for a categorical one, the rows with a `by` value, a row with a missing
+weight left out, rows rather than weights under `weights` ("N = 60
+(unweighted)."), the complete cases of each model in its n column.
+
+When `covariates` is non-empty, the note then names the covariates and
+the chosen estimand, e.g. `Adjusted for age, education (proportional).`
+With p-values, the note also names the test behind them, read off each
+outcome's model: `P-values: t-test from the linear model.` (the F-test
+for a `by` with more than two levels, the t-test of the slope for a
+numeric `by`), in the singular, `P-value:`, when the table shows one. A
+test shown by its statistic alone (`p_value = FALSE, statistic = TRUE`)
+is named as the group comparison,
+`Group comparison: t-test from the linear model.`, or, for a numeric
+`by`, as the slope test: `Slope test: t-test from the linear model.`
 
 The rendering engines carry that same footer as a table note. On the
 `"tinytable"` route the note is set one size down;
@@ -1272,7 +1279,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 67.16   71.05  3.89    2.13       5.64     <.001  0.02  1200 
 #>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1297,7 +1304,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  bmi             │ 1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Hedges' g with weighted analysis and weighted n column.
 table_continuous_lm(
@@ -1323,7 +1330,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.25  1200   1196.47   
 #>  bmi             │ 0.13  1188   1183.32   
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580). Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Hedges' g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
@@ -1347,7 +1354,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.25 [0.14, 0.36]  1200 
 #>  bmi             │ 0.14 [0.02, 0.25]  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Cohen's f-squared alongside R-squared (familiar power-analysis effect size).
 table_continuous_lm(
@@ -1370,7 +1377,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  bmi             │ 1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 
 # Hays's omega-squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
@@ -1394,7 +1401,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.21  1200 
 #>  bmi             │ 0.13  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: F-test from the linear model.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: F-test from the linear model.
 
 # --- Robust SE for a numeric predictor ----------------------------------
 
@@ -1413,7 +1420,7 @@ table_continuous_lm(
 #>  wellbeing_score   │  0.04     .176    0.00    1200  
 #>  bmi               │  0.04    <.001    0.02    1188  
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. N = 1200. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).
@@ -1438,7 +1445,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #> ──────────┼────────────────────────────────────────────────────────
 #>  extra    │ 0.75  2.33  1.58    0.70       2.46     .003  0.16  20 
 #> 
-#> Note. P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Covariate adjustment ----------------------------------------------
 
@@ -1461,7 +1468,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 67.27   70.93  3.65    2.08       5.23     <.001  0.22  1200 
 #>  bmi             │ 25.65   26.23  0.58    0.19       0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
 # marginal means on a synthetic covariate grid).
@@ -1482,7 +1489,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 65.90   69.56  3.65    2.08       5.23     <.001  0.22  1200 
 #>  bmi             │ 25.89   26.46  0.58    0.19       0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
 # effect sizes via the partial F restricted to the focal `by`.
@@ -1509,7 +1516,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.02 [0.01, 0.04]  1200 
 #>  bmi             │ 0.01 [0.00, 0.02]  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².
 
 # --- Article-style polish -----------------------------------------------
 
@@ -1538,7 +1545,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100)  │  0.01    1200 
 #>  Body-mass index (kg/m^2) │  0.00    1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # European decimal comma.
 table_continuous_lm(
@@ -1561,7 +1568,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  bmi             │ 1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Regex selection of all columns starting with "life_sat".
 table_continuous_lm(
@@ -1588,7 +1595,7 @@ table_continuous_lm(
 #>  life_sat_relationships │ 1192 
 #>  life_sat_standard      │ 1192 
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Output formats -----------------------------------------------------
 

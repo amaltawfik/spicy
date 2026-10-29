@@ -37,7 +37,7 @@ publication-ready reporting."><meta property="og:image" content="https://amaltaw
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -234,7 +234,7 @@ multiple-response block (the five <code>info_*</code> items) with
 factors (<code>sex</code>, <code>region</code>, ...) and ordered factors (<code>education</code>,
 <code>self_rated_health</code>, ...) live side by side so that
 <code><a href="cross_tab.html">cross_tab()</a></code> and <code><a href="table_categorical.html">table_categorical()</a></code> can demonstrate the
-automatic ordinal-vs-nominal dispatch (Cramer's V, Phi, Kendall's
+automatic ordinal-vs-nominal dispatch (Cramér's V, Phi, Kendall's
 Tau-b, Goodman-Kruskal Gamma) on the same dataset.</p>
 <p>Survey weights (<code>weight</code>) are calibrated: they average about 1
 (<code>mean(weight)</code> is 0.997) and sum to 1196.5 for the 1200 rows.
@@ -316,7 +316,7 @@ on no other variable.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

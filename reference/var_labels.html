@@ -65,7 +65,7 @@ interactions, and transformed terms keep their names."><meta property="og:image"
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -144,7 +144,8 @@ interactions, and transformed terms keep their names.</p>
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p><code>name = "label"</code> pairs, one per variable to rename, each
 label a single string. A named character vector can be spliced with
-<code>!!!</code>. Names that match nothing in a table are ignored. For
+<code>!!!</code>. A name that matches nothing in a table warns there and is
+left out. For
 <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, passed on to <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>.</p></dd>
 
 
@@ -179,7 +180,7 @@ it takes.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  BMI (kg/m2) <span style="color: #9E9E9E;">│</span> 25.93   3.72  16.00  38.90    25.72      26.14    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Age (years) <span style="color: #9E9E9E;">│</span> 49.26  14.70  25.00  75.00    48.43      50.10    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: BMI (kg/m2) (12). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: BMI (kg/m2) (12). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A vector of renames kept for a whole project, spliced.</span></span></span>
 <span class="r-in"><span><span class="va">renames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>bmi <span class="op">=</span> <span class="st">"BMI (kg/m2)"</span>, smoking <span class="op">=</span> <span class="st">"Smoker"</span><span class="op">)</span></span></span>
@@ -189,6 +190,8 @@ it takes.</p></div>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  labels <span class="op">=</span> <span class="fu">var_labels</span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">renames</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`labels` has a name that matches nothing in the table: "bmi".</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">ℹ</span> It is ignored. Check the spelling, or wrap the call in `suppressWarnings()` when one vector serves several tables.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A regression table: the outcome and the factor header keep their</span></span></span>
 <span class="r-in"><span><span class="co"># label attribute, the numeric term takes the one given here.</span></span></span>

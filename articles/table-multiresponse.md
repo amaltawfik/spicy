@@ -92,7 +92,7 @@ table_categorical(stacked, select = source, by = sex)
 #>    info_family     │     
 #>    info_media      │     
 #> 
-#> Note. N = 2001: Female (n = 1079), Male (n = 922). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 2001: Female (n = 1079), Male (n = 922). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V.
 ```
 
 That table misreads the question in three ways.
@@ -152,7 +152,7 @@ tbl
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Base             │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Each percentage is now a share of the respondents of its group, and the
@@ -478,7 +478,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Base             │   31                196                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 5 with no answer to the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 5 with no answer to the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
 ```
 
 The note names both tests: the Pearson chi-squared for four items, and
@@ -648,7 +648,7 @@ table_multiresponse(with_empty, select = starts_with("info_"), by = sex)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Base             │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Its row shows a true zero and its `p` cell a dash, which the note
@@ -952,7 +952,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Base             │   599                565             1164                   
 #> 
-#> Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ## Rendered output
@@ -976,8 +976,8 @@ pkgdown_dark_gt(
 *Note.* Multiple answers possible: percentages can sum to more than
 100%. Base: respondents who answered the question (excluded: 36 with no
 answer to the question). Item p-values: Pearson chi-squared test of each
-item by group. P-values adjusted for 5 tests (Holm method). Overall
-group comparison: Rao-Scott second-order corrected chi-squared test of
+item by group. Adjusted for 5 tests (Holm method). Overall group
+comparison: Rao-Scott second-order corrected chi-squared test of
 multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 
 ``` r
@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_63hi22o5353rihl6m26m .table
+Multiple responses by Sex {#tinytable_0yvb23n5eceohr2sxe08 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

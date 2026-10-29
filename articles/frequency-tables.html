@@ -56,7 +56,7 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -433,7 +433,7 @@ test and effect size:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -454,7 +454,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  N        <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"row"</span><span class="op">)</span></span>
@@ -468,7 +468,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>              21.9               44.9        33.3 <span style="color: #9E9E9E;">│</span>   100.0    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -487,7 +487,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               133                282         191 <span style="color: #9E9E9E;">│</span>     606 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.11</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.11</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (14).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span></span>
@@ -500,7 +500,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               124                245         200 <span style="color: #9E9E9E;">│</span>     569 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.17</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.17</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (11).</span></span></span></code></pre></div>
 <p>For more than one grouping variable, use
 <code><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction()</a></code>:</p>
@@ -517,7 +517,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                32                 58          36 <span style="color: #9E9E9E;">│</span>     126 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .356</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.13</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.13</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (4).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.25-34</span></span></span>
@@ -530,7 +530,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                20                 53          36 <span style="color: #9E9E9E;">│</span>     109 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 14.2, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.36</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.36</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (3).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.35-49</span></span></span>
@@ -543,7 +543,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                34                 93          56 <span style="color: #9E9E9E;">│</span>     183 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 3.0, p = .223</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.13</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.13</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (7).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.35-49</span></span></span>
@@ -556,7 +556,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                47                 76          67 <span style="color: #9E9E9E;">│</span>     190 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 6.9, p = .032</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.19</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.19</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (3).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.50-64</span></span></span>
@@ -569,7 +569,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                36                 79          51 <span style="color: #9E9E9E;">│</span>     166 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 2.0, p = .360</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.11</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.11</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (3).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.50-64</span></span></span>
@@ -582,7 +582,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                36                 71          47 <span style="color: #9E9E9E;">│</span>     154 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 2.1, p = .343</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.12</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.12</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (4).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Female.65-75</span></span></span>
@@ -595,7 +595,7 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                31                 52          48 <span style="color: #9E9E9E;">│</span>     131 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 2.5, p = .282</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex x age_group = Male.65-75</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -607,14 +607,14 @@ to display percentages instead of raw counts:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>                21                 45          50 <span style="color: #9E9E9E;">│</span>     116 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 1.4, p = .499</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.11</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.11</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (1).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="ordinal-variables">Ordinal variables<a class="anchor" aria-label="anchor" href="#ordinal-variables"></a>
 </h3>
 <p>When both variables are ordered factors, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
-automatically switches from Cramer’s V to Kendall’s Tau-b:</p>
+automatically switches from Cramér’s V to Kendall’s Tau-b:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">self_rated_health</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: self_rated_health x education (N)</span></span></span>
@@ -667,7 +667,7 @@ automatically switches from Cramer’s V to Kendall’s Tau-b:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14, 95% CI [0.08, 0.19]</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14, 95% CI [0.08, 0.19]</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -688,7 +688,7 @@ automatically switches from Cramer’s V to Kendall’s Tau-b:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               254                531         384 <span style="color: #9E9E9E;">│</span>    1170 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.3, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.13</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.13</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Weight: weight</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Pass <code>rescale = TRUE</code> to make the weighted total match the
@@ -705,7 +705,7 @@ unweighted sample size:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               256                534         386 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.4, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.13</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.13</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Weight: weight (rescaled)</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 </div>
@@ -796,7 +796,7 @@ don’t have to repeat arguments. <code>spicy.rescale</code> is read by
 </h2>
 <ul>
 <li>
-<a href="association-measures.html"><em>Cramer’s V, Phi, and
+<a href="association-measures.html"><em>Cramér’s V, Phi, and
 association measures</em></a> - choosing the right effect size for your
 contingency table.</li>
 <li>

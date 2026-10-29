@@ -25,10 +25,10 @@
   effect sizes, and weighted counts in R using the spicy package. Covers
   sorting, percentages, grouping, and labelled data.
 
-- [Cramer's V, Phi, and association
+- [Cramér's V, Phi, and association
   measures](https://amaltawfik.github.io/spicy/articles/association-measures.md):
 
-  Calculate Cramer’s V, Phi, Goodman-Kruskal Gamma, Kendall’s Tau-b,
+  Calculate Cramér’s V, Phi, Goodman-Kruskal Gamma, Kendall’s Tau-b,
   Somers’ D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 

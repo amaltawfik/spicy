@@ -56,7 +56,7 @@
 <li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -171,7 +171,7 @@ the quarto package and Quarto 1.7 or later).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">smoking</span>, <span class="va">bmi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-10-28</span></span>
+<span><span class="co">#&gt; Date: 2026-10-29</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 4</span></span>
 <span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
@@ -228,7 +228,7 @@ N:</p>
 <h2 id="cross-tabulations">Cross-tabulations<a class="anchor" aria-label="anchor" href="#cross-tabulations"></a>
 </h2>
 <p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> crosses two categorical variables. By
-default it shows counts, a chi-squared test, and Cramer’s V:</p>
+default it shows counts, a chi-squared test, and Cramér’s V:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span></span>
@@ -241,7 +241,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Add percentages with <code>percent</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -257,7 +257,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt;  N        <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Group by a third variable with <code>by</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -272,7 +272,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               133                282         191 <span style="color: #9E9E9E;">│</span>     606 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.11</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.11</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (14).</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Male</span></span></span>
@@ -285,11 +285,11 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               124                245         200 <span style="color: #9E9E9E;">│</span>     569 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; .001</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.17</span></span></span>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.17</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (11).</span></span></span></code></pre></div>
 <p>When both variables are ordered factors, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
 automatically selects an ordinal measure (Kendall’s Tau-b) instead of
-Cramer’s V:</p>
+Cramér’s V:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">self_rated_health</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: self_rated_health x education (N)</span></span></span>
@@ -316,7 +316,7 @@ contingency table to <code><a href="../reference/assoc_measures.html">assoc_meas
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper      p </span></span>
-<span><span class="co">#&gt; Cramer's V                            0.136      –     0.079     0.191  &lt;.001 </span></span>
+<span><span class="co">#&gt; Cramér's V                            0.136      –     0.079     0.191  &lt;.001 </span></span>
 <span><span class="co">#&gt; Contingency Coefficient               0.134      –         –         –  &lt;.001 </span></span>
 <span><span class="co">#&gt; Lambda symmetric                      0.000  0.000     0.000     0.000      – </span></span>
 <span><span class="co">#&gt; Lambda R|C                            0.000  0.000     0.000     0.000      – </span></span>
@@ -398,7 +398,7 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5               </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable; when
 <code>by</code> is supplied it also reports a group-comparison test (a
@@ -431,7 +431,7 @@ Welch test by default):</p>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers the same reporting
 territory when you want to stay in a linear-model framework, for example
 with robust or cluster-robust standard errors, case weights, or additive
@@ -452,7 +452,7 @@ covariate adjustment:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.12       5.65     &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>By default every <code>table_*</code> helper formats to APA
 conventions. To match a journal instead, pass <code>style =</code> —
 <code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>,
@@ -631,7 +631,7 @@ tables and cross-tabulations</a> — <code><a href="../reference/freq.html">freq
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> in depth (weights, simulation, labelled
 data).</li>
 <li>
-<a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s
+<a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramér’s
 V, Phi, and association measures</a> — choosing the right effect size
 for a contingency table.</li>
 </ul>

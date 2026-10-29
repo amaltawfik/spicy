@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-28
+#> Date: 2026-10-29
 #> Observations: 1200
 #> Variables: 4
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -136,7 +136,7 @@ freq(sochealth, education, weights = weight, rescale = TRUE)
 
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 crosses two categorical variables. By default it shows counts, a
-chi-squared test, and Cramer’s V:
+chi-squared test, and Cramér’s V:
 
 ``` r
 
@@ -151,7 +151,7 @@ cross_tab(sochealth, smoking, education)
 #>  Total    │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p < .001
-#> Cramer's V = 0.14
+#> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
 
@@ -171,7 +171,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  N        │               257                527         391 │    1175 
 #> 
 #> Chi-2(2) = 21.6, p < .001
-#> Cramer's V = 0.14
+#> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
 
@@ -190,7 +190,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #>  Total    │               133                282         191 │     606 
 #> 
 #> Chi-2(2) = 7.1, p = .029
-#> Cramer's V = 0.11
+#> Cramér's V = 0.11
 #> Missing values removed: smoking (14).
 #> 
 #> Crosstable: smoking x education (N) | sex = Male
@@ -203,14 +203,14 @@ cross_tab(sochealth, smoking, education, by = sex)
 #>  Total    │               124                245         200 │     569 
 #> 
 #> Chi-2(2) = 15.6, p < .001
-#> Cramer's V = 0.17
+#> Cramér's V = 0.17
 #> Missing values removed: smoking (11).
 ```
 
 When both variables are ordered factors,
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 automatically selects an ordinal measure (Kendall’s Tau-b) instead of
-Cramer’s V:
+Cramér’s V:
 
 ``` r
 
@@ -242,7 +242,7 @@ contingency table to
 tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Cramér's V                            0.136      –     0.079     0.191  <.001 
 #> Contingency Coefficient               0.134      –         –         –  <.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
 #> Lambda R|C                            0.000  0.000     0.000     0.000      – 
@@ -333,7 +333,7 @@ table_categorical(
 #>    No              │  29.5               
 #>    Yes             │  70.5               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -370,7 +370,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -395,7 +395,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 67.16   71.05  3.89    2.12       5.65     <.001  0.02  1200 
 #>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 By default every `table_*` helper formats to APA conventions. To match a
@@ -590,7 +590,7 @@ kept alongside the reference pages and rebuilt with each release.
   — [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   in depth (weights, simulation, labelled data).
-- [Cramer’s V, Phi, and association
+- [Cramér’s V, Phi, and association
   measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
   — choosing the right effect size for a contingency table.
 

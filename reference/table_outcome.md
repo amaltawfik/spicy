@@ -105,13 +105,14 @@ table_outcome(
     [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
     alone is `labels = TRUE`.
 
-  Names that match no column are ignored, so one vector can serve every
-  table of a project. The default reads `options(spicy.var_labels)`, and
-  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
-  `NULL` included, is an error. A variable label documents the data
-  file; a published table carries the wording you set here.
-  `note_labels` gives a variable a shorter label in the title and the
-  notes.
+  A name that matches no column of the table warns (class
+  `spicy_unknown_name`) and is left out, so one vector can still serve
+  every table of a project. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here. `note_labels` gives a variable a shorter label
+  in the title and the notes.
 
 - note_labels:
 
@@ -123,11 +124,11 @@ table_outcome(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - overall:
 
@@ -575,12 +576,16 @@ read.
 
 ## The table note
 
-One note sits under the table and states what left the analytic sample,
-which group comparison ran in each block, what the displayed columns
-mean, and how the blocks and the `Overall` row are to be read. The
-rendering engines carry the same sentence as a table note. On the
-`"tinytable"` route it is set one size down; `options(spicy.note_style)`
-governs that (see
+One note sits under the table. It opens with the sample size, as in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+"N = 159.": the rows of the data, a row with a missing weight left out,
+rows rather than weights under `weights` ("N = 60 (unweighted)."), the
+outcome's complete cases in the n of the `Overall` row. It then states
+what left the analytic sample, which group comparison ran in each block,
+what the displayed columns mean, and how the blocks and the `Overall`
+row are to be read. The rendering engines carry the same sentence as a
+table note. On the `"tinytable"` route it is set one size down;
+`options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 ## Multiple-comparison adjustment
@@ -637,7 +642,7 @@ table_outcome(sochealth, bmi, select = c(sex, smoking))
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of wellbeing_score
 #> 
@@ -799,5 +804,5 @@ table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #>    High              │       
 #>    Very high         │       
 #> 
-#> Note. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```

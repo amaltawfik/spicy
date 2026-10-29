@@ -160,7 +160,7 @@ table_categorical(
 #>    No                      │    40.8       650     54.2               
 #>    Yes                     │    59.2       550     45.8               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ``` r
@@ -205,7 +205,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -233,7 +233,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  life_sat_health │ 1192 
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12), life_sat_health (8). P-values: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Statistics weighted by weight. Missing values removed: bmi (12), life_sat_health (8). P-values: F-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -391,7 +391,7 @@ table_categorical(
 #>    No                                    │  29.5               
 #>    Yes                                   │  70.5               
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
 
 ### Continuous variables
@@ -454,7 +454,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: Body mass index (12), Satisfaction with health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -487,7 +487,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 1200 
 #>  life_sat_health │ 1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 This is the better summary-table path when the article is already
@@ -535,7 +535,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Note. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 ``` r
@@ -838,7 +838,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  bmi      │ Female  0,018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+#> Note. N = 1200 : Female (n = 620), Male (n = 580). Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -876,7 +876,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>           │ Male        
 #> 
 #> Abréviations : LI, limite inférieure ; LS, limite supérieure.
-#> Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch.
+#> N = 1200 : Female (n = 620), Male (n = 580). Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch.
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -906,7 +906,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  bmi      │ Female  0.018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+#> Note. N = 1200 : Female (n = 620), Male (n = 580). Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -1028,7 +1028,7 @@ tab |>
 
 *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
 Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramer’s V.
+Pearson chi-squared test. V = Cramér’s V.
 
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
@@ -1066,9 +1066,9 @@ tab |>
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V. |  |  |  |  |  |  |  |  |  |  |
+| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_t19rr4d03acyhdbzki2i .table
+Categorical table by education {#tinytable_sfthdmc2okslvb1jbbbs .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

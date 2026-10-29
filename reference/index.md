@@ -38,7 +38,7 @@
 - [`contingency_coef()`](https://amaltawfik.github.io/spicy/reference/contingency_coef.md)
   : Pearson's contingency coefficient
 - [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md)
-  : Cramer's V
+  : Cramér's V
 - [`gamma_gk()`](https://amaltawfik.github.io/spicy/reference/gamma_gk.md)
   : Goodman-Kruskal Gamma
 - [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md)

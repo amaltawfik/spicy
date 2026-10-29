@@ -43,7 +43,7 @@ test).
 ## Details
 
 The phi coefficient is \\\phi = \sqrt{\chi^2 / n}\\. It is equivalent to
-Cramer's V for 2x2 tables and equals the absolute value of the Pearson
+Cramér's V for 2x2 tables and equals the absolute value of the Pearson
 correlation between the two binary variables – spicy returns only the
 magnitude (always non-negative), matching the DescTools (Signorell et
 al., 2024) and PSPP conventions. SPSS itself SIGNS phi on 2x2 tables

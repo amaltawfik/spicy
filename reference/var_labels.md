@@ -43,8 +43,8 @@ print(x, ...)
 - ...:
 
   `name = "label"` pairs, one per variable to rename, each label a
-  single string. A named character vector can be spliced with `!!!`.
-  Names that match nothing in a table are ignored. For
+  single string. A named character vector can be spliced with `!!!`. A
+  name that matches nothing in a table warns there and is left out. For
   [`print()`](https://rdrr.io/r/base/print.html), passed on to
   [`print()`](https://rdrr.io/r/base/print.html).
 
@@ -83,7 +83,7 @@ table_continuous(
 #>  BMI (kg/m2) │ 25.93   3.72  16.00  38.90    25.72      26.14    1188 
 #>  Age (years) │ 49.26  14.70  25.00  75.00    48.43      50.10    1200 
 #> 
-#> Note. Missing values removed: BMI (kg/m2) (12). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: BMI (kg/m2) (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # A vector of renames kept for a whole project, spliced.
 renames <- c(bmi = "BMI (kg/m2)", smoking = "Smoker")
@@ -93,6 +93,8 @@ tbl <- table_categorical(
   by = sex,
   labels = var_labels(!!!renames)
 )
+#> Warning: `labels` has a name that matches nothing in the table: "bmi".
+#> ℹ It is ignored. Check the spelling, or wrap the call in `suppressWarnings()` when one vector serves several tables.
 
 # A regression table: the outcome and the factor header keep their
 # label attribute, the numeric term takes the one given here.

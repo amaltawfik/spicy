@@ -340,13 +340,14 @@ table_continuous(
     [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
     alone is `labels = TRUE`.
 
-  Names that match no column are ignored, so one vector can serve every
-  table of a project. The default reads `options(spicy.var_labels)`, and
-  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
-  `NULL` included, is an error. A variable label documents the data
-  file; a published table carries the wording you set here.
-  `note_labels` gives a variable a shorter label in the title and the
-  notes.
+  A name that matches no column of the table warns (class
+  `spicy_unknown_name`) and is left out, so one vector can still serve
+  every table of a project. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here. `note_labels` gives a variable a shorter label
+  in the title and the notes.
 
 - note_labels:
 
@@ -358,11 +359,11 @@ table_continuous(
   question while the note says "Missing values removed: sex at birth
   (2).". The rows, the column headers and the spanners keep the labels
   of `labels`, and so do the title and the notes for a variable
-  `note_labels` does not name. Names that match no column are ignored,
-  as in `labels`, and `NULL` (the default) renames nothing. A note label
-  that another variable of the table shows is an error (class
-  `spicy_label_collision`): choose another one, or relabel the other
-  variable.
+  `note_labels` does not name. A name that matches no column warns and
+  is left out, as in `labels`, and `NULL` (the default) renames nothing.
+  A note label that another variable of the table shows is an error
+  (class `spicy_label_collision`): choose another one, or relabel the
+  other variable.
 
 - ci_level:
 
@@ -380,11 +381,11 @@ table_continuous(
   `digits = c(height = 0, bmi = 1)`; the other variables and the
   weighted *n* keep the default, the `digits` of a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  in force included. Names that match no variable are ignored, as in
-  `labels`. A fraction is an error, as for every `*_digits` argument.
-  The other numbers keep their own decimals: *p*-values (`p_digits`),
-  effect sizes and the SMD (`effect_size_digits`), test statistics (two
-  decimals) and counts (none).
+  in force included. A name that matches no variable warns and is left
+  out, as in `labels`. A fraction is an error, as for every `*_digits`
+  argument. The other numbers keep their own decimals: *p*-values
+  (`p_digits`), effect sizes and the SMD (`effect_size_digits`), test
+  statistics (two decimals) and counts (none).
 
 - effect_size_digits:
 
@@ -633,6 +634,14 @@ Depends on `output`:
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
 
+The note opens with the sample size, as in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+"N = 159." or, with `by`, "N = 159: Women (n = 80), Men (n = 79).", the
+rows the table describes and those of each group (the group of missing
+`by` values included), a row missing `by` under `drop_na = TRUE` or a
+weight left out, rows rather than weights under `weights` ("N = 60
+(unweighted)."), the complete cases of each variable in its n column.
+
 The missing-value disclosure (values excluded from the summaries, and
 rows removed for a missing `by` value under `drop_na = TRUE`) travels
 with the table on every route, not just the console: `"default"` prints
@@ -745,6 +754,9 @@ keep the mean:
       sitting = c("med_iqr", "n"),
       .default = c("m", "sd", "n")
     )
+
+A name that is no variable of the table warns and is left out, as in
+`labels`.
 
 The table's columns are the union of the requested tokens; a cell of a
 column the variable did not ask for is left blank (structurally empty,
@@ -1015,7 +1027,7 @@ table_continuous(
 #>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
 #>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #> 
-#> Note. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -1045,7 +1057,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -1086,7 +1098,7 @@ table_continuous(
 #>                  │ Upper secondary        
 #>                  │ Tertiary               
 #> 
-#> Note. Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -1103,7 +1115,7 @@ table_continuous(
 #>  bmi               │  25.90 [23.40, 28.60]    1188  
 #>  wellbeing_score   │  70.25 [58.90, 79.23]    1200  
 #> 
-#> Note. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.
+#> Note. N = 1200. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.
 
 # Median with its exact (order-statistic) confidence interval.
 table_continuous(
@@ -1117,7 +1129,7 @@ table_continuous(
 #> ────────────┼───────────────────────────────────────────────────────────
 #>  bmi        │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to
@@ -1145,7 +1157,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80                     620  <.001 
 #>                  │ Male    71.05  16.23                     580        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1170,7 +1182,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
 #> 
-#> Note. P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Female (n = 620), Male (n = 580). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # Explicit effect-size measure.
 table_continuous(
@@ -1201,7 +1213,7 @@ table_continuous(
 #>                  │ Upper secondary                            
 #>                  │ Tertiary                                   
 #> 
-#> Note. P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # --- Selection helpers --------------------------------------------------
 
@@ -1220,7 +1232,7 @@ table_continuous(
 #>  life_sat_relationships │ 3.72  1.10  1.00  5.00    3.66       3.79     1192 
 #>  life_sat_standard      │ 3.40  1.16  1.00  5.00    3.33       3.46     1192 
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -1243,7 +1255,7 @@ table_continuous(
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Output formats -----------------------------------------------------
 

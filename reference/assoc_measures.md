@@ -41,7 +41,7 @@ assoc_measures(
 A data frame with columns `measure`, `estimate`, `se`, `ci_lower`,
 `ci_upper`, and `p_value`. The `p_value` comes from two test families:
 
-- **Pearson chi-squared test of independence** for Cramer's V, Phi, and
+- **Pearson chi-squared test of independence** for Cramér's V, Phi, and
   the Contingency Coefficient (the three chi-squared-derived nominal
   measures). All three carry the same chi-squared *p*-value on a given
   table.
@@ -133,7 +133,7 @@ Other association measures:
 tab <- table(sochealth$smoking, sochealth$education)
 assoc_measures(tab)
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Cramér's V                            0.136      –     0.079     0.191  <.001 
 #> Contingency Coefficient               0.134      –         –         –  <.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
 #> Lambda R|C                            0.000  0.000     0.000     0.000      – 
@@ -150,7 +150,7 @@ assoc_measures(tab)
 #> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  <.001 
 assoc_measures(tab, type = "nominal")
 #> Measure                            Estimate     SE  CI lower  CI upper      p 
-#> Cramer's V                            0.136      –     0.079     0.191  <.001 
+#> Cramér's V                            0.136      –     0.079     0.191  <.001 
 #> Contingency Coefficient               0.134      –         –         –  <.001 
 #> Lambda symmetric                      0.000  0.000     0.000     0.000      – 
 #> Lambda R|C                            0.000  0.000     0.000     0.000      – 

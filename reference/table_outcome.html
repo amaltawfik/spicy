@@ -41,7 +41,7 @@ gives the marginal summary of the whole analytic sample."><meta property="og:ima
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -180,7 +180,8 @@ unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>T
 <li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
 names these labels, and every other column its <code>label</code> attribute,
 whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
-</ul><p>Names that match no column are ignored, so one vector can serve
+</ul><p>A name that matches no column of the table warns (class
+<code>spicy_unknown_name</code>) and is left out, so one vector can still serve
 every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
@@ -198,8 +199,9 @@ which reads as one. <code>labels</code> can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of <code>labels</code>, and so do the title and the notes for a variable
-<code>note_labels</code> does not name. Names that match no column are ignored,
-as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+<code>note_labels</code> does not name. A name that matches no column warns and
+is left out, as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
@@ -612,7 +614,11 @@ and as the rows of a labelled variable of <code><a href="table_categorical.html"
     </div>
     <div class="section level2">
     <h2 id="the-table-note">The table note<a class="anchor" aria-label="anchor" href="#the-table-note"></a></h2>
-    <p>One note sits under the table and states what left the analytic
+    <p>One note sits under the table. It opens with the sample size, as in
+<code><a href="table_categorical.html">table_categorical()</a></code>, "N = 159.": the rows of the data, a row with a
+missing weight left out, rows rather than weights under <code>weights</code>
+("N = 60 (unweighted)."), the outcome's complete cases in the n of the
+<code>Overall</code> row. It then states what left the analytic
 sample, which group comparison ran in each block, what the displayed
 columns mean, and how the blocks and the <code>Overall</code> row are to be
 read. The rendering engines carry the same sentence as a table note.
@@ -666,7 +672,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -828,7 +834,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

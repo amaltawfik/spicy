@@ -254,7 +254,7 @@ survey’s seven are refused: `"lincom"`, whose numerical integration
 as failing when the upper tail approaches machine epsilon, and
 `"wls-score"`, which has no reporting convention here.
 
-Association measures – Cramer’s *V*, phi, tau-b/c, gamma, Somers’ *D*,
+Association measures – Cramér’s *V*, phi, tau-b/c, gamma, Somers’ *D*,
 lambda – are absent, and that absence is a decision. None has an
 established design-based variance, and the intervals
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)

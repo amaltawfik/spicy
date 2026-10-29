@@ -51,7 +51,7 @@ or publication-ready tables (&quot;tinytable&quot;, &quot;gt&quot;, &quot;flexta
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/spicy.html">Getting started with spicy</a></li>
     <li><a class="dropdown-item" href="../articles/variable-exploration.html">Explore variables and build codebooks</a></li>
     <li><a class="dropdown-item" href="../articles/frequency-tables.html">Frequency tables and cross-tabulations</a></li>
-    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramer's V, Phi, and association measures</a></li>
+    <li><a class="dropdown-item" href="../articles/association-measures.html">Cramér's V, Phi, and association measures</a></li>
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
@@ -211,7 +211,8 @@ unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>T
 <li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
 names these labels, and every other column its <code>label</code> attribute,
 whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
-</ul><p>Names that match no column are ignored, so one vector can serve
+</ul><p>A name that matches no column of the table warns (class
+<code>spicy_unknown_name</code>) and is left out, so one vector can still serve
 every table of a project. The default reads
 <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
 call wins over it. Any other value, <code>NULL</code> included, is an error. A
@@ -229,8 +230,9 @@ which reads as one. <code>labels</code> can then name a row with a whole
 question while the note says "Missing values removed: sex at birth
 (2).". The rows, the column headers and the spanners keep the labels
 of <code>labels</code>, and so do the title and the notes for a variable
-<code>note_labels</code> does not name. Names that match no column are ignored,
-as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing. A note label
+<code>note_labels</code> does not name. A name that matches no column warns and
+is left out, as in <code>labels</code>, and <code>NULL</code> (the default) renames nothing.
+A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
@@ -464,7 +466,7 @@ column and names it in the data frames, as the effect size of
 \(\gamma\) (<code>gamma</code>), the three others keeping their name
 (<code>"Lambda"</code>). The note defines the symbol as it defines any
 abbreviation, under the <code>abbreviations</code> rule of <code><a href="spicy_style.html">spicy_style()</a></code>:
-"V = Cramer's V" by default, the Greek letters only under <code>"all"</code> and
+"V = Cramér's V" by default, the Greek letters only under <code>"all"</code> and
 in the <code>"jama"</code> and <code>"lancet"</code> themes. When multiple measures are used
 (typically with <code>"auto"</code> on a heterogeneous <code>select</code>), the header
 collapses to <code>"Effect size"</code> and the table note names the measure
@@ -815,7 +817,7 @@ each variable. See <code>@param correct</code> /
 <code>simulate_p</code> to switch on Yates' continuity correction or Monte Carlo
 <em>p</em>-values for the chi-squared test, and <code>@param assoc_measure</code> for
 the per-row dispatch table used by <code>"auto"</code> (2x2 -&gt; Phi, both ordered
--&gt; Kendall's Tau-b, otherwise Cramer's V). Without <code>by</code>, the table
+-&gt; Kendall's Tau-b, otherwise Cramér's V). Without <code>by</code>, the table
 reports the marginal frequency distribution of each variable with no
 inferential statistics.</p>
 <p>The exact tests condition on counts. Under <code>weights</code>, they run on the
@@ -1161,7 +1163,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>  54.2               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>  45.8               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Survey weights with rescaling.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -1206,7 +1208,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>  54.6               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>  45.4               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramer's V.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200 (unweighted): Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. Statistics weighted by weight. P-values: Pearson chi-squared test. V = Cramér's V.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Confidence interval for the association measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -1238,7 +1240,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span>                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span>                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramer's V; CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V; CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Per-variable association measure ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1278,7 +1280,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary        <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: education.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Force a uniform measure across all row variables: its symbol, V,</span></span></span>
 <span class="r-in"><span><span class="co"># heads the column, and the note defines it.</span></span></span>
@@ -1314,7 +1316,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary        <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramer's V.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Per-variable override (recommended named form).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -1367,7 +1369,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very good       <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)       <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. Phi: smoking. Cramér's V: education. Kendall's Tau-b: self_rated_health.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
