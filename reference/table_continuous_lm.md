@@ -145,7 +145,7 @@ table_continuous_lm(
   rule of a table that computes (see `drop_na` in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md));
   this table has no `drop_na`. The note lists `by` after the outcomes
-  and covariates ("Missing values removed: bmi (3), sex (2)."): a
+  and covariates ("Missing values removed: age (3), sex (2)."): a
   missing `by` or covariate takes the row out of the model of every
   outcome, a missing outcome only out of its own.
 
