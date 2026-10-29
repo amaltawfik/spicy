@@ -301,7 +301,7 @@
 #'     the first.
 #'   - `"hedges_g"`: Hedges's `g = J * d` with the small-sample correction
 #'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
-#'   - `"omega2"`: Hays's `omega-squared`, a bias-corrected estimator of the
+#'   - `"omega2"`: Hays's omega squared, a bias-corrected estimator of the
 #'     population variance explained, less optimistic than \eqn{R^2}{R^2} for small
 #'     samples. Defined for any predictor type and truncated at 0.
 #'
@@ -645,10 +645,10 @@
 #'     adjustment (partial effect sizes), the bounds use the partial
 #'     transforms instead: partial `f^2 = ncp / df2`, and for partial
 #'     `omega^2` the inversion runs at the *F*-value equivalent of the
-#'     omega-squared point estimate with bounds `ncp / (ncp + df2)` --
+#'     omega squared point estimate with bounds `ncp / (ncp + df2)` --
 #'     the [effectsize::omega_squared()] `partial = TRUE` convention,
-#'     which is narrower than the partial eta-squared CI because
-#'     omega-squared shrinks the point estimate.
+#'     which is narrower than the partial eta squared CI because
+#'     omega squared shrinks the point estimate.
 #' }
 #' For the weighted case, the CI uses raw (unweighted) group counts and
 #' `df.residual(fit) = n - p`, consistent with the WLS reporting convention
@@ -958,7 +958,7 @@
 #'   effect_size = "cohens_d"
 #' )
 #'
-#' # Hedges' g with weighted analysis and weighted n column.
+#' # Hedges's g with weighted analysis and weighted n column.
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
@@ -969,7 +969,7 @@
 #'   show_weighted_n = TRUE
 #' )
 #'
-#' # Hedges' g with noncentral t confidence interval (bracket notation).
+#' # Hedges's g with noncentral t confidence interval (bracket notation).
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
@@ -986,7 +986,7 @@
 #'   effect_size = "f2"
 #' )
 #'
-#' # Hays's omega-squared for a 3-level predictor ("cohens_d" and
+#' # Hays's omega squared for a 3-level predictor ("cohens_d" and
 #' # "hedges_g" need two groups).
 #' table_continuous_lm(
 #'   sochealth,

@@ -193,19 +193,19 @@ outputs. One of:
 \item \code{"none"} (default): no effect-size column.
 \item \code{"auto"}: auto-select the canonical measure for the chosen
 \code{test} and group count -- Hedges's \emph{g} (parametric, 2 groups),
-eta-squared (parametric, 3+ groups), rank-biserial \emph{r}
-(nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
+eta squared (parametric, 3+ groups), rank-biserial \emph{r}
+(nonparametric, 2 groups), epsilon squared (nonparametric, 3+
 groups).
 \item \code{"hedges_g"}: Hedges's \emph{g} (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges & Olkin
 normal approximation.
-\item \code{"eta2"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
+\item \code{"eta2"}: Eta squared (\eqn{\eta^2}, parametric ANOVA-style
 \code{SS_between / SS_total}). CI via inversion of the noncentral
 \emph{F} distribution.
 \item \code{"r_rb"}: Rank-biserial \emph{r} from the Wilcoxon / Mann-Whitney
 statistic (2 groups, nonparametric). CI via Fisher
 \emph{z}-transform.
-\item \code{"epsilon2"}: Epsilon-squared (\eqn{\varepsilon^2}) from the
+\item \code{"epsilon2"}: Epsilon squared (\eqn{\varepsilon^2}) from the
 Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).
 }
@@ -916,8 +916,8 @@ table_continuous(
 
 # --- Effect sizes -------------------------------------------------------
 
-# Auto-selected effect size with confidence interval (Hedges' g for
-# binary `by`, eta-squared for k > 2).
+# Auto-selected effect size with confidence interval (Hedges's g for
+# binary `by`, eta squared for k > 2).
 table_continuous(
   sochealth,
   select = wellbeing_score,

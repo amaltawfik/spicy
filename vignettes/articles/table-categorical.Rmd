@@ -235,7 +235,7 @@ is not a contradiction. Goodman-Kruskal lambda measures the
 proportional reduction in the error of predicting the row variable
 once the group is known, and it is exactly 0 whenever the modal
 category is the same in every group: here "No" is the most frequent
-answer at all three education levels (68.6%, 77.0%, 83.0%), so
+answer at all three education levels (69.6%, 78.7%, 84.9%), so
 knowing education never changes the best single guess, even though
 the distributions clearly differ (hence the significant chi-squared
 test).

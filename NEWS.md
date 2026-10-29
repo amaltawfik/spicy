@@ -298,7 +298,7 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 
 * *n*, *N*, *p*, and test statistics are never defined, but for the
   partial χ² of `table_regression()`, which names its test; the notes of
-  `table_categorical_svy()` still say how % and *n* are computed.
+  `table_categorical_svy()` still define % and *n*.
 
 * The default note of `table_regression()` and `table_regression_uv()`
   no longer defines OR, and defines CI; that of a table of means adds

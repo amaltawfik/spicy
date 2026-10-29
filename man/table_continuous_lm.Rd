@@ -350,7 +350,7 @@ The sign matches the displayed difference, the second level minus
 the first.
 \item \code{"hedges_g"}: Hedges's \code{g = J * d} with the small-sample correction
 \code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
-\item \code{"omega2"}: Hays's \code{omega-squared}, a bias-corrected estimator of the
+\item \code{"omega2"}: Hays's omega squared, a bias-corrected estimator of the
 population variance explained, less optimistic than \eqn{R^2}{R^2} for small
 samples. Defined for any predictor type and truncated at 0.
 }
@@ -784,10 +784,10 @@ converted from the noncentrality parameter using
 adjustment (partial effect sizes), the bounds use the partial
 transforms instead: partial \code{f^2 = ncp / df2}, and for partial
 \code{omega^2} the inversion runs at the \emph{F}-value equivalent of the
-omega-squared point estimate with bounds \code{ncp / (ncp + df2)} --
+omega squared point estimate with bounds \code{ncp / (ncp + df2)} --
 the \code{\link[effectsize:omega_squared]{effectsize::omega_squared()}} \code{partial = TRUE} convention,
-which is narrower than the partial eta-squared CI because
-omega-squared shrinks the point estimate.
+which is narrower than the partial eta squared CI because
+omega squared shrinks the point estimate.
 }
 For the weighted case, the CI uses raw (unweighted) group counts and
 \code{df.residual(fit) = n - p}, consistent with the WLS reporting convention
@@ -995,7 +995,7 @@ table_continuous_lm(
   effect_size = "cohens_d"
 )
 
-# Hedges' g with weighted analysis and weighted n column.
+# Hedges's g with weighted analysis and weighted n column.
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1006,7 +1006,7 @@ table_continuous_lm(
   show_weighted_n = TRUE
 )
 
-# Hedges' g with noncentral t confidence interval (bracket notation).
+# Hedges's g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
@@ -1023,7 +1023,7 @@ table_continuous_lm(
   effect_size = "f2"
 )
 
-# Hays's omega-squared for a 3-level predictor ("cohens_d" and
+# Hays's omega squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
 table_continuous_lm(
   sochealth,

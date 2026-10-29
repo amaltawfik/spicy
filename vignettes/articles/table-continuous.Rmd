@@ -123,8 +123,8 @@ table_continuous(
 
 `effect_size = "auto"` selects the canonical measure for the
 chosen `test` and number of groups: Hedges's *g* (parametric, 2
-groups), eta-squared (parametric, 3+ groups), rank-biserial *r*
-(nonparametric, 2 groups), or epsilon-squared (nonparametric, 3+
+groups), eta squared (parametric, 3+ groups), rank-biserial *r*
+(nonparametric, 2 groups), or epsilon squared (nonparametric, 3+
 groups). To pick a specific measure explicitly, pass its character
 name:
 

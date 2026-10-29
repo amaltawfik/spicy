@@ -305,14 +305,11 @@ table_regression(
 )
 ```
 
-The default footer documents the variance estimator, flags
-standardized coefficients (`β = standardized coefficient`), and
-reports any multiplicity correction, so the inferential regime is
-visible without leaving the table. One thing it does not carry: the
-*name* of the standardization method. Here `standardized = "refit"`
-produced the β column, but the footer would read the same under any
-of the five methods, so record the method in the table note or the
-text of the article.
+The default footer documents the variance estimator, defines the
+standardized coefficients with the method that produced them
+(`β = standardized coefficient ("refit": ...)`), and reports any
+multiplicity correction, so the inferential regime is visible without
+leaving the table.
 
 Side-by-side reporting of competing specifications (e.g., unadjusted
 vs. covariate-adjusted, or `lm` vs. `glm`) is supported by passing a
@@ -405,9 +402,10 @@ the journal's published author guidelines:
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 ```
 
-Two things change here. JAMA rounds *p* values to two decimals (`.71`),
+Three things change here. JAMA rounds *p* values to two decimals (`.71`),
 where the default reports three (`.713`), and the note opens without
-the word "Note.", as the AMA manual sets table notes.
+the word "Note.", as the AMA manual sets table notes. Its first line
+defines the φ of the header, which the APA default leaves undefined.
 `spicy_style(note_label = )` chooses that word for any style: "Note."
 (APA), "Note:" (Chicago), or none.
 
@@ -561,7 +559,7 @@ tab |>
     subtitle = "Categorical summary table"
   ) |>
   gt::tab_source_note(
-    gt::md("*Percentages are computed within each education group.*")
+    gt::md("*Source: sochealth, a simulated survey of 1,200 adults.*")
   )
 ```
 

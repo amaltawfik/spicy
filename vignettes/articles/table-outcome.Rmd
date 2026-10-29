@@ -124,9 +124,9 @@ translation of the table.
 `show_columns` takes exactly the tokens `table_continuous()` takes,
 with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
-`"n"`, `"weighted_n"`. See the *Choosing which statistics to show*
-section of [*Continuous summary tables*](table-continuous.html) for the vocabulary itself;
-nothing about it changes here.
+`"n"`, `"weighted_n"`. See the *Choosing the statistics* section of
+`?table_continuous` for the vocabulary itself; nothing about it changes
+here.
 
 ```{r tokens}
 table_outcome(
@@ -178,7 +178,7 @@ Each block chooses its own test from its own level count. With
 *t*-test and a three-or-more-level block gets the Welch one-way
 ANOVA, which is why the note above names both. `effect_size = "auto"`
 follows the test the block actually ran: Hedges's *g* beside a
-*t*-test, eta-squared beside an ANOVA, their rank homologs beside a
+*t*-test, eta squared beside an ANOVA, their rank homologs beside a
 rank test. A column can therefore mix measures from row to row, and
 each cell prefixes its own glyph.
 
