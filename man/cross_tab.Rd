@@ -43,7 +43,7 @@ or a combination of multiple variables (e.g. \code{interaction(vs, am)}).
 A row with a missing \code{by} belongs to no group and leaves every table,
 where a missing \code{x} or \code{y} leaves only its own; each note lists \code{by}
 with that count after \code{x} and \code{y} ("Missing values removed: x (2),
-grp (3).").}
+region (3).").}
 
 \item{weights}{Optional numeric weights. A logical vector is also
 accepted and coerced to 1/0 (include / exclude).}

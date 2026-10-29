@@ -101,7 +101,7 @@ Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
 outcome (NAs in \code{y} and \code{weights} are also excluded; see Details), the
 rule of a table that computes (see \code{drop_na} in
 \code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}. The note lists
-\code{by} after the outcomes and covariates ("Missing values removed: bmi
+\code{by} after the outcomes and covariates ("Missing values removed: age
 (3), sex (2)."): a missing \code{by} or covariate takes the row out of the
 model of every outcome, a missing outcome only out of its own.
 

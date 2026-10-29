@@ -701,7 +701,7 @@ abort_outcome_by_renamed <- function() {
 #'   [table_categorical()]; the missing values of the outcome are always
 #'   removed and counted in the note. `TRUE` removes those of a `select`
 #'   variable from its block, and the note lists the variable after the
-#'   outcome ("Missing values removed: bmi (3), sex (2)."): a missing
+#'   outcome ("Missing values removed: age (3), sex (2)."): a missing
 #'   outcome takes the row out of every block, a missing `select` value
 #'   only out of its own block. Under `drop_na = TRUE`, a grouping that
 #'   no observation holds is an error (class `spicy_invalid_data`).

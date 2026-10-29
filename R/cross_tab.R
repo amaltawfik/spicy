@@ -20,7 +20,7 @@
 #'   A row with a missing `by` belongs to no group and leaves every table,
 #'   where a missing `x` or `y` leaves only its own; each note lists `by`
 #'   with that count after `x` and `y` ("Missing values removed: x (2),
-#'   grp (3).").
+#'   region (3).").
 #' @param weights Optional numeric weights. A logical vector is also
 #'   accepted and coerced to 1/0 (include / exclude).
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.

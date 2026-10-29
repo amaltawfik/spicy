@@ -694,9 +694,8 @@ extend, or relabel (`note`, `note_add`, `note_labels`).
 * The note of `table_multiresponse()` says, in words a reader can
   follow, what the percentages sum to and who is in the base.
 
-* That base reads "respondents who answered the question" (in French,
-  "personnes ayant répondu à la question"), the others counted "with no
-  answer to the question".
+* That base reads "respondents who answered the question", the others
+  counted "with no answer to the question".
 
 * The row of the base is labeled "Base" in both languages and points to
   that sentence.

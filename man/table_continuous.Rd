@@ -91,7 +91,7 @@ variable's statistics, and the exclusion is disclosed in a table
 note ("Missing values removed: ...") rather than silent. If \code{TRUE}
 (the default), rows with \code{NA} in \code{by} are removed from the grouped
 summaries and counted in the same note, \code{by} after the variables
-("Missing values removed: bmi (3), sex (2)."): a missing \code{by} takes
+("Missing values removed: age (3), sex (2)."): a missing \code{by} takes
 the row out of the whole table, a missing value only out of its own
 variable's statistics. If \code{FALSE}, rows with \code{NA} in \code{by} form a
 dedicated \code{"(Missing)"} group -- the field convention for

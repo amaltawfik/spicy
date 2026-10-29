@@ -119,7 +119,7 @@ comparison, and a level displayed with that label is an error, as in
 \code{\link[=table_categorical]{table_categorical()}}; the missing values of the outcome are always
 removed and counted in the note. \code{TRUE} removes those of a \code{select}
 variable from its block, and the note lists the variable after the
-outcome ("Missing values removed: bmi (3), sex (2)."): a missing
+outcome ("Missing values removed: age (3), sex (2)."): a missing
 outcome takes the row out of every block, a missing \code{select} value
 only out of its own block. Under \code{drop_na = TRUE}, a grouping that
 no observation holds is an error (class \code{spicy_invalid_data}).}
