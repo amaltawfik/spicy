@@ -227,7 +227,7 @@ nonzero count – the opposite direction, hence the distinct label), and a
 coefficients join the <code>p_adjust</code> family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). <code>"CR1"</code> for <code>pscl</code> fits covers both
-components via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, and <code>"CR0"</code> for <code>glmmTMB</code> fits covers the
+components via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, and <code>"CR0"</code> for <code>glmmTMB</code> fits covers the
 zero-inflation and dispersion blocks. Opt out with <code>show_components = FALSE</code>.</p>
     </div>
     <div class="section level2">
@@ -248,7 +248,7 @@ model has no working residuals.
 per-alternative rows; AME is refused (no <code>slopes()</code> method exists for
 its data format). <code>"CR1"</code> is available with one cluster value per choice
 situation, and <code>n</code> counts choice situations; <code>HC*</code> is refused
-(<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the meat for mlogit's per-chooser
+(<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> mis-scales the meat for mlogit's per-chooser
 score structure).</p>
     </div>
     <div class="section level2">
@@ -268,7 +268,7 @@ closed-form AFT curves are standardized directly (stratified
 <code>survreg</code> refused).
 <code>"CR0"</code> uses the Lin-Wei grouped-dfbeta sandwich
 (<code>coxph</code>) or <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (<code>cph</code>, needs <code>x = TRUE, y = TRUE</code>);
-<code>survreg</code> takes <code>"CR1"</code>, from <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.
+<code>survreg</code> takes <code>"CR1"</code>, from <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.
 <code>nested = TRUE</code> compares nested Cox fits by likelihood-ratio test.</p>
     </div>
     <div class="section level2">

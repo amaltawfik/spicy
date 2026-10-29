@@ -635,8 +635,7 @@ Three guardrails: average marginal effects are refused for `mlogit`
 (`marginaleffects` has no slopes method for its one-row-per-choice
 structure); the one robust `vcov` is `CR1`, with one cluster value per
 choice situation, not per long-format row; and `HC*` is refused outright
-—
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+— [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
 mis-scales the sandwich for mlogit’s per-choice-situation scores.
 
 ## Several models side by side

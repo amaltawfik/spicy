@@ -1222,7 +1222,7 @@ Rename the model, or pass `model_labels`.
 - `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)).
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)).
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
@@ -1297,7 +1297,7 @@ silent model-based result under a robust label:
   all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`. `lm`
   additionally takes `"CR1S"` – the full Stata `regress, vce(cluster)`
   convention: the CR1S small-sample scaling (equal to
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
   with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
   clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
   Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
@@ -1308,7 +1308,7 @@ silent model-based result under a robust label:
 - `mlogit`:
 
   `classical` + `"CR1"` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
@@ -1331,7 +1331,7 @@ silent model-based result under a robust label:
   [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`:
 
   `classical` + `"CR1"` only:
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
   computes one cluster estimator for these, the CR0 sandwich scaled by
   \\G/(G-1)\\, `G` the number of clusters (clubSandwich's CR1). `"CR0"`,
   `"CR2"` and `"CR3"` are refused, as are `HC*` and the resamplers.
@@ -1407,7 +1407,7 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 `pscl` two-part fits use
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
 For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
 the penalized covariance of the fit, and lets `vcovCL()` do only the
 clustering arithmetic: the sandwich methods for these fits are wrong for
@@ -1437,7 +1437,7 @@ Three accepted forms, in order of preference:
     `model.frame(fit)` first, then in the original `data` argument
     captured by the fit. **Recommended**: independent of the dataset's
     name, composable for multi-way clustering, consistent with
-    [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+    [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
     /
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
 
