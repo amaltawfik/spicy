@@ -4,7 +4,7 @@
 * GitHub Actions: Windows (R-release), macOS (R-release), Ubuntu
   (R-release, R-devel, R-oldrel-1)
 * win-builder: R-release (4.6.2), R-devel, R-oldrelease (4.5.3)
-* R-hub: nosuggests, atlas
+* R-hub: atlas
 
 ## R CMD check results
 
