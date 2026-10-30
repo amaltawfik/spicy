@@ -55,3 +55,4 @@ tools/suite_results.csv
 # machine-specific, and regenerated on demand.
 dev/.fixture_cache/
 dev/i18n_fr_review_samples.md
+CRAN-SUBMISSION

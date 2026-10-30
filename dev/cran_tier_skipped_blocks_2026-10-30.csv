@@ -1,0 +1,1155 @@
+"file_name","line","test","stage","why","seconds_per_file_run"
+"code_book",325,"labels that only name declared missing codes leave the stored type","2","beyond",0.11
+"code_book",404,"an NA level is system missing, as in freq()","2","beyond",0.12
+"code_book",715,"the print is pinned","1","snapshot",0.0899999999999999
+"code_book",744,"the print fits the console width by cutting long labels","2","beyond",0.17
+"code_book",794,"decimal_mark: argument > style > language","2","beyond",0.19
+"code_book",857,"errors name code_book(), not the helpers that raise them","2","beyond",0.13
+"code_book",885,"an empty selection gives empty tables","2","beyond",0.109999999999999
+"code_book",911,"the Excel codebook reads back","1","render",2.39
+"code_book",1030,"the Excel file leaves non-finite statistics empty, and means as they are","1","render",0.81
+"code_book",1054,"the Excel header takes the PDF colors, and the font when given","1","render",1.67
+"code_book",1078,"the Excel codebook follows the language, with or without a title","1","render",1.04
+"cross_tab",452,"cross_tab simulate_p adds (simulated) to note","1","boot",0
+"i18n",8,"the registry itself is under snapshot","1","snapshot",0.09
+"i18n",29,"no dead keys: every registry key is consumed in R/","1","lint",46.77
+"i18n",152,"every frozen categorical key equals its English display label","2","beyond",0.100000000000001
+"i18n",204,"every frozen continuous key equals its English display label","2","beyond",0.0799999999999983
+"i18n",273,"every frozen linear-model key equals its English display label","2","beyond",0.530000000000001
+"i18n",480,"every frozen block identity equals its English caption","2","beyond",0.109999999999999
+"i18n",568,"every registry template is a well-formed sprintf format","2","beyond",1.31
+"inline",68,"a cited cell carries the style levers that have no formal","2","beyond",0.34
+"inline",157,"reference and undefined cells refuse with the reason","2","beyond",0.77
+"inline",189,"a partial chi-squared is cited without its degrees of freedom","2","beyond",0.2
+"inline",233,"`model = k` addresses the k-th model, by identity","2","beyond",0.13
+"inline",327,"an out-of-range or unknown `model` is refused, unchanged","2","beyond",0.11
+"inline",426,"an interval token names its own bounds, not a rival estimand","2","beyond",0.45
+"inline",756,"`model` cites a group column of table_continuous_lm()","2","beyond",0.11
+"inline",1236,"a column the table does not carry is named before any level hint","2","beyond",0.11
+"inline",1372,"a group given as `level` is pointed to `model`","2","beyond",0.11
+"inline",1471,"an item column named like a generated row's token keeps both rows","2","beyond",0.14
+"inline",1516,"an exact label wins over a fit statistic's label read regardless of case","2","beyond",0.11
+"inline",1548,"a variable that matches two rows is refused with an address for each","2","beyond",0.14
+"inline",1643,"the p of a by-group continuous table is cited without `model`","2","beyond",0.22
+"regression_broom",294,"tidy df is numeric double and carries fractional Satterthwaite df verbatim","1","oracle",0.12
+"regression_broom",319,"tidy ⇄ raw long: per-coef estimates round-trip","2","beyond",0.14
+"regression_broom",430,"tidy – estimate_type stays in the documented domain","2","beyond",0.65
+"regression_broom",460,"tidy – one row per (model_id, term, estimate_type, outcome_level)","2","beyond",0.16
+"regression_broom",530,"as.data.frame and output = 'data.frame' are attribute-identical","2","beyond",0.52
+"regression_structured",468,"as_structured – engines see the same values (excel + gt parity)","1","render",1.05
+"regression_uv",109,"per-predictor N is shown and the differing-N note fires","2","beyond",0.11
+"regression_uv",177,"screen-only tables carry no empty fit-stat rows","2","beyond",0.14
+"regression_uv",208,"the structured body carries no empty fit-stat rows either","1","render",0.27
+"regression_uv",263,"the N column is a count: no decimals whatever `digits`","1","render",0.1
+"regression_uv",293,"the r2 / adj_r2 tokens carry each predictor's own R-squared","2","beyond",0.11
+"regression_uv",525,"labels: names by default, the label attributes with TRUE (decision 54)","2","beyond",0.8
+"regression_uv",575,"rank-deficient predictors stay visible as dropped rows","2","beyond",0.14
+"regression_uv",597,"p_adjust adjusts within the screen family and within the multivariable family separately","2","beyond",0.86
+"regression_uv",623,"HC3 flows through to every univariable fit","2","beyond",0.359999999999999
+"regression_uv",642,"CR2 clusters align to each fit's own sample (differing Ns)","1","oracle",3.06
+"regression_uv",749,"default titles follow the family; custom title wins","2","beyond",1.02
+"regression_uv",974,"an error raised in table_regression() names table_regression_uv()","2","beyond",0.18
+"regression_uv",992,"a survey design is refused with the design-based route","2","beyond",1.48
+"regression_uv",1003,"the outcome is auto-dropped from tidyselect predictors","2","beyond",0.25
+"regression_uv",1019,"console snapshot: screen + multivariable merge","1","snapshot",0.450000000000001
+"regression_uv",1037,"the footer names the cluster column through the wrapper","1","model",2.3
+"regression_uv",1056,"family with method = 'lm': non-gaussian refused, gaussian ignored with a warning","2","beyond",0.190000000000001
+"regression_uv",1143,"family without method selects the glm screen (0.12 calls intact)","2","beyond",0.140000000000001
+"regression_uv",1165,"family is normalized like stats::glm(): object, name, constructor","2","beyond",0.219999999999999
+"regression_uv",1220,"gaussian identity is refused for the glm screen in all three forms","2","beyond",0.140000000000001
+"regression_uv",1269,"a 3-level factor with two observed levels passes the linear screen","2","beyond",0.120000000000001
+"regression_uv",1296,"LPM codes 0/1 on the second level and the warning names it","2","beyond",0.219999999999999
+"regression_uv",1339,"tidyselect helpers work and the outcome is dropped from them","2","beyond",0.129999999999999
+"regression_uv",1363,"show_intercept = TRUE shows the univariable intercepts too","2","beyond",0.399999999999999
+"regression_uv",1405,"keep on a predictor name spares BOTH intercepts (uv + multivariable)","2","beyond",0.229999999999997
+"regression_uv",1432,"the documented example runs and yields the OR screen","2","beyond",0.270000000000003
+"regression_uv",1477,"the screen renders through the rich engines","1","render",2.18
+"spicy_style",195,"every registry entry carries its provenance and rule list","2","beyond",0.22
+"spicy_style",374,"lancet: the coverage percentage takes the midline dot too","2","beyond",0.13
+"spicy_style",461,"aer's star ban still yields to an explicit argument","2","beyond",0.14
+"spicy_style",478,"jama and lancet open the note without a lead-in word","2","beyond",0.58
+"spicy_style",509,"the lead-in follows the style argument, then the option","2","beyond",0.38
+"spicy_style",606,"jama and lancet head the mean and the median in full, keys unchanged","2","beyond",4.58
+"spicy_style",755,"the locale reaches every family with a style layer","2","beyond",0.390000000000001
+"spicy_style",765,"the locale reaches the survey twins","2","beyond",0.279999999999999
+"spicy_style",783,"a typed comma keeps the leading zero in every family","2","beyond",0.180000000000001
+"spicy_style",870,"an explicit p_style outranks the mark in both directions","2","beyond",0.17
+"spicy_style",923,"a point mark is untouched by the rule","2","beyond",0.170000000000002
+"spicy_style",974,"a theme outranks the locale where the two meet","2","beyond",0.19
+"spicy_style",1128,"options(spicy.style) reaches four table functions","2","beyond",0.27
+"spicy_style",1250,"the no-style corpus is pinned across four table functions","2","beyond",0.290000000000001
+"spicy_style",1292,"ci_sep and ci_brackets reach the descriptive families","1","render",0.67
+"table_categorical",13,"table_categorical returns expected long raw structure","3","bulk",0.38
+"table_categorical",85,"table_categorical accepts weights as an unquoted column name","3","bulk",0.0399999999999999
+"table_categorical",118,"the rows a missing weight removes are said in the note, not warned","2","beyond",0.16
+"table_categorical",174,"table_categorical accepts by as a character object","3","bulk",0.05
+"table_categorical",212,"table_categorical works without by in long raw output","3","bulk",0.02
+"table_categorical",230,"a level displayed beside the missing row is refused, with both ways out","3","bulk",0.0499999999999998
+"table_categorical",268,"the refusal fires only when both rows are displayed","3","bulk",0.0600000000000001
+"table_categorical",314,"each variable is judged on its own rows","2","beyond",0.11
+"table_categorical",341,"a `by` level displayed beside the missing column is refused","3","bulk",0.0599999999999998
+"table_categorical",374,"a one-way variable with no observed value keeps its one row","3","bulk",0.03
+"table_categorical",399,"a grouped variable with no observed value keeps its one row","3","bulk",0.03
+"table_categorical",436,"table_categorical warns about ignored grouped options without by","3","bulk",0.04
+"table_categorical",475,"table_categorical returns visibly and is silent when assigned","3","bulk",0.23
+"table_categorical",514,"table_categorical validates weights and simulate_B","3","bulk",0.04
+"table_categorical",562,"table_categorical keeps missing values as explicit levels when drop_na is FALSE","3","bulk",0.0699999999999998
+"table_categorical",595,"table_categorical returns tinytable object when requested","1","render",0.0800000000000001
+"table_categorical",615,"table_categorical returns one-way rendered objects when requested","1","render",3.88
+"table_categorical",718,"table_categorical default column is Cramer's V","3","bulk",0.140000000000001
+"table_categorical",744,"table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (mixed -> Effect size header)","2","beyond",0.5
+"table_categorical",795,"table_categorical accepts a named per-variable `assoc_measure`","3","bulk",0.36
+"table_categorical",827,"table_categorical accepts unnamed positional `assoc_measure` and validates length","3","bulk",0.12
+"table_categorical",854,"table_categorical errors when `assoc_measure = 'phi'` requested on non-2x2","3","bulk",0.0499999999999998
+"table_categorical",877,"table_categorical rejects unknown `assoc_measure` values and bad keys","3","bulk",0.0299999999999994
+"table_categorical",898,"the assoc_measure errors name table_categorical()","3","bulk",0.0599999999999996
+"table_categorical",924,"table_categorical drops association column when assoc_measure is none","3","bulk",0.22
+"table_categorical",950,"table_categorical uses dynamic column name with assoc_measure = 'gamma'","3","bulk",0.23
+"table_categorical",991,"a single measure heads and names its column with its symbol","2","beyond",2.64
+"table_categorical",1106,"assoc_ci adds CI columns in the data.frame output","3","bulk",0.199999999999999
+"table_categorical",1126,"assoc_ci = FALSE omits CI columns in the data.frame output","3","bulk",0.25
+"table_categorical",1150,"the association CI label ignores decimal_mark at its integer coverage","2","beyond",0.32
+"table_categorical",1170,"assoc_ci fills the CI columns of the long output","3","bulk",0.17
+"table_categorical",1187,"assoc_ci shows inline CI in rendered formats","1","render",0.859999999999999
+"table_categorical",1225,"table_categorical levels_keep filters and reorders levels","3","bulk",0.0999999999999996
+"table_categorical",1236,"table_categorical levels_keep with (Missing)","2","beyond",0.119999999999999
+"table_categorical",1249,"table_categorical levels_keep no-match warns and names the levels","3","bulk",0.0100000000000016
+"table_categorical",1277,"table_categorical levels_keep no-match keeps the matching variable","3","bulk",0.0599999999999987
+"table_categorical",1297,"table_categorical grouped levels_keep no-match warns per variable","3","bulk",0.0299999999999994
+"table_categorical",1315,"levels_keep takes a named list, one entry per variable","3","bulk",0.41
+"table_categorical",1365,"levels_keep refuses a list it cannot read, as the survey twin does","3","bulk",0.0399999999999991
+"table_categorical",1388,".warn_levels_keep_no_match truncates long level listings","3","bulk",0.0199999999999996
+"table_categorical",1404,"table_categorical blank_na_wide replaces NA with empty strings","3","bulk",0.15
+"table_categorical",1420,"table_categorical validates data argument","3","bulk",0.0299999999999994
+"table_categorical",1427,"table_categorical validates select","3","bulk",0.0500000000000007
+"table_categorical",1440,"table_categorical validates by","3","bulk",0.0299999999999994
+"table_categorical",1448,"table_categorical rejects unnamed labels vectors","3","bulk",0.00999999999999979
+"table_categorical",1456,"table_categorical validates boolean arguments","3","bulk",0.0899999999999999
+"table_categorical",1488,"table_categorical validates decimal_mark","3","bulk",0.0299999999999994
+"table_categorical",1496,"table_categorical validates weights type","3","bulk",0.0399999999999991
+"table_categorical",1504,"table_categorical validates weights column name","3","bulk",0.0300000000000011
+"table_categorical",1512,"table_categorical warns when rescale = TRUE without weights","3","bulk",0.140000000000001
+"table_categorical",1525,"table_categorical honors options(spicy.rescale)","3","bulk",0.0299999999999994
+"table_categorical",1532,"explicit rescale overrides options(spicy.rescale)","3","bulk",0.0400000000000009
+"table_categorical",1545,"table_categorical rejects p_digits < 1 with a classed error","3","bulk",0.0499999999999989
+"table_categorical",1571,"table_categorical handles multiple select in wide output","3","bulk",0.139999999999999
+"table_categorical",1583,"table_categorical include_total = FALSE omits Total column","3","bulk",0.0800000000000001
+"table_categorical",1596,"table_categorical returns flextable object when requested","1","render",0.739999999999998
+"table_categorical",1607,"table_categorical grouped word and clipboard outputs work","1","render",0.859999999999999
+"table_categorical",1650,"table_categorical requires file paths for word and excel outputs","3","bulk",0.0700000000000003
+"table_categorical",1683,"table_categorical assoc_measure = 'none' empties the association columns","3","bulk",0.0500000000000007
+"table_categorical",1705,"table_categorical with assoc_ci includes CI columns in raw long","3","bulk",0.0399999999999991
+"table_categorical",1718,"table_categorical simulate_p works in long output","1","boot",0.0199999999999996
+"table_categorical",1730,"table_categorical with drop_na = FALSE includes Missing level","3","bulk",0.0199999999999996
+"table_categorical",1745,"table_categorical rejects invalid digit arguments","3","bulk",0.0300000000000011
+"table_categorical",1779,"table_categorical preserves factor level order in row variables","3","bulk",0
+"table_categorical",1798,"table_categorical places (Missing) at end when drop_na = FALSE","3","bulk",0.0500000000000007
+"table_categorical",1818,"table_categorical rescale warning includes call. = FALSE","3","bulk",0
+"table_categorical",1841,"empty data is refused, with or without `by`","3","bulk",0.00999999999999801
+"table_categorical",1859,"table_categorical gt output omits association header when assoc_measure = 'none'","1","render",0.190000000000001
+"table_categorical",1881,"table_categorical errors when select matches no columns","3","bulk",0.00999999999999801
+"table_categorical",1889,"table_categorical one-way with weights","3","bulk",0.0300000000000011
+"table_categorical",1901,"table_categorical one-way with levels_keep filters levels","3","bulk",0.0199999999999996
+"table_categorical",1914,"table_categorical one-way with levels_keep and long output","3","bulk",0.0100000000000016
+"table_categorical",1927,"table_categorical one-way with decimal_mark comma","3","bulk",0
+"table_categorical",1941,"table_categorical one-way with blank_na_wide","3","bulk",0
+"table_categorical",1956,"a one-way factor with no observed value shows its declared levels","3","bulk",0.0100000000000016
+"table_categorical",1972,"table_categorical grouped default output returns a styled object","3","bulk",0.0499999999999972
+"table_categorical",1982,"table_categorical grouped with levels_keep filters levels","3","bulk",0.0300000000000011
+"table_categorical",2000,"table_categorical grouped with assoc_measure = none","3","bulk",0.0399999999999991
+"table_categorical",2021,"a grouped variable with no observed value and no level is one row","3","bulk",0.0300000000000011
+"table_categorical",2046,"table_categorical one-way weighted with rescale","3","bulk",0.0199999999999996
+"table_categorical",2062,"a look-alike of the missing label is a level like any other","3","bulk",0.0100000000000016
+"table_categorical",2076,"table_categorical grouped with levels_keep and default output","3","bulk",0.0399999999999991
+"table_categorical",2090,"table_categorical grouped empty via levels_keep with non-matching levels","3","bulk",0.0599999999999987
+"table_categorical",2132,"table_categorical grouped with assoc_measure = none and default output","3","bulk",0.0300000000000011
+"table_categorical",2142,"table_categorical one-way with levels_keep that filters some levels","3","bulk",0.0100000000000016
+"table_categorical",2160,"table_categorical grouped with decimal_mark comma and default output","3","bulk",0.0399999999999991
+"table_categorical",2177,"table_categorical grouped tinytable with assoc_measure = none","1","render",0.0399999999999991
+"table_categorical",2189,"table_categorical grouped excel with assoc_ci","1","render",0.25
+"table_categorical",2204,"table_categorical grouped excel with assoc_measure = none","1","render",0.260000000000002
+"table_categorical",2219,"table_categorical one-way all-NA keeps the variable, undefined","3","bulk",0.0199999999999996
+"table_categorical",2230,"table_categorical grouped all-NA keeps the variable, undefined","3","bulk",0.0199999999999996
+"table_categorical",2246,"table_categorical one-way levels_keep with no match returns empty","3","bulk",0.0399999999999991
+"table_categorical",2285,"table_categorical errors for missing tinytable package","3","bulk",0.0199999999999996
+"table_categorical",2301,"table_categorical errors for missing gt package","3","bulk",0.0100000000000016
+"table_categorical",2317,"table_categorical errors for missing flextable package","3","bulk",0.0199999999999996
+"table_categorical",2334,"table_categorical errors for missing openxlsx2 package","3","bulk",0.0100000000000016
+"table_categorical",2355,"table_categorical errors for missing clipr package","3","bulk",0.0199999999999996
+"table_categorical",2371,"table_categorical one-way word output errors for missing officer package","3","bulk",0
+"table_categorical",2375,"table_categorical word output errors when word_path is missing","3","bulk",0.0300000000000011
+"table_categorical",2382,"table_categorical excel output errors when excel_path is missing","3","bulk",0.0399999999999991
+"table_categorical",2394,"table_categorical grouped errors for missing tinytable","3","bulk",0.0500000000000007
+"table_categorical",2415,"table_categorical grouped errors for missing gt","3","bulk",0.0299999999999976
+"table_categorical",2431,"table_categorical grouped errors for missing flextable","3","bulk",0.0500000000000007
+"table_categorical",2453,"table_categorical grouped errors for missing openxlsx2","3","bulk",0.0300000000000011
+"table_categorical",2475,"table_categorical grouped errors for missing clipr","3","bulk",0.0300000000000011
+"table_categorical",2496,"table_categorical grouped word errors for missing officer","3","bulk",0
+"table_categorical",2502,"align argument validates and is stored as attribute","3","bulk",0.129999999999999
+"table_categorical",2514,"align defaults to 'decimal' on the printed object","3","bulk",0.0899999999999999
+"table_categorical",2521,"align = 'decimal' produces gt and tinytable outputs","1","render",0.289999999999999
+"table_categorical",2543,"align = 'center' / 'right' all render gt + tinytable","1","render",0.599999999999998
+"table_categorical",2570,"align = 'decimal' / 'center' / 'right' all render flextable","1","render",1.33
+"table_categorical",2595,"align flows to word output (cross-tab + oneway)","1","render",2.95
+"table_categorical",2626,"align flows to excel output (cross-tab + oneway, all values)","1","render",1.06
+"table_categorical",2644,"align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)","2","beyond",0.140000000000001
+"table_categorical",2696,"clipboard payload carries the console title and notes","2","beyond",0.109999999999999
+"table_categorical",2757,"as.data.frame() strips spicy classes and rendering attrs","3","bulk",0.130000000000003
+"table_categorical",2785,"as_tibble() returns a tbl_df","3","bulk",0.0299999999999976
+"table_categorical",2792,"tidy() returns long-format with broom-conventional columns (cross-tab)","3","bulk",0.100000000000001
+"table_categorical",2830,"tidy() returns an NA group column without by","3","bulk",0.0500000000000007
+"table_categorical",2853,"the long output, tidy() and glance() name the column and the label","2","beyond",0.41
+"table_categorical",2901,"glance() returns chi-squared test + association measure (cross-tab)","3","bulk",0.109999999999999
+"table_categorical",2939,"glance() gives each variable the key of its own measure","2","beyond",0.109999999999999
+"table_categorical",2962,"glance() returns NA test/ES, populated nobs without by","3","bulk",0.0599999999999987
+"table_categorical",2977,"a row whose variable asked for no measure has no es_type","3","bulk",0.0600000000000023
+"table_categorical",2999,"print() survives a typed view that outlived its display frame","3","bulk",0.0899999999999999
+"table_categorical",3013,"an empty display cell does not break the width decision","3","bulk",0.0799999999999983
+"table_categorical",3029,"glance() names the measure column from the typed view","2","beyond",0.140000000000001
+"table_categorical",3051,"glance() picks up assoc CIs when assoc_ci = TRUE","3","bulk",0.0700000000000003
+"table_categorical",3065,"glance() reports no interval when assoc_ci = FALSE","2","beyond",0.109999999999999
+"table_categorical",3091,"glance() nobs excludes the synthetic 'Total' group","2","beyond",0.199999999999999
+"table_categorical",3120,"glance() nobs stays correct when include_total = FALSE","3","bulk",0.0800000000000018
+"table_categorical",3139,"tidy() keeps the synthetic 'Total' group, flagged by `total`","3","bulk",0.0599999999999987
+"table_categorical",3153,"tidy() respects include_total = FALSE without spurious Total rows","3","bulk",0.0800000000000018
+"table_categorical",3178,"p_digits drives the small-p threshold in table_categorical()","3","bulk",0.109999999999999
+"table_categorical",3208,"p_digits = 4 respects decimal_mark = ','","3","bulk",0.0599999999999987
+"table_categorical",3221,"table_categorical does not over-truncate p in (10^-p_digits, 0.001)","3","bulk",0.0500000000000007
+"table_categorical",3247,"labels rejects the legacy positional character vector","3","bulk",0
+"table_categorical",3264,"labels rejects partially named vectors","3","bulk",0
+"table_categorical",3323,"labels refuses every other form with one classed error","3","bulk",0.0800000000000018
+"table_categorical",3352,"labels accepts a named character vector keyed by column name","3","bulk",0.00999999999999801
+"table_categorical",3368,"named labels relabel a subset; the others keep their names","3","bulk",0.0200000000000031
+"table_categorical",3378,"named labels with unknown names warn and are left out","3","bulk",0.00999999999999801
+"table_categorical",3391,"non-character labels rejected at boundary","3","bulk",0.0199999999999996
+"table_categorical",3398,"the by title and the missing-values notes follow labels","2","beyond",0.220000000000002
+"table_categorical",3429,"var_labels() renames on the attribute base, whatever the option","2","beyond",0.149999999999999
+"table_categorical",3450,"two variables showing one label keep a block each","1","render",0.780000000000001
+"table_categorical",3536,"glance() gives each variable a row, whatever the labels","2","beyond",0.18
+"table_categorical",3567,"glance() follows the order of select, as the table and tidy() do","2","beyond",0.140000000000001
+"table_categorical",3599,"select-less call tabulates every eligible categorical column","3","bulk",0.140000000000001
+"table_categorical",3617,"select-less call keeps labelled (haven-style) columns","3","bulk",0.0500000000000007
+"table_categorical",3627,"select-less call with no eligible column is an error","3","bulk",0.0199999999999996
+"table_categorical",3633,"explicit select is taken verbatim, numeric columns included","3","bulk",0
+"table_categorical",3642,"default drop_na = FALSE shows the (Missing) level","3","bulk",0.00999999999999801
+"table_categorical",3651,"drop_na = TRUE discloses removals in the note","3","bulk",0.0700000000000003
+"table_categorical",3692,"the by title names the grouping variable by its label","2","beyond",0.170000000000002
+"table_categorical",3706,"drop_na = TRUE with by-NAs discloses both removals","3","bulk",0.0700000000000003
+"table_categorical",3719,"association stats ignore the (Missing) display level","2","beyond",0.149999999999999
+"table_categorical",3742,"drop_na = TRUE disclosure note names the dropped counts","2","beyond",0.100000000000001
+"table_categorical",3778,"the note opens with ""Note."" once, drop_na disclosure first or not","1","render",0.579999999999998
+"table_categorical",3864,"a group with no data shows the undefined mark, NA in the machine outputs","2","beyond",0.16
+"table_categorical",3906,"a group with no data leaves the comparison of the other groups","3","bulk",0.0599999999999987
+"table_categorical",3919,"the missing answers of a variable leave out its groups with no data","3","bulk",0.0899999999999999
+"table_categorical",3949,"with fewer than two groups with data, the variable is not compared","2","beyond",0.16
+"table_categorical",3997,"a variable with nothing to compare has undefined cells and no measure in the note","1","render",0.440000000000001
+"table_categorical",4045,"a measure the variable asked none of stays blank","2","beyond",0.140000000000001
+"table_categorical",4065,"the no-data sentence follows the language, the label and the order","2","beyond",0.140000000000001
+"table_categorical",4097,"without by, a variable with no observed value keeps its levels","3","bulk",0.0600000000000023
+"table_categorical",4122,"the note names no association measure for a variable with no value","2","beyond",0.189999999999998
+"table_categorical",4157,"the default object carries the title the console prints","3","bulk",0.0899999999999963
+"table_categorical",4170,"a weighted table says so after its sample size and percentages","2","beyond",0.170000000000002
+"table_categorical",4199,"the Excel sheet writes the mark in the cells of a group with no data","1","render",0.460000000000001
+"table_categorical",4227,"ordinal measures respect the declared order under default drop_na","3","bulk",0.0399999999999991
+"table_categorical",4243,"ordinal measures are drop_na-invariant on NA-free ordered data","2","beyond",0.259999999999998
+"table_categorical",4288,"the long output and glance() carry the statistic and df; the data.frame the p","3","bulk",0.18
+"table_categorical",4326,"ignored `correct` warns once, with the tested-table dimensions","3","bulk",0.0399999999999991
+"table_categorical",4349,"weighted grouped table is exact in machine outputs, coherent on display","2","beyond",0.140000000000001
+"table_categorical",4400,"weighted real-data counts match the xtabs oracle exactly","3","bulk",0.0700000000000003
+"table_categorical",4435,"labelled columns display value labels under the drop_na default","3","bulk",0.0399999999999991
+"table_categorical",4458,"a by level displayed beside the margin is refused, with both ways out","2","beyond",0.240000000000002
+"table_categorical",4516,"a declared-but-unobserved 'Total' by level is a displayed group","2","beyond",0.119999999999997
+"table_categorical",4556,"include_total = FALSE keeps a user group named 'Total'","3","bulk",0.0600000000000023
+"table_categorical",4583,"the margin and the missing column cannot share one label","3","bulk",0.0499999999999972
+"table_categorical",4599,"percent_digits >= 2 renders true decimals with by","3","bulk",0.0600000000000023
+"table_categorical",4612,"percent = ""row"" gives row shares and leaves the statistics alone","3","bulk",0.439999999999998
+"table_categorical",4721,"total_row closes each variable with its total, in both directions","3","bulk",0.43
+"table_categorical",4804,"row percentages and the Total row reach the Typst cells and the note","1","render",0.170000000000002
+"table_categorical",4825,"a declared-but-unobserved by level is a zero column in wide and long","2","beyond",0.140000000000001
+"table_categorical",4859,"user_na = FALSE surfaces phi's hard error instead of a silent NA","3","bulk",0.0799999999999983
+"table_categorical",4917,"table_categorical() rejects bit64::integer64 columns","3","bulk",0.0399999999999991
+"table_categorical",4952,"align = 'auto' is removed from table_categorical","3","bulk",0
+"table_categorical",4996,"each variable keeps its own level order in multi-variable tables","2","beyond",0.170000000000002
+"table_categorical",5046,"spicy tinytables keep tinytable's format finalizers alive","1","render",0.280000000000001
+"table_categorical",5076,"the missing disclosure reaches tinytable, one-way and by","1","render",0.330000000000005
+"table_categorical",5123,"the missing disclosure reaches gt, one-way and by","1","render",0.339999999999996
+"table_categorical",5165,"the missing disclosure reaches flextable, one-way and by","1","render",1.11
+"table_categorical",5208,"the missing disclosure rides along on output = 'data.frame'","3","bulk",0.0800000000000054
+"table_categorical",5248,"the association CI separator follows the decimal mark","1","render",0.0499999999999972
+"table_categorical",5272,"a quote in a `by` level no longer breaks the gt render","1","render",1.15
+"table_categorical",5297,".css_escape_string leaves an ordinary label untouched","3","bulk",0.0200000000000031
+"table_categorical",5310,"an all-missing `by` is refused instead of growing phantom columns","3","bulk",0.0700000000000003
+"table_categorical",5363,"the refusal states the reason the DATA gives, not a generic one","3","bulk",0.0300000000000011
+"table_categorical",5390,"p_adjust adjusts the one test of each variable, together","3","bulk",0.259999999999998
+"table_categorical",5418,"p_adjust: the displayed p, the object and the note agree","2","beyond",0.240000000000002
+"table_categorical",5454,"p_adjust finds the raw p-values of labelled variables","2","beyond",0.140000000000001
+"table_categorical",5472,"p_adjust = ""none"" leaves the table as it was","2","beyond",0.140000000000001
+"table_categorical",5480,"p_adjust needs `by`, and validates its method","3","bulk",0.0700000000000003
+"table_categorical",5493,"p_adjust: the note reaches the gt and flextable engines","1","render",0.699999999999996
+"table_categorical",5527,"the adjustment follows the test sentence, its subject, in both languages","2","beyond",0.340000000000003
+"table_categorical",5569,"p_adjust under holm is pinned, in English and in French","1","snapshot",0.279999999999994
+"table_categorical",5592,"p_value defaults to the test with `by`, as in the siblings","3","bulk",0.300000000000004
+"table_categorical",5604,"p_value = FALSE: the data frames are the default minus the test","3","bulk",0.25
+"table_categorical",5636,"p_value = FALSE: the console table, its typed view and glance()","2","beyond",0.240000000000002
+"table_categorical",5680,"p_value = FALSE removes the p column from every rendered engine","1","render",3.51
+"table_categorical",5762,"p_value = FALSE with assoc_measure = ""none"": a purely descriptive table","1","snapshot",0.210000000000001
+"table_categorical",5820,"a descriptive table leaves the engines no statistic column","1","render",0.950000000000003
+"table_categorical",5858,"p_value = FALSE keeps the SMD, which has its own switch","2","beyond",0.219999999999999
+"table_categorical",5876,"p_adjust is refused when p_value = FALSE removes the p column","3","bulk",0.0700000000000003
+"table_categorical",5884,"p_value without `by` is ignored, with a warning when TRUE","3","bulk",0.0600000000000023
+"table_categorical",5897,"p_value is validated","3","bulk",0.0399999999999991
+"table_categorical",5903,"correct and simulate_p are ignored without the test","2","beyond",0.200000000000003
+"table_categorical",5942,"test = ""auto"": dense tables take the chi-squared test, as in gtsummary","3","bulk",0.0799999999999983
+"table_categorical",5962,"test = ""auto"": an expected count below 5 takes Fisher's exact test, as in gtsummary","3","bulk",0.310000000000002
+"table_categorical",6041,"Fisher's exact test of an r x c table reproduces gtsummary","2","beyond",0.140000000000001
+"table_categorical",6072,"a table the exact enumeration cannot handle takes the Monte Carlo test","1","boot",0.740000000000002
+"table_categorical",6111,"test = ""chisq"" gives the 0.13.0 p-values, test = ""fisher"" tests every variable exactly","3","bulk",0.210000000000001
+"table_categorical",6153,"p_adjust adjusts the p-values the tests produced","3","bulk",0.0499999999999972
+"table_categorical",6166,"correct and simulate_p reach only the variables the chi-squared tests","1","boot",0.520000000000003
+"table_categorical",6230,"test is ignored without `by` or without the p column","2","beyond",0.199999999999996
+"table_categorical",6251,"Fisher's exact test runs on whole-number weights and not on fractional ones","3","bulk",0.0900000000000034
+"table_categorical",6298,"the test reads the observed table: no (Missing) level, no empty level","3","bulk",0.0799999999999983
+"table_categorical",6326,"a variable with nothing to test carries no test type","2","beyond",0.140000000000001
+"table_categorical",6348,"the test helpers read the table cross_tab() tests","3","bulk",0.0300000000000011
+"table_categorical",6407,"the note names the test after the p-values, singular for one","2","beyond",0.359999999999999
+"table_categorical",6469,"the Monte Carlo exact test takes a comma inside a list of tests","1","boot",1.1
+"table_categorical",6513,"a label with a comma turns its list in a note to semicolons","2","beyond",0.689999999999998
+"table_categorical",6571,"labels without a comma keep the comma join in the notes","2","beyond",0.149999999999999
+"table_categorical",6647,"test = ""midp"" reproduces the published Fisher mid-p values","3","bulk",0.259999999999998
+"table_categorical",6678,"the mid-p reads ties within fisher.test()'s tolerance: a table and its mirror agree","2","beyond",0.100000000000001
+"table_categorical",6701,"the central mid-p coincides at equal margins and nowhere else","2","beyond",0.18
+"table_categorical",6746,"test = ""n1"" is the N-1 chi-squared of Campbell (2007)","3","bulk",0.110000000000007
+"table_categorical",6787,"Campbell's rule sends a table with an expected count below 1 to Fisher's exact test","2","beyond",0.139999999999993
+"table_categorical",6827,"midp and n1 test 2 x 2 tables only; a larger table follows auto","2","beyond",0.410000000000004
+"table_categorical",6910,"a table with an empty row or column gets no test under midp and n1","2","beyond",0.109999999999999
+"table_categorical",6940,"p_adjust adjusts the mid-p values","2","beyond",0.200000000000003
+"table_categorical",6965,"correct is ignored under midp and n1; simulate_p reaches a larger table","1","boot",0.339999999999996
+"table_categorical",6996,"the mid-p needs counts; under weights Campbell's rule gives way to the N-1 test","3","bulk",0.0799999999999983
+"table_categorical",7057,"the notes name the 2 x 2 tests in French","1","boot",0.170000000000002
+"table_categorical",7097,"a sentence ending on a label with its own mark closes once","2","beyond",0.25
+"table_categorical",7215,"the note opens on the sample size, without by","2","beyond",0.169999999999995
+"table_categorical",7245,"under by, the note gives N and the n of each group column","2","beyond",0.420000000000002
+"table_categorical",7339,"a weighted table gives its unweighted N, rows with a weight","2","beyond",0.160000000000004
+"table_categorical",7381,"the sample size goes with the note the table builds","3","bulk",0.0399999999999991
+"table_categorical",7400,"percent_base = ""valid"" puts the percentages on the observed values","3","bulk",0.220000000000006
+"table_categorical",7467,"under by, the base is the observed values of each column","2","beyond",0.369999999999997
+"table_categorical",7534,"row percentages keep their rows; only the Total row moves","2","beyond",0.140000000000001
+"table_categorical",7569,"the Total row closes the observed base, weighted or not","2","beyond",0.330000000000005
+"table_categorical",7617,"a column with no observed value has no base, an empty one keeps 0","3","bulk",0.0899999999999963
+"table_categorical",7654,"a thin rule sits above each Total row on the console","1","snapshot",0.170000000000002
+"table_categorical",7675,"the engines draw the rule above the Total row","1","render",1.72
+"table_categorical_svy",62,"the design effects are svymean(deff = )'s, per level","3","bulk",0.1
+"table_categorical_svy",84,"the percentage intervals are svyciprop's, and the point is not","3","bulk",0.2
+"table_categorical_svy",133,"the p-value is svychisq's, on the statistic asked for","3","bulk",0.38
+"table_categorical_svy",185,"a sparse table lets no warning escape, and keeps survey's p-value","3","bulk",0.0599999999999998
+"table_categorical_svy",241,"a calibrated domain counts only the rows it kept","3","bulk",0.0500000000000003
+"table_categorical_svy",263,"a negative calibration weight is counted, not dropped","3","bulk",0.04
+"table_categorical_svy",285,"a replicate design gives the same percentages, its own intervals","1","replicate",0.17
+"table_categorical_svy",316,"missing values are a level of their own by default","3","bulk",0.11
+"table_categorical_svy",390,"every ci_method returns an interval on a variable with NA","3","bulk",0.19
+"table_categorical_svy",457,"a percentage of 0 or 100 gets the exact binomial interval","2","beyond",0.51
+"table_categorical_svy",578,"the exact interval at 0 and 100 has the published values","3","bulk",0.0699999999999998
+"table_categorical_svy",597,"the p tests the rows the percentages describe","3","bulk",0.0899999999999999
+"table_categorical_svy",628,"a calibrated design tests the same table, and not NaN","2","beyond",0.11
+"table_categorical_svy",675,"a declared level nobody chose does not enter the test","3","bulk",0.0600000000000001
+"table_categorical_svy",697,"`levels_keep` selects levels, as a vector or per variable","3","bulk",0.0799999999999996
+"table_categorical_svy",726,"declared missing codes leave the table and the note","3","bulk",0.0600000000000001
+"table_categorical_svy",785,"under by, the note says the percentages are column percentages","2","beyond",0.3
+"table_categorical_svy",803,"`drop_na` also governs the missing-`by` domain","3","bulk",0.15
+"table_categorical_svy",862,"labels names the rows, the by title and the notes","2","beyond",0.329999999999999
+"table_categorical_svy",922,"var_labels() renames on the attribute base, whatever the option","2","beyond",0.109999999999999
+"table_categorical_svy",947,"the two unusable svychisq statistics are refused by name","3","bulk",0.0700000000000003
+"table_categorical_svy",976,"saddlepoint is refused on a replicate design and kept on a linearized one","1","replicate",0.0999999999999996
+"table_categorical_svy",1105,"the missing-Suggests guard covers this entry point too","3","bulk",0.0199999999999996
+"table_categorical_svy",1116,"`df` overrides the design df, and the footer changes with it","3","bulk",0.0900000000000007
+"table_categorical_svy",1163,"negative weights are disclosed once, with the exact count","3","bulk",0.0800000000000001
+"table_categorical_svy",1192,"negative weights refuse svychisq too, and say so","3","bulk",0.0599999999999996
+"table_categorical_svy",1223,"the categorical refusal clause says how far it reached","2","beyond",0.11
+"table_categorical_svy",1291,"the design table comes back visibly, and assigning it says nothing","3","bulk",0.0800000000000001
+"table_categorical_svy",1310,"the console table prints its blocks, its spanners and its footer","1","snapshot",0.17
+"table_categorical_svy",1324,"every rendering engine accepts a design categorical table","1","render",2.42
+"table_categorical_svy",1368,"the clipboard payload carries the table","3","bulk",0.0700000000000003
+"table_categorical_svy",1393,"a domain with no degrees of freedom has no design effect","3","bulk",0.0800000000000001
+"table_categorical_svy",1409,"the typed view keys every column by its block","2","beyond",0.17
+"table_categorical_svy",1444,"`inline()` cites a cell of a design categorical table","2","beyond",0.140000000000001
+"table_categorical_svy",1590,"coercion does not rename the frozen block keys","2","beyond",0.109999999999999
+"table_categorical_svy",1612,"coercion returns the displayed table, with the note alone","2","beyond",0.129999999999999
+"table_categorical_svy",1658,"a group displayed with the margin's label is refused","2","beyond",0.139999999999999
+"table_categorical_svy",1686,"a level displayed beside the row of missing values is refused","3","bulk",0.0699999999999985
+"table_categorical_svy",1721,"glance() counts the whole sample without a margin","2","beyond",0.100000000000001
+"table_categorical_svy",1742,"output = 'data.frame' and output = 'long' carry the same numbers","2","beyond",0.559999999999999
+"table_categorical_svy",1790,"p_adjust adjusts the one design-based test of each variable","3","bulk",0.31
+"table_categorical_svy",1834,"p_adjust needs `by` and the p-value column","3","bulk",0.0500000000000007
+"table_categorical_svy",1852,"p_value = FALSE leaves no p column in the frame (issue #9)","2","beyond",0.19
+"table_categorical_svy",1884,"the note names the test only when a test ran","3","bulk",0.0899999999999999
+"table_categorical_svy",1911,"`by` named in `select` is refused; a helper skips it","2","beyond",0.130000000000001
+"table_categorical_svy",1925,"the design's weights, clusters and fpc are outside the selection","2","beyond",0.25
+"table_categorical_svy",1977,"a select-less call takes the columns table_categorical() takes","2","beyond",0.4
+"table_categorical_svy",2015,"a group with no data shows the undefined mark, NA in the machine outputs","2","beyond",0.129999999999999
+"table_categorical_svy",2056,"a group with no data leaves the test of the other groups","3","bulk",0.0400000000000009
+"table_categorical_svy",2069,"the missing values of a variable leave out its groups with no data","2","beyond",0.109999999999999
+"table_categorical_svy",2096,"with fewer than two groups with data, the variable is not tested","2","beyond",0.140000000000001
+"table_categorical_svy",2131,"without by, a variable with no observed value keeps its levels","3","bulk",0.0800000000000001
+"table_categorical_svy",2169,"the note gives its sentences in the four kinds, whatever the language","2","beyond",0.27
+"table_categorical_svy",2224,"the default object carries the title the console prints","3","bulk",0.0899999999999999
+"table_categorical_svy",2235,"a level holding the word ""Total"" takes no rule in the console","3","bulk",0.0200000000000014
+"table_continuous",3,"table_continuous returns correct structure","3","bulk",0.48
+"table_continuous",62,"table_continuous returns visibly and is silent when assigned","3","bulk",0.15
+"table_continuous",85,"table_continuous default output object carries correct attributes","3","bulk",0.0399999999999998
+"table_continuous",99,"table_continuous default output with group carries group_var attribute","3","bulk",0.03
+"table_continuous",104,"table_continuous accepts by as a character object without warnings","3","bulk",0.03
+"table_continuous",122,"table_continuous computes correct values","3","bulk",0.05
+"table_continuous",132,"table_continuous CI is t-based","3","bulk",0.03
+"table_continuous",142,"table_continuous ci_level affects width","3","bulk",0.0799999999999998
+"table_continuous",152,"table_continuous handles multiple numeric variables","3","bulk",0.04
+"table_continuous",165,"table_continuous handles NAs","3","bulk",0.01
+"table_continuous",172,"table_continuous handles all-NA column","3","bulk",0.05
+"table_continuous",185,"table_continuous n=1 gives NA for sd and CI","3","bulk",0.05
+"table_continuous",197,"the undefined glyph sets the width of the column it lands in","2","beyond",0.43
+"table_continuous",243,"table_continuous display uses the undefined glyph for NA","3","bulk",0.0699999999999998
+"table_continuous",255,"table_continuous filters non-numeric columns","3","bulk",0.0300000000000002
+"table_continuous",261,"table_continuous select works with tidyselect","3","bulk",0.0299999999999998
+"table_continuous",271,"table_continuous select works with character vector","3","bulk",0.0300000000000002
+"table_continuous",281,"table_continuous select works with tidyselect helpers","3","bulk",0.0299999999999998
+"table_continuous",291,"table_continuous exclude works","3","bulk",0.0299999999999998
+"table_continuous",302,"table_continuous exclude works with an unquoted column name","3","bulk",0.02
+"table_continuous",313,"table_continuous exclude works with tidyselect syntax","3","bulk",0.02
+"table_continuous",326,"table_continuous regex selection works","3","bulk",0.0299999999999998
+"table_continuous",337,"table_continuous regex with default select matches all","3","bulk",0.0300000000000002
+"table_continuous",342,"table_continuous verbose reports ignored columns","3","bulk",0.0299999999999998
+"table_continuous",352,"table_continuous uses column names as default labels","3","bulk",0.0500000000000003
+"table_continuous",368,"table_continuous custom labels apply only to matching columns","3","bulk",0.0299999999999998
+"table_continuous",374,"table_continuous reads haven labels only under labels = TRUE","3","bulk",0.0800000000000001
+"table_continuous",382,"labels: TRUE falls back to the name, the named form to the option","3","bulk",0.2
+"table_continuous",403,"table_continuous custom labels override haven labels","3","bulk",0.02
+"table_continuous",424,"table_continuous grouped stats are correct","3","bulk",0.0300000000000002
+"table_continuous",438,"table_continuous group_var is excluded from numeric selection","3","bulk",0.0799999999999996
+"table_continuous",444,"table_continuous preserves factor level order in group_var","3","bulk",0.0699999999999998
+"table_continuous",456,"table_continuous grouped with multiple variables","3","bulk",0.0300000000000002
+"table_continuous",470,"table_continuous sorts the groups of a non-factor by","2","beyond",0.12
+"table_continuous",490,"the test direction follows the displayed group order","3","bulk",0.0600000000000001
+"table_continuous",513,"table_continuous p_value adds p column without Test column","3","bulk",0.0600000000000001
+"table_continuous",557,"table_continuous p_value + statistic adds both columns","3","bulk",0.0299999999999998
+"table_continuous",578,"table_continuous statistic alone shows Test column without p","3","bulk",0.0499999999999998
+"table_continuous",611,"table_continuous p_value without by warns","3","bulk",0.02
+"table_continuous",624,"table_continuous statistic without by warns","3","bulk",0.02
+"table_continuous",637,"table_continuous p_value default output carries show_p attribute","3","bulk",0.0299999999999998
+"table_continuous",648,"table_continuous p_value + statistic default output carries both attributes","3","bulk",0.0300000000000002
+"table_continuous",660,"table_continuous statistic default output carries show_statistic attribute","3","bulk",0.0299999999999998
+"table_continuous",672,"table_continuous p_value auto-shows when by is supplied","3","bulk",0.0300000000000002
+"table_continuous",683,"table_continuous p_value stays hidden when by is absent","3","bulk",0.0299999999999998
+"table_continuous",692,"table_continuous p_value = FALSE suppresses column when by is supplied","3","bulk",0.02
+"table_continuous",703,"p_value = FALSE drops p.value when another argument runs the test (issue #9)","2","beyond",0.14
+"table_continuous",727,"table_continuous print works with statistic only","3","bulk",0.04
+"table_continuous",737,"table_continuous print works with p_value only","3","bulk",0.0299999999999998
+"table_continuous",747,"table_continuous print works with p_value + statistic","3","bulk",0.0500000000000003
+"table_continuous",760,"table_continuous test='welch' is the default (2 groups)","3","bulk",0.0800000000000001
+"table_continuous",765,"table_continuous test='welch' with 3+ groups uses welch_anova","3","bulk",0.0300000000000002
+"table_continuous",776,"table_continuous test='student' uses student_t for 2 groups","3","bulk",0.0599999999999996
+"table_continuous",788,"table_continuous test='student' uses anova for 3+ groups","3","bulk",0.0199999999999996
+"table_continuous",801,"table_continuous test='nonparametric' uses wilcoxon for 2 groups","3","bulk",0.16
+"table_continuous",814,"table_continuous test='nonparametric' uses kruskal for 3+ groups","3","bulk",0.0300000000000002
+"table_continuous",827,"table_continuous test attribute is stored","3","bulk",0.04
+"table_continuous",838,"table_continuous test attribute is NA without by","3","bulk",0.00999999999999979
+"table_continuous",846,"table_continuous warns when test is set without p_value/statistic","3","bulk",0.0200000000000005
+"table_continuous",859,"the test-ignored warning states the full trigger condition","3","bulk",0.0300000000000002
+"table_continuous",888,"table_continuous nonparametric statistic display uses W and H","3","bulk",0.0800000000000001
+"table_continuous",924,"table_continuous student statistic display uses t and F","3","bulk",0.0999999999999996
+"table_continuous",960,"table_continuous test='nonparametric' p-values match base R","3","bulk",0.00999999999999979
+"table_continuous",975,"table_continuous decimal_mark attribute is set","3","bulk",0.00999999999999979
+"table_continuous",980,"table_continuous decimal_mark comma in display output","3","bulk",0.0499999999999998
+"table_continuous",988,"table_continuous digits parameter controls precision","3","bulk",0.140000000000001
+"table_continuous",1006,"table_continuous uses dedicated digits for effect sizes","3","bulk",0.0799999999999992
+"table_continuous",1059,"a named digits gives each variable its own decimals","3","bulk",0.420000000000001
+"table_continuous",1100,"inline() and as_structured() follow the decimals the table prints","2","beyond",0.27
+"table_continuous",1150,"a name that matches no variable warns and is left out, as in labels","3","bulk",0.0600000000000005
+"table_continuous",1173,"the other forms of digits are errors that give both forms","2","beyond",1.6
+"table_continuous",1232,"the variables a named digits leaves out keep the style's","2","beyond",0.140000000000001
+"table_continuous",1256,"a weighted n keeps the table's decimals, a median the variable's","2","beyond",0.14
+"table_continuous",1288,"table_continuous_lm() gives each outcome its decimals","2","beyond",0.449999999999999
+"table_continuous",1350,"table_continuous_svy() gives each variable its decimals","2","beyond",0.260000000000002
+"table_continuous",1388,"print.spicy_continuous_table produces output","3","bulk",0.0499999999999989
+"table_continuous",1393,"print.spicy_continuous_table works with groups","3","bulk",0.0299999999999994
+"table_continuous",1398,"print.spicy_continuous_table returns invisible x","3","bulk",0.00999999999999979
+"table_continuous",1405,"the console prints the registry header, not the column key","3","bulk",0.0199999999999996
+"table_continuous",1429,"a table without `by` draws no variable separator in the console","3","bulk",0.0800000000000001
+"table_continuous",1446,"a missing variable label falls back to the column name","3","bulk",0.0199999999999996
+"table_continuous",1475,"a wide-character label does not overflow a narrow console","3","bulk",0.00999999999999979
+"table_continuous",1500,"table_continuous validates ci_level","3","bulk",0.0299999999999994
+"table_continuous",1509,"table_continuous validates digits","3","bulk",0.0499999999999989
+"table_continuous",1528,"table_continuous validates decimal_mark","3","bulk",0
+"table_continuous",1533,"table_continuous validates labels","3","bulk",0.0800000000000001
+"table_continuous",1553,"table_continuous validates by","3","bulk",0.00999999999999979
+"table_continuous",1558,"table_continuous validates regex select","3","bulk",0.0200000000000014
+"table_continuous",1570,"table_continuous validates logical parameters","3","bulk",0.0399999999999991
+"table_continuous",1581,"table_continuous discloses NA in the by column in the note only","3","bulk",0.00999999999999979
+"table_continuous",1600,"table_continuous discloses removed NAs in a table note","3","bulk",0.0500000000000007
+"table_continuous",1618,"the missing-values note names each variable by its row label","3","bulk",0.0600000000000005
+"table_continuous",1657,"a label with a comma turns the missing-values list to semicolons","3","bulk",0.0299999999999994
+"table_continuous",1688,"the by title and the missing-by note follow labels","2","beyond",0.140000000000001
+"table_continuous",1722,"var_labels() renames on the attribute base, whatever the option","3","bulk",0.0600000000000005
+"table_continuous",1740,"drop_na = TRUE discloses removed missing-by rows in the note","3","bulk",0.0199999999999996
+"table_continuous",1757,"the note opens with ""Note."" once, on the attribute and in print","2","beyond",0.119999999999999
+"table_continuous",1814,"drop_na = FALSE displays a (Missing) group and tests the observed","3","bulk",0.0600000000000005
+"table_continuous",1838,"drop_na = FALSE refuses a real (Missing) group value","3","bulk",0.0700000000000003
+"table_continuous",1874,"drop_na = FALSE refuses a declared-only (Missing) level","3","bulk",0.0399999999999991
+"table_continuous",1902,"drop_na = FALSE without by warns spicy_ignored_arg","3","bulk",0.0200000000000014
+"table_continuous",1910,"table_continuous raw outputs carry the note attribute","3","bulk",0.0499999999999989
+"table_continuous",1953,"a variable with no data in a group shows the mark there, n included","2","beyond",0.110000000000001
+"table_continuous",1988,"the rows of a no-data group leave the missing-value count","2","beyond",0.129999999999999
+"table_continuous",2018,"the comparison runs on the groups with data, and on two at least","3","bulk",0.0899999999999999
+"table_continuous",2073,"the SMD of a pair with a no-data group is NA, silently","3","bulk",0.0300000000000011
+"table_continuous",2091,"an empty group and the missing-by group are not no-data groups","3","bulk",0.0299999999999994
+"table_continuous",2120,"declared missing values of a no-data group leave their count too","3","bulk",0.0299999999999994
+"table_continuous",2141,"without `by`, a variable with no observed value has no data","3","bulk",0.0700000000000003
+"table_continuous",2164,"the variables with no data in the same groups share one sentence","3","bulk",0.0899999999999999
+"table_continuous",2184,"the note names the test whenever its p-value or its statistic shows","2","beyond",0.110000000000001
+"table_continuous",2231,"a test named with no p-value shown is the group comparison","2","beyond",0.109999999999999
+"table_continuous",2306,"the note gives its sentences in the order of the family","3","bulk",0.0500000000000007
+"table_continuous",2376,"fmt_p uses non-breaking space in display","3","bulk",0.0299999999999994
+"table_continuous",2401,"table_continuous refuses a selection with no numeric column","3","bulk",0.0500000000000007
+"table_continuous",2416,"table_continuous tinytable output works","1","render",0.0399999999999991
+"table_continuous",2422,"table_continuous tinytable with groups works","1","render",0.0500000000000007
+"table_continuous",2435,"table_continuous gt output works","1","render",0.289999999999999
+"table_continuous",2441,"table_continuous gt with groups works","1","render",0.190000000000001
+"table_continuous",2452,"table_continuous gt has spanners for all columns","1","render",0.23
+"table_continuous",2464,"table_continuous gt with p_value only has p spanner but not Test","1","render",0.399999999999999
+"table_continuous",2491,"table_continuous gt with p_value + statistic has both spanners","1","render",0.15
+"table_continuous",2509,"table_continuous flextable output works","1","render",1.05
+"table_continuous",2516,"table_continuous flextable has 2-row header with CI spanner","1","render",0.299999999999999
+"table_continuous",2527,"table_continuous excel output works","1","render",0.630000000000001
+"table_continuous",2540,"table_continuous excel errors without path","3","bulk",0.00999999999999979
+"table_continuous",2548,"table_continuous excel errors with empty path","3","bulk",0.00999999999999979
+"table_continuous",2577,"table_continuous word errors without path","3","bulk",0.00999999999999979
+"table_continuous",2586,"table_continuous word errors with empty path","3","bulk",0.0199999999999996
+"table_continuous",2602,"table_continuous clipboard output works","3","bulk",0.0299999999999994
+"table_continuous",2622,"table_continuous clipboard output can be exercised with a mocked writer","3","bulk",0.0300000000000011
+"table_continuous",2654,"table_continuous flextable with groups works","1","render",0.27
+"table_continuous",2666,"table_continuous excel with groups works","1","render",0.26
+"table_continuous",2680,"table_continuous word with groups works","1","render",0.810000000000002
+"table_continuous",2697,"build_display_df ungrouped has correct column names","2","beyond",0.109999999999999
+"table_continuous",2719,"build_display_df grouped has Group column","3","bulk",0.0300000000000011
+"table_continuous",2731,"table_continuous multiple variables with groups has correct rows","3","bulk",0.0300000000000011
+"table_continuous",2742,"table_continuous NAs in grouped data are handled","3","bulk",0.0799999999999983
+"table_continuous",2755,"table_continuous gt grouped output has Group column aligned left","1","render",0.220000000000002
+"table_continuous",2767,"table_continuous tinytable grouped has correct number of rows","1","render",0.0499999999999972
+"table_continuous",2780,"table_continuous errors when by selects multiple columns","3","bulk",0.0100000000000016
+"table_continuous",2788,"table_continuous clipboard with groups works","3","bulk",0.0399999999999991
+"table_continuous",2811,"table_continuous clipboard with custom delimiter works","3","bulk",0.0100000000000016
+"table_continuous",2834,"table_continuous effect_size=TRUE adds es columns (welch, 2 groups)","3","bulk",0.0700000000000003
+"table_continuous",2864,"table_continuous Hedges' g matches manual calculation","3","bulk",0.0199999999999996
+"table_continuous",2886,"table_continuous eta-squared for 3+ groups (welch)","3","bulk",0.0300000000000011
+"table_continuous",2908,"table_continuous nonparametric 2 groups gives rank-biserial r","3","bulk",0.0300000000000011
+"table_continuous",2924,"table_continuous nonparametric 3+ groups gives epsilon-squared","1","boot",1.97
+"table_continuous",2938,"table_continuous effect_size without by warns","3","bulk",0.0199999999999996
+"table_continuous",2951,"table_continuous effect_size_ci without effect_size warns and enables it","3","bulk",0.0300000000000011
+"table_continuous",2968,"table_continuous effect_size default output carries attributes","3","bulk",0.0500000000000007
+"table_continuous",2980,"table_continuous effect_size display shows ES column","3","bulk",0.0300000000000011
+"table_continuous",2998,"table_continuous effect_size_ci display shows brackets","3","bulk",0.00999999999999801
+"table_continuous",3018,"table_continuous print works with effect_size","3","bulk",0.0500000000000007
+"table_continuous",3029,"table_continuous es values only on first row of each variable block","3","bulk",0.0199999999999996
+"table_continuous",3043,"table_continuous gt with effect_size has ES spanner","1","render",0.169999999999998
+"table_continuous",3059,"table_continuous effect_size=TRUE alone adds es but not test columns","3","bulk",0.0800000000000018
+"table_continuous",3094,"table_continuous does not warn about test when effect_size uses it","3","bulk",0.0199999999999996
+"table_continuous",3114,"table_continuous effect_size with test='student' 2 groups gives hedges_g","3","bulk",0.0199999999999996
+"table_continuous",3129,"table_continuous effect_size with test='student' 3+ groups gives eta2","3","bulk",0.0300000000000011
+"table_continuous",3144,"table_continuous effect_size display uses comma decimal_mark","3","bulk",0.00999999999999801
+"table_continuous",3169,"table_continuous effect_size with untestable group gives NA","2","beyond",0.100000000000001
+"table_continuous",3187,"table_continuous rank-biserial r_rb has CI with small n","3","bulk",0.0700000000000003
+"table_continuous",3206,"table_continuous effect_size with multiple variables","3","bulk",0.0500000000000007
+"table_continuous",3223,"table_continuous tinytable with effect_size works","1","render",0.0299999999999976
+"table_continuous",3236,"table_continuous flextable with effect_size works","1","render",0.289999999999999
+"table_continuous",3248,"table_continuous excel with effect_size works","1","render",0.27
+"table_continuous",3263,"table_continuous word with effect_size works","1","render",0.960000000000001
+"table_continuous",3280,"table_continuous gt with effect_size_ci has ES spanner","1","render",0.189999999999998
+"table_continuous",3296,"epsilon_sq_boot_ci returns valid CI","1","boot",1.92
+"table_continuous",3305,"epsilon_sq_boot_ci handles resamples that lose a group","1","boot",0.879999999999999
+"table_continuous",3315,"epsilon_sq_boot_ci returns NA when too few valid resamples","1","boot",0.0300000000000011
+"table_continuous",3325,"epsilon_sq_boot_ci does not alter user RNG state","1","boot",1.7
+"table_continuous",3338,"epsilon squared is clamped to 0 when H is small","1","boot",1.72
+"table_continuous",3354,"eta_sq_ci returns lower = 0 for very small F","3","bulk",0.00999999999999801
+"table_continuous",3363,"table_continuous ES display is empty for subsequent group rows","3","bulk",0.0300000000000011
+"table_continuous",3383,"table_continuous all columns together: p + stat + es","3","bulk",0.0399999999999991
+"table_continuous",3407,"table_continuous print works with all columns","3","bulk",0.0599999999999987
+"table_continuous",3422,"print auto-selects compact padding for narrow console","3","bulk",0.0600000000000023
+"table_continuous",3436,"print.spicy_continuous_table uses defaults when attributes are missing","3","bulk",0.0300000000000011
+"table_continuous",3449,"table_continuous gt with multiple variables has separator rows","1","render",0.139999999999997
+"table_continuous",3463,"table_continuous flextable with multiple variables has separator rows","1","render",0.25
+"table_continuous",3476,"table_continuous excel with multiple variables has separator rows","1","render",0.25
+"table_continuous",3491,"table_continuous tinytable with p + stat + es works","1","render",0.0500000000000007
+"table_continuous",3507,"build_display_df formats p >= 0.001 correctly","3","bulk",0.0500000000000007
+"table_continuous",3521,"build_display_df fmt_test with decimal comma","3","bulk",0.0799999999999983
+"table_continuous",3540,"build_display_df fmt_p with decimal comma","3","bulk",0.0100000000000016
+"table_continuous",3559,"build_display_df fmt_p large p with decimal comma","3","bulk",0.0599999999999987
+"table_continuous",3582,"build_display_df fmt_test F-test with decimal comma","3","bulk",0.0399999999999991
+"table_continuous",3600,"effect-size CI bracket separator switches with decimal_mark","3","bulk",0.0399999999999991
+"table_continuous",3647,"effect_size refuses the logical TRUE/FALSE it once took","3","bulk",0.0300000000000011
+"table_continuous",3666,"effect_size character explicit choices dispatch correctly","1","boot",2.18
+"table_continuous",3706,"effect_size mismatched explicit choice errors clearly","3","bulk",0.0399999999999991
+"table_continuous",3746,"effect_size invalid character value rejected with a classed error","3","bulk",0.0200000000000031
+"table_continuous",3759,"effect_size logical NA / non-scalar errors","3","bulk",0.00999999999999801
+"table_continuous",3775,"p_digits validates and renders accordingly","3","bulk",0.0300000000000011
+"table_continuous",3804,"align argument validates and stores the choice","3","bulk",0.0799999999999983
+"table_continuous",3816,"show_n = FALSE drops the n column from the rendered display df","3","bulk",0.0399999999999991
+"table_continuous",3852,"ci = FALSE drops the CI columns from the rendered display df","3","bulk",0.0300000000000011
+"table_continuous",3916,"as.data.frame() strips spicy classes and rendering attrs","3","bulk",0.0899999999999999
+"table_continuous",3939,"as_tibble() returns a tbl_df","3","bulk",0.0399999999999991
+"table_continuous",3946,"tidy() returns one row per (variable x group) with broom columns","3","bulk",0.0399999999999991
+"table_continuous",3989,"tidy() works without by (one row per variable)","3","bulk",0.0300000000000011
+"table_continuous",3999,"glance() returns one row per outcome with omnibus test + ES","3","bulk",0.0799999999999983
+"table_continuous",4031,"glance() without by returns NA test/ES, populated nobs","3","bulk",0.0300000000000011
+"table_continuous",4042,"ci = FALSE / show_n = FALSE render across every output (smoke matrix)","1","render",0.270000000000003
+"table_continuous",4071,"the long output always carries analytic ci_lower / ci_upper / n","3","bulk",0.0499999999999972
+"table_continuous",4098,"ci = FALSE structurally removes CI cols from the build_display_df output","3","bulk",0.00999999999999801
+"table_continuous",4116,"show_n = FALSE structurally removes n col from build_display_df output","3","bulk",0.0300000000000011
+"table_continuous",4145,"ci = FALSE renders structurally without CI in tinytable / gt / flextable","1","render",0.559999999999995
+"table_continuous",4181,"ci = FALSE renders one header row in tinytable / gt / flextable","1","render",0.940000000000005
+"table_continuous",4225,"show_n = FALSE renders structurally without n in tinytable / gt / flextable","1","render",0.439999999999998
+"table_continuous",4261,"ci = FALSE / show_n = FALSE flow to excel and word","1","render",4
+"table_continuous",4294,"clipboard text reflects ci = FALSE structurally","3","bulk",0.0500000000000043
+"table_continuous",4327,"each rendered output errors with an actionable 'Install package' message when its Suggest is missing","3","bulk",0.0899999999999963
+"table_continuous",4368,"every align value renders cleanly across every rendered engine","1","render",1.45
+"table_continuous",4456,"output = 'word' errors when officer is not installed even if flextable is","3","bulk",0.0200000000000031
+"table_continuous",4481,"a constant column reports exact SD 0 and a degenerate CI","3","bulk",0.0500000000000043
+"table_continuous",4503,"a degenerate variable degrades per-variable, others survive","3","bulk",0.0599999999999952
+"table_continuous",4540,"an undefined effect size degrades to NA with a classed warning","3","bulk",0.0300000000000011
+"table_continuous",4567,"a NaN effect size is blanked with a classed warning","3","bulk",0.0300000000000011
+"table_continuous",4594,"table_continuous() rejects bit64::integer64 columns","3","bulk",0.0499999999999972
+"table_continuous",4621,"align = 'auto' is removed from table_continuous","3","bulk",0.00999999999999801
+"table_continuous",4679,"table_continuous discloses dropped rows on the rich outputs","1","render",0.969999999999999
+"table_continuous",4721,"table_continuous rich outputs carry the sample size alone when nothing is lost","1","render",0.390000000000001
+"table_continuous",4754,"the note opens with the sample size, the groups adding up to it","2","beyond",0.160000000000004
+"table_continuous",4806,"an effect size shown alone names the test it belongs to","3","bulk",0.0300000000000011
+"table_continuous",4836,"an existing table note is joined, never overwritten","1","render",0.0599999999999952
+"table_continuous",4859,"the token order and the column vocabulary declare the same set","3","bulk",0.0500000000000043
+"table_continuous",4897,"show_columns = NULL reproduces the historical display exactly","3","bulk",0.0899999999999963
+"table_continuous",4944,"median / quartile columns equal stats::median() and quantile() type 7","3","bulk",0.0700000000000003
+"table_continuous",4972,"med_ci is the exact order-statistic interval, NA at small n","3","bulk",0.149999999999999
+"table_continuous",5007,"med_ci matches the exact order-statistic oracle","2","beyond",0.160000000000004
+"table_continuous",5032,"med_ci follows ci_level","3","bulk",0.0599999999999952
+"table_continuous",5051,"a named list gives each variable its own columns, blanks the rest","3","bulk",0.0500000000000043
+"table_continuous",5084,"a variable named in show_columns but absent from the table warns","3","bulk",0.0300000000000011
+"table_continuous",5110,"unknown show_columns tokens error with the valid list","3","bulk",0.0300000000000011
+"table_continuous",5133,"a variable shown as a median is tested as one, per variable","3","bulk",0.0799999999999983
+"table_continuous",5183,"the rank switch carries the rank effect size","3","bulk",0.0300000000000011
+"table_continuous",5200,"an explicit test stays sovereign but raises a caveat","3","bulk",0.029999999999994
+"table_continuous",5228,"ci without m is dropped and points at med_ci; med_ci mirrors it","3","bulk",0.0500000000000043
+"table_continuous",5256,"show_columns overrules a contradictory show_n / ci","3","bulk",0.0399999999999991
+"table_continuous",5290,"show_columns reaches every output engine with the same columns","1","render",0.5
+"table_continuous",5394,"the note glosses only the columns actually displayed","2","beyond",0.100000000000001
+"table_continuous",5433,"the by table titles itself 'Descriptive statistics by <label>'","3","bulk",0.0899999999999963
+"table_continuous",5451,"a fractional ci_level keeps its own percentage everywhere","2","beyond",0.160000000000004
+"table_continuous",5510,"the coverage percentage follows decimal_mark (decision 27)","1","render",0.25
+"table_continuous",5567,"a user's options(OutDec) never leaks into the frozen keys","3","bulk",0.0300000000000011
+"table_continuous",5584,"p_adjust adjusts the one test of each variable, together","3","bulk",0.140000000000001
+"table_continuous",5607,"p_adjust: the displayed p, the object and the note agree","3","bulk",0.0899999999999963
+"table_continuous",5642,"p_adjust leaves a test without a p-value out of the family","3","bulk",0.0799999999999983
+"table_continuous",5674,"p_adjust needs `by` and the p-value column","3","bulk",0.00999999999999801
+"table_continuous",5696,"p_adjust: the note reaches the tinytable engine","1","render",0.0300000000000011
+"table_continuous",5712,"p_adjust under holm is pinned, in English and in French","1","snapshot",0.169999999999995
+"table_continuous",5729,"`by` named in `select` is refused; `everything()` skips it","2","beyond",1.39
+"table_continuous",5750,"an unknown column is named, in `select` and in `exclude`","3","bulk",0.0500000000000043
+"table_continuous",5771,"a fractional number of decimals is refused, not truncated","3","bulk",0.029999999999994
+"table_continuous",5783,"a variable with no variance has no test, whichever test is chosen","3","bulk",0.0600000000000023
+"table_continuous",5835,"the comparison cells of a variable with no variance are undefined","3","bulk",0.0899999999999963
+"table_continuous",5880,"every comparison that cannot run is undefined, its warnings unchanged","2","beyond",0.140000000000001
+"table_continuous",5933,"a residual variance of zero draws no inference, with one warning","2","beyond",0.189999999999998
+"table_continuous",5993,"the rank tests run on groups each constant on their own value","3","bulk",0.0600000000000023
+"table_continuous",6056,"the note never names a test that failed","3","bulk",0.0300000000000011
+"table_continuous",6090,"`note` builds the note, replaces it under the lead-in, or removes it","3","bulk",0.259999999999998
+"table_continuous",6171,"`note_add` closes the note the table builds, or follows a typed one","3","bulk",0.109999999999999
+"table_continuous",6226,"`note_add` is refused when empty, NA, or with `note = FALSE`","3","bulk",0.0600000000000023
+"table_continuous",6265,"`note_labels` names a variable in the note and the title, not in the rows","3","bulk",0.100000000000001
+"table_continuous",6323,"`note_labels` speaks the language of the note","3","bulk",0.0500000000000043
+"table_continuous",6354,"a note label another variable shows is refused, as a collision","3","bulk",0.029999999999994
+"table_continuous",6396,"`note_labels` takes the named forms of `labels`, nothing else","3","bulk",0.0300000000000011
+"table_continuous_lm",3,"table_continuous_lm returns expected raw structure","3","bulk",0.3
+"table_continuous_lm",78,"table_continuous_lm returns visibly and is silent when assigned","3","bulk",0.13
+"table_continuous_lm",98,"table_continuous_lm numeric predictor slope matches lm","3","bulk",0.03
+"table_continuous_lm",137,"table_continuous_lm 3+ level factor reports estimated means","3","bulk",0.04
+"table_continuous_lm",155,"table_continuous_lm contrast none suppresses binary contrasts","3","bulk",0.0199999999999998
+"table_continuous_lm",172,"contrast = ""none"" leaves the contrast and its interval out of every output","3","bulk",0.0900000000000001
+"table_continuous_lm",241,"table_continuous_lm can display weighted n separately from n","3","bulk",0.03
+"table_continuous_lm",263,"table_continuous_lm ignores weighted n when weights are absent","3","bulk",0.05
+"table_continuous_lm",294,"table_continuous_lm HC3 changes standard errors on heteroskedastic data","3","bulk",0.0799999999999998
+"table_continuous_lm",318,"table_continuous_lm HC4, HC4m, and HC5 use leverage-adjusted SE","3","bulk",0.0600000000000001
+"table_continuous_lm",387,"table_continuous_lm uses dedicated digits for fit and effect size","3","bulk",0.02
+"table_continuous_lm",419,"table_continuous_lm rejects deprecated contrast value","3","bulk",0
+"table_continuous_lm",473,"table_continuous_lm data.frame output names the binary contrast, its note the order","3","bulk",0.0599999999999998
+"table_continuous_lm",501,"table_continuous_lm data.frame output honors optional columns","3","bulk",0.0800000000000001
+"table_continuous_lm",535,"p_value = FALSE leaves no p-value in the machine outputs","3","bulk",0.17
+"table_continuous_lm",563,"table_continuous_lm data.frame can hide CI columns","3","bulk",0.05
+"table_continuous_lm",575,"table_continuous_lm data.frame uses R2 by default and can show adjusted R2","3","bulk",0.0600000000000001
+"table_continuous_lm",597,"table_continuous_lm rejects deprecated wide output","3","bulk",0
+"table_continuous_lm",612,"table_continuous_lm validates select and weights","3","bulk",0.02
+"table_continuous_lm",699,"table_continuous_lm validates predictor and regex selection","3","bulk",0.0500000000000003
+"table_continuous_lm",720,"table_continuous_lm validates weight edge cases","3","bulk",0.00999999999999979
+"table_continuous_lm",742,"table_continuous_lm uses labels, exclude, regex, and character by","3","bulk",0.04
+"table_continuous_lm",761,"table_continuous_lm reports ignored non-numeric outcomes in verbose mode","3","bulk",0.0299999999999998
+"table_continuous_lm",785,"table_continuous_lm helper functions cover empty-model cases","3","bulk",0.0600000000000001
+"table_continuous_lm",838,"table_continuous_lm helper functions handle coercion and weights detection","3","bulk",0.0800000000000001
+"table_continuous_lm",856,"table_continuous_lm internal builders cover numeric displays","3","bulk",0.04
+"table_continuous_lm",906,"table_continuous_lm internal builders cover binary categorical variants","3","bulk",0.0499999999999998
+"table_continuous_lm",957,"table_continuous_lm low-level formatting helpers behave as expected","2","beyond",0.1
+"table_continuous_lm",1028,"a wide-character label does not split the console into panels","3","bulk",0.0900000000000003
+"table_continuous_lm",1061,"the console and every engine print the registry header, not the key","1","render",1.44
+"table_continuous_lm",1170,"a categorical by decks its headers in the console, Typst, Word and the typed view","1","render",1.17
+"table_continuous_lm",1253,"the note gives the order of the difference after the test, in English and French","2","beyond",0.25
+"table_continuous_lm",1318,"a numeric by keeps one header row and states no subtraction","1","render",0.25
+"table_continuous_lm",1372,"labels = TRUE with long group labels: each heads its own mean","1","render",0.29
+"table_continuous_lm",1407,"a mean glyph emptied through spicy.labels sets no spanner","1","render",0.0899999999999999
+"table_continuous_lm",1430,"table_continuous_lm internal covariance helper covers fallback branches","3","bulk",0.0300000000000002
+"table_continuous_lm",1457,"table_continuous_lm export helper validates excel_path","3","bulk",0.0299999999999994
+"table_continuous_lm",1473,"table_continuous_lm export helper validates word_path","3","bulk",0
+"table_continuous_lm",1490,"table_continuous_lm export helper rejects unknown output format","3","bulk",0
+"table_continuous_lm",1507,"table_continuous_lm tinytable output works","1","render",0.04
+"table_continuous_lm",1520,"table_continuous_lm gt output works","1","render",0.13
+"table_continuous_lm",1533,"table_continuous_lm gt output includes a CI spanner","1","render",0.17
+"table_continuous_lm",1549,"table_continuous_lm flextable output works","1","render",0.22
+"table_continuous_lm",1562,"table_continuous_lm flextable has 2-row header with CI spanner","1","render",0.23
+"table_continuous_lm",1578,"table_continuous_lm excel output works","1","render",0.44
+"table_continuous_lm",1602,"table_continuous_lm word output works","1","render",0.86
+"table_continuous_lm",1623,"effect_size = 'cohens_d' matches beta / sigma from lm for binary by","3","bulk",0.0299999999999994
+"table_continuous_lm",1641,"effect_size = 'hedges_g' applies the Hedges small-sample correction","3","bulk",0.0299999999999994
+"table_continuous_lm",1661,"effect_size = 'cohens_d' / 'hedges_g' work with weights via the WLS fit","3","bulk",0.0199999999999996
+"table_continuous_lm",1692,"effect_size = 'cohens_d' / 'hedges_g' error when by is not a 2-level categorical","3","bulk",0.0299999999999994
+"table_continuous_lm",1725,"effect_size = 'omega2' matches Hays' formula and is truncated at 0","3","bulk",0.0300000000000011
+"table_continuous_lm",1760,"effect sizes are invariant to the choice of vcov","2","beyond",0.109999999999999
+"table_continuous_lm",1787,"effect_size column header reflects the chosen metric in wide outputs","3","bulk",0.0600000000000005
+"table_continuous_lm",1818,"effect_size_ci computes valid noncentral CIs containing the point estimate","3","bulk",0.0600000000000005
+"table_continuous_lm",1853,"effect_size_ci CIs match effectsize package for d and g (nct)","1","oracle",1.14
+"table_continuous_lm",1899,"effect_size_ci is invariant to vcov choice","2","beyond",0.129999999999999
+"table_continuous_lm",1928,"effect_size_ci = TRUE adds bracket notation in wide display","3","bulk",0.0299999999999994
+"table_continuous_lm",1958,"effect_size_ci = TRUE adds numeric LL/UL columns in wide raw","3","bulk",0.0600000000000005
+"table_continuous_lm",1995,"effect_size_ci = TRUE warns and resets when effect_size is none","3","bulk",0.0500000000000007
+"table_continuous_lm",2010,"effect_size_ci validates as logical scalar","3","bulk",0.0199999999999996
+"table_continuous_lm",2023,"ci_level controls effect-size CI width","3","bulk",0.00999999999999979
+"table_continuous_lm",2050,"degenerate models still preserve the predictor label","3","bulk",0.00999999999999979
+"table_continuous_lm",2070,"long output uses an integer nobs and double degrees of freedom","3","bulk",0.0500000000000007
+"table_continuous_lm",2108,"effect_size = 'none' yields NA es_type and es_value in long output","3","bulk",0.0299999999999994
+"table_continuous_lm",2122,"as.data.frame.spicy_continuous_lm_table returns the displayed table","3","bulk",0.0800000000000001
+"table_continuous_lm",2174,"as_tibble.spicy_continuous_lm_table returns a tbl_df","3","bulk",0.0399999999999991
+"table_continuous_lm",2191,"tidy() returns one row per parameter for binary categorical by","3","bulk",0.0399999999999991
+"table_continuous_lm",2231,"tidy() handles 3-level categorical by (no contrast row)","3","bulk",0.0300000000000011
+"table_continuous_lm",2246,"tidy() handles numeric predictor (slope row)","3","bulk",0.0499999999999989
+"table_continuous_lm",2261,"glance() returns one row per outcome with model-level stats","3","bulk",0.0500000000000007
+"table_continuous_lm",2298,"glance() exposes test_type 't' for numeric predictors","3","bulk",0.00999999999999979
+"table_continuous_lm",2309,"glance() reports the displayed test: the t of a two-level contrast","3","bulk",0.130000000000001
+"table_continuous_lm",2343,"coercion is a no-op on the original object","3","bulk",0.0299999999999994
+"table_continuous_lm",2365,"format_p_value derives threshold from digits","3","bulk",0.0299999999999994
+"table_continuous_lm",2374,"format_p_value respects European decimal mark across digits","3","bulk",0.0600000000000005
+"table_continuous_lm",2383,"an explicit leading_zero still outranks the mark","3","bulk",0.0300000000000011
+"table_continuous_lm",2396,"options(OutDec) cannot override a typed decimal_mark","2","beyond",0.549999999999999
+"table_continuous_lm",2453,"options(OutDec) cannot reach the renderers outside the shared formatters","2","beyond",0.859999999999999
+"table_continuous_lm",2562,"format_p_value handles NA and falls back to default for bad digits","3","bulk",0.0599999999999987
+"table_continuous_lm",2569,"p_digits argument propagates through table_continuous_lm()","3","bulk",0.109999999999999
+"table_continuous_lm",2596,"p_digits changes the rendered p value in wide display","3","bulk",0.0600000000000005
+"table_continuous_lm",2647,"p_digits validates as a single positive integer","3","bulk",0.0400000000000009
+"table_continuous_lm",2688,"decimal_align_strings aligns dots in heterogeneous-magnitude column","3","bulk",0.0399999999999991
+"table_continuous_lm",2704,"decimal_align_strings handles integers (no dot) as if dotted at end","3","bulk",0.0299999999999994
+"table_continuous_lm",2712,"decimal_align_strings handles blanks and NA as full-width spaces","3","bulk",0.0499999999999989
+"table_continuous_lm",2723,"decimal_align_strings respects European decimal mark","3","bulk",0.0300000000000011
+"table_continuous_lm",2737,"decimal_align_strings handles bracket notation like '0.18 [0.07, 0.30]'","3","bulk",0.0299999999999994
+"table_continuous_lm",2752,"align='decimal' is the default and pads ASCII display values","3","bulk",0.0800000000000001
+"table_continuous_lm",2762,"align='decimal' produces dot-aligned numeric columns","3","bulk",0.200000000000001
+"table_continuous_lm",2814,"align='center' restores the legacy column-by-column rendering","2","beyond",0.17
+"table_continuous_lm",2834,"align argument validates","3","bulk",0.00999999999999979
+"table_continuous_lm",2847,"align='decimal' on gt and tinytable returns valid styled objects","1","render",0.380000000000001
+"table_continuous_lm",2872,"wide raw uses ci_level-derived names for contrast CI columns","3","bulk",0.0800000000000001
+"table_continuous_lm",2901,"wide raw column names match wide display when ci_level is custom","3","bulk",0.0800000000000001
+"table_continuous_lm",2942,"compute_wald_test degrades to NA on a singular submatrix","3","bulk",0.0299999999999994
+"table_continuous_lm",2959,"ci_bracket_separator returns ', ' for '.' and '; ' for ','","3","bulk",0.0300000000000011
+"table_continuous_lm",2964,"effect-size CI bracket separator switches with decimal_mark","3","bulk",0.0800000000000001
+"table_continuous_lm",3023,"cluster-robust vcov requires cluster + clubSandwich","3","bulk",0.0199999999999996
+"table_continuous_lm",3045,"cluster argument resolves columns and vectors consistently","3","bulk",0.279999999999999
+"table_continuous_lm",3088,"CR2 matches clubSandwich::coef_test() for binary contrast","1","oracle",0.120000000000001
+"table_continuous_lm",3118,"CR2 matches clubSandwich::Wald_test() for k>2 categorical","1","oracle",0.0800000000000001
+"table_continuous_lm",3153,"effect sizes are invariant to vcov = 'CR2'","3","bulk",0.0600000000000005
+"table_continuous_lm",3186,"glance() preserves a fractional df without integer truncation","3","bulk",0.0799999999999983
+"table_continuous_lm",3224,"CR2 df.residual differs from the classical one (cluster-aware df)","3","bulk",0.0300000000000011
+"table_continuous_lm",3253,"get_test_header_lm formats fractional df with one decimal","3","bulk",0.0399999999999991
+"table_continuous_lm",3274,"cluster validation: must have nrow(data) length, no all-NA, etc.","3","bulk",0.00999999999999979
+"table_continuous_lm",3303,"bootstrap produces a finite vcov on a binary predictor","1","boot",0.0800000000000001
+"table_continuous_lm",3323,"cluster bootstrap differs from obs bootstrap on paired data","1","boot",0.16
+"table_continuous_lm",3350,"jackknife matches the closed-form formula on a binary predictor","1","boot",0.0899999999999999
+"table_continuous_lm",3375,"cluster jackknife is leave-one-cluster-out on the paired data","1","boot",0.0300000000000011
+"table_continuous_lm",3401,"bootstrap on 3-level categorical produces chi2 header","1","boot",0.109999999999999
+"table_continuous_lm",3432,"bootstrap and jackknife leave the effect sizes unchanged","1","boot",0.0600000000000005
+"table_continuous_lm",3468,"multi-way clustering errors with a clear message","3","bulk",0.109999999999999
+"table_continuous_lm",3491,"boot_n validates as a positive whole number","3","bulk",0.0299999999999994
+"table_continuous_lm",3542,"compute_resample_vcov_bootstrap reproducibility and weighted refit","1","boot",0.0500000000000007
+"table_continuous_lm",3566,"compute_resample_vcov_jackknife reproduces the leave-one-out variance","1","boot",0.0600000000000005
+"table_continuous_lm",3584,"compute_model_vcov dispatches by type and validates unknowns","1","boot",0.0800000000000001
+"table_continuous_lm",3604,"resolve_cluster_argument rejects malformed input with clear errors","3","bulk",0.0299999999999994
+"table_continuous_lm",3636,"get_test_header_lm covers all test_type branches","1","boot",0.32
+"table_continuous_lm",3690,"compute_resample_vcov_bootstrap errors on too few valid replicates","3","bulk",0.0199999999999996
+"table_continuous_lm",3710,"compute_resample_vcov_bootstrap cluster path produces a finite vcov","1","boot",0.00999999999999801
+"table_continuous_lm",3723,"compute_resample_vcov_jackknife cluster path matches leave-one-out","1","boot",0.00999999999999801
+"table_continuous_lm",3732,"compute_resample_vcov_jackknife errors when too few replicates","3","bulk",0
+"table_continuous_lm",3744,"compute_model_vcov errors for CR* without cluster and clubSandwich","3","bulk",0.0100000000000016
+"table_continuous_lm",3752,"compute_model_vcov refuses when clubSandwich errors","3","bulk",0.0199999999999996
+"table_continuous_lm",3770,"compute_coef_inference falls back when clubSandwich coef_test errors","3","bulk",0.0300000000000011
+"table_continuous_lm",3790,"compute_wald_test falls back when clubSandwich Wald_test errors","3","bulk",0.0199999999999996
+"table_continuous_lm",3808,"compute_wald_test handles q == 0","3","bulk",0.0199999999999996
+"table_continuous_lm",3820,"resolve_cluster_argument NULL roundtrip","3","bulk",0
+"table_continuous_lm",3827,"decimal_align_strings handles empty input and single value","3","bulk",0.0199999999999996
+"table_continuous_lm",3836,"table_continuous_lm errors clearly on bad cluster + vcov combinations","3","bulk",0.0199999999999996
+"table_continuous_lm",3864,"find_ncp_t_lm expands the bracket on extreme statistics","3","bulk",0.0100000000000016
+"table_continuous_lm",3875,"find_ncp_f_lm returns 0 when ncp = 0 already attains the target tail","3","bulk",0.0199999999999996
+"table_continuous_lm",3880,"find_ncp_f_lm widens the bracket on huge F statistics","3","bulk",0.00999999999999801
+"table_continuous_lm",3886,"format_p_value covers blanks, NAs, and edge digits","3","bulk",0.0200000000000031
+"table_continuous_lm",3892,"get_test_header_lm: show_statistic = FALSE returns NULL early","3","bulk",0.00999999999999801
+"table_continuous_lm",3904,"compute_es_ci_lm fast-paths to NA on effect_size = 'none'","3","bulk",0
+"table_continuous_lm",3910,"compute_lm_omega2 returns NA when sums of squares are degenerate","3","bulk",0.0100000000000016
+"table_continuous_lm",3934,"find_ncp_t_lm inverts pt() correctly","3","bulk",0.0199999999999996
+"table_continuous_lm",3954,"find_ncp_t_lm returns NA for invalid inputs","3","bulk",0.0300000000000011
+"table_continuous_lm",3962,"find_ncp_f_lm inverts pf() correctly and respects ncp >= 0","3","bulk",0.0299999999999976
+"table_continuous_lm",3985,"find_ncp_f_lm returns NA for invalid inputs","3","bulk",0.0500000000000007
+"table_continuous_lm",3993,"compute_es_ci_lm dispatches and the strict fallback rejects unknown effect_size","3","bulk",0.0599999999999987
+"table_continuous_lm",4014,"pick_es_value_lm fails fast on unknown effect_size","3","bulk",0.0300000000000011
+"table_continuous_lm",4025,"compute_model_vcov refuses when sandwich errors","3","bulk",0.0300000000000011
+"table_continuous_lm",4047,"compute_model_vcov matches sandwich::vcovHC numerically","1","oracle",0.0499999999999972
+"table_continuous_lm",4062,"table_continuous_lm clipboard output can be exercised with a mocked writer","3","bulk",0.0500000000000007
+"table_continuous_lm",4107,"resolve_cluster_argument rejects unevaluable expressions","3","bulk",0.0100000000000016
+"table_continuous_lm",4116,"resolve_cluster_argument rejects multi-way list / data.frame","3","bulk",0.0199999999999996
+"table_continuous_lm",4130,"resolve_cluster_argument rejects non-atomic resolved value","3","bulk",0.00999999999999801
+"table_continuous_lm",4143,"compute_model_vcov errors clearly on unknown vcov type","3","bulk",0.0200000000000031
+"table_continuous_lm",4151,"compute_model_vcov simulates clubSandwich missing for CR types","3","bulk",0.00999999999999801
+"table_continuous_lm",4171,"compute_resample_vcov_bootstrap errors when fewer than 10 valid replicates","3","bulk",0.0199999999999996
+"table_continuous_lm",4186,"compute_resample_vcov_bootstrap warns when over half of replicates fail","1","boot",0.0399999999999991
+"table_continuous_lm",4214,"get_test_header_lm returns NULL when test_type column is all NA","3","bulk",0.0100000000000016
+"table_continuous_lm",4226,"get_test_header_lm returns plain z / chi^2 / t / F when df not available","3","bulk",0.0399999999999991
+"table_continuous_lm",4286,"get_test_header_lm returns the raw test_type for unknown labels","3","bulk",0.0199999999999996
+"table_continuous_lm",4299,"format_effect_size_header_lm passes through unknown labels","3","bulk",0.0500000000000007
+"table_continuous_lm",4307,"compute_lm_omega2 returns NA when y is non-numeric","3","bulk",0.00999999999999801
+"table_continuous_lm",4321,"compute_smd_ci_lm returns NA when slope is not finite or x not factor","3","bulk",0.0200000000000031
+"table_continuous_lm",4341,"extract_lm_f_stat returns NULL for an intercept-only fit","3","bulk",0.00999999999999801
+"table_continuous_lm",4347,"compute_omega2_ci_lm and compute_f2_ci_lm return NA when F-stat is missing","3","bulk",0.0199999999999996
+"table_continuous_lm",4362,"table_continuous_lm renders empty cells when n / weighted_n are NA","3","bulk",0.0199999999999996
+"table_continuous_lm",4387,"table_continuous_lm with show_weighted_n = TRUE renders blank weighted_n on empty rows","3","bulk",0.0300000000000011
+"table_continuous_lm",4412,"table_continuous_lm gt output is rendered (decimal align default)","1","render",0.149999999999999
+"table_continuous_lm",4423,"table_continuous_lm gt output respects align = 'center' / 'right'","1","render",0.32
+"table_continuous_lm",4437,"table_continuous_lm tinytable output respects align = 'center' / 'right'","1","render",0.0599999999999987
+"table_continuous_lm",4451,"table_continuous_lm flextable output is rendered (decimal default)","1","render",0.25
+"table_continuous_lm",4462,"table_continuous_lm flextable output respects align = 'center' / 'right'","1","render",0.470000000000002
+"table_continuous_lm",4476,"table_continuous_lm word output writes a docx file","1","render",0.75
+"table_continuous_lm",4492,"table_continuous_lm word output errors when word_path is missing","3","bulk",0.0299999999999976
+"table_continuous_lm",4506,"table_continuous_lm excel output writes an xlsx file","1","render",0.329999999999998
+"table_continuous_lm",4521,"table_continuous_lm excel output errors when excel_path is missing","3","bulk",0.0500000000000007
+"table_continuous_lm",4534,"resolve_cluster_argument: non-null quo that evaluates to NULL returns NULL","3","bulk",0
+"table_continuous_lm",4553,"table_continuous_lm: numeric predictor + weights exercises weighted lm path","3","bulk",0.0199999999999996
+"table_continuous_lm",4569,"fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)","3","bulk",0.0199999999999996
+"table_continuous_lm",4594,"a failed HC computation yields no matrix at all","3","bulk",0.0100000000000016
+"table_continuous_lm",4611,"a failed CR computation yields no matrix at all","3","bulk",0.0199999999999996
+"table_continuous_lm",4628,"compute_resample_vcov_bootstrap errors when 0 valid replicates","3","bulk",0.0100000000000016
+"table_continuous_lm",4640,"compute_resample_vcov_bootstrap refuses fewer than 10 replicates","3","bulk",0
+"table_continuous_lm",4651,"compute_resample_vcov_jackknife errors when 0 valid replicates","3","bulk",0.00999999999999801
+"table_continuous_lm",4663,"compute_lm_omega2 returns NA when weights length mismatches y / when sum(w) = 0","3","bulk",0.0200000000000031
+"table_continuous_lm",4676,"compute_lm_omega2 returns NA when sum of weights is non-positive","3","bulk",0.00999999999999801
+"table_continuous_lm",4688,"compute_coef_inference uses qnorm CI when df is not finite (CR path)","3","bulk",0.0199999999999996
+"table_continuous_lm",4716,"compute_coef_inference uses qnorm CI when df.residual <= 0 (classical fallback)","3","bulk",0.0100000000000016
+"table_continuous_lm",4728,"compute_wald_test: clubSandwich constrain_zero failure falls through to classical Wald","3","bulk",0.0399999999999991
+"table_continuous_lm",4747,"export_continuous_lm_table errors when required Suggests packages are missing","3","bulk",0.0300000000000011
+"table_continuous_lm",4781,"ordered by: emmeans are the group means and match an unordered-fit oracle","3","bulk",0.0599999999999987
+"table_continuous_lm",4838,"ordered by with weights: emmeans are the weighted group means (vignette oracle)","3","bulk",0.0199999999999996
+"table_continuous_lm",4862,"2-level ordered by: displayed difference is the full mean difference (lm oracle)","3","bulk",0.0599999999999987
+"table_continuous_lm",4923,"ordered by with covariates: proportional emmeans match the G-computation oracle","3","bulk",0.0500000000000007
+"table_continuous_lm",4956,"balanced adjustment with an ordered factor covariate matches emmeans exactly","1","oracle",0.0899999999999999
+"table_continuous_lm",4984,"labelled by with value labels dispatches to the categorical path","3","bulk",0.0300000000000011
+"table_continuous_lm",5008,"labelled_spss by with value labels forms groups and honors user_na","3","bulk",0.0700000000000003
+"table_continuous_lm",5034,"labelled by without value labels stays a continuous regressor","3","bulk",0.0399999999999991
+"table_continuous_lm",5045,"a factor covariate with a declared-but-empty level fits cleanly","1","oracle",0.0599999999999987
+"table_continuous_lm",5099,"NA weights are excluded from the analytic sample as documented","3","bulk",0.0500000000000007
+"table_continuous_lm",5138,"rows dropped for missing by / weights are disclosed in the note","3","bulk",0.0399999999999991
+"table_continuous_lm",5181,"proportional emmeans use the case weights (Stata margins)","3","bulk",0.0600000000000023
+"table_continuous_lm",5227,"adjusted omega2 CI matches effectsize's partial omega2 CI","1","oracle",0.0700000000000003
+"table_continuous_lm",5284,"non-syntactic covariate names survive formula construction","3","bulk",0.00999999999999801
+"table_continuous_lm",5307,"a single-level by raises a classed, actionable error","3","bulk",0.0199999999999996
+"table_continuous_lm",5331,"global options(contrasts=) does not alter categorical-by results","3","bulk",0.0500000000000007
+"table_continuous_lm",5369,"an outcome left with one observed group keeps the levels of the table","3","bulk",0.0899999999999999
+"table_continuous_lm",5403,"an outcome a missing weight leaves with one group degrades loudly","3","bulk",0.0799999999999983
+"table_continuous_lm",5433,"a degenerate numeric by degrades loudly per outcome","3","bulk",0.0700000000000003
+"table_continuous_lm",5461,"a saturated fit reports NA inference with a classed warning","3","bulk",0.0700000000000003
+"table_continuous_lm",5478,"an outcome with no variance has no test, interval, effect size or R2","2","beyond",0.609999999999999
+"table_continuous_lm",5585,"a slope on an outcome with no variance is 0, with no inference","3","bulk",0.0700000000000003
+"table_continuous_lm",5622,"a saturated or unfitted model leaves no cell blank","3","bulk",0.0599999999999987
+"table_continuous_lm",5685,"a residual variance of zero draws no inference, with one warning","2","beyond",0.109999999999999
+"table_continuous_lm",5754,"an exact linear function of a numeric `by` draws no inference","2","beyond",0.219999999999999
+"table_continuous_lm",5856,"an exact fit on a categorical `by` and a covariate keeps the adjusted means","2","beyond",0.130000000000003
+"table_continuous_lm",5930,"table_continuous_lm() rejects bit64::integer64 columns","3","bulk",0.0199999999999996
+"table_continuous_lm",5965,"align = 'auto' is removed from table_continuous_lm","3","bulk",0.0100000000000016
+"table_continuous_lm",6013,"balanced adjustment expands logical covariates like factors (no crash)","1","oracle",0.0700000000000003
+"table_continuous_lm",6042,"missing values are disclosed in the table note (decision 14)","1","render",0.0800000000000018
+"table_continuous_lm",6105,"labels names the outcomes and the by variable (title, note)","2","beyond",0.25
+"table_continuous_lm",6145,"var_labels() renames on the attribute base, whatever the option","3","bulk",0.0600000000000023
+"table_continuous_lm",6163,"declared missing values are disclosed separately (decision 14)","3","bulk",0.0299999999999976
+"table_continuous_lm",6187,"a table with no spanner renders one header row in tinytable / gt / flextable","1","render",0.84
+"table_continuous_lm",6215,"two `by` levels that differ only in punctuation still render","1","render",2.05
+"table_continuous_lm",6247,"every gt spanner id in the family comes from a key","1","render",1.5
+"table_continuous_lm",6278,"the lm coverage percentage follows decimal_mark (decision 27)","1","render",0.280000000000001
+"table_continuous_lm",6313,".lm_spanner_ids is stable where nothing collides","3","bulk",0.0199999999999996
+"table_continuous_lm",6326,".lm_spanner_ids refuses keys that already repeat","3","bulk",0
+"table_continuous_lm",6344,"`p_value = NULL`, the family default, shows the p-value","3","bulk",0.0399999999999991
+"table_continuous_lm",6365,"`by` and the covariates named in `select` are refused; helpers skip them","2","beyond",0.140000000000001
+"table_continuous_lm",6398,"a logical `effect_size` is refused with the measures to use","3","bulk",0
+"table_continuous_lm",6417,"an outcome with no data in a level is fit on the other levels","2","beyond",0.169999999999998
+"table_continuous_lm",6478,"an outcome with data in one level only keeps the mean of that level","2","beyond",0.190000000000001
+"table_continuous_lm",6557,"tidy() keeps a level with no data as a row with NA","3","bulk",0.0899999999999999
+"table_continuous_lm",6592,"the outcomes with no data in the same levels share one sentence","3","bulk",0.0500000000000007
+"table_continuous_lm",6611,"a first level without data hands the reference to the next one","3","bulk",0.0399999999999991
+"table_continuous_lm",6639,"a level a covariate empties for one outcome keeps the blocks aligned","3","bulk",0.0500000000000007
+"table_continuous_lm",6665,"the note names the test behind the p-values","2","beyond",0.300000000000001
+"table_continuous_lm",6751,"a statistic shown without its p-value names its test: group comparison or slope test","2","beyond",0.16
+"table_continuous_lm",6818,"outcomes tested differently are each named with their test","3","bulk",0.0100000000000016
+"table_continuous_lm",6851,"the weights are named, and the note is one paragraph","2","beyond",0.190000000000001
+"table_continuous_svy",118,"`deff = ""replace""` is the other design effect, and says so","3","bulk",0.1
+"table_continuous_svy",136,"every displayed number is survey's own (cluster design)","2","beyond",0.13
+"table_continuous_svy",155,"`qrule` reaches survey, and ""spicy"" is the type-7 rule","3","bulk",0.12
+"table_continuous_svy",215,"D17: on a weights-only design the two regimes are the same estimand","2","beyond",0.33
+"table_continuous_svy",259,"D17 holds where the alignment of n had no reason to","3","bulk",0.0799999999999996
+"table_continuous_svy",290,"the two-stratum micro design matches a hand linearization","3","bulk",0.0900000000000003
+"table_continuous_svy",320,"a replicate design gives the same point estimate, its own SE","1","replicate",0.18
+"table_continuous_svy",372,"a calibrated domain counts only the rows it kept","2","beyond",0.26
+"table_continuous_svy",408,"a negative calibration weight is an observation, not a hole","2","beyond",0.12
+"table_continuous_svy",460,"negative weights refuse the test, keep the cells, and say so","2","beyond",0.13
+"table_continuous_svy",491,"the refusal clause says how far the refusal reached","2","beyond",0.15
+"table_continuous_svy",559,"a comparison absent for another reason is not blamed on the weights","3","bulk",0.0700000000000003
+"table_continuous_svy",585,"a calibrated design with no negative weight says nothing","2","beyond",0.12
+"table_continuous_svy",603,"the footer gives the df span when the groups disagree","2","beyond",0.16
+"table_continuous_svy",622,"`drop_na = FALSE` keeps the missing values as their own domain","3","bulk",0.17
+"table_continuous_svy",653,"the sample-size sentence counts the analytic sample","3","bulk",0.0900000000000003
+"table_continuous_svy",667,"rows with a missing `by` leave the table and the note says so","2","beyond",0.149999999999999
+"table_continuous_svy",715,"two groups take the design-based t-test, three the Wald F","3","bulk",0.16
+"table_continuous_svy",745,"the rank tests are survey's, including the documented shape swap","2","beyond",0.13
+"table_continuous_svy",780,"`test = ""student""` warns and behaves like the design t-test","3","bulk",0.0900000000000007
+"table_continuous_svy",796,"a table showing a median without a mean takes the rank test","3","bulk",0.04
+"table_continuous_svy",808,"a declared but unobserved `by` level does not reach the test","3","bulk",0.0900000000000007
+"table_continuous_svy",848,"the comparison reads its groups, whatever the type of `by`","2","beyond",0.159999999999999
+"table_continuous_svy",875,"a group too thin to compare leaves the test columns empty","3","bulk",0.0600000000000005
+"table_continuous_svy",890,"`df` moves the intervals, and only the intervals","3","bulk",0.17
+"table_continuous_svy",949,"`df` does not reach the categorical test either","2","beyond",0.13
+"table_continuous_svy",976,"a domain with no degrees of freedom has no estimable variance","2","beyond",0.15
+"table_continuous_svy",1098,"an unsupported design class is refused by name","3","bulk",0.0800000000000001
+"table_continuous_svy",1112,"the ignored-argument warnings fire where they should","2","beyond",0.16
+"table_continuous_svy",1173,"`regex` and `exclude` select the way the sibling does","3","bulk",0.0899999999999999
+"table_continuous_svy",1187,"declared missing codes leave the statistics and the note","3","bulk",0.0800000000000001
+"table_continuous_svy",1212,"ordinary missing values are counted in the note","3","bulk",0.0300000000000002
+"table_continuous_svy",1243,"a variable with no data in a domain shows the mark there","2","beyond",0.2
+"table_continuous_svy",1265,"the comparison of a no-data variable runs on the domains with data","2","beyond",0.159999999999999
+"table_continuous_svy",1299,"without `by`, a variable with no observed value has no data","2","beyond",0.109999999999999
+"table_continuous_svy",1327,"the note gives the design, then the missing data, then the inference","3","bulk",0.0700000000000003
+"table_continuous_svy",1361,"the object carries the title it prints","2","beyond",0.16
+"table_continuous_svy",1415,"the missing-values note names each variable by its row label","2","beyond",0.640000000000001
+"table_continuous_svy",1482,"var_labels() renames on the attribute base, whatever the option","2","beyond",0.17
+"table_continuous_svy",1504,"the design table comes back visibly, and assigning it says nothing","3","bulk",0.11
+"table_continuous_svy",1523,"the console table prints its title, its columns and its footer","1","snapshot",0.25
+"table_continuous_svy",1542,"every rendering engine accepts a design table","1","render",3.65
+"table_continuous_svy",1576,"the clipboard route is reachable and refuses without clipr","3","bulk",0.0800000000000001
+"table_continuous_svy",1601,"the typed view carries the design tokens and the row identity","2","beyond",0.109999999999999
+"table_continuous_svy",1623,"`inline()` cites a cell of a design table","3","bulk",0.0899999999999999
+"table_continuous_svy",1772,"coercion returns the displayed table, with the note alone","2","beyond",0.109999999999999
+"table_continuous_svy",1820,"output = 'data.frame' and output = 'long' carry the same numbers","2","beyond",0.17
+"table_continuous_svy",1859,"p_adjust adjusts the one design-based test of each variable","3","bulk",0.32
+"table_continuous_svy",1900,"p_adjust needs `by` and the p-value column","3","bulk",0.0299999999999994
+"table_continuous_svy",1918,"statistic = TRUE, p_value = FALSE keeps the statistic, not the p (issue #9)","2","beyond",0.180000000000001
+"table_continuous_svy",1943,"a `by` no observation holds is refused, not a base R error","3","bulk",0.0499999999999989
+"table_continuous_svy",1962,"a variable with no variance gets no comparison, with a warning","2","beyond",0.120000000000001
+"table_continuous_svy",1994,"the comparison cells of a variable with no variance are undefined","3","bulk",0.0999999999999996
+"table_continuous_svy",2028,"every comparison that cannot run is undefined, its warnings unchanged","2","beyond",0.200000000000001
+"table_continuous_svy",2110,"`by` named in `select` is refused; a helper skips it","2","beyond",1.75
+"table_continuous_svy",2129,"the design's weights, clusters and fpc are outside the selection","1","replicate",0.5
+"table_multiresponse",402,"the bootstrap is reproducible and agrees with MRCV within Monte Carlo error","1","boot",0.45
+"table_multiresponse",436,"the bootstrap draws again a resample in which an item loses all variation","1","boot",0.0799999999999998
+"table_multiresponse",477,"the Rao-Scott design-effect summary: rs_mean and rs_cv","1","boot",0.21
+"table_multiresponse",610,"the global test sums the Pearson statistics whatever `test` says","1","boot",0.11
+"table_multiresponse",661,"an item table the exact enumeration cannot handle takes the Monte Carlo test","1","boot",0.45
+"table_multiresponse",712,"the item note names the tests in French","2","beyond",0.18
+"table_multiresponse",729,"a label with a comma turns its item list in the note to semicolons","2","beyond",0.22
+"table_multiresponse",925,"a bootstrap p of zero is reported at the resolution of the resamples","1","boot",0.0300000000000002
+"table_multiresponse",1358,"the automatic note opens with ""Note."" once, a typed note under it too","2","beyond",0.470000000000001
+"table_multiresponse",1391,"the engines set the ""Note."" of a note in italics, typed or not","1","render",2.66
+"table_multiresponse",1426,"the global test is the overall group comparison, in both languages","1","boot",0.21
+"table_multiresponse",1759,"each base shows its rows: valid one, all two, answered none","2","beyond",0.109999999999999
+"table_multiresponse",2044,"tinytable renders the rows of none_row","1","render",0.0599999999999987
+"table_multiresponse",2053,"gt renders the rows of none_row","1","render",0.120000000000001
+"table_multiresponse",2059,"flextable renders the rows of none_row","1","render",0.25
+"table_multiresponse",2065,"word renders the rows of none_row","1","render",1.03
+"table_multiresponse",2076,"excel renders the rows of none_row","1","render",0.720000000000001
+"table_multiresponse",2144,"both ways out of the refusal work","2","beyond",0.16
+"table_multiresponse",2258,"an engine renders the relabeled rows","1","render",0.139999999999999
+"table_multiresponse",2292,"an item with no data in a group leaves it out of its margin and test","2","beyond",0.140000000000001
+"table_multiresponse",2354,"the note names the items with no data in a group, after the base","2","beyond",0.220000000000001
+"table_multiresponse",2508,"p_value = FALSE removes the test from every rendered engine","1","render",3.08
+"table_multiresponse",2568,"the engines render the tested table, title and note included","1","render",0.440000000000001
+"table_multiresponse",2711,"title and note can be replaced, and the note removed","2","beyond",0.100000000000001
+"table_multiresponse",2971,"a survey design is refused, with the reason","2","beyond",0.460000000000001
+"table_multiresponse",2986,"the console table is pinned","1","snapshot",0.449999999999999
+"table_outcome",171,"the rank family answers on the same blocks","1","boot",1.25
+"table_outcome",464,"a select displayed as Overall is refused, with both ways out","2","beyond",0.18
+"table_outcome",566,"a level displayed beside the row of missing values is refused","2","beyond",0.11
+"table_outcome",658,"the block compares the levels with data, and the note says why","2","beyond",0.16
+"table_outcome",752,"the note opens with the sample size, the rows of the data","2","beyond",0.14
+"table_outcome",1212,"p_adjust: the typed view, the note and an engine agree","1","render",0.34
+"table_outcome",1326,"the outcome named in `select` is refused; a helper skips it","2","beyond",0.18
+"table_outcome",1382,"the comparison cells of a block with no variance are undefined","2","beyond",0.12
+"table_outcome",1424,"every comparison that cannot run is undefined, its warnings unchanged","2","beyond",0.22
+"table_regression",26,"table_regression – single fit and 1-list of fits behave the same","3","bulk",0.08
+"table_regression",34,"table_regression – factor with reference: ref row en-dashed","3","bulk",0.0599999999999999
+"table_regression",49,"table_regression – standardized != 'none' auto-injects 'beta'","3","bulk",0.0700000000000001
+"table_regression",55,"table_regression – 'beta' without standardized errors with spicy_invalid_input","3","bulk",0
+"table_regression",63,"table_regression – partial_eta2 + partial_eta2_ci render as atomic columns","3","bulk",0.0499999999999999
+"table_regression",81,"table_regression – stars = TRUE applied to B (no β requested)","3","bulk",0.05
+"table_regression",88,"table_regression – stars on B when both B and β are shown","3","bulk",0.04
+"table_regression",116,"table_regression – names(list) used as model labels","3","bulk",0.0599999999999998
+"table_regression",124,"table_regression – nested = TRUE injects change-stat rows + Hierarchical title","3","bulk",0.0800000000000001
+"table_regression",170,"output = 'excel' without path errors with spicy_invalid_input","3","bulk",0.01
+"table_regression",178,"output = 'word' without path errors with spicy_invalid_input","2","beyond",0.83
+"table_regression",188,"output = 'gt' returns a gt_tbl object when gt installed","1","render",0.19
+"table_regression",222,"table_regression – class without as_regression_frame method errors with spicy_unsupported","3","bulk",0.02
+"table_regression",234,"an unsupported class is refused with every registry class named","3","bulk",0.02
+"table_regression",262,"print.spicy_regression_table – invisible return + non-empty stdout","3","bulk",0.0600000000000001
+"table_regression",276,"AME – binary numeric var keeps the var name (not '<var>1')","3","bulk",1.25
+"table_regression",288,"AME – true factor still gets <var><level> naming","2","beyond",0.13
+"table_regression",297,"Q1 – names(list) + model_labels conflict warns spicy_ignored_arg","3","bulk",0.0699999999999994
+"table_regression",306,"Q1 – names(list) alone (no explicit model_labels): no warning","3","bulk",0.0800000000000001
+"table_regression",315,"Q2 – show_intercept=FALSE + non-default intercept_position warns","3","bulk",0.0599999999999996
+"table_regression",323,"Q2 – show_intercept=FALSE + default intercept_position: no warning","3","bulk",0.0300000000000002
+"table_regression",331,"stars validation – empty numeric errors spicy_invalid_input","3","bulk",0
+"table_regression",339,"stars validation – out-of-range threshold errors","3","bulk",0.0199999999999996
+"table_regression",351,"stars validation – empty / unnamed name errors","3","bulk",0.00999999999999979
+"table_regression",369,"vcov – unknown type errors spicy_invalid_input","3","bulk",0
+"table_regression",377,"vcov – CR* without cluster errors spicy_invalid_input","3","bulk",0
+"table_regression",385,"vcov – list length mismatch errors spicy_invalid_input","3","bulk",0
+"table_regression",394,"ci_level – out of range errors spicy_invalid_input","3","bulk",0.00999999999999979
+"table_regression",406,"show_columns – unknown token errors spicy_invalid_input","3","bulk",0.0200000000000005
+"table_regression",414,"show_columns – empty errors spicy_invalid_input","3","bulk",0.00999999999999979
+"table_regression",422,"show_fit_stats – unknown token errors spicy_invalid_input","3","bulk",0.0200000000000005
+"table_regression",430,"show_fit_stats – change tokens accepted under nested = TRUE","3","bulk",0
+"table_regression",447,"digit args – non-positive integer errors spicy_invalid_input","3","bulk",0.0200000000000005
+"table_regression",459,"decimal_mark – multi-character errors spicy_invalid_input","3","bulk",0
+"table_regression",467,"decimal_mark – the CI note quotes the coverage with the mark","3","bulk",0.0999999999999996
+"table_regression",489,"reference_label – empty string errors spicy_invalid_input","3","bulk",0.0100000000000007
+"table_regression",497,"model_labels – length mismatch errors spicy_invalid_input","3","bulk",0.0199999999999996
+"table_regression",506,"outcome_labels – length mismatch errors spicy_invalid_input","3","bulk",0.00999999999999979
+"table_regression",515,"labels - an unknown key warns and is left out (decision 54)","3","bulk",0.0800000000000001
+"table_regression",524,"nested = TRUE – different nobs errors spicy_invalid_input","3","bulk",0
+"table_regression",534,"nested = TRUE – different DV errors spicy_invalid_input","3","bulk",0.00999999999999979
+"table_regression",543,"output = 'excel' with non-existent dir errors spicy_invalid_input","3","bulk",0.0199999999999996
+"table_regression",561,"show_fit_stats – default tokens (n / R² / Adj. R²) appear in body","3","bulk",0.0499999999999998
+"table_regression",569,"show_fit_stats – custom tokens (omega2, sigma, AIC) appear","3","bulk",0.0599999999999996
+"table_regression",580,"show_fit_stats = FALSE drops the footer block","3","bulk",0.0700000000000003
+"table_regression",593,"show_fit_stats – multi-model: each model contributes its values","3","bulk",0.0899999999999999
+"table_regression",608,"group_sep_rows attribute marks the body / fit-stats divider","3","bulk",0.0500000000000007
+"table_regression",617,"labels – coef-style key (cyl6) renames the contrast row","3","bulk",0.0599999999999996
+"table_regression",630,"labels – mixed term + coef-style keys both honored","3","bulk",0.0800000000000001
+"table_regression",641,"labels – a key that exists in only ONE model applies there only","2","beyond",0.14
+"table_regression",697,"labels = TRUE - the outcome, numeric terms and factor headers read their label","3","bulk",0.19
+"table_regression",726,"labels = TRUE - lmer: the random-effect rows keep their text","1","model",4.83
+"table_regression",751,"labels = TRUE - coxph: a label the model frame lost is read off the data","3","bulk",0.0999999999999996
+"table_regression",769,"labels = TRUE - lme: the terms are read off the data","3","bulk",0.0800000000000001
+"table_regression",778,"labels = TRUE - a fit whose data is gone keeps its names, silently","3","bulk",0.0600000000000005
+"table_regression",791,"labels = TRUE - interactions and transformed terms keep their names","2","beyond",0.109999999999999
+"table_regression",806,"labels = var_labels() - a rename over the label attributes","3","bulk",0.0899999999999999
+"table_regression",816,"labels = c(...) - coefficient keys apply, the rest stays names","3","bulk",0.0800000000000001
+"table_regression",829,"labels - options(spicy.var_labels = TRUE) is the base of a named vector","2","beyond",0.16
+"table_regression",843,"labels = TRUE - an explicit outcome_labels still wins","3","bulk",0.0600000000000005
+"table_regression",857,"labels = TRUE - two outcomes sharing a label head their columns by name","3","bulk",0.0800000000000001
+"table_regression",871,"labels - NULL and unnamed vectors are errors","3","bulk",0.0199999999999996
+"table_regression",883,"align – 'decimal' is default; padding applied to numeric cols","3","bulk",0.0299999999999994
+"table_regression",893,"align – 'right' / 'center' are accepted (no decimal pad)","3","bulk",0.0600000000000005
+"table_regression",901,"print – align = 'center' propagates to align_center_cols","3","bulk",0.0500000000000007
+"table_regression",916,"duplicate names in `list(...)` error spicy_invalid_input","3","bulk",0.00999999999999979
+"table_regression",925,"duplicate values in `model_labels` error spicy_invalid_input","3","bulk",0.0199999999999996
+"table_regression",934,"a typed name colliding with an auto-filled label is refused","3","bulk",0.0800000000000001
+"table_regression",970,"the collision message names the label and both positions","3","bulk",0.0299999999999994
+"table_regression",994,"the collision is detected against the registry, not a literal","3","bulk",0.0400000000000009
+"table_regression",1025,"the collision is refused before any model is extracted","3","bulk",0.00999999999999979
+"table_regression",1050,"DV smart spanner uses the bare variable name (NOT attr('label'))","2","beyond",0.110000000000001
+"table_regression",1076,"outcome auto-row identical-DV check uses variable name (not label)","3","bulk",0.0999999999999996
+"table_regression",1096,"cluster_name – `df$col` extracted to 'col' for the footer","3","bulk",0.0399999999999991
+"table_regression",1116,"cluster_name – bare symbol extracted as variable name","3","bulk",0.0300000000000011
+"table_regression",1136,"cluster_name – list(...) with named elements per model","3","bulk",0.0499999999999989
+"table_regression",1165,"extract_arg_column_name – handles all recognized forms","3","bulk",0.0199999999999996
+"table_regression",1178,"outcome_labels – single model: row never shown (DV is in title)","3","bulk",0.0999999999999996
+"table_regression",1198,"outcome_labels – multi-model identical DVs: NULL hides the row","2","beyond",0.110000000000001
+"table_regression",1213,"outcome_labels – multi-model differing DVs: NULL lifts DVs into spanner","3","bulk",0.0899999999999999
+"table_regression",1233,"outcome_labels – explicit labels take precedence","3","bulk",0.0600000000000005
+"table_regression",1246,"outcome_labels – FALSE suppresses the row even with differing DVs","3","bulk",0.0999999999999996
+"table_regression",1262,"reference_style = 'annotation' – factor header annotated [ref: <level>]","3","bulk",0.0399999999999991
+"table_regression",1271,"reference_style = 'row' (default) – no factor header annotation","3","bulk",0.0399999999999991
+"table_regression",1279,"reference_style = 'annotation' – works with multiple factors","3","bulk",0.0500000000000007
+"table_regression",1293,"no-intercept formula – first level of factor is a real coef, no phantom ref row","3","bulk",0.0600000000000005
+"table_regression",1306,"no-intercept formula – tidy returns all factor coefs","3","bulk",0.0499999999999989
+"table_regression",1319,"no-intercept formula – alt syntax 'y ~ x - 1' is equivalent","3","bulk",0.0600000000000005
+"table_regression",1327,"no-intercept formula – works with multi-model nested lookalike","3","bulk",0.0600000000000005
+"table_regression",1355,"snapshot – single lm default rendering","1","snapshot",0.109999999999999
+"table_regression",1361,"snapshot – multi-model with nested = TRUE comparison footer","1","snapshot",0.109999999999999
+"table_regression",1368,"snapshot – standardized + stars + reference annotation","1","snapshot",0.0599999999999987
+"table_regression",1384,"spanner – single model: no spanner attribute","3","bulk",0.0300000000000011
+"table_regression",1390,"spanner – multi-model named list: names become spanner labels","3","bulk",0.0399999999999991
+"table_regression",1403,"spanner – multi-model unnamed + same DV: 'Model N' labels","3","bulk",0.0800000000000001
+"table_regression",1411,"spanner – multi-model unnamed + distinct DVs: DV smart default","3","bulk",0.0900000000000016
+"table_regression",1429,"spanner – explicit model_labels override DV smart default","3","bulk",0.0499999999999989
+"table_regression",1437,"spanner – explicit outcome_labels keep the row; spanner stays generic","3","bulk",0.0500000000000007
+"table_regression",1449,"spanner – multi-model print strips 'Label: ' prefix from headers","3","bulk",0.0800000000000001
+"table_regression",1463,"spanner – .validate_spanners catches malformed input","3","bulk",0.0299999999999994
+"table_regression",1483,"spanner – gt output applies tab_spanner + cols_label","1","render",0.470000000000001
+"table_regression",1497,"spanner – flextable output adds a header row with spanners","1","render",0.540000000000001
+"table_regression",1522,"ordered factor – grouped under header, poly-order, auto footer note","3","bulk",0.0999999999999996
+"table_regression",1557,"ordered factor – fitting with factor(ordered = FALSE) restores treatment layout","3","bulk",0.0599999999999987
+"table_regression",1578,"default show_columns context-aware: single keeps CI, multi drops it","3","bulk",0.17
+"table_regression",1591,"outcome_labels – NULL hides the row even when DVs differ + names supplied","2","beyond",0.110000000000001
+"table_regression",1605,"spanner – tinytable output uses group_tt for column groups","1","render",0.110000000000001
+"table_regression",1619,"reference row always FIRST in its factor group regardless of group_factor_levels","3","bulk",0.0899999999999999
+"table_regression",1653,"reference_style = ""annotation"" + factor_layout = ""flat"" inlines [vs <ref>] on 1st dummy only","3","bulk",0.0499999999999972
+"table_regression",1682,"reference_style = ""footer"" adds a single 'Reference categories: ...' line","3","bulk",0.0500000000000007
+"table_regression",1712,"reference_style = ""none"" shows no reference info anywhere","3","bulk",0.0399999999999991
+"table_regression",1740,"reference_style = ""none"" + factor_layout = ""flat"" emits spicy_inform once","3","bulk",0.0299999999999976
+"table_regression",1770,"reference_style = ""none"" + factor_layout = ""grouped"" does NOT emit the info","3","bulk",0.0300000000000011
+"table_regression",1790,"reference_style = ""none"" with NO factors: no spicy_inform (nothing to lose)","3","bulk",0.0300000000000011
+"table_regression",1803,"factor_layout = ""flat"" produces concatenated <var><level> labels","3","bulk",0.0500000000000007
+"table_regression",1814,"factor_layout = ""grouped"" (default) inserts factor header + indents","3","bulk",0.0399999999999991
+"table_regression",1828,"show_columns – group tokens expand to their documented fixed vectors","3","bulk",0.0500000000000007
+"table_regression",1847,"show_columns – each preset table equals its atomic-token table","2","beyond",0.43
+"table_regression",1878,"show_columns – AME presets equal their atomic-token tables","2","beyond",0.329999999999998
+"table_regression",1892,"show_columns – token order controls displayed column order","3","bulk",0.0800000000000018
+"table_regression",1902,"show_columns – beta is auto-injected directly after b","3","bulk",0.0399999999999991
+"table_regression",1913,"show_columns – 'p' carries the B p-values, never the AME ones","2","beyond",0.129999999999999
+"table_regression",1941,"show_columns – every base atomic token adds exactly one column","3","bulk",0.170000000000002
+"table_regression",1960,"boot_n – formals default is 1000L; degenerate values rejected","3","bulk",0.0300000000000011
+"table_regression",1974,"ci_method = 'profile' with lm raises spicy_invalid_input","3","bulk",0.0199999999999996
+"table_regression",1983,"raw formula input is refused – fit-only API","3","bulk",0
+"table_regression",1988,"ci_level moves B, beta, AME and partial CI bounds together","3","bulk",0.240000000000002
+"table_regression",2038,"'n' column is dropped for a plain multivariable fit","3","bulk",0.0300000000000011
+"table_regression",2045,"partial_f2 / partial_eta2 / partial_omega2 are refused for glm","3","bulk",0.0199999999999996
+"table_regression",2056,"r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm","3","bulk",0.0599999999999987
+"table_regression",2081,"change tokens render under nested = TRUE and are inert without it","2","beyond",0.130000000000003
+"table_regression",2103,"digits controls B/SE/CI/t decimals; p and AIC are untouched","3","bulk",0.0500000000000007
+"table_regression",2128,"p_digits formats rendered p cells APA-strict at any width","3","bulk",0.0899999999999999
+"table_regression",2145,"fit_digits controls R² decimals while AIC keeps ic_digits","3","bulk",0.0800000000000018
+"table_regression",2167,"effect_size_digits scopes partial_f2 only (B keeps digits)","3","bulk",0.0700000000000003
+"table_regression",2188,"default output – documented class vector and rendering attributes","3","bulk",0.0700000000000003
+"table_regression",2202,"provenance attributes outcome / model_ids are carried","2","beyond",0.109999999999999
+"table_regression",2218,"title and note attributes are post-processable before printing","3","bulk",0.0600000000000023
+"table_regression",2231,"factor_layout grouped applies to character predictors","3","bulk",0.0499999999999972
+"table_regression",2245,"factor_layout grouped applies to logical predictors","2","beyond",0.140000000000001
+"table_regression",2270,"reference_label defaults to '(ref.)' and only acts in row mode","3","bulk",0.380000000000003
+"table_regression",2314,"align – CI anchors are each column-aligned in decimal mode","3","bulk",0.0599999999999987
+"table_regression",2341,"align – 'right' right-justifies, 'center' centers, in print","2","beyond",0.140000000000001
+"table_regression",2387,"AME extraction honors the fit's weights","1","oracle",0.389999999999997
+"table_regression",2438,"weighted AME identical under na.omit and na.exclude","1","oracle",0.240000000000002
+"table_regression",2482,"polr frequency weights reach the per-category AME","1","oracle",0.539999999999999
+"table_regression",2540,"output = 'excel' returns the file path invisibly","1","render",0.719999999999999
+"table_regression",2555,"output = 'word' returns the file path invisibly","1","render",0.75
+"table_regression",2569,"output = 'long' returns the documented tbl_df","3","bulk",0.0500000000000007
+"table_regression",2581,"output = 'flextable' carries the spicy_flextable tag","1","render",0.210000000000001
+"table_regression",2590,"console shows bare deduped labels; data.frame keeps unique names","2","beyond",0.129999999999999
+"table_regression",2612,"print honors the padding attr unless overridden at print time","2","beyond",0.110000000000003
+"table_regression",2629,"boot_n – full validation domain and the 1000-replicate default","1","boot",0.25
+"table_regression",2663,"align = 'auto' is removed: classed error, not a silent default","3","bulk",0.00999999999999801
+"table_regression",2674,"ci_level relabels the CI header and widens the bounds","3","bulk",0.0700000000000003
+"table_regression",2693,"eta2 and omega2 CI cells are identical; reference row stays blank","2","beyond",0.120000000000001
+"table_regression",2741,"both bodies print the block caption, not the block identity","3","bulk",0.52
+"table_regression",2778,"p_digits must be at least 1, as in the descriptive tables","3","bulk",0.0700000000000003
+"table_regression",2798,"an output path is a single path with the extension of its format","2","beyond",0.599999999999998
+"table_regression_models",93,"tidy / glance / as_structured / as.data.frame work for every registry family","1","model",16.53
