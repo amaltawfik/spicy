@@ -542,7 +542,7 @@ footer line <code>Reference categories: ...</code>.</p></dd>
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>
 <dd><p>Character vector of tokens for the
 model-level rows below the coefficients; row order follows
-token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>, <code><a href="https://rdrr.io/pkg/estimatr/man/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>: <code>c("nobs", "r2", "adj_r2")</code>. <code><a href="https://rdrr.io/pkg/estimatr/man/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code> gets <code>"nobs"</code> alone –
+token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>, <code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>: <code>c("nobs", "r2", "adj_r2")</code>. <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code> gets <code>"nobs"</code> alone –
 the 2SLS R-squared is not the classical one.</p></li>
 <li><p><code>glm</code>, ordinal <code>polr</code> / <code>clm</code>:
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code> (McFadden = Stata <code>ologit</code> default,

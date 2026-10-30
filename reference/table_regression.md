@@ -463,9 +463,9 @@ table_regression(
   class-aware:
 
   - `lm`,
-    [`estimatr::lm_robust()`](https://rdrr.io/pkg/estimatr/man/lm_robust.html):
+    [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html):
     `c("nobs", "r2", "adj_r2")`.
-    [`estimatr::iv_robust()`](https://rdrr.io/pkg/estimatr/man/iv_robust.html)
+    [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
     gets `"nobs"` alone – the 2SLS R-squared is not the classical one.
 
   - `glm`, ordinal `polr` / `clm`:
