@@ -523,24 +523,24 @@ test_that("show_columns tokens drive the typed columns", {
   expect_identical(
     vapply(s$col_meta, `[[`, character(1), "token"),
     c(
-      Med = "med",
+      Mdn = "med",
       IQR = "iqr",
-      `Med [Q1, Q3]` = "med_iqr",
+      `Mdn [Q1, Q3]` = "med_iqr",
       Q1 = "q1",
       Q3 = "q3",
-      `Med 95% CI LL` = "med_ci",
-      `Med 95% CI UL` = "med_ci",
+      `Mdn 95% CI LL` = "med_ci",
+      `Mdn 95% CI UL` = "med_ci",
       n = "n"
     )
   )
   # The compact median cell is composite: the body keeps the median,
-  # the override the "Med [Q1, Q3]" string.
+  # the override the "Mdn [Q1, Q3]" string.
   expect_equal(
-    s$body[["Med [Q1, Q3]"]],
-    s$body[["Med"]]
+    s$body[["Mdn [Q1, Q3]"]],
+    s$body[["Mdn"]]
   )
-  expect_false(anyNA(s$col_meta[["Med [Q1, Q3]"]]$display_cells))
-  # The keys keep "Med"; the label a reader sees is the APA "Mdn".
+  expect_false(anyNA(s$col_meta[["Mdn [Q1, Q3]"]]$display_cells))
+  # The keys are the headers, the APA "Mdn" included.
   expect_identical(s$ci_pairs[[1L]]$label, "Mdn 95% CI")
 
   expect_faithful(s, con_display(tbl))
@@ -557,9 +557,9 @@ test_that("a statistic another variable displays is absent, not undefined", {
 
   # `age` has no median row: the cell is NA with NO status (absent,
   # displayed blank), never "undefined".
-  expect_true(is.na(s$body$Med[1L]))
-  expect_identical(spicy:::.struct_cell_status(s, "Med")[1L], "")
-  expect_false(is.na(s$body$Med[2L]))
+  expect_true(is.na(s$body$Mdn[1L]))
+  expect_identical(spicy:::.struct_cell_status(s, "Mdn")[1L], "")
+  expect_false(is.na(s$body$Mdn[2L]))
   expect_faithful(s, con_display(tbl))
 })
 

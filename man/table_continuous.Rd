@@ -455,7 +455,7 @@ prints several numbers keeps the first in its column and the
 others beside it under their names in the long output: \code{df} and
 \code{df.residual} after \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper}
 after \code{"ES"} when its interval is printed, \code{q1} and \code{q3} after
-\code{"Med [Q1, Q3]"}.
+\code{"Mdn [Q1, Q3]"}.
 \item \code{"long"}: a plain \code{data.frame} with one row per
 \verb{(variable x group)} and columns \code{variable}, \code{label}, \code{group} and
 \code{.group_role} (the role of \code{group}: \code{"group"}, or \code{"missing"} for
@@ -570,11 +570,12 @@ tokens, and the column each one produces:\tabular{lll}{
 
 The column is the header the table prints. In \code{output = "data.frame"}, \link[=as.data.frame.spicy_continuous_table]{as.data.frame()}
 and \code{\link[=as_structured]{as_structured()}}, the columns are named by their keys, the same
-in every display language: the printed header in English, except for
-the median, whose keys are \code{Med}, \code{Med [Q1, Q3]} and
-\verb{Med <level>\% CI LL} / \code{UL} under the printed \code{Mdn}. The note under
-the table defines the abbreviations these headers show, as the style
-in force asks (see \code{abbreviations} in \code{\link[=spicy_style]{spicy_style()}}).
+in every display language and style: the default header in English
+(\code{M}; \code{Mdn}, \code{Mdn [Q1, Q3]}, \verb{Mdn <level>\% CI LL} / \code{UL} for the
+median), where the \code{"jama"} and \code{"lancet"} styles print \code{Mean} and
+\code{Median}. The note
+under the table defines the abbreviations these headers show, as the
+style in force asks (see \code{abbreviations} in \code{\link[=spicy_style]{spicy_style()}}).
 
 Quartiles use \code{\link[stats:quantile]{stats::quantile()}}'s default type 7. \code{"iqr"} is the
 width (one number, the rank mirror of \code{SD}); \code{"med_iqr"} shows the

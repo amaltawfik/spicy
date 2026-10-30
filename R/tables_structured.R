@@ -769,7 +769,7 @@
 # string and whose role is the key.
 #
 # `display_df` is the very frame the print method renders: the
-# composite cells ("Med [Q1, Q3]", the test statistic, the effect
+# composite cells ("Mdn [Q1, Q3]", the test statistic, the effect
 # size) are read from it, so the typed view and the console can never
 # word the same cell differently.
 #

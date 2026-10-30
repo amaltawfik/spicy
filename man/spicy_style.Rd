@@ -165,7 +165,8 @@ name or as the object returned here, and by
 }
 \section{What a theme claims, and what it does not}{
 A theme covers \strong{numeric formatting conformity}, the word that opens
-the table note and the abbreviations that note defines, \strong{only} --
+the table note, the abbreviations that note defines and, in English,
+how the mean and the median are headed, \strong{only} --
 not full editorial conformity. It does not check reporting
 guidelines, table structure, footnote symbols, units, or anything else
 a journal's instructions ask of a manuscript. Each theme below
@@ -274,6 +275,8 @@ that do not carry "expand at first mention" (\emph{n}, \emph{N}, \emph{P}, \emph
 \eqn{\rho}{rho}), \emph{B} and \emph{M} among them, which that section
 writes \emph{b} and \eqn{\bar{x}}{x-bar}: it lists them as usable
 "without expansion except where noted".
+\item the mean and the median headed \code{Mean} and \code{Median}, not \code{M} and
+\code{Mdn} -- section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.
 }
 
 Not encoded: everything else in that document (percentages carrying
@@ -356,6 +359,9 @@ rule}: they are those of the model tables of the two formatting
 guidelines ("Data are n (\%), median (IQR), mean (SD) ...
 BMI=body-mass index.") and of 35 tables of 13 research articles
 published in 2025-2026, checked on 2026-10-20.
+\item the mean and the median headed \code{Mean} and \code{Median}, not \code{M} and
+\code{Mdn}, as the "median (IQR), mean (SD)" of the same model tables
+(not a written rule).
 }
 
 Not encoded: the empty-cell filler, the ban on p-values in a

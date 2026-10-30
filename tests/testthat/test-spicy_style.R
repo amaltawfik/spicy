@@ -603,6 +603,88 @@ test_that("the abbreviations lever is validated, printed, and carried", {
   )
 })
 
+test_that("jama and lancet head the mean and the median in full, keys unchanged", {
+  # The AMA Manual of Style and the Lancet model tables write "mean (SD)"
+  # and "median (IQR)" (2026-10-30). Display only: the keys are the
+  # English default headers, and the default, apa, and French keep their
+  # own word.
+  keys <- c("M", "Mdn", "Mdn [Q1, Q3]")
+  tokens <- c("m", "med", "med_iqr")
+  d <- fixed_data()
+  builders <- list(
+    table_continuous = function(...) {
+      table_continuous(d, select = mpg, show_columns = tokens, ...)
+    },
+    table_outcome = function(...) {
+      table_outcome(d, mpg, select = am, show_columns = tokens, ...)
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~wt, data = d)
+    builders$table_continuous_svy <- function(...) {
+      table_continuous_svy(des, select = mpg, show_columns = tokens, ...)
+    }
+  }
+  headers <- function(x) {
+    vapply(as_structured(x)$col_meta[keys], `[[`, character(1), "display_label")
+  }
+  for (fn in names(builders)) {
+    for (th in c("default", spicy_style_names())) {
+      style <- if (th != "default") th
+      x <- quietly(builders[[fn]](style = style))
+      info <- paste(fn, th)
+      spelled <- th %in% c("jama", "lancet")
+      expect_true(all(keys %in% names(as.data.frame(x))), info = info)
+      expect_identical(
+        unname(headers(x)),
+        if (spelled) c("Mean", "Median", "Median [Q1, Q3]") else keys,
+        info = info
+      )
+      expect_identical(
+        grepl("Median [Q1, Q3]", console(x), fixed = TRUE),
+        spelled,
+        info = info
+      )
+    }
+  }
+  # The spanner over the means of table_continuous_lm(), whose keys stay
+  # "M (level)".
+  for (th in c("default", spicy_style_names())) {
+    style <- if (th != "default") th
+    x <- quietly(table_continuous_lm(d, select = mpg, by = am, style = style))
+    expect_true(
+      all(c("M (auto)", "M (manual)") %in% names(as.data.frame(x))),
+      info = th
+    )
+    expect_identical(
+      grepl("Mean", console(x), fixed = TRUE),
+      th %in% c("jama", "lancet"),
+      info = th
+    )
+  }
+  # Nor does the lancet note define them ("M=mean." before).
+  x <- quietly(builders$table_continuous(style = "lancet"))
+  expect_false(grepl("=mean", attr(x, "note"), fixed = TRUE))
+  # The note neither defines the spelled-out word nor names the symbol.
+  x <- quietly(table_continuous(
+    d,
+    select = mpg,
+    show_columns = c("med", "med_ci"),
+    style = "jama"
+  ))
+  expect_false(grepl("Mdn", attr(x, "note"), fixed = TRUE))
+  expect_match(attr(x, "note"), "Median 95% CI = ", fixed = TRUE)
+  # A translation keeps its own word under the theme.
+  withr::local_options(spicy.language = "fr")
+  x <- quietly(builders$table_continuous(style = "jama"))
+  expect_identical(headers(x)[["Mdn"]], "Méd.")
+  expect_identical(headers(x)[["M"]], spicy_str("header_mean"))
+  expect_true(all(keys %in% names(as.data.frame(x))))
+})
+
 test_that("the minus_sign lever is validated and printed, and no theme sets it", {
   expect_identical(spicy_style(minus_sign = "ascii")$minus_sign, "ascii")
   expect_identical(

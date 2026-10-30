@@ -255,7 +255,7 @@ unclass_spicy_continuous_table <- function(x) {
 #' their names in the long output: `df` and `df.residual` after the test
 #' statistic `"Test"`, `es_ci_lower` and `es_ci_upper` after the effect
 #' size `"ES"` when its interval is printed, `q1` and `q3` after
-#' `"Med [Q1, Q3]"`. The note, as printed, is kept in `attr(, "note")`.
+#' `"Mdn [Q1, Q3]"`. The note, as printed, is kept in `attr(, "note")`.
 #' `as_tibble()` returns the same table as a tibble.
 #'
 #' For every statistic the table computes, whatever it displays, use

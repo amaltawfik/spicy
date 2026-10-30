@@ -134,9 +134,9 @@
 #' then), and that of [table_continuous_lm()] and [table_outcome()] the
 #' effect-size columns; the survey tables and [table_multiresponse()]
 #' compute neither. `glance()` has a fixed set of columns.
-#' `p_value = FALSE` removes the test columns, except in
-#' [table_continuous_lm()], whose long output is that of its models: they
-#' stay there, `NA`.
+#' `p_value = FALSE` removes from the long output the test columns that
+#' neither the statistic nor an effect size needs; `glance()` keeps them,
+#' `NA`, as does the `tidy()` of [table_continuous_lm()].
 #' Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`.
 #' The long output carries them as well where its rows are models of
 #' their own: in [table_continuous_lm()], one model per outcome (the fit

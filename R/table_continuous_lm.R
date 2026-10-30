@@ -274,9 +274,9 @@
 #'   the wide and rendered outputs. `NULL` (the default) shows it whenever
 #'   `by` is supplied, as in the rest of the family; `by` is required
 #'   here, so `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it:
-#'   `output = "long"`, `tidy()` and `glance()` then keep their columns
-#'   with `p.value` `NA`, and `test_type`, `statistic`, `df` and
-#'   `df.residual` too unless `statistic = TRUE`.
+#'   `output = "long"` then drops `p.value`, and `test_type`,
+#'   `statistic`, `df` and `df.residual` too unless `statistic = TRUE`;
+#'   `tidy()` and `glance()` keep theirs, `NA`.
 #' @param show_n Logical. If `TRUE`, includes an unweighted `n` column in the
 #'   wide and rendered outputs. Defaults to `TRUE`.
 #' @param show_weighted_n Logical. If `TRUE` and `weights` is supplied,
@@ -507,8 +507,8 @@
 #'     `estimate_ci_upper`), inferential output (`test_type`, `statistic`,
 #'     `df`, `df.residual`, `p.value`: the *F* of a factor has both
 #'     degrees of freedom, the *t* of a contrast or a slope has its own in
-#'     `df` and none in `df.residual`), effect size with its CI
-#'     (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
+#'     `df` and none in `df.residual`; see `p_value`), effect size with
+#'     its CI (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
 #'     (`r.squared`, `adj.r.squared`, on the first row of an outcome),
 #'     the size of the model (`nobs`, `weighted_nobs`, repeated on each
 #'     row of an outcome), and `boot_n_valid`, the number of bootstrap

@@ -34,7 +34,7 @@ numbers keeps the first in its column and the others beside it under
 their names in the long output: \code{df} and \code{df.residual} after the test
 statistic \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper} after the effect
 size \code{"ES"} when its interval is printed, \code{q1} and \code{q3} after
-\code{"Med [Q1, Q3]"}. The note, as printed, is kept in \code{attr(, "note")}.
+\code{"Mdn [Q1, Q3]"}. The note, as printed, is kept in \code{attr(, "note")}.
 \code{as_tibble()} returns the same table as a tibble.
 }
 \details{

@@ -3077,7 +3077,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   margin is flagged `col_meta$<col>$total`.
 #'
 #' Cells the console builds from more than one number -- a
-#' `"Med [Q1, Q3]"`, a test gloss, an effect size with its interval --
+#' `"Mdn [Q1, Q3]"`, a test gloss, an effect size with its interval --
 #' keep their numeric anchor in `body` and their exact printed string
 #' in `col_meta$<col>$display_cells`. So does a cell of a variable that a
 #' named `digits` gives decimals other than the column's `precision`,

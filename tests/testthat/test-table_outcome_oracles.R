@@ -195,7 +195,7 @@ test_that("we name the outcome, and we carry a p by default", {
 })
 
 test_that("the composite cell is ours, punctuation included", {
-  # "Med [Q1, Q3]" against gtsummary's "median (p25, p75)": frozen
+  # "Mdn [Q1, Q3]" against gtsummary's "median (p25, p75)": frozen
   # brackets (decision 25), and a semicolon separator under a comma
   # decimal mark, where a comma would serve two roles at once.
   tbl <- .too_quiet(table_outcome(
@@ -204,7 +204,7 @@ test_that("the composite cell is ours, punctuation included", {
     select = sex,
     show_columns = c("med_iqr", "n")
   ))
-  cell <- attr(tbl, "display_df")[["Med [Q1, Q3]"]][[3L]]
+  cell <- attr(tbl, "display_df")[["Mdn [Q1, Q3]"]][[3L]]
   expect_match(cell, "^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
   tbl_eu <- .too_quiet(table_outcome(
     .too_sh(),
@@ -213,6 +213,6 @@ test_that("the composite cell is ours, punctuation included", {
     show_columns = c("med_iqr", "n"),
     decimal_mark = ","
   ))
-  cell_eu <- attr(tbl_eu, "display_df")[["Med [Q1, Q3]"]][[3L]]
+  cell_eu <- attr(tbl_eu, "display_df")[["Mdn [Q1, Q3]"]][[3L]]
   expect_match(cell_eu, "^[0-9,]+ \\[[0-9,]+; [0-9,]+\\]$")
 })

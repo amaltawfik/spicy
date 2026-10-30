@@ -115,9 +115,9 @@ column names unless `labels = TRUE`, and their machine outputs take the
 
 ### Headers and columns
 
-* `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`
-  head the median `Mdn` (was `Med`; `Méd.` in French), and their data
-  frames name it `Med`, `Med [Q1, Q3]`, and `Med 95% CI LL`.
+* The continuous tables name the median `Mdn` in headers and data frames
+  (`Mdn [Q1, Q3]`, `Mdn 95% CI LL`; was `Med`), and print `Median` and
+  `Mean` under `jama` and `lancet`: a script indexing `Med` must change.
 
 * In French, the effect size of `table_continuous()` is headed
   `Taille d'effet` (was `ES`, which now heads the standard errors of the
@@ -471,9 +471,9 @@ column names unless `labels = TRUE`, and their machine outputs take the
   `table_continuous_lm()` render one header row, as do `table_outcome()`
   without intervals and `table_categorical_svy()` without `by`.
 
-* With `p_value = FALSE`, `output = "long"` keeps no p-value in
-  `table_continuous()`, `table_outcome()`, and the survey twins, and an
-  `NA` test in `table_continuous_lm()`, whose default is now `NULL`.
+* With `p_value = FALSE`, `output = "long"` keeps no test column in
+  `table_continuous()`, `table_outcome()`, the survey twins, and
+  `table_continuous_lm()` (default `NULL`); `glance()` keeps them `NA`.
 
 * `table_continuous_lm()` fits no model to an outcome with no variance
   and shows a dash for what an exact fit leaves undefined, and no longer

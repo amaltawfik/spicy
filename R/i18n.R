@@ -774,11 +774,19 @@
   # HEADER a reader sees. `header_variable` is shared with lot A.
   header_group = "Group",
   header_mean = "M",
+  # The mean spelled out, in place of "M" under the "jama" and "lancet"
+  # themes (`.style_header()`), which read the AMA and Lancet "mean (SD)".
+  # A header only: the column key stays "M".
+  header_mean_spelled = "Mean",
   header_sd = "SD",
   # "Mdn", the symbol of the APA Publication Manual (7th ed., Table 6.5),
-  # since 0.14.0 (ADR of 2026-10-20, decision 5). The frozen column key of
-  # the median stays "Med" (`.continuous_token_columns()`).
+  # since 0.14.0 (ADR of 2026-10-20, decision 5), and the frozen column key
+  # of the median with it, as every key equals its English header.
   header_median = "Mdn",
+  # The median spelled out, in place of "Mdn" under the "jama" and "lancet"
+  # themes (`.style_header()`), which read the AMA and Lancet "median
+  # (IQR)". A header only: the column key stays "Mdn".
+  header_median_spelled = "Median",
   header_iqr = "IQR",
   header_q1 = "Q1",
   header_q3 = "Q3",

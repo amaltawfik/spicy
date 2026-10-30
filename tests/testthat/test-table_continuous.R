@@ -5073,7 +5073,7 @@ test_that("a named list gives each variable its own columns, blanks the rest", {
     tokens_union = attr(out, "show_columns"),
     tokens_by_var = attr(out, "show_columns_by_var")
   )
-  expect_named(display, c("Variable", "M", "SD", "Med [Q1, Q3]", "n"))
+  expect_named(display, c("Variable", "M", "SD", "Mdn [Q1, Q3]", "n"))
   # Structural blank (""), never the undefined-statistic en-dash.
   expect_identical(display$M[1:2], c("", ""))
   expect_identical(display[[4]][3], "")
@@ -5344,12 +5344,12 @@ test_that("show_columns reaches every output engine with the same columns", {
       "Group",
       "M",
       "SD",
-      "Med",
-      "Med [Q1, Q3]",
+      "Mdn",
+      "Mdn [Q1, Q3]",
       "95% CI LL",
       "95% CI UL",
-      "Med 95% CI LL",
-      "Med 95% CI UL",
+      "Mdn 95% CI LL",
+      "Mdn 95% CI UL",
       "n",
       "p"
     )

@@ -319,9 +319,9 @@ wide and rendered outputs. Defaults to \code{FALSE}.}
 the wide and rendered outputs. \code{NULL} (the default) shows it whenever
 \code{by} is supplied, as in the rest of the family; \code{by} is required
 here, so \code{NULL} means \code{TRUE}. Pass \code{p_value = FALSE} to suppress it:
-\code{output = "long"}, \code{tidy()} and \code{glance()} then keep their columns
-with \code{p.value} \code{NA}, and \code{test_type}, \code{statistic}, \code{df} and
-\code{df.residual} too unless \code{statistic = TRUE}.}
+\code{output = "long"} then drops \code{p.value}, and \code{test_type},
+\code{statistic}, \code{df} and \code{df.residual} too unless \code{statistic = TRUE};
+\code{tidy()} and \code{glance()} keep theirs, \code{NA}.}
 
 \item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column in the
 wide and rendered outputs. Defaults to \code{TRUE}.}
@@ -621,8 +621,8 @@ fitted means and their CI (\code{emmean}, \code{emmean_se}, \code{emmean_ci_lowe
 \code{estimate_ci_upper}), inferential output (\code{test_type}, \code{statistic},
 \code{df}, \code{df.residual}, \code{p.value}: the \emph{F} of a factor has both
 degrees of freedom, the \emph{t} of a contrast or a slope has its own in
-\code{df} and none in \code{df.residual}), effect size with its CI
-(\code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit
+\code{df} and none in \code{df.residual}; see \code{p_value}), effect size with
+its CI (\code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit
 (\code{r.squared}, \code{adj.r.squared}, on the first row of an outcome),
 the size of the model (\code{nobs}, \code{weighted_nobs}, repeated on each
 row of an outcome), and \code{boot_n_valid}, the number of bootstrap

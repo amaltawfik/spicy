@@ -572,7 +572,7 @@ test_that("the read-through headers and row labels follow the language", {
   )
   con <- table_continuous(sochealth, select = bmi, show_columns = c("med", "n"))
   expect_identical(
-    as_structured(con)$col_meta[["Med"]]$display_label,
+    as_structured(con)$col_meta[["Mdn"]]$display_label,
     "M\u00E9d."
   )
   fit <- stats::glm(

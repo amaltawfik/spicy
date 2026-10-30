@@ -550,7 +550,7 @@ unclass_spicy_continuous_lm_table <- function(x) {
   dfs <- .lm_df_cols(out$test_type, out$df, out$df.residual)
   out$df <- dfs$df
   out$df.residual <- dfs$df.residual
-  out <- .tclm_hide_test(out, x)
+  out <- .tclm_hide_test(out, x, drop = TRUE)
   attr(out, "note") <- attr(x, "note", exact = TRUE)
   out
 }
@@ -559,16 +559,20 @@ unclass_spicy_continuous_lm_table <- function(x) {
 # machine outputs carry no p-value the table does not report, and none of
 # the test (its type, statistic and degrees of freedom) unless the table
 # shows the statistic. The model is fit all the same, for the means and
-# the contrast, so the columns stay, NA: one shape for the long output,
-# tidy() and glance(), whatever the table shows. `x` is the table, whose
-# attributes say what it shows; `df` a frame under the published names.
-.tclm_hide_test <- function(df, x) {
+# the contrast. The long output drops those columns, as the other
+# descriptive tables do (`drop = TRUE`); tidy() and glance() keep their
+# fixed schema, the columns NA. `x` is the table, whose attributes say
+# what it shows; `df` a frame under the published names.
+.tclm_hide_test <- function(df, x, drop = FALSE) {
   if (!identical(attr(x, "show_p_value", exact = TRUE), FALSE)) {
     return(df)
   }
   hide <- "p.value"
   if (!isTRUE(attr(x, "show_statistic", exact = TRUE))) {
     hide <- c(hide, "test_type", "statistic", "df", "df.residual")
+  }
+  if (drop) {
+    return(df[setdiff(names(df), hide)])
   }
   for (nm in intersect(hide, names(df))) {
     df[[nm]][] <- NA

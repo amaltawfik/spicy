@@ -255,7 +255,7 @@
 
   if (identical(by_type, "categorical")) {
     # Each mean is headed by its level, under `spanner_label`.
-    mean_hdr <- spicy_str("header_mean")
+    mean_hdr <- .style_header("header_mean")
     for (lev in first_block$level) {
       add(
         .lm_key_emmean(lev),

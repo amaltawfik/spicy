@@ -539,20 +539,18 @@ test_that("p_value = FALSE leaves no p-value in the machine outputs", {
   }
   on <- build(output = "long")
   off <- build(p_value = FALSE, output = "long")
-  # The same shape, the test NA; the means and the contrast stay.
-  expect_identical(names(off), names(on))
-  for (nm in test_cols) {
-    expect_true(all(is.na(off[[nm]])), info = nm)
-  }
+  # The test columns go, as in the rest of the family; the means and the
+  # contrast stay.
+  expect_identical(names(off), setdiff(names(on), test_cols))
   expect_false(anyNA(on$p.value))
   expect_identical(off$emmean, on$emmean)
   expect_identical(off$estimate, on$estimate)
   # A statistic the table shows keeps its test; only the p-value goes.
   shown <- build(p_value = FALSE, statistic = TRUE, output = "long")
-  expect_true(all(is.na(shown$p.value)))
+  expect_identical(names(shown), setdiff(names(on), "p.value"))
   expect_identical(shown$statistic, on$statistic)
   expect_identical(shown$test_type, on$test_type)
-  # tidy() and glance() follow.
+  # tidy() and glance() keep their columns, NA.
   gl <- broom::glance(build(p_value = FALSE))
   expect_identical(names(gl), names(broom::glance(build())))
   for (nm in test_cols) {

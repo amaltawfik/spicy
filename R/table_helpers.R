@@ -1641,7 +1641,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     if (!keep) {
       next
     }
-    s <- it$symbol %||% spicy_str(entry$symbol)
+    s <- it$symbol %||% .style_header(entry$symbol)
     t <- it$term %||% spicy_str(entry$term)
     # Defined once per symbol: "R2 (McFadden)" and "R2 (Nagelkerke)" are
     # two rows of one concept.
@@ -2133,7 +2133,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # and the others in the columns named after them in the long output. The
 # test statistic ("t(1184.50) = -2.38") carries its degrees of freedom,
 # the effect size its interval when the table prints one, and the
-# "Med [Q1, Q3]" cell its two quartiles.
+# "Mdn [Q1, Q3]" cell its two quartiles.
 #
 # `frame` is the compute frame, one row per body row, read with its
 # INTERNAL names (`df1`, `df2`); `es_ci` says whether the effect-size cell

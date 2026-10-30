@@ -363,7 +363,7 @@
 #'     others beside it under their names in the long output: `df` and
 #'     `df.residual` after `"Test"`, `es_ci_lower` and `es_ci_upper`
 #'     after `"ES"` when its interval is printed, `q1` and `q3` after
-#'     `"Med [Q1, Q3]"`.
+#'     `"Mdn [Q1, Q3]"`.
 #'   \item `"long"`: a plain `data.frame` with one row per
 #'     `(variable x group)` and columns `variable`, `label`, `group` and
 #'     `.group_role` (the role of `group`: `"group"`, or `"missing"` for
@@ -453,11 +453,12 @@
 #' The column is the header the table prints. In `output =
 #' "data.frame"`, [as.data.frame()][as.data.frame.spicy_continuous_table]
 #' and [as_structured()], the columns are named by their keys, the same
-#' in every display language: the printed header in English, except for
-#' the median, whose keys are `Med`, `Med [Q1, Q3]` and
-#' `Med <level>% CI LL` / `UL` under the printed `Mdn`. The note under
-#' the table defines the abbreviations these headers show, as the style
-#' in force asks (see `abbreviations` in [spicy_style()]).
+#' in every display language and style: the default header in English
+#' (`M`; `Mdn`, `Mdn [Q1, Q3]`, `Mdn <level>% CI LL` / `UL` for the
+#' median), where the `"jama"` and `"lancet"` styles print `Mean` and
+#' `Median`. The note
+#' under the table defines the abbreviations these headers show, as the
+#' style in force asks (see `abbreviations` in [spicy_style()]).
 #'
 #' Quartiles use [stats::quantile()]'s default type 7. `"iqr"` is the
 #' width (one number, the rank mirror of `SD`); `"med_iqr"` shows the
@@ -2219,7 +2220,7 @@ order_continuous_tokens <- function(tokens) {
 .CON_KEY_CI <- "CI"
 # The median interval prefixes its keys: two columns named "LL" would
 # collide.
-.CON_KEY_MED_PREFIX <- "Med "
+.CON_KEY_MED_PREFIX <- "Mdn "
 
 # The coverage percentage as it enters a frozen column key ("95%"). Four
 # sites built this string independently (the glosses, the display frame,
@@ -2276,7 +2277,7 @@ order_continuous_tokens <- function(tokens) {
   ci_key <- paste0(.continuous_ci_pct(ci_level), " ", .CON_KEY_CI)
   med_ci_key <- paste0(.CON_KEY_MED_PREFIX, ci_key)
   ci_hdr <- .continuous_ci_label(ci_level, decimal_mark)
-  med_hdr <- spicy_str("header_median")
+  med_hdr <- .style_header("header_median")
   # "Mdn 95% CI": the same statistic-then-interval template the
   # regression family uses for "f2 95% CI".
   med_ci_hdr <- spicy_fmt("header_with_ci_suffix", med_hdr, ci_hdr)
@@ -2300,7 +2301,7 @@ order_continuous_tokens <- function(tokens) {
   list(
     m = list(list(
       name = "M",
-      label = spicy_str("header_mean"),
+      label = .style_header("header_mean"),
       field = "mean"
     )),
     sd = list(list(
@@ -2316,17 +2317,17 @@ order_continuous_tokens <- function(tokens) {
       label = spicy_str("header_se"),
       field = "se"
     )),
-    med = list(list(name = "Med", label = med_hdr, field = "median")),
+    med = list(list(name = "Mdn", label = med_hdr, field = "median")),
     iqr = list(list(
       name = "IQR",
       label = spicy_str("header_iqr"),
       field = "iqr"
     )),
     # Composite: the body keeps the median, the display override
-    # carries the "Med [Q1, Q3]" string no single number expresses.
+    # carries the "Mdn [Q1, Q3]" string no single number expresses.
     # The header composes from the same three atoms.
     med_iqr = list(list(
-      name = "Med [Q1, Q3]",
+      name = "Mdn [Q1, Q3]",
       label = spicy_fmt(
         "header_med_iqr_composite",
         med_hdr,

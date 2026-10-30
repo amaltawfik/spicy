@@ -2243,6 +2243,49 @@ test_that("the degrees of freedom follow the statistic", {
   )
 })
 
+test_that("`p_value = FALSE` drops the test from the long output, not from glance()", {
+  skip_if_not_installed("broom")
+  # The family rule (ADR of 2026-10-17), table_continuous_lm() included
+  # since 2026-10-30: the long output keeps no column of a test the table
+  # does not report, and glance() keeps its fixed schema, NA.
+  test_cols <- c("test_type", "statistic", "df", "df.residual", "p.value")
+  d <- sochealth
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  builders <- list(
+    table_continuous = function(...) {
+      q(table_continuous(d, select = bmi, by = sex, ...))
+    },
+    table_outcome = function(...) {
+      q(table_outcome(d, outcome = bmi, select = sex, ...))
+    },
+    table_continuous_lm = function(...) {
+      q(table_continuous_lm(d, select = bmi, by = sex, ...))
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    builders$table_continuous_svy <- function(...) {
+      q(table_continuous_svy(des, select = bmi, by = sex, ...))
+    }
+    builders$table_categorical_svy <- function(...) {
+      q(table_categorical_svy(des, select = smoking, by = sex, ...))
+    }
+  }
+  for (fn in names(builders)) {
+    b <- builders[[fn]]
+    on <- b(output = "long")
+    off <- b(p_value = FALSE, output = "long")
+    expect_true("p.value" %in% names(on), info = fn)
+    expect_identical(names(off), setdiff(names(on), test_cols), info = fn)
+    gl <- broom::glance(b(p_value = FALSE))
+    expect_identical(names(gl), names(broom::glance(b())), info = fn)
+    expect_true(all(is.na(gl$p.value)), info = fn)
+  }
+})
+
 test_that("tidy() of a descriptive table always carries `group`", {
   skip_if_not_installed("broom")
   d <- sochealth
@@ -2316,6 +2359,49 @@ test_that("`output = \"data.frame\"` is the displayed table, as.data.frame() of 
       info = fn
     )
   }
+})
+
+test_that("the median columns are named by their English header, `Mdn`", {
+  # Every key of `output = "data.frame"` is its English header, the
+  # median's included (2026-10-30; 0.13.0 named them "Med").
+  d <- sochealth
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  sc <- c("med", "med_iqr")
+  want <- c(spicy_str("header_median"), "Mdn [Q1, Q3]")
+  frames <- list(
+    table_continuous = q(table_continuous(
+      d,
+      select = bmi,
+      show_columns = c(sc, "med_ci"),
+      output = "data.frame"
+    )),
+    table_outcome = q(table_outcome(
+      d,
+      outcome = bmi,
+      select = sex,
+      show_columns = sc,
+      output = "data.frame"
+    ))
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    frames$table_continuous_svy <- q(table_continuous_svy(
+      des,
+      select = bmi,
+      show_columns = sc,
+      output = "data.frame"
+    ))
+  }
+  for (fn in names(frames)) {
+    expect_true(all(want %in% names(frames[[fn]])), info = fn)
+    expect_false(any(startsWith(names(frames[[fn]]), "Med")), info = fn)
+  }
+  expect_true(all(
+    c("Mdn 95% CI LL", "Mdn 95% CI UL") %in% names(frames$table_continuous)
+  ))
 })
 
 test_that("tidy() reports proportions between 0 and 1", {
@@ -4571,6 +4657,17 @@ test_that("every table function refuses data with no rows, first", {
       }
     }
     s <- it$symbol %||% spicy_str(reg[[it$id]]$symbol)
+    # jama and lancet head the mean and the median "Mean" and "Median" in
+    # English, which need no definition; a translation keeps its symbol.
+    spelled <- c(mean = "Mean", median = "Median")
+    if (
+      it$id %in%
+        names(spelled) &&
+        rule %in% c("jama", "lancet") &&
+        identical(getOption("spicy.language"), "en")
+    ) {
+      s <- spelled[[it$id]]
+    }
     t <- it$term %||% spicy_str(reg[[it$id]]$term)
     if (identical(tolower(s), tolower(t)) || any(ids == it$id & sym == s)) {
       next

@@ -91,7 +91,8 @@
 #' # What a theme claims, and what it does not
 #'
 #' A theme covers **numeric formatting conformity**, the word that opens
-#' the table note and the abbreviations that note defines, **only** --
+#' the table note, the abbreviations that note defines and, in English,
+#' how the mean and the median are headed, **only** --
 #' not full editorial conformity. It does not check reporting
 #' guidelines, table structure, footnote symbols, units, or anything else
 #' a journal's instructions ask of a manuscript. Each theme below
@@ -200,6 +201,8 @@
 #'     \eqn{\rho}{rho}), *B* and *M* among them, which that section
 #'     writes *b* and \eqn{\bar{x}}{x-bar}: it lists them as usable
 #'     "without expansion except where noted".
+#'   \item the mean and the median headed `Mean` and `Median`, not `M` and
+#'     `Mdn` -- section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.
 #' }
 #'
 #' Not encoded: everything else in that document (percentages carrying
@@ -280,6 +283,9 @@
 #'     guidelines ("Data are n (%), median (IQR), mean (SD) ...
 #'     BMI=body-mass index.") and of 35 tables of 13 research articles
 #'     published in 2025-2026, checked on 2026-10-20.
+#'   \item the mean and the median headed `Mean` and `Median`, not `M` and
+#'     `Mdn`, as the "median (IQR), mean (SD)" of the same model tables
+#'     (not a written rule).
 #' }
 #'
 #' Not encoded: the empty-cell filler, the ban on p-values in a
@@ -918,6 +924,11 @@ spicy_style <- function(
           "SE, CI and the symbols of section 19.6 not expanded (AMA Manual ",
           "of Style, 11th edition, sections 4.1.4.10, 13.11 and 19.6)"
         ),
+        paste0(
+          "the mean and the median headed \"Mean\" and \"Median\": the AMA ",
+          "Manual of Style writes \"mean (SD)\" and \"median (IQR)\" in full ",
+          "(11th edition, section 4.1.5)"
+        ),
         "everything else in the source is table construction, not number format"
       ),
       # The abbreviations of the note (R/table_helpers.R,
@@ -930,6 +941,16 @@ spicy_style <- function(
       # expand") and section 19.6 (dev/journal_styles_sources.md, section
       # 5 ter).
       abbrev_rule = "jama",
+      # The headers the theme writes in place of the English default, key
+      # for key (`.style_header()`): the AMA Manual of Style, 11th edition,
+      # section 4.1.5, p. 128, writes "mean (SD)" and "median (IQR)" in
+      # full in the stub, so neither M nor Mdn is an abbreviation there
+      # (dev/journal_styles_sources.md, section 5 ter). Display only: the
+      # column keys stay "M" and "Mdn".
+      headers = c(
+        header_mean = "header_mean_spelled",
+        header_median = "header_median_spelled"
+      ),
       # "All P values should be reported to exact numbers to 2 digits
       # past the decimal point ... For values lower than .01, present
       # the P value to 3 digits. Express any values lower than .001 as
@@ -1015,6 +1036,11 @@ spicy_style <- function(
           "\"HR=hazard ratio.\" sentence each, alphabetical; n, N, p, SD, SE, ",
           "IQR and CI not (matches the journal's model tables and its ",
           "published tables; not a written rule)"
+        ),
+        paste0(
+          "the mean and the median headed \"Mean\" and \"Median\" (matches ",
+          "the journal's model tables, \"median (IQR), mean (SD)\"; not a ",
+          "written rule)"
         )
       ),
       # The abbreviations of the note: "please list and spell out all
@@ -1026,6 +1052,13 @@ spicy_style <- function(
       # 2026-10-20, give the form and leave n, N, p, SD, SE, IQR and CI
       # undefined (dev/journal_styles_sources.md, section 5 ter).
       abbrev_rule = "lancet",
+      # The mean and the median spelled out, as in the "median (IQR), mean
+      # (SD)" of the same model tables (`.style_header()`; the column keys
+      # stay "M" and "Mdn").
+      headers = c(
+        header_mean = "header_mean_spelled",
+        header_median = "header_median_spelled"
+      ),
       # "Type decimal points midline (ie, 23[U+00B7]4, not 23.4)."
       # "Supply p values to two significant figures (capped at four
       #  decimal places), or p<0[U+00B7]0001."
@@ -1209,6 +1242,9 @@ spicy_style_names <- function() {
   # The abbreviation rule of the theme, for the themes that have one of
   # their own; the others apply spicy's default, the APA rule.
   prov$abbrev_rule <- entry$abbrev_rule
+  # The headers it spells its own way (`.style_header()`), for the themes
+  # that have any.
+  prov$headers <- entry$headers
   attr(out, "provenance") <- prov
   out
 }
@@ -1456,6 +1492,11 @@ print.spicy_style <- function(x, ...) {
   if (!is.null(abbrev_rule)) {
     fmt$abbrev_rule <- abbrev_rule
   }
+  # So do the headers the theme spells its own way.
+  headers <- attr(style, "provenance", exact = TRUE)$headers
+  if (!is.null(headers)) {
+    fmt$headers <- headers
+  }
   if (is.null(style)) {
     # A locale-only push must not mask a frame already in force: before
     # the locale existed, a call with no style pushed nothing and the
@@ -1543,6 +1584,27 @@ print.spicy_style <- function(x, ...) {
 
 
 # ---- Formatter hooks ------------------------------------------------------
+
+# The header of registry key `key` under the style in force: the word a
+# named theme spells its own way (the `headers` of its registry entry,
+# "Mean" and "Median" under "jama" and "lancet") where an English table
+# would print the English default, `spicy_str(key)` otherwise. Another
+# language keeps its word, even one it shares with English (the French
+# "M"), and so does a `spicy.labels` override. Display only: no column
+# key reads it.
+.style_header <- function(key) {
+  out <- spicy_str(key)
+  alt <- .style_fmt()$headers
+  i <- match(key, names(alt))
+  if (
+    is.na(i) ||
+      !identical(getOption("spicy.language", "en"), "en") ||
+      !identical(out, unname(.spicy_strings[[key]]))
+  ) {
+    return(out)
+  }
+  spicy_str(alt[[i]])
+}
 
 # Number of decimals a p-value gets under the active style.
 #   base  the caller's `p_digits`
