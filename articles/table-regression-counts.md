@@ -459,9 +459,9 @@ with `datagrid()`.
 
 Students cluster in labs, cohorts, mentor groups. `vcov = "CR1"` covers
 **both components with one estimator** —
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html) on
-the full score matrix, so the count and zero rows shift together. It is
-the one cluster estimator `vcovCL()` computes here, the CR0 sandwich
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+on the full score matrix, so the count and zero rows shift together. It
+is the one cluster estimator `vcovCL()` computes here, the CR0 sandwich
 scaled by G/(G − 1) for G clusters, so `"CR0"`, `"CR2"` and `"CR3"` are
 refused:
 

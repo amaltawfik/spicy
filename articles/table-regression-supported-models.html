@@ -771,7 +771,7 @@ correction for this class (Cameron &amp; Miller 2015).
 and validated in spicy).</li>
 <li>
 <strong>Ordinal (<code>polr</code>, <code>clm</code>)</strong> –
-<code>CR1</code> via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, no
+<code>CR1</code> via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, no
 <code>HC*</code>; the cut-point thresholds are reweighted from the same
 clustered vcov. A <code>clm</code> with a scale or nominal
 partial-proportional-odds component is model-based only.</li>
@@ -779,9 +779,9 @@ partial-proportional-odds component is model-based only.</li>
 <strong>Categorical</strong> – <code>multinom</code> takes
 <code>CR1</code> (one cluster value per observation),
 <code>mlogit</code> takes <code>CR1</code> (one per choice situation),
-both via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Both refuse <code>HC*</code>:
+both via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Both refuse <code>HC*</code>:
 <code>multinom</code> has no working-residual form for a multi-equation
-model, and for <code>mlogit</code>, <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
+model, and for <code>mlogit</code>, <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>
 computes a result but silently mis-scales the meat for its per-chooser
 score structure.</li>
 <li>
@@ -797,11 +797,11 @@ Lin-Wei grouped-dfbeta sandwich; the <code>rms</code> fits take
 <code>CR0</code> via <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with
 <code>x = TRUE, y = TRUE</code>). Neither has a small-sample factor, and
 <code>CR1</code> to <code>CR3</code> are refused. <code>survreg</code>
-takes <code>CR1</code> via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.</li>
+takes <code>CR1</code> via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.</li>
 <li>
 <strong><code>gam</code> / <code>bam</code>, <code>betareg</code>,
 <code>pscl</code> two-part</strong> – <code>CR1</code> via
-<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
 both components. For <code>gam</code> / <code>bam</code>, spicy forms
 the sandwich itself, from the score and the penalized covariance of the
 fit, and <code>vcovCL()</code> only does the clustering arithmetic. For

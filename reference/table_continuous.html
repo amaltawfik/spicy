@@ -651,7 +651,7 @@ prints several numbers keeps the first in its column and the
 others beside it under their names in the long output: <code>df</code> and
 <code>df.residual</code> after <code>"Test"</code>, <code>es_ci_lower</code> and <code>es_ci_upper</code>
 after <code>"ES"</code> when its interval is printed, <code>q1</code> and <code>q3</code> after
-<code>"Med [Q1, Q3]"</code>.</p></li>
+<code>"Mdn [Q1, Q3]"</code>.</p></li>
 <li><p><code>"long"</code>: a plain <code>data.frame</code> with one row per
 <code>(variable x group)</code> and columns <code>variable</code>, <code>label</code>, <code>group</code> and
 <code>.group_role</code> (the role of <code>group</code>: <code>"group"</code>, or <code>"missing"</code> for
@@ -716,11 +716,12 @@ first row; the table itself starts on row 3.</p>
     <p><code>show_columns</code> selects which statistics the table displays. The
 tokens, and the column each one produces:</p><table class="table table"><tr><td>Token</td><td>Column</td><td>Statistic</td></tr><tr><td><code>"m"</code></td><td><code>M</code></td><td>mean</td></tr><tr><td><code>"sd"</code></td><td><code>SD</code></td><td>standard deviation</td></tr><tr><td><code>"med"</code></td><td><code>Mdn</code></td><td>median (<code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median()</a></code>)</td></tr><tr><td><code>"iqr"</code></td><td><code>IQR</code></td><td>interquartile <em>width</em>, <code>Q3 - Q1</code></td></tr><tr><td><code>"med_iqr"</code></td><td><code>Mdn [Q1, Q3]</code></td><td>median and the interquartile <em>interval</em>, in one compact column</td></tr><tr><td><code>"q1"</code> / <code>"q3"</code></td><td><code>Q1</code> / <code>Q3</code></td><td>first / third quartile</td></tr><tr><td><code>"min"</code> / <code>"max"</code></td><td><code>Min</code> / <code>Max</code></td><td>extremes</td></tr><tr><td><code>"ci"</code></td><td><code>&lt;level&gt;% CI LL</code> / <code>UL</code></td><td><em>t</em> confidence interval of the mean</td></tr><tr><td><code>"med_ci"</code></td><td><code>Mdn &lt;level&gt;% CI LL</code> / <code>UL</code></td><td>exact confidence interval of the median</td></tr><tr><td><code>"n"</code></td><td><code>n</code></td><td>valid observations</td></tr><tr><td><code>"weighted_n"</code></td><td><code>Weighted n</code></td><td>sum of weights (requires <code>weights</code>)</td></tr></table><p>The column is the header the table prints. In <code>output = "data.frame"</code>, <a href="as.data.frame.spicy_continuous_table.html">as.data.frame()</a>
 and <code><a href="as_structured.html">as_structured()</a></code>, the columns are named by their keys, the same
-in every display language: the printed header in English, except for
-the median, whose keys are <code>Med</code>, <code>Med [Q1, Q3]</code> and
-<code>Med &lt;level&gt;% CI LL</code> / <code>UL</code> under the printed <code>Mdn</code>. The note under
-the table defines the abbreviations these headers show, as the style
-in force asks (see <code>abbreviations</code> in <code><a href="spicy_style.html">spicy_style()</a></code>).</p>
+in every display language and style: the default header in English
+(<code>M</code>; <code>Mdn</code>, <code>Mdn [Q1, Q3]</code>, <code>Mdn &lt;level&gt;% CI LL</code> / <code>UL</code> for the
+median), where the <code>"jama"</code> and <code>"lancet"</code> styles print <code>Mean</code> and
+<code>Median</code>. The note
+under the table defines the abbreviations these headers show, as the
+style in force asks (see <code>abbreviations</code> in <code><a href="spicy_style.html">spicy_style()</a></code>).</p>
 <p>Quartiles use <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code>'s default type 7. <code>"iqr"</code> is the
 width (one number, the rank mirror of <code>SD</code>); <code>"med_iqr"</code> shows the
 interval with its bounds. Columns appear in the canonical order of

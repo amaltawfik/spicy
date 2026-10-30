@@ -197,9 +197,9 @@ effect-size and SMD columns whether or not they were requested (<code>NA</code>
 then), and that of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="table_outcome.html">table_outcome()</a></code> the
 effect-size columns; the survey tables and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>
 compute neither. <code>glance()</code> has a fixed set of columns.
-<code>p_value = FALSE</code> removes the test columns, except in
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, whose long output is that of its models: they
-stay there, <code>NA</code>.
+<code>p_value = FALSE</code> removes from the long output the test columns that
+neither the statistic nor an effect size needs; <code>glance()</code> keeps them,
+<code>NA</code>, as does the <code>tidy()</code> of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.
 Model-level statistics (<code>nobs</code>, <code>r.squared</code>, ...) are in <code>glance()</code>.
 The long output carries them as well where its rows are models of
 their own: in <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, one model per outcome (the fit

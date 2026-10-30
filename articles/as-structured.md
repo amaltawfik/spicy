@@ -557,7 +557,7 @@ vapply(scn$col_meta, `[[`, character(1), "token")
 
 Cells the console builds from more than one number keep their numeric
 anchor in `body` and their printed string in `display_cells` — the
-effect size and its interval, a compact `Med [Q1, Q3]`, a test gloss:
+effect size and its interval, a compact `Mdn [Q1, Q3]`, a test gloss:
 
 ``` r
 

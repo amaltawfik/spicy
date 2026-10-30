@@ -644,7 +644,7 @@ table_outcome(
 )
 #> Descriptive statistics of bmi
 #> 
-#>  Variable   │    M       SD      n       p   
+#>  Variable   │  Mean      SD      n       p   
 #> ────────────┼────────────────────────────────
 #>  Overall    │  25.93    3.72    1188         
 #> ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -702,7 +702,7 @@ table_outcome(
 | *Note.* N = 1200. P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_1970t1ehj5yaklzijig1 .table .tinytable
+{#tinytable_cpk7o68fdsn9bumfe3bz .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

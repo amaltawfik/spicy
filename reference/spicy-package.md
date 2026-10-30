@@ -187,9 +187,10 @@ and
 the effect-size columns; the survey tables and
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 compute neither. `glance()` has a fixed set of columns.
-`p_value = FALSE` removes the test columns, except in
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-whose long output is that of its models: they stay there, `NA`.
+`p_value = FALSE` removes from the long output the test columns that
+neither the statistic nor an effect size needs; `glance()` keeps them,
+`NA`, as does the `tidy()` of
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`. The
 long output carries them as well where its rows are models of their own:
 in

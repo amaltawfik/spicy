@@ -158,12 +158,9 @@ machine outputs take the `broom` names.
 
 #### Headers and columns
 
-- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
-  and
-  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  head the median `Mdn` (was `Med`; `Méd.` in French), and their data
-  frames name it `Med`, `Med [Q1, Q3]`, and `Med 95% CI LL`.
+- The continuous tables name the median `Mdn` in headers and data frames
+  (`Mdn [Q1, Q3]`, `Mdn 95% CI LL`; was `Med`), and print `Median` and
+  `Mean` under `jama` and `lancet`: a script indexing `Med` must change.
 
 - In French, the effect size of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -619,12 +616,12 @@ machine outputs take the `broom` names.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   without `by`.
 
-- With `p_value = FALSE`, `output = "long"` keeps no p-value in
+- With `p_value = FALSE`, `output = "long"` keeps no test column in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  and the survey twins, and an `NA` test in
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  whose default is now `NULL`.
+  the survey twins, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  (default `NULL`); `glance()` keeps them `NA`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   fits no model to an outcome with no variance and shows a dash for what
@@ -1293,7 +1290,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonization across the table family

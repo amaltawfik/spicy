@@ -585,7 +585,7 @@ Depends on `output`:
   first in its column and the others beside it under their names in the
   long output: `df` and `df.residual` after `"Test"`, `es_ci_lower` and
   `es_ci_upper` after `"ES"` when its interval is printed, `q1` and `q3`
-  after `"Med [Q1, Q3]"`.
+  after `"Mdn [Q1, Q3]"`.
 
 - `"long"`: a plain `data.frame` with one row per `(variable x group)`
   and columns `variable`, `label`, `group` and `.group_role` (the role
@@ -683,11 +683,12 @@ The column is the header the table prints. In `output = "data.frame"`,
 [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
 and
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
-the columns are named by their keys, the same in every display language:
-the printed header in English, except for the median, whose keys are
-`Med`, `Med [Q1, Q3]` and `Med <level>% CI LL` / `UL` under the printed
-`Mdn`. The note under the table defines the abbreviations these headers
-show, as the style in force asks (see `abbreviations` in
+the columns are named by their keys, the same in every display language
+and style: the default header in English (`M`; `Mdn`, `Mdn [Q1, Q3]`,
+`Mdn <level>% CI LL` / `UL` for the median), where the `"jama"` and
+`"lancet"` styles print `Mean` and `Median`. The note under the table
+defines the abbreviations these headers show, as the style in force asks
+(see `abbreviations` in
 [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)).
 
 Quartiles use

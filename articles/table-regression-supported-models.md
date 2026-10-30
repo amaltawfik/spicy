@@ -200,17 +200,17 @@ Family by family:
   backend for `glmer`, and its `gls` backend is not yet wired and
   validated in spicy).
 - **Ordinal (`polr`, `clm`)** – `CR1` via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html),
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
   no `HC*`; the cut-point thresholds are reweighted from the same
   clustered vcov. A `clm` with a scale or nominal
   partial-proportional-odds component is model-based only.
 - **Categorical** – `multinom` takes `CR1` (one cluster value per
   observation), `mlogit` takes `CR1` (one per choice situation), both
   via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
   Both refuse `HC*`: `multinom` has no working-residual form for a
   multi-equation model, and for `mlogit`,
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   computes a result but silently mis-scales the meat for its per-chooser
   score structure.
 - **Quantile (`rq`)** – its own estimator family: `"classical"` resolves
@@ -222,9 +222,9 @@ Family by family:
   [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
   `x = TRUE, y = TRUE`). Neither has a small-sample factor, and `CR1` to
   `CR3` are refused. `survreg` takes `CR1` via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 - **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR1` via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html);
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
   zero-inflated and hurdle fits cluster both components. For `gam` /
   `bam`, spicy forms the sandwich itself, from the score and the
   penalized covariance of the fit, and `vcovCL()` only does the

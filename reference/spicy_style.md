@@ -205,12 +205,13 @@ either as a theme name or as the object returned here, and by
 ## What a theme claims, and what it does not
 
 A theme covers **numeric formatting conformity**, the word that opens
-the table note and the abbreviations that note defines, **only** – not
-full editorial conformity. It does not check reporting guidelines, table
-structure, footnote symbols, units, or anything else a journal's
-instructions ask of a manuscript. Each theme below lists the exact rules
-it encodes, with the sentence it encodes them from; anything not listed
-is spicy's own default, not the journal's rule.
+the table note, the abbreviations that note defines and, in English, how
+the mean and the median are headed, **only** – not full editorial
+conformity. It does not check reporting guidelines, table structure,
+footnote symbols, units, or anything else a journal's instructions ask
+of a manuscript. Each theme below lists the exact rules it encodes, with
+the sentence it encodes them from; anything not listed is spicy's own
+default, not the journal's rule.
 
 Themes only move **defaults**. An argument you type wins over the theme,
 always: `table_regression(fit, style = "lancet", digits = 3)` is a
@@ -313,6 +314,9 @@ Encoded:
   \\\bar{x}\\: it lists them as usable "without expansion except where
   noted".
 
+- the mean and the median headed `Mean` and `Median`, not `M` and `Mdn`
+  – section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.
+
 Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote letters,
 SI conversion factors) is table *construction*, not number formatting.
@@ -390,6 +394,10 @@ Encoded:
   of the model tables of the two formatting guidelines ("Data are n (%),
   median (IQR), mean (SD) ... BMI=body-mass index.") and of 35 tables of
   13 research articles published in 2025-2026, checked on 2026-10-20.
+
+- the mean and the median headed `Mean` and `Median`, not `M` and `Mdn`,
+  as the "median (IQR), mean (SD)" of the same model tables (not a
+  written rule).
 
 Not encoded: the empty-cell filler, the ban on p-values in a randomized
 trial's baseline table, and the absolute-rather-than- relative effect
@@ -637,6 +645,7 @@ spicy_style("lancet")
 #>  - confidence intervals: en dash between bounds (matches the journal's published examples; not a written rule)
 #>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)
 #>  - table note: abbreviations spelled out at its end, one "HR=hazard ratio." sentence each, alphabetical; n, N, p, SD, SE, IQR and CI not (matches the journal's model tables and its published tables; not a written rule)
+#>  - the mean and the median headed "Mean" and "Median" (matches the journal's model tables, "median (IQR), mean (SD)"; not a written rule)
 #> 
 #> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)
 #>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf

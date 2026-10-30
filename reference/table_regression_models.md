@@ -172,7 +172,7 @@ coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
 components via
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html),
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
 and `"CR0"` for `glmmTMB` fits covers the zero-inflation and dispersion
 blocks. Opt out with `show_components = FALSE`.
 
@@ -191,7 +191,7 @@ working residuals. `mlogit` renders per-alternative rows; AME is refused
 (no `slopes()` method exists for its data format). `"CR1"` is available
 with one cluster value per choice situation, and `n` counts choice
 situations; `HC*` is refused
-([`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+([`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
 mis-scales the meat for mlogit's per-chooser score structure).
 
 ## Survival models
@@ -209,7 +209,7 @@ For `survreg`: the closed-form AFT curves are standardized directly
 sandwich (`coxph`) or
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (`cph`, needs
 `x = TRUE, y = TRUE`); `survreg` takes `"CR1"`, from
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 
 ## Survey-design models

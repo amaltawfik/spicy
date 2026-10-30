@@ -293,7 +293,8 @@ name or as the object returned here, and by
     <div class="section level2">
     <h2 id="what-a-theme-claims-and-what-it-does-not">What a theme claims, and what it does not<a class="anchor" aria-label="anchor" href="#what-a-theme-claims-and-what-it-does-not"></a></h2>
     <p>A theme covers <strong>numeric formatting conformity</strong>, the word that opens
-the table note and the abbreviations that note defines, <strong>only</strong> –
+the table note, the abbreviations that note defines and, in English,
+how the mean and the median are headed, <strong>only</strong> –
 not full editorial conformity. It does not check reporting
 guidelines, table structure, footnote symbols, units, or anything else
 a journal's instructions ask of a manuscript. Each theme below
@@ -398,6 +399,8 @@ that do not carry "expand at first mention" (<em>n</em>, <em>N</em>, <em>P</em>,
 \(\rho\)), <em>B</em> and <em>M</em> among them, which that section
 writes <em>b</em> and \(\bar{x}\): it lists them as usable
 "without expansion except where noted".</p></li>
+<li><p>the mean and the median headed <code>Mean</code> and <code>Median</code>, not <code>M</code> and
+<code>Mdn</code> – section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.</p></li>
 </ul><p>Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote
 letters, SI conversion factors) is table <em>construction</em>, not number
@@ -473,6 +476,9 @@ rule</strong>: they are those of the model tables of the two formatting
 guidelines ("Data are n (%), median (IQR), mean (SD) ...
 BMI=body-mass index.") and of 35 tables of 13 research articles
 published in 2025-2026, checked on 2026-10-20.</p></li>
+<li><p>the mean and the median headed <code>Mean</code> and <code>Median</code>, not <code>M</code> and
+<code>Mdn</code>, as the "median (IQR), mean (SD)" of the same model tables
+(not a written rule).</p></li>
 </ul><p>Not encoded: the empty-cell filler, the ban on p-values in a
 randomized trial's baseline table, and the absolute-rather-than-
 relative effect rule are content decisions, not number formats.</p>
@@ -715,6 +721,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - confidence intervals: en dash between bounds (matches the journal's published examples; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - table note: abbreviations spelled out at its end, one "HR=hazard ratio." sentence each, alphabetical; n, N, p, SD, SE, IQR and CI not (matches the journal's model tables and its published tables; not a written rule)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - the mean and the median headed "Mean" and "Median" (matches the journal's model tables, "median (IQR), mean (SD)"; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf</span>
