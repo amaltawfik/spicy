@@ -37,7 +37,7 @@ Aujourd'hui spicy ne suit aucune de ces règles. La note des régressions défin
 - **APA** : la liste du §6.44 est un « e.g. » ; Mdn, z et g sont exemptés au même titre que M, SD et d. Les lettres grecques (§6.44, §7.15) et R² avec ses variantes (tableau modèle p. 219) sont exemptés.
 - **jama** : B et M sont le *b* et le x̄ de la liste §19.6, donc exemptés.
 - **Pseudo-R²** (McFadden, Nagelkerke, Tjur, R² bayésien) : défini sous lancet et `"all"` comme « pseudo coefficient of determination », chaque ligne sous son propre libellé.
-- **Les clés de colonnes gardent « Med »** (contrat de la 0.13.0) ; seul l'en-tête affiché devient « Mdn ».
+- **Les clés de colonnes gardent « Med »** (contrat de la 0.13.0) ; seul l'en-tête affiché devient « Mdn ». **Remplacé le 2026-10-30 (Amal)** : les clés suivent l'en-tête anglais sans exception (règle « le data.frame est le tableau affiché »), donc `Mdn`, `Mdn [Q1, Q3]`, `Mdn 95% CI LL` ; sous les thèmes `jama` et `lancet`, l'en-tête affiché est « Median » (et « Mean »), AMA 4.1.5 et les tableaux du Lancet écrivant ces mots en toutes lettres ; les clés restent `Mdn` et `M`.
 - Un `note_label` saisi sous jama précède la ligne des abréviations.
 
 ## Principe du contenu d'une définition (Amal, 2026-10-24)
