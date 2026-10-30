@@ -91,6 +91,7 @@ test_that("the per-family help page is reachable via its 8 documented aliases", 
 # One representative fit per registry family: tidy() / glance() /
 # as_structured() / as.data.frame() all return non-empty objects.
 test_that("tidy / glance / as_structured / as.data.frame work for every registry family", {
+  skip_on_cran()
   skip_if_not_installed("quantreg")
   skip_if_not_installed("lme4")
   skip_if_not_installed("geepack")

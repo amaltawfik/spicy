@@ -466,6 +466,7 @@ test_that("as_structured – the identity columns are typed and complete", {
 })
 
 test_that("as_structured – engines see the same values (excel + gt parity)", {
+  skip_on_cran()
   # rd-methods:as-structured-engine-contract-shared
   skip_if_not_installed("openxlsx2")
   skip_if_not_installed("gt")

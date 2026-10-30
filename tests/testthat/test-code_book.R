@@ -323,6 +323,7 @@ test_that("values caps the categories listed per variable", {
 })
 
 test_that("labels that only name declared missing codes leave the stored type", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   inc <- c(1500, 2300, 2300, 4100)
   d <- data.frame(
@@ -402,6 +403,7 @@ test_that("factor_levels = 'all' lists a declared code that nobody gave", {
 })
 
 test_that("an NA level is system missing, as in freq()", {
+  skip_on_cran()
   f <- addNA(factor(c("a", NA, "a")))
   cb <- code_book(data.frame(f = f))
   expect_identical(cb$values$code, c("a", "NA"))
@@ -713,6 +715,7 @@ test_that("notes and title reach the header", {
 })
 
 test_that("the print is pinned", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   d <- cbind(cb_data()[c("sex", "score", "day")], cb_labelled()[1:6, ])
   cb <- code_book(
@@ -742,6 +745,7 @@ test_that("the print keeps the language the codebook was built in", {
 })
 
 test_that("the print fits the console width by cutting long labels", {
+  skip_on_cran()
   label <- "A label long enough to push the list past a narrow console"
   d <- data.frame(id = 1:3, x = c(2.5, 3, NA))
   attr(d$x, "label") <- label
@@ -792,6 +796,7 @@ test_that("the print keeps a label on its row, and counts columns, not character
 })
 
 test_that("decimal_mark: argument > style > language", {
+  skip_on_cran()
   expect_identical(attr(code_book(cb_data(), sex), "decimal_mark"), ".")
   withr::local_options(spicy.language = "fr")
   expect_identical(attr(code_book(cb_data(), sex), "decimal_mark"), ",")
@@ -855,6 +860,7 @@ test_that("removed and malformed arguments are classed errors", {
 })
 
 test_that("errors name code_book(), not the helpers that raise them", {
+  skip_on_cran()
   d <- cb_data()
   called <- function(err) rlang::call_name(conditionCall(err))
   err <- expect_error(code_book(d, paper = "A3"), class = "spicy_invalid_input")
@@ -883,6 +889,7 @@ test_that("a raw or complex column is listed without a warning", {
 })
 
 test_that("an empty selection gives empty tables", {
+  skip_on_cran()
   expect_warning(
     cb <- code_book(cb_data(), starts_with("zzz")),
     class = "spicy_no_selection"
@@ -909,6 +916,7 @@ test_that("writing an Excel file needs openxlsx2", {
 })
 
 test_that("the Excel codebook reads back", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   skip_if_not_installed("haven")
   path <- withr::local_tempfile(fileext = ".xlsx")
@@ -1028,6 +1036,7 @@ test_that("the Excel codebook reads back", {
 })
 
 test_that("the Excel file leaves non-finite statistics empty, and means as they are", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   path <- withr::local_tempfile(fileext = ".xlsx")
   d <- data.frame(
@@ -1052,6 +1061,7 @@ test_that("the Excel file leaves non-finite statistics empty, and means as they 
 })
 
 test_that("the Excel header takes the PDF colors, and the font when given", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   path <- withr::local_tempfile(fileext = ".xlsx")
   colors <- c(band = "#112233", primary = "#FFEEDD")
@@ -1076,6 +1086,7 @@ test_that("the Excel header takes the PDF colors, and the font when given", {
 })
 
 test_that("the Excel codebook follows the language, with or without a title", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   path <- withr::local_tempfile(fileext = ".xlsx")
   withr::with_options(

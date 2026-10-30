@@ -1,6 +1,7 @@
 # ---- structure ----
 
 test_that("table_continuous_lm returns expected raw structure", {
+  skip_on_cran()
   out <- table_continuous_lm(
     iris,
     select = c(Sepal.Length, Petal.Width),
@@ -76,6 +77,7 @@ test_that("table_continuous_lm default output returns a spicy table", {
 })
 
 test_that("table_continuous_lm returns visibly and is silent when assigned", {
+  skip_on_cran()
   # Decision 47: a bare call renders (capture.output() evaluates as at
   # top level, so the visible return auto-prints); an assignment
   # writes nothing.
@@ -96,6 +98,7 @@ test_that("table_continuous_lm returns visibly and is silent when assigned", {
 # ---- computation ----
 
 test_that("table_continuous_lm numeric predictor slope matches lm", {
+  skip_on_cran()
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -135,6 +138,7 @@ test_that("table_continuous_lm binary factor stores means and auto contrast", {
 })
 
 test_that("table_continuous_lm 3+ level factor reports estimated means", {
+  skip_on_cran()
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -153,6 +157,7 @@ test_that("table_continuous_lm 3+ level factor reports estimated means", {
 })
 
 test_that("table_continuous_lm contrast none suppresses binary contrasts", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -170,6 +175,7 @@ test_that("table_continuous_lm contrast none suppresses binary contrasts", {
 })
 
 test_that("contrast = \"none\" leaves the contrast and its interval out of every output", {
+  skip_on_cran()
   # The table printed the contrast column and its two bounds, empty.
   tb <- table_continuous_lm(
     sochealth,
@@ -239,6 +245,7 @@ test_that("table_continuous_lm weights accept column names", {
 })
 
 test_that("table_continuous_lm can display weighted n separately from n", {
+  skip_on_cran()
   df <- data.frame(
     y = c(1, 2, 3, 10),
     g = factor(c("A", "A", "B", "B")),
@@ -261,6 +268,7 @@ test_that("table_continuous_lm can display weighted n separately from n", {
 })
 
 test_that("table_continuous_lm ignores weighted n when weights are absent", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous_lm(
       iris,
@@ -292,6 +300,7 @@ test_that("table_continuous_lm ignores weighted n when weights are absent", {
 })
 
 test_that("table_continuous_lm HC3 changes standard errors on heteroskedastic data", {
+  skip_on_cran()
   df <- data.frame(
     y = c(1.0, 1.2, 1.1, 5.0, 7.5, 10.0),
     x = c(0, 0, 0, 1, 1, 1)
@@ -316,6 +325,7 @@ test_that("table_continuous_lm HC3 changes standard errors on heteroskedastic da
 })
 
 test_that("table_continuous_lm HC4, HC4m, and HC5 use leverage-adjusted SE", {
+  skip_on_cran()
   df <- data.frame(
     y = c(2, 2.2, 2.1, 2.4, 3.1, 8.5),
     x = c(0, 1, 2, 3, 4, 20)
@@ -385,6 +395,7 @@ test_that("table_continuous_lm HC4, HC4m, and HC5 use leverage-adjusted SE", {
 # ---- display ----
 
 test_that("table_continuous_lm uses dedicated digits for fit and effect size", {
+  skip_on_cran()
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -417,6 +428,7 @@ test_that("table_continuous_lm uses dedicated digits for fit and effect size", {
 })
 
 test_that("table_continuous_lm rejects deprecated contrast value", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sochealth,
@@ -471,6 +483,7 @@ test_that("table_continuous_lm data.frame output puts >2 categorical levels in c
 })
 
 test_that("table_continuous_lm data.frame output names the binary contrast, its note the order", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -499,6 +512,7 @@ test_that("table_continuous_lm data.frame output names the binary contrast, its 
 })
 
 test_that("table_continuous_lm data.frame output honors optional columns", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
@@ -533,6 +547,7 @@ test_that("table_continuous_lm data.frame output honors optional columns", {
 })
 
 test_that("p_value = FALSE leaves no p-value in the machine outputs", {
+  skip_on_cran()
   test_cols <- c("test_type", "statistic", "df", "df.residual", "p.value")
   build <- function(...) {
     table_continuous_lm(sochealth, select = bmi, by = sex, ...)
@@ -561,6 +576,7 @@ test_that("p_value = FALSE leaves no p-value in the machine outputs", {
 })
 
 test_that("table_continuous_lm data.frame can hide CI columns", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
@@ -573,6 +589,7 @@ test_that("table_continuous_lm data.frame can hide CI columns", {
 })
 
 test_that("table_continuous_lm data.frame uses R2 by default and can show adjusted R2", {
+  skip_on_cran()
   out_r2 <- table_continuous_lm(
     iris,
     select = c(Sepal.Length, Petal.Width),
@@ -595,6 +612,7 @@ test_that("table_continuous_lm data.frame uses R2 by default and can show adjust
 })
 
 test_that("table_continuous_lm rejects deprecated wide output", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sochealth,
@@ -610,6 +628,7 @@ test_that("table_continuous_lm rejects deprecated wide output", {
 # ---- validation ----
 
 test_that("table_continuous_lm validates select and weights", {
+  skip_on_cran()
   df <- data.frame(y = letters[1:3], x = 1:3, w = c(1, -1, 1))
 
   # No numeric outcome: an error, as in the rest of the family (it warned
@@ -697,6 +716,7 @@ test_that("table_continuous_lm validates core user arguments", {
 })
 
 test_that("table_continuous_lm validates predictor and regex selection", {
+  skip_on_cran()
   df <- data.frame(
     y = 1:3,
     z = 4:6,
@@ -718,6 +738,7 @@ test_that("table_continuous_lm validates predictor and regex selection", {
 })
 
 test_that("table_continuous_lm validates weight edge cases", {
+  skip_on_cran()
   df <- data.frame(y = 1:3, x = 1:3, w = c(1, Inf, 1), z = c(0, 0, 0))
 
   err1 <- tryCatch(
@@ -740,6 +761,7 @@ test_that("table_continuous_lm validates weight edge cases", {
 })
 
 test_that("table_continuous_lm uses labels, exclude, regex, and character by", {
+  skip_on_cran()
   df <- sochealth
   attr(df$wellbeing_score, "label") <- "Wellbeing attr"
 
@@ -759,6 +781,7 @@ test_that("table_continuous_lm uses labels, exclude, regex, and character by", {
 })
 
 test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose mode", {
+  skip_on_cran()
   msg <- NULL
   out <- withCallingHandlers(
     table_continuous_lm(
@@ -783,6 +806,7 @@ test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose m
 })
 
 test_that("table_continuous_lm helper functions cover empty-model cases", {
+  skip_on_cran()
   expect_warning(
     num_empty <- spicy:::fit_numeric_predictor_lm_rows(
       y = c(1, 2),
@@ -836,6 +860,7 @@ test_that("table_continuous_lm helper functions cover empty-model cases", {
 })
 
 test_that("table_continuous_lm helper functions handle coercion and weights detection", {
+  skip_on_cran()
   expect_true(is.factor(spicy:::coerce_lm_factor(c("a", "b"))))
   expect_true(is.factor(spicy:::coerce_lm_factor(factor("a"))))
   expect_true(spicy:::is_supported_lm_predictor(TRUE))
@@ -854,6 +879,7 @@ test_that("table_continuous_lm helper functions handle coercion and weights dete
 })
 
 test_that("table_continuous_lm internal builders cover numeric displays", {
+  skip_on_cran()
   # The builders read the compute frame of the printed object, under its
   # internal names.
   out <- table_continuous_lm(
@@ -904,6 +930,7 @@ test_that("table_continuous_lm internal builders cover numeric displays", {
 })
 
 test_that("table_continuous_lm internal builders cover binary categorical variants", {
+  skip_on_cran()
   df <- sochealth
   out <- table_continuous_lm(
     df,
@@ -955,6 +982,7 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
 })
 
 test_that("table_continuous_lm low-level formatting helpers behave as expected", {
+  skip_on_cran()
   # The printed object: the helpers read its internal names.
   block <- table_continuous_lm(
     iris[iris$Species != "virginica", ],
@@ -1026,6 +1054,7 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
 })
 
 test_that("a wide-character label does not split the console into panels", {
+  skip_on_cran()
   # `nchar()` counts CHARACTERS, the renderer lays out COLUMNS. A CJK
   # label is twice as wide as it is long, so the padding decision used
   # to over-estimate what the compact layout needed, keep the 2-char
@@ -1059,6 +1088,7 @@ test_that("a wide-character label does not split the console into panels", {
 })
 
 test_that("the console and every engine print the registry header, not the key", {
+  skip_on_cran()
   # At the English default a label and its frozen key are the SAME
   # string, so nothing else in the suite can tell whether this family
   # reads the label layer at all -- the console goldens and the
@@ -1168,6 +1198,7 @@ test_that("the console and every engine print the registry header, not the key",
 }
 
 test_that("a categorical by decks its headers in the console, Typst, Word and the typed view", {
+  skip_on_cran()
   d <- .lm_decked_data()
   tbl <- table_continuous_lm(d, select = c(y, z), by = g)
 
@@ -1251,6 +1282,7 @@ test_that("a categorical by decks its headers in the console, Typst, Word and th
 })
 
 test_that("the note gives the order of the difference after the test, in English and French", {
+  skip_on_cran()
   d <- .lm_decked_data()
   delta <- "\u0394 = Current smoker \u2212 Never smoker."
   for (lang in c("en", "fr")) {
@@ -1316,6 +1348,7 @@ test_that("the note gives the order of the difference after the test, in English
 })
 
 test_that("a numeric by keeps one header row and states no subtraction", {
+  skip_on_cran()
   set.seed(3)
   d <- data.frame(x = stats::rnorm(30L), y = stats::rnorm(30L))
   tbl <- table_continuous_lm(d, select = y, by = x)
@@ -1370,6 +1403,7 @@ test_that("a numeric by keeps one header row and states no subtraction", {
 })
 
 test_that("labels = TRUE with long group labels: each heads its own mean", {
+  skip_on_cran()
   set.seed(5)
   a <- "Assigned female at birth (self-report)"
   b <- "Assigned male at birth (self-report)"
@@ -1405,6 +1439,7 @@ test_that("labels = TRUE with long group labels: each heads its own mean", {
 })
 
 test_that("a mean glyph emptied through spicy.labels sets no spanner", {
+  skip_on_cran()
   withr::local_options(spicy.labels = list(header_mean = ""), width = 200L)
   d <- .lm_decked_data()
   txt <- capture.output(print(table_continuous_lm(d, select = y, by = g)))
@@ -1428,6 +1463,7 @@ test_that("a mean glyph emptied through spicy.labels sets no spanner", {
 })
 
 test_that("table_continuous_lm internal covariance helper covers fallback branches", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mtcars)
   fit_singular <- lm(mpg ~ wt + I(2 * wt), data = mtcars)
 
@@ -1455,6 +1491,7 @@ test_that("table_continuous_lm internal covariance helper covers fallback branch
 }
 
 test_that("table_continuous_lm export helper validates excel_path", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   expect_error(
     spicy:::export_continuous_lm_table(
@@ -1471,6 +1508,7 @@ test_that("table_continuous_lm export helper validates excel_path", {
 })
 
 test_that("table_continuous_lm export helper validates word_path", {
+  skip_on_cran()
   skip_if_not_installed("officer")
   skip_if_not_installed("flextable")
   expect_error(
@@ -1488,6 +1526,7 @@ test_that("table_continuous_lm export helper validates word_path", {
 })
 
 test_that("table_continuous_lm export helper rejects unknown output format", {
+  skip_on_cran()
   expect_error(
     spicy:::export_continuous_lm_table(
       .export_lm_display_df(),
@@ -1505,6 +1544,7 @@ test_that("table_continuous_lm export helper rejects unknown output format", {
 # ---- optional outputs ----
 
 test_that("table_continuous_lm tinytable output works", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
 
   out <- table_continuous_lm(
@@ -1518,6 +1558,7 @@ test_that("table_continuous_lm tinytable output works", {
 })
 
 test_that("table_continuous_lm gt output works", {
+  skip_on_cran()
   skip_if_not_installed("gt")
 
   out <- table_continuous_lm(
@@ -1531,6 +1572,7 @@ test_that("table_continuous_lm gt output works", {
 })
 
 test_that("table_continuous_lm gt output includes a CI spanner", {
+  skip_on_cran()
   skip_if_not_installed("gt")
 
   out <- table_continuous_lm(
@@ -1547,6 +1589,7 @@ test_that("table_continuous_lm gt output includes a CI spanner", {
 })
 
 test_that("table_continuous_lm flextable output works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
 
   out <- table_continuous_lm(
@@ -1560,6 +1603,7 @@ test_that("table_continuous_lm flextable output works", {
 })
 
 test_that("table_continuous_lm flextable has 2-row header with CI spanner", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
 
   out <- table_continuous_lm(
@@ -1576,6 +1620,7 @@ test_that("table_continuous_lm flextable has 2-row header with CI spanner", {
 })
 
 test_that("table_continuous_lm excel output works", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
 
   tmp <- tempfile(fileext = ".xlsx")
@@ -1600,6 +1645,7 @@ test_that("table_continuous_lm excel output works", {
 })
 
 test_that("table_continuous_lm word output works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
 
@@ -1621,6 +1667,7 @@ test_that("table_continuous_lm word output works", {
 # ---- effect sizes ----
 
 test_that("effect_size = 'cohens_d' matches beta / sigma from lm for binary by", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   fit <- lm(Sepal.Length ~ Species, data = df)
@@ -1639,6 +1686,7 @@ test_that("effect_size = 'cohens_d' matches beta / sigma from lm for binary by",
 })
 
 test_that("effect_size = 'hedges_g' applies the Hedges small-sample correction", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   fit <- lm(Sepal.Length ~ Species, data = df)
@@ -1659,6 +1707,7 @@ test_that("effect_size = 'hedges_g' applies the Hedges small-sample correction",
 })
 
 test_that("effect_size = 'cohens_d' / 'hedges_g' work with weights via the WLS fit", {
+  skip_on_cran()
   df <- data.frame(
     y = c(1, 2, 3, 5, 6, 8, 10, 12),
     g = factor(c("A", "A", "A", "A", "B", "B", "B", "B")),
@@ -1690,6 +1739,7 @@ test_that("effect_size = 'cohens_d' / 'hedges_g' work with weights via the WLS f
 })
 
 test_that("effect_size = 'cohens_d' / 'hedges_g' error when by is not a 2-level categorical", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       iris,
@@ -1723,6 +1773,7 @@ test_that("effect_size = 'cohens_d' / 'hedges_g' error when by is not a 2-level 
 })
 
 test_that("effect_size = 'omega2' matches Hays' formula and is truncated at 0", {
+  skip_on_cran()
   fit <- lm(Sepal.Length ~ Species, data = iris)
   ss_total <- sum((iris$Sepal.Length - mean(iris$Sepal.Length))^2)
   ss_resid <- sum(residuals(fit)^2)
@@ -1758,6 +1809,7 @@ test_that("effect_size = 'omega2' matches Hays' formula and is truncated at 0", 
 })
 
 test_that("effect sizes are invariant to the choice of vcov", {
+  skip_on_cran()
   df <- data.frame(
     y = c(1, 1.2, 1.1, 5, 7.5, 10),
     x = factor(c("A", "A", "A", "B", "B", "B"))
@@ -1785,6 +1837,7 @@ test_that("effect sizes are invariant to the choice of vcov", {
 })
 
 test_that("effect_size column header reflects the chosen metric in wide outputs", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -1816,6 +1869,7 @@ test_that("effect_size column header reflects the chosen metric in wide outputs"
 })
 
 test_that("effect_size_ci computes valid noncentral CIs containing the point estimate", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -1851,6 +1905,7 @@ test_that("effect_size_ci computes valid noncentral CIs containing the point est
 })
 
 test_that("effect_size_ci CIs match effectsize package for d and g (nct)", {
+  skip_on_cran()
   skip_if_not_installed("effectsize")
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
@@ -1897,6 +1952,7 @@ test_that("effect_size_ci CIs match effectsize package for d and g (nct)", {
 })
 
 test_that("effect_size_ci is invariant to vcov choice", {
+  skip_on_cran()
   df <- data.frame(
     y = c(1, 1.2, 1.1, 5, 7.5, 10),
     x = factor(c("A", "A", "A", "B", "B", "B"))
@@ -1926,6 +1982,7 @@ test_that("effect_size_ci is invariant to vcov choice", {
 })
 
 test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous_lm(
@@ -1956,6 +2013,7 @@ test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
 })
 
 test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous_lm(
@@ -1993,6 +2051,7 @@ test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
 })
 
 test_that("effect_size_ci = TRUE warns and resets when effect_size is none", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous_lm(
       iris,
@@ -2008,6 +2067,7 @@ test_that("effect_size_ci = TRUE warns and resets when effect_size is none", {
 })
 
 test_that("effect_size_ci validates as logical scalar", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       iris,
@@ -2021,6 +2081,7 @@ test_that("effect_size_ci validates as logical scalar", {
 })
 
 test_that("ci_level controls effect-size CI width", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out_95 <- table_continuous_lm(
@@ -2048,6 +2109,7 @@ test_that("ci_level controls effect-size CI width", {
 })
 
 test_that("degenerate models still preserve the predictor label", {
+  skip_on_cran()
   df <- data.frame(
     y_ok = c(1, 2, 3, 4, 5, 6),
     y_bad = c(NA, NA, NA, NA, NA, 1),
@@ -2068,6 +2130,7 @@ test_that("degenerate models still preserve the predictor label", {
 })
 
 test_that("long output uses an integer nobs and double degrees of freedom", {
+  skip_on_cran()
   out_num <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -2106,6 +2169,7 @@ test_that("long output uses an integer nobs and double degrees of freedom", {
 })
 
 test_that("effect_size = 'none' yields NA es_type and es_value in long output", {
+  skip_on_cran()
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -2120,6 +2184,7 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
 # ---- coercion + broom integration ----
 
 test_that("as.data.frame.spicy_continuous_lm_table returns the displayed table", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
@@ -2172,6 +2237,7 @@ test_that("as.data.frame.spicy_continuous_lm_table returns the displayed table",
 })
 
 test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
+  skip_on_cran()
   skip_if_not_installed("tibble")
   out <- table_continuous_lm(
     sochealth,
@@ -2189,6 +2255,7 @@ test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
 })
 
 test_that("tidy() returns one row per parameter for binary categorical by", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
@@ -2229,6 +2296,7 @@ test_that("tidy() returns one row per parameter for binary categorical by", {
 })
 
 test_that("tidy() handles 3-level categorical by (no contrast row)", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   out <- table_continuous_lm(
     iris,
@@ -2244,6 +2312,7 @@ test_that("tidy() handles 3-level categorical by (no contrast row)", {
 })
 
 test_that("tidy() handles numeric predictor (slope row)", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   out <- table_continuous_lm(
     sochealth,
@@ -2259,6 +2328,7 @@ test_that("tidy() handles numeric predictor (slope row)", {
 })
 
 test_that("glance() returns one row per outcome with model-level stats", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   out <- table_continuous_lm(
     iris,
@@ -2296,6 +2366,7 @@ test_that("glance() returns one row per outcome with model-level stats", {
 })
 
 test_that("glance() exposes test_type 't' for numeric predictors", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   out <- table_continuous_lm(
     sochealth,
@@ -2307,6 +2378,7 @@ test_that("glance() exposes test_type 't' for numeric predictors", {
 })
 
 test_that("glance() reports the displayed test: the t of a two-level contrast", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   out <- table_continuous_lm(
     sochealth,
@@ -2341,6 +2413,7 @@ test_that("glance() reports the displayed test: the t of a two-level contrast", 
 })
 
 test_that("coercion is a no-op on the original object", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
@@ -2363,6 +2436,7 @@ test_that("coercion is a no-op on the original object", {
 # ---- p_digits ----
 
 test_that("format_p_value derives threshold from digits", {
+  skip_on_cran()
   expect_equal(spicy:::format_p_value(0.045, ".", 3L), ".045")
   expect_equal(spicy:::format_p_value(0.0008, ".", 3L), "<.001")
   expect_equal(spicy:::format_p_value(0.0451, ".", 4L), ".0451")
@@ -2372,6 +2446,7 @@ test_that("format_p_value derives threshold from digits", {
 })
 
 test_that("format_p_value respects European decimal mark across digits", {
+  skip_on_cran()
   # A comma keeps the leading zero at every precision: ",045" is not a
   # number (BIPM, SI brochure 9th ed., 5.4.4).
   expect_equal(spicy:::format_p_value(0.045, ",", 3L), "0,045")
@@ -2381,6 +2456,7 @@ test_that("format_p_value respects European decimal mark across digits", {
 })
 
 test_that("an explicit leading_zero still outranks the mark", {
+  skip_on_cran()
   # The pair's lever (`cross_tab()` has no style layer): it can force
   # the drop back under a comma, and force the zero under a point.
   expect_equal(
@@ -2394,6 +2470,7 @@ test_that("an explicit leading_zero still outranks the mark", {
 })
 
 test_that("options(OutDec) cannot override a typed decimal_mark", {
+  skip_on_cran()
   # Beside the shared formatters because that is where the leak was:
   # `formatC()` and `as.character()` both read the session option, so a
   # user with `OutDec = ","` got commas out of a table that asked for a
@@ -2451,6 +2528,7 @@ test_that("options(OutDec) cannot override a typed decimal_mark", {
 })
 
 test_that("options(OutDec) cannot reach the renderers outside the shared formatters", {
+  skip_on_cran()
   # The witness above covers the five families, the pair and the shared
   # formatters. Several renderers write their own `formatC()` and never
   # pass through `format_number()`; a mutation reverting THEIR pins left
@@ -2560,6 +2638,7 @@ test_that("options(OutDec) cannot reach the renderers outside the shared formatt
 })
 
 test_that("format_p_value handles NA and falls back to default for bad digits", {
+  skip_on_cran()
   expect_equal(spicy:::format_p_value(NA_real_, ".", 3L), "")
   # Non-finite or < 1 digits silently fall back to digits=3.
   expect_equal(spicy:::format_p_value(0.045, ".", 0L), ".045")
@@ -2567,6 +2646,7 @@ test_that("format_p_value handles NA and falls back to default for bad digits", 
 })
 
 test_that("p_digits argument propagates through table_continuous_lm()", {
+  skip_on_cran()
   out_3 <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
@@ -2594,6 +2674,7 @@ test_that("p_digits argument propagates through table_continuous_lm()", {
 })
 
 test_that("p_digits changes the rendered p value in wide display", {
+  skip_on_cran()
   # The printed object: the builder reads its internal names.
   tbl <- table_continuous_lm(
     sochealth,
@@ -2645,6 +2726,7 @@ test_that("p_digits changes the rendered p value in wide display", {
 })
 
 test_that("p_digits validates as a single positive integer", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sochealth,
@@ -2686,6 +2768,7 @@ test_that("p_digits validates as a single positive integer", {
 # ---- decimal alignment ----
 
 test_that("decimal_align_strings aligns dots in heterogeneous-magnitude column", {
+  skip_on_cran()
   out <- spicy:::decimal_align_strings(
     c("1234.56", "0.05", "42.30"),
     decimal_mark = "."
@@ -2702,6 +2785,7 @@ test_that("decimal_align_strings aligns dots in heterogeneous-magnitude column",
 })
 
 test_that("decimal_align_strings handles integers (no dot) as if dotted at end", {
+  skip_on_cran()
   out <- spicy:::decimal_align_strings(
     c("1.23", "100", "12.5"),
     decimal_mark = "."
@@ -2710,6 +2794,7 @@ test_that("decimal_align_strings handles integers (no dot) as if dotted at end",
 })
 
 test_that("decimal_align_strings handles blanks and NA as full-width spaces", {
+  skip_on_cran()
   out <- spicy:::decimal_align_strings(
     c("1.23", "", NA_character_, "42.5"),
     decimal_mark = "."
@@ -2721,6 +2806,7 @@ test_that("decimal_align_strings handles blanks and NA as full-width spaces", {
 })
 
 test_that("decimal_align_strings respects European decimal mark", {
+  skip_on_cran()
   out <- spicy:::decimal_align_strings(
     c("1,23", "0,05", "42,30"),
     decimal_mark = ","
@@ -2735,6 +2821,7 @@ test_that("decimal_align_strings respects European decimal mark", {
 })
 
 test_that("decimal_align_strings handles bracket notation like '0.18 [0.07, 0.30]'", {
+  skip_on_cran()
   out <- spicy:::decimal_align_strings(
     c("0.18 [0.07, 0.30]", "12.34 [10.0, 14.7]"),
     decimal_mark = "."
@@ -2750,6 +2837,7 @@ test_that("decimal_align_strings handles bracket notation like '0.18 [0.07, 0.30
 })
 
 test_that("align='decimal' is the default and pads ASCII display values", {
+  skip_on_cran()
   # A rendering attribute: it lives on the printed object only.
   out <- table_continuous_lm(
     sochealth,
@@ -2760,6 +2848,7 @@ test_that("align='decimal' is the default and pads ASCII display values", {
 })
 
 test_that("align='decimal' produces dot-aligned numeric columns", {
+  skip_on_cran()
   # Test the pre-padding pipeline that the ASCII print method applies:
   # build the display df, then pre-pad numeric columns. All values in
   # each numeric column must end up with identical nchar (and therefore
@@ -2812,6 +2901,7 @@ test_that("align='decimal' produces dot-aligned numeric columns", {
 })
 
 test_that("align='center' restores the legacy column-by-column rendering", {
+  skip_on_cran()
   out_decimal <- capture.output(
     table_continuous_lm(
       sochealth,
@@ -2832,6 +2922,7 @@ test_that("align='center' restores the legacy column-by-column rendering", {
 })
 
 test_that("align argument validates", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sochealth,
@@ -2845,6 +2936,7 @@ test_that("align argument validates", {
 })
 
 test_that("align='decimal' on gt and tinytable returns valid styled objects", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
   expect_s3_class(
@@ -2870,6 +2962,7 @@ test_that("align='decimal' on gt and tinytable returns valid styled objects", {
 # ---- wide raw respects ci_level for contrast CI columns ----
 
 test_that("wide raw uses ci_level-derived names for contrast CI columns", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -2899,6 +2992,7 @@ test_that("wide raw uses ci_level-derived names for contrast CI columns", {
 })
 
 test_that("wide raw column names match wide display when ci_level is custom", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
@@ -2940,6 +3034,7 @@ test_that("wide raw column names match wide display when ci_level is custom", {
 # ---- categorical Wald F: tryCatch around solve(vc_sub, beta_sub) ----
 
 test_that("compute_wald_test degrades to NA on a singular submatrix", {
+  skip_on_cran()
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- stats::vcov(fit)
   vc[,] <- 0
@@ -2957,11 +3052,13 @@ test_that("compute_wald_test degrades to NA on a singular submatrix", {
 # ---- bracket separator for European decimal mark ----
 
 test_that("ci_bracket_separator returns ', ' for '.' and '; ' for ','", {
+  skip_on_cran()
   expect_equal(spicy:::ci_bracket_separator("."), ", ")
   expect_equal(spicy:::ci_bracket_separator(","), "; ")
 })
 
 test_that("effect-size CI bracket separator switches with decimal_mark", {
+  skip_on_cran()
   out_dot <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
@@ -3021,6 +3118,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
 # ---- cluster-robust SE ----
 
 test_that("cluster-robust vcov requires cluster + clubSandwich", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sleep,
@@ -3043,6 +3141,7 @@ test_that("cluster-robust vcov requires cluster + clubSandwich", {
 })
 
 test_that("cluster argument resolves columns and vectors consistently", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
 
   # Column form via NSE.
@@ -3086,6 +3185,7 @@ test_that("cluster argument resolves columns and vectors consistently", {
 })
 
 test_that("CR2 matches clubSandwich::coef_test() for binary contrast", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
 
   out <- table_continuous_lm(
@@ -3116,6 +3216,7 @@ test_that("CR2 matches clubSandwich::coef_test() for binary contrast", {
 })
 
 test_that("CR2 matches clubSandwich::Wald_test() for k>2 categorical", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
 
   # Use a synthetic clustering structure independent of the predictor
@@ -3151,6 +3252,7 @@ test_that("CR2 matches clubSandwich::Wald_test() for k>2 categorical", {
 })
 
 test_that("effect sizes are invariant to vcov = 'CR2'", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   fit_classical <- table_continuous_lm(
     sleep,
@@ -3184,6 +3286,7 @@ test_that("effect sizes are invariant to vcov = 'CR2'", {
 })
 
 test_that("glance() preserves a fractional df without integer truncation", {
+  skip_on_cran()
   # Regression: glance() previously coerced df2 -> integer, which
   # truncated both genuinely-fractional Satterthwaite df (e.g. 45.32)
   # and FP-noisy near-integer values (47.999999... -> 47). The
@@ -3222,6 +3325,7 @@ test_that("glance() preserves a fractional df without integer truncation", {
 })
 
 test_that("CR2 df.residual differs from the classical one (cluster-aware df)", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   long_classical <- table_continuous_lm(
     sleep,
@@ -3251,6 +3355,7 @@ test_that("CR2 df.residual differs from the classical one (cluster-aware df)", {
 })
 
 test_that("get_test_header_lm formats fractional df with one decimal", {
+  skip_on_cran()
   # The printed object: the helper reads its internal `df1` / `df2`.
   tbl <- table_continuous_lm(
     sleep,
@@ -3272,6 +3377,7 @@ test_that("get_test_header_lm formats fractional df with one decimal", {
 })
 
 test_that("cluster validation: must have nrow(data) length, no all-NA, etc.", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   expect_error(
     table_continuous_lm(
@@ -3301,6 +3407,7 @@ test_that("cluster validation: must have nrow(data) length, no all-NA, etc.", {
 # ---- bootstrap and jackknife SE ----
 
 test_that("bootstrap produces a finite vcov on a binary predictor", {
+  skip_on_cran()
   set.seed(20260418)
   out <- table_continuous_lm(
     sleep,
@@ -3321,6 +3428,7 @@ test_that("bootstrap produces a finite vcov on a binary predictor", {
 })
 
 test_that("cluster bootstrap differs from obs bootstrap on paired data", {
+  skip_on_cran()
   set.seed(20260418)
   obs_boot <- table_continuous_lm(
     sleep,
@@ -3348,6 +3456,7 @@ test_that("cluster bootstrap differs from obs bootstrap on paired data", {
 })
 
 test_that("jackknife matches the closed-form formula on a binary predictor", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sleep,
     select = extra,
@@ -3373,6 +3482,7 @@ test_that("jackknife matches the closed-form formula on a binary predictor", {
 })
 
 test_that("cluster jackknife is leave-one-cluster-out on the paired data", {
+  skip_on_cran()
   out <- table_continuous_lm(
     sleep,
     select = extra,
@@ -3399,6 +3509,7 @@ test_that("cluster jackknife is leave-one-cluster-out on the paired data", {
 })
 
 test_that("bootstrap on 3-level categorical produces chi2 header", {
+  skip_on_cran()
   set.seed(20260418)
   out <- table_continuous_lm(
     iris,
@@ -3430,6 +3541,7 @@ test_that("bootstrap on 3-level categorical produces chi2 header", {
 })
 
 test_that("bootstrap and jackknife leave the effect sizes unchanged", {
+  skip_on_cran()
   set.seed(20260418)
   out_class <- table_continuous_lm(
     sleep,
@@ -3466,6 +3578,7 @@ test_that("bootstrap and jackknife leave the effect sizes unchanged", {
 })
 
 test_that("multi-way clustering errors with a clear message", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       iris,
@@ -3489,6 +3602,7 @@ test_that("multi-way clustering errors with a clear message", {
 })
 
 test_that("boot_n validates as a positive whole number", {
+  skip_on_cran()
   # One validator for the three tables that bootstrap: no floor of 50,
   # and a fraction refused rather than truncated.
   expect_error(
@@ -3540,6 +3654,7 @@ test_that("boot_n validates as a positive whole number", {
 # ---- additional coverage: SE helpers and edge cases ----
 
 test_that("compute_resample_vcov_bootstrap reproducibility and weighted refit", {
+  skip_on_cran()
   set.seed(20260418)
   fit <- stats::lm(extra ~ group, data = sleep)
   set.seed(20260418)
@@ -3564,6 +3679,7 @@ test_that("compute_resample_vcov_bootstrap reproducibility and weighted refit", 
 })
 
 test_that("compute_resample_vcov_jackknife reproduces the leave-one-out variance", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- spicy:::compute_resample_vcov_jackknife(fit)
   expect_true(is.matrix(vc))
@@ -3582,6 +3698,7 @@ test_that("compute_resample_vcov_jackknife reproduces the leave-one-out variance
 })
 
 test_that("compute_model_vcov dispatches by type and validates unknowns", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   expect_equal(
     spicy:::compute_model_vcov(fit, "classical"),
@@ -3602,6 +3719,7 @@ test_that("compute_model_vcov dispatches by type and validates unknowns", {
 })
 
 test_that("resolve_cluster_argument rejects malformed input with clear errors", {
+  skip_on_cran()
   data <- data.frame(y = 1:10, x = 1:10)
 
   # Multi-way (list / data.frame) rejected.
@@ -3634,6 +3752,7 @@ test_that("resolve_cluster_argument rejects malformed input with clear errors", 
 })
 
 test_that("get_test_header_lm covers all test_type branches", {
+  skip_on_cran()
   # The helper reads the printed objects (internal `df1` / `df2`).
   # numeric predictor with classical vcov -> "t(df)"
   out_num <- table_continuous_lm(
@@ -3688,6 +3807,7 @@ test_that("get_test_header_lm covers all test_type branches", {
 })
 
 test_that("compute_resample_vcov_bootstrap errors on too few valid replicates", {
+  skip_on_cran()
   # Fit before mocking so the original fit succeeds; the mock then
   # blocks every refit inside compute_resample_vcov_bootstrap.
   # Pre-1.0: hard error (was a classical fallback under a "bootstrap"
@@ -3708,6 +3828,7 @@ test_that("compute_resample_vcov_bootstrap errors on too few valid replicates", 
 # ---- coverage: more SE error paths and helper branches ----
 
 test_that("compute_resample_vcov_bootstrap cluster path produces a finite vcov", {
+  skip_on_cran()
   set.seed(20260418)
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- spicy:::compute_resample_vcov_bootstrap(
@@ -3721,6 +3842,7 @@ test_that("compute_resample_vcov_bootstrap cluster path produces a finite vcov",
 })
 
 test_that("compute_resample_vcov_jackknife cluster path matches leave-one-out", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   vc_obs <- spicy:::compute_resample_vcov_jackknife(fit)
   vc_cl <- spicy:::compute_resample_vcov_jackknife(fit, cluster = sleep$ID)
@@ -3730,6 +3852,7 @@ test_that("compute_resample_vcov_jackknife cluster path matches leave-one-out", 
 })
 
 test_that("compute_resample_vcov_jackknife errors when too few replicates", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     lm.wfit = function(...) stop("synthetic refit failure"),
@@ -3742,6 +3865,7 @@ test_that("compute_resample_vcov_jackknife errors when too few replicates", {
 })
 
 test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   expect_error(
     spicy:::compute_model_vcov(fit, type = "CR2"),
@@ -3750,6 +3874,7 @@ test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", 
 })
 
 test_that("compute_model_vcov refuses when clubSandwich errors", {
+  skip_on_cran()
   # Was a spicy_fallback warning plus the classical matrix, which the
   # caller then labeled cluster-robust (register n. 229).
   fit <- stats::lm(extra ~ group, data = sleep)
@@ -3768,6 +3893,7 @@ test_that("compute_model_vcov refuses when clubSandwich errors", {
 })
 
 test_that("compute_coef_inference falls back when clubSandwich coef_test errors", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = sleep$ID)
   testthat::local_mocked_bindings(
@@ -3788,6 +3914,7 @@ test_that("compute_coef_inference falls back when clubSandwich coef_test errors"
 })
 
 test_that("compute_wald_test falls back when clubSandwich Wald_test errors", {
+  skip_on_cran()
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = iris$Species)
   testthat::local_mocked_bindings(
@@ -3806,6 +3933,7 @@ test_that("compute_wald_test falls back when clubSandwich Wald_test errors", {
 })
 
 test_that("compute_wald_test handles q == 0", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   out <- spicy:::compute_wald_test(
     fit,
@@ -3818,6 +3946,7 @@ test_that("compute_wald_test handles q == 0", {
 })
 
 test_that("resolve_cluster_argument NULL roundtrip", {
+  skip_on_cran()
   data <- data.frame(y = 1:5, x = 1:5)
   expect_null(
     spicy:::resolve_cluster_argument(rlang::quo(NULL), data, "cluster")
@@ -3825,6 +3954,7 @@ test_that("resolve_cluster_argument NULL roundtrip", {
 })
 
 test_that("decimal_align_strings handles empty input and single value", {
+  skip_on_cran()
   expect_equal(spicy:::decimal_align_strings(character(0)), character(0))
   out <- spicy:::decimal_align_strings("3.14", decimal_mark = ".")
   expect_equal(out, "3.14")
@@ -3834,6 +3964,7 @@ test_that("decimal_align_strings handles empty input and single value", {
 })
 
 test_that("table_continuous_lm errors clearly on bad cluster + vcov combinations", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(
       sochealth,
@@ -3862,6 +3993,7 @@ test_that("table_continuous_lm errors clearly on bad cluster + vcov combinations
 # ---- coverage: noncentral inversion edge cases and small helpers ----
 
 test_that("find_ncp_t_lm expands the bracket on extreme statistics", {
+  skip_on_cran()
   # Initial bracket [-50, 50] doesn't contain the root for very large
   # |t|; the helper widens up to 6 times. With t = 200 the root is
   # near 200, so bracket expansion is required.
@@ -3873,23 +4005,27 @@ test_that("find_ncp_t_lm expands the bracket on extreme statistics", {
 })
 
 test_that("find_ncp_f_lm returns 0 when ncp = 0 already attains the target tail", {
+  skip_on_cran()
   # F = 0 -> pf(0, df1, df2, 0) = 0 < p, so the helper returns 0.
   expect_equal(spicy:::find_ncp_f_lm(0, df1 = 2, df2 = 30, p = 0.025), 0)
 })
 
 test_that("find_ncp_f_lm widens the bracket on huge F statistics", {
+  skip_on_cran()
   ncp <- spicy:::find_ncp_f_lm(f_obs = 5000, df1 = 1, df2 = 100, p = 0.5)
   expect_true(is.finite(ncp))
   expect_gte(ncp, 0)
 })
 
 test_that("format_p_value covers blanks, NAs, and edge digits", {
+  skip_on_cran()
   expect_equal(spicy:::format_p_value(NA_real_), "")
   # digits = 1L is admissible
   expect_match(spicy:::format_p_value(0.05, ".", 1L), "^[<.0-9]+$")
 })
 
 test_that("get_test_header_lm: show_statistic = FALSE returns NULL early", {
+  skip_on_cran()
   block <- data.frame(
     test_type = "t",
     df1 = 1L,
@@ -3902,12 +4038,14 @@ test_that("get_test_header_lm: show_statistic = FALSE returns NULL early", {
 })
 
 test_that("compute_es_ci_lm fast-paths to NA on effect_size = 'none'", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   out <- spicy:::compute_es_ci_lm(fit, "none", 0.95)
   expect_equal(out, c(NA_real_, NA_real_))
 })
 
 test_that("compute_lm_omega2 returns NA when sums of squares are degenerate", {
+  skip_on_cran()
   # Constant outcome -> SS_total = 0 -> omega2 not defined.
   df <- data.frame(y = rep(5, 10), x = factor(rep(c("A", "B"), each = 5)))
   fit <- stats::lm(y ~ x, data = df)
@@ -3932,6 +4070,7 @@ test_that("compute_lm_omega2 returns NA when sums of squares are degenerate", {
 # ---- internal CI helpers ----
 
 test_that("find_ncp_t_lm inverts pt() correctly", {
+  skip_on_cran()
   ncp <- spicy:::find_ncp_t_lm(t_obs = 2.5, df = 30, p = 0.5)
   expect_equal(stats::pt(2.5, df = 30, ncp = ncp), 0.5, tolerance = 1e-6)
 
@@ -3952,6 +4091,7 @@ test_that("find_ncp_t_lm inverts pt() correctly", {
 })
 
 test_that("find_ncp_t_lm returns NA for invalid inputs", {
+  skip_on_cran()
   expect_true(is.na(spicy:::find_ncp_t_lm(NA_real_, 10, 0.5)))
   expect_true(is.na(spicy:::find_ncp_t_lm(2, NA_real_, 0.5)))
   expect_true(is.na(spicy:::find_ncp_t_lm(2, 0, 0.5)))
@@ -3960,6 +4100,7 @@ test_that("find_ncp_t_lm returns NA for invalid inputs", {
 })
 
 test_that("find_ncp_f_lm inverts pf() correctly and respects ncp >= 0", {
+  skip_on_cran()
   ncp <- spicy:::find_ncp_f_lm(f_obs = 5, df1 = 2, df2 = 30, p = 0.5)
   expect_gte(ncp, 0)
   expect_equal(
@@ -3983,6 +4124,7 @@ test_that("find_ncp_f_lm inverts pf() correctly and respects ncp >= 0", {
 })
 
 test_that("find_ncp_f_lm returns NA for invalid inputs", {
+  skip_on_cran()
   expect_true(is.na(spicy:::find_ncp_f_lm(NA_real_, 2, 30, 0.5)))
   expect_true(is.na(spicy:::find_ncp_f_lm(-1, 2, 30, 0.5)))
   expect_true(is.na(spicy:::find_ncp_f_lm(5, 0, 30, 0.5)))
@@ -3991,6 +4133,7 @@ test_that("find_ncp_f_lm returns NA for invalid inputs", {
 })
 
 test_that("compute_es_ci_lm dispatches and the strict fallback rejects unknown effect_size", {
+  skip_on_cran()
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
 
   expect_equal(
@@ -4012,6 +4155,7 @@ test_that("compute_es_ci_lm dispatches and the strict fallback rejects unknown e
 })
 
 test_that("pick_es_value_lm fails fast on unknown effect_size", {
+  skip_on_cran()
   ms <- list(f2 = 1, d = 0.5, g = 0.45, omega2 = 0.2)
   expect_error(
     spicy:::pick_es_value_lm(ms, "bogus"),
@@ -4023,6 +4167,7 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
 })
 
 test_that("compute_model_vcov refuses when sandwich errors", {
+  skip_on_cran()
   # The branch is reached only when sandwich::vcovHC() itself errors. It
   # used to warn and return the classical matrix, which the caller then
   # labeled robust (register n. 229); it now refuses and says why.
@@ -4045,6 +4190,7 @@ test_that("compute_model_vcov refuses when sandwich errors", {
 })
 
 test_that("compute_model_vcov matches sandwich::vcovHC numerically", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt + cyl, data = mtcars)
   for (type in c("HC0", "HC1", "HC2", "HC3", "HC4", "HC4m", "HC5")) {
     expect_equal(
@@ -4060,6 +4206,7 @@ test_that("compute_model_vcov matches sandwich::vcovHC numerically", {
 # ---- end effect sizes ----
 
 test_that("table_continuous_lm clipboard output can be exercised with a mocked writer", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
 
   captured <- NULL
@@ -4105,6 +4252,7 @@ test_that("table_continuous_lm clipboard output can be exercised with a mocked w
 # ---- coverage: resolve_cluster_argument error paths ----
 
 test_that("resolve_cluster_argument rejects unevaluable expressions", {
+  skip_on_cran()
   data <- data.frame(y = 1:5, x = 1:5)
   q <- rlang::quo(this_object_does_not_exist_anywhere)
   expect_error(
@@ -4114,6 +4262,7 @@ test_that("resolve_cluster_argument rejects unevaluable expressions", {
 })
 
 test_that("resolve_cluster_argument rejects multi-way list / data.frame", {
+  skip_on_cran()
   data <- data.frame(y = 1:5, x = 1:5, g1 = 1:5, g2 = letters[1:5])
   q <- rlang::quo(list(g1, g2))
   expect_error(
@@ -4128,6 +4277,7 @@ test_that("resolve_cluster_argument rejects multi-way list / data.frame", {
 })
 
 test_that("resolve_cluster_argument rejects non-atomic resolved value", {
+  skip_on_cran()
   data <- data.frame(y = 1:5, x = 1:5)
   # An S4 / non-atomic non-list value is unusual, but a function or
   # environment is non-atomic and not a list.
@@ -4141,6 +4291,7 @@ test_that("resolve_cluster_argument rejects non-atomic resolved value", {
 # ---- coverage: compute_model_vcov dispatch ----
 
 test_that("compute_model_vcov errors clearly on unknown vcov type", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   expect_error(
     spicy:::compute_model_vcov(fit, type = "BOGUS"),
@@ -4149,6 +4300,7 @@ test_that("compute_model_vcov errors clearly on unknown vcov type", {
 })
 
 test_that("compute_model_vcov simulates clubSandwich missing for CR types", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     requireNamespace = function(package, ...) {
@@ -4169,6 +4321,7 @@ test_that("compute_model_vcov simulates clubSandwich missing for CR types", {
 # ---- coverage: bootstrap warnings ----
 
 test_that("compute_resample_vcov_bootstrap errors when fewer than 10 valid replicates", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   # Force every refit to fail by mocking lm.wfit so 0 replicates succeed.
   testthat::local_mocked_bindings(
@@ -4184,6 +4337,7 @@ test_that("compute_resample_vcov_bootstrap errors when fewer than 10 valid repli
 })
 
 test_that("compute_resample_vcov_bootstrap warns when over half of replicates fail", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   real_lm_wfit <- stats::lm.wfit
   call_count <- 0L
@@ -4212,6 +4366,7 @@ test_that("compute_resample_vcov_bootstrap warns when over half of replicates fa
 # ---- coverage: get_test_header_lm edge cases ----
 
 test_that("get_test_header_lm returns NULL when test_type column is all NA", {
+  skip_on_cran()
   block <- data.frame(
     test_type = NA_character_,
     df1 = NA_integer_,
@@ -4224,6 +4379,7 @@ test_that("get_test_header_lm returns NULL when test_type column is all NA", {
 })
 
 test_that("get_test_header_lm returns plain z / chi^2 / t / F when df not available", {
+  skip_on_cran()
   # z asymptotic
   block_z <- data.frame(
     test_type = "z",
@@ -4284,6 +4440,7 @@ test_that("get_test_header_lm returns plain z / chi^2 / t / F when df not availa
 })
 
 test_that("get_test_header_lm returns the raw test_type for unknown labels", {
+  skip_on_cran()
   block <- data.frame(
     test_type = "weirdo",
     df1 = NA_integer_,
@@ -4297,6 +4454,7 @@ test_that("get_test_header_lm returns the raw test_type for unknown labels", {
 })
 
 test_that("format_effect_size_header_lm passes through unknown labels", {
+  skip_on_cran()
   expect_equal(spicy:::format_effect_size_header_lm("custom"), "custom")
   expect_equal(spicy:::format_effect_size_header_lm("cohens_d"), "d")
   expect_equal(spicy:::format_effect_size_header_lm("hedges_g"), "g")
@@ -4305,6 +4463,7 @@ test_that("format_effect_size_header_lm passes through unknown labels", {
 # ---- coverage: omega2 / smd CI degenerate paths ----
 
 test_that("compute_lm_omega2 returns NA when y is non-numeric", {
+  skip_on_cran()
   # Inject a fake fit where model.response is non-numeric. We do this
   # by mocking model.response.
   fit <- stats::lm(extra ~ group, data = sleep)
@@ -4319,6 +4478,7 @@ test_that("compute_lm_omega2 returns NA when y is non-numeric", {
 })
 
 test_that("compute_smd_ci_lm returns NA when slope is not finite or x not factor", {
+  skip_on_cran()
   # Numeric predictor (not a factor) -> NA
   fit_num <- stats::lm(mpg ~ wt, data = mtcars)
   out <- spicy:::compute_smd_ci_lm(
@@ -4339,12 +4499,14 @@ test_that("compute_smd_ci_lm returns NA when slope is not finite or x not factor
 })
 
 test_that("extract_lm_f_stat returns NULL for an intercept-only fit", {
+  skip_on_cran()
   df <- data.frame(y = c(1, 2, 3, 4, 5))
   fit <- stats::lm(y ~ 1, data = df)
   expect_null(spicy:::extract_lm_f_stat(fit))
 })
 
 test_that("compute_omega2_ci_lm and compute_f2_ci_lm return NA when F-stat is missing", {
+  skip_on_cran()
   df <- data.frame(y = c(1, 2, 3, 4, 5))
   fit <- stats::lm(y ~ 1, data = df)
   expect_equal(
@@ -4360,6 +4522,7 @@ test_that("compute_omega2_ci_lm and compute_f2_ci_lm return NA when F-stat is mi
 # ---- coverage: build_wide_display_df NA branches ----
 
 test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", {
+  skip_on_cran()
   # Trigger empty-row path: an outcome with no observed value at all, no
   # data in a nor in b, which the note says: no warning. (An outcome with
   # data in one level keeps the mean and the n of that level.)
@@ -4385,6 +4548,7 @@ test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", 
 })
 
 test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighted_n on empty rows", {
+  skip_on_cran()
   df <- data.frame(
     y_ok = c(1, 2, 3, 4, 5, 6),
     y_short = rep(NA_real_, 6),
@@ -4410,6 +4574,7 @@ test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighte
 # ---- coverage: export engines (skip if Suggests not installed) ----
 
 test_that("table_continuous_lm gt output is rendered (decimal align default)", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous_lm(
     sochealth,
@@ -4421,6 +4586,7 @@ test_that("table_continuous_lm gt output is rendered (decimal align default)", {
 })
 
 test_that("table_continuous_lm gt output respects align = 'center' / 'right'", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   for (al in c("center", "right")) {
     out <- table_continuous_lm(
@@ -4435,6 +4601,7 @@ test_that("table_continuous_lm gt output respects align = 'center' / 'right'", {
 })
 
 test_that("table_continuous_lm tinytable output respects align = 'center' / 'right'", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   for (al in c("center", "right")) {
     out <- table_continuous_lm(
@@ -4449,6 +4616,7 @@ test_that("table_continuous_lm tinytable output respects align = 'center' / 'rig
 })
 
 test_that("table_continuous_lm flextable output is rendered (decimal default)", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   out <- table_continuous_lm(
     sochealth,
@@ -4460,6 +4628,7 @@ test_that("table_continuous_lm flextable output is rendered (decimal default)", 
 })
 
 test_that("table_continuous_lm flextable output respects align = 'center' / 'right'", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   for (al in c("center", "right")) {
     out <- table_continuous_lm(
@@ -4474,6 +4643,7 @@ test_that("table_continuous_lm flextable output respects align = 'center' / 'rig
 })
 
 test_that("table_continuous_lm word output writes a docx file", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   tmp <- tempfile(fileext = ".docx")
@@ -4490,6 +4660,7 @@ test_that("table_continuous_lm word output writes a docx file", {
 })
 
 test_that("table_continuous_lm word output errors when word_path is missing", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   expect_error(
@@ -4504,6 +4675,7 @@ test_that("table_continuous_lm word output errors when word_path is missing", {
 })
 
 test_that("table_continuous_lm excel output writes an xlsx file", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -4519,6 +4691,7 @@ test_that("table_continuous_lm excel output writes an xlsx file", {
 })
 
 test_that("table_continuous_lm excel output errors when excel_path is missing", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   expect_error(
     table_continuous_lm(
@@ -4532,6 +4705,7 @@ test_that("table_continuous_lm excel output errors when excel_path is missing", 
 })
 
 test_that("resolve_cluster_argument: non-null quo that evaluates to NULL returns NULL", {
+  skip_on_cran()
   data <- data.frame(y = 1:5, x = 1:5)
   null_fn <- function() NULL
   q <- rlang::new_quosure(rlang::expr(null_fn()), env = environment())
@@ -4551,6 +4725,7 @@ test_that("table_continuous_lm: labels argument overrides default outcome label"
 })
 
 test_that("table_continuous_lm: numeric predictor + weights exercises weighted lm path", {
+  skip_on_cran()
   df <- sochealth
   df$wt <- runif(nrow(df), 0.5, 1.5)
   out <- table_continuous_lm(
@@ -4567,6 +4742,7 @@ test_that("table_continuous_lm: numeric predictor + weights exercises weighted l
 })
 
 test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)", {
+  skip_on_cran()
   # Perfect fit: 3 observations, 3 levels => df.residual = 0. The
   # saturated-fit degradation (audit phase 2, finding 32) warns with a
   # classed condition and blanks the inferential columns to NA; the
@@ -4592,6 +4768,7 @@ test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)
 })
 
 test_that("a failed HC computation yields no matrix at all", {
+  skip_on_cran()
   testthat::local_mocked_bindings(
     vcovHC = function(x, type, ...) stop("synthetic test failure"),
     .package = "sandwich"
@@ -4609,6 +4786,7 @@ test_that("a failed HC computation yields no matrix at all", {
 })
 
 test_that("a failed CR computation yields no matrix at all", {
+  skip_on_cran()
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
     .package = "clubSandwich"
@@ -4626,6 +4804,7 @@ test_that("a failed CR computation yields no matrix at all", {
 })
 
 test_that("compute_resample_vcov_bootstrap errors when 0 valid replicates", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
     lm.wfit = function(...) stop("synthetic lm failure"),
@@ -4638,6 +4817,7 @@ test_that("compute_resample_vcov_bootstrap errors when 0 valid replicates", {
 })
 
 test_that("compute_resample_vcov_bootstrap refuses fewer than 10 replicates", {
+  skip_on_cran()
   # Below 10 valid replicates the covariance is refused, so a `boot_n`
   # under 10 is refused before any refit, with that reason.
   fit <- stats::lm(mpg ~ wt, data = mtcars)
@@ -4649,6 +4829,7 @@ test_that("compute_resample_vcov_bootstrap refuses fewer than 10 replicates", {
 })
 
 test_that("compute_resample_vcov_jackknife errors when 0 valid replicates", {
+  skip_on_cran()
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
     lm.wfit = function(...) stop("synthetic lm failure"),
@@ -4661,6 +4842,7 @@ test_that("compute_resample_vcov_jackknife errors when 0 valid replicates", {
 })
 
 test_that("compute_lm_omega2 returns NA when weights length mismatches y / when sum(w) = 0", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   # Weights with mismatched length
   testthat::local_mocked_bindings(
@@ -4674,6 +4856,7 @@ test_that("compute_lm_omega2 returns NA when weights length mismatches y / when 
 })
 
 test_that("compute_lm_omega2 returns NA when sum of weights is non-positive", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     weights = function(x, ...) rep(0, 20L),
@@ -4686,6 +4869,7 @@ test_that("compute_lm_omega2 returns NA when sum of weights is non-positive", {
 })
 
 test_that("compute_coef_inference uses qnorm CI when df is not finite (CR path)", {
+  skip_on_cran()
   fit <- stats::lm(extra ~ group, data = sleep)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = sleep$ID)
   testthat::local_mocked_bindings(
@@ -4714,6 +4898,7 @@ test_that("compute_coef_inference uses qnorm CI when df is not finite (CR path)"
 })
 
 test_that("compute_coef_inference uses qnorm CI when df.residual <= 0 (classical fallback)", {
+  skip_on_cran()
   # Perfect-fit lm: df.residual = 0 -> qnorm critical value branch
   fit <- stats::lm(c(1, 2, 3) ~ factor(c("a", "b", "c")))
   out <- spicy:::compute_coef_inference(
@@ -4726,6 +4911,7 @@ test_that("compute_coef_inference uses qnorm CI when df.residual <= 0 (classical
 })
 
 test_that("compute_wald_test: clubSandwich constrain_zero failure falls through to classical Wald", {
+  skip_on_cran()
   fit <- stats::lm(Sepal.Length ~ Species, data = iris)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = iris$Species)
   testthat::local_mocked_bindings(
@@ -4745,6 +4931,7 @@ test_that("compute_wald_test: clubSandwich constrain_zero failure falls through 
 })
 
 test_that("export_continuous_lm_table errors when required Suggests packages are missing", {
+  skip_on_cran()
   display_df <- data.frame(
     Variable = "x",
     M = "1",
@@ -4779,6 +4966,7 @@ test_that("export_continuous_lm_table errors when required Suggests packages are
 # ---- ordered and labelled by (audit phase 2: findings 11/19/20/21/25/26) ----
 
 test_that("ordered by: emmeans are the group means and match an unordered-fit oracle", {
+  skip_on_cran()
   # sochealth$education / $age_group are ordered factors. The fit used
   # to keep contr.poly while the prediction grid was rebuilt as a plain
   # factor, silently multiplying treatment-coded columns against
@@ -4836,6 +5024,7 @@ test_that("ordered by: emmeans are the group means and match an unordered-fit or
 })
 
 test_that("ordered by with weights: emmeans are the weighted group means (vignette oracle)", {
+  skip_on_cran()
   cc <- !is.na(sochealth$bmi) &
     !is.na(sochealth$education) &
     !is.na(sochealth$weight)
@@ -4860,6 +5049,7 @@ test_that("ordered by with weights: emmeans are the weighted group means (vignet
 })
 
 test_that("2-level ordered by: displayed difference is the full mean difference (lm oracle)", {
+  skip_on_cran()
   # A 2-level ordered factor used to display the contr.poly .L
   # coefficient as the difference: exactly Delta_true / sqrt(2), with
   # the CI shrunk by the same factor but an exact p (finding 20).
@@ -4921,6 +5111,7 @@ test_that("2-level ordered by: displayed difference is the full mean difference 
 })
 
 test_that("ordered by with covariates: proportional emmeans match the G-computation oracle", {
+  skip_on_cran()
   cc <- stats::complete.cases(
     sochealth[, c("bmi", "education", "age", "sex")]
   )
@@ -4954,6 +5145,7 @@ test_that("ordered by with covariates: proportional emmeans match the G-computat
 })
 
 test_that("balanced adjustment with an ordered factor covariate matches emmeans exactly", {
+  skip_on_cran()
   # The balanced grid used to rebuild the ordered covariate as a plain
   # factor: treatment columns against contr.poly coefficients
   # (finding 21). emmeans::emmeans() is the external oracle for the
@@ -4982,6 +5174,7 @@ test_that("balanced adjustment with an ordered factor covariate matches emmeans 
 })
 
 test_that("labelled by with value labels dispatches to the categorical path", {
+  skip_on_cran()
   # A haven labelled numeric with value labels used to pass
   # is.numeric() and silently produce a slope on the codes
   # (findings 25 / 26): non-significant slope vs a highly significant
@@ -5006,6 +5199,7 @@ test_that("labelled by with value labels dispatches to the categorical path", {
 })
 
 test_that("labelled_spss by with value labels forms groups and honors user_na", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   d <- data.frame(y = c(5, 6, 7, 10, 11, 12, 100, 200))
   d$grp <- haven::labelled_spss(
@@ -5032,6 +5226,7 @@ test_that("labelled_spss by with value labels forms groups and honors user_na", 
 })
 
 test_that("labelled by without value labels stays a continuous regressor", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   d <- data.frame(y = c(10, 12, 11, 13, 20, 22, 21, 23, 12, 14, 13, 15))
   d$gn <- haven::labelled(rep(c(1, 2, 3), each = 4))
@@ -5043,6 +5238,7 @@ test_that("labelled by without value labels stays a continuous regressor", {
 })
 
 test_that("a factor covariate with a declared-but-empty level fits cleanly", {
+  skip_on_cran()
   # Audit phase 2, finding 22 (real fix): empty declared covariate
   # levels are dropped at fit entry, so the table comes out correct
   # with no error. Oracle: the same lm() on droplevels()-ed data.
@@ -5097,6 +5293,7 @@ test_that("a factor covariate with a declared-but-empty level fits cleanly", {
 })
 
 test_that("NA weights are excluded from the analytic sample as documented", {
+  skip_on_cran()
   # Audit phase 2, finding 14: `weights` with NA used to hit the
   # finiteness gate (`!is.finite(NA)` is TRUE) and raise a hard error,
   # making the documented row-exclusion contract unreachable.
@@ -5136,6 +5333,7 @@ test_that("NA weights are excluded from the analytic sample as documented", {
 })
 
 test_that("rows dropped for missing by / weights are disclosed in the note", {
+  skip_on_cran()
   # Audit phase 2, findings 14 + 32: the family ledger convention.
   d <- data.frame(
     y = c(1, 2, 3, 4, 5, 6, 7, 8),
@@ -5179,6 +5377,7 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
 })
 
 test_that("proportional emmeans use the case weights (Stata margins)", {
+  skip_on_cran()
   # Audit phase 2, finding 23: the G-computation aggregation now
   # weights the averaged predictions by the fit weights. Oracle:
   # manual weighted mean of predictions, pinned at 1e-8.
@@ -5225,6 +5424,7 @@ test_that("proportional emmeans use the case weights (Stata margins)", {
 })
 
 test_that("adjusted omega2 CI matches effectsize's partial omega2 CI", {
+  skip_on_cran()
   # Audit phase 2, finding 24: the partial omega^2 CI used to be the
   # partial eta^2 CI (inversion at the raw F). Oracle: the
   # effectsize::omega_squared(partial = TRUE) recipe -- inversion at
@@ -5282,6 +5482,7 @@ test_that("adjusted omega2 CI matches effectsize's partial omega2 CI", {
 })
 
 test_that("non-syntactic covariate names survive formula construction", {
+  skip_on_cran()
   # Audit phase 2, finding 28: covariate names like "co var" used to
   # raise a raw parse error from reformulate().
   set.seed(3)
@@ -5305,6 +5506,7 @@ test_that("non-syntactic covariate names survive formula construction", {
 })
 
 test_that("a single-level by raises a classed, actionable error", {
+  skip_on_cran()
   # Audit phase 2, finding 32: an all-NA row used to be printed
   # silently.
   expect_error(
@@ -5329,6 +5531,7 @@ test_that("a single-level by raises a classed, actionable error", {
 })
 
 test_that("global options(contrasts=) does not alter categorical-by results", {
+  skip_on_cran()
   # Audit phase 2 delta, R1/R10: afex-style sessions set
   # options(contrasts = c("contr.sum", "contr.poly")), which used to
   # rename the lm() dummies ("x1" instead of "xb") and abort a binary
@@ -5367,6 +5570,7 @@ test_that("global options(contrasts=) does not alter categorical-by results", {
 })
 
 test_that("an outcome left with one observed group keeps the levels of the table", {
+  skip_on_cran()
   # Audit phase 2 delta, R4: per-outcome complete-case filtering that
   # leaves a single observed group used to emit a silent all-NA row
   # whose `level = NA` grew a spurious `M (NA)` column in the wide
@@ -5401,6 +5605,7 @@ test_that("an outcome left with one observed group keeps the levels of the table
 })
 
 test_that("an outcome a missing weight leaves with one group degrades loudly", {
+  skip_on_cran()
   # y2 has data in b, on row 4 only, whose weight is missing: the model
   # cannot reach b, and the cause is not a group with no data, so a
   # classed warning names the outcome. The table keeps both levels (b
@@ -5431,6 +5636,7 @@ test_that("an outcome a missing weight leaves with one group degrades loudly", {
 })
 
 test_that("a degenerate numeric by degrades loudly per outcome", {
+  skip_on_cran()
   # Companion to the categorical branch of R4: a slope needs variance
   # in `by` and at least two complete observations.
   d <- data.frame(y = c(1.2, 3.4, 2.8, 4.1), x = rep(2, 4))
@@ -5459,6 +5665,7 @@ test_that("a degenerate numeric by degrades loudly per outcome", {
 })
 
 test_that("a saturated fit reports NA inference with a classed warning", {
+  skip_on_cran()
   # Audit phase 2, finding 32: one observation per group used to
   # display NaN SEs and a misleading "z" test label.
   d <- data.frame(y = c(3.1, 7.2), g = factor(c("m", "f")))
@@ -5476,6 +5683,7 @@ test_that("a saturated fit reports NA inference with a classed warning", {
 })
 
 test_that("an outcome with no variance has no test, interval, effect size or R2", {
+  skip_on_cran()
   # lm() fits a constant exactly, and the inference it returned was
   # rounding noise: for y = 5 a p of .331 and an R2 of 0.49, other numbers
   # for y = 3.7, NaN for y = 0.1, with base R's "essentially perfect fit"
@@ -5583,6 +5791,7 @@ test_that("an outcome with no variance has no test, interval, effect size or R2"
 })
 
 test_that("a slope on an outcome with no variance is 0, with no inference", {
+  skip_on_cran()
   d <- data.frame(
     y = rep(3.7, 20),
     z = 1:20,
@@ -5620,6 +5829,7 @@ test_that("a slope on an outcome with no variance is 0, with no inference", {
 })
 
 test_that("a saturated or unfitted model leaves no cell blank", {
+  skip_on_cran()
   mark <- spicy_str("cell_undefined")
   first_row <- function(tl) {
     s <- as_structured(tl)
@@ -5683,6 +5893,7 @@ test_that("a saturated or unfitted model leaves no cell blank", {
 })
 
 test_that("a residual variance of zero draws no inference, with one warning", {
+  skip_on_cran()
   # Each group constant on its own value: lm() fits it exactly, the t of
   # the contrast was 3.32e+15 and base R warned of an "essentially perfect
   # fit". Decided on the data, with or without weights and covariates.
@@ -5752,6 +5963,7 @@ test_that("a residual variance of zero draws no inference, with one warning", {
 })
 
 test_that("an exact linear function of a numeric `by` draws no inference", {
+  skip_on_cran()
   # y = 2 + 3x: lm() fits it exactly, the t of the slope was 5.20e+16 and
   # base R warned of an "essentially perfect fit". Decided on the design
   # (y in the column space of the model matrix), with or without weights
@@ -5854,6 +6066,7 @@ test_that("an exact linear function of a numeric `by` draws no inference", {
 })
 
 test_that("an exact fit on a categorical `by` and a covariate keeps the adjusted means", {
+  skip_on_cran()
   # y = group constant + 2z: lm() fits it exactly although no group is
   # constant, so only the rank of the design shows it. The t of the
   # contrast was 1.31e+15, with base R's "essentially perfect fit" warning.
@@ -5928,6 +6141,7 @@ test_that("an exact fit on a categorical `by` and a covariate keeps the adjusted
 })
 
 test_that("table_continuous_lm() rejects bit64::integer64 columns", {
+  skip_on_cran()
   i64 <- structure(
     rep(c(4.94e-324, 9.88e-324), 10),
     class = "integer64"
@@ -5963,6 +6177,7 @@ test_that("table_continuous_lm() rejects bit64::integer64 columns", {
 # critic:pkgrd-broom-columns-stabilising (lot T4)
 
 test_that("align = 'auto' is removed from table_continuous_lm", {
+  skip_on_cran()
   expect_error(
     table_continuous_lm(mtcars, select = "mpg", by = "am", align = "auto"),
     class = "spicy_invalid_input"
@@ -6011,6 +6226,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
 })
 
 test_that("balanced adjustment expands logical covariates like factors (no crash)", {
+  skip_on_cran()
   # Wave-2 review: a logical covariate under adjustment = "balanced"
   # crashed with base R's "contrasts can be applied only to factors" --
   # the column was frozen at its numeric mean while lm() had encoded it
@@ -6040,6 +6256,7 @@ test_that("balanced adjustment expands logical covariates like factors (no crash
 
 
 test_that("missing values are disclosed in the table note (decision 14)", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$bmi[1:57] <- NA
   d$age[5:16] <- NA
@@ -6103,6 +6320,7 @@ test_that("missing values are disclosed in the table note (decision 14)", {
 })
 
 test_that("labels names the outcomes and the by variable (title, note)", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$sex[1:3] <- NA
   d$plain <- as.numeric(d$age)
@@ -6143,6 +6361,7 @@ test_that("labels names the outcomes and the by variable (title, note)", {
 })
 
 test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_on_cran()
   build <- function() {
     table_continuous_lm(
       sochealth,
@@ -6161,6 +6380,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
 })
 
 test_that("declared missing values are disclosed separately (decision 14)", {
+  skip_on_cran()
   d <- data.frame(y = c(5, 6, 7, 10, 11, 12, 99, NA))
   d$y <- structure(
     d$y,
@@ -6185,6 +6405,7 @@ test_that("declared missing values are disclosed separately (decision 14)", {
 
 
 test_that("a table with no spanner renders one header row in tinytable / gt / flextable", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -6213,6 +6434,7 @@ test_that("a table with no spanner renders one header row in tinytable / gt / fl
 # ---- gt spanner ids survive a make.names() collision ----------------------
 
 test_that("two `by` levels that differ only in punctuation still render", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   set.seed(1)
   d <- data.frame(
@@ -6245,6 +6467,7 @@ test_that("two `by` levels that differ only in punctuation still render", {
 })
 
 test_that("every gt spanner id in the family comes from a key", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   set.seed(2)
   d <- data.frame(y = rnorm(40), g = rep(c("A", "B"), 20))
@@ -6276,6 +6499,7 @@ test_that("every gt spanner id in the family comes from a key", {
 })
 
 test_that("the lm coverage percentage follows decimal_mark (decision 27)", {
+  skip_on_cran()
   set.seed(2)
   d <- data.frame(y = rnorm(40), g = rep(c("A", "B"), 20))
   tl <- table_continuous_lm(
@@ -6311,6 +6535,7 @@ test_that("the lm coverage percentage follows decimal_mark (decision 27)", {
 })
 
 test_that(".lm_spanner_ids is stable where nothing collides", {
+  skip_on_cran()
   keys <- c("Variable", "M (Female)", "M (Male)", "p", "n")
   ids <- spicy:::.lm_spanner_ids(keys)
   # Named by key: the producer and the styling site read one object.
@@ -6324,6 +6549,7 @@ test_that(".lm_spanner_ids is stable where nothing collides", {
 })
 
 test_that(".lm_spanner_ids refuses keys that already repeat", {
+  skip_on_cran()
   # `make.unique()` breaks a tie between DERIVED ids, not between the
   # keys themselves: repeated keys would name two entries the same, and
   # the by-name lookup at the styling site would hand gt one id twice --
@@ -6342,6 +6568,7 @@ test_that(".lm_spanner_ids refuses keys that already repeat", {
 })
 
 test_that("`p_value = NULL`, the family default, shows the p-value", {
+  skip_on_cran()
   expect_null(formals(table_continuous_lm)$p_value)
   a <- table_continuous_lm(sochealth, select = bmi, by = sex, output = "long")
   b <- table_continuous_lm(
@@ -6363,6 +6590,7 @@ test_that("`p_value = NULL`, the family default, shows the p-value", {
 })
 
 test_that("`by` and the covariates named in `select` are refused; helpers skip them", {
+  skip_on_cran()
   err <- expect_error(
     table_continuous_lm(sochealth, select = c(bmi, age), by = age),
     class = "spicy_invalid_input"
@@ -6396,6 +6624,7 @@ test_that("`by` and the covariates named in `select` are refused; helpers skip t
 })
 
 test_that("a logical `effect_size` is refused with the measures to use", {
+  skip_on_cran()
   err <- expect_error(
     table_continuous_lm(sochealth, select = bmi, by = sex, effect_size = TRUE),
     class = "spicy_defunct"
@@ -6415,6 +6644,7 @@ test_that("a logical `effect_size` is refused with the measures to use", {
 }
 
 test_that("an outcome with no data in a level is fit on the other levels", {
+  skip_on_cran()
   d <- .tclm_nodata()
   # Before lot N this call failed in the wide frame ("attempt to select
   # less than one element"): the outcome's rows lacked the level.
@@ -6476,6 +6706,7 @@ test_that("an outcome with no data in a level is fit on the other levels", {
 })
 
 test_that("an outcome with data in one level only keeps the mean of that level", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$wellbeing_score[d$sex == "Male"] <- NA
   # A question not asked in a group is ordinary data: the note says why
@@ -6555,6 +6786,7 @@ test_that("an outcome with data in one level only keeps the mean of that level",
 })
 
 test_that("tidy() keeps a level with no data as a row with NA", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   d <- .tclm_nodata()
   x <- table_continuous_lm(d, select = c(bmi, wellbeing_score), by = education)
@@ -6590,6 +6822,7 @@ test_that("tidy() keeps a level with no data as a row with NA", {
 })
 
 test_that("the outcomes with no data in the same levels share one sentence", {
+  skip_on_cran()
   d <- .tclm_nodata()
   d$wb2 <- d$wellbeing_score
   note <- attr(
@@ -6609,6 +6842,7 @@ test_that("the outcomes with no data in the same levels share one sentence", {
 })
 
 test_that("a first level without data hands the reference to the next one", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$wellbeing_score[d$education == "Lower secondary"] <- NA
   long <- table_continuous_lm(
@@ -6637,6 +6871,7 @@ test_that("a first level without data hands the reference to the next one", {
 })
 
 test_that("a level a covariate empties for one outcome keeps the blocks aligned", {
+  skip_on_cran()
   # wellbeing_score is observed in Tertiary only where age is missing: its
   # model cannot reach the level, which still has data, so the cell is
   # undefined (the mark, with no no-data sentence) and the columns stay
@@ -6663,6 +6898,7 @@ test_that("a level a covariate empties for one outcome keeps the blocks aligned"
 # ---- the note: one paragraph, the test named, the weights (lot N) ---------
 
 test_that("the note names the test behind the p-values", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   note_of <- function(...) {
     attr(table_continuous_lm(d, select = c(bmi, wellbeing_score), ...), "note")
@@ -6749,6 +6985,7 @@ test_that("the note names the test behind the p-values", {
 })
 
 test_that("a statistic shown without its p-value names its test: group comparison or slope test", {
+  skip_on_cran()
   set.seed(11)
   d <- data.frame(
     y = rnorm(90),
@@ -6816,6 +7053,7 @@ test_that("a statistic shown without its p-value names its test: group compariso
 })
 
 test_that("outcomes tested differently are each named with their test", {
+  skip_on_cran()
   x <- data.frame(
     variable = c("a", "a", "b", "b"),
     label = c("Alpha", "Alpha", "Beta", "Beta"),
@@ -6849,6 +7087,7 @@ test_that("outcomes tested differently are each named with their test", {
 })
 
 test_that("the weights are named, and the note is one paragraph", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   x <- table_continuous_lm(
     d,

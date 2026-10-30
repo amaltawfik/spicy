@@ -450,6 +450,7 @@ test_that("cross_tab warns about small expected cells", {
 # ── Simulate p ───────────────────────────────────────────────────────────
 
 test_that("cross_tab simulate_p adds (simulated) to note", {
+  skip_on_cran()
   res <- cross_tab(mtcars, cyl, gear, simulate_p = TRUE)
   # The simulated p-value varies run to run; pin the deterministic
   # prefix (df becomes NA under simulation) and the suffix marker.

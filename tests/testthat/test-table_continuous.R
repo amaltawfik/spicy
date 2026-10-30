@@ -1,6 +1,7 @@
 # ---- structure ----
 
 test_that("table_continuous returns correct structure", {
+  skip_on_cran()
   # output = "data.frame": the displayed table, its numbers under the
   # printed column names.
   out <- table_continuous(iris, output = "data.frame")
@@ -60,6 +61,7 @@ test_that("table_continuous returns spicy_continuous_table class when default ou
 })
 
 test_that("table_continuous returns visibly and is silent when assigned", {
+  skip_on_cran()
   # Decision 47: a bare call renders (capture.output() evaluates as at
   # top level, so the visible return auto-prints); an assignment
   # writes nothing.
@@ -83,6 +85,7 @@ test_that("table_continuous returns visibly and is silent when assigned", {
 })
 
 test_that("table_continuous default output object carries correct attributes", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -97,11 +100,13 @@ test_that("table_continuous default output object carries correct attributes", {
 })
 
 test_that("table_continuous default output with group carries group_var attribute", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length, by = Species)
   expect_equal(attr(out, "group_var"), "Species")
 })
 
 test_that("table_continuous accepts by as a character object without warnings", {
+  skip_on_cran()
   by_col <- "Species"
 
   expect_no_warning(
@@ -120,6 +125,7 @@ test_that("table_continuous accepts by as a character object without warnings", 
 # ---- computation ----
 
 test_that("table_continuous computes correct values", {
+  skip_on_cran()
   df <- data.frame(x = c(1, 2, 3, 4, 5))
   out <- table_continuous(df, output = "long")
   expect_equal(out$mean, 3)
@@ -130,6 +136,7 @@ test_that("table_continuous computes correct values", {
 })
 
 test_that("table_continuous CI is t-based", {
+  skip_on_cran()
   df <- data.frame(x = c(10, 20, 30))
   out <- table_continuous(df, ci_level = 0.95, output = "long")
   m <- mean(c(10, 20, 30))
@@ -140,6 +147,7 @@ test_that("table_continuous CI is t-based", {
 })
 
 test_that("table_continuous ci_level affects width", {
+  skip_on_cran()
   df <- data.frame(x = 1:100)
   out90 <- table_continuous(df, ci_level = 0.90, output = "long")
   out99 <- table_continuous(df, ci_level = 0.99, output = "long")
@@ -150,6 +158,7 @@ test_that("table_continuous ci_level affects width", {
 })
 
 test_that("table_continuous handles multiple numeric variables", {
+  skip_on_cran()
   out <- table_continuous(iris, output = "long")
   expect_equal(nrow(out), 4L)
   expect_equal(
@@ -163,6 +172,7 @@ test_that("table_continuous handles multiple numeric variables", {
 # ---- NA handling ----
 
 test_that("table_continuous handles NAs", {
+  skip_on_cran()
   df <- data.frame(x = c(1, NA, 3, NA, 5))
   out <- table_continuous(df, output = "long")
   expect_equal(out$n, 3L)
@@ -170,6 +180,7 @@ test_that("table_continuous handles NAs", {
 })
 
 test_that("table_continuous handles all-NA column", {
+  skip_on_cran()
   df <- data.frame(x = rep(NA_real_, 5))
   out <- table_continuous(df, output = "long")
   # No observed value at all: no data, so the count is undefined too.
@@ -183,6 +194,7 @@ test_that("table_continuous handles all-NA column", {
 })
 
 test_that("table_continuous n=1 gives NA for sd and CI", {
+  skip_on_cran()
   df <- data.frame(x = 42)
   out <- table_continuous(df, output = "long")
   expect_equal(out$n, 1L)
@@ -195,6 +207,7 @@ test_that("table_continuous n=1 gives NA for sd and CI", {
 })
 
 test_that("the undefined glyph sets the width of the column it lands in", {
+  skip_on_cran()
   # Decision 23 replaced a two-character placeholder with a
   # one-character one, and the placeholder takes part in the
   # integer-part width `decimal_align_strings()` computes for its
@@ -241,6 +254,7 @@ test_that("the undefined glyph sets the width of the column it lands in", {
 })
 
 test_that("table_continuous display uses the undefined glyph for NA", {
+  skip_on_cran()
   df <- data.frame(x = 42)
   out <- table_continuous(df)
   display <- spicy:::build_display_df(out, 2L, ".", 0.95)
@@ -253,12 +267,14 @@ test_that("table_continuous display uses the undefined glyph for NA", {
 # ---- column selection ----
 
 test_that("table_continuous filters non-numeric columns", {
+  skip_on_cran()
   df <- data.frame(x = 1:5, y = letters[1:5], z = 6:10)
   out <- table_continuous(df, output = "data.frame")
   expect_equal(out$variable, c("x", "z"))
 })
 
 test_that("table_continuous select works with tidyselect", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Petal.Width),
@@ -269,6 +285,7 @@ test_that("table_continuous select works with tidyselect", {
 })
 
 test_that("table_continuous select works with character vector", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c("Sepal.Length", "Petal.Width"),
@@ -279,6 +296,7 @@ test_that("table_continuous select works with character vector", {
 })
 
 test_that("table_continuous select works with tidyselect helpers", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = starts_with("Sepal"),
@@ -289,6 +307,7 @@ test_that("table_continuous select works with tidyselect helpers", {
 })
 
 test_that("table_continuous exclude works", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width, Petal.Length),
@@ -300,6 +319,7 @@ test_that("table_continuous exclude works", {
 })
 
 test_that("table_continuous exclude works with an unquoted column name", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width, Petal.Length),
@@ -311,6 +331,7 @@ test_that("table_continuous exclude works with an unquoted column name", {
 })
 
 test_that("table_continuous exclude works with tidyselect syntax", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = everything(),
@@ -324,6 +345,7 @@ test_that("table_continuous exclude works with tidyselect syntax", {
 })
 
 test_that("table_continuous regex selection works", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = "^Sepal",
@@ -335,11 +357,13 @@ test_that("table_continuous regex selection works", {
 })
 
 test_that("table_continuous regex with default select matches all", {
+  skip_on_cran()
   out <- table_continuous(iris, regex = TRUE, output = "data.frame")
   expect_equal(nrow(out), 4L)
 })
 
 test_that("table_continuous verbose reports ignored columns", {
+  skip_on_cran()
   df <- data.frame(x = 1:5, y = letters[1:5], z = 6:10)
   expect_message(
     table_continuous(df, output = "data.frame", verbose = TRUE),
@@ -350,6 +374,7 @@ test_that("table_continuous verbose reports ignored columns", {
 # ---- labels ----
 
 test_that("table_continuous uses column names as default labels", {
+  skip_on_cran()
   df <- data.frame(x = 1:5, y = 6:10)
   out <- table_continuous(df, output = "data.frame")
   expect_equal(out$label, c("x", "y"))
@@ -366,12 +391,14 @@ test_that("table_continuous accepts custom labels", {
 })
 
 test_that("table_continuous custom labels apply only to matching columns", {
+  skip_on_cran()
   df <- data.frame(x = 1:5, y = 6:10)
   out <- table_continuous(df, labels = c(x = "My X"), output = "data.frame")
   expect_equal(out$label, c("My X", "y"))
 })
 
 test_that("table_continuous reads haven labels only under labels = TRUE", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   attr(df$x, "label") <- "A labeled var"
   expect_equal(table_continuous(df, output = "data.frame")$label, "x")
@@ -380,6 +407,7 @@ test_that("table_continuous reads haven labels only under labels = TRUE", {
 })
 
 test_that("labels: TRUE falls back to the name, the named form to the option", {
+  skip_on_cran()
   df <- data.frame(a = 1:5, b = 6:10, n = 1:5, e = 6:10)
   attr(df$a, "label") <- "Alpha"
   attr(df$n, "label") <- NA_character_
@@ -401,6 +429,7 @@ test_that("labels: TRUE falls back to the name, the named form to the option", {
 })
 
 test_that("table_continuous custom labels override haven labels", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   attr(df$x, "label") <- "Haven label"
   out <- table_continuous(df, labels = c(x = "Custom"), output = "data.frame")
@@ -422,6 +451,7 @@ test_that("table_continuous grouped output has group column", {
 })
 
 test_that("table_continuous grouped stats are correct", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -436,12 +466,14 @@ test_that("table_continuous grouped stats are correct", {
 })
 
 test_that("table_continuous group_var is excluded from numeric selection", {
+  skip_on_cran()
   df <- data.frame(g = rep(1:2, each = 5), x = 1:10, y = 11:20)
   out <- table_continuous(df, by = g, output = "data.frame")
   expect_false("g" %in% out$variable)
 })
 
 test_that("table_continuous preserves factor level order in group_var", {
+  skip_on_cran()
   df <- data.frame(
     g = factor(
       rep(c("C", "A", "B"), each = 5),
@@ -454,6 +486,7 @@ test_that("table_continuous preserves factor level order in group_var", {
 })
 
 test_that("table_continuous grouped with multiple variables", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Petal.Length),
@@ -468,6 +501,7 @@ test_that("table_continuous grouped with multiple variables", {
 })
 
 test_that("table_continuous sorts the groups of a non-factor by", {
+  skip_on_cran()
   # Decision 4 of the ADR of 2026-10-20: a non-factor `by` is sorted, in
   # the C locale for text, whatever the order of the rows (it followed
   # the order of first appearance until 0.14.0).
@@ -488,6 +522,7 @@ test_that("table_continuous sorts the groups of a non-factor by", {
 })
 
 test_that("the test direction follows the displayed group order", {
+  skip_on_cran()
   # Companion to finding 17: the formula interface of t.test() would
   # re-sort a bare character `by`; the statistic's sign must match
   # the displayed first-minus-second convention.
@@ -511,6 +546,7 @@ test_that("the test direction follows the displayed group order", {
 # ---- p_value / statistic ----
 
 test_that("table_continuous p_value adds p column without Test column", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -555,6 +591,7 @@ test_that("table_continuous p_value adds p column without Test column", {
 })
 
 test_that("table_continuous p_value + statistic adds both columns", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -576,6 +613,7 @@ test_that("table_continuous p_value + statistic adds both columns", {
 })
 
 test_that("table_continuous statistic alone shows Test column without p", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -609,6 +647,7 @@ test_that("table_continuous statistic alone shows Test column without p", {
 })
 
 test_that("table_continuous p_value without by warns", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       iris,
@@ -622,6 +661,7 @@ test_that("table_continuous p_value without by warns", {
 })
 
 test_that("table_continuous statistic without by warns", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       iris,
@@ -635,6 +675,7 @@ test_that("table_continuous statistic without by warns", {
 })
 
 test_that("table_continuous p_value default output carries show_p attribute", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -646,6 +687,7 @@ test_that("table_continuous p_value default output carries show_p attribute", {
 })
 
 test_that("table_continuous p_value + statistic default output carries both attributes", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -658,6 +700,7 @@ test_that("table_continuous p_value + statistic default output carries both attr
 })
 
 test_that("table_continuous statistic default output carries show_statistic attribute", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -670,6 +713,7 @@ test_that("table_continuous statistic default output carries show_statistic attr
 })
 
 test_that("table_continuous p_value auto-shows when by is supplied", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -681,6 +725,7 @@ test_that("table_continuous p_value auto-shows when by is supplied", {
 })
 
 test_that("table_continuous p_value stays hidden when by is absent", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length
@@ -690,6 +735,7 @@ test_that("table_continuous p_value stays hidden when by is absent", {
 })
 
 test_that("table_continuous p_value = FALSE suppresses column when by is supplied", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -701,6 +747,7 @@ test_that("table_continuous p_value = FALSE suppresses column when by is supplie
 })
 
 test_that("p_value = FALSE drops p.value when another argument runs the test (issue #9)", {
+  skip_on_cran()
   build <- function(...) {
     table_continuous(iris, select = Sepal.Length, by = Species, ...)
   }
@@ -725,6 +772,7 @@ test_that("p_value = FALSE drops p.value when another argument runs the test (is
 })
 
 test_that("table_continuous print works with statistic only", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -735,6 +783,7 @@ test_that("table_continuous print works with statistic only", {
 })
 
 test_that("table_continuous print works with p_value only", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -745,6 +794,7 @@ test_that("table_continuous print works with p_value only", {
 })
 
 test_that("table_continuous print works with p_value + statistic", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -758,11 +808,13 @@ test_that("table_continuous print works with p_value + statistic", {
 # ---- test method ----
 
 test_that("table_continuous test='welch' is the default (2 groups)", {
+  skip_on_cran()
   df <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out <- table_continuous(df, by = g, p_value = TRUE, output = "long")
   expect_equal(out$test_type[1], "welch_t")
 })
 test_that("table_continuous test='welch' with 3+ groups uses welch_anova", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -774,6 +826,7 @@ test_that("table_continuous test='welch' with 3+ groups uses welch_anova", {
 })
 
 test_that("table_continuous test='student' uses student_t for 2 groups", {
+  skip_on_cran()
   df <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out <- table_continuous(
     df,
@@ -786,6 +839,7 @@ test_that("table_continuous test='student' uses student_t for 2 groups", {
 })
 
 test_that("table_continuous test='student' uses anova for 3+ groups", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -799,6 +853,7 @@ test_that("table_continuous test='student' uses anova for 3+ groups", {
 })
 
 test_that("table_continuous test='nonparametric' uses wilcoxon for 2 groups", {
+  skip_on_cran()
   df <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out <- table_continuous(
     df,
@@ -812,6 +867,7 @@ test_that("table_continuous test='nonparametric' uses wilcoxon for 2 groups", {
 })
 
 test_that("table_continuous test='nonparametric' uses kruskal for 3+ groups", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -825,6 +881,7 @@ test_that("table_continuous test='nonparametric' uses kruskal for 3+ groups", {
 })
 
 test_that("table_continuous test attribute is stored", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -836,6 +893,7 @@ test_that("table_continuous test attribute is stored", {
 })
 
 test_that("table_continuous test attribute is NA without by", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(iris, select = Sepal.Length, p_value = TRUE),
     "ignored"
@@ -844,6 +902,7 @@ test_that("table_continuous test attribute is NA without by", {
 })
 
 test_that("table_continuous warns when test is set without p_value/statistic", {
+  skip_on_cran()
   expect_warning(
     table_continuous(
       iris,
@@ -857,6 +916,7 @@ test_that("table_continuous warns when test is set without p_value/statistic", {
 })
 
 test_that("the test-ignored warning states the full trigger condition", {
+  skip_on_cran()
   expect_warning(
     table_continuous(
       iris,
@@ -886,6 +946,7 @@ test_that("the test-ignored warning states the full trigger condition", {
 })
 
 test_that("table_continuous nonparametric statistic display uses W and H", {
+  skip_on_cran()
   df2 <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out2 <- table_continuous(
     df2,
@@ -922,6 +983,7 @@ test_that("table_continuous nonparametric statistic display uses W and H", {
 })
 
 test_that("table_continuous student statistic display uses t and F", {
+  skip_on_cran()
   df2 <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out2 <- table_continuous(
     df2,
@@ -958,6 +1020,7 @@ test_that("table_continuous student statistic display uses t and F", {
 })
 
 test_that("table_continuous test='nonparametric' p-values match base R", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -973,11 +1036,13 @@ test_that("table_continuous test='nonparametric' p-values match base R", {
 # ---- formatting ----
 
 test_that("table_continuous decimal_mark attribute is set", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length, decimal_mark = ",")
   expect_equal(attr(out, "decimal_mark"), ",")
 })
 
 test_that("table_continuous decimal_mark comma in display output", {
+  skip_on_cran()
   df <- data.frame(x = c(1.5, 2.5, 3.5))
   out <- table_continuous(df, decimal_mark = ",")
   display <- spicy:::build_display_df(out, 2L, ",", 0.95)
@@ -986,6 +1051,7 @@ test_that("table_continuous decimal_mark comma in display output", {
 })
 
 test_that("table_continuous digits parameter controls precision", {
+  skip_on_cran()
   df <- data.frame(x = c(1.123456, 2.654321, 3.987654))
   d0 <- spicy:::build_display_df(
     table_continuous(df, digits = 0),
@@ -1004,6 +1070,7 @@ test_that("table_continuous digits parameter controls precision", {
 })
 
 test_that("table_continuous uses dedicated digits for effect sizes", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -1057,6 +1124,7 @@ test_that("table_continuous uses dedicated digits for effect sizes", {
 }
 
 test_that("a named digits gives each variable its own decimals", {
+  skip_on_cran()
   d <- .dpv_data()
   x <- table_continuous(
     d,
@@ -1098,6 +1166,7 @@ test_that("a named digits gives each variable its own decimals", {
 })
 
 test_that("inline() and as_structured() follow the decimals the table prints", {
+  skip_on_cran()
   d <- .dpv_data()
   a <- d$g == "A"
   tbl <- function(...) {
@@ -1148,6 +1217,7 @@ test_that("inline() and as_structured() follow the decimals the table prints", {
 })
 
 test_that("a name that matches no variable warns and is left out, as in labels", {
+  skip_on_cran()
   d <- .dpv_data()
   expect_warning(
     x <- table_continuous(
@@ -1171,6 +1241,7 @@ test_that("a name that matches no variable warns and is left out, as in labels",
 })
 
 test_that("the other forms of digits are errors that give both forms", {
+  skip_on_cran()
   d <- .dpv_data()
   bad <- list(
     c(1, 2),
@@ -1230,6 +1301,7 @@ test_that("the other forms of digits are errors that give both forms", {
 })
 
 test_that("the variables a named digits leaves out keep the style's", {
+  skip_on_cran()
   d <- .dpv_data()
   x <- table_continuous(
     d,
@@ -1254,6 +1326,7 @@ test_that("the variables a named digits leaves out keep the style's", {
 })
 
 test_that("a weighted n keeps the table's decimals, a median the variable's", {
+  skip_on_cran()
   d <- .dpv_data()
   d$w <- rep(c(0.5, 1.5), 15L)
   dg <- c(height = 0, bmi = 1)
@@ -1286,6 +1359,7 @@ test_that("a weighted n keeps the table's decimals, a median the variable's", {
 })
 
 test_that("table_continuous_lm() gives each outcome its decimals", {
+  skip_on_cran()
   d <- .dpv_data()
   a <- d$g == "A"
   dg <- c(height = 0, bmi = 1)
@@ -1348,6 +1422,7 @@ test_that("table_continuous_lm() gives each outcome its decimals", {
 })
 
 test_that("table_continuous_svy() gives each variable its decimals", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   d <- .dpv_data()
   d$w <- rep(c(0.5, 1.5), 15L)
@@ -1386,16 +1461,19 @@ test_that("table_continuous_svy() gives each variable its decimals", {
 # ---- printing ----
 
 test_that("print.spicy_continuous_table produces output", {
+  skip_on_cran()
   out <- table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
   expect_output(print(out))
 })
 
 test_that("print.spicy_continuous_table works with groups", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length, by = Species)
   expect_output(print(out))
 })
 
 test_that("print.spicy_continuous_table returns invisible x", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length)
   ret <- withVisible(print(out))
   expect_false(ret$visible)
@@ -1403,6 +1481,7 @@ test_that("print.spicy_continuous_table returns invisible x", {
 })
 
 test_that("the console prints the registry header, not the column key", {
+  skip_on_cran()
   # At the English default the label and the key are the same string, so
   # nothing else in the suite can tell whether the console reads the
   # label layer at all. Mocking the resolver makes the difference
@@ -1427,6 +1506,7 @@ test_that("the console prints the registry header, not the column key", {
 })
 
 test_that("a table without `by` draws no variable separator in the console", {
+  skip_on_cran()
   # A one-way table has one row per variable, so the block key changes
   # on every row and `.struct_run_sep_rows()` answers "every row". The
   # console does not want a hairline under each of them; the engines do
@@ -1444,6 +1524,7 @@ test_that("a table without `by` draws no variable separator in the console", {
 })
 
 test_that("a missing variable label falls back to the column name", {
+  skip_on_cran()
   # `nzchar(NA)` is TRUE, so a partly-labelled import used to send the
   # attribute's NA into the table's stub. Downstream that was worse than
   # a wrong word: `nchar(NA)` is NA, which turned the padding decision
@@ -1473,6 +1554,7 @@ test_that("a missing variable label falls back to the column name", {
 })
 
 test_that("a wide-character label does not overflow a narrow console", {
+  skip_on_cran()
   # `nchar()` counts CHARACTERS, the renderer lays out COLUMNS. A CJK
   # label is twice as wide as it is long, so the padding decision used to
   # under-measure it and emit a table wider than the console. Measured on
@@ -1498,6 +1580,7 @@ test_that("table_continuous errors on non-data-frame", {
 })
 
 test_that("table_continuous validates ci_level", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, ci_level = 2), "ci_level")
   expect_error(table_continuous(df, ci_level = 0), "ci_level")
@@ -1507,6 +1590,7 @@ test_that("table_continuous validates ci_level", {
 })
 
 test_that("table_continuous validates digits", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, digits = -1), "digits")
   expect_error(table_continuous(df, digits = "a"), "digits")
@@ -1526,11 +1610,13 @@ test_that("table_continuous validates digits", {
 })
 
 test_that("table_continuous validates decimal_mark", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, decimal_mark = "--"), "decimal_mark")
 })
 
 test_that("table_continuous validates labels", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, labels = c("a", "b")), "labels")
   expect_error(table_continuous(df, labels = 42), "labels")
@@ -1551,11 +1637,13 @@ test_that("table_continuous validates labels", {
 })
 
 test_that("table_continuous validates by", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, by = nonexistent), "by")
 })
 
 test_that("table_continuous validates regex select", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(
     table_continuous(df, select = c("a", "b"), regex = TRUE),
@@ -1568,6 +1656,7 @@ test_that("table_continuous validates regex select", {
 })
 
 test_that("table_continuous validates logical parameters", {
+  skip_on_cran()
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, p_value = "yes"), "p_value")
   expect_error(table_continuous(df, statistic = 1), "statistic")
@@ -1579,6 +1668,7 @@ test_that("table_continuous validates logical parameters", {
 })
 
 test_that("table_continuous discloses NA in the by column in the note only", {
+  skip_on_cran()
   # The default `drop_na = TRUE` removes the rows and the note says how
   # many, as in the rest of the family: no warning on a default.
   df <- data.frame(
@@ -1598,6 +1688,7 @@ test_that("table_continuous discloses NA in the by column in the note only", {
 })
 
 test_that("table_continuous discloses removed NAs in a table note", {
+  skip_on_cran()
   df <- data.frame(x = c(1:7, NA), y = c(NA, NA, 3:8))
   out <- table_continuous(df, select = c("x", "y"))
   expect_equal(
@@ -1616,6 +1707,7 @@ test_that("table_continuous discloses removed NAs in a table note", {
 })
 
 test_that("the missing-values note names each variable by its row label", {
+  skip_on_cran()
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
     attr(out, "note"),
@@ -1655,6 +1747,7 @@ test_that("the missing-values note names each variable by its row label", {
 })
 
 test_that("a label with a comma turns the missing-values list to semicolons", {
+  skip_on_cran()
   df <- data.frame(x = c(1:7, NA), y = c(NA, NA, 3:8))
   note <- function() {
     attr(
@@ -1686,6 +1779,7 @@ test_that("a label with a comma turns the missing-values list to semicolons", {
 })
 
 test_that("the by title and the missing-by note follow labels", {
+  skip_on_cran()
   d <- sochealth[, c("bmi", "income_group")]
   build <- function(...) {
     suppressWarnings(table_continuous(d, select = bmi, by = income_group, ...))
@@ -1720,6 +1814,7 @@ test_that("the by title and the missing-by note follow labels", {
 })
 
 test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_on_cran()
   build <- function() {
     table_continuous(
       sochealth,
@@ -1738,6 +1833,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
 })
 
 test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
+  skip_on_cran()
   df <- data.frame(
     x = c(1:6, NA),
     g = c("A", "A", "B", "B", NA, NA, "A")
@@ -1755,6 +1851,7 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
 })
 
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  skip_on_cran()
   tbl <- table_continuous(sochealth, select = c(bmi, age), by = sex)
   expect_identical(
     attr(tbl, "note"),
@@ -1812,6 +1909,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
 })
 
 test_that("drop_na = FALSE displays a (Missing) group and tests the observed", {
+  skip_on_cran()
   df <- data.frame(
     x = c(1, 2, 3, 4, 5, 6, 7, 8),
     g = c("A", "A", "B", "B", "A", "B", NA, NA)
@@ -1836,6 +1934,7 @@ test_that("drop_na = FALSE displays a (Missing) group and tests the observed", {
 })
 
 test_that("drop_na = FALSE refuses a real (Missing) group value", {
+  skip_on_cran()
   df <- data.frame(
     x = 1:6,
     g = c("(Missing)", "(Missing)", "B", "B", NA, NA)
@@ -1872,6 +1971,7 @@ test_that("drop_na = FALSE refuses a real (Missing) group value", {
 })
 
 test_that("drop_na = FALSE refuses a declared-only (Missing) level", {
+  skip_on_cran()
   # Audit phase 2 delta (sibling of R2/R3/R8): a factor `by` DECLARING an
   # unobserved "(Missing)" level plus real NAs used to display the
   # missing-`by` group twice under the same duplicated label. A declared
@@ -1900,6 +2000,7 @@ test_that("drop_na = FALSE refuses a declared-only (Missing) level", {
 })
 
 test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
+  skip_on_cran()
   df <- data.frame(x = c(1:4, NA))
   expect_warning(
     table_continuous(df, select = "x", drop_na = FALSE, output = "data.frame"),
@@ -1908,6 +2009,7 @@ test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
 })
 
 test_that("table_continuous raw outputs carry the note attribute", {
+  skip_on_cran()
   # Reversal of the pre-0.13 contract: a raw frame that a pipeline
   # re-renders itself must still be able to state what was removed.
   df <- data.frame(x = c(1:7, NA))
@@ -1951,6 +2053,7 @@ test_that("table_continuous raw outputs carry the note attribute", {
 }
 
 test_that("a variable with no data in a group shows the mark there, n included", {
+  skip_on_cran()
   d <- .tc_nodata()
   long <- table_continuous(d, select = c(x, y), by = g, output = "long")
   cell <- long$variable == "y" & long$group == "c"
@@ -1986,6 +2089,7 @@ test_that("a variable with no data in a group shows the mark there, n included",
 })
 
 test_that("the rows of a no-data group leave the missing-value count", {
+  skip_on_cran()
   d <- .tc_nodata()
   tbl <- table_continuous(d, select = c(x, y), by = g)
   note <- attr(tbl, "note")
@@ -2016,6 +2120,7 @@ test_that("the rows of a no-data group leave the missing-value count", {
 })
 
 test_that("the comparison runs on the groups with data, and on two at least", {
+  skip_on_cran()
   d <- .tc_nodata()
   long <- table_continuous(
     d,
@@ -2071,6 +2176,7 @@ test_that("the comparison runs on the groups with data, and on two at least", {
 })
 
 test_that("the SMD of a pair with a no-data group is NA, silently", {
+  skip_on_cran()
   d2 <- data.frame(
     g = rep(c("a", "b"), each = 4),
     y = c(1, 2, 3, 4, NA, NA, NA, NA)
@@ -2089,6 +2195,7 @@ test_that("the SMD of a pair with a no-data group is NA, silently", {
 })
 
 test_that("an empty group and the missing-by group are not no-data groups", {
+  skip_on_cran()
   d <- data.frame(
     g = factor(
       c("a", "a", "b", "b", NA, NA),
@@ -2118,6 +2225,7 @@ test_that("an empty group and the missing-by group are not no-data groups", {
 })
 
 test_that("declared missing values of a no-data group leave their count too", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   d <- .tc_nodata()
   d$y <- haven::labelled_spss(
@@ -2139,6 +2247,7 @@ test_that("declared missing values of a no-data group leave their count too", {
 })
 
 test_that("without `by`, a variable with no observed value has no data", {
+  skip_on_cran()
   d <- data.frame(x = c(1, 2, NA), y = NA_real_)
   long <- table_continuous(d, select = c(x, y), output = "long")
   expect_identical(long$n, c(2L, NA_integer_))
@@ -2162,6 +2271,7 @@ test_that("without `by`, a variable with no observed value has no data", {
 })
 
 test_that("the variables with no data in the same groups share one sentence", {
+  skip_on_cran()
   d <- .tc_nodata()
   d$z <- d$y
   d$v <- d$y
@@ -2182,6 +2292,7 @@ test_that("the variables with no data in the same groups share one sentence", {
 })
 
 test_that("the note names the test whenever its p-value or its statistic shows", {
+  skip_on_cran()
   note <- function(...) {
     attr(table_continuous(sochealth, select = c(bmi, age), ...), "note")
   }
@@ -2229,6 +2340,7 @@ test_that("the note names the test whenever its p-value or its statistic shows",
 })
 
 test_that("a test named with no p-value shown is the group comparison", {
+  skip_on_cran()
   # A variable shown as a median takes the rank test whatever `p_value`
   # says, and the note names it for the statistic it shows: the
   # sentence cannot open on p-values the table does not show.
@@ -2304,6 +2416,7 @@ test_that("a test named with no p-value shown is the group comparison", {
 })
 
 test_that("the note gives its sentences in the order of the family", {
+  skip_on_cran()
   # `z` has no data in "b"; the last row has no group.
   d <- data.frame(
     g = c(rep(c("a", "b"), each = 4), NA),
@@ -2374,6 +2487,7 @@ test_that("the object carries the title it prints", {
 
 
 test_that("fmt_p uses non-breaking space in display", {
+  skip_on_cran()
   set.seed(1)
   df <- data.frame(
     x = c(rnorm(30, 0), rnorm(30, 10)),
@@ -2399,6 +2513,7 @@ test_that("fmt_p uses non-breaking space in display", {
 })
 
 test_that("table_continuous refuses a selection with no numeric column", {
+  skip_on_cran()
   # As the other tables do: it warned and returned an empty data frame.
   df <- data.frame(x = letters[1:5])
   expect_error(
@@ -2414,12 +2529,14 @@ test_that("table_continuous refuses a selection with no numeric column", {
 # ---- optional outputs: tinytable ----
 
 test_that("table_continuous tinytable output works", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   out <- table_continuous(iris, select = c(Sepal.Length), output = "tinytable")
   expect_true(methods::is(out, "tinytable"))
 })
 
 test_that("table_continuous tinytable with groups works", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   out <- table_continuous(
     iris,
@@ -2433,12 +2550,14 @@ test_that("table_continuous tinytable with groups works", {
 # ---- optional outputs: gt ----
 
 test_that("table_continuous gt output works", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(iris, select = c(Sepal.Length), output = "gt")
   expect_s3_class(out, "gt_tbl")
 })
 
 test_that("table_continuous gt with groups works", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -2450,6 +2569,7 @@ test_that("table_continuous gt with groups works", {
 })
 
 test_that("table_continuous gt has spanners for all columns", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(iris, select = c(Sepal.Length), output = "gt")
   spanners <- out[["_spanners"]]
@@ -2462,6 +2582,7 @@ test_that("table_continuous gt has spanners for all columns", {
 })
 
 test_that("table_continuous gt with p_value only has p spanner but not Test", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -2489,6 +2610,7 @@ test_that("table_continuous gt with p_value only has p spanner but not Test", {
 })
 
 test_that("table_continuous gt with p_value + statistic has both spanners", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -2507,6 +2629,7 @@ test_that("table_continuous gt with p_value + statistic has both spanners", {
 # ---- optional outputs: flextable ----
 
 test_that("table_continuous flextable output works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   out <- table_continuous(iris, select = c(Sepal.Length), output = "flextable")
@@ -2514,6 +2637,7 @@ test_that("table_continuous flextable output works", {
 })
 
 test_that("table_continuous flextable has 2-row header with CI spanner", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   out <- table_continuous(iris, select = c(Sepal.Length), output = "flextable")
@@ -2525,6 +2649,7 @@ test_that("table_continuous flextable has 2-row header with CI spanner", {
 # ---- optional outputs: excel ----
 
 test_that("table_continuous excel output works", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -2538,6 +2663,7 @@ test_that("table_continuous excel output works", {
 })
 
 test_that("table_continuous excel errors without path", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   expect_error(
     table_continuous(iris, select = c(Sepal.Length), output = "excel"),
@@ -2546,6 +2672,7 @@ test_that("table_continuous excel errors without path", {
 })
 
 test_that("table_continuous excel errors with empty path", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   expect_error(
     table_continuous(
@@ -2575,6 +2702,7 @@ test_that("table_continuous word output writes file", {
 })
 
 test_that("table_continuous word errors without path", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   expect_error(
@@ -2584,6 +2712,7 @@ test_that("table_continuous word errors without path", {
 })
 
 test_that("table_continuous word errors with empty path", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   expect_error(
@@ -2600,6 +2729,7 @@ test_that("table_continuous word errors with empty path", {
 # ---- optional outputs: clipboard ----
 
 test_that("table_continuous clipboard output works", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   # The writer is mocked, never the real system clipboard: a test run
   # must not overwrite what the user has copied.
@@ -2620,6 +2750,7 @@ test_that("table_continuous clipboard output works", {
 })
 
 test_that("table_continuous clipboard output can be exercised with a mocked writer", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
 
   captured <- NULL
@@ -2652,6 +2783,7 @@ test_that("table_continuous clipboard output can be exercised with a mocked writ
 # ---- grouped optional outputs ----
 
 test_that("table_continuous flextable with groups works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   out <- table_continuous(
@@ -2664,6 +2796,7 @@ test_that("table_continuous flextable with groups works", {
 })
 
 test_that("table_continuous excel with groups works", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -2678,6 +2811,7 @@ test_that("table_continuous excel with groups works", {
 })
 
 test_that("table_continuous word with groups works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   tmp <- tempfile(fileext = ".docx")
@@ -2695,6 +2829,7 @@ test_that("table_continuous word with groups works", {
 # ---- display format details ----
 
 test_that("build_display_df ungrouped has correct column names", {
+  skip_on_cran()
   df <- data.frame(x = 1:10)
   out <- table_continuous(df, ci_level = 0.90)
   display <- spicy:::build_display_df(out, 2L, ".", 0.90)
@@ -2717,6 +2852,7 @@ test_that("build_display_df ungrouped has correct column names", {
 })
 
 test_that("build_display_df grouped has Group column", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2729,6 +2865,7 @@ test_that("build_display_df grouped has Group column", {
 })
 
 test_that("table_continuous multiple variables with groups has correct rows", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width),
@@ -2740,6 +2877,7 @@ test_that("table_continuous multiple variables with groups has correct rows", {
 })
 
 test_that("table_continuous NAs in grouped data are handled", {
+  skip_on_cran()
   df <- data.frame(
     g = c("A", "A", "B", "B", "B"),
     x = c(1, NA, 3, NA, 5)
@@ -2753,6 +2891,7 @@ test_that("table_continuous NAs in grouped data are handled", {
 })
 
 test_that("table_continuous gt grouped output has Group column aligned left", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -2765,6 +2904,7 @@ test_that("table_continuous gt grouped output has Group column aligned left", {
 })
 
 test_that("table_continuous tinytable grouped has correct number of rows", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   out <- table_continuous(
     iris,
@@ -2778,6 +2918,7 @@ test_that("table_continuous tinytable grouped has correct number of rows", {
 # ---- by selecting multiple columns ----
 
 test_that("table_continuous errors when by selects multiple columns", {
+  skip_on_cran()
   df <- data.frame(a = 1:6, b = rep(1:2, 3), c = rep(1:3, 2), x = 11:16)
   expect_error(table_continuous(df, by = c(b, c), output = "data.frame"))
 })
@@ -2786,6 +2927,7 @@ test_that("table_continuous errors when by selects multiple columns", {
 # ---- grouped clipboard ----
 
 test_that("table_continuous clipboard with groups works", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   testthat::local_mocked_bindings(
     write_clip = function(text, ...) invisible(text),
@@ -2809,6 +2951,7 @@ test_that("table_continuous clipboard with groups works", {
 # ---- non-default clipboard_delim ----
 
 test_that("table_continuous clipboard with custom delimiter works", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   testthat::local_mocked_bindings(
     write_clip = function(text, ...) invisible(text),
@@ -2832,6 +2975,7 @@ test_that("table_continuous clipboard with custom delimiter works", {
 # ---- effect size ----
 
 test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -2862,6 +3006,7 @@ test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)",
 })
 
 test_that("table_continuous Hedges' g matches manual calculation", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -2884,6 +3029,7 @@ test_that("table_continuous Hedges' g matches manual calculation", {
 })
 
 test_that("table_continuous eta-squared for 3+ groups (welch)", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2906,6 +3052,7 @@ test_that("table_continuous eta-squared for 3+ groups (welch)", {
 })
 
 test_that("table_continuous nonparametric 2 groups gives rank-biserial r", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -2922,6 +3069,7 @@ test_that("table_continuous nonparametric 2 groups gives rank-biserial r", {
 })
 
 test_that("table_continuous nonparametric 3+ groups gives epsilon-squared", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2936,6 +3084,7 @@ test_that("table_continuous nonparametric 3+ groups gives epsilon-squared", {
 })
 
 test_that("table_continuous effect_size without by warns", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       iris,
@@ -2949,6 +3098,7 @@ test_that("table_continuous effect_size without by warns", {
 })
 
 test_that("table_continuous effect_size_ci without effect_size warns and enables it", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       iris,
@@ -2966,6 +3116,7 @@ test_that("table_continuous effect_size_ci without effect_size warns and enables
 })
 
 test_that("table_continuous effect_size default output carries attributes", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2978,6 +3129,7 @@ test_that("table_continuous effect_size default output carries attributes", {
 })
 
 test_that("table_continuous effect_size display shows ES column", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2996,6 +3148,7 @@ test_that("table_continuous effect_size display shows ES column", {
 })
 
 test_that("table_continuous effect_size_ci display shows brackets", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3016,6 +3169,7 @@ test_that("table_continuous effect_size_ci display shows brackets", {
 })
 
 test_that("table_continuous print works with effect_size", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3027,6 +3181,7 @@ test_that("table_continuous print works with effect_size", {
 })
 
 test_that("table_continuous es values only on first row of each variable block", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3041,6 +3196,7 @@ test_that("table_continuous es values only on first row of each variable block",
 })
 
 test_that("table_continuous gt with effect_size has ES spanner", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -3057,6 +3213,7 @@ test_that("table_continuous gt with effect_size has ES spanner", {
 # ---- effect size: do_es without do_test (no p_value/statistic) ----
 
 test_that("table_continuous effect_size=TRUE alone adds es but not test columns", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3092,6 +3249,7 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
 })
 
 test_that("table_continuous does not warn about test when effect_size uses it", {
+  skip_on_cran()
   expect_no_warning(
     out <- table_continuous(
       iris,
@@ -3112,6 +3270,7 @@ test_that("table_continuous does not warn about test when effect_size uses it", 
 # ---- effect size: student test ----
 
 test_that("table_continuous effect_size with test='student' 2 groups gives hedges_g", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -3127,6 +3286,7 @@ test_that("table_continuous effect_size with test='student' 2 groups gives hedge
 })
 
 test_that("table_continuous effect_size with test='student' 3+ groups gives eta2", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3142,6 +3302,7 @@ test_that("table_continuous effect_size with test='student' 3+ groups gives eta2
 # ---- effect size: decimal_mark comma ----
 
 test_that("table_continuous effect_size display uses comma decimal_mark", {
+  skip_on_cran()
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   out <- table_continuous(
@@ -3167,6 +3328,7 @@ test_that("table_continuous effect_size display uses comma decimal_mark", {
 # ---- effect size: untestable groups (n=1) ----
 
 test_that("table_continuous effect_size with untestable group gives NA", {
+  skip_on_cran()
   df <- data.frame(
     g = c("A", "B"),
     x = c(1, 2)
@@ -3185,6 +3347,7 @@ test_that("table_continuous effect_size with untestable group gives NA", {
 # ---- effect size: nonparametric rank-biserial CI small n ----
 
 test_that("table_continuous rank-biserial r_rb has CI with small n", {
+  skip_on_cran()
   df <- data.frame(
     g = c("A", "A", "B", "B"),
     x = c(1, 2, 3, 4)
@@ -3204,6 +3367,7 @@ test_that("table_continuous rank-biserial r_rb has CI with small n", {
 # ---- effect size: multiple variables ----
 
 test_that("table_continuous effect_size with multiple variables", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width),
@@ -3221,6 +3385,7 @@ test_that("table_continuous effect_size with multiple variables", {
 # ---- effect size: export formats ----
 
 test_that("table_continuous tinytable with effect_size works", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   out <- table_continuous(
     iris,
@@ -3234,6 +3399,7 @@ test_that("table_continuous tinytable with effect_size works", {
 })
 
 test_that("table_continuous flextable with effect_size works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   out <- table_continuous(
     iris,
@@ -3246,6 +3412,7 @@ test_that("table_continuous flextable with effect_size works", {
 })
 
 test_that("table_continuous excel with effect_size works", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -3261,6 +3428,7 @@ test_that("table_continuous excel with effect_size works", {
 })
 
 test_that("table_continuous word with effect_size works", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   tmp <- tempfile(fileext = ".docx")
@@ -3278,6 +3446,7 @@ test_that("table_continuous word with effect_size works", {
 })
 
 test_that("table_continuous gt with effect_size_ci has ES spanner", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -3294,6 +3463,7 @@ test_that("table_continuous gt with effect_size_ci has ES spanner", {
 # ---- effect size: epsilon_sq_boot_ci internals ----
 
 test_that("epsilon_sq_boot_ci returns valid CI", {
+  skip_on_cran()
   set.seed(1)
   x <- c(rnorm(30, 0), rnorm(30, 1), rnorm(30, 2))
   g <- rep(c("A", "B", "C"), each = 30)
@@ -3303,6 +3473,7 @@ test_that("epsilon_sq_boot_ci returns valid CI", {
 })
 
 test_that("epsilon_sq_boot_ci handles resamples that lose a group", {
+  skip_on_cran()
   # Small groups: many resamples will miss a group (triggers NA branch)
   x <- c(1, 2, 10, 11, 20, 21)
   g <- rep(c("A", "B", "C"), each = 2)
@@ -3313,6 +3484,7 @@ test_that("epsilon_sq_boot_ci handles resamples that lose a group", {
 })
 
 test_that("epsilon_sq_boot_ci returns NA when too few valid resamples", {
+  skip_on_cran()
   # Many groups with 1 obs each: most resamples miss groups
   x <- 1:8
   g <- paste0("G", 1:8)
@@ -3323,6 +3495,7 @@ test_that("epsilon_sq_boot_ci returns NA when too few valid resamples", {
 })
 
 test_that("epsilon_sq_boot_ci does not alter user RNG state", {
+  skip_on_cran()
   set.seed(123)
   before <- .Random.seed
   x <- c(rnorm(30, 0), rnorm(30, 1), rnorm(30, 2))
@@ -3336,6 +3509,7 @@ test_that("epsilon_sq_boot_ci does not alter user RNG state", {
 })
 
 test_that("epsilon squared is clamped to 0 when H is small", {
+  skip_on_cran()
   # Create data where groups are nearly identical -> H ≈ 0 -> raw ε² < 0
   set.seed(1)
   x <- rnorm(90, mean = 5, sd = 10)
@@ -3352,6 +3526,7 @@ test_that("epsilon squared is clamped to 0 when H is small", {
 })
 
 test_that("eta_sq_ci returns lower = 0 for very small F", {
+  skip_on_cran()
   # F close to 0: ncp_lower should be 0
   ci <- spicy:::eta_sq_ci(0.5, df1 = 2, df2 = 100, ci_level = 0.95)
   expect_equal(ci[1], 0)
@@ -3361,6 +3536,7 @@ test_that("eta_sq_ci returns lower = 0 for very small F", {
 # ---- effect size: fmt_es empty when NA ----
 
 test_that("table_continuous ES display is empty for subsequent group rows", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3381,6 +3557,7 @@ test_that("table_continuous ES display is empty for subsequent group rows", {
 # ---- effect size: p_value + statistic + effect_size together ----
 
 test_that("table_continuous all columns together: p + stat + es", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3405,6 +3582,7 @@ test_that("table_continuous all columns together: p + stat + es", {
 })
 
 test_that("table_continuous print works with all columns", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width),
@@ -3420,6 +3598,7 @@ test_that("table_continuous print works with all columns", {
 # ---- print: auto-compact padding ----
 
 test_that("print auto-selects compact padding for narrow console", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length, by = Species)
   old_w <- getOption("width")
   on.exit(options(width = old_w), add = TRUE)
@@ -3434,6 +3613,7 @@ test_that("print auto-selects compact padding for narrow console", {
 # ---- print method %||% fallback branches ----
 
 test_that("print.spicy_continuous_table uses defaults when attributes are missing", {
+  skip_on_cran()
   df <- data.frame(x = 1:10)
   out <- table_continuous(df)
   # Strip attributes to test fallback branches
@@ -3447,6 +3627,7 @@ test_that("print.spicy_continuous_table uses defaults when attributes are missin
 # ---- coverage: multi-variable exports with separator rows ----
 
 test_that("table_continuous gt with multiple variables has separator rows", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   out <- table_continuous(
     iris,
@@ -3461,6 +3642,7 @@ test_that("table_continuous gt with multiple variables has separator rows", {
 })
 
 test_that("table_continuous flextable with multiple variables has separator rows", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   out <- table_continuous(
@@ -3474,6 +3656,7 @@ test_that("table_continuous flextable with multiple variables has separator rows
 })
 
 test_that("table_continuous excel with multiple variables has separator rows", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -3489,6 +3672,7 @@ test_that("table_continuous excel with multiple variables has separator rows", {
 })
 
 test_that("table_continuous tinytable with p + stat + es works", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   out <- table_continuous(
     iris,
@@ -3505,6 +3689,7 @@ test_that("table_continuous tinytable with p + stat + es works", {
 # ---- coverage: display formatting branches ----
 
 test_that("build_display_df formats p >= 0.001 correctly", {
+  skip_on_cran()
   df <- data.frame(g = rep(c("A", "B"), each = 30), x = rnorm(60))
   out <- table_continuous(df, by = g, p_value = TRUE)
   display <- spicy:::build_display_df(
@@ -3519,6 +3704,7 @@ test_that("build_display_df formats p >= 0.001 correctly", {
 })
 
 test_that("build_display_df fmt_test with decimal comma", {
+  skip_on_cran()
   df <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
   out <- table_continuous(
     df,
@@ -3538,6 +3724,7 @@ test_that("build_display_df fmt_test with decimal comma", {
 })
 
 test_that("build_display_df fmt_p with decimal comma", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3557,6 +3744,7 @@ test_that("build_display_df fmt_p with decimal comma", {
 })
 
 test_that("build_display_df fmt_p large p with decimal comma", {
+  skip_on_cran()
   set.seed(123)
   df <- data.frame(
     g = rep(c("A", "B"), each = 20),
@@ -3580,6 +3768,7 @@ test_that("build_display_df fmt_p large p with decimal comma", {
 })
 
 test_that("build_display_df fmt_test F-test with decimal comma", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -3598,6 +3787,7 @@ test_that("build_display_df fmt_test F-test with decimal comma", {
 })
 
 test_that("effect-size CI bracket separator switches with decimal_mark", {
+  skip_on_cran()
   df_two <- iris[iris$Species != "virginica", ]
   df_two$Species <- droplevels(df_two$Species)
 
@@ -3645,6 +3835,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
 # ---- harmonization with table_continuous_lm() (Phase 1) ------------------
 
 test_that("effect_size refuses the logical TRUE/FALSE it once took", {
+  skip_on_cran()
   expect_error(
     table_continuous(sleep, select = extra, by = group, effect_size = TRUE),
     class = "spicy_defunct"
@@ -3664,6 +3855,7 @@ test_that("effect_size refuses the logical TRUE/FALSE it once took", {
 })
 
 test_that("effect_size character explicit choices dispatch correctly", {
+  skip_on_cran()
   out_g <- table_continuous(
     sleep,
     select = extra,
@@ -3704,6 +3896,7 @@ test_that("effect_size character explicit choices dispatch correctly", {
 })
 
 test_that("effect_size mismatched explicit choice errors clearly", {
+  skip_on_cran()
   # eta2 requires k > 2; sleep has 2 groups
   expect_error(
     table_continuous(sleep, select = extra, by = group, effect_size = "eta2"),
@@ -3744,6 +3937,7 @@ test_that("effect_size mismatched explicit choice errors clearly", {
 })
 
 test_that("effect_size invalid character value rejected with a classed error", {
+  skip_on_cran()
   expect_error(
     table_continuous(
       sleep,
@@ -3757,6 +3951,7 @@ test_that("effect_size invalid character value rejected with a classed error", {
 })
 
 test_that("effect_size logical NA / non-scalar errors", {
+  skip_on_cran()
   expect_error(
     table_continuous(sleep, select = extra, by = group, effect_size = NA),
     class = "spicy_defunct"
@@ -3773,6 +3968,7 @@ test_that("effect_size logical NA / non-scalar errors", {
 })
 
 test_that("p_digits validates and renders accordingly", {
+  skip_on_cran()
   expect_error(
     table_continuous(sleep, select = extra, by = group, p_digits = 0),
     "p_digits"
@@ -3802,6 +3998,7 @@ test_that("p_digits validates and renders accordingly", {
 })
 
 test_that("align argument validates and stores the choice", {
+  skip_on_cran()
   for (a in c("decimal", "center", "right")) {
     out <- table_continuous(sleep, select = extra, by = group, align = a)
     expect_equal(attr(out, "align"), a)
@@ -3814,6 +4011,7 @@ test_that("align argument validates and stores the choice", {
 })
 
 test_that("show_n = FALSE drops the n column from the rendered display df", {
+  skip_on_cran()
   out <- table_continuous(
     sleep,
     select = extra,
@@ -3850,6 +4048,7 @@ test_that("show_n = FALSE drops the n column from the rendered display df", {
 })
 
 test_that("ci = FALSE drops the CI columns from the rendered display df", {
+  skip_on_cran()
   out <- table_continuous(sleep, select = extra, by = group, ci = FALSE)
   expect_false(attr(out, "show_ci"))
   display <- spicy:::build_display_df(
@@ -3914,6 +4113,7 @@ test_that("output = 'data.frame' is the displayed table, 'long' the compute fram
 # ---- broom S3 methods -----------------------------------------------------
 
 test_that("as.data.frame() strips spicy classes and rendering attrs", {
+  skip_on_cran()
   out <- table_continuous(sleep, select = extra, by = group)
   df <- as.data.frame(out)
   expect_true(inherits(df, "data.frame"))
@@ -3937,6 +4137,7 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
 })
 
 test_that("as_tibble() returns a tbl_df", {
+  skip_on_cran()
   skip_if_not_installed("tibble")
   out <- table_continuous(sleep, select = extra, by = group)
   tb <- tibble::as_tibble(out)
@@ -3944,6 +4145,7 @@ test_that("as_tibble() returns a tbl_df", {
 })
 
 test_that("tidy() returns one row per (variable x group) with broom columns", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width),
@@ -3987,6 +4189,7 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
 })
 
 test_that("tidy() works without by (one row per variable)", {
+  skip_on_cran()
   out <- table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
   td <- broom::tidy(out)
   expect_equal(nrow(td), 2L)
@@ -3997,6 +4200,7 @@ test_that("tidy() works without by (one row per variable)", {
 })
 
 test_that("glance() returns one row per outcome with omnibus test + ES", {
+  skip_on_cran()
   out <- table_continuous(
     iris,
     select = c(Sepal.Length, Sepal.Width),
@@ -4029,6 +4233,7 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
 })
 
 test_that("glance() without by returns NA test/ES, populated nobs", {
+  skip_on_cran()
   out <- table_continuous(iris, select = Sepal.Length)
   gl <- broom::glance(out)
   expect_equal(nrow(gl), 1L)
@@ -4040,6 +4245,7 @@ test_that("glance() without by returns NA test/ES, populated nobs", {
 # ---- ci = FALSE / show_n = FALSE: structural omission across engines -----
 
 test_that("ci = FALSE / show_n = FALSE render across every output (smoke matrix)", {
+  skip_on_cran()
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   testthat::local_mocked_bindings(
     clipr_available = function(...) TRUE,
@@ -4069,6 +4275,7 @@ test_that("ci = FALSE / show_n = FALSE render across every output (smoke matrix)
 })
 
 test_that("the long output always carries analytic ci_lower / ci_upper / n", {
+  skip_on_cran()
   # `ci = FALSE` and `show_n = FALSE` only suppress the display
   # columns; `output = "long"` always carries the underlying CI bounds
   # and `n` so downstream code (broom::tidy, gtsummary, ...) has access
@@ -4096,6 +4303,7 @@ test_that("the long output always carries analytic ci_lower / ci_upper / n", {
 })
 
 test_that("ci = FALSE structurally removes CI cols from the build_display_df output", {
+  skip_on_cran()
   out <- table_continuous(sleep, select = extra, by = group, ci = FALSE)
   display <- spicy:::build_display_df(
     out,
@@ -4114,6 +4322,7 @@ test_that("ci = FALSE structurally removes CI cols from the build_display_df out
 })
 
 test_that("show_n = FALSE structurally removes n col from build_display_df output", {
+  skip_on_cran()
   out <- table_continuous(sleep, select = extra, by = group, show_n = FALSE)
   args <- list(
     digits = 2,
@@ -4143,6 +4352,7 @@ test_that("show_n = FALSE structurally removes n col from build_display_df outpu
 })
 
 test_that("ci = FALSE renders structurally without CI in tinytable / gt / flextable", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -4179,6 +4389,7 @@ test_that("ci = FALSE renders structurally without CI in tinytable / gt / flexta
 })
 
 test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -4223,6 +4434,7 @@ test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
 })
 
 test_that("show_n = FALSE renders structurally without n in tinytable / gt / flextable", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -4259,6 +4471,7 @@ test_that("show_n = FALSE renders structurally without n in tinytable / gt / fle
 })
 
 test_that("ci = FALSE / show_n = FALSE flow to excel and word", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
@@ -4292,6 +4505,7 @@ test_that("ci = FALSE / show_n = FALSE flow to excel and word", {
 })
 
 test_that("clipboard text reflects ci = FALSE structurally", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   captured <- new.env()
@@ -4325,6 +4539,7 @@ test_that("clipboard text reflects ci = FALSE structurally", {
 # ---- requireNamespace() guards: actionable error when Suggests missing ---
 
 test_that("each rendered output errors with an actionable 'Install package' message when its Suggest is missing", {
+  skip_on_cran()
   # The defensive guards inside `export_desc_table()` (one
   # `requireNamespace()` per engine, plus one for `officer` inside
   # the word path) are not exercised under normal `devtools::test()`
@@ -4366,6 +4581,7 @@ test_that("each rendered output errors with an actionable 'Install package' mess
 })
 
 test_that("every align value renders cleanly across every rendered engine", {
+  skip_on_cran()
   # Phase 2/3 added "decimal" / "center" / "right" / "auto" branches
   # in each engine's alignment dispatch (gt, tinytable, flextable,
   # word, excel, clipboard). Default tests cover the "decimal"
@@ -4454,6 +4670,7 @@ test_that("every align value renders cleanly across every rendered engine", {
 })
 
 test_that("output = 'word' errors when officer is not installed even if flextable is", {
+  skip_on_cran()
   # `output = "word"` requires both `flextable` (for the table
   # object) and `officer` (for `save_as_docx`). The guard for
   # `officer` is checked inside the flextable / word branch; mock
@@ -4479,6 +4696,7 @@ test_that("output = 'word' errors when officer is not installed even if flextabl
 })
 
 test_that("a constant column reports exact SD 0 and a degenerate CI", {
+  skip_on_cran()
   # Audit phase 2, finding 16: pins the documented behavior -- the
   # numbers are exact, "--" is reserved for undefined statistics.
   out <- table_continuous(
@@ -4501,6 +4719,7 @@ test_that("a constant column reports exact SD 0 and a degenerate CI", {
 })
 
 test_that("a degenerate variable degrades per-variable, others survive", {
+  skip_on_cran()
   # Audit phase 2, finding 27: t.test()'s "data are essentially
   # constant" error used to kill the whole multi-variable table.
   d <- data.frame(
@@ -4538,6 +4757,7 @@ test_that("a degenerate variable degrades per-variable, others survive", {
 })
 
 test_that("an undefined effect size degrades to NA with a classed warning", {
+  skip_on_cran()
   # Companion to finding 27: a zero pooled SD makes Hedges' g
   # non-finite; the cell must be NA, never a printed Inf.
   d <- data.frame(
@@ -4565,6 +4785,7 @@ test_that("an undefined effect size degrades to NA with a classed warning", {
 })
 
 test_that("a NaN effect size is blanked with a classed warning", {
+  skip_on_cran()
   # Audit phase 2 delta, R9: is.na(NaN) is TRUE, so the NA-first
   # non-finite guard used to let a 0/0 Hedges' g (equal group means
   # with zero pooled SD) reach the long output as NaN, unannounced.
@@ -4592,6 +4813,7 @@ test_that("a NaN effect size is blanked with a classed warning", {
 })
 
 test_that("table_continuous() rejects bit64::integer64 columns", {
+  skip_on_cran()
   i64 <- structure(
     c(4.94e-324, 9.88e-324, 1.48e-323, 1.98e-323),
     class = "integer64"
@@ -4619,6 +4841,7 @@ test_that("table_continuous() rejects bit64::integer64 columns", {
 # critic:pkgrd-broom-columns-stabilising (lot T4)
 
 test_that("align = 'auto' is removed from table_continuous", {
+  skip_on_cran()
   expect_error(
     table_continuous(mtcars, select = "mpg", align = "auto"),
     class = "spicy_invalid_input"
@@ -4677,6 +4900,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
 # `warning: false`.
 
 test_that("table_continuous discloses dropped rows on the rich outputs", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -4719,6 +4943,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
 })
 
 test_that("table_continuous rich outputs carry the sample size alone when nothing is lost", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -4752,6 +4977,7 @@ test_that("table_continuous rich outputs carry the sample size alone when nothin
 })
 
 test_that("the note opens with the sample size, the groups adding up to it", {
+  skip_on_cran()
   d <- data.frame(
     g = factor(c("A", "A", "A", "B", "B", NA, "A", "B")),
     x = c(1, 2, NA, 4, 5, 6, 7, 8),
@@ -4804,6 +5030,7 @@ test_that("the note opens with the sample size, the groups adding up to it", {
 })
 
 test_that("an effect size shown alone names the test it belongs to", {
+  skip_on_cran()
   d <- data.frame(
     g = rep(c("A", "B"), each = 10),
     x = c(1:10, 3:12)
@@ -4834,6 +5061,7 @@ test_that("an effect size shown alone names the test it belongs to", {
 })
 
 test_that("an existing table note is joined, never overwritten", {
+  skip_on_cran()
   # table_continuous_lm() already emits an SE-estimator note; the
   # missing-data disclosure must be added to it, not on top of it.
   skip_if_not_installed("tinytable")
@@ -4857,6 +5085,7 @@ test_that("an existing table note is joined, never overwritten", {
 # ---- show_columns: statistic selection -----------------------------------
 
 test_that("the token order and the column vocabulary declare the same set", {
+  skip_on_cran()
   # `.continuous_column_tokens` is the ORDER of the columns,
   # `.continuous_token_columns()` their NAMES. Two tables that must stay
   # equal, and nothing else can catch a drift between them: a token
@@ -4895,6 +5124,7 @@ test_that("the token order and the column vocabulary declare the same set", {
 })
 
 test_that("show_columns = NULL reproduces the historical display exactly", {
+  skip_on_cran()
   # The default must not move: the printed table shows M / SD / Min /
   # Max and none of the new statistics, and its note only defines the
   # abbreviations of its interval columns.
@@ -4942,6 +5172,7 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
 })
 
 test_that("median / quartile columns equal stats::median() and quantile() type 7", {
+  skip_on_cran()
   set.seed(101)
   d <- data.frame(x = stats::rexp(41, 1 / 10))
   out <- table_continuous(
@@ -4970,6 +5201,7 @@ test_that("median / quartile columns equal stats::median() and quantile() type 7
 })
 
 test_that("med_ci is the exact order-statistic interval, NA at small n", {
+  skip_on_cran()
   # Hand-pinned against the sign-test inversion: the tightest
   # [x(k), x(n-k+1)] whose binomial coverage still reaches 95%.
   #   n = 6  -> k = 1  (coverage 0.96875)
@@ -5005,6 +5237,7 @@ test_that("med_ci is the exact order-statistic interval, NA at small n", {
 })
 
 test_that("med_ci matches the exact order-statistic oracle", {
+  skip_on_cran()
   # Oracle values PINNED from DescTools::MedianCI(method = "exact")
   # (v0.99.60, captured 2026-08-14) on set.seed(202) draws -- pinned,
   # not called live, per the house rule (and so the package declares
@@ -5030,6 +5263,7 @@ test_that("med_ci matches the exact order-statistic oracle", {
 })
 
 test_that("med_ci follows ci_level", {
+  skip_on_cran()
   x <- as.numeric(1:25)
   # n = 25: k = 6 at 99% -> [6, 20]; k = 8 at 95% -> [8, 18].
   wide <- table_continuous(
@@ -5049,6 +5283,7 @@ test_that("med_ci follows ci_level", {
 })
 
 test_that("a named list gives each variable its own columns, blanks the rest", {
+  skip_on_cran()
   set.seed(7)
   d <- data.frame(
     mvpa = round(stats::rexp(60, 1 / 300)),
@@ -5082,6 +5317,7 @@ test_that("a named list gives each variable its own columns, blanks the rest", {
 })
 
 test_that("a variable named in show_columns but absent from the table warns", {
+  skip_on_cran()
   # The policy of every argument named by variable (decision 14 of the
   # ADR of 2026-10-20): a warning, and the table without the name.
   expect_warning(
@@ -5108,6 +5344,7 @@ test_that("a variable named in show_columns but absent from the table warns", {
 })
 
 test_that("unknown show_columns tokens error with the valid list", {
+  skip_on_cran()
   expect_error(
     table_continuous(sleep, select = extra, show_columns = c("m", "mediane")),
     class = "spicy_invalid_input"
@@ -5131,6 +5368,7 @@ test_that("unknown show_columns tokens error with the valid list", {
 })
 
 test_that("a variable shown as a median is tested as one, per variable", {
+  skip_on_cran()
   set.seed(9)
   d <- data.frame(
     skewed = round(stats::rexp(60, 1 / 300)),
@@ -5181,6 +5419,7 @@ test_that("a variable shown as a median is tested as one, per variable", {
 })
 
 test_that("the rank switch carries the rank effect size", {
+  skip_on_cran()
   set.seed(19)
   d <- data.frame(
     skewed = round(stats::rexp(60, 1 / 300)),
@@ -5198,6 +5437,7 @@ test_that("the rank switch carries the rank effect size", {
 })
 
 test_that("an explicit test stays sovereign but raises a caveat", {
+  skip_on_cran()
   set.seed(21)
   d <- data.frame(
     skewed = round(stats::rexp(60, 1 / 300)),
@@ -5226,6 +5466,7 @@ test_that("an explicit test stays sovereign but raises a caveat", {
 })
 
 test_that("ci without m is dropped and points at med_ci; med_ci mirrors it", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       sleep,
@@ -5254,6 +5495,7 @@ test_that("ci without m is dropped and points at med_ci; med_ci mirrors it", {
 })
 
 test_that("show_columns overrules a contradictory show_n / ci", {
+  skip_on_cran()
   expect_warning(
     out <- table_continuous(
       sleep,
@@ -5288,6 +5530,7 @@ test_that("show_columns overrules a contradictory show_n / ci", {
 })
 
 test_that("show_columns reaches every output engine with the same columns", {
+  skip_on_cran()
   Sys.setenv(CLIPR_ALLOW = "TRUE")
   testthat::local_mocked_bindings(
     clipr_available = function(...) TRUE,
@@ -5392,6 +5635,7 @@ test_that("show_columns reaches every output engine with the same columns", {
 })
 
 test_that("the note glosses only the columns actually displayed", {
+  skip_on_cran()
   d <- data.frame(x = as.numeric(1:40))
   n_iqr <- attr(
     table_continuous(d, show_columns = c("med", "iqr"), output = "long"),
@@ -5431,6 +5675,7 @@ test_that("the note glosses only the columns actually displayed", {
 
 
 test_that("the by table titles itself 'Descriptive statistics by <label>'", {
+  skip_on_cran()
   # Decision 4 (2026-08-13): the grouping variable is stated in the
   # title, label resolved, like the other by tables of the family.
   out <- capture.output(print(
@@ -5449,6 +5694,7 @@ test_that("the by table titles itself 'Descriptive statistics by <label>'", {
 # ---- the interval percentage is exact, not rounded ------------------------
 
 test_that("a fractional ci_level keeps its own percentage everywhere", {
+  skip_on_cran()
   d <- spicy::sochealth
   # 97.5% was displayed as "98%" -- in the spanner, in the column names
   # of the data.frame output, and in the median-CI gloss -- because the
@@ -5508,6 +5754,7 @@ test_that("a fractional ci_level keeps its own percentage everywhere", {
 
 
 test_that("the coverage percentage follows decimal_mark (decision 27)", {
+  skip_on_cran()
   d <- spicy::sochealth
   # "97.5% CI" over cells reading "49,38": the percentage is a number in
   # a label, so the reader who asked for the comma gets it there too.
@@ -5565,6 +5812,7 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
 
 
 test_that("a user's options(OutDec) never leaks into the frozen keys", {
+  skip_on_cran()
   withr::local_options(OutDec = ",")
   # The frozen-key producer must pin its own decimal mark: formatC
   # honors OutDec otherwise, and a column NAME depending on a user
@@ -5582,6 +5830,7 @@ test_that("a user's options(OutDec) never leaks into the frozen keys", {
 # ---- p_adjust ---------------------------------------------------------------
 
 test_that("p_adjust adjusts the one test of each variable, together", {
+  skip_on_cran()
   raw <- table_continuous(mtcars, c(mpg, hp, qsec), by = am, output = "long")
   raw_p <- raw$p.value[!is.na(raw$p.value)]
   for (method in c("holm", "BH", "bonferroni")) {
@@ -5605,6 +5854,7 @@ test_that("p_adjust adjusts the one test of each variable, together", {
 })
 
 test_that("p_adjust: the displayed p, the object and the note agree", {
+  skip_on_cran()
   raw <- table_continuous(mtcars, c(mpg, hp, qsec), by = am)
   tbl <- table_continuous(
     mtcars,
@@ -5640,6 +5890,7 @@ test_that("p_adjust: the displayed p, the object and the note agree", {
 })
 
 test_that("p_adjust leaves a test without a p-value out of the family", {
+  skip_on_cran()
   d <- data.frame(
     g = rep(c("a", "b"), each = 4),
     x = c(1, 2, 3, 4, 6, 7, 8, 9),
@@ -5672,6 +5923,7 @@ test_that("p_adjust leaves a test without a p-value out of the family", {
 })
 
 test_that("p_adjust needs `by` and the p-value column", {
+  skip_on_cran()
   expect_error(
     table_continuous(mtcars, c(mpg, hp), p_adjust = "holm"),
     class = "spicy_invalid_input"
@@ -5694,6 +5946,7 @@ test_that("p_adjust needs `by` and the p-value column", {
 })
 
 test_that("p_adjust: the note reaches the tinytable engine", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   tt <- table_continuous(
     mtcars,
@@ -5710,6 +5963,7 @@ test_that("p_adjust: the note reaches the tinytable engine", {
 })
 
 test_that("p_adjust under holm is pinned, in English and in French", {
+  skip_on_cran()
   withr::local_options(width = 100)
   expect_snapshot(print(table_continuous(
     mtcars,
@@ -5727,6 +5981,7 @@ test_that("p_adjust under holm is pinned, in English and in French", {
 })
 
 test_that("`by` named in `select` is refused; `everything()` skips it", {
+  skip_on_cran()
   err <- expect_error(
     table_continuous(sochealth, select = c(bmi, age), by = age),
     class = "spicy_invalid_input"
@@ -5748,6 +6003,7 @@ test_that("`by` named in `select` is refused; `everything()` skips it", {
 })
 
 test_that("an unknown column is named, in `select` and in `exclude`", {
+  skip_on_cran()
   err <- expect_error(
     table_continuous(sochealth, select = c(bmi, nope)),
     class = "spicy_missing_column"
@@ -5769,6 +6025,7 @@ test_that("an unknown column is named, in `select` and in `exclude`", {
 })
 
 test_that("a fractional number of decimals is refused, not truncated", {
+  skip_on_cran()
   for (arg in c("digits", "effect_size_digits", "p_digits")) {
     args <- list(sochealth, select = quote(bmi), by = quote(sex))
     args[[arg]] <- 2.5
@@ -5781,6 +6038,7 @@ test_that("a fractional number of decimals is refused, not truncated", {
 })
 
 test_that("a variable with no variance has no test, whichever test is chosen", {
+  skip_on_cran()
   # The rank tests answer p = 1 (two groups) or NaN (three) on a constant,
   # where t.test() stops: every test now leaves the cells undefined, with
   # the warning the Welch test gave.
@@ -5833,6 +6091,7 @@ test_that("a variable with no variance has no test, whichever test is chosen", {
 })
 
 test_that("the comparison cells of a variable with no variance are undefined", {
+  skip_on_cran()
   d <- data.frame(
     k = rep(5, 12),
     y = c(1.1, 5.2, 2.3, 8.4, 3.5, 9.6, 4.7, 7.8, 6.9, 2.05, 8.15, 1.25),
@@ -5878,6 +6137,7 @@ test_that("the comparison cells of a variable with no variance are undefined", {
 })
 
 test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  skip_on_cran()
   mark <- spicy_str("cell_undefined")
   d <- data.frame(
     v = c(1, 2, 3, 4, 5, 6, 7, 8),
@@ -5931,6 +6191,7 @@ test_that("every comparison that cannot run is undefined, its warnings unchanged
 })
 
 test_that("a residual variance of zero draws no inference, with one warning", {
+  skip_on_cran()
   # Each group constant on its own value: t.test() stopped, Hedges' g was
   # infinite, and the ANOVA answered on data that leave nothing to infer.
   # Decided on the data, for every comparison of means.
@@ -5991,6 +6252,7 @@ test_that("a residual variance of zero draws no inference, with one warning", {
 })
 
 test_that("the rank tests run on groups each constant on their own value", {
+  skip_on_cran()
   # A rank test reads the order of the values, not their variance: valid
   # there, as in 0.13.0. The zero-variance refusal took it too.
   two <- data.frame(
@@ -6054,6 +6316,7 @@ test_that("the rank tests run on groups each constant on their own value", {
 })
 
 test_that("the note never names a test that failed", {
+  skip_on_cran()
   # The rank switch makes the note name the test of each variable; a
   # variable whose test fails (a constant) has none to name.
   d <- data.frame(
@@ -6088,6 +6351,7 @@ test_that("the note never names a test that failed", {
 }
 
 test_that("`note` builds the note, replaces it under the lead-in, or removes it", {
+  skip_on_cran()
   d <- .tc_note_data()
   built <- table_continuous(d, y, by = g)
   expect_true(startsWith(
@@ -6169,6 +6433,7 @@ test_that("`note` builds the note, replaces it under the lead-in, or removes it"
 })
 
 test_that("`note_add` closes the note the table builds, or follows a typed one", {
+  skip_on_cran()
   d <- .tc_note_data()
   built <- attr(table_continuous(d, y, by = g), "note")
   added <- table_continuous(
@@ -6224,6 +6489,7 @@ test_that("`note_add` closes the note the table builds, or follows a typed one",
 })
 
 test_that("`note_add` is refused when empty, NA, or with `note = FALSE`", {
+  skip_on_cran()
   d <- .tc_note_data()
   for (bad in list(NA_character_, "", character(0), 1, c("A.", NA))) {
     expect_error(
@@ -6263,6 +6529,7 @@ test_that("`note_add` is refused when empty, NA, or with `note = FALSE`", {
 )
 
 test_that("`note_labels` names a variable in the note and the title, not in the rows", {
+  skip_on_cran()
   d <- .tc_note_label_data()
   tbl <- table_continuous(
     d,
@@ -6321,6 +6588,7 @@ test_that("`note_labels` names a variable in the note and the title, not in the 
 })
 
 test_that("`note_labels` speaks the language of the note", {
+  skip_on_cran()
   d <- .tc_note_label_data()
   for (lang in c("en", "fr")) {
     withr::local_options(spicy.language = lang)
@@ -6352,6 +6620,7 @@ test_that("`note_labels` speaks the language of the note", {
 })
 
 test_that("a note label another variable shows is refused, as a collision", {
+  skip_on_cran()
   d <- .tc_note_label_data()
   labs <- c(bmi = "BMI", age = "Age")
   # The label of another variable's rows.
@@ -6394,6 +6663,7 @@ test_that("a note label another variable shows is refused, as a collision", {
 })
 
 test_that("`note_labels` takes the named forms of `labels`, nothing else", {
+  skip_on_cran()
   d <- .tc_note_label_data()
   for (bad in list(
     TRUE,

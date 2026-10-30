@@ -6,14 +6,26 @@
 # * NOT_CRAN = "true" (devtools::check(), GitHub Actions): the full suite,
 #   18,000+ expectations -- numeric oracles, engine parity, per-class
 #   frames, branch coverage.
-# * otherwise (CRAN): the public contract of each exported family, a few
-#   minutes of tests. The full suite needs about 20 minutes even with the
-#   Stan fixtures skipped, which is not a cost to put on the check farm.
+# * otherwise (CRAN): the public contract of each exported family, its
+#   main test file only. The full suite needs about 20 minutes even with
+#   the Stan fixtures skipped, which is not a cost to put on the check
+#   farm.
 #
 # The CRAN tier is an ALLOW-list on purpose. The suite doubled during the
 # 0.13 cycle without anyone seeing the CRAN check grow with it. With an
 # allow-list, a new test file cannot lengthen that check unless a line is
 # added here. A new exported function adds its main test file below.
+#
+# Inside a listed file, a block beyond the contract opens with
+# skip_on_cran(): rendering past one smoke test per engine for the whole
+# tier, resampling, replicate designs, slow fits, oracles against other
+# packages, long snapshots, wording and edge cases. The largest families
+# (table_categorical(), table_continuous(), table_continuous_lm(),
+# table_regression() and the two survey twins) keep only their core: one
+# default call, one block per argument group (by, weights, labels,
+# output = "data.frame", an error), one machine-output check, one French
+# call. CRAN asked for it on 2026-10-30, when this file took 450 s of its
+# Windows check.
 
 library(testthat)
 library(spicy)
@@ -21,10 +33,8 @@ library(spicy)
 cran_tier <- c(
   # tabulation and association measures
   "freq",
-  "freq_print",
   "cross_tab",
   "assoc",
-  "cramer_v",
   # variable inspection and row-wise helpers
   "varlist",
   "code_book",
@@ -33,7 +43,6 @@ cran_tier <- c(
   "mean_n",
   "sum_n",
   "count_n",
-  "user_na",
   # summary tables, and their survey-design twins
   "table_categorical",
   "table_continuous",

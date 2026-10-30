@@ -193,6 +193,7 @@ test_that("a composed style can itself be a base", {
 # ---- Registry ------------------------------------------------------------
 
 test_that("every registry entry carries its provenance and rule list", {
+  skip_on_cran()
   for (nm in spicy_style_names()) {
     s <- spicy_style(nm)
     prov <- attr(s, "provenance")
@@ -372,6 +373,7 @@ test_that("lancet on a real table: dot, floor, en dash", {
 })
 
 test_that("lancet: the coverage percentage takes the midline dot too", {
+  skip_on_cran()
   # Decision 27: "97·5% CI" -- the percentage is a number in a
   # label, and the Lancet mark reaches it like every other number.
   txt <- console(table_regression(
@@ -459,6 +461,7 @@ test_that("aer: leading zero on every decimal fraction, no stars", {
 })
 
 test_that("aer's star ban still yields to an explicit argument", {
+  skip_on_cran()
   # The ban is written, so the theme pins it; only an argument the
   # caller types may override it -- that is the precedence rule.
   txt <- console(table_regression(fixed_fit(), style = "aer", stars = TRUE))
@@ -476,6 +479,7 @@ test_that("aer's star ban still yields to an explicit argument", {
 # NEJM, Annals and the AER: those themes encode no rule.
 
 test_that("jama and lancet open the note without a lead-in word", {
+  skip_on_cran()
   fit <- fixed_fit()
   for (th in spicy_style_names()) {
     note <- attr(quietly(table_regression(fit, style = th)), "note")
@@ -507,6 +511,7 @@ test_that("jama and lancet open the note without a lead-in word", {
 })
 
 test_that("the lead-in follows the style argument, then the option", {
+  skip_on_cran()
   fit <- fixed_fit()
   note <- function(...) attr(quietly(table_regression(fit, ...)), "note")
   withr::local_options(spicy.style = "jama")
@@ -604,6 +609,7 @@ test_that("the abbreviations lever is validated, printed, and carried", {
 })
 
 test_that("jama and lancet head the mean and the median in full, keys unchanged", {
+  skip_on_cran()
   # The AMA Manual of Style and the Lancet model tables write "mean (SD)"
   # and "median (IQR)" (2026-10-30). Display only: the keys are the
   # English default headers, and the default, apa, and French keep their
@@ -753,6 +759,7 @@ test_that("the French locale keeps the leading zero on bounded measures too", {
 })
 
 test_that("the locale reaches every family with a style layer", {
+  skip_on_cran()
   withr::local_options(spicy.language = "fr")
   d <- fixed_data()
   expect_match(console(table_regression(fixed_fit())), "37,23")
@@ -763,6 +770,7 @@ test_that("the locale reaches every family with a style layer", {
 })
 
 test_that("the locale reaches the survey twins", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   withr::local_options(spicy.language = "fr")
   d <- fixed_data()
@@ -781,6 +789,7 @@ test_that("the locale reaches the survey twins", {
 # ---- The mark alone, with no style ---------------------------------------
 
 test_that("a typed comma keeps the leading zero in every family", {
+  skip_on_cran()
   # The sibling of decision 43: with no `p_style` anywhere, the DEFAULT
   # of the leading zero follows the MARK -- in the reporting families
   # as it already did in the exploration pair. ",018" is not a number
@@ -868,6 +877,7 @@ test_that("the structured token follows the mark, so every engine agrees", {
 })
 
 test_that("an explicit p_style outranks the mark in both directions", {
+  skip_on_cran()
   # A theme, or a composed style, is the explicit gesture; it wins under
   # any mark. Decision 43 -- unchanged by the mark-driven default.
   jama <- console(table_regression(
@@ -921,6 +931,7 @@ test_that("an explicit p_style outranks the mark in both directions", {
 })
 
 test_that("a point mark is untouched by the rule", {
+  skip_on_cran()
   # The invariant the corpus snapshot pins in full; asserted here by
   # name so a failure says what broke.
   d <- fixed_data()
@@ -972,6 +983,7 @@ test_that("a theme fills only what its source states, the locale the rest", {
 })
 
 test_that("a theme outranks the locale where the two meet", {
+  skip_on_cran()
   withr::local_options(spicy.language = "fr")
   # The Lancet writes its own decimal mark: the theme wins.
   txt <- console(table_regression(fixed_fit(), style = "lancet"))
@@ -1126,6 +1138,7 @@ test_that("the style argument beats the option, which beats the defaults", {
 })
 
 test_that("options(spicy.style) reaches four table functions", {
+  skip_on_cran()
   d <- fixed_data()
   withr::local_options(spicy.style = spicy_style(decimal_mark = ","))
   expect_match(console(table_regression(fixed_fit())), "37,23")
@@ -1248,6 +1261,7 @@ test_that("a style leaves no residue after the call that used it", {
 })
 
 test_that("the no-style corpus is pinned across four table functions", {
+  skip_on_cran()
   # A style must be opt-in to the byte: this snapshot is the guard
   # that a lever added later cannot leak into the defaults.
   d <- fixed_data()
@@ -1290,6 +1304,7 @@ test_that("a hand-composed style drives the output", {
 })
 
 test_that("ci_sep and ci_brackets reach the descriptive families", {
+  skip_on_cran()
   d <- fixed_data()
   s <- spicy_style(ci_sep = " to ", ci_brackets = c("(", ")"))
   txt <- console(table_continuous_lm(

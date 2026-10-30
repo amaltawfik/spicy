@@ -60,6 +60,7 @@ test_that("the percentages are svymean's, in percent", {
 })
 
 test_that("the design effects are svymean(deff = )'s, per level", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   out <- .svycat_df(.svycat_design("clus1"), select = stype, deff = TRUE)
   expect_equal(
@@ -82,6 +83,7 @@ test_that("the design effects are svymean(deff = )'s, per level", {
 })
 
 test_that("the percentage intervals are svyciprop's, and the point is not", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   out <- .svycat_df(d, select = stype, proportion_ci = TRUE)
   expect_equal(
@@ -131,6 +133,7 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
 })
 
 test_that("the p-value is svychisq's, on the statistic asked for", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   out <- .svycat_df(d, select = stype, by = sch.wide)
   expect_equal(out$p[[1L]], 0.021747462370796899, tolerance = 1e-12)
@@ -183,6 +186,7 @@ test_that("the p-value is svychisq's, on the statistic asked for", {
 })
 
 test_that("a sparse table lets no warning escape, and keeps survey's p-value", {
+  skip_on_cran()
   # survey's chisq.test() warns on expected counts below 5 and hides it
   # with options(warn = -1), which a calling handler still saw, unclassed
   # and translated. It is muffled, as table_categorical() muffles it.
@@ -239,6 +243,7 @@ test_that("`by` gives one column block per domain plus the margin", {
 })
 
 test_that("a calibrated domain counts only the rows it kept", {
+  skip_on_cran()
   # Same trap as the continuous twin: `[` on a calibrated design keeps
   # the excluded rows at weight zero, so a count that did not filter
   # on a positive weight would read the whole sample in every block.
@@ -261,6 +266,7 @@ test_that("a calibrated domain counts only the rows it kept", {
 })
 
 test_that("a negative calibration weight is counted, not dropped", {
+  skip_on_cran()
   # The categorical half of the same predicate: under `> 0` the counts
   # read 119 / 14 / 22 and no longer summed to the sample.
   skip_if_not_installed("survey")
@@ -283,6 +289,7 @@ test_that("a negative calibration weight is counted, not dropped", {
 })
 
 test_that("a replicate design gives the same percentages, its own intervals", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   lin <- .svycat_df(
     .svycat_design("clus1"),
@@ -314,6 +321,7 @@ test_that("a replicate design gives the same percentages, its own intervals", {
 # ---- levels and missing values --------------------------------------------
 
 test_that("missing values are a level of their own by default", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -388,6 +396,7 @@ test_that("missing values are a level of their own by default", {
 }
 
 test_that("every ci_method returns an interval on a variable with NA", {
+  skip_on_cran()
   # `svyciprop()` has no `na.rm`. Handed the whole design it routes,
   # depending on the method, either through `svyglm()` (which drops the
   # NA rows itself) or through `svymean()` without `na.rm` (which
@@ -455,6 +464,7 @@ test_that("every ci_method returns an interval on a variable with NA", {
 }
 
 test_that("a percentage of 0 or 100 gets the exact binomial interval", {
+  skip_on_cran()
   # survey has none there: "logit" printed [0.0, 0.0] and [100.0, 100.0]
   # with an unclassed glm.fit warning, "mean" [0, 0], the others NaN.
   # Whatever `ci_method`, the interval is Clopper-Pearson's on the
@@ -576,6 +586,7 @@ test_that("a percentage of 0 or 100 gets the exact binomial interval", {
 })
 
 test_that("the exact interval at 0 and 100 has the published values", {
+  skip_on_cran()
   # The research case: group y holds 100 rows, every one "a". Korn and
   # Graubard (1998, p. 194): [0, 0.03621669] at 0, and its complement at
   # 1 (NCHS, Parker et al. 2017, pp. 2-3).
@@ -595,6 +606,7 @@ test_that("the exact interval at 0 and 100 has the published values", {
 })
 
 test_that("the p tests the rows the percentages describe", {
+  skip_on_cran()
   # `svychisq()` has no `na.rm` either. On the full design the
   # statistic is right and the reference distribution is not: the
   # denominator degrees of freedom follow `degf()`, which falls from 14
@@ -626,6 +638,7 @@ test_that("the p tests the rows the percentages describe", {
 })
 
 test_that("a calibrated design tests the same table, and not NaN", {
+  skip_on_cran()
   # The same rule, on the design where `droplevels()` alone could not
   # apply it. `[` on a CALIBRATED design keeps the excluded rows at
   # weight zero instead of dropping them, so with `drop_na = FALSE` the
@@ -673,6 +686,7 @@ test_that("a calibrated design tests the same table, and not NaN", {
 })
 
 test_that("a declared level nobody chose does not enter the test", {
+  skip_on_cran()
   # Same rule, the other way in: `droplevels()` inside the test keeps a
   # ghost level out of the table being tested, so a level added to the
   # factor and never observed cannot move the p.
@@ -695,6 +709,7 @@ test_that("a declared level nobody chose does not enter the test", {
 })
 
 test_that("`levels_keep` selects levels, as a vector or per variable", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   out <- .svycat_df(d, select = stype, levels_keep = c("E", "M"))
   expect_identical(out$level, c(NA, "E", "M"))
@@ -724,6 +739,7 @@ test_that("`levels_keep` selects levels, as a vector or per variable", {
 })
 
 test_that("declared missing codes leave the table and the note", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   skip_if_not_installed("haven")
   d <- data.frame(w = rep(1, 6))
@@ -783,6 +799,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
 })
 
 test_that("under by, the note says the percentages are column percentages", {
+  skip_on_cran()
   # After the sample size, as `table_categorical()` says it (decision of
   # 2026-10-28); a table without `by` has one direction and says nothing.
   skip_if_not_installed("survey")
@@ -801,6 +818,7 @@ test_that("under by, the note says the percentages are column percentages", {
 })
 
 test_that("`drop_na` also governs the missing-`by` domain", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -860,6 +878,7 @@ test_that("`drop_na` also governs the missing-`by` domain", {
 })
 
 test_that("labels names the rows, the by title and the notes", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -920,6 +939,7 @@ test_that("labels names the rows, the by title and the notes", {
 })
 
 test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   build <- function() {
@@ -945,6 +965,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
 # ---- refusals -------------------------------------------------------------
 
 test_that("the two unusable svychisq statistics are refused by name", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   err <- expect_error(
     table_categorical_svy(
@@ -974,6 +995,7 @@ test_that("the two unusable svychisq statistics are refused by name", {
 })
 
 test_that("saddlepoint is refused on a replicate design and kept on a linearized one", {
+  skip_on_cran()
   # Same option, same survey function, two code paths: the linearized
   # branch passes `ddf = d0 * nu` to pchisqsum(), the replicate branch
   # passes no ddf at all, so its p-value comes out too small. Refused
@@ -1103,6 +1125,7 @@ test_that("the design-only refusals fire, one per branch", {
 })
 
 test_that("the missing-Suggests guard covers this entry point too", {
+  skip_on_cran()
   with_mocked_bindings(
     expect_error(
       table_categorical_svy(mtcars, select = cyl),
@@ -1114,6 +1137,7 @@ test_that("the missing-Suggests guard covers this entry point too", {
 })
 
 test_that("`df` overrides the design df, and the footer changes with it", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   out <- .svycat_df(d, select = stype, proportion_ci = TRUE, df = 100)
   ref <- 100 *
@@ -1161,6 +1185,7 @@ test_that("`df` overrides the design df, and the footer changes with it", {
 }
 
 test_that("negative weights are disclosed once, with the exact count", {
+  skip_on_cran()
   # Decision 36 / ARB-3: the note is conditional on the FACT. With no
   # `by` no comparison was asked for, so the fact is disclosed and
   # nothing is said about a test.
@@ -1190,6 +1215,7 @@ test_that("negative weights are disclosed once, with the exact count", {
 })
 
 test_that("negative weights refuse svychisq too, and say so", {
+  skip_on_cran()
   # Decision 36 / ARB-2 applied twin-symmetrically (2026-08-22). The
   # Rao-Scott correction is a function of the design variance, and the
   # footer of this very table says that variance can come out negative
@@ -1221,6 +1247,7 @@ test_that("negative weights refuse svychisq too, and say so", {
 })
 
 test_that("the categorical refusal clause says how far it reached", {
+  skip_on_cran()
   # The mixed regime, same rule as the continuous twin: a variable
   # whose complete cases exclude the negatively weighted rows is
   # tested, and the note scopes the refusal instead of speaking for the
@@ -1289,6 +1316,7 @@ test_that("the categorical refusal clause says how far it reached", {
 # ---- restitution ----------------------------------------------------------
 
 test_that("the design table comes back visibly, and assigning it says nothing", {
+  skip_on_cran()
   # Decision 47, the family invariant: a bare call renders through the
   # print method (capture.output() evaluates as at top level, so the
   # visible return auto-prints), an assignment writes nothing. This
@@ -1308,6 +1336,7 @@ test_that("the design table comes back visibly, and assigning it says nothing", 
 })
 
 test_that("the console table prints its blocks, its spanners and its footer", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   expect_snapshot(table_categorical_svy(d, select = c(stype, awards)))
   expect_snapshot(table_categorical_svy(d, select = stype, by = sch.wide))
@@ -1322,6 +1351,7 @@ test_that("the console table prints its blocks, its spanners and its footer", {
 })
 
 test_that("every rendering engine accepts a design categorical table", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   for (eng in c("tinytable", "gt", "flextable")) {
     skip_if_not_installed(eng)
@@ -1366,6 +1396,7 @@ test_that("every rendering engine accepts a design categorical table", {
 })
 
 test_that("the clipboard payload carries the table", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   skip_if_not_installed("clipr")
   captured <- new.env(parent = emptyenv())
@@ -1391,6 +1422,7 @@ test_that("the clipboard payload carries the table", {
 })
 
 test_that("a domain with no degrees of freedom has no design effect", {
+  skip_on_cran()
   # `deff()` returns 0 on a single-PSU domain, not NA, so it printed
   # "0.00" -- "no design effect at all" -- beside cells the same table
   # was already dashing.
@@ -1407,6 +1439,7 @@ test_that("a domain with no degrees of freedom has no design effect", {
 })
 
 test_that("the typed view keys every column by its block", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(
     d,
@@ -1442,6 +1475,7 @@ test_that("the typed view keys every column by its block", {
 })
 
 test_that("`inline()` cites a cell of a design categorical table", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(
     d,
@@ -1588,6 +1622,7 @@ test_that("broom tidy() and glance() read a design categorical table", {
 })
 
 test_that("coercion does not rename the frozen block keys", {
+  skip_on_cran()
   # `as.data.frame(unclass(x))` defaults to `check.names = TRUE`, which
   # rewrote "Yes n" to "Yes.n" -- a coercion silently renaming the
   # contract user code indexes into.
@@ -1610,6 +1645,7 @@ test_that("coercion does not rename the frozen block keys", {
 })
 
 test_that("coercion returns the displayed table, with the note alone", {
+  skip_on_cran()
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(d, select = stype, by = sch.wide)
   expect_identical(
@@ -1656,6 +1692,7 @@ test_that("`labels`, a comma mark and a journal style all reach the table", {
 })
 
 test_that("a group displayed with the margin's label is refused", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -1684,6 +1721,7 @@ test_that("a group displayed with the margin's label is refused", {
 })
 
 test_that("a level displayed beside the row of missing values is refused", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -1719,6 +1757,7 @@ test_that("a level displayed beside the row of missing values is refused", {
 })
 
 test_that("glance() counts the whole sample without a margin", {
+  skip_on_cran()
   # `nobs` read the LAST block, which is a group under
   # `include_total = FALSE`: 160 of the 183 schools.
   skip_if_not_installed("survey")
@@ -1740,6 +1779,7 @@ test_that("glance() counts the whole sample without a margin", {
 # ---- "data.frame" and "long": one table, two shapes ---------------------
 
 test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
+  skip_on_cran()
   # Two shapes since the ADR of 2026-10-20, as in table_categorical():
   # the displayed table, a group of columns per block, and the long
   # frame, one row per level and block. Every cell of one is a row of the
@@ -1788,6 +1828,7 @@ test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
 # ---- p_adjust ---------------------------------------------------------------
 
 test_that("p_adjust adjusts the one design-based test of each variable", {
+  skip_on_cran()
   des <- .svycat_design()
   raw <- table_categorical_svy(
     des,
@@ -1832,6 +1873,7 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
 })
 
 test_that("p_adjust needs `by` and the p-value column", {
+  skip_on_cran()
   des <- .svycat_design()
   expect_error(
     table_categorical_svy(des, c(stype, awards), p_adjust = "holm"),
@@ -1850,6 +1892,7 @@ test_that("p_adjust needs `by` and the p-value column", {
 })
 
 test_that("p_value = FALSE leaves no p column in the frame (issue #9)", {
+  skip_on_cran()
   des <- .svycat_design()
   ref <- .svycat_df(des, c(stype, awards), by = sch.wide)
   out <- .svycat_df(des, c(stype, awards), by = sch.wide, p_value = FALSE)
@@ -1882,6 +1925,7 @@ test_that("p_value = FALSE leaves no p column in the frame (issue #9)", {
 })
 
 test_that("the note names the test only when a test ran", {
+  skip_on_cran()
   # A one-level `by` and a constant variable run no test: the p cell is
   # blank, and a note naming the Rao-Scott test would describe nothing.
   d <- .svycat_design("strat")
@@ -1909,6 +1953,7 @@ test_that("the note names the test only when a test ran", {
 })
 
 test_that("`by` named in `select` is refused; a helper skips it", {
+  skip_on_cran()
   d <- .svycat_design("strat")
   expect_error(
     table_categorical_svy(d, select = c(stype, awards), by = awards),
@@ -1923,6 +1968,7 @@ test_that("`by` named in `select` is refused; a helper skips it", {
 })
 
 test_that("the design's weights, clusters and fpc are outside the selection", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(
     w = rep(c(1, 2, 3, 4), 10),
@@ -1975,6 +2021,7 @@ test_that("the design's weights, clusters and fpc are outside the selection", {
 })
 
 test_that("a select-less call takes the columns table_categorical() takes", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   svy_vars <- unique(suppressWarnings(table_categorical_svy(des))$variable)
@@ -2013,6 +2060,7 @@ test_that("a select-less call takes the columns table_categorical() takes", {
 }
 
 test_that("a group with no data shows the undefined mark, NA in the machine outputs", {
+  skip_on_cran()
   des <- .svycat_nd()
   mark <- spicy:::spicy_str("cell_undefined")
   tbl <- table_categorical_svy(des, select = physical_activity, by = education)
@@ -2054,6 +2102,7 @@ test_that("a group with no data shows the undefined mark, NA in the machine outp
 })
 
 test_that("a group with no data leaves the test of the other groups", {
+  skip_on_cran()
   des <- .svycat_nd()
   tbl <- table_categorical_svy(des, select = physical_activity, by = education)
   cc <- subset(des, !is.na(physical_activity) & education != "Tertiary")
@@ -2067,6 +2116,7 @@ test_that("a group with no data leaves the test of the other groups", {
 })
 
 test_that("the missing values of a variable leave out its groups with no data", {
+  skip_on_cran()
   des <- .svycat_nd(extra_na = 7L)
   tbl <- table_categorical_svy(
     des,
@@ -2094,6 +2144,7 @@ test_that("the missing values of a variable leave out its groups with no data", 
 })
 
 test_that("with fewer than two groups with data, the variable is not tested", {
+  skip_on_cran()
   des <- .svycat_nd(by_sex = TRUE)
   tbl <- table_categorical_svy(
     des,
@@ -2129,6 +2180,7 @@ test_that("with fewer than two groups with data, the variable is not tested", {
 })
 
 test_that("without by, a variable with no observed value keeps its levels", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- as.data.frame(sochealth)
   d$physical_activity <- factor(NA, levels = c("No", "Yes"))
@@ -2167,6 +2219,7 @@ test_that("without by, a variable with no observed value keeps its levels", {
 })
 
 test_that("the note gives its sentences in the four kinds, whatever the language", {
+  skip_on_cran()
   neg <- .svycat_neg_design()
   neg$variables$awardsb <- neg$variables$awards
   neg$variables$awardsb[.design_weights(neg) < 0] <- NA
@@ -2222,6 +2275,7 @@ test_that("the note gives its sentences in the four kinds, whatever the language
 })
 
 test_that("the default object carries the title the console prints", {
+  skip_on_cran()
   d <- .svycat_design()
   tbl <- table_categorical_svy(d, select = stype, by = awards)
   expect_identical(attr(tbl, "title"), "Categorical table by awards")
@@ -2233,6 +2287,7 @@ test_that("the default object carries the title the console prints", {
 })
 
 test_that("a level holding the word \"Total\" takes no rule in the console", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   set.seed(3)
   d <- data.frame(

@@ -169,6 +169,7 @@ test_that("each block carries its own one-way comparison", {
 })
 
 test_that("the rank family answers on the same blocks", {
+  skip_on_cran()
   r <- .to_compute(
     do_test = TRUE,
     do_es = TRUE,
@@ -462,6 +463,7 @@ test_that("the disclosures follow the arguments that cause them", {
 })
 
 test_that("a select displayed as Overall is refused, with both ways out", {
+  skip_on_cran()
   d <- data.frame(
     y = c(1, 2, 3, 4, 5, 6),
     g = c("a", "a", "b", "b", "a", "b")
@@ -564,6 +566,7 @@ test_that("a select displayed as Overall is refused, with both ways out", {
 })
 
 test_that("a level displayed beside the row of missing values is refused", {
+  skip_on_cran()
   # Every declared level of a block is displayed, so a declared
   # "(Missing)" collides too.
   for (g in list(
@@ -656,6 +659,7 @@ test_that("a level without data shows the mark, n included", {
 })
 
 test_that("the block compares the levels with data, and the note says why", {
+  skip_on_cran()
   d <- .to_nodata()
   long <- table_outcome(d, y, select = c(edu, sex), output = "long")
   headers <- long[long$.row_role == "factor_header", ]
@@ -750,6 +754,7 @@ test_that("the weights open the note, after the sample size", {
 })
 
 test_that("the note opens with the sample size, the rows of the data", {
+  skip_on_cran()
   d <- data.frame(
     y = c(1, 2, NA, 4, 5, 6, 7, 8),
     g = factor(c("A", "A", "A", "B", "B", NA, "A", "B")),
@@ -1210,6 +1215,7 @@ test_that("p_adjust adjusts the one test of each block, together", {
 })
 
 test_that("p_adjust: the typed view, the note and an engine agree", {
+  skip_on_cran()
   raw <- table_outcome(mtcars, mpg, select = c(am, vs, cyl), output = "long")
   raw_p <- raw$p.value[!is.na(raw$p.value)]
   tbl <- table_outcome(mtcars, mpg, select = c(am, vs, cyl), p_adjust = "BH")
@@ -1324,6 +1330,7 @@ test_that("p_value = FALSE leaves no p-value and no empty test column (issue #9)
 })
 
 test_that("the outcome named in `select` is refused; a helper skips it", {
+  skip_on_cran()
   d <- data.frame(
     y = c(1, 2, 3, 4, 10, 20, 30, 40),
     g = factor(rep(c("a", "b"), each = 4)),
@@ -1380,6 +1387,7 @@ test_that("the note names a block's test only when it ran", {
 })
 
 test_that("the comparison cells of a block with no variance are undefined", {
+  skip_on_cran()
   d <- data.frame(
     k = rep(5, 12),
     g2 = factor(rep(c("a", "b"), each = 6)),
@@ -1422,6 +1430,7 @@ test_that("the comparison cells of a block with no variance are undefined", {
 })
 
 test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  skip_on_cran()
   mark <- spicy_str("cell_undefined")
   d <- data.frame(
     v = c(1, 2, 3, 4, 5, 6, 7, 8),

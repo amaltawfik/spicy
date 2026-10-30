@@ -107,6 +107,7 @@ test_that("the multivariable column equals the full fit exactly", {
 # ---- 2. N column + sample-size disclosure --------------------------------
 
 test_that("per-predictor N is shown and the differing-N note fires", {
+  skip_on_cran()
   d <- .uv_soc()
   out <- paste(
     capture.output(print(
@@ -175,6 +176,7 @@ test_that("complete_cases = TRUE forces the common sample and says so", {
 # ---- 3. Layout contract ---------------------------------------------------
 
 test_that("screen-only tables carry no empty fit-stat rows", {
+  skip_on_cran()
   d <- .uv_soc()
   out <- paste(
     capture.output(print(
@@ -206,6 +208,7 @@ test_that("screen-only tables carry no empty fit-stat rows", {
 
 
 test_that("the structured body carries no empty fit-stat rows either", {
+  skip_on_cran()
   d <- .uv_soc()
   df <- table_regression_uv(
     d,
@@ -261,6 +264,7 @@ test_that("the structured body carries no empty fit-stat rows either", {
 
 
 test_that("the N column is a count: no decimals whatever `digits`", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   d <- .uv_soc()
   n_cells <- function(digits) {
@@ -291,6 +295,7 @@ test_that("the N column is a count: no decimals whatever `digits`", {
 # 2-decimal display cannot hide a wrong number.
 
 test_that("the r2 / adj_r2 tokens carry each predictor's own R-squared", {
+  skip_on_cran()
   d <- .uv_soc()
   preds <- c("age", "bmi", "sex")
   df <- table_regression_uv(
@@ -523,6 +528,7 @@ test_that("labels pass through to the row stubs", {
 
 
 test_that("labels: names by default, the label attributes with TRUE (decision 54)", {
+  skip_on_cran()
   d <- .uv_soc()
   out0 <- table_regression_uv(d, wellbeing_score, c(age, sex))
   expect_match(attr(out0, "title"), ": wellbeing_score$")
@@ -573,6 +579,7 @@ test_that("labels: NULL and unnamed vectors are errors", {
 
 
 test_that("rank-deficient predictors stay visible as dropped rows", {
+  skip_on_cran()
   d <- .uv_soc()
   d$const <- 1
   out <- paste(
@@ -596,6 +603,7 @@ test_that("rank-deficient predictors stay visible as dropped rows", {
 
 test_that("p_adjust adjusts within the screen family and within the
            multivariable family separately", {
+  skip_on_cran()
   d <- .uv_soc()
   raw <- broom::tidy(table_regression_uv(
     d,
@@ -621,6 +629,7 @@ test_that("p_adjust adjusts within the screen family and within the
 # ---- 5. Robust vcov passthrough ------------------------------------------
 
 test_that("HC3 flows through to every univariable fit", {
+  skip_on_cran()
   d <- .uv_soc()
   t_hc <- table_regression_uv(
     d,
@@ -640,6 +649,7 @@ test_that("HC3 flows through to every univariable fit", {
 
 
 test_that("CR2 clusters align to each fit's own sample (differing Ns)", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   d <- .uv_soc()
   t_cr <- table_regression_uv(
@@ -747,6 +757,7 @@ test_that("method = 'lm' fits linear screens with the matching title", {
 
 
 test_that("default titles follow the family; custom title wins", {
+  skip_on_cran()
   d <- .uv_soc()
   out1 <- paste(
     capture.output(print(
@@ -972,6 +983,7 @@ test_that("`...` takes the arguments of table_regression(), by full name", {
 })
 
 test_that("an error raised in table_regression() names table_regression_uv()", {
+  skip_on_cran()
   d <- .uv_soc()
   for (cl in list(
     quote(table_regression_uv(d, bmi, predictors = age, align = "left")),
@@ -990,6 +1002,7 @@ test_that("an error raised in table_regression() names table_regression_uv()", {
 })
 
 test_that("a survey design is refused with the design-based route", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   err <- expect_error(
@@ -1001,6 +1014,7 @@ test_that("a survey design is refused with the design-based route", {
 })
 
 test_that("the outcome is auto-dropped from tidyselect predictors", {
+  skip_on_cran()
   d <- .uv_soc()[, c("smoking", "age", "sex")]
   td <- broom::tidy(table_regression_uv(
     d,
@@ -1017,6 +1031,7 @@ test_that("the outcome is auto-dropped from tidyselect predictors", {
 # ---- 8. Snapshot: the flagship layout -------------------------------------
 
 test_that("console snapshot: screen + multivariable merge", {
+  skip_on_cran()
   d <- .uv_soc()
   # Wide enough for the two column groups on one panel (the default
   # test width of 80 splits a continuation panel; panel splitting has
@@ -1035,6 +1050,7 @@ test_that("console snapshot: screen + multivariable merge", {
 
 
 test_that("the footer names the cluster column through the wrapper", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   d <- .uv_soc()
   out <- paste(
@@ -1054,6 +1070,7 @@ test_that("the footer names the cluster column through the wrapper", {
 })
 
 test_that("family with method = 'lm': non-gaussian refused, gaussian ignored with a warning", {
+  skip_on_cran()
   set.seed(42)
   df <- data.frame(
     y = rnorm(40),
@@ -1141,6 +1158,7 @@ test_that("explicit method = 'lm' on a binary outcome stays silent", {
 })
 
 test_that("family without method selects the glm screen (0.12 calls intact)", {
+  skip_on_cran()
   d <- sochealth[1:300, ]
   t_fam <- expect_no_warning(
     table_regression_uv(
@@ -1163,6 +1181,7 @@ test_that("family without method selects the glm screen (0.12 calls intact)", {
 })
 
 test_that("family is normalized like stats::glm(): object, name, constructor", {
+  skip_on_cran()
   d <- sochealth[1:300, ]
   fit_with <- function(fam) {
     table_regression_uv(
@@ -1218,6 +1237,7 @@ test_that("a >2-level outcome under the default is refused with guidance", {
 # ============================================================================
 
 test_that("gaussian identity is refused for the glm screen in all three forms", {
+  skip_on_cran()
   # rd-uv-estimands:gaussian-identity-refused-glm
   d <- .uv_soc()
   for (ff in list(stats::gaussian(), "gaussian", stats::gaussian)) {
@@ -1267,6 +1287,7 @@ test_that("method = 'lm' + non-gaussian family points at the glm screen", {
 })
 
 test_that("a 3-level factor with two observed levels passes the linear screen", {
+  skip_on_cran()
   # rd-uv-estimands:lm-multilevel-outcome-refused ('observed levels'
   # nuance; the >2-observed refusal is pinned above)
   set.seed(31)
@@ -1294,6 +1315,7 @@ test_that("a 3-level factor with two observed levels passes the linear screen", 
 })
 
 test_that("LPM codes 0/1 on the second level and the warning names it", {
+  skip_on_cran()
   # rd-uv-estimands:lpm-01-coding-second-level-named
   set.seed(32)
   n <- 100
@@ -1337,6 +1359,7 @@ test_that("LPM codes 0/1 on the second level and the warning names it", {
 })
 
 test_that("tidyselect helpers work and the outcome is dropped from them", {
+  skip_on_cran()
   # rd-uv-estimands:predictors-outcome-autodropped (where() half; the
   # everything() half is pinned above, the Surv half in the coxph file)
   set.seed(33)
@@ -1361,6 +1384,7 @@ test_that("tidyselect helpers work and the outcome is dropped from them", {
 })
 
 test_that("show_intercept = TRUE shows the univariable intercepts too", {
+  skip_on_cran()
   # rd-uv-estimands:show-intercept-default-false – the Rd Intercepts
   # section promises both sides under show_intercept = TRUE: each
   # univariable block opens with its own fit's intercept, rendered
@@ -1403,6 +1427,7 @@ test_that("show_intercept = TRUE shows the univariable intercepts too", {
 })
 
 test_that("keep on a predictor name spares BOTH intercepts (uv + multivariable)", {
+  skip_on_cran()
   # Regression (delta review D7): the uv intercepts are keyed
   # "<pred>: (Intercept)", so `keep = "age"` used to retain the age
   # block's intercept while filtering the multivariable "(Intercept)"
@@ -1430,6 +1455,7 @@ test_that("keep on a predictor name spares BOTH intercepts (uv + multivariable)"
 })
 
 test_that("the documented example runs and yields the OR screen", {
+  skip_on_cran()
   # rd-uv-estimands:example-runs (the \donttest body, verbatim
   # arguments)
   out <- table_regression_uv(
@@ -1475,6 +1501,7 @@ test_that("the screen honors the table_regression output contract", {
 })
 
 test_that("the screen renders through the rich engines", {
+  skip_on_cran()
   # rd-uv-estimands:value-same-output-contract (engine half)
   skip_if_not_installed("tinytable")
   skip_if_not_installed("flextable")

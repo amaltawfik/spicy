@@ -66,6 +66,7 @@ test_that("the cited text follows the style and the decimal mark", {
 })
 
 test_that("a cited cell carries the style levers that have no formal", {
+  skip_on_cran()
   # Half a style travels in the typed contract, because `digits`,
   # `p_digits` and `decimal_mark` are formals and are baked into
   # `col_meta` at build time. The other half -- `p_sigfig`, `p_bands`,
@@ -155,6 +156,7 @@ test_that("misaddressing errors are classed and list the choices", {
 })
 
 test_that("reference and undefined cells refuse with the reason", {
+  skip_on_cran()
   tbl <- .il_quiet(table_regression(.il_fit()))
   err <- tryCatch(inline(tbl, sex, "Female", "b"), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
@@ -187,6 +189,7 @@ test_that("a multi-model table requires and honors `model`", {
 })
 
 test_that("a partial chi-squared is cited without its degrees of freedom", {
+  skip_on_cran()
   # The table prints "1.10 (1)": the df is a column of its own carrying
   # the same token, and the pair was refused as two columns, `model` or
   # not, with "Available: ." on a single-model table.
@@ -231,6 +234,7 @@ test_that("a partial chi-squared is cited without its degrees of freedom", {
 })
 
 test_that("`model = k` addresses the k-th model, by identity", {
+  skip_on_cran()
   # `model = k` used to resolve to `names(spans)[[k]]` and then re-enter
   # the list BY NAME. That is the k-th model only while no two labels
   # coincide -- and `[[` by name returns the first match, so when they
@@ -325,6 +329,7 @@ test_that("`model = k` does not go out to the label and back", {
 })
 
 test_that("an out-of-range or unknown `model` is refused, unchanged", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   tbl <- .il_quiet(table_regression(list(
     lm(wellbeing_score ~ age, data = d),
@@ -424,6 +429,7 @@ test_that("inline() refuses an interval whose bounds have no value", {
 })
 
 test_that("an interval token names its own bounds, not a rival estimand", {
+  skip_on_cran()
   # "ci", "med_ci", "ame_ci" and "assoc_ci" are different estimands. The
   # bound lookup used to ignore the token and scan every LL / UL column,
   # so a table carrying two intervals reported an ambiguity and told the
@@ -754,6 +760,7 @@ test_that("a bare inline() on a factor `by` cites the contrast, not n", {
 })
 
 test_that("`model` cites a group column of table_continuous_lm()", {
+  skip_on_cran()
   # This family lays its groups out SIDEWAYS: one row per outcome, the
   # `by` levels in the headers ("M (Female)", "M (Male)"), with the
   # level carried as data in `col_meta$level` precisely so a consumer
@@ -1234,6 +1241,7 @@ test_that("`model` keeps the columns that belong to no group", {
 })
 
 test_that("a column the table does not carry is named before any level hint", {
+  skip_on_cran()
   # On a block table the refusal used to be a level hint ("has levels:
   # pick one with `level`"), which cannot help when the column itself is
   # missing. It now names the column, with the head every family uses.
@@ -1370,6 +1378,7 @@ test_that("a multiple-response item renamed by `labels` keeps its address", {
 })
 
 test_that("a group given as `level` is pointed to `model`", {
+  skip_on_cran()
   # An item row has no level, and the groups of a `by` table are
   # spanners: `level = "Female"` is the address a reader tries first, and
   # its refusal used to list nothing ("Available: ."). It now says why,
@@ -1469,6 +1478,7 @@ test_that("an untested item and an empty group refuse with the reason", {
 }
 
 test_that("an item column named like a generated row's token keeps both rows", {
+  skip_on_cran()
   # The item and the generated row shared the token, so the label of the
   # generated row led back to it and returned the item's count. The
   # column now owns the token; the generated row keeps its label.
@@ -1514,6 +1524,7 @@ test_that("an item labeled like a generated row's token is told apart", {
 })
 
 test_that("an exact label wins over a fit statistic's label read regardless of case", {
+  skip_on_cran()
   d <- data.frame(
     x1 = c(1, 0, NA, 1, 0, 1, 1),
     x2 = c(0, 0, NA, 1, 0, 1, 1)
@@ -1546,6 +1557,7 @@ test_that("an exact label wins over a fit statistic's label read regardless of c
 })
 
 test_that("a variable that matches two rows is refused with an address for each", {
+  skip_on_cran()
   tbl <- table_regression(
     lm(mpg ~ wt + hp, data = mtcars),
     show_fit_stats = c("nobs", "aic"),
@@ -1641,6 +1653,7 @@ test_that("a level's label leads to its variable only when one variable has it",
 })
 
 test_that("the p of a by-group continuous table is cited without `model`", {
+  skip_on_cran()
   # The p-value belongs to the variable, not to a group: cited without
   # `model`, and refused with any group, the first one included (whose
   # row prints it).

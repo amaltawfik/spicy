@@ -292,6 +292,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
 })
 
 test_that("tidy df is numeric double and carries fractional Satterthwaite df verbatim", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   fit <- lm(mpg ~ wt, data = mtcars)
   # Classical: double-typed even when the values are whole numbers.
@@ -317,6 +318,7 @@ test_that("tidy df is numeric double and carries fractional Satterthwaite df ver
 
 
 test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl + am, data = mt)
   out <- table_regression(fit)
   td <- broom::tidy(out)
@@ -428,6 +430,7 @@ test_that("tidy – a truly aliased coefficient is dropped (no NA estimates)", {
 })
 
 test_that("tidy – estimate_type stays in the documented domain", {
+  skip_on_cran()
   # rd-methods:tidy-estimate-type-domain
   skip_if_not_installed("marginaleffects")
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -458,6 +461,7 @@ test_that("tidy – estimate_type stays in the documented domain", {
 })
 
 test_that("tidy – one row per (model_id, term, estimate_type, outcome_level)", {
+  skip_on_cran()
   # rd-methods:tidy-row-grain
   skip_if_not_installed("marginaleffects")
   m1 <- lm(mpg ~ wt + cyl, data = mt)
@@ -528,6 +532,7 @@ test_that("as.data.frame equals output = 'data.frame' cell-for-cell", {
 })
 
 test_that("as.data.frame and output = 'data.frame' are attribute-identical", {
+  skip_on_cran()
   # rd-methods:asdf-roundtrip-output-dataframe (strict half): the Rd
   # Details say the two paths return identical objects, attributes
   # included: the note alone, no provenance (model_ids / outcome) nor

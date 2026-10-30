@@ -116,6 +116,7 @@ test_that("every displayed number is survey's own (stratified design)", {
 })
 
 test_that("`deff = \"replace\"` is the other design effect, and says so", {
+  skip_on_cran()
   d <- .svyc_design("strat")
   out <- .svyc_long(d, select = api00, deff = "replace")
   expect_equal(out$deff, 1.1655661714535266, tolerance = 1e-12)
@@ -134,6 +135,7 @@ test_that("`deff = \"replace\"` is the other design effect, and says so", {
 })
 
 test_that("every displayed number is survey's own (cluster design)", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   out <- .svyc_long(
     .svyc_design("clus1"),
@@ -153,6 +155,7 @@ test_that("every displayed number is survey's own (cluster design)", {
 })
 
 test_that("`qrule` reaches survey, and \"spicy\" is the type-7 rule", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   math <- .svyc_long(
     d,
@@ -213,6 +216,7 @@ test_that("`qrule` reaches survey, and \"spicy\" is the type-7 rule", {
 # ---- the continuity theorem of decision 17 --------------------------------
 
 test_that("D17: on a weights-only design the two regimes are the same estimand", {
+  skip_on_cran()
   # THE witness of this chantier. `survey:::svyvar()` computes
   # sum(w (x - xbar)^2) / sum(w) * n / (n - 1); `.wtd_sd()` on weights
   # rescaled to sum to n computes sum(w' (x - xbar)^2) / (sum(w') - 1),
@@ -257,6 +261,7 @@ test_that("D17: on a weights-only design the two regimes are the same estimand",
 })
 
 test_that("D17 holds where the alignment of n had no reason to", {
+  skip_on_cran()
   # The theorem is stated for any design, but its `n` -- survey's
   # "weight non-zero and not NA" against spicy's "value, weight, and
   # weight > 0" -- coincides for a reason that is easy to break.
@@ -288,6 +293,7 @@ test_that("D17 holds where the alignment of n had no reason to", {
 # ---- an oracle that does not come from survey -----------------------------
 
 test_that("the two-stratum micro design matches a hand linearization", {
+  skip_on_cran()
   # Six PSU, two strata, weights 5 and 2. The linearized variance is
   # the exact rational 492/441, so this witness would catch a survey
   # regression as well as one of ours.
@@ -318,6 +324,7 @@ test_that("the two-stratum micro design matches a hand linearization", {
 # ---- replicate weights ----------------------------------------------------
 
 test_that("a replicate design gives the same point estimate, its own SE", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   lin <- .svyc_long(.svyc_design("clus1"), select = api00)
   rep <- .svyc_long(.svyc_design("rep1"), select = api00)
@@ -370,6 +377,7 @@ test_that("`by` cuts one domain per group, each with its own df", {
 })
 
 test_that("a calibrated domain counts only the rows it kept", {
+  skip_on_cran()
   # `[` on a CALIBRATED design does not drop the excluded rows: it
   # sets their probability to Inf, i.e. their weight to zero, and the
   # domain still has 183 rows. Every count of the twin therefore
@@ -406,6 +414,7 @@ test_that("a calibrated domain counts only the rows it kept", {
 })
 
 test_that("a negative calibration weight is an observation, not a hole", {
+  skip_on_cran()
   # `survey:::svyvar()` counts `weights(design, "sampling") != 0`, and
   # LINEAR calibration routinely drives weights below zero -- that is
   # what `calibrate(bounds = )` exists to prevent. A `> 0` filter drops
@@ -458,6 +467,7 @@ test_that("a negative calibration weight is an observation, not a hole", {
 })
 
 test_that("negative weights refuse the test, keep the cells, and say so", {
+  skip_on_cran()
   # Decision 36 / ARB-2 and ARB-3. The group comparison used to filter
   # on `w > 0`: the cells were computed on 183 rows and the p-value on
   # 96, under a footer saying "N = 183" and no word about either.
@@ -489,6 +499,7 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
 })
 
 test_that("the refusal clause says how far the refusal reached", {
+  skip_on_cran()
   # The footer clause used to be decided per TABLE ("was a test asked
   # for?") while the refusal is decided per VARIABLE. A variable whose
   # missing values happen to cover the negatively weighted rows has a
@@ -557,6 +568,7 @@ test_that("the refusal clause says how far the refusal reached", {
 })
 
 test_that("a comparison absent for another reason is not blamed on the weights", {
+  skip_on_cran()
   # The milder half of the same defect: with negative weights present
   # AND fewer than two usable groups, the comparison is missing for a
   # reason that has nothing to do with the sign of the weights. The
@@ -583,6 +595,7 @@ test_that("a comparison absent for another reason is not blamed on the weights",
 })
 
 test_that("a calibrated design with no negative weight says nothing", {
+  skip_on_cran()
   # The note is conditional on the FACT, not on the design being
   # calibrated: "calibrated" is already said by the design line.
   skip_if_not_installed("survey")
@@ -601,6 +614,7 @@ test_that("a calibrated design with no negative weight says nothing", {
 })
 
 test_that("the footer gives the df span when the groups disagree", {
+  skip_on_cran()
   skip_if_not_installed("survey", "4.5")
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(
@@ -620,6 +634,7 @@ test_that("the footer gives the df span when the groups disagree", {
 })
 
 test_that("`drop_na = FALSE` keeps the missing values as their own domain", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -651,6 +666,7 @@ test_that("`drop_na = FALSE` keeps the missing values as their own domain", {
 })
 
 test_that("the sample-size sentence counts the analytic sample", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -665,6 +681,7 @@ test_that("the sample-size sentence counts the analytic sample", {
 })
 
 test_that("rows with a missing `by` leave the table and the note says so", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -713,6 +730,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
 # ---- the group comparison -------------------------------------------------
 
 test_that("two groups take the design-based t-test, three the Wald F", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   two <- .svyc_long(d, select = api00, by = sch.wide, statistic = TRUE)
   expect_identical(two$test_type[[1L]], "design_t")
@@ -743,6 +761,7 @@ test_that("two groups take the design-based t-test, three the Wald F", {
 })
 
 test_that("the rank tests are survey's, including the documented shape swap", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   two <- .svyc_long(
     d,
@@ -778,6 +797,7 @@ test_that("the rank tests are survey's, including the documented shape swap", {
 })
 
 test_that("`test = \"student\"` warns and behaves like the design t-test", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   expect_warning(
     stu <- table_continuous_svy(
@@ -794,6 +814,7 @@ test_that("`test = \"student\"` warns and behaves like the design t-test", {
 })
 
 test_that("a table showing a median without a mean takes the rank test", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   out <- .svyc_long(
     d,
@@ -806,6 +827,7 @@ test_that("a table showing a median without a mean takes the rank test", {
 })
 
 test_that("a declared but unobserved `by` level does not reach the test", {
+  skip_on_cran()
   # `droplevels()` in `.svy_group_test()` carries the whole "observed
   # groups" rule -- it is why `note_design_df_test_differs` exists --
   # and no fixture separated it from its absence: removing it stayed
@@ -846,6 +868,7 @@ test_that("a declared but unobserved `by` level does not reach the test", {
 })
 
 test_that("the comparison reads its groups, whatever the type of `by`", {
+  skip_on_cran()
   # An ordered factor entered `svyttest()` with a polynomial contrast,
   # which its 0/1 check refuses: a two-level ordered `by` was never
   # compared. A numeric `by` entered `svyglm()` as a SLOPE, a trend test
@@ -873,6 +896,7 @@ test_that("the comparison reads its groups, whatever the type of `by`", {
 
 
 test_that("a group too thin to compare leaves the test columns empty", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
@@ -888,6 +912,7 @@ test_that("a group too thin to compare leaves the test columns empty", {
 # ---- degrees of freedom supplied by the caller ----------------------------
 
 test_that("`df` moves the intervals, and only the intervals", {
+  skip_on_cran()
   # `df` reaches `confint()`. It cannot reach the group comparison:
   # `svyttest()` and `svyranktest()` have no `df` argument. The note
   # used to promise both, which put three different numbers in one
@@ -947,6 +972,7 @@ test_that("`df` moves the intervals, and only the intervals", {
 })
 
 test_that("`df` does not reach the categorical test either", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   a <- suppressWarnings(table_categorical_svy(
     d,
@@ -974,6 +1000,7 @@ test_that("`df` does not reach the categorical test either", {
 })
 
 test_that("a domain with no degrees of freedom has no estimable variance", {
+  skip_on_cran()
   # `svymean()` returns SE = 0 on a single-PSU domain: there is no
   # between-unit variation to measure. Printed as "0.00" beside a
   # dashed interval it reads as a perfect estimate, which is the
@@ -1096,6 +1123,7 @@ test_that("the design-only refusals fire, one per branch", {
 })
 
 test_that("an unsupported design class is refused by name", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   tw <- survey::twophase(
@@ -1110,6 +1138,7 @@ test_that("an unsupported design class is refused by name", {
 })
 
 test_that("the ignored-argument warnings fire where they should", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   expect_warning(
     table_continuous_svy(d, select = api00, statistic = TRUE),
@@ -1171,6 +1200,7 @@ test_that("the ignored-argument warnings fire where they should", {
 })
 
 test_that("`regex` and `exclude` select the way the sibling does", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   out <- .svyc_long(d, select = "^api[0-9]", regex = TRUE)
   expect_identical(out$variable, c("api00", "api99"))
@@ -1185,6 +1215,7 @@ test_that("`regex` and `exclude` select the way the sibling does", {
 # ---- declared missing values ----------------------------------------------
 
 test_that("declared missing codes leave the statistics and the note", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   skip_if_not_installed("haven")
   d <- data.frame(w = rep(1, 6))
@@ -1210,6 +1241,7 @@ test_that("declared missing codes leave the statistics and the note", {
 })
 
 test_that("ordinary missing values are counted in the note", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(y = c(1, 2, NA, 4), w = rep(1, 4))
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
@@ -1241,6 +1273,7 @@ test_that("ordinary missing values are counted in the note", {
 }
 
 test_that("a variable with no data in a domain shows the mark there", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- .svyc_nodata()
   long <- .svyc_long(des, select = c(x, y), by = g)
@@ -1263,6 +1296,7 @@ test_that("a variable with no data in a domain shows the mark there", {
 })
 
 test_that("the comparison of a no-data variable runs on the domains with data", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- .svyc_nodata()
   long <- .svyc_long(des, select = c(x, y), by = g)
@@ -1297,6 +1331,7 @@ test_that("the comparison of a no-data variable runs on the domains with data", 
 
 
 test_that("without `by`, a variable with no observed value has no data", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(x = c(1, 2, NA, 4), y = NA_real_, w = rep(1, 4))
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
@@ -1325,6 +1360,7 @@ test_that("without `by`, a variable with no observed value has no data", {
 })
 
 test_that("the note gives the design, then the missing data, then the inference", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- .svyc_nodata(ordered = FALSE)
   note <- attr(
@@ -1359,6 +1395,7 @@ test_that("the note gives the design, then the missing data, then the inference"
 })
 
 test_that("the object carries the title it prints", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- .svyc_design("clus1")
   tbl <- table_continuous_svy(des, select = api00, by = stype)
@@ -1413,6 +1450,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
 })
 
 test_that("the missing-values note names each variable by its row label", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(
     y = c(1, 2, NA, 4, 5, 6),
@@ -1480,6 +1518,7 @@ test_that("the missing-values note names each variable by its row label", {
 })
 
 test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   build <- function() {
@@ -1502,6 +1541,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
 # ---- restitution ----------------------------------------------------------
 
 test_that("the design table comes back visibly, and assigning it says nothing", {
+  skip_on_cran()
   # Decision 47, the family invariant: a bare call renders through the
   # print method (capture.output() evaluates as at top level, so the
   # visible return auto-prints), an assignment writes nothing. This
@@ -1521,6 +1561,7 @@ test_that("the design table comes back visibly, and assigning it says nothing", 
 })
 
 test_that("the console table prints its title, its columns and its footer", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   expect_snapshot(table_continuous_svy(d, select = c(api00, api99)))
   expect_snapshot(table_continuous_svy(
@@ -1540,6 +1581,7 @@ test_that("the console table prints its title, its columns and its footer", {
 })
 
 test_that("every rendering engine accepts a design table", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   for (eng in c("tinytable", "gt", "flextable")) {
     skip_if_not_installed(eng)
@@ -1574,6 +1616,7 @@ test_that("every rendering engine accepts a design table", {
 })
 
 test_that("the clipboard route is reachable and refuses without clipr", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   skip_if_not_installed("clipr")
   local_mocked_bindings(
@@ -1599,6 +1642,7 @@ test_that("the clipboard route is reachable and refuses without clipr", {
 })
 
 test_that("the typed view carries the design tokens and the row identity", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   tbl <- table_continuous_svy(d, select = api00, by = stype, deff = TRUE)
   s <- as_structured(tbl)
@@ -1621,6 +1665,7 @@ test_that("the typed view carries the design tokens and the row identity", {
 })
 
 test_that("`inline()` cites a cell of a design table", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   tbl <- table_continuous_svy(
     d,
@@ -1770,6 +1815,7 @@ test_that("broom tidy() and glance() read a design table", {
 })
 
 test_that("coercion returns the displayed table, with the note alone", {
+  skip_on_cran()
   d <- .svyc_design("clus1")
   tbl <- table_continuous_svy(d, select = api00, by = stype)
   expect_identical(
@@ -1818,6 +1864,7 @@ test_that("`labels` renames the stub, and a journal style reaches the cells", {
 # ---- "data.frame" and "long": one table, two shapes ---------------------
 
 test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
+  skip_on_cran()
   # Two shapes since the ADR of 2026-10-20, as in table_continuous():
   # the displayed table under its printed keys, and the compute frame
   # under the names of the family. One row per (variable x group) in
@@ -1857,6 +1904,7 @@ test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
 # ---- p_adjust ---------------------------------------------------------------
 
 test_that("p_adjust adjusts the one design-based test of each variable", {
+  skip_on_cran()
   d <- .svyc_design()
   raw <- table_continuous_svy(
     d,
@@ -1898,6 +1946,7 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
 })
 
 test_that("p_adjust needs `by` and the p-value column", {
+  skip_on_cran()
   d <- .svyc_design()
   expect_error(
     table_continuous_svy(d, c(api00, api99), p_adjust = "holm"),
@@ -1916,6 +1965,7 @@ test_that("p_adjust needs `by` and the p-value column", {
 })
 
 test_that("statistic = TRUE, p_value = FALSE keeps the statistic, not the p (issue #9)", {
+  skip_on_cran()
   d <- .svyc_design()
   ref <- .svyc_long(d, c(api00, api99), by = stype, statistic = TRUE)
   out <- .svyc_long(
@@ -1941,6 +1991,7 @@ test_that("statistic = TRUE, p_value = FALSE keeps the statistic, not the p (iss
 })
 
 test_that("a `by` no observation holds is refused, not a base R error", {
+  skip_on_cran()
   d <- .svyc_design("iid")
   d$variables$none <- factor(NA, levels = c("a", "b"))
   err <- expect_error(
@@ -1960,6 +2011,7 @@ test_that("a `by` no observation holds is refused, not a base R error", {
 })
 
 test_that("a variable with no variance gets no comparison, with a warning", {
+  skip_on_cran()
   # survey still returns a p-value for it (0.228 from svyttest() on the
   # sochealth constant): the cells are undefined, as in table_continuous().
   d <- .svyc_design("iid")
@@ -1992,6 +2044,7 @@ test_that("a variable with no variance gets no comparison, with a warning", {
 })
 
 test_that("the comparison cells of a variable with no variance are undefined", {
+  skip_on_cran()
   d <- .svyc_design("iid")
   d$variables$const <- 5
   tc <- suppressWarnings(table_continuous_svy(
@@ -2026,6 +2079,7 @@ test_that("the comparison cells of a variable with no variance are undefined", {
 })
 
 test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   mark <- spicy_str("cell_undefined")
   g <- rep(c("a", "b"), each = 4)
@@ -2108,6 +2162,7 @@ test_that("every comparison that cannot run is undefined, its warnings unchanged
 })
 
 test_that("`by` named in `select` is refused; a helper skips it", {
+  skip_on_cran()
   d <- .svyc_design("iid")
   expect_error(
     table_continuous_svy(d, select = c(api00, api99), by = api99),
@@ -2127,6 +2182,7 @@ test_that("`by` named in `select` is refused; a helper skips it", {
 })
 
 test_that("the design's weights, clusters and fpc are outside the selection", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(
     w = 1 + (1:40 %% 3) / 2,

@@ -6,6 +6,7 @@
 # `sprintf` format.
 
 test_that("the registry itself is under snapshot", {
+  skip_on_cran()
   # One key per line: the default print of a named character vector reflows
   # with `getOption("width")` and with the longest value, so a snapshot of it
   # would churn on every addition instead of showing the addition.
@@ -27,6 +28,7 @@ test_that("registry keys are unique and non-empty", {
 })
 
 test_that("no dead keys: every registry key is consumed in R/", {
+  skip_on_cran()
   # Only meaningful against the sources; skipped for an installed
   # package. `dir.exists()` is NOT the right guard: an installed
   # package also has an R/ directory two levels up under covr's
@@ -150,6 +152,7 @@ test_that("the lead-in in force follows note_label, as the language spells it", 
 })
 
 test_that("every frozen categorical key equals its English display label", {
+  skip_on_cran()
   # The column NAME and the header are two layers that hold the same
   # string in English and are free to diverge at stage 2. Nothing else
   # can catch a key that stops matching its label -- the key is pinned by
@@ -202,6 +205,7 @@ test_that("every frozen categorical key equals its English display label", {
 })
 
 test_that("every frozen continuous key equals its English display label", {
+  skip_on_cran()
   # Same contract as the categorical test above, for lot B. The column
   # NAME is a rendering key (flextable col_keys, gt ids, the gt CSS
   # selector) and an `as_structured()` key; the header is a separate
@@ -271,6 +275,7 @@ test_that("every frozen continuous key equals its English display label", {
 })
 
 test_that("every frozen linear-model key equals its English display label", {
+  skip_on_cran()
   # Same contract as the two tests above, for lot C. Here the key layer
   # is unusually load-bearing: it names the public `data.frame` columns,
   # the flextable `col_keys`, the gt spanner ids and the `th[id="%s"]`
@@ -478,6 +483,7 @@ test_that("a label that states a subtraction writes the minus sign", {
 })
 
 test_that("every frozen block identity equals its English caption", {
+  skip_on_cran()
   # Same contract as the three descriptive blocks above, for lot D. Here
   # the key layer is a ROW identity rather than a column name: it is
   # `coefs$parent_var`, the `factor_term` column of `broom::tidy()` and
@@ -566,6 +572,7 @@ test_that("spicy_str() returns the raw default", {
 })
 
 test_that("every registry template is a well-formed sprintf format", {
+  skip_on_cran()
   # A value carrying at least one conversion is a TEMPLATE: it must survive
   # `sprintf()` with the counted number of dummy arguments, and it must not
   # leave an unescaped literal `%` behind. Values with no conversion at all

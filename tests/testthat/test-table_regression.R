@@ -24,6 +24,7 @@ test_that("table_regression – default output: spicy_regression_table class + a
 })
 
 test_that("table_regression – single fit and 1-list of fits behave the same", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   o1 <- table_regression(fit)
   o2 <- table_regression(list(fit))
@@ -32,6 +33,7 @@ test_that("table_regression – single fit and 1-list of fits behave the same", 
 })
 
 test_that("table_regression – factor with reference: ref row en-dashed", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   ref_idx <- grep("\\(ref\\.\\)", out$Variable)
@@ -47,12 +49,14 @@ test_that("table_regression – factor with reference: ref row en-dashed", {
 # ============================================================================
 
 test_that("table_regression – standardized != 'none' auto-injects 'beta'", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, standardized = "refit")
   expect_true("β" %in% names(out))
 })
 
 test_that("table_regression – 'beta' without standardized errors with spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = c("b", "beta")),
@@ -61,6 +65,7 @@ test_that("table_regression – 'beta' without standardized errors with spicy_in
 })
 
 test_that("table_regression – partial_eta2 + partial_eta2_ci render as atomic columns", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
     fit,
@@ -79,6 +84,7 @@ test_that("table_regression – partial_eta2 + partial_eta2_ci render as atomic 
 # ============================================================================
 
 test_that("table_regression – stars = TRUE applied to B (no β requested)", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, stars = TRUE)
   wt_row <- out[out$Variable == "wt", , drop = FALSE]
@@ -86,6 +92,7 @@ test_that("table_regression – stars = TRUE applied to B (no β requested)", {
 })
 
 test_that("table_regression – stars on B when both B and β are shown", {
+  skip_on_cran()
   # Convention aligned with SPSS, Stata `esttab`, SAS, and the R
   # ecosystem (modelsummary, gtsummary, parameters): stars are
   # anchored on the raw coefficient B. β is a deterministic
@@ -114,6 +121,7 @@ test_that("table_regression – two models: per-model column groups", {
 })
 
 test_that("table_regression – names(list) used as model labels", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(Crude = m1, Adjusted = m2))
@@ -122,6 +130,7 @@ test_that("table_regression – names(list) used as model labels", {
 })
 
 test_that("table_regression – nested = TRUE injects change-stat rows + Hierarchical title", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
@@ -168,6 +177,7 @@ test_that("output = 'long' returns broom-style long format", {
 })
 
 test_that("output = 'excel' without path errors with spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, output = "excel"),
@@ -176,6 +186,7 @@ test_that("output = 'excel' without path errors with spicy_invalid_input", {
 })
 
 test_that("output = 'word' without path errors with spicy_invalid_input", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   fit <- lm(mpg ~ wt, data = mt)
@@ -186,6 +197,7 @@ test_that("output = 'word' without path errors with spicy_invalid_input", {
 })
 
 test_that("output = 'gt' returns a gt_tbl object when gt installed", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit, output = "gt")
@@ -220,6 +232,7 @@ test_that("table_regression – NULL models errors with spicy_invalid_input", {
 })
 
 test_that("table_regression – class without as_regression_frame method errors with spicy_unsupported", {
+  skip_on_cran()
   # Phase 1-6 added methods for many classes including mixed-effects,
   # survival, ordinal, multinomial, robust, fixed-effects, GAM, rms,
   # Bayesian etc. Genuinely-unsupported off-roadmap classes still
@@ -232,6 +245,7 @@ test_that("table_regression – class without as_regression_frame method errors 
 })
 
 test_that("an unsupported class is refused with every registry class named", {
+  skip_on_cran()
   err <- expect_error(
     table_regression(structure(list(), class = "foo")),
     class = "spicy_unsupported"
@@ -260,6 +274,7 @@ test_that("table_regression – binomial glm fits cleanly (Phase 3)", {
 # ============================================================================
 
 test_that("print.spicy_regression_table – invisible return + non-empty stdout", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   txt <- capture.output(p <- print(out))
@@ -274,6 +289,7 @@ test_that("print.spicy_regression_table – invisible return + non-empty stdout"
 # ============================================================================
 
 test_that("AME – binary numeric var keeps the var name (not '<var>1')", {
+  skip_on_cran()
   # mtcars$am is 0/1 INTEGER (not factor). marginaleffects returns
   # the contrast string "1 - 0" for binary numerics; we must not
   # mistake that for a factor and concatenate `am1`. The AME row
@@ -286,6 +302,7 @@ test_that("AME – binary numeric var keeps the var name (not '<var>1')", {
 })
 
 test_that("AME – true factor still gets <var><level> naming", {
+  skip_on_cran()
   # Sanity: factor predictors must still produce <var><level> AME
   # rows so they align with the B coef rows (cyl6, cyl8).
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -295,6 +312,7 @@ test_that("AME – true factor still gets <var><level> naming", {
 })
 
 test_that("Q1 – names(list) + model_labels conflict warns spicy_ignored_arg", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_warning(
@@ -304,6 +322,7 @@ test_that("Q1 – names(list) + model_labels conflict warns spicy_ignored_arg", 
 })
 
 test_that("Q1 – names(list) alone (no explicit model_labels): no warning", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_no_warning(
@@ -313,6 +332,7 @@ test_that("Q1 – names(list) alone (no explicit model_labels): no warning", {
 })
 
 test_that("Q2 – show_intercept=FALSE + non-default intercept_position warns", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_warning(
     table_regression(fit, show_intercept = FALSE, intercept_position = "last"),
@@ -321,6 +341,7 @@ test_that("Q2 – show_intercept=FALSE + non-default intercept_position warns", 
 })
 
 test_that("Q2 – show_intercept=FALSE + default intercept_position: no warning", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_no_warning(
     table_regression(fit, show_intercept = FALSE),
@@ -329,6 +350,7 @@ test_that("Q2 – show_intercept=FALSE + default intercept_position: no warning"
 })
 
 test_that("stars validation – empty numeric errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, stars = setNames(numeric(0), character(0))),
@@ -337,6 +359,7 @@ test_that("stars validation – empty numeric errors spicy_invalid_input", {
 })
 
 test_that("stars validation – out-of-range threshold errors", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, stars = c("*" = 0, "**" = -0.01)),
@@ -349,6 +372,7 @@ test_that("stars validation – out-of-range threshold errors", {
 })
 
 test_that("stars validation – empty / unnamed name errors", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, stars = c(0.05, 0.01)), # no names
@@ -367,6 +391,7 @@ test_that("stars validation – empty / unnamed name errors", {
 # ============================================================================
 
 test_that("vcov – unknown type errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, vcov = "HC99"),
@@ -375,6 +400,7 @@ test_that("vcov – unknown type errors spicy_invalid_input", {
 })
 
 test_that("vcov – CR* without cluster errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, vcov = "CR2"),
@@ -383,6 +409,7 @@ test_that("vcov – CR* without cluster errors spicy_invalid_input", {
 })
 
 test_that("vcov – list length mismatch errors spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -392,6 +419,7 @@ test_that("vcov – list length mismatch errors spicy_invalid_input", {
 })
 
 test_that("ci_level – out of range errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, ci_level = 1.5),
@@ -404,6 +432,7 @@ test_that("ci_level – out of range errors spicy_invalid_input", {
 })
 
 test_that("show_columns – unknown token errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = c("b", "BOGUS")),
@@ -412,6 +441,7 @@ test_that("show_columns – unknown token errors spicy_invalid_input", {
 })
 
 test_that("show_columns – empty errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_columns = character(0)),
@@ -420,6 +450,7 @@ test_that("show_columns – empty errors spicy_invalid_input", {
 })
 
 test_that("show_fit_stats – unknown token errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, show_fit_stats = c("nobs", "nope")),
@@ -428,6 +459,7 @@ test_that("show_fit_stats – unknown token errors spicy_invalid_input", {
 })
 
 test_that("show_fit_stats – change tokens accepted under nested = TRUE", {
+  skip_on_cran()
   # Since 0.12 the `nested_stats` argument was removed: change tokens
   # (`r2_change`, `f_change`, `p_change`, ...) are regular
   # `show_fit_stats` entries. An unknown token raises the same
@@ -445,6 +477,7 @@ test_that("show_fit_stats – change tokens accepted under nested = TRUE", {
 })
 
 test_that("digit args – non-positive integer errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, digits = -1L),
@@ -457,6 +490,7 @@ test_that("digit args – non-positive integer errors spicy_invalid_input", {
 })
 
 test_that("decimal_mark – multi-character errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(fit, decimal_mark = "..."),
@@ -465,6 +499,7 @@ test_that("decimal_mark – multi-character errors spicy_invalid_input", {
 })
 
 test_that("decimal_mark – the CI note quotes the coverage with the mark", {
+  skip_on_cran()
   # Decision 27, note surface: "97,5% CIs: profile likelihood." -- the
   # coverage in a footer follows the same mark as the header it glosses.
   fit <- suppressWarnings(glm(am ~ wt, data = mt, family = binomial()))
@@ -487,6 +522,7 @@ test_that("decimal_mark – the CI note quotes the coverage with the mark", {
 })
 
 test_that("reference_label – empty string errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
     table_regression(fit, reference_label = ""),
@@ -495,6 +531,7 @@ test_that("reference_label – empty string errors spicy_invalid_input", {
 })
 
 test_that("model_labels – length mismatch errors spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -504,6 +541,7 @@ test_that("model_labels – length mismatch errors spicy_invalid_input", {
 })
 
 test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -513,6 +551,7 @@ test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
 })
 
 test_that("labels - an unknown key warns and is left out (decision 54)", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_warning(
     out <- table_regression(fit, labels = c("nonexistent_predictor" = "Foo")),
@@ -522,6 +561,7 @@ test_that("labels - an unknown key warns and is left out (decision 54)", {
 })
 
 test_that("nested = TRUE – different nobs errors spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   # Drop one row to force nobs mismatch
   m2 <- lm(mpg ~ wt + cyl, data = mt[-1, ])
@@ -532,6 +572,7 @@ test_that("nested = TRUE – different nobs errors spicy_invalid_input", {
 })
 
 test_that("nested = TRUE – different DV errors spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(hp ~ wt + cyl, data = mt)
   expect_error(
@@ -541,6 +582,7 @@ test_that("nested = TRUE – different DV errors spicy_invalid_input", {
 })
 
 test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
     table_regression(
@@ -559,6 +601,7 @@ test_that("output = 'excel' with non-existent dir errors spicy_invalid_input", {
 # ============================================================================
 
 test_that("show_fit_stats – default tokens (n / R² / Adj. R²) appear in body", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   expect_true("n" %in% out$Variable)
@@ -567,6 +610,7 @@ test_that("show_fit_stats – default tokens (n / R² / Adj. R²) appear in body
 })
 
 test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(
     fit,
@@ -578,6 +622,7 @@ test_that("show_fit_stats – custom tokens (omega2, sigma, AIC) appear", {
 })
 
 test_that("show_fit_stats = FALSE drops the footer block", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   # Positive control first: a negative membership on typed-out labels
   # asserts nothing the day one of them is renamed -- it just stops
@@ -591,6 +636,7 @@ test_that("show_fit_stats = FALSE drops the footer block", {
 })
 
 test_that("show_fit_stats – multi-model: each model contributes its values", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), show_fit_stats = c("nobs", "r2"))
@@ -606,6 +652,7 @@ test_that("show_fit_stats – multi-model: each model contributes its values", {
 })
 
 test_that("group_sep_rows attribute marks the body / fit-stats divider", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   sep <- attr(out, "group_sep_rows")
@@ -615,6 +662,7 @@ test_that("group_sep_rows attribute marks the body / fit-stats divider", {
 })
 
 test_that("labels – coef-style key (cyl6) renames the contrast row", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
     fit,
@@ -628,6 +676,7 @@ test_that("labels – coef-style key (cyl6) renames the contrast row", {
 })
 
 test_that("labels – mixed term + coef-style keys both honored", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
     fit,
@@ -639,6 +688,7 @@ test_that("labels – mixed term + coef-style keys both honored", {
 })
 
 test_that("labels – a key that exists in only ONE model applies there only", {
+  skip_on_cran()
   # Mundlak-style comparison: the within / between decomposition exists
   # in the second model only. `labels` keys are validated against the
   # UNION of every model's terms, so naming a term absent from model 1
@@ -695,6 +745,7 @@ test_that("labels - names by default: title, terms, headers, outcome spanners", 
 })
 
 test_that("labels = TRUE - the outcome, numeric terms and factor headers read their label", {
+  skip_on_cran()
   sh <- sochealth
   fits <- list(
     lm = lm(bmi ~ age + sex, data = sh),
@@ -724,6 +775,7 @@ test_that("labels = TRUE - the outcome, numeric terms and factor headers read th
 })
 
 test_that("labels = TRUE - lmer: the random-effect rows keep their text", {
+  skip_on_cran()
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(
     wellbeing_score ~ age + sex + (1 | education),
@@ -749,6 +801,7 @@ test_that("labels = TRUE - lmer: the random-effect rows keep their text", {
 })
 
 test_that("labels = TRUE - coxph: a label the model frame lost is read off the data", {
+  skip_on_cran()
   skip_if_not_installed("survival")
   sh <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
   sh$time <- sh$bmi
@@ -767,6 +820,7 @@ test_that("labels = TRUE - coxph: a label the model frame lost is read off the d
 })
 
 test_that("labels = TRUE - lme: the terms are read off the data", {
+  skip_on_cran()
   skip_if_not_installed("nlme")
   sh <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
   fit <- nlme::lme(bmi ~ age + sex, random = ~ 1 | education, data = sh)
@@ -776,6 +830,7 @@ test_that("labels = TRUE - lme: the terms are read off the data", {
 })
 
 test_that("labels = TRUE - a fit whose data is gone keeps its names, silently", {
+  skip_on_cran()
   skip_if_not_installed("survival")
   fit <- local({
     dat <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
@@ -789,6 +844,7 @@ test_that("labels = TRUE - a fit whose data is gone keeps its names, silently", 
 })
 
 test_that("labels = TRUE - interactions and transformed terms keep their names", {
+  skip_on_cran()
   fit <- lm(bmi ~ poly(age, 2) + sex * income + log(income), data = sochealth)
   out <- table_regression(fit, labels = TRUE)$Variable
   expect_true(all(
@@ -804,6 +860,7 @@ test_that("labels = TRUE - interactions and transformed terms keep their names",
 })
 
 test_that("labels = var_labels() - a rename over the label attributes", {
+  skip_on_cran()
   fit <- lm(bmi ~ age + sex, data = sochealth)
   out <- table_regression(fit, labels = var_labels(age = "Age in years"))
   expect_match(attr(out, "title"), ": Body mass index", fixed = TRUE)
@@ -814,6 +871,7 @@ test_that("labels = var_labels() - a rename over the label attributes", {
 })
 
 test_that("labels = c(...) - coefficient keys apply, the rest stays names", {
+  skip_on_cran()
   fit <- lm(bmi ~ age + sex, data = sochealth)
   out <- table_regression(
     fit,
@@ -827,6 +885,7 @@ test_that("labels = c(...) - coefficient keys apply, the rest stays names", {
 })
 
 test_that("labels - options(spicy.var_labels = TRUE) is the base of a named vector", {
+  skip_on_cran()
   fit <- lm(bmi ~ age + sex, data = sochealth)
   withr::local_options(spicy.var_labels = TRUE)
   out <- table_regression(fit, labels = c(sexMale = "Men"))
@@ -841,6 +900,7 @@ test_that("labels - options(spicy.var_labels = TRUE) is the base of a named vect
 })
 
 test_that("labels = TRUE - an explicit outcome_labels still wins", {
+  skip_on_cran()
   sh <- sochealth
   ms <- list(lm(wellbeing_score ~ age, data = sh), lm(bmi ~ age, data = sh))
   out <- table_regression(
@@ -855,6 +915,7 @@ test_that("labels = TRUE - an explicit outcome_labels still wins", {
 })
 
 test_that("labels = TRUE - two outcomes sharing a label head their columns by name", {
+  skip_on_cran()
   sh <- sochealth
   attr(sh$life_sat_work, "label") <- attr(sh$life_sat_health, "label")
   ms <- list(
@@ -869,6 +930,7 @@ test_that("labels = TRUE - two outcomes sharing a label head their columns by na
 })
 
 test_that("labels - NULL and unnamed vectors are errors", {
+  skip_on_cran()
   fit <- lm(bmi ~ age, data = sochealth)
   expect_error(
     table_regression(fit, labels = NULL),
@@ -881,6 +943,7 @@ test_that("labels - NULL and unnamed vectors are errors", {
 })
 
 test_that("align – 'decimal' is default; padding applied to numeric cols", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   expect_equal(attr(out, "align"), "decimal")
@@ -891,6 +954,7 @@ test_that("align – 'decimal' is default; padding applied to numeric cols", {
 })
 
 test_that("align – 'right' / 'center' are accepted (no decimal pad)", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   for (a in c("center", "right")) {
     out <- table_regression(fit, align = a)
@@ -899,6 +963,7 @@ test_that("align – 'right' / 'center' are accepted (no decimal pad)", {
 })
 
 test_that("print – align = 'center' propagates to align_center_cols", {
+  skip_on_cran()
   # Exercises the data_col_idx branch in print.spicy_regression_table
   # when align is "center" (vs "decimal" / "right").
   fit <- lm(mpg ~ wt, data = mt)
@@ -914,6 +979,7 @@ test_that("print – align = 'center' propagates to align_center_cols", {
 # ============================================================================
 
 test_that("duplicate names in `list(...)` error spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -923,6 +989,7 @@ test_that("duplicate names in `list(...)` error spicy_invalid_input", {
 })
 
 test_that("duplicate values in `model_labels` error spicy_invalid_input", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   expect_error(
@@ -932,6 +999,7 @@ test_that("duplicate values in `model_labels` error spicy_invalid_input", {
 })
 
 test_that("a typed name colliding with an auto-filled label is refused", {
+  skip_on_cran()
   # The two guards above compare `model_labels` with itself and
   # `names(models)` with itself. Neither compares a typed name with the
   # "Model <position>" label the auto-fill writes into the unnamed
@@ -968,6 +1036,7 @@ test_that("a typed name colliding with an auto-filled label is refused", {
 })
 
 test_that("the collision message names the label and both positions", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ hp, data = mt)
   m3 <- lm(mpg ~ drat, data = mt)
@@ -992,6 +1061,7 @@ test_that("the collision message names the label and both positions", {
 })
 
 test_that("the collision is detected against the registry, not a literal", {
+  skip_on_cran()
   # The auto-fill writes `spicy_fmt("label_model_name", i)`. Under a
   # localized registry the colliding string is a different one, and the
   # guard must still see it -- proof it compares resolved labels rather
@@ -1023,6 +1093,7 @@ test_that("the collision is detected against the registry, not a literal", {
 })
 
 test_that("the collision is refused before any model is extracted", {
+  skip_on_cran()
   # Fail-fast: the refusal belongs with the other argument validation,
   # not after n expensive extractions.
   m1 <- lm(mpg ~ wt, data = mt)
@@ -1048,6 +1119,7 @@ test_that("the collision is refused before any model is extracted", {
 })
 
 test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
+  skip_on_cran()
   # With distinct DVs and no explicit labels, the response variable
   # NAME is lifted into the spanner -- not `attr("label")`, which
   # can be a long phrase that would distort column widths. The
@@ -1074,6 +1146,7 @@ test_that("DV smart spanner uses the bare variable name (NOT attr('label'))", {
 })
 
 test_that("outcome auto-row identical-DV check uses variable name (not label)", {
+  skip_on_cran()
   # If two fits share the same response variable (same column),
   # the row must still be hidden even if labels happen to differ.
   df <- data.frame(y = rnorm(50), x = rnorm(50))
@@ -1094,6 +1167,7 @@ test_that("outcome auto-row identical-DV check uses variable name (not label)", 
 })
 
 test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   set.seed(1)
   df <- data.frame(
@@ -1114,6 +1188,7 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
 })
 
 test_that("cluster_name – bare symbol extracted as variable name", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   set.seed(2)
   df <- data.frame(
@@ -1134,6 +1209,7 @@ test_that("cluster_name – bare symbol extracted as variable name", {
 })
 
 test_that("cluster_name – list(...) with named elements per model", {
+  skip_on_cran()
   skip_if_not_installed("clubSandwich")
   set.seed(3)
   df <- data.frame(
@@ -1163,6 +1239,7 @@ test_that("cluster_name – list(...) with named elements per model", {
 })
 
 test_that("extract_arg_column_name – handles all recognized forms", {
+  skip_on_cran()
   expect_equal(spicy:::extract_arg_column_name(quote(df$col)), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(df[["col"]])), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(mycluster)), "mycluster")
@@ -1176,6 +1253,7 @@ test_that("extract_arg_column_name – handles all recognized forms", {
 # ============================================================================
 
 test_that("outcome_labels – single model: row never shown (DV is in title)", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out_null <- table_regression(fit, outcome_labels = NULL)
   out_chr <- table_regression(fit, outcome_labels = "Custom")
@@ -1196,6 +1274,7 @@ test_that("outcome_labels – single model: row never shown (DV is in title)", {
 })
 
 test_that("outcome_labels – multi-model identical DVs: NULL hides the row", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
@@ -1211,6 +1290,7 @@ test_that("outcome_labels – multi-model identical DVs: NULL hides the row", {
 })
 
 test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spanner", {
+  skip_on_cran()
   # When `outcome_labels = NULL` (default) and DVs differ, the
   # smart default moves the auto-detected DV names into the
   # multi-model spanner and suppresses the body Outcome row.
@@ -1231,6 +1311,7 @@ test_that("outcome_labels – multi-model differing DVs: NULL lifts DVs into spa
 })
 
 test_that("outcome_labels – explicit labels take precedence", {
+  skip_on_cran()
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(
@@ -1244,6 +1325,7 @@ test_that("outcome_labels – explicit labels take precedence", {
 })
 
 test_that("outcome_labels – FALSE suppresses the row even with differing DVs", {
+  skip_on_cran()
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp), outcome_labels = FALSE)
@@ -1260,6 +1342,7 @@ test_that("outcome_labels – FALSE suppresses the row even with differing DVs",
 })
 
 test_that("reference_style = 'annotation' – factor header annotated [ref: <level>]", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, reference_style = "annotation")
   # Header now reads "cyl: [ref: 4]" (or whichever the ref level is)
@@ -1269,6 +1352,7 @@ test_that("reference_style = 'annotation' – factor header annotated [ref: <lev
 })
 
 test_that("reference_style = 'row' (default) – no factor header annotation", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit) # default = "row"
   expect_true("cyl:" %in% out$Variable)
@@ -1277,6 +1361,7 @@ test_that("reference_style = 'row' (default) – no factor header annotation", {
 })
 
 test_that("reference_style = 'annotation' – works with multiple factors", {
+  skip_on_cran()
   mt2 <- mt
   mt2$gear <- factor(mt2$gear)
   fit <- lm(mpg ~ wt + cyl + gear, data = mt2)
@@ -1291,6 +1376,7 @@ test_that("reference_style = 'annotation' – works with multiple factors", {
 # ============================================================================
 
 test_that("no-intercept formula – first level of factor is a real coef, no phantom ref row", {
+  skip_on_cran()
   fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
   out <- table_regression(fit)
   # No "(ref.)" suffix anywhere – all 3 cyl levels are fitted coefs
@@ -1304,6 +1390,7 @@ test_that("no-intercept formula – first level of factor is a real coef, no pha
 })
 
 test_that("no-intercept formula – tidy returns all factor coefs", {
+  skip_on_cran()
   fit <- lm(mpg ~ 0 + wt + cyl, data = mt)
   td <- broom::tidy(table_regression(fit))
   # Expect 4 B rows (wt, cyl4, cyl6, cyl8)
@@ -1317,6 +1404,7 @@ test_that("no-intercept formula – tidy returns all factor coefs", {
 })
 
 test_that("no-intercept formula – alt syntax 'y ~ x - 1' is equivalent", {
+  skip_on_cran()
   fit_a <- lm(mpg ~ 0 + wt, data = mt)
   fit_b <- lm(mpg ~ wt - 1, data = mt)
   out_a <- table_regression(fit_a)
@@ -1325,6 +1413,7 @@ test_that("no-intercept formula – alt syntax 'y ~ x - 1' is equivalent", {
 })
 
 test_that("no-intercept formula – works with multi-model nested lookalike", {
+  skip_on_cran()
   m_with_int <- lm(mpg ~ wt + cyl, data = mt)
   m_no_int <- lm(mpg ~ 0 + wt + cyl, data = mt)
   # Side-by-side display (NOT nested – these aren't nested in the
@@ -1353,12 +1442,14 @@ capture_norm <- function(out) {
 }
 
 test_that("snapshot – single lm default rendering", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   expect_snapshot(cat(capture_norm(out)))
 })
 
 test_that("snapshot – multi-model with nested = TRUE comparison footer", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
@@ -1366,6 +1457,7 @@ test_that("snapshot – multi-model with nested = TRUE comparison footer", {
 })
 
 test_that("snapshot – standardized + stars + reference annotation", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
     fit,
@@ -1382,12 +1474,14 @@ test_that("snapshot – standardized + stars + reference annotation", {
 # ============================================================================
 
 test_that("spanner – single model: no spanner attribute", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   expect_null(attr(out, "spanners"))
 })
 
 test_that("spanner – multi-model named list: names become spanner labels", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
@@ -1401,6 +1495,7 @@ test_that("spanner – multi-model named list: names become spanner labels", {
 })
 
 test_that("spanner – multi-model unnamed + same DV: 'Model N' labels", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2))
@@ -1409,6 +1504,7 @@ test_that("spanner – multi-model unnamed + same DV: 'Model N' labels", {
 })
 
 test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
+  skip_on_cran()
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp))
@@ -1427,6 +1523,7 @@ test_that("spanner – multi-model unnamed + distinct DVs: DV smart default", {
 })
 
 test_that("spanner – explicit model_labels override DV smart default", {
+  skip_on_cran()
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(list(m_mpg, m_hp), model_labels = c("Fuel", "Power"))
@@ -1435,6 +1532,7 @@ test_that("spanner – explicit model_labels override DV smart default", {
 })
 
 test_that("spanner – explicit outcome_labels keep the row; spanner stays generic", {
+  skip_on_cran()
   m_mpg <- lm(mpg ~ wt, data = mt)
   m_hp <- lm(hp ~ wt, data = mt)
   out <- table_regression(
@@ -1447,6 +1545,7 @@ test_that("spanner – explicit outcome_labels keep the row; spanner stays gener
 })
 
 test_that("spanner – multi-model print strips 'Label: ' prefix from headers", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list("A" = m1, "B" = m2))
@@ -1461,6 +1560,7 @@ test_that("spanner – multi-model print strips 'Label: ' prefix from headers", 
 })
 
 test_that("spanner – .validate_spanners catches malformed input", {
+  skip_on_cran()
   df <- data.frame(a = 1, b = 2, c = 3, d = 4)
   expect_error(
     spicy:::build_ascii_table(df, spanners = list(2:3)), # unnamed
@@ -1481,6 +1581,7 @@ test_that("spanner – .validate_spanners catches malformed input", {
 })
 
 test_that("spanner – gt output applies tab_spanner + cols_label", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -1495,6 +1596,7 @@ test_that("spanner – gt output applies tab_spanner + cols_label", {
 })
 
 test_that("spanner – flextable output adds a header row with spanners", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -1520,6 +1622,7 @@ test_that("spanner – flextable output adds a header row with spanners", {
 })
 
 test_that("ordered factor – grouped under header, poly-order, auto footer note", {
+  skip_on_cran()
   set.seed(1)
   df <- data.frame(
     y = rnorm(200),
@@ -1555,6 +1658,7 @@ test_that("ordered factor – grouped under header, poly-order, auto footer note
 })
 
 test_that("ordered factor – fitting with factor(ordered = FALSE) restores treatment layout", {
+  skip_on_cran()
   set.seed(1)
   df <- data.frame(
     y = rnorm(200),
@@ -1576,6 +1680,7 @@ test_that("ordered factor – fitting with factor(ordered = FALSE) restores trea
 
 
 test_that("default show_columns context-aware: single keeps CI, multi drops it", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out1 <- table_regression(m1)
@@ -1589,6 +1694,7 @@ test_that("default show_columns context-aware: single keeps CI, multi drops it",
 
 
 test_that("outcome_labels – NULL hides the row even when DVs differ + names supplied", {
+  skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(hp ~ wt, data = mt)
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
@@ -1603,6 +1709,7 @@ test_that("outcome_labels – NULL hides the row even when DVs differ + names su
 
 
 test_that("spanner – tinytable output uses group_tt for column groups", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -1617,6 +1724,7 @@ test_that("spanner – tinytable output uses group_tt for column groups", {
 
 
 test_that("reference row always FIRST in its factor group regardless of group_factor_levels", {
+  skip_on_cran()
   # Reference-row position must be deterministic across the
   # group_factor_levels toggle. Pre-fix, FALSE put the ref AFTER
   # the active dummies (because build_reference_rows appends them
@@ -1651,6 +1759,7 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
 # ============================================================================
 
 test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [vs <ref>] on 1st dummy only", {
+  skip_on_cran()
   df <- data.frame(
     y = rnorm(200),
     sex = factor(
@@ -1680,6 +1789,7 @@ test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [
 })
 
 test_that("reference_style = \"footer\" adds a single 'Reference categories: ...' line", {
+  skip_on_cran()
   df <- data.frame(
     y = rnorm(200),
     sex = factor(
@@ -1710,6 +1820,7 @@ test_that("reference_style = \"footer\" adds a single 'Reference categories: ...
 })
 
 test_that("reference_style = \"none\" shows no reference info anywhere", {
+  skip_on_cran()
   df <- data.frame(
     y = rnorm(200),
     sex = factor(
@@ -1738,6 +1849,7 @@ test_that("reference_style = \"none\" shows no reference info anywhere", {
 })
 
 test_that("reference_style = \"none\" + factor_layout = \"flat\" emits spicy_inform once", {
+  skip_on_cran()
   df <- data.frame(
     y = rnorm(100),
     sex = factor(sample(c("Female", "Male"), 100, replace = TRUE))
@@ -1768,6 +1880,7 @@ test_that("reference_style = \"none\" + factor_layout = \"flat\" emits spicy_inf
 })
 
 test_that("reference_style = \"none\" + factor_layout = \"grouped\" does NOT emit the info", {
+  skip_on_cran()
   # Grouped still shows the `education:` header, so the silent-loss
   # warning is unnecessary -- only the FLAT case loses all visual
   # trace of the factor's existence beyond per-level dummies.
@@ -1788,6 +1901,7 @@ test_that("reference_style = \"none\" + factor_layout = \"grouped\" does NOT emi
 })
 
 test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing to lose)", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   cnd <- NULL
   withCallingHandlers(
@@ -1801,6 +1915,7 @@ test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing 
 })
 
 test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, factor_layout = "flat")
   vars <- out$Variable
@@ -1812,6 +1927,7 @@ test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", 
 })
 
 test_that("factor_layout = \"grouped\" (default) inserts factor header + indents", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit) # default grouped
   vars <- out$Variable
@@ -1826,6 +1942,7 @@ test_that("factor_layout = \"grouped\" (default) inserts factor header + indents
 # ============================================================================
 
 test_that("show_columns – group tokens expand to their documented fixed vectors", {
+  skip_on_cran()
   # rd-core:show-columns-group-token-expansions
   expected <- list(
     all_b = c("b", "se", "ci", "p"),
@@ -1845,6 +1962,7 @@ test_that("show_columns – group tokens expand to their documented fixed vector
 })
 
 test_that("show_columns – each preset table equals its atomic-token table", {
+  skip_on_cran()
   # rd-core:show-columns-group-token-expansions (end-to-end column sets)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   pairs <- list(
@@ -1876,6 +1994,7 @@ test_that("show_columns – each preset table equals its atomic-token table", {
 })
 
 test_that("show_columns – AME presets equal their atomic-token tables", {
+  skip_on_cran()
   # rd-core:show-columns-group-token-expansions (all_ame / all_ame_compact)
   skip_if_not_installed("marginaleffects")
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -1890,6 +2009,7 @@ test_that("show_columns – AME presets equal their atomic-token tables", {
 })
 
 test_that("show_columns – token order controls displayed column order", {
+  skip_on_cran()
   # rd-core:show-columns-dedup-order
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, show_columns = c("p", "b"))
@@ -1900,6 +2020,7 @@ test_that("show_columns – token order controls displayed column order", {
 })
 
 test_that("show_columns – beta is auto-injected directly after b", {
+  skip_on_cran()
   # rd-core:show-columns-beta-autoinject
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
@@ -1911,6 +2032,7 @@ test_that("show_columns – beta is auto-injected directly after b", {
 })
 
 test_that("show_columns – 'p' carries the B p-values, never the AME ones", {
+  skip_on_cran()
   # rd-core:show-columns-p-is-b-p
   skip_if_not_installed("marginaleffects")
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -1939,6 +2061,7 @@ test_that("show_columns – 'p' carries the B p-values, never the AME ones", {
 })
 
 test_that("show_columns – every base atomic token adds exactly one column", {
+  skip_on_cran()
   # rd-core:show-columns-atomic-tokens (incl. the never-tested bare 't')
   fit <- lm(mpg ~ wt + cyl, data = mt)
   headers <- c(b = "B", se = "SE", ci = "95% CI", t = "t", p = "p")
@@ -1958,6 +2081,7 @@ test_that("show_columns – every base atomic token adds exactly one column", {
 })
 
 test_that("boot_n – formals default is 1000L; degenerate values rejected", {
+  skip_on_cran()
   # rd-core:boot-n-default
   expect_identical(formals(table_regression)$boot_n, 1000L)
   fit <- lm(mpg ~ wt, data = mt)
@@ -1972,6 +2096,7 @@ test_that("boot_n – formals default is 1000L; degenerate values rejected", {
 })
 
 test_that("ci_method = 'profile' with lm raises spicy_invalid_input", {
+  skip_on_cran()
   # rd-core:ci-method-profile-lm-refused
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
@@ -1981,11 +2106,13 @@ test_that("ci_method = 'profile' with lm raises spicy_invalid_input", {
 })
 
 test_that("raw formula input is refused – fit-only API", {
+  skip_on_cran()
   # rd-core:models-fit-only-api
   expect_error(table_regression(mpg ~ wt), class = "spicy_unsupported")
 })
 
 test_that("ci_level moves B, beta, AME and partial CI bounds together", {
+  skip_on_cran()
   # rd-core:ci-level-default-scope
   skip_if_not_installed("marginaleffects")
   skip_if_not_installed("broom")
@@ -2036,6 +2163,7 @@ test_that("ci_level moves B, beta, AME and partial CI bounds together", {
 })
 
 test_that("'n' column is dropped for a plain multivariable fit", {
+  skip_on_cran()
   # rd-core:show-columns-n-uv-populated (no per-row N data -> no column)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, show_columns = c("b", "n"))
@@ -2043,6 +2171,7 @@ test_that("'n' column is dropped for a plain multivariable fit", {
 })
 
 test_that("partial_f2 / partial_eta2 / partial_omega2 are refused for glm", {
+  skip_on_cran()
   # rd-core:show-columns-partial-lm-only
   gfit <- glm(am ~ mpg + cyl, data = mt, family = binomial)
   for (tok in c("partial_f2", "partial_eta2", "partial_omega2")) {
@@ -2054,6 +2183,7 @@ test_that("partial_f2 / partial_eta2 / partial_omega2 are refused for glm", {
 })
 
 test_that("r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm", {
+  skip_on_cran()
   # rd-core:fit-stats-r2-lm-only
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, show_fit_stats = c("r2", "adj_r2"))
@@ -2079,6 +2209,7 @@ test_that("r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm",
 })
 
 test_that("change tokens render under nested = TRUE and are inert without it", {
+  skip_on_cran()
   # rd-core:fit-stats-change-tokens-nested-only
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
@@ -2101,6 +2232,7 @@ test_that("change tokens render under nested = TRUE and are inert without it", {
 })
 
 test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
+  skip_on_cran()
   # rd-core:digits-scope-default
   fit <- lm(mpg ~ wt + cyl, data = mt)
   o3 <- table_regression(
@@ -2126,6 +2258,7 @@ test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
 })
 
 test_that("p_digits formats rendered p cells APA-strict at any width", {
+  skip_on_cran()
   # rd-core:p-digits-apa
   fit <- lm(mpg ~ wt + cyl, data = mt)
   # The printed tables: their columns are the displayed cells.
@@ -2143,6 +2276,7 @@ test_that("p_digits formats rendered p cells APA-strict at any width", {
 })
 
 test_that("fit_digits controls R² decimals while AIC keeps ic_digits", {
+  skip_on_cran()
   # rd-core:fit-digits
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
@@ -2165,6 +2299,7 @@ test_that("fit_digits controls R² decimals while AIC keeps ic_digits", {
 })
 
 test_that("effect_size_digits scopes partial_f2 only (B keeps digits)", {
+  skip_on_cran()
   # rd-core:effect-size-digits
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_identical(formals(table_regression)$effect_size_digits, 2L)
@@ -2186,6 +2321,7 @@ test_that("effect_size_digits scopes partial_f2 only (B keeps digits)", {
 })
 
 test_that("default output – documented class vector and rendering attributes", {
+  skip_on_cran()
   # rd-core:return-class-attributes
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
@@ -2200,6 +2336,7 @@ test_that("default output – documented class vector and rendering attributes",
 })
 
 test_that("provenance attributes outcome / model_ids are carried", {
+  skip_on_cran()
   # rd-core:return-class-attributes (provenance half)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
@@ -2216,6 +2353,7 @@ test_that("provenance attributes outcome / model_ids are carried", {
 })
 
 test_that("title and note attributes are post-processable before printing", {
+  skip_on_cran()
   # rd-core:i18n-attrs-postprocessable
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
@@ -2229,6 +2367,7 @@ test_that("title and note attributes are post-processable before printing", {
 })
 
 test_that("factor_layout grouped applies to character predictors", {
+  skip_on_cran()
   # rd-core:factor-layout-scope (character half)
   df <- mtcars
   df$gear_chr <- as.character(df$gear)
@@ -2243,6 +2382,7 @@ test_that("factor_layout grouped applies to character predictors", {
 })
 
 test_that("factor_layout grouped applies to logical predictors", {
+  skip_on_cran()
   # rd-core:factor-layout-scope (logical half)
   df <- mtcars
   df$am_lgl <- df$am == 1
@@ -2268,6 +2408,7 @@ test_that("factor_layout grouped applies to logical predictors", {
 })
 
 test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
+  skip_on_cran()
   # rd-core:reference-label-default
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_null(formals(table_regression)$reference_label)
@@ -2312,6 +2453,7 @@ test_that("the default reference_label follows the language, a typed one does no
 })
 
 test_that("align – CI anchors are each column-aligned in decimal mode", {
+  skip_on_cran()
   # rd-core:align-decimal-ci-anchors (per-anchor positions)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
@@ -2339,6 +2481,7 @@ test_that("align – CI anchors are each column-aligned in decimal mode", {
 })
 
 test_that("align – 'right' right-justifies, 'center' centers, in print", {
+  skip_on_cran()
   # rd-core:align-decimal-ci-anchors ('center' / 'right' behavior)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   stats <- c("r2", "aic", "nobs")
@@ -2385,6 +2528,7 @@ test_that("weights come from the fit – no weights argument", {
 })
 
 test_that("AME extraction honors the fit's weights", {
+  skip_on_cran()
   # rd-core:weights-from-fit (AME half)
   skip_if_not_installed("marginaleffects")
   set.seed(7)
@@ -2436,6 +2580,7 @@ test_that("AME extraction honors the fit's weights", {
 })
 
 test_that("weighted AME identical under na.omit and na.exclude", {
+  skip_on_cran()
   # Regression (delta review D2): stats::weights() returns the
   # naresid-PADDED vector under na.exclude (NA at dropped rows), which
   # tripped the finite-weights guard and silently reverted the AME to
@@ -2480,6 +2625,7 @@ test_that("weighted AME identical under na.omit and na.exclude", {
 })
 
 test_that("polr frequency weights reach the per-category AME", {
+  skip_on_cran()
   # Regression (delta review D4): MASS::polr stores no weights
   # component, so stats::weights() is empty and the per-category AME
   # averaged with equal weights while B / SE were weight-aware. The
@@ -2538,6 +2684,7 @@ test_that("polr frequency weights reach the per-category AME", {
 # ============================================================================
 
 test_that("output = 'excel' returns the file path invisibly", {
+  skip_on_cran()
   # rd-methods:output-class-mapping (file outputs return their path; the
   # gt / flextable / tinytable / data.frame class halves are pinned in
   # the per-output tests above)
@@ -2553,6 +2700,7 @@ test_that("output = 'excel' returns the file path invisibly", {
 })
 
 test_that("output = 'word' returns the file path invisibly", {
+  skip_on_cran()
   # rd-methods:output-class-mapping (file outputs, word engine)
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
@@ -2567,6 +2715,7 @@ test_that("output = 'word' returns the file path invisibly", {
 })
 
 test_that("output = 'long' returns the documented tbl_df", {
+  skip_on_cran()
   # rd-methods:output-class-mapping (long half): the Rd \value and the
   # `output` argument docs promise a long-format tibble.
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -2579,6 +2728,7 @@ test_that("output = 'long' returns the documented tbl_df", {
 })
 
 test_that("output = 'flextable' carries the spicy_flextable tag", {
+  skip_on_cran()
   # rd-methods:flextable-output-tagged-class (table_regression half;
   # the table_continuous_lm half is pinned in test-tclm_notes.R)
   skip_if_not_installed("flextable")
@@ -2588,6 +2738,7 @@ test_that("output = 'flextable' carries the spicy_flextable tag", {
 })
 
 test_that("console shows bare deduped labels; data.frame keeps unique names", {
+  skip_on_cran()
   # rd-methods:print-header-display-labels-deduped
   skip_if_not_installed("marginaleffects")
   fit <- lm(mpg ~ wt + hp, data = mt)
@@ -2610,6 +2761,7 @@ test_that("console shows bare deduped labels; data.frame keeps unique names", {
 })
 
 test_that("print honors the padding attr unless overridden at print time", {
+  skip_on_cran()
   # rd-methods:print-honors-padding-attr
   fit <- lm(mpg ~ wt, data = mt)
   # No note: it prints unwrapped, and its line would be the widest.
@@ -2627,6 +2779,7 @@ test_that("print honors the padding attr unless overridden at print time", {
 })
 
 test_that("boot_n – full validation domain and the 1000-replicate default", {
+  skip_on_cran()
   # rd-uv-estimands:boot-n-default-1000-validated (complements
   # rd-core:boot-n-default above: -1 / 2.5 refusals, the resolved
   # default replicate count, and the boot_n = 50 vs 1000 difference)
@@ -2661,6 +2814,7 @@ test_that("boot_n – full validation domain and the 1000-replicate default", {
 # Phase 3 matrix – vignettes-news:align-auto-removed (lot T4)
 
 test_that("align = 'auto' is removed: classed error, not a silent default", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt, data = mtcars)
   expect_error(
     table_regression(fit, align = "auto"),
@@ -2672,6 +2826,7 @@ test_that("align = 'auto' is removed: classed error, not a silent default", {
 # Phase 3 matrix – vignettes-news:ci-header-tracks-level (lot T4)
 
 test_that("ci_level relabels the CI header and widens the bounds", {
+  skip_on_cran()
   fit <- lm(mpg ~ wt + hp, data = mtcars)
   tbl <- table_regression(fit, ci_level = 0.99)
   out <- paste(capture.output(print(tbl)), collapse = "\n")
@@ -2691,6 +2846,7 @@ test_that("ci_level relabels the CI header and widens the bounds", {
 # vignettes-news:effect-size-broadcast-factors (lot T4)
 
 test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
+  skip_on_cran()
   set.seed(7)
   n <- 60
   d <- data.frame(
@@ -2739,6 +2895,7 @@ test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
 # ============================================================================
 
 test_that("both bodies print the block caption, not the block identity", {
+  skip_on_cran()
   # At the English default the identity and the caption are the same
   # string, so nothing else in the suite can tell whether either body
   # reads the caption layer at all. Mocking the resolver makes the
@@ -2776,6 +2933,7 @@ test_that("both bodies print the block caption, not the block identity", {
 })
 
 test_that("p_digits must be at least 1, as in the descriptive tables", {
+  skip_on_cran()
   fit <- lm(bmi ~ age + sex, data = sochealth)
   err <- expect_error(
     table_regression(fit, p_digits = 0),
@@ -2796,6 +2954,7 @@ test_that("p_digits must be at least 1, as in the descriptive tables", {
 })
 
 test_that("an output path is a single path with the extension of its format", {
+  skip_on_cran()
   fit <- lm(bmi ~ age, data = sochealth)
   bad <- list(
     list(output = "excel", excel_path = NULL),

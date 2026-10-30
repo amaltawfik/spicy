@@ -11,6 +11,7 @@ collect_warnings <- function(expr) {
 }
 
 test_that("table_categorical returns expected long raw structure", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non"),
@@ -83,6 +84,7 @@ test_that("table_categorical accepts weights as column name or numeric vector", 
 })
 
 test_that("table_categorical accepts weights as an unquoted column name", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", "B", "A", "B"),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non"),
@@ -116,6 +118,7 @@ test_that("table_categorical accepts weights as an unquoted column name", {
 })
 
 test_that("the rows a missing weight removes are said in the note, not warned", {
+  skip_on_cran()
   d <- sochealth
   d$weight[3L] <- NA
   # A warning came from every internal cross_tab() or freq() call: three
@@ -172,6 +175,7 @@ test_that("table_categorical accepts tidyselect-style select and unquoted by", {
 })
 
 test_that("table_categorical accepts by as a character object", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", "B"),
     v1 = c("Oui", "Non", "Oui", "Non")
@@ -210,6 +214,7 @@ test_that("table_categorical validates by and select branches", {
 })
 
 test_that("table_categorical works without by in long raw output", {
+  skip_on_cran()
   df <- data.frame(
     v1 = c("Oui", "Non", "Oui", NA),
     v2 = c("A", "A", "B", "B")
@@ -228,6 +233,7 @@ test_that("table_categorical works without by in long raw output", {
 })
 
 test_that("a level displayed beside the missing row is refused, with both ways out", {
+  skip_on_cran()
   df <- data.frame(v1 = c("(Missing)", NA, "Yes"))
   err <- expect_error(
     table_categorical(df, select = v1, output = "long"),
@@ -266,6 +272,7 @@ test_that("a level displayed beside the missing row is refused, with both ways o
 })
 
 test_that("the refusal fires only when both rows are displayed", {
+  skip_on_cran()
   # A declared level nobody holds is not displayed: no error, and the row
   # of missing values keeps its label (the declared level used to make
   # the table crash on a duplicated factor level, then rename the row).
@@ -312,6 +319,7 @@ test_that("the refusal fires only when both rows are displayed", {
 })
 
 test_that("each variable is judged on its own rows", {
+  skip_on_cran()
   # `x1` displays a level "(Missing)" and has no missing value; `x2` gets
   # the row of missing values. Two blocks, no collision: the typed view
   # calls the first a level and the second the missing row, and the test
@@ -339,6 +347,7 @@ test_that("each variable is judged on its own rows", {
 })
 
 test_that("a `by` level displayed beside the missing column is refused", {
+  skip_on_cran()
   # Every level of `by` is displayed, a declared one nobody holds
   # included (a zero column), so a declared "(Missing)" collides too.
   db <- data.frame(
@@ -372,6 +381,7 @@ test_that("a `by` level displayed beside the missing column is refused", {
 })
 
 test_that("a one-way variable with no observed value keeps its one row", {
+  skip_on_cran()
   # No level to show: one row for the variable, its cells undefined, in
   # place of the silent drop of 0.13.0.
   df <- data.frame(v1 = c(NA, NA))
@@ -397,6 +407,7 @@ test_that("a one-way variable with no observed value keeps its one row", {
 })
 
 test_that("a grouped variable with no observed value keeps its one row", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "B"),
     v1 = c(NA, NA)
@@ -434,6 +445,7 @@ test_that("a grouped variable with no observed value keeps its one row", {
 })
 
 test_that("table_categorical warns about ignored grouped options without by", {
+  skip_on_cran()
   df <- data.frame(v1 = c("Oui", "Non", "Oui"))
 
   res <- collect_warnings(
@@ -473,6 +485,7 @@ test_that("table_categorical default output renders ASCII and returns styled obj
 })
 
 test_that("table_categorical returns visibly and is silent when assigned", {
+  skip_on_cran()
   # A bare call renders (capture.output() evaluates as at top level, so
   # the visible return auto-prints); an assignment writes nothing.
   expect_visible(table_categorical(sochealth, select = smoking))
@@ -512,6 +525,7 @@ test_that("table_categorical output = 'data.frame' returns the displayed table",
 })
 
 test_that("table_categorical validates weights and simulate_B", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", "B"),
     v1 = c("Oui", "Non", "Oui", "Non")
@@ -560,6 +574,7 @@ test_that("table_categorical validates weights and simulate_B", {
 })
 
 test_that("table_categorical keeps missing values as explicit levels when drop_na is FALSE", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", NA),
     v1 = c("Oui", NA, "Non", "Oui"),
@@ -593,6 +608,7 @@ test_that("table_categorical keeps missing values as explicit levels when drop_n
 })
 
 test_that("table_categorical returns tinytable object when requested", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
 
   df <- data.frame(
@@ -613,6 +629,7 @@ test_that("table_categorical returns tinytable object when requested", {
 })
 
 test_that("table_categorical returns one-way rendered objects when requested", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -716,6 +733,7 @@ test_that("table_categorical returns gt object when requested", {
 # ---- Dynamic association measure column ----------------------------------
 
 test_that("table_categorical default column is Cramer's V", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
@@ -742,6 +760,7 @@ test_that("table_categorical default column is Cramer's V", {
 })
 
 test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (mixed -> Effect size header)", {
+  skip_on_cran()
   # smoking: binary, education: 4-cat nominal, sex: binary
   # auto-rule: smoking -> phi (2x2), education -> cramer_v (not 2x2)
   out <- table_categorical(
@@ -793,6 +812,7 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
 })
 
 test_that("table_categorical accepts a named per-variable `assoc_measure`", {
+  skip_on_cran()
   # Same data, but explicit override per variable
   out_default <- table_categorical(
     sochealth,
@@ -825,6 +845,7 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
 })
 
 test_that("table_categorical accepts unnamed positional `assoc_measure` and validates length", {
+  skip_on_cran()
   # Positional, length matches select -> works
   out <- table_categorical(
     sochealth,
@@ -852,6 +873,7 @@ test_that("table_categorical accepts unnamed positional `assoc_measure` and vali
 })
 
 test_that("table_categorical errors when `assoc_measure = 'phi'` requested on non-2x2", {
+  skip_on_cran()
   expect_error(
     table_categorical(
       sochealth,
@@ -875,6 +897,7 @@ test_that("table_categorical errors when `assoc_measure = 'phi'` requested on no
 })
 
 test_that("table_categorical rejects unknown `assoc_measure` values and bad keys", {
+  skip_on_cran()
   expect_error(
     table_categorical(
       sochealth,
@@ -896,6 +919,7 @@ test_that("table_categorical rejects unknown `assoc_measure` values and bad keys
 })
 
 test_that("the assoc_measure errors name table_categorical()", {
+  skip_on_cran()
   called <- function(class, ...) {
     err <- expect_error(
       table_categorical(sochealth, by = sex, ...),
@@ -922,6 +946,7 @@ test_that("the assoc_measure errors name table_categorical()", {
 })
 
 test_that("table_categorical drops association column when assoc_measure is none", {
+  skip_on_cran()
   out_long <- table_categorical(
     sochealth,
     select = smoking,
@@ -948,6 +973,7 @@ test_that("table_categorical drops association column when assoc_measure is none
 })
 
 test_that("table_categorical uses dynamic column name with assoc_measure = 'gamma'", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = c("Oui", "Non", "Oui", "Non", "Oui", "Non")
@@ -989,6 +1015,7 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
 })
 
 test_that("a single measure heads and names its column with its symbol", {
+  skip_on_cran()
   set.seed(5)
   d <- data.frame(
     g = factor(rep(c("A", "B"), 30L)),
@@ -1104,6 +1131,7 @@ test_that("a single measure heads and names its column with its symbol", {
 })
 
 test_that("assoc_ci adds CI columns in the data.frame output", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1124,6 +1152,7 @@ test_that("assoc_ci adds CI columns in the data.frame output", {
 })
 
 test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
+  skip_on_cran()
   # Positive control: the two bound headers ARE column names with
   # `assoc_ci = TRUE`, so the negatives below keep biting if either is
   # renamed instead of silently ceasing to match.
@@ -1148,6 +1177,7 @@ test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
 })
 
 test_that("the association CI label ignores decimal_mark at its integer coverage", {
+  skip_on_cran()
   # Decision 27 witness, categorical family: the association interval is
   # pinned at 95% upstream, an integer percentage with no decimal point,
   # so the label is byte-identical under any mark.
@@ -1168,6 +1198,7 @@ test_that("the association CI label ignores decimal_mark at its integer coverage
 })
 
 test_that("assoc_ci fills the CI columns of the long output", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1185,6 +1216,7 @@ test_that("assoc_ci fills the CI columns of the long output", {
 })
 
 test_that("assoc_ci shows inline CI in rendered formats", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   gt_out <- table_categorical(
     sochealth,
@@ -1223,6 +1255,7 @@ test_that("assoc_ci shows inline CI in rendered formats", {
 # ---- levels_keep ---------------------------------------------------------
 
 test_that("table_categorical levels_keep filters and reorders levels", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1234,6 +1267,7 @@ test_that("table_categorical levels_keep filters and reorders levels", {
 })
 
 test_that("table_categorical levels_keep with (Missing)", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "income_group",
@@ -1247,6 +1281,7 @@ test_that("table_categorical levels_keep with (Missing)", {
 })
 
 test_that("table_categorical levels_keep no-match warns and names the levels", {
+  skip_on_cran()
   # Labelled column: internal level strings are the "[code] label"
   # display form, so the bare label text can never match -- the
   # variable used to vanish silently (audit finding
@@ -1275,6 +1310,7 @@ test_that("table_categorical levels_keep no-match warns and names the levels", {
 })
 
 test_that("table_categorical levels_keep no-match keeps the matching variable", {
+  skip_on_cran()
   # Multi-variable select: only the variable with zero matches is
   # dropped (with a warning); the matching one still renders.
   df <- data.frame(
@@ -1295,6 +1331,7 @@ test_that("table_categorical levels_keep no-match keeps the matching variable", 
 })
 
 test_that("table_categorical grouped levels_keep no-match warns per variable", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "B", "A", "B")),
     v = factor(c("x", "y", "x", "y"))
@@ -1313,6 +1350,7 @@ test_that("table_categorical grouped levels_keep no-match warns per variable", {
 })
 
 test_that("levels_keep takes a named list, one entry per variable", {
+  skip_on_cran()
   # Read as one vector for every variable, the list kept "Yes" in
   # `education` too, which has no such level, and dropped it with a
   # warning. Per variable, as in table_categorical_svy().
@@ -1363,6 +1401,7 @@ test_that("levels_keep takes a named list, one entry per variable", {
 })
 
 test_that("levels_keep refuses a list it cannot read, as the survey twin does", {
+  skip_on_cran()
   expect_error(
     table_categorical(
       sochealth,
@@ -1386,6 +1425,7 @@ test_that("levels_keep refuses a list it cannot read, as the survey twin does", 
 })
 
 test_that(".warn_levels_keep_no_match truncates long level listings", {
+  skip_on_cran()
   cnd <- testthat::capture_warning(
     .warn_levels_keep_no_match("v", as.character(1:12))
   )
@@ -1402,6 +1442,7 @@ test_that(".warn_levels_keep_no_match truncates long level listings", {
 # ---- blank_na_wide -------------------------------------------------------
 
 test_that("table_categorical blank_na_wide replaces NA with empty strings", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1418,6 +1459,7 @@ test_that("table_categorical blank_na_wide replaces NA with empty strings", {
 # ---- Validation errors ---------------------------------------------------
 
 test_that("table_categorical validates data argument", {
+  skip_on_cran()
   expect_error(
     table_categorical("not_df", "v1", "grp"),
     "`data` must be a data.frame"
@@ -1425,6 +1467,7 @@ test_that("table_categorical validates data argument", {
 })
 
 test_that("table_categorical validates select", {
+  skip_on_cran()
   df <- data.frame(g = 1, v = 1)
   expect_error(
     table_categorical(df, character(0), "g"),
@@ -1438,6 +1481,7 @@ test_that("table_categorical validates select", {
 })
 
 test_that("table_categorical validates by", {
+  skip_on_cran()
   df <- data.frame(g = 1, v = 1)
   expect_error(
     table_categorical(df, "v", "missing"),
@@ -1446,6 +1490,7 @@ test_that("table_categorical validates by", {
 })
 
 test_that("table_categorical rejects unnamed labels vectors", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", labels = c("a", "b")),
@@ -1454,6 +1499,7 @@ test_that("table_categorical rejects unnamed labels vectors", {
 })
 
 test_that("table_categorical validates boolean arguments", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", include_total = NA),
@@ -1486,6 +1532,7 @@ test_that("table_categorical validates boolean arguments", {
 })
 
 test_that("table_categorical validates decimal_mark", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", decimal_mark = "--"),
@@ -1494,6 +1541,7 @@ test_that("table_categorical validates decimal_mark", {
 })
 
 test_that("table_categorical validates weights type", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", weights = TRUE),
@@ -1502,6 +1550,7 @@ test_that("table_categorical validates weights type", {
 })
 
 test_that("table_categorical validates weights column name", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", weights = "nonexistent"),
@@ -1510,6 +1559,7 @@ test_that("table_categorical validates weights column name", {
 })
 
 test_that("table_categorical warns when rescale = TRUE without weights", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_warning(
     table_categorical(df, "v", "g", rescale = TRUE, output = "data.frame"),
@@ -1523,6 +1573,7 @@ test_that("table_categorical warns when rescale = TRUE without weights", {
 })
 
 test_that("table_categorical honors options(spicy.rescale)", {
+  skip_on_cran()
   df <- data.frame(v = rep(c("a", "b"), 5), w = rep(2, 10))
   withr::local_options(spicy.rescale = TRUE)
   out <- table_categorical(df, "v", weights = "w", output = "data.frame")
@@ -1530,6 +1581,7 @@ test_that("table_categorical honors options(spicy.rescale)", {
 })
 
 test_that("explicit rescale overrides options(spicy.rescale)", {
+  skip_on_cran()
   df <- data.frame(v = rep(c("a", "b"), 5), w = rep(2, 10))
   withr::local_options(spicy.rescale = TRUE)
   out <- table_categorical(
@@ -1543,6 +1595,7 @@ test_that("explicit rescale overrides options(spicy.rescale)", {
 })
 
 test_that("table_categorical rejects p_digits < 1 with a classed error", {
+  skip_on_cran()
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_error(
     table_categorical(df, "v", "g", p_digits = 0, output = "long"),
@@ -1569,6 +1622,7 @@ test_that("table_categorical rejects p_digits < 1 with a classed error", {
 # ---- Multiple select -----------------------------------------------------
 
 test_that("table_categorical handles multiple select in wide output", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     c(smoking, physical_activity),
@@ -1581,6 +1635,7 @@ test_that("table_categorical handles multiple select in wide output", {
 # ---- include_total = FALSE -----------------------------------------------
 
 test_that("table_categorical include_total = FALSE omits Total column", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1594,6 +1649,7 @@ test_that("table_categorical include_total = FALSE omits Total column", {
 # ---- Flextable output ----------------------------------------------------
 
 test_that("table_categorical returns flextable object when requested", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   ft <- table_categorical(
     sochealth,
@@ -1605,6 +1661,7 @@ test_that("table_categorical returns flextable object when requested", {
 })
 
 test_that("table_categorical grouped word and clipboard outputs work", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   skip_if_not_installed("clipr")
@@ -1648,6 +1705,7 @@ test_that("table_categorical grouped word and clipboard outputs work", {
 })
 
 test_that("table_categorical requires file paths for word and excel outputs", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   skip_if_not_installed("openxlsx2")
@@ -1681,6 +1739,7 @@ test_that("table_categorical writes excel file", {
 # ---- assoc_measure = "none" ----------------------------------------------
 
 test_that("table_categorical assoc_measure = 'none' empties the association columns", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1703,6 +1762,7 @@ test_that("table_categorical assoc_measure = 'none' empties the association colu
   expect_true(all(is.na(out$es_value) & is.na(out$es_type)))
 })
 test_that("table_categorical with assoc_ci includes CI columns in raw long", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1716,6 +1776,7 @@ test_that("table_categorical with assoc_ci includes CI columns in raw long", {
 })
 
 test_that("table_categorical simulate_p works in long output", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1728,6 +1789,7 @@ test_that("table_categorical simulate_p works in long output", {
 })
 
 test_that("table_categorical with drop_na = FALSE includes Missing level", {
+  skip_on_cran()
   df <- sochealth
   df$smoking[1:5] <- NA
   out <- table_categorical(
@@ -1743,6 +1805,7 @@ test_that("table_categorical with drop_na = FALSE includes Missing level", {
 # ---- Digit validation ----------------------------------------------------
 
 test_that("table_categorical rejects invalid digit arguments", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "B", "A", "B"),
     v1 = c("x", "y", "x", "y")
@@ -1777,6 +1840,7 @@ test_that("table_categorical rejects invalid digit arguments", {
 # ---- Level ordering ------------------------------------------------------
 
 test_that("table_categorical preserves factor level order in row variables", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", "B", "A", "B"),
     v1 = factor(
@@ -1796,6 +1860,7 @@ test_that("table_categorical preserves factor level order in row variables", {
 })
 
 test_that("table_categorical places (Missing) at end when drop_na = FALSE", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "A", "B", "B", "A", "B"),
     v1 = factor(
@@ -1816,6 +1881,7 @@ test_that("table_categorical places (Missing) at end when drop_na = FALSE", {
 })
 
 test_that("table_categorical rescale warning includes call. = FALSE", {
+  skip_on_cran()
   df <- data.frame(
     grp = c("A", "B", "A", "B"),
     v1 = c("x", "y", "x", "y")
@@ -1839,6 +1905,7 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
 # ---- empty data: refused, with or without `by` ----
 
 test_that("empty data is refused, with or without `by`", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(levels = c("a", "b")),
     g = factor(levels = c("A", "B")),
@@ -1857,6 +1924,7 @@ test_that("empty data is refused, with or without `by`", {
 })
 
 test_that("table_categorical gt output omits association header when assoc_measure = 'none'", {
+  skip_on_cran()
   skip_if_not_installed("gt")
 
   gt_tbl <- table_categorical(
@@ -1879,6 +1947,7 @@ test_that("table_categorical gt output omits association header when assoc_measu
 # --- Coverage tests: uncovered paths ---
 
 test_that("table_categorical errors when select matches no columns", {
+  skip_on_cran()
   df <- data.frame(a = 1:3, b = 4:6)
   expect_error(
     table_categorical(df, select = c(nonexistent_col)),
@@ -1887,6 +1956,7 @@ test_that("table_categorical errors when select matches no columns", {
 })
 
 test_that("table_categorical one-way with weights", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     w = c(2, 1, 3, 1, 2)
@@ -1899,6 +1969,7 @@ test_that("table_categorical one-way with weights", {
 })
 
 test_that("table_categorical one-way with levels_keep filters levels", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
   )
@@ -1912,6 +1983,7 @@ test_that("table_categorical one-way with levels_keep filters levels", {
 })
 
 test_that("table_categorical one-way with levels_keep and long output", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", "B", "C", "A", "B"), levels = c("A", "B", "C"))
   )
@@ -1925,6 +1997,7 @@ test_that("table_categorical one-way with levels_keep and long output", {
 })
 
 test_that("table_categorical one-way with decimal_mark comma", {
+  skip_on_cran()
   df <- data.frame(x = factor(c("A", "B", "A", "B", "A")))
   out <- table_categorical(
     df,
@@ -1939,6 +2012,7 @@ test_that("table_categorical one-way with decimal_mark comma", {
 })
 
 test_that("table_categorical one-way with blank_na_wide", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", NA, "B", NA)),
     y = factor(c("C", "D", NA, NA))
@@ -1954,6 +2028,7 @@ test_that("table_categorical one-way with blank_na_wide", {
 })
 
 test_that("a one-way factor with no observed value shows its declared levels", {
+  skip_on_cran()
   df <- data.frame(x = factor(c(NA, NA, NA), levels = c("a", "b")))
   out_wide <- table_categorical(
     df,
@@ -1970,6 +2045,7 @@ test_that("a one-way factor with no observed value shows its declared levels", {
 })
 
 test_that("table_categorical grouped default output returns a styled object", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -1980,6 +2056,7 @@ test_that("table_categorical grouped default output returns a styled object", {
 })
 
 test_that("table_categorical grouped with levels_keep filters levels", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -1998,6 +2075,7 @@ test_that("table_categorical grouped with levels_keep filters levels", {
 })
 
 test_that("table_categorical grouped with assoc_measure = none", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -2019,6 +2097,7 @@ test_that("table_categorical grouped with assoc_measure = none", {
 })
 
 test_that("a grouped variable with no observed value and no level is one row", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "B")),
     v = factor(c(NA, NA))
@@ -2044,6 +2123,7 @@ test_that("a grouped variable with no observed value and no level is one row", {
 })
 
 test_that("table_categorical one-way weighted with rescale", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     w = c(10, 5, 10, 5, 10)
@@ -2060,6 +2140,7 @@ test_that("table_categorical one-way weighted with rescale", {
 })
 
 test_that("a look-alike of the missing label is a level like any other", {
+  skip_on_cran()
   # Only the label itself collides: "(Missing_1)", which the table used to
   # give its own row on a collision, is now an ordinary level.
   df <- data.frame(
@@ -2074,6 +2155,7 @@ test_that("a look-alike of the missing label is a level like any other", {
 })
 
 test_that("table_categorical grouped with levels_keep and default output", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -2088,6 +2170,7 @@ test_that("table_categorical grouped with levels_keep and default output", {
 })
 
 test_that("table_categorical grouped empty via levels_keep with non-matching levels", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "B", "A", "B")),
     v = factor(c("x", "y", "x", "y"))
@@ -2130,6 +2213,7 @@ test_that("table_categorical grouped empty via levels_keep with non-matching lev
 })
 
 test_that("table_categorical grouped with assoc_measure = none and default output", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -2140,6 +2224,7 @@ test_that("table_categorical grouped with assoc_measure = none and default outpu
 })
 
 test_that("table_categorical one-way with levels_keep that filters some levels", {
+  skip_on_cran()
   df <- data.frame(
     x = factor(c("A", "B", "C", "D"), levels = c("A", "B", "C", "D")),
     y = factor(c("P", "Q", "P", "Q"))
@@ -2158,6 +2243,7 @@ test_that("table_categorical one-way with levels_keep that filters some levels",
 })
 
 test_that("table_categorical grouped with decimal_mark comma and default output", {
+  skip_on_cran()
   out <- table_categorical(
     data = sochealth,
     select = smoking,
@@ -2175,6 +2261,7 @@ test_that("table_categorical grouped with decimal_mark comma and default output"
 })
 
 test_that("table_categorical grouped tinytable with assoc_measure = none", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   tt <- table_categorical(
     data = sochealth,
@@ -2187,6 +2274,7 @@ test_that("table_categorical grouped tinytable with assoc_measure = none", {
 })
 
 test_that("table_categorical grouped excel with assoc_ci", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -2202,6 +2290,7 @@ test_that("table_categorical grouped excel with assoc_ci", {
 })
 
 test_that("table_categorical grouped excel with assoc_measure = none", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -2217,6 +2306,7 @@ test_that("table_categorical grouped excel with assoc_measure = none", {
 })
 
 test_that("table_categorical one-way all-NA keeps the variable, undefined", {
+  skip_on_cran()
   df <- data.frame(x = factor(c(NA, NA, NA)))
   out <- table_categorical(df, select = x, drop_na = TRUE, output = "default")
   expect_s3_class(out, "spicy_categorical_table")
@@ -2228,6 +2318,7 @@ test_that("table_categorical one-way all-NA keeps the variable, undefined", {
 })
 
 test_that("table_categorical grouped all-NA keeps the variable, undefined", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "B", "A")),
     v = factor(c(NA, NA, NA))
@@ -2244,6 +2335,7 @@ test_that("table_categorical grouped all-NA keeps the variable, undefined", {
 })
 
 test_that("table_categorical one-way levels_keep with no match returns empty", {
+  skip_on_cran()
   df <- data.frame(x = factor(c("A", "B"), levels = c("A", "B", "C")))
   expect_warning(
     out <- table_categorical(
@@ -2283,6 +2375,7 @@ test_that("table_categorical one-way levels_keep with no match returns empty", {
 })
 
 test_that("table_categorical errors for missing tinytable package", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "tinytable") {
@@ -2299,6 +2392,7 @@ test_that("table_categorical errors for missing tinytable package", {
 })
 
 test_that("table_categorical errors for missing gt package", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "gt") {
@@ -2315,6 +2409,7 @@ test_that("table_categorical errors for missing gt package", {
 })
 
 test_that("table_categorical errors for missing flextable package", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "flextable") {
@@ -2332,6 +2427,7 @@ test_that("table_categorical errors for missing flextable package", {
 })
 
 test_that("table_categorical errors for missing openxlsx2 package", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "openxlsx2") {
@@ -2353,6 +2449,7 @@ test_that("table_categorical errors for missing openxlsx2 package", {
 })
 
 test_that("table_categorical errors for missing clipr package", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "clipr") {
@@ -2369,10 +2466,12 @@ test_that("table_categorical errors for missing clipr package", {
 })
 
 test_that("table_categorical one-way word output errors for missing officer package", {
+  skip_on_cran()
   skip("Cannot mock officer requireNamespace without recursion")
 })
 
 test_that("table_categorical word output errors when word_path is missing", {
+  skip_on_cran()
   expect_error(
     table_categorical(sochealth, select = smoking, by = sex, output = "word"),
     "word_path"
@@ -2380,6 +2479,7 @@ test_that("table_categorical word output errors when word_path is missing", {
 })
 
 test_that("table_categorical excel output errors when excel_path is missing", {
+  skip_on_cran()
   expect_error(
     table_categorical(
       sochealth,
@@ -2392,6 +2492,7 @@ test_that("table_categorical excel output errors when excel_path is missing", {
 })
 
 test_that("table_categorical grouped errors for missing tinytable", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "tinytable") {
@@ -2413,6 +2514,7 @@ test_that("table_categorical grouped errors for missing tinytable", {
 })
 
 test_that("table_categorical grouped errors for missing gt", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "gt") {
@@ -2429,6 +2531,7 @@ test_that("table_categorical grouped errors for missing gt", {
 })
 
 test_that("table_categorical grouped errors for missing flextable", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "flextable") {
@@ -2451,6 +2554,7 @@ test_that("table_categorical grouped errors for missing flextable", {
 })
 
 test_that("table_categorical grouped errors for missing openxlsx2", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "openxlsx2") {
@@ -2473,6 +2577,7 @@ test_that("table_categorical grouped errors for missing openxlsx2", {
 })
 
 test_that("table_categorical grouped errors for missing clipr", {
+  skip_on_cran()
   local_mocked_bindings(
     requireNamespace = function(pkg, ...) {
       if (pkg == "clipr") {
@@ -2494,12 +2599,14 @@ test_that("table_categorical grouped errors for missing clipr", {
 })
 
 test_that("table_categorical grouped word errors for missing officer", {
+  skip_on_cran()
   skip("Cannot mock officer requireNamespace without recursion")
 })
 
 # ---- harmonization with table_continuous() / _lm() (Phase 2) -------------
 
 test_that("align argument validates and is stored as attribute", {
+  skip_on_cran()
   for (a in c("decimal", "center", "right")) {
     out <- table_categorical(sochealth, select = smoking, by = sex, align = a)
     expect_equal(attr(out, "align"), a)
@@ -2512,6 +2619,7 @@ test_that("align argument validates and is stored as attribute", {
 })
 
 test_that("align defaults to 'decimal' on the printed object", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking, by = sex)
   expect_equal(attr(out, "align"), "decimal")
   out_ow <- table_categorical(sochealth, select = smoking)
@@ -2519,6 +2627,7 @@ test_that("align defaults to 'decimal' on the printed object", {
 })
 
 test_that("align = 'decimal' produces gt and tinytable outputs", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
   out_gt <- table_categorical(
@@ -2541,6 +2650,7 @@ test_that("align = 'decimal' produces gt and tinytable outputs", {
 })
 
 test_that("align = 'center' / 'right' all render gt + tinytable", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
   for (a in c("center", "right")) {
@@ -2568,6 +2678,7 @@ test_that("align = 'center' / 'right' all render gt + tinytable", {
 })
 
 test_that("align = 'decimal' / 'center' / 'right' all render flextable", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   for (a in c("decimal", "center", "right")) {
     expect_s3_class(
@@ -2593,6 +2704,7 @@ test_that("align = 'decimal' / 'center' / 'right' all render flextable", {
 })
 
 test_that("align flows to word output (cross-tab + oneway)", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   for (a in c("decimal", "center")) {
@@ -2624,6 +2736,7 @@ test_that("align flows to word output (cross-tab + oneway)", {
 })
 
 test_that("align flows to excel output (cross-tab + oneway, all values)", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   for (a in c("decimal", "center", "right")) {
     tmp <- tempfile(fileext = ".xlsx")
@@ -2642,6 +2755,7 @@ test_that("align flows to excel output (cross-tab + oneway, all values)", {
 })
 
 test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   captured <- new.env()
   testthat::local_mocked_bindings(
@@ -2694,6 +2808,7 @@ test_that("align = 'decimal' pads numeric clipboard cells (oneway + cross-tab)",
 })
 
 test_that("clipboard payload carries the console title and notes", {
+  skip_on_cran()
   skip_if_not_installed("clipr")
   captured <- new.env()
   testthat::local_mocked_bindings(
@@ -2755,6 +2870,7 @@ test_that("clipboard payload carries the console title and notes", {
 # ---- broom S3 methods -----------------------------------------------------
 
 test_that("as.data.frame() strips spicy classes and rendering attrs", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking, by = sex)
   df <- as.data.frame(out)
   expect_true(inherits(df, "data.frame"))
@@ -2783,6 +2899,7 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
 })
 
 test_that("as_tibble() returns a tbl_df", {
+  skip_on_cran()
   skip_if_not_installed("tibble")
   out <- table_categorical(sochealth, select = smoking, by = sex)
   tb <- tibble::as_tibble(out)
@@ -2790,6 +2907,7 @@ test_that("as_tibble() returns a tbl_df", {
 })
 
 test_that("tidy() returns long-format with broom-conventional columns (cross-tab)", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
@@ -2828,6 +2946,7 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
 })
 
 test_that("tidy() returns an NA group column without by", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking)
   td <- broom::tidy(out)
   expect_identical(
@@ -2851,6 +2970,7 @@ test_that("tidy() returns an NA group column without by", {
 })
 
 test_that("the long output, tidy() and glance() name the column and the label", {
+  skip_on_cran()
   # `variable` is the column name whatever `labels` says, `label` the label
   # the rows display: code can tell which column a row comes from.
   build <- function(labels, by = TRUE, output = "default") {
@@ -2899,6 +3019,7 @@ test_that("the long output, tidy() and glance() name the column and the label", 
 })
 
 test_that("glance() returns chi-squared test + association measure (cross-tab)", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
@@ -2937,6 +3058,7 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
 })
 
 test_that("glance() gives each variable the key of its own measure", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = c(smoking, education), by = sex)
   gl <- broom::glance(out)
   long <- table_categorical(
@@ -2960,6 +3082,7 @@ test_that("glance() gives each variable the key of its own measure", {
 })
 
 test_that("glance() returns NA test/ES, populated nobs without by", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking)
   gl <- broom::glance(out)
   expect_equal(nrow(gl), 1L)
@@ -2975,6 +3098,7 @@ test_that("glance() returns NA test/ES, populated nobs without by", {
 })
 
 test_that("a row whose variable asked for no measure has no es_type", {
+  skip_on_cran()
   # The only route to the NA arm: a mixed vector where one variable opts
   # out. Its rows still sit in the shared `es_value` column -- empty --
   # but they name no measure.
@@ -2997,6 +3121,7 @@ test_that("a row whose variable asked for no measure has no es_type", {
 })
 
 test_that("print() survives a typed view that outlived its display frame", {
+  skip_on_cran()
   # The shape guard on `display_labels`, not merely `is.null(structured)`:
   # here the typed view is PRESENT while `display_df` is gone, so the
   # printer falls back to the raw wide frame -- which carries `Level`,
@@ -3011,6 +3136,7 @@ test_that("print() survives a typed view that outlived its display frame", {
 })
 
 test_that("an empty display cell does not break the width decision", {
+  skip_on_cran()
   # The width decision measures printed width, so a missing cell is two
   # columns wide, not an NA that turns `if (width > console)` into an
   # error.
@@ -3027,6 +3153,7 @@ test_that("an empty display cell does not break the width decision", {
 })
 
 test_that("glance() names the measure column from the typed view", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking, by = education)
   expect_identical(broom::glance(out)$es_type, "cramer_v")
   expect_equal(
@@ -3049,6 +3176,7 @@ test_that("glance() names the measure column from the typed view", {
 })
 
 test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -3063,6 +3191,7 @@ test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
 })
 
 test_that("glance() reports no interval when assoc_ci = FALSE", {
+  skip_on_cran()
   # The attached long data carries the bounds whatever `assoc_ci` says,
   # and glance() used to publish them for a table that showed none.
   skip_if_not_installed("broom")
@@ -3089,6 +3218,7 @@ test_that("glance() reports no interval when assoc_ci = FALSE", {
 # ---- audit fixes (nobs / Total margin / p_digits threshold) --------------
 
 test_that("glance() nobs excludes the synthetic 'Total' group", {
+  skip_on_cran()
   # smoking x sex with include_total = TRUE (default) should not
   # double-count: the underlying analytic sample is the count of
   # observations with non-NA smoking (1175 in sochealth), NOT
@@ -3118,6 +3248,7 @@ test_that("glance() nobs excludes the synthetic 'Total' group", {
 })
 
 test_that("glance() nobs stays correct when include_total = FALSE", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -3137,6 +3268,7 @@ test_that("glance() nobs stays correct when include_total = FALSE", {
 })
 
 test_that("tidy() keeps the synthetic 'Total' group, flagged by `total`", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = smoking, by = sex)
   td <- broom::tidy(out)
   expect_true("Total" %in% td$group)
@@ -3151,6 +3283,7 @@ test_that("tidy() keeps the synthetic 'Total' group, flagged by `total`", {
 })
 
 test_that("tidy() respects include_total = FALSE without spurious Total rows", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -3176,6 +3309,7 @@ test_that("tidy() respects include_total = FALSE without spurious Total rows", {
 })
 
 test_that("p_digits drives the small-p threshold in table_categorical()", {
+  skip_on_cran()
   # With a strong association, the chi-squared p-value falls well
   # below 1e-4. p_digits = 4 -> the rendered p column should show
   # `<.0001`, not `<.001` (which would be the legacy hardcoded
@@ -3206,6 +3340,7 @@ test_that("p_digits drives the small-p threshold in table_categorical()", {
 })
 
 test_that("p_digits = 4 respects decimal_mark = ','", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -3219,6 +3354,7 @@ test_that("p_digits = 4 respects decimal_mark = ','", {
 })
 
 test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)", {
+  skip_on_cran()
   # Regression: parse_stats() previously hardcoded `p_op = "<"` for any
   # p < 0.001, which caused fmt_p() to render "<.0001" for a true p
   # like 0.000108 even though that value is *greater* than the
@@ -3245,6 +3381,7 @@ test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)",
 # ---- labels: column names by default, the attribute on request ------------
 
 test_that("labels rejects the legacy positional character vector", {
+  skip_on_cran()
   err <- tryCatch(
     table_categorical(
       sochealth,
@@ -3262,6 +3399,7 @@ test_that("labels rejects the legacy positional character vector", {
 })
 
 test_that("labels rejects partially named vectors", {
+  skip_on_cran()
   expect_error(
     table_categorical(
       sochealth,
@@ -3321,6 +3459,7 @@ test_that("labels: names by default, the label attribute under TRUE", {
 })
 
 test_that("labels refuses every other form with one classed error", {
+  skip_on_cran()
   bad <- list(NULL, NA, c(TRUE, FALSE), 123, list(smoking = "Smoker"), mean)
   for (b in bad) {
     expect_error(
@@ -3350,6 +3489,7 @@ test_that("labels refuses every other form with one classed error", {
 })
 
 test_that("labels accepts a named character vector keyed by column name", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
@@ -3366,6 +3506,7 @@ test_that("labels accepts a named character vector keyed by column name", {
 })
 
 test_that("named labels relabel a subset; the others keep their names", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
@@ -3376,6 +3517,7 @@ test_that("named labels relabel a subset; the others keep their names", {
 })
 
 test_that("named labels with unknown names warn and are left out", {
+  skip_on_cran()
   expect_warning(
     out <- table_categorical(
       sochealth,
@@ -3389,6 +3531,7 @@ test_that("named labels with unknown names warn and are left out", {
 })
 
 test_that("non-character labels rejected at boundary", {
+  skip_on_cran()
   expect_error(
     table_categorical(sochealth, select = smoking, labels = 123),
     class = "spicy_invalid_input"
@@ -3396,6 +3539,7 @@ test_that("non-character labels rejected at boundary", {
 })
 
 test_that("the by title and the missing-values notes follow labels", {
+  skip_on_cran()
   d <- sochealth
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
@@ -3427,6 +3571,7 @@ test_that("the by title and the missing-values notes follow labels", {
 })
 
 test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_on_cran()
   build <- function() {
     table_categorical(
       sochealth,
@@ -3448,6 +3593,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
 })
 
 test_that("two variables showing one label keep a block each", {
+  skip_on_cran()
   # Rows are keyed by column name: the factor of labels failed with
   # "factor level [2] is duplicated", in every output.
   build <- function(...) {
@@ -3534,6 +3680,7 @@ test_that("two variables showing one label keep a block each", {
 })
 
 test_that("glance() gives each variable a row, whatever the labels", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   build <- function(...) {
     table_categorical(
@@ -3565,6 +3712,7 @@ test_that("glance() gives each variable a row, whatever the labels", {
 })
 
 test_that("glance() follows the order of select, as the table and tidy() do", {
+  skip_on_cran()
   skip_if_not_installed("broom")
   # Alphabetical by label, glance() used to list physical_activity first
   # and education before both.
@@ -3597,6 +3745,7 @@ test_that("glance() follows the order of select, as the table and tidy() do", {
 # ---- select: optional, defaults to eligible categorical columns -----------
 
 test_that("select-less call tabulates every eligible categorical column", {
+  skip_on_cran()
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B")),
     fct = factor(c("x", "y", "x", "y")),
@@ -3615,6 +3764,7 @@ test_that("select-less call tabulates every eligible categorical column", {
 })
 
 test_that("select-less call keeps labelled (haven-style) columns", {
+  skip_on_cran()
   df <- data.frame(x = 1:4)
   df$lab <- labelled::labelled(
     c(1, 2, 1, 2),
@@ -3625,12 +3775,14 @@ test_that("select-less call keeps labelled (haven-style) columns", {
 })
 
 test_that("select-less call with no eligible column is an error", {
+  skip_on_cran()
   df <- data.frame(a = 1:4, b = rnorm(4))
   err <- expect_error(table_categorical(df), class = "spicy_invalid_input")
   expect_match(conditionMessage(err), "categorical column", fixed = TRUE)
 })
 
 test_that("explicit select is taken verbatim, numeric columns included", {
+  skip_on_cran()
   df <- data.frame(num = c(1, 2, 1, 2))
   out <- table_categorical(df, select = num, output = "long")
   expect_setequal(unique(out$level), c("1", "2"))
@@ -3640,6 +3792,7 @@ test_that("explicit select is taken verbatim, numeric columns included", {
 # ---- drop_na default flip + disclosure (0.13.0, EpiRHandbook batch) -------
 
 test_that("default drop_na = FALSE shows the (Missing) level", {
+  skip_on_cran()
   out <- table_categorical(sochealth, select = income_group)
   df <- as.data.frame(attr(out, "display_df"))
   expect_true(any(grepl("(Missing)", df$Variable, fixed = TRUE)))
@@ -3649,6 +3802,7 @@ test_that("default drop_na = FALSE shows the (Missing) level", {
 })
 
 test_that("drop_na = TRUE discloses removals in the note", {
+  skip_on_cran()
   out <- table_categorical(
     sochealth,
     select = c(income_group, smoking),
@@ -3690,6 +3844,7 @@ test_that("drop_na = TRUE discloses removals in the note", {
 })
 
 test_that("the by title names the grouping variable by its label", {
+  skip_on_cran()
   title_has <- function(out, text) {
     any(grepl(text, capture.output(print(out)), fixed = TRUE))
   }
@@ -3704,6 +3859,7 @@ test_that("the by title names the grouping variable by its label", {
 })
 
 test_that("drop_na = TRUE with by-NAs discloses both removals", {
+  skip_on_cran()
   d <- sochealth
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
@@ -3717,6 +3873,7 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
 })
 
 test_that("association stats ignore the (Missing) display level", {
+  skip_on_cran()
   # Show the missing, test the observed (gtsummary / SPSS convention):
   # the chi-square / Phi / p must be IDENTICAL whether the missing are
   # displayed (default) or dropped (drop_na = TRUE).
@@ -3740,6 +3897,7 @@ test_that("association stats ignore the (Missing) display level", {
 
 
 test_that("drop_na = TRUE disclosure note names the dropped counts", {
+  skip_on_cran()
   # The published contract (NEWS 0.13 dev): opting back into silent-drop
   # is DISCLOSED -- a reader can always see what left the table.
   df <- data.frame(
@@ -3776,6 +3934,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
 })
 
 test_that("the note opens with \"Note.\" once, drop_na disclosure first or not", {
+  skip_on_cran()
   by_sex <- function(...) {
     table_categorical(
       sochealth,
@@ -3862,6 +4021,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
 }
 
 test_that("a group with no data shows the undefined mark, NA in the machine outputs", {
+  skip_on_cran()
   d <- .nd_data()
   mark <- spicy:::spicy_str("cell_undefined")
   tbl <- table_categorical(d, c(smoking, physical_activity), by = education)
@@ -3904,6 +4064,7 @@ test_that("a group with no data shows the undefined mark, NA in the machine outp
 })
 
 test_that("a group with no data leaves the comparison of the other groups", {
+  skip_on_cran()
   d <- .nd_data()
   gl <- broom::glance(table_categorical(d, physical_activity, by = education))
   asked <- d[d$education != "Tertiary", ]
@@ -3917,6 +4078,7 @@ test_that("a group with no data leaves the comparison of the other groups", {
 })
 
 test_that("the missing answers of a variable leave out its groups with no data", {
+  skip_on_cran()
   d <- .nd_data(extra_na = 7L)
   out <- table_categorical(
     d,
@@ -3947,6 +4109,7 @@ test_that("the missing answers of a variable leave out its groups with no data",
 })
 
 test_that("with fewer than two groups with data, the variable is not compared", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$physical_activity[d$sex == "Male"] <- NA
   expect_no_warning(
@@ -3995,6 +4158,7 @@ test_that("with fewer than two groups with data, the variable is not compared", 
 })
 
 test_that("a variable with nothing to compare has undefined cells and no measure in the note", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$smoking[d$sex == "Male"] <- NA
   d$constf <- factor("a", levels = c("a", "b"))
@@ -4043,6 +4207,7 @@ test_that("a variable with nothing to compare has undefined cells and no measure
 })
 
 test_that("a measure the variable asked none of stays blank", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$smoking[d$sex == "Male"] <- NA
   tbl <- table_categorical(
@@ -4063,6 +4228,7 @@ test_that("a measure the variable asked none of stays blank", {
 })
 
 test_that("the no-data sentence follows the language, the label and the order", {
+  skip_on_cran()
   d <- .nd_data()
   d$alcohol <- d$smoking
   d$alcohol[d$education == "Lower secondary"] <- NA
@@ -4095,6 +4261,7 @@ test_that("the no-data sentence follows the language, the label and the order", 
 })
 
 test_that("without by, a variable with no observed value keeps its levels", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$physical_activity <- factor(NA, levels = c("No", "Yes"))
   mark <- spicy:::spicy_str("cell_undefined")
@@ -4120,6 +4287,7 @@ test_that("without by, a variable with no observed value keeps its levels", {
 })
 
 test_that("the note names no association measure for a variable with no value", {
+  skip_on_cran()
   d <- as.data.frame(sochealth)
   d$empty <- factor(NA, levels = c("a", "b", "c"))
   # smoking takes phi, education and empty Cramer's V, so the column takes
@@ -4155,6 +4323,7 @@ test_that("the note names no association measure for a variable with no value", 
 })
 
 test_that("the default object carries the title the console prints", {
+  skip_on_cran()
   by_tbl <- table_categorical(sochealth, smoking, by = sex, labels = TRUE)
   expect_identical(attr(by_tbl, "title"), "Categorical table by Sex")
   expect_identical(
@@ -4168,6 +4337,7 @@ test_that("the default object carries the title the console prints", {
 })
 
 test_that("a weighted table says so after its sample size and percentages", {
+  skip_on_cran()
   w <- table_categorical(sochealth, smoking, by = sex, weights = weight)
   what <- paste(
     "N = 1200 (unweighted): Female (n = 620), Male (n = 580).",
@@ -4197,6 +4367,7 @@ test_that("a weighted table says so after its sample size and percentages", {
 })
 
 test_that("the Excel sheet writes the mark in the cells of a group with no data", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
@@ -4225,6 +4396,7 @@ test_that("the Excel sheet writes the mark in the cells of a group with no data"
 # ---- audit Phase 2: level order, labels, margins, full precision ----------
 
 test_that("ordinal measures respect the declared order under default drop_na", {
+  skip_on_cran()
   # PSPP 2.0 oracle (CROSSTABS /STATISTICS=BTAU on education x
   # self_rated_health): tau-b = .2045524, chi2 = 73.2444141. The
   # pre-fix as.character() round-trip re-sorted both ordered factors
@@ -4241,6 +4413,7 @@ test_that("ordinal measures respect the declared order under default drop_na", {
 })
 
 test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
+  skip_on_cran()
   # Ordinal order != alphabetical order in BOTH variables; with no NA
   # anywhere, drop_na = FALSE and drop_na = TRUE tabulate the same
   # cells, so all four order-sensitive measures must agree exactly.
@@ -4286,6 +4459,7 @@ test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
 })
 
 test_that("the long output and glance() carry the statistic and df; the data.frame the p", {
+  skip_on_cran()
   wd <- table_categorical(
     sochealth,
     select = smoking,
@@ -4324,6 +4498,7 @@ test_that("the long output and glance() carry the statistic and df; the data.fra
 })
 
 test_that("ignored `correct` warns once, with the tested-table dimensions", {
+  skip_on_cran()
   # smoking has NAs, so the internal display passes see a 3x3 table
   # with the (Missing) column; the warning must fire once, from the
   # complete-case stats pass, with the 3x2 dimensions actually tested.
@@ -4347,6 +4522,7 @@ test_that("ignored `correct` warns once, with the tested-table dimensions", {
 })
 
 test_that("weighted grouped table is exact in machine outputs, coherent on display", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(c("A", "A", "B", "C", NA, NA, "C", "A")),
     g = factor(c("g1", "g1", "g2", "g2", "g1", NA, "g2", "g1")),
@@ -4398,6 +4574,7 @@ test_that("weighted grouped table is exact in machine outputs, coherent on displ
 })
 
 test_that("weighted real-data counts match the xtabs oracle exactly", {
+  skip_on_cran()
   lg <- table_categorical(
     sochealth,
     select = education,
@@ -4433,6 +4610,7 @@ test_that("weighted real-data counts match the xtabs oracle exactly", {
 })
 
 test_that("labelled columns display value labels under the drop_na default", {
+  skip_on_cran()
   skip_if_not_installed("haven")
   d <- data.frame(id = 1:10)
   d$xl <- haven::labelled_spss(
@@ -4456,6 +4634,7 @@ test_that("labelled columns display value labels under the drop_na default", {
 })
 
 test_that("a by level displayed beside the margin is refused, with both ways out", {
+  skip_on_cran()
   d1 <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     g = factor(c("Total", "Total", "g2", "g2", "Total"))
@@ -4514,6 +4693,7 @@ test_that("a by level displayed beside the margin is refused, with both ways out
 })
 
 test_that("a declared-but-unobserved 'Total' by level is a displayed group", {
+  skip_on_cran()
   # Audit phase 2 delta, R7: cross_tab() renames its margin only on an
   # OBSERVED collision, so with a declared-only "Total" level the last
   # column is literally named "Total" and the name-based group read
@@ -4554,6 +4734,7 @@ test_that("a declared-but-unobserved 'Total' by level is a displayed group", {
 })
 
 test_that("include_total = FALSE keeps a user group named 'Total'", {
+  skip_on_cran()
   d1 <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     g = factor(c("Total", "Total", "g2", "g2", "Total"))
@@ -4581,6 +4762,7 @@ test_that("include_total = FALSE keeps a user group named 'Total'", {
 })
 
 test_that("the margin and the missing column cannot share one label", {
+  skip_on_cran()
   # Two labels spicy adds, set alike through options(spicy.labels): the
   # reader could not tell the margin from the missing values of `by`.
   d <- data.frame(x = c("A", "B", "A", "B"), g = c("u", NA, "v", "u"))
@@ -4597,6 +4779,7 @@ test_that("the margin and the missing column cannot share one label", {
 })
 
 test_that("percent_digits >= 2 renders true decimals with by", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(c("A", "A", "B", "C", NA, NA, "C", "A")),
     g = factor(c("g1", "g1", "g2", "g2", "g1", NA, "g2", "g1"))
@@ -4610,6 +4793,7 @@ test_that("percent_digits >= 2 renders true decimals with by", {
 })
 
 test_that("percent = \"row\" gives row shares and leaves the statistics alone", {
+  skip_on_cran()
   set.seed(14)
   n <- 120
   d <- data.frame(
@@ -4719,6 +4903,7 @@ test_that("percent = \"row\" gives row shares and leaves the statistics alone", 
 })
 
 test_that("total_row closes each variable with its total, in both directions", {
+  skip_on_cran()
   set.seed(15)
   n <- 90L
   d <- data.frame(
@@ -4802,6 +4987,7 @@ test_that("total_row closes each variable with its total, in both directions", {
 })
 
 test_that("row percentages and the Total row reach the Typst cells and the note", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   set.seed(14)
   d <- data.frame(
@@ -4823,6 +5009,7 @@ test_that("row percentages and the Total row reach the Typst cells and the note"
 })
 
 test_that("a declared-but-unobserved by level is a zero column in wide and long", {
+  skip_on_cran()
   # Audit phase 2, finding 29: the wide output used to carry NA cells
   # under the empty group's columns while the long output omitted the
   # group entirely.
@@ -4857,6 +5044,7 @@ test_that("a declared-but-unobserved by level is a zero column in wide and long"
 })
 
 test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
+  skip_on_cran()
   # Audit phase 2, finding 31: with declared na_values kept as valid
   # codes, the table is 3x2; phi's documented spicy_unsupported error
   # used to be swallowed into an all-NA column.
@@ -4915,6 +5103,7 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
 })
 
 test_that("table_categorical() rejects bit64::integer64 columns", {
+  skip_on_cran()
   # Manually classed vector: inherits() is all the guard needs, and
   # this is the shape a bare integer64 column has when bit64 is not
   # loaded (raw int64 bit patterns in a double payload).
@@ -4950,6 +5139,7 @@ test_that("table_categorical() rejects bit64::integer64 columns", {
 # critic:pkgrd-broom-columns-stabilising (lot T4)
 
 test_that("align = 'auto' is removed from table_categorical", {
+  skip_on_cran()
   expect_error(
     table_categorical(mtcars, select = "cyl", align = "auto"),
     class = "spicy_invalid_input"
@@ -4994,6 +5184,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
 })
 
 test_that("each variable keeps its own level order in multi-variable tables", {
+  skip_on_cran()
   # dev/bug_missing_order_multivar.md: the global level factor imposed
   # the FIRST variable's ordering on every later block -- "(Missing)"
   # jumped to the head from the second variable on, and homonymous
@@ -5044,6 +5235,7 @@ test_that("each variable keeps its own level order in multi-variable tables", {
 })
 
 test_that("spicy tinytables keep tinytable's format finalizers alive", {
+  skip_on_cran()
   # dev/theme_empty_efface_les_finaliseurs.md: theme_empty() wiped
   # lazy_finalize, killing options(tinytable_typst_multipage) -- and
   # any future format hook -- on every spicy table. .spicy_tt_bare()
@@ -5074,6 +5266,7 @@ test_that("spicy tinytables keep tinytable's format finalizers alive", {
 # showed a table computed on fewer people than it announced.
 
 test_that("the missing disclosure reaches tinytable, one-way and by", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   d <- sochealth
   d$sex_na <- d$sex
@@ -5121,6 +5314,7 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
 })
 
 test_that("the missing disclosure reaches gt, one-way and by", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   d <- sochealth
   d$sex_na <- d$sex
@@ -5163,6 +5357,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
 })
 
 test_that("the missing disclosure reaches flextable, one-way and by", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("htmltools")
   d <- sochealth
@@ -5206,6 +5401,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
 })
 
 test_that("the missing disclosure rides along on output = 'data.frame'", {
+  skip_on_cran()
   d <- sochealth
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
@@ -5246,6 +5442,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
 
 
 test_that("the association CI separator follows the decimal mark", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   d <- transform(mtcars, vs = factor(vs), am = factor(am))
   tt <- table_categorical(
@@ -5270,6 +5467,7 @@ test_that("the association CI separator follows the decimal mark", {
 # ---- gt: the group-column CSS selector escapes its ids -------------------
 
 test_that("a quote in a `by` level no longer breaks the gt render", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   d <- data.frame(
     sex = factor(rep(c("F", "M"), 20)),
@@ -5295,6 +5493,7 @@ test_that("a quote in a `by` level no longer breaks the gt render", {
 })
 
 test_that(".css_escape_string leaves an ordinary label untouched", {
+  skip_on_cran()
   expect_identical(
     spicy:::.css_escape_string(c("plain_n", "Total_pct", "\u00e9t\u00e9_n")),
     c("plain_n", "Total_pct", "\u00e9t\u00e9_n")
@@ -5308,6 +5507,7 @@ test_that(".css_escape_string leaves an ordinary label untouched", {
 # ---- by with no non-missing level -----------------------------------------
 
 test_that("an all-missing `by` is refused instead of growing phantom columns", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(rep(c("a", "b"), 10)),
     g = rep(NA_character_, 20),
@@ -5361,6 +5561,7 @@ test_that("an all-missing `by` is refused instead of growing phantom columns", {
 })
 
 test_that("the refusal states the reason the DATA gives, not a generic one", {
+  skip_on_cran()
   # Zero rows: nothing is missing `by`, there is simply nothing -- and
   # `drop_na = FALSE` is NOT a remedy here (it raises the same error),
   # so the message must not offer it.
@@ -5388,6 +5589,7 @@ test_that("the refusal states the reason the DATA gives, not a generic one", {
 # ---- p_adjust ---------------------------------------------------------------
 
 test_that("p_adjust adjusts the one test of each variable, together", {
+  skip_on_cran()
   raw <- table_categorical(mtcars, c(cyl, gear, vs), by = am, output = "long")
   raw_p <- raw$p.value[!duplicated(raw$variable)]
   expect_length(raw_p, 3L)
@@ -5416,6 +5618,7 @@ test_that("p_adjust adjusts the one test of each variable, together", {
 })
 
 test_that("p_adjust: the displayed p, the object and the note agree", {
+  skip_on_cran()
   raw <- table_categorical(mtcars, c(cyl, gear, vs), by = am)
   tbl <- table_categorical(mtcars, c(cyl, gear, vs), by = am, p_adjust = "holm")
   raw_p <- raw$p[!duplicated(raw$Variable)]
@@ -5452,6 +5655,7 @@ test_that("p_adjust: the displayed p, the object and the note agree", {
 })
 
 test_that("p_adjust finds the raw p-values of labelled variables", {
+  skip_on_cran()
   raw <- table_categorical(mtcars, c(cyl, gear), by = am)
   tbl <- table_categorical(
     mtcars,
@@ -5470,6 +5674,7 @@ test_that("p_adjust finds the raw p-values of labelled variables", {
 })
 
 test_that("p_adjust = \"none\" leaves the table as it was", {
+  skip_on_cran()
   a <- table_categorical(mtcars, c(cyl, gear), by = am)
   b <- table_categorical(mtcars, c(cyl, gear), by = am, p_adjust = "none")
   expect_identical(a, b)
@@ -5478,6 +5683,7 @@ test_that("p_adjust = \"none\" leaves the table as it was", {
 })
 
 test_that("p_adjust needs `by`, and validates its method", {
+  skip_on_cran()
   expect_error(
     table_categorical(mtcars, c(cyl, gear), p_adjust = "holm"),
     class = "spicy_invalid_input"
@@ -5491,6 +5697,7 @@ test_that("p_adjust needs `by`, and validates its method", {
 })
 
 test_that("p_adjust: the note reaches the gt and flextable engines", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
   note <- "Adjusted for 3 tests (Benjamini-Hochberg method)."
@@ -5525,6 +5732,7 @@ test_that("p_adjust: the note reaches the gt and flextable engines", {
 })
 
 test_that("the adjustment follows the test sentence, its subject, in both languages", {
+  skip_on_cran()
   set.seed(5)
   d <- data.frame(
     g = factor(sample(c("a", "b"), 200, TRUE)),
@@ -5567,6 +5775,7 @@ test_that("the adjustment follows the test sentence, its subject, in both langua
 })
 
 test_that("p_adjust under holm is pinned, in English and in French", {
+  skip_on_cran()
   withr::local_options(width = 100)
   expect_snapshot(print(table_categorical(
     mtcars,
@@ -5590,6 +5799,7 @@ test_that("p_adjust under holm is pinned, in English and in French", {
 }
 
 test_that("p_value defaults to the test with `by`, as in the siblings", {
+  skip_on_cran()
   ref <- .pv_tbl()
   expect_true(all(c("Chi2", "df", "p") %in% names(ref)))
   expect_identical(.pv_tbl(p_value = TRUE), ref)
@@ -5602,6 +5812,7 @@ test_that("p_value defaults to the test with `by`, as in the siblings", {
 })
 
 test_that("p_value = FALSE: the data frames are the default minus the test", {
+  skip_on_cran()
   ref <- .pv_tbl(output = "data.frame")
   out <- .pv_tbl(p_value = FALSE, output = "data.frame")
   # The displayed table prints the test as its `p` column alone.
@@ -5634,6 +5845,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
 })
 
 test_that("p_value = FALSE: the console table, its typed view and glance()", {
+  skip_on_cran()
   ref <- .pv_tbl()
   tbl <- .pv_tbl(p_value = FALSE)
   expect_false(any(c("test_type", "Chi2", "df", "p") %in% names(tbl)))
@@ -5678,6 +5890,7 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
 })
 
 test_that("p_value = FALSE removes the p column from every rendered engine", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -5760,6 +5973,7 @@ test_that("p_value = FALSE removes the p column from every rendered engine", {
 })
 
 test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive table", {
+  skip_on_cran()
   tbl <- .pv_tbl(p_value = FALSE, assoc_measure = "none")
   s <- as_structured(tbl)
   expect_identical(
@@ -5818,6 +6032,7 @@ test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive t
 })
 
 test_that("a descriptive table leaves the engines no statistic column", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -5856,6 +6071,7 @@ test_that("a descriptive table leaves the engines no statistic column", {
 })
 
 test_that("p_value = FALSE keeps the SMD, which has its own switch", {
+  skip_on_cran()
   # The multinomial SMD of `smoking` (three levels) needs MASS, a
   # suggestion: the no-Suggests check mode must skip, not fail.
   skip_if_not_installed("MASS")
@@ -5874,6 +6090,7 @@ test_that("p_value = FALSE keeps the SMD, which has its own switch", {
 })
 
 test_that("p_adjust is refused when p_value = FALSE removes the p column", {
+  skip_on_cran()
   expect_error(
     .pv_tbl(p_value = FALSE, p_adjust = "holm"),
     class = "spicy_invalid_input"
@@ -5882,6 +6099,7 @@ test_that("p_adjust is refused when p_value = FALSE removes the p column", {
 })
 
 test_that("p_value without `by` is ignored, with a warning when TRUE", {
+  skip_on_cran()
   ref <- table_categorical(sochealth, c(smoking, education))
   expect_warning(
     out <- table_categorical(sochealth, c(smoking, education), p_value = TRUE),
@@ -5895,12 +6113,14 @@ test_that("p_value without `by` is ignored, with a warning when TRUE", {
 })
 
 test_that("p_value is validated", {
+  skip_on_cran()
   for (bad in list(NA, "no", c(TRUE, FALSE), 1)) {
     expect_error(.pv_tbl(p_value = bad), class = "spicy_invalid_input")
   }
 })
 
 test_that("correct and simulate_p are ignored without the test", {
+  skip_on_cran()
   ref <- .pv_tbl(p_value = FALSE)
   expect_warning(
     out <- .pv_tbl(p_value = FALSE, correct = TRUE),
@@ -5940,6 +6160,7 @@ test_that("correct and simulate_p are ignored without the test", {
 .first_rows <- function(long) long[!duplicated(long$variable), ]
 
 test_that("test = \"auto\": dense tables take the chi-squared test, as in gtsummary", {
+  skip_on_cran()
   out <- .first_rows(table_categorical(
     .gts_sh(),
     c(smoking, education, physical_activity),
@@ -5960,6 +6181,7 @@ test_that("test = \"auto\": dense tables take the chi-squared test, as in gtsumm
 })
 
 test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test, as in gtsummary", {
+  skip_on_cran()
   d <- .gts_sh(1:40)
   tbl <- table_categorical(
     d,
@@ -6039,6 +6261,7 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
 })
 
 test_that("Fisher's exact test of an r x c table reproduces gtsummary", {
+  skip_on_cran()
   d <- .gts_sh(1:100)
   out <- .first_rows(table_categorical(
     d,
@@ -6070,6 +6293,7 @@ test_that("Fisher's exact test of an r x c table reproduces gtsummary", {
 })
 
 test_that("a table the exact enumeration cannot handle takes the Monte Carlo test", {
+  skip_on_cran()
   d <- .gts_sh(1:300)
   d$sex_age <- interaction(d$sex, d$age_group, sep = " ")
   tab <- table(d$region, d$sex_age)
@@ -6109,6 +6333,7 @@ test_that("a table the exact enumeration cannot handle takes the Monte Carlo tes
 })
 
 test_that("test = \"chisq\" gives the 0.13.0 p-values, test = \"fisher\" tests every variable exactly", {
+  skip_on_cran()
   d <- .gts_sh(1:40)
   vars <- c("smoking", "dentist_12m", "physical_activity")
   chisq <- .first_rows(table_categorical(
@@ -6151,6 +6376,7 @@ test_that("test = \"chisq\" gives the 0.13.0 p-values, test = \"fisher\" tests e
 })
 
 test_that("p_adjust adjusts the p-values the tests produced", {
+  skip_on_cran()
   d <- .gts_sh(1:40)
   out <- .first_rows(table_categorical(
     d,
@@ -6164,6 +6390,7 @@ test_that("p_adjust adjusts the p-values the tests produced", {
 })
 
 test_that("correct and simulate_p reach only the variables the chi-squared tests", {
+  skip_on_cran()
   d <- .gts_sh(1:40)
   vars <- c("smoking", "dentist_12m", "physical_activity")
   # Yates on the two chi-squared 2 x 2 tables; smoking keeps its exact p.
@@ -6228,6 +6455,7 @@ test_that("correct and simulate_p reach only the variables the chi-squared tests
 })
 
 test_that("test is ignored without `by` or without the p column", {
+  skip_on_cran()
   ref <- table_categorical(sochealth, c(smoking, education))
   expect_warning(
     out <- table_categorical(sochealth, c(smoking, education), test = "fisher"),
@@ -6249,6 +6477,7 @@ test_that("test is ignored without `by` or without the p column", {
 })
 
 test_that("Fisher's exact test runs on whole-number weights and not on fractional ones", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(c("a", "a", "b", "b", "a", "b")),
     g = factor(c("u", "v", "u", "v", "v", "u")),
@@ -6296,6 +6525,7 @@ test_that("Fisher's exact test runs on whole-number weights and not on fractiona
 })
 
 test_that("the test reads the observed table: no (Missing) level, no empty level", {
+  skip_on_cran()
   d <- .gts_sh(1:40)
   # drop_na = FALSE shows a (Missing) level; the test is the complete
   # cases' all the same.
@@ -6324,6 +6554,7 @@ test_that("the test reads the observed table: no (Missing) level, no empty level
 })
 
 test_that("a variable with nothing to test carries no test type", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(c("a", "a", "a", "a")),
     y = factor(c("a", "b", "a", "b")),
@@ -6346,6 +6577,7 @@ test_that("a variable with nothing to test carries no test type", {
 })
 
 test_that("the test helpers read the table cross_tab() tests", {
+  skip_on_cran()
   set.seed(3)
   d <- data.frame(
     x = factor(sample(c("a", "b", "c"), 200, replace = TRUE)),
@@ -6405,6 +6637,7 @@ test_that("the note names the tests in French", {
 })
 
 test_that("the note names the test after the p-values, singular for one", {
+  skip_on_cran()
   set.seed(11)
   d <- data.frame(
     g = factor(rep(c("A", "B"), 40L)),
@@ -6467,6 +6700,7 @@ test_that("the note names the test after the p-values, singular for one", {
 })
 
 test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
+  skip_on_cran()
   # The 20 x 2 table of x overflows FEXACT; y's does not.
   k <- c(6, 5, 7, 4, 6, 8, 5, 6, 7, 3, 6, 5, 4, 7, 6, 5, 8, 6, 5, 4)
   d <- data.frame(
@@ -6511,6 +6745,7 @@ test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
 }
 
 test_that("a label with a comma turns its list in a note to semicolons", {
+  skip_on_cran()
   assoc <- function() {
     attr(
       table_categorical(
@@ -6569,6 +6804,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
 })
 
 test_that("labels without a comma keep the comma join in the notes", {
+  skip_on_cran()
   out <- .comma_label_tbl("Dentist in the past 12 months")
   expect_identical(
     attr(out, "assoc_note"),
@@ -6645,6 +6881,7 @@ test_that("labels without a comma keep the comma join in the notes", {
 }
 
 test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
+  skip_on_cran()
   pins <- list(
     # Fagerland et al. 2017: tea (p. 100), epinephrine (Table 4.12), GADA
     # (p. 102), CHRNA4 (Table 4.15); the last two have unequal margins.
@@ -6676,6 +6913,7 @@ test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
 })
 
 test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and its mirror agree", {
+  skip_on_cran()
   # 2 36 / 8 30 and its mirror are as probable as each other: an exact
   # comparison gives 0.0680 and 0.0320 (contingencytables 3.1.0).
   p <- .mp_row(c(2, 36, 8, 30), "midp")$p.value
@@ -6699,6 +6937,7 @@ test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and it
 })
 
 test_that("the central mid-p coincides at equal margins and nowhere else", {
+  skip_on_cran()
   # Twice the smaller one-sided mid-p (exact2x2, epitools; Agresti 2019,
   # p. 49): documented, not computed by spicy.
   central <- function(v) {
@@ -6744,6 +6983,7 @@ test_that("the central mid-p coincides at equal margins and nowhere else", {
 })
 
 test_that("test = \"n1\" is the N-1 chi-squared of Campbell (2007)", {
+  skip_on_cran()
   # Campbell's Table I(b): X2 = 2.3858, N-1 p = 0.1270 (Busing et al. 2016).
   out <- .mp_row(c(4, 16, 1, 21), "n1")
   expect_identical(out$test_type, "n1_chi_squared")
@@ -6785,6 +7025,7 @@ test_that("test = \"n1\" is the N-1 chi-squared of Campbell (2007)", {
 })
 
 test_that("Campbell's rule sends a table with an expected count below 1 to Fisher's exact test", {
+  skip_on_cran()
   # 2 1 / 1 20: smallest expected count 0.375.
   out <- .mp_row(c(2, 1, 1, 20), "n1")
   expect_identical(out$test_type, "fisher_exact")
@@ -6825,6 +7066,7 @@ test_that("Campbell's rule sends a table with an expected count below 1 to Fishe
 })
 
 test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
+  skip_on_cran()
   d <- .mp_mixed()
   auto <- .first_rows(table_categorical(
     d,
@@ -6908,6 +7150,7 @@ test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
 })
 
 test_that("a table with an empty row or column gets no test under midp and n1", {
+  skip_on_cran()
   # x is observed at one level: its table has an empty row.
   d <- data.frame(
     g = factor(rep(c("a", "b"), each = 5L)),
@@ -6938,6 +7181,7 @@ test_that("a table with an empty row or column gets no test under midp and n1", 
 })
 
 test_that("p_adjust adjusts the mid-p values", {
+  skip_on_cran()
   d <- .mp_2x2(9, 4, 4, 10)
   # A second variable on the same 13 + 14 respondents.
   d$y <- factor(rep(c("yes", "no", "yes", "no"), c(3, 10, 1, 13)))
@@ -6963,6 +7207,7 @@ test_that("p_adjust adjusts the mid-p values", {
 })
 
 test_that("correct is ignored under midp and n1; simulate_p reaches a larger table", {
+  skip_on_cran()
   d <- .mp_mixed()
   for (tt in c("midp", "n1")) {
     ref <- table_categorical(d, c(x, z), by = g, test = tt)
@@ -6994,6 +7239,7 @@ test_that("correct is ignored under midp and n1; simulate_p reaches a larger tab
 })
 
 test_that("the mid-p needs counts; under weights Campbell's rule gives way to the N-1 test", {
+  skip_on_cran()
   d <- data.frame(
     x = factor(c("a", "a", "b", "b", "a", "b")),
     g = factor(c("u", "v", "u", "v", "v", "u")),
@@ -7055,6 +7301,7 @@ test_that("the mid-p needs counts; under weights Campbell's rule gives way to th
 })
 
 test_that("the notes name the 2 x 2 tests in French", {
+  skip_on_cran()
   withr::local_options(spicy.language = "fr")
   d <- .mp_2x2(4, 16, 1, 21)
   d$y <- factor(rep(c("yes", "no", "no"), c(2, 18, 22)), c("yes", "no"))
@@ -7095,6 +7342,7 @@ test_that("the notes name the 2 x 2 tests in French", {
 # ---- a label that closes its own sentence ---------------------------------
 
 test_that("a sentence ending on a label with its own mark closes once", {
+  skip_on_cran()
   # The helper: "?." and "!." keep the label's mark, ".." one point, at a
   # sentence end only; an ellipsis keeps its three points.
   expect_identical(
@@ -7213,6 +7461,7 @@ test_that("a sentence ending on a label with its own mark closes once", {
 }
 
 test_that("the note opens on the sample size, without by", {
+  skip_on_cran()
   d <- .ss_data()
   expect_identical(.ss_note(table_categorical(d, y)), "Note. N = 60.")
   # The `(Missing)` row shows the base itself: no sentence for it.
@@ -7243,6 +7492,7 @@ test_that("the note opens on the sample size, without by", {
 })
 
 test_that("under by, the note gives N and the n of each group column", {
+  skip_on_cran()
   d <- .ss_data()
   n_of <- function(g) as.vector(table(g, useNA = "ifany"))
   two <- table_categorical(
@@ -7337,6 +7587,7 @@ test_that("under by, the note gives N and the n of each group column", {
 })
 
 test_that("a weighted table gives its unweighted N, rows with a weight", {
+  skip_on_cran()
   d <- .ss_data()
   expect_identical(
     .ss_note(table_categorical(d, y, weights = w)),
@@ -7379,6 +7630,7 @@ test_that("a weighted table gives its unweighted N, rows with a weight", {
 })
 
 test_that("the sample size goes with the note the table builds", {
+  skip_on_cran()
   d <- .ss_data()
   expect_identical(
     .ss_note(table_categorical(d, y, note = "Source: survey.")),
@@ -7398,6 +7650,7 @@ test_that("the sample size goes with the note the table builds", {
 })
 
 test_that("percent_base = \"valid\" puts the percentages on the observed values", {
+  skip_on_cran()
   d <- .ss_data()
   v <- table_categorical(d, x, output = "long")
   expect_equal(
@@ -7465,6 +7718,7 @@ test_that("percent_base = \"valid\" puts the percentages on the observed values"
 })
 
 test_that("under by, the base is the observed values of each column", {
+  skip_on_cran()
   d <- .ss_data()
   long <- table_categorical(d, x, by = g_na, output = "long")
   tot <- table_categorical(
@@ -7532,6 +7786,7 @@ test_that("under by, the base is the observed values of each column", {
 })
 
 test_that("row percentages keep their rows; only the Total row moves", {
+  skip_on_cran()
   d <- .ss_data()
   rv <- table_categorical(
     d,
@@ -7567,6 +7822,7 @@ test_that("row percentages keep their rows; only the Total row moves", {
 })
 
 test_that("the Total row closes the observed base, weighted or not", {
+  skip_on_cran()
   d <- .ss_data()
   check <- function(long) {
     for (gr in unique(long$group)) {
@@ -7615,6 +7871,7 @@ test_that("the Total row closes the observed base, weighted or not", {
 })
 
 test_that("a column with no observed value has no base, an empty one keeps 0", {
+  skip_on_cran()
   # The rows missing `by` all miss `x`: their column has no observed value,
   # so its percentages are undefined. "c" is declared and holds no row.
   d <- data.frame(
@@ -7652,6 +7909,7 @@ test_that("a column with no observed value has no base, an empty one keeps 0", {
 })
 
 test_that("a thin rule sits above each Total row on the console", {
+  skip_on_cran()
   d <- .ss_data()
   one <- table_categorical(d, x, total_row = TRUE)
   expect_snapshot(print(one))
@@ -7673,6 +7931,7 @@ test_that("a thin rule sits above each Total row on the console", {
 })
 
 test_that("the engines draw the rule above the Total row", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")

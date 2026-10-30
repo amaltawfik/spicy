@@ -400,6 +400,7 @@ test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
 })
 
 test_that("the bootstrap is reproducible and agrees with MRCV within Monte Carlo error", {
+  skip_on_cran()
   # The item p-values of the default `test = "auto"` take Fisher's exact
   # test for three items: exact, so they draw nothing from the RNG and the
   # bootstrap draws the resamples it drew before they existed.
@@ -434,6 +435,7 @@ test_that("the bootstrap is reproducible and agrees with MRCV within Monte Carlo
 })
 
 test_that("the bootstrap draws again a resample in which an item loses all variation", {
+  skip_on_cran()
   # x is chosen once in 20, so about a third of the resamples leave it
   # unchosen: each is drawn again, and the p-value still rests on the
   # `boot_n` resamples kept.
@@ -475,6 +477,7 @@ test_that("the bootstrap draws again a resample in which an item loses all varia
 })
 
 test_that("the Rao-Scott design-effect summary: rs_mean and rs_cv", {
+  skip_on_cran()
   g <- attr(.mr_farm_tbl(), "global_test")
   # rs_cv is the a-hat of Thomas & Decady (2004, p. 59), 1 + a^2 =
   # sum(lambda^2) / k, with sum(lambda^2) = k^2 / df from the MRCV pin:
@@ -608,6 +611,7 @@ test_that("test = \"chisq\" and \"fisher\" take one test for every item", {
 })
 
 test_that("the global test sums the Pearson statistics whatever `test` says", {
+  skip_on_cran()
   ref <- attr(.mr_farm_tbl(test = "chisq"), "global_test")
   expect_equal(ref$statistic, .mrcv_rs2[["statistic"]], tolerance = 1e-3)
   expect_equal(ref$df, .mrcv_rs2[["df"]], tolerance = 1e-3)
@@ -659,6 +663,7 @@ test_that("an item tested by Fisher's exact test shows a dash for its statistic"
 })
 
 test_that("an item table the exact enumeration cannot handle takes the Monte Carlo test", {
+  skip_on_cran()
   # 20 groups of 200, an item chosen 3 to 8 times per group: FEXACT
   # overflows on this 20 x 2 table.
   k <- c(6, 5, 7, 4, 6, 8, 5, 6, 7, 3, 6, 5, 4, 7, 6, 5, 8, 6, 5, 4)
@@ -710,6 +715,7 @@ test_that("with no item tested, the note names no item test", {
 })
 
 test_that("the item note names the tests in French", {
+  skip_on_cran()
   withr::local_options(spicy.language = "fr")
   expect_match(
     attr(.mr_farm_tbl(), "note"),
@@ -727,6 +733,7 @@ test_that("the item note names the tests in French", {
 })
 
 test_that("a label with a comma turns its item list in the note to semicolons", {
+  skip_on_cran()
   farm_note <- function() {
     attr(.mr_farm_tbl(labels = c(C = "Radio, television")), "note")
   }
@@ -923,6 +930,7 @@ test_that("the item note names the 2 x 2 tests in French", {
 })
 
 test_that("a bootstrap p of zero is reported at the resolution of the resamples", {
+  skip_on_cran()
   d <- data.frame(
     g = rep(c("a", "b"), each = 20L),
     x = rep(c(1, 0), each = 20L),
@@ -1356,6 +1364,7 @@ test_that("the note says what the percentages sum to, in both languages", {
 })
 
 test_that("the automatic note opens with \"Note.\" once, a typed note under it too", {
+  skip_on_cran()
   tbl <- .mr_farm_tbl()
   note <- attr(tbl, "note")
   expect_true(startsWith(note, "Note. Multiple answers possible:"))
@@ -1389,6 +1398,7 @@ test_that("the automatic note opens with \"Note.\" once, a typed note under it t
 })
 
 test_that("the engines set the \"Note.\" of a note in italics, typed or not", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
@@ -1424,6 +1434,7 @@ test_that("the engines set the \"Note.\" of a note in italics, typed or not", {
 })
 
 test_that("the global test is the overall group comparison, in both languages", {
+  skip_on_cran()
   expect_match(
     attr(.mr_farm_tbl(), "note"),
     "Overall group comparison: Rao-Scott second-order corrected chi-squared test",
@@ -1757,6 +1768,7 @@ test_that("rows with a missing `by` are removed, and the note says how many", {
 }
 
 test_that("each base shows its rows: valid one, all two, answered none", {
+  skip_on_cran()
   valid <- .mr_none_tbl()
   expect_identical(
     valid$label,
@@ -2042,6 +2054,7 @@ test_that("tidy() reads the items only, and glance() does not move", {
 }
 
 test_that("tinytable renders the rows of none_row", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   tt <- .mr_none_tbl(base = "all", output = "tinytable")
   md <- tinytable::save_tt(tt, output = "markdown")
@@ -2051,18 +2064,21 @@ test_that("tinytable renders the rows of none_row", {
 })
 
 test_that("gt renders the rows of none_row", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   g <- .mr_none_tbl(base = "all", output = "gt")
   expect_true(.mr_none_order(g[["_data"]][[1L]]))
 })
 
 test_that("flextable renders the rows of none_row", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   ft <- .mr_none_tbl(base = "all", output = "flextable")
   expect_true(.mr_none_order(ft$body$dataset[[1L]]))
 })
 
 test_that("word renders the rows of none_row", {
+  skip_on_cran()
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   docx <- tempfile(fileext = ".docx")
@@ -2074,6 +2090,7 @@ test_that("word renders the rows of none_row", {
 })
 
 test_that("excel renders the rows of none_row", {
+  skip_on_cran()
   skip_if_not_installed("openxlsx2")
   xlsx <- tempfile(fileext = ".xlsx")
   on.exit(unlink(xlsx), add = TRUE)
@@ -2142,6 +2159,7 @@ test_that("an item displaying a label the table adds is refused", {
 })
 
 test_that("both ways out of the refusal work", {
+  skip_on_cran()
   labs <- c(x1 = "(No item chosen)", x2 = "Base")
   # Way out 1: other labels in `labels`.
   ok <- .mr_none_tbl(
@@ -2256,6 +2274,7 @@ test_that("only a displayed row collides, and the French labels do", {
 })
 
 test_that("an engine renders the relabeled rows", {
+  skip_on_cran()
   skip_if_not_installed("gt")
   withr::local_options(
     spicy.labels = list(row_multiresponse_base = "All respondents")
@@ -2290,6 +2309,7 @@ test_that("an engine renders the relabeled rows", {
 }
 
 test_that("an item with no data in a group leaves it out of its margin and test", {
+  skip_on_cran()
   d <- .mr_nodata()
   out <- table_multiresponse(
     d,
@@ -2352,6 +2372,7 @@ test_that("an item with no data in a group leaves it out of its margin and test"
 })
 
 test_that("the note names the items with no data in a group, after the base", {
+  skip_on_cran()
   d <- .mr_nodata()
   d$g[1L] <- NA
   note <- function(dd = d) {
@@ -2506,6 +2527,7 @@ test_that("p_value = FALSE: the console table and its typed view", {
 })
 
 test_that("p_value = FALSE removes the test from every rendered engine", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -2566,6 +2588,7 @@ test_that("p_value = FALSE removes the test from every rendered engine", {
 })
 
 test_that("the engines render the tested table, title and note included", {
+  skip_on_cran()
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
@@ -2709,6 +2732,7 @@ test_that("labels: names by default, the attribute with TRUE, a named vector, va
 })
 
 test_that("title and note can be replaced, and the note removed", {
+  skip_on_cran()
   tbl <- .mr_farm_tbl(title = "Sources of information", note = "Source: L&S.")
   expect_identical(attr(tbl, "title"), "Sources of information")
   expect_identical(attr(tbl, "note"), "Note. Source: L&S.")
@@ -2969,6 +2993,7 @@ test_that("a group displayed with the margin's label is refused", {
 })
 
 test_that("a survey design is refused, with the reason", {
+  skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(a = c(1, 0, 1), w = c(1, 2, 1))
   design <- survey::svydesign(ids = ~1, weights = ~w, data = d)
@@ -2984,6 +3009,7 @@ test_that("a subset of the table prints as the data frame it is", {
 })
 
 test_that("the console table is pinned", {
+  skip_on_cran()
   withr::local_options(width = 120)
   expect_snapshot(print(.mr_farm_tbl()))
   expect_snapshot(print(table_multiresponse(
