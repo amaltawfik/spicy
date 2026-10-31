@@ -26,5 +26,5 @@ This release fixes the robust standard errors of mgcv fits with a free
 dispersion, which were wrong in 0.13.0, and changes some defaults of
 the descriptive tables; NEWS.md lists each with the argument that
 restores the previous behavior. Following the reviewer's request, the
-tests run on CRAN were reduced to about a minute and a half; the full
-suite runs on GitHub Actions.
+tests run on CRAN were reduced to about two minutes (win-builder); the
+full suite runs on GitHub Actions.
