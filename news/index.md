@@ -2,6 +2,8 @@
 
 ## spicy 0.14.0
 
+CRAN release: 2026-10-31
+
 This release adds
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 for “check all that apply” questions and makes
