@@ -1,3 +1,5 @@
+# spicy (development version)
+
 # spicy 0.14.0
 
 This release adds `table_multiresponse()` for "check all that apply"
