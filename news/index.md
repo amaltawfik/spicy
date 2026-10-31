@@ -1,5 +1,7 @@
 # Changelog
 
+## spicy (development version)
+
 ## spicy 0.14.0
 
 CRAN release: 2026-10-31
