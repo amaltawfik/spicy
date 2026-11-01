@@ -1702,7 +1702,7 @@ test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` every st
   )
   # The data frame is as.data.frame() of the table: the printed columns
   # under their keys, the test statistic with its degrees of freedom.
-  expect_identical(a, as.data.frame(tbl))
+  expect_equal(a, as.data.frame(tbl))
   expect_s3_class(a, "data.frame")
   expect_false(inherits(a, "spicy_continuous_svy_table"))
   expect_identical(

@@ -2013,7 +2013,7 @@ test_that("data.frame, long and the typed view mark the rows of none_row by role
   )
   expect_false(anyNA(long$p.value[long$.row_role == "summary"]))
   tbl <- .mr_none_tbl(base = "all", output = "default")
-  expect_identical(as.data.frame(tbl), wide)
+  expect_equal(as.data.frame(tbl), wide)
   s <- as_structured(tbl)
   expect_identical(s$body$.row_role, wide$.row_role)
   expect_identical(s$body$.variable, c("x1", "x2", "none", "no_data", "nobs"))

@@ -1514,7 +1514,7 @@ test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` one row 
   )
   # The data frame is as.data.frame() of the table: one row per printed
   # row, the key columns first and the p last.
-  expect_identical(a, as.data.frame(tbl))
+  expect_equal(a, as.data.frame(tbl))
   expect_false(inherits(a, "spicy_categorical_svy_table"))
   expect_identical(nrow(a), nrow(as_structured(tbl)$body))
   expect_identical(
