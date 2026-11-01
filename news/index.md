@@ -1,5 +1,7 @@
 # Changelog
 
+## spicy (development version)
+
 ## spicy 0.14.1
 
 - Three tests compare their floating-point results with a tolerance, so
