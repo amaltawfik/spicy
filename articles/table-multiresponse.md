@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_iovdvhxnr8tk3rcc4q6a .table
+Multiple responses by Sex {#tinytable_wr8olimlaqkg1g5movb7 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

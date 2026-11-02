@@ -4,6 +4,8 @@
 
 ## spicy 0.14.1
 
+CRAN release: 2026-11-01
+
 - Three tests compare their floating-point results with a tolerance, so
   that they pass under an alternative BLAS such as MKL. No change to the
   code.
