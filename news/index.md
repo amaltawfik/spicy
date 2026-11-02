@@ -2,6 +2,27 @@
 
 ## spicy (development version)
 
+- Word (flextable), gt and tinytable HTML tables now write a negative
+  number with the minus sign (U+2212), in the cells and in the numbers
+  of the note, as Typst and LaTeX already did. The data frame, the
+  console, Excel, the clipboard and markdown keep the hyphen;
+  `spicy_style(minus_sign = "ascii")` keeps it everywhere.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the note on skipped variance-component SE and CI of large mixed models
+  names the threshold instead of the internal option (“… not computed
+  for n above 1000 (see ?table_regression)”).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the Word table (`output = "flextable"`) now uses a fixed layout with
+  the column widths flextable computes, as the other table functions do,
+  so that LibreOffice places the “95% CI” spanner over its two columns.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a `reference_label` that opens on `,`, `;` or `:` attaches to the
+  level without a space, so `reference_label = ", ref."` gives
+  `T0 (2018), ref.` instead of `T0 (2018) (ref.)`.
+
 ## spicy 0.14.1
 
 CRAN release: 2026-11-01

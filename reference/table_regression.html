@@ -536,7 +536,12 @@ first AME row, not to the polynomial-trend rows.</p></dd>
 translated under <code>options(spicy.language = )</code>; a string you supply
 is printed as typed. Ignored by the other three modes, whose fixed
 wording follows the language: <code>[ref: ...]</code>, <code>[vs ...]</code>, and the
-footer line <code>Reference categories: ...</code>.</p></dd>
+footer line <code>Reference categories: ...</code>. The suffix follows the
+level after a space, unless it opens on <code>,</code>, <code>;</code> or <code>:</code>, which
+attach to the level directly: a level such as <code>T0 (2018)</code> reads
+<code>T0 (2018) (ref.)</code>; <code>reference_label = ", ref."</code> gives
+<code>T0 (2018), ref.</code>; <code>reference_style = "annotation"</code> moves the
+reference out of the row.</p></dd>
 
 
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>

@@ -454,7 +454,11 @@ table_regression(
   `options(spicy.language = )`; a string you supply is printed as typed.
   Ignored by the other three modes, whose fixed wording follows the
   language: `[ref: ...]`, `[vs ...]`, and the footer line
-  `Reference categories: ...`.
+  `Reference categories: ...`. The suffix follows the level after a
+  space, unless it opens on `,`, `;` or `:`, which attach to the level
+  directly: a level such as `T0 (2018)` reads `T0 (2018) (ref.)`;
+  `reference_label = ", ref."` gives `T0 (2018), ref.`;
+  `reference_style = "annotation"` moves the reference out of the row.
 
 - show_fit_stats:
 

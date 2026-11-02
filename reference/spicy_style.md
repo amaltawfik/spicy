@@ -155,21 +155,27 @@ spicy_style_names()
 
 - minus_sign:
 
-  The sign of a negative number in the outputs that are printed: the
-  Typst and LaTeX of `output = "tinytable"`, the LaTeX of
-  `output = "gt"`, and the PDF of
+  The sign of a negative number in the outputs that are printed:
+  `output = "flextable"` and `"word"` (a flextable knitted into Word
+  too), `output = "gt"` in HTML, Word and LaTeX, the HTML, Typst and
+  LaTeX of `output = "tinytable"` (and its markdown inside a knit to
+  Word), and the PDF of
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
   which reads the lever from `options(spicy.style)`. `"typographic"`
   (the default) sets the minus sign (Unicode U+2212, as wide as the plus
   sign) in place of the hyphen-minus, `"ascii"` keeps the hyphen-minus.
   It applies to the cells of the statistics (estimates, intervals,
-  differences, effect sizes, the summaries of a codebook), not to the
-  labels, the codes of a codebook, the headers or the note. LaTeX sets
-  the sign in math mode, which every engine and font has. Every other
-  output keeps the hyphen-minus – the console, the data frame, Excel,
-  the clipboard, Word, HTML and markdown: their text is copied and
-  recomputed, and a spreadsheet or a parser reads a minus sign as text,
-  not as part of a number. No theme sets it.
+  differences, effect sizes, thresholds, the summaries of a codebook)
+  and to the numbers of a table's note (a hyphen before a digit, after a
+  space, `=`, `(`, `[`, `,` or `;`: a date or `N-1` keep theirs), not to
+  the labels, the codes of a codebook or the headers. LaTeX sets the
+  sign in math mode, which every engine and font has. The outputs whose
+  text is copied or read back keep the hyphen-minus – the data frame,
+  the console, `output = "excel"`, `"clipboard"`, markdown and the long
+  output: a spreadsheet or a parser reads a minus sign as text, not as
+  part of a number. A printed table pasted into a spreadsheet therefore
+  gives text; build it with `minus_sign = "ascii"` for that use. No
+  theme sets it.
 
 - v_digits:
 

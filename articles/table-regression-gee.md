@@ -493,7 +493,7 @@ table_regression(
 | Max cluster size |       4  |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-012bb927 quarto-disable-processing="true"}
+.cl-d8bad469 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). GEE working
 correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and

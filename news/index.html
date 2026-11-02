@@ -72,7 +72,11 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
-</div>
+<ul><li><p>Word (flextable), gt and tinytable HTML tables now write a negative number with the minus sign (U+2212), in the cells and in the numbers of the note, as Typst and LaTeX already did. The data frame, the console, Excel, the clipboard and markdown keep the hyphen; <code>spicy_style(minus_sign = "ascii")</code> keeps it everywhere.</p></li>
+<li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: the note on skipped variance-component SE and CI of large mixed models names the threshold instead of the internal option (“… not computed for n above 1000 (see ?table_regression)”).</p></li>
+<li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: the Word table (<code>output = "flextable"</code>) now uses a fixed layout with the column widths flextable computes, as the other table functions do, so that LibreOffice places the “95% CI” spanner over its two columns.</p></li>
+<li><p><code><a href="../reference/table_regression.html">table_regression()</a></code>: a <code>reference_label</code> that opens on <code>,</code>, <code>;</code> or <code>:</code> attaches to the level without a space, so <code>reference_label = ", ref."</code> gives <code>T0 (2018), ref.</code> instead of <code>T0 (2018) (ref.)</code>.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.14.1" id="spicy-0141">spicy 0.14.1<a class="anchor" aria-label="anchor" href="#spicy-0141"></a></h2><p class="text-muted">CRAN release: 2026-11-01</p>
 <ul><li>Three tests compare their floating-point results with a tolerance, so that they pass under an alternative BLAS such as MKL. No change to the code.</li>
