@@ -1463,10 +1463,12 @@ test_that("Typst and LaTeX print a negative statistic with the minus sign", {
   )
   # The outputs whose text is copied or recomputed keep the hyphen of a
   # number; the subtraction sign of the header is not a number (point 2).
-  for (out in list(.pt_html(tt), .pt_markdown(tt))) {
-    expect_match(out, "-0.08", fixed = TRUE)
-    expect_no_match(out, paste0(minus, "0."), fixed = TRUE)
-  }
+  # HTML is a printed table and takes the sign; markdown keeps the hyphen.
+  expect_match(.pt_html(tt), paste0(minus, "0.08"), fixed = TRUE)
+  expect_match(.pt_html(ascii), "-0.08", fixed = TRUE)
+  out <- .pt_markdown(tt)
+  expect_match(out, "-0.08", fixed = TRUE)
+  expect_no_match(out, paste0(minus, "0."), fixed = TRUE)
   console <- utils::capture.output(print(.pt_negative()))
   expect_true(any(grepl("-0.08", console, fixed = TRUE)))
   expect_false(any(grepl(paste0(minus, "0."), console, fixed = TRUE)))
@@ -1475,24 +1477,179 @@ test_that("Typst and LaTeX print a negative statistic with the minus sign", {
   expect_false(any(grepl(minus, unlist(df), fixed = TRUE)))
 })
 
-test_that("Word and Excel keep the hyphen of a negative statistic", {
+test_that("Word takes the minus sign, Excel keeps the hyphen", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   skip_if_not_installed("openxlsx2")
   minus <- intToUtf8(0x2212)
-  docx <- withr::local_tempfile(fileext = ".docx")
-  .pt_negative(output = "word", word_path = docx)
-  word <- officer::docx_summary(officer::read_docx(docx))$text
+  word <- function(...) {
+    docx <- withr::local_tempfile(fileext = ".docx")
+    .pt_negative(output = "word", word_path = docx, ...)
+    officer::docx_summary(officer::read_docx(docx))$text
+  }
+  expect_true(all(paste0(minus, c("0.08", "0.61")) %in% word()))
+  ascii <- word(style = spicy_style(minus_sign = "ascii"))
+  expect_true(all(c("-0.08", "-0.61") %in% ascii))
+  expect_false(any(grepl(paste0(minus, "0."), ascii, fixed = TRUE)))
   xlsx <- withr::local_tempfile(fileext = ".xlsx")
   .pt_negative(output = "excel", excel_path = xlsx)
   excel <- unlist(openxlsx2::wb_to_df(
     openxlsx2::wb_load(xlsx),
     col_names = FALSE
   ))
-  for (text in list(word, excel)) {
-    expect_true(all(c("-0.08", "-0.61") %in% text))
-    expect_false(any(grepl(paste0(minus, "0."), text, fixed = TRUE)))
+  expect_true(all(c("-0.08", "-0.61") %in% excel))
+  expect_false(any(grepl(paste0(minus, "0."), excel, fixed = TRUE)))
+})
+
+# An ordinal model whose note states a negative cut-point.
+.pt_polr <- function(...) {
+  fit <- suppressMessages(MASS::polr(
+    Sat ~ Infl + Type,
+    data = MASS::housing,
+    weights = Freq
+  ))
+  suppressMessages(table_regression(fit, show_thresholds = FALSE, ...))
+}
+
+test_that("the note rule leaves every hyphen that is not a sign", {
+  minus <- intToUtf8(0x2212)
+  rule <- function(x) spicy:::.apply_minus_sign(x, where = "note")
+  expect_identical(
+    rule("Thresholds: 1|2 = -4.16, 2|3 = -0.5 (-1.2 to -.3) [-2; -1]."),
+    paste0(
+      "Thresholds: 1|2 = ",
+      minus,
+      "4.16, 2|3 = ",
+      minus,
+      "0.5 (",
+      minus,
+      "1.2 to ",
+      minus,
+      ".3) [",
+      minus,
+      "2; ",
+      minus,
+      "1]."
+    )
+  )
+  kept <- "Run 2026-10-28; df = N-1; two-sided, Holm-adjusted; COVID-19."
+  expect_identical(rule(kept), kept)
+  expect_identical(rule(paste0("-5 ", kept)), paste0(minus, "5 ", kept))
+  expect_identical(
+    spicy:::.apply_minus_sign("= -4.16", "ascii", "note"),
+    "= -4.16"
+  )
+})
+
+test_that("flextable sets the minus sign in the cells and the note", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("MASS")
+  minus <- intToUtf8(0x2212)
+  footer <- function(ft) {
+    unlist(lapply(ft$footer$content$data, function(p) {
+      paste(p$txt, collapse = "")
+    }))
   }
+  ft <- .pt_polr(output = "flextable")
+  cells <- unlist(ft$body$dataset[-1L])
+  expect_true(any(startsWith(trimws(cells), minus)))
+  expect_false(any(grepl("-[0-9]", cells)))
+  expect_true(any(grepl(
+    paste0("= ", minus, "0.67,"),
+    footer(ft),
+    fixed = TRUE
+  )))
+  ascii <- .pt_polr(
+    output = "flextable",
+    style = spicy_style(minus_sign = "ascii")
+  )
+  expect_false(any(grepl(minus, unlist(ascii$body$dataset), fixed = TRUE)))
+  expect_true(any(grepl("= -0.67,", footer(ascii), fixed = TRUE)))
+  # The descriptive families too, after their label columns.
+  set.seed(3)
+  d <- data.frame(g = factor(rep(c("-1", "1"), each = 20L)))
+  d$y <- stats::rnorm(40L, -5, 1)
+  ft <- table_continuous(d, y, by = g, output = "flextable")
+  expect_identical(ft$body$dataset[[2L]], c("-1", "1"))
+  expect_true(all(startsWith(ft$body$dataset[[3L]], minus)))
+})
+
+test_that("gt sets the minus sign in HTML and leaves its LaTeX to knit", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("MASS")
+  minus <- intToUtf8(0x2212)
+  html <- function(...) gt::as_raw_html(.pt_polr(output = "gt", ...))
+  s <- html()
+  expect_match(s, paste0(minus, "0.52<"), fixed = TRUE)
+  expect_match(s, paste0("= ", minus, "0.67,"), fixed = TRUE)
+  expect_no_match(s, "-0.52<", fixed = TRUE)
+  ascii <- html(style = spicy_style(minus_sign = "ascii"))
+  expect_match(ascii, "-0.52<", fixed = TRUE)
+  expect_no_match(ascii, minus, fixed = TRUE)
+  # gt's own LaTeX of the cells is the same under both: the sign is set
+  # there by `knit_print.spicy_gt()`.
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  tex <- function(...) {
+    as.character(gt::as_latex(table_regression(fit, output = "gt", ...)))
+  }
+  expect_identical(tex(), tex(style = spicy_style(minus_sign = "ascii")))
+})
+
+test_that("tinytable sets the minus sign in HTML and in a Word knit", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("knitr")
+  minus <- intToUtf8(0x2212)
+  tt <- .pt_polr(output = "tinytable")
+  s <- .pt_html(tt)
+  expect_match(s, paste0(minus, "0.52"), fixed = TRUE)
+  expect_match(s, paste0("= ", minus, "0.67,"), fixed = TRUE)
+  ascii <- .pt_html(.pt_polr(
+    output = "tinytable",
+    style = spicy_style(minus_sign = "ascii")
+  ))
+  expect_no_match(ascii, minus, fixed = TRUE)
+  # Markdown keeps the hyphen, except in a knit to Word.
+  expect_no_match(.pt_markdown(tt), minus, fixed = TRUE)
+  old <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  knitr::opts_knit$set(rmarkdown.pandoc.to = "docx")
+  on.exit(knitr::opts_knit$set(rmarkdown.pandoc.to = old), add = TRUE)
+  docx <- .pt_markdown(tt)
+  expect_match(docx, paste0(minus, "0.52"), fixed = TRUE)
+  expect_match(docx, paste0("= ", minus, "0.67,"), fixed = TRUE)
+})
+
+test_that("the data frame, Excel and the clipboard keep the hyphen", {
+  skip_if_not_installed("openxlsx2")
+  minus <- intToUtf8(0x2212)
+  fit <- stats::lm(mpg ~ wt + hp + qsec, data = mtcars)
+  df <- table_regression(fit, output = "data.frame")
+  expect_false(any(grepl(minus, unlist(df), fixed = TRUE)))
+  xlsx <- withr::local_tempfile(fileext = ".xlsx")
+  table_regression(fit, output = "excel", excel_path = xlsx)
+  body <- openxlsx2::wb_to_df(
+    openxlsx2::wb_load(xlsx),
+    start_row = 5,
+    col_names = FALSE
+  )
+  expect_true(is.numeric(body[[2L]]))
+  expect_true(any(body[[2L]] < 0, na.rm = TRUE))
+  expect_false(any(grepl(minus, unlist(body), fixed = TRUE)))
+  captured <- new.env(parent = emptyenv())
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(content, ...) {
+      captured$text <- content
+      invisible(content)
+    },
+    .package = "clipr"
+  )
+  suppressMessages(table_regression(fit, output = "clipboard"))
+  expect_false(grepl(minus, captured$text, fixed = TRUE))
+  cells <- unlist(strsplit(strsplit(captured$text, "\n")[[1L]], "\t"))
+  neg <- trimws(grep("^\\s*-[0-9]", cells, value = TRUE))
+  expect_true(length(neg) > 0L)
+  expect_false(anyNA(suppressWarnings(as.numeric(neg))))
 })
 
 test_that("the labels keep the hyphen the user typed", {

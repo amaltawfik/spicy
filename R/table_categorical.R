@@ -3408,6 +3408,7 @@ table_categorical <- function(
           nchar(indent_text) + 1L
         )
       }
+      df <- .apply_minus_sign(df, decimal_mark = decimal_mark)
       ft <- flextable::flextable(df)
       map <- data.frame(
         col_keys = names(df),
@@ -5643,6 +5644,7 @@ table_categorical <- function(
     if (length(id_mod)) {
       df[[1L]][id_mod] <- substring(df[[1L]][id_mod], nchar(indent_text) + 1L)
     }
+    df <- .apply_minus_sign(df, decimal_mark = decimal_mark)
     ft <- flextable::flextable(df)
 
     map <- data.frame(

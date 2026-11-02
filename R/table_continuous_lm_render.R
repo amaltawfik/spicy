@@ -1237,6 +1237,14 @@ export_continuous_lm_table <- function(
       map$bottom <- NULL
     }
 
+    # The minus sign of the style in force, in the cells after the label
+    # column and in the numbers of the note (`.apply_minus_sign()`).
+    display_df <- .apply_minus_sign(display_df, decimal_mark = decimal_mark)
+    note_signed <- .apply_minus_sign(
+      note,
+      where = "note",
+      decimal_mark = decimal_mark
+    )
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
     # `merge_h()` merges ADJACENT header cells carrying the same TEXT:
@@ -1310,7 +1318,7 @@ export_continuous_lm_table <- function(
     }
     ft <- flextable::autofit(ft)
 
-    if (!is.null(note) && nzchar(note)) {
+    if (!is.null(note_signed) && nzchar(note_signed)) {
       # APA Manual 7 Section 7.14: general notes form a SINGLE
       # paragraph ("*Note.* ...") that wraps naturally within the
       # table width. Collapse embedded newlines (source-side line
@@ -1322,7 +1330,7 @@ export_continuous_lm_table <- function(
       # font -- this builder, unlike table_regression()'s, does not
       # force a font, so hard-coding one here would make the note
       # clash with the body.
-      note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+      note_one_line <- gsub("\n", " ", note_signed, fixed = TRUE)
       note_split <- .note_prefix_split(note_one_line)
       if (!is.null(note_split)) {
         note_para <- flextable::as_paragraph(

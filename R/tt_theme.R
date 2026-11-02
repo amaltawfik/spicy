@@ -28,16 +28,21 @@
   # to the preparation and finalizing steps below, which run when the
   # table is printed or saved -- after the call, its style context gone.
   lead <- .note_lead()
+  # The sign of the negative numbers, decided by the style in force in
+  # this call too (`spicy_style(minus_sign = )`): set in the cells after
+  # the label columns (`.spicy_tt_minus()`) and in the numbers of the
+  # note (`.apply_minus_sign()`), for the outputs each step names.
+  sign <- .style_minus_sign()
+  minus <- function(n) .apply_minus_sign(n, sign, "note", decimal_mark)
   # The two preparation steps spicy registers itself: the note of the
   # markdown output, set before tinytable lays it out
   # (`.spicy_tt_note_markdown()`), and the fit of a LaTeX table to the
   # text block (`.spicy_tt_latex_fit`).
-  x@lazy_prepare <- list(.spicy_tt_note_markdown(lead), .spicy_tt_latex_fit)
-
-  # The sign of the negative numbers in Typst and LaTeX, decided by the
-  # style in force in this call too (`spicy_style(minus_sign = )`), and
-  # set in the cells after the label columns (`.spicy_tt_minus()`).
-  if (identical(.style_minus_sign(), "typographic")) {
+  x@lazy_prepare <- list(
+    .spicy_tt_note_markdown(lead, minus),
+    .spicy_tt_latex_fit
+  )
+  if (identical(sign, "typographic")) {
     x@lazy_prepare <- c(
       x@lazy_prepare,
       list(.spicy_tt_minus(stub, decimal_mark))
@@ -69,11 +74,21 @@
       groups <- tryCatch(tbl@group_data_j, error = function(e) NULL)
       spans <- .spicy_tt_colspan_cells(tbl@style)
       s <- .spicy_tt_typst_layout(s, groups, spans)
-      tbl@table_string <- .spicy_tt_note_typst(s, notes, lead)
+      tbl@table_string <- .spicy_tt_note_typst(s, notes, lead, minus)
     } else if (identical(tbl@output, "html")) {
-      tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string, notes, lead)
+      tbl@table_string <- .spicy_tt_note_tfoot(
+        tbl@table_string,
+        notes,
+        lead,
+        minus
+      )
     } else if (identical(tbl@output, "latex")) {
-      tbl@table_string <- .spicy_tt_note_latex(tbl@table_string, notes, lead)
+      tbl@table_string <- .spicy_tt_note_latex(
+        tbl@table_string,
+        notes,
+        lead,
+        minus
+      )
     }
     tbl
   })
@@ -415,29 +430,94 @@
   gsub(pattern, intToUtf8(0x2212), x, perl = TRUE)
 }
 
-# The preparation step that sets the minus sign in Typst and LaTeX
-# (`.spicy_minus_sign()`), in the cells after the `stub` label columns:
-# the labels keep the text the user typed, as the headers and the note
-# do. It runs on the cells tinytable is about to write, so the table and
-# the natural widths Typst measures its columns with
-# (`tinytable-coldata`) carry the same character, and no Typst or LaTeX
-# code around the cells is touched.
+# The minus sign of a printed table, for the engines that print one:
+# flextable (and Word), gt, tinytable outside markdown. `style` is the
+# `minus_sign` of the style in force where the table is built; under
+# "ascii", or on anything but text, `x` comes back as it is.
+#
+# `where = "cell"` is the rule of `.spicy_minus_sign()`, on the cells as
+# spicy formats them (unescaped). `where = "note"` is stricter, since a
+# note is prose: a hyphen is a sign only at the start of the note or
+# after a space, "=", "(", "[", "," or ";", before a digit (or a mark
+# and a digit). So "-4.16", "= -0.5" and "(-1.2" take the sign, and
+# "2026-10-28", "N-1", "two-sided" and "Holm-adjusted" keep their
+# hyphen. A data frame has its text columns after the `stub` label
+# columns rewritten, the labels left as typed.
+#
+# The outputs whose text is copied or read back (the data frame, the
+# console, Excel, the clipboard, markdown, the long and tidy outputs)
+# never call it: a spreadsheet reads U+2212 as text.
+.apply_minus_sign <- function(
+  x,
+  style = .style_minus_sign(),
+  where = c("cell", "note"),
+  decimal_mark = ".",
+  stub = 1L
+) {
+  where <- match.arg(where)
+  if (!identical(style, "typographic") || is.null(x)) {
+    return(x)
+  }
+  if (is.data.frame(x)) {
+    for (j in setdiff(seq_along(x), seq_len(stub))) {
+      if (is.character(x[[j]])) {
+        x[[j]] <- .apply_minus_sign(x[[j]], style, where, decimal_mark)
+      }
+    }
+    return(x)
+  }
+  if (!is.character(x)) {
+    return(x)
+  }
+  if (identical(where, "cell")) {
+    return(.spicy_minus_sign(x, "latex", decimal_mark))
+  }
+  marks <- paste(unique(c(".", ",", decimal_mark)), collapse = "")
+  pattern <- paste0(
+    "(?<![^\\s=(\\[,;])-(?=[0-9]|[",
+    gsub("([]\\\\^-])", "\\\\\\1", marks),
+    "][0-9])"
+  )
+  gsub(pattern, intToUtf8(0x2212), x, perl = TRUE)
+}
+
+# TRUE inside a knit to Word: tinytable writes its markdown grid there,
+# which pandoc turns into a Word table, a printed table.
+.spicy_knit_docx <- function() {
+  isTRUE(getOption("knitr.in.progress")) &&
+    requireNamespace("knitr", quietly = TRUE) &&
+    identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "docx")
+}
+
+# The preparation step that sets the minus sign in the cells tinytable
+# is about to write (`.spicy_minus_sign()`), after the `stub` label
+# columns: the labels keep the text the user typed, as the headers do.
+# Typst, LaTeX and HTML; markdown only inside a knit to Word
+# (`.spicy_knit_docx()`), the markdown printed or saved as text keeping
+# the hyphen. The cells come escaped: the Typst hyphen is `\-`, LaTeX
+# and HTML leave it as it is. So the table and the natural widths Typst
+# measures its columns with (`tinytable-coldata`) carry the same
+# character, and no code around the cells is touched.
 .spicy_tt_minus <- function(stub = 1L, decimal_mark = ".") {
   structure(
     function(tbl) {
+      if (identical(tbl@output, "markdown") && !.spicy_knit_docx()) {
+        return(tbl)
+      }
+      engine <- if (identical(tbl@output, "typst")) "typst" else "latex"
       for (j in setdiff(seq_along(tbl@data_body), seq_len(stub))) {
         cells <- tbl@data_body[[j]]
         if (is.character(cells)) {
           tbl@data_body[[j]] <- .spicy_minus_sign(
             cells,
-            tbl@output,
+            engine,
             decimal_mark
           )
         }
       }
       tbl
     },
-    output = c("typst", "latex")
+    output = c("typst", "latex", "html", "markdown")
   )
 }
 
@@ -675,13 +755,16 @@
 # is a knit in progress -- Quarto and R Markdown -- which is also how
 # `print.spicy_gt()` tells the two apart. Registered by `.spicy_tt_bare()`
 # as a preparation step for the markdown output only.
-.spicy_tt_note_markdown <- function(lead) {
+.spicy_tt_note_markdown <- function(lead, minus = identity) {
   structure(
     function(tbl) {
       knit <- isTRUE(getOption("knitr.in.progress"))
+      # The numbers of the note take the minus sign in a Word document
+      # only, as the cells do (`.spicy_tt_minus()`).
+      sign <- if (.spicy_knit_docx()) minus else identity
       tbl@notes <- .spicy_map_notes(
         .spicy_split_note_lines(tbl@notes),
-        function(n) if (knit) .note_markdown(n, lead = lead) else n
+        function(n) if (knit) .note_markdown(sign(n), lead = lead) else n
       )
       tbl
     },
@@ -775,7 +858,12 @@
 # The same substitution sets the lead-in `lead` in italics (APA Manual 7
 # Section 7.14) through `.note_markup()`, as every engine does. A note
 # that does not open with the lead-in is escaped and left unmarked.
-.spicy_tt_note_tfoot <- function(s, notes = NULL, lead = .note_lead()) {
+.spicy_tt_note_tfoot <- function(
+  s,
+  notes = NULL,
+  lead = .note_lead(),
+  minus = identity
+) {
   m <- regexpr("<tfoot>[\\s\\S]*?</tfoot>", s, perl = TRUE)
   if (m < 0L) {
     return(s)
@@ -785,7 +873,7 @@
   for (note in .spicy_note_texts(notes)) {
     if (nzchar(note)) {
       note_html <- .note_markup(
-        note,
+        minus(note),
         .spicy_html_escape,
         .spicy_html_em,
         lead
@@ -837,7 +925,12 @@
 # their indentation kept as no-break spaces. And the whole note is
 # wrapped at 0.9em, unless it was already styled through
 # `tinytable::style_tt(i = "notes")` -- an explicit user style wins.
-.spicy_tt_note_typst <- function(s, notes = NULL, lead = .note_lead()) {
+.spicy_tt_note_typst <- function(
+  s,
+  notes = NULL,
+  lead = .note_lead(),
+  minus = identity
+) {
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   cell_open <- "^\\s*table\\.cell\\(align: left, colspan: [0-9]+, "
   starts <- grep(cell_open, lines)
@@ -860,7 +953,12 @@
       if (grepl(note, cell, fixed = TRUE)) {
         cell <- sub(
           note,
-          .note_markup(note, .spicy_typst_escape, .spicy_typst_emph, lead),
+          .note_markup(
+            minus(note),
+            .spicy_typst_escape,
+            .spicy_typst_emph,
+            lead
+          ),
           cell,
           fixed = TRUE
         )
@@ -912,14 +1010,24 @@
 # outputs. Then the characters spicy writes that LaTeX cannot set with
 # every engine and font are mapped, for the whole table
 # (`.spicy_latex_unicode()`).
-.spicy_tt_note_latex <- function(s, notes = NULL, lead = .note_lead()) {
+.spicy_tt_note_latex <- function(
+  s,
+  notes = NULL,
+  lead = .note_lead(),
+  minus = identity
+) {
   size <- if (isTRUE(.spicy_note_style()$resize)) "\\small " else ""
   for (note in .spicy_note_texts(notes)) {
     key <- paste0("note{}={", note, "}")
     if (!nzchar(note) || !grepl(key, s, fixed = TRUE)) {
       next
     }
-    tex <- .note_markup(note, .spicy_latex_escape, .spicy_latex_emph, lead)
+    tex <- .note_markup(
+      minus(note),
+      .spicy_latex_escape,
+      .spicy_latex_emph,
+      lead
+    )
     tex <- .spicy_note_lines(tex, br = "\\\\\n", space = "~")
     s <- sub(key, paste0("note{}={", size, tex, "}"), s, fixed = TRUE)
   }
@@ -1023,8 +1131,14 @@
 # the table's content width.
 .spicy_tt_note_div <- function(note, lead = .note_lead()) {
   # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14). Called
-  # where the table is built, so the default is the lead-in of the note.
-  note_html <- .note_markup(note, .spicy_html_escape, .spicy_html_em, lead)
+  # where the table is built, so the default is the lead-in of the note,
+  # and the style in force sets the minus sign of its numbers.
+  note_html <- .note_markup(
+    .apply_minus_sign(note, where = "note"),
+    .spicy_html_escape,
+    .spicy_html_em,
+    lead
+  )
   note_html <- .spicy_note_lines(note_html)
   paste0(
     "<div class=\"spicy-tt-note\" style=\"",

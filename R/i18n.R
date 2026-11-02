@@ -444,7 +444,7 @@
   # `re_ci = "profile"`: what the interval cells of those rows are.
   note_re_profile_ci = "Random-effect variance components: profile likelihood CIs; no SE (asymmetric intervals).",
   # Their SE and CI skipped for size. One hole: the sample size.
-  note_re_se_skipped = "Random-effect variance components: SE and CI not computed (n = %s exceeds the spicy.re_se_max_n cap).",
+  note_re_se_skipped = "SE and CI of the random-effect variance components not computed for n above %s (see ?table_regression).",
   # A mixed fit on the boundary of its parameter space.
   note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11); the Wald SE and CI of the variance components are omitted.",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod

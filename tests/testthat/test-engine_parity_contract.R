@@ -18,8 +18,12 @@
 # Oracles are the console strings, pinned verbatim.
 
 # Figure spaces (U+2007) are the decimal-alignment padding; every
-# engine pads differently on purpose, so parity is on the content.
-.ep_norm <- function(x) trimws(gsub(" ", " ", as.character(x)))
+# engine pads differently on purpose, so parity is on the content. The
+# minus sign (U+2212) of the printed engines is the console's hyphen.
+.ep_norm <- function(x) {
+  x <- gsub("\u2212", "-", as.character(x), fixed = TRUE)
+  trimws(gsub(" ", " ", x))
+}
 
 .ep_df <- function(x) {
   out <- as.data.frame(lapply(x, .ep_norm), stringsAsFactors = FALSE)

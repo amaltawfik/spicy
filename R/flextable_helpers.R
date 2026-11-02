@@ -20,7 +20,9 @@
   if (is.null(note) || !nzchar(note)) {
     return(ft)
   }
-  lines <- .note_lines(note)
+  # The numbers of the note take the minus sign of the style in force.
+  note_signed <- .apply_minus_sign(note, where = "note")
+  lines <- .note_lines(note_signed)
   note_split <- .note_prefix_split(lines[[1L]])
   ft <- flextable::add_footer_lines(
     ft,
@@ -73,9 +75,14 @@
 # LaTeX of a gt table gets its minus sign and its Unicode mapping, and a
 # table of the family must not lose them because it has nothing to say.
 .spicy_gt_attach_note <- function(tbl, note, stub = 1L, decimal_mark = ".") {
-  if (!is.null(note) && nzchar(note)) {
-    tbl <- .spicy_gt_add_source_notes(tbl, note)
-    attr(tbl, "spicy_note") <- note
+  note_signed <- .apply_minus_sign(
+    note,
+    where = "note",
+    decimal_mark = decimal_mark
+  )
+  if (!is.null(note_signed) && nzchar(note_signed)) {
+    tbl <- .spicy_gt_add_source_notes(tbl, note_signed)
+    attr(tbl, "spicy_note") <- note_signed
     # The lead-in the note was built with, for the display methods, which
     # run after the table function returns (`.note_lead_keys()`, R/i18n.R).
     attr(tbl, "spicy_note_lead") <- .note_lead()
@@ -85,19 +92,62 @@
   tbl
 }
 
-# The sign of the negative numbers in the LaTeX of a gt table
+# The sign of the negative numbers of a gt table
 # (`spicy_style(minus_sign = )`), decided by the style in force where the
-# table is built and kept with it, as the lead-in of its note is, for
-# `knit_print.spicy_gt()`, which runs later: with the label columns that
-# open the table (`stub`) and its `decimal_mark`, which the rewrite of
-# its body needs (`.spicy_gt_latex_minus()`).
+# table is built. In HTML and Word, a formatter of the cells after the
+# label columns (`.spicy_gt_minus_cells()`). In LaTeX, kept with the
+# table, as the lead-in of its note is, for `knit_print.spicy_gt()`,
+# which runs later: with the label columns that open the table (`stub`)
+# and its `decimal_mark`, which the rewrite of its body needs
+# (`.spicy_gt_latex_minus()`).
 .spicy_gt_minus_attr <- function(tbl, stub = 1L, decimal_mark = ".") {
+  sign <- .style_minus_sign()
   attr(tbl, "spicy_minus_sign") <- list(
-    sign = .style_minus_sign(),
+    sign = sign,
     stub = stub,
     decimal_mark = decimal_mark
   )
+  if (identical(sign, "typographic")) {
+    tbl <- .spicy_gt_minus_cells(tbl, stub, decimal_mark)
+  }
   tbl
+}
+
+# The minus sign in the cells of a gt table after its `stub` label
+# columns, for the HTML and Word gt writes (`.apply_minus_sign()`): a
+# formatter per output, which gt runs when it renders the table. A cell
+# with no negative number, and every cell of the other outputs, gets NA,
+# which leaves it to gt's own rendering, as before: the LaTeX keeps the
+# hyphen for `.spicy_gt_latex_minus()`. A rewritten cell is escaped as
+# gt escapes a plain one (HTML) or left as text (Word, which gt escapes
+# when it writes the XML).
+.spicy_gt_minus_cells <- function(tbl, stub = 1L, decimal_mark = ".") {
+  data <- tbl[["_data"]]
+  cols <- names(data)[setdiff(seq_along(data), seq_len(stub))]
+  cols <- cols[vapply(data[cols], is.character, logical(1))]
+  if (length(cols) == 0L) {
+    return(tbl)
+  }
+  sign <- function(escape) {
+    function(x) {
+      y <- .apply_minus_sign(x, "typographic", "cell", decimal_mark)
+      out <- rep(NA_character_, length(x))
+      hit <- !is.na(x) & y != x
+      out[hit] <- escape(y[hit])
+      out
+    }
+  }
+  none <- function(x) rep(NA_character_, length(x))
+  gt::fmt(
+    tbl,
+    columns = tidyselect::all_of(cols),
+    fns = list(
+      html = sign(.spicy_html_escape),
+      word = sign(identity),
+      latex = none,
+      default = none
+    )
+  )
 }
 
 # The note as native gt source notes, one per line of the note

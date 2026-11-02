@@ -6914,8 +6914,8 @@ test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
 
 test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and its mirror agree", {
   skip_on_cran()
-  # 2 36 / 8 30 and its mirror are as probable as each other: an exact
-  # comparison gives 0.0680 and 0.0320 (contingencytables 3.1.0).
+  # 2 36 / 8 30 and its mirror are as probable as each other. An exact
+  # comparison gave 0.0680 and 0.0320 in contingencytables 3.1.0; 3.1.1 agrees.
   p <- .mp_row(c(2, 36, 8, 30), "midp")$p.value
   expect_equal(p, 0.0499865594, tolerance = 1e-9)
   expect_identical(.mp_row(c(8, 30, 2, 36), "midp")$p.value, p)

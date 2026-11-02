@@ -402,7 +402,12 @@ first AME row, not to the polynomial-trend rows.}
 translated under \code{options(spicy.language = )}; a string you supply
 is printed as typed. Ignored by the other three modes, whose fixed
 wording follows the language: \verb{[ref: ...]}, \verb{[vs ...]}, and the
-footer line \verb{Reference categories: ...}.}
+footer line \verb{Reference categories: ...}. The suffix follows the
+level after a space, unless it opens on \verb{,}, \verb{;} or \code{:}, which
+attach to the level directly: a level such as \code{T0 (2018)} reads
+\code{T0 (2018) (ref.)}; \code{reference_label = ", ref."} gives
+\verb{T0 (2018), ref.}; \code{reference_style = "annotation"} moves the
+reference out of the row.}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level rows below the coefficients; row order follows

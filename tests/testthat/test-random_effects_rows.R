@@ -356,8 +356,8 @@ test_that("variance-component SEs are skipped above the size cap", {
   expect_warning(tr <- table_regression(fit), class = "spicy_caveat")
   out <- paste(capture.output(print(tr)), collapse = "\n")
   # Fact-only table note; the advice lives in the warning.
-  expect_match(out, "SE and CI not computed", fixed = TRUE)
-  expect_match(out, "spicy.re_se_max_n", fixed = TRUE)
+  expect_match(out, "variance components not computed", fixed = TRUE)
+  expect_no_match(out, "spicy.re_se_max_n", fixed = TRUE)
 
   # tidy: vc rows keep estimates but carry no SE.
   tt <- suppressWarnings(broom::tidy(table_regression(fit)))
@@ -370,6 +370,36 @@ test_that("variance-component SEs are skipped above the size cap", {
   w <- tryCatch(table_regression(fit), warning = function(w) w)
   expect_match(conditionMessage(w), "spicy.re_se_max_n", fixed = TRUE)
   expect_match(conditionMessage(w), "re_test", fixed = TRUE)
+})
+
+test_that("the size-cap note names the threshold, not the option", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  withr::local_options(spicy.re_se_max_n = 10)
+  flat <- function(tr) {
+    gsub("[[:space:]]+", " ", paste(capture.output(print(tr)), collapse = " "))
+  }
+
+  out <- flat(suppressWarnings(table_regression(fit)))
+  expect_match(
+    out,
+    paste(
+      "SE and CI of the random-effect variance components not computed",
+      "for n above 10 (see ?table_regression)."
+    ),
+    fixed = TRUE
+  )
+  expect_no_match(out, "spicy.re_se_max_n", fixed = TRUE)
+
+  withr::local_options(spicy.language = "fr")
+  out_fr <- flat(suppressWarnings(table_regression(fit)))
+  expect_match(
+    out_fr,
+    "pour n sup\u00E9rieur \u00E0 10 (voir ?table_regression).",
+    fixed = TRUE
+  )
+  expect_no_match(out_fr, "spicy.re_se_max_n", fixed = TRUE)
 })
 
 test_that("raising the size cap restores the variance-component SEs", {
@@ -385,7 +415,7 @@ test_that("raising the size cap restores the variance-component SEs", {
   vc <- tt[tt$estimate_type == "vc", ]
   expect_true(any(is.finite(vc$std.error)))
   out <- paste(capture.output(print(tr)), collapse = "\n")
-  expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
+  expect_false(grepl("variance components not computed", out, fixed = TRUE))
 })
 
 test_that("the size-cap warning does not swallow `labels =` (register 55)", {
@@ -489,7 +519,7 @@ test_that("re_ci = 'profile' sidesteps the size cap without note or warning", {
 
   expect_no_warning(tr <- table_regression(fit, re_ci = "profile"))
   out <- paste(capture.output(print(tr)), collapse = "\n")
-  expect_false(grepl("SE and CI not computed", out, fixed = TRUE))
+  expect_false(grepl("variance components not computed", out, fixed = TRUE))
   expect_match(out, "profile likelihood CIs", fixed = TRUE)
   tt <- broom::tidy(tr)
   vc <- tt[tt$estimate_type == "vc", ]

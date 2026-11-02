@@ -279,21 +279,9 @@ test_that(".format_random_effects_for_frame is NULL without RE metadata", {
 
 # ---- re_se_skipped footer: multi-model consolidation branches -------------
 
-test_that("re_se_skipped footer consolidates when all models share the n", {
-  mkf <- function(n) list(info = list(extras = list(re_se_skipped_n = n)))
-  out <- spicy:::build_re_se_skipped_footer_block_from_frames(
-    list(mkf(15000L), mkf(15000L))
-  )
-  expect_identical(
-    out,
-    paste0(
-      "Random-effect variance components: SE and CI not computed ",
-      "(n = 15000 exceeds the spicy.re_se_max_n cap)."
-    )
-  )
-})
-
-test_that("re_se_skipped footer lists per-model lines when n differs", {
+test_that("re_se_skipped footer states the cap once when all models skip", {
+  # The sentence names the cap (one global option), not each model's n,
+  # so models with different n still share one line.
   mkf <- function(n) list(info = list(extras = list(re_se_skipped_n = n)))
   out <- spicy:::build_re_se_skipped_footer_block_from_frames(
     list(mkf(15000L), mkf(20000L))
@@ -301,10 +289,8 @@ test_that("re_se_skipped footer lists per-model lines when n differs", {
   expect_identical(
     out,
     paste0(
-      "Model 1: Random-effect variance components: SE and CI not ",
-      "computed (n = 15000 exceeds the spicy.re_se_max_n cap).\n",
-      "Model 2: Random-effect variance components: SE and CI not ",
-      "computed (n = 20000 exceeds the spicy.re_se_max_n cap)."
+      "SE and CI of the random-effect variance components not computed ",
+      "for n above 1000 (see ?table_regression)."
     )
   )
 })
@@ -312,14 +298,15 @@ test_that("re_se_skipped footer lists per-model lines when n differs", {
 test_that("re_se_skipped footer prefixes only the affected model", {
   unaffected <- list(info = list(extras = list()))
   affected <- list(info = list(extras = list(re_se_skipped_n = 20000L)))
+  withr::local_options(spicy.re_se_max_n = 12500)
   out <- spicy:::build_re_se_skipped_footer_block_from_frames(
     list(unaffected, affected)
   )
   expect_identical(
     out,
     paste0(
-      "Model 2: Random-effect variance components: SE and CI not ",
-      "computed (n = 20000 exceeds the spicy.re_se_max_n cap)."
+      "Model 2: SE and CI of the random-effect variance components not ",
+      "computed for n above 12500 (see ?table_regression)."
     )
   )
 })

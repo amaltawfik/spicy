@@ -228,7 +228,7 @@
   note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux).",
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
   note_re_profile_ci = "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles asym\u00E9triques).",
-  note_re_se_skipped = "Composantes de la variance des effets al\u00E9atoires\u00A0: erreur standard et IC non calcul\u00E9s (n = %s d\u00E9passe le plafond spicy.re_se_max_n).",
+  note_re_se_skipped = "Erreur standard et IC des composantes de la variance des effets al\u00E9atoires non calcul\u00E9s pour n sup\u00E9rieur \u00E0 %s (voir ?table_regression).",
   note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de \u00B11)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
   note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",
   note_component_gloss_zero_inflation = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",

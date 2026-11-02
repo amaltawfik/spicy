@@ -2346,48 +2346,39 @@ build_re_profile_footer_block_from_frames <- function(frames) {
 
 # Variance-component SE / CI omitted for size (extras$re_se_skipped_n,
 # see .re_se_skipped_by_size): the note states the FACT about what the
-# table shows; the advice (raise the cap, or use re_test) lives in the
-# orchestrator's spicy_caveat warning, per the singular-fit precedent.
+# table shows, in reader terms: the threshold, never the option name
+# (documented under `re_columns` of ?table_regression). The advice
+# (raise the cap, or use re_test) lives in the orchestrator's
+# spicy_caveat warning, per the singular-fit precedent.
 build_re_se_skipped_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  ns <- vapply(
+  skipped <- vapply(
     frames,
     function(f) {
-      as.integer(f$info$extras$re_se_skipped_n %||% NA_integer_)
+      !is.na(f$info$extras$re_se_skipped_n %||% NA_integer_)
     },
-    integer(1)
+    logical(1)
   )
-  if (all(is.na(ns))) {
+  if (!any(skipped)) {
     return(NULL)
   }
-  msg <- function(n) {
-    spicy_fmt(
-      "note_re_se_skipped",
-      # No thousands separator: every other N the package prints is
-      # bare, and an anglophone "," reads as a decimal under
-      # decimal_mark = ",".
-      format(n)
-    )
-  }
-  affected <- which(!is.na(ns))
-  if (length(frames) == 1L) {
-    return(msg(ns[affected]))
-  }
-  # Every model affected with the same n (the common multi-model case):
-  # one shared line instead of per-model repeats.
-  if (
-    length(affected) == length(frames) &&
-      length(unique(ns[affected])) == 1L
-  ) {
-    return(msg(ns[affected][1L]))
+  # The cap is one global option, so the sentence is the same for every
+  # model. Written like the N of the notes (.sample_size_sentence): no
+  # thousands separator, since an anglophone "," reads as a decimal
+  # under decimal_mark = ",".
+  msg <- spicy_fmt(
+    "note_re_se_skipped",
+    formatC(round(.re_se_size_cap()), format = "f", digits = 0)
+  )
+  # One model, or every model affected: one shared line.
+  if (length(frames) == 1L || all(skipped)) {
+    return(msg)
   }
   per <- vapply(
-    affected,
-    function(k) {
-      .model_line(frames, k, msg(ns[k]))
-    },
+    which(skipped),
+    function(k) .model_line(frames, k, msg),
     character(1)
   )
   paste(per, collapse = "\n")

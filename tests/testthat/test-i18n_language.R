@@ -1849,9 +1849,9 @@ test_that("the random-effects notes follow the language", {
       list(list(info = list(extras = list(re_se_skipped_n = 180L))))
     ),
     paste0(
-      "Composantes de la variance des effets al\u00E9atoires\u00A0: erreur ",
-      "standard et IC non calcul\u00E9s (n = 180 d\u00E9passe le plafond ",
-      "spicy.re_se_max_n)."
+      "Erreur standard et IC des composantes de la variance des effets ",
+      "al\u00E9atoires non calcul\u00E9s pour n sup\u00E9rieur \u00E0 1000 ",
+      "(voir ?table_regression)."
     )
   )
 })

@@ -1110,6 +1110,12 @@ output_gt <- function(rendered) {
   #    pathology as `output_tinytable` / `output_flextable`), so
   #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
   #    `<div>` sibling outside the table.
+  # Its numbers take the minus sign of the style in force, as the cells.
+  note <- .apply_minus_sign(
+    note,
+    where = "note",
+    decimal_mark = struct$format_spec$decimal_mark
+  )
   if (!is.null(note) && nzchar(note)) {
     tbl <- .spicy_gt_add_source_notes(tbl, note)
     attr(tbl, "spicy_note") <- note
@@ -1535,6 +1541,12 @@ output_flextable <- function(rendered) {
   struct <- attr(rendered, "structured")
   body <- .format_structured_to_string_body(struct)
   body <- .pad_for_decimal_align(body, struct)
+  # The minus sign of the style in force, in the cells after the label
+  # column and in the numbers of the note (`.apply_minus_sign()`).
+  body <- .apply_minus_sign(
+    body,
+    decimal_mark = struct$format_spec$decimal_mark
+  )
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   level_rows <- .struct_indent_rows(struct)
@@ -1873,13 +1885,21 @@ output_flextable <- function(rendered) {
     }
   }
 
-  # Content-driven autofit. plain `autofit()` sizes columns to
-  # content; `layout = "autofit"` tells Word to honor the widths.
+  # Content-driven widths. `autofit()` sizes the columns to their
+  # content and `layout = "fixed"` writes them in the column grid of
+  # the .docx, as the descriptive families do. Under `layout =
+  # "autofit"` flextable writes no grid, and LibreOffice then rebuilds
+  # the columns from the first row: a spanner such as "95% CI" lands
+  # on its first column only (dev/todo_from_ncs_2026-11-02.md, point 3).
   ft <- flextable::autofit(ft)
-  ft <- flextable::set_table_properties(ft, layout = "autofit")
+  ft <- flextable::set_table_properties(ft, layout = "fixed")
 
   title <- attr(rendered, "title")
-  note <- attr(rendered, "note")
+  note <- .apply_minus_sign(
+    attr(rendered, "note"),
+    where = "note",
+    decimal_mark = struct$format_spec$decimal_mark
+  )
   # APA Manual 7 Section 7.10-Section 7.11: the caption is flush-left
   # (italic-styled by Word's "Table Caption" style at the OOXML level
   # when rendered into docx). Same helper as the descriptive

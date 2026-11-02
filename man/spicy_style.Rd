@@ -117,19 +117,25 @@ standard error). Either way the definitions take the form and the
 place of the theme in force. A \code{note} you type is printed as typed.}
 
 \item{minus_sign}{The sign of a negative number in the outputs that are
-printed: the Typst and LaTeX of \code{output = "tinytable"}, the LaTeX of
-\code{output = "gt"}, and the PDF of \code{\link[=code_book]{code_book()}}, which reads the lever
-from \code{options(spicy.style)}. \code{"typographic"} (the default) sets the
-minus sign (Unicode U+2212, as wide as the plus sign) in place of the
+printed: \code{output = "flextable"} and \code{"word"} (a flextable knitted into
+Word too), \code{output = "gt"} in HTML, Word and LaTeX, the HTML, Typst
+and LaTeX of \code{output = "tinytable"} (and its markdown inside a knit to
+Word), and the PDF of \code{\link[=code_book]{code_book()}}, which reads the lever from
+\code{options(spicy.style)}. \code{"typographic"} (the default) sets the minus
+sign (Unicode U+2212, as wide as the plus sign) in place of the
 hyphen-minus, \code{"ascii"} keeps the hyphen-minus. It applies to the
 cells of the statistics (estimates, intervals, differences, effect
-sizes, the summaries of a codebook), not to the labels, the codes of
-a codebook, the headers or the note. LaTeX sets the sign in math mode,
-which every engine and font has. Every other output keeps the
-hyphen-minus -- the console, the data frame, Excel, the clipboard,
-Word, HTML and markdown: their text is copied and recomputed, and a
+sizes, thresholds, the summaries of a codebook) and to the numbers of
+a table's note (a hyphen before a digit, after a space, \code{=}, \code{(}, \code{[},
+\verb{,} or \verb{;}: a date or \code{N-1} keep theirs), not to the labels, the codes
+of a codebook or the headers. LaTeX sets the sign in math mode, which
+every engine and font has. The outputs whose text is copied or read
+back keep the hyphen-minus -- the data frame, the console,
+\code{output = "excel"}, \code{"clipboard"}, markdown and the long output: a
 spreadsheet or a parser reads a minus sign as text, not as part of a
-number. No theme sets it.}
+number. A printed table pasted into a spreadsheet therefore gives
+text; build it with \code{minus_sign = "ascii"} for that use. No theme
+sets it.}
 
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}

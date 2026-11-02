@@ -4573,6 +4573,11 @@ export_desc_table <- function(
       map$bottom <- NULL
     }
 
+    display_df <- .apply_minus_sign(
+      display_df,
+      decimal_mark = decimal_mark,
+      stub = length(stub_keys)
+    )
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
     # Spanner geometry by equality of TEXT: `merge_h()` merges adjacent

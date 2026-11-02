@@ -1464,6 +1464,9 @@ format_term_label <- function(
     return(resolve_label("(Intercept)", labels))
   }
   if (isTRUE(term_row$is_reference)) {
+    # A suffix that opens on punctuation attaches to the level with no
+    # space: `reference_label = ", ref."` gives "T0 (2018), ref.".
+    ref_sep <- if (grepl("^[,;:]", reference_label)) "" else " "
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
@@ -1477,14 +1480,14 @@ format_term_label <- function(
       if (identical(lbl, term)) {
         lbl <- lvl
       }
-      return(paste0("  ", lbl, " ", reference_label))
+      return(paste0("  ", lbl, ref_sep, reference_label))
     }
     # Flat: no factor header \u2192 render as <var><level> (matching the
     # coef-name convention used for non-reference dummies).
     ft <- term_row$factor_term
     flat_key <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
     flat_lbl <- resolve_label(flat_key, labels)
-    return(paste0(flat_lbl, " ", reference_label))
+    return(paste0(flat_lbl, ref_sep, reference_label))
   }
   # Subordinate-block rows (ordinal thresholds, PPO non-proportional
   # effects, random-effect variance components) always render their display

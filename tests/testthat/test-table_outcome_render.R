@@ -19,9 +19,11 @@
 }
 
 # Figure spaces (U+2007) are the decimal padding; non-breaking spaces
-# (U+00A0) are the HTML indentation. Parity is on the content.
+# (U+00A0) are the HTML indentation. Parity is on the content: the
+# minus sign (U+2212) of the printed engines is the console's hyphen.
 .tor_norm <- function(x) {
-  trimws(gsub("[  ]", " ", as.character(x)))
+  x <- gsub("\u2212", "-", as.character(x), fixed = TRUE)
+  trimws(gsub("[  ]", " ", x))
 }
 
 .tor_cells <- function(df) {

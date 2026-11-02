@@ -2452,6 +2452,38 @@ test_that("the default reference_label follows the language, a typed one does no
   expect_true(any(grepl("(ref.)", typed$Variable, fixed = TRUE)))
 })
 
+test_that("a reference_label opening on punctuation attaches without a space", {
+  skip_on_cran()
+  set.seed(3)
+  d <- data.frame(
+    wave = factor(
+      sample(c("T0 (2018)", "T1 (2022)"), 60, replace = TRUE),
+      levels = c("T0 (2018)", "T1 (2022)")
+    ),
+    x = rnorm(60)
+  )
+  d$y <- d$x + (d$wave == "T1 (2022)") + rnorm(60)
+  fit <- lm(y ~ x + wave, data = d)
+  ref_row <- function(tr) trimws(grep("T0", tr$Variable, value = TRUE))
+
+  expect_identical(ref_row(table_regression(fit)), "T0 (2018) (ref.)")
+  for (lab in c(", ref.", "; ref.", ": ref.")) {
+    expect_identical(
+      ref_row(table_regression(fit, reference_label = lab)),
+      paste0("T0 (2018)", lab)
+    )
+  }
+  expect_identical(
+    ref_row(table_regression(fit, reference_label = "[base]")),
+    "T0 (2018) [base]"
+  )
+  expect_false(any(grepl(
+    "  ,",
+    table_regression(fit, reference_label = ", ref.")$Variable,
+    fixed = TRUE
+  )))
+})
+
 test_that("align – CI anchors are each column-aligned in decimal mode", {
   skip_on_cran()
   # rd-core:align-decimal-ci-anchors (per-anchor positions)

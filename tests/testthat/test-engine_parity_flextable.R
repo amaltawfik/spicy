@@ -137,6 +137,36 @@ test_that("the CI header keeps its spanner row and its LL/UL row", {
   expect_identical(rows2[3L], "[][][LL][UL][][][LL][UL][]")
 })
 
+test_that("the CI spanner is a real merge, in the object and the .docx", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  ft <- table_regression(
+    stats::lm(mpg ~ wt + hp, data = mtcars),
+    output = "flextable"
+  )
+  # "95% CI" spans LL and UL (2 then 0); every other cell is its own.
+  expect_equal(ft$header$spans$rows[1L, ], c(1, 1, 1, 2, 0, 1))
+  expect_equal(ft$header$spans$rows[2L, ], rep(1, 6L))
+  # A fixed layout, so the .docx carries the column grid that LibreOffice
+  # needs to place the spanner (Word reads the spans without it).
+  expect_identical(ft$properties$layout, "fixed")
+  path <- withr::local_tempfile(fileext = ".docx")
+  flextable::save_as_docx(ft, path = path)
+  xml <- paste(
+    readLines(unz(path, "word/document.xml"), warn = FALSE, encoding = "UTF-8"),
+    collapse = ""
+  )
+  head_row <- regmatches(xml, regexpr("<w:tr>.*?</w:tr>", xml))
+  cells <- regmatches(head_row, gregexpr("<w:tc>.*?</w:tc>", head_row))[[1L]]
+  expect_length(cells, 5L)
+  expect_match(cells[[4L]], "<w:gridSpan w:val=\"2\"/>", fixed = TRUE)
+  expect_match(cells[[4L]], "95% CI", fixed = TRUE)
+  expect_false(any(grepl("gridSpan", cells[-4L], fixed = TRUE)))
+  grid <- regmatches(xml, regexpr("<w:tblGrid>.*?</w:tblGrid>", xml))
+  expect_length(grid, 1L)
+  expect_length(gregexpr("<w:gridCol", grid, fixed = TRUE)[[1L]], 6L)
+})
+
 test_that("a header cell never straddles two models", {
   skip_if_not_installed("flextable")
   d <- .pf_data()
