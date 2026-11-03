@@ -460,6 +460,22 @@
 
 # ---- the footer ------------------------------------------------------------
 
+# The name the note gives the percentage interval: the method, as
+# `?survey::svyciprop` describes each `method`, never the argument value
+# a reader cannot reproduce outside R.
+.svy_ci_prop_label <- function(ci_method) {
+  switch(
+    ci_method,
+    logit = spicy_str("note_ci_prop_method_logit"),
+    likelihood = spicy_str("note_ci_prop_method_likelihood"),
+    asin = spicy_str("note_ci_prop_method_asin"),
+    beta = spicy_str("note_ci_prop_method_beta"),
+    mean = spicy_str("note_ci_prop_method_mean"),
+    xlogit = spicy_str("note_ci_prop_method_xlogit"),
+    wilson = spicy_str("note_ci_prop_method_wilson")
+  )
+}
+
 # The note of a design categorical table, in the four kinds of
 # `.compose_note()`: (a) what the numbers are -- how big the sample is,
 # what design produced them, its negative weights, the design effect's
@@ -549,7 +565,10 @@
   )
   inference <- lines[-1L]
   if (isTRUE(proportion_ci)) {
-    inference <- c(inference, spicy_fmt("note_ci_prop_method", ci_method))
+    inference <- c(
+      inference,
+      spicy_fmt("note_ci_prop_method", .svy_ci_prop_label(ci_method))
+    )
     # Only when a percentage of 0 or 100 got the exact interval.
     if (isTRUE(ci_bound)) {
       inference <- c(inference, spicy_str("note_ci_prop_bound"))

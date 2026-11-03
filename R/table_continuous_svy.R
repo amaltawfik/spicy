@@ -95,9 +95,22 @@ order_continuous_svy_tokens <- function(tokens) {
   qrule
 }
 
-# The name the footer gives the rule in force.
+# The name the footer gives the rule in force: the method, which a
+# reader can reproduce with any software, never the `qrule` value.
+# survey's "math" is its "hf1" and "school" its "hf2"
+# (`vignette("qrule", package = "survey")`).
 .svy_qrule_label <- function(qrule) {
-  if (is.function(qrule)) "<function>" else qrule
+  if (is.function(qrule)) {
+    return(spicy_str("note_quantile_rule_function"))
+  }
+  switch(
+    qrule,
+    spicy = spicy_str("note_quantile_rule_spicy"),
+    shahvaish = spicy_str("note_quantile_rule_shahvaish"),
+    math = spicy_fmt("note_quantile_rule_hf", 1L),
+    school = spicy_fmt("note_quantile_rule_hf", 2L),
+    spicy_fmt("note_quantile_rule_hf", as.integer(sub("^hf", "", qrule)))
+  )
 }
 
 # Every statistic of one variable on one design, in the schema

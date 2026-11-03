@@ -403,7 +403,7 @@ as_regression_frame.gls <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = "Linear mixed-effects regression (nlme)",
+    title_prefix = "Linear mixed-effects regression",
     exp_applied = FALSE,
     exp_header = NA_character_
   )
@@ -473,7 +473,7 @@ as_regression_frame.gls <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = "Generalized least squares (nlme)",
+    title_prefix = "Generalized least squares",
     exp_applied = FALSE,
     exp_header = NA_character_,
     correlation_structure = corr_label

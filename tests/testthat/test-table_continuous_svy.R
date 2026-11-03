@@ -208,9 +208,35 @@ test_that("`qrule` reaches survey, and \"spicy\" is the type-7 rule", {
       ),
       "note"
     ),
-    'qrule = "<function>"',
+    "Quantiles: user-defined rule.",
     fixed = TRUE
   )
+})
+
+test_that("the quantile note names the rule, not the `qrule` value", {
+  skip_on_cran()
+  # survey's "math" is its "hf1" and "school" its "hf2" (vignette
+  # "qrule"), so each pair reads as one Hyndman-Fan type.
+  expect_identical(.svy_qrule_label("math"), "Hyndman-Fan type 1")
+  expect_identical(.svy_qrule_label("hf1"), "Hyndman-Fan type 1")
+  expect_identical(.svy_qrule_label("school"), "Hyndman-Fan type 2")
+  expect_identical(.svy_qrule_label("hf9"), "Hyndman-Fan type 9")
+  expect_identical(
+    .svy_qrule_label("spicy"),
+    "Hyndman-Fan type 7, weights as frequencies"
+  )
+  expect_identical(.svy_qrule_label("shahvaish"), "Shah-Vaish rule")
+  expect_identical(.svy_qrule_label(mean), "user-defined rule")
+  known <- c("math", "school", "shahvaish", "spicy", paste0("hf", 1:9))
+  for (q in known) {
+    expect_no_match(.svy_qrule_label(q), "qrule|hf[0-9]|survey", info = q)
+  }
+  d <- .svyc_design("clus1")
+  note <- attr(
+    table_continuous_svy(d, select = api00, show_columns = c("m", "med")),
+    "note"
+  )
+  expect_match(note, "Quantiles: Hyndman-Fan type 1.", fixed = TRUE)
 })
 
 # ---- the continuity theorem of decision 17 --------------------------------

@@ -20,3 +20,9 @@ options(
 # re-wrapped the corpus and failed layout pins spuriously. Same
 # baseline for every session.
 options(width = 80L)
+
+# The once-per-session hint of a plain lme4::lmer() fit fires on the
+# first such table of a session, so the order of the files would decide
+# which snapshot or expect_silent() block met it. Spent here; the block
+# that tests it resets it.
+suppressMessages(inform_lmertest_hint())

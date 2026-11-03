@@ -197,6 +197,53 @@ test_that("translated Excel sheet names stay legal worksheet names", {
   }
 })
 
+test_that("a table note names the method, never a package", {
+  # The note serves the reader of a publication, who reproduces the
+  # method with any software; the software belongs in the methods
+  # section. Package names are read from DESCRIPTION (Imports and
+  # Suggests), in the three forms that name software rather than an
+  # ordinary word: `(pkg)`, `pkg::` and `pkg` in backticks.
+  desc <- read.dcf(
+    system.file("DESCRIPTION", package = "spicy"),
+    fields = c("Imports", "Suggests")
+  )
+  pkgs <- trimws(sub("\\(.*$", "", unlist(strsplit(desc[1L, ], ","))))
+  pkgs <- pkgs[!is.na(pkgs) & nzchar(pkgs)]
+  expect_true(all(c("lmerTest", "survey", "mgcv") %in% pkgs))
+  q <- gsub(".", "\\.", pkgs, fixed = TRUE)
+  pattern <- paste0(
+    "\\((",
+    paste(q, collapse = "|"),
+    ")\\)",
+    "|(?<![A-Za-z0-9.])(",
+    paste(q, collapse = "|"),
+    ")::",
+    "|`(",
+    paste(q, collapse = "|"),
+    ")`"
+  )
+  for (lang in .SPICY_LANGUAGES) {
+    set <- .spicy_language_table(lang) %||% .spicy_strings
+    notes <- set[startsWith(names(set), "note_")]
+    expect_gt(length(notes), 0L)
+    expect_identical(
+      names(notes)[grepl(pattern, notes, perl = TRUE)],
+      character(0),
+      label = lang
+    )
+    # The title follows the same rule: no bridged title names an engine,
+    # by its package or by its fit class.
+    bridge <- .spicy_title_prefix_table(lang)
+    titles <- as.character(c(names(bridge), unname(bridge)))
+    engines <- paste0(pattern, "|\\((stanreg|brmsfit)\\)")
+    expect_identical(
+      titles[grepl(engines, titles, perl = TRUE)],
+      character(0),
+      label = lang
+    )
+  }
+})
+
 
 # ---- 3. Resolution order, fallback, validation ----------------------------
 
@@ -1001,10 +1048,14 @@ test_that("the robust-SE and mixed p-value lines follow the language", {
     se_line(en$tmb),
     "Std. errors: cluster-robust (CR0), clusters by site."
   )
-  expect_match(en$tmb, "P-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
+  expect_match(
+    en$tmb,
+    "P-values: Wald z-test, large-sample approximation.",
+    fixed = TRUE
+  )
   expect_match(
     en$lmer,
-    "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    "P-values: Satterthwaite t-test, cluster-robust df.",
     fixed = TRUE
   )
   expect_identical(
@@ -1022,14 +1073,14 @@ test_that("the robust-SE and mixed p-value lines follow the language", {
   )
   expect_match(
     fr$tmb,
-    "Valeurs p\u00A0: z de Wald asymptotique (glmmTMB).",
+    "Valeurs p\u00A0: test z de Wald, approximation pour grands \u00E9chantillons.",
     fixed = TRUE
   )
   expect_match(
     fr$lmer,
     paste0(
       "Valeurs p\u00A0: test t de Satterthwaite, degr\u00E9s de libert\u00E9 ",
-      "robustes aux grappes (clubSandwich)."
+      "robustes aux grappes."
     ),
     fixed = TRUE
   )
@@ -1067,8 +1118,8 @@ test_that("the random-effects LR test line follows the language", {
     "probit regression",
     "poisson regression",
     "poisson regression",
-    "binomial regression",
-    "nbinom2 regression",
+    "logistic regression",
+    "negative-binomial regression",
     "cumulative logit regression"
   )
   fr <- paste(
@@ -1079,8 +1130,8 @@ test_that("the random-effects LR test line follows the language", {
       "probit",
       "de Poisson",
       "de Poisson",
-      "binomiale",
-      "nbinom2",
+      "logistique",
+      "binomiale n\u00E9gative",
       "\u00E0 logit cumulatif"
     )
   )
@@ -1436,7 +1487,8 @@ test_that("the Bayesian sampler and predictive-accuracy notes follow the languag
       "ES(ELPD) = 12,3\u00A0; ES(WAIC) = 12,0."
     )
   )
-  # Both reliability caveats; the R code they quote keeps its point.
+  # Both reliability caveats, the fact only (the remedies are in the
+  # warning).
   expect_identical(
     spicy:::.stan_loo_text(
       loo(has_elpd = FALSE, has_waic = FALSE, n_bad_k = 3L, n_bad_p = 2L),
@@ -1444,11 +1496,8 @@ test_that("the Bayesian sampler and predictive-accuracy notes follow the languag
     ),
     paste0(
       "PSIS-LOO non fiable pour 3 observations sur 100 (k de Pareto > ",
-      "0,70)\u00A0; envisager loo::loo_moment_match(), la ",
-      "r\u00E9estimation des plis signal\u00E9s (k_threshold = 0.7) ou ",
-      "une validation crois\u00E9e en K plis. Approximation WAIC non ",
-      "fiable pour 2 observation(s) (p_waic > 0,4)\u00A0; ",
-      "pr\u00E9f\u00E9rer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`)."
+      "0,70). Approximation WAIC non fiable pour 2 observation(s) ",
+      "(p_waic > 0,4)."
     )
   )
 })
@@ -2009,8 +2058,8 @@ test_that("the Bayesian standard-error line of mgcv follows the language", {
   expect_identical(
     .se_line_en_fr(fit),
     c(
-      "Std. errors: Bayesian (mgcv posterior covariance).",
-      "Erreurs standards\u00A0: bay\u00E9siennes (covariance a posteriori de mgcv)."
+      "Std. errors: Bayesian (posterior covariance).",
+      "Erreurs standards\u00A0: bay\u00E9siennes (covariance a posteriori)."
     )
   )
 })

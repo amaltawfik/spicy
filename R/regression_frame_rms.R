@@ -626,9 +626,9 @@ as_regression_frame.Glm <- function(
 .rms_title_prefix <- function(rms_class, fam) {
   switch(
     rms_class,
-    ols = "Linear regression (rms)",
-    lrm = "Logistic regression (rms)",
-    cph = "Cox proportional hazards regression (rms)",
+    ols = "Linear regression",
+    lrm = "Logistic regression",
+    cph = "Cox proportional hazards regression",
     Glm = {
       base <- switch(
         fam$family,
@@ -638,7 +638,7 @@ as_regression_frame.Glm <- function(
         gaussian = "Linear",
         paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
       )
-      paste0(base, " regression (rms Glm)")
+      paste0(base, " regression")
     }
   )
 }

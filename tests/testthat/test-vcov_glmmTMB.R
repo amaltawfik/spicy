@@ -255,14 +255,18 @@ test_that("table_regression(vcov = 'CR0') shows glmmTMB's sandwich SEs", {
   oracle <- sqrt(diag(stats::vcov(fit, sandwich = TRUE)$cond))
   expect_equal(b$std.error, unname(oracle[b$term]), tolerance = 1e-10)
   # The footer: the CR wording of every class, the cluster named, the
-  # Wald-z line of glmmTMB.
+  # Wald z line of glmmTMB.
   note <- attr(table_regression(fit, vcov = "CR0"), "note")
   expect_match(
     note,
     "Std. errors: cluster-robust (CR0), clusters by site.",
     fixed = TRUE
   )
-  expect_match(note, "P-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
+  expect_match(
+    note,
+    "P-values: Wald z-test, large-sample approximation.",
+    fixed = TRUE
+  )
   # A user cluster is honored and named as the user wrote it.
   note_u <- attr(table_regression(fit, vcov = "CR0", cluster = ~site), "note")
   expect_match(note_u, "clusters by site.", fixed = TRUE)

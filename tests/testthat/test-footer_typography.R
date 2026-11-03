@@ -227,7 +227,7 @@ test_that("each predictive-accuracy method names itself alone", {
   )
 })
 
-test_that("the reliability caveats mark their prose and not their code", {
+test_that("the reliability caveats follow the mark and carry no R code", {
   d <- .ft_loo_diag(n_bad_k = 3L, n_bad_p = 2L)
   dot <- spicy:::.stan_loo_text(d)
   com <- spicy:::.stan_loo_text(d, ",")
@@ -236,10 +236,10 @@ test_that("the reliability caveats mark their prose and not their code", {
   expect_match(com, "(Pareto k > 0,70)", fixed = TRUE)
   expect_match(dot, "(p_waic > 0.4)", fixed = TRUE)
   expect_match(com, "(p_waic > 0,4)", fixed = TRUE)
-  # ... while the R argument the reader is told to retype does not: R
-  # parses a point, whatever the table prints.
-  expect_match(com, "(k_threshold = 0.7)", fixed = TRUE)
-  expect_match(com, "`show_fit_stats = \"elpd_loo\"`", fixed = TRUE)
+  # ... and the note carries no R code: the remedies are for the
+  # analyst and live in the warnings of .stan_info().
+  expect_no_match(dot, "`", fixed = TRUE)
+  expect_no_match(dot, "k_threshold", fixed = TRUE)
   # Counts are integers; nothing to mark.
   expect_match(com, "unreliable for 3 of 100 observations", fixed = TRUE)
 })

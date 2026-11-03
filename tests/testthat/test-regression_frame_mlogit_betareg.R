@@ -39,10 +39,17 @@ test_that("mlogit: family multinomial/logit", {
   expect_identical(fr$info$family$link, "logit")
 })
 
-test_that("mlogit: title_prefix names mlogit", {
+test_that("mlogit: title_prefix names the method, not the engine", {
   fit <- .fit_mlogit_fishing()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "mlogit", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Discrete-choice multinomial logit"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("mlogit: alternative-specific intercepts get outcome_level parsed", {

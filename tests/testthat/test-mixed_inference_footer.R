@@ -71,31 +71,28 @@ test_that("footer annotates lmerModLmerTest fits with Satterthwaite line", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence, not just the method fragments.
-  expect_identical(out, "P-values: Satterthwaite t-test (lmerTest).")
+  expect_identical(out, "P-values: Satterthwaite t-test.")
 })
 
 
 # ---- 4. Footer annotation: lmerMod (no lmerTest) -> Wald-z line --------
 
-test_that("footer annotates lmerMod (no lmerTest) with Wald-z recommendation", {
+test_that("footer annotates lmerMod (no lmerTest) with the Wald z method", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
-  # Pin the complete fallback sentence, including the recommendation.
+  # Pin the complete sentence: the method, and no advice to the analyst.
   expect_identical(
     out,
-    paste0(
-      "P-values: Wald-z, large-sample approximation. ",
-      "Load `lmerTest` for Satterthwaite t-tests."
-    )
+    "P-values: Wald z-test, large-sample approximation."
   )
 })
 
 
 # ---- 5. Footer annotation per class -------------------------------------
 
-test_that("footer annotates glmer with Wald-z (lme4)", {
+test_that("footer annotates glmer with Wald z", {
   skip_if_not_installed("lme4")
   d <- mtcars
   d$cyl <- factor(d$cyl)
@@ -105,10 +102,10 @@ test_that("footer annotates glmer with Wald-z (lme4)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the glmer class.
-  expect_identical(out, "P-values: Wald-z asymptotic (lme4).")
+  expect_identical(out, "P-values: Wald z-test, large-sample approximation.")
 })
 
-test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
+test_that("footer annotates glmmTMB with Wald z", {
   skip_if_not_installed("glmmTMB")
   fit <- glmmTMB::glmmTMB(
     Reaction ~ Days + (1 | Subject),
@@ -117,10 +114,10 @@ test_that("footer annotates glmmTMB with Wald-z (glmmTMB)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the glmmTMB class.
-  expect_identical(out, "P-values: Wald-z asymptotic (glmmTMB).")
+  expect_identical(out, "P-values: Wald z-test, large-sample approximation.")
 })
 
-test_that("footer annotates lme with containment df (nlme)", {
+test_that("footer annotates lme with containment df", {
   skip_if_not_installed("nlme")
   fit <- nlme::lme(
     distance ~ age + Sex,
@@ -130,7 +127,7 @@ test_that("footer annotates lme with containment df (nlme)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_mixed_inference_footer_block_from_frames(list(fr))
   # Pin the complete footer sentence for the nlme class.
-  expect_identical(out, "P-values: t-test with containment df (nlme).")
+  expect_identical(out, "P-values: t-test with containment df.")
 })
 
 
@@ -174,10 +171,7 @@ test_that("footer consolidates identical per-model lines (no 'Model k:' prefix)"
   # Pin the single consolidated sentence exactly.
   expect_identical(
     out,
-    paste0(
-      "P-values: Wald-z, large-sample approximation. ",
-      "Load `lmerTest` for Satterthwaite t-tests."
-    )
+    "P-values: Wald z-test, large-sample approximation."
   )
 })
 
@@ -200,9 +194,8 @@ test_that("footer prefixes per model in multi-model lists", {
   expect_identical(
     out,
     paste0(
-      "Model 1: P-values: Wald-z, large-sample approximation. ",
-      "Load `lmerTest` for Satterthwaite t-tests.\n",
-      "Model 2: P-values: t-test with containment df (nlme)."
+      "Model 1: P-values: Wald z-test, large-sample approximation.\n",
+      "Model 2: P-values: t-test with containment df."
     )
   )
 })
@@ -218,10 +211,7 @@ test_that("table_regression() footer surfaces the inference annotation", {
   # The full footer sentence must survive rendering as one printed line.
   expect_match(
     combined,
-    paste0(
-      "P-values: Wald-z, large-sample approximation. ",
-      "Load `lmerTest` for Satterthwaite t-tests."
-    ),
+    "P-values: Wald z-test, large-sample approximation.",
     fixed = TRUE
   )
 })
@@ -230,19 +220,19 @@ test_that("orchestrator path keeps the Satterthwaite footer (default ci_method)"
   skip_if_not_installed("lmerTest")
   # table_regression() always passes its match.arg default "wald" to the
   # frames; that request must not override the Satterthwaite regime the
-  # rows actually carry (the footer used to say "Wald-z ... Load
-  # lmerTest" over Satterthwaite-t rows).
+  # rows actually carry (the footer used to say "Wald-z" over
+  # Satterthwaite-t rows).
   fit <- lmerTest::lmer(
     Reaction ~ Days + (Days | Subject),
     data = lme4::sleepstudy
   )
   out <- table_regression(fit)
   note <- paste(attr(out, "note"), collapse = "\n")
-  expect_match(note, "P-values: Satterthwaite t-test (lmerTest).", fixed = TRUE)
-  expect_false(grepl("Load `lmerTest`", note, fixed = TRUE))
+  expect_match(note, "P-values: Satterthwaite t-test.", fixed = TRUE)
+  expect_false(grepl("Wald z-test", note, fixed = TRUE))
 })
 
-test_that("CR* on mixed fits attributes the Satterthwaite df to clubSandwich", {
+test_that("CR* on mixed fits names the cluster-robust Satterthwaite df", {
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("clubSandwich")
   fit <- lmerTest::lmer(
@@ -253,8 +243,8 @@ test_that("CR* on mixed fits attributes the Satterthwaite df to clubSandwich", {
   note <- paste(attr(out, "note"), collapse = "\n")
   expect_match(
     note,
-    "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    "P-values: Satterthwaite t-test, cluster-robust df.",
     fixed = TRUE
   )
-  expect_false(grepl("Satterthwaite t-test (lmerTest)", note, fixed = TRUE))
+  expect_false(grepl("P-values: Satterthwaite t-test.", note, fixed = TRUE))
 })

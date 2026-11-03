@@ -432,6 +432,12 @@
   # takes `note_re_null_linear`).
   note_re_null_gaussian = "gaussian regression",
   note_re_null_inverse_gaussian = "inverse-gaussian regression",
+  # The glmmTMB families named as the title names them (NB1: variance
+  # linear in the mean; NB2, the standard form, unmarked).
+  note_re_null_nb = "negative-binomial regression",
+  note_re_null_nb1 = "negative-binomial (NB1) regression",
+  note_re_null_beta = "beta regression",
+  note_re_null_tweedie = "Tweedie regression",
   # One hole: the theta of the family, formatted as the statistic of the
   # line (two decimals, the decimal mark of the table).
   note_re_null_negative_binomial = "negative binomial(%s) regression",
@@ -1162,9 +1168,18 @@
   # "1185 (bmi) and 798 (score)" (`note_group_comparison_item`,
   # `.join_and()`).
   note_design_df_test_differs = "The group comparison uses %s degrees of freedom (observed groups only).",
-  # One hole: the rule in force, an identifier from survey ("math",
-  # "hf7", ...) or "spicy" -- never translated.
-  note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
+  # One hole: the NAME of the rule in force, one of the fragments below
+  # (`.svy_qrule_label()`), never the `qrule` value a reader cannot
+  # reproduce outside R. survey's "math" is its "hf1" and "school" its
+  # "hf2" (`vignette("qrule", package = "survey")`), so each pair reads
+  # as the one Hyndman-Fan type it is. "spicy" is type 7 with the
+  # weights read as frequencies (`.wtd_quantile7()`), a different
+  # weighted type 7 from survey's "hf7".
+  note_quantile_rule = "Quantiles: %s.",
+  note_quantile_rule_hf = "Hyndman-Fan type %d",
+  note_quantile_rule_spicy = "Hyndman-Fan type 7, weights as frequencies",
+  note_quantile_rule_shahvaish = "Shah-Vaish rule",
+  note_quantile_rule_function = "user-defined rule",
   # Linear calibration can drive a weight below zero. The rows were
   # sampled, so they stay in every count and every estimate; what
   # changes is what the estimates can do. Two holes: the count and the
@@ -1197,9 +1212,19 @@
   test_design_wald_chisq = "design-based Wald test of the cell proportions",
   test_design_adj_wald = "design-based adjusted Wald test of the cell proportions",
   test_design_saddlepoint = "design-based saddlepoint chi-squared",
-  # One hole: the method name, a survey identifier ("logit",
-  # "wilson", ...), never translated.
-  note_ci_prop_method = "Percentage CIs: %s (survey::svyciprop).",
+  # One hole: the NAME of the interval, one of the seven fragments below
+  # (`.svy_ci_prop_label()`), as `?survey::svyciprop` describes each
+  # `method`. "logit" fits a logistic regression, "xlogit" transforms
+  # the estimated mean; both are Wald intervals on the logit scale and
+  # differ under replicate weights only.
+  note_ci_prop_method = "Percentage CIs: %s.",
+  note_ci_prop_method_logit = "Wald on the logit scale (logistic regression)",
+  note_ci_prop_method_xlogit = "Wald on the logit scale (logit-transformed mean)",
+  note_ci_prop_method_likelihood = "likelihood, Rao-Scott scaled chi-squared",
+  note_ci_prop_method_asin = "arcsine square root",
+  note_ci_prop_method_beta = "Korn-Graubard",
+  note_ci_prop_method_mean = "Wald on the proportion scale",
+  note_ci_prop_method_wilson = "Wilson score",
   # Said after the sentence above, only when such a cell is shown.
   note_ci_prop_bound = "Percentages of 0 or 100: exact binomial interval on the unweighted count.",
   # The two glosses a design categorical table owes its reader: the
@@ -1243,8 +1268,8 @@
   note_vcov_classical_plain = "Classical",
   # The default of mgcv::gam() and bam(): the Bayesian posterior
   # covariance of the coefficients (mgcv's Vp), whatever the smoothing
-  # method (GCV, REML, ML).
-  note_vcov_bayesian_mgcv = "Bayesian (mgcv posterior covariance)",
+  # method (GCV, REML, ML). The note names the method, not the package.
+  note_vcov_bayesian_mgcv = "Bayesian (posterior covariance)",
   note_vcov_hc = "heteroskedasticity-robust (%s)",
   note_vcov_cluster_vector = "cluster vector supplied",
   note_vcov_cluster_named = "clusters by %s",
@@ -1299,14 +1324,17 @@
   note_vcov_rq_rank = "Rank inversion (CIs only)",
   note_vcov_rq_boot_cluster = "Quantile wild gradient cluster bootstrap (R = %d)",
   note_vcov_rq_boot = "Quantile bootstrap (xy pairs, R = %d)",
-  # The fixed-effect inference line of a mixed model: the distribution,
-  # the df and the package that computed them. One hole on the Wald
-  # line: the engine (lme4, glmmTMB), a package name, never translated.
-  note_pvalues_satterthwaite_cr = "P-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
-  note_pvalues_satterthwaite = "P-values: Satterthwaite t-test (lmerTest).",
-  note_pvalues_wald_lmer = "P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.",
-  note_pvalues_wald = "P-values: Wald-z asymptotic (%s).",
-  note_pvalues_containment = "P-values: t-test with containment df (nlme).",
+  # The fixed-effect inference line of a mixed model: the distribution
+  # and the df. A table note names the METHOD, never the package that
+  # computed it: the reader must be able to reproduce it with any
+  # software, and the software belongs in the methods section. Advice to
+  # the analyst (load lmerTest) is a message, never a note
+  # (`inform_lmertest_hint()`). The cluster-robust line pairs with the
+  # standard-error line, which names the CR estimator.
+  note_pvalues_satterthwaite_cr = "P-values: Satterthwaite t-test, cluster-robust df.",
+  note_pvalues_satterthwaite = "P-values: Satterthwaite t-test.",
+  note_pvalues_wald = "P-values: Wald z-test, large-sample approximation.",
+  note_pvalues_containment = "P-values: t-test with containment df.",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
   # The interval of a Bayesian model in a table that also holds
@@ -1337,8 +1365,12 @@
   note_loo_se_waic = "SE(WAIC) = %s",
   note_loo_accuracy = "Predictive accuracy by %s; %s.",
   note_loo_sep = "; ",
-  note_loo_pareto_k = "PSIS-LOO unreliable for %d of %d observations (Pareto k > %s); consider loo::loo_moment_match(), refitting the flagged folds (k_threshold = 0.7), or K-fold CV.",
-  note_loo_waic_unreliable = "WAIC approximation unreliable for %d observation(s) (p_waic > %s); prefer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`).",
+  # The two reliability caveats state the fact for the reader; the
+  # remedies (moment matching, refitting the flagged folds, K-fold CV,
+  # PSIS-LOO over WAIC) are for the analyst and live in the
+  # `spicy_bayes_diagnostics` warnings that fire with them.
+  note_loo_pareto_k = "PSIS-LOO unreliable for %d of %d observations (Pareto k > %s).",
+  note_loo_waic_unreliable = "WAIC approximation unreliable for %d observation(s) (p_waic > %s).",
 
   # -- typographic markers: frozen ------------------------------------------
   # R's own spellings for the two missing markers. `varlist-values.R` quotes

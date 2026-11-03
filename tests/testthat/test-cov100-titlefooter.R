@@ -103,9 +103,9 @@ test_that("cluster jackknife footer says leave-one-cluster-out + cluster", {
 })
 
 
-# ---- Mixed-inference annotation: glmmTMB keeps its Wald-z line -----------
+# ---- Mixed-inference annotation: glmmTMB keeps its Wald z line -----------
 
-test_that("glmmTMB frame labels Wald-z asymptotic under a CR* vcov_kind", {
+test_that("glmmTMB frame labels Wald z under a CR* vcov_kind", {
   # glmmTMB's CR0 SEs come from its own sandwich and are tested against
   # the normal: the label function must not credit clubSandwich's
   # Satterthwaite df for this class, whatever CR token the frame carries.
@@ -114,7 +114,7 @@ test_that("glmmTMB frame labels Wald-z asymptotic under a CR* vcov_kind", {
   )
   expect_identical(
     spicy:::.mixed_inference_label_for_frame(fr),
-    "P-values: Wald-z asymptotic (glmmTMB)."
+    "P-values: Wald z-test, large-sample approximation."
   )
 })
 

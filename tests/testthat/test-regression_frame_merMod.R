@@ -213,6 +213,57 @@ test_that("lmer: without lmerTest -> ci_method = 'wald', test_type = 'z', df = I
   )
 })
 
+test_that("lmer: without lmerTest, the hint to refit is a message, once per session", {
+  # The note names the method; the advice to the analyst is a message.
+  # setup.R spends it for the suite, so reset it here and spend it again
+  # on the way out.
+  fit <- .fit_lmer_basic()
+  rlang::reset_message_verbosity("spicy_lmertest_info")
+  withr::defer(suppressMessages(inform_lmertest_hint()))
+  expect_message(
+    as_regression_frame(fit, model_id = "M1"),
+    class = "spicy_lmertest_info"
+  )
+  expect_no_message(
+    as_regression_frame(fit, model_id = "M1"),
+    class = "spicy_lmertest_info"
+  )
+  note <- paste(attr(table_regression(fit), "note"), collapse = " ")
+  expect_match(
+    note,
+    "P-values: Wald z-test, large-sample approximation.",
+    fixed = TRUE
+  )
+  expect_no_match(note, "lmerTest", fixed = TRUE)
+})
+
+test_that("the lmerTest hint is not given where Wald z is not a fallback", {
+  rlang::reset_message_verbosity("spicy_lmertest_info")
+  withr::defer(suppressMessages(inform_lmertest_hint()))
+  # glmer: Wald z is the method, lmerTest has nothing to offer.
+  fit_g <- .fit_glmer_logit()
+  expect_no_message(
+    as_regression_frame(fit_g, model_id = "M1"),
+    class = "spicy_lmertest_info"
+  )
+  # A cluster-robust vcov carries its own Satterthwaite df.
+  skip_if_not_installed("clubSandwich")
+  fit <- .fit_lmer_basic()
+  expect_no_message(
+    table_regression(fit, vcov = "CR2", cluster = ~Subject),
+    class = "spicy_lmertest_info"
+  )
+  skip_if_not_installed("lmerTest")
+  fit_t <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
+  expect_no_message(
+    as_regression_frame(fit_t, model_id = "M1"),
+    class = "spicy_lmertest_info"
+  )
+})
+
 
 # ---- 4. lmer: random effects + ICC --------------------------------------
 

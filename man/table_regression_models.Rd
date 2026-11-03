@@ -105,8 +105,11 @@ with a pointer to the right ones).
 \section{Mixed effects}{
 
 Fixed effects: Satterthwaite t (\code{lmer} + \pkg{lmerTest}), Wald z
-(\code{glmer}, \code{glmmTMB}), containment-df t (\code{lme}). Random effects render as
-a \verb{Random effects} block of rows (SD / correlation / residual with SE and
+(\code{glmer}, \code{glmmTMB}), containment-df t (\code{lme}). A plain \code{lme4::lmer()}
+fit gets Wald z, and a message, once per session, suggests refitting
+with \code{lmerTest::lmer()}; the note names the method only. Random effects
+render as a \verb{Random effects} block of rows (SD / correlation / residual
+with SE and
 CI; \code{re_scale}, \code{re_columns}), deliberately with \strong{no per-row p-value}
 (boundary-invalid Wald; Self & Liang 1987) -- the footer carries the
 chi-bar-squared LR test of the whole random part, and

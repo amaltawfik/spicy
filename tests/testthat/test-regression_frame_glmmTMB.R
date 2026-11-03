@@ -268,8 +268,14 @@ test_that("glmmTMB binomial: info$family is binomial/logit; Wald z", {
 test_that("glmmTMB binomial: title_prefix names 'Logistic'", {
   fit <- .fit_glmmTMB_binom()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "Logistic", fixed = TRUE)
-  expect_match(fr$info$extras$title_prefix, "glmmTMB", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Logistic mixed-effects regression"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("glmmTMB poisson: info$family is poisson/log; title 'Poisson'", {
@@ -721,10 +727,11 @@ test_that("glmmTMB ordinal: the fixed intercept is dropped, no more crash", {
   expect_true(is.na(fr$info$fit_stats$r2_marginal))
   expect_identical(
     fr$info$extras$title_prefix,
-    paste0(
-      "Cumulative logit mixed-effects regression (proportional odds) ",
-      "(glmmTMB)"
-    )
+    "Cumulative logit mixed-effects regression (proportional odds)"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   )
   expect_s3_class(table_regression(fit), "spicy_regression_table")
 })

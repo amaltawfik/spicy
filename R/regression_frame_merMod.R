@@ -56,6 +56,10 @@ as_regression_frame.lmerMod <- function(
   vc <- NULL
   if (!.is_model_vcov(vcov)) {
     vc <- compute_model_vcov(fit, type = vcov, cluster = cluster)
+  } else if (!inherits(fit, "lmerModLmerTest")) {
+    # The rows carry Wald z p-values: the note names that method, and
+    # the advice to the analyst (refit with lmerTest) is a message.
+    inform_lmertest_hint()
   }
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
@@ -267,6 +271,25 @@ as_regression_frame.glmerMod <- function(
 }
 
 
+# Once-per-session hint for a plain lme4::lmer() fit, whose fixed-effect
+# p-values are Wald z-tests. The table note names the method; the advice
+# (refit with lmerTest) is for the analyst, not the reader of the table,
+# so it lives here and in ?table_regression. Same mechanism as
+# inform_polynomial_pedagogy(). Never fired for glmer (Wald z is the
+# method there, not a fallback) nor for an lmerTest fit.
+inform_lmertest_hint <- function() {
+  rlang::inform(
+    c(
+      "P-values of the `lme4::lmer()` model are Wald z-tests, a large-sample approximation.",
+      "i" = "For Satterthwaite t-tests, which suit models with few groups, refit with `lmerTest::lmer()` (install lmerTest if needed)."
+    ),
+    class = c("spicy_lmertest_info", "spicy_info"),
+    .frequency = "once",
+    .frequency_id = "spicy_lmertest_info"
+  )
+}
+
+
 # Build the coefs tibble for a merMod / glmerMod fit. Reads fixed
 # effects only -- random effects go in info$random_effects. Inference
 # branches on family_z:
@@ -330,8 +353,9 @@ as_regression_frame.glmerMod <- function(
     # SAS PROC MIXED (ddfm=z), Stata xtmixed (large-sample default),
     # parameters::model_parameters(ci_method="wald"), and
     # broom.mixed::tidy(effects="fixed"). For small samples
-    # (n_groups < ~30) we recommend lmerTest -- see the inform message
-    # the dispatcher emits the first time this branch fires.
+    # (n_groups < ~30) we recommend lmerTest -- as_regression_frame.lmerMod()
+    # says so once per session (inform_lmertest_hint()) when these Wald z
+    # p-values reach the table, i.e. under the model-based vcov.
     df <- rep(Inf, length(est))
     stat <- est / se
     p_value <- 2 * stats::pnorm(-abs(stat))

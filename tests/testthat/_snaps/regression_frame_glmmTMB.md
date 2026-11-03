@@ -3,7 +3,7 @@
     Code
       cat(paste(sub("[ \t]+$", "", txt), collapse = "\n"))
     Output
-      Cumulative logit mixed-effects regression (proportional odds) (glmmTMB): rating
+      Cumulative logit mixed-effects regression (proportional odds): rating
       
        Variable              │   B      SE       95% CI        p
       ───────────────────────┼─────────────────────────────────────
@@ -28,5 +28,5 @@
        AIC                   │ 177.1
        BIC                   │ 193.1
       
-      Note. Cumulative logit mixed-effects regression (proportional odds) (glmmTMB). Std. errors: Wald asymptotic (z). P-values: Wald-z asymptotic (glmmTMB). Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+      Note. Cumulative logit mixed-effects regression (proportional odds). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 

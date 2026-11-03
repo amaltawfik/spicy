@@ -1356,10 +1356,42 @@ validate_regression_frame <- function(frame) {
     .re_null_model("note_re_null_cumulative", tolower(fam$link))
   } else if (identical(fam$family, "poisson")) {
     .re_null_model("note_re_null_poisson")
+  } else if (
+    identical(fam$family, "binomial") && !identical(fam$link, "probit")
+  ) {
+    # Link-aware, with the keys of the merMod null above: the line reads
+    # like the title and translates like lme4's.
+    .re_null_model(switch(
+      fam$link,
+      logit = "note_re_null_logistic",
+      cloglog = "note_re_null_cloglog",
+      log = "note_re_null_log_binomial",
+      "note_re_null_binomial"
+    ))
   } else if (identical(fam$family, "binomial")) {
-    .re_null_model("note_re_null_binomial")
+    .re_null_model("note_re_null_family", "probit")
   } else if (identical(fam$family, "gaussian")) {
     .re_null_model("note_re_null_gaussian")
+  } else if (identical(fam$family, "inverse.gaussian")) {
+    .re_null_model("note_re_null_inverse_gaussian")
+  } else if (fam$family %in% c("nbinom1", "nbinom2", "beta", "tweedie")) {
+    # Named as the title names them, never by glmmTMB's family code, with
+    # a key each so the name translates.
+    .re_null_model(switch(
+      fam$family,
+      nbinom1 = "note_re_null_nb1",
+      nbinom2 = "note_re_null_nb",
+      beta = "note_re_null_beta",
+      tweedie = "note_re_null_tweedie"
+    ))
+  } else if (fam$family %in% names(.GLMMTMB_FAMILY_LABELS)) {
+    # The family label of the title ("gamma regression"), not glmmTMB's
+    # family code.
+    label <- .glmmTMB_family_label(fam)
+    .re_null_model(
+      "note_re_null_family",
+      paste0(tolower(substr(label, 1L, 1L)), substring(label, 2L))
+    )
   } else {
     .re_null_model("note_re_null_family", fam$family)
   }

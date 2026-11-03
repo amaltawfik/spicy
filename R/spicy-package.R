@@ -338,7 +338,9 @@
 #'     displayed nowhere under `reference_style = "none"` with
 #'     `factor_layout = "flat"`. The once-per-session hint on
 #'     ordered-factor polynomial contrasts carries its own class,
-#'     \code{spicy_polynomial_contrasts_info}.
+#'     \code{spicy_polynomial_contrasts_info}, and so does the one that
+#'     suggests \pkg{lmerTest} for a plain `lme4::lmer()` fit,
+#'     \code{spicy_lmertest_info}.
 #'   }
 #' }
 #'

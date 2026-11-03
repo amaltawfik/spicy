@@ -507,3 +507,92 @@ test_that("glmmTMB gaussian(log): the engine-native null is named as in lme4", {
     "r\u00e9gression gaussienne"
   )
 })
+
+
+# ---- glmmTMB: the null model is named as the title names the family ----
+
+test_that("a glmmTMB negative binomial names NB1 in its title and null model", {
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  nb1 <- glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    family = glmmTMB::nbinom1,
+    data = d
+  )
+  nb2 <- glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    family = glmmTMB::nbinom2,
+    data = d
+  )
+  t1 <- table_regression(nb1)
+  t2 <- table_regression(nb2)
+  # NB1 (variance linear in the mean) is marked; NB2, the standard
+  # formulation, is not.
+  expect_identical(
+    attr(t1, "title"),
+    "Negative-binomial (NB1) mixed-effects regression: count"
+  )
+  expect_identical(
+    attr(t2, "title"),
+    "Negative-binomial mixed-effects regression: count"
+  )
+  n1 <- attr(t1, "note")
+  n2 <- attr(t2, "note")
+  expect_match(
+    n1,
+    "LR test vs negative-binomial (NB1) regression, ",
+    fixed = TRUE
+  )
+  expect_match(n2, "LR test vs negative-binomial regression, ", fixed = TRUE)
+  # glmmTMB's family code never reaches the note.
+  expect_no_match(n1, "nbinom", fixed = TRUE)
+  expect_no_match(n2, "nbinom", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    attr(table_regression(nb1), "title"),
+    paste0(
+      "R\u00e9gression binomiale n\u00e9gative (NB1) \u00e0 effets mixtes",
+      "\u00a0: count"
+    )
+  )
+  # The null model translates too, never half English.
+  expect_match(
+    attr(table_regression(nb1), "note"),
+    "contre la r\u00e9gression binomiale n\u00e9gative (NB1), ",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(table_regression(nb2), "note"),
+    "contre la r\u00e9gression binomiale n\u00e9gative, ",
+    fixed = TRUE
+  )
+})
+
+test_that("a glmmTMB probit or cloglog null is named as lme4 names it", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("lme4")
+  f <- cbind(incidence, size - incidence) ~ period + (1 | herd)
+  for (link in c("probit", "cloglog")) {
+    tmb <- glmmTMB::glmmTMB(
+      f,
+      data = lme4::cbpp,
+      family = stats::binomial(link = link)
+    )
+    mer <- lme4::glmer(
+      f,
+      data = lme4::cbpp,
+      family = stats::binomial(link = link)
+    )
+    a <- spicy:::.null_lrt_glmmTMB(tmb)
+    b <- spicy:::.null_lrt_merMod(mer)
+    expect_identical(a$family_label, b$family_label, label = link)
+    expect_identical(a$family_key, b$family_key, label = link)
+    expect_identical(a$family_args, b$family_args, label = link)
+  }
+  expect_identical(a$family_label, "complementary log-log regression")
+  expect_match(
+    attr(table_regression(tmb), "note"),
+    "LR test vs complementary log-log regression, ",
+    fixed = TRUE
+  )
+})

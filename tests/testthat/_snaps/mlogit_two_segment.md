@@ -3,7 +3,7 @@
     Code
       print(table_regression(fit))
     Output
-      Discrete-choice multinomial logit (mlogit): mode
+      Discrete-choice multinomial logit: mode
       
        Variable               │    B      SE       95% CI        p   
       ────────────────────────┼──────────────────────────────────────
@@ -23,5 +23,5 @@
        n                      │ 1182                                 
        AIC                    │ 2446.3                               
       
-      Note. Discrete-choice multinomial logit (mlogit). Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+      Note. Discrete-choice multinomial logit. Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
 

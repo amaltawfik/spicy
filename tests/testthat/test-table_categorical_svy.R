@@ -446,6 +446,37 @@ test_that("every ci_method returns an interval on a variable with NA", {
   )
 })
 
+test_that("the percentage-CI note names the interval, not the `ci_method` value", {
+  skip_on_cran()
+  methods <- c(
+    "logit",
+    "likelihood",
+    "asin",
+    "beta",
+    "mean",
+    "xlogit",
+    "wilson"
+  )
+  labels <- vapply(methods, .svy_ci_prop_label, character(1))
+  expect_false(anyDuplicated(labels) > 0L)
+  expect_identical(labels[["beta"]], "Korn-Graubard")
+  expect_identical(labels[["wilson"]], "Wilson score")
+  note <- attr(
+    table_categorical_svy(
+      .svycat_design(),
+      select = stype,
+      proportion_ci = TRUE
+    ),
+    "note"
+  )
+  expect_match(
+    note,
+    "Percentage CIs: Wald on the logit scale (logistic regression).",
+    fixed = TRUE
+  )
+  expect_no_match(note, "svyciprop", fixed = TRUE)
+})
+
 # "b" is absent from domain y, 150 rows: 0% there, and "a" 100%.
 .svycat_absent <- function() {
   skip_if_not_installed("survey", "4.5")
@@ -503,7 +534,7 @@ test_that("a percentage of 0 or 100 gets the exact binomial interval", {
     expect_match(
       attr(tbl, "note"),
       paste(
-        spicy_fmt("note_ci_prop_method", m),
+        spicy_fmt("note_ci_prop_method", .svy_ci_prop_label(m)),
         spicy_str("note_ci_prop_bound")
       ),
       fixed = TRUE
@@ -565,7 +596,7 @@ test_that("a percentage of 0 or 100 gets the exact binomial interval", {
   expect_match(
     fr,
     paste(
-      spicy_fmt("note_ci_prop_method", "logit"),
+      spicy_fmt("note_ci_prop_method", .svy_ci_prop_label("logit")),
       spicy_str("note_ci_prop_bound")
     ),
     fixed = TRUE

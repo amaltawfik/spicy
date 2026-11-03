@@ -217,7 +217,7 @@ test_that("a factor whose reference was kept contributes no reference row", {
 # ---- 1442-1447: the family-title vocabulary -------------------------------
 
 test_that("the Bayesian title names the family in the reader's words", {
-  # The title prefix reads "Bayesian <family> regression (<engine>)".
+  # The title prefix reads "Bayesian <family> regression", no engine.
   # Only a NON-identity link reaches this helper -- an identity link is
   # "Bayesian linear regression" without asking -- so these are the
   # words a Poisson, a Gamma or an inverse-Gaussian posterior gets.

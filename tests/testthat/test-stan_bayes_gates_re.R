@@ -625,6 +625,7 @@ test_that("Pareto-k and p_waic diagnostics are surfaced, not silenced", {
     seed = 11
   ))
   w_classes <- list()
+  w_msgs <- character(0)
   out <- withCallingHandlers(
     paste(
       capture.output(print(table_regression(
@@ -635,6 +636,7 @@ test_that("Pareto-k and p_waic diagnostics are surfaced, not silenced", {
     ),
     warning = function(w) {
       w_classes[[length(w_classes) + 1L]] <<- class(w)
+      w_msgs <<- c(w_msgs, conditionMessage(w))
       invokeRestart("muffleWarning")
     }
   )
@@ -644,6 +646,10 @@ test_that("Pareto-k and p_waic diagnostics are surfaced, not silenced", {
   expect_match(out, "SE(WAIC) = ", fixed = TRUE)
   expect_match(out, "PSIS-LOO unreliable for", fixed = TRUE)
   expect_match(out, "p_waic > 0.4", fixed = TRUE)
+  # The remedies are for the analyst: in the warnings, not the note.
+  expect_true(any(grepl("loo::loo_moment_match()", w_msgs, fixed = TRUE)))
+  expect_true(any(grepl("show_fit_stats = \"elpd_loo\"", w_msgs, fixed = TRUE)))
+  expect_no_match(out, "loo_moment_match", fixed = TRUE)
   # Every guard warning carries the nested class pair, so
   # spicy_bayes_diagnostics mutes selectively while spicy_caveat
   # handlers still catch it.
@@ -819,6 +825,7 @@ test_that("a Bayesian probit is titled probit, not logistic", {
   )
   expect_match(out, "Bayesian probit regression", fixed = TRUE)
   expect_false(grepl("Bayesian logistic regression", out, fixed = TRUE))
+  expect_no_match(out, "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)")
 })
 
 
@@ -918,16 +925,20 @@ test_that("the Bayesian footer and interval header follow the language", {
   expect_true(all(
     c("95% CrI LL", "95% CrI UL") %in% names(as.data.frame(tbl))
   ))
-  # The model is named in French, its engine as it is written: in the
-  # title and in the first sentence of the note.
+  # The model is named in French, in the title and in the first sentence
+  # of the note -- the method only, never the engine that sampled it.
   expect_identical(
     attr(tbl, "title"),
-    "R\u00e9gression logistique bay\u00e9sienne (stanreg)\u00a0: am"
+    "R\u00e9gression logistique bay\u00e9sienne\u00a0: am"
   )
   expect_true(startsWith(
     note,
-    "Note. R\u00e9gression logistique bay\u00e9sienne (stanreg)."
+    "Note. R\u00e9gression logistique bay\u00e9sienne."
   ))
+  expect_no_match(
+    attr(tbl, "title"),
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 

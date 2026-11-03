@@ -6,6 +6,21 @@
   console, Excel, the clipboard and markdown keep the hyphen;
   `spicy_style(minus_sign = "ascii")` keeps it everywhere.
 
+* Table notes name the statistical method, never the package that
+  computes it: "P-values: Satterthwaite t-test." instead of "...
+  (lmerTest).", "Percentage CIs: Wilson score." instead of "wilson
+  (survey::svyciprop).", "Quantiles: Hyndman-Fan type 1." instead of
+  `qrule = "math"`. The hint to refit a `lme4::lmer()` model with
+  lmerTest is now a message, shown once per session, and the remedies
+  for unreliable PSIS-LOO and WAIC values moved from the note to their
+  warnings. Table titles no longer carry the engine either: "Linear
+  mixed-effects regression" instead of "... (glmmTMB)", likewise for
+  nlme, rms, mlogit, rstanarm and brms models.
+
+* `table_regression()`: a glmmTMB `nbinom1` model reads "Negative-binomial
+  (NB1) mixed-effects regression", and the random-effects test names its
+  null model as the title does instead of glmmTMB's family code.
+
 * `table_regression()`: the note on skipped variance-component SE and CI
   of large mixed models names the threshold instead of the internal
   option ("... not computed for n above 1000 (see ?table_regression)").

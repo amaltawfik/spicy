@@ -221,6 +221,10 @@
   note_re_null_log_binomial = "r\u00E9gression log-binomiale",
   note_re_null_gaussian = "r\u00E9gression gaussienne",
   note_re_null_inverse_gaussian = "r\u00E9gression gaussienne inverse",
+  note_re_null_nb = "r\u00E9gression binomiale n\u00E9gative",
+  note_re_null_nb1 = "r\u00E9gression binomiale n\u00E9gative (NB1)",
+  note_re_null_beta = "r\u00E9gression b\u00EAta",
+  note_re_null_tweedie = "r\u00E9gression de Tweedie",
   note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (%s)",
   # Comme le pont des titres : "Regression a logit cumulatif".
   note_re_null_cumulative = "r\u00E9gression \u00E0 %s cumulatif",
@@ -480,7 +484,11 @@
   note_design_n = "N = %s (N pond\u00E9r\u00E9 = %s).",
   note_design_df_supplied = "Les intervalles de confiance utilisent %d degr\u00E9s de libert\u00E9 (fournis dans `df`)\u00A0; les tests utilisent ceux du plan de sondage.",
   note_design_df_test_differs = "La comparaison des groupes utilise %s degr\u00E9s de libert\u00E9 (groupes observ\u00E9s uniquement).",
-  note_quantile_rule = "Quantiles\u00A0: qrule = \"%s\" (survey).",
+  note_quantile_rule = "Quantiles\u00A0: %s.",
+  note_quantile_rule_hf = "type %d de Hyndman-Fan",
+  note_quantile_rule_spicy = "type 7 de Hyndman-Fan, poids trait\u00E9s comme des fr\u00E9quences",
+  note_quantile_rule_shahvaish = "r\u00E8gle de Shah-Vaish",
+  note_quantile_rule_function = "r\u00E8gle d\u00E9finie par l'utilisateur",
   note_negative_weights = "Le calage a donn\u00E9 un poids n\u00E9gatif \u00E0 %d lignes sur %d\u00A0: une moyenne pond\u00E9r\u00E9e peut sortir de l'intervalle observ\u00E9, et une variance peut devenir n\u00E9gative, laissant sa cellule ind\u00E9finie.",
   note_negative_weights_no_test = "La comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
   note_negative_weights_no_test_some = "Pour les variables dont les cas complets comprennent des lignes \u00E0 poids n\u00E9gatif, la comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
@@ -494,7 +502,14 @@
   test_design_wald_chisq = "test de Wald des proportions des cellules, fond\u00E9 sur le plan de sondage",
   test_design_adj_wald = "test de Wald ajust\u00E9 des proportions des cellules, fond\u00E9 sur le plan de sondage",
   test_design_saddlepoint = "khi-deux (approximation du point de selle) fond\u00E9 sur le plan de sondage",
-  note_ci_prop_method = "IC des pourcentages\u00A0: %s (survey::svyciprop).",
+  note_ci_prop_method = "IC des pourcentages\u00A0: %s.",
+  note_ci_prop_method_logit = "Wald sur l'\u00E9chelle logit (r\u00E9gression logistique)",
+  note_ci_prop_method_xlogit = "Wald sur l'\u00E9chelle logit (logit de la moyenne)",
+  note_ci_prop_method_likelihood = "vraisemblance, khi-deux avec correction de Rao-Scott",
+  note_ci_prop_method_asin = "arcsinus de la racine carr\u00E9e",
+  note_ci_prop_method_beta = "Korn-Graubard",
+  note_ci_prop_method_mean = "Wald sur l'\u00E9chelle des proportions",
+  note_ci_prop_method_wilson = "score de Wilson",
   note_ci_prop_bound = "Pourcentages de 0 ou 100\u00A0: intervalle binomial exact sur l'effectif non pond\u00E9r\u00E9.",
   note_gloss_pct_svy = "%s = pourcentage estim\u00E9.",
   note_gloss_n_svy = "%s = effectif observ\u00E9 (non pond\u00E9r\u00E9).",
@@ -509,7 +524,7 @@
   note_vcov_classical_glm = "classiques (information de Fisher)",
   note_vcov_classical_lm = "classiques (MCO)",
   note_vcov_classical_plain = "classiques",
-  note_vcov_bayesian_mgcv = "bay\u00E9siennes (covariance a posteriori de mgcv)",
+  note_vcov_bayesian_mgcv = "bay\u00E9siennes (covariance a posteriori)",
   note_vcov_hc = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (%s)",
   note_vcov_cluster_vector = "vecteur de grappes fourni",
   note_vcov_cluster_named = "grappes d\u00E9finies par %s",
@@ -541,11 +556,10 @@
   note_vcov_rq_rank = "inversion du test de rang (IC seulement)",
   note_vcov_rq_boot_cluster = "bootstrap quantile sauvage par gradient, par grappes (R = %d)",
   note_vcov_rq_boot = "bootstrap quantile (paires xy, R = %d)",
-  note_pvalues_satterthwaite_cr = "Valeurs p\u00A0: test t de Satterthwaite, degr\u00E9s de libert\u00E9 robustes aux grappes (clubSandwich).",
-  note_pvalues_satterthwaite = "Valeurs p\u00A0: test t de Satterthwaite (lmerTest).",
-  note_pvalues_wald_lmer = "Valeurs p\u00A0: z de Wald, approximation pour grands \u00E9chantillons. Chargez `lmerTest` pour des tests t de Satterthwaite.",
-  note_pvalues_wald = "Valeurs p\u00A0: z de Wald asymptotique (%s).",
-  note_pvalues_containment = "Valeurs p\u00A0: test t, degr\u00E9s de libert\u00E9 \u00AB\u00A0containment\u00A0\u00BB (nlme).",
+  note_pvalues_satterthwaite_cr = "Valeurs p\u00A0: test t de Satterthwaite, degr\u00E9s de libert\u00E9 robustes aux grappes.",
+  note_pvalues_satterthwaite = "Valeurs p\u00A0: test t de Satterthwaite.",
+  note_pvalues_wald = "Valeurs p\u00A0: test z de Wald, approximation pour grands \u00E9chantillons.",
+  note_pvalues_containment = "Valeurs p\u00A0: test t, degr\u00E9s de libert\u00E9 \u00AB\u00A0containment\u00A0\u00BB.",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "L'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
@@ -569,8 +583,8 @@
   note_loo_se_waic = "ES(WAIC) = %s",
   note_loo_accuracy = "Performance pr\u00E9dictive par %s\u00A0; %s.",
   note_loo_sep = "\u00A0; ",
-  note_loo_pareto_k = "PSIS-LOO non fiable pour %d observations sur %d (k de Pareto > %s)\u00A0; envisager loo::loo_moment_match(), la r\u00E9estimation des plis signal\u00E9s (k_threshold = 0.7) ou une validation crois\u00E9e en K plis.",
-  note_loo_waic_unreliable = "Approximation WAIC non fiable pour %d observation(s) (p_waic > %s)\u00A0; pr\u00E9f\u00E9rer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`).",
+  note_loo_pareto_k = "PSIS-LOO non fiable pour %d observations sur %d (k de Pareto > %s).",
+  note_loo_waic_unreliable = "Approximation WAIC non fiable pour %d observation(s) (p_waic > %s).",
 
   # -- table_regression(): titres et note de type (decision 42) -------------
   # Les %s recoivent le prefixe de famille (traduit par le pont
@@ -699,10 +713,11 @@
 # deliberement jetable : quand 251-C (horizon v1.0) fera porter une CLE
 # par le frame, ce vecteur et .spicy_title_prefix_table() disparaissent
 # en bloc. Regle d'application (au site d'appel) : coherent-ou-rien --
-# un prefixe absent d'ici garde son titre anglais ENTIER ; les suffixes
-# moteur " (glmmTMB)" / " (nlme)" / " (stanreg)" / " (brmsfit)" sont
-# detaches puis reattaches tels quels (noms propres). Familles couvertes : les chemins par defaut
-# qu'un utilisateur francophone rencontre (decision 42, minimum vital).
+# un prefixe absent d'ici garde son titre anglais ENTIER. Un titre nomme
+# la methode, jamais le moteur (decision du 2026-11-03) : le prefixe est
+# cherche tel quel, sans suffixe a detacher. Familles couvertes : les
+# chemins par defaut qu'un utilisateur francophone rencontre (decision 42,
+# minimum vital).
 .FR_TITLE_PREFIXES <- c(
   "Regression" = "R\u00E9gression",
   "Linear regression" = "R\u00E9gression lin\u00E9aire",
@@ -717,14 +732,31 @@
   "Logistic mixed-effects regression" = "R\u00E9gression logistique \u00E0 effets mixtes",
   "Poisson mixed-effects regression" = "R\u00E9gression de Poisson \u00E0 effets mixtes",
   "Negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes",
+  # Les autres familles de glmmTMB (et de lme4), l'ordinal de clmm et de
+  # glmmTMB, les deux zero-inflated courants.
+  "Probit mixed-effects regression" = "R\u00E9gression probit \u00E0 effets mixtes",
+  "Complementary log-log mixed-effects regression" = "R\u00E9gression log-log compl\u00E9mentaire \u00E0 effets mixtes",
+  "Log-binomial mixed-effects regression" = "R\u00E9gression log-binomiale \u00E0 effets mixtes",
+  "Binomial mixed-effects regression" = "R\u00E9gression binomiale \u00E0 effets mixtes",
+  "Gamma mixed-effects regression" = "R\u00E9gression gamma \u00E0 effets mixtes",
+  "Inverse-Gaussian mixed-effects regression" = "R\u00E9gression gaussienne inverse \u00E0 effets mixtes",
+  "Tweedie mixed-effects regression" = "R\u00E9gression de Tweedie \u00E0 effets mixtes",
+  "Beta mixed-effects regression" = "R\u00E9gression b\u00EAta \u00E0 effets mixtes",
+  "Poisson mixed-effects regression (zero-inflated)" = "R\u00E9gression de Poisson \u00E0 effets mixtes (inflation de z\u00E9ros)",
+  "Negative-binomial mixed-effects regression (zero-inflated)" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes (inflation de z\u00E9ros)",
+  "Negative-binomial (NB1) mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative (NB1) \u00E0 effets mixtes",
+  "Negative-binomial (NB1) mixed-effects regression (zero-inflated)" = "R\u00E9gression binomiale n\u00E9gative (NB1) \u00E0 effets mixtes (inflation de z\u00E9ros)",
+  "Cumulative logit mixed-effects regression (proportional odds)" = "R\u00E9gression \u00E0 logit cumulatif \u00E0 effets mixtes (cotes proportionnelles)",
+  # nlme::gls() et mlogit.
+  "Generalized least squares" = "Moindres carr\u00E9s g\u00E9n\u00E9ralis\u00E9s",
+  "Discrete-choice multinomial logit" = "Logit multinomial de choix discret",
   "Cumulative logit regression (proportional odds)" = "R\u00E9gression \u00E0 logit cumulatif (cotes proportionnelles)",
   "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
   "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
   "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",
   "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
   "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale",
-  # Les modeles bayesiens de regression_frame_stan.R : le suffixe
-  # " (stanreg)" / " (brmsfit)" est detache puis rattache.
+  # Les modeles bayesiens de regression_frame_stan.R (rstanarm et brms).
   "Bayesian linear regression" = "R\u00E9gression lin\u00E9aire bay\u00E9sienne",
   "Bayesian logistic regression" = "R\u00E9gression logistique bay\u00E9sienne",
   "Bayesian probit regression" = "R\u00E9gression probit bay\u00E9sienne",

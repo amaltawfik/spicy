@@ -198,7 +198,7 @@ test_that("an NA title_prefix does not crash the bridge", {
 test_that("the hyphenated engine spellings reach their bridge entries", {
   # MASS::glm.nb and fixest both emit "Negative-binomial regression"
   # (hyphenated); glmmTMB emits "Negative-binomial mixed-effects
-  # regression (glmmTMB)". Planted by hand so no Suggests package is
+  # regression". Planted by hand so no Suggests package is
   # needed -- the strings are pinned to the engine sources by
   # test-regression grep-level tests, not here.
   withr::local_options(spicy.language = "fr")
@@ -209,12 +209,12 @@ test_that("the hyphenated engine spellings reach their bridge entries", {
     "R\u00e9gression binomiale n\u00e9gative\u00a0: mpg"
   )
   f1$info$extras$title_prefix <-
-    "Negative-binomial mixed-effects regression (glmmTMB)"
+    "Negative-binomial mixed-effects regression"
   expect_identical(
     build_regression_title_from_frames(list(f1)),
     paste0(
       "R\u00e9gression binomiale n\u00e9gative \u00e0 effets mixtes",
-      " (glmmTMB)\u00a0: mpg"
+      "\u00a0: mpg"
     )
   )
 })
@@ -237,7 +237,7 @@ test_that("a glmer.nb fit takes the negative-binomial title of the other engines
   )
 })
 
-test_that("an engine suffix survives the bridge as a proper noun", {
+test_that("a glmmTMB title names the method and shares the lme4 title", {
   skip_if_not_installed("glmmTMB")
   skip_on_cran()
   fit <- suppressWarnings(glmmTMB::glmmTMB(
@@ -249,7 +249,18 @@ test_that("an engine suffix survives the bridge as a proper noun", {
   })
   expect_identical(
     fr,
-    "R\u00e9gression lin\u00e9aire \u00e0 effets mixtes (glmmTMB)\u00a0: Reaction"
+    "R\u00e9gression lin\u00e9aire \u00e0 effets mixtes\u00a0: Reaction"
+  )
+  # One method, one title: an lmer and a glmmTMB fit of the same model
+  # share the prefix, so the table is titled once.
+  lmer_fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), lme4::sleepstudy)
+  frames <- list(
+    as_regression_frame(lmer_fit, model_id = "M1"),
+    as_regression_frame(fit, model_id = "M2")
+  )
+  expect_identical(
+    build_regression_title_from_frames(frames),
+    "Linear mixed-effects regression comparison: Reaction"
   )
 })
 

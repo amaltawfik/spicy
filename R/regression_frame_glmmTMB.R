@@ -730,44 +730,59 @@ as_regression_frame.glmmTMB <- function(
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
     identical(fam$link, "identity")
   base <- if (is_gaussian_identity) {
-    "Linear mixed-effects regression (glmmTMB)"
+    "Linear mixed-effects regression"
   } else if (identical(fam$family, "ordinal")) {
-    # The clmm title, engine-suffixed: "Cumulative logit mixed-effects
-    # regression (proportional odds) (glmmTMB)".
+    # The clmm title: "Cumulative logit mixed-effects
+    # regression (proportional odds)".
     paste0(
       .clm_link_title(fam$link),
       " mixed-effects regression (",
       .ordinal_assumption_label(fam$link),
-      ") (glmmTMB)"
+      ")"
     )
   } else {
-    # Binomial titles are LINK-aware: a probit glmmTMB is NOT a
-    # logistic regression.
-    fam_title <- if (identical(fam$family, "binomial")) {
-      switch(
-        fam$link,
-        "logit" = "Logistic",
-        "probit" = "Probit",
-        "cloglog" = "Complementary log-log",
-        "log" = "Log-binomial",
-        "Binomial"
-      )
-    } else {
-      switch(
-        fam$family,
-        poisson = "Poisson",
-        Gamma = "Gamma",
-        inverse.gaussian = "Inverse-Gaussian",
-        nbinom1 = "Negative-binomial",
-        nbinom2 = "Negative-binomial",
-        tweedie = "Tweedie",
-        beta_family = "Beta",
-        paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
-      )
-    }
-    paste0(fam_title, " mixed-effects regression (glmmTMB)")
+    paste0(.glmmTMB_family_label(fam), " mixed-effects regression")
   }
   if (has_zi) paste0(base, " (zero-inflated)") else base
+}
+
+
+# The reader's name of a glmmTMB family, shared by the title and by the
+# null model of the random-effects LR test, so the two read alike.
+# nbinom1 (variance linear in the mean) is marked "(NB1)"; nbinom2 is
+# the standard negative binomial (Stata's nbreg default, MASS::glm.nb,
+# lme4::glmer.nb) and stays unmarked. A family absent from the table
+# keeps its glmmTMB name, capitalized.
+.GLMMTMB_FAMILY_LABELS <- c(
+  poisson = "Poisson",
+  Gamma = "Gamma",
+  inverse.gaussian = "Inverse-Gaussian",
+  nbinom1 = "Negative-binomial (NB1)",
+  nbinom2 = "Negative-binomial",
+  tweedie = "Tweedie",
+  # glmmTMB::beta_family() names its family "beta".
+  beta = "Beta"
+)
+
+.glmmTMB_family_label <- function(fam) {
+  # Binomial labels are LINK-aware: a probit glmmTMB is NOT a logistic
+  # regression.
+  if (identical(fam$family, "binomial")) {
+    return(switch(
+      fam$link,
+      "logit" = "Logistic",
+      "probit" = "Probit",
+      "cloglog" = "Complementary log-log",
+      "log" = "Log-binomial",
+      "Binomial"
+    ))
+  }
+  label <- unname(.GLMMTMB_FAMILY_LABELS[fam$family])
+  if (is.na(label)) {
+    paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
+  } else {
+    label
+  }
 }
 
 

@@ -272,7 +272,7 @@ as_regression_frame.mlogit <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = "Discrete-choice multinomial logit (mlogit)",
+    title_prefix = "Discrete-choice multinomial logit",
     exp_applied = FALSE,
     exp_header = NA_character_
   )

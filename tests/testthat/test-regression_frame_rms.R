@@ -46,10 +46,14 @@ test_that("ols: info$class is 'ols'", {
   expect_identical(fr$info$class, "ols")
 })
 
-test_that("ols: title_prefix = 'Linear regression (rms)'", {
+test_that("ols: title_prefix = 'Linear regression', no engine", {
   fit <- .fit_ols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix, "Linear regression (rms)")
+  expect_identical(fr$info$extras$title_prefix, "Linear regression")
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("ols: 'Intercept' renamed to '(Intercept)' for schema consistency", {
@@ -137,10 +141,14 @@ test_that("lrm: family is binomial/logit", {
   expect_identical(fr$info$family$link, "logit")
 })
 
-test_that("lrm: title_prefix = 'Logistic regression (rms)'", {
+test_that("lrm: title_prefix = 'Logistic regression', no engine", {
   fit <- .fit_lrm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$extras$title_prefix, "Logistic regression (rms)")
+  expect_identical(fr$info$extras$title_prefix, "Logistic regression")
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("lrm: pseudo_r2 carries Nagelkerke + C-index + Brier", {
@@ -184,10 +192,13 @@ test_that("cph: info$class is 'cph'", {
 test_that("cph: title_prefix names Cox PH", {
   fit <- .fit_cph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(
+  expect_identical(
     fr$info$extras$title_prefix,
-    "Cox proportional hazards",
-    fixed = TRUE
+    "Cox proportional hazards regression"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   )
 })
 
@@ -222,7 +233,11 @@ test_that("Glm Poisson: schema valid; family poisson/log", {
   expect_identical(fr$info$class, "Glm")
   expect_identical(fr$info$family$family, "poisson")
   expect_identical(fr$info$family$link, "log")
-  expect_match(fr$info$extras$title_prefix, "Poisson", fixed = TRUE)
+  expect_identical(fr$info$extras$title_prefix, "Poisson regression")
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("Glm Poisson: supports$exponentiate = TRUE", {

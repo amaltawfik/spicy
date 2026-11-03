@@ -348,7 +348,9 @@ the diagnostic.
 displayed nowhere under \code{reference_style = "none"} with
 \code{factor_layout = "flat"}. The once-per-session hint on
 ordered-factor polynomial contrasts carries its own class,
-\code{spicy_polynomial_contrasts_info}.
+\code{spicy_polynomial_contrasts_info}, and so does the one that
+suggests \pkg{lmerTest} for a plain \code{lme4::lmer()} fit,
+\code{spicy_lmertest_info}.
 }
 }
 }

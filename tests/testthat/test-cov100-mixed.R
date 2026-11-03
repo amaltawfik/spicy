@@ -180,39 +180,50 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
   # Binomial titles are link-aware.
   expect_identical(
     tp("binomial", "probit"),
-    "Probit mixed-effects regression (glmmTMB)"
+    "Probit mixed-effects regression"
   )
   expect_identical(
     tp("binomial", "cloglog"),
-    "Complementary log-log mixed-effects regression (glmmTMB)"
+    "Complementary log-log mixed-effects regression"
   )
   expect_identical(
     tp("binomial", "log"),
-    "Log-binomial mixed-effects regression (glmmTMB)"
+    "Log-binomial mixed-effects regression"
   )
   expect_identical(
     tp("binomial", "cauchit"), # fallback link label
-    "Binomial mixed-effects regression (glmmTMB)"
+    "Binomial mixed-effects regression"
   )
   # Family arms.
-  expect_identical(tp("Gamma"), "Gamma mixed-effects regression (glmmTMB)")
+  expect_identical(tp("Gamma"), "Gamma mixed-effects regression")
   expect_identical(
     tp("inverse.gaussian"),
-    "Inverse-Gaussian mixed-effects regression (glmmTMB)"
+    "Inverse-Gaussian mixed-effects regression"
   )
   expect_identical(
     tp("nbinom1"),
-    "Negative-binomial mixed-effects regression (glmmTMB)"
+    "Negative-binomial (NB1) mixed-effects regression"
   )
-  expect_identical(tp("tweedie"), "Tweedie mixed-effects regression (glmmTMB)")
-  expect_identical(tp("beta_family"), "Beta mixed-effects regression (glmmTMB)")
+  expect_identical(
+    tp("nbinom2"),
+    "Negative-binomial mixed-effects regression"
+  )
+  expect_identical(tp("tweedie"), "Tweedie mixed-effects regression")
+  expect_identical(tp("beta"), "Beta mixed-effects regression")
   # Unknown family: sentence-cased verbatim.
-  expect_identical(tp("compois"), "Compois mixed-effects regression (glmmTMB)")
+  expect_identical(tp("compois"), "Compois mixed-effects regression")
   # Zero-inflation suffix.
   expect_identical(
     tp("poisson", zi = TRUE),
-    "Poisson mixed-effects regression (glmmTMB) (zero-inflated)"
+    "Poisson mixed-effects regression (zero-inflated)"
   )
+  # A title names the method, never the engine that fitted it.
+  engine <- "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  for (fam in c("gaussian", "binomial", "poisson", "nbinom2", "ordinal")) {
+    link <- if (identical(fam, "gaussian")) "identity" else "logit"
+    expect_no_match(tp(fam, link), engine)
+    expect_no_match(tp(fam, link, zi = TRUE), engine)
+  }
 })
 
 

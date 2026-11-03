@@ -12,15 +12,15 @@
 # Decision 42: the translated display form of an engine's title_prefix,
 # or NULL when the current language is English or has no bridge entry --
 # in which case the caller keeps the WHOLE English title (coherent or
-# nothing, never a half-translated head). Engine suffixes are proper
-# nouns: detached before the lookup, reattached verbatim. This helper
-# and the bridge it reads disappear together when 251-C makes the
-# prefix a registry key.
+# nothing, never a half-translated head). A title names the method,
+# never the engine that fitted it (the engine belongs in the methods
+# section), so the prefix is looked up whole. This helper and the bridge
+# it reads disappear together when 251-C makes the prefix a registry key.
 .title_prefix_display <- function(prefix) {
   # Defensive: no engine is known to emit a non-string prefix, but an
-  # NA here would turn the `endsWith()` below into an error under a
-  # translating language while English renders it -- the fallback must
-  # never be LESS robust than the path it falls back from.
+  # NA here must answer "no entry" under a translating language, as
+  # English renders it -- the fallback must never be LESS robust than
+  # the path it falls back from.
   if (!is.character(prefix) || length(prefix) != 1L || is.na(prefix)) {
     return(NULL)
   }
@@ -29,21 +29,13 @@
   if (is.null(bridge)) {
     return(NULL)
   }
-  suffix <- ""
-  for (s in c(" (glmmTMB)", " (nlme)", " (stanreg)", " (brmsfit)")) {
-    if (endsWith(prefix, s)) {
-      suffix <- s
-      prefix <- substr(prefix, 1L, nchar(prefix) - nchar(s))
-      break
-    }
-  }
   # Single-bracket on purpose: `[[` on a named vector ERRORS on a
   # missing name, `[` answers NA -- and NA here means "no entry".
   hit <- unname(bridge[prefix])
   if (is.na(hit)) {
     return(NULL)
   }
-  paste0(hit, suffix)
+  hit
 }
 
 build_regression_title_from_frames <- function(frames, nested = FALSE) {
@@ -422,7 +414,7 @@ lowercase_first <- function(s) {
 #   frame$info$vcov_label          (Phase 1+: the engine-/class-specific
 #                                   already-formatted label, e.g.
 #                                   "Wald (model-based)", "Robust (HC2)",
-#                                   "Bayesian (mgcv posterior covariance)", ...)
+#                                   "Bayesian (posterior covariance)", ...)
 #   frame$info$vcov_kind           (the estimator token, read through
 #                                   .frame_vcov_kind(): "model" / "HC*"
 #                                   / "CR*" / "bootstrap" / etc.)
@@ -1672,14 +1664,14 @@ build_random_effects_footer_block_from_frames <- function(
 
 # Phase 7c8a: per-frame fixed-effect inference annotation for mixed-
 # effects fits. Returns NULL for non-mixed classes; otherwise a single
-# line stating the distribution + df strategy + source package, so a
-# publication-quality reader can tell at a glance whether the
-# p-values / CIs are Satterthwaite (the recommended default for
-# lmer when sample sizes are small), Wald-z (large-sample
-# approximation), or nlme's containment df.
+# line stating the distribution + df strategy (the method, never the
+# package), so a publication-quality reader can tell at a glance
+# whether the p-values / CIs are Satterthwaite (the recommended default
+# for lmer when sample sizes are small), Wald z (large-sample
+# approximation), or containment df.
 #
 # Single-model output (no prefix):
-#   "P-values: Satterthwaite t-test (lmerTest)."
+#   "P-values: Satterthwaite t-test."
 # Multi-model: prefixed "Model k: ...".
 build_mixed_inference_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
@@ -1700,7 +1692,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     return(per_model[[1L]]$text)
   }
   # Consolidate when every model produced the SAME annotation -- avoids
-  # printing three identical "P-values: Wald-z, ..." lines when the
+  # printing three identical "P-values: Wald z-test, ..." lines when the
   # whole list is, say, lme4::lmer without lmerTest. Mirrors the
   # consolidation done by build_regression_type_footer_block_from_frames().
   texts <- vapply(per_model, function(pm) pm$text, character(1))
@@ -1807,16 +1799,17 @@ build_nested_ml_refit_footer_block_from_frames <- function(
 # Dispatch on (class, ci_method) instead of just class: lmer fits
 # are normalized to class == "lmerMod" regardless of whether
 # lmerTest decorated the fit, so we read ci_method to tell apart
-# Satterthwaite ("satterthwaite") from Wald-z fallback ("wald").
+# Satterthwaite ("satterthwaite") from Wald z fallback ("wald").
 .mixed_inference_label_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   ci <- frame$info$ci_method %||% ""
   vk <- .frame_vcov_kind(frame)
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
-  # the footer must attribute the df source truthfully. (glmmTMB under
-  # CR0 keeps its Wald-z line: its sandwich SEs are tested against the
-  # normal, and the Std. errors line names the estimator.)
+  # the footer must name the df the rows carry: the cluster-robust
+  # Satterthwaite df. (glmmTMB under CR0 keeps its Wald z line: its
+  # sandwich SEs are tested against the normal, and the Std. errors line
+  # names the estimator.)
   if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
     return(spicy_str("note_pvalues_satterthwaite_cr"))
   }
@@ -1825,9 +1818,9 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   }
   switch(
     cls,
-    "lmerMod" = spicy_str("note_pvalues_wald_lmer"),
-    "glmerMod" = spicy_fmt("note_pvalues_wald", "lme4"),
-    "glmmTMB" = spicy_fmt("note_pvalues_wald", "glmmTMB"),
+    "lmerMod" = ,
+    "glmerMod" = ,
+    "glmmTMB" = spicy_str("note_pvalues_wald"),
     "lme" = spicy_str("note_pvalues_containment"),
     NULL
   )

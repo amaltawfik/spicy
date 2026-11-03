@@ -326,8 +326,11 @@
 #'
 #' @section Mixed effects:
 #' Fixed effects: Satterthwaite t (`lmer` + \pkg{lmerTest}), Wald z
-#' (`glmer`, `glmmTMB`), containment-df t (`lme`). Random effects render as
-#' a `Random effects` block of rows (SD / correlation / residual with SE and
+#' (`glmer`, `glmmTMB`), containment-df t (`lme`). A plain `lme4::lmer()`
+#' fit gets Wald z, and a message, once per session, suggests refitting
+#' with `lmerTest::lmer()`; the note names the method only. Random effects
+#' render as a `Random effects` block of rows (SD / correlation / residual
+#' with SE and
 #' CI; `re_scale`, `re_columns`), deliberately with **no per-row p-value**
 #' (boundary-invalid Wald; Self & Liang 1987) -- the footer carries the
 #' chi-bar-squared LR test of the whole random part, and

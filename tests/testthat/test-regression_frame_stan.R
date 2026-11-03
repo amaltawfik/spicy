@@ -7,8 +7,8 @@
 #   * Schema validity in all paths, with the new `pd` column populated
 #     and `p_value` left NA per Q1.
 #   * ci_method = "posterior_quantile" by default; ETI CrI.
-#   * Family-aware title_prefix decorated with the posterior engine
-#     ("stanreg" / "brmsfit").
+#   * Family-aware title_prefix naming the method, never the posterior
+#     engine ("stanreg" / "brmsfit").
 #   * Oracle cross-validation against parameters::model_parameters()
 #     (skipped if not installed).
 #
@@ -217,11 +217,14 @@ test_that("brmsfit: estimate matches posterior median; std_error matches posteri
 
 # ---- 3. brmsfit: family-aware title_prefix and supports ------------------
 
-test_that("brmsfit gaussian: title_prefix names linear + brmsfit engine", {
+test_that("brmsfit gaussian: title_prefix names the method, not the engine", {
   fit <- .fit_brms_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "linear", fixed = TRUE)
-  expect_match(fr$info$extras$title_prefix, "brmsfit", fixed = TRUE)
+  expect_identical(fr$info$extras$title_prefix, "Bayesian linear regression")
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
+  )
 })
 
 test_that("brmsfit logit: family = bernoulli/logit; title decorates with logistic", {

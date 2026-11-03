@@ -101,7 +101,6 @@ as_regression_frame.stanreg <- function(
     ci_method = ci_method,
     model_id = model_id,
     class_name = "stanreg",
-    title_class = .stanreg_title_prefix(fit),
     random_effects = .stan_random_effects(
       fit,
       "stanreg",
@@ -194,7 +193,6 @@ as_regression_frame.brmsfit <- function(
     ci_method = ci_method,
     model_id = model_id,
     class_name = "brmsfit",
-    title_class = .brmsfit_title_prefix(fit),
     random_effects = .stan_random_effects(
       fit,
       "brmsfit",
@@ -1080,7 +1078,6 @@ as_regression_frame.brmsfit <- function(
   ci_method,
   model_id,
   class_name,
-  title_class,
   random_effects = NULL,
   n_groups = NULL,
   show_fit_stats = NULL,
@@ -1267,15 +1264,9 @@ as_regression_frame.brmsfit <- function(
 
   has_identity_link <- identical(fam$link, "identity")
   title_prefix <- if (has_identity_link) {
-    paste0("Bayesian linear regression (", title_class, ")")
+    "Bayesian linear regression"
   } else {
-    paste0(
-      "Bayesian ",
-      .stan_family_title(fam),
-      " regression (",
-      title_class,
-      ")"
-    )
+    paste0("Bayesian ", .stan_family_title(fam), " regression")
   }
 
   # Reference-table guard: a posterior whose sampler misbehaved must
@@ -1317,32 +1308,45 @@ as_regression_frame.brmsfit <- function(
     k_thr = loo_pair$k_thr,
     n_bad_p = waic_pair$n_bad_p
   )
+  # The table note states these caveats for the reader; the remedies
+  # are for the analyst and live here only (Bayesian Workflow ch. 24:
+  # moment matching first, then refitting the flagged folds, then
+  # K-fold CV).
   if (isTRUE(loo_pair$n_bad_k > 0L)) {
     spicy_warn(
-      sprintf(
-        paste0(
-          "PSIS-LOO diagnostics (outcome: %s): %d of %d ",
-          "observations with Pareto k > %.2f -- the requested ",
-          "ELPD / LOOIC values and SE(ELPD) are unreliable."
+      c(
+        sprintf(
+          paste0(
+            "PSIS-LOO diagnostics (outcome: %s): %d of %d ",
+            "observations with Pareto k > %.2f -- the requested ",
+            "ELPD / LOOIC values and SE(ELPD) are unreliable."
+          ),
+          dv,
+          loo_pair$n_bad_k,
+          loo_pair$n_k,
+          loo_pair$k_thr
         ),
-        dv,
-        loo_pair$n_bad_k,
-        loo_pair$n_k,
-        loo_pair$k_thr
+        "i" = paste0(
+          "Consider `loo::loo_moment_match()`, refitting the flagged ",
+          "folds (`k_threshold = 0.7`), or K-fold cross-validation."
+        )
       ),
       class = c("spicy_bayes_diagnostics", "spicy_caveat")
     )
   }
   if (isTRUE(waic_pair$n_bad_p > 0L)) {
     spicy_warn(
-      sprintf(
-        paste0(
-          "WAIC diagnostics (outcome: %s): p_waic > 0.4 for %d ",
-          "observation(s) -- the requested WAIC value is ",
-          "unreliable; prefer PSIS-LOO."
+      c(
+        sprintf(
+          paste0(
+            "WAIC diagnostics (outcome: %s): p_waic > 0.4 for %d ",
+            "observation(s) -- the requested WAIC value is ",
+            "unreliable."
+          ),
+          dv,
+          waic_pair$n_bad_p
         ),
-        dv,
-        waic_pair$n_bad_p
+        "i" = "Prefer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`)."
       ),
       class = c("spicy_bayes_diagnostics", "spicy_caveat")
     )
@@ -1424,7 +1428,7 @@ as_regression_frame.brmsfit <- function(
 
 
 # Family-title helper: lowercase variants for the title (e.g.
-# "Bayesian logistic regression (brmsfit)").
+# "Bayesian logistic regression").
 .stan_family_title <- function(fam) {
   # Binomial titles are LINK-aware: a probit fit is NOT a logistic
   # regression -- mirrors spicy_glm_title_prefix and the merMod /
@@ -1448,13 +1452,6 @@ as_regression_frame.brmsfit <- function(
     paste0(tolower(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
   )
 }
-
-
-# Per-class title-prefix decorators name the underlying engine
-# ("stanreg" or "brmsfit") so a reader can tell which Bayesian backend
-# produced the fit when scanning multi-model tables.
-.stanreg_title_prefix <- function(fit) "stanreg"
-.brmsfit_title_prefix <- function(fit) "brmsfit"
 
 
 # ---- Random effects for Bayesian multilevel fits ---------------------------
@@ -1834,8 +1831,7 @@ as_regression_frame.brmsfit <- function(
   # The TARGETS are rendered numbers too. A sentence that read "max
   # R-hat = 1,034 (target < 1.01)" would carry two decimal marks four
   # words apart; the star legend settled the same question the same way
-  # ("*** p < 0,001"). Only literal R CODE keeps its point below --
-  # `k_threshold = 0.7` is an argument the reader retypes.
+  # ("*** p < 0,001").
   lookup <- function(key) {
     if (translated) spicy_str(key) else unname(.spicy_strings[[key]])
   }
@@ -1911,9 +1907,8 @@ as_regression_frame.brmsfit <- function(
 #
 # The Pareto-k and p_waic thresholds are quoted back to the reader as
 # prose, so they follow the mark like the targets in the sibling
-# sentence. What does NOT follow it is literal R code -- the
-# `k_threshold = 0.7` argument and `show_fit_stats = "elpd_loo"` are
-# things the reader retypes, and R parses a point.
+# sentence. The note carries no R code: the remedies are for the
+# analyst and live in the warnings of .stan_info().
 .stan_loo_text <- function(d, decimal_mark = ".") {
   if (!is.list(d)) {
     return(NULL)
@@ -1955,8 +1950,8 @@ as_regression_frame.brmsfit <- function(
     )
   }
   if (isTRUE(d$n_bad_k > 0L)) {
-    # Remediation ladder per Bayesian Workflow ch. 24: moment matching
-    # first, then refitting the flagged folds, then K-fold CV.
+    # The fact only: the remediation ladder is in the warning that
+    # fires with it (the spicy_bayes_diagnostics warning of .stan_info()).
     bits <- c(
       bits,
       spicy_fmt(

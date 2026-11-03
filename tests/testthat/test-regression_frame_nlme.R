@@ -228,12 +228,16 @@ test_that("lme: supports flags are correct", {
   expect_true(sp$standardise_refit)
 })
 
-test_that("lme: title_prefix = 'Linear mixed-effects regression (nlme)'", {
+test_that("lme: title_prefix = 'Linear mixed-effects regression', no engine", {
   fit <- .fit_lme_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Linear mixed-effects regression (nlme)"
+    "Linear mixed-effects regression"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   )
 })
 
@@ -338,12 +342,16 @@ test_that("gls without correlation structure: vcov_label is plain Wald", {
 
 # ---- 11. gls: supports + title -------------------------------------------
 
-test_that("gls: title_prefix = 'Generalized least squares (nlme)'", {
+test_that("gls: title_prefix = 'Generalized least squares', no engine", {
   fit <- .fit_gls_corcs()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Generalized least squares (nlme)"
+    "Generalized least squares"
+  )
+  expect_no_match(
+    fr$info$extras$title_prefix,
+    "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   )
 })
 
