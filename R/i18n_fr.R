@@ -835,18 +835,18 @@
   hyp_fr <- if (partial) {
     c(
       "cotes partiellement proportionnelles",
-      "pentes partiellement parall\u00E8les",
+      "\u00E9galit\u00E9 partielle des pentes",
       "risques partiellement proportionnels",
-      "pentes partiellement parall\u00E8les",
-      "pentes partiellement parall\u00E8les"
+      "\u00E9galit\u00E9 partielle des pentes",
+      "\u00E9galit\u00E9 partielle des pentes"
     )
   } else {
     c(
       "cotes proportionnelles",
-      "pentes parall\u00E8les",
+      "\u00E9galit\u00E9 des pentes",
       "risques proportionnels",
-      "pentes parall\u00E8les",
-      "pentes parall\u00E8les"
+      "\u00E9galit\u00E9 des pentes",
+      "\u00E9galit\u00E9 des pentes"
     )
   }
   if (partial) {
@@ -1006,10 +1006,10 @@
   # revendique donc pas les risques proportionnels.
   "Cumulative complementary log-log mixed-effects regression" = "R\u00E9gression \u00E0 log-log compl\u00E9mentaire cumulatif \u00E0 effets mixtes",
   # Les liens flexibles de clm.
-  "Cumulative Aranda-Ordaz regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (pentes parall\u00E8les)",
-  "Cumulative Aranda-Ordaz regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (pentes partiellement parall\u00E8les)",
-  "Cumulative log-gamma regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (pentes parall\u00E8les)",
-  "Cumulative log-gamma regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (pentes partiellement parall\u00E8les)",
+  "Cumulative Aranda-Ordaz regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (\u00E9galit\u00E9 des pentes)",
+  "Cumulative Aranda-Ordaz regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (\u00E9galit\u00E9 partielle des pentes)",
+  "Cumulative log-gamma regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (\u00E9galit\u00E9 des pentes)",
+  "Cumulative log-gamma regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (\u00E9galit\u00E9 partielle des pentes)",
   # La survie : Cox, les modeles AFT de survreg et les modeles
   # parametriques de flexsurv.
   "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
