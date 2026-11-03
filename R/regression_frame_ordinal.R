@@ -245,8 +245,8 @@ as_regression_frame.clmm <- function(
   # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. Reported
   # upstream with a tested patch: runehaubo/ordinal#76. The coefficients of a
   # "cloglog" clmm are therefore not log hazard ratios: the ratio is
-  # refused rather than mislabeled, and the title does not claim
-  # proportional hazards.
+  # refused rather than mislabeled, and the title names the link the call
+  # asked for without claiming proportional hazards.
   if (isTRUE(exponentiate) && identical(fit$link, "cloglog")) {
     spicy_abort(
       c(
@@ -530,12 +530,7 @@ as_regression_frame.clmm <- function(
     singular_terms = character(0),
     has_weights = .ordinal_has_weights(fit),
     weighted_n = NA_real_,
-    title_prefix = paste0(
-      .polr_link_title(link),
-      " regression (",
-      .ordinal_assumption_label(link),
-      ")"
-    ),
+    title_prefix = .ordinal_title_prefix(link),
     exp_applied = FALSE,
     exp_header = NA_character_,
     response_levels = as.character(fit$lev %||% character(0)),
@@ -660,16 +655,30 @@ as_regression_frame.clmm <- function(
   )
 }
 
-.polr_link_title <- function(method) {
-  switch(
-    method,
-    logistic = "Cumulative logit",
-    probit = "Cumulative probit",
-    cloglog = "Cumulative cloglog",
-    loglog = "Cumulative loglog",
-    cauchit = "Cumulative cauchit",
-    # nocov: polr$method is always one of the 5 links above.
-    paste0("Cumulative ", method)
+# The title of a cumulative-link model, one source for polr, clm, clmm,
+# svyolr and stan_polr, so they read alike: the link spelled out (polr
+# calls the logit "logistic"; a flexible clm link, Aranda-Ordaz or
+# log-gamma, is already a name), "mixed-effects" when the model has
+# random effects, and the restriction the link implies in parentheses
+# (.ordinal_assumption_label()), "partial" under clm's `nominal =`.
+.ordinal_title_prefix <- function(link, partial = FALSE, mixed = FALSE) {
+  words <- switch(
+    link,
+    logistic = ,
+    logit = "logit",
+    probit = "probit",
+    cloglog = "complementary log-log",
+    loglog = "log-log",
+    cauchit = "cauchit",
+    link
+  )
+  paste0(
+    "Cumulative ",
+    words,
+    if (mixed) " mixed-effects",
+    " regression (",
+    .ordinal_assumption_label(link, partial = partial),
+    ")"
   )
 }
 
@@ -982,11 +991,9 @@ as_regression_frame.clmm <- function(
     singular_terms = character(0),
     has_weights = .ordinal_has_weights(fit),
     weighted_n = NA_real_,
-    title_prefix = paste0(
-      .clm_link_title(link),
-      " regression (",
-      .ordinal_assumption_label(link, partial = !is.null(fit$nom.terms)),
-      ")"
+    title_prefix = .ordinal_title_prefix(
+      link,
+      partial = !is.null(fit$nom.terms)
     ),
     exp_applied = FALSE,
     exp_header = NA_character_,
@@ -1214,19 +1221,6 @@ as_regression_frame.clmm <- function(
 }
 
 
-.clm_link_title <- function(link) {
-  switch(
-    link,
-    logit = "Cumulative logit",
-    probit = "Cumulative probit",
-    cloglog = "Cumulative cloglog",
-    loglog = "Cumulative loglog",
-    cauchit = "Cumulative cauchit",
-    paste0("Cumulative ", link)
-  )
-}
-
-
 # ---- clmm helpers ---------------------------------------------------------
 
 # Build the info list for a clmm fit: the clm info (thresholds, link, the
@@ -1276,17 +1270,14 @@ as_regression_frame.clmm <- function(
     extras = list(
       has_singular = .clmm_is_singular(fit),
       has_weights = .ordinal_has_weights(fit),
-      # No "(proportional hazards)" for a cloglog clmm: see the refusal
-      # of `exponentiate` above.
+      # The title names the link the call asked for. A cloglog title
+      # does not claim proportional hazards: clmm's cloglog and loglog
+      # links are swapped against clm's and glmmTMB's (see
+      # as_regression_frame.clmm(), runehaubo/ordinal#76).
       title_prefix = if (identical(link, "cloglog")) {
-        paste(.clm_link_title(link), "mixed-effects regression")
+        "Cumulative complementary log-log mixed-effects regression"
       } else {
-        paste0(
-          .clm_link_title(link),
-          " mixed-effects regression (",
-          .ordinal_assumption_label(link),
-          ")"
-        )
+        .ordinal_title_prefix(link, mixed = TRUE)
       },
       response_levels = as.character(fit$y.levels %||% character(0)),
       thresholds = .clm_thresholds(fit)

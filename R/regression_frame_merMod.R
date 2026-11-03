@@ -518,11 +518,16 @@ inform_lmertest_hint <- function() {
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
-  # glmer.nb: the NB2 theta and alpha = 1/theta, the rows of glm.nb.
-  nb_theta <- if (
-    inherits(fit, "glmerMod") &&
-      startsWith(stats::family(fit)$family, "Negative Binomial(")
-  ) {
+  # glmer.nb: the NB2 theta and alpha = 1/theta, the rows of glm.nb. Its
+  # sigma() is the family's fixed 1, not a residual scale, and its
+  # dispersion is the theta row, so the sigma cell stays blank, as for
+  # glm.nb.
+  is_nb <- inherits(fit, "glmerMod") &&
+    startsWith(stats::family(fit)$family, "Negative Binomial(")
+  if (is_nb) {
+    fit_stats$sigma <- NA_real_
+  }
+  nb_theta <- if (is_nb) {
     tryCatch(
       as.numeric(lme4::getME(fit, "glmer.nb.theta")),
       error = function(e) NA_real_

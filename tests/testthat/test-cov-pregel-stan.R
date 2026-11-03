@@ -214,26 +214,69 @@ test_that("a factor whose reference was kept contributes no reference row", {
 })
 
 
-# ---- 1442-1447: the family-title vocabulary -------------------------------
+# ---- The family-title vocabulary ------------------------------------------
 
 test_that("the Bayesian title names the family in the reader's words", {
   # The title prefix reads "Bayesian <family> regression", no engine.
-  # Only a NON-identity link reaches this helper -- an identity link is
-  # "Bayesian linear regression" without asking -- so these are the
-  # words a Poisson, a Gamma or an inverse-Gaussian posterior gets.
+  # The words come from the family, never from the link alone.
   title <- function(family, link = "log") {
     spicy:::.stan_family_title(list(family = family, link = link))
   }
   expect_identical(title("poisson"), "Poisson")
-  expect_identical(title("Gamma"), "Gamma")
+  # brms spells the Gamma family in lower case; mid-title it is "gamma".
+  expect_identical(title("Gamma"), "gamma")
+  expect_identical(title("gamma"), "gamma")
   expect_identical(title("inverse.gaussian"), "inverse-Gaussian")
-  expect_identical(title("gaussian"), "linear")
-  # An unlisted family keeps its own name, lower-cased at the front so
-  # it reads inside the sentence rather than shouting mid-title.
-  expect_identical(title("negbinomial"), "negbinomial")
-  expect_identical(title("Beta"), "beta")
-  # The binomial arm above it stays link-aware, which is the reason the
-  # two switches are separate.
+  expect_identical(title("gaussian", "identity"), "linear")
+  expect_identical(title("gaussian"), "Gaussian")
+  # An identity link does not make a model linear.
+  expect_identical(title("lognormal", "identity"), "log-normal")
+  expect_identical(title("student", "identity"), "Student-t")
+  # The R codes of rstanarm and brms are spelled out.
+  expect_identical(title("neg_binomial_2"), "negative-binomial")
+  expect_identical(title("negbinomial"), "negative-binomial")
+  expect_identical(title("zero_inflated_poisson"), "zero-inflated Poisson")
+  expect_identical(title("hurdle_negbinomial"), "negative-binomial hurdle")
+  # The binomial arm stays link-aware; bernoulli is the binomial.
   expect_identical(title("binomial", "probit"), "probit")
   expect_identical(title("bernoulli", "logit"), "logistic")
+  # A family it does not know is not named.
+  expect_null(title("Beta"))
+  expect_null(title("cumulative", "logit"))
+})
+
+test_that("the Bayesian title prefix falls back to the bare method", {
+  fake <- structure(list(), class = c("stanreg", "glm", "lm"))
+  prefix <- function(family, link) {
+    spicy:::.stan_title_prefix(fake, list(family = family, link = link))
+  }
+  expect_identical(prefix("gaussian", "identity"), "Bayesian linear regression")
+  expect_identical(prefix("beta", "logit"), "Bayesian beta regression")
+  expect_identical(prefix("categorical", "logit"), "Bayesian regression")
+})
+
+test_that("an ordinal stan_polr fit is refused, a binary one is a glm", {
+  # With more than two outcome levels rstanarm keeps the link as a bare
+  # string, which .stan_family() cannot read (gaussian fallback): the fit
+  # is refused rather than tabulated as a gaussian model.
+  ordinal_fit <- structure(
+    list(family = "logistic", method = "logistic"),
+    class = c("stanreg", "polr")
+  )
+  expect_error(
+    spicy:::.stan_refuse_ordinal(ordinal_fit),
+    "stan_polr",
+    class = "spicy_unsupported"
+  )
+  # A binary stan_polr carries a real binomial family: a glm-style model,
+  # titled in the glm words.
+  binary <- structure(
+    list(family = stats::binomial(link = "probit"), method = "probit"),
+    class = c("stanreg", "polr")
+  )
+  expect_null(spicy:::.stan_refuse_ordinal(binary))
+  expect_identical(
+    spicy:::.stan_title_prefix(binary, spicy:::.stan_family(binary)),
+    "Bayesian probit regression"
+  )
 })

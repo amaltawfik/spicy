@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------------
 # Phase 6b: as_regression_frame() method for fixest fits.
 #
-# fixest::feols (OLS), feglm (general family), fepois, fenegbin, ...
-# all share class "fixest" -- the family slot disambiguates them.
+# fixest::feols (OLS), feglm (general family), fepois, femlm, fenegbin,
+# ... all share class "fixest" -- the family slot disambiguates them.
 #
 # Key quirks vs lm/glm:
 #   * NO (Intercept) row in coef -- fixed effects absorb it. The frame
@@ -45,15 +45,15 @@ as_regression_frame.fixest <- function(
   .check_fixest_available()
 
   # Family disambiguation. feglm / fepois store fit$family as a glm-family
-  # *list* (gaussian / binomial / poisson / Gamma / ...). fenegbin instead
-  # stores the character string "negbin" (with the dispersion theta in
-  # fit$theta) and is NOT a list. Both feglm-like and fenegbin fits report
-  # asymptotic Wald-z inference (summary()$coeftable has "z value" /
-  # "Pr(>|z|)") with df = Inf, no classical R^2, and a log link by default
-  # -- so they share the GLM-like processing path. feols (OLS) is the only
-  # remaining case: fit$family is NULL and inference is Wald-t.
-  is_negbin <- is.character(fit$family) && identical(fit$family[[1L]], "negbin")
-  is_glm <- is_negbin || (!is.null(fit$family) && is.list(fit$family))
+  # *list* (gaussian / binomial / poisson / Gamma / ...). femlm and
+  # fenegbin instead store a character string: "poisson", "logit",
+  # "gaussian" or "negbin" (fenegbin is "negbin", with the dispersion
+  # theta in fit$theta). Every one of these is a maximum-likelihood fit
+  # with no classical R^2, and the femlm / fenegbin coeftable reports
+  # asymptotic Wald z ("z value" / "Pr(>|z|)", df = Inf) for all four
+  # strings -- so they share the GLM-like processing path. feols (OLS) is
+  # the only remaining case: fit$family is NULL and inference is Wald-t.
+  is_glm <- is.character(fit$family) || is.list(fit$family)
   coefs <- .fixest_coefs(fit, ci_level = ci_level, is_glm = is_glm)
   # AME rows when requested (finding M2): response-scale avg_slopes().
   # `vcov` is always the fit's own estimator here -- the variance comes
@@ -61,15 +61,18 @@ as_regression_frame.fixest <- function(
   # reports; "IID" unless the user asked for something else at
   # estimation or in summary()), and spicy's HC* / CR* / resampling
   # tokens are refused up front by .robust_vcov_support(), which grants
-  # fixest "classical" only.
-  coefs <- .attach_ame_to_frame_coefs(
-    coefs,
-    fit,
-    ci_level,
-    show_columns,
-    vcov_type = vcov,
-    cluster = cluster
-  )
+  # fixest "classical" only. A non-linear fit with fixed effects has no
+  # AME (see .fixest_ame_ok()), so none is attempted.
+  if (.fixest_ame_ok(fit, is_glm)) {
+    coefs <- .attach_ame_to_frame_coefs(
+      coefs,
+      fit,
+      ci_level,
+      show_columns,
+      vcov_type = vcov,
+      cluster = cluster
+    )
+  }
   info <- .fixest_info(
     fit,
     vcov_kind = vcov,
@@ -233,9 +236,11 @@ as_regression_frame.fixest <- function(
 #   * feols (OLS): fit$family is NULL -> gaussian / identity.
 #   * feglm / fepois: fit$family is a glm-family *list* carrying
 #     $family ("binomial", "poisson", "Gamma", ...) and $link.
-#   * fenegbin: fit$family is the character string "negbin" (theta in
-#     fit$theta). The negative-binomial GLM uses a log link by default,
-#     matching MASS::glm.nb()'s convention in as_regression_frame.negbin().
+#   * femlm / fenegbin: fit$family is a character string with a fixed
+#     link, named here as glm names it, so the glm title and
+#     exponentiate rules apply: "poisson" (log), "logit" (the binomial
+#     logit), "gaussian" (identity), "negbin" (theta in fit$theta; log,
+#     MASS::glm.nb()'s convention in as_regression_frame.negbin()).
 .fixest_family_info <- function(fit, is_glm) {
   if (!is_glm) {
     return(list(family = "gaussian", link = "identity"))
@@ -243,8 +248,13 @@ as_regression_frame.fixest <- function(
   if (is.list(fit$family)) {
     return(list(family = fit$family$family, link = fit$family$link))
   }
-  # fenegbin: character "negbin", log link by default.
-  list(family = "negbin", link = "log")
+  switch(
+    fit$family[[1L]],
+    poisson = list(family = "poisson", link = "log"),
+    logit = list(family = "binomial", link = "logit"),
+    gaussian = list(family = "gaussian", link = "identity"),
+    list(family = "negbin", link = "log")
+  )
 }
 
 
@@ -304,7 +314,7 @@ as_regression_frame.fixest <- function(
   exp_ok <- is_glm && !identical(fam$link, "identity")
 
   supports <- list(
-    ame = TRUE,
+    ame = .fixest_ame_ok(fit, is_glm),
     partial_effect_size = FALSE,
     classical_r2 = !is_glm,
     nested_lrt = TRUE,
@@ -360,7 +370,8 @@ as_regression_frame.fixest <- function(
 # Fit-stats for fixest. OLS gets classical R^2 + within R^2 (the FE-
 # partialled variant) via fitstat(); GLM-like gets the McFadden
 # pseudo-R^2 (fixest's own "pr2": 1 - ll/ll0), matching the glm /
-# ordinal / multinom default family.
+# ordinal / multinom default family. A negative binomial also gets its
+# theta and alpha = 1/theta, the rows of MASS::glm.nb().
 .fixest_fit_stats <- function(fit, is_glm) {
   r2 <- if (!is_glm) {
     tryCatch(
@@ -384,6 +395,17 @@ as_regression_frame.fixest <- function(
     NA_real_
   }
   sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
+  # femlm / fenegbin store the family as a string, feglm / fepois as a
+  # glm family object, feols not at all.
+  fam_name <- if (is.list(fit$family)) fit$family$family else fit$family
+  if (is_glm) {
+    sigma_val <- .fixest_glm_sigma(fit, fam_name, sigma_val)
+  }
+  theta <- if (identical(fam_name, "negbin")) {
+    as.numeric(fit$theta %||% NA_real_)
+  } else {
+    NA_real_
+  }
   list(
     r_squared = as.numeric(r2$r2 %||% NA_real_),
     adj_r_squared = as.numeric(r2$ar2 %||% NA_real_),
@@ -405,8 +427,49 @@ as_regression_frame.fixest <- function(
       error = function(e) NA_real_
     ),
     sigma = sigma_val,
+    theta = theta,
+    alpha = 1 / theta,
     nobs = as.integer(stats::nobs(fit))
   )
+}
+
+
+# TRUE when the fit has an average marginal effect: feols, or a
+# non-linear fit without fixed effects. With fixed effects, the
+# delta-method variance of a non-linear fit would need the uncertainty of
+# the fixed effects, which fixest does not estimate, and marginaleffects
+# refuses the fit ("cannot take into account the uncertainty in
+# fixed-effects parameters", checked with marginaleffects 1.0.0 on
+# fepois, feglm and fenegbin). Declaring it lets table_regression()
+# refuse the request with a reason instead of a column of dashes.
+.fixest_ame_ok <- function(fit, is_glm) {
+  !is_glm || length(fit$fixef_vars) == 0L
+}
+
+
+# The sigma row of a maximum-likelihood fixest fit, by the glm rule: the
+# square root of the dispersion, 1 when the family fixes it. feglm /
+# fepois store glm's own dispersion in fit$dispersion (1 for poisson and
+# binomial, the Pearson estimate otherwise); femlm stores none, so its
+# poisson and logit take the fixed 1 and its gaussian the sigma() of the
+# fit, the same square root. Blank for the negative binomial, whose
+# dispersion is the theta row. fixest's own sigma() is a response-scale
+# RMSE on these fits, which is why it is not used for them.
+.fixest_glm_sigma <- function(fit, fam_name, sigma_fit) {
+  if (identical(fam_name, "negbin")) {
+    return(NA_real_)
+  }
+  disp <- fit$dispersion
+  if (is.numeric(disp) && length(disp) == 1L && is.finite(disp)) {
+    return(sqrt(as.numeric(disp)))
+  }
+  if (isTRUE(fam_name %in% c("poisson", "logit"))) {
+    return(1)
+  }
+  if (identical(fam_name, "gaussian")) {
+    return(as.numeric(sigma_fit))
+  }
+  NA_real_
 }
 
 

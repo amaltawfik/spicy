@@ -1466,9 +1466,10 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # W, H): no style and no journal observed defines them, so no rule does,
 # "all" included. The chi-squared has an entry only for the disambiguations
 # of table_regression() that name its test (decision 3). Neither has
-# the percent sign, which APA 7.15 lets every table use undefined. Three
+# the percent sign, which APA 7.15 lets every table use undefined. Four
 # fit-statistic rows define themselves in their label and are not
-# collected: "theta (dispersion)", "alpha (= 1/theta)", "phi (precision)".
+# collected: "theta (dispersion)", "alpha (= 1/theta)", "delta (NB1
+# dispersion)", "phi (precision)".
 #
 # Per entry:
 #   symbol     the key of the displayed symbol (a header key);

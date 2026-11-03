@@ -371,9 +371,9 @@ test_that("a note with no numbers behind it passes through verbatim", {
 })
 
 
-# ---- 5. The quantile-regression tau is pinned at the point ----------------
+# ---- 5. The quantile-regression tau: a key at the point, shown in the mark --
 
-test_that("the rq title tau stays at the point under any mark", {
+test_that("the rq tau is written in the mark while its prefix key stays at the point", {
   skip_if_not_installed("quantreg")
   set.seed(11)
   d <- data.frame(y = stats::rnorm(60), x = stats::rnorm(60))
@@ -381,23 +381,26 @@ test_that("the rq title tau stays at the point under any mark", {
   tau_sym <- intToUtf8(0x03C4)
   # `extras$title_prefix` is not only display: it is the LOOKUP KEY of
   # the language bridge and the identity the type footer dedupes models
-  # on. A key whose spelling depended on a rendering argument would be a
-  # key that sometimes matches. The tau therefore does NOT follow the
-  # mark -- 251-C, which makes the prefix a registry key with the tau as
-  # data, is the fix.
+  # on, so its spelling never depends on a rendering argument. The mark
+  # is applied to the displayed title and note only, after every lookup.
+  expect_identical(
+    as_regression_frame(fit)$info$extras$title_prefix,
+    paste0("Quantile regression (", tau_sym, " = 0.25)")
+  )
   for (dm in c(".", ",")) {
+    shown <- paste0("Quantile regression (", tau_sym, " = 0", dm, "25)")
     tbl <- table_regression(fit, decimal_mark = dm)
-    expect_match(
-      attr(tbl, "title"),
-      paste0("Quantile regression (", tau_sym, " = 0.25)"),
-      fixed = TRUE
-    )
-    expect_match(
-      attr(tbl, "note"),
-      paste0("Quantile regression (", tau_sym, " = 0.25)."),
-      fixed = TRUE
-    )
+    expect_match(attr(tbl, "title"), shown, fixed = TRUE)
+    expect_match(attr(tbl, "note"), paste0(shown, "."), fixed = TRUE)
   }
+  # Two quantiles stay two models in the type footer, under either mark.
+  fit_75 <- quantreg::rq(y ~ x, tau = 0.75, data = d)
+  note <- attr(
+    table_regression(list(fit, fit_75), decimal_mark = ","),
+    "note"
+  )
+  expect_match(note, paste0("(", tau_sym, " = 0,25)"), fixed = TRUE)
+  expect_match(note, paste0("(", tau_sym, " = 0,75)"), fixed = TRUE)
 })
 
 

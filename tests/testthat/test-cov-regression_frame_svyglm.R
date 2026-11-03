@@ -5,8 +5,8 @@
 # test-regression_frame_svyglm.R:
 #   * .check_survey_available() abort when `survey` is unavailable (mocked)
 #   * no-intercept factor model -> reference NOT dropped -> empty ref frame
-#   * .svyglm_family_title() arms: poisson / Gamma / inverse.gaussian /
-#     gaussian (identity) / default fall-through
+#   * .svyglm_title_prefix(): the glm words, the quasi families as their
+#     model, an unknown family unnamed
 #   * .design_weighted_n() defensive NA branches for fits whose
 #     survey.design has been detached or stripped of weights
 # ---------------------------------------------------------------------------
@@ -67,26 +67,54 @@ test_that("svyglm no-intercept factor: every level present, zero reference rows"
 })
 
 
-# ---- 3. .svyglm_family_title(): switch arms ------------------------------
+# ---- 3. .svyglm_title_prefix(): the glm words ----------------------------
 
-test_that(".svyglm_family_title maps non-quasi GLM families to display labels", {
-  expect_identical(spicy:::.svyglm_family_title(stats::poisson()), "Poisson")
-  expect_identical(spicy:::.svyglm_family_title(stats::Gamma()), "Gamma")
+test_that(".svyglm_title_prefix names the family as the glm title does", {
+  title <- function(fam) spicy:::.svyglm_title_prefix(fam)
   expect_identical(
-    spicy:::.svyglm_family_title(stats::inverse.gaussian()),
-    "inverse-Gaussian"
+    title(stats::poisson()),
+    "Survey-weighted Poisson regression"
   )
-  expect_identical(spicy:::.svyglm_family_title(stats::gaussian()), "linear")
+  expect_identical(title(stats::Gamma()), "Survey-weighted gamma regression")
+  expect_identical(
+    title(stats::inverse.gaussian()),
+    "Survey-weighted inverse-Gaussian regression"
+  )
+  expect_identical(
+    title(stats::gaussian()),
+    "Survey-weighted linear regression"
+  )
+  expect_identical(
+    title(stats::gaussian(link = "log")),
+    "Survey-weighted Gaussian regression"
+  )
+  # Named by the family, never by the link alone: a Poisson model with
+  # an identity link is still a Poisson model.
+  expect_identical(
+    title(stats::poisson(link = "identity")),
+    "Survey-weighted Poisson regression"
+  )
+  # The quasi families are survey's way of fitting the binomial and
+  # Poisson models: same model, same title.
+  expect_identical(
+    title(stats::quasibinomial(link = "probit")),
+    "Survey-weighted probit regression"
+  )
+  expect_identical(
+    title(stats::quasipoisson(link = "identity")),
+    "Survey-weighted Poisson regression"
+  )
 })
 
-test_that(".svyglm_family_title falls through to lower-cased family name", {
-  # A family the switch does not name explicitly hits the default arm,
-  # which lower-cases the first letter.
+test_that(".svyglm_title_prefix does not name a family it does not know", {
   fake_fam <- list(family = "Tweedie", link = "log")
-  expect_identical(spicy:::.svyglm_family_title(fake_fam), "tweedie")
+  expect_identical(
+    spicy:::.svyglm_title_prefix(fake_fam),
+    "Survey-weighted regression"
+  )
 })
 
-test_that("svyglm Gamma fit: title_prefix uses the Gamma family label", {
+test_that("svyglm Gamma fit: title_prefix names the gamma family", {
   d <- .cov_svy_design()
   fit <- survey::svyglm(
     api00 ~ ell,
@@ -94,8 +122,10 @@ test_that("svyglm Gamma fit: title_prefix uses the Gamma family label", {
     family = stats::Gamma(link = "log")
   )
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "Gamma", fixed = TRUE)
-  expect_match(fr$info$extras$title_prefix, "Survey-weighted", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Survey-weighted gamma regression"
+  )
 })
 
 

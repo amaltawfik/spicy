@@ -311,10 +311,7 @@ as_regression_frame.flexsurvreg <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = paste0(
-      .flexsurv_dist_title(dist_clean),
-      " parametric survival regression"
-    ),
+    title_prefix = .flexsurv_title_prefix(dist_clean),
     exp_applied = FALSE,
     exp_header = NA_character_,
     distribution = dist_clean,
@@ -341,22 +338,22 @@ as_regression_frame.flexsurvreg <- function(
 }
 
 
+# The title of a flexsurvreg fit. flexsurvspline() models the log
+# cumulative hazard (or odds) with a spline: the Royston-Parmar model,
+# which no distribution names.
+.flexsurv_title_prefix <- function(dist) {
+  if (grepl("^survspline", dist)) {
+    return("Royston-Parmar spline survival regression")
+  }
+  paste0(.flexsurv_dist_title(dist), " parametric survival regression")
+}
+
+
+# The distribution's name in the title: the shared table of the
+# parametric survival models (.surv_title_dist(), which the footer's
+# "Distribution:" reads too), so the title and the note name it alike.
 .flexsurv_dist_title <- function(dist) {
-  switch(
-    dist,
-    weibull = "Weibull",
-    weibullPH = "Weibull (PH)",
-    lognormal = "Log-normal",
-    lnorm = "Log-normal",
-    gompertz = "Gompertz",
-    gamma = "Gamma",
-    exponential = "Exponential",
-    exp = "Exponential",
-    llogis = "Log-logistic",
-    gengamma = "Generalized gamma",
-    genf = "Generalized F",
-    paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
-  )
+  .surv_title_dist(dist)
 }
 
 

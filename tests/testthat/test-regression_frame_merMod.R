@@ -745,3 +745,28 @@ test_that("glmer.nb: theta and alpha match getME(), as glm.nb and glmmTMB", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("glmer.nb: sigma blank, theta only in its own column", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  fit <- suppressWarnings(lme4::glmer.nb(count ~ mined + (1 | site), data = d))
+  # lme4's sigma() is the family's fixed 1; the dispersion is theta.
+  expect_equal(stats::sigma(fit), 1)
+  expect_true(is.na(as_regression_frame(fit)$info$fit_stats$sigma))
+  fit_p <- lme4::glmer(count ~ mined + (1 | site), data = d, family = poisson)
+  expect_equal(
+    as_regression_frame(fit_p)$info$fit_stats$sigma,
+    stats::sigma(fit_p)
+  )
+  tbl <- table_regression(
+    list(Poisson = fit_p, NB = fit),
+    show_fit_stats = c("theta", "sigma")
+  )
+  df <- as.data.frame(tbl)
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  theta <- lme4::getME(fit, "glmer.nb.theta")
+  expect_equal(row("theta")[["NB: B"]], theta, tolerance = 1e-10)
+  expect_true(is.na(row("theta")[["Poisson: B"]]))
+  expect_true(is.na(row("sigma")[["NB: B"]]))
+})

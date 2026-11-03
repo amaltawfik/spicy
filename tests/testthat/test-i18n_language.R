@@ -1211,7 +1211,7 @@ test_that("every glmer family names its null model in the language", {
     "binomial regression",
     "inverse-Gaussian regression",
     sprintf(
-      "negative binomial\\(%s\\) regression",
+      "negative-binomial regression \\(\u03B8 = %s\\)",
       sub(".", "\\.", formatC(theta, digits = 2, format = "f"), fixed = TRUE)
     )
   )
@@ -1221,7 +1221,7 @@ test_that("every glmer family names its null model in the language", {
     "binomiale",
     "gaussienne inverse",
     sprintf(
-      "binomiale n\u00E9gative \\(%s\\)",
+      "binomiale n\u00E9gative \\(\u03B8 = %s\\)",
       formatC(theta, digits = 2, format = "f", decimal.mark = ",")
     )
   )

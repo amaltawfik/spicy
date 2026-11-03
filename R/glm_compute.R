@@ -58,11 +58,21 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
   if (grepl("^quasi", family_name)) {
     return("Quasi-likelihood regression")
   }
-  # gaussian + identity is lm's model, titled as lm titles it. A gaussian
-  # with another link, or any unrecognized family, falls through to the
-  # generic "Regression" prefix.
-  if (identical(family_name, "gaussian") && identical(link_name, "identity")) {
-    return("Linear regression")
+  # MASS::negative.binomial(theta) and mgcv's nb() put the theta in the
+  # family name, "Negative Binomial(1.5)": the title names the family,
+  # never the number.
+  if (grepl("^Negative Binomial\\(", family_name)) {
+    return("Negative-binomial regression")
+  }
+  # gaussian + identity is lm's model, titled as lm titles it; a gaussian
+  # with another link is no longer linear in the mean, so it is named by
+  # its family. Any unrecognized family falls through to the generic
+  # "Regression" prefix.
+  if (identical(family_name, "gaussian")) {
+    if (identical(link_name, "identity")) {
+      return("Linear regression")
+    }
+    return("Gaussian regression")
   }
   "Regression"
 }

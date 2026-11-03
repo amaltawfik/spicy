@@ -447,6 +447,7 @@ as_regression_frame.glmmTMB <- function(
     sigma = disp$sigma,
     theta = disp$theta,
     alpha = disp$alpha,
+    delta = disp$delta,
     phi = disp$phi,
     nobs = as.integer(stats::nobs(fit))
   )
@@ -600,11 +601,16 @@ as_regression_frame.glmmTMB <- function(
 # only for gaussian (and 1/sqrt(shape) for Gamma, the analog of a Gamma
 # glm's sigma); for the other families it is the family's own dispersion
 # parameter (?glmmTMB::sigma.glmmTMB), never a residual scale. So:
-#   * sigma: gaussian and Gamma; poisson and binomial keep their fixed 1,
-#     as glm and glmer report it; blank for every other family;
+#   * sigma: gaussian and Gamma; poisson, truncated_poisson and binomial
+#     keep their fixed 1, as glm and glmer report it; tweedie gives the
+#     square root of its phi (Var = phi * mu^p, the GLM dispersion), the
+#     glm rule; blank for every other family;
 #   * theta / alpha = 1/theta: nbinom2 and truncated_nbinom2, where
 #     sigma() is the NB2 theta (V = mu(1 + mu/theta)), the glm.nb row;
-#   * phi: beta, where sigma() is the betareg precision.
+#   * delta: nbinom1 and truncated_nbinom1, where sigma() is the NB1
+#     dispersion (V = mu(1 + delta)), Stata's nbreg, dispersion(constant);
+#   * phi: beta, betabinomial and ordbeta, where sigma() is the betareg
+#     precision (the help page gives the last two beta's parameterization).
 # A modeled dispersion (dispformula with covariates) is not one number:
 # every cell stays blank, as betareg's phi does.
 .glmmTMB_dispersion_stats <- function(fit, fam) {
@@ -612,6 +618,7 @@ as_regression_frame.glmmTMB <- function(
     sigma = NA_real_,
     theta = NA_real_,
     alpha = NA_real_,
+    delta = NA_real_,
     phi = NA_real_
   )
   if (!.glmmTMB_constant_dispersion(fit)) {
@@ -621,12 +628,24 @@ as_regression_frame.glmmTMB <- function(
   if (length(s) != 1L || !is.finite(s)) {
     return(out)
   }
-  if (fam$family %in% c("gaussian", "Gamma", "poisson", "binomial")) {
+  # The families whose sigma() is the sigma row itself.
+  sigma_families <- c(
+    "gaussian",
+    "Gamma",
+    "poisson",
+    "truncated_poisson",
+    "binomial"
+  )
+  if (fam$family %in% sigma_families) {
     out$sigma <- s
+  } else if (identical(fam$family, "tweedie")) {
+    out$sigma <- sqrt(s)
   } else if (fam$family %in% c("nbinom2", "truncated_nbinom2")) {
     out$theta <- s
     out$alpha <- 1 / s
-  } else if (identical(fam$family, "beta")) {
+  } else if (fam$family %in% c("nbinom1", "truncated_nbinom1")) {
+    out$delta <- s
+  } else if (fam$family %in% c("beta", "betabinomial", "ordbeta")) {
     out$phi <- s
   }
   out
@@ -793,14 +812,11 @@ as_regression_frame.glmmTMB <- function(
   base <- if (is_gaussian_identity) {
     "Linear mixed-effects regression"
   } else if (identical(fam$family, "ordinal")) {
-    # The clmm title: "Cumulative logit mixed-effects
-    # regression (proportional odds)".
-    paste0(
-      .clm_link_title(fam$link),
-      " mixed-effects regression (",
-      .ordinal_assumption_label(fam$link),
-      ")"
-    )
+    # The ordinal title of clm, with random effects: "Cumulative
+    # complementary log-log mixed-effects regression (proportional
+    # hazards)". Unlike clmm's, glmmTMB's cloglog is the clm cloglog,
+    # so its title keeps the assumption.
+    .ordinal_title_prefix(fam$link, mixed = TRUE)
   } else if (.glmmTMB_is_hurdle(fam, has_zi)) {
     count_fam <- fam
     count_fam$family <- sub("^truncated_", "", fam$family)
@@ -838,8 +854,9 @@ as_regression_frame.glmmTMB <- function(
   combinomial = "Conway-Maxwell-binomial",
   genpois = "Generalized Poisson",
   bell = "Bell",
-  lognormal = "Lognormal",
-  t = "Student t",
+  # Spelled as the survreg and flexsurv titles spell them.
+  lognormal = "Log-normal",
+  t = "Student-t",
   skewnormal = "Skew-normal",
   truncated_poisson = "Zero-truncated Poisson",
   truncated_nbinom1 = "Zero-truncated negative-binomial (NB1)",

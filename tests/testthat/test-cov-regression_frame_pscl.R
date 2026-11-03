@@ -91,12 +91,12 @@ test_that("geometric hurdle title_prefix names Geometric", {
   expect_identical(fr$info$family$family, "geometric")
 })
 
-test_that("geometric zeroinfl title_prefix names Geometric", {
+test_that("geometric zeroinfl title_prefix names the geometric model", {
   fit <- .cov_fit_zeroinfl_geometric()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Geometric zero-inflated regression"
+    "Zero-inflated geometric regression"
   )
 })
 

@@ -1058,6 +1058,7 @@
     alpha = 0x03B1,
     beta = 0x03B2,
     gamma = 0x03B3,
+    delta = 0x03B4,
     varepsilon = 0x03B5,
     zeta = 0x03B6,
     eta = 0x03B7,

@@ -14,9 +14,10 @@
 # in which case the caller keeps the WHOLE English title (coherent or
 # nothing, never a half-translated head). A title names the method,
 # never the engine that fitted it (the engine belongs in the methods
-# section), so the prefix is looked up whole. This helper and the bridge
-# it reads disappear together when 251-C makes the prefix a registry key.
-.title_prefix_display <- function(prefix) {
+# section), so the prefix is looked up whole -- the quantile title alone
+# by its pattern, as it carries its tau. This helper and the bridge it
+# reads disappear together when 251-C makes the prefix a registry key.
+.title_prefix_display <- function(prefix, decimal_mark = NULL) {
   # Defensive: no engine is known to emit a non-string prefix, but an
   # NA here must answer "no entry" under a translating language, as
   # English renders it -- the fallback must never be LESS robust than
@@ -29,6 +30,20 @@
   if (is.null(bridge)) {
     return(NULL)
   }
+  # The one prefix with a number in it: the quantile regression carries
+  # its tau, so no fixed key can match it. The bridge translates
+  # "Quantile regression", and the tau, read back from the English key
+  # (pinned at the point), is written in the table's decimal mark, the
+  # language's when the caller passes none.
+  tau <- .rq_prefix_tau(prefix)
+  if (!is.null(tau)) {
+    rq_head <- unname(bridge["Quantile regression"])
+    if (is.na(rq_head)) {
+      return(NULL)
+    }
+    mark <- decimal_mark %||% .spicy_locale_table(lang)$decimal_mark %||% "."
+    return(paste0(rq_head, " (\u03C4 = ", .footer_num(tau, 2L, mark), ")"))
+  }
   # Single-bracket on purpose: `[[` on a named vector ERRORS on a
   # missing name, `[` answers NA -- and NA here means "no entry".
   hit <- unname(bridge[prefix])
@@ -38,7 +53,32 @@
   hit
 }
 
-build_regression_title_from_frames <- function(frames, nested = FALSE) {
+# The tau of a quantile-regression prefix, NULL for any other prefix.
+# quantreg's frame pins it at the point ("Quantile regression (tau =
+# 0.50)"), so the prefix stays one key whatever the decimal mark.
+.rq_prefix_tau <- function(prefix) {
+  pattern <- "^Quantile regression \\(\u03C4 = ([0-9.]+)\\)$"
+  if (!grepl(pattern, prefix)) {
+    return(NULL)
+  }
+  as.numeric(sub(pattern, "\\1", prefix))
+}
+
+# An English prefix as the table writes it: the tau of a quantile
+# regression takes the table's decimal mark, as every number does.
+.prefix_with_mark <- function(prefix, decimal_mark = NULL) {
+  tau <- .rq_prefix_tau(prefix)
+  if (is.null(tau) || is.null(decimal_mark) || identical(decimal_mark, ".")) {
+    return(prefix)
+  }
+  sub("[0-9.]+\\)$", paste0(.footer_num(tau, 2L, decimal_mark), ")"), prefix)
+}
+
+build_regression_title_from_frames <- function(
+  frames,
+  nested = FALSE,
+  decimal_mark = NULL
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(spicy_str("title_regression_fallback"))
   }
@@ -80,7 +120,7 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   # its type footer is the frozen English "Model k: ..." list, and a
   # French title over an English footer is the hybrid the rule forbids
   # -- even though the fallback prefix "Regression" has a bridge entry.
-  disp <- if (mixed) NULL else .title_prefix_display(prefix)
+  disp <- if (mixed) NULL else .title_prefix_display(prefix, decimal_mark)
   if (!is.null(disp)) {
     if (n == 1L) {
       if (length(outcomes) == 0L) {
@@ -104,6 +144,7 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   # layer is bypassed (these templates must never come out half-French)
   # but a `spicy.labels` override still reaches them -- the registry
   # advertises the keys, so they cannot be dead letters in English.
+  prefix <- .prefix_with_mark(prefix, decimal_mark)
   if (n == 1L) {
     if (length(outcomes) == 0L) {
       return(prefix)
@@ -204,7 +245,10 @@ build_regression_footer_from_frames <- function(
     # state of the fit, a statistic it does not report, and what its
     # coefficients are read against.
     what = .footer_paragraph(
-      build_regression_type_footer_block_from_frames(frames),
+      build_regression_type_footer_block_from_frames(
+        frames,
+        decimal_mark = decimal_mark
+      ),
       # Before the variance label (c), so a design table reads "what the
       # design is" then "where the standard errors come from" -- the
       # order the descriptive twins use.
@@ -335,7 +379,10 @@ capitalize_first <- function(s) {
 # The footer-block builders were migrated one at a time, each with its
 # own byte-equivalence gate; every one now has a _from_frames sibling
 # and the dispatcher that consumed legacy extracts is gone.
-build_regression_type_footer_block_from_frames <- function(frames) {
+build_regression_type_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = NULL
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
@@ -362,18 +409,27 @@ build_regression_type_footer_block_from_frames <- function(frames) {
   # plural English arm routes through the registry too, so a
   # `spicy.labels` override of `note_type_models` works in English, as
   # `spicy_labels()` advertises.
-  disp <- .title_prefix_display(types[1])
+  disp <- .title_prefix_display(types[1], decimal_mark)
+  # The English arms write the tau of a quantile regression with the
+  # table's decimal mark; `types` keeps the keys for the comparisons.
+  types_en <- vapply(
+    types,
+    .prefix_with_mark,
+    character(1),
+    decimal_mark = decimal_mark,
+    USE.NAMES = FALSE
+  )
   if (length(types) == 1L) {
     if (!is.null(disp)) {
       return(paste0(capitalize_first(disp), "."))
     }
-    return(paste0(capitalize_first(types[1]), "."))
+    return(paste0(capitalize_first(types_en[1]), "."))
   }
   if (length(unique(types)) == 1L) {
     if (!is.null(disp)) {
       return(spicy_fmt("note_type_models", lowercase_first(disp)))
     }
-    return(.spicy_fmt_en("note_type_models", capitalize_first(types[1])))
+    return(.spicy_fmt_en("note_type_models", capitalize_first(types_en[1])))
   }
   per <- vapply(
     seq_along(types),
@@ -381,7 +437,7 @@ build_regression_type_footer_block_from_frames <- function(frames) {
       .spicy_fmt_en(
         "note_model_line",
         .model_ref(frames, i, .spicy_fmt_en),
-        lowercase_first(types[i])
+        lowercase_first(types_en[i])
       )
     },
     character(1)
@@ -397,13 +453,31 @@ build_regression_type_footer_block_from_frames <- function(frames) {
 # with a proper noun (Cox, Poisson, Weibull, ...) keep their capital:
 # "Hierarchical Cox proportional hazards regression", "Model 1:
 # Poisson regression" -- lowercasing a surname is a typo, not style.
+# So does a title that starts with an acronym ("IV regression (2SLS)").
+# "Gamma" is the name of a distribution, not of a person: mid-title it
+# is "gamma regression".
 lowercase_first <- function(s) {
   if (!length(s) || !nzchar(s)) {
     return(s)
   }
-  proper <- c("Cox", "Poisson", "Weibull", "Bayesian", "Tweedie")
+  proper <- c(
+    "Cox",
+    "Poisson",
+    "Weibull",
+    "Bayesian",
+    "Tweedie",
+    "Gaussian",
+    "Gompertz",
+    "Rayleigh",
+    "Student",
+    "Conway",
+    "Bell",
+    "Royston",
+    "Heckman",
+    "Tobit"
+  )
   first_word <- sub("[ -].*$", "", s)
-  if (first_word %in% proper) {
+  if (first_word %in% proper || grepl("^[A-Z]{2,}$", first_word)) {
     return(s)
   }
   paste0(tolower(substr(s, 1L, 1L)), substring(s, 2L))
@@ -912,8 +986,9 @@ build_abbreviations_footer_block_from_frames <- function(
 # changes. Not collected: n and N (n_groups, n_events, weighted_nobs),
 # the test statistics (F-change, Wald F-change, Wald chi-squared, the
 # Delta chi-squared of a likelihood-ratio change) and the p-value of a
-# change; "theta (dispersion)", "alpha (= 1/theta)" and "phi
-# (precision)", which define themselves; and the words (Scale, Max
+# change; "theta (dispersion)", "alpha (= 1/theta)", "delta (NB1
+# dispersion)" and "phi (precision)", which define themselves; and the
+# words (Scale, Max
 # cluster size, Deviance, Effective parameters, the fixed-effects block).
 .reg_abbrev_fit_stat <- function(tk) {
   change <- .abbr(
@@ -1568,13 +1643,18 @@ build_survival_footer_block_from_frames <- function(
 .surv_title_dist <- function(dist) {
   # Single source for parametric-survival distribution display names:
   # the union of the survreg and flexsurvreg vocabularies.
-  # .survreg_dist_title() (regression_frame_survival.R) delegates
-  # here -- the two used to be separate, diverging tables.
+  # .survreg_dist_title() (regression_frame_survival.R) and
+  # .flexsurv_dist_title() delegate here -- they used to be separate,
+  # diverging tables. An alias names the distribution it stands for:
+  # survreg's "loggaussian" is its "lognormal", and flexsurv's
+  # "gengamma.orig" / "genf.orig" are the generalized gamma / F in their
+  # original parameterization.
   switch(
     dist,
     weibull = "Weibull",
     weibullPH = "Weibull (PH)",
-    lognormal = "Log-normal",
+    lognormal = ,
+    loggaussian = ,
     lnorm = "Log-normal",
     gompertz = "Gompertz",
     gamma = "Gamma",
@@ -1582,10 +1662,14 @@ build_survival_footer_block_from_frames <- function(
     exp = "Exponential",
     llogis = "Log-logistic",
     loglogistic = "Log-logistic",
-    gengamma = "Generalized gamma",
-    genf = "Generalized F",
+    gengamma = ,
+    gengamma.orig = "Generalized gamma",
+    genf = ,
+    genf.orig = "Generalized F",
+    survspline = "Royston-Parmar spline",
     gaussian = "Gaussian",
     logistic = "Logistic",
+    extreme = "Extreme-value",
     `t` = "Student-t",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )

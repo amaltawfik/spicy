@@ -167,10 +167,13 @@ test_that("zeroinfl: info$class is 'zeroinfl'", {
   expect_identical(fr$info$class, "zeroinfl")
 })
 
-test_that("zeroinfl Poisson: title names 'zero-inflated'", {
+test_that("zeroinfl Poisson: title names the zero-inflated Poisson model", {
   fit <- .fit_zeroinfl_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "zero-inflated", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Zero-inflated Poisson regression"
+  )
 })
 
 test_that("zeroinfl: coefs estimates match coef(fit, model='count')", {

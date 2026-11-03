@@ -293,6 +293,9 @@
   label_r2_conditional = "conditional",
   fitstat_theta = "\u03B8 (dispersion)",
   fitstat_alpha = "\u03B1 (= 1/\u03B8)",
+  # The NB1 dispersion of glmmTMB's nbinom1, V = mu(1 + delta): Stata's
+  # name for it (`nbreg, dispersion(constant)`), since alpha is NB2's.
+  fitstat_delta = "\u03B4 (NB1 dispersion)",
   fitstat_phi = "\u03C6 (precision)",
   fitstat_qic = "QIC",
   fitstat_qicu = "QICu",
@@ -421,7 +424,8 @@
   # The null model of that test, named after its family. The families
   # met by default have a key each; any other family passes the engine's
   # own name through `note_re_null_family`. One hole in `_cumulative`:
-  # the link (logit, probit, ...), an identifier.
+  # the link when it is a word (logit, probit, cauchit); cloglog and
+  # loglog have keys of their own, spelled out as the titles spell them.
   note_re_null_linear = "linear regression",
   note_re_null_logistic = "logistic regression",
   note_re_null_poisson = "Poisson regression",
@@ -446,8 +450,8 @@
   note_re_null_combinomial = "Conway-Maxwell-binomial regression",
   note_re_null_genpois = "generalized Poisson regression",
   note_re_null_bell = "Bell regression",
-  note_re_null_lognormal = "lognormal regression",
-  note_re_null_student_t = "Student t regression",
+  note_re_null_lognormal = "log-normal regression",
+  note_re_null_student_t = "Student-t regression",
   note_re_null_skewnormal = "skew-normal regression",
   note_re_null_truncated_poisson = "zero-truncated Poisson regression",
   note_re_null_truncated_nb = "zero-truncated negative-binomial regression",
@@ -456,8 +460,10 @@
   note_re_null_truncated_genpois = "zero-truncated generalized Poisson regression",
   # One hole: the theta of the family, formatted as the statistic of the
   # line (two decimals, the decimal mark of the table).
-  note_re_null_negative_binomial = "negative binomial(%s) regression",
+  note_re_null_negative_binomial = "negative-binomial regression (\u03B8 = %s)",
   note_re_null_cumulative = "cumulative %s regression",
+  note_re_null_cumulative_cloglog = "cumulative complementary log-log regression",
+  note_re_null_cumulative_loglog = "cumulative log-log regression",
   note_re_null_family = "%s regression",
   # The test behind the p column of the variance-component rows, under
   # `re_test = "lrt"` / `"rlrt"`.

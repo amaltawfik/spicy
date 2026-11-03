@@ -52,21 +52,36 @@ test_that("phi stays out of the default betareg block", {
 })
 
 
-test_that("phi is refused for non-betareg fits", {
+test_that("phi is refused when no model in the table is a beta fit", {
   fit_lm <- stats::lm(mpg ~ wt, data = mtcars)
   expect_error(
     table_regression(fit_lm, show_fit_stats = c("nobs", "phi")),
+    "no model in the table",
     class = "spicy_invalid_input"
   )
-  # Mixed betareg + lm list: refused too (all-betareg only).
+})
+
+
+test_that("betareg beside lm: phi in the beta column, sigma in the lm one", {
   skip_if_not_installed("betareg")
-  expect_error(
-    table_regression(
-      list(.br_fit(), fit_lm),
-      show_fit_stats = c("nobs", "phi")
-    ),
-    class = "spicy_invalid_input"
+  fit <- .br_fit()
+  fit_lm <- stats::lm(yield ~ temp, data = fit$model)
+  tbl <- table_regression(
+    list(Beta = fit, Linear = fit_lm),
+    show_fit_stats = c("nobs", "phi", "sigma")
   )
+  df <- as.data.frame(tbl)
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_equal(
+    row("phi")[["Beta: B"]],
+    unname(stats::coef(fit, model = "precision")),
+    tolerance = 1e-12
+  )
+  expect_true(is.na(row("phi")[["Linear: B"]]))
+  # The beta dispersion is the phi row: no sigma for betareg.
+  expect_true(is.na(as_regression_frame(fit)$info$fit_stats$sigma))
+  expect_true(is.na(row("sigma")[["Beta: B"]]))
+  expect_equal(row("sigma")[["Linear: B"]], stats::sigma(fit_lm))
 })
 
 

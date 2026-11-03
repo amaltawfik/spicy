@@ -90,7 +90,7 @@ test_that(".geeglm_id_name falls back to \"id\" when the call carries no id valu
 
 # ---- 3. Family title: Gamma (real fit) ----------------------------------
 
-test_that("geeglm Gamma family is titled \"Gamma\"", {
+test_that("geeglm Gamma family is titled \"gamma\" in running text", {
   skip_if_not_installed("geepack")
   d <- .cov_gee_data()
   fit <- geepack::geeglm(
@@ -103,32 +103,41 @@ test_that("geeglm Gamma family is titled \"Gamma\"", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Population-averaged Gamma regression (GEE)"
+    "Population-averaged gamma regression (GEE)"
   )
   expect_identical(fr$info$family$family, "Gamma")
 })
 
 
-# ---- 4. Family title: inverse.gaussian + unknown-family fallback --------
+# ---- 4. Family title: the glm words, and no name for an unknown family ---
 
-test_that(".geeglm_family_title maps inverse.gaussian and lower-cases unknown families", {
-  # geeglm() itself refuses these families ("variance invalid"), so the two
-  # switch arms are only reachable through the helper. The default arm
-  # lower-cases the first letter of whatever family name it is handed.
+test_that(".geeglm_title_prefix names the family as the glm title does", {
+  title <- function(family, link) {
+    spicy:::.geeglm_title_prefix(list(family = family, link = link))
+  }
   expect_identical(
-    spicy:::.geeglm_family_title(list(
-      family = "inverse.gaussian",
-      link = "log"
-    )),
-    "inverse-Gaussian"
+    title("inverse.gaussian", "log"),
+    "Population-averaged inverse-Gaussian regression (GEE)"
+  )
+  # A gaussian with a non-identity link is no longer linear in the mean.
+  expect_identical(
+    title("gaussian", "log"),
+    "Population-averaged Gaussian regression (GEE)"
   )
   expect_identical(
-    spicy:::.geeglm_family_title(list(family = "quasipoisson", link = "log")),
-    "quasipoisson"
+    title("gaussian", "identity"),
+    "Population-averaged linear regression (GEE)"
   )
+  # geeglm() itself refuses the quasi families ("variance invalid"); the
+  # helper still spells them in words, never by their R code.
   expect_identical(
-    spicy:::.geeglm_family_title(list(family = "Tweedie", link = "log")),
-    "tweedie"
+    title("quasipoisson", "log"),
+    "Population-averaged quasi-Poisson regression (GEE)"
+  )
+  # A family the glm source does not know is not named.
+  expect_identical(
+    title("Tweedie", "log"),
+    "Population-averaged regression (GEE)"
   )
 })
 

@@ -170,10 +170,10 @@ test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
     ),
     "Linear regression (fixed effects)"
   )
-  # A gaussian GLM with another link has the generic glm title.
+  # A gaussian GLM with another link is named by its family.
   expect_identical(
     spicy:::.fixest_title_prefix(list(family = "gaussian", link = "log"), TRUE),
-    "Regression (fixed effects)"
+    "Gaussian regression (fixed effects)"
   )
 })
 

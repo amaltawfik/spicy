@@ -220,6 +220,33 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
   )
   # Unknown family: sentence-cased verbatim.
   expect_identical(tp("newfam"), "Newfam mixed-effects regression")
+  # Spelled as the survreg and flexsurv titles spell them.
+  expect_identical(tp("lognormal"), "Log-normal mixed-effects regression")
+  expect_identical(tp("t", "identity"), "Student-t mixed-effects regression")
+  # Ordinal: the link in words, and the assumption it implies.
+  expect_identical(
+    tp("ordinal", "logit"),
+    "Cumulative logit mixed-effects regression (proportional odds)"
+  )
+  expect_identical(
+    tp("ordinal", "probit"),
+    "Cumulative probit mixed-effects regression (parallel slopes)"
+  )
+  expect_identical(
+    tp("ordinal", "cloglog"),
+    paste(
+      "Cumulative complementary log-log mixed-effects regression",
+      "(proportional hazards)"
+    )
+  )
+  expect_identical(
+    tp("ordinal", "loglog"),
+    "Cumulative log-log mixed-effects regression (parallel slopes)"
+  )
+  expect_identical(
+    tp("ordinal", "cauchit"),
+    "Cumulative cauchit mixed-effects regression (parallel slopes)"
+  )
   # Zero-inflation suffix.
   expect_identical(
     tp("poisson", zi = TRUE),

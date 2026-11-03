@@ -164,6 +164,20 @@ test_that("lrm: title_prefix = 'Logistic regression', no engine", {
   )
 })
 
+test_that("an ordinal lrm is titled as the proportional-odds model it is", {
+  skip_if_not_installed("rms")
+  d <- mtcars
+  d$gear_f <- factor(d$gear)
+  fit <- rms::lrm(gear_f ~ wt, data = d)
+  # Two intercepts, rms's cut-points "y>=4" and "y>=5".
+  expect_equal(fit$non.slopes, 2)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative logit regression (proportional odds)"
+  )
+})
+
 test_that("lrm: pseudo_r2 carries Nagelkerke + C-index + Brier", {
   fit <- .fit_lrm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
@@ -257,6 +271,30 @@ test_that("Glm Poisson: supports$exponentiate = TRUE", {
   fit <- .fit_Glm_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_true(fr$info$supports$exponentiate)
+})
+
+test_that("a Glm is titled as the glm title names its family and link", {
+  title <- function(family, link) {
+    spicy:::.rms_title_prefix("Glm", list(family = family, link = link))
+  }
+  # A probit Glm is not a logistic regression.
+  expect_identical(title("binomial", "probit"), "Probit regression")
+  expect_identical(title("gaussian", "log"), "Gaussian regression")
+  expect_identical(
+    title("inverse.gaussian", "1/mu^2"),
+    "Inverse-Gaussian regression"
+  )
+  expect_identical(title("quasipoisson", "log"), "Quasi-Poisson regression")
+  skip_if_not_installed("rms")
+  fit <- rms::Glm(
+    am ~ wt,
+    data = mtcars,
+    family = stats::binomial(link = "probit")
+  )
+  expect_identical(
+    as_regression_frame(fit)$info$extras$title_prefix,
+    "Probit regression"
+  )
 })
 
 

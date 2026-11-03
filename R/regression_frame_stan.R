@@ -55,6 +55,7 @@ as_regression_frame.stanreg <- function(
     .stan_refuse_out_of_scope_beta(fit)
   }
   .stan_check_standardized(standardized)
+  .stan_refuse_ordinal(fit)
 
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
@@ -639,6 +640,30 @@ as_regression_frame.brmsfit <- function(
     coefs$df[ame_i] <- NA_real_
   }
   coefs
+}
+
+
+# An ordinal rstanarm::stan_polr() fit (more than two outcome levels,
+# where rstanarm keeps the link as a bare string instead of a family)
+# is outside the Bayesian scope, the lm / glm-style models: it would be
+# read as a gaussian model, without its cut-points, and its defaults
+# would fail on the ordinal fit statistics. A binary stan_polr carries a
+# binomial family and is a glm-style model, so it stays in.
+.stan_refuse_ordinal <- function(fit) {
+  if (!(inherits(fit, "polr") && is.character(fit$family))) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      "Ordinal `rstanarm::stan_polr()` models are not supported.",
+      "i" = paste0(
+        "Bayesian models are tabulated for linear and generalized linear ",
+        "families; an ordinal outcome is supported for `MASS::polr()` and ",
+        "`ordinal::clm()` fits."
+      )
+    ),
+    class = "spicy_unsupported"
+  )
 }
 
 
@@ -1262,12 +1287,7 @@ as_regression_frame.brmsfit <- function(
     }
   )
 
-  has_identity_link <- identical(fam$link, "identity")
-  title_prefix <- if (has_identity_link) {
-    "Bayesian linear regression"
-  } else {
-    paste0("Bayesian ", .stan_family_title(fam), " regression")
-  }
+  title_prefix <- .stan_title_prefix(fit, fam)
 
   # Reference-table guard: a posterior whose sampler misbehaved must
   # not print silently. Thresholds per Vehtari et al. (2021): R-hat
@@ -1408,8 +1428,11 @@ as_regression_frame.brmsfit <- function(
     return(list(family = fam$family, link = fam$link))
   }
   # brms can wrap the family in a `brmsfamily` object with the same
-  # accessor pattern; fall back to gaussian / identity if absent.
-  list(family = "gaussian", link = "identity") # nocov
+  # accessor pattern; fall back to gaussian / identity if absent. An
+  # rstanarm::stan_polr() fit with more than two outcome levels reaches
+  # this fallback: it keeps its link as a bare string (`fit$method`),
+  # which .stan_title_prefix() reads for the title.
+  list(family = "gaussian", link = "identity")
 }
 
 
@@ -1427,29 +1450,59 @@ as_regression_frame.brmsfit <- function(
 }
 
 
-# Family-title helper: lowercase variants for the title (e.g.
-# "Bayesian logistic regression").
+# The title of a Bayesian fit, "Bayesian <family> regression", the
+# family named in words. rstanarm::stan_polr() with more than two outcome
+# levels keeps its link as a bare string (`fit$family`, `fit$method`:
+# "logistic", "probit", ...), which .stan_family() cannot read: it is
+# titled as the cumulative-link model it is, by the ordinal source.
+.stan_title_prefix <- function(fit, fam) {
+  name <- .stan_family_title(fam)
+  if (is.null(name)) {
+    return("Bayesian regression")
+  }
+  paste0("Bayesian ", name, " regression")
+}
+
+
+# The family in the title's words, NULL for a family it does not know.
+# Named by the family, never by the link alone: an identity link is
+# "linear" only for the gaussian family (a brms lognormal or student
+# model has one too). A glm family reads as the glm frame titles it
+# (spicy_glm_title_prefix(): link-aware for binomial, a probit fit is
+# not a logistic regression); brms spells the single-trial binomial
+# "bernoulli" and the Gamma family "gamma". The other families are the
+# ones rstanarm and brms fit that spicy tabulates (none is refused):
+# rstanarm's stan_glm.nb() and brms name the negative binomial
+# "neg_binomial_2" / "negbinomial", and stan_betareg() and brms's
+# Beta() the beta family "beta".
 .stan_family_title <- function(fam) {
-  # Binomial titles are LINK-aware: a probit fit is NOT a logistic
-  # regression -- mirrors spicy_glm_title_prefix and the merMod /
-  # glmmTMB / svyglm frames.
-  if (fam$family %in% c("binomial", "bernoulli")) {
-    return(switch(
-      fam$link,
-      logit = "logistic",
-      probit = "probit",
-      cloglog = "complementary log-log",
-      log = "log-binomial",
-      "binomial"
-    ))
+  family <- switch(
+    fam$family,
+    bernoulli = "binomial",
+    gamma = "Gamma",
+    fam$family
+  )
+  glm_prefix <- spicy_glm_title_prefix(family, fam$link)
+  if (!identical(glm_prefix, "Regression")) {
+    return(sub(" regression$", "", lowercase_first(glm_prefix)))
   }
   switch(
-    fam$family,
-    poisson = "Poisson",
-    Gamma = "Gamma",
-    inverse.gaussian = "inverse-Gaussian",
-    gaussian = "linear",
-    paste0(tolower(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
+    family,
+    neg_binomial_2 = ,
+    negbinomial = "negative-binomial",
+    beta = "beta",
+    student = "Student-t",
+    skew_normal = "skew-normal",
+    lognormal = "log-normal",
+    weibull = "Weibull",
+    exponential = "exponential",
+    geometric = "geometric",
+    beta_binomial = "beta-binomial",
+    zero_inflated_poisson = "zero-inflated Poisson",
+    zero_inflated_negbinomial = "zero-inflated negative-binomial",
+    hurdle_poisson = "Poisson hurdle",
+    hurdle_negbinomial = "negative-binomial hurdle",
+    NULL
   )
 }
 

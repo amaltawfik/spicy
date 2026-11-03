@@ -99,12 +99,19 @@
     "pseudo_r2_mcfadden",
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur",
-    # NB2 negative-binomial dispersion (glm.nb, glmer.nb, glmmTMB
-    # nbinom2): theta (V = mu + mu^2/theta) and alpha = 1/theta.
+    # NB2 negative-binomial dispersion (glm.nb, glmer.nb, fixest
+    # fenegbin, glmmTMB nbinom2): theta (V = mu + mu^2/theta) and
+    # alpha = 1/theta.
     "theta",
     "alpha",
-    # Beta-regression precision (betareg, glmmTMB beta): phi (Ferrari &
-    # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
+    # NB1 negative-binomial dispersion (glmmTMB nbinom1): delta, with
+    # V = mu(1 + delta). glmmTMB's help calls it alpha after Hardin &
+    # Hilbe, but "alpha" is already NB2's 1/theta here, so it takes the
+    # name Stata gives it (`nbreg, dispersion(constant)`).
+    "delta",
+    # Beta-regression precision (betareg, glmmTMB beta, betabinomial and
+    # ordbeta): phi (Ferrari & Cribari-Neto 2004; Var(y) =
+    # mu(1-mu)/(1+phi)).
     "phi",
     # GEE (geepack::geeglm) only: quasi-likelihood information
     # criteria (Pan 2001), the estimated scale (dispersion)
@@ -1341,12 +1348,25 @@ validate_show_columns <- function(
   out
 }
 
-# Fits whose dispersion is the NB2 theta (the "theta" / "alpha" rows), and
-# fits whose precision is the beta phi (the "phi" row). A pre-frame
-# class sniff, like absorbs_fixed_effects() below.
+# Fits whose dispersion is the NB2 theta (the "theta" / "alpha" rows),
+# the NB1 delta (the "delta" row), and fits whose precision is the beta
+# phi (the "phi" row). A pre-frame class sniff, like
+# absorbs_fixed_effects() below.
 .is_nb2_fit <- function(model) {
   if (inherits(model, "negbin")) {
     return(TRUE)
+  }
+  # fenegbin() and femlm(family = "negbin") store the family as the
+  # string "negbin", with the NB2 theta in fit$theta.
+  if (inherits(model, "fixest")) {
+    return(
+      is.character(model$family) && identical(model$family[[1L]], "negbin")
+    )
+  }
+  # mgcv's nb() estimates theta; negbin(theta) fixes it, as glm's
+  # negative.binomial(theta) does, and has no theta row.
+  if (inherits(model, "gam")) {
+    return(.gam_is_nb_estimated(model))
   }
   fam <- tryCatch(stats::family(model)$family, error = function(e) "")
   if (inherits(model, "glmerMod")) {
@@ -1356,18 +1376,31 @@ validate_show_columns <- function(
     isTRUE(fam %in% c("nbinom2", "truncated_nbinom2"))
 }
 
+.is_nb1_fit <- function(model) {
+  inherits(model, "glmmTMB") &&
+    isTRUE(
+      tryCatch(stats::family(model)$family, error = function(e) "") %in%
+        c("nbinom1", "truncated_nbinom1")
+    )
+}
+
+# glmmTMB's sigma() is the beta precision for beta_family() and, by its
+# help page, for betabinomial() ("the same parameterization ... as beta")
+# and ordbeta() ("see details for beta").
 .is_beta_fit <- function(model) {
   inherits(model, "betareg") ||
     (inherits(model, "glmmTMB") &&
-      identical(
-        tryCatch(stats::family(model)$family, error = function(e) ""),
-        "beta"
+      isTRUE(
+        tryCatch(stats::family(model)$family, error = function(e) "") %in%
+          c("beta", "betabinomial", "ordbeta")
       ))
 }
 
-# "theta" / "alpha" on a glmmTMB fit whose dispersion has covariates:
-# not one number, refused as betareg's phi is.
-.abort_modeled_dispersion <- function(models, tokens, call) {
+# A dispersion token on a glmmTMB fit of the token's family whose
+# dispersion has covariates: not one number, refused as betareg's phi
+# is. `models` holds the fits of that family only, so a gaussian
+# glmmTMB with a `dispformula` beside an NB2 fit leaves theta defined.
+.abort_modeled_dispersion <- function(models, tokens, param, call) {
   modeled <- vapply(
     models,
     function(m) inherits(m, "glmmTMB") && !.glmmTMB_constant_dispersion(m),
@@ -1381,7 +1414,9 @@ validate_show_columns <- function(
           paste(.quote_val(tokens), collapse = ", ")
         ),
         "i" = paste0(
-          "With dispersion covariates, theta is not a single number; ",
+          "With dispersion covariates, ",
+          param,
+          " is not a single number; ",
           "inspect the dispersion coefficients with `summary(fit)` instead."
         )
       ),
@@ -1934,47 +1969,73 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
-  # Negative-binomial dispersion tokens: defined only for NB2 fits
-  # (MASS::glm.nb, lme4::glmer.nb, glmmTMB nbinom2 / truncated_nbinom2).
-  # Hard error elsewhere -- silently dropping the row (or rendering a
-  # blank) would hide the request (pre-1.0 policy).
-  disp_tokens <- intersect(show_fit_stats, c("theta", "alpha"))
-  if (length(disp_tokens) > 0L) {
-    all_negbin <- length(models) > 0L &&
-      all(vapply(models, .is_nb2_fit, logical(1)))
-    if (!all_negbin) {
+  # Dispersion and precision tokens: theta / alpha for NB2 fits
+  # (MASS::glm.nb, lme4::glmer.nb, fixest fenegbin, mgcv nb(), glmmTMB nbinom2 /
+  # truncated_nbinom2), delta for NB1 fits (glmmTMB nbinom1 /
+  # truncated_nbinom1), phi for beta fits. ANY-gates, like the GEE
+  # tokens below: Poisson beside NB2, or NB1 beside NB2, is the
+  # comparison these rows are for, and a column whose model lacks the
+  # parameter renders blank. Refused when no model in the table carries
+  # it -- silently dropping the row would hide the request (pre-1.0
+  # policy) -- and when a fit of the token's family has dispersion
+  # covariates, so its parameter is not one number.
+  nb2_tokens <- intersect(show_fit_stats, c("theta", "alpha"))
+  if (length(nb2_tokens) > 0L) {
+    is_nb2 <- vapply(models, .is_nb2_fit, logical(1))
+    if (!any(is_nb2)) {
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb`, `lme4::glmer.nb`, glmmTMB `nbinom2`).",
-            paste(.quote_val(disp_tokens), collapse = ", ")
+            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, glmmTMB `nbinom2`), and no model in the table is one.",
+            paste(.quote_val(nb2_tokens), collapse = ", ")
           ),
           "i" = paste0(
             "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
-            "alpha its reciprocal; other families, NB1 included, have ",
-            "no such parameter."
+            "alpha its reciprocal. An NB1 fit (glmmTMB `nbinom1`) ",
+            "reports 'delta' instead; other families have no such ",
+            "parameter."
           )
         ),
         class = "spicy_invalid_input",
         call = call
       )
     }
-    .abort_modeled_dispersion(models, disp_tokens, call)
+    .abort_modeled_dispersion(models[is_nb2], nb2_tokens, "theta", call)
   }
 
-  # Beta-regression precision token: defined only for betareg fits
-  # with a constant precision. Hard error elsewhere, mirroring the
-  # negbin theta / alpha policy above.
+  if ("delta" %in% show_fit_stats) {
+    is_nb1 <- vapply(models, .is_nb1_fit, logical(1))
+    if (!any(is_nb1)) {
+      spicy_abort(
+        c(
+          paste0(
+            "Token 'delta' in `show_fit_stats` is defined only for NB1 ",
+            "negative-binomial fits (glmmTMB `nbinom1`, ",
+            "`truncated_nbinom1`), and no model in the table is one."
+          ),
+          "i" = paste0(
+            "delta is the NB1 dispersion (V = mu(1 + delta), Stata's ",
+            "`nbreg, dispersion(constant)`). An NB2 fit reports 'theta' ",
+            "and 'alpha' instead; other families have no such parameter."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    .abort_modeled_dispersion(models[is_nb1], "delta", "delta", call)
+  }
+
   if ("phi" %in% show_fit_stats) {
-    all_betareg <- length(models) > 0L &&
-      all(vapply(models, .is_beta_fit, logical(1)))
-    if (!all_betareg) {
+    is_beta <- vapply(models, .is_beta_fit, logical(1))
+    if (!any(is_beta)) {
       spicy_abort(
         c(
           paste0(
             "Token 'phi' in `show_fit_stats` is defined only ",
-            "for beta-regression fits (`betareg::betareg`, ",
-            "glmmTMB `beta_family()`)."
+            "for beta-regression fits (`betareg::betareg()`, ",
+            "glmmTMB `beta_family()`, `betabinomial()`, `ordbeta()`), ",
+            "and no model in the table is one."
           ),
           "i" = paste0(
             "phi is the beta-distribution precision ",
@@ -1987,7 +2048,7 @@ validate_class_appropriate_tokens <- function(
       )
     }
     variable_prec <- vapply(
-      models,
+      models[is_beta],
       function(m) {
         if (inherits(m, "glmmTMB")) {
           return(!.glmmTMB_constant_dispersion(m))
@@ -2021,10 +2082,10 @@ validate_class_appropriate_tokens <- function(
   }
 
   # Absorbed-fixed-effects disclosure tokens. Deliberately an ANY-gate
-  # (a third variant next to the theta / phi ALL-gate and the ungated
-  # n_groups): the Fixed effects block is a cross-model design
-  # disclosure, so a mixed lm + fixest table is exactly where it is
-  # most useful -- columns without the concept render blank cells.
+  # (like the dispersion tokens above; n_groups is ungated): the Fixed
+  # effects block is a cross-model design disclosure, so a mixed lm +
+  # fixest table is exactly where it is most useful -- columns without
+  # the concept render blank cells.
   fixest_tokens <- intersect(show_fit_stats, c("fixed_effects", "within_r2"))
   if (length(fixest_tokens) > 0L) {
     any_fe <- length(models) > 0L &&

@@ -963,6 +963,14 @@ test_that("glmmTMB ordinal: exponentiate follows the clm rule", {
     tolerance = 1e-10
   )
   expect_identical(fr_cl$info$extras$exp_header, "HR")
+  # The title spells the link out, as the clm title does.
+  expect_identical(
+    fr_cl$info$extras$title_prefix,
+    paste(
+      "Cumulative complementary log-log mixed-effects regression",
+      "(proportional hazards)"
+    )
+  )
   expect_error(
     table_regression(.fit_glmmTMB_ordinal("probit"), exponentiate = TRUE),
     class = "spicy_invalid_input"
@@ -1063,18 +1071,73 @@ test_that("glmmTMB beta: phi = sigma(fit), sigma blank", {
   expect_no_error(table_regression(fit, show_fit_stats = "phi"))
 })
 
-test_that("glmmTMB nbinom1: sigma, theta and alpha all blank; theta refused", {
+test_that("glmmTMB nbinom1: delta = sigma(fit), the other cells blank", {
   fit <- .fit_glmmTMB_salamanders(glmmTMB::nbinom1)
   fs <- as_regression_frame(fit)$info$fit_stats
+  # ?glmmTMB::sigma.glmmTMB: for nbinom1 the variance is mu(1 + sigma(fit)).
+  expect_equal(fs$delta, stats::sigma(fit), tolerance = 1e-10)
   expect_true(is.na(fs$sigma))
   expect_true(is.na(fs$theta))
   expect_true(is.na(fs$alpha))
+  expect_true(is.na(fs$phi))
+  expect_identical(fit_stat_label("delta"), "δ (NB1 dispersion)")
+  tbl <- table_regression(fit, show_fit_stats = c("nobs", "delta"))
+  out <- paste(utils::capture.output(print(tbl)), collapse = "\n")
+  expect_match(
+    out,
+    paste0(
+      "δ \\(NB1 dispersion\\)\\s+│\\s+",
+      sprintf("%.2f", stats::sigma(fit))
+    )
+  )
+  # theta / alpha are NB2's and phi is beta's: refused when no model in
+  # the table has them.
   expect_error(
     table_regression(fit, show_fit_stats = "theta"),
+    "NB2",
     class = "spicy_invalid_input"
   )
   expect_error(
     table_regression(fit, show_fit_stats = "phi"),
+    class = "spicy_invalid_input"
+  )
+  # A LaTeX table sets the delta in math, as the other Greek letters.
+  expect_identical(
+    spicy:::.spicy_latex_unicode("δ (NB1 dispersion)"),
+    "\\ensuremath{\\delta} (NB1 dispersion)"
+  )
+})
+
+test_that("NB1 beside NB2: each dispersion row only in its own column", {
+  fit1 <- .fit_glmmTMB_salamanders(glmmTMB::nbinom1)
+  fit2 <- .fit_glmmTMB_salamanders(glmmTMB::nbinom2)
+  tbl <- table_regression(
+    list(NB1 = fit1, NB2 = fit2),
+    show_fit_stats = c("theta", "alpha", "delta")
+  )
+  df <- as.data.frame(tbl)
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_equal(row("delta")[["NB1: B"]], stats::sigma(fit1), tolerance = 1e-10)
+  expect_equal(row("theta")[["NB2: B"]], stats::sigma(fit2), tolerance = 1e-10)
+  expect_equal(
+    row("alpha")[["NB2: B"]],
+    1 / stats::sigma(fit2),
+    tolerance = 1e-10
+  )
+  expect_true(is.na(row("delta")[["NB2: B"]]))
+  expect_true(is.na(row("theta")[["NB1: B"]]))
+  expect_true(is.na(row("alpha")[["NB1: B"]]))
+  # A blank cell prints as the undefined en-dash, in its own column.
+  out <- utils::capture.output(print(tbl))
+  delta_line <- grep("NB1 dispersion", out, value = TRUE)
+  expect_match(
+    delta_line,
+    paste0(sprintf("%.2f", stats::sigma(fit1)), "\\s+–\\s*$")
+  )
+  # delta needs an NB1 model in the table.
+  expect_error(
+    table_regression(fit2, show_fit_stats = "delta"),
+    "NB1",
     class = "spicy_invalid_input"
   )
 })
@@ -1084,6 +1147,49 @@ test_that("glmmTMB poisson and binomial keep sigma = 1, as glm and glmer do", {
   expect_equal(as_regression_frame(fit)$info$fit_stats$sigma, 1)
   fit_b <- .fit_glmmTMB_binom()
   expect_equal(as_regression_frame(fit_b)$info$fit_stats$sigma, 1)
+  # The zero-truncated Poisson fixes it too.
+  fit_t <- .fit_glmmTMB_salamanders(glmmTMB::truncated_poisson, zi = ~1)
+  expect_equal(stats::sigma(fit_t), 1)
+  expect_equal(as_regression_frame(fit_t)$info$fit_stats$sigma, 1)
+})
+
+test_that("glmmTMB tweedie: sigma is the square root of its dispersion", {
+  fit <- .fit_glmmTMB_salamanders(glmmTMB::tweedie)
+  fs <- as_regression_frame(fit)$info$fit_stats
+  # sigma() is phi in Var = phi * mu^p, the GLM dispersion: the glm rule
+  # takes its square root.
+  expect_equal(fs$sigma, sqrt(stats::sigma(fit)), tolerance = 1e-10)
+  expect_true(all(is.na(c(fs$theta, fs$alpha, fs$delta, fs$phi))))
+})
+
+test_that("glmmTMB betabinomial and ordbeta: phi = sigma(fit), sigma blank", {
+  skip_if_not_installed("glmmTMB")
+  set.seed(3)
+  d <- data.frame(g = factor(rep(1:20, each = 10)), x = stats::rnorm(200))
+  p <- stats::plogis(0.3 + 0.4 * d$x + stats::rnorm(20, sd = 0.3)[d$g])
+  d$y <- stats::rbinom(200, 20, stats::rbeta(200, p * 5, (1 - p) * 5))
+  fit_bb <- glmmTMB::glmmTMB(
+    cbind(y, 20 - y) ~ x + (1 | g),
+    data = d,
+    family = glmmTMB::betabinomial()
+  )
+  fs <- as_regression_frame(fit_bb)$info$fit_stats
+  expect_equal(fs$phi, stats::sigma(fit_bb), tolerance = 1e-10)
+  expect_true(is.na(fs$sigma))
+  expect_no_error(table_regression(fit_bb, show_fit_stats = "phi"))
+  # ordbeta: ?sigma.glmmTMB sends it to the beta entry ("see details for
+  # beta"), the precision of its continuous part.
+  d$p <- stats::rbeta(200, p * 6, (1 - p) * 6)
+  d$p[1:15] <- 0
+  d$p[16:30] <- 1
+  fit_ob <- glmmTMB::glmmTMB(
+    p ~ x + (1 | g),
+    data = d,
+    family = glmmTMB::ordbeta()
+  )
+  fs_ob <- as_regression_frame(fit_ob)$info$fit_stats
+  expect_equal(fs_ob$phi, stats::sigma(fit_ob), tolerance = 1e-10)
+  expect_true(is.na(fs_ob$sigma))
 })
 
 test_that("glmmTMB modeled dispersion: cells blank, theta and phi refused", {
@@ -1100,6 +1206,36 @@ test_that("glmmTMB modeled dispersion: cells blank, theta and phi refused", {
   expect_error(
     table_regression(fit_b, show_fit_stats = "phi"),
     "constant precision",
+    class = "spicy_invalid_input"
+  )
+  fit_1 <- .fit_glmmTMB_salamanders(glmmTMB::nbinom1, dispformula = ~mined)
+  expect_true(is.na(as_regression_frame(fit_1)$info$fit_stats$delta))
+  expect_error(
+    table_regression(fit_1, show_fit_stats = "delta"),
+    "constant dispersion",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("dispersion covariates refuse a token only for its own family", {
+  # A gaussian glmmTMB with a dispformula beside an NB2 fit: theta is
+  # still one number for the NB2 column.
+  fit_nb <- .fit_glmmTMB_salamanders(glmmTMB::nbinom2)
+  fit_g <- .fit_glmmTMB_salamanders(stats::gaussian, dispformula = ~mined)
+  tbl <- table_regression(
+    list(NB2 = fit_nb, Gaussian = fit_g),
+    show_fit_stats = c("nobs", "theta")
+  )
+  df <- as.data.frame(tbl)
+  theta <- df[df$variable == "theta", ]
+  expect_equal(theta[["NB2: B"]], stats::sigma(fit_nb), tolerance = 1e-10)
+  expect_true(is.na(theta[["Gaussian: B"]]))
+  # The NB2 fit with dispersion covariates is still refused, whatever
+  # stands beside it.
+  fit_nb_d <- .fit_glmmTMB_salamanders(glmmTMB::nbinom2, dispformula = ~mined)
+  expect_error(
+    table_regression(list(fit_nb, fit_nb_d), show_fit_stats = "theta"),
+    "constant dispersion",
     class = "spicy_invalid_input"
   )
 })

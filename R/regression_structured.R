@@ -1537,6 +1537,7 @@ build_structured_body <- function(
       "pseudo_r2_tjur",
       "theta",
       "alpha",
+      "delta",
       "phi",
       "scale",
       "within_r2",

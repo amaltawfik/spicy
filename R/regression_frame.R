@@ -1386,7 +1386,7 @@ validate_regression_frame <- function(frame) {
   } else if (identical(fam$family, "ordinal")) {
     # The null of an ordinal glmmTMB is a cumulative-link model; named
     # as the clmm null is, so the two engines' footers read alike.
-    .re_null_model("note_re_null_cumulative", tolower(fam$link))
+    .re_null_cumulative(fam$link)
   } else if (identical(fam$family, "poisson")) {
     .re_null_model("note_re_null_poisson")
   } else if (
@@ -1454,7 +1454,21 @@ validate_regression_frame <- function(frame) {
         (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(fit_null))),
       df = df_q
     ),
-    .re_null_model("note_re_null_cumulative", tolower(fit$link))
+    .re_null_cumulative(fit$link)
+  )
+}
+
+# The cumulative-link null model, named by its link as the ordinal
+# titles name it: logit, probit and cauchit are words and fill the hole
+# of `note_re_null_cumulative`; cloglog and loglog are spelled out by
+# keys of their own, which the table language translates whole.
+.re_null_cumulative <- function(link) {
+  link <- tolower(link)
+  switch(
+    link,
+    cloglog = .re_null_model("note_re_null_cumulative_cloglog"),
+    loglog = .re_null_model("note_re_null_cumulative_loglog"),
+    .re_null_model("note_re_null_cumulative", link)
   )
 }
 

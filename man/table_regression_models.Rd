@@ -48,7 +48,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \cr
    Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \cr
    Robust, IV, quantile, panel \tab \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \cr
-   Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::fenegbin()} \tab yes \tab \code{feglm}: OR / IRR \tab - \cr
+   Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \cr
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \cr
    Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) \cr
@@ -183,6 +183,11 @@ is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). \code{"CR1"} for \code{pscl} fits covers both
 components via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
 zero-inflation and dispersion blocks. Opt out with \code{show_components = FALSE}.
+
+The dispersion of a negative-binomial fit is an opt-in fit-statistic
+row: \code{"theta"} and \code{"alpha"} (= 1/theta) for NB2 fits, \code{"delta"} for
+NB1 fits (glmmTMB \code{nbinom1}). A Poisson column in the same table is
+blank on these rows; see \code{show_fit_stats} in \code{\link[=table_regression]{table_regression()}}.
 }
 
 \section{Categorical outcomes}{
@@ -297,6 +302,10 @@ varying-slope-only factors are not absorbed intercepts and read
 No), with per-factor \verb{N (<factor>)} counts via the opt-in
 \code{n_groups} token and the within R-squared in the default fit
 statistics for \code{fixest} (opt-in via \code{within_r2} for \code{estimatr}).
+AME is refused for a non-linear \code{fixest} model with fixed effects
+(\code{fepois()}, \code{feglm()}, \code{femlm()}, \code{fenegbin()}): its variance would
+need the uncertainty of the fixed effects, which fixest does not
+estimate. \code{feols()} and a GLM without fixed effects have it.
 }
 
 \section{Bayesian models}{

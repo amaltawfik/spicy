@@ -52,6 +52,40 @@ test_that("capitalize_first / lowercase_first pass empty input through", {
   expect_identical(spicy:::lowercase_first(character(0)), character(0))
 })
 
+test_that("lowercase_first keeps proper names and acronyms", {
+  lf <- spicy:::lowercase_first
+  # A title that starts with a proper name keeps its capital, the first
+  # word read up to a space or a hyphen.
+  keep <- c(
+    "Cox proportional hazards regression",
+    "Poisson regression",
+    "Weibull AFT regression",
+    "Bayesian linear regression",
+    "Tweedie GAM",
+    "Gaussian regression",
+    "Gompertz parametric survival regression",
+    "Rayleigh AFT regression",
+    "Student-t AFT regression",
+    "Conway-Maxwell-Poisson mixed-effects regression",
+    "Bell mixed-effects regression",
+    "Royston-Parmar spline survival regression",
+    "Heckman selection model",
+    "Tobit regression",
+    # An acronym is never lowercased.
+    "IV regression (2SLS)"
+  )
+  for (s in keep) {
+    expect_identical(lf(s), s, label = s)
+  }
+  # Gamma names a distribution, not a person: sentence case.
+  expect_identical(lf("Gamma regression"), "gamma regression")
+  expect_identical(lf("Linear regression"), "linear regression")
+  expect_identical(
+    lf("Generalized additive model (GAM)"),
+    "generalized additive model (GAM)"
+  )
+})
+
 
 # ---- Per-block empty-frame guards ----------------------------------------
 
@@ -240,6 +274,18 @@ test_that(".surv_title_dist normalizes all known distribution tokens", {
   expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalized gamma")
   expect_identical(spicy:::.surv_title_dist("genf"), "Generalized F")
   expect_identical(spicy:::.surv_title_dist("gaussian"), "Gaussian")
+  # An alias names the distribution it stands for, never its R code.
+  expect_identical(spicy:::.surv_title_dist("loggaussian"), "Log-normal")
+  expect_identical(spicy:::.surv_title_dist("extreme"), "Extreme-value")
+  expect_identical(
+    spicy:::.surv_title_dist("gengamma.orig"),
+    "Generalized gamma"
+  )
+  expect_identical(spicy:::.surv_title_dist("genf.orig"), "Generalized F")
+  expect_identical(
+    spicy:::.surv_title_dist("survspline"),
+    "Royston-Parmar spline"
+  )
   # Default: capitalize the first letter of an unknown token.
   expect_identical(spicy:::.surv_title_dist("customdist"), "Customdist")
 })

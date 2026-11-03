@@ -164,6 +164,7 @@
   label_r2_within = "intra",
   label_r2_conditional = "conditionnel",
   fitstat_phi = "\u03C6 (pr\u00E9cision)",
+  fitstat_delta = "\u03B4 (dispersion NB1)",
   fitstat_scale = "\u00C9chelle",
   fitstat_max_cluster_size = "Taille max. de grappe",
   fitstat_deviance = "D\u00E9viance",
@@ -241,9 +242,11 @@
   note_re_null_truncated_nb1 = "r\u00E9gression binomiale n\u00E9gative (NB1) tronqu\u00E9e en z\u00E9ro",
   note_re_null_truncated_compois = "r\u00E9gression de Conway-Maxwell-Poisson tronqu\u00E9e en z\u00E9ro",
   note_re_null_truncated_genpois = "r\u00E9gression de Poisson g\u00E9n\u00E9ralis\u00E9e tronqu\u00E9e en z\u00E9ro",
-  note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (%s)",
+  note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (\u03B8 = %s)",
   # Comme le pont des titres : "Regression a logit cumulatif".
   note_re_null_cumulative = "r\u00E9gression \u00E0 %s cumulatif",
+  note_re_null_cumulative_cloglog = "r\u00E9gression \u00E0 log-log compl\u00E9mentaire cumulatif",
+  note_re_null_cumulative_loglog = "r\u00E9gression \u00E0 log-log cumulatif",
   note_re_null_family = "r\u00E9gression %s",
   note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux).",
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
@@ -728,105 +731,355 @@
 # Les chaines ANGLAISES FINALES que les moteurs posent dans
 # extras$title_prefix, mappees vers leur francais. C'est un PONT
 # deliberement jetable : quand 251-C (horizon v1.0) fera porter une CLE
-# par le frame, ce vecteur et .spicy_title_prefix_table() disparaissent
+# par le frame, ces tables et .spicy_title_prefix_table() disparaissent
 # en bloc. Regle d'application (au site d'appel) : coherent-ou-rien --
 # un prefixe absent d'ici garde son titre anglais ENTIER. Un titre nomme
 # la methode, jamais le moteur (decision du 2026-11-03) : le prefixe est
-# cherche tel quel, sans suffixe a detacher. Familles couvertes : les
-# chemins par defaut qu'un utilisateur francophone rencontre (decision 42,
-# minimum vital).
+# cherche tel quel, sans suffixe a detacher. Le titre d'une regression
+# quantile porte son tau : .title_prefix_display() le traduit par la cle
+# "Quantile regression" et ecrit tau avec la virgule decimale.
+#
+# Couverture : chaque prefixe qu'un moteur peut produire a son entree,
+# ce que garde tests/testthat/test-title_bridge_coverage.R. Les familles
+# se composent. Une famille a une tete anglaise, sous sa forme de debut
+# de titre et sous sa forme de milieu de titre (celle de
+# lowercase_first(), qui garde la majuscule des noms propres), et un
+# qualificatif francais de "regression", au feminin. Les GAM (masculin)
+# et les titres uniques sont ecrits en entier. Le modele hurdle garde son
+# nom anglais, comme le bloc "Hurdle (zero)" (decision 38).
+
+# Colonnes : tete en debut de titre, tete en milieu de titre, qualificatif.
+# Une ligne par famille, que le formateur ne doit pas eclater.
+# fmt: skip
+.FR_TITLE_FAMILIES <- matrix(
+  c(
+    "Linear", "linear", "lin\u00E9aire",
+    "Logistic", "logistic", "logistique",
+    "Probit", "probit", "probit",
+    "Complementary log-log", "complementary log-log", "log-log compl\u00E9mentaire",
+    "Log-binomial", "log-binomial", "log-binomiale",
+    "Binomial", "binomial", "binomiale",
+    "Poisson", "Poisson", "de Poisson",
+    "Gamma", "gamma", "gamma",
+    "Inverse-Gaussian", "inverse-Gaussian", "gaussienne inverse",
+    "Gaussian", "Gaussian", "gaussienne",
+    "Quasi-binomial", "quasi-binomial", "quasi-binomiale",
+    "Quasi-Poisson", "quasi-Poisson", "quasi-Poisson",
+    "Quasi-likelihood", "quasi-likelihood", "de quasi-vraisemblance",
+    "Negative-binomial", "negative-binomial", "binomiale n\u00E9gative",
+    "Negative-binomial (NB1)", "negative-binomial (NB1)", "binomiale n\u00E9gative (NB1)",
+    "Negative-binomial (NB1-NB2)", "negative-binomial (NB1-NB2)", "binomiale n\u00E9gative (NB1-NB2)",
+    "Tweedie", "Tweedie", "de Tweedie",
+    "Beta", "beta", "b\u00EAta",
+    "Beta-binomial", "beta-binomial", "b\u00EAta-binomiale",
+    "Ordered beta", "ordered beta", "b\u00EAta ordonn\u00E9e",
+    "Conway-Maxwell-Poisson", "Conway-Maxwell-Poisson", "de Conway-Maxwell-Poisson",
+    "Conway-Maxwell-binomial", "Conway-Maxwell-binomial", "binomiale de Conway-Maxwell",
+    "Generalized Poisson", "generalized Poisson", "de Poisson g\u00E9n\u00E9ralis\u00E9e",
+    "Bell", "Bell", "de Bell",
+    "Log-normal", "log-normal", "log-normale",
+    "Student-t", "Student-t", "t de Student",
+    "Skew-normal", "skew-normal", "normale asym\u00E9trique",
+    "Geometric", "geometric", "g\u00E9om\u00E9trique",
+    "Exponential", "exponential", "exponentielle",
+    "Weibull", "Weibull", "de Weibull",
+    "Weibull (PH)", "Weibull (PH)", "de Weibull (PH)",
+    "Log-logistic", "log-logistic", "log-logistique",
+    "Extreme-value", "extreme-value", "des valeurs extr\u00EAmes",
+    "Rayleigh", "Rayleigh", "de Rayleigh",
+    "Gompertz", "Gompertz", "de Gompertz",
+    "Generalized gamma", "generalized gamma", "gamma g\u00E9n\u00E9ralis\u00E9e",
+    "Generalized F", "generalized F", "F g\u00E9n\u00E9ralis\u00E9e"
+  ),
+  ncol = 3L,
+  byrow = TRUE,
+  dimnames = list(NULL, c("en", "mid", "fr"))
+)
+
+# Les entrees d'un gabarit pour une liste de familles : `en` recoit la
+# tete (forme `form`), `fr` le qualificatif. Une tete inconnue arrete
+# l'installation du package : la table ci-dessus est sa seule source.
+.fr_title_set <- function(heads, en, fr, form = "en") {
+  idx <- match(heads, .FR_TITLE_FAMILIES[, "en"])
+  if (anyNA(idx)) {
+    stop(
+      "Unknown title head(s): ",
+      paste(heads[is.na(idx)], collapse = ", "),
+      call. = FALSE
+    )
+  }
+  out <- sprintf(fr, .FR_TITLE_FAMILIES[idx, "fr"])
+  names(out) <- sprintf(en, .FR_TITLE_FAMILIES[idx, form])
+  out
+}
+
+# Les titres ordinaux : lien cumulatif et hypothese, en anglais et en
+# francais, sous les quatre formes des moteurs (polr et clm, clm avec
+# `nominal =`, clmm et glmmTMB, svyolr).
+.fr_ordinal_set <- function(en, fr, partial = FALSE) {
+  link_en <- c("logit", "probit", "complementary log-log", "log-log", "cauchit")
+  link_fr <- c(
+    "\u00E0 logit cumulatif",
+    "\u00E0 probit cumulatif",
+    "\u00E0 log-log compl\u00E9mentaire cumulatif",
+    "\u00E0 log-log cumulatif",
+    "\u00E0 cauchit cumulatif"
+  )
+  hyp_en <- c(
+    "proportional odds",
+    "parallel slopes",
+    "proportional hazards",
+    "parallel slopes",
+    "parallel slopes"
+  )
+  hyp_fr <- if (partial) {
+    c(
+      "cotes partiellement proportionnelles",
+      "pentes partiellement parall\u00E8les",
+      "risques partiellement proportionnels",
+      "pentes partiellement parall\u00E8les",
+      "pentes partiellement parall\u00E8les"
+    )
+  } else {
+    c(
+      "cotes proportionnelles",
+      "pentes parall\u00E8les",
+      "risques proportionnels",
+      "pentes parall\u00E8les",
+      "pentes parall\u00E8les"
+    )
+  }
+  if (partial) {
+    hyp_en <- paste("partial", hyp_en)
+  }
+  out <- sprintf(fr, link_fr, hyp_fr)
+  names(out) <- sprintf(en, link_en, hyp_en)
+  out
+}
+
+# Les familles de glm (spicy_glm_title_prefix()) et celles des modeles
+# mixtes : lme4 (sans les quasi) et glmmTMB (.GLMMTMB_FAMILY_LABELS).
+.FR_GLM_HEADS <- c(
+  "Linear",
+  "Logistic",
+  "Probit",
+  "Complementary log-log",
+  "Log-binomial",
+  "Binomial",
+  "Poisson",
+  "Gamma",
+  "Inverse-Gaussian",
+  "Gaussian",
+  "Quasi-binomial",
+  "Quasi-Poisson",
+  "Quasi-likelihood",
+  "Negative-binomial"
+)
+.FR_MIXED_HEADS <- c(
+  setdiff(
+    .FR_GLM_HEADS,
+    c("Quasi-binomial", "Quasi-Poisson", "Quasi-likelihood")
+  ),
+  "Negative-binomial (NB1)",
+  "Negative-binomial (NB1-NB2)",
+  "Tweedie",
+  "Beta",
+  "Beta-binomial",
+  "Ordered beta",
+  "Conway-Maxwell-Poisson",
+  "Conway-Maxwell-binomial",
+  "Generalized Poisson",
+  "Bell",
+  "Log-normal",
+  "Student-t",
+  "Skew-normal"
+)
+# Les familles de comptage tronquees en zero de glmmTMB, seules ou en
+# modele hurdle.
+.FR_COUNT_HEADS <- c(
+  "Poisson",
+  "Negative-binomial",
+  "Negative-binomial (NB1)",
+  "Conway-Maxwell-Poisson",
+  "Generalized Poisson"
+)
+# geeglm refuse les familles quasi ("variance invalid").
+.FR_GEE_HEADS <- setdiff(
+  .FR_GLM_HEADS,
+  c("Quasi-binomial", "Quasi-Poisson", "Quasi-likelihood")
+)
+.FR_BAYES_HEADS <- c(
+  setdiff(
+    .FR_GLM_HEADS,
+    c("Quasi-binomial", "Quasi-Poisson", "Quasi-likelihood")
+  ),
+  "Beta",
+  "Student-t",
+  "Skew-normal",
+  "Log-normal",
+  "Weibull",
+  "Exponential",
+  "Geometric",
+  "Beta-binomial"
+)
+
 .FR_TITLE_PREFIXES <- c(
   "Regression" = "R\u00E9gression",
-  "Linear regression" = "R\u00E9gression lin\u00E9aire",
-  "Logistic regression" = "R\u00E9gression logistique",
-  "Probit regression" = "R\u00E9gression probit",
-  "Binomial regression" = "R\u00E9gression binomiale",
-  "Log-binomial regression" = "R\u00E9gression log-binomiale",
-  "Poisson regression" = "R\u00E9gression de Poisson",
-  "Quasi-Poisson regression" = "R\u00E9gression quasi-Poisson",
-  "Negative-binomial regression" = "R\u00E9gression binomiale n\u00E9gative",
-  # Les autres familles de glm (spicy_glm_title_prefix()).
-  "Complementary log-log regression" = "R\u00E9gression log-log compl\u00E9mentaire",
-  "Gamma regression" = "R\u00E9gression gamma",
-  "Inverse-Gaussian regression" = "R\u00E9gression gaussienne inverse",
-  "Quasi-binomial regression" = "R\u00E9gression quasi-binomiale",
-  "Quasi-likelihood regression" = "R\u00E9gression de quasi-vraisemblance",
-  "Linear mixed-effects regression" = "R\u00E9gression lin\u00E9aire \u00E0 effets mixtes",
-  "Logistic mixed-effects regression" = "R\u00E9gression logistique \u00E0 effets mixtes",
-  "Poisson mixed-effects regression" = "R\u00E9gression de Poisson \u00E0 effets mixtes",
-  "Negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes",
-  # Les autres familles de glmmTMB (et de lme4), l'ordinal de clmm et de
-  # glmmTMB, les deux zero-inflated courants.
-  "Probit mixed-effects regression" = "R\u00E9gression probit \u00E0 effets mixtes",
-  "Complementary log-log mixed-effects regression" = "R\u00E9gression log-log compl\u00E9mentaire \u00E0 effets mixtes",
-  "Log-binomial mixed-effects regression" = "R\u00E9gression log-binomiale \u00E0 effets mixtes",
-  "Binomial mixed-effects regression" = "R\u00E9gression binomiale \u00E0 effets mixtes",
-  "Gamma mixed-effects regression" = "R\u00E9gression gamma \u00E0 effets mixtes",
-  "Inverse-Gaussian mixed-effects regression" = "R\u00E9gression gaussienne inverse \u00E0 effets mixtes",
-  "Tweedie mixed-effects regression" = "R\u00E9gression de Tweedie \u00E0 effets mixtes",
-  "Beta mixed-effects regression" = "R\u00E9gression b\u00EAta \u00E0 effets mixtes",
-  "Poisson mixed-effects regression (zero-inflated)" = "R\u00E9gression de Poisson \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Negative-binomial mixed-effects regression (zero-inflated)" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Negative-binomial (NB1) mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative (NB1) \u00E0 effets mixtes",
-  "Negative-binomial (NB1) mixed-effects regression (zero-inflated)" = "R\u00E9gression binomiale n\u00E9gative (NB1) \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  # Les autres familles de glmmTMB (.GLMMTMB_FAMILY_LABELS), avec leurs
-  # variantes zero-inflated courantes et les modeles a barriere (famille
-  # tronquee en zero + ziformula, nommes par la famille de comptage).
-  "Negative-binomial (NB1-NB2) mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative (NB1-NB2) \u00E0 effets mixtes",
-  "Negative-binomial (NB1-NB2) mixed-effects regression (zero-inflated)" = "R\u00E9gression binomiale n\u00E9gative (NB1-NB2) \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Beta-binomial mixed-effects regression" = "R\u00E9gression b\u00EAta-binomiale \u00E0 effets mixtes",
-  "Beta-binomial mixed-effects regression (zero-inflated)" = "R\u00E9gression b\u00EAta-binomiale \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Ordered beta mixed-effects regression" = "R\u00E9gression b\u00EAta ordonn\u00E9e \u00E0 effets mixtes",
-  "Conway-Maxwell-Poisson mixed-effects regression" = "R\u00E9gression de Conway-Maxwell-Poisson \u00E0 effets mixtes",
-  "Conway-Maxwell-Poisson mixed-effects regression (zero-inflated)" = "R\u00E9gression de Conway-Maxwell-Poisson \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Conway-Maxwell-binomial mixed-effects regression" = "R\u00E9gression binomiale de Conway-Maxwell \u00E0 effets mixtes",
-  "Generalized Poisson mixed-effects regression" = "R\u00E9gression de Poisson g\u00E9n\u00E9ralis\u00E9e \u00E0 effets mixtes",
-  "Generalized Poisson mixed-effects regression (zero-inflated)" = "R\u00E9gression de Poisson g\u00E9n\u00E9ralis\u00E9e \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Bell mixed-effects regression" = "R\u00E9gression de Bell \u00E0 effets mixtes",
-  "Lognormal mixed-effects regression" = "R\u00E9gression log-normale \u00E0 effets mixtes",
-  "Student t mixed-effects regression" = "R\u00E9gression t de Student \u00E0 effets mixtes",
-  "Skew-normal mixed-effects regression" = "R\u00E9gression normale asym\u00E9trique \u00E0 effets mixtes",
-  "Gamma mixed-effects regression (zero-inflated)" = "R\u00E9gression gamma \u00E0 effets mixtes (inflation de z\u00E9ros)",
-  "Zero-truncated Poisson mixed-effects regression" = "R\u00E9gression de Poisson tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
-  "Zero-truncated negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
-  "Zero-truncated negative-binomial (NB1) mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative (NB1) tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
-  "Zero-truncated Conway-Maxwell-Poisson mixed-effects regression" = "R\u00E9gression de Conway-Maxwell-Poisson tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
-  "Zero-truncated generalized Poisson mixed-effects regression" = "R\u00E9gression de Poisson g\u00E9n\u00E9ralis\u00E9e tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
-  "Poisson mixed-effects regression (hurdle)" = "R\u00E9gression de Poisson \u00E0 effets mixtes (mod\u00E8le \u00E0 barri\u00E8re)",
-  "Negative-binomial mixed-effects regression (hurdle)" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes (mod\u00E8le \u00E0 barri\u00E8re)",
-  "Negative-binomial (NB1) mixed-effects regression (hurdle)" = "R\u00E9gression binomiale n\u00E9gative (NB1) \u00E0 effets mixtes (mod\u00E8le \u00E0 barri\u00E8re)",
-  "Conway-Maxwell-Poisson mixed-effects regression (hurdle)" = "R\u00E9gression de Conway-Maxwell-Poisson \u00E0 effets mixtes (mod\u00E8le \u00E0 barri\u00E8re)",
-  "Generalized Poisson mixed-effects regression (hurdle)" = "R\u00E9gression de Poisson g\u00E9n\u00E9ralis\u00E9e \u00E0 effets mixtes (mod\u00E8le \u00E0 barri\u00E8re)",
-  "Cumulative logit mixed-effects regression (proportional odds)" = "R\u00E9gression \u00E0 logit cumulatif \u00E0 effets mixtes (cotes proportionnelles)",
-  # nlme::gls() et mlogit.
+  .fr_title_set(.FR_GLM_HEADS, "%s regression", "R\u00E9gression %s"),
+  .fr_title_set(
+    .FR_GLM_HEADS,
+    "%s regression (fixed effects)",
+    "R\u00E9gression %s (effets fixes)"
+  ),
+  "Regression (fixed effects)" = "R\u00E9gression (effets fixes)",
+  .fr_title_set(
+    setdiff(.FR_GLM_HEADS, c("Quasi-binomial", "Quasi-Poisson")),
+    "Survey-weighted %s regression",
+    "R\u00E9gression %s pond\u00E9r\u00E9e par le plan de sondage",
+    form = "mid"
+  ),
+  "Survey-weighted regression" = "R\u00E9gression pond\u00E9r\u00E9e par le plan de sondage",
+  .fr_title_set(
+    .FR_GEE_HEADS,
+    "Population-averaged %s regression (GEE)",
+    "R\u00E9gression %s moyenn\u00E9e sur la population (GEE)",
+    form = "mid"
+  ),
+  "Population-averaged regression (GEE)" = "R\u00E9gression moyenn\u00E9e sur la population (GEE)",
+  .fr_title_set(
+    .FR_BAYES_HEADS,
+    "Bayesian %s regression",
+    "R\u00E9gression %s bay\u00E9sienne",
+    form = "mid"
+  ),
+  "Bayesian regression" = "R\u00E9gression bay\u00E9sienne",
+  "Bayesian zero-inflated Poisson regression" = "R\u00E9gression de Poisson bay\u00E9sienne (inflation de z\u00E9ros)",
+  "Bayesian zero-inflated negative-binomial regression" = "R\u00E9gression binomiale n\u00E9gative bay\u00E9sienne (inflation de z\u00E9ros)",
+  "Bayesian Poisson hurdle regression" = "R\u00E9gression de Poisson bay\u00E9sienne (mod\u00E8le hurdle)",
+  "Bayesian negative-binomial hurdle regression" = "R\u00E9gression binomiale n\u00E9gative bay\u00E9sienne (mod\u00E8le hurdle)",
+  .fr_title_set(
+    .FR_MIXED_HEADS,
+    "%s mixed-effects regression",
+    "R\u00E9gression %s \u00E0 effets mixtes"
+  ),
+  .fr_title_set(
+    .FR_MIXED_HEADS,
+    "%s mixed-effects regression (zero-inflated)",
+    "R\u00E9gression %s \u00E0 effets mixtes (inflation de z\u00E9ros)"
+  ),
+  .fr_title_set(
+    .FR_COUNT_HEADS,
+    "%s mixed-effects regression (hurdle)",
+    "R\u00E9gression %s \u00E0 effets mixtes (mod\u00E8le hurdle)"
+  ),
+  .fr_title_set(
+    .FR_COUNT_HEADS,
+    "Zero-truncated %s mixed-effects regression",
+    "R\u00E9gression %s tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
+    form = "mid"
+  ),
+  # pscl : inflation de zeros et modele hurdle, nommes par la loi de
+  # comptage.
+  "Zero-inflated Poisson regression" = "R\u00E9gression de Poisson (inflation de z\u00E9ros)",
+  "Zero-inflated negative-binomial regression" = "R\u00E9gression binomiale n\u00E9gative (inflation de z\u00E9ros)",
+  "Zero-inflated geometric regression" = "R\u00E9gression g\u00E9om\u00E9trique (inflation de z\u00E9ros)",
+  "Poisson hurdle regression" = "R\u00E9gression de Poisson (mod\u00E8le hurdle)",
+  "Negative-binomial hurdle regression" = "R\u00E9gression binomiale n\u00E9gative (mod\u00E8le hurdle)",
+  "Geometric hurdle regression" = "R\u00E9gression g\u00E9om\u00E9trique (mod\u00E8le hurdle)",
+  # Les modeles ordinaux.
+  .fr_ordinal_set("Cumulative %s regression (%s)", "R\u00E9gression %s (%s)"),
+  .fr_ordinal_set(
+    "Cumulative %s regression (%s)",
+    "R\u00E9gression %s (%s)",
+    partial = TRUE
+  ),
+  .fr_ordinal_set(
+    "Cumulative %s mixed-effects regression (%s)",
+    "R\u00E9gression %s \u00E0 effets mixtes (%s)"
+  ),
+  .fr_ordinal_set(
+    "Survey-weighted cumulative %s regression (%s)",
+    "R\u00E9gression %s pond\u00E9r\u00E9e par le plan de sondage (%s)"
+  ),
+  # clmm en cloglog : ses liens cloglog et loglog sont inverses par
+  # rapport a clm et glmmTMB (runehaubo/ordinal#76), le titre ne
+  # revendique donc pas les risques proportionnels.
+  "Cumulative complementary log-log mixed-effects regression" = "R\u00E9gression \u00E0 log-log compl\u00E9mentaire cumulatif \u00E0 effets mixtes",
+  # Les liens flexibles de clm.
+  "Cumulative Aranda-Ordaz regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (pentes parall\u00E8les)",
+  "Cumulative Aranda-Ordaz regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien d'Aranda-Ordaz (pentes partiellement parall\u00E8les)",
+  "Cumulative log-gamma regression (parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (pentes parall\u00E8les)",
+  "Cumulative log-gamma regression (partial parallel slopes)" = "R\u00E9gression cumulative \u00E0 lien log-gamma (pentes partiellement parall\u00E8les)",
+  # La survie : Cox, les modeles AFT de survreg et les modeles
+  # parametriques de flexsurv.
+  "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
+  "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
+  .fr_title_set(
+    c(
+      "Weibull",
+      "Exponential",
+      "Gaussian",
+      "Logistic",
+      "Log-normal",
+      "Log-logistic",
+      "Extreme-value",
+      "Rayleigh",
+      "Student-t"
+    ),
+    "%s AFT regression",
+    "R\u00E9gression AFT %s"
+  ),
+  .fr_title_set(
+    c(
+      "Weibull",
+      "Weibull (PH)",
+      "Log-normal",
+      "Gompertz",
+      "Gamma",
+      "Exponential",
+      "Log-logistic",
+      "Generalized gamma",
+      "Generalized F"
+    ),
+    "%s parametric survival regression",
+    "R\u00E9gression de survie param\u00E9trique %s"
+  ),
+  "Royston-Parmar spline survival regression" = "R\u00E9gression de survie par splines de Royston-Parmar",
+  # Les GAM de mgcv : "GAM" est masculin.
+  "Generalized additive model (GAM)" = "Mod\u00E8le additif g\u00E9n\u00E9ralis\u00E9 (GAM)",
+  "Logistic GAM" = "GAM logistique",
+  "Probit GAM" = "GAM probit",
+  "Complementary log-log GAM" = "GAM log-log compl\u00E9mentaire",
+  "Log-binomial GAM" = "GAM log-binomial",
+  "Binomial GAM" = "GAM binomial",
+  "Poisson GAM" = "GAM de Poisson",
+  "Gamma GAM" = "GAM gamma",
+  "Inverse-Gaussian GAM" = "GAM gaussien inverse",
+  "Gaussian GAM" = "GAM gaussien",
+  "Quasi-binomial GAM" = "GAM quasi-binomial",
+  "Quasi-Poisson GAM" = "GAM quasi-Poisson",
+  "Quasi-likelihood GAM" = "GAM de quasi-vraisemblance",
+  "Negative-binomial GAM" = "GAM binomial n\u00E9gatif",
+  "Tweedie GAM" = "GAM de Tweedie",
+  "Beta GAM" = "GAM b\u00EAta",
+  "Student-t GAM" = "GAM t de Student",
+  "Zero-inflated Poisson GAM" = "GAM de Poisson (inflation de z\u00E9ros)",
+  "Cumulative logit GAM (proportional odds)" = "GAM \u00E0 logit cumulatif (cotes proportionnelles)",
+  # Les titres uniques des autres moteurs.
+  "Linear regression (robust SE)" = "R\u00E9gression lin\u00E9aire (ES robustes)",
+  "Linear regression (classical SE)" = "R\u00E9gression lin\u00E9aire (ES classiques)",
+  "Linear regression (no SE computed)" = "R\u00E9gression lin\u00E9aire (sans ES)",
+  "IV regression (robust SE)" = "R\u00E9gression par variables instrumentales (ES robustes)",
+  "IV regression (classical SE)" = "R\u00E9gression par variables instrumentales (ES classiques)",
+  "IV regression (no SE computed)" = "R\u00E9gression par variables instrumentales (sans ES)",
+  "IV regression (2SLS)" = "R\u00E9gression par variables instrumentales (2SLS)",
+  "Robust linear regression (M-estimator)" = "R\u00E9gression lin\u00E9aire robuste (estimateur M)",
+  "Beta regression" = "R\u00E9gression b\u00EAta",
+  "Tobit regression" = "R\u00E9gression tobit",
+  "Quantile regression" = "R\u00E9gression quantile",
+  "Non-linear least squares regression" = "R\u00E9gression par moindres carr\u00E9s non lin\u00E9aires",
+  "Heckman selection model" = "Mod\u00E8le de s\u00E9lection de Heckman",
   "Generalized least squares" = "Moindres carr\u00E9s g\u00E9n\u00E9ralis\u00E9s",
   "Discrete-choice multinomial logit" = "Logit multinomial de choix discret",
-  "Cumulative logit regression (proportional odds)" = "R\u00E9gression \u00E0 logit cumulatif (cotes proportionnelles)",
-  "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
-  "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
-  "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",
-  "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
-  "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale",
-  # Les modeles bayesiens de regression_frame_stan.R (rstanarm et brms).
-  "Bayesian linear regression" = "R\u00E9gression lin\u00E9aire bay\u00E9sienne",
-  "Bayesian logistic regression" = "R\u00E9gression logistique bay\u00E9sienne",
-  "Bayesian probit regression" = "R\u00E9gression probit bay\u00E9sienne",
-  "Bayesian complementary log-log regression" = "R\u00E9gression log-log compl\u00E9mentaire bay\u00E9sienne",
-  "Bayesian log-binomial regression" = "R\u00E9gression log-binomiale bay\u00E9sienne",
-  "Bayesian binomial regression" = "R\u00E9gression binomiale bay\u00E9sienne",
-  "Bayesian Poisson regression" = "R\u00E9gression de Poisson bay\u00E9sienne",
-  "Bayesian Gamma regression" = "R\u00E9gression gamma bay\u00E9sienne",
-  "Bayesian inverse-Gaussian regression" = "R\u00E9gression gaussienne inverse bay\u00E9sienne",
-  # The GEE models of regression_frame_geepack.R, one entry per family
-  # title `.geeglm_family_title()` can give. "(GEE)" is part of the entry:
-  # an acronym the French text keeps, as the standard-error line does.
-  "Population-averaged linear regression (GEE)" = "R\u00E9gression lin\u00E9aire moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged logistic regression (GEE)" = "R\u00E9gression logistique moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged probit regression (GEE)" = "R\u00E9gression probit moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged complementary log-log regression (GEE)" = "R\u00E9gression log-log compl\u00E9mentaire moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged log-binomial regression (GEE)" = "R\u00E9gression log-binomiale moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged binomial regression (GEE)" = "R\u00E9gression binomiale moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged Poisson regression (GEE)" = "R\u00E9gression de Poisson moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged Gamma regression (GEE)" = "R\u00E9gression gamma moyenn\u00E9e sur la population (GEE)",
-  "Population-averaged inverse-Gaussian regression (GEE)" = "R\u00E9gression gaussienne inverse moyenn\u00E9e sur la population (GEE)"
+  "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
 )

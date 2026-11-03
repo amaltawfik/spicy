@@ -3,11 +3,11 @@
 #
 # Targets branches the main test-regression_frame_ordinal.R suite leaves
 # uncovered:
-#   * Non-logit link arms of .polr_link_short / .polr_link_title
+#   * Non-logit link arms of .polr_link_short / .ordinal_title_prefix
 #     (probit / cloglog / loglog / cauchit) via real polr fits.
-#   * Non-logit link arms of .clm_link_title (probit / cloglog / loglog /
-#     cauchit) plus the switch fallback arm via a flexible "Aranda-Ordaz"
-#     clm link, which is NOT in the named switch.
+#   * Non-logit link arms of .ordinal_title_prefix for clm (probit /
+#     cloglog / loglog / cauchit) plus the switch fallback arm via a
+#     flexible "Aranda-Ordaz" clm link, which is NOT in the named switch.
 #   * .clm_coefs() empty-beta early return via an intercept-only clm.
 #   * .ordinal_reference_rows() with (a) no factor terms (continuous-only
 #     predictors) and (b) factor terms whose reference is NOT dropped
@@ -79,7 +79,11 @@ test_that("polr cloglog fit reports the cloglog link and title", {
   fit <- .fit_polr_link("cloglog")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "cloglog")
-  expect_match(fr$info$extras$title_prefix, "Cumulative cloglog", fixed = TRUE)
+  expect_match(
+    fr$info$extras$title_prefix,
+    "Cumulative complementary log-log",
+    fixed = TRUE
+  )
   # Consistency with the sibling probit test: the constructed frame must
   # pass the schema validator (the gap the audit flagged).
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -90,7 +94,7 @@ test_that("polr cloglog fit reports the cloglog link and title", {
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Cumulative cloglog regression (proportional hazards)"
+    "Cumulative complementary log-log regression (proportional hazards)"
   )
   # cloglog is a non-canonical link but exponentiation is still offered
   # (hazard-ratio interpretation), shared by all cumulative-link fits.
@@ -120,7 +124,7 @@ test_that("polr loglog fit reports the loglog link and title", {
   fit <- .fit_polr_link("loglog")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "loglog")
-  expect_match(fr$info$extras$title_prefix, "Cumulative loglog", fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "Cumulative log-log", fixed = TRUE)
   # Consistency with the sibling probit test: the constructed frame must
   # pass the schema validator (the gap the audit flagged).
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -130,7 +134,7 @@ test_that("polr loglog fit reports the loglog link and title", {
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Cumulative loglog regression (parallel slopes)"
+    "Cumulative log-log regression (parallel slopes)"
   )
   expect_true(isTRUE(fr$info$supports$exponentiate))
   # housing's Sat has 3 ordered levels -> (k - 1) = 2 cumulative
@@ -180,14 +184,20 @@ test_that("clm cloglog fit reports the cloglog link and title", {
   fit <- .fit_clm_link("cloglog")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "cloglog")
-  expect_match(fr$info$extras$title_prefix, "Cumulative cloglog", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative complementary log-log regression (proportional hazards)"
+  )
 })
 
 test_that("clm loglog fit reports the loglog link and title", {
   fit <- .fit_clm_link("loglog")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$link, "loglog")
-  expect_match(fr$info$extras$title_prefix, "Cumulative loglog", fixed = TRUE)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Cumulative log-log regression (parallel slopes)"
+  )
 })
 
 test_that("clm cauchit fit reports the cauchit link and title", {
@@ -199,8 +209,9 @@ test_that("clm cauchit fit reports the cauchit link and title", {
 
 test_that("clm flexible Aranda-Ordaz link hits the switch fallback title", {
   skip_if_not_installed("ordinal")
-  # Aranda-Ordaz is a valid clm link but is NOT in the .clm_link_title
-  # switch, so it exercises the paste0() fallback arm.
+  # Aranda-Ordaz is a valid clm link but is NOT in the link-words switch
+  # of .ordinal_title_prefix(), so it exercises the fallback arm: the
+  # link is already a name.
   fit <- suppressWarnings(
     ordinal::clm(
       rating ~ temp + contact,

@@ -372,11 +372,7 @@ as_regression_frame.zeroinfl <- function(
   )
   component_blocks <- Filter(Negate(is.null), component_blocks)
 
-  title_prefix <- if (is_hurdle) {
-    paste0(.pscl_dist_title(count_dist), " hurdle regression")
-  } else {
-    paste0(.pscl_dist_title(count_dist), " zero-inflated regression")
-  }
+  title_prefix <- .pscl_title_prefix(count_dist, is_hurdle)
 
   # has_weights: pscl stores case weights on fit$weights (all-1 when unset).
   wts <- fit$weights
@@ -415,6 +411,18 @@ as_regression_frame.zeroinfl <- function(
     supports = supports,
     extras = extras
   )
+}
+
+
+# The title of a hurdle or zero-inflated model, named by its count
+# distribution: "Poisson hurdle regression", "Zero-inflated Poisson
+# regression".
+.pscl_title_prefix <- function(count_dist, is_hurdle) {
+  dist <- .pscl_dist_title(count_dist)
+  if (is_hurdle) {
+    return(paste0(dist, " hurdle regression"))
+  }
+  paste0("Zero-inflated ", lowercase_first(dist), " regression")
 }
 
 

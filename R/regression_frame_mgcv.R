@@ -303,6 +303,18 @@ as_regression_frame.gam <- function(
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
+  # nb() estimates the NB2 theta: the theta / alpha rows of glm.nb, and
+  # no sigma, whose fixed 1 would contradict them. negbin(theta) fixes
+  # theta, as glm's negative.binomial(theta) does, and keeps the glm rule.
+  if (.gam_is_nb_estimated(fit)) {
+    theta <- tryCatch(
+      as.numeric(fit$family$getTheta(TRUE)),
+      error = function(e) NA_real_
+    )
+    fit_stats$sigma <- NA_real_
+    fit_stats$theta <- theta
+    fit_stats$alpha <- 1 / theta
+  }
 
   exp_ok <- !identical(fam$link, "identity")
 
@@ -388,18 +400,47 @@ as_regression_frame.gam <- function(
 }
 
 
+# TRUE for a GAM whose negative-binomial theta is estimated: mgcv's nb()
+# extended family. negbin(theta) is a plain family with theta fixed by
+# the call, like glm's negative.binomial(theta).
+.gam_is_nb_estimated <- function(fit) {
+  fam <- fit$family
+  inherits(fam, "extended.family") &&
+    isTRUE(startsWith(fam$family, "Negative Binomial("))
+}
+
+
+# The title of a GAM. The gaussian identity model is the generalized
+# additive model; a glm family is named as the glm frame names it, GAM
+# for regression ("Probit GAM", "Quasi-Poisson GAM", "Negative-binomial
+# GAM"); an extended family of mgcv by the distribution its name
+# carries -- the name also carries the estimated parameters
+# ("Tweedie(p=1.26)", "Scaled t(3.2,0.26)"), which belong to the model,
+# never to its title. ocat() is the cumulative model with a logistic
+# latent variable. Any other family is not named.
 .gam_title_prefix <- function(fam, is_gaussian_identity) {
   if (is_gaussian_identity) {
-    "Generalized additive model (GAM)"
-  } else {
-    base <- switch(
-      fam$family,
-      binomial = "Logistic",
-      poisson = "Poisson",
-      Gamma = "Gamma",
-      inverse.gaussian = "Inverse-Gaussian",
-      paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
-    )
-    paste0(base, " GAM")
+    return("Generalized additive model (GAM)")
   }
+  glm_prefix <- spicy_glm_title_prefix(fam$family, fam$link)
+  if (!identical(glm_prefix, "Regression")) {
+    return(sub(" regression$", " GAM", glm_prefix))
+  }
+  family <- fam$family
+  if (grepl("^Tweedie", family)) {
+    return("Tweedie GAM")
+  }
+  if (grepl("^Beta regression", family)) {
+    return("Beta GAM")
+  }
+  if (grepl("^Scaled t", family)) {
+    return("Student-t GAM")
+  }
+  if (grepl("^Zero inflated Poisson", family)) {
+    return("Zero-inflated Poisson GAM")
+  }
+  if (grepl("^Ordered Categorical", family)) {
+    return(sub(" regression ", " GAM ", .ordinal_title_prefix("logit")))
+  }
+  "Generalized additive model (GAM)"
 }

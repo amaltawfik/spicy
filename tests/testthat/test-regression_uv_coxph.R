@@ -191,7 +191,10 @@ test_that("titles, HR note, and the survival footer render", {
   )
   expect_match(
     out,
-    "Univariable and multivariable Cox regression: Surv(time, status)",
+    paste0(
+      "Univariable and multivariable Cox proportional hazards regression: ",
+      "Surv(time, status)"
+    ),
     fixed = TRUE
   )
   expect_match(out, "HR = hazard ratio", fixed = TRUE)
@@ -212,7 +215,7 @@ test_that("titles, HR note, and the survival footer render", {
   )
   expect_match(
     out2,
-    "Univariable Cox regression screen: Surv(time, status)",
+    "Univariable Cox proportional hazards regression screen: Surv(time, status)",
     fixed = TRUE
   )
 })

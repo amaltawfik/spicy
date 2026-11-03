@@ -224,6 +224,62 @@ test_that("gam poisson: smooth_terms$stat_type = 'chi2'", {
   expect_true(all(fr$info$extras$smooth_terms$stat_type == "chi2"))
 })
 
+test_that("gam titles name the family in words, never by its R code", {
+  title <- function(family, link = "log") {
+    spicy:::.gam_title_prefix(list(family = family, link = link), FALSE)
+  }
+  # A glm family reads as the glm title, GAM for regression.
+  expect_identical(title("binomial", "probit"), "Probit GAM")
+  expect_identical(
+    title("binomial", "cloglog"),
+    "Complementary log-log GAM"
+  )
+  expect_identical(title("gaussian"), "Gaussian GAM")
+  expect_identical(title("Gamma"), "Gamma GAM")
+  expect_identical(title("quasipoisson"), "Quasi-Poisson GAM")
+  expect_identical(title("quasi", "identity"), "Quasi-likelihood GAM")
+  # The family names mgcv gives its families (checked on fits, mgcv
+  # 1.9): the estimated parameters ride in the name, never in the title.
+  expect_identical(title("Negative Binomial(1.358)"), "Negative-binomial GAM")
+  expect_identical(title("Tweedie(p=1.892)"), "Tweedie GAM")
+  expect_identical(title("Tweedie(1.5)"), "Tweedie GAM")
+  expect_identical(title("Beta regression(4.108)", "logit"), "Beta GAM")
+  expect_identical(title("Scaled t(7.075,0.327)", "identity"), "Student-t GAM")
+  expect_identical(
+    title("Zero inflated Poisson(0.172,0)", "identity"),
+    "Zero-inflated Poisson GAM"
+  )
+  expect_identical(
+    title("Ordered Categorical(-1,2.95)", "identity"),
+    "Cumulative logit GAM (proportional odds)"
+  )
+  # Any other family is not named.
+  expect_identical(
+    title("gaulss", "identity"),
+    "Generalized additive model (GAM)"
+  )
+})
+
+test_that("a probit GAM is not titled logistic", {
+  skip_if_not_installed("mgcv")
+  dat <- mgcv::gamSim(
+    1,
+    n = 200,
+    dist = "binary",
+    scale = 0.33,
+    verbose = FALSE
+  )
+  fit <- mgcv::gam(
+    y ~ s(x0) + x2,
+    data = dat,
+    family = stats::binomial(link = "probit")
+  )
+  expect_identical(
+    as_regression_frame(fit)$info$extras$title_prefix,
+    "Probit GAM"
+  )
+})
+
 
 # ---- 8. gam: factor predictor reference row ----------------------------
 
@@ -313,4 +369,27 @@ test_that("gam / bam CR2 standard errors equal the glm's cluster sandwich", {
     # The same estimator through clubSandwich's CR1 on the glm table.
     expect_equal(se_gam, se_of(m_glm, "CR1"), tolerance = 1e-5, label = nm)
   }
+})
+
+test_that("an nb() GAM has theta and alpha rows and no sigma; negbin(theta) keeps the glm rule", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  d <- data.frame(x = stats::runif(200))
+  d$y <- stats::rnbinom(200, mu = exp(1 + d$x), size = 2)
+  fit <- mgcv::gam(y ~ s(x), family = mgcv::nb(), data = d)
+  fr <- as_regression_frame(fit, model_id = "M1")
+  theta <- fit$family$getTheta(TRUE)
+  expect_equal(fr$info$fit_stats$theta, theta)
+  expect_equal(fr$info$fit_stats$alpha, 1 / theta)
+  expect_true(is.na(fr$info$fit_stats$sigma))
+  expect_no_error(table_regression(fit, show_fit_stats = c("theta", "alpha")))
+  # negbin(theta) fixes theta: no estimate to report, the family fixes
+  # the dispersion, as glm's negative.binomial(theta) does.
+  fixed <- mgcv::gam(y ~ s(x), family = mgcv::negbin(2), data = d)
+  fr_fixed <- as_regression_frame(fixed, model_id = "M1")
+  expect_equal(fr_fixed$info$fit_stats$sigma, 1)
+  expect_error(
+    table_regression(fixed, show_fit_stats = "theta"),
+    class = "spicy_invalid_input"
+  )
 })

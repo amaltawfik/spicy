@@ -63,6 +63,10 @@ as_regression_frame.negbin <- function(
   } else {
     NA_real_ # nocov
   }
+  # No sigma row: the glm path reads 1 from the fixed dispersion of the
+  # family object, but a negative binomial's dispersion is the theta row,
+  # and "sigma 1.00" above "theta 1.79" would contradict it.
+  frame$info$fit_stats$sigma <- NA_real_
 
   attr(frame, "fit") <- fit
   # The MUTATION boundary: everything above rewrote a frame the glm

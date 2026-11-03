@@ -76,11 +76,12 @@ test_that("the French type footer translates its two coherent arms", {
 })
 
 test_that("an unmapped family keeps its WHOLE English title under fr", {
-  # Coherent or nothing: a half-translated head ("Heckman selection
-  # model -- comparaison") would be worse than English. The prefix is
-  # planted by hand so no Suggests package is needed.
+  # Coherent or nothing: a half-translated head ("Unmapped family
+  # regression -- comparaison") would be worse than English. The prefix
+  # is planted by hand, a title no engine gives and no bridge carries,
+  # so no Suggests package is needed.
   f1 <- .tf_lm_frame()
-  f1$info$extras$title_prefix <- "Heckman selection model"
+  f1$info$extras$title_prefix <- "Unmapped family regression"
   en_title <- build_regression_title_from_frames(list(f1))
   en_note <- build_regression_type_footer_block_from_frames(list(f1))
   withr::local_options(spicy.language = "fr")
@@ -119,7 +120,7 @@ test_that("the mixed-family separator is a key, read with the language bypassed"
   f2$info$extras$title_prefix <- "Heckman selection model"
   expect_identical(
     build_regression_type_footer_block_from_frames(list(f1, f2)),
-    "Model 1: linear regression; Model 2: heckman selection model."
+    "Model 1: linear regression; Model 2: Heckman selection model."
   )
   withr::local_options(
     spicy.language = "fr",
@@ -127,7 +128,7 @@ test_that("the mixed-family separator is a key, read with the language bypassed"
   )
   expect_identical(
     build_regression_type_footer_block_from_frames(list(f1, f2)),
-    "Model 1: linear regression | Model 2: heckman selection model."
+    "Model 1: linear regression | Model 2: Heckman selection model."
   )
 })
 
@@ -284,4 +285,53 @@ test_that("the public render carries the French title end to end", {
   )
   expect_match(out, "R\u00e9gression lin\u00e9aire\u00a0: mpg", fixed = TRUE)
   expect_match(out, "Note. R\u00e9gression lin\u00e9aire.", fixed = TRUE)
+})
+
+test_that("the quantile title translates its head and writes tau in the mark", {
+  # The prefix carries its tau, so no fixed key matches it: the bridge
+  # translates "Quantile regression" and the tau, read back from the
+  # English key, takes the language's decimal mark.
+  bridge <- c("Quantile regression" = "R\u00e9gression quantile")
+  local_mocked_bindings(.spicy_title_prefix_table = function(lang) bridge)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .title_prefix_display("Quantile regression (\u03c4 = 0.50)"),
+    "R\u00e9gression quantile (\u03c4 = 0,50)"
+  )
+  expect_identical(
+    .title_prefix_display("Quantile regression (\u03c4 = 0.25)"),
+    "R\u00e9gression quantile (\u03c4 = 0,25)"
+  )
+  # Without the head in the bridge, the whole English title stays.
+  bridge <- c("Regression" = "R\u00e9gression")
+  expect_null(.title_prefix_display("Quantile regression (\u03c4 = 0.50)"))
+})
+
+test_that("the quantile tau follows the table's decimal mark, in both languages", {
+  skip_if_not_installed("quantreg")
+  fit <- quantreg::rq(mpg ~ wt, tau = 0.5, data = mtcars)
+  # English with a comma mark: the tau of the title and of the note
+  # takes it, as every number of the table does.
+  out_en <- table_regression(fit, decimal_mark = ",")
+  expect_match(attr(out_en, "title"), "(\u03c4 = 0,50)", fixed = TRUE)
+  expect_match(attr(out_en, "note"), "(\u03c4 = 0,50)", fixed = TRUE)
+  # The default point mark leaves the prefix as the engine set it.
+  expect_match(
+    attr(table_regression(fit), "title"),
+    "Quantile regression (\u03c4 = 0.50)",
+    fixed = TRUE
+  )
+  # French: the language's comma by default, the point when the table
+  # is asked for one.
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_regression(fit), "title"),
+    "R\u00e9gression quantile (\u03c4 = 0,50)",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(table_regression(fit, decimal_mark = "."), "title"),
+    "R\u00e9gression quantile (\u03c4 = 0.50)",
+    fixed = TRUE
+  )
 })

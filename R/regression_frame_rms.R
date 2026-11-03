@@ -572,7 +572,11 @@ as_regression_frame.Glm <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = .rms_title_prefix(rms_class, fam),
+    title_prefix = .rms_title_prefix(
+      rms_class,
+      fam,
+      n_intercepts = fit$non.slopes %||% 1L
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     rms_stats = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
@@ -635,23 +639,21 @@ as_regression_frame.Glm <- function(
 }
 
 
-.rms_title_prefix <- function(rms_class, fam) {
+# A Glm is titled as the glm frame titles its family and link (a probit
+# Glm is not a logistic regression).
+.rms_title_prefix <- function(rms_class, fam, n_intercepts = 1L) {
   switch(
     rms_class,
     ols = "Linear regression",
-    lrm = "Logistic regression",
+    # An lrm with several intercepts (rms's "y>=j" cut-points) is the
+    # proportional-odds model of an ordinal outcome.
+    lrm = if (isTRUE(n_intercepts > 1L)) {
+      .ordinal_title_prefix("logit")
+    } else {
+      "Logistic regression"
+    },
     cph = "Cox proportional hazards regression",
-    Glm = {
-      base <- switch(
-        fam$family,
-        binomial = "Logistic",
-        poisson = "Poisson",
-        Gamma = "Gamma",
-        gaussian = "Linear",
-        paste0(toupper(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
-      )
-      paste0(base, " regression")
-    }
+    Glm = spicy_glm_title_prefix(fam$family, fam$link)
   )
 }
 

@@ -2086,9 +2086,9 @@ build_fit_stats_rows <- function(
 # Display label for each show_fit_stats token. Greek symbols and
 # typographic conventions per APA / modelsummary.
 fit_stat_label <- function(token) {
-  # A change token displays the delta prefix over its base label, so the
+  # A change token displays the Delta prefix over its base label, so the
   # two can never disagree.
-  delta <- function(base) spicy_fmt("fitstat_change_prefix", base)
+  change_label <- function(base) spicy_fmt("fitstat_change_prefix", base)
   switch(
     token,
     nobs = spicy_str("header_n_lower"),
@@ -2102,6 +2102,7 @@ fit_stat_label <- function(token) {
     pseudo_r2_tjur = spicy_fmt("fitstat_pseudo_r2", "Tjur"),
     theta = spicy_str("fitstat_theta"),
     alpha = spicy_str("fitstat_alpha"),
+    delta = spicy_str("fitstat_delta"),
     within_r2 = spicy_fmt(
       "fitstat_r2_qualified",
       spicy_str("label_r2_within")
@@ -2136,17 +2137,17 @@ fit_stat_label <- function(token) {
     deviance = spicy_str("fitstat_deviance"),
     eff_p = spicy_str("fitstat_eff_p"),
     # Nested-comparison change tokens (APA Table 7.13)
-    r2_change = delta(spicy_str("symbol_r2")),
-    adj_r2_change = delta(spicy_str("fitstat_adj_r2")),
+    r2_change = change_label(spicy_str("symbol_r2")),
+    adj_r2_change = change_label(spicy_str("fitstat_adj_r2")),
     f_change = spicy_str("fitstat_f_change"),
-    f2_change = delta(spicy_str("symbol_f2_global")),
-    lrt_change = delta(spicy_str("symbol_chi_sq")),
+    f2_change = change_label(spicy_str("symbol_f2_global")),
+    lrt_change = change_label(spicy_str("symbol_chi_sq")),
     wald_f_change = spicy_str("fitstat_wald_f_change"),
     wald_chi2_change = spicy_str("fitstat_wald_chi2_change"),
-    aic_change = delta(spicy_str("fitstat_aic")),
-    aicc_change = delta(spicy_str("fitstat_aicc")),
-    bic_change = delta(spicy_str("fitstat_bic")),
-    deviance_change = delta(spicy_str("fitstat_deviance")),
+    aic_change = change_label(spicy_str("fitstat_aic")),
+    aicc_change = change_label(spicy_str("fitstat_aicc")),
+    bic_change = change_label(spicy_str("fitstat_bic")),
+    deviance_change = change_label(spicy_str("fitstat_deviance")),
     p_change = spicy_str("fitstat_p_change"),
     token
   )
@@ -2212,6 +2213,7 @@ format_fit_stat_value <- function(
     pseudo_r2_mcfadden = fit_digits,
     theta = fit_digits,
     alpha = fit_digits,
+    delta = fit_digits,
     within_r2 = fit_digits,
     phi = fit_digits,
     scale = fit_digits,

@@ -61,9 +61,9 @@
     c(
       "Robust, IV, quantile, panel",
       "fixest",
-      "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::fenegbin()",
-      "yes",
-      "`feglm`: OR / IRR",
+      "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::femlm(), fixest::fenegbin()",
+      "yes (no for a GLM with fixed effects)",
+      "OR / IRR (link)",
       "-"
     ),
     c("Mixed effects", "lmerMod", "lme4::lmer()", "yes", "-", .REG_BLOCK_RE),
@@ -399,6 +399,11 @@
 #' components via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
 #' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
 #'
+#' The dispersion of a negative-binomial fit is an opt-in fit-statistic
+#' row: `"theta"` and `"alpha"` (= 1/theta) for NB2 fits, `"delta"` for
+#' NB1 fits (glmmTMB `nbinom1`). A Poisson column in the same table is
+#' blank on these rows; see `show_fit_stats` in [table_regression()].
+#'
 #' @section Categorical outcomes:
 #' `multinom` renders per non-reference outcome; `exponentiate` yields
 #' odds ratios of each outcome against the reference outcome -- the
@@ -504,6 +509,10 @@
 #' No), with per-factor `N (<factor>)` counts via the opt-in
 #' `n_groups` token and the within R-squared in the default fit
 #' statistics for `fixest` (opt-in via `within_r2` for `estimatr`).
+#' AME is refused for a non-linear `fixest` model with fixed effects
+#' (`fepois()`, `feglm()`, `femlm()`, `fenegbin()`): its variance would
+#' need the uncertainty of the fixed effects, which fixest does not
+#' estimate. `feols()` and a GLM without fixed effects have it.
 #'
 #' @section Bayesian models:
 #' Posterior median, posterior MAD SD, and equal-tailed credible

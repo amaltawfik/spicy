@@ -1021,13 +1021,18 @@ field convention; blank for other classes).
 \code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991),
 \code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
 \item Residual scale: \code{"sigma"}, \code{"rmse"}. \code{"sigma"} is the lm
-\eqn{\hat{\sigma}}{sigma-hat}; for glm, the square root of the
-dispersion estimate (so a gaussian glm reads as lm), and 1 when
-the family fixes the dispersion (binomial, Poisson). For \code{glmmTMB} fits, \code{"sigma"} is
-shown for the gaussian and Gamma families (and the fixed 1 of
-poisson and binomial, as for \code{glm}) and left blank for the other
-families, whose \code{sigma()} is a family-specific dispersion
-parameter rather than a residual scale.
+\eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like \code{fixest}
+fits, it is the square root of the dispersion (so a gaussian glm
+reads as lm), and 1 when the family fixes it (binomial, Poisson).
+For \code{survreg}, it is the scale \eqn{\sigma}{sigma} of
+\eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} (the
+standard deviation of \eqn{\log T}{log T} for the log-normal),
+blank when strata give one scale per stratum. For \code{glmmTMB}, it is
+the same square root for the gaussian, Gamma and Tweedie families,
+and the fixed 1 of Poisson and binomial. It is blank for the
+negative-binomial and beta fits below, whose dispersion has its
+own row, and for the other \code{glmmTMB} families, whose \code{sigma()} is
+a family-specific parameter.
 \item Survey designs (\code{survey::svyglm} only): \code{"eff_p"}, the
 effective number of parameters of the design (the first element
 of survey's \code{extractAIC}, the sum of the Rao-Scott eigenvalues).
@@ -1040,23 +1045,28 @@ expected log predictive density and its deviance-scale twin,
 Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and \code{"waic"}
 (Watanabe-Akaike; PSIS-LOO is generally preferred).
-\item Negative-binomial dispersion (NB2 fits: \code{MASS::glm.nb},
-\code{lme4::glmer.nb}, and \code{glmmTMB} with \code{nbinom2} or
-\code{truncated_nbinom2}):
-\code{"theta"} (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta})
-and \code{"alpha"} (\eqn{= 1/\theta}{= 1/theta}, the Stata \code{nbreg}
-convention). Refused for other families, \code{nbinom1} included
-(its dispersion is not an NB2 theta), and for a \code{glmmTMB} fit
-whose \code{dispformula} has covariates.
-\item Beta-regression precision (\code{betareg::betareg}, and \code{glmmTMB}
-with \code{beta_family()}):
+\item Negative-binomial dispersion. NB2 fits (\code{MASS::glm.nb},
+\code{lme4::glmer.nb}, \code{fixest::fenegbin}, \code{mgcv::gam} with \code{nb()},
+and \code{glmmTMB} with \code{nbinom2} or \code{truncated_nbinom2}): \code{"theta"}
+(\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and \code{"alpha"}
+(\eqn{= 1/\theta}{= 1/theta}, the Stata \code{nbreg} convention).
+NB1 fits (\code{glmmTMB} with \code{nbinom1} or \code{truncated_nbinom1}):
+\code{"delta"} (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
+\eqn{\delta}{delta} of Stata's \verb{nbreg, dispersion(constant)}).
+\item Beta precision (\code{betareg::betareg}, and \code{glmmTMB} with
+\code{beta_family()}, \code{betabinomial()} or \code{ordbeta()}):
 \code{"phi"} (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
 \eqn{\phi}{phi} = less dispersion). A constant precision is
 back-transformed from its link, so \code{y ~ x | 1} reports the
-same \eqn{\phi}{phi} as \code{y ~ x}. Refused for other families
-and when the precision has covariates (\code{y ~ x | z}, or a
-\code{glmmTMB} \code{dispformula}), so it is not a single number.
+same \eqn{\phi}{phi} as \code{y ~ x}.
+\item For these dispersion rows (\code{"theta"}, \code{"alpha"}, \code{"delta"},
+\code{"phi"}), a column whose model lacks the parameter is blank, so a
+Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+A token is refused only when no model in the table has the
+parameter, or when a model of that family has dispersion
+covariates (a \code{glmmTMB} \code{dispformula}, or a betareg \code{y ~ x | z}),
+so the parameter is not a single number.
 \item GEE (\code{geepack::geeglm} only): \code{"qic"} and \code{"qicu"} -- the
 quasi-likelihood information criteria (Pan 2001; QIC for
 working-correlation choice, QICu for covariate choice) via

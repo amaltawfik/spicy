@@ -121,13 +121,18 @@
 #'     `"pseudo_r2_nagelkerke"` (Nagelkerke 1991),
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 #'   \item Residual scale: `"sigma"`, `"rmse"`. `"sigma"` is the lm
-#'     \eqn{\hat{\sigma}}{sigma-hat}; for glm, the square root of the
-#'     dispersion estimate (so a gaussian glm reads as lm), and 1 when
-#'     the family fixes the dispersion (binomial, Poisson). For `glmmTMB` fits, `"sigma"` is
-#'     shown for the gaussian and Gamma families (and the fixed 1 of
-#'     poisson and binomial, as for `glm`) and left blank for the other
-#'     families, whose `sigma()` is a family-specific dispersion
-#'     parameter rather than a residual scale.
+#'     \eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like `fixest`
+#'     fits, it is the square root of the dispersion (so a gaussian glm
+#'     reads as lm), and 1 when the family fixes it (binomial, Poisson).
+#'     For `survreg`, it is the scale \eqn{\sigma}{sigma} of
+#'     \eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} (the
+#'     standard deviation of \eqn{\log T}{log T} for the log-normal),
+#'     blank when strata give one scale per stratum. For `glmmTMB`, it is
+#'     the same square root for the gaussian, Gamma and Tweedie families,
+#'     and the fixed 1 of Poisson and binomial. It is blank for the
+#'     negative-binomial and beta fits below, whose dispersion has its
+#'     own row, and for the other `glmmTMB` families, whose `sigma()` is
+#'     a family-specific parameter.
 #'   \item Survey designs (`survey::svyglm` only): `"eff_p"`, the
 #'     effective number of parameters of the design (the first element
 #'     of survey's `extractAIC`, the sum of the Rao-Scott eigenvalues).
@@ -140,23 +145,28 @@
 #'     Vehtari et al. 2017; opt-in, a few seconds per model; the
 #'     footer discloses the elpd standard error), and `"waic"`
 #'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
-#'   \item Negative-binomial dispersion (NB2 fits: `MASS::glm.nb`,
-#'     `lme4::glmer.nb`, and `glmmTMB` with `nbinom2` or
-#'     `truncated_nbinom2`):
-#'     `"theta"` (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta})
-#'     and `"alpha"` (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg`
-#'     convention). Refused for other families, `nbinom1` included
-#'     (its dispersion is not an NB2 theta), and for a `glmmTMB` fit
-#'     whose `dispformula` has covariates.
-#'   \item Beta-regression precision (`betareg::betareg`, and `glmmTMB`
-#'     with `beta_family()`):
+#'   \item Negative-binomial dispersion. NB2 fits (`MASS::glm.nb`,
+#'     `lme4::glmer.nb`, `fixest::fenegbin`, `mgcv::gam` with `nb()`,
+#'     and `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"`
+#'     (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and `"alpha"`
+#'     (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg` convention).
+#'     NB1 fits (`glmmTMB` with `nbinom1` or `truncated_nbinom1`):
+#'     `"delta"` (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
+#'     \eqn{\delta}{delta} of Stata's `nbreg, dispersion(constant)`).
+#'   \item Beta precision (`betareg::betareg`, and `glmmTMB` with
+#'     `beta_family()`, `betabinomial()` or `ordbeta()`):
 #'     `"phi"` (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
 #'     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
 #'     \eqn{\phi}{phi} = less dispersion). A constant precision is
 #'     back-transformed from its link, so `y ~ x | 1` reports the
-#'     same \eqn{\phi}{phi} as `y ~ x`. Refused for other families
-#'     and when the precision has covariates (`y ~ x | z`, or a
-#'     `glmmTMB` `dispformula`), so it is not a single number.
+#'     same \eqn{\phi}{phi} as `y ~ x`.
+#'   \item For these dispersion rows (`"theta"`, `"alpha"`, `"delta"`,
+#'     `"phi"`), a column whose model lacks the parameter is blank, so a
+#'     Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+#'     A token is refused only when no model in the table has the
+#'     parameter, or when a model of that family has dispersion
+#'     covariates (a `glmmTMB` `dispformula`, or a betareg `y ~ x | z`),
+#'     so the parameter is not a single number.
 #'   \item GEE (`geepack::geeglm` only): `"qic"` and `"qicu"` -- the
 #'     quasi-likelihood information criteria (Pan 2001; QIC for
 #'     working-correlation choice, QICu for covariate choice) via
@@ -3323,6 +3333,13 @@ table_regression <- function(
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
           "with `tau = `, or `\"risk_diff\"` with `at_time = `."
         )
+      } else if (any(classes == "fixest")) {
+        paste0(
+          "The AME of a non-linear fixest model with fixed effects would ",
+          "need the uncertainty of the fixed effects, which fixest does ",
+          "not estimate. It is available for `feols()` and for a GLM ",
+          "without fixed effects."
+        )
       } else {
         paste0(
           "No average-marginal-effects backend exists for this class ",
@@ -3613,7 +3630,11 @@ table_regression <- function(
     # The title was the first renderer to read frames directly; the
     # footer, body and alignment followed, and the legacy extract shape
     # is gone.
-    build_regression_title_from_frames(frames, nested = nested)
+    build_regression_title_from_frames(
+      frames,
+      nested = nested,
+      decimal_mark = decimal_mark
+    )
   } else if (isFALSE(title)) {
     NULL
   } else {

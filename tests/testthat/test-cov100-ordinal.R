@@ -15,7 +15,7 @@
 #     carries only the "(Intercept)" baseline row -> no non-proportional
 #     rows are synthesized.
 #   * Defensive guards of .polr_thresholds / .clm_thresholds /
-#     .append_threshold_rows and the .polr_link_title switch fallback.
+#     .append_threshold_rows and the .ordinal_title_prefix switch fallback.
 #   * .ordinal_pseudo_r2 / .ordinal_null_loglik degenerate-input guards.
 # ---------------------------------------------------------------------------
 
@@ -177,8 +177,12 @@ test_that("threshold extractors return an empty frame for empty inputs", {
   expect_identical(spicy:::.clm_thresholds(list(alpha = NULL)), data.frame())
 })
 
-test_that(".polr_link_title falls back to a generic cumulative title", {
-  expect_identical(spicy:::.polr_link_title("aranda"), "Cumulative aranda")
+test_that(".ordinal_title_prefix keeps a link it does not spell out", {
+  # clm's flexible links are already names.
+  expect_identical(
+    spicy:::.ordinal_title_prefix("log-gamma"),
+    "Cumulative log-gamma regression (parallel slopes)"
+  )
 })
 
 test_that(".append_threshold_rows is a no-op without a threshold frame", {

@@ -3,7 +3,8 @@
 #
 # Targets branches the Phase 6i tests don't reach:
 #   * .flexsurv_coefs() non-95% ci_level branch (rebuilds CIs from se/z)
-#   * .flexsurv_dist_title() switch arms + default fallback
+#   * .flexsurv_dist_title() switch arms + default fallback, and the
+#     Royston-Parmar title of a flexsurvspline fit
 #   * .check_flexsurv_available() / .check_sampleSelection_available()
 #     missing-package aborts (mocked spicy_pkg_available)
 # ---------------------------------------------------------------------------
@@ -104,11 +105,37 @@ test_that(".flexsurv_dist_title maps every named distribution", {
     "Generalized gamma"
   )
   expect_identical(spicy:::.flexsurv_dist_title("genf"), "Generalized F")
+  # The original parameterizations are the same distributions.
+  expect_identical(
+    spicy:::.flexsurv_dist_title("gengamma.orig"),
+    "Generalized gamma"
+  )
+  expect_identical(
+    spicy:::.flexsurv_dist_title("genf.orig"),
+    "Generalized F"
+  )
 })
 
 test_that(".flexsurv_dist_title default capitalizes an unknown distribution", {
   expect_identical(spicy:::.flexsurv_dist_title("royston"), "Royston")
   expect_identical(spicy:::.flexsurv_dist_title("spline"), "Spline")
+})
+
+test_that("a flexsurvspline fit is titled as the Royston-Parmar model", {
+  skip_if_not_installed("flexsurv")
+  fit <- flexsurv::flexsurvspline(
+    survival::Surv(recyrs, censrec) ~ group,
+    data = flexsurv::bc,
+    k = 1
+  )
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Royston-Parmar spline survival regression"
+  )
+  # The note's distribution reads the same table: no R code there either.
+  note <- attr(table_regression(fit), "note")
+  expect_match(note, "Distribution: Royston-Parmar spline", fixed = TRUE)
 })
 
 

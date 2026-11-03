@@ -301,11 +301,7 @@ as_regression_frame.svyglm <- function(
   )
 
   # Family-aware title prefix names the design-based context.
-  title_prefix <- if (has_identity_link) {
-    "Survey-weighted linear regression"
-  } else {
-    paste0("Survey-weighted ", .svyglm_family_title(fam), " regression")
-  }
+  title_prefix <- .svyglm_title_prefix(fam)
 
   extras <- list(
     cluster_name = NULL,
@@ -343,32 +339,24 @@ as_regression_frame.svyglm <- function(
 }
 
 
-# Title-case family label. Note: survey uses quasibinomial / quasipoisson
-# under the hood because the score variance does not coincide with the
-# nominal-likelihood variance; we still display "Logistic" / "Poisson"
-# to the user because that is the model class they typed.
-.svyglm_family_title <- function(fam) {
-  # Binomial titles are LINK-aware: a probit svyglm is NOT a logistic
-  # regression (title mistitle caught in the Group D verification pass).
-  if (fam$family %in% c("binomial", "quasibinomial")) {
-    return(switch(
-      fam$link,
-      "logit" = "logistic",
-      "probit" = "probit",
-      "cloglog" = "complementary log-log",
-      "log" = "log-binomial",
-      "binomial"
-    ))
-  }
-  switch(
+# The title of a design-based glm: its family as the glm frame titles it
+# (spicy_glm_title_prefix(), link-aware for binomial: a probit svyglm is
+# not a logistic regression), in running text, named by the family and
+# never by the link alone (a Poisson model with an identity link is
+# still a Poisson model). survey users fit quasibinomial / quasipoisson
+# for the binomial / Poisson model, because the design-based variance
+# does not rest on the nominal likelihood; the model is the same, so
+# the title is "logistic" / "Poisson", the model class they mean. A
+# family the glm source does not know is not named.
+.svyglm_title_prefix <- function(fam) {
+  family <- switch(
     fam$family,
-    quasipoisson = "Poisson",
-    poisson = "Poisson",
-    Gamma = "Gamma",
-    inverse.gaussian = "inverse-Gaussian",
-    gaussian = "linear",
-    paste0(tolower(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
+    quasibinomial = "binomial",
+    quasipoisson = "poisson",
+    fam$family
   )
+  glm_prefix <- spicy_glm_title_prefix(family, fam$link)
+  paste0("Survey-weighted ", lowercase_first(glm_prefix))
 }
 
 

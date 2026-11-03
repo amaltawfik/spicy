@@ -214,13 +214,7 @@ as_regression_frame.svyolr <- function(
     singular_terms = character(0),
     has_weights = TRUE,
     weighted_n = fit_stats$weighted_nobs,
-    title_prefix = paste0(
-      "Survey-weighted ",
-      tolower(.polr_link_title(link)),
-      " regression (",
-      .ordinal_assumption_label(link),
-      ")"
-    ),
+    title_prefix = .svyolr_title_prefix(link),
     exp_applied = FALSE,
     exp_header = NA_character_,
     response_levels = as.character(fit$lev %||% character(0)),
@@ -248,4 +242,11 @@ as_regression_frame.svyolr <- function(
     supports = supports,
     extras = extras
   )
+}
+
+
+# The title of a design-based cumulative-link model: the polr title of
+# the same link (.ordinal_title_prefix()), in running text.
+.svyolr_title_prefix <- function(link) {
+  paste0("Survey-weighted ", lowercase_first(.ordinal_title_prefix(link)))
 }

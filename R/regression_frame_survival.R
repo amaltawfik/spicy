@@ -25,7 +25,8 @@
 #     LHS expression "Surv(time, status)" (not just "time").
 #   * survreg::summary(fit)$table includes a Log(scale) row; we exclude
 #     it from coefs (it is a nuisance parameter) and stash fit$scale in
-#     info$extras$scale_parameter for downstream consumers.
+#     info$extras$scale_parameter for downstream consumers (NA when
+#     strata() give one scale per stratum).
 #   * fit$xlevels is NULL for coxph even when factors are present; the
 #     generic .spicy_get_xlevels() fallback (terms + model.frame) works.
 #
@@ -575,6 +576,15 @@ as_regression_frame.survreg <- function(
     ci_method <- "wald"
   }
 
+  # The scale sigma of log T = X'beta + sigma W (the AFT error scale).
+  # strata() give each stratum its own scale: there is then no single
+  # value, and the sigma row and the footer's scale stay blank.
+  aft_scale <- if (length(fit$scale) == 1L) {
+    as.numeric(fit$scale)
+  } else {
+    NA_real_
+  }
+
   fit_stats <- list(
     r_squared = NA_real_,
     adj_r_squared = NA_real_,
@@ -583,7 +593,7 @@ as_regression_frame.survreg <- function(
     bic = stats::BIC(fit),
     log_lik = as.numeric(stats::logLik(fit)),
     deviance = NA_real_,
-    sigma = tryCatch(fit$scale, error = function(e) NA_real_),
+    sigma = aft_scale,
     nobs = as.integer(stats::nobs(fit))
   )
 
@@ -612,7 +622,7 @@ as_regression_frame.survreg <- function(
     title_prefix = paste0(.survreg_dist_title(dist), " AFT regression"),
     exp_applied = FALSE,
     exp_header = NA_character_,
-    scale_parameter = as.numeric(fit$scale %||% NA_real_),
+    scale_parameter = aft_scale,
     distribution = dist
   )
 

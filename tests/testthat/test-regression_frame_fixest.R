@@ -363,6 +363,49 @@ test_that("feols AME matches marginaleffects::avg_slopes", {
   expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
 
+test_that("a non-linear fixest fit with fixed effects has no AME, and the refusal says why", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("marginaleffects")
+  d <- mtcars
+  d$cyl_f <- factor(d$cyl)
+  fit <- fixest::fepois(carb ~ wt | cyl_f, data = d)
+  # The engine itself refuses: its delta method cannot carry the
+  # uncertainty of the fixed effects.
+  expect_error(marginaleffects::avg_slopes(fit))
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  expect_false(fr$info$supports$ame)
+  expect_false(any(fr$coefs$estimate_type == "ame"))
+  err <- expect_error(
+    table_regression(fit, show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "uncertainty of the\\s+fixed\\s+effects"
+  )
+  # Beside a model that has an AME, its AME cells stay blank, silently.
+  lm_fit <- stats::lm(carb ~ wt, data = d)
+  expect_no_warning(
+    table_regression(list(lm_fit, fit), show_columns = c("b", "ame"))
+  )
+})
+
+test_that("a fixest GLM without fixed effects keeps its AME", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("marginaleffects")
+  fit <- fixest::feglm(am ~ wt, data = mtcars, family = binomial())
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  expect_true(fr$info$supports$ame)
+  a <- fr$coefs[fr$coefs$estimate_type == "ame", , drop = FALSE]
+  orc <- as.data.frame(suppressWarnings(suppressMessages(
+    marginaleffects::avg_slopes(fit, df = Inf)
+  )))
+  idx <- match(a$term, orc$term)
+  expect_false(anyNA(idx))
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
+})
+
 test_that("feglm follows the statistic fixest reports: t for an estimated dispersion, z otherwise", {
   skip_if_not_installed("fixest")
   d <- mtcars
@@ -392,4 +435,148 @@ test_that("feglm follows the statistic fixest reports: t for an estimated disper
     }
     expect_no_error(table_regression(fit))
   }
+})
+
+
+# ---- 11. femlm: maximum likelihood, whatever its family -------------------
+
+# femlm() stores its family as a string ("poisson", "logit", "gaussian",
+# "negbin") and reports Wald z for all four; the gaussian one used to be
+# read as feols, with t tests and a subscript error.
+test_that("femlm: Wald z as fixest reports it, and the glm title of its family", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("MASS")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  cases <- list(
+    list(
+      family = "poisson",
+      formula = carb ~ wt + hp | cyl,
+      data = d,
+      info = list(family = "poisson", link = "log"),
+      title = "Poisson regression (fixed effects)"
+    ),
+    list(
+      family = "logit",
+      formula = am ~ wt + hp | cyl,
+      data = d,
+      info = list(family = "binomial", link = "logit"),
+      title = "Logistic regression (fixed effects)"
+    ),
+    list(
+      family = "gaussian",
+      formula = mpg ~ wt + hp | cyl,
+      data = d,
+      info = list(family = "gaussian", link = "identity"),
+      title = "Linear regression (fixed effects)"
+    ),
+    list(
+      family = "negbin",
+      formula = Days ~ Sex + Lrn | Age,
+      data = MASS::quine,
+      info = list(family = "negbin", link = "log"),
+      title = "Negative-binomial regression (fixed effects)"
+    )
+  )
+  for (cs in cases) {
+    fit <- fixest::femlm(cs$formula, data = cs$data, family = cs$family)
+    fr <- as_regression_frame(fit)
+    ct <- fixest::coeftable(fit)
+    b <- fr$coefs[!fr$coefs$is_ref, ]
+    expect_identical(unique(b$test_type), "z", info = cs$family)
+    expect_true(all(is.infinite(b$df)), info = cs$family)
+    expect_equal(
+      b$statistic,
+      unname(ct[b$term, "z value"]),
+      tolerance = 1e-10,
+      info = cs$family
+    )
+    expect_equal(
+      b$p_value,
+      unname(ct[b$term, "Pr(>|z|)"]),
+      tolerance = 1e-10,
+      info = cs$family
+    )
+    expect_identical(fr$info$family, cs$info, info = cs$family)
+    expect_identical(fr$info$extras$title_prefix, cs$title, info = cs$family)
+    expect_false(fr$info$supports$classical_r2, info = cs$family)
+    expect_identical(
+      fr$info$supports$exponentiate,
+      !identical(cs$info$link, "identity"),
+      info = cs$family
+    )
+    expect_no_error(table_regression(fit))
+  }
+})
+
+
+# ---- 12. sigma, theta and alpha -------------------------------------------
+
+test_that("fixest sigma follows the glm rule: sqrt(dispersion), 1 when fixed", {
+  skip_if_not_installed("fixest")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  sigma_of <- function(fit) as_regression_frame(fit)$info$fit_stats$sigma
+  # feglm stores glm's own dispersion: the Pearson estimate for Gamma.
+  fg <- fixest::feglm(mpg ~ wt | cyl, data = d, family = stats::Gamma("log"))
+  gg <- stats::glm(mpg ~ wt + cyl, data = d, family = stats::Gamma("log"))
+  expect_equal(sigma_of(fg), sqrt(summary(gg)$dispersion), tolerance = 1e-5)
+  # Poisson fixes it at 1, where fixest's own sigma() is a response-scale
+  # RMSE.
+  fp <- fixest::fepois(carb ~ wt | cyl, data = d)
+  gp <- stats::glm(carb ~ wt + cyl, data = d, family = poisson)
+  expect_equal(sigma_of(fp), summary(gp)$dispersion)
+  expect_false(isTRUE(all.equal(stats::sigma(fp), 1)))
+  # femlm stores no dispersion: 1 for poisson and logit, and the sigma()
+  # of the fit for gaussian, which is the square root of glm's.
+  fm_p <- fixest::femlm(carb ~ wt | cyl, data = d, family = "poisson")
+  expect_identical(sigma_of(fm_p), 1)
+  fm_l <- fixest::femlm(am ~ wt | cyl, data = d, family = "logit")
+  expect_identical(sigma_of(fm_l), 1)
+  fm_g <- fixest::femlm(mpg ~ wt | cyl, data = d, family = "gaussian")
+  gl <- stats::glm(mpg ~ wt + cyl, data = d)
+  expect_equal(sigma_of(fm_g), sqrt(summary(gl)$dispersion), tolerance = 1e-6)
+  # feols keeps sigma-hat.
+  fo <- fixest::feols(mpg ~ wt | cyl, data = d)
+  expect_equal(sigma_of(fo), stats::sigma(fo))
+})
+
+test_that("fenegbin: theta and alpha rows, theta as MASS::glm.nb's, sigma blank", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("MASS")
+  d <- MASS::quine
+  fit <- fixest::fenegbin(Days ~ Sex + Lrn | Age, data = d)
+  fs <- as_regression_frame(fit)$info$fit_stats
+  expect_equal(fs$theta, unname(as.numeric(fit$theta)), tolerance = 1e-12)
+  expect_equal(fs$alpha, 1 / unname(as.numeric(fit$theta)), tolerance = 1e-12)
+  expect_true(is.na(fs$sigma))
+  # The same NB2 model by MASS, the fixed effect as dummies.
+  oracle <- MASS::glm.nb(Days ~ Sex + Lrn + Age, data = d)
+  expect_equal(fs$theta, oracle$theta, tolerance = 1e-5)
+  out <- paste(
+    utils::capture.output(print(table_regression(
+      fit,
+      show_fit_stats = c("nobs", "theta", "alpha")
+    ))),
+    collapse = "\n"
+  )
+  expect_match(out, "θ (dispersion)", fixed = TRUE)
+  expect_match(out, sprintf("%.2f", fs$theta), fixed = TRUE)
+  expect_match(out, sprintf("%.2f", fs$alpha), fixed = TRUE)
+  # femlm(family = "negbin") is the same fit.
+  fm <- fixest::femlm(Days ~ Sex + Lrn | Age, data = d, family = "negbin")
+  expect_equal(
+    as_regression_frame(fm)$info$fit_stats$theta,
+    oracle$theta,
+    tolerance = 1e-5
+  )
+  # Beside a Poisson fit, theta is in the negative-binomial column only.
+  fp <- fixest::fepois(Days ~ Sex + Lrn | Age, data = d)
+  df <- as.data.frame(table_regression(
+    list(Poisson = fp, NB = fit),
+    show_fit_stats = "theta"
+  ))
+  theta <- df[df$variable == "theta", ]
+  expect_equal(theta[["NB: B"]], fs$theta, tolerance = 1e-12)
+  expect_true(is.na(theta[["Poisson: B"]]))
 })

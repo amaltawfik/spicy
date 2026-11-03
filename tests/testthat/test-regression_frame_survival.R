@@ -289,6 +289,26 @@ test_that("survreg: scale parameter is stashed in info$extras$scale_parameter", 
   expect_identical(fr$info$extras$distribution, "weibull")
 })
 
+test_that("survreg: sigma is the AFT scale, blank with one scale per stratum", {
+  fit <- .fit_survreg_weibull()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_equal(fr$info$fit_stats$sigma, fit$scale, tolerance = 1e-12)
+  # strata() give each stratum its own scale: no single sigma, and the
+  # table renders (the footer's scale used to fail on the two values).
+  fit_s <- survival::survreg(
+    survival::Surv(time, status) ~ age + strata(sex),
+    data = survival::lung
+  )
+  expect_length(fit_s$scale, 2L)
+  fr_s <- as_regression_frame(fit_s, model_id = "M1")
+  expect_true(is.na(fr_s$info$fit_stats$sigma))
+  expect_true(is.na(fr_s$info$extras$scale_parameter))
+  tbl <- table_regression(fit_s, show_fit_stats = c("nobs", "sigma"))
+  out <- paste(utils::capture.output(print(tbl)), collapse = "\n")
+  expect_false(grepl(fit_stat_label("sigma"), out, fixed = TRUE))
+  expect_no_match(attr(tbl, "note"), "scale =", fixed = TRUE)
+})
+
 
 # ---- 9. survreg: coef extraction -----------------------------------------
 

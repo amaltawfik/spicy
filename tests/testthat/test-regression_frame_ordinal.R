@@ -189,6 +189,82 @@ test_that("polr (logit): title_prefix names the cumulative logit family", {
   expect_match(fr$info$extras$title_prefix, "proportional odds", fixed = TRUE)
 })
 
+test_that(".ordinal_title_prefix spells the link and names its assumption", {
+  title <- spicy:::.ordinal_title_prefix
+  # polr calls the logit "logistic": same words as clm's "logit".
+  expect_identical(
+    title("logistic"),
+    "Cumulative logit regression (proportional odds)"
+  )
+  expect_identical(title("logit"), title("logistic"))
+  expect_identical(
+    title("probit"),
+    "Cumulative probit regression (parallel slopes)"
+  )
+  expect_identical(
+    title("cloglog"),
+    "Cumulative complementary log-log regression (proportional hazards)"
+  )
+  expect_identical(
+    title("loglog"),
+    "Cumulative log-log regression (parallel slopes)"
+  )
+  expect_identical(
+    title("cauchit"),
+    "Cumulative cauchit regression (parallel slopes)"
+  )
+  # clm's `nominal =`: the restriction is partial.
+  expect_identical(
+    title("logit", partial = TRUE),
+    "Cumulative logit regression (partial proportional odds)"
+  )
+  expect_identical(
+    title("cloglog", partial = TRUE),
+    "Cumulative complementary log-log regression (partial proportional hazards)"
+  )
+  expect_identical(
+    title("probit", partial = TRUE),
+    "Cumulative probit regression (partial parallel slopes)"
+  )
+  # A model with random effects.
+  expect_identical(
+    title("cloglog", mixed = TRUE),
+    paste0(
+      "Cumulative complementary log-log mixed-effects regression ",
+      "(proportional hazards)"
+    )
+  )
+})
+
+test_that("svyolr and clmm titles come from the ordinal source", {
+  # The survey title is the same words in running text.
+  expect_identical(
+    paste0(
+      "Survey-weighted ",
+      spicy:::lowercase_first(spicy:::.ordinal_title_prefix("loglog"))
+    ),
+    "Survey-weighted cumulative log-log regression (parallel slopes)"
+  )
+  # A cloglog clmm names its link but not proportional hazards: clmm's
+  # cloglog and loglog links are swapped against clm's and glmmTMB's
+  # (runehaubo/ordinal#76), so its coefficients are not log hazard ratios.
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clmm(
+    rating ~ temp + contact + (1 | judge),
+    data = ordinal::wine,
+    link = "cloglog"
+  )
+  expect_identical(
+    as_regression_frame(fit)$info$extras$title_prefix,
+    "Cumulative complementary log-log mixed-effects regression"
+  )
+  fit_logit <- stats::update(fit, link = "logit")
+  expect_identical(
+    as_regression_frame(fit_logit)$info$extras$title_prefix,
+    "Cumulative logit mixed-effects regression (proportional odds)"
+  )
+})
+
 
 # ---- 8. clm: schema validity + core fields -------------------------------
 

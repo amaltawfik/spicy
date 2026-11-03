@@ -468,11 +468,7 @@ as_regression_frame.gee <- function(fit, ...) {
     standardise_refit = FALSE
   )
 
-  title_prefix <- paste0(
-    "Population-averaged ",
-    .geeglm_family_title(fam),
-    " regression (GEE)"
-  )
+  title_prefix <- .geeglm_title_prefix(fam)
 
   # Working correlation disclosure (model-defining, the RE-block
   # philosophy): structure name + estimated alpha(s), read by the GEE
@@ -519,30 +515,15 @@ as_regression_frame.gee <- function(fit, ...) {
 }
 
 
-# Family label for the title, link-aware for binomial (a probit GEE is
-# not a logistic regression -- the svyglm precedent). No quasi
-# entries: geeglm hard-rejects the quasi families ("variance
-# invalid"), so mapping them here would be unreachable code (2026-07
-# GEE review, verified against geepack 1.3.13).
-.geeglm_family_title <- function(fam) {
-  if (identical(fam$family, "binomial")) {
-    return(switch(
-      fam$link,
-      "logit" = "logistic",
-      "probit" = "probit",
-      "cloglog" = "complementary log-log",
-      "log" = "log-binomial",
-      "binomial"
-    ))
-  }
-  switch(
-    fam$family,
-    poisson = "Poisson",
-    Gamma = "Gamma",
-    inverse.gaussian = "inverse-Gaussian",
-    gaussian = "linear",
-    paste0(tolower(substr(fam$family, 1L, 1L)), substring(fam$family, 2L))
-  )
+# The title of a GEE fit: its family as the glm frame titles it
+# (spicy_glm_title_prefix(), link-aware for binomial: a probit GEE is
+# not a logistic regression), in running text. A family the glm source
+# does not know is not named: "Population-averaged regression (GEE)".
+# geeglm refuses the quasi families ("variance invalid", geepack
+# 1.3.13), so their titles are composed but never reached.
+.geeglm_title_prefix <- function(fam) {
+  glm_prefix <- spicy_glm_title_prefix(fam$family, fam$link)
+  paste0("Population-averaged ", lowercase_first(glm_prefix), " (GEE)")
 }
 
 

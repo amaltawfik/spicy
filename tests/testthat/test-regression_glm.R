@@ -3330,9 +3330,41 @@ test_that("a gaussian/identity glm is titled as lm titles it", {
     as_regression_frame(g)$info$extras$title_prefix,
     "Linear regression"
   )
+  # With another link the model is no longer linear in the mean: it is
+  # named by its family.
   g_log <- glm(mpg ~ wt, data = mtcars, family = gaussian(link = "log"))
   expect_identical(
     as_regression_frame(g_log)$info$extras$title_prefix,
-    "Regression"
+    "Gaussian regression"
+  )
+})
+
+test_that("spicy_glm_title_prefix names every family in words", {
+  title <- spicy:::spicy_glm_title_prefix
+  expect_identical(title("gaussian", "identity"), "Linear regression")
+  expect_identical(title("gaussian", "log"), "Gaussian regression")
+  expect_identical(title("gaussian", "inverse"), "Gaussian regression")
+  # MASS::negative.binomial(theta) and mgcv's nb() put the theta in the
+  # family name: the title never carries it.
+  expect_identical(
+    title("Negative Binomial(1.5)", "log"),
+    "Negative-binomial regression"
+  )
+  expect_identical(title("binomial", "probit"), "Probit regression")
+  expect_identical(title("binomial", "cauchit"), "Binomial regression")
+  expect_identical(title("Gamma", "log"), "Gamma regression")
+  expect_identical(title("quasipoisson", "log"), "Quasi-Poisson regression")
+  # An unknown family is not named.
+  expect_identical(title("tweedie", "log"), "Regression")
+  # A glm with MASS's family carries the same title as glm.nb.
+  skip_if_not_installed("MASS")
+  fit <- glm(
+    carb ~ wt,
+    data = mtcars,
+    family = MASS::negative.binomial(2)
+  )
+  expect_identical(
+    as_regression_frame(fit)$info$extras$title_prefix,
+    "Negative-binomial regression"
   )
 })

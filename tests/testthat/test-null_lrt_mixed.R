@@ -596,3 +596,26 @@ test_that("a glmmTMB probit or cloglog null is named as lme4 names it", {
     fixed = TRUE
   )
 })
+
+test_that("the cumulative null model spells cloglog and loglog out, in each language", {
+  label <- function(link) spicy:::.re_null_cumulative(link)$family_label
+  expect_identical(label("logit"), "cumulative logit regression")
+  expect_identical(label("PROBIT"), "cumulative probit regression")
+  expect_identical(
+    label("cloglog"),
+    "cumulative complementary log-log regression"
+  )
+  expect_identical(label("loglog"), "cumulative log-log regression")
+  # The table language renders the key, never the English label.
+  withr::local_options(spicy.language = "fr")
+  fr <- function(link) {
+    out <- spicy:::.re_null_cumulative(link)
+    do.call(spicy_fmt, c(list(out$family_key), out$family_args))
+  }
+  expect_identical(fr("logit"), "régression à logit cumulatif")
+  expect_identical(
+    fr("cloglog"),
+    "régression à log-log complémentaire cumulatif"
+  )
+  expect_identical(fr("loglog"), "régression à log-log cumulatif")
+})
