@@ -99,11 +99,11 @@
     "pseudo_r2_mcfadden",
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur",
-    # Negative-binomial dispersion (MASS::glm.nb only): theta
-    # (V = mu + mu^2/theta) and alpha = 1/theta (Stata nbreg).
+    # NB2 negative-binomial dispersion (glm.nb, glmer.nb, glmmTMB
+    # nbinom2): theta (V = mu + mu^2/theta) and alpha = 1/theta.
     "theta",
     "alpha",
-    # Beta-regression precision (betareg only): phi (Ferrari &
+    # Beta-regression precision (betareg, glmmTMB beta): phi (Ferrari &
     # Cribari-Neto 2004; Var(y) = mu(1-mu)/(1+phi)).
     "phi",
     # GEE (geepack::geeglm) only: quasi-likelihood information
@@ -1341,6 +1341,57 @@ validate_show_columns <- function(
   out
 }
 
+# Fits whose dispersion is the NB2 theta (the "theta" / "alpha" rows), and
+# fits whose precision is the beta phi (the "phi" row). A pre-frame
+# class sniff, like absorbs_fixed_effects() below.
+.is_nb2_fit <- function(model) {
+  if (inherits(model, "negbin")) {
+    return(TRUE)
+  }
+  fam <- tryCatch(stats::family(model)$family, error = function(e) "")
+  if (inherits(model, "glmerMod")) {
+    return(isTRUE(startsWith(fam, "Negative Binomial(")))
+  }
+  inherits(model, "glmmTMB") &&
+    isTRUE(fam %in% c("nbinom2", "truncated_nbinom2"))
+}
+
+.is_beta_fit <- function(model) {
+  inherits(model, "betareg") ||
+    (inherits(model, "glmmTMB") &&
+      identical(
+        tryCatch(stats::family(model)$family, error = function(e) ""),
+        "beta"
+      ))
+}
+
+# "theta" / "alpha" on a glmmTMB fit whose dispersion has covariates:
+# not one number, refused as betareg's phi is.
+.abort_modeled_dispersion <- function(models, tokens, call) {
+  modeled <- vapply(
+    models,
+    function(m) inherits(m, "glmmTMB") && !.glmmTMB_constant_dispersion(m),
+    logical(1)
+  )
+  if (any(modeled)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` need a constant dispersion, but a model has covariates in its `dispformula`.",
+          paste(.quote_val(tokens), collapse = ", ")
+        ),
+        "i" = paste0(
+          "With dispersion covariates, theta is not a single number; ",
+          "inspect the dispersion coefficients with `summary(fit)` instead."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
 # Fits that absorb fixed effects, and so can disclose them: every
 # fixest estimator, plus an estimatr fit built with `fixed_effects =`
 # (which sets `fes`). A pre-frame class sniff, like its callers.
@@ -1883,29 +1934,32 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
-  # Negative-binomial dispersion tokens: defined only for MASS::glm.nb
-  # fits (fit$theta). Hard error elsewhere -- silently dropping the row
-  # (or rendering a blank) would hide the request (pre-1.0 policy).
+  # Negative-binomial dispersion tokens: defined only for NB2 fits
+  # (MASS::glm.nb, lme4::glmer.nb, glmmTMB nbinom2 / truncated_nbinom2).
+  # Hard error elsewhere -- silently dropping the row (or rendering a
+  # blank) would hide the request (pre-1.0 policy).
   disp_tokens <- intersect(show_fit_stats, c("theta", "alpha"))
   if (length(disp_tokens) > 0L) {
     all_negbin <- length(models) > 0L &&
-      all(vapply(models, inherits, logical(1), "negbin"))
+      all(vapply(models, .is_nb2_fit, logical(1)))
     if (!all_negbin) {
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for negative-binomial fits (`MASS::glm.nb`).",
+            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb`, `lme4::glmer.nb`, glmmTMB `nbinom2`).",
             paste(.quote_val(disp_tokens), collapse = ", ")
           ),
           "i" = paste0(
             "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
-            "alpha its reciprocal; other families have no such parameter."
+            "alpha its reciprocal; other families, NB1 included, have ",
+            "no such parameter."
           )
         ),
         class = "spicy_invalid_input",
         call = call
       )
     }
+    .abort_modeled_dispersion(models, disp_tokens, call)
   }
 
   # Beta-regression precision token: defined only for betareg fits
@@ -1913,13 +1967,14 @@ validate_class_appropriate_tokens <- function(
   # negbin theta / alpha policy above.
   if ("phi" %in% show_fit_stats) {
     all_betareg <- length(models) > 0L &&
-      all(vapply(models, inherits, logical(1), "betareg"))
+      all(vapply(models, .is_beta_fit, logical(1)))
     if (!all_betareg) {
       spicy_abort(
         c(
           paste0(
             "Token 'phi' in `show_fit_stats` is defined only ",
-            "for beta-regression fits (`betareg::betareg`)."
+            "for beta-regression fits (`betareg::betareg`, ",
+            "glmmTMB `beta_family()`)."
           ),
           "i" = paste0(
             "phi is the beta-distribution precision ",
@@ -1934,6 +1989,9 @@ validate_class_appropriate_tokens <- function(
     variable_prec <- vapply(
       models,
       function(m) {
+        if (inherits(m, "glmmTMB")) {
+          return(!.glmmTMB_constant_dispersion(m))
+        }
         length(tryCatch(
           stats::coef(m, model = "precision"),
           error = function(e) numeric(0)
@@ -1948,7 +2006,7 @@ validate_class_appropriate_tokens <- function(
           paste0(
             "Token 'phi' needs a constant precision, but a ",
             "model has covariates on the precision ",
-            "(`y ~ x | z`)."
+            "(`y ~ x | z`, or a glmmTMB `dispformula`)."
           ),
           "i" = paste0(
             "With precision covariates, phi is not a single number; ",

@@ -851,7 +851,7 @@ test_that("default titles follow the family; custom title wins", {
   )
   expect_match(
     out5,
-    "Univariable and multivariable Gamma regression: wb1",
+    "Univariable and multivariable gamma regression: wb1",
     fixed = TRUE
   )
 })
@@ -1570,4 +1570,45 @@ test_that("terms.spicy_uv_screen returns outcome ~ all predictors, backtick-safe
     "`well being` ~ `age years` + sex"
   )
   expect_identical(attr(tt, "term.labels"), c("`age years`", "sex"))
+})
+
+
+test_that("uv titles use the glm family titles and reach the French bridge", {
+  d <- mtcars
+  ig <- suppressWarnings(table_regression_uv(
+    d,
+    outcome = mpg,
+    predictors = c(wt, hp),
+    method = "glm",
+    family = stats::inverse.gaussian(link = "log")
+  ))
+  expect_identical(
+    attr(ig, "title"),
+    "Univariable and multivariable inverse-Gaussian regression: mpg"
+  )
+  qp <- table_regression_uv(
+    d,
+    outcome = carb,
+    predictors = c(wt, hp),
+    method = "glm",
+    family = stats::quasipoisson(),
+    multivariable = FALSE
+  )
+  expect_identical(
+    attr(qp, "title"),
+    "Univariable quasi-Poisson regression screen: carb"
+  )
+  withr::local_options(spicy.language = "fr")
+  qp_fr <- table_regression_uv(
+    d,
+    outcome = carb,
+    predictors = c(wt, hp),
+    method = "glm",
+    family = stats::quasipoisson(),
+    multivariable = FALSE
+  )
+  expect_identical(
+    attr(qp_fr, "title"),
+    "Régression quasi-Poisson univariable (présélection) : carb"
+  )
 })

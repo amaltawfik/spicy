@@ -136,11 +136,8 @@ test_that("weighted lm_robust surfaces weighted_n = sum(weights)", {
 # ---- fixest: family-aware title prefixes ----------------------------------
 
 test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
-  # Direct helper calls: through as_regression_frame() these branches are
-  # currently unreachable because .fixest_coefs() indexes the "z value"
-  # column for every is_glm fit, but fixest reports "t value" columns for
-  # free-dispersion families (Gamma / gaussian / inverse.gaussian) -- see
-  # the incidental-bug note in the coverage task log.
+  # The glm title of the family and link: no R family code, and the link
+  # decides the binomial title.
   expect_identical(
     spicy:::.fixest_title_prefix(list(family = "Gamma", link = "log"), TRUE),
     "Gamma regression (fixed effects)"
@@ -152,17 +149,31 @@ test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
     ),
     "Inverse-Gaussian regression (fixed effects)"
   )
-  # Any other family name falls through to the capitalized default.
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "quasipoisson", link = "log"),
       TRUE
     ),
-    "Quasipoisson regression (fixed effects)"
+    "Quasi-Poisson regression (fixed effects)"
   )
   expect_identical(
+    spicy:::.fixest_title_prefix(
+      list(family = "binomial", link = "probit"),
+      TRUE
+    ),
+    "Probit regression (fixed effects)"
+  )
+  expect_identical(
+    spicy:::.fixest_title_prefix(
+      list(family = "gaussian", link = "identity"),
+      TRUE
+    ),
+    "Linear regression (fixed effects)"
+  )
+  # A gaussian GLM with another link has the generic glm title.
+  expect_identical(
     spicy:::.fixest_title_prefix(list(family = "gaussian", link = "log"), TRUE),
-    "Gaussian regression (fixed effects)"
+    "Regression (fixed effects)"
   )
 })
 

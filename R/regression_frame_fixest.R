@@ -16,7 +16,8 @@
 #   * Inference comes from summary(fit)$coeftable. For OLS the columns
 #     are "Estimate / Std. Error / t value / Pr(>|t|)" (Wald-t with
 #     df.residual). For GLM-like fits the columns are "z value /
-#     Pr(>|z|)" (Wald z-asymptotic).
+#     Pr(>|z|)" (Wald z-asymptotic), except the families whose dispersion
+#     fixest estimates (gaussian, Gamma, quasi-*), which report t.
 #   * attr(coeftable, "vcov_type") carries a human label like "IID",
 #     "Clustered (Month)", "Newey-West", etc. -- surfaced directly in
 #     info$vcov_label.
@@ -110,7 +111,10 @@ as_regression_frame.fixest <- function(
   se <- sqrt(diag(V))[nm]
 
   sm <- summary(fit)$coeftable
-  if (is_glm) {
+  # fixest reports a t statistic for OLS and for the GLM families whose
+  # dispersion it estimates (gaussian, Gamma, quasi-*), a z statistic
+  # otherwise: follow the column it reports, as summary.glm() is followed.
+  if (is_glm && "z value" %in% colnames(sm)) {
     # GLM-like fixest: Wald z-asymptotic.
     stat <- unname(sm[nm, "z value"])
     p_value <- unname(sm[nm, "Pr(>|z|)"])
@@ -120,7 +124,8 @@ as_regression_frame.fixest <- function(
     ci_upper <- est + z_crit * se
     test_type_col <- rep("z", length(est))
   } else {
-    # OLS-like fixest: Wald-t with df.residual.
+    # OLS, or a GLM family with an estimated dispersion: Wald-t with
+    # df.residual.
     stat <- unname(sm[nm, "t value"])
     p_value <- unname(sm[nm, "Pr(>|t|)"])
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
@@ -405,24 +410,16 @@ as_regression_frame.fixest <- function(
 }
 
 
-# Title prefix: family-aware "(fixed effects)" suffix.
+# Title prefix: the glm title of the family and link, plus "(fixed
+# effects)" -- so a probit feglm is not titled logistic, and no title
+# carries R's family code ("Quasipoisson").
 .fixest_title_prefix <- function(fam, is_glm) {
   base <- if (!is_glm) {
     "Linear regression"
+  } else if (identical(fam$family, "negbin")) {
+    "Negative-binomial regression"
   } else {
-    switch(
-      fam$family,
-      binomial = "Logistic regression",
-      poisson = "Poisson regression",
-      Gamma = "Gamma regression",
-      inverse.gaussian = "Inverse-Gaussian regression",
-      negbin = "Negative-binomial regression",
-      paste0(
-        toupper(substr(fam$family, 1L, 1L)),
-        substring(fam$family, 2L),
-        " regression"
-      )
-    )
+    spicy_glm_title_prefix(fam$family, fam$link)
   }
   paste0(base, " (fixed effects)")
 }

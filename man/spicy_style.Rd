@@ -118,7 +118,7 @@ place of the theme in force. A \code{note} you type is printed as typed.}
 
 \item{minus_sign}{The sign of a negative number in the outputs that are
 printed: \code{output = "flextable"} and \code{"word"} (a flextable knitted into
-Word too), \code{output = "gt"} in HTML, Word and LaTeX, the HTML, Typst
+Word too), \code{output = "gt"} in HTML, Word, RTF and LaTeX, the HTML, Typst
 and LaTeX of \code{output = "tinytable"} (and its markdown inside a knit to
 Word), and the PDF of \code{\link[=code_book]{code_book()}}, which reads the lever from
 \code{options(spicy.style)}. \code{"typographic"} (the default) sets the minus
@@ -135,7 +135,10 @@ back keep the hyphen-minus -- the data frame, the console,
 spreadsheet or a parser reads a minus sign as text, not as part of a
 number. A printed table pasted into a spreadsheet therefore gives
 text; build it with \code{minus_sign = "ascii"} for that use. No theme
-sets it.}
+sets it. \code{tinytable::save_tt(x, "table.docx")} writes the table
+through markdown and keeps the hyphen-minus: for a Word file, use
+\code{output = "word"} (or \code{"flextable"}), or knit the table in a Word
+document.}
 
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}

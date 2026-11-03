@@ -1116,8 +1116,8 @@ test_that("the random-effects LR test line follows the language", {
     "linear regression",
     "logistic regression",
     "probit regression",
-    "poisson regression",
-    "poisson regression",
+    "Poisson regression",
+    "Poisson regression",
     "logistic regression",
     "negative-binomial regression",
     "cumulative logit regression"
@@ -1209,7 +1209,7 @@ test_that("every glmer family names its null model in the language", {
     "complementary log-log regression",
     "log-binomial regression",
     "binomial regression",
-    "inverse-gaussian regression",
+    "inverse-Gaussian regression",
     sprintf(
       "negative binomial\\(%s\\) regression",
       sub(".", "\\.", formatC(theta, digits = 2, format = "f"), fixed = TRUE)
@@ -2128,7 +2128,13 @@ test_that("the univariable table title and sample note follow the language", {
     attr(screen, "title"),
     "R\u00E9gression logistique univariable (pr\u00E9s\u00E9lection)\u00A0: smoking"
   )
-  # A family the title bridge does not carry keeps the whole English title.
+  # A family the title bridge does not carry keeps the whole English title
+  # (the bridge is mocked without its Gamma entry).
+  local_mocked_bindings(
+    .spicy_title_prefix_table = function(lang) {
+      .FR_TITLE_PREFIXES[names(.FR_TITLE_PREFIXES) != "Gamma regression"]
+    }
+  )
   gamma <- table_regression_uv(
     sochealth,
     outcome = income,
@@ -2138,6 +2144,6 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(gamma, "title"),
-    "Univariable and multivariable Gamma regression: income"
+    "Univariable and multivariable gamma regression: income"
   )
 })

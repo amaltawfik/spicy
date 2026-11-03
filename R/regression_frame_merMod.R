@@ -518,6 +518,22 @@ inform_lmertest_hint <- function() {
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
+  # glmer.nb: the NB2 theta and alpha = 1/theta, the rows of glm.nb.
+  nb_theta <- if (
+    inherits(fit, "glmerMod") &&
+      startsWith(stats::family(fit)$family, "Negative Binomial(")
+  ) {
+    tryCatch(
+      as.numeric(lme4::getME(fit, "glmer.nb.theta")),
+      error = function(e) NA_real_
+    )
+  } else {
+    NA_real_
+  }
+  if (length(nb_theta) == 1L && is.finite(nb_theta) && nb_theta > 0) {
+    fit_stats$theta <- nb_theta
+    fit_stats$alpha <- 1 / nb_theta
+  }
 
   # Resolve the inference regime actually carried by the rows.
   # .merMod_coefs() reads Satterthwaite t (df + p) from the lmerTest

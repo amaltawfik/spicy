@@ -150,7 +150,7 @@ test_that(".null_lrt_glmmTMB returns NULL when the glm null refit fails", {
   expect_type(res, "list")
   expect_identical(res$df, 1L)
   expect_true(is.finite(res$chi2))
-  expect_identical(res$family_label, "poisson regression")
+  expect_identical(res$family_label, "Poisson regression")
 })
 
 

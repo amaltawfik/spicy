@@ -114,13 +114,14 @@
 }
 
 # The minus sign in the cells of a gt table after its `stub` label
-# columns, for the HTML and Word gt writes (`.apply_minus_sign()`): a
-# formatter per output, which gt runs when it renders the table. A cell
+# columns, for the HTML, Word and RTF gt writes (`.apply_minus_sign()`):
+# a formatter per output, which gt runs when it renders the table. A cell
 # with no negative number, and every cell of the other outputs, gets NA,
 # which leaves it to gt's own rendering, as before: the LaTeX keeps the
 # hyphen for `.spicy_gt_latex_minus()`. A rewritten cell is escaped as
-# gt escapes a plain one (HTML) or left as text (Word, which gt escapes
-# when it writes the XML).
+# gt escapes a plain one (HTML; RTF, where gt writes a formatter's text
+# as it is) or left as text (Word, which gt escapes when it writes the
+# XML).
 .spicy_gt_minus_cells <- function(tbl, stub = 1L, decimal_mark = ".") {
   data <- tbl[["_data"]]
   cols <- names(data)[setdiff(seq_along(data), seq_len(stub))]
@@ -144,9 +145,36 @@
     fns = list(
       html = sign(.spicy_html_escape),
       word = sign(identity),
+      rtf = sign(.spicy_rtf_escape),
       latex = none,
       default = none
     )
+  )
+}
+
+# RTF text, escaped as gt escapes a plain cell: the backslash and the
+# braces as hex escapes, a non-ASCII character as `\uN` (N signed on 16
+# bits) closed by a space. gt's paragraphs set `\uc0`, so no fallback
+# character follows.
+.spicy_rtf_escape <- function(s) {
+  s <- gsub("\\", "\\'5c", s, fixed = TRUE)
+  s <- gsub("{", "\\'7b", s, fixed = TRUE)
+  s <- gsub("}", "\\'7d", s, fixed = TRUE)
+  vapply(
+    s,
+    function(x) {
+      cp <- utf8ToInt(enc2utf8(x))
+      ch <- vapply(cp, intToUtf8, character(1))
+      hi <- cp > 127L
+      ch[hi] <- paste0(
+        "\\u",
+        ifelse(cp[hi] > 32767L, cp[hi] - 65536L, cp[hi]),
+        " "
+      )
+      paste(ch, collapse = "")
+    },
+    character(1),
+    USE.NAMES = FALSE
   )
 }
 

@@ -128,6 +128,19 @@ test_that("as_regression_frame.lrm produces a schema-valid frame", {
   expect_invisible(spicy:::validate_regression_frame(fr))
 })
 
+test_that("lrm.fit() fits (no formula) get a clear spicy error", {
+  skip_if_not_installed("rms")
+  f0 <- rms::lrm.fit(y = mtcars$am)
+  f1 <- rms::lrm.fit(x = mtcars$wt, y = mtcars$am)
+  expect_error(table_regression(f0), class = "spicy_unsupported")
+  expect_error(table_regression(f1), class = "spicy_unsupported")
+  expect_error(
+    table_regression(f1),
+    "comes from `rms::lrm.fit()`",
+    fixed = TRUE
+  )
+})
+
 test_that("lrm: info$class is 'lrm'", {
   fit <- .fit_lrm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")

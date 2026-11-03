@@ -113,6 +113,18 @@ as_regression_frame.lrm <- function(
   ...
 ) {
   .check_rms_available()
+  # rms::lrm.fit() returns class "lrm" without terms or formula (and rms
+  # >= 8.2-0 sends intercept-only models there): nothing names the outcome
+  # or the predictors, so refuse before any slot is read.
+  if (is.null(fit$terms)) {
+    spicy_abort(
+      c(
+        "This `lrm` fit has no model formula: it comes from `rms::lrm.fit()`.",
+        "i" = "Refit with `rms::lrm(y ~ x, data = ...)`."
+      ),
+      class = "spicy_unsupported"
+    )
+  }
 
   coefs <- .rms_coefs(fit, ci_level = ci_level, is_glm = TRUE)
   # CR* -> rms::robcov() cluster sandwich (Wald z); a no-op for the default.

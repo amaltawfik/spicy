@@ -507,7 +507,7 @@
 #'   place of the theme in force. A `note` you type is printed as typed.
 #' @param minus_sign The sign of a negative number in the outputs that are
 #'   printed: `output = "flextable"` and `"word"` (a flextable knitted into
-#'   Word too), `output = "gt"` in HTML, Word and LaTeX, the HTML, Typst
+#'   Word too), `output = "gt"` in HTML, Word, RTF and LaTeX, the HTML, Typst
 #'   and LaTeX of `output = "tinytable"` (and its markdown inside a knit to
 #'   Word), and the PDF of [code_book()], which reads the lever from
 #'   `options(spicy.style)`. `"typographic"` (the default) sets the minus
@@ -524,7 +524,10 @@
 #'   spreadsheet or a parser reads a minus sign as text, not as part of a
 #'   number. A printed table pasted into a spreadsheet therefore gives
 #'   text; build it with `minus_sign = "ascii"` for that use. No theme
-#'   sets it.
+#'   sets it. `tinytable::save_tt(x, "table.docx")` writes the table
+#'   through markdown and keeps the hyphen-minus: for a Word file, use
+#'   `output = "word"` (or `"flextable"`), or knit the table in a Word
+#'   document.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
 #'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'

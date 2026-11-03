@@ -389,7 +389,9 @@
 #' Two-part models show their full model: the zero component renders as a
 #' `Zero-inflation` block (`zeroinfl`, glmmTMB `ziformula`: probability of a
 #' structural zero) or a `Zero hurdle` block (`hurdle`: probability of a
-#' nonzero count -- the opposite direction, hence the distinct label), and a
+#' nonzero count -- the opposite direction, hence the distinct label; a
+#' glmmTMB hurdle model, a zero-truncated family with `ziformula`, also
+#' shows a `Zero hurdle` block, which models the probability of a zero), and a
 #' `Dispersion` block when `dispformula` has covariates. Component
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the

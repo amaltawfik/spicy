@@ -1005,3 +1005,152 @@ test_that("snapshot: glmmTMB ordinal table", {
   txt <- capture.output(print(table_regression(fit)))
   expect_snapshot(cat(paste(sub("[ \t]+$", "", txt), collapse = "\n")))
 })
+
+
+# ---- Dispersion fit statistics by family ----------------------------------
+# glmmTMB's sigma() is the residual SD only for gaussian (1/sqrt(shape)
+# for Gamma); elsewhere it is the family's own dispersion parameter
+# (?glmmTMB::sigma.glmmTMB). sigma() is the oracle of every cell.
+
+.fit_glmmTMB_salamanders <- function(family, ...) {
+  skip_if_not_installed("glmmTMB")
+  glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    data = glmmTMB::Salamanders,
+    family = family,
+    ...
+  )
+}
+
+.fit_glmmTMB_beta <- function(...) {
+  skip_if_not_installed("glmmTMB")
+  set.seed(11)
+  d <- data.frame(g = factor(rep(1:15, each = 12)), x = rnorm(180))
+  mu <- stats::plogis(0.2 + 0.5 * d$x + stats::rnorm(15, sd = 0.4)[d$g])
+  d$p <- stats::rbeta(180, mu * 8, (1 - mu) * 8)
+  glmmTMB::glmmTMB(
+    p ~ x + (1 | g),
+    data = d,
+    family = glmmTMB::beta_family(),
+    ...
+  )
+}
+
+test_that("glmmTMB nbinom2: theta and alpha = 1/theta, sigma blank", {
+  fit <- .fit_glmmTMB_salamanders(glmmTMB::nbinom2)
+  fs <- as_regression_frame(fit)$info$fit_stats
+  expect_equal(fs$theta, stats::sigma(fit), tolerance = 1e-10)
+  expect_equal(fs$alpha, 1 / stats::sigma(fit), tolerance = 1e-10)
+  expect_true(is.na(fs$sigma))
+  expect_true(is.na(fs$phi))
+  tbl <- table_regression(fit, show_fit_stats = c("theta", "alpha"))
+  out <- paste(utils::capture.output(print(tbl)), collapse = "\n")
+  expect_match(
+    out,
+    paste0(
+      "θ \\(dispersion\\)\\s+│\\s+",
+      sprintf("%.2f", stats::sigma(fit))
+    )
+  )
+})
+
+test_that("glmmTMB beta: phi = sigma(fit), sigma blank", {
+  fit <- .fit_glmmTMB_beta()
+  fs <- as_regression_frame(fit)$info$fit_stats
+  expect_equal(fs$phi, stats::sigma(fit), tolerance = 1e-10)
+  expect_true(is.na(fs$sigma))
+  expect_true(is.na(fs$theta))
+  expect_no_error(table_regression(fit, show_fit_stats = "phi"))
+})
+
+test_that("glmmTMB nbinom1: sigma, theta and alpha all blank; theta refused", {
+  fit <- .fit_glmmTMB_salamanders(glmmTMB::nbinom1)
+  fs <- as_regression_frame(fit)$info$fit_stats
+  expect_true(is.na(fs$sigma))
+  expect_true(is.na(fs$theta))
+  expect_true(is.na(fs$alpha))
+  expect_error(
+    table_regression(fit, show_fit_stats = "theta"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, show_fit_stats = "phi"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("glmmTMB poisson and binomial keep sigma = 1, as glm and glmer do", {
+  fit <- .fit_glmmTMB_salamanders(stats::poisson)
+  expect_equal(as_regression_frame(fit)$info$fit_stats$sigma, 1)
+  fit_b <- .fit_glmmTMB_binom()
+  expect_equal(as_regression_frame(fit_b)$info$fit_stats$sigma, 1)
+})
+
+test_that("glmmTMB modeled dispersion: cells blank, theta and phi refused", {
+  fit <- .fit_glmmTMB_salamanders(glmmTMB::nbinom2, dispformula = ~mined)
+  fs <- as_regression_frame(fit)$info$fit_stats
+  expect_true(all(is.na(c(fs$sigma, fs$theta, fs$alpha))))
+  expect_error(
+    table_regression(fit, show_fit_stats = "theta"),
+    "constant dispersion",
+    class = "spicy_invalid_input"
+  )
+  fit_b <- .fit_glmmTMB_beta(dispformula = ~x)
+  expect_true(is.na(as_regression_frame(fit_b)$info$fit_stats$phi))
+  expect_error(
+    table_regression(fit_b, show_fit_stats = "phi"),
+    "constant precision",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("glmmTMB hurdle: title names the count family, null LRT too", {
+  skip_if_not_installed("glmmTMB")
+  fit <- glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    zi = ~1,
+    data = glmmTMB::Salamanders,
+    family = glmmTMB::truncated_nbinom2
+  )
+  fr <- as_regression_frame(fit)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Negative-binomial mixed-effects regression (hurdle)"
+  )
+  expect_equal(fr$info$fit_stats$theta, stats::sigma(fit), tolerance = 1e-10)
+  note <- attr(table_regression(fit), "note")
+  expect_match(note, "LR test vs negative-binomial regression, ", fixed = TRUE)
+  expect_no_match(note, "truncated", fixed = TRUE)
+  # The zi part is the zero hurdle, which glmmTMB models as Pr(y = 0).
+  blk <- fr$info$extras$component_blocks[[1L]]
+  expect_identical(blk$label, "Zero hurdle")
+  expect_match(
+    note,
+    "Zero hurdle component: log-odds of a zero count.",
+    fixed = TRUE
+  )
+  expect_no_match(note, "structural", fixed = TRUE)
+  # A zero-inflated (non-truncated) fit keeps its Zero-inflation block.
+  zi <- glmmTMB::glmmTMB(
+    count ~ mined + (1 | site),
+    zi = ~1,
+    data = glmmTMB::Salamanders,
+    family = stats::poisson
+  )
+  expect_identical(
+    as_regression_frame(zi)$info$extras$component_blocks[[1L]]$label,
+    "Zero-inflation"
+  )
+})
+
+test_that("every glmmTMB null-model key exists in English and French", {
+  keys <- unname(.GLMMTMB_NULL_KEYS)
+  expect_true(all(keys %in% names(.spicy_strings)))
+  expect_true(all(keys %in% names(.spicy_strings_fr)))
+  # Every labeled family but the ones with their own arm has a key.
+  own_arm <- c("poisson", "inverse.gaussian")
+  expect_setequal(
+    c(names(.GLMMTMB_NULL_KEYS), own_arm),
+    names(.GLMMTMB_FAMILY_LABELS)
+  )
+})

@@ -120,8 +120,14 @@
 #'     `"pseudo_r2_mcfadden"` (McFadden 1974),
 #'     `"pseudo_r2_nagelkerke"` (Nagelkerke 1991),
 #'     `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
-#'   \item Residual scale: `"sigma"` (lm \eqn{\hat{\sigma}}{sigma-hat}
-#'     / glm dispersion), `"rmse"`.
+#'   \item Residual scale: `"sigma"`, `"rmse"`. `"sigma"` is the lm
+#'     \eqn{\hat{\sigma}}{sigma-hat}; for glm, the square root of the
+#'     dispersion estimate (so a gaussian glm reads as lm), and 1 when
+#'     the family fixes the dispersion (binomial, Poisson). For `glmmTMB` fits, `"sigma"` is
+#'     shown for the gaussian and Gamma families (and the fixed 1 of
+#'     poisson and binomial, as for `glm`) and left blank for the other
+#'     families, whose `sigma()` is a family-specific dispersion
+#'     parameter rather than a residual scale.
 #'   \item Survey designs (`survey::svyglm` only): `"eff_p"`, the
 #'     effective number of parameters of the design (the first element
 #'     of survey's `extractAIC`, the sum of the Rao-Scott eigenvalues).
@@ -134,18 +140,23 @@
 #'     Vehtari et al. 2017; opt-in, a few seconds per model; the
 #'     footer discloses the elpd standard error), and `"waic"`
 #'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
-#'   \item Negative-binomial dispersion (`MASS::glm.nb` only):
+#'   \item Negative-binomial dispersion (NB2 fits: `MASS::glm.nb`,
+#'     `lme4::glmer.nb`, and `glmmTMB` with `nbinom2` or
+#'     `truncated_nbinom2`):
 #'     `"theta"` (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta})
 #'     and `"alpha"` (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg`
-#'     convention). Refused for other families.
-#'   \item Beta-regression precision (`betareg::betareg` only):
+#'     convention). Refused for other families, `nbinom1` included
+#'     (its dispersion is not an NB2 theta), and for a `glmmTMB` fit
+#'     whose `dispformula` has covariates.
+#'   \item Beta-regression precision (`betareg::betareg`, and `glmmTMB`
+#'     with `beta_family()`):
 #'     `"phi"` (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
 #'     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
 #'     \eqn{\phi}{phi} = less dispersion). A constant precision is
 #'     back-transformed from its link, so `y ~ x | 1` reports the
 #'     same \eqn{\phi}{phi} as `y ~ x`. Refused for other families
-#'     and when the precision has covariates (`y ~ x | z`), so it is
-#'     not a single number.
+#'     and when the precision has covariates (`y ~ x | z`, or a
+#'     `glmmTMB` `dispformula`), so it is not a single number.
 #'   \item GEE (`geepack::geeglm` only): `"qic"` and `"qicu"` -- the
 #'     quasi-likelihood information criteria (Pan 2001; QIC for
 #'     working-correlation choice, QICu for covariate choice) via
@@ -1073,6 +1084,9 @@
 #'     \item `pscl::hurdle`: a `Zero hurdle` block -- the model for the
 #'       probability of a **nonzero count** (note the opposite direction
 #'       vs zero-inflation; the footer names each block's meaning).
+#'       A `glmmTMB` hurdle model (a zero-truncated family with
+#'       `ziformula`) also shows a `Zero hurdle` block, but glmmTMB
+#'       models the probability of a **zero count**: the footer says so.
 #'     \item `glmmTMB(dispformula = )`: a `Dispersion` block (only when
 #'       dispersion was actually modeled; log scale, never
 #'       exponentiated).

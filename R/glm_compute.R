@@ -58,8 +58,12 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
   if (grepl("^quasi", family_name)) {
     return("Quasi-likelihood regression")
   }
-  # gaussian + identity (and any other unrecognized family) falls
-  # through to the generic "Regression" prefix.
+  # gaussian + identity is lm's model, titled as lm titles it. A gaussian
+  # with another link, or any unrecognized family, falls through to the
+  # generic "Regression" prefix.
+  if (identical(family_name, "gaussian") && identical(link_name, "identity")) {
+    return("Linear regression")
+  }
   "Regression"
 }
 

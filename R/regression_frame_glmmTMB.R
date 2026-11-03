@@ -422,6 +422,7 @@ as_regression_frame.glmmTMB <- function(
     re$icc <- NA_real_
   }
 
+  disp <- .glmmTMB_dispersion_stats(fit, fam)
   log_lik <- as.numeric(stats::logLik(fit))
   # No R^2 for the ordinal family, as for clmm: the two engines of a
   # cumulative-link mixed model report the same fit statistics.
@@ -443,7 +444,10 @@ as_regression_frame.glmmTMB <- function(
       suppressWarnings(stats::deviance(fit)),
       error = function(e) NA_real_
     ),
-    sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
+    sigma = disp$sigma,
+    theta = disp$theta,
+    alpha = disp$alpha,
+    phi = disp$phi,
     nobs = as.integer(stats::nobs(fit))
   )
 
@@ -480,17 +484,27 @@ as_regression_frame.glmmTMB <- function(
   has_zi <- length(ff_all$zi) > 0L
   component_blocks <- list()
   if (has_zi) {
+    # A hurdle model's zi part is the zero hurdle: in glmmTMB it models
+    # Pr(y = 0), every zero, not a structural excess of zeros.
+    is_hurdle <- .glmmTMB_is_hurdle(fam, has_zi)
     component_blocks[[length(component_blocks) + 1L]] <-
       .glmmTMB_component_block(
         fit,
         component = "zi",
-        label = .REG_BLOCK_ZI,
+        label = if (is_hurdle) .REG_BLOCK_HURDLE else .REG_BLOCK_ZI,
         link = "logit",
         exp_ok = TRUE,
-        gloss = spicy_fmt(
-          "note_component_gloss_zero_inflation",
-          spicy_str("label_block_zero_inflation")
-        ),
+        gloss = if (is_hurdle) {
+          spicy_fmt(
+            "note_component_gloss_hurdle_zero",
+            spicy_str("label_block_zero_hurdle")
+          )
+        } else {
+          spicy_fmt(
+            "note_component_gloss_zero_inflation",
+            spicy_str("label_block_zero_inflation")
+          )
+        },
         ci_level = ci_level,
         vc = vc
       )
@@ -579,6 +593,53 @@ as_regression_frame.glmmTMB <- function(
 .glmmTMB_family_info <- function(fit) {
   fam <- stats::family(fit)
   list(family = fam$family, link = fam$link)
+}
+
+
+# The dispersion fit statistics. glmmTMB's sigma() is the residual SD
+# only for gaussian (and 1/sqrt(shape) for Gamma, the analog of a Gamma
+# glm's sigma); for the other families it is the family's own dispersion
+# parameter (?glmmTMB::sigma.glmmTMB), never a residual scale. So:
+#   * sigma: gaussian and Gamma; poisson and binomial keep their fixed 1,
+#     as glm and glmer report it; blank for every other family;
+#   * theta / alpha = 1/theta: nbinom2 and truncated_nbinom2, where
+#     sigma() is the NB2 theta (V = mu(1 + mu/theta)), the glm.nb row;
+#   * phi: beta, where sigma() is the betareg precision.
+# A modeled dispersion (dispformula with covariates) is not one number:
+# every cell stays blank, as betareg's phi does.
+.glmmTMB_dispersion_stats <- function(fit, fam) {
+  out <- list(
+    sigma = NA_real_,
+    theta = NA_real_,
+    alpha = NA_real_,
+    phi = NA_real_
+  )
+  if (!.glmmTMB_constant_dispersion(fit)) {
+    return(out)
+  }
+  s <- tryCatch(as.numeric(stats::sigma(fit)), error = function(e) NA_real_)
+  if (length(s) != 1L || !is.finite(s)) {
+    return(out)
+  }
+  if (fam$family %in% c("gaussian", "Gamma", "poisson", "binomial")) {
+    out$sigma <- s
+  } else if (fam$family %in% c("nbinom2", "truncated_nbinom2")) {
+    out$theta <- s
+    out$alpha <- 1 / s
+  } else if (identical(fam$family, "beta")) {
+    out$phi <- s
+  }
+  out
+}
+
+# TRUE when the dispersion is a single parameter: dispformula `~ 1` (or a
+# family with no dispersion at all).
+.glmmTMB_constant_dispersion <- function(fit) {
+  disp_form <- tryCatch(
+    stats::formula(fit, component = "disp"),
+    error = function(e) NULL
+  )
+  is.null(disp_form) || length(all.vars(disp_form)) == 0L
 }
 
 
@@ -740,6 +801,13 @@ as_regression_frame.glmmTMB <- function(
       .ordinal_assumption_label(fam$link),
       ")"
     )
+  } else if (.glmmTMB_is_hurdle(fam, has_zi)) {
+    count_fam <- fam
+    count_fam$family <- sub("^truncated_", "", fam$family)
+    return(paste0(
+      .glmmTMB_family_label(count_fam),
+      " mixed-effects regression (hurdle)"
+    ))
   } else {
     paste0(.glmmTMB_family_label(fam), " mixed-effects regression")
   }
@@ -759,10 +827,33 @@ as_regression_frame.glmmTMB <- function(
   inverse.gaussian = "Inverse-Gaussian",
   nbinom1 = "Negative-binomial (NB1)",
   nbinom2 = "Negative-binomial",
+  # V = mu(1 + phi + mu/psi): the NB1 and NB2 variance terms together.
+  nbinom12 = "Negative-binomial (NB1-NB2)",
   tweedie = "Tweedie",
-  # glmmTMB::beta_family() names its family "beta".
-  beta = "Beta"
+  # glmmTMB::beta_family() names its family "beta"; t_family() "t".
+  beta = "Beta",
+  betabinomial = "Beta-binomial",
+  ordbeta = "Ordered beta",
+  compois = "Conway-Maxwell-Poisson",
+  combinomial = "Conway-Maxwell-binomial",
+  genpois = "Generalized Poisson",
+  bell = "Bell",
+  lognormal = "Lognormal",
+  t = "Student t",
+  skewnormal = "Skew-normal",
+  truncated_poisson = "Zero-truncated Poisson",
+  truncated_nbinom1 = "Zero-truncated negative-binomial (NB1)",
+  truncated_nbinom2 = "Zero-truncated negative-binomial",
+  truncated_compois = "Zero-truncated Conway-Maxwell-Poisson",
+  truncated_genpois = "Zero-truncated generalized Poisson"
 )
+
+# A zero-truncated family with a zero-inflation formula is a hurdle model
+# in glmmTMB: the conditional part is the count of the positives, and the
+# model is named after the untruncated count family plus "(hurdle)".
+.glmmTMB_is_hurdle <- function(fam, has_zi) {
+  isTRUE(has_zi) && startsWith(fam$family, "truncated_")
+}
 
 .glmmTMB_family_label <- function(fam) {
   # Binomial labels are LINK-aware: a probit glmmTMB is NOT a logistic

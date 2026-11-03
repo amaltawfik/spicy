@@ -697,22 +697,26 @@ table_regression_uv <- function(
   }
 
   if (is.null(title)) {
-    type <- if (identical(method, "lm")) {
-      "linear"
+    # The glm family is titled by the glm frame's own source, so the two
+    # read alike; in running text its first letter is lowercased unless
+    # it is a proper name (Poisson). A family it does not know keeps its
+    # R name.
+    prefix <- if (identical(method, "lm")) {
+      "linear regression"
     } else if (identical(method, "coxph")) {
-      "Cox"
+      "Cox regression"
     } else {
-      switch(
-        paste(family$family, family$link),
-        "binomial logit" = "logistic",
-        "binomial probit" = "probit",
-        "poisson log" = "Poisson",
-        family$family
-      )
+      glm_prefix <- spicy_glm_title_prefix(family$family, family$link)
+      if (identical(glm_prefix, "Regression")) {
+        paste(family$family, "regression")
+      } else if (startsWith(glm_prefix, "Poisson")) {
+        glm_prefix
+      } else {
+        paste0(tolower(substr(glm_prefix, 1L, 1L)), substring(glm_prefix, 2L))
+      }
     }
     # Decision 42: the family goes through the title-prefix bridge, and a
     # family with no bridge entry keeps the whole English title.
-    prefix <- paste(type, "regression")
     disp <- .title_prefix_display(capitalize_first(prefix))
     key <- if (isTRUE(multivariable)) {
       "title_uv_multivariable"

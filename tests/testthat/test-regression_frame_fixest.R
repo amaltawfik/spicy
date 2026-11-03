@@ -362,3 +362,34 @@ test_that("feols AME matches marginaleffects::avg_slopes", {
   expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
   expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
+
+test_that("feglm follows the statistic fixest reports: t for an estimated dispersion, z otherwise", {
+  skip_if_not_installed("fixest")
+  d <- mtcars
+  d$am01 <- d$am
+  cases <- list(
+    list(y = "mpg", fam = stats::gaussian(), test = "t"),
+    list(y = "mpg", fam = stats::Gamma(link = "log"), test = "t"),
+    list(y = "carb", fam = stats::quasipoisson(), test = "t"),
+    list(y = "am01", fam = stats::binomial(link = "probit"), test = "z")
+  )
+  for (cs in cases) {
+    fit <- fixest::feglm(
+      stats::as.formula(paste(cs$y, "~ wt | cyl")),
+      data = d,
+      family = cs$fam
+    )
+    fr <- as_regression_frame(fit)
+    ct <- fixest::coeftable(fit)
+    row <- fr$coefs[fr$coefs$term == "wt" & fr$coefs$estimate_type == "B", ]
+    expect_identical(row$test_type, cs$test)
+    expect_equal(row$statistic, unname(ct["wt", 3L]), tolerance = 1e-10)
+    expect_equal(row$p_value, unname(ct["wt", 4L]), tolerance = 1e-10)
+    if (identical(cs$test, "t")) {
+      expect_equal(row$df, stats::df.residual(fit))
+    } else {
+      expect_identical(row$df, Inf)
+    }
+    expect_no_error(table_regression(fit))
+  }
+})

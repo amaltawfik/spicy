@@ -1217,6 +1217,8 @@ validate_regression_frame <- function(frame) {
     .re_null_model("note_re_null_gaussian")
   } else if (identical(fam_name, "inverse.gaussian")) {
     .re_null_model("note_re_null_inverse_gaussian")
+  } else if (identical(fam_name, "Gamma")) {
+    .re_null_model("note_re_null_gamma")
   } else if (startsWith(fam_name, "Negative Binomial(")) {
     # glmer.nb: lme4 names the family with its theta, rounded to four
     # decimals; the null is refit at the theta itself.
@@ -1252,6 +1254,32 @@ validate_regression_frame <- function(frame) {
   fam$family %||% "regression"
 }
 
+
+# The key of the null model of each glmmTMB family the title names (see
+# .GLMMTMB_FAMILY_LABELS); poisson, binomial, gaussian, inverse.gaussian
+# and ordinal have their own arms below.
+.GLMMTMB_NULL_KEYS <- c(
+  Gamma = "note_re_null_gamma",
+  nbinom1 = "note_re_null_nb1",
+  nbinom2 = "note_re_null_nb",
+  nbinom12 = "note_re_null_nb12",
+  tweedie = "note_re_null_tweedie",
+  beta = "note_re_null_beta",
+  betabinomial = "note_re_null_beta_binomial",
+  ordbeta = "note_re_null_ordered_beta",
+  compois = "note_re_null_compois",
+  combinomial = "note_re_null_combinomial",
+  genpois = "note_re_null_genpois",
+  bell = "note_re_null_bell",
+  lognormal = "note_re_null_lognormal",
+  t = "note_re_null_student_t",
+  skewnormal = "note_re_null_skewnormal",
+  truncated_poisson = "note_re_null_truncated_poisson",
+  truncated_nbinom1 = "note_re_null_truncated_nb1",
+  truncated_nbinom2 = "note_re_null_truncated_nb",
+  truncated_compois = "note_re_null_truncated_compois",
+  truncated_genpois = "note_re_null_truncated_genpois"
+)
 
 .null_lrt_glmmTMB <- function(fit) {
   if (!requireNamespace("glmmTMB", quietly = TRUE)) {
@@ -1348,6 +1376,11 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- a fitted random structure has >= 1 free parameter
   }
 
+  # A hurdle null (zero-truncated family + zi formula) is named after its
+  # untruncated count family, as the title names it.
+  if (.glmmTMB_is_hurdle(fam, length(glmmTMB::fixef(fit)$zi) > 0L)) {
+    fam$family <- sub("^truncated_", "", fam$family)
+  }
   null_model <- if (is_linear) {
     .re_null_model("note_re_null_linear")
   } else if (identical(fam$family, "ordinal")) {
@@ -1374,24 +1407,10 @@ validate_regression_frame <- function(frame) {
     .re_null_model("note_re_null_gaussian")
   } else if (identical(fam$family, "inverse.gaussian")) {
     .re_null_model("note_re_null_inverse_gaussian")
-  } else if (fam$family %in% c("nbinom1", "nbinom2", "beta", "tweedie")) {
+  } else if (fam$family %in% names(.GLMMTMB_NULL_KEYS)) {
     # Named as the title names them, never by glmmTMB's family code, with
     # a key each so the name translates.
-    .re_null_model(switch(
-      fam$family,
-      nbinom1 = "note_re_null_nb1",
-      nbinom2 = "note_re_null_nb",
-      beta = "note_re_null_beta",
-      tweedie = "note_re_null_tweedie"
-    ))
-  } else if (fam$family %in% names(.GLMMTMB_FAMILY_LABELS)) {
-    # The family label of the title ("gamma regression"), not glmmTMB's
-    # family code.
-    label <- .glmmTMB_family_label(fam)
-    .re_null_model(
-      "note_re_null_family",
-      paste0(tolower(substr(label, 1L, 1L)), substring(label, 2L))
-    )
+    .re_null_model(unname(.GLMMTMB_NULL_KEYS[fam$family]))
   } else {
     .re_null_model("note_re_null_family", fam$family)
   }

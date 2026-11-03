@@ -1595,6 +1595,33 @@ test_that("gt sets the minus sign in HTML and leaves its LaTeX to knit", {
   expect_identical(tex(), tex(style = spicy_style(minus_sign = "ascii")))
 })
 
+test_that("gt sets the minus sign in RTF, escaped as gt escapes a cell", {
+  skip_if_not_installed("gt")
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  rtf <- function(...) {
+    gt::as_rtf(table_regression(
+      fit,
+      output = "gt",
+      note = "Shift -1.5 {a}.",
+      ...
+    ))
+  }
+  s <- rtf()
+  expect_match(s, "{\\f0\\fs20 \\u8722 3.88}", fixed = TRUE)
+  expect_match(s, "Shift \\u8722 1.5 \\'7ba\\'7d.", fixed = TRUE)
+  # The label and a cell with no negative number keep gt's own text.
+  expect_match(s, "{\\f0\\fs20 wt}", fixed = TRUE)
+  expect_match(s, "{\\f0\\fs20 0.63}", fixed = TRUE)
+  ascii <- rtf(style = spicy_style(minus_sign = "ascii"))
+  expect_match(ascii, "{\\f0\\fs20 -3.88}", fixed = TRUE)
+  expect_no_match(ascii, "\\u8722", fixed = TRUE)
+  # The escape is gt's: backslash and braces in hex, the rest as `\uN`.
+  expect_identical(
+    spicy:::.spicy_rtf_escape(paste0("a\\b{c}", intToUtf8(0x2212))),
+    "a\\'5cb\\'7bc\\'7d\\u8722 "
+  )
+})
+
 test_that("tinytable sets the minus sign in HTML and in a Word knit", {
   skip_if_not_installed("tinytable")
   skip_if_not_installed("MASS")

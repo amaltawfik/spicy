@@ -424,20 +424,36 @@
   # the link (logit, probit, ...), an identifier.
   note_re_null_linear = "linear regression",
   note_re_null_logistic = "logistic regression",
-  note_re_null_poisson = "poisson regression",
+  note_re_null_poisson = "Poisson regression",
   note_re_null_binomial = "binomial regression",
   note_re_null_cloglog = "complementary log-log regression",
   note_re_null_log_binomial = "log-binomial regression",
   # A gaussian family with a link other than identity (the identity link
   # takes `note_re_null_linear`).
-  note_re_null_gaussian = "gaussian regression",
-  note_re_null_inverse_gaussian = "inverse-gaussian regression",
+  note_re_null_gaussian = "Gaussian regression",
+  note_re_null_inverse_gaussian = "inverse-Gaussian regression",
   # The glmmTMB families named as the title names them (NB1: variance
   # linear in the mean; NB2, the standard form, unmarked).
   note_re_null_nb = "negative-binomial regression",
   note_re_null_nb1 = "negative-binomial (NB1) regression",
   note_re_null_beta = "beta regression",
   note_re_null_tweedie = "Tweedie regression",
+  note_re_null_gamma = "gamma regression",
+  note_re_null_nb12 = "negative-binomial (NB1-NB2) regression",
+  note_re_null_beta_binomial = "beta-binomial regression",
+  note_re_null_ordered_beta = "ordered beta regression",
+  note_re_null_compois = "Conway-Maxwell-Poisson regression",
+  note_re_null_combinomial = "Conway-Maxwell-binomial regression",
+  note_re_null_genpois = "generalized Poisson regression",
+  note_re_null_bell = "Bell regression",
+  note_re_null_lognormal = "lognormal regression",
+  note_re_null_student_t = "Student t regression",
+  note_re_null_skewnormal = "skew-normal regression",
+  note_re_null_truncated_poisson = "zero-truncated Poisson regression",
+  note_re_null_truncated_nb = "zero-truncated negative-binomial regression",
+  note_re_null_truncated_nb1 = "zero-truncated negative-binomial (NB1) regression",
+  note_re_null_truncated_compois = "zero-truncated Conway-Maxwell-Poisson regression",
+  note_re_null_truncated_genpois = "zero-truncated generalized Poisson regression",
   # One hole: the theta of the family, formatted as the statistic of the
   # line (two decimals, the decimal mark of the table).
   note_re_null_negative_binomial = "negative binomial(%s) regression",
@@ -468,6 +484,9 @@
   note_component_gloss_zero_inflation = "%s component: log-odds of a structural (excess) zero.",
   note_component_gloss_dispersion = "%s component: log scale.",
   note_component_gloss_hurdle_binomial = "%s component: log-odds of a nonzero count.",
+  # glmmTMB hurdle (zero-truncated family + zi formula): its zi part
+  # models Pr(y = 0), the opposite event of pscl's zero hurdle.
+  note_component_gloss_hurdle_zero = "%s component: log-odds of a zero count.",
   # Two holes: the block caption, then the censoring distribution (an
   # identifier from the fit).
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",

@@ -723,3 +723,25 @@ test_that("a Gamma glmer table does not depend on merDeriv being loaded", {
     expect_true(all(is.finite(rows$statistic)), label = type)
   }
 })
+
+
+# ---- glmer.nb: the NB2 theta and alpha rows --------------------------------
+
+test_that("glmer.nb: theta and alpha match getME(), as glm.nb and glmmTMB", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  fit <- suppressWarnings(lme4::glmer.nb(count ~ mined + (1 | site), data = d))
+  fs <- as_regression_frame(fit)$info$fit_stats
+  theta <- lme4::getME(fit, "glmer.nb.theta")
+  expect_equal(fs$theta, theta, tolerance = 1e-10)
+  expect_equal(fs$alpha, 1 / theta, tolerance = 1e-10)
+  expect_no_error(table_regression(fit, show_fit_stats = c("theta", "alpha")))
+  # A Poisson glmer has no theta, and the token is refused.
+  fit_p <- lme4::glmer(count ~ mined + (1 | site), data = d, family = poisson)
+  expect_true(is.na(as_regression_frame(fit_p)$info$fit_stats$theta %||% NA))
+  expect_error(
+    table_regression(fit_p, show_fit_stats = "theta"),
+    class = "spicy_invalid_input"
+  )
+})

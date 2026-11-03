@@ -3307,3 +3307,32 @@ test_that("an offset term is absorbed silently: no coefficient row appears", {
   fit0 <- glm(y ~ x, family = poisson, data = d)
   expect_gt(abs(coef(fit)[1] - coef(fit0)[1]), 1e-6)
 })
+
+
+# ---- sigma is a standard deviation; gaussian/identity is linear -----------
+
+test_that("glm sigma is the square root of the dispersion", {
+  g <- glm(mpg ~ wt, data = mtcars)
+  fs <- as_regression_frame(g)$info$fit_stats
+  expect_equal(fs$sigma, stats::sigma(lm(mpg ~ wt, data = mtcars)))
+  gam <- glm(mpg ~ wt, data = mtcars, family = Gamma(link = "log"))
+  expect_equal(
+    as_regression_frame(gam)$info$fit_stats$sigma,
+    sqrt(summary(gam)$dispersion)
+  )
+  pois <- glm(carb ~ wt, data = mtcars, family = poisson)
+  expect_equal(as_regression_frame(pois)$info$fit_stats$sigma, 1)
+})
+
+test_that("a gaussian/identity glm is titled as lm titles it", {
+  g <- glm(mpg ~ wt, data = mtcars)
+  expect_identical(
+    as_regression_frame(g)$info$extras$title_prefix,
+    "Linear regression"
+  )
+  g_log <- glm(mpg ~ wt, data = mtcars, family = gaussian(link = "log"))
+  expect_identical(
+    as_regression_frame(g_log)$info$extras$title_prefix,
+    "Regression"
+  )
+})

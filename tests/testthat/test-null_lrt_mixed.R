@@ -463,14 +463,14 @@ test_that("glmer gaussian(log): the null keeps the family and the link", {
   # statistic about 0.14 lower under either lme4 (150.46, then 159.85).
   lm0 <- stats::lm(bmi ~ age_c, data = mf)
   expect_gt(abs(out$chi2 - 2 * (ll - as.numeric(stats::logLik(lm0)))), 0.1)
-  expect_identical(out$family_label, "gaussian regression")
+  expect_identical(out$family_label, "Gaussian regression")
 })
 
 test_that("table_regression(glmer gaussian(log)) names the null in its footer", {
   # Below 1,000 rows, so the variance components keep their SEs.
   fit <- .fit_glmer_gaussian_log(rows = 1:600)
   note <- attr(table_regression(fit), "note")
-  expect_match(note, "LR test vs gaussian regression, ", fixed = TRUE)
+  expect_match(note, "LR test vs Gaussian regression, ", fixed = TRUE)
   expect_no_match(note, "linear regression", fixed = TRUE)
   # In French the family takes its French name, as the inverse-gaussian
   # family does, rather than the engine's English one.
@@ -500,7 +500,7 @@ test_that("glmmTMB gaussian(log): the engine-native null is named as in lme4", {
     2 * (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(n0))),
     tolerance = 1e-6
   )
-  expect_identical(out$family_label, "gaussian regression")
+  expect_identical(out$family_label, "Gaussian regression")
   withr::local_options(spicy.language = "fr")
   expect_identical(
     do.call(spicy_fmt, c(list(out$family_key), out$family_args)),

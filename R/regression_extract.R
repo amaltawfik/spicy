@@ -1119,12 +1119,13 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
   }
   pseudo_r2_tjur <- if (is_glm) compute_pseudo_r2_tjur(fit) else NA_real_
 
-  # Residual scale. For glm, `summary(fit)$sigma` does not exist;
-  # we use the dispersion estimate (sm$dispersion) instead and
-  # report it under the same `sigma` token. For families with a
-  # fixed dispersion (binomial / poisson), this is 1 by convention.
+  # Residual scale. For glm, `summary(fit)$sigma` does not exist; the
+  # row is the square root of the dispersion estimate (sm$dispersion is
+  # a variance: sigma^2 for gaussian), so a gaussian glm reads as lm
+  # and a Gamma glm gives sqrt(phi), stats::sigma()'s value. For
+  # families with a fixed dispersion (binomial / poisson), this is 1.
   sigma <- if (is_glm) {
-    unname(sm$dispersion %||% NA_real_)
+    sqrt(unname(sm$dispersion %||% NA_real_))
   } else {
     unname(sm$sigma)
   }

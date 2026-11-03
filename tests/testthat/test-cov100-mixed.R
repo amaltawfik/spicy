@@ -210,13 +210,61 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
   )
   expect_identical(tp("tweedie"), "Tweedie mixed-effects regression")
   expect_identical(tp("beta"), "Beta mixed-effects regression")
+  expect_identical(
+    tp("compois"),
+    "Conway-Maxwell-Poisson mixed-effects regression"
+  )
+  expect_identical(
+    tp("truncated_nbinom2"),
+    "Zero-truncated negative-binomial mixed-effects regression"
+  )
   # Unknown family: sentence-cased verbatim.
-  expect_identical(tp("compois"), "Compois mixed-effects regression")
+  expect_identical(tp("newfam"), "Newfam mixed-effects regression")
   # Zero-inflation suffix.
   expect_identical(
     tp("poisson", zi = TRUE),
     "Poisson mixed-effects regression (zero-inflated)"
   )
+  # A zero-truncated family with a zi formula is a hurdle model, named
+  # after its count family.
+  expect_identical(
+    tp("truncated_poisson", zi = TRUE),
+    "Poisson mixed-effects regression (hurdle)"
+  )
+  expect_identical(
+    tp("truncated_nbinom1", zi = TRUE),
+    "Negative-binomial (NB1) mixed-effects regression (hurdle)"
+  )
+  # Every family glmmTMB can return has a label, and every label has a
+  # French title (plain, and hurdle for the truncated count families).
+  fams <- c(
+    "nbinom12",
+    "compois",
+    "truncated_compois",
+    "genpois",
+    "truncated_genpois",
+    "truncated_poisson",
+    "truncated_nbinom1",
+    "truncated_nbinom2",
+    "betabinomial",
+    "combinomial",
+    "ordbeta",
+    "lognormal",
+    "t",
+    "skewnormal",
+    "bell"
+  )
+  expect_true(all(fams %in% names(.GLMMTMB_FAMILY_LABELS)))
+  titles <- c(
+    vapply(fams, tp, character(1)),
+    vapply(
+      grep("^truncated_", fams, value = TRUE),
+      tp,
+      character(1),
+      zi = TRUE
+    )
+  )
+  expect_true(all(titles %in% names(.FR_TITLE_PREFIXES)))
   # A title names the method, never the engine that fitted it.
   engine <- "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   for (fam in c("gaussian", "binomial", "poisson", "nbinom2", "ordinal")) {
