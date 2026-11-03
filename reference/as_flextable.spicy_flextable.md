@@ -17,7 +17,8 @@ pipelines, or composition with other flextable tooling), mirroring
 ## Usage
 
 ``` r
-as_flextable.spicy_flextable(x, ...)
+# S3 method for class 'spicy_flextable'
+as_flextable(x, ...)
 ```
 
 ## Arguments

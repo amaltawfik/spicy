@@ -81,7 +81,7 @@
 
       <dl><dt>
 
-          <code><a href="code_book.html">code_book()</a></code> <code><a href="code_book.html">print(<i>&lt;spicy_codebook&gt;</i>)</a></code>
+          <code><a href="code_book.html">code_book()</a></code>
 
         </dt>
         <dd>Build a codebook of a data frame</dd>
@@ -111,17 +111,17 @@
 
       <dl><dt>
 
+          <code><a href="freq.html">freq()</a></code>
+
+        </dt>
+        <dd>Frequency table</dd>
+
+        <dt>
+
           <code><a href="cross_tab.html">cross_tab()</a></code>
 
         </dt>
         <dd>Cross-tabulation</dd>
-
-        <dt>
-
-          <code><a href="freq.html">freq()</a></code>
-
-        </dt>
-        <dd>Frequency Table</dd>
       </dl></div><div class="section level2">
       <h2 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a></h2>
 
@@ -153,7 +153,7 @@
         </dt>
         <dd>Row sums with an optional minimum-valid-values rule</dd>
       </dl></div><div class="section level2">
-      <h2 id="measures-of-association">Measures of Association<a class="anchor" aria-label="anchor" href="#measures-of-association"></a></h2>
+      <h2 id="measures-of-association">Measures of association<a class="anchor" aria-label="anchor" href="#measures-of-association"></a></h2>
 
 
 
@@ -237,7 +237,7 @@
           <code><a href="uncertainty_coef.html">uncertainty_coef()</a></code>
 
         </dt>
-        <dd>Uncertainty Coefficient</dd>
+        <dd>Uncertainty coefficient</dd>
 
         <dt>
 
@@ -246,7 +246,7 @@
         </dt>
         <dd>Yule's Q</dd>
       </dl></div><div class="section level2">
-      <h2 id="summary-tables">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a></h2>
+      <h2 id="descriptive-tables">Descriptive tables<a class="anchor" aria-label="anchor" href="#descriptive-tables"></a></h2>
 
 
 
@@ -289,15 +289,40 @@
 
         </dt>
         <dd>Multiple-response summary table</dd>
+      </dl></div><div class="section level2">
+      <h2 id="survey-design-tables">Survey-design tables<a class="anchor" aria-label="anchor" href="#survey-design-tables"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>The descriptive tables from a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign()</a></code> or replicate-weight design: design-based estimates, standard errors, degrees of freedom and tests, every number delegated to survey (Lumley).</p></div>
 
-          <code><a href="var_labels.html">var_labels()</a></code> <code><a href="var_labels.html">print(<i>&lt;spicy_var_labels&gt;</i>)</a></code>
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>
 
         </dt>
-        <dd>Label attributes with a few renames</dd>
+        <dd>Categorical summary table from a survey design</dd>
 
         <dt>
+
+          <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
+
+        </dt>
+        <dd>Descriptive statistics from a survey design</dd>
+      </dl></div><div class="section level2">
+      <h2 id="regression-tables">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables"></a></h2>
+
+      <div class="section-desc"><p>One or more fitted models side by side, and the univariable screen. <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> returns the supported model classes; its page describes the behavior of each family (inference, robust-variance backends, exponentiation, marginal effects, labeled blocks).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="table_regression.html">table_regression()</a></code>
 
@@ -313,21 +338,14 @@
 
         <dt>
 
-          <code><a href="as_structured.html">as_structured()</a></code>
+          <code><a href="table_regression_models.html">table_regression_models()</a></code>
 
         </dt>
-        <dd>Extract the typed (structured) view of a spicy table</dd>
-
-        <dt>
-
-          <code><a href="inline.html">inline()</a></code>
-
-        </dt>
-        <dd>Cite a table cell in inline text</dd>
+        <dd>Supported models and per-family behavior of table_regression()</dd>
       </dl></div><div class="section level2">
-      <h2 id="survey-design-tables">Survey-design tables<a class="anchor" aria-label="anchor" href="#survey-design-tables"></a></h2>
+      <h2 id="working-with-tables">Working with tables<a class="anchor" aria-label="anchor" href="#working-with-tables"></a></h2>
 
-      <div class="section-desc"><p>The descriptive tables from a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign()</a></code> or replicate-weight design: design-based estimates, standard errors, degrees of freedom and tests, every number delegated to survey (Lumley). New in 0.13.0 – see the API-stability tiers in <code><a href="../reference/spicy-package.html">?spicy</a></code>.</p></div>
+      <div class="section-desc"><p>Helpers shared by the descriptive and regression tables: the labels of the variables, a cell cited in the text, and the typed view of a table.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -336,21 +354,28 @@
 
       <dl><dt>
 
-          <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
+          <code><a href="var_labels.html">var_labels()</a></code>
 
         </dt>
-        <dd>Descriptive statistics from a survey design</dd>
+        <dd>Variable labels for a table</dd>
 
         <dt>
 
-          <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>
+          <code><a href="inline.html">inline()</a></code>
 
         </dt>
-        <dd>Categorical summary table from a survey design</dd>
+        <dd>Cite a table cell in inline text</dd>
+
+        <dt>
+
+          <code><a href="as_structured.html">as_structured()</a></code>
+
+        </dt>
+        <dd>Extract the typed (structured) view of a spicy table</dd>
       </dl></div><div class="section level2">
       <h2 id="table-styles">Table styles<a class="anchor" aria-label="anchor" href="#table-styles"></a></h2>
 
-      <div class="section-desc"><p>Journal and locale number-formatting themes, each encoding only rules sourced from an official document of the institution – <code><a href="../reference/spicy_style.html">?spicy_style</a></code> lists every rule with the sentence it comes from.</p></div>
+      <div class="section-desc"><p>Journal and locale number-formatting themes, each encoding only rules sourced from an official document of the institution: <code><a href="../reference/spicy_style.html">?spicy_style</a></code> lists every rule with the sentence it comes from.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -379,22 +404,6 @@
 
         </dt>
         <dd>Table labels and their language</dd>
-      </dl></div><div class="section level2">
-      <h2 id="supported-models">Supported models<a class="anchor" aria-label="anchor" href="#supported-models"></a></h2>
-
-      <div class="section-desc"><p>The registry of model classes <code><a href="../reference/table_regression.html">table_regression()</a></code> supports – one function returning the machine-readable list, whose documentation page also describes the per-family behavior (inference, robust-variance backends, exponentiate semantics, marginal effects, labeled blocks).</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="table_regression_models.html">table_regression_models()</a></code>
-
-        </dt>
-        <dd>Supported models and per-family behavior of table_regression()</dd>
       </dl></div><div class="section level2">
       <h2 id="export">Export<a class="anchor" aria-label="anchor" href="#export"></a></h2>
 
@@ -428,22 +437,6 @@
         </dt>
         <dd>Simulated social-health survey</dd>
       </dl></div><div class="section level2">
-      <h2 id="ascii-helpers">ASCII helpers<a class="anchor" aria-label="anchor" href="#ascii-helpers"></a></h2>
-
-
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
-
-        </dt>
-        <dd>Print a spicy-formatted ASCII table</dd>
-      </dl></div><div class="section level2">
       <h2 id="advanced-s-methods">Advanced S3 methods<a class="anchor" aria-label="anchor" href="#advanced-s-methods"></a></h2>
 
       <div class="section-desc"><p>Exported S3 methods. Most users dispatch them implicitly (<code>print(x)</code>, <code>broom::tidy(x)</code>, <code>as.data.frame(x)</code>, <code>tibble::as_tibble(x)</code>). Documented here for direct invocation with custom arguments (e.g., <code>print(..., digits = 2)</code>).</p></div>
@@ -469,6 +462,13 @@
 
         <dt>
 
+          <code><a href="print.spicy_categorical_svy_table.html">print(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for categorical survey-design tables</dd>
+
+        <dt>
+
           <code><a href="print.spicy_categorical_table.html">print(<i>&lt;spicy_categorical_table&gt;</i>)</a></code>
 
         </dt>
@@ -476,10 +476,24 @@
 
         <dt>
 
+          <code><a href="print.spicy_codebook.html">print(<i>&lt;spicy_codebook&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a codebook</dd>
+
+        <dt>
+
           <code><a href="print.spicy_continuous_lm_table.html">print(<i>&lt;spicy_continuous_lm_table&gt;</i>)</a></code>
 
         </dt>
         <dd>Print method for bivariate linear-model tables</dd>
+
+        <dt>
+
+          <code><a href="print.spicy_continuous_svy_table.html">print(<i>&lt;spicy_continuous_svy_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for continuous survey-design tables</dd>
 
         <dt>
 
@@ -525,6 +539,20 @@
 
         <dt>
 
+          <code><a href="print.spicy_multiresponse_table.html">print(<i>&lt;spicy_multiresponse_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for multiple-response tables</dd>
+
+        <dt>
+
+          <code><a href="print.spicy_outcome_table.html">print(<i>&lt;spicy_outcome_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for outcome tables</dd>
+
+        <dt>
+
           <code><a href="print.spicy_regression_frame.html">print(<i>&lt;spicy_regression_frame&gt;</i>)</a></code>
 
         </dt>
@@ -539,10 +567,24 @@
 
         <dt>
 
-          <code><a href="terms.spicy_uv_screen.html">terms(<i>&lt;spicy_uv_screen&gt;</i>)</a></code>
+          <code><a href="print.spicy_style.html">print(<i>&lt;spicy_style&gt;</i>)</a></code>
 
         </dt>
-        <dd>Terms method for univariable screen bundles</dd>
+        <dd>Print method for table styles</dd>
+
+        <dt>
+
+          <code><a href="print.spicy_var_labels.html">print(<i>&lt;spicy_var_labels&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a <code><a href="../reference/var_labels.html">var_labels()</a></code> value</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_categorical_svy_table.html">as.data.frame(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_categorical_svy_table.html">as_tibble(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_categorical_svy_table</code> to a data frame or tibble</dd>
 
         <dt>
 
@@ -560,10 +602,31 @@
 
         <dt>
 
+          <code><a href="as.data.frame.spicy_continuous_svy_table.html">as.data.frame(<i>&lt;spicy_continuous_svy_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_continuous_svy_table.html">as_tibble(<i>&lt;spicy_continuous_svy_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_continuous_svy_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
           <code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame(<i>&lt;spicy_continuous_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_continuous_table.html">as_tibble(<i>&lt;spicy_continuous_table&gt;</i>)</a></code>
 
         </dt>
         <dd>Coerce a <code>spicy_continuous_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_multiresponse_table.html">as.data.frame(<i>&lt;spicy_multiresponse_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_multiresponse_table.html">as_tibble(<i>&lt;spicy_multiresponse_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_multiresponse_table</code> to a plain data frame or tibble</dd>
+
+        <dt>
+
+          <code><a href="as.data.frame.spicy_outcome_table.html">as.data.frame(<i>&lt;spicy_outcome_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_outcome_table.html">as_tibble(<i>&lt;spicy_outcome_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Coerce a <code>spicy_outcome_table</code> to a plain data frame or tibble</dd>
 
         <dt>
 
@@ -574,10 +637,10 @@
 
         <dt>
 
-          <code><a href="as_flextable.spicy_flextable.html">as_flextable.spicy_flextable()</a></code>
+          <code><a href="tidy.spicy_categorical_svy_table.html">tidy(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code> <code><a href="tidy.spicy_categorical_svy_table.html">glance(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code>
 
         </dt>
-        <dd>Convert a spicy flextable output to a plain flextable</dd>
+        <dd>Tidying methods for a <code>spicy_categorical_svy_table</code></dd>
 
         <dt>
 
@@ -595,10 +658,31 @@
 
         <dt>
 
+          <code><a href="tidy.spicy_continuous_svy_table.html">tidy(<i>&lt;spicy_continuous_svy_table&gt;</i>)</a></code> <code><a href="tidy.spicy_continuous_svy_table.html">glance(<i>&lt;spicy_continuous_svy_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_continuous_svy_table</code></dd>
+
+        <dt>
+
           <code><a href="tidy.spicy_continuous_table.html">tidy(<i>&lt;spicy_continuous_table&gt;</i>)</a></code> <code><a href="tidy.spicy_continuous_table.html">glance(<i>&lt;spicy_continuous_table&gt;</i>)</a></code>
 
         </dt>
         <dd>Tidying methods for a <code>spicy_continuous_table</code></dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_multiresponse_table.html">tidy(<i>&lt;spicy_multiresponse_table&gt;</i>)</a></code> <code><a href="tidy.spicy_multiresponse_table.html">glance(<i>&lt;spicy_multiresponse_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_multiresponse_table</code></dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_outcome_table.html">tidy(<i>&lt;spicy_outcome_table&gt;</i>)</a></code> <code><a href="tidy.spicy_outcome_table.html">glance(<i>&lt;spicy_outcome_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidying methods for a <code>spicy_outcome_table</code></dd>
 
         <dt>
 
@@ -609,10 +693,17 @@
 
         <dt>
 
-          <code><a href="spicy_tables.html">spicy_tables</a></code>
+          <code><a href="terms.spicy_uv_screen.html">terms(<i>&lt;spicy_uv_screen&gt;</i>)</a></code>
 
         </dt>
-        <dd>Spicy table engine</dd>
+        <dd>Terms method for univariable screen bundles</dd>
+
+        <dt>
+
+          <code><a href="as_flextable.spicy_flextable.html">as_flextable(<i>&lt;spicy_flextable&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Convert a spicy flextable output to a plain flextable</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

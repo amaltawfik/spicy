@@ -1,4 +1,4 @@
-# Label attributes with a few renames
+# Variable labels for a table
 
 Builds a value for the `labels` argument of the descriptive tables
 ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -33,9 +33,6 @@ transformed terms keep their names.
 
 ``` r
 var_labels(...)
-
-# S3 method for class 'spicy_var_labels'
-print(x, ...)
 ```
 
 ## Arguments
@@ -44,20 +41,12 @@ print(x, ...)
 
   `name = "label"` pairs, one per variable to rename, each label a
   single string. A named character vector can be spliced with `!!!`. A
-  name that matches nothing in a table warns there and is left out. For
-  [`print()`](https://rdrr.io/r/base/print.html), passed on to
-  [`print()`](https://rdrr.io/r/base/print.html).
-
-- x:
-
-  A `spicy_var_labels` object, for
-  [`print()`](https://rdrr.io/r/base/print.html).
+  name that matches nothing in a table warns there and is left out.
 
 ## Value
 
 A named character vector of class `spicy_var_labels`, which prints as
-the plain named vector. [`print()`](https://rdrr.io/r/base/print.html)
-returns `x` invisibly.
+the plain named vector.
 
 ## See also
 

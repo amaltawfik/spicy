@@ -1,4 +1,4 @@
-# Frequency Table
+# Frequency table
 
 Creates a frequency table for a vector or variable from a data frame,
 with options for weighting, sorting, handling *labelled* data, defining

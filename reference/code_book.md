@@ -34,17 +34,13 @@ code_book(
   index_columns = NULL,
   output = NULL
 )
-
-# S3 method for class 'spicy_codebook'
-print(x, ...)
 ```
 
 ## Arguments
 
 - x:
 
-  A data frame or tibble. For
-  [`print()`](https://rdrr.io/r/base/print.html), a `spicy_codebook`.
+  A data frame or tibble.
 
 - ...:
 
@@ -389,7 +385,7 @@ Other variable inspection:
 code_book(sochealth)
 #> Codebook
 #> 
-#> Date: 2026-11-02
+#> Date: 2026-11-03
 #> Observations: 1200
 #> Variables: 29
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -439,7 +435,7 @@ cb
 #> Body mass index
 #> Jane Doe – University of Somewhere
 #> 
-#> Date: 2026-11-02
+#> Date: 2026-11-03
 #> Observations: 1200
 #> Variables: 2
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.

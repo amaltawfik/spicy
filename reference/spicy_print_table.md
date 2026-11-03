@@ -1,10 +1,15 @@
 # Print a spicy-formatted ASCII table
 
-User-facing helper that prints a spicy-styled ASCII table to the console
-with optional title and note, table-type-aware alignment defaults, and
-automatic horizontal paneling when the table is wider than the console.
-Wraps the internal renderer
+Prints a spicy-styled ASCII table to the console with optional title and
+note, table-type-aware alignment defaults, and automatic horizontal
+paneling when the table is wider than the console. Wraps the internal
+renderer
 [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
+
+Part of the internal API (see the API-stability tiers in
+[spicy](https://amaltawfik.github.io/spicy/reference/spicy-package.md)):
+it stays exported for the print methods of the package, and its
+arguments can change without notice.
 
 ## Usage
 
