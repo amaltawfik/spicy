@@ -29,7 +29,9 @@
   mixed-effects regression” for `compois`. A zero-truncated family with
   a zero-inflation formula is titled as a hurdle model, with a “Zero
   hurdle” block. The random-effects test names its null model as the
-  title does instead of glmmTMB’s family code.
+  title does instead of the engine’s family code,
+  e.g. “negative-binomial regression (θ = 1.71)” or “cumulative
+  complementary log-log regression”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the note on skipped variance-component SE and CI of large mixed models
@@ -62,16 +64,33 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a Gaussian [`glm()`](https://rdrr.io/r/stats/glm.html) with the
   identity link is titled “Linear regression”, as
-  [`lm()`](https://rdrr.io/r/stats/lm.html) is.
+  [`lm()`](https://rdrr.io/r/stats/lm.html) is, and one with another
+  link “Gaussian regression” instead of “Regression”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  glmmTMB models no longer show their family’s dispersion parameter
-  under σ̂, which stays blank for families other than Gaussian, Gamma,
-  Poisson and binomial. `show_fit_stats = c("theta", "alpha")` now also
-  works for
+  σ̂ is a residual scale only. It is blank for negative-binomial models
+  that estimate their dispersion, which has its own row (it showed 1 for
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
   [`lme4::glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) and
-  glmmTMB `nbinom2` models, and `"phi"` for glmmTMB `beta_family()`
-  models.
+  mgcv’s `nb()`), and glmmTMB models no longer show their family’s
+  dispersion parameter under it. For fixest GLMs it is the square root
+  of the dispersion, as for [`glm()`](https://rdrr.io/r/stats/glm.html),
+  instead of a response-scale RMSE. A stratified
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
+  model, which has one scale per stratum, leaves it blank instead of
+  showing the first stratum’s scale.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `show_fit_stats = "delta"` shows the NB1 dispersion δ of glmmTMB
+  `nbinom1` models (variance μ(1 + δ)). `"theta"` and `"alpha"` now also
+  work for
+  [`lme4::glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html),
+  [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html),
+  mgcv `nb()` and glmmTMB `nbinom2` models, and `"phi"` for glmmTMB
+  `beta_family()`, `betabinomial()` and `ordbeta()` models. These rows
+  now accept a table that also holds models without the parameter
+  (Poisson next to negative binomial, NB1 next to NB2), whose cells stay
+  blank.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
@@ -80,14 +99,60 @@
   the link (“Probit regression (fixed effects)”) and no longer show R’s
   family code (“Quasipoisson”).
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html)
+  Poisson, logit and Gaussian models no longer fail with “subscript out
+  of bounds”. They are read as the maximum-likelihood fits they are,
+  with fixest’s z tests and a title that names their family.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses an AME on a non-linear fixest model with fixed effects
+  (`fepois()`, `feglm()`, `fenegbin()`), as it does for the other models
+  that have none: its variance would need the uncertainty of the fixed
+  effects, which fixest does not estimate. It used to warn and leave the
+  column empty. `feols()` and a GLM without fixed effects keep their
+  AME.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  titles name the model in words, never with an R code or a fitted
+  number: “Negative-binomial GAM” instead of “Negative Binomial(1.597)
+  GAM”, “Bayesian negative-binomial regression” instead of “Bayesian
+  neg_binomial_2 regression”, “Log-normal AFT regression” for
+  `dist = "loggaussian"`. They follow the family and the link: a probit
+  GAM or [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) model is
+  no longer titled logistic, nor a survey Poisson model with an identity
+  link “linear”, and an ordinal
+  [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) model is titled
+  as the proportional-odds model it is. Ordinal titles spell the link
+  out (“Cumulative complementary log-log regression (proportional
+  hazards)”), pscl models read “Zero-inflated Poisson regression”,
+  family names follow sentence case (“Bayesian gamma regression”), and
+  the survival notes name the distribution the same way (“Distribution:
+  Extreme-value”).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the τ of a quantile-regression title and note follows the table’s
+  decimal mark, so `decimal_mark = ","` writes “τ = 0,50”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses an ordinal
+  [`rstanarm::stan_polr()`](https://mc-stan.org/rstanarm/reference/stan_polr.html)
+  model with a clear error. It was read as a Gaussian model, without its
+  cut-points, and failed on its default fit statistics.
+
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   titles name the family as
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  does (“inverse-Gaussian” instead of “Inverse.gaussian”).
+  does (“inverse-Gaussian” instead of “Inverse.gaussian”) and a Cox
+  model “Cox proportional hazards regression”, as the other tables do.
 
-- French titles now cover the Gamma, inverse-Gaussian, complementary
-  log-log, quasi-binomial and quasi-likelihood GLMs and every glmmTMB
-  family.
+- French titles (`options(spicy.language = "fr")`) now cover every model
+  that
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  accept, quantile regressions included (“Régression quantile (τ =
+  0,50)”).
 
 ## spicy 0.14.1
 

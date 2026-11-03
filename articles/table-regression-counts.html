@@ -325,7 +325,7 @@ not a default to accept.</p>
 <code class="sourceCode R"><span><span class="va">fit_zip</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">zeroinfl</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                    data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson zero-inflated regression: art</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Zero-inflated Poisson regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span></span>
@@ -346,7 +346,7 @@ not a default to accept.</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                               </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_hur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">hurdle</a></span><span class="op">(</span><span class="va">art</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">mar</span> <span class="op">+</span> <span class="va">kid5</span> <span class="op">+</span> <span class="va">ment</span> <span class="op">|</span> <span class="va">ment</span>,</span>
 <span>                  data <span class="op">=</span> <span class="va">bioChemists</span><span class="op">)</span></span>
@@ -460,7 +460,7 @@ substantive reasoning carry the comparison.)</p>
 <span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.19      –       0.11      –   </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3312.3   3225.5   3134.1   3122.5  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson: Poisson regression; ZIP: zero-inflated Poisson regression; NB: negative-binomial regression; ZINB: zero-inflated negative-binomial regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read the AIC row across. The ZIP’s entire inflation component buys
 less than the negative binomial’s single dispersion parameter (3225.5
 against 3134.1): modeling the zeros directly is the <em>worse</em>
@@ -492,7 +492,7 @@ zero processes (computed by <code><a href="https://rdrr.io/pkg/marginaleffects/m
 on the full model):</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson zero-inflated regression: art</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Zero-inflated Poisson regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      AME     p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────</span></span></span>
@@ -513,7 +513,7 @@ on the full model):</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                  </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Averaged over the sample’s covariate values, women are expected to
 publish 0.36 fewer articles over the three years than comparable men
 (AME −0.36) — one number combining both components; the zero-component
@@ -541,7 +541,7 @@ and <code>"CR3"</code> are refused:</p>
 <span><span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, vcov <span class="op">=</span> <span class="st">"CR1"</span>, cluster <span class="op">=</span> <span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span>,</span>
 <span>                 show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson zero-inflated regression: art</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Zero-inflated Poisson regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────</span></span></span>
@@ -562,7 +562,7 @@ and <code>"CR3"</code> are refused:</p>
 <span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                 </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3225.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CR1), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson regression. Std. errors: cluster-robust (CR1), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Do not read the shift here as the effect of clustering. The labs are
 assigned at random, so they carry no real dependence: most of the
 movement in marriage (p = .041 → .147) comes from the sandwich estimator
@@ -950,7 +950,7 @@ div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 <thead>
 <tr class="gt_heading">
 <td colspan="6" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
-Poisson zero-inflated regression: art
+Zero-inflated Poisson regression: art
 </td>
 </tr>
 <tr class="gt_col_headings gt_spanner_row">
@@ -1258,7 +1258,7 @@ AIC
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Poisson zero-inflated regression. Coefficients
+<em>Note.</em> Zero-inflated Poisson regression. Coefficients
 exponentiated and displayed as IRR; SE on the IRR scale (delta method);
 CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z).
 Zero-inflation component: log-odds of a structural (excess) zero.

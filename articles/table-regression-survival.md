@@ -401,7 +401,7 @@ table_regression_uv(lung2, outcome = Surv(time, status),
                     predictors = c(age, sex, ph.ecog),
                     method = "coxph", exponentiate = TRUE,
                     show_columns = c("n", "n_events", "b", "ci", "p"))
-#> Univariable and multivariable Cox regression: Surv(time, status)
+#> Univariable and multivariable Cox proportional hazards regression: Surv(time, status)
 #> 
 #>                                Univariable                   Multivariable   
 #>                  ────────────────────────────────────────  ───────────────── 

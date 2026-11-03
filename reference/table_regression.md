@@ -1106,13 +1106,17 @@ restore it explicitly when needed).
   (Nagelkerke 1991), `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 
 - Residual scale: `"sigma"`, `"rmse"`. `"sigma"` is the lm
-  \\\hat{\sigma}\\; for glm, the square root of the dispersion estimate
-  (so a gaussian glm reads as lm), and 1 when the family fixes the
-  dispersion (binomial, Poisson). For `glmmTMB` fits, `"sigma"` is shown
-  for the gaussian and Gamma families (and the fixed 1 of poisson and
-  binomial, as for `glm`) and left blank for the other families, whose
-  [`sigma()`](https://rdrr.io/r/stats/sigma.html) is a family-specific
-  dispersion parameter rather than a residual scale.
+  \\\hat{\sigma}\\. For glm and the GLM-like `fixest` fits, it is the
+  square root of the dispersion (so a gaussian glm reads as lm), and 1
+  when the family fixes it (binomial, Poisson). For `survreg`, it is the
+  scale \\\sigma\\ of \\\log T = X'\beta + \sigma W\\ (the standard
+  deviation of \\\log T\\ for the log-normal), blank when strata give
+  one scale per stratum. For `glmmTMB`, it is the same square root for
+  the gaussian, Gamma and Tweedie families, and the fixed 1 of Poisson
+  and binomial. It is blank for the negative-binomial and beta fits
+  below, whose dispersion has its own row, and for the other `glmmTMB`
+  families, whose [`sigma()`](https://rdrr.io/r/stats/sigma.html) is a
+  family-specific parameter.
 
 - Survey designs
   ([`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) only):
@@ -1128,23 +1132,31 @@ restore it explicitly when needed).
   model; the footer discloses the elpd standard error), and `"waic"`
   (Watanabe-Akaike; PSIS-LOO is generally preferred).
 
-- Negative-binomial dispersion (NB2 fits:
-  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
-  [`lme4::glmer.nb`](https://rdrr.io/pkg/lme4/man/glmer.nb.html), and
+- Negative-binomial dispersion. NB2 fits
+  ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
+  [`lme4::glmer.nb`](https://rdrr.io/pkg/lme4/man/glmer.nb.html),
+  [`fixest::fenegbin`](https://lrberge.github.io/fixest/reference/femlm.html),
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) with `nb()`, and
   `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"` (\\V =
   \mu + \mu^2/\theta\\) and `"alpha"` (\\= 1/\theta\\, the Stata `nbreg`
-  convention). Refused for other families, `nbinom1` included (its
-  dispersion is not an NB2 theta), and for a `glmmTMB` fit whose
-  `dispformula` has covariates.
+  convention). NB1 fits (`glmmTMB` with `nbinom1` or
+  `truncated_nbinom1`): `"delta"` (\\V = \mu(1 + \delta)\\, the
+  \\\delta\\ of Stata's `nbreg, dispersion(constant)`).
 
-- Beta-regression precision
+- Beta precision
   ([`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html),
-  and `glmmTMB` with `beta_family()`): `"phi"` (\\Var(y) =
-  \mu(1-\mu)/(1+\phi)\\, Ferrari & Cribari-Neto 2004; higher \\\phi\\ =
-  less dispersion). A constant precision is back-transformed from its
-  link, so `y ~ x | 1` reports the same \\\phi\\ as `y ~ x`. Refused for
-  other families and when the precision has covariates (`y ~ x | z`, or
-  a `glmmTMB` `dispformula`), so it is not a single number.
+  and `glmmTMB` with `beta_family()`, `betabinomial()` or `ordbeta()`):
+  `"phi"` (\\Var(y) = \mu(1-\mu)/(1+\phi)\\, Ferrari & Cribari-Neto
+  2004; higher \\\phi\\ = less dispersion). A constant precision is
+  back-transformed from its link, so `y ~ x | 1` reports the same
+  \\\phi\\ as `y ~ x`.
+
+- For these dispersion rows (`"theta"`, `"alpha"`, `"delta"`, `"phi"`),
+  a column whose model lacks the parameter is blank, so a Poisson model
+  can stand beside an NB2 model, or NB1 beside NB2. A token is refused
+  only when no model in the table has the parameter, or when a model of
+  that family has dispersion covariates (a `glmmTMB` `dispformula`, or a
+  betareg `y ~ x | z`), so the parameter is not a single number.
 
 - GEE ([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)
   only): `"qic"` and `"qicu"` – the quasi-likelihood information

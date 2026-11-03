@@ -45,7 +45,7 @@ A data frame with one row per supported engine and columns `family`,
 | Robust, IV, quantile, panel | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- |
 | Robust, IV, quantile, panel | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- |
 | Robust, IV, quantile, panel | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- |
-| Robust, IV, quantile, panel | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes | `feglm`: OR / IRR | \- |
+| Robust, IV, quantile, panel | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
 | Mixed effects | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
 | Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) |
@@ -182,6 +182,12 @@ components via
 and `"CR0"` for `glmmTMB` fits covers the zero-inflation and dispersion
 blocks. Opt out with `show_components = FALSE`.
 
+The dispersion of a negative-binomial fit is an opt-in fit-statistic
+row: `"theta"` and `"alpha"` (= 1/theta) for NB2 fits, `"delta"` for NB1
+fits (glmmTMB `nbinom1`). A Poisson column in the same table is blank on
+these rows; see `show_fit_stats` in
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
 ## Categorical outcomes
 
 `multinom` renders per non-reference outcome; `exponentiate` yields odds
@@ -292,7 +298,11 @@ fixed effects as a default-on `Fixed effects:` block (one Yes / No row
 per factor; varying-slope-only factors are not absorbed intercepts and
 read No), with per-factor `N (<factor>)` counts via the opt-in
 `n_groups` token and the within R-squared in the default fit statistics
-for `fixest` (opt-in via `within_r2` for `estimatr`).
+for `fixest` (opt-in via `within_r2` for `estimatr`). AME is refused for
+a non-linear `fixest` model with fixed effects (`fepois()`, `feglm()`,
+`femlm()`, `fenegbin()`): its variance would need the uncertainty of the
+fixed effects, which fixest does not estimate. `feols()` and a GLM
+without fixed effects have it.
 
 ## Bayesian models
 
@@ -375,86 +385,86 @@ table_regression_models()
 #> 37                              rms         Glm
 #> 38                         Bayesian     stanreg
 #> 39                         Bayesian     brmsfit
-#>                                                                    engine
-#> 1                                                             stats::lm()
-#> 2                                                            stats::glm()
-#> 3                                                          MASS::glm.nb()
-#> 4                                                             MASS::rlm()
-#> 5                                                            stats::nls()
-#> 6                                                   estimatr::lm_robust()
-#> 7                                                   estimatr::iv_robust()
-#> 8                                                            AER::ivreg()
-#> 9                                                            AER::tobit()
-#> 10                                                         quantreg::rq()
-#> 11 fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::fenegbin()
-#> 12                                                           lme4::lmer()
-#> 13                                                          lme4::glmer()
-#> 14                                                     glmmTMB::glmmTMB()
-#> 15                                                            nlme::lme()
-#> 16                                                            nlme::gls()
-#> 17                                                      geepack::geeglm()
-#> 18                                                           MASS::polr()
-#> 19                                                         ordinal::clm()
-#> 20                                                        ordinal::clmm()
-#> 21                                                       nnet::multinom()
-#> 22                                                       mlogit::mlogit()
-#> 23                                                       pscl::zeroinfl()
-#> 24                                                         pscl::hurdle()
-#> 25                                                      survival::coxph()
-#> 26                                                    survival::survreg()
-#> 27                                                             rms::cph()
-#> 28                                                flexsurv::flexsurvreg()
-#> 29                                                       survey::svyglm()
-#> 30                                                       survey::svyolr()
-#> 31                                                     survey::svycoxph()
-#> 32                                               mgcv::gam(), mgcv::bam()
-#> 33                                                     betareg::betareg()
-#> 34                                           sampleSelection::selection()
-#> 35                                                             rms::ols()
-#> 36                                                             rms::lrm()
-#> 37                                                             rms::Glm()
-#> 38                           rstanarm::stan_glm(), rstanarm::stan_glmer()
-#> 39                                                            brms::brm()
-#>                                ame
-#> 1                              yes
-#> 2                              yes
-#> 3                              yes
-#> 4                              yes
-#> 5                               no
-#> 6                              yes
-#> 7                              yes
-#> 8                              yes
-#> 9                              yes
-#> 10                             yes
-#> 11                             yes
-#> 12                             yes
-#> 13                             yes
-#> 14 yes (no for the ordinal family)
-#> 15                             yes
-#> 16                             yes
-#> 17                             yes
-#> 18                    per category
-#> 19                    per category
-#> 20                              no
-#> 21                     per outcome
-#> 22                              no
-#> 23         yes (combined response)
-#> 24         yes (combined response)
-#> 25                RMST / risk diff
-#> 26          yes + RMST / risk diff
-#> 27                              no
-#> 28                              no
-#> 29              yes (design-based)
-#> 30     per category (design-based)
-#> 31                              no
-#> 32                             yes
-#> 33                             yes
-#> 34                              no
-#> 35                             yes
-#> 36                             yes
-#> 37                             yes
-#> 38                     yes (draws)
-#> 39                     yes (draws)
+#>                                                                                     engine
+#> 1                                                                              stats::lm()
+#> 2                                                                             stats::glm()
+#> 3                                                                           MASS::glm.nb()
+#> 4                                                                              MASS::rlm()
+#> 5                                                                             stats::nls()
+#> 6                                                                    estimatr::lm_robust()
+#> 7                                                                    estimatr::iv_robust()
+#> 8                                                                             AER::ivreg()
+#> 9                                                                             AER::tobit()
+#> 10                                                                          quantreg::rq()
+#> 11 fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::femlm(), fixest::fenegbin()
+#> 12                                                                            lme4::lmer()
+#> 13                                                                           lme4::glmer()
+#> 14                                                                      glmmTMB::glmmTMB()
+#> 15                                                                             nlme::lme()
+#> 16                                                                             nlme::gls()
+#> 17                                                                       geepack::geeglm()
+#> 18                                                                            MASS::polr()
+#> 19                                                                          ordinal::clm()
+#> 20                                                                         ordinal::clmm()
+#> 21                                                                        nnet::multinom()
+#> 22                                                                        mlogit::mlogit()
+#> 23                                                                        pscl::zeroinfl()
+#> 24                                                                          pscl::hurdle()
+#> 25                                                                       survival::coxph()
+#> 26                                                                     survival::survreg()
+#> 27                                                                              rms::cph()
+#> 28                                                                 flexsurv::flexsurvreg()
+#> 29                                                                        survey::svyglm()
+#> 30                                                                        survey::svyolr()
+#> 31                                                                      survey::svycoxph()
+#> 32                                                                mgcv::gam(), mgcv::bam()
+#> 33                                                                      betareg::betareg()
+#> 34                                                            sampleSelection::selection()
+#> 35                                                                              rms::ols()
+#> 36                                                                              rms::lrm()
+#> 37                                                                              rms::Glm()
+#> 38                                            rstanarm::stan_glm(), rstanarm::stan_glmer()
+#> 39                                                                             brms::brm()
+#>                                      ame
+#> 1                                    yes
+#> 2                                    yes
+#> 3                                    yes
+#> 4                                    yes
+#> 5                                     no
+#> 6                                    yes
+#> 7                                    yes
+#> 8                                    yes
+#> 9                                    yes
+#> 10                                   yes
+#> 11 yes (no for a GLM with fixed effects)
+#> 12                                   yes
+#> 13                                   yes
+#> 14       yes (no for the ordinal family)
+#> 15                                   yes
+#> 16                                   yes
+#> 17                                   yes
+#> 18                          per category
+#> 19                          per category
+#> 20                                    no
+#> 21                           per outcome
+#> 22                                    no
+#> 23               yes (combined response)
+#> 24               yes (combined response)
+#> 25                      RMST / risk diff
+#> 26                yes + RMST / risk diff
+#> 27                                    no
+#> 28                                    no
+#> 29                    yes (design-based)
+#> 30           per category (design-based)
+#> 31                                    no
+#> 32                                   yes
+#> 33                                   yes
+#> 34                                    no
+#> 35                                   yes
+#> 36                                   yes
+#> 37                                   yes
+#> 38                           yes (draws)
+#> 39                           yes (draws)
 #>                                                     exponentiate
 #> 1                                                              -
 #> 2                                 OR / IRR / RR / MR / HR (link)
@@ -466,7 +476,7 @@ table_regression_models()
 #> 8                                                              -
 #> 9                                                              -
 #> 10                                                             -
-#> 11                                             `feglm`: OR / IRR
+#> 11                                               OR / IRR (link)
 #> 12                                                             -
 #> 13                                               OR / IRR (link)
 #> 14 link-dependent (IRR for count families, OR for ordinal logit)

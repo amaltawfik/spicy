@@ -237,7 +237,7 @@ specify, not a default to accept.
 fit_zip <- zeroinfl(art ~ fem + mar + kid5 + ment | ment,
                     data = bioChemists)
 table_regression(fit_zip, exponentiate = TRUE)
-#> Poisson zero-inflated regression: art
+#> Zero-inflated Poisson regression: art
 #> 
 #>  Variable        │   IRR     SE      95% CI       p   
 #> ─────────────────┼────────────────────────────────────
@@ -258,7 +258,7 @@ table_regression(fit_zip, exponentiate = TRUE)
 #>  n               │  915                               
 #>  AIC             │ 3225.5                             
 #> 
-#> Note. Poisson zero-inflated regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ``` r
@@ -382,7 +382,7 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
-#> Note. Poisson: Poisson regression; ZIP: Poisson zero-inflated regression; NB: negative-binomial regression; ZINB: negative-binomial zero-inflated regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.
+#> Note. Poisson: Poisson regression; ZIP: zero-inflated Poisson regression; NB: negative-binomial regression; ZINB: zero-inflated negative-binomial regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.
 ```
 
 Read the AIC row across. The ZIP’s entire inflation component buys less
@@ -418,7 +418,7 @@ on the full model):
 ``` r
 
 table_regression(fit_zip, show_columns = c("b", "ame", "p"))
-#> Poisson zero-inflated regression: art
+#> Zero-inflated Poisson regression: art
 #> 
 #>  Variable        │    B      AME     p   
 #> ─────────────────┼───────────────────────
@@ -439,7 +439,7 @@ table_regression(fit_zip, show_columns = c("b", "ame", "p"))
 #>  n               │  915                  
 #>  AIC             │ 3225.5                
 #> 
-#> Note. Poisson zero-inflated regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.
 ```
 
 Averaged over the sample’s covariate values, women are expected to
@@ -471,7 +471,7 @@ set.seed(1)
 bioChemists$lab <- factor(sample(1:60, nrow(bioChemists), replace = TRUE))
 table_regression(fit_zip, vcov = "CR1", cluster = bioChemists$lab,
                  show_columns = c("b", "se", "p"))
-#> Poisson zero-inflated regression: art
+#> Zero-inflated Poisson regression: art
 #> 
 #>  Variable        │    B      SE     p   
 #> ─────────────────┼──────────────────────
@@ -492,7 +492,7 @@ table_regression(fit_zip, vcov = "CR1", cluster = bioChemists$lab,
 #>  n               │  915                 
 #>  AIC             │ 3225.5               
 #> 
-#> Note. Poisson zero-inflated regression. Std. errors: cluster-robust (CR1), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Std. errors: cluster-robust (CR1), clusters by lab. Zero-inflation component: log-odds of a structural (excess) zero. AIC = Akaike information criterion.
 ```
 
 Do not read the shift here as the effect of clustering. The labs are
@@ -740,7 +740,7 @@ pkgdown_dark_gt(table_regression(fit_zip, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Poisson zero-inflated regression. Coefficients exponentiated and
+*Note.* Zero-inflated Poisson regression. Coefficients exponentiated and
 displayed as IRR; SE on the IRR scale (delta method); CI bounds
 exponentiated (asymmetric). Std. errors: Wald asymptotic (z).
 Zero-inflation component: log-odds of a structural (excess) zero.

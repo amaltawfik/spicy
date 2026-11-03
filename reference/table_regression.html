@@ -1166,13 +1166,18 @@ field convention; blank for other classes).</p></li>
 <code>"pseudo_r2_nagelkerke"</code> (Nagelkerke 1991),
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
 <li><p>Residual scale: <code>"sigma"</code>, <code>"rmse"</code>. <code>"sigma"</code> is the lm
-\(\hat{\sigma}\); for glm, the square root of the
-dispersion estimate (so a gaussian glm reads as lm), and 1 when
-the family fixes the dispersion (binomial, Poisson). For <code>glmmTMB</code> fits, <code>"sigma"</code> is
-shown for the gaussian and Gamma families (and the fixed 1 of
-poisson and binomial, as for <code>glm</code>) and left blank for the other
-families, whose <code><a href="https://rdrr.io/r/stats/sigma.html" class="external-link">sigma()</a></code> is a family-specific dispersion
-parameter rather than a residual scale.</p></li>
+\(\hat{\sigma}\). For glm and the GLM-like <code>fixest</code>
+fits, it is the square root of the dispersion (so a gaussian glm
+reads as lm), and 1 when the family fixes it (binomial, Poisson).
+For <code>survreg</code>, it is the scale \(\sigma\) of
+\(\log T = X'\beta + \sigma W\) (the
+standard deviation of \(\log T\) for the log-normal),
+blank when strata give one scale per stratum. For <code>glmmTMB</code>, it is
+the same square root for the gaussian, Gamma and Tweedie families,
+and the fixed 1 of Poisson and binomial. It is blank for the
+negative-binomial and beta fits below, whose dispersion has its
+own row, and for the other <code>glmmTMB</code> families, whose <code><a href="https://rdrr.io/r/stats/sigma.html" class="external-link">sigma()</a></code> is
+a family-specific parameter.</p></li>
 <li><p>Survey designs (<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code> only): <code>"eff_p"</code>, the
 effective number of parameters of the design (the first element
 of survey's <code>extractAIC</code>, the sum of the Rao-Scott eigenvalues).
@@ -1185,22 +1190,27 @@ expected log predictive density and its deviance-scale twin,
 Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and <code>"waic"</code>
 (Watanabe-Akaike; PSIS-LOO is generally preferred).</p></li>
-<li><p>Negative-binomial dispersion (NB2 fits: <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>,
-<code><a href="https://rdrr.io/pkg/lme4/man/glmer.nb.html" class="external-link">lme4::glmer.nb</a></code>, and <code>glmmTMB</code> with <code>nbinom2</code> or
-<code>truncated_nbinom2</code>):
-<code>"theta"</code> (\(V = \mu + \mu^2/\theta\))
-and <code>"alpha"</code> (\(= 1/\theta\), the Stata <code>nbreg</code>
-convention). Refused for other families, <code>nbinom1</code> included
-(its dispersion is not an NB2 theta), and for a <code>glmmTMB</code> fit
-whose <code>dispformula</code> has covariates.</p></li>
-<li><p>Beta-regression precision (<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code>, and <code>glmmTMB</code>
-with <code>beta_family()</code>):
+<li><p>Negative-binomial dispersion. NB2 fits (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>,
+<code><a href="https://rdrr.io/pkg/lme4/man/glmer.nb.html" class="external-link">lme4::glmer.nb</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> with <code>nb()</code>,
+and <code>glmmTMB</code> with <code>nbinom2</code> or <code>truncated_nbinom2</code>): <code>"theta"</code>
+(\(V = \mu + \mu^2/\theta\)) and <code>"alpha"</code>
+(\(= 1/\theta\), the Stata <code>nbreg</code> convention).
+NB1 fits (<code>glmmTMB</code> with <code>nbinom1</code> or <code>truncated_nbinom1</code>):
+<code>"delta"</code> (\(V = \mu(1 + \delta)\), the
+\(\delta\) of Stata's <code>nbreg, dispersion(constant)</code>).</p></li>
+<li><p>Beta precision (<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code>, and <code>glmmTMB</code> with
+<code>beta_family()</code>, <code>betabinomial()</code> or <code>ordbeta()</code>):
 <code>"phi"</code> (\(Var(y) = \mu(1-\mu)/(1+\phi)\), Ferrari &amp; Cribari-Neto 2004; higher
 \(\phi\) = less dispersion). A constant precision is
 back-transformed from its link, so <code>y ~ x | 1</code> reports the
-same \(\phi\) as <code>y ~ x</code>. Refused for other families
-and when the precision has covariates (<code>y ~ x | z</code>, or a
-<code>glmmTMB</code> <code>dispformula</code>), so it is not a single number.</p></li>
+same \(\phi\) as <code>y ~ x</code>.</p></li>
+<li><p>For these dispersion rows (<code>"theta"</code>, <code>"alpha"</code>, <code>"delta"</code>,
+<code>"phi"</code>), a column whose model lacks the parameter is blank, so a
+Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+A token is refused only when no model in the table has the
+parameter, or when a model of that family has dispersion
+covariates (a <code>glmmTMB</code> <code>dispformula</code>, or a betareg <code>y ~ x | z</code>),
+so the parameter is not a single number.</p></li>
 <li><p>GEE (<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code> only): <code>"qic"</code> and <code>"qicu"</code> – the
 quasi-likelihood information criteria (Pan 2001; QIC for
 working-correlation choice, QICu for covariate choice) via

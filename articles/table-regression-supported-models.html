@@ -360,14 +360,14 @@ not understand.</p>
 <p>The table is generated from the same internal registry that the
 package itself uses, so it cannot drift from the code. Call
 <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> to get it as a data frame.</p>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
-<col width="11%">
-<col width="4%">
-<col width="27%">
 <col width="10%">
-<col width="21%">
-<col width="24%">
+<col width="4%">
+<col width="30%">
+<col width="11%">
+<col width="19%">
+<col width="22%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Family</th>
@@ -464,11 +464,10 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">
 <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>,
 <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>,
-<code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
+<code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
 </td>
-<td align="left">yes</td>
-<td align="left">
-<code>feglm</code>: OR / IRR</td>
+<td align="left">yes (no for a GLM with fixed effects)</td>
+<td align="left">OR / IRR (link)</td>
 <td align="left">-</td>
 </tr>
 <tr class="even">
