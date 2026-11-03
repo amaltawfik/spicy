@@ -2,10 +2,13 @@
 
 ## spicy (development version)
 
-- Word (flextable), gt and tinytable HTML tables now write a negative
-  number with the minus sign (U+2212), in the cells and in the numbers
-  of the note, as Typst and LaTeX already did. The data frame, the
-  console, Excel, the clipboard and markdown keep the hyphen;
+- Word (flextable), gt (HTML, Word and RTF) and tinytable HTML tables
+  now write a negative number with the minus sign (U+2212), in the cells
+  and in the numbers of the note, as Typst and LaTeX already did. The
+  data frame, the console, Excel, the clipboard and markdown keep the
+  hyphen, as does
+  [`tinytable::save_tt()`](https://vincentarelbundock.github.io/tinytable/man/save_tt.html)
+  to `.docx`, which writes markdown (use `output = "word"` for Word).
   `spicy_style(minus_sign = "ascii")` keeps it everywhere.
 
 - Table notes name the statistical method, never the package that
@@ -21,8 +24,11 @@
   rms, mlogit, rstanarm and brms models.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a glmmTMB `nbinom1` model reads “Negative-binomial (NB1) mixed-effects
-  regression”, and the random-effects test names its null model as the
+  glmmTMB titles name every family, e.g. “Negative-binomial (NB1)
+  mixed-effects regression” for `nbinom1` or “Conway-Maxwell-Poisson
+  mixed-effects regression” for `compois`. A zero-truncated family with
+  a zero-inflation formula is titled as a hurdle model, with a “Zero
+  hurdle” block. The random-effects test names its null model as the
   title does instead of glmmTMB’s family code.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
@@ -39,6 +45,49 @@
   a `reference_label` that opens on `,`, `;` or `:` attaches to the
   level without a space, so `reference_label = ", ref."` gives
   `T0 (2018), ref.` instead of `T0 (2018) (ref.)`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gives a clear error for a model fitted with
+  [`rms::lrm.fit()`](https://rdrr.io/pkg/rms/man/lrm.fit.html), which
+  has no formula, and suggests refitting with
+  [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html). It used to fail
+  with “invalid formula”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the σ̂ of a [`glm()`](https://rdrr.io/r/stats/glm.html) is the square
+  root of the dispersion, so a Gaussian glm shows the same residual
+  standard deviation as [`lm()`](https://rdrr.io/r/stats/lm.html). It
+  showed the dispersion itself (σ²).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a Gaussian [`glm()`](https://rdrr.io/r/stats/glm.html) with the
+  identity link is titled “Linear regression”, as
+  [`lm()`](https://rdrr.io/r/stats/lm.html) is.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  glmmTMB models no longer show their family’s dispersion parameter
+  under σ̂, which stays blank for families other than Gaussian, Gamma,
+  Poisson and binomial. `show_fit_stats = c("theta", "alpha")` now also
+  works for
+  [`lme4::glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) and
+  glmmTMB `nbinom2` models, and `"phi"` for glmmTMB `beta_family()`
+  models.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
+  models with a Gaussian, Gamma or quasi family no longer fail, and
+  their t tests are read as fixest reports them. fixest titles follow
+  the link (“Probit regression (fixed effects)”) and no longer show R’s
+  family code (“Quasipoisson”).
+
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  titles name the family as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  does (“inverse-Gaussian” instead of “Inverse.gaussian”).
+
+- French titles now cover the Gamma, inverse-Gaussian, complementary
+  log-log, quasi-binomial and quasi-likelihood GLMs and every glmmTMB
+  family.
 
 ## spicy 0.14.1
 

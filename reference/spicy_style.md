@@ -157,8 +157,8 @@ spicy_style_names()
 
   The sign of a negative number in the outputs that are printed:
   `output = "flextable"` and `"word"` (a flextable knitted into Word
-  too), `output = "gt"` in HTML, Word and LaTeX, the HTML, Typst and
-  LaTeX of `output = "tinytable"` (and its markdown inside a knit to
+  too), `output = "gt"` in HTML, Word, RTF and LaTeX, the HTML, Typst
+  and LaTeX of `output = "tinytable"` (and its markdown inside a knit to
   Word), and the PDF of
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
   which reads the lever from `options(spicy.style)`. `"typographic"`
@@ -175,7 +175,10 @@ spicy_style_names()
   output: a spreadsheet or a parser reads a minus sign as text, not as
   part of a number. A printed table pasted into a spreadsheet therefore
   gives text; build it with `minus_sign = "ascii"` for that use. No
-  theme sets it.
+  theme sets it. `tinytable::save_tt(x, "table.docx")` writes the table
+  through markdown and keeps the hyphen-minus: for a Word file, use
+  `output = "word"` (or `"flextable"`), or knit the table in a Word
+  document.
 
 - v_digits:
 

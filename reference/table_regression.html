@@ -457,7 +457,10 @@ Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl
 <strong>structural (excess) zero</strong>.</p></li>
 <li><p><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle</a></code>: a <code>Zero hurdle</code> block – the model for the
 probability of a <strong>nonzero count</strong> (note the opposite direction
-vs zero-inflation; the footer names each block's meaning).</p></li>
+vs zero-inflation; the footer names each block's meaning).
+A <code>glmmTMB</code> hurdle model (a zero-truncated family with
+<code>ziformula</code>) also shows a <code>Zero hurdle</code> block, but glmmTMB
+models the probability of a <strong>zero count</strong>: the footer says so.</p></li>
 <li><p><code>glmmTMB(dispformula = )</code>: a <code>Dispersion</code> block (only when
 dispersion was actually modeled; log scale, never
 exponentiated).</p></li>
@@ -1162,8 +1165,14 @@ field convention; blank for other classes).</p></li>
 <code>"pseudo_r2_mcfadden"</code> (McFadden 1974),
 <code>"pseudo_r2_nagelkerke"</code> (Nagelkerke 1991),
 <code>"pseudo_r2_tjur"</code> (Tjur 2009; binomial only).</p></li>
-<li><p>Residual scale: <code>"sigma"</code> (lm \(\hat{\sigma}\)
-/ glm dispersion), <code>"rmse"</code>.</p></li>
+<li><p>Residual scale: <code>"sigma"</code>, <code>"rmse"</code>. <code>"sigma"</code> is the lm
+\(\hat{\sigma}\); for glm, the square root of the
+dispersion estimate (so a gaussian glm reads as lm), and 1 when
+the family fixes the dispersion (binomial, Poisson). For <code>glmmTMB</code> fits, <code>"sigma"</code> is
+shown for the gaussian and Gamma families (and the fixed 1 of
+poisson and binomial, as for <code>glm</code>) and left blank for the other
+families, whose <code><a href="https://rdrr.io/r/stats/sigma.html" class="external-link">sigma()</a></code> is a family-specific dispersion
+parameter rather than a residual scale.</p></li>
 <li><p>Survey designs (<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code> only): <code>"eff_p"</code>, the
 effective number of parameters of the design (the first element
 of survey's <code>extractAIC</code>, the sum of the Rao-Scott eigenvalues).
@@ -1176,17 +1185,22 @@ expected log predictive density and its deviance-scale twin,
 Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and <code>"waic"</code>
 (Watanabe-Akaike; PSIS-LOO is generally preferred).</p></li>
-<li><p>Negative-binomial dispersion (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> only):
+<li><p>Negative-binomial dispersion (NB2 fits: <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>,
+<code><a href="https://rdrr.io/pkg/lme4/man/glmer.nb.html" class="external-link">lme4::glmer.nb</a></code>, and <code>glmmTMB</code> with <code>nbinom2</code> or
+<code>truncated_nbinom2</code>):
 <code>"theta"</code> (\(V = \mu + \mu^2/\theta\))
 and <code>"alpha"</code> (\(= 1/\theta\), the Stata <code>nbreg</code>
-convention). Refused for other families.</p></li>
-<li><p>Beta-regression precision (<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code> only):
+convention). Refused for other families, <code>nbinom1</code> included
+(its dispersion is not an NB2 theta), and for a <code>glmmTMB</code> fit
+whose <code>dispformula</code> has covariates.</p></li>
+<li><p>Beta-regression precision (<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg</a></code>, and <code>glmmTMB</code>
+with <code>beta_family()</code>):
 <code>"phi"</code> (\(Var(y) = \mu(1-\mu)/(1+\phi)\), Ferrari &amp; Cribari-Neto 2004; higher
 \(\phi\) = less dispersion). A constant precision is
 back-transformed from its link, so <code>y ~ x | 1</code> reports the
 same \(\phi\) as <code>y ~ x</code>. Refused for other families
-and when the precision has covariates (<code>y ~ x | z</code>), so it is
-not a single number.</p></li>
+and when the precision has covariates (<code>y ~ x | z</code>, or a
+<code>glmmTMB</code> <code>dispformula</code>), so it is not a single number.</p></li>
 <li><p>GEE (<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code> only): <code>"qic"</code> and <code>"qicu"</code> – the
 quasi-likelihood information criteria (Pan 2001; QIC for
 working-correlation choice, QICu for covariate choice) via

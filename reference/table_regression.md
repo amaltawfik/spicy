@@ -369,7 +369,10 @@ table_regression(
   - [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html): a
     `Zero hurdle` block – the model for the probability of a **nonzero
     count** (note the opposite direction vs zero-inflation; the footer
-    names each block's meaning).
+    names each block's meaning). A `glmmTMB` hurdle model (a
+    zero-truncated family with `ziformula`) also shows a `Zero hurdle`
+    block, but glmmTMB models the probability of a **zero count**: the
+    footer says so.
 
   - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
     dispersion was actually modeled; log scale, never exponentiated).
@@ -1102,8 +1105,14 @@ restore it explicitly when needed).
   `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"`
   (Nagelkerke 1991), `"pseudo_r2_tjur"` (Tjur 2009; binomial only).
 
-- Residual scale: `"sigma"` (lm \\\hat{\sigma}\\ / glm dispersion),
-  `"rmse"`.
+- Residual scale: `"sigma"`, `"rmse"`. `"sigma"` is the lm
+  \\\hat{\sigma}\\; for glm, the square root of the dispersion estimate
+  (so a gaussian glm reads as lm), and 1 when the family fixes the
+  dispersion (binomial, Poisson). For `glmmTMB` fits, `"sigma"` is shown
+  for the gaussian and Gamma families (and the fixed 1 of poisson and
+  binomial, as for `glm`) and left blank for the other families, whose
+  [`sigma()`](https://rdrr.io/r/stats/sigma.html) is a family-specific
+  dispersion parameter rather than a residual scale.
 
 - Survey designs
   ([`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) only):
@@ -1119,18 +1128,23 @@ restore it explicitly when needed).
   model; the footer discloses the elpd standard error), and `"waic"`
   (Watanabe-Akaike; PSIS-LOO is generally preferred).
 
-- Negative-binomial dispersion
-  ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) only):
-  `"theta"` (\\V = \mu + \mu^2/\theta\\) and `"alpha"` (\\= 1/\theta\\,
-  the Stata `nbreg` convention). Refused for other families.
+- Negative-binomial dispersion (NB2 fits:
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
+  [`lme4::glmer.nb`](https://rdrr.io/pkg/lme4/man/glmer.nb.html), and
+  `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"` (\\V =
+  \mu + \mu^2/\theta\\) and `"alpha"` (\\= 1/\theta\\, the Stata `nbreg`
+  convention). Refused for other families, `nbinom1` included (its
+  dispersion is not an NB2 theta), and for a `glmmTMB` fit whose
+  `dispformula` has covariates.
 
 - Beta-regression precision
-  ([`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html)
-  only): `"phi"` (\\Var(y) = \mu(1-\mu)/(1+\phi)\\, Ferrari &
-  Cribari-Neto 2004; higher \\\phi\\ = less dispersion). A constant
-  precision is back-transformed from its link, so `y ~ x | 1` reports
-  the same \\\phi\\ as `y ~ x`. Refused for other families and when the
-  precision has covariates (`y ~ x | z`), so it is not a single number.
+  ([`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html),
+  and `glmmTMB` with `beta_family()`): `"phi"` (\\Var(y) =
+  \mu(1-\mu)/(1+\phi)\\, Ferrari & Cribari-Neto 2004; higher \\\phi\\ =
+  less dispersion). A constant precision is back-transformed from its
+  link, so `y ~ x | 1` reports the same \\\phi\\ as `y ~ x`. Refused for
+  other families and when the precision has covariates (`y ~ x | z`, or
+  a `glmmTMB` `dispformula`), so it is not a single number.
 
 - GEE ([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)
   only): `"qic"` and `"qicu"` – the quasi-likelihood information

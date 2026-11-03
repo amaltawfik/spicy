@@ -225,7 +225,9 @@ of <code>clm()</code> and of <code>glmmTMB()</code>.</p>
 <p>Two-part models show their full model: the zero component renders as a
 <code>Zero-inflation</code> block (<code>zeroinfl</code>, glmmTMB <code>ziformula</code>: probability of a
 structural zero) or a <code>Zero hurdle</code> block (<code>hurdle</code>: probability of a
-nonzero count – the opposite direction, hence the distinct label), and a
+nonzero count – the opposite direction, hence the distinct label; a
+glmmTMB hurdle model, a zero-truncated family with <code>ziformula</code>, also
+shows a <code>Zero hurdle</code> block, which models the probability of a zero), and a
 <code>Dispersion</code> block when <code>dispformula</code> has covariates. Component
 coefficients join the <code>p_adjust</code> family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
