@@ -536,7 +536,7 @@ cph_fit <- rms::cph(Surv(time, status) ~ age + sex, data = lung2,
                     x = TRUE, y = TRUE)
 table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
                  exponentiate = TRUE)
-#> Cox proportional hazards regression (rms): Surv(time, status)
+#> Cox proportional hazards regression: Surv(time, status)
 #> 
 #>  Variable      │   HR      SE      95% CI       p   
 #> ───────────────┼────────────────────────────────────
@@ -549,7 +549,7 @@ table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
 #>  N events      │  163                               
 #>  AIC           │ 1469.0                             
 #> 
-#> Note. Cox proportional hazards regression (rms). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Cox proportional hazards regression. Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ## Fully parametric: `flexsurv`

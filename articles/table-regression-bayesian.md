@@ -54,7 +54,7 @@ bounds are tail quantiles, estimated exactly where draws are scarcest
 ``` r
 
 table_regression(fit)
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B      SE      95% CrI     
 #> ──────────────────────────┼───────────────────────────────
@@ -71,7 +71,7 @@ table_regression(fit)
 #>  n                        │ 1175                          
 #>  R² (Bayes)               │    0.02                       
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
 ```
 
 Reading the columns against their frequentist counterparts:
@@ -119,7 +119,7 @@ Reading the columns against their frequentist counterparts:
 ``` r
 
 table_regression(fit, show_columns = c("b", "ci", "pd"))
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B        95% CrI       pd   
 #> ──────────────────────────┼────────────────────────────────
@@ -136,7 +136,7 @@ table_regression(fit, show_columns = c("b", "ci", "pd"))
 #>  n                        │ 1175                           
 #>  R² (Bayes)               │    0.02                        
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; pd = probability of direction.
 ```
 
 Read against the table: `Male`, at .617, is barely better than a coin
@@ -192,7 +192,7 @@ the Monte Carlo standard error of the displayed posterior median:
 ``` r
 
 table_regression(fit, show_columns = c("b", "ci", "rhat", "mcse"))
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B        95% CrI      R-hat   MCSE   
 #> ──────────────────────────┼─────────────────────────────────────────
@@ -209,7 +209,7 @@ table_regression(fit, show_columns = c("b", "ci", "rhat", "mcse"))
 #>  n                        │ 1175                                    
 #>  R² (Bayes)               │    0.02                                 
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval; R-hat = potential scale reduction factor; MCSE = Monte Carlo standard error of the posterior median.
 ```
 
 The `mcse` column answers a question the other diagnostics do not: *how
@@ -322,7 +322,7 @@ never reconstruct one as B ± 2 SE:
 ``` r
 
 table_regression(fit, exponentiate = TRUE)
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │   OR      SE     95% CrI    
 #> ──────────────────────────┼─────────────────────────────
@@ -339,7 +339,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  n                        │ 1175                        
 #>  R² (Bayes)               │    0.02                     
 #> 
-#> Note. Bayesian logistic regression (stanreg). Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
+#> Note. Bayesian logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
 ```
 
 Reading the `Tertiary` row with the factor-change template: holding sex
@@ -362,7 +362,7 @@ follows `ci_method` (equal-tailed by default, HDI on request):
 ``` r
 
 table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B      AME      95% CrI     
 #> ──────────────────────────┼────────────────────────────────
@@ -379,7 +379,7 @@ table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
 #>  n                        │ 1175                           
 #>  R² (Bayes)               │    0.02                        
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). AME = average marginal effect; CrI = credible interval.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). AME = average marginal effect; CrI = credible interval.
 ```
 
 Reading the `Tertiary` row: averaged over the sample, tertiary education
@@ -426,7 +426,7 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 #>  AIC                      │ 1200.9                       –                   
 #>  R² (Bayes)               │     –                       0.02                 
 #> 
-#> Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression (stanreg). Std. errors: ML (glm): classical (Fisher information), Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation). Bayes (stan_glm): 95% CI is an equal-tailed posterior credible interval. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. ML (glm): logistic regression; Bayes (stan_glm): Bayesian logistic regression. Std. errors: ML (glm): classical (Fisher information), Bayes (stan_glm): posterior MAD SD (scaled median absolute deviation). Bayes (stan_glm): 95% CI is an equal-tailed posterior credible interval. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The intervals differ in *reading*, not much in width: the frequentist
@@ -453,7 +453,7 @@ PSIS-LOO per model:
 
 table_regression(fit, show_fit_stats = c("nobs", "r2_bayes",
                                          "elpd_loo"))
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B      SE      95% CrI     
 #> ──────────────────────────┼───────────────────────────────
@@ -471,7 +471,7 @@ table_regression(fit, show_fit_stats = c("nobs", "r2_bayes",
 #>  R² (Bayes)               │    0.02                       
 #>  ELPD (LOO)               │ -600.6                        
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). Predictive accuracy by PSIS-LOO; SE(ELPD) = 18.7. CrI = credible interval; ELPD = expected log pointwise predictive density; LOO = leave-one-out cross-validation.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). Predictive accuracy by PSIS-LOO; SE(ELPD) = 18.7. CrI = credible interval; ELPD = expected log pointwise predictive density; LOO = leave-one-out cross-validation.
 ```
 
 The `ELPD (LOO)` row is the expected log predictive density (Vehtari,
@@ -514,7 +514,7 @@ SD ratio and nothing is re-summarized:
 
 table_regression(fit, standardized = "posthoc",
                  show_columns = c("b", "beta"))
-#> Bayesian logistic regression (stanreg): smoking
+#> Bayesian logistic regression: smoking
 #> 
 #>  Variable                 │    B       β   
 #> ──────────────────────────┼────────────────
@@ -531,7 +531,7 @@ table_regression(fit, standardized = "posthoc",
 #>  n                        │ 1175           
 #>  R² (Bayes)               │    0.02        
 #> 
-#> Note. Bayesian logistic regression (stanreg). Std. errors: posterior MAD SD (scaled median absolute deviation). β = standardized coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). β = standardized coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).
 ```
 
 On this logistic model the betas are x-standardized on the link scale
@@ -623,7 +623,7 @@ table_regression(mfit)
 #> Warning: Bayesian fit (outcome: Reaction) shows sampler problems -- Sampler
 #> diagnostics: max R-hat = 1.011 (target < 1.01); min ESS = 282 (target > 400).
 #> Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
-#> Bayesian linear regression (stanreg): Reaction
+#> Bayesian linear regression: Reaction
 #> 
 #>  Variable                         │   B      SE       95% CrI      
 #> ──────────────────────────────────┼────────────────────────────────
@@ -639,7 +639,7 @@ table_regression(mfit)
 #>  n                                │ 180                            
 #>  R² (Bayes)                       │   0.79                         
 #> 
-#> Note. Bayesian linear regression (stanreg). Sampler diagnostics: max R-hat = 1.011 (target < 1.01); min ESS = 282 (target > 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021). Std. errors: posterior MAD SD (scaled median absolute deviation). Random effects (MCMC). CrI = credible interval.
+#> Note. Bayesian linear regression. Sampler diagnostics: max R-hat = 1.011 (target < 1.01); min ESS = 282 (target > 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021). Std. errors: posterior MAD SD (scaled median absolute deviation). Random effects (MCMC). CrI = credible interval.
 ```
 
 Note the guard from the convergence section doing its job: this
@@ -718,11 +718,11 @@ pkgdown_dark_gt(table_regression(fit, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Bayesian logistic regression (stanreg). Coefficients
-exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD
-of the exponentiated draws); CI bounds exponentiated (asymmetric). Std.
-errors: posterior MAD SD (scaled median absolute deviation). CrI =
-credible interval.
+*Note.* Bayesian logistic regression. Coefficients exponentiated and
+displayed as OR; SE on the OR scale (posterior MAD SD of the
+exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors:
+posterior MAD SD (scaled median absolute deviation). CrI = credible
+interval.
 
 ## See also
 

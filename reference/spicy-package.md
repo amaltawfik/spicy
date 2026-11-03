@@ -436,7 +436,10 @@ parent class plus a leaf class describing the specific cause:
   `spicy_silent_reference` – reference levels are displayed nowhere
   under `reference_style = "none"` with `factor_layout = "flat"`. The
   once-per-session hint on ordered-factor polynomial contrasts carries
-  its own class, `spicy_polynomial_contrasts_info`.
+  its own class, `spicy_polynomial_contrasts_info`, and so does the one
+  that suggests lmerTest for a plain
+  [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) fit,
+  `spicy_lmertest_info`.
 
 ## See also
 

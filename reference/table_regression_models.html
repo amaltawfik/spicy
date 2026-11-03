@@ -154,8 +154,11 @@ with a pointer to the right ones).</p></li>
 
 
 <p>Fixed effects: Satterthwaite t (<code>lmer</code> + <span class="pkg">lmerTest</span>), Wald z
-(<code>glmer</code>, <code>glmmTMB</code>), containment-df t (<code>lme</code>). Random effects render as
-a <code>Random effects</code> block of rows (SD / correlation / residual with SE and
+(<code>glmer</code>, <code>glmmTMB</code>), containment-df t (<code>lme</code>). A plain <code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code>
+fit gets Wald z, and a message, once per session, suggests refitting
+with <code><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmerTest::lmer()</a></code>; the note names the method only. Random effects
+render as a <code>Random effects</code> block of rows (SD / correlation / residual
+with SE and
 CI; <code>re_scale</code>, <code>re_columns</code>), deliberately with <strong>no per-row p-value</strong>
 (boundary-invalid Wald; Self &amp; Liang 1987) – the footer carries the
 chi-bar-squared LR test of the whole random part, and

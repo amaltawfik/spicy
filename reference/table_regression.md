@@ -2281,6 +2281,9 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   # Suppress the random-effects panel entirely.
   table_regression(fit, show_re = FALSE)
 }
+#> P-values of the `lme4::lmer()` model are Wald z-tests, a large-sample approximation.
+#> ℹ For Satterthwaite t-tests, which suit models with few groups, refit with `lmerTest::lmer()` (install lmerTest if needed).
+#> This message is displayed once per session.
 #> Registered S3 method overwritten by 'merDeriv':
 #>   method        from        
 #>   bread.lmerMod clubSandwich
@@ -2298,7 +2301,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC              │ 1755.6                                 
 #>  BIC              │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 
 # Hierarchical mixed-effects comparison (nested LRT).
 if (requireNamespace("lme4", quietly = TRUE)) {
@@ -2362,7 +2365,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                             │  +42.14               
 #>  p (change)                      │    <.001              
 #> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }
 
 if (FALSE) { # \dontrun{

@@ -592,7 +592,7 @@ Fish <- dfidx(Fishing, varying = 2:9, choice = "mode", shape = "wide")
 fit_choice <- mlogit(mode ~ price + catch | income_k, data = Fish)
 table_regression(fit_choice, exponentiate = TRUE,
                  show_columns = c("b", "ci", "p"))
-#> Discrete-choice multinomial logit (mlogit): mode
+#> Discrete-choice multinomial logit: mode
 #> 
 #>  Variable               │   OR        95% CI       p   
 #> ────────────────────────┼──────────────────────────────
@@ -612,7 +612,7 @@ table_regression(fit_choice, exponentiate = TRUE,
 #>  n                      │ 1182                         
 #>  AIC                    │ 2446.3                       
 #> 
-#> Note. Discrete-choice multinomial logit (mlogit). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Discrete-choice multinomial logit. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The table comes in **two segments**, the presentation Stata’s `asclogit`

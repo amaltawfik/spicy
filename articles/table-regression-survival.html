@@ -620,7 +620,7 @@ robust request fails with exactly that instruction:</p>
 <span>                    x <span class="op">=</span> <span class="cn">TRUE</span>, y <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cph_fit</span>, vcov <span class="op">=</span> <span class="st">"CR0"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">inst</span>,</span>
 <span>                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cox proportional hazards regression (rms): Surv(time, status)</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Cox proportional hazards regression: Surv(time, status)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>   HR      SE      95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼────────────────────────────────────</span></span></span>
@@ -633,7 +633,7 @@ robust request fails with exactly that instruction:</p>
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1469.0                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression (rms). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-flexsurv">Fully parametric: <code>flexsurv</code><a class="anchor" aria-label="anchor" href="#fully-parametric-flexsurv"></a>
