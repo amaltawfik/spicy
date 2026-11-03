@@ -1,4 +1,4 @@
-#' Label attributes with a few renames
+#' Variable labels for a table
 #'
 #' @description
 #' Builds a value for the `labels` argument of the descriptive tables
@@ -26,12 +26,10 @@
 #' @param ... `name = "label"` pairs, one per variable to rename, each
 #'   label a single string. A named character vector can be spliced with
 #'   `!!!`. A name that matches nothing in a table warns there and is
-#'   left out. For
-#'   `print()`, passed on to [print()].
-#' @param x A `spicy_var_labels` object, for `print()`.
+#'   left out.
 #'
 #' @return A named character vector of class `spicy_var_labels`, which
-#'   prints as the plain named vector. `print()` returns `x` invisibly.
+#'   prints as the plain named vector.
 #'
 #' @seealso The `labels` argument of [table_categorical()] and its
 #'   siblings, and of [table_regression()], which lists the four forms
@@ -87,7 +85,14 @@ var_labels <- function(...) {
   out
 }
 
-#' @rdname var_labels
+#' Print a `var_labels()` value
+#'
+#' Prints the labels as the plain named character vector.
+#'
+#' @param x A `spicy_var_labels` object, from [var_labels()].
+#' @param ... Passed on to [print()].
+#' @return `x`, invisibly.
+#' @keywords internal
 #' @export
 print.spicy_var_labels <- function(x, ...) {
   print(unclass(x), ...)

@@ -11,7 +11,7 @@
 #' Counts and percentages are unweighted: they describe the data file and
 #' are not estimates for a population.
 #'
-#' @param x A data frame or tibble. For `print()`, a `spicy_codebook`.
+#' @param x A data frame or tibble.
 #' @param ... Optional tidyselect-style column selectors (e.g.
 #'   `starts_with("bmi")`, `where(is.numeric)`). Columns can be selected or
 #'   reordered, but renaming selections is not supported.
@@ -504,7 +504,15 @@ code_book <- function(
 }
 
 
-#' @rdname code_book
+#' Print a codebook
+#'
+#' Prints the variable list of a [code_book()] object in the console, with
+#' its headers in the language the codebook was built in.
+#'
+#' @param x A `spicy_codebook` object, from [code_book()].
+#' @param ... Ignored.
+#' @return `x`, invisibly.
+#' @keywords internal
 #' @export
 print.spicy_codebook <- function(x, ...) {
   # The type column was written in the language the codebook was built

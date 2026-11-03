@@ -630,11 +630,15 @@ ascii_table_panels <- function(
 #' Print a spicy-formatted ASCII table
 #'
 #' @description
-#' User-facing helper that prints a spicy-styled ASCII table to the
+#' Prints a spicy-styled ASCII table to the
 #' console with optional title and note, table-type-aware alignment
 #' defaults, and automatic horizontal paneling when the table is
 #' wider than the console. Wraps the internal renderer
 #' [build_ascii_table()].
+#'
+#' Part of the internal API (see the API-stability tiers in [spicy]):
+#' it stays exported for the print methods of the package, and its
+#' arguments can change without notice.
 #'
 #' @details
 #' Table type is auto-detected from `x` and drives the default
@@ -742,6 +746,7 @@ ascii_table_panels <- function(
 #' [build_ascii_table()] for the underlying text rendering engine.
 #' [print.spicy_freq_table()] for the specialized printing method used by [freq()].
 #'
+#' @keywords internal
 #' @export
 
 spicy_print_table <- function(

@@ -2131,6 +2131,7 @@ print.spicy_flextable <- function(x, ...) {
 #' @param x A `spicy_flextable` object.
 #' @param ... Unused; for generic consistency.
 #' @return A `flextable` object.
+#' @usage \method{as_flextable}{spicy_flextable}(x, ...)
 #' @exportS3Method flextable::as_flextable spicy_flextable
 as_flextable.spicy_flextable <- function(x, ...) {
   class(x) <- setdiff(class(x), "spicy_flextable")

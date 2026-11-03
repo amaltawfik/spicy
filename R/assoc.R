@@ -985,7 +985,7 @@ goodman_kruskal_tau <- function(
 }
 
 
-#' Uncertainty Coefficient
+#' Uncertainty coefficient
 #'
 #' `uncertainty_coef()` computes the Uncertainty Coefficient
 #' (Theil's U) for a two-way contingency table, based on

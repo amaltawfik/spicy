@@ -2,7 +2,7 @@
 % Please edit documentation in R/assoc.R
 \name{uncertainty_coef}
 \alias{uncertainty_coef}
-\title{Uncertainty Coefficient}
+\title{Uncertainty coefficient}
 \usage{
 uncertainty_coef(
   x,

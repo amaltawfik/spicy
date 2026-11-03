@@ -111,11 +111,15 @@ sit before it. Defaults to \code{FALSE}.}
 Invisibly returns \code{x}, after printing the formatted ASCII table to the console.
 }
 \description{
-User-facing helper that prints a spicy-styled ASCII table to the
+Prints a spicy-styled ASCII table to the
 console with optional title and note, table-type-aware alignment
 defaults, and automatic horizontal paneling when the table is
 wider than the console. Wraps the internal renderer
 \code{\link[=build_ascii_table]{build_ascii_table()}}.
+
+Part of the internal API (see the API-stability tiers in \link{spicy}):
+it stays exported for the print methods of the package, and its
+arguments can change without notice.
 }
 \details{
 Table type is auto-detected from \code{x} and drives the default
@@ -159,3 +163,4 @@ spicy_print_table(df,
 \code{\link[=build_ascii_table]{build_ascii_table()}} for the underlying text rendering engine.
 \code{\link[=print.spicy_freq_table]{print.spicy_freq_table()}} for the specialized printing method used by \code{\link[=freq]{freq()}}.
 }
+\keyword{internal}

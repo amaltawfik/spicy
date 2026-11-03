@@ -4,7 +4,7 @@
 \alias{as_flextable.spicy_flextable}
 \title{Convert a spicy flextable output to a plain flextable}
 \usage{
-as_flextable.spicy_flextable(x, ...)
+\method{as_flextable}{spicy_flextable}(x, ...)
 }
 \arguments{
 \item{x}{A \code{spicy_flextable} object.}

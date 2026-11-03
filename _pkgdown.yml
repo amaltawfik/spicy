@@ -136,14 +136,14 @@ reference:
       - vl
   - title: Tabulation
     contents:
-      - cross_tab
       - freq
+      - cross_tab
   - title: Row-wise summaries
     contents:
       - count_n
       - mean_n
       - sum_n
-  - title: Measures of Association
+  - title: Measures of association
     contents:
       - assoc_measures
       - contingency_coef
@@ -157,32 +157,46 @@ reference:
       - somers_d
       - uncertainty_coef
       - yule_q
-  - title: Summary tables
+  - title: Descriptive tables
     contents:
       - table_categorical
       - table_continuous
       - table_continuous_lm
       - table_outcome
       - table_multiresponse
-      - var_labels
-      - table_regression
-      - table_regression_uv
-      - as_structured
-      - inline
   - title: Survey-design tables
     desc: >
       The descriptive tables from a `survey::svydesign()` or
       replicate-weight design: design-based estimates, standard errors,
       degrees of freedom and tests, every number delegated to survey
-      (Lumley). New in 0.13.0 -- see the API-stability tiers in
-      `?spicy`.
+      (Lumley).
     contents:
-      - table_continuous_svy
       - table_categorical_svy
+      - table_continuous_svy
+  - title: Regression tables
+    desc: >
+      One or more fitted models side by side, and the univariable screen.
+      `table_regression_models()` returns the supported model classes;
+      its page describes the behavior of each family (inference,
+      robust-variance backends, exponentiation, marginal effects,
+      labeled blocks).
+    contents:
+      - table_regression
+      - table_regression_uv
+      - table_regression_models
+  - title: Working with tables
+    desc: >
+      Helpers shared by the descriptive and regression tables: the
+      labels of the variables, a cell cited in the text, and the typed
+      view of a table.
+    contents:
+      - var_labels
+      - inline
+      - as_structured
   - title: Table styles
     desc: >
       Journal and locale number-formatting themes, each encoding only
-      rules sourced from an official document of the institution --
+      rules sourced from an official document of the institution:
       `?spicy_style` lists every rule with the sentence it comes from.
     contents:
       - spicy_style
@@ -194,24 +208,12 @@ reference:
       both of them take.
     contents:
       - spicy_labels
-  - title: Supported models
-    desc: >
-      The registry of model classes `table_regression()` supports --
-      one function returning the machine-readable list, whose
-      documentation page also describes the per-family behavior
-      (inference, robust-variance backends, exponentiate semantics,
-      marginal effects, labeled blocks).
-    contents:
-      - table_regression_models
   - title: Export
     contents:
       - copy_clipboard
   - title: Data
     contents:
       - sochealth
-  - title: ASCII helpers
-    contents:
-      - spicy_print_table
   - title: Advanced S3 methods
     desc: >
       Exported S3 methods. Most users dispatch them implicitly
@@ -220,26 +222,8 @@ reference:
       invocation with custom arguments (e.g., `print(...,
       digits = 2)`).
     contents:
-      - print.spicy_assoc_detail
-      - print.spicy_assoc_table
-      - print.spicy_categorical_table
-      - print.spicy_continuous_lm_table
-      - print.spicy_continuous_table
-      - print.spicy_cross_table
-      - print.spicy_cross_table_list
-      - print.spicy_flextable
-      - print.spicy_freq_table
-      - print.spicy_gt
-      - print.spicy_regression_frame
-      - print.spicy_regression_table
+      - starts_with("print.", internal = TRUE)
+      - starts_with("as.data.frame.", internal = TRUE)
+      - starts_with("tidy.", internal = TRUE)
       - terms.spicy_uv_screen
-      - as.data.frame.spicy_categorical_table
-      - as.data.frame.spicy_continuous_lm_table
-      - as.data.frame.spicy_continuous_table
-      - as.data.frame.spicy_regression_table
       - as_flextable.spicy_flextable
-      - tidy.spicy_categorical_table
-      - tidy.spicy_continuous_lm_table
-      - tidy.spicy_continuous_table
-      - tidy.spicy_regression_table
-      - spicy_tables

@@ -2,7 +2,6 @@
 % Please edit documentation in R/code_book.R
 \name{code_book}
 \alias{code_book}
-\alias{print.spicy_codebook}
 \title{Build a codebook of a data frame}
 \usage{
 code_book(
@@ -26,11 +25,9 @@ code_book(
   index_columns = NULL,
   output = NULL
 )
-
-\method{print}{spicy_codebook}(x, ...)
 }
 \arguments{
-\item{x}{A data frame or tibble. For \code{print()}, a \code{spicy_codebook}.}
+\item{x}{A data frame or tibble.}
 
 \item{...}{Optional tidyselect-style column selectors (e.g.
 \code{starts_with("bmi")}, \code{where(is.numeric)}). Columns can be selected or

@@ -2,25 +2,19 @@
 % Please edit documentation in R/var_labels.R
 \name{var_labels}
 \alias{var_labels}
-\alias{print.spicy_var_labels}
-\title{Label attributes with a few renames}
+\title{Variable labels for a table}
 \usage{
 var_labels(...)
-
-\method{print}{spicy_var_labels}(x, ...)
 }
 \arguments{
 \item{...}{\code{name = "label"} pairs, one per variable to rename, each
 label a single string. A named character vector can be spliced with
 \verb{!!!}. A name that matches nothing in a table warns there and is
-left out. For
-\code{print()}, passed on to \code{\link[=print]{print()}}.}
-
-\item{x}{A \code{spicy_var_labels} object, for \code{print()}.}
+left out.}
 }
 \value{
 A named character vector of class \code{spicy_var_labels}, which
-prints as the plain named vector. \code{print()} returns \code{x} invisibly.
+prints as the plain named vector.
 }
 \description{
 Builds a value for the \code{labels} argument of the descriptive tables

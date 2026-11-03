@@ -2,7 +2,7 @@
 % Please edit documentation in R/freq.R
 \name{freq}
 \alias{freq}
-\title{Frequency Table}
+\title{Frequency table}
 \usage{
 freq(
   data,
