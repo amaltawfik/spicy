@@ -18,6 +18,7 @@ build_ascii_table(
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   display_labels = NULL,
+  body_spanners = NULL,
   ...
 )
 }
@@ -99,6 +100,13 @@ visual header is swapped. Used by \code{print.spicy_regression_table()}
 so a \code{B + AME} table shows the bare label (\verb{95\% CI}, \code{p}) in both
 blocks rather than R's deduplicated \verb{95\% CI.2} / \code{p.2}. Defaults
 to \code{NULL} (use \code{colnames(x)} verbatim).}
+
+\item{body_spanners}{Optional list of column group rows inside the
+body, each a list with \code{row} (the row index) and \code{spans} (a named
+list like \code{spanners}). The row is drawn as the spanner row is: each
+label centered over its columns, a thin rule under them. Its cells
+should be blank. Used by \code{print.spicy_stack_table()} for the column
+groups of a panel's own header. Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

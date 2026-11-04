@@ -166,6 +166,12 @@
 #'   so a `B + AME` table shows the bare label (`95% CI`, `p`) in both
 #'   blocks rather than R's deduplicated `95% CI.2` / `p.2`. Defaults
 #'   to `NULL` (use `colnames(x)` verbatim).
+#' @param body_spanners Optional list of column group rows inside the
+#'   body, each a list with `row` (the row index) and `spans` (a named
+#'   list like `spanners`). The row is drawn as the spanner row is: each
+#'   label centered over its columns, a thin rule under them. Its cells
+#'   should be blank. Used by `print.spicy_stack_table()` for the column
+#'   groups of a panel's own header. Defaults to `NULL`.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return
@@ -191,6 +197,7 @@ build_ascii_table <- function(
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   display_labels = NULL,
+  body_spanners = NULL,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -392,42 +399,33 @@ build_ascii_table <- function(
   }
   light_rule <- style(make_light_rule(full_width, bar_positions))
 
-  # --- Colorize vertical bars if supported
-  if (crayon::has_color()) {
-    # nocov start
-    header_txt <- gsub("\u2502", style("\u2502"), header_txt, fixed = TRUE)
-    rows_txt <- gsub("\u2502", style("\u2502"), rows_txt, fixed = TRUE)
-  } # nocov end
-
-  out <- character(0)
-
-  # --- Spanner row (column group labels above the header) ---------------
-  # Each spanner label is centered across the cell-content range of the
-  # columns it spans (start of leftmost cell -> end of rightmost cell,
-  # including the inner gutters and any separators between them). A thin
-  # underline rule (U+2500) is drawn just below the spanner, covering the
-  # same range only, so empty (un-spanned) columns get neither label nor
-  # underline. The spanner row itself contains no vertical bars.
-  if (!is.null(spanners) && length(spanners)) {
-    # Compute 1-based char-position ranges of each column's cell (the
-    # widths[i]-wide region, excluding its left/right gutters and any
-    # separator).
-    col_starts <- integer(length(w))
-    col_ends <- integer(length(w))
-    pos <- 0L
-    for (i in seq_along(w)) {
-      pos <- pos + 1L # left gutter
-      col_starts[i] <- pos + 1L # next char is the first cell char
-      pos <- pos + w[i] # cell content
-      col_ends[i] <- pos
-      pos <- pos + 1L # right gutter
-      if (i %in% sep_after) pos <- pos + 1L
-    }
-
-    spanner_chars <- rep(" ", full_width)
-    underline_chars <- rep(" ", full_width)
-    for (lbl in names(spanners)) {
-      cols <- spanners[[lbl]]
+  # --- Column groups (the spanner row above the header, and the rows of
+  # column groups inside the body: `body_spanners`) ----------------------
+  # Each label is centered across the cell-content range of the columns
+  # it spans (start of leftmost cell -> end of rightmost cell, including
+  # the inner gutters and any separators between them). A thin underline
+  # rule (U+2500) is drawn just below it, covering the same range only, so
+  # empty (un-spanned) columns get neither label nor underline. The
+  # spanner row itself contains no vertical bars; a row of the body keeps
+  # those of its line (`base`).
+  # 1-based char-position ranges of each column's cell (the widths[i]-wide
+  # region, excluding its left/right gutters and any separator).
+  col_starts <- integer(length(w))
+  col_ends <- integer(length(w))
+  pos <- 0L
+  for (i in seq_along(w)) {
+    pos <- pos + 1L # left gutter
+    col_starts[i] <- pos + 1L # next char is the first cell char
+    pos <- pos + w[i] # cell content
+    col_ends[i] <- pos
+    pos <- pos + 1L # right gutter
+    if (i %in% sep_after) pos <- pos + 1L
+  }
+  span_lines <- function(base, spans) {
+    spanner_chars <- strsplit(base, "", fixed = TRUE)[[1]]
+    underline_chars <- spanner_chars
+    for (lbl in names(spans)) {
+      cols <- spans[[lbl]]
       span_start <- col_starts[min(cols)]
       span_end <- col_ends[max(cols)]
       span_width <- span_end - span_start + 1L
@@ -461,11 +459,34 @@ build_ascii_table <- function(
         underline_chars[p] <- "\u2500"
       }
     }
-    spanner_line <- paste(spanner_chars, collapse = "")
-    underline_line <- style(paste(underline_chars, collapse = ""))
-    out <- c(out, spanner_line, underline_line)
+    c(
+      paste(spanner_chars, collapse = ""),
+      paste(underline_chars, collapse = "")
+    )
+  }
+  for (b in body_spanners) {
+    if (length(b$spans) && b$row >= 1L && b$row <= length(rows_txt)) {
+      rows_txt[b$row] <- paste(
+        span_lines(rows_txt[b$row], b$spans),
+        collapse = "\n"
+      )
+    }
   }
 
+  # --- Colorize vertical bars if supported
+  if (crayon::has_color()) {
+    # nocov start
+    header_txt <- gsub("\u2502", style("\u2502"), header_txt, fixed = TRUE)
+    rows_txt <- gsub("\u2502", style("\u2502"), rows_txt, fixed = TRUE)
+    rows_txt <- gsub("\u2500", style("\u2500"), rows_txt, fixed = TRUE)
+  } # nocov end
+
+  out <- character(0)
+
+  if (!is.null(spanners) && length(spanners)) {
+    lines <- span_lines(strrep(" ", full_width), spanners)
+    out <- c(out, lines[[1L]], style(lines[[2L]]))
+  }
   # --- Add header
   out <- c(out, header_txt, header_rule)
 
@@ -669,7 +690,8 @@ ascii_table_panels <- function(
 #'   after the first column.
 #' @details
 #' The layout arguments `spanners`, `display_labels`,
-#' `fit_stats_start`, `total_row_idx` and `group_sep_rows` are
+#' `fit_stats_start`, `total_row_idx`, `group_sep_rows`,
+#' `body_spanners` and `blank_row_groups` are
 #' plumbing consumed by spicy's own print methods; they are
 #' documented for completeness and are rarely useful when calling
 #' this function directly.
@@ -723,6 +745,16 @@ ascii_table_panels <- function(
 #'   `p` is the omnibus test of a whole block it has no carrier, and
 #'   qualifying it would attribute it to whichever column happened to
 #'   sit before it. Defaults to `FALSE`.
+#' @param body_spanners Optional list of column group rows inside the
+#'   body (see [build_ascii_table()]), in the columns of `x`. When the
+#'   table splits into stacked panels, each panel repeats a label over
+#'   the columns of its group it holds. Defaults to `NULL`.
+#' @param blank_row_groups Optional list of integer vectors, each a set
+#'   of rows that go together (the rows of a panel of a stacked table,
+#'   or one of its fit-statistic rows). When the table splits into
+#'   stacked panels, continuation panels leave out every group none of
+#'   whose rows has a data cell there. An alternative to
+#'   `fit_stats_start`, not to be combined with it. Defaults to `NULL`.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -767,6 +799,8 @@ spicy_print_table <- function(
   display_labels = NULL,
   fit_stats_start = NULL,
   qualify_companions = FALSE,
+  body_spanners = NULL,
+  blank_row_groups = NULL,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -823,36 +857,34 @@ spicy_print_table <- function(
     sticky_cols = align_left_cols
   )
 
+  # Column groups (label -> columns of `x`) remapped to the indices of the
+  # panel of columns `cols`. When a group's columns are split across
+  # panels, each panel displays its label over the surviving subset
+  # (matches modelsummary panel-split behavior: the model name reappears
+  # at the top of every panel where any of its columns are visible).
+  # NULL when no group is left.
+  panel_spans <- function(spans, cols) {
+    out <- list()
+    for (lbl in names(spans)) {
+      local_idx <- sort(match(intersect(spans[[lbl]], cols), cols))
+      # Drop discontiguous slivers (e.g. sticky col 1 between data cols
+      # of the same model would break contiguity -- that doesn't arise
+      # in practice because the Variable column is never in a spanner).
+      if (length(local_idx) && all(diff(local_idx) == 1L)) {
+        out[[lbl]] <- local_idx
+      }
+    }
+    if (length(out)) out
+  }
+
   txt <- vapply(
     seq_along(panel_cols),
     function(panel_i) {
       cols <- panel_cols[[panel_i]]
-      # Remap spanners to per-panel column indices. When a model's
-      # columns are split across panels, each panel displays the
-      # spanner label over the surviving subset (matches modelsummary
-      # panel-split behavior: the model name reappears at the top of
-      # every panel where any of its columns are visible).
-      panel_spanners <- NULL
-      if (!is.null(spanners) && length(spanners)) {
-        panel_spanners <- list()
-        for (lbl in names(spanners)) {
-          surviving <- intersect(spanners[[lbl]], cols)
-          if (length(surviving)) {
-            local_idx <- sort(match(surviving, cols))
-            # Drop discontiguous slivers (e.g. sticky col 1 between
-            # data cols of the same model would break contiguity --
-            # that doesn't arise in practice because the Variable
-            # column is never in a spanner).
-            if (
-              length(local_idx) == 1L ||
-                all(diff(local_idx) == 1L)
-            ) {
-              panel_spanners[[lbl]] <- local_idx
-            }
-          }
-        }
-        if (!length(panel_spanners)) panel_spanners <- NULL
-      }
+      panel_spanners <- panel_spans(spanners, cols)
+      panel_body_spanners <- lapply(body_spanners, function(b) {
+        list(row = b$row, spans = panel_spans(b$spans, cols))
+      })
       # `x[, cols]` uniquifies duplicate names ("B"/"B" -> "B"/"B.1");
       # restore the originals so the header row prints the unprefixed
       # names that the print method handed us.
@@ -971,6 +1003,50 @@ spicy_print_table <- function(
           }
         }
       }
+      # Continuation panels of a table whose rows go in groups
+      # (`blank_row_groups`, a stacked table): a group none of whose rows
+      # has a cell in this panel is left out -- a panel of the stack whose
+      # columns all sit in an earlier panel, a fit statistic whose value
+      # does. A rule above a row left out passes to the next row kept.
+      panel_total <- total_row_idx
+      if (panel_i > 1L && length(blank_row_groups)) {
+        data_cols_local <- which(!(cols %in% align_left_cols))
+        has_cell <- vapply(
+          seq_len(nrow(sub)),
+          function(r) {
+            any(nzchar(trimws(as.character(
+              unlist(sub[r, data_cols_local], use.names = FALSE)
+            ))))
+          },
+          logical(1)
+        )
+        for (b in panel_body_spanners) {
+          if (length(b$spans)) has_cell[[b$row]] <- TRUE
+        }
+        gone <- unique(unlist(Filter(
+          function(g) !any(has_cell[g]),
+          blank_row_groups
+        )))
+        if (length(gone)) {
+          kept <- setdiff(seq_len(nrow(sub)), gone)
+          at <- function(r) match(r[r %in% kept], kept)
+          panel_group_sep <- unique(match(
+            vapply(panel_group_sep, function(r) kept[kept >= r][1L], 1L),
+            kept
+          ))
+          panel_group_sep <- panel_group_sep[!is.na(panel_group_sep)]
+          if (length(panel_total)) {
+            panel_total <- at(panel_total)
+          }
+          panel_body_spanners <- lapply(
+            Filter(function(b) b$row %in% kept, panel_body_spanners),
+            function(b) list(row = at(b$row), spans = b$spans)
+          )
+          nm <- names(sub)
+          sub <- sub[kept, , drop = FALSE]
+          names(sub) <- nm
+        }
+      }
       build_ascii_table(
         sub,
         padding = padding,
@@ -983,8 +1059,9 @@ spicy_print_table <- function(
         center_headers = center_headers,
         spanners = panel_spanners,
         group_sep_rows = panel_group_sep,
-        total_row_idx = total_row_idx,
+        total_row_idx = panel_total,
         display_labels = panel_display_labels,
+        body_spanners = panel_body_spanners,
         ...
       )
     },

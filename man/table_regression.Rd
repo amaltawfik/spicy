@@ -28,6 +28,7 @@ table_regression(
   reference_label = NULL,
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
+  layout = c("columns", "stacked"),
   show_re = TRUE,
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
@@ -466,6 +467,14 @@ values plus any fit-stat value(s) in \code{"first_col"} mode
 trivially decimal-aligns in \code{"merged"} mode (the fit-stat
 values move out of the B column into the merged cell).}
 
+\item{layout}{How several models are laid out. \code{"columns"} (default)
+sets them side by side, one group of columns per model. \code{"stacked"}
+sets them one under the other, one panel per model: each panel is
+the table of that model alone (its default columns, the confidence
+interval included, its blocks and fit statistics), opened by a row
+with its label. See \emph{Multi-model semantics} and \code{\link[=table_stack]{table_stack()}},
+which stacks tables built separately.}
+
 \item{show_re}{Logical. \code{TRUE} (default) renders the random-effects
 variance components of a mixed-effects fit (\code{lmer}, \code{glmer},
 \code{glmmTMB}, \code{lme}, \code{clmm}) as a subordinate \strong{"Random effects" block of
@@ -900,7 +909,8 @@ format-specific object: \code{gt_tbl}, \code{flextable}, \code{tinytable}; for
 \code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...); the file
 path, invisibly, for \code{"excel"} and \code{"word"}; the table, invisibly,
 for \code{"clipboard"}. The two data frames carry the note as printed in
-\code{attr(x, "note")}.
+\code{attr(x, "note")}. With \code{layout = "stacked"}, the stacked table of
+\code{\link[=table_stack]{table_stack()}}, whose value is described there.
 }
 \description{
 Publication-ready coefficient table from one or more fitted
@@ -1156,6 +1166,36 @@ auto-filled label of another slot (\code{list("Model 2" = m1, m2)}):
 two models under one spanner cannot be told apart in the table,
 nor addressed by \code{\link[=inline]{inline()}}. Rename the model, or pass
 \code{model_labels}.
+\subsection{Stacked layout}{
+
+\code{layout = "stacked"} sets the models one under the other, one panel
+per model, through \code{\link[=table_stack]{table_stack()}}. Each panel is exactly the table
+\code{table_regression()} gives that model alone, with the same arguments:
+its default columns (\code{"all_b"}, the confidence interval included), its
+reference rows, blocks and fit statistics. A row with the label of the
+model opens each panel: \code{model_labels}, else the names of \code{models},
+else the outcomes when they all differ, else "Model k". The panels
+share one column header when they have the same columns, and each opens
+with its own header otherwise (an odds ratio beside a coefficient, a
+multinomial model with its outcome categories in columns). \code{vcov} and
+\code{cluster} lists give each panel its own estimator; \code{outcome_labels}
+does not apply. Under \code{nested = TRUE}, the change statistics of each
+model sit in its own panel, labeled "vs" the model before it. The type
+of each model, its standard errors and the adjustment of its p-values
+are worded as in the note of the models side by side, each panel named
+by its label; the other sentences each open with the labels of the
+panels they concern. A warning or an error names a model as the
+side-by-side table does. \code{tidy()}, \code{glance()} and \code{output = "long"}
+return the rows of the models side by side, under a leading \code{panel}
+column, with one exception: under \code{keep} or \code{drop}, a multinomial
+model returns the rows its panel shows, selected by its terms as in
+its table alone (\code{"age"}),
+where side by side the patterns meet terms named with their outcome
+(\code{"Student: age"}). \code{output = "data.frame"} binds the data frames of
+the panels by rows. A \code{keep}, \code{drop} or \code{show_intercept = FALSE} that
+leaves a panel without a coefficient row is an error: side by side,
+such a model keeps its fit statistics beside the others.
+}
 }
 
 \section{Inference and standard errors}{
@@ -1856,7 +1896,7 @@ if (requireNamespace("broom", quietly = TRUE)) {
 \donttest{
 # ---- Mixed-effects models ----------------------------------------
 # Linear mixed-effects (lme4). The footer adds a random-effects
-# panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
+# block with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
 # marginal / conditional R^2 fit-stats, and a per-class p-value
 # annotation line.
 if (requireNamespace("lme4", quietly = TRUE)) {
@@ -1870,7 +1910,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   # Minimal random-effects display: estimates only, no SE / CI.
   table_regression(fit, re_columns = "est")
 
-  # Suppress the random-effects panel entirely.
+  # Suppress the random-effects block entirely.
   table_regression(fit, show_re = FALSE)
 }
 
@@ -1957,6 +1997,7 @@ classes and the per-family behavior reference (also reachable as
 class is not listed there, try \code{table_regression(fit)} anyway --
 unsupported classes error with a clear message.
 Other regression-table functions:
+\code{\link[=table_stack]{table_stack()}} to stack regression tables one under the other;
 \code{\link[=table_continuous_lm]{table_continuous_lm()}} for one-predictor-by-many-outcomes
 descriptive tables.
 Other spicy table functions:

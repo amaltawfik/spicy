@@ -541,6 +541,7 @@
   note_std_errors_single = "Erreurs standards\u00A0: %s.",
   label_model_name = "Mod\u00E8le %d",
   note_model_line = "%s\u00A0: %s",
+  label_panel_name = "Panneau %d",
   note_vcov_classical_glm = "classiques (information de Fisher)",
   note_vcov_classical_lm = "classiques (MCO)",
   note_vcov_classical_plain = "classiques",

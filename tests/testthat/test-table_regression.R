@@ -3013,3 +3013,199 @@ test_that("an output path is a single path with the extension of its format", {
   table_regression(fit, output = "excel", excel_path = path)
   expect_true(file.exists(path))
 })
+
+test_that("a row selection that leaves no coefficient row is refused", {
+  # A model whose `keep`, `drop` or `show_intercept = FALSE` removes
+  # every coefficient row used to come back as a bare header, without
+  # fit statistics, note or typed view.
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  err <- expect_error(
+    table_regression(fit, drop = "wt", show_intercept = FALSE),
+    class = "spicy_empty_table"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "Model 1 has no rows to show.", fixed = TRUE)
+  expect_match(
+    msg,
+    "`drop` and `show_intercept = FALSE` left no coefficient row.",
+    fixed = TRUE
+  )
+  expect_false(grepl("stacked", msg, fixed = TRUE))
+  # Every model emptied: one error naming them all.
+  err <- expect_error(
+    table_regression(
+      list(A = fit, B = fit),
+      drop = "wt",
+      show_intercept = FALSE
+    ),
+    class = "spicy_empty_table"
+  )
+  expect_match(conditionMessage(err), "A, B have no rows to show.", fixed = TRUE)
+  # Side by side, a model left without coefficients keeps its fit
+  # statistics beside the others: the table is built.
+  tbl <- table_regression(
+    list(fit, stats::lm(mpg ~ hp, data = mtcars)),
+    drop = "wt",
+    show_intercept = FALSE
+  )
+  expect_s3_class(tbl, "spicy_regression_table")
+  expect_false(is.null(attr(tbl, "structured")))
+})
+
+# The rows of a gt table that carry the light rule under them (the rule
+# drawn above the next row): the bottom border the gt writer gives a
+# block boundary, #cccccc.
+.tr_gt_light_rule_rows <- function(g) {
+  s <- g[["_styles"]]
+  s <- s[s$locname == "data", , drop = FALSE]
+  light <- vapply(
+    s$styles,
+    function(x) {
+      b <- x$cell_border_bottom
+      !is.null(b) && identical(tolower(b$color), "#cccccc")
+    },
+    logical(1)
+  )
+  sort(unique(s$rownum[light]))
+}
+
+test_that("gt rules off the Thresholds and Random effects blocks", {
+  # Before, gt drew only the rule above the fit statistics: the block of
+  # an ordinal model's cut-points and the random effects of a mixed model
+  # opened without the rule the console draws above them.
+  skip_on_cran()
+  skip_if_not_installed("gt")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("lme4")
+  fit_polr <- MASS::polr(
+    factor(self_rated_health) ~ age + sex,
+    data = sochealth,
+    Hess = TRUE
+  )
+  fit_lmer <- lme4::lmer(
+    wellbeing_score ~ age + sex + (1 | education),
+    data = sochealth[1:600, ]
+  )
+  for (case in list(
+    list(fit = fit_polr, block = "Thresholds:"),
+    list(fit = fit_lmer, block = "Random effects:")
+  )) {
+    g <- table_regression(case$fit, output = "gt")
+    lab <- trimws(as.character(g[["_data"]][[1L]]))
+    at <- which(lab == case$block)
+    expect_length(at, 1L)
+    # The rule above the block, and still the one above the fit
+    # statistics (the first row after the coefficient-type rows that
+    # the model's own n opens).
+    n_row <- which(lab == "n")
+    expect_true((at - 1L) %in% .tr_gt_light_rule_rows(g), info = case$block)
+    expect_true(
+      (min(n_row) - 1L) %in% .tr_gt_light_rule_rows(g),
+      info = case$block
+    )
+  }
+})
+
+test_that("a label that holds the word Total draws no total rule", {
+  # The console used to rule off as a total any row whose label held the
+  # word "Total": a regression table has no totals row.
+  fit <- stats::lm(mpg ~ hp + wt, data = mtcars)
+  out <- capture.output(print(table_regression(
+    fit,
+    labels = c(hp = "Total horsepower")
+  )))
+  expect_true(any(grepl("^ Total horsepower ", out)))
+  solid <- paste0("^", intToUtf8(0x2500L))
+  dashed <- paste0("^", intToUtf8(0x254CL))
+  # One solid rule, under the header; the dashed rule above the fit
+  # statistics stays.
+  expect_identical(sum(grepl(solid, out)), 1L)
+  expect_identical(grep(solid, out), grep("^ Variable ", out) + 1L)
+  expect_identical(sum(grepl(dashed, out)), 1L)
+  expect_identical(grep(dashed, out) + 1L, grep("^ n ", out))
+})
+
+
+test_that("an emptied table names what emptied it, and only that", {
+  skip_on_cran()
+  f0 <- stats::lm(mpg ~ 1, data = mtcars)
+  expect_identical(names(stats::coef(f0)), "(Intercept)")
+  e <- expect_error(
+    table_regression(f0, show_intercept = FALSE),
+    class = "spicy_empty_table"
+  )
+  expect_match(
+    conditionMessage(e),
+    "`show_intercept = FALSE` left no coefficient row.",
+    fixed = TRUE
+  )
+  # No pattern was typed: no word about patterns.
+  expect_no_match(conditionMessage(e), "Patterns", fixed = TRUE)
+  # Two models: the verb agrees.
+  w1 <- stats::lm(mpg ~ wt, data = mtcars)
+  w2 <- stats::lm(mpg ~ hp, data = mtcars)
+  expect_warning(
+    e <- expect_error(
+      table_regression(list(w1, w2), keep = "zzz", show_intercept = FALSE),
+      class = "spicy_empty_table"
+    ),
+    class = "spicy_no_match"
+  )
+  expect_match(
+    conditionMessage(e),
+    "Model 1, Model 2 have no rows to show.",
+    fixed = TRUE
+  )
+  skip_if_not_installed("MASS")
+  pf <- MASS::polr(
+    Sat ~ Infl + Type + Cont,
+    weights = Freq,
+    data = MASS::housing,
+    Hess = TRUE
+  )
+  # Every coefficient matches the pattern, and the fit has cut-points.
+  expect_true(all(grepl("Infl|Type|Cont", names(stats::coef(pf)))))
+  expect_gt(length(pf$zeta), 0L)
+  expect_true(inherits(
+    table_regression(pf, drop = "Infl|Type|Cont"),
+    "spicy_table"
+  ))
+  e <- expect_error(
+    table_regression(pf, drop = "Infl|Type|Cont", show_thresholds = FALSE),
+    class = "spicy_empty_table"
+  )
+  expect_match(
+    conditionMessage(e),
+    "`drop` and `show_thresholds = FALSE` left no coefficient row.",
+    fixed = TRUE
+  )
+  # A fit with nothing but its cut-points, twice: the verb agrees there too.
+  p0 <- MASS::polr(Sat ~ 1, weights = Freq, data = MASS::housing, Hess = TRUE)
+  e <- expect_error(
+    table_regression(list(p0, p0), show_thresholds = FALSE),
+    class = "spicy_empty_table"
+  )
+  expect_match(
+    conditionMessage(e),
+    "Model 1, Model 2 have no rows to show.",
+    fixed = TRUE
+  )
+})
+
+test_that("the ignored intercept_position warning cites no internal tag", {
+  skip_on_cran()
+  w <- expect_warning(
+    table_regression(
+      stats::lm(mpg ~ wt, data = mtcars),
+      intercept_position = "last",
+      show_intercept = FALSE
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(
+    conditionMessage(w),
+    "is ignored when `show_intercept = FALSE`.",
+    fixed = TRUE
+  )
+  expect_no_match(conditionMessage(w), "(Q2)", fixed = TRUE)
+})

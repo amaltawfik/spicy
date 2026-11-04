@@ -111,9 +111,36 @@
   with a clear error. It was read as a Gaussian model, without its
   cut-points, and failed on its default fit statistics.
 
+* `table_regression()` gains `layout = "stacked"`: one panel per model,
+  each with the columns of the model alone, its confidence interval
+  included. Under `nested = TRUE` the change statistics of each model
+  sit in its panel, labeled "vs" the model before it. `tidy()`,
+  `glance()` and `output = "long"` return the rows of the models side
+  by side, with a leading `panel` column.
+
+* `table_regression()`: gt tables now rule off the "Thresholds",
+  "Random effects" and component blocks, as the console, tinytable,
+  flextable and Excel already did.
+
+* `table_regression()`: the console no longer draws the rule of a total
+  above a row whose label contains the word "Total".
+
+* `table_regression()`: a `keep`, `drop` or `show_intercept = FALSE`
+  that leaves no coefficient row now stops with `spicy_empty_table`,
+  naming the model, instead of returning a table with a header only.
+
 * `table_regression_uv()` titles name the family as `table_regression()`
   does ("inverse-Gaussian" instead of "Inverse.gaussian") and a Cox model
   "Cox proportional hazards regression", as the other tables do.
+
+* New `table_stack()`, experimental, stacks regression tables one under
+  the other: each table becomes a panel opened by a row with its name
+  (or its entry in `panel_labels`), under one column header when the
+  panels share their columns and with its own header otherwise. The
+  notes are merged as for the models side by side, a sentence that
+  holds for some panels only opening with their names. Tables built in
+  different languages, with different decimal marks or alignments, or
+  under styles that format a cell differently are refused.
 
 * French titles (`options(spicy.language = "fr")`) now cover every model
   that `table_regression()` and `table_regression_uv()` accept, quantile

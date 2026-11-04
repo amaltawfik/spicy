@@ -1285,6 +1285,15 @@
   # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
   # the user labeled the models, "Model 1: ..." otherwise.
   note_model_line = "%s: %s",
+  # table_stack(): the label of a panel whose table has neither a name nor
+  # a title (one hole: its position); the separator of the labels that
+  # open a sentence of the merged note holding for some panels only
+  # ("Women, Men: ..."); the label of a change statistic of a stacked
+  # hierarchy, which names the panel it compares with (two holes: the
+  # statistic, the label of that panel).
+  label_panel_name = "Panel %d",
+  note_panels_sep = ", ",
+  fitstat_change_vs = "%s vs %s",
   note_vcov_classical_glm = "classical (Fisher information)",
   note_vcov_classical_lm = "classical (OLS)",
   # The model-based default of the classes whose label names no
@@ -1727,6 +1736,13 @@ spicy_fmt <- function(key, ...) {
     )
   }
   opt
+}
+
+# The language a table is built in, "en" when the option is unset: the
+# stamp `table_stack()` reads to keep a stack in one language.
+.spicy_language_code <- function() {
+  opt <- getOption("spicy.language")
+  if (is.null(opt)) "en" else .spicy_language_option(opt)
 }
 
 

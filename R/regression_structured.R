@@ -243,6 +243,9 @@
 #            who chose no item.
 #   total    the Total row that closes a block of a categorical table
 #            under `total_row = TRUE`, its label the margin's.
+#   header   a row of column headers inside the body of a stacked table
+#            (R/stack_render.R), the header of a panel. Never present in
+#            the view of a table, which `as_structured()` returns.
 .STRUCT_ROW_ROLES <- c(
   "coef",
   "factor_header",
@@ -255,7 +258,8 @@
   "group",
   "missing",
   "none",
-  "total"
+  "total",
+  "header"
 )
 
 # Value (displayable) columns of a structured body: everything but the
@@ -673,7 +677,7 @@ build_structured_body <- function(
       # a user-supplied label starting with a space would defeat).
       indent = if (
         isTRUE(group_factor_levels) &&
-          !isTRUE(rt$is_intercept) &&
+          !(isTRUE(rt$is_intercept) && is.na(rt$factor_term)) &&
           (isTRUE(rt$is_reference) || !is.na(rt$factor_term))
       ) {
         1L
@@ -1843,6 +1847,12 @@ build_structured_body <- function(
   # to recognize the very mark the cell formatter wrote (Chicago /
   # NEJM / JAMA tabular "not applicable").
   na_dash <- spicy_str("cell_undefined")
+  # The header rows of a stacked table hold column labels, not numbers:
+  # neither measured nor padded.
+  header <- logical(nrow(body))
+  if (length(struct$body[[".row_role"]]) == nrow(body)) {
+    header <- struct$body[[".row_role"]] %in% "header"
+  }
 
   for (j in seq_along(body)) {
     if (j == 1L) {
@@ -1854,7 +1864,7 @@ build_structured_body <- function(
     rhs <- character(length(col_vals))
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || identical(v, na_dash)) {
+      if (is.na(v) || !nzchar(v) || identical(v, na_dash) || header[i]) {
         lhs[i] <- ""
         rhs[i] <- ""
         next
@@ -1879,7 +1889,7 @@ build_structured_body <- function(
 
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v)) {
+      if (is.na(v) || !nzchar(v) || header[i]) {
         next
       }
       # Phase 7c24 (item g): en-dash cells (factor reference rows /
@@ -1967,8 +1977,13 @@ build_structured_body <- function(
 # row index `row_idx`, honoring any fit_stat_overrides recorded by
 # build_structured_body() (fit-stat rows can carry per-row precision
 # that differs from the column default, e.g. integer "n" in the same
-# column as 2-dp coefficients).
+# column as 2-dp coefficients). A stacked table records the format of
+# each cell, its panel's, in `row_fmt` (R/stack_render.R): it wins.
 .resolve_cell_fmt <- function(col_meta_entry, row_idx) {
+  row_fmt <- col_meta_entry$row_fmt
+  if (length(row_fmt) >= row_idx && !is.null(row_fmt[[row_idx]])) {
+    return(row_fmt[[row_idx]])
+  }
   prec <- col_meta_entry$precision
   p_style <- col_meta_entry$p_style
   threshold <- col_meta_entry$threshold

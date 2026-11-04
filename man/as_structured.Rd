@@ -11,11 +11,14 @@ as_structured(x)
 \code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}
 or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
-\code{\link[=table_continuous_svy]{table_continuous_svy()}}. All return the same schema.}
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}. All return the same schema. A stacked
+table of \code{\link[=table_stack]{table_stack()}} is accepted too.}
 }
 \value{
 A list with the structured view (see Details for the
-schema).
+schema). For a stacked table of \code{\link[=table_stack]{table_stack()}}, a list of such
+views, one per panel, named by the labels of the panels: each is the
+view of the table stacked in that panel.
 }
 \description{
 spicy's tables return a \emph{display} representation by default -- a

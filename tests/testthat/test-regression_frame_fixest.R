@@ -580,3 +580,55 @@ test_that("fenegbin: theta and alpha rows, theta as MASS::glm.nb's, sigma blank"
   expect_equal(theta[["NB: B"]], fs$theta, tolerance = 1e-12)
   expect_true(is.na(theta[["Poisson: B"]]))
 })
+
+test_that("the standard-error note writes each fixest label in lower case after the model's name", {
+  skip_on_cran()
+  skip_if_not_installed("fixest")
+  d <- na.omit(airquality)
+  d$Month <- factor(d$Month)
+  fits <- list(
+    IID = fixest::feols(Ozone ~ Wind, data = d),
+    Hetero = fixest::feols(Ozone ~ Wind, data = d, vcov = "hetero"),
+    Cluster = fixest::feols(Ozone ~ Wind, data = d, vcov = ~Month),
+    NW = fixest::feols(
+      Ozone ~ Wind,
+      data = d,
+      panel.id = ~ Month + Day,
+      vcov = "NW"
+    )
+  )
+  # fixest's own label of each fit, which a table of that model alone
+  # writes after "Std. errors:" ("IID" under its common name).
+  expect_identical(
+    unname(vapply(
+      fits,
+      function(f) attr(summary(f)$coeftable, "vcov_type"),
+      character(1)
+    )),
+    c(
+      "IID",
+      "Heteroskedasticity-robust",
+      "Clustered (Month)",
+      "Newey-West (L=2)"
+    )
+  )
+  expect_match(
+    attr(table_regression(fits$Hetero), "note"),
+    "Std. errors: Heteroskedasticity-robust.",
+    fixed = TRUE
+  )
+  # After a model's name, the label opens in lower case, a surname aside.
+  note <- attr(
+    table_regression(c(fits, list(OLS = stats::lm(Ozone ~ Wind, data = d)))),
+    "note"
+  )
+  expect_match(
+    note,
+    paste0(
+      "Std. errors: IID: classical, Hetero: heteroskedasticity-robust, ",
+      "Cluster: clustered (Month), NW: Newey-West (L=2), ",
+      "OLS: classical (OLS)."
+    ),
+    fixed = TRUE
+  )
+})

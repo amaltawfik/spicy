@@ -35,7 +35,8 @@ spicy_abort <- function(
 .SPICY_ERROR_PARENTS <- c(
   spicy_missing_column = "spicy_invalid_input",
   spicy_wrong_regime = "spicy_invalid_data",
-  spicy_not_implemented = "spicy_unsupported"
+  spicy_not_implemented = "spicy_unsupported",
+  spicy_stack_mismatch = "spicy_invalid_input"
 )
 
 .spicy_error_classes <- function(class) {

@@ -122,6 +122,9 @@ output_default <- function(rendered, aligned, labels = NULL) {
   # no formal (`p_bands`, `p_sigfig`, `ci_sep`, ...) ride along like the
   # other formatting attributes; with no style the stamp is a no-op.
   rendered <- .style_stamp(rendered)
+  # The language the table was built in: `table_stack()` refuses to stack
+  # tables of two languages, and renders a stack in theirs.
+  attr(rendered, "language") <- .spicy_language_code()
   class(rendered) <- c("spicy_regression_table", "spicy_table", "data.frame")
   rendered
 }
@@ -483,7 +486,9 @@ output_tinytable <- function(rendered) {
   gspec <- list()
   if (has_ci_spanner) {
     for (j in seq_along(body_names_orig)) {
-      if (j %in% ci_cols_set) {
+      # A column a stacked table leaves unlabeled at the top has no group:
+      # its header cell stays empty.
+      if (j %in% ci_cols_set || !nzchar(col_label(j))) {
         next
       }
       gspec[[length(gspec) + 1L]] <- j
@@ -555,6 +560,11 @@ output_tinytable <- function(rendered) {
   tt <- tinytable::style_tt(tt, j = 1L, align = "l")
   if (n_cols >= 2L) {
     tt <- tinytable::style_tt(tt, j = 2:n_cols, align = "c")
+  }
+  # The header rows of a stacked table: tinytable spans no body cells, so
+  # the label of a span (an interval, a column group) opens its first cell.
+  for (hs in attr(rendered, "header_spans") %||% list()) {
+    tt <- tinytable::style_tt(tt, i = hs$row, j = hs$cols[[1L]], align = "l")
   }
   # Header rows: Variable column left, the rest centered.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
@@ -642,6 +652,18 @@ output_tinytable <- function(rendered) {
         line_color = "#cccccc"
       )
     }
+  }
+  # The header rows of a stacked table: a rule under each column group
+  # and interval label, as under those of the header.
+  for (hr in attr(rendered, "header_rules") %||% list()) {
+    tt <- tinytable::style_tt(
+      tt,
+      i = hr$row,
+      j = hr$cols,
+      line = "b",
+      line_width = 0.06,
+      line_trim = if (identical(hr$kind, "spanner")) "lr" else NULL
+    )
   }
   if (nrow(body) > 0L) {
     tt <- tinytable::style_tt(
@@ -844,6 +866,10 @@ output_gt <- function(rendered) {
     lbl <- struct$col_meta[[orig_names[j]]]$display_label
     bare <- if (j == 1L) {
       spicy_str("header_variable")
+    } else if (identical(lbl, "")) {
+      # A column a stacked table leaves unlabeled at the top: an empty
+      # label would print the column key.
+      "\u00a0"
     } else if (!is.null(lbl) && nzchar(lbl)) {
       lbl
     } else {
@@ -1012,13 +1038,20 @@ output_gt <- function(rendered) {
       locations = gt::cells_body(rows = n_rows)
     )
   }
-  if (
-    length(group_sep) >= 1L && group_sep[1L] >= 2L && group_sep[1L] <= n_rows
-  ) {
+  # A light rule above every block the console rules off: the
+  # coefficients / fit-stats divide (`group_sep_rows`) and the opening of
+  # a subordinate block -- `Thresholds:`, `Random effects:`, ... --
+  # (`section_sep_rows`), as the other engines draw them.
+  rule_rows <- sort(unique(c(
+    as.integer(group_sep %||% integer(0)),
+    as.integer(attr(rendered, "section_sep_rows") %||% integer(0))
+  )))
+  rule_rows <- rule_rows[rule_rows >= 2L & rule_rows <= n_rows]
+  if (length(rule_rows)) {
     tbl <- gt::tab_style(
       tbl,
       style = rule_light,
-      locations = gt::cells_body(rows = group_sep[1L] - 1L)
+      locations = gt::cells_body(rows = rule_rows - 1L)
     )
   }
 
@@ -1089,6 +1122,26 @@ output_gt <- function(rendered) {
       tbl,
       style = gt::cell_text(indent = gt::px(20)),
       locations = gt::cells_body(columns = gt_names[1L], rows = level_rows)
+    )
+  }
+  # The header rows of a stacked table: gt merges no body cells, so the
+  # label of a span (an interval, a column group) opens its first cell,
+  # with a rule under its columns as under the spanners of the header.
+  for (hs in attr(rendered, "header_spans") %||% list()) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = gt::cell_text(align = "left"),
+      locations = gt::cells_body(
+        columns = gt_names[hs$cols[[1L]]],
+        rows = hs$row
+      )
+    )
+  }
+  for (hr in attr(rendered, "header_rules") %||% list()) {
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule,
+      locations = gt::cells_body(columns = gt_names[hr$cols], rows = hr$row)
     )
   }
 
@@ -1638,9 +1691,11 @@ output_flextable <- function(rendered) {
   # (no Model prefix, no dedup `.N` suffix) when available, with the
   # legacy `strip_model_prefix()` path as a fallback so structured
   # bodies that pre-date `display_label` still render.
+  # An empty label stays empty: a column a stacked table leaves
+  # unlabeled at the top.
   col_label <- function(j) {
     lbl <- struct$col_meta[[orig_names[j]]]$display_label
-    if (!is.null(lbl) && nzchar(lbl)) {
+    if (!is.null(lbl)) {
       lbl
     } else {
       strip_model_prefix(orig_names[j]) # nocov -- display_label always set
@@ -1826,6 +1881,17 @@ output_flextable <- function(rendered) {
       )
     }
   }
+  # The header rows of a stacked table: a rule under each column group
+  # and interval label, as under those of the header.
+  for (hr in attr(rendered, "header_rules") %||% list()) {
+    ft <- flextable::hline(
+      ft,
+      i = hr$row,
+      j = hr$cols,
+      part = "body",
+      border = bd
+    )
+  }
   if (nrow(body) > 0L) {
     ft <- flextable::hline_bottom(ft, part = "body", border = bd)
   }
@@ -1869,20 +1935,27 @@ output_flextable <- function(rendered) {
 
   # fit_stats_layout = "merged": merge each model's numeric sub-
   # columns into one wide centered cell per fit-stat row (Stata
-  # esttab / Econometrica convention).
+  # esttab / Econometrica convention). A stacked table carries its own
+  # ranges (`fit_merge_specs`): the fit rows of its "merged" panels only.
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
-  if (identical(fit_stats_layout, "merged")) {
+  specs <- attr(rendered, "fit_merge_specs")
+  if (is.null(specs) && identical(fit_stats_layout, "merged")) {
     specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
-    for (sp in specs) {
-      ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols, part = "body")
-      ft <- flextable::align(
-        ft,
-        i = sp$row,
-        j = sp$cols,
-        part = "body",
-        align = "center"
-      )
-    }
+  }
+  for (sp in specs) {
+    ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols, part = "body")
+    ft <- flextable::align(
+      ft,
+      i = sp$row,
+      j = sp$cols,
+      part = "body",
+      align = "center"
+    )
+  }
+  # The header rows of a stacked table: the label of a span (an interval,
+  # a column group) merged over its columns.
+  for (hs in attr(rendered, "header_spans") %||% list()) {
+    ft <- flextable::merge_at(ft, i = hs$row, j = hs$cols, part = "body")
   }
 
   # Content-driven widths. `autofit()` sizes the columns to their
@@ -2386,28 +2459,61 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       }
       # nocov end
 
-      # Default per-column numfmt
-      default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
-      wb <- openxlsx2::wb_add_numfmt(
-        wb,
-        sheet = excel_sheet,
-        dims = openxlsx2::wb_dims(rows = body_rows_idx, cols = j),
-        numfmt = default_fmt
-      )
-      # Per-row precision overrides (fit-stat rows: e.g. "n" integer)
-      if (!is.null(meta$fit_stat_overrides)) {
-        for (ov in meta$fit_stat_overrides) {
-          ov_fmt <- .excel_numfmt(
-            ov$precision %||% meta$precision,
-            ov$p_style %||% meta$p_style
-          )
-          excel_row <- body_first_row + ov$row - 1L
+      # The format of each cell, where the view records one per cell (a
+      # stacked table: each cell keeps its panel's), else the column's.
+      row_fmt <- meta$row_fmt
+      if (!is.null(row_fmt)) {
+        cell_fmt <- vapply(
+          seq_len(nrow(body)),
+          function(i) {
+            f <- if (i <= length(row_fmt)) row_fmt[[i]]
+            if (is.null(f)) {
+              NA_character_
+            } else {
+              .excel_numfmt(f$precision, f$p_style)
+            }
+          },
+          character(1)
+        )
+        # One call per run of consecutive rows that share a format.
+        runs <- rle(cell_fmt)
+        ends <- cumsum(runs$lengths)
+        for (r in which(!is.na(runs$values))) {
+          run_rows <- seq.int(ends[[r]] - runs$lengths[[r]] + 1L, ends[[r]])
           wb <- openxlsx2::wb_add_numfmt(
             wb,
             sheet = excel_sheet,
-            dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
-            numfmt = ov_fmt
+            dims = openxlsx2::wb_dims(
+              rows = body_first_row + run_rows - 1L,
+              cols = j
+            ),
+            numfmt = runs$values[[r]]
           )
+        }
+      } else {
+        # Default per-column numfmt
+        default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
+        wb <- openxlsx2::wb_add_numfmt(
+          wb,
+          sheet = excel_sheet,
+          dims = openxlsx2::wb_dims(rows = body_rows_idx, cols = j),
+          numfmt = default_fmt
+        )
+        # Per-row precision overrides (fit-stat rows: e.g. "n" integer)
+        if (!is.null(meta$fit_stat_overrides)) {
+          for (ov in meta$fit_stat_overrides) {
+            ov_fmt <- .excel_numfmt(
+              ov$precision %||% meta$precision,
+              ov$p_style %||% meta$p_style
+            )
+            excel_row <- body_first_row + ov$row - 1L
+            wb <- openxlsx2::wb_add_numfmt(
+              wb,
+              sheet = excel_sheet,
+              dims = openxlsx2::wb_dims(rows = excel_row, cols = j),
+              numfmt = ov_fmt
+            )
+          }
         }
       }
 
@@ -2447,7 +2553,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       # (4) The Yes/No of the fixed-effects disclosure block
       #     (numeric-encoded 1/0 in the typed body -- a bare "1" in a
       #     coefficient column would read like an estimate).
-      if (!is.null(meta$fit_stat_overrides)) {
+      if (!is.null(row_fmt)) {
+        for (i in seq_len(min(nrow(body), length(row_fmt)))) {
+          if (identical(row_fmt[[i]]$fit_stat %||% "", "fixed_effects")) {
+            text_rows[i] <- TRUE
+          }
+        }
+      } else if (!is.null(meta$fit_stat_overrides)) {
         for (ov in meta$fit_stat_overrides) {
           if (identical(ov$fit_stat %||% "", "fixed_effects")) {
             text_rows[ov$row] <- TRUE
@@ -2471,7 +2583,17 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       status_col <- .struct_cell_status(struct, col_name)
       text_rows[nzchar(status_col)] <- TRUE
       # (7) Below-threshold p-values ("<.001").
-      if (!is.null(meta$threshold)) {
+      if (!is.null(row_fmt)) {
+        thr <- vapply(
+          seq_len(nrow(body)),
+          function(i) {
+            f <- if (i <= length(row_fmt)) row_fmt[[i]]
+            f$threshold %||% NA_real_
+          },
+          numeric(1)
+        )
+        text_rows[!is.na(col_vals) & !is.na(thr) & col_vals < thr] <- TRUE
+      } else if (!is.null(meta$threshold)) {
         text_rows[!is.na(col_vals) & col_vals < meta$threshold] <- TRUE
       }
 
@@ -2620,6 +2742,18 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       )
     }
   }
+  # The header rows of a stacked table: a rule under each column group
+  # and interval label, as under those of the header. Drawn on its own
+  # row only: a border drawn on the row below would replace the borders
+  # that row already has.
+  for (hr in attr(rendered, "header_rules") %||% list()) {
+    wb <- draw_rule(
+      wb,
+      rows = body_first_row + hr$row - 1L,
+      cols = hr$cols,
+      bottom = TRUE
+    )
+  }
   # Bottom rule under last body row.
   if (nrow(body) > 0L) {
     wb <- draw_rule(
@@ -2701,6 +2835,22 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           horizontal = "right",
           vertical = "center"
         )
+        # The header rows of a stacked table are centered, as the header.
+        header_body_rows <- as.integer(
+          attr(rendered, "header_rows") %||% integer(0)
+        )
+        if (length(header_body_rows)) {
+          wb <- openxlsx2::wb_add_cell_style(
+            wb,
+            sheet = excel_sheet,
+            dims = openxlsx2::wb_dims(
+              rows = body_first_row + header_body_rows - 1L,
+              cols = 2:n_cols
+            ),
+            horizontal = "center",
+            vertical = "center"
+          )
+        }
       }
     }
   }
@@ -2710,24 +2860,38 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # containing the fit-stat value. The value lives in the first
   # sub-column (rendered body layout); the merge extends it across
   # the remaining sub-columns of the model. The merged cell is
-  # centered so the value sits visually under the model spanner.
+  # centered so the value sits visually under the model spanner. A
+  # stacked table carries its own ranges (`fit_merge_specs`).
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
-  if (identical(fit_stats_layout, "merged")) {
+  specs <- attr(rendered, "fit_merge_specs")
+  if (is.null(specs) && identical(fit_stats_layout, "merged")) {
     specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
-    for (sp in specs) {
-      excel_row <- body_first_row + sp$row - 1L
-      wb <- openxlsx2::wb_merge_cells(
-        wb,
-        sheet = excel_sheet,
-        dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols)
+  }
+  for (sp in specs) {
+    excel_row <- body_first_row + sp$row - 1L
+    wb <- openxlsx2::wb_merge_cells(
+      wb,
+      sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols)
+    )
+    wb <- openxlsx2::wb_add_cell_style(
+      wb,
+      sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols),
+      horizontal = "center"
+    )
+  }
+  # The header rows of a stacked table: the label of a span (an interval,
+  # a column group) merged over its columns.
+  for (hs in attr(rendered, "header_spans") %||% list()) {
+    wb <- openxlsx2::wb_merge_cells(
+      wb,
+      sheet = excel_sheet,
+      dims = openxlsx2::wb_dims(
+        rows = body_first_row + hs$row - 1L,
+        cols = hs$cols
       )
-      wb <- openxlsx2::wb_add_cell_style(
-        wb,
-        sheet = excel_sheet,
-        dims = openxlsx2::wb_dims(rows = excel_row, cols = sp$cols),
-        horizontal = "center"
-      )
-    }
+    )
   }
 
   wb <- .spicy_xl_add_note(
@@ -2836,6 +3000,13 @@ clipboard_payload <- function(rendered, clipboard_delim) {
     .strip_spanner_prefix(body, spanners)
   } else {
     body
+  }
+  # The header rows of a stacked table: the label of a span repeated in
+  # every cell of it, as the spanner rows of the header are.
+  for (hs in attr(rendered, "header_spans") %||% list()) {
+    for (j in hs$cols[-1L]) {
+      stripped[[j]][[hs$row]] <- stripped[[hs$cols[[1L]]]][[hs$row]]
+    }
   }
 
   if (has_model_spanner) {
@@ -2948,6 +3119,21 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 
 # ---- as_structured() accessor --------------------------------------------
 
+# The eight table classes that carry a structured view, mapped to the
+# function that builds each: `as_structured()` names the builder of a
+# table without a view, `table_stack()` the builder of a table that
+# cannot be a panel yet.
+.STRUCTURED_TABLE_BUILDERS <- c(
+  spicy_regression_table = "table_regression()",
+  spicy_categorical_table = "table_categorical()",
+  spicy_continuous_table = "table_continuous()",
+  spicy_continuous_lm_table = "table_continuous_lm()",
+  spicy_outcome_table = "table_outcome()",
+  spicy_continuous_svy_table = "table_continuous_svy()",
+  spicy_categorical_svy_table = "table_categorical_svy()",
+  spicy_multiresponse_table = "table_multiresponse()"
+)
+
 #' Extract the typed (structured) view of a spicy table
 #'
 #' spicy's tables return a *display* representation by default -- a
@@ -2975,10 +3161,13 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   [table_regression()], [table_categorical()], [table_continuous()],
 #'   [table_continuous_lm()], [table_outcome()], [table_multiresponse()]
 #'   or the survey twins [table_categorical_svy()] and
-#'   [table_continuous_svy()]. All return the same schema.
+#'   [table_continuous_svy()]. All return the same schema. A stacked
+#'   table of [table_stack()] is accepted too.
 #'
 #' @return A list with the structured view (see Details for the
-#'   schema).
+#'   schema). For a stacked table of [table_stack()], a list of such
+#'   views, one per panel, named by the labels of the panels: each is the
+#'   view of the table stacked in that panel.
 #'
 #' @section Schema:
 #' * `version` -- integer contract version (see *Versioning* below).
@@ -3171,19 +3360,14 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' @export
 as_structured <- function(x) {
-  # The eight table classes that carry a structured view, mapped to
-  # the function that builds one -- named in the error so a user who
-  # passed the wrong object is told what to call.
-  builders <- c(
-    spicy_regression_table = "table_regression()",
-    spicy_categorical_table = "table_categorical()",
-    spicy_continuous_table = "table_continuous()",
-    spicy_continuous_lm_table = "table_continuous_lm()",
-    spicy_outcome_table = "table_outcome()",
-    spicy_continuous_svy_table = "table_continuous_svy()",
-    spicy_categorical_svy_table = "table_categorical_svy()",
-    spicy_multiresponse_table = "table_multiresponse()"
-  )
+  # The table classes that carry a structured view, mapped to the
+  # function that builds one (`.STRUCTURED_TABLE_BUILDERS`): named in the
+  # error, so a user who passed the wrong object is told what to call.
+  # A stack is its panels: the view of each, by addition to the schema.
+  if (inherits(x, "spicy_stack_table")) {
+    return(lapply(attr(x, "panels", exact = TRUE), as_structured))
+  }
+  builders <- .STRUCTURED_TABLE_BUILDERS
   # spicy release that gave each family its structured view -- a table
   # pickled by an older one carries no attribute at all.
   since <- c(
@@ -3297,7 +3481,8 @@ as_structured <- function(x) {
 #'
 #' @param x A `data.frame` of class `"spicy_regression_table"` as
 #'   returned by [table_regression()] with `output = "default"`.
-#' @param ... Additional arguments (currently ignored).
+#' @param ... Passed to [spicy_print_table()] (e.g. `padding`, which
+#'   overrides the padding the table was built with).
 #'
 #' @return Invisibly returns `x`.
 #'
@@ -3305,29 +3490,6 @@ as_structured <- function(x) {
 #' @keywords internal
 #' @export
 print.spicy_regression_table <- function(x, ...) {
-  group_sep <- attr(x, "group_sep_rows")
-  # nocov start -- defensive: render_regression_table() always sets
-  # the attribute (to integer(0) when no fit-stats footer is present).
-  # Reached only if a caller manually constructed an object that
-  # bypasses the renderer.
-  if (is.null(group_sep)) {
-    group_sep <- integer(0)
-  }
-  # nocov end
-  # The subordinate "Thresholds" section rule is ASCII-only: union it in here
-  # so the gt / flextable / tinytable / excel backends -- which read the raw
-  # `group_sep_rows` attr and treat its first element as the fit-stats boundary
-  # (+ merge ranges) -- are left untouched.
-  section_sep <- attr(x, "section_sep_rows") %||% integer(0)
-  group_sep <- sort(unique(c(as.integer(group_sep), as.integer(section_sep))))
-  align <- attr(x, "align") %||% "decimal"
-  spanners <- attr(x, "spanners")
-
-  # The printed cells are the object's own columns. Not `as.data.frame()`,
-  # whose method returns the table with its numbers (`output =
-  # "data.frame"`), not the strings the console shows.
-  body <- x
-  class(body) <- "data.frame"
   # Build a parallel `display_labels` vector that overrides the body's
   # `colnames()` for the PRINTED header text only. The data.frame
   # itself keeps its deduplicated, model-prefixed column names so the
@@ -3341,15 +3503,53 @@ print.spicy_regression_table <- function(x, ...) {
   struct <- attr(x, "structured")
   display_labels <- if (!is.null(struct) && !is.null(struct$col_meta)) {
     vapply(
-      names(body),
+      names(x),
       function(nm) {
         .lookup_display_label(nm, struct$col_meta)
       },
       character(1)
     )
   } else {
-    names(body)
+    names(x)
   }
+  # First element of the RAW group_sep_rows attr = the fit-stats
+  # boundary (rule drawn before that row). Passing it lets the panel
+  # splitter drop blank n / AIC stub rows from continuation panels
+  # (single-model tables split by width, e.g. the multinomial
+  # columns layout at narrow console widths).
+  fit_stats_start <- {
+    raw_gs <- as.integer(attr(x, "group_sep_rows") %||% integer(0))
+    if (length(raw_gs)) raw_gs[1L] else NULL
+  }
+  .print_regression_like(
+    x,
+    display_labels = display_labels,
+    fit_stats_start = fit_stats_start,
+    ...
+  )
+}
+
+# The console of a regression table and of a stacked table
+# (`print.spicy_stack_table()`), from the attributes they share: the rules
+# between blocks, the alignment, the column groups, the padding. The
+# caller passes the header text of each column and the first fit-statistic
+# row, which only a single table has.
+.print_regression_like <- function(x, display_labels, fit_stats_start, ...) {
+  # Every rule the console draws between blocks: the coefficients /
+  # fit-stats divide (`group_sep_rows`) and the rule that opens a
+  # subordinate block (`section_sep_rows`), as every rich engine draws
+  # them.
+  group_sep <- sort(unique(c(
+    as.integer(attr(x, "group_sep_rows") %||% integer(0)),
+    as.integer(attr(x, "section_sep_rows") %||% integer(0))
+  )))
+  align <- attr(x, "align") %||% "decimal"
+
+  # The printed cells are the object's own columns. Not `as.data.frame()`,
+  # whose method returns the table with its numbers (`output =
+  # "data.frame"`), not the strings the console shows.
+  body <- x
+  class(body) <- "data.frame"
   data_col_idx <- setdiff(seq_along(body), 1L)
   align_center_cols <- if (identical(align, "center")) {
     data_col_idx
@@ -3366,19 +3566,15 @@ print.spicy_regression_table <- function(x, ...) {
   # Stata regress / parameters::model_parameters / modelsummary.
   # Use the call-site `padding` stashed by table_regression() (in
   # the `"padding"` attribute) unless the user overrides via `...`.
-  padding_attr <- attr(x, "padding") %||% 2L
   dot_args <- list(...)
   if (is.null(dot_args$padding)) {
-    dot_args$padding <- padding_attr
+    dot_args$padding <- attr(x, "padding") %||% 2L
   }
-  # First element of the RAW group_sep_rows attr = the fit-stats
-  # boundary (rule drawn before that row). Passing it lets the panel
-  # splitter drop blank n / AIC stub rows from continuation panels
-  # (single-model tables split by width, e.g. the multinomial
-  # columns layout at narrow console widths).
-  fit_stats_start <- {
-    raw_gs <- as.integer(attr(x, "group_sep_rows") %||% integer(0))
-    if (length(raw_gs)) raw_gs[1L] else NULL
+  # A regression table has no totals row: without this, the printer's
+  # fallback would rule off as a total any row whose label holds the
+  # word "Total" (a coefficient labeled "Total horsepower").
+  if (!"total_row_idx" %in% names(dot_args)) {
+    dot_args$total_row_idx <- integer(0)
   }
   do.call(
     spicy_print_table,
@@ -3390,7 +3586,7 @@ print.spicy_regression_table <- function(x, ...) {
         group_sep_rows = group_sep,
         align_center_cols = align_center_cols,
         center_headers = TRUE,
-        spanners = spanners,
+        spanners = attr(x, "spanners"),
         display_labels = display_labels,
         fit_stats_start = fit_stats_start,
         # The one layout where `SE` / `p` / an interval really is the

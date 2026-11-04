@@ -1612,3 +1612,20 @@ test_that("uv titles use the glm family titles and reach the French bridge", {
     "Régression quasi-Poisson univariable (présélection) : carb"
   )
 })
+
+
+test_that("a screen refuses `layout` and points to table_stack()", {
+  skip_on_cran()
+  e <- expect_error(
+    table_regression_uv(
+      airquality,
+      outcome = "Ozone",
+      predictors = c("Temp", "Wind"),
+      method = "lm",
+      layout = "stacked"
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(e), "`table_stack()`", fixed = TRUE)
+  expect_no_match(conditionMessage(e), "Unknown argument", fixed = TRUE)
+})

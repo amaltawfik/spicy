@@ -59,7 +59,16 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 #   * `coefs_aligned` filtered to the surviving terms
 #   * `term_order` filtered to the same set
 #   * `factor_ref_levels` cleaned of factors whose group is now empty
-apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
+#
+# `warn = FALSE` leaves the patterns that match no term to the caller:
+# the driver of a stacked table, whose panels each see one model, checks
+# them once against the terms of every model (`.reg_warn_dead_patterns()`).
+apply_keep_drop_filter <- function(
+  aligned,
+  keep = NULL,
+  drop = NULL,
+  warn = TRUE
+) {
   if (is.null(keep) && is.null(drop)) {
     return(aligned)
   }
@@ -81,37 +90,8 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
     )
   }
 
-  # A pattern that matches NO term is almost always a mistake -- the
-  # classic one being a pattern written against a display LABEL
-  # ("Sexe") instead of the model term ("sexMale"). With `drop` the
-  # failure is invisible: the filter is inert and the table stays
-  # plausible. Name every dead pattern instead of staying silent
-  # (the `coef_omit` bug class documented in the 2026-08 field audit).
-  dead <- character(0)
-  for (p in c(keep, drop)) {
-    if (!any(grepl(p, terms, perl = TRUE))) {
-      dead <- c(dead, p)
-    }
-  }
-  if (length(dead) > 0L) {
-    spicy_warn(
-      c(
-        sprintf(
-          "%s pattern(s) %s matched no coefficient term.",
-          if (is.null(keep)) "`drop`" else "`keep`",
-          paste(.quote_val(dead), collapse = ", ")
-        ),
-        "i" = paste0(
-          "Patterns match term names as in `stats::coef()` (e.g. ",
-          "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
-          "The terms of this table: ",
-          paste(.quote_val(utils::head(unique(terms), 12L)), collapse = ", "),
-          if (length(unique(terms)) > 12L) ", ..." else "",
-          "."
-        )
-      ),
-      class = "spicy_no_match"
-    )
+  if (isTRUE(warn)) {
+    .reg_warn_dead_patterns(terms, keep, drop)
   }
 
   keep_mask <- if (!is.null(keep)) {
@@ -152,8 +132,12 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   if (any(is_int)) {
     owner <- ifelse(is.na(ca$factor_term), ca$term, ca$factor_term)
     surviving_owners <- unique(owner[final_mask & !is_int])
-    uv_int <- is_int & grepl(": \\(Intercept\\)$", ca$term)
+    # Only a univariable-screen intercept is keyed by a predictor; a
+    # multinomial one ("Student: (Intercept)") is keyed by its outcome.
     uv_pred <- sub(": \\(Intercept\\)$", "", ca$term)
+    uv_int <- is_int &
+      grepl(": \\(Intercept\\)$", ca$term) &
+      uv_pred %in% owner[!is_int]
     final_mask[is_int] <- !uv_int[is_int] |
       (uv_pred[is_int] %in% surviving_owners)
   }
@@ -179,4 +163,41 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
   }
 
   aligned
+}
+
+# A pattern that matches NO term is almost always a mistake -- the
+# classic one being a pattern written against a display LABEL ("Sexe")
+# instead of the model term ("sexMale"). With `drop` the failure is
+# invisible: the filter is inert and the table stays plausible. Name
+# every dead pattern instead of staying silent (the `coef_omit` bug class
+# documented in the 2026-08 field audit). `terms`: every term the
+# patterns were matched against.
+.reg_warn_dead_patterns <- function(terms, keep = NULL, drop = NULL) {
+  dead <- character(0)
+  for (p in c(keep, drop)) {
+    if (!any(grepl(p, terms, perl = TRUE))) {
+      dead <- c(dead, p)
+    }
+  }
+  if (length(dead) == 0L) {
+    return(invisible(NULL))
+  }
+  spicy_warn(
+    c(
+      sprintf(
+        "%s pattern(s) %s matched no coefficient term.",
+        if (is.null(keep)) "`drop`" else "`keep`",
+        paste(.quote_val(dead), collapse = ", ")
+      ),
+      "i" = paste0(
+        "Patterns match term names as in `stats::coef()` (e.g. ",
+        "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
+        "The terms of this table: ",
+        paste(.quote_val(utils::head(unique(terms), 12L)), collapse = ", "),
+        if (length(unique(terms)) > 12L) ", ..." else "",
+        "."
+      )
+    ),
+    class = "spicy_no_match"
+  )
 }

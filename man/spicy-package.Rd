@@ -72,6 +72,8 @@ since 0.13.0
 Excel workbook, and its PDF), since 0.14.0
 \item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, since
 0.14.0
+\item Stacked tables: \code{\link[=table_stack]{table_stack()}}, with
+\code{table_regression(layout = "stacked")}, since 0.15.0
 }
 
 \strong{Internal API} (not part of the public surface; can change
@@ -88,10 +90,12 @@ The \code{broom::tidy()} and \code{broom::glance()} methods of every table class
 \code{spicy_categorical_table}, \code{spicy_categorical_svy_table},
 \code{spicy_continuous_table}, \code{spicy_continuous_svy_table},
 \code{spicy_continuous_lm_table}, \code{spicy_outcome_table},
-\code{spicy_multiresponse_table}, and \code{spicy_regression_table}, and the
-\code{output = "long"} frame of every table function, speak one
-vocabulary: broom's name wherever broom defines one, and one
-snake_case name per concept otherwise, the same in every function.
+\code{spicy_multiresponse_table}, \code{spicy_regression_table} and
+\code{spicy_stack_table}, and the \code{output = "long"} frame of every table
+function, speak one vocabulary: broom's name wherever broom defines
+one, and one snake_case name per concept otherwise, the same in every
+function. The outputs of a stacked table (\code{\link[=table_stack]{table_stack()}}) open with
+a \code{panel} column, the label of the panel a row belongs to.
 One exception, the estimates: \code{tidy()} gives them broom's names, and
 the long output of a descriptive table names each statistic it holds
 (see the table below).\tabular{ll}{
@@ -160,7 +164,11 @@ is displayed, one row per printed row, with numbers: the key columns
 \code{variable}, \code{label} (and the \code{level} or \code{group} of the row, and
 \code{.row_role}, the role of the printed row, where the table adds rows),
 then the printed columns under their names. The two are identical for
-every class. \code{output = "excel"} and \code{"word"} return the path of the
+every class. A stacked table (\code{\link[=table_stack]{table_stack()}}) is the exception to one
+row per printed row: its data frame binds the data frames of its
+panels by rows, under a leading \code{panel} column, without the rows that
+open the panels or repeat their headers. \code{output = "excel"} and
+\code{"word"} return the path of the
 file, invisibly. The columns of the object \code{output = "default"}
 returns are internal and can change without notice: the contracts are
 \code{output = "data.frame"}, \code{output = "long"}, \code{tidy()}, \code{glance()} and
@@ -226,7 +234,15 @@ spicy does not compute it (e.g., weighted group tests in
 \code{\link[=table_continuous]{table_continuous()}}); the message names an alternative.
 \item \code{spicy_empty_table} -- \code{\link[=table_regression]{table_regression()}} has no row
 left to show for a model once the requested row blocks are
-switched off.
+switched off, or no coefficient row once \code{keep}, \code{drop} or
+\code{show_intercept = FALSE} have chosen the rows (for a panel of
+\code{layout = "stacked"}, or for every model of the table);
+\code{\link[=table_stack]{table_stack()}} received a table without rows.
+\item \code{spicy_stack_mismatch} -- \code{\link[=table_stack]{table_stack()}} received
+tables built in different languages, with different decimal
+marks or alignments, or under styles that format a cell
+differently. Signaled together with
+\code{spicy_invalid_input}.
 \item \code{spicy_ame_satt_unsupported_formula} -- signaled
 together with \code{spicy_unsupported} when AME
 Satterthwaite degrees of freedom are unavailable for the

@@ -227,8 +227,9 @@ align_frames <- function(
         events = events_col,
         events_n = events_n_col,
         is_singular = cf$term %in% singular_terms,
+        # %in% TRUE: rows bound in without the column (AME) read FALSE.
         is_intercept = if (!is.null(cf$is_intercept)) {
-          as.logical(cf$is_intercept)
+          cf$is_intercept %in% TRUE
         } else {
           cf$term == "(Intercept)"
         },

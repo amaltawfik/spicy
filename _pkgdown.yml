@@ -175,7 +175,8 @@ reference:
       - table_continuous_svy
   - title: Regression tables
     desc: >
-      One or more fitted models side by side, and the univariable screen.
+      One or more fitted models side by side or one under the other, and
+      the univariable screen.
       `table_regression_models()` returns the supported model classes;
       its page describes the behavior of each family (inference,
       robust-variance backends, exponentiation, marginal effects,
@@ -183,6 +184,7 @@ reference:
     contents:
       - table_regression
       - table_regression_uv
+      - table_stack
       - table_regression_models
   - title: Working with tables
     desc: >

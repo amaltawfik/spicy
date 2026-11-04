@@ -123,8 +123,8 @@ outcome a shorter label in the title.}
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
 \code{cluster}, \code{p_adjust}, \code{digits}, \code{output}, ...), each by its full
 name: an unknown or abbreviated name is an error.
-\code{nested} is not
-meaningful for a screen and is refused. \code{cluster} must be a
+\code{nested} and \code{layout} are not
+meaningful for a screen and are refused. \code{cluster} must be a
 single vector with one value per row of \code{data}; it is aligned to
 each fit's own estimation sample automatically.}
 

@@ -256,6 +256,36 @@
 #' nor addressed by [inline()]. Rename the model, or pass
 #' `model_labels`.
 #'
+#' ## Stacked layout
+#'
+#' `layout = "stacked"` sets the models one under the other, one panel
+#' per model, through [table_stack()]. Each panel is exactly the table
+#' `table_regression()` gives that model alone, with the same arguments:
+#' its default columns (`"all_b"`, the confidence interval included), its
+#' reference rows, blocks and fit statistics. A row with the label of the
+#' model opens each panel: `model_labels`, else the names of `models`,
+#' else the outcomes when they all differ, else "Model k". The panels
+#' share one column header when they have the same columns, and each opens
+#' with its own header otherwise (an odds ratio beside a coefficient, a
+#' multinomial model with its outcome categories in columns). `vcov` and
+#' `cluster` lists give each panel its own estimator; `outcome_labels`
+#' does not apply. Under `nested = TRUE`, the change statistics of each
+#' model sit in its own panel, labeled "vs" the model before it. The type
+#' of each model, its standard errors and the adjustment of its p-values
+#' are worded as in the note of the models side by side, each panel named
+#' by its label; the other sentences each open with the labels of the
+#' panels they concern. A warning or an error names a model as the
+#' side-by-side table does. `tidy()`, `glance()` and `output = "long"`
+#' return the rows of the models side by side, under a leading `panel`
+#' column, with one exception: under `keep` or `drop`, a multinomial
+#' model returns the rows its panel shows, selected by its terms as in
+#' its table alone (`"age"`),
+#' where side by side the patterns meet terms named with their outcome
+#' (`"Student: age"`). `output = "data.frame"` binds the data frames of
+#' the panels by rows. A `keep`, `drop` or `show_intercept = FALSE` that
+#' leaves a panel without a coefficient row is an error: side by side,
+#' such a model keeps its fit statistics beside the others.
+#'
 #' # Inference and standard errors
 #'
 #' `vcov` selects the variance-covariance estimator:
@@ -1229,6 +1259,13 @@
 #'   (native primitives handle the mixed-precision case), and
 #'   trivially decimal-aligns in `"merged"` mode (the fit-stat
 #'   values move out of the B column into the merged cell).
+#' @param layout How several models are laid out. `"columns"` (default)
+#'   sets them side by side, one group of columns per model. `"stacked"`
+#'   sets them one under the other, one panel per model: each panel is
+#'   the table of that model alone (its default columns, the confidence
+#'   interval included, its blocks and fit statistics), opened by a row
+#'   with its label. See *Multi-model semantics* and [table_stack()],
+#'   which stacks tables built separately.
 #' @param show_re Logical. `TRUE` (default) renders the random-effects
 #'   variance components of a mixed-effects fit (`lmer`, `glmer`,
 #'   `glmmTMB`, `lme`, `clmm`) as a subordinate **"Random effects" block of
@@ -1611,7 +1648,8 @@
 #'   `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the file
 #'   path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
 #'   for `"clipboard"`. The two data frames carry the note as printed in
-#'   `attr(x, "note")`.
+#'   `attr(x, "note")`. With `layout = "stacked"`, the stacked table of
+#'   [table_stack()], whose value is described there.
 #'
 #' @section Classed conditions:
 #' Every error and warning emitted by `table_regression()` carries
@@ -1632,6 +1670,7 @@
 #' class is not listed there, try `table_regression(fit)` anyway --
 #' unsupported classes error with a clear message.
 #' Other regression-table functions:
+#' [table_stack()] to stack regression tables one under the other;
 #' [table_continuous_lm()] for one-predictor-by-many-outcomes
 #' descriptive tables.
 #' Other spicy table functions:
@@ -1740,7 +1779,7 @@
 #' \donttest{
 #' # ---- Mixed-effects models ----------------------------------------
 #' # Linear mixed-effects (lme4). The footer adds a random-effects
-#' # panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
+#' # block with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
 #' # marginal / conditional R^2 fit-stats, and a per-class p-value
 #' # annotation line.
 #' if (requireNamespace("lme4", quietly = TRUE)) {
@@ -1754,7 +1793,7 @@
 #'   # Minimal random-effects display: estimates only, no SE / CI.
 #'   table_regression(fit, re_columns = "est")
 #'
-#'   # Suppress the random-effects panel entirely.
+#'   # Suppress the random-effects block entirely.
 #'   table_regression(fit, show_re = FALSE)
 #' }
 #'
@@ -1858,6 +1897,7 @@ table_regression <- function(
   reference_label = NULL,
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
+  layout = c("columns", "stacked"),
   show_re = TRUE,
   re_scale = c("sd", "variance"),
   re_columns = c("est", "se", "ci"),
@@ -1898,6 +1938,9 @@ table_regression <- function(
   word_template = NULL,
   style = NULL
 ) {
+  # A panel of `layout = "stacked"` (R/regression_stacked.R) is told so by
+  # the request its driver set for this call; NULL for any other call.
+  panel_req <- .reg_panel_take()
   # A journal / locale style only moves DEFAULTS: `.style_begin()`
   # rewrites the formatting formals the caller did NOT type, and pushes
   # the levers that have no formal (p-value banding, interval
@@ -1958,6 +2001,7 @@ table_regression <- function(
   reference_style <- spicy_match_arg(reference_style)
   factor_layout <- spicy_match_arg(factor_layout)
   fit_stats_layout <- spicy_match_arg(fit_stats_layout)
+  layout <- spicy_match_arg(layout)
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
   # The `labels` contract of the descriptive tables (decision 54), checked
@@ -1978,6 +2022,20 @@ table_regression <- function(
   models <- validate_models_input(models)
   n_models <- length(models)
 
+  # `layout = "stacked"`: one panel per model, each built by a call of
+  # this function on that model alone, then stacked
+  # (R/regression_stacked.R). Taken before any argument is resolved per
+  # model, so every panel resolves its own.
+  if (identical(layout, "stacked")) {
+    return(.regression_stacked(
+      models,
+      match.call(),
+      environment(),
+      public_call,
+      cluster_expr
+    ))
+  }
+
   # Resolve `cluster` to a list of vectors (one per model) so the
   # rest of the pipeline sees a uniform atomic form. `cluster` may
   # be a formula (`~region`), a string (`"region"`), a vector
@@ -1987,9 +2045,13 @@ table_regression <- function(
   # cluster for the full spec.
   cluster <- resolve_cluster_arg(cluster, models)
 
-  # Phase B -- multi-model alignment (steps 4-8)
+  # Phase B -- multi-model alignment (steps 4-8). The driver of a stacked
+  # table checks the `vcov` and `cluster` of every model, and warns about
+  # each in the words of the whole list: its panels do not again.
   validate_nested_alignment(models, nested)
-  validate_vcov_cluster_lists(vcov, cluster, models)
+  if (is.null(panel_req)) {
+    validate_vcov_cluster_lists(vcov, cluster, models)
+  }
 
   # Multinomial outcome-as-columns gate (single nnet::multinom model,
   # no nested comparison). Computed early because it drives the
@@ -2336,6 +2398,9 @@ table_regression <- function(
     }
     if (isTRUE(nested) && length(models) >= 2L) {
       show_fit_stats <- c(show_fit_stats, default_nested_tokens(models))
+    } else if (!is.null(panel_req$nested)) {
+      # A panel of a nested stack: the change tokens of its hierarchy.
+      show_fit_stats <- c(show_fit_stats, panel_req$nested$tokens)
     }
   }
 
@@ -2454,13 +2519,13 @@ table_regression <- function(
       logical(1)
     )
     if (any(overridden)) {
-      mod_labels <- .model_display_names(models)
-      spicy_warn(
+      mod_labels <- .model_display_names(models, panel_req)
+      msg <- function(it) {
         c(
           paste0(
             "`ci_method = \"profile\"` is ignored under a robust or ",
             "resampling `vcov`: ",
-            paste(mod_labels[overridden], collapse = ", "),
+            paste(it$names, collapse = ", "),
             "."
           ),
           "i" = paste0(
@@ -2468,8 +2533,13 @@ table_regression <- function(
             "requested `vcov` takes precedence and its Wald CIs are ",
             "reported (the footer names the estimator)."
           )
-        ),
-        class = "spicy_ignored_arg"
+        )
+      }
+      items <- list(names = mod_labels[overridden])
+      spicy_warn(
+        msg(items),
+        class = "spicy_ignored_arg",
+        spicy_gather = .reg_gather(panel_req, "ci_profile", items, msg)
       )
     }
   }
@@ -2587,7 +2657,7 @@ table_regression <- function(
           c(
             sprintf(
               "Model %d is a gaussian / identity glm.",
-              i
+              .reg_model_index(i, panel_req)
             ),
             "i" = paste0(
               "This is mathematically equivalent to `lm()`. Refitting ",
@@ -2704,35 +2774,22 @@ table_regression <- function(
   # Phase E -- cross-arg semantic warnings (no errors). The
   # standardized x non-additive caveat is emitted later (after
   # extracts) since it inspects each fit. Q1 / Q2 conflict warnings
-  # are runtime / orchestrator-only and emitted here.
-  if (
-    !is.null(model_labels) &&
-      is.list(models) &&
-      !is.null(names(models)) &&
-      all(nzchar(names(models)))
-  ) {
-    spicy_warn(
-      c(
-        paste0(
-          "Both `names(models)` and `model_labels` were supplied; ",
-          "the explicit `model_labels` takes precedence (Q1)."
-        ),
-        "i" = "Drop one of the two to silence this warning."
-      ),
-      class = "spicy_ignored_arg"
-    )
-  }
+  # are runtime / orchestrator-only and emitted here. A warning about the
+  # arguments alone, which every panel of a stacked table would repeat,
+  # is gathered by its driver and shown once (`.reg_gather()`).
+  .reg_warn_both_labels(model_labels, models)
   if (isFALSE(show_intercept) && !identical(intercept_position, "first")) {
     spicy_warn(
       c(
         paste0(
           "`intercept_position = \"",
           intercept_position,
-          "\"` is ignored when `show_intercept = FALSE` (Q2)."
+          "\"` is ignored when `show_intercept = FALSE`."
         ),
         "i" = "Drop `intercept_position` or set `show_intercept = TRUE`."
       ),
-      class = "spicy_ignored_arg"
+      class = "spicy_ignored_arg",
+      spicy_gather = .reg_gather(panel_req, "intercept_position")
     )
   }
   # AME visibility caveat: when `ame` and `p` are both shown but
@@ -2765,7 +2822,8 @@ table_regression <- function(
           ),
           "i" = "Add `\"ame_p\"` to display the AME-specific p-value."
         ),
-        class = "spicy_caveat"
+        class = "spicy_caveat",
+        spicy_gather = .reg_gather(panel_req, "ame_p")
       )
     }
   }
@@ -2788,9 +2846,13 @@ table_regression <- function(
         ) %in%
           show_columns
       )
+    # A panel of a stacked table sees its own `vcov`: the side-by-side
+    # table warns only when no model runs the bootstrap, so the driver
+    # shows this warning only when every panel raised it.
     if (!runs_boot) {
       .warn_boot_n_ignored(
-        "`vcov = \"bootstrap\"` and to the RMST and risk-difference columns"
+        "`vcov = \"bootstrap\"` and to the RMST and risk-difference columns",
+        spicy_gather = .reg_gather(panel_req, "boot_n", every = TRUE)
       )
     }
   }
@@ -2884,7 +2946,10 @@ table_regression <- function(
     frames[[i]] <- .with_public_call(
       as_regression_frame_validated(
         models[[i]],
-        model_id = model_ids[i],
+        # A panel of a stacked table names its model in the messages of
+        # the frame as the side-by-side table would; its display keeps
+        # `model_ids`, those of the model alone.
+        model_id = panel_req$id %||% model_ids[i],
         vcov = vcov_list[[i]],
         cluster = cluster_list[[i]],
         boot_n = boot_n,
@@ -2916,11 +2981,7 @@ table_regression <- function(
       (isTRUE(frames[[i]]$info$supports$standardise_algebraic) &&
         standardized %in% c("posthoc", "basic", "smart"))
     if (!identical(standardized, "none") && !std_ok) {
-      model_tag <- if (n_models > 1L) {
-        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
-      } else {
-        sprintf("this model class (%s)", class(models[[i]])[1L])
-      }
+      model_tag <- .reg_model_tag(models, i, panel_req)
       spicy_abort(
         c(
           sprintf(
@@ -2972,11 +3033,7 @@ table_regression <- function(
         # warning); only a class with no estimand machinery aborts.
         is.null(frames[[i]]$info$extras$survival_estimands)
     ) {
-      model_tag <- if (n_models > 1L) {
-        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
-      } else {
-        sprintf("this model class (%s)", class(models[[i]])[1L])
-      }
+      model_tag <- .reg_model_tag(models, i, panel_req)
       spicy_abort(
         c(
           sprintf(
@@ -2999,11 +3056,7 @@ table_regression <- function(
     # them would render a requested column entirely empty -- error
     # instead, naming the model.
     if ("n_events" %in% show_columns && is.null(frames[[i]]$coefs$events)) {
-      model_tag <- if (n_models > 1L) {
-        sprintf("model %d (class %s)", i, class(models[[i]])[1L])
-      } else {
-        sprintf("this model class (%s)", class(models[[i]])[1L])
-      }
+      model_tag <- .reg_model_tag(models, i, panel_req)
       spicy_abort(
         c(
           sprintf(
@@ -3162,19 +3215,20 @@ table_regression <- function(
   # object for want of a view. Silence is the worst of the three possible
   # answers; say what emptied the table instead.
   #
-  # Exactly one route reaches this state: a fit whose entire content is a
-  # block the caller switched off. An intercept-only ordinal (`y ~ 1`) is
-  # that fit -- its cut-points ARE the model, there is not one predictor
-  # coefficient beside them -- and `show_thresholds = FALSE` removes
-  # them. Left alone (the default), the same fit renders its Thresholds
-  # block and its fit statistics normally.
+  # Here, the route of a fit whose entire content is a block the caller
+  # switched off. An intercept-only ordinal (`y ~ 1`) is that fit -- its
+  # cut-points ARE the model, there is not one predictor coefficient
+  # beside them -- and `show_thresholds = FALSE` removes them. Left alone
+  # (the default), the same fit renders its Thresholds block and its fit
+  # statistics normally. The other route, rows selected away by `keep`,
+  # `drop` or `show_intercept`, is refused after the selection.
   empty_frames <- vapply(
     frames,
     function(fr) nrow(fr$coefs) == 0L,
     logical(1)
   )
   if (any(empty_frames)) {
-    mod_labels <- .model_display_names(models)
+    mod_labels <- .model_display_names(models, panel_req)
     hid_thresholds <- !isTRUE(show_thresholds) &&
       any(vapply(
         frames[empty_frames],
@@ -3184,13 +3238,15 @@ table_regression <- function(
         },
         logical(1)
       ))
-    spicy_abort(
+    msg <- function(it) {
+      hid <- any(it$hid)
       c(
         sprintf(
-          "%s has no rows to show.",
-          paste(mod_labels[empty_frames], collapse = ", ")
+          "%s %s no rows to show.",
+          paste(it$names, collapse = ", "),
+          if (length(it$names) > 1L) "have" else "has"
         ),
-        "i" = if (hid_thresholds) {
+        "i" = if (hid) {
           paste0(
             "This fit has no predictor coefficients -- its cut-points ",
             "are its whole content -- and `show_thresholds = FALSE` ",
@@ -3199,13 +3255,18 @@ table_regression <- function(
         } else {
           "Every row the model could contribute has been switched off."
         },
-        "i" = if (hid_thresholds) {
+        "i" = if (hid) {
           "Drop `show_thresholds = FALSE` to see the cut-points."
         } else {
           "Re-enable one of the row blocks (`show_thresholds`, `show_re`, `show_components`)."
         }
-      ),
-      class = "spicy_empty_table"
+      )
+    }
+    items <- list(names = mod_labels[empty_frames], hid = hid_thresholds)
+    spicy_abort(
+      msg(items),
+      class = "spicy_empty_table",
+      spicy_gather = .reg_gather(panel_req, "empty_frames", items, msg)
     )
   }
 
@@ -3222,35 +3283,33 @@ table_regression <- function(
     logical(1)
   )
   if (any(singular_mixed)) {
-    mod_labels <- .model_display_names(models)
+    mod_labels <- .model_display_names(models, panel_req)
     # "exactly zero" would be false for three of the five classes: only
     # lme4 drives a collapsed component onto 0 itself. glmmTMB optimizes
     # the log-SD and nlme the log-Cholesky factor, where an exact 0 sits
     # at -Inf, so the estimate lands NEAR the boundary; and the
     # correlation regime (|r| = 1) has no zero variance at all.
-    advice <- paste0(
-      "Consider simplifying the random structure (drop the ",
-      "offending term), or test whether it belongs with ",
-      "`re_test = \"lrt\"`."
-    )
     # `isSingular()` is lme4's, and lme4 is a Suggests: point there only
     # for the fits it can actually be run on, or the reader is sent to a
     # package they may not have, documenting a criterion that is not the
     # one applied to their model.
+    advice_for <- function(classes) {
+      out <- paste0(
+        "Consider simplifying the random structure (drop the ",
+        "offending term), or test whether it belongs with ",
+        "`re_test = \"lrt\"`."
+      )
+      if (all(classes %in% c("lmerMod", "lmerModLmerTest", "glmerMod"))) {
+        out <- paste0(out, " See `help(\"isSingular\", package = \"lme4\")`.")
+      }
+      out
+    }
     singular_classes <- vapply(
       frames[singular_mixed],
       function(fr) fr$info$class %||% "",
       character(1)
     )
-    if (
-      all(singular_classes %in% c("lmerMod", "lmerModLmerTest", "glmerMod"))
-    ) {
-      advice <- paste0(
-        advice,
-        " See `help(\"isSingular\", package = \"lme4\")`."
-      )
-    }
-    spicy_warn(
+    msg <- function(it) {
       c(
         sprintf(
           paste0(
@@ -3258,11 +3317,19 @@ table_regression <- function(
             "at or near the boundary of the parameter space -- a variance ",
             "of 0, or a correlation of \u00B11."
           ),
-          paste(mod_labels[singular_mixed], collapse = ", ")
+          paste(it$names, collapse = ", ")
         ),
-        "i" = advice
-      ),
-      class = "spicy_caveat"
+        "i" = advice_for(it$classes)
+      )
+    }
+    items <- list(
+      names = mod_labels[singular_mixed],
+      classes = singular_classes
+    )
+    spicy_warn(
+      msg(items),
+      class = "spicy_caveat",
+      spicy_gather = .reg_gather(panel_req, "singular_fit", items, msg)
     )
   }
 
@@ -3277,15 +3344,15 @@ table_regression <- function(
     logical(1)
   )
   if (any(re_se_skipped)) {
-    mod_labels <- .model_display_names(models)
-    spicy_warn(
+    mod_labels <- .model_display_names(models, panel_req)
+    msg <- function(it) {
       c(
         sprintf(
           paste0(
             "Variance-component SEs and CIs skipped for %s: n exceeds ",
             "`options(\"spicy.re_se_max_n\")` = %s."
           ),
-          paste(mod_labels[re_se_skipped], collapse = ", "),
+          paste(it$names, collapse = ", "),
           format(.re_se_size_cap(), big.mark = ",")
         ),
         "i" = paste0(
@@ -3294,8 +3361,13 @@ table_regression <- function(
           "`options(spicy.re_se_max_n = Inf)`, to compute them anyway, ",
           "or test the random terms with `re_test = \"lrt\"`."
         )
-      ),
-      class = "spicy_caveat"
+      )
+    }
+    items <- list(names = mod_labels[re_se_skipped])
+    spicy_warn(
+      msg(items),
+      class = "spicy_caveat",
+      spicy_gather = .reg_gather(panel_req, "re_se_skipped", items, msg)
     )
   }
 
@@ -3417,8 +3489,9 @@ table_regression <- function(
   # intended reading. A hierarchy is a SEQUENCE: every change statistic
   # is a statement about an adjacent PAIR, so a fit that cannot enter a
   # comparison silently removes the comparison the table exists for.
-  # There is no capable side to fall back on.
-  if (isTRUE(nested) && length(frames) >= 2L) {
+  # There is no capable side to fall back on. A panel of a nested stack
+  # answers for its own model.
+  if ((isTRUE(nested) && length(frames) >= 2L) || !is.null(panel_req$nested)) {
     nested_ok <- vapply(
       frames,
       function(fr) {
@@ -3448,34 +3521,14 @@ table_regression <- function(
     }
   }
 
-  # `exponentiate = TRUE` no-op detection (relocated from before extraction):
-  # now that every frame is built, warn only when NO model actually applied
-  # exp() -- i.e. every link is identity or otherwise non-exponentiable. Keyed
-  # on the frames' own info$extras$exp_applied, so it covers classes with no
-  # stats::family() method (polr / clm / multinom / fixest / betareg / ...).
-  if (
-    isTRUE(exponentiate) &&
-      !any(vapply(
-        frames,
-        function(fr) isTRUE(fr$info$extras$exp_applied),
-        logical(1)
-      ))
-  ) {
-    spicy_warn(
-      c(
-        "`exponentiate = TRUE` has no effect on identity-link fits.",
-        "i" = paste0(
-          "exp() is only applied to fits whose coefficients are on a log / ",
-          "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
-          "argument for identity-link (gaussian) fits."
-        )
-      ),
-      class = "spicy_ignored_arg"
-    )
+  # `exponentiate = TRUE` no-op detection, once every frame is built. The
+  # panel of a stack leaves it to the driver, which asks every model.
+  if (is.null(panel_req)) {
+    .reg_warn_exponentiate_noop(frames, exponentiate)
   }
 
   # Standardized-on-non-additive caveat (Q15, Phase E)
-  emit_standardized_caveat_if_needed(models, standardized)
+  emit_standardized_caveat_if_needed(models, standardized, panel = panel_req)
 
   # Nested-comparison change stats (APA Table 7.13 in-table rows).
   # Augments each `frames[[i]]$info$fit_stats` list with `r2_change`,
@@ -3496,6 +3549,16 @@ table_regression <- function(
       cluster_list = cluster_list
     )
     show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
+  } else if (!is.null(panel_req$nested$prev_fit)) {
+    # Panel k of a nested stack: model k against model k - 1.
+    frames <- .reg_attach_panel_change(
+      frames,
+      models,
+      vcov_list,
+      cluster_list,
+      panel_req$nested
+    )
+    show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
   }
 
   # ---- Variable labels (decision 54) -------------------------------------
@@ -3505,18 +3568,21 @@ table_regression <- function(
   # its `labels`. Before the explode, which copies each frame's info.
   # A name of `labels` or `note_labels` that is no outcome, term label or
   # coefficient name of the table warns, and is left out, as in the
-  # descriptive tables (`.warn_unknown_label_names()`).
-  .warn_unknown_label_names(
-    c(
-      .reg_label_keys(models),
-      unlist(lapply(frames, function(f) {
-        dv <- f$info$dv %||% NA_character_
-        c(dv, .reg_bare_var(dv))
-      }))
-    ),
-    labels,
-    note_labels
-  )
+  # descriptive tables (`.warn_unknown_label_names()`). The panel of a
+  # stack names one model only: its driver checks the names against all.
+  if (is.null(panel_req)) {
+    .warn_unknown_label_names(
+      c(
+        .reg_label_keys(models),
+        unlist(lapply(frames, function(f) {
+          dv <- f$info$dv %||% NA_character_
+          c(dv, .reg_bare_var(dv))
+        }))
+      ),
+      labels,
+      note_labels
+    )
+  }
   var_labs <- .reg_variable_labels(labels, models, frames)
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
@@ -3527,6 +3593,10 @@ table_regression <- function(
   dv_notes <- .reg_outcome_notes(frames, var_labs, models, note_labels)
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_note <- dv_notes[[i]]
+  }
+  # The driver of a stack titles and labels the panels from their frames.
+  if (!is.null(panel_req)) {
+    .reg_panel$frames <- c(.reg_panel$frames, frames)
   }
 
   # ---- Multinomial outcome-as-columns explode (display only) -------------
@@ -3579,8 +3649,45 @@ table_regression <- function(
   # `keep` / `drop` filter -- runs AFTER alignment (so canonical term
   # ordering is preserved for the surviving terms) and AFTER
   # p_adjust (so adjusted p-values reflect the model's full
-  # coefficient family, not just the displayed subset).
-  aligned <- apply_keep_drop_filter(aligned, keep = keep, drop = drop)
+  # coefficient family, not just the displayed subset). A panel of a
+  # stacked table matches the patterns against its own model only: it
+  # leaves the terms it saw to its driver, which warns once about a
+  # pattern no model matches.
+  if (!is.null(panel_req)) {
+    .reg_panel$terms <- c(
+      .reg_panel$terms,
+      list(unique(aligned$coefs_aligned$term))
+    )
+  }
+  aligned <- apply_keep_drop_filter(
+    aligned,
+    keep = keep,
+    drop = drop,
+    warn = is.null(panel_req)
+  )
+  # A table whose row selection (`keep`, `drop`, `show_intercept =
+  # FALSE`) leaves no coefficient row of any model has nothing to show:
+  # the renderer would return a bare header without fit statistics, note
+  # or typed view. Several models where only some lose all their rows
+  # still make a table, each keeping its fit statistics.
+  if (NROW(aligned$coefs_aligned) == 0L) {
+    .reg_abort_no_rows(
+      models,
+      keep,
+      drop,
+      show_intercept,
+      panel_req,
+      hid_thresholds = !isTRUE(show_thresholds) &&
+        any(vapply(
+          frames,
+          function(fr) {
+            thr <- fr$info$extras$thresholds
+            is.data.frame(thr) && nrow(thr) > 0L
+          },
+          logical(1)
+        ))
+    )
+  }
 
   # Dispatch payload: under the columns layout, tidy() and
   # `output = "long"` must keep the original long frame (a
@@ -3625,7 +3732,10 @@ table_regression <- function(
   # only; the footer side of the resolution lives below (`footer_main`
   # is always built so its diagnostic side-effects still fire, e.g. the
   # "none" + flat informational message tied to reference_style; the
-  # override / suppression happens last).
+  # override / suppression happens last). Whether the caller typed the
+  # title is kept on the table: `table_stack()` labels a panel by its
+  # title only then.
+  title_typed <- is.character(title) && any(nzchar(title))
   title <- if (is.null(title)) {
     # The title was the first renderer to read frames directly; the
     # footer, body and alignment followed, and the legacy extract shape
@@ -3682,8 +3792,9 @@ table_regression <- function(
   # the label-reading themes (reference categories, polynomial
   # trends) read the DISPLAY frames -- under the columns layout the
   # original prefixed labels would print pseudo-levels like
-  # "sex = Student: Female" once per equation.
-  footer_main <- build_regression_footer_from_frames(
+  # "sex = Student: Female" once per equation. The parts of the note are
+  # kept on the table, for `table_stack()` to merge the notes of panels.
+  footer_parts <- build_regression_footer_from_frames(
     frames,
     frames_display = frames_render,
     standardized = standardized,
@@ -3700,8 +3811,10 @@ table_regression <- function(
     displayed_parent_vars = displayed_parent_vars,
     decimal_mark = decimal_mark,
     model_labels = named_model_labels,
-    note_add = note_add
+    note_add = note_add,
+    parts = TRUE
   )
+  footer_main <- .compose_note_parts(footer_parts)
 
   # "none" + flat: silent information loss flag. Inform-level
   # message (not a warning), once per call. Reference convention
@@ -3737,7 +3850,8 @@ table_regression <- function(
           "text or table caption."
         )
       ),
-      class = "spicy_silent_reference"
+      class = "spicy_silent_reference",
+      spicy_gather = .reg_gather(panel_req, "silent_reference")
     )
   }
 
@@ -3802,6 +3916,30 @@ table_regression <- function(
   # cells unchanged).
   attr(rendered, "padding") <- as.integer(padding)
   attr(rendered, "fit_stats_layout") <- fit_stats_layout
+  # What `table_stack()` labels an unnamed panel by: the title when the
+  # caller typed it, else the outcome as the table names it, one per
+  # model. The names must not open with "title" or "outcome", which
+  # `attr()` would match partially for a table without those attributes.
+  attr(rendered, "spicy_title_typed") <- title_typed
+  attr(rendered, "spicy_outcome_display") <- vapply(
+    frames,
+    function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
+    character(1)
+  )
+  # What `table_stack()` merges the note of a panel from: the parts the
+  # note was composed of, the note the call typed (with its `note_add`),
+  # and whether the call removed the note. The name must not open with
+  # "note": `attr(x, "note")` matches partially, and would read this list
+  # off a table whose note was removed.
+  attr(rendered, "spicy_note_parts") <- c(
+    footer_parts,
+    list(
+      typed = if (is.character(note)) {
+        paste(c(note[nzchar(note)], note_add), collapse = " ")
+      },
+      suppressed = isFALSE(note)
+    )
+  )
 
   # ---- Output dispatch (Step 11) -----------------------------------------
   # `aligned_data` (not `aligned`): under the multinomial columns
@@ -3827,10 +3965,156 @@ table_regression <- function(
 # never `labels`, the user's per-coefficient row-label vector still
 # needed by the renderer downstream: shadowing it in a warning block
 # once silently dropped every `labels =` override on mixed fits.
-.model_display_names <- function(models) {
+#
+# `panel`, the request of a panel of a stacked table
+# (R/regression_stacked.R): its one model takes the name the messages of
+# the side-by-side table give it in the whole list.
+.model_display_names <- function(models, panel = NULL) {
+  if (!is.null(panel$name)) {
+    return(panel$name)
+  }
   if (!is.null(names(models)) && all(nzchar(names(models)))) {
     names(models)
   } else {
     paste("Model", seq_along(models))
   }
+}
+
+# The identifiers of the models of a list, `model_id` of the machine
+# outputs: their names when all are named, "M<k>" otherwise.
+.reg_model_ids <- function(models) {
+  if (!is.null(names(models)) && all(nzchar(names(models)))) {
+    names(models)
+  } else {
+    paste0("M", seq_along(models))
+  }
+}
+
+# The position of model `i` in the messages: in the list for a panel of a
+# stacked table, whose call sees its model alone; and the number of
+# models the messages speak of.
+.reg_model_index <- function(i, panel = NULL) {
+  i + (panel$index %||% 1L) - 1L
+}
+
+.reg_model_count <- function(n_models, panel = NULL) {
+  panel$n %||% n_models
+}
+
+# The row selection (`keep`, `drop`, `show_intercept = FALSE`) left no
+# coefficient row: the models it emptied, and what emptied them. Every
+# model of a table that reaches here, or the one model of a panel of a
+# stacked table, whose driver gathers the panels it emptied.
+.reg_abort_no_rows <- function(
+  models,
+  keep,
+  drop,
+  show_intercept,
+  panel = NULL,
+  hid_thresholds = FALSE,
+  call = rlang::caller_env()
+) {
+  what <- c(
+    if (!is.null(keep)) "`keep`",
+    if (!is.null(drop)) "`drop`",
+    if (isFALSE(show_intercept)) "`show_intercept = FALSE`",
+    if (hid_thresholds) "`show_thresholds = FALSE`"
+  )
+  msg <- function(it) {
+    c(
+      sprintf(
+        "%s %s no rows to show.",
+        paste(it$names, collapse = ", "),
+        if (length(it$names) > 1L) "have" else "has"
+      ),
+      "i" = sprintf(
+        "%s left no coefficient row.",
+        paste(what, collapse = " and ")
+      ),
+      if (!is.null(keep) || !is.null(drop)) {
+        c(
+          "i" = paste0(
+            "Patterns match term names as in `stats::coef()`: choose the ",
+            "rows so that one at least remains."
+          )
+        )
+      },
+      # Side by side, a model with no row keeps its fit statistics; a
+      # panel is a table of its own.
+      if (!is.null(panel)) {
+        c("i" = "Each panel of a stacked table needs one row at least.")
+      }
+    )
+  }
+  items <- list(names = .model_display_names(models, panel))
+  spicy_abort(
+    msg(items),
+    class = "spicy_empty_table",
+    spicy_gather = .reg_gather(panel, "empty_rows", items, msg),
+    call = call
+  )
+}
+
+# How a message about one model names it: "model 2 (class glm)" among
+# several, "this model class (glm)" in a table of one.
+.reg_model_tag <- function(models, i, panel = NULL) {
+  cls <- class(models[[i]])[1L]
+  if (.reg_model_count(length(models), panel) > 1L) {
+    sprintf("model %d (class %s)", .reg_model_index(i, panel), cls)
+  } else {
+    sprintf("this model class (%s)", cls)
+  }
+}
+
+# `model_labels` beside a fully named list: the labels win (Q1), and the
+# caller is told.
+.reg_warn_both_labels <- function(model_labels, models) {
+  if (
+    !is.null(model_labels) &&
+      is.list(models) &&
+      !is.null(names(models)) &&
+      all(nzchar(names(models)))
+  ) {
+    spicy_warn(
+      c(
+        paste0(
+          "Both `names(models)` and `model_labels` were supplied; ",
+          "the explicit `model_labels` takes precedence."
+        ),
+        "i" = "Drop one of the two to silence this warning."
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+  invisible(NULL)
+}
+
+# `exponentiate = TRUE` that no model applied: every link is identity or
+# otherwise non-exponentiable. Keyed on the frames' own
+# info$extras$exp_applied, so it covers classes with no stats::family()
+# method (polr / clm / multinom / fixest / betareg / ...). Asked once the
+# frames are built: by table_regression(), or for all the panels of a
+# stack by its driver.
+.reg_warn_exponentiate_noop <- function(frames, exponentiate) {
+  if (
+    isTRUE(exponentiate) &&
+      !any(vapply(
+        frames,
+        function(fr) isTRUE(fr$info$extras$exp_applied),
+        logical(1)
+      ))
+  ) {
+    spicy_warn(
+      c(
+        "`exponentiate = TRUE` has no effect on identity-link fits.",
+        "i" = paste0(
+          "exp() is only applied to fits whose coefficients are on a log / ",
+          "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
+          "argument for identity-link (gaussian) fits."
+        )
+      ),
+      class = "spicy_ignored_arg"
+    )
+  }
+  invisible(NULL)
 }

@@ -172,8 +172,8 @@
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
 #'   `cluster`, `p_adjust`, `digits`, `output`, ...), each by its full
 #'   name: an unknown or abbreviated name is an error.
-#'   `nested` is not
-#'   meaningful for a screen and is refused. `cluster` must be a
+#'   `nested` and `layout` are not
+#'   meaningful for a screen and are refused. `cluster` must be a
 #'   single vector with one value per row of `data`; it is aligned to
 #'   each fit's own estimation sample automatically.
 #' @inheritParams table_categorical
@@ -696,6 +696,10 @@ table_regression_uv <- function(
     }
   }
 
+  # The title the screen builds reaches table_regression() as a typed
+  # one: whether the caller typed it is stamped on the table afterwards,
+  # for `table_stack()`, which labels a panel by its title only then.
+  title_typed <- is.character(title) && nzchar(title)
   if (is.null(title)) {
     prefix <- .uv_title_prefix(method, family)
     # Decision 42: the family goes through the title-prefix bridge, and a
@@ -717,7 +721,7 @@ table_regression_uv <- function(
   # error raised in it carries no name a header can print ("Error:"),
   # and a base error the deparse of its whole body. Both are re-signaled
   # with the call of the screen, the function the user called.
-  withCallingHandlers(
+  res <- withVisible(withCallingHandlers(
     do.call(
       table_regression,
       c(
@@ -741,7 +745,13 @@ table_regression_uv <- function(
         stop(e)
       }
     }
-  )
+  ))
+  out <- res$value
+  if (inherits(out, "spicy_regression_table")) {
+    attr(out, "spicy_title_typed") <- title_typed
+  }
+  # The path of a file, the table sent to the clipboard: invisibly.
+  if (res$visible) out else invisible(out)
 }
 
 # The names `...` passes to `table_regression()`: every one an argument
@@ -761,9 +771,20 @@ table_regression_uv <- function(
       call = call
     )
   }
+  # `layout` lays out several models; the screen is one table.
+  if ("layout" %in% dot_names) {
+    spicy_abort(
+      c(
+        "`layout` does not apply to a univariable screen: the screen is one table.",
+        "i" = "Stack several screens with `table_stack()`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   known <- setdiff(
     names(formals(table_regression)),
-    c("models", names(formals(table_regression_uv)))
+    c("models", "layout", names(formals(table_regression_uv)))
   )
   bad <- setdiff(dot_names, known)
   if (length(bad) == 0L) {
