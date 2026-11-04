@@ -956,7 +956,7 @@ Un libellé de variable documente le fichier de données ; un tableau publié po
 
 ## Décision 55 — Empilement des tableaux : `panel_labels` et fusion de table-stack (2026-11-04)
 
-La branche table-stack (`table_stack()`, `table_regression(layout = "stacked")`) est fusionnée dans main dès que sa suite est verte, sans attendre la relecture des sept amendements de l'ADR `dev/decisions/2026-10-16-table-stack.md`, qui restent à relire et peuvent être amendés avant publication. L'argument des libellés de panneaux s'appelle `panel_labels` : la décision 54 réserve `labels` aux libellés de variables dans les huit fonctions table_*, et `panel_labels` fait la paire avec `model_labels`. Un ancien `labels =` passé à `table_stack()` est refusé par un message qui nomme `panel_labels`.
+La branche table-stack (`table_stack()`, `table_regression(layout = "stacked")`) est fusionnée dans main dès que sa suite est verte. Les sept amendements de l'ADR `dev/decisions/2026-10-16-table-stack.md` sont validés le soir même, dont les trois qui étaient de vrais choix : le libellé par défaut d'un panneau ne reprend qu'un titre tapé par l'utilisateur (sinon l'outcome, sinon « Panel k »), des panneaux de styles différents sont refusés plutôt que ramenés en silence au premier, et les quatre différences connues entre la note empilée et la note en colonnes sont acceptées. L'argument des libellés de panneaux s'appelle `panel_labels` : la décision 54 réserve `labels` aux libellés de variables dans les huit fonctions table_*, et `panel_labels` fait la paire avec `model_labels`. Un ancien `labels =` passé à `table_stack()` est refusé par un message qui nomme `panel_labels`.
 
 ## Décision 56 — Mots français : « Panneau », « vs » et les étiquettes vcov de fixest traduites (2026-11-04)
 

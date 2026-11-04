@@ -1,6 +1,6 @@
 # ADR 2026-10-16 — Empilement des tableaux : table_stack() et layout = "stacked"
 
-**Statut** : décidé par Amal le 2026-10-16 (cinq points de `dev/stacked_layout_spec.md` et nom de la primitive). Amendé le 2026-11-04 par délégation (section « Amendements »). Nom `panel_labels` et fusion dans `main` confirmés par Amal le 2026-11-04, amendements à relire.
+**Statut** : décidé par Amal le 2026-10-16 (cinq points de `dev/stacked_layout_spec.md` et nom de la primitive). Amendé le 2026-11-04 par délégation (section « Amendements »). Nom `panel_labels`, fusion dans `main` et amendements 1 à 7 validés par Amal le 2026-11-04.
 
 ## Décisions d'Amal (2026-10-16)
 
