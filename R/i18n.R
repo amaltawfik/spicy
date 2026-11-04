@@ -334,7 +334,10 @@
   label_block_scale_effects = "Scale effects",
   label_block_random_effects = "Random effects",
   label_block_zero_inflation = "Zero-inflation",
-  label_block_zero_hurdle = "Zero hurdle",
+  # The two zero hurdles model opposite events -- pscl's zero part
+  # Pr(y > 0), glmmTMB's Pr(y = 0) -- so each caption names its event.
+  label_block_zero_hurdle = "Zero hurdle, Pr(y > 0)",
+  label_block_zero_hurdle_zero = "Zero hurdle, Pr(y = 0)",
   label_block_dispersion = "Dispersion",
   # Not a subordinate block: the leading section of a conditional-logit
   # (mlogit) table, the coefficients shared by every alternative. Same
@@ -421,6 +424,10 @@
   # the `note_re_null_*` below), the df, the statistic and the p clause
   # (operator and value) -- DATA.
   note_re_lrt = "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
+  # The same test when its null has no short name (a glmmTMB fit whose zi
+  # or dispersion formula has a random term the null keeps). Three holes:
+  # the df, the statistic and the p clause -- DATA.
+  note_re_lrt_unnamed = "LR test, \u03C7\u0304\u00B2(%d) = %s, p %s",
   # The null model of that test, named after its family. The families
   # met by default have a key each; any other family passes the engine's
   # own name through `note_re_null_family`. One hole in `_cumulative`:
@@ -465,6 +472,12 @@
   note_re_null_cumulative_cloglog = "cumulative complementary log-log regression",
   note_re_null_cumulative_loglog = "cumulative log-log regression",
   note_re_null_family = "%s regression",
+  # The null of a two-part glmmTMB fit keeps its zero part, so it is named
+  # as the title names that model. One hole: the family, filled in the
+  # table language as the titles write it (`.title_family_word()`:
+  # "Poisson", "negative-binomial").
+  note_re_null_hurdle = "%s hurdle regression",
+  note_re_null_zero_inflated = "zero-inflated %s regression",
   # The test behind the p column of the variance-component rows, under
   # `re_test = "lrt"` / `"rlrt"`.
   note_re_test_lrt = "Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.",
@@ -493,12 +506,13 @@
   # glmmTMB hurdle (zero-truncated family + zi formula): its zi part
   # models Pr(y = 0), the opposite event of pscl's zero hurdle.
   note_component_gloss_hurdle_zero = "%s component: log-odds of a zero count.",
-  # Two holes: the block caption, then the censoring distribution (an
-  # identifier from the fit).
+  # The same for a glmmTMB hurdle on a continuous family (ziGamma,
+  # lognormal or beta_family + zi formula): its zero is a value, not a
+  # count.
+  note_component_gloss_hurdle_zero_continuous = "%s component: log-odds of a zero.",
+  # Two holes: the block caption, then the censoring distribution, one of
+  # the `note_component_dist_*` words below.
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
-  # The censoring distribution of a pscl zero hurdle, named in the
-  # gloss above in place of the code pscl stores (poisson, negbin,
-  # geometric).
   note_component_dist_poisson = "Poisson",
   note_component_dist_negbin = "negative binomial",
   note_component_dist_geometric = "geometric",
@@ -575,6 +589,11 @@
   # English, through the same bridge), then the outcome label.
   title_uv_multivariable = "Univariable and multivariable %s: %s",
   title_uv_screen = "Univariable %s screen: %s",
+  # The same two titles for a Cox model, whose title carries a qualifier
+  # of its own ("proportional hazards") that a language may place after
+  # "univariable". One hole: the outcome label.
+  title_uv_multivariable_cox = "Univariable and multivariable Cox proportional hazards regression: %s",
+  title_uv_screen_cox = "Univariable Cox proportional hazards regression screen: %s",
   # The sample disclosure of that table: the common complete-case count,
   # or the range of the per-predictor N.
   note_uv_common_complete_cases = "All models fit on the %d common complete cases.",
@@ -1306,6 +1325,13 @@
   # mechanism (nls, AER::ivreg, rms::ols, fixest's IID, estimatr's
   # classical se_type), capitalized as it has always printed.
   note_vcov_classical_plain = "Classical",
+  # estimatr's robust `se_type` values, capitalized as they have always
+  # printed. One hole: the type ("HC2", "Stata HC1", "CR2").
+  note_vcov_robust_plain = "Robust (%s)",
+  note_vcov_cluster_robust_plain = "Cluster-robust (%s)",
+  # An estimatr fit with `se_type = "none"`, which computes no standard
+  # errors.
+  note_vcov_none_plain = "None (se_type = \"none\")",
   # The default of mgcv::gam() and bam(): the Bayesian posterior
   # covariance of the coefficients (mgcv's Vp), whatever the smoothing
   # method (GCV, REML, ML). The note names the method, not the package.
@@ -1707,6 +1733,41 @@ spicy_fmt <- function(key, ...) {
 # deleted when 251-C makes the prefix a registry key.
 .spicy_title_prefix_table <- function(lang) {
   switch(lang, en = NULL, fr = .FR_TITLE_PREFIXES)
+}
+
+# The family words a language composes its titles with (`.fr_title_set()`):
+# the English title head ("Negative-binomial") mapped to the word the
+# language's templates take ("binomiale negative"). "en" has none -- the
+# head lowercased mid-sentence is the English word. Read where a note names
+# a model as its title does (`.title_family_word()`).
+.spicy_title_family_table <- function(lang) {
+  switch(
+    lang,
+    en = NULL,
+    fr = stats::setNames(.FR_TITLE_FAMILIES[, "fr"], .FR_TITLE_FAMILIES[, "en"])
+  )
+}
+
+# The titles that already name a model, with the plural a type note
+# writes for several models of that title ("Heckman selection models."):
+# "<title> models." would name the model twice. Keyed by the English
+# title. The GAM titles follow one rule instead (.gam_title_plural()).
+.spicy_title_plural_table <- function(lang) {
+  switch(
+    lang,
+    en = c(
+      "Heckman selection model" = "Heckman selection models"
+    ),
+    fr = .FR_TITLE_PLURALS
+  )
+}
+
+# The names of the parametric survival distributions a note writes
+# ("Distribution: Log-normal"): the English name (`.surv_title_dist()`)
+# mapped to the language's. "en" has none -- the English name is the
+# word.
+.spicy_surv_dist_table <- function(lang) {
+  switch(lang, en = NULL, fr = .FR_SURV_DIST_NAMES)
 }
 
 # Validate `options(spicy.language)` and return the language name.

@@ -132,6 +132,38 @@ test_that("the mixed-family separator is a key, read with the language bypassed"
   )
 })
 
+test_that("a title that already names a model has a plural of its own", {
+  # "Models of generalized additive model (GAM)" would name the model
+  # twice, in either language.
+  gam <- .tf_lm_frame()
+  gam$info$extras$title_prefix <- "Generalized additive model (GAM)"
+  heck <- .tf_lm_frame()
+  heck$info$extras$title_prefix <- "Heckman selection model"
+  lin <- .tf_lm_frame()
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(gam, gam)),
+    "Generalized additive models (GAM)."
+  )
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(heck, heck)),
+    "Heckman selection models."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(gam, gam)),
+    "Mod\u00e8les additifs g\u00e9n\u00e9ralis\u00e9s (GAM)."
+  )
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(heck, heck)),
+    "Mod\u00e8les de s\u00e9lection de Heckman."
+  )
+  # Any other title keeps the sentence of the language.
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(lin, lin)),
+    "Mod\u00e8les de r\u00e9gression lin\u00e9aire."
+  )
+})
+
 test_that("the five template keys accept a spicy.labels override in English", {
   # The registry advertises these keys, so they must not be dead
   # letters when no language is set: the English arms resolve through
@@ -305,6 +337,21 @@ test_that("the quantile title translates its head and writes tau in the mark", {
   # Without the head in the bridge, the whole English title stays.
   bridge <- c("Regression" = "R\u00e9gression")
   expect_null(.title_prefix_display("Quantile regression (\u03c4 = 0.50)"))
+})
+
+test_that("a GAM title that names its family translates its head only", {
+  # The family name a GAM title carries matches no fixed key: the bridge
+  # translates the head and keeps the name, or answers NULL without it.
+  head_fr <- "Mod\u00e8le additif g\u00e9n\u00e9ralis\u00e9 (GAM)"
+  bridge <- c("Generalized additive model (GAM)" = head_fr)
+  local_mocked_bindings(.spicy_title_prefix_table = function(lang) bridge)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .title_prefix_display("Generalized additive model (GAM, myfam)"),
+    "Mod\u00e8le additif g\u00e9n\u00e9ralis\u00e9 (GAM, myfam)"
+  )
+  bridge <- c("Regression" = "R\u00e9gression")
+  expect_null(.title_prefix_display("Generalized additive model (GAM, myfam)"))
 })
 
 test_that("the quantile tau follows the table's decimal mark, in both languages", {

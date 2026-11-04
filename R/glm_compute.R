@@ -64,6 +64,12 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
   if (grepl("^Negative Binomial\\(", family_name)) {
     return("Negative-binomial regression")
   }
+  # statmod::tweedie() names its family "Tweedie", mgcv's Tweedie(p)
+  # "Tweedie(1.5)": the title names the family, as the glmmTMB, GAM and
+  # univariable titles do.
+  if (grepl("^Tweedie", family_name)) {
+    return("Tweedie regression")
+  }
   # gaussian + identity is lm's model, titled as lm titles it; a gaussian
   # with another link is no longer linear in the mean, so it is named by
   # its family. Any unrecognized family falls through to the generic

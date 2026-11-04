@@ -51,7 +51,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \cr
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \cr
-   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) \cr
+   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) \cr
    Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
    Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \cr
@@ -165,20 +165,22 @@ AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
 \code{vcov}, \code{ci_method = "profile"} and \code{standardized} are refused, as is
 \code{nested = TRUE} for \code{clmm}. \code{exponentiate} follows the \code{clm} rule
 (odds ratios under logit, hazard ratios under cloglog), except for a
-\code{clmm} fit with the cloglog link, where it is refused: on the current
-\code{ordinal}, the cloglog and loglog links of \code{clmm()} do not match those
-of \code{clm()} and of \code{glmmTMB()}.
+\code{clmm} fit with the cloglog link and a single random intercept, where
+it is refused: on the current \code{ordinal}, \code{clmm()} fits such a model
+with the loglog link, and the reverse. The random-effects LR test
+refits its null with the link actually fitted.
 }
 
 \section{Counts and two-part models}{
 
 Two-part models show their full model: the zero component renders as a
 \code{Zero-inflation} block (\code{zeroinfl}, glmmTMB \code{ziformula}: probability of a
-structural zero) or a \verb{Zero hurdle} block (\code{hurdle}: probability of a
-nonzero count -- the opposite direction, hence the distinct label; a
-glmmTMB hurdle model, a zero-truncated family with \code{ziformula}, also
-shows a \verb{Zero hurdle} block, which models the probability of a zero), and a
-\code{Dispersion} block when \code{dispformula} has covariates. Component
+structural zero), a \verb{Zero hurdle, Pr(y > 0)} block (\code{hurdle}: probability
+of a nonzero count -- the opposite direction, hence the distinct label)
+or a \verb{Zero hurdle, Pr(y = 0)} block (a glmmTMB hurdle model, a
+zero-truncated family, \code{ziGamma()}, \code{lognormal()} or \code{beta_family()}
+with \code{ziformula}: probability of a zero), and a \code{Dispersion} block when
+\code{dispformula} has covariates. Component
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). \code{"CR1"} for Poisson and geometric \code{pscl}

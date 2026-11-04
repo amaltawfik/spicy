@@ -381,9 +381,11 @@ test_that("survreg: title_prefix names the distribution", {
     as_regression_frame(.fit_survreg_lognormal())$info$extras$title_prefix,
     "Log-normal AFT regression"
   )
+  # A gaussian survreg models T itself: a censored regression, not an AFT
+  # model.
   expect_identical(
     as_regression_frame(.fit_survreg_gaussian())$info$extras$title_prefix,
-    "Gaussian AFT regression"
+    "Censored regression (Gaussian)"
   )
 })
 

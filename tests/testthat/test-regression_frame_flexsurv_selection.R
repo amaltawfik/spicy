@@ -249,6 +249,30 @@ test_that("flexsurvreg surfaces its distribution parameters in the footer", {
   expect_match(note, sprintf("scale = %.2f", aux[["scale"]]), fixed = TRUE)
 })
 
+test_that("a flexsurv rate below 0.01 keeps two significant digits in the footer", {
+  skip_if_not_installed("flexsurv")
+  skip_if_not_installed("survival")
+  lung2 <- stats::na.omit(survival::lung[, c("time", "status", "age", "sex")])
+  fit <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = lung2,
+    dist = "exp"
+  )
+  # The fit's own rate (about 0.0017 per day), rounded by R alone.
+  shown <- format(signif(fit$res["rate", "est"], 2L), scientific = FALSE)
+  expect_false(grepl("^0[.]0*$", shown))
+  expect_match(
+    attr(table_regression(fit), "note"),
+    paste0("Distribution: Exponential; rate = ", shown, "."),
+    fixed = TRUE
+  )
+  expect_match(
+    attr(table_regression(fit, decimal_mark = ","), "note"),
+    paste0("rate = ", chartr(".", ",", shown), "."),
+    fixed = TRUE
+  )
+})
+
 # Phase 3 matrix: rd-vcov-classes:registry-selection
 test_that("selection advertises no AME and refuses the ame column", {
   skip_if_not_installed("sampleSelection")

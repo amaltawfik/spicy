@@ -353,6 +353,27 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
   models
 }
 
+# The scope refusals of the model frames, run by table_regression() on
+# every model before it resolves any argument against them: an ordinal
+# or categorical Bayesian fit (.stan_refuse_ordinal(),
+# .brms_refuse_ordinal()) and a GAM with several linear predictors
+# (.gam_refuse_multi_formula()). Run later, the refusal of an ordinal
+# stan_polr fit was hidden by the Bayesian fit-statistics gate, which
+# refused the ordinal defaults the user never asked for. Each frame
+# method runs its own as well, so as_regression_frame() refuses alike.
+.refuse_out_of_scope_model <- function(fit) {
+  if (inherits(fit, "stanreg")) {
+    .stan_refuse_ordinal(fit)
+  }
+  if (inherits(fit, "brmsfit")) {
+    .brms_refuse_ordinal(fit)
+  }
+  if (inherits(fit, "gam")) {
+    .gam_refuse_multi_formula(fit)
+  }
+  invisible(NULL)
+}
+
 # Per-fit class classifier: NULL if OK, message string otherwise.
 # Used by validate_models_input() to build the aggregate-fail message.
 #

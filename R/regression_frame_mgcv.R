@@ -45,6 +45,7 @@ as_regression_frame.gam <- function(
   ...
 ) {
   .check_mgcv_available()
+  .gam_refuse_multi_formula(fit)
 
   fam <- stats::family(fit)
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
@@ -110,6 +111,32 @@ as_regression_frame.gam <- function(
     )
     # nocov end
   }
+}
+
+
+# A GAM fitted from a list of formulas -- mgcv's location-scale and
+# multi-formula families (gaulss, gevlss, ziplss, twlss, shash, gammals,
+# gumbls, mvn, multinom) -- has one linear predictor per formula. The
+# frame tabulates one, so the fit is refused rather than tabulated with
+# the coefficients of several predictors in one column (it failed on its
+# response name before).
+.gam_refuse_multi_formula <- function(fit) {
+  if (!is.list(stats::formula(fit))) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "GAMs with several linear predictors (family `%s`) are not supported.",
+        fit$family$family
+      ),
+      "i" = paste0(
+        "A family fitted from a list of formulas has one linear predictor ",
+        "per formula; `table_regression()` tabulates GAMs with one."
+      )
+    ),
+    class = "spicy_unsupported"
+  )
 }
 
 
@@ -278,6 +305,12 @@ as_regression_frame.gam <- function(
   dv_label <- .extract_dv_label(fit, dv)
 
   fam_list <- list(family = fam$family, link = fam$link)
+  # cox.ph() reports an identity link, but its linear predictor is the
+  # log hazard ratio, as in coxph(): the frame carries the coxph family,
+  # so `exponentiate = TRUE` gives hazard ratios labeled HR.
+  if (grepl("^Cox PH", fam$family)) {
+    fam_list <- list(family = "cox", link = "log")
+  }
   if (is.null(ci_method)) {
     ci_method <- "wald"
   }
@@ -340,7 +373,7 @@ as_regression_frame.gam <- function(
     }
   }
 
-  exp_ok <- !identical(fam$link, "identity")
+  exp_ok <- !identical(fam_list$link, "identity")
 
   supports <- list(
     ame = TRUE,
@@ -458,7 +491,12 @@ as_regression_frame.gam <- function(
 # carries -- the name also carries the estimated parameters
 # ("Tweedie(p=1.26)", "Scaled t(3.2,0.26)"), which belong to the model,
 # never to its title. ocat() is the cumulative model with a logistic
-# latent variable. Any other family is not named.
+# latent variable, cox.ph() the Cox model, cnorm(), clog() and cpois()
+# the models of a censored normal, logistic and Poisson response, bcg()
+# that of a censored response normal after a Box-Cox transformation, and
+# gfam() a response grouped from several families. A family from outside
+# mgcv keeps the name its author gave it, its parameters dropped: never
+# the title of the gaussian model.
 .gam_title_prefix <- function(fam, is_gaussian_identity) {
   if (is_gaussian_identity) {
     return("Generalized additive model (GAM)")
@@ -483,5 +521,23 @@ as_regression_frame.gam <- function(
   if (grepl("^Ordered Categorical", family)) {
     return(sub(" regression ", " GAM ", .ordinal_title_prefix("logit")))
   }
-  "Generalized additive model (GAM)"
+  if (grepl("^Cox PH", family)) {
+    return("Cox proportional hazards GAM")
+  }
+  if (grepl("^cnorm", family)) {
+    return("Censored normal GAM")
+  }
+  if (grepl("^clog", family)) {
+    return("Censored logistic GAM")
+  }
+  if (grepl("^cpois", family)) {
+    return("Censored Poisson GAM")
+  }
+  if (grepl("^bcg", family)) {
+    return("Censored Box-Cox normal GAM")
+  }
+  if (grepl("^gfam", family)) {
+    return("Grouped-family GAM")
+  }
+  paste0("Generalized additive model (GAM, ", sub("[({].*$", "", family), ")")
 }

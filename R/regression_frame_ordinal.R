@@ -212,6 +212,70 @@ as_regression_frame.clm <- function(
 }
 
 
+# ordinal's clmm() swaps the cloglog and loglog links on its
+# single-random-intercept path only (runehaubo/ordinal#76): one bar term
+# whose left side is 1, without `clmm.control(useMatrix = TRUE)`
+# (`use.ssr` in ordinal::clmm()). Every other random structure goes
+# through the general Laplace code, which fits the link it is asked for.
+# Measured on ordinal 2026.7.26 against glmmTMB's ordinal cloglog family
+# on ordinal::wine.
+.clmm_ssr_path <- function(fit) {
+  length(fit$ST) == 1L &&
+    identical(rownames(as.matrix(fit$ST[[1L]])), "(Intercept)") &&
+    !isTRUE(fit$control$useMatrix)
+}
+
+# Whether the installed ordinal swaps the two links, detected once per
+# session rather than read from its version: when the links are swapped,
+# the general-path cloglog fit (useMatrix = TRUE) has the logLik of the
+# single-intercept LOGLOG fit, not of the single-intercept cloglog fit.
+# One general-path fit (about 2.5 s on ordinal::wine) and two fast
+# single-intercept fits, the first time only.
+# NA when the detection fails, so callers can decline rather than guess.
+.clmm_link_swap_cache <- new.env(parent = emptyenv())
+
+.clmm_links_swapped <- function() {
+  if (!exists("swapped", envir = .clmm_link_swap_cache, inherits = FALSE)) {
+    .clmm_link_swap_cache$swapped <- tryCatch(
+      {
+        wine <- ordinal::wine
+        ll <- function(link, use_matrix) {
+          fit <- ordinal::clmm(
+            rating ~ temp + (1 | judge),
+            data = wine,
+            link = link,
+            control = ordinal::clmm.control(useMatrix = use_matrix)
+          )
+          as.numeric(stats::logLik(fit))
+        }
+        gen <- ll("cloglog", TRUE)
+        abs(gen - ll("loglog", FALSE)) < abs(gen - ll("cloglog", FALSE))
+      },
+      error = function(e) NA
+    )
+  }
+  .clmm_link_swap_cache$swapped
+}
+
+# The link a clmm fit actually estimated: the link of its call, except
+# cloglog and loglog on the swapping path. NA when that cannot be told.
+.clmm_fitted_link <- function(fit) {
+  link <- fit$link
+  if (!link %in% c("cloglog", "loglog") || !.clmm_ssr_path(fit)) {
+    return(link)
+  }
+  swapped <- .clmm_links_swapped()
+  if (is.na(swapped)) {
+    return(NA_character_)
+  }
+  if (swapped) {
+    switch(link, cloglog = "loglog", loglog = "cloglog")
+  } else {
+    link
+  }
+}
+
+
 #' `as_regression_frame()` method for `clmm` fits (ordinal::clmm()).
 #'
 #' The clm frame plus the random part: location coefficients as rows, the
@@ -238,16 +302,18 @@ as_regression_frame.clmm <- function(
 ) {
   .check_ordinal_available()
   # The clm rule reads exp(-B) of a cumulative cloglog as a hazard ratio.
-  # Not for clmm: on ordinal 2026.7.26 the cloglog and loglog links of
-  # clmm() are swapped against those of clm() and of glmmTMB's ordinal
-  # family. Measured on ordinal::wine (logLik): clm cloglog -86.634 =
-  # glmmTMB cloglog -86.634; with a judge intercept, glmmTMB cloglog
-  # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. Reported
-  # upstream with a tested patch: runehaubo/ordinal#76. The coefficients of a
-  # "cloglog" clmm are therefore not log hazard ratios: the ratio is
-  # refused rather than mislabeled, and the title names the link the call
-  # asked for without claiming proportional hazards.
-  if (isTRUE(exponentiate) && identical(fit$link, "cloglog")) {
+  # Not for a clmm fit on the single-random-intercept path, where the
+  # cloglog and loglog links are swapped (.clmm_fitted_link()): there the
+  # coefficients of a "cloglog" fit are not log hazard ratios, and the
+  # ratio is refused rather than mislabeled. The title names the link the
+  # call asked for without claiming proportional hazards, and the null of
+  # the random-effects LR test is refitted with the link clmm actually
+  # fitted (.null_lrt_clmm()).
+  if (
+    isTRUE(exponentiate) &&
+      identical(fit$link, "cloglog") &&
+      !identical(.clmm_fitted_link(fit), "cloglog")
+  ) {
     spicy_abort(
       c(
         paste0(
@@ -255,9 +321,9 @@ as_regression_frame.clmm <- function(
           "the cloglog link."
         ),
         "i" = paste0(
-          "The cloglog and loglog links of `ordinal::clmm()` do not match ",
-          "those of `ordinal::clm()` and `glmmTMB::glmmTMB()`, so exp(-B) ",
-          "is not a hazard ratio."
+          "With a single random intercept, `ordinal::clmm()` fits the ",
+          "loglog link when asked for cloglog, so exp(-B) is not a hazard ",
+          "ratio."
         ),
         "i" = paste0(
           "`glmmTMB::glmmTMB(family = glmmTMB::ordinal(\"cloglog\"))` fits ",
@@ -1317,10 +1383,14 @@ as_regression_frame.clmm <- function(
       has_singular = .clmm_is_singular(fit),
       has_weights = .ordinal_has_weights(fit),
       # The title names the link the call asked for. A cloglog title
-      # does not claim proportional hazards: clmm's cloglog and loglog
-      # links are swapped against clm's and glmmTMB's (see
-      # as_regression_frame.clmm(), runehaubo/ordinal#76).
-      title_prefix = if (identical(link, "cloglog")) {
+      # claims proportional hazards, as clm's and glmmTMB's do, only
+      # when clmm fitted that link: on the single-random-intercept
+      # path the cloglog and loglog links are swapped (see
+      # .clmm_fitted_link(), runehaubo/ordinal#76).
+      title_prefix = if (
+        identical(link, "cloglog") &&
+          !identical(.clmm_fitted_link(fit), "cloglog")
+      ) {
         "Cumulative complementary log-log mixed-effects regression"
       } else {
         .ordinal_title_prefix(link, mixed = TRUE)

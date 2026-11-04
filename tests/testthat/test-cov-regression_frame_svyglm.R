@@ -107,7 +107,7 @@ test_that(".svyglm_title_prefix names the family as the glm title does", {
 })
 
 test_that(".svyglm_title_prefix does not name a family it does not know", {
-  fake_fam <- list(family = "Tweedie", link = "log")
+  fake_fam <- list(family = "foo", link = "log")
   expect_identical(
     spicy:::.svyglm_title_prefix(fake_fam),
     "Survey-weighted regression"

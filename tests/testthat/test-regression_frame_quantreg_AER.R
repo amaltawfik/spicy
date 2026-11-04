@@ -106,6 +106,63 @@ test_that("rq: p-values byte-match summary(fit, se='nid') (the default)", {
   }
 })
 
+test_that("rq: tau keeps the decimals it needs, up to four, in title and note", {
+  skip_if_not_installed("quantreg")
+  set.seed(1)
+  d <- data.frame(y = stats::rnorm(200), x = stats::rnorm(200))
+  tau_sym <- intToUtf8(0x03C4)
+  # The tau quantreg fitted, and how a reader writes it.
+  cases <- list(
+    list(0.975, "0.975"),
+    list(0.025, "0.025"),
+    list(0.125, "0.125"),
+    list(0.5, "0.50"),
+    list(1 / 3, "0.3333")
+  )
+  for (case in cases) {
+    fit <- quantreg::rq(y ~ x, tau = case[[1L]], data = d)
+    expect_identical(fit$tau, case[[1L]])
+    shown <- paste0("Quantile regression (", tau_sym, " = ", case[[2L]], ")")
+    tbl <- table_regression(fit)
+    expect_identical(attr(tbl, "title"), paste0(shown, ": y"))
+    expect_match(attr(tbl, "note"), paste0(shown, "."), fixed = TRUE)
+  }
+  # The comma follows the table's mark.
+  fit <- quantreg::rq(y ~ x, tau = 0.975, data = d)
+  expect_match(
+    attr(table_regression(fit, decimal_mark = ","), "title"),
+    paste0("(", tau_sym, " = 0,975)"),
+    fixed = TRUE
+  )
+  # The key is exact, so two quantiles a two-decimal tau confused stay two
+  # models.
+  key <- as_regression_frame(quantreg::rq(
+    y ~ x,
+    tau = 1 / 3,
+    data = d
+  ))$info$extras$title_prefix
+  expect_equal(spicy:::.rq_prefix_tau(key), 1 / 3, tolerance = 1e-14)
+  note <- attr(
+    table_regression(list(
+      quantreg::rq(y ~ x, tau = 0.12, data = d),
+      quantreg::rq(y ~ x, tau = 0.125, data = d)
+    )),
+    "note"
+  )
+  expect_match(
+    note,
+    paste0(
+      "Model 1: quantile regression (",
+      tau_sym,
+      " = 0.12); ",
+      "Model 2: quantile regression (",
+      tau_sym,
+      " = 0.125)."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("rq: n_obs from length(residuals); fit_stats$nobs matches", {
   fit <- .fit_rq_median()
   fr <- as_regression_frame(fit, model_id = "M1")

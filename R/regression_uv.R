@@ -697,19 +697,37 @@ table_regression_uv <- function(
   }
 
   if (is.null(title)) {
-    prefix <- .uv_title_prefix(method, family)
-    # Decision 42: the family goes through the title-prefix bridge, and a
-    # family with no bridge entry keeps the whole English title.
-    disp <- .title_prefix_display(capitalize_first(prefix))
-    key <- if (isTRUE(multivariable)) {
-      "title_uv_multivariable"
+    if (identical(method, "coxph")) {
+      # The Cox title carries a qualifier of its own ("proportional
+      # hazards"), which a language may place after "univariable": one
+      # whole template per form, the outcome its only hole.
+      title <- spicy_fmt(
+        if (isTRUE(multivariable)) {
+          "title_uv_multivariable_cox"
+        } else {
+          "title_uv_screen_cox"
+        },
+        outcome_note
+      )
     } else {
-      "title_uv_screen"
-    }
-    title <- if (is.null(disp)) {
-      .spicy_fmt_en(key, prefix, outcome_note)
-    } else {
-      spicy_fmt(key, disp, outcome_note)
+      prefix <- .uv_title_prefix(method, family)
+      # Decision 42: the family goes through the title-prefix bridge. A
+      # family no entry carries (one the glm title does not know, named
+      # by its R name) takes the language's generic prefix, as
+      # table_regression() titles the same glm: a translated table keeps
+      # a translated title. English has no bridge and keeps the R name.
+      disp <- .title_prefix_display(capitalize_first(prefix)) %||%
+        .title_prefix_display("Regression")
+      key <- if (isTRUE(multivariable)) {
+        "title_uv_multivariable"
+      } else {
+        "title_uv_screen"
+      }
+      title <- if (is.null(disp)) {
+        .spicy_fmt_en(key, prefix, outcome_note)
+      } else {
+        spicy_fmt(key, disp, outcome_note)
+      }
     }
   }
 
@@ -800,19 +818,17 @@ table_regression_uv <- function(
 # The model the screen's title names, in running text ("Univariable %s
 # screen"). The glm family is titled by the glm frame's own source,
 # spicy_glm_title_prefix(), so the two read alike, its first letter
-# lowercased unless it is a proper name (Poisson, Gaussian); the Cox
-# model as the coxph frame titles it. A family the glm source does not
-# know keeps its R name.
+# lowercased unless it is a proper name (Poisson, Gaussian). A family the
+# glm source does not know keeps its R name, without the parameters a
+# name may carry ("Tweedie(1.5)" reads "Tweedie"). The Cox model has
+# templates of its own (`title_uv_multivariable_cox`).
 .uv_title_prefix <- function(method, family) {
   if (identical(method, "lm")) {
     return("linear regression")
   }
-  if (identical(method, "coxph")) {
-    return("Cox proportional hazards regression")
-  }
   glm_prefix <- spicy_glm_title_prefix(family$family, family$link)
   if (identical(glm_prefix, "Regression")) {
-    return(paste(family$family, "regression"))
+    return(paste(sub("[(].*$", "", family$family), "regression"))
   }
   lowercase_first(glm_prefix)
 }

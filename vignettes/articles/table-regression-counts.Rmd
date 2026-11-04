@@ -214,7 +214,7 @@ the same substantive finding, and *opposite-looking* odds ratios:
 
 * Zero-inflation block: OR 0.88 — each mentor publication **lowers the
   odds of being a structural zero**.
-* Zero hurdle block: OR 1.08 — each mentor publication **raises the
+* Zero hurdle, Pr(y > 0) block: OR 1.08 — each mentor publication **raises the
   odds of publishing at all**.
 
 Both blocks say the same thing: a productive mentor makes an observed
@@ -495,7 +495,8 @@ pkgdown_dark_gt(table_regression(fit_zip, exponentiate = TRUE, output = "gt"))
 ```
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
-terms carry a `zero_` prefix, so the two parts separate cleanly:
+terms are keyed by their block (`Zero-inflation::(Intercept)`), so the
+two parts separate cleanly:
 
 ```{r broom, eval = have_broom}
 td <- broom::tidy(table_regression(fit_zip))

@@ -157,6 +157,32 @@ test_that("component-blocks footer lists a shared block label only once", {
   )
 })
 
+test_that("component-blocks footer attributes the differing glosses of a block", {
+  f2 <- .mk_cb_frame()
+  f2$info$extras$component_blocks[[1L]]$gloss <- paste0(
+    "Zero-inflation component: probability of a structural (excess) zero ",
+    "on the probit scale."
+  )
+  f3 <- .mk_cb_frame()
+  f3$info$model_label <- "Adjusted"
+  # One block, two glosses: each model's own, after its name; the first
+  # gloss no longer stands for the whole block.
+  out <- spicy:::build_component_blocks_footer_block_from_frames(
+    list(.mk_cb_frame(), f2, f3)
+  )
+  expect_identical(
+    out,
+    paste0(
+      "Model 1: Zero-inflation component: log-odds of a structural ",
+      "(excess) zero.\n",
+      "Model 2: Zero-inflation component: probability of a structural ",
+      "(excess) zero on the probit scale.\n",
+      "Adjusted: Zero-inflation component: log-odds of a structural ",
+      "(excess) zero."
+    )
+  )
+})
+
 test_that("component-blocks footer needs no robust-SE scope disclosure", {
   # A robust vcov covers the component rows too (pscl's whole-model
   # vcovCL, glmmTMB's full CR0 sandwich): the gloss stands alone.

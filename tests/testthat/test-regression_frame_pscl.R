@@ -138,10 +138,11 @@ test_that("hurdle: info$extras$has_zi = TRUE; component block populated", {
   expect_true(is.list(blocks) && length(blocks) == 1L)
   blk <- blocks[[1L]]
   expect_identical(blk$label, "Zero hurdle")
-  # one fully-inferenced row per zero coefficient, zero_-prefixed terms
+  # one fully-inferenced row per zero coefficient, under its own name (the
+  # table keys it by block)
   zc <- stats::coef(fit, model = "zero")
   non_ref <- blk$coefs[!blk$coefs$is_ref, , drop = FALSE]
-  expect_setequal(non_ref$term, paste0("zero_", names(zc)))
+  expect_setequal(non_ref$term, names(zc))
   expect_true(all(is.finite(non_ref$std_error)))
 })
 
@@ -270,16 +271,16 @@ test_that("hurdle zero-component coefs match parameters::model_parameters() (ora
   )
 
   # The zero-hurdle half of the model lives in
-  # `info$extras$component_blocks`, not in `coefs`, and its terms are
-  # already `zero_`-prefixed -- so this side of the model had no oracle
-  # at all while the count side had a dead one.
+  # `info$extras$component_blocks`, not in `coefs` -- so this side of the
+  # model had no oracle at all while the count side had a dead one. Its
+  # terms are the coefficient names; parameters prefixes them `zero_`.
   blocks <- fr$info$extras$component_blocks
   expect_identical(length(blocks), 1L)
   zb <- blocks[[1L]]$coefs
   zb <- zb[!zb$is_ref, ]
   n_checked <- 0L
   for (nm in zb$term) {
-    oracle_row <- oracle[oracle$Parameter == nm, ]
+    oracle_row <- oracle[oracle$Parameter == paste0("zero_", nm), ]
     expect_identical(
       nrow(oracle_row),
       1L,
@@ -419,51 +420,25 @@ test_that("the theta of a negbin zero hurdle is not the count dispersion", {
   expect_null(as_regression_frame(zp, model_id = "M1")$info$fit_stats$theta)
 })
 
-test_that("a censored zero hurdle names its distribution, not pscl's code", {
+test_that("the pscl zero hurdle keeps its published identity, 'Zero hurdle'", {
   skip_if_not_installed("pscl")
-  data("bioChemists", package = "pscl", envir = environment())
-  gloss <- function(zero_dist, lang) {
-    withr::local_options(spicy.language = lang)
-    fit <- pscl::hurdle(
-      art ~ fem | fem,
-      data = bioChemists,
-      zero.dist = zero_dist
-    )
-    # The code pscl stores is what the note used to print.
-    expect_identical(fit$dist$zero, zero_dist)
-    fr <- as_regression_frame(fit, model_id = "M1")
-    fr$info$extras$component_blocks[[1L]]$gloss
-  }
+  skip_if_not_installed("broom")
+  data("bioChemists", package = "pscl")
+  hu <- pscl::hurdle(art ~ fem + ment | fem + ment, data = bioChemists)
+  tab <- table_regression(hu)
+  # inline() addresses the block by the identity published in 0.14.1; the
+  # oracle is pscl's own zero-part coefficient (0.08 there).
   expect_identical(
-    gloss("negbin", "en"),
-    "Zero hurdle component: right-censored negative binomial on the log scale."
+    inline(tab, "Zero hurdle", "ment", "b"),
+    sprintf("%.2f", stats::coef(hu, model = "zero")[["ment"]])
   )
+  expect_true("Zero hurdle" %in% as.data.frame(tab)$variable)
+  td <- broom::tidy(tab)
   expect_identical(
-    gloss("poisson", "en"),
-    "Zero hurdle component: right-censored Poisson on the log scale."
+    td$term[td$factor_term %in% "Zero hurdle"],
+    paste0("Zero hurdle::", c("(Intercept)", "femWomen", "ment"))
   )
-  expect_identical(
-    gloss("geometric", "en"),
-    "Zero hurdle component: right-censored geometric on the log scale."
-  )
-  fr_open <- "Composante \u00AB\u00A0Hurdle (z\u00E9ro)\u00A0\u00BB\u00A0: loi "
-  fr_close <- " censur\u00E9e \u00E0 droite sur l'\u00E9chelle logarithmique."
-  expect_identical(
-    gloss("negbin", "fr"),
-    paste0(fr_open, "binomiale n\u00E9gative", fr_close)
-  )
-  expect_identical(
-    gloss("poisson", "fr"),
-    paste0(fr_open, "de Poisson", fr_close)
-  )
-  expect_identical(
-    gloss("geometric", "fr"),
-    paste0(fr_open, "g\u00E9om\u00E9trique", fr_close)
-  )
-  # The rendered note carries the same sentence.
-  withr::local_options(width = 200)
-  fit <- pscl::hurdle(art ~ fem | fem, data = bioChemists, zero.dist = "negbin")
-  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
-  expect_match(out, "right-censored negative binomial", fixed = TRUE)
-  expect_no_match(out, "negbin", fixed = TRUE)
+  # Only the caption names the event the part models.
+  v <- trimws(tab$Variable)
+  expect_identical(sum(v == "Zero hurdle, Pr(y > 0):"), 1L)
 })

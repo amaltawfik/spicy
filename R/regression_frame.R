@@ -1027,17 +1027,30 @@ validate_regression_frame <- function(frame) {
 # helpers pick the key from the family and link tokens of the fit. A
 # numeric hole (the theta of a negative binomial) stays a number in
 # `family_args`: the footer formats it as the other numbers of the note,
-# with the table's decimal mark.
+# with the table's decimal mark. A family hole (`.re_null_family_hole()`)
+# stays the title head of the family: the footer writes it in the table
+# language, as the titles write the family.
 .re_null_model <- function(key, ...) {
   args <- list(...)
   shown <- lapply(args, function(a) {
-    if (is.numeric(a)) .footer_num(a, 2L) else a
+    if (is.numeric(a)) {
+      .footer_num(a, 2L)
+    } else if (inherits(a, "spicy_family_hole")) {
+      .title_family_word(a, "en")
+    } else {
+      a
+    }
   })
   list(
     family_label = do.call(sprintf, c(list(.spicy_strings[[key]]), shown)),
     family_key = key,
     family_args = args
   )
+}
+
+# The family of a null-model name, as a title head ("Negative-binomial").
+.re_null_family_hole <- function(head) {
+  structure(head, class = "spicy_family_hole")
 }
 
 
@@ -1376,12 +1389,38 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- a fitted random structure has >= 1 free parameter
   }
 
-  # A hurdle null (zero-truncated family + zi formula) is named after its
-  # untruncated count family, as the title names it.
-  if (.glmmTMB_is_hurdle(fam, length(glmmTMB::fixef(fit)$zi) > 0L)) {
-    fam$family <- sub("^truncated_", "", fam$family)
+  # The null of a two-part fit keeps its zero part (the refit above passes
+  # the ziformula through), so it is that two-part model without the
+  # conditional random effects, named as the title names it:
+  # "negative-binomial hurdle regression", "zero-inflated Poisson
+  # regression". Named after the count family alone, a hurdle and a
+  # zero-inflated fit read as tested against a plain count regression they
+  # were never compared to. When the zi or dispersion formula has a random
+  # term, the null keeps it too and is still a mixed model: no short name
+  # says so in both languages, so the line gives the test without naming
+  # its null.
+  zi_disp_re <- any(vapply(
+    fit$modelInfo$reTrms[c("zi", "disp")],
+    function(r) length(r$cnms) > 0L,
+    logical(1)
+  ))
+  if (zi_disp_re) {
+    return(list(chi2 = chi2, df = df_q, unnamed = TRUE))
   }
-  null_model <- if (is_linear) {
+  has_zi <- length(glmmTMB::fixef(fit)$zi) > 0L
+  null_model <- if (has_zi) {
+    is_hurdle <- .glmmTMB_is_hurdle(fam, has_zi)
+    head_fam <- fam
+    if (is_hurdle) {
+      head_fam$family <- sub("^truncated_", "", fam$family)
+    }
+    .re_null_model(
+      if (is_hurdle) "note_re_null_hurdle" else "note_re_null_zero_inflated",
+      .re_null_family_hole(
+        if (is_linear) "Linear" else .glmmTMB_family_label(head_fam)
+      )
+    )
+  } else if (is_linear) {
     .re_null_model("note_re_null_linear")
   } else if (identical(fam$family, "ordinal")) {
     # The null of an ordinal glmmTMB is a cumulative-link model; named
@@ -1422,7 +1461,22 @@ validate_regression_frame <- function(frame) {
 # threshold structure, refitted on the model frame under a safe response
 # name (see .null_lrt_merMod). clmm and clm both maximize the exact (or
 # Laplace-approximated) likelihood, so their logLik values compare.
+#
+# The link of the null is the link clmm actually fitted
+# (.clmm_fitted_link()), which is not the one its call names for cloglog
+# and loglog on the single-random-intercept path (runehaubo/ordinal#76:
+# there, clmm "loglog" on ordinal::wine has the logLik of glmmTMB's
+# cloglog with the same random intercept). Refitted with the link of the
+# call, that null was not nested in the model and the chi-bar-squared was
+# wrong (12.35 instead of 10.19). Other random structures fit the link
+# they name and keep it. When the fitted link cannot be told, no LR line
+# is printed. The null keeps the name of the link the call asked for, as
+# the title does.
 .null_lrt_clmm <- function(fit) {
+  null_link <- .clmm_fitted_link(fit)
+  if (is.na(null_link)) {
+    return(NULL)
+  }
   data <- stats::model.frame(fit)
   fixed <- suppressWarnings(.re_nobars(stats::formula(fit)))
   data[[".spicy_response."]] <- stats::model.response(data)
@@ -1432,7 +1486,7 @@ validate_regression_frame <- function(frame) {
   args <- list(
     null_f,
     data = data,
-    link = fit$link,
+    link = null_link,
     threshold = fit$threshold
   )
   w <- stats::model.weights(data)

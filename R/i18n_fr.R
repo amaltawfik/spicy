@@ -180,7 +180,8 @@
   label_block_scale_effects = "Effets d'\u00E9chelle",
   label_block_random_effects = "Effets al\u00E9atoires",
   label_block_zero_inflation = "Inflation de z\u00E9ros",
-  label_block_zero_hurdle = "Hurdle (z\u00E9ro)",
+  label_block_zero_hurdle = "Hurdle (z\u00E9ro), Pr(y > 0)",
+  label_block_zero_hurdle_zero = "Hurdle (z\u00E9ro), Pr(y = 0)",
   label_block_alternative_invariant = "Invariant entre alternatives",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
@@ -214,6 +215,7 @@
   note_scale_effects_not_exp = " (\u00E9chelle logarithmique, non exponenti\u00E9s\u00A0: leur exponentielle est un rapport d'\u00E9carts-types latents, pas un rapport de cotes)",
   note_re_line_lrt = "%s\u00A0: %s.",
   note_re_lrt = "test du rapport de vraisemblance contre la %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
+  note_re_lrt_unnamed = "test du rapport de vraisemblance, \u03C7\u0304\u00B2(%d) = %s, p %s",
   note_re_null_linear = "r\u00E9gression lin\u00E9aire",
   note_re_null_logistic = "r\u00E9gression logistique",
   note_re_null_poisson = "r\u00E9gression de Poisson",
@@ -248,6 +250,8 @@
   note_re_null_cumulative_cloglog = "r\u00E9gression \u00E0 log-log compl\u00E9mentaire cumulatif",
   note_re_null_cumulative_loglog = "r\u00E9gression \u00E0 log-log cumulatif",
   note_re_null_family = "r\u00E9gression %s",
+  note_re_null_hurdle = "r\u00E9gression %s (mod\u00E8le hurdle)",
+  note_re_null_zero_inflated = "r\u00E9gression %s (inflation de z\u00E9ros)",
   note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux).",
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
   note_re_profile_ci = "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles asym\u00E9triques).",
@@ -258,6 +262,7 @@
   note_component_gloss_dispersion = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: \u00E9chelle logarithmique.",
   note_component_gloss_hurdle_binomial = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un effectif non nul.",
   note_component_gloss_hurdle_zero = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un effectif nul.",
+  note_component_gloss_hurdle_zero_continuous = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un z\u00E9ro.",
   note_component_gloss_hurdle_censored = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: loi %s censur\u00E9e \u00E0 droite sur l'\u00E9chelle logarithmique.",
   note_component_dist_poisson = "de Poisson",
   note_component_dist_negbin = "binomiale n\u00E9gative",
@@ -552,6 +557,9 @@
   note_vcov_classical_glm = "classiques (information de Fisher)",
   note_vcov_classical_lm = "classiques (MCO)",
   note_vcov_classical_plain = "classiques",
+  note_vcov_robust_plain = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (%s)",
+  note_vcov_cluster_robust_plain = "robustes aux grappes (%s)",
+  note_vcov_none_plain = "aucune (se_type = \"none\")",
   note_vcov_bayesian_mgcv = "bay\u00E9siennes (covariance a posteriori)",
   note_vcov_hc = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (%s)",
   note_vcov_cluster_vector = "vecteur de grappes fourni",
@@ -631,6 +639,8 @@
   title_regression_comparison = "%s \u2014 comparaison de mod\u00E8les",
   title_uv_multivariable = "%s univariable et multivariable\u00A0: %s",
   title_uv_screen = "%s univariable (pr\u00E9s\u00E9lection)\u00A0: %s",
+  title_uv_multivariable_cox = "R\u00E9gression de Cox univariable et multivariable \u00E0 risques proportionnels\u00A0: %s",
+  title_uv_screen_cox = "R\u00E9gression de Cox univariable \u00E0 risques proportionnels (pr\u00E9s\u00E9lection)\u00A0: %s",
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
   note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets. N varie selon le pr\u00E9dicteur (%d\u2013%d).",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
@@ -754,7 +764,8 @@
 # lowercase_first(), qui garde la majuscule des noms propres), et un
 # qualificatif francais de "regression", au feminin. Les GAM (masculin)
 # et les titres uniques sont ecrits en entier. Le modele hurdle garde son
-# nom anglais, comme le bloc "Hurdle (zero)" (decision 38).
+# nom anglais, comme les blocs "Hurdle (zero), Pr(y > 0)" et "Hurdle
+# (zero), Pr(y = 0)" (decision 38).
 
 # Colonnes : tete en debut de titre, tete en milieu de titre, qualificatif.
 # Une ligne par famille, que le formateur ne doit pas eclater.
@@ -791,7 +802,7 @@
     "Geometric", "geometric", "g\u00E9om\u00E9trique",
     "Exponential", "exponential", "exponentielle",
     "Weibull", "Weibull", "de Weibull",
-    "Weibull (PH)", "Weibull (PH)", "de Weibull (PH)",
+    "Weibull (PH)", "Weibull (PH)", "de Weibull (risques proportionnels)",
     "Log-logistic", "log-logistic", "log-logistique",
     "Extreme-value", "extreme-value", "des valeurs extr\u00EAmes",
     "Rayleigh", "Rayleigh", "de Rayleigh",
@@ -819,6 +830,15 @@
   out <- sprintf(fr, .FR_TITLE_FAMILIES[idx, "fr"])
   names(out) <- sprintf(en, .FR_TITLE_FAMILIES[idx, form])
   out
+}
+
+# Les titres des modeles a deux parties portent deja une parenthese
+# ("(inflation de zeros)", "(modele hurdle)") : la variante NB1 de la loi
+# binomiale negative y perd la sienne, pour qu'un titre n'en empile pas
+# deux ("binomiale negative NB1").
+.fr_two_part <- function(x) {
+  x[] <- gsub(" \\((NB1(-NB2)?)\\)", " \\1", x)
+  x
 }
 
 # Les titres ordinaux : lien cumulatif et hypothese, en anglais et en
@@ -881,7 +901,8 @@
   "Quasi-binomial",
   "Quasi-Poisson",
   "Quasi-likelihood",
-  "Negative-binomial"
+  "Negative-binomial",
+  "Tweedie"
 )
 .FR_MIXED_HEADS <- c(
   setdiff(
@@ -890,7 +911,6 @@
   ),
   "Negative-binomial (NB1)",
   "Negative-binomial (NB1-NB2)",
-  "Tweedie",
   "Beta",
   "Beta-binomial",
   "Ordered beta",
@@ -911,6 +931,10 @@
   "Conway-Maxwell-Poisson",
   "Generalized Poisson"
 )
+# Le modele hurdle de glmmTMB : une famille de comptage tronquee en zero,
+# ou une loi continue sans zero (ziGamma, lognormal, beta_family), avec
+# une ziformula.
+.FR_HURDLE_HEADS <- c(.FR_COUNT_HEADS, "Gamma", "Log-normal", "Beta")
 # geeglm refuse les familles quasi ("variance invalid").
 .FR_GEE_HEADS <- setdiff(
   .FR_GLM_HEADS,
@@ -970,20 +994,47 @@
     "%s mixed-effects regression",
     "R\u00E9gression %s \u00E0 effets mixtes"
   ),
-  .fr_title_set(
+  .fr_two_part(.fr_title_set(
     .FR_MIXED_HEADS,
-    "%s mixed-effects regression (zero-inflated)",
-    "R\u00E9gression %s \u00E0 effets mixtes (inflation de z\u00E9ros)"
-  ),
-  .fr_title_set(
-    .FR_COUNT_HEADS,
-    "%s mixed-effects regression (hurdle)",
+    "Zero-inflated %s mixed-effects regression",
+    "R\u00E9gression %s \u00E0 effets mixtes (inflation de z\u00E9ros)",
+    form = "mid"
+  )),
+  .fr_two_part(.fr_title_set(
+    .FR_HURDLE_HEADS,
+    "%s hurdle mixed-effects regression",
     "R\u00E9gression %s \u00E0 effets mixtes (mod\u00E8le hurdle)"
-  ),
+  )),
   .fr_title_set(
     .FR_COUNT_HEADS,
     "Zero-truncated %s mixed-effects regression",
     "R\u00E9gression %s tronqu\u00E9e en z\u00E9ro \u00E0 effets mixtes",
+    form = "mid"
+  ),
+  # glmmTMB sans effet aleatoire : le titre a effets fixes de la meme
+  # famille ("Beta regression" est deja le titre de betareg).
+  .fr_title_set(
+    setdiff(.FR_MIXED_HEADS, c(.FR_GLM_HEADS, "Beta")),
+    "%s regression",
+    "R\u00E9gression %s"
+  ),
+  # Les modeles a deux parties sans effet aleatoire sont nommes comme ceux
+  # de pscl, dont les entrees suivent (Poisson et binomiale negative).
+  .fr_two_part(.fr_title_set(
+    setdiff(.FR_MIXED_HEADS, c("Poisson", "Negative-binomial")),
+    "Zero-inflated %s regression",
+    "R\u00E9gression %s (inflation de z\u00E9ros)",
+    form = "mid"
+  )),
+  .fr_two_part(.fr_title_set(
+    setdiff(.FR_HURDLE_HEADS, c("Poisson", "Negative-binomial")),
+    "%s hurdle regression",
+    "R\u00E9gression %s (mod\u00E8le hurdle)"
+  )),
+  .fr_title_set(
+    .FR_COUNT_HEADS,
+    "Zero-truncated %s regression",
+    "R\u00E9gression %s tronqu\u00E9e en z\u00E9ro",
     form = "mid"
   ),
   # pscl : inflation de zeros et modele hurdle, nommes par la loi de
@@ -1023,20 +1074,16 @@
   "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
   "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
   .fr_title_set(
-    c(
-      "Weibull",
-      "Exponential",
-      "Gaussian",
-      "Logistic",
-      "Log-normal",
-      "Log-logistic",
-      "Extreme-value",
-      "Rayleigh",
-      "Student-t"
-    ),
+    c("Weibull", "Exponential", "Log-normal", "Log-logistic", "Rayleigh"),
     "%s AFT regression",
     "R\u00E9gression AFT %s"
   ),
+  # Les lois de survreg sans transformation modelisent T lui-meme : une
+  # regression censuree, pas un modele AFT.
+  "Censored regression (Gaussian)" = "R\u00E9gression censur\u00E9e (gaussienne)",
+  "Censored regression (logistic)" = "R\u00E9gression censur\u00E9e (logistique)",
+  "Censored regression (extreme value)" = "R\u00E9gression censur\u00E9e (valeurs extr\u00EAmes)",
+  "Censored regression (Student t)" = "R\u00E9gression censur\u00E9e (t de Student)",
   .fr_title_set(
     c(
       "Weibull",
@@ -1073,6 +1120,12 @@
   "Student-t GAM" = "GAM t de Student",
   "Zero-inflated Poisson GAM" = "GAM de Poisson (inflation de z\u00E9ros)",
   "Cumulative logit GAM (proportional odds)" = "GAM \u00E0 logit cumulatif (cotes proportionnelles)",
+  "Cox proportional hazards GAM" = "GAM de Cox \u00E0 risques proportionnels",
+  "Censored normal GAM" = "GAM normal censur\u00E9",
+  "Censored logistic GAM" = "GAM logistique censur\u00E9",
+  "Censored Poisson GAM" = "GAM de Poisson censur\u00E9",
+  "Censored Box-Cox normal GAM" = "GAM normal censur\u00E9 de Box-Cox",
+  "Grouped-family GAM" = "GAM \u00E0 familles group\u00E9es",
   # Les titres uniques des autres moteurs.
   "Linear regression (robust SE)" = "R\u00E9gression lin\u00E9aire (ES robustes)",
   "Linear regression (classical SE)" = "R\u00E9gression lin\u00E9aire (ES classiques)",
@@ -1086,7 +1139,7 @@
   "IV regression (robust SE, fixed effects)" = "R\u00E9gression par variables instrumentales (ES robustes, effets fixes)",
   "IV regression (classical SE, fixed effects)" = "R\u00E9gression par variables instrumentales (ES classiques, effets fixes)",
   "IV regression (no SE computed, fixed effects)" = "R\u00E9gression par variables instrumentales (sans ES, effets fixes)",
-  "IV regression (2SLS)" = "R\u00E9gression par variables instrumentales (2SLS)",
+  "IV regression (2SLS)" = "R\u00E9gression par variables instrumentales (doubles moindres carr\u00E9s)",
   "IV regression (2SLS, fixed effects)" = "R\u00E9gression par variables instrumentales (2SLS, effets fixes)",
   "Robust linear regression (M-estimator)" = "R\u00E9gression lin\u00E9aire robuste (estimateur M)",
   "Beta regression" = "R\u00E9gression b\u00EAta",
@@ -1097,4 +1150,31 @@
   "Generalized least squares" = "Moindres carr\u00E9s g\u00E9n\u00E9ralis\u00E9s",
   "Discrete-choice multinomial logit" = "Logit multinomial de choix discret",
   "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
+)
+
+# Les titres qui nomment deja un modele, et leur pluriel : la note de type
+# ("Modeles de %s.") les nommerait deux fois.
+.FR_TITLE_PLURALS <- c(
+  "Heckman selection model" = "Mod\u00E8les de s\u00E9lection de Heckman"
+)
+
+# ---- Les lois des notes de survie ------------------------------------------
+# Le nom d'une loi de survie dans la note ("Distribution : log-normale"),
+# en face du nom anglais que donne .surv_title_dist(), dans le vocabulaire
+# des titres francais. Un nom absent garde sa forme anglaise : les noms
+# propres (Weibull, Gompertz, Rayleigh) et le nom qu'un utilisateur a donne
+# a sa propre loi.
+.FR_SURV_DIST_NAMES <- c(
+  "Weibull (PH)" = "Weibull (risques proportionnels)",
+  "Log-normal" = "log-normale",
+  "Gamma" = "gamma",
+  "Exponential" = "exponentielle",
+  "Log-logistic" = "log-logistique",
+  "Generalized gamma" = "gamma g\u00E9n\u00E9ralis\u00E9e",
+  "Generalized F" = "F g\u00E9n\u00E9ralis\u00E9e",
+  "Royston-Parmar spline" = "spline de Royston-Parmar",
+  "Gaussian" = "gaussienne",
+  "Logistic" = "logistique",
+  "Extreme value" = "valeurs extr\u00EAmes",
+  "Student t" = "t de Student"
 )

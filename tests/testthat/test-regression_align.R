@@ -239,7 +239,7 @@ test_that("pivot_aligned_wide – two models, side-by-side columns", {
 
 # ---- Subordinate-block identity ------------------------------------------
 
-test_that("the seven block constants are exactly .REG_BLOCK_TERMS", {
+test_that("the eight block constants are exactly .REG_BLOCK_TERMS", {
   # The scalars name the blocks that only ONE site cares about (the
   # cloglog refusal reads NPO, the residual rule reads RE, the scale
   # gloss reads SCALE); the vector is what every membership test reads.
@@ -249,6 +249,7 @@ test_that("the seven block constants are exactly .REG_BLOCK_TERMS", {
   scalars <- c(
     spicy:::.REG_BLOCK_ZI,
     spicy:::.REG_BLOCK_HURDLE,
+    spicy:::.REG_BLOCK_HURDLE_ZERO,
     spicy:::.REG_BLOCK_DISP,
     spicy:::.REG_BLOCK_SCALE,
     spicy:::.REG_BLOCK_NPO,
@@ -256,7 +257,7 @@ test_that("the seven block constants are exactly .REG_BLOCK_TERMS", {
     spicy:::.REG_BLOCK_RE
   )
   expect_setequal(scalars, spicy:::.REG_BLOCK_TERMS)
-  expect_length(spicy:::.REG_BLOCK_TERMS, 7L)
+  expect_length(spicy:::.REG_BLOCK_TERMS, 8L)
   expect_false(anyDuplicated(spicy:::.REG_BLOCK_TERMS) > 0L)
 
   expect_true(all(spicy:::.reg_is_block(spicy:::.REG_BLOCK_TERMS)))

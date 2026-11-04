@@ -331,12 +331,15 @@ Default \code{TRUE}:
 \item \code{pscl::zeroinfl} and \code{glmmTMB(ziformula = )}: a
 \code{Zero-inflation} block -- the model for the probability of a
 \strong{structural (excess) zero}.
-\item \code{pscl::hurdle}: a \verb{Zero hurdle} block -- the model for the
-probability of a \strong{nonzero count} (note the opposite direction
-vs zero-inflation; the footer names each block's meaning).
-A \code{glmmTMB} hurdle model (a zero-truncated family with
-\code{ziformula}) also shows a \verb{Zero hurdle} block, but glmmTMB
-models the probability of a \strong{zero count}: the footer says so.
+\item \code{pscl::hurdle}: a \verb{Zero hurdle, Pr(y > 0)} block -- the model
+for the probability of a \strong{nonzero count} (note the opposite
+direction vs zero-inflation; the footer names each block's
+meaning).
+\item A \code{glmmTMB} hurdle model (a zero-truncated family,
+\code{glmmTMB::ziGamma()}, \code{glmmTMB::lognormal()} or
+\code{glmmTMB::beta_family()}, with \code{ziformula}): a
+\verb{Zero hurdle, Pr(y = 0)} block -- glmmTMB models the probability
+of a \strong{zero}, the opposite event of the \code{pscl::hurdle} block.
 \item \code{glmmTMB(dispformula = )}: a \code{Dispersion} block (only when
 dispersion was actually modeled; log scale, never
 exponentiated).
@@ -1042,8 +1045,11 @@ BIC follow the engine's \code{\link[stats:nobs]{stats::nobs()}}, which for a wei
 fits, it is the square root of the dispersion (so a gaussian glm
 reads as lm), and 1 when the family fixes it (binomial, Poisson).
 For \code{survreg}, it is the scale \eqn{\sigma}{sigma} of
-\eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} (the
-standard deviation of \eqn{\log T}{log T} for the log-normal),
+\eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} for the
+distributions fitted on \eqn{\log T}{log T} (the standard deviation
+of \eqn{\log T}{log T} for the log-normal), and of
+\eqn{T = X'\beta + \sigma W}{T = X'beta + sigma W} for those that
+model \eqn{T}{T} itself (gaussian, logistic, extreme value, t),
 blank when strata give one scale per stratum. For \code{glmmTMB}, it is
 the same square root for the gaussian, Gamma and Tweedie families,
 and the fixed 1 of Poisson and binomial. It is blank for the

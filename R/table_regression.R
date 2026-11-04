@@ -127,8 +127,11 @@
 #'     fits, it is the square root of the dispersion (so a gaussian glm
 #'     reads as lm), and 1 when the family fixes it (binomial, Poisson).
 #'     For `survreg`, it is the scale \eqn{\sigma}{sigma} of
-#'     \eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} (the
-#'     standard deviation of \eqn{\log T}{log T} for the log-normal),
+#'     \eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} for the
+#'     distributions fitted on \eqn{\log T}{log T} (the standard deviation
+#'     of \eqn{\log T}{log T} for the log-normal), and of
+#'     \eqn{T = X'\beta + \sigma W}{T = X'beta + sigma W} for those that
+#'     model \eqn{T}{T} itself (gaussian, logistic, extreme value, t),
 #'     blank when strata give one scale per stratum. For `glmmTMB`, it is
 #'     the same square root for the gaussian, Gamma and Tweedie families,
 #'     and the fixed 1 of Poisson and binomial. It is blank for the
@@ -1155,12 +1158,15 @@
 #'     \item `pscl::zeroinfl` and `glmmTMB(ziformula = )`: a
 #'       `Zero-inflation` block -- the model for the probability of a
 #'       **structural (excess) zero**.
-#'     \item `pscl::hurdle`: a `Zero hurdle` block -- the model for the
-#'       probability of a **nonzero count** (note the opposite direction
-#'       vs zero-inflation; the footer names each block's meaning).
-#'       A `glmmTMB` hurdle model (a zero-truncated family with
-#'       `ziformula`) also shows a `Zero hurdle` block, but glmmTMB
-#'       models the probability of a **zero count**: the footer says so.
+#'     \item `pscl::hurdle`: a `Zero hurdle, Pr(y > 0)` block -- the model
+#'       for the probability of a **nonzero count** (note the opposite
+#'       direction vs zero-inflation; the footer names each block's
+#'       meaning).
+#'     \item A `glmmTMB` hurdle model (a zero-truncated family,
+#'       `glmmTMB::ziGamma()`, `glmmTMB::lognormal()` or
+#'       `glmmTMB::beta_family()`, with `ziformula`): a
+#'       `Zero hurdle, Pr(y = 0)` block -- glmmTMB models the probability
+#'       of a **zero**, the opposite event of the `pscl::hurdle` block.
 #'     \item `glmmTMB(dispformula = )`: a `Dispersion` block (only when
 #'       dispersion was actually modeled; log scale, never
 #'       exponentiated).
@@ -2048,6 +2054,12 @@ table_regression <- function(
   # Phase A -- input class (steps 1-3)
   models <- validate_models_input(models)
   n_models <- length(models)
+  # A model outside the scope of its frame (an ordinal or categorical
+  # Bayesian fit, a GAM with several linear predictors) is refused before
+  # any argument is resolved against it.
+  for (m in models) {
+    .with_public_call(.refuse_out_of_scope_model(m), public_call)
+  }
 
   # Resolve `cluster` to a list of vectors (one per model) so the
   # rest of the pipeline sees a uniform atomic form. `cluster` may
@@ -3552,14 +3564,51 @@ table_regression <- function(
         logical(1)
       ))
   ) {
+    # A survreg distribution that models the time itself (extreme,
+    # gaussian, logistic, t) is named, with why exp(B) is no time ratio.
+    raw_time <- vapply(
+      frames,
+      function(fr) {
+        identical(fr$info$class, "survreg") &&
+          identical(fr$info$family$link, "identity")
+      },
+      logical(1)
+    )
+    dists <- unique(vapply(
+      frames[raw_time],
+      function(fr) as.character(fr$info$extras$distribution)[1L],
+      character(1)
+    ))
+    dist_txt <- paste0("`dist = \"", dists, "\"`", collapse = " / ")
     spicy_warn(
       c(
-        "`exponentiate = TRUE` has no effect on identity-link fits.",
-        "i" = paste0(
-          "exp() is only applied to fits whose coefficients are on a log / ",
-          "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
-          "argument for identity-link (gaussian) fits."
-        )
+        if (all(raw_time)) {
+          paste0(
+            "`exponentiate = TRUE` has no effect on a `survreg()` model ",
+            "with ",
+            dist_txt,
+            "."
+          )
+        } else {
+          "`exponentiate = TRUE` has no effect on identity-link fits."
+        },
+        "i" = if (any(raw_time)) {
+          paste0(
+            "With ",
+            dist_txt,
+            " the model is on the time scale, not the log-time scale: a ",
+            "coefficient is a difference in time, and exp(B) is not a time ",
+            "ratio. Time ratios come from a log-time distribution ",
+            "(\"weibull\", \"lognormal\", \"loglogistic\")."
+          )
+        },
+        "i" = if (!all(raw_time)) {
+          paste0(
+            "exp() is only applied to fits whose coefficients are on a log / ",
+            "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
+            "argument for identity-link (gaussian) fits."
+          )
+        }
       ),
       class = "spicy_ignored_arg"
     )

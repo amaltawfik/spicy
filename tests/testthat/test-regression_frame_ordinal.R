@@ -245,9 +245,10 @@ test_that("svyolr and clmm titles come from the ordinal source", {
     ),
     "Survey-weighted cumulative log-log regression (parallel slopes)"
   )
-  # A cloglog clmm names its link but not proportional hazards: clmm's
-  # cloglog and loglog links are swapped against clm's and glmmTMB's
-  # (runehaubo/ordinal#76), so its coefficients are not log hazard ratios.
+  # A cloglog clmm with a single random intercept names its link but not
+  # proportional hazards: there clmm's cloglog and loglog links are
+  # swapped against clm's and glmmTMB's (runehaubo/ordinal#76), so its
+  # coefficients are not log hazard ratios.
   skip_if_not_installed("ordinal")
   fit <- ordinal::clmm(
     rating ~ temp + contact + (1 | judge),
@@ -263,6 +264,22 @@ test_that("svyolr and clmm titles come from the ordinal source", {
     as_regression_frame(fit_logit)$info$extras$title_prefix,
     "Cumulative logit mixed-effects regression (proportional odds)"
   )
+  # Two random terms take the general path, which fits the cloglog link:
+  # the title claims proportional hazards, as glmmTMB's for the same model.
+  skip_if_not_installed("glmmTMB")
+  f2 <- rating ~ temp + contact + (1 | judge) + (1 | bottle)
+  fit2 <- ordinal::clmm(f2, data = ordinal::wine, link = "cloglog")
+  tmb2 <- glmmTMB::glmmTMB(
+    f2,
+    data = ordinal::wine,
+    family = glmmTMB::ordinal("cloglog")
+  )
+  ph <- paste(
+    "Cumulative complementary log-log mixed-effects regression",
+    "(proportional hazards)"
+  )
+  expect_identical(as_regression_frame(fit2)$info$extras$title_prefix, ph)
+  expect_identical(as_regression_frame(tmb2)$info$extras$title_prefix, ph)
 })
 
 
@@ -638,6 +655,147 @@ test_that("clmm: the footer LR test is against the clm without random effects", 
     as_regression_frame(fit_w)$info$random_effects$null_lrt$chi2,
     2 * (as.numeric(stats::logLik(fit_w)) - as.numeric(stats::logLik(fit0_w))),
     tolerance = 1e-10
+  )
+})
+
+test_that("clmm cloglog and loglog: the LR test equals glmmTMB's", {
+  skip_if_not_installed("glmmTMB")
+  # ordinal's clmm() swaps its cloglog and loglog links against clm()
+  # on its single-random-intercept path only (runehaubo/ordinal#76): one
+  # (1 | g) term, without clmm.control(useMatrix = TRUE). Other random
+  # structures go through the general Laplace code and fit the link they
+  # name. Oracle: the same model fitted by glmmTMB, whose ordinal cloglog
+  # is clm's. glmmTMB has no loglog link, but a cumulative loglog model of
+  # y is the cloglog model of the reversed response, F_loglog(x) =
+  # 1 - F_cloglog(-x). The oracle of a swapped fit is the other link.
+  w <- ordinal::wine
+  w$rating_rev <- factor(
+    6L - as.integer(w$rating),
+    levels = 1:5,
+    ordered = TRUE
+  )
+  ll <- function(m) as.numeric(stats::logLik(m))
+  tmb_lr <- function(re, fitted_link) {
+    y <- if (fitted_link == "cloglog") "rating" else "rating_rev"
+    f0 <- stats::as.formula(paste(y, "~ temp + contact"))
+    f1 <- stats::as.formula(paste(y, "~ temp + contact +", re))
+    m0 <- glmmTMB::glmmTMB(f0, data = w, family = glmmTMB::ordinal("cloglog"))
+    m1 <- glmmTMB::glmmTMB(f1, data = w, family = glmmTMB::ordinal("cloglog"))
+    2 * (ll(m1) - ll(m0))
+  }
+  other <- c(cloglog = "loglog", loglog = "cloglog")
+  # The null keeps the name of the link the call asked for, as the title.
+  name <- c(
+    loglog = "cumulative log-log regression",
+    cloglog = "cumulative complementary log-log regression"
+  )
+  cases <- list(
+    list(re = "(1 | judge)", use_matrix = FALSE, swapped = TRUE),
+    list(re = "(1 | judge)", use_matrix = TRUE, swapped = FALSE),
+    list(
+      re = "(1 | judge) + (1 | bottle)",
+      use_matrix = FALSE,
+      swapped = FALSE
+    ),
+    list(re = "(1 | judge/temp)", use_matrix = FALSE, swapped = FALSE),
+    list(re = "(1 + temp | judge)", use_matrix = FALSE, swapped = FALSE)
+  )
+  for (cs in cases) {
+    for (link in names(other)) {
+      fit <- ordinal::clmm(
+        stats::as.formula(paste("rating ~ temp + contact +", cs$re)),
+        data = w,
+        link = link,
+        control = ordinal::clmm.control(useMatrix = cs$use_matrix)
+      )
+      oracle <- tmb_lr(cs$re, if (cs$swapped) other[[link]] else link)
+      lrt <- as_regression_frame(fit)$info$random_effects$null_lrt
+      lab <- paste(cs$re, "useMatrix =", cs$use_matrix, link)
+      expect_lt(abs(lrt$chi2 - oracle), 1e-3, label = lab)
+      expect_identical(lrt$family_label, name[[link]], label = lab)
+    }
+  }
+})
+
+test_that("clmm: the link swap is detected, and an undetected swap prints no LR line", {
+  skip_if_not_installed("glmmTMB")
+  # Oracle: the single-intercept clmm cloglog fit has the logLik of
+  # glmmTMB's loglog fit (cloglog on the reversed rating) when ordinal
+  # swaps the links, and of glmmTMB's cloglog fit when it does not.
+  w <- ordinal::wine
+  w$rating_rev <- factor(
+    6L - as.integer(w$rating),
+    levels = 1:5,
+    ordered = TRUE
+  )
+  ll <- function(m) as.numeric(stats::logLik(m))
+  tmb <- function(y) {
+    ll(glmmTMB::glmmTMB(
+      stats::as.formula(paste(y, "~ temp + (1 | judge)")),
+      data = w,
+      family = glmmTMB::ordinal("cloglog")
+    ))
+  }
+  ssr <- ll(ordinal::clmm(
+    rating ~ temp + (1 | judge),
+    data = w,
+    link = "cloglog"
+  ))
+  expect_identical(
+    spicy:::.clmm_links_swapped(),
+    abs(ssr - tmb("rating_rev")) < abs(ssr - tmb("rating"))
+  )
+
+  # When the detection fails, the fitted link of a cloglog or loglog fit
+  # on the single-intercept path is unknown: no LR line, rather than a
+  # statistic against a null that may not be nested.
+  fit <- .fit_clmm_wine(link = "cloglog")
+  local_mocked_bindings(.clmm_links_swapped = function() NA)
+  expect_null(as_regression_frame(fit)$info$random_effects$null_lrt)
+  expect_error(
+    table_regression(fit, exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+  # A logit fit does not depend on the detection.
+  fit_logit <- .fit_clmm_wine()
+  expect_false(is.null(
+    as_regression_frame(fit_logit)$info$random_effects$null_lrt
+  ))
+})
+
+test_that("clmm: an ordinal that fits the link it is asked for is taken at its word", {
+  # The branch that becomes live once ordinal fixes #76. Oracle: the LR
+  # statistic against the clm of the requested link, by hand.
+  fit <- .fit_clmm_wine(link = "cloglog")
+  local_mocked_bindings(.clmm_links_swapped = function() FALSE)
+  expect_identical(spicy:::.clmm_fitted_link(fit), "cloglog")
+  null <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    link = "cloglog"
+  )
+  chi2 <- 2 * (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(null)))
+  fr <- as_regression_frame(fit)
+  expect_equal(fr$info$random_effects$null_lrt$chi2, chi2, tolerance = 1e-6)
+  expect_true(endsWith(fr$info$extras$title_prefix, "(proportional hazards)"))
+})
+
+test_that("clmm cloglog: exponentiate is refused only where the links swap", {
+  skip_if_not_installed("glmmTMB")
+  # A nested random term takes the general path, which fits the cloglog link:
+  # exp(-B) is a hazard ratio, as for clm. Oracle: glmmTMB's cumulative
+  # cloglog fit of the same model.
+  w <- ordinal::wine
+  f <- rating ~ temp + contact + (1 | judge / temp)
+  fit <- ordinal::clmm(f, data = w, link = "cloglog")
+  tmb <- glmmTMB::glmmTMB(f, data = w, family = glmmTMB::ordinal("cloglog"))
+  b <- glmmTMB::fixef(tmb)$cond[["tempwarm"]]
+  txt <- .snap_text(table_regression(fit, exponentiate = TRUE))
+  expect_match(txt, sprintf("%.2f", exp(-b)), fixed = TRUE)
+  # The single-intercept fit stays refused (see the exponentiate test).
+  expect_error(
+    table_regression(.fit_clmm_wine(link = "cloglog"), exponentiate = TRUE),
+    class = "spicy_invalid_input"
   )
 })
 

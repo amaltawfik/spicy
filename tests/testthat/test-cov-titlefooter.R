@@ -276,7 +276,7 @@ test_that(".surv_title_dist normalizes all known distribution tokens", {
   expect_identical(spicy:::.surv_title_dist("gaussian"), "Gaussian")
   # An alias names the distribution it stands for, never its R code.
   expect_identical(spicy:::.surv_title_dist("loggaussian"), "Log-normal")
-  expect_identical(spicy:::.surv_title_dist("extreme"), "Extreme-value")
+  expect_identical(spicy:::.surv_title_dist("extreme"), "Extreme value")
   expect_identical(
     spicy:::.surv_title_dist("gengamma.orig"),
     "Generalized gamma"

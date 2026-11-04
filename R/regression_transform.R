@@ -18,8 +18,8 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   }
 
   # Intercepts are excluded from the family: the main one by term, and the
-  # component-block ones (zero-inflation / dispersion, terms "zero_(Intercept)"
-  # / "zi.(Intercept)") by their display label.
+  # component-block ones (zero-inflation / dispersion, terms
+  # "Zero-inflation::(Intercept)", ...) by their display label.
   family_mask <- coefs$term != "(Intercept)" &
     !(coefs$label %in% "(Intercept)") &
     !coefs$is_ref &

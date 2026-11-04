@@ -149,6 +149,29 @@ test_that("the flexsurv auxiliary parameters follow the mark", {
   )
 })
 
+test_that("a small flexsurv parameter keeps two significant digits, never 0.00", {
+  # Gompertz shape and rate of the lung data, on a day axis: two decimals
+  # wrote both "0.00". Expected values rounded by hand.
+  fr <- .ft_frame(
+    "flexsurvreg",
+    list(
+      distribution = "gompertz",
+      aux_parameters = c(shape = 0.001394352, rate = 0.0002432249)
+    )
+  )
+  expect_identical(
+    spicy:::build_survival_footer_block_from_frames(list(fr)),
+    "Distribution: Gompertz; shape = 0.0014, rate = 0.00024."
+  )
+  expect_identical(
+    spicy:::build_survival_footer_block_from_frames(
+      list(fr),
+      decimal_mark = ","
+    ),
+    "Distribution: Gompertz; shape = 0,0014, rate = 0,00024."
+  )
+})
+
 test_that("the per-model survival lines all follow the mark", {
   frames <- list(
     .ft_frame("coxph", list(concordance = list(c = 0.6041, se = 0.0312))),

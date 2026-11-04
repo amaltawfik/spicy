@@ -85,6 +85,10 @@
         c(
           .REG_BLOCK_RE,
           .REG_BLOCK_ZI,
+          paste0(
+            .REG_BLOCK_HURDLE_ZERO,
+            " for a zero-truncated family, ziGamma, lognormal or beta_family"
+          ),
           .REG_BLOCK_DISP,
           paste0(.REG_BLOCK_THRESH, " (ordinal family)")
         ),
@@ -389,18 +393,20 @@
 #' `vcov`, `ci_method = "profile"` and `standardized` are refused, as is
 #' `nested = TRUE` for `clmm`. `exponentiate` follows the `clm` rule
 #' (odds ratios under logit, hazard ratios under cloglog), except for a
-#' `clmm` fit with the cloglog link, where it is refused: on the current
-#' `ordinal`, the cloglog and loglog links of `clmm()` do not match those
-#' of `clm()` and of `glmmTMB()`.
+#' `clmm` fit with the cloglog link and a single random intercept, where
+#' it is refused: on the current `ordinal`, `clmm()` fits such a model
+#' with the loglog link, and the reverse. The random-effects LR test
+#' refits its null with the link actually fitted.
 #'
 #' @section Counts and two-part models:
 #' Two-part models show their full model: the zero component renders as a
 #' `Zero-inflation` block (`zeroinfl`, glmmTMB `ziformula`: probability of a
-#' structural zero) or a `Zero hurdle` block (`hurdle`: probability of a
-#' nonzero count -- the opposite direction, hence the distinct label; a
-#' glmmTMB hurdle model, a zero-truncated family with `ziformula`, also
-#' shows a `Zero hurdle` block, which models the probability of a zero), and a
-#' `Dispersion` block when `dispformula` has covariates. Component
+#' structural zero), a `Zero hurdle, Pr(y > 0)` block (`hurdle`: probability
+#' of a nonzero count -- the opposite direction, hence the distinct label)
+#' or a `Zero hurdle, Pr(y = 0)` block (a glmmTMB hurdle model, a
+#' zero-truncated family, `ziGamma()`, `lognormal()` or `beta_family()`
+#' with `ziformula`: probability of a zero), and a `Dispersion` block when
+#' `dispformula` has covariates. Component
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
 #' combined-response effect on E(Y). `"CR1"` for Poisson and geometric `pscl`

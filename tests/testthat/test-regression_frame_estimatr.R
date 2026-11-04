@@ -614,6 +614,42 @@ test_that("se_type = 'classical' / 'HC3' name themselves in the note", {
   )
 })
 
+test_that("se_type = 'stata' with clusters is labeled cluster-robust (CR1)", {
+  skip_if_not_installed("estimatr")
+  skip_if_not_installed("sandwich")
+  fit <- estimatr::lm_robust(
+    mpg ~ wt,
+    data = mtcars,
+    clusters = cyl,
+    se_type = "stata"
+  )
+  # The oracle: these are Stata's cluster-robust CR1 errors, sandwich's
+  # vcovCL() with the HC1 small-sample factor, G / (G - 1) (N - 1) / (N - K).
+  ols <- stats::lm(mpg ~ wt, data = mtcars)
+  cr1 <- sqrt(diag(sandwich::vcovCL(ols, cluster = ~cyl, type = "HC1")))
+  expect_equal(unname(fit$std.error), unname(cr1), tolerance = 1e-8)
+  expect_match(
+    attr(table_regression(fit), "note"),
+    "Std. errors: Cluster-robust (Stata CR1)",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_regression(fit), "note"),
+    "Erreurs standards\u00a0: robustes aux grappes (Stata CR1)",
+    fixed = TRUE
+  )
+  # Without clusters, "stata" is HC1, which estimatr records as such.
+  hc1 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "stata")
+  expect_identical(hc1$se_type, "HC1")
+  withr::local_options(spicy.language = "en")
+  expect_match(
+    attr(table_regression(hc1), "note"),
+    "Std. errors: Robust (HC1)",
+    fixed = TRUE
+  )
+})
+
 test_that("iv_robust with se_type = 'none' names IV and the missing SE", {
   skip_if_not_installed("estimatr")
   fit <- estimatr::iv_robust(mpg ~ wt | hp, data = mtcars, se_type = "none")

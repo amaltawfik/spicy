@@ -407,7 +407,8 @@ as_regression_frame.glmmTMB <- function(
   n_groups <- if (!is.null(cond_ng) && length(cond_ng) > 0L) {
     setNames(as.integer(cond_ng), names(cond_ng))
   } else {
-    NULL # nocov
+    # A fit without a conditional random effect.
+    NULL
   }
 
   re <- .glmmTMB_random_effects(
@@ -486,19 +487,26 @@ as_regression_frame.glmmTMB <- function(
   component_blocks <- list()
   if (has_zi) {
     # A hurdle model's zi part is the zero hurdle: in glmmTMB it models
-    # Pr(y = 0), every zero, not a structural excess of zeros.
+    # Pr(y = 0), every zero, not a structural excess of zeros -- the
+    # opposite event of pscl's zero hurdle, hence a block of its own.
     is_hurdle <- .glmmTMB_is_hurdle(fam, has_zi)
     component_blocks[[length(component_blocks) + 1L]] <-
       .glmmTMB_component_block(
         fit,
         component = "zi",
-        label = if (is_hurdle) .REG_BLOCK_HURDLE else .REG_BLOCK_ZI,
+        label = if (is_hurdle) .REG_BLOCK_HURDLE_ZERO else .REG_BLOCK_ZI,
         link = "logit",
         exp_ok = TRUE,
         gloss = if (is_hurdle) {
           spicy_fmt(
-            "note_component_gloss_hurdle_zero",
-            spicy_str("label_block_zero_hurdle")
+            # The zero of a continuous response (hurdle-Gamma, log-normal
+            # or beta) is a value.
+            if (fam$family %in% .GLMMTMB_HURDLE_CONTINUOUS) {
+              "note_component_gloss_hurdle_zero_continuous"
+            } else {
+              "note_component_gloss_hurdle_zero"
+            },
+            spicy_str("label_block_zero_hurdle_zero")
           )
         } else {
           spicy_fmt(
@@ -554,7 +562,11 @@ as_regression_frame.glmmTMB <- function(
     convergence_note = convergence_note,
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = .glmmTMB_title_prefix(fam, has_zi),
+    title_prefix = .glmmTMB_title_prefix(
+      fam,
+      has_zi,
+      mixed = .glmmTMB_has_re(fit)
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     component_blocks = component_blocks,
@@ -696,8 +708,8 @@ as_regression_frame.glmmTMB <- function(
 # from summary(fit)$coefficients[[component]] -- no refit. Under CR0 / CR1 the
 # SEs come from the "zi~" / "disp~" rows of the same sandwich as the conditional
 # rows (`vc`), so one estimator covers the whole table, as for the pscl
-# two-part fits. Terms are "<component>."-prefixed for uniqueness against
-# the conditional rows (matching glmmTMB's own confint() rownames convention).
+# two-part fits. Terms are the coefficient names of the component;
+# .append_component_rows() keys them by block for the table.
 .glmmTMB_component_block <- function(
   fit,
   component,
@@ -757,7 +769,10 @@ as_regression_frame.glmmTMB <- function(
   }
 
   rows <- data.frame(
-    term = paste0(component, ".", nm),
+    term = nm,
+    # "factor: level" with an ASCII colon in every language: the label
+    # is also the row's level, which inline() and tidy() address, and
+    # an identifier never follows the table language.
     label = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
     factor_level_pos = as.integer(pos),
     is_ref = FALSE,
@@ -782,7 +797,7 @@ as_regression_frame.glmmTMB <- function(
       rows <- rbind(
         rows,
         data.frame(
-          term = paste0(component, ".", v, ref[1L]),
+          term = paste0(v, ref[1L]),
           label = paste0(v, ": ", ref[1L]),
           factor_level_pos = as.integer(match(ref[1L], lvls)),
           is_ref = TRUE,
@@ -805,29 +820,44 @@ as_regression_frame.glmmTMB <- function(
 
 
 # Title-case family label for the footer prefix. Mirrors the merMod
-# convention; "zero-inflated" is appended when a zi formula is present.
-.glmmTMB_title_prefix <- function(fam, has_zi) {
+# convention. A two-part model reads as pscl names it, "Negative-binomial
+# hurdle regression" and "Zero-inflated Poisson regression", so the same
+# model fitted by both engines has one title; with random effects,
+# "mixed-effects" takes the place of "regression" in the same words. A fit
+# without any random-effect term (`mixed = FALSE`) takes the fixed-effects
+# title of its family.
+.glmmTMB_title_prefix <- function(fam, has_zi, mixed = TRUE) {
+  design <- if (mixed) " mixed-effects regression" else " regression"
+  if (.glmmTMB_is_hurdle(fam, has_zi)) {
+    count_fam <- fam
+    count_fam$family <- sub("^truncated_", "", fam$family)
+    return(paste0(.glmmTMB_family_label(count_fam), " hurdle", design))
+  }
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
     identical(fam$link, "identity")
   base <- if (is_gaussian_identity) {
-    "Linear mixed-effects regression"
+    paste0("Linear", design)
   } else if (identical(fam$family, "ordinal")) {
     # The ordinal title of clm, with random effects: "Cumulative
     # complementary log-log mixed-effects regression (proportional
     # hazards)". Unlike clmm's, glmmTMB's cloglog is the clm cloglog,
     # so its title keeps the assumption.
-    .ordinal_title_prefix(fam$link, mixed = TRUE)
-  } else if (.glmmTMB_is_hurdle(fam, has_zi)) {
-    count_fam <- fam
-    count_fam$family <- sub("^truncated_", "", fam$family)
-    return(paste0(
-      .glmmTMB_family_label(count_fam),
-      " mixed-effects regression (hurdle)"
-    ))
+    .ordinal_title_prefix(fam$link, mixed = mixed)
   } else {
-    paste0(.glmmTMB_family_label(fam), " mixed-effects regression")
+    paste0(.glmmTMB_family_label(fam), design)
   }
-  if (has_zi) paste0(base, " (zero-inflated)") else base
+  if (has_zi) paste0("Zero-inflated ", lowercase_first(base)) else base
+}
+
+# TRUE when the fit has a random-effect term in any of its formulas
+# (conditional, zero-inflation or dispersion): a random intercept in the
+# zi formula alone still makes a mixed model.
+.glmmTMB_has_re <- function(fit) {
+  any(vapply(
+    fit$modelInfo$reTrms,
+    function(r) length(r$cnms) > 0L,
+    logical(1)
+  ))
 }
 
 
@@ -867,9 +897,19 @@ as_regression_frame.glmmTMB <- function(
 
 # A zero-truncated family with a zero-inflation formula is a hurdle model
 # in glmmTMB: the conditional part is the count of the positives, and the
-# model is named after the untruncated count family plus "(hurdle)".
+# model is named after the untruncated count family: "Poisson hurdle
+# regression". So is a continuous family without zeros -- Gamma (glmmTMB's
+# ziGamma, its documented hurdle-Gamma, ?glmmTMB::ziGamma), lognormal and
+# beta_family: their density puts no mass at zero, so the zi part models
+# every zero. Measured on glmmTMB 1.1.15: with `ziformula = ~1`, the zi
+# intercept of each equals qlogis(mean(y == 0)), as it does not for the
+# gaussian, t or skewnormal families, whose density is positive at zero.
+.GLMMTMB_HURDLE_CONTINUOUS <- c("Gamma", "lognormal", "beta")
+
 .glmmTMB_is_hurdle <- function(fam, has_zi) {
-  isTRUE(has_zi) && startsWith(fam$family, "truncated_")
+  isTRUE(has_zi) &&
+    (startsWith(fam$family, "truncated_") ||
+      fam$family %in% .GLMMTMB_HURDLE_CONTINUOUS)
 }
 
 .glmmTMB_family_label <- function(fam) {

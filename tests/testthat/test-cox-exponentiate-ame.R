@@ -84,7 +84,11 @@ test_that("survreg log-scale dist exponentiates to time ratios; gaussian does no
     data = survival::lung,
     dist = "gaussian"
   )
-  expect_warning(table_regression(gg, exponentiate = TRUE), "identity-link")
+  expect_warning(
+    table_regression(gg, exponentiate = TRUE),
+    "dist = \"gaussian\"",
+    class = "spicy_ignored_arg"
+  )
 })
 
 test_that("AME tokens are rejected for Cox models with a clear error", {

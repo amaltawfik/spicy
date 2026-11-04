@@ -253,11 +253,258 @@ test_that("gam titles name the family in words, never by its R code", {
     title("Ordered Categorical(-1,2.95)", "identity"),
     "Cumulative logit GAM (proportional odds)"
   )
-  # Any other family is not named.
+  expect_identical(title("Cox PH", "identity"), "Cox proportional hazards GAM")
+  expect_identical(title("cnorm(1.254)", "identity"), "Censored normal GAM")
+  expect_identical(title("clog(0.726)", "identity"), "Censored logistic GAM")
+  expect_identical(title("cpois"), "Censored Poisson GAM")
   expect_identical(
-    title("gaulss", "identity"),
-    "Generalized additive model (GAM)"
+    title("bcg(0.006,0.494)", "identity"),
+    "Censored Box-Cox normal GAM"
   )
+  expect_identical(
+    title("gfam{gaussian,poisson}", "identity"),
+    "Grouped-family GAM"
+  )
+  # A family from outside mgcv keeps the name its author gave it, its
+  # parameters dropped, and never the title of the gaussian model.
+  expect_identical(
+    title("Some family(0.5)", "identity"),
+    "Generalized additive model (GAM, Some family)"
+  )
+  # In French the head is translated and the name kept.
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::.title_prefix_display(
+      "Generalized additive model (GAM, Some family)"
+    ),
+    "Mod\u00e8le additif g\u00e9n\u00e9ralis\u00e9 (GAM, Some family)"
+  )
+})
+
+test_that("the type note of several GAMs names the model once", {
+  # One rule for every GAM title: English pluralizes the model, French
+  # keeps the acronym and makes its qualifiers agree.
+  frames <- function(prefix) {
+    rep(list(list(info = list(extras = list(title_prefix = prefix)))), 2L)
+  }
+  note <- function(prefix, lang = "en") {
+    withr::with_options(
+      list(spicy.language = lang),
+      spicy:::build_regression_type_footer_block_from_frames(frames(prefix))
+    )
+  }
+  expected <- list(
+    "Generalized additive model (GAM)" = c(
+      "Generalized additive models (GAM).",
+      "Mod\u00e8les additifs g\u00e9n\u00e9ralis\u00e9s (GAM)."
+    ),
+    "Poisson GAM" = c("Poisson GAMs.", "GAM de Poisson."),
+    "Negative-binomial GAM" = c(
+      "Negative-binomial GAMs.",
+      "GAM binomiaux n\u00e9gatifs."
+    ),
+    "Censored normal GAM" = c(
+      "Censored normal GAMs.",
+      "GAM normaux censur\u00e9s."
+    ),
+    "Censored Poisson GAM" = c(
+      "Censored Poisson GAMs.",
+      "GAM de Poisson censur\u00e9s."
+    ),
+    "Inverse-Gaussian GAM" = c(
+      "Inverse-Gaussian GAMs.",
+      "GAM gaussiens inverses."
+    ),
+    "Cumulative logit GAM (proportional odds)" = c(
+      "Cumulative logit GAMs (proportional odds).",
+      "GAM \u00e0 logit cumulatif (cotes proportionnelles)."
+    ),
+    "Zero-inflated Poisson GAM" = c(
+      "Zero-inflated Poisson GAMs.",
+      "GAM de Poisson (inflation de z\u00e9ros)."
+    ),
+    "Generalized additive model (GAM, Some family)" = c(
+      "Generalized additive models (GAM, Some family).",
+      "Mod\u00e8les additifs g\u00e9n\u00e9ralis\u00e9s (GAM, Some family)."
+    )
+  )
+  for (prefix in names(expected)) {
+    expect_identical(note(prefix), expected[[prefix]][1L], label = prefix)
+    expect_identical(note(prefix, "fr"), expected[[prefix]][2L], label = prefix)
+  }
+  # Every GAM title has a French title and a French plural without the
+  # word "Mod\u00e8les de".
+  gam <- grep("GAM", names(spicy:::.FR_TITLE_PREFIXES), value = TRUE)
+  for (prefix in gam) {
+    expect_no_match(note(prefix, "fr"), "^Mod\u00e8les de ", label = prefix)
+    expect_no_match(note(prefix), " models\\.$", label = prefix)
+  }
+})
+
+
+test_that("the censored and Cox families of mgcv are titled by their model", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  n <- 300
+  d <- data.frame(x = stats::runif(n), z = stats::rnorm(n))
+  eta <- sin(2 * pi * d$x) + 0.5 * d$z
+  d$time <- stats::rexp(n, exp(0.3 * eta))
+  d$ev <- stats::rbinom(n, 1, 0.8)
+  d$y <- eta + stats::rnorm(n)
+  d$y_hi <- ifelse(d$y > 1, Inf, d$y)
+  d$cnt <- pmax(round(exp(1 + 0.3 * d$z) + stats::rnorm(n)), 0)
+  d$cnt_hi <- ifelse(d$cnt > 4, Inf, d$cnt)
+  fits <- list(
+    "Cox PH" = mgcv::gam(
+      time ~ s(x) + z,
+      data = d,
+      family = mgcv::cox.ph(),
+      weights = ev
+    ),
+    cnorm = mgcv::gam(
+      cbind(y, y_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::cnorm()
+    ),
+    clog = mgcv::gam(
+      cbind(y, y_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::clog()
+    ),
+    cpois = mgcv::gam(
+      cbind(cnt, cnt_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::cpois()
+    )
+  )
+  expected <- c(
+    "Cox PH" = "Cox proportional hazards GAM",
+    cnorm = "Censored normal GAM",
+    clog = "Censored logistic GAM",
+    cpois = "Censored Poisson GAM"
+  )
+  gaussian <- mgcv::gam(y ~ s(x) + z, data = d)
+  for (nm in names(fits)) {
+    # The family is the one mgcv reports for the fit.
+    expect_true(startsWith(stats::family(fits[[nm]])$family, nm), info = nm)
+    prefix <- as_regression_frame(fits[[nm]])$info$extras$title_prefix
+    expect_identical(prefix, expected[[nm]], info = nm)
+    expect_false(
+      identical(prefix, as_regression_frame(gaussian)$info$extras$title_prefix)
+    )
+  }
+  # Beside a gaussian GAM, the table names both models.
+  note <- attr(
+    table_regression(list(Gaussian = gaussian, Cox = fits[["Cox PH"]])),
+    "note"
+  )
+  expect_match(
+    note,
+    "Gaussian: generalized additive model (GAM); Cox: Cox proportional hazards GAM.",
+    fixed = TRUE
+  )
+})
+
+test_that("a Cox PH GAM reports hazard ratios under exponentiate = TRUE", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("broom")
+  d <- survival::lung
+  d <- d[stats::complete.cases(d[, c("time", "status", "age", "sex")]), ]
+  d$ev <- as.integer(d$status == 2)
+  d$sex <- factor(d$sex, labels = c("M", "F"))
+  # Without a smooth term the GAM is coxph() with Breslow ties: same
+  # hazard ratios, delta-method SE and Wald CI.
+  g <- mgcv::gam(
+    time ~ age + sex,
+    data = d,
+    family = mgcv::cox.ph(),
+    weights = ev
+  )
+  cx <- survival::coxph(
+    survival::Surv(time, ev) ~ age + sex,
+    data = d,
+    ties = "breslow"
+  )
+  tab <- expect_no_warning(table_regression(g, exponentiate = TRUE))
+  expect_match(paste(capture.output(print(tab)), collapse = "\n"), "HR")
+  td <- broom::tidy(tab)
+  sc <- summary(cx)
+  expect_equal(
+    td$estimate,
+    unname(sc$coefficients[, "exp(coef)"]),
+    tolerance = 1e-5
+  )
+  expect_equal(
+    td$std.error,
+    unname(sc$coefficients[, "exp(coef)"] * sc$coefficients[, "se(coef)"]),
+    tolerance = 1e-4
+  )
+  expect_equal(
+    td$conf.low,
+    unname(sc$conf.int[, "lower .95"]),
+    tolerance = 1e-4
+  )
+  expect_equal(
+    td$conf.high,
+    unname(sc$conf.int[, "upper .95"]),
+    tolerance = 1e-4
+  )
+  # With a smooth term: the GAM's own exp(coef) on the parametric terms.
+  g1 <- mgcv::gam(
+    time ~ s(age) + sex,
+    data = d,
+    family = mgcv::cox.ph(),
+    weights = ev
+  )
+  td1 <- broom::tidy(table_regression(g1, exponentiate = TRUE))
+  expect_equal(td1$estimate, unname(exp(stats::coef(g1)["sexF"])))
+  expect_equal(
+    td1$std.error,
+    unname(exp(stats::coef(g1)["sexF"]) * sqrt(diag(stats::vcov(g1))["sexF"]))
+  )
+})
+
+test_that("a GAM with several linear predictors is refused", {
+  skip_if_not_installed("mgcv")
+  set.seed(4)
+  n <- 200
+  d <- data.frame(x = stats::runif(n), z = stats::rnorm(n))
+  d$y <- d$z + stats::rnorm(n, sd = exp(d$x))
+  d$k <- sample(0:2, n, replace = TRUE)
+  d$cnt <- stats::rpois(n, 2) * stats::rbinom(n, 1, 0.7)
+  fits <- list(
+    gaulss = mgcv::gam(
+      list(y ~ s(x) + z, ~ s(x)),
+      data = d,
+      family = mgcv::gaulss()
+    ),
+    ziplss = mgcv::gam(
+      list(cnt ~ s(x), ~ s(z)),
+      data = d,
+      family = mgcv::ziplss()
+    ),
+    multinom = mgcv::gam(
+      list(k ~ s(x), ~ s(z)),
+      data = d,
+      family = mgcv::multinom(K = 2)
+    )
+  )
+  for (nm in names(fits)) {
+    # mgcv fits them from a list of formulas, one per linear predictor.
+    expect_true(is.list(stats::formula(fits[[nm]])), info = nm)
+    expect_error(
+      table_regression(fits[[nm]]),
+      paste0("several linear predictors (family `", nm, "`)"),
+      fixed = TRUE,
+      class = "spicy_unsupported"
+    )
+    expect_error(
+      as_regression_frame(fits[[nm]]),
+      "several linear predictors",
+      class = "spicy_unsupported"
+    )
+  }
 })
 
 test_that("a probit GAM is not titled logistic", {

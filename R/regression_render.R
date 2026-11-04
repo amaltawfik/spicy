@@ -1478,7 +1478,7 @@ format_term_label <- function(
       # the bare factor_level string.
       lbl <- resolve_label(term, labels)
       if (identical(lbl, term)) {
-        lbl <- lvl
+        lbl <- .reg_component_level_display(lvl, term_row$factor_term)
       }
       return(paste0("  ", lbl, ref_sep, reference_label))
     }
@@ -1498,6 +1498,7 @@ format_term_label <- function(
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
     }
+    lvl <- .reg_component_level_display(lvl, term_row$factor_term)
     return(paste0(if (isTRUE(group_factor_levels)) "  " else "", lvl))
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
@@ -1514,6 +1515,24 @@ format_term_label <- function(
     return(paste0("  ", lbl))
   }
   resolve_label(term, labels)
+}
+
+# The level of a component row ("mined: no") is an identifier, the same
+# in every language, which inline() and tidy() address. Its display takes
+# the colon of the table language, as the factor header of the main
+# block does ("mined\u00a0: no" in French): display only.
+.reg_component_level_display <- function(lvl, block) {
+  component <- c(
+    .REG_BLOCK_ZI,
+    .REG_BLOCK_HURDLE,
+    .REG_BLOCK_HURDLE_ZERO,
+    .REG_BLOCK_DISP
+  )
+  if (!isTRUE(block %in% component)) {
+    return(lvl)
+  }
+  sep <- paste0(spicy_fmt("label_block_header", ""), " ")
+  sub(": ", sep, lvl, fixed = TRUE)
 }
 
 # Look up a user-provided label for a term name; fall back to the
