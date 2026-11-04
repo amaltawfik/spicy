@@ -968,4 +968,4 @@ Erreurs, avertissements et messages de spicy restent en anglais, y compris l'ave
 
 ## Décision 58 — Deux signalements amont préparés, envoi réservé à Amal (2026-11-04)
 
-Un commentaire pour runehaubo/ordinal#76 (l'inversion cloglog/loglog des `clmm` ne touche que le chemin à une seule ordonnée aléatoire sans `useMatrix`) et une issue pour pscl (les méthodes `estfun` des `zeroinfl()` et `hurdle()` binomiaux négatifs omettent le score de θ, d'où un sandwich incomplet) sont rédigés avec un sondage capturé par affirmation, selon le protocole d'octobre, et déposés dans `dev/upstream`. Amal décide de l'envoi.
+Un commentaire pour runehaubo/ordinal#76 (l'inversion cloglog/loglog des `clmm` ne touche que le chemin à une seule ordonnée aléatoire sans `useMatrix`) et une issue pour pscl (les méthodes `estfun` des `zeroinfl()` et `hurdle()` binomiaux négatifs omettent le score de θ, d'où un sandwich incomplet) sont rédigés avec un sondage capturé par affirmation, selon le protocole d'octobre. Ils restent des brouillons locaux de `dev/` (motif ignoré `*_draft.md`) tant qu'ils ne sont pas envoyés, puis rejoignent `dev/upstream` tels qu'envoyés. Amal décide de l'envoi.

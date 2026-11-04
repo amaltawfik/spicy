@@ -54,7 +54,7 @@
 * `table_regression()` refuses `vcov = "CR1"` for negative-binomial
   `pscl::zeroinfl()` and `pscl::hurdle()` models (`dist = "negbin"` or
   `zero.dist = "negbin"`), whose sandwich leaves out the score of theta
-  and gives inconsistent standard errors. When the count part is
+  and is not the full sandwich of the fit. When the count part is
   negative binomial, the error points to glmmTMB, whose sandwich
   includes theta and whose zero hurdle is binomial. When only the zero
   hurdle is negative binomial, it points to the default binomial zero

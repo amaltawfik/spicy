@@ -1335,8 +1335,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
         )
       },
       "i" = paste0(
-        "The sandwich of these fits leaves out the score of theta, so its ",
-        "standard errors are inconsistent."
+        "The sandwich of these fits leaves out the score of theta, so it ",
+        "is not the full sandwich of the fit."
       ),
       "i" = if (zero_only) {
         paste0(

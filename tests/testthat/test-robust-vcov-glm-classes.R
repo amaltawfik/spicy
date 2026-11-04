@@ -467,7 +467,7 @@ test_that("negative-binomial pscl fits refuse the sandwich; the others keep CR1"
   skip_if_not_installed("numDeriv")
   # sandwich's estfun() for zeroinfl / hurdle leaves out the score of
   # log(theta) while the bread is the coefficient block of the full
-  # inverse Hessian: the sandwich of a negbin part is inconsistent.
+  # inverse Hessian: it is not the full sandwich of a negbin fit.
   data("bioChemists", package = "pscl", envir = environment())
   d <- get("bioChemists", envir = environment())
   set.seed(2)
