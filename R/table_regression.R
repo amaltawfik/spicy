@@ -194,7 +194,8 @@
 #'     intercept: they read No when another model absorbs that
 #'     factor, and contribute no row otherwise.
 #'     `"within_r2"` is the FE-partialed within
-#'     R-squared (a default for `feols`, opt-in for `estimatr`;
+#'     R-squared (a default for `feols`, except an IV one; opt-in
+#'     for `estimatr`;
 #'     GLM-family fixest fits report fixest's McFadden `pr2`
 #'     instead). Both tokens are refused when no model in the table
 #'     absorbs fixed effects.
@@ -626,8 +627,11 @@
 #'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
 #'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"` or
 #'     after `rms::robcov()`, `quantreg::rq` under `"iid"` and
-#'     `"ker"`, and a `fixest::feols` fit estimated with a non-iid vcov
-#'     (on fixest's own degrees of freedom, as `fixest::wald()`). Under
+#'     `"ker"`, and a fixest fit estimated with a non-iid vcov whose
+#'     coefficient tests are t (on fixest's own degrees of freedom, as
+#'     `fixest::wald()`): `feols`, and `feglm` with a family whose
+#'     dispersion is estimated (gaussian, Gamma, inverse Gaussian and
+#'     the quasi families). Under
 #'     `"CR0"`-`"CR3"`, `lm`, `glm` (`MASS::glm.nb` included),
 #'     `lme4::lmer` and `nlme::lme` use the HTZ test of
 #'     `clubSandwich::Wald_test()`, the small-sample correction of their
@@ -642,9 +646,10 @@
 #'     and under `"CR1"` to `survreg`, `mgcv::gam` and `bam`, `polr`,
 #'     `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
 #'     `hurdle`; also to
-#'     `survreg(robust = TRUE)`, a `fixest::fepois` or `feglm` fit with
-#'     a non-iid vcov, and an `rms` fit of these classes passed through
-#'     `robcov()`.
+#'     `survreg(robust = TRUE)`, a fixest fit with a non-iid vcov whose
+#'     coefficient tests are z (`fepois`, `femlm`, `fenegbin`, and
+#'     `feglm` with the binomial or Poisson family), and an `rms` fit of
+#'     these classes passed through `robcov()`.
 #' }
 #' \eqn{\Delta R^2}{Delta R^2}, the information criteria and the
 #' deviance change do not depend on the vcov and are unchanged, and a
@@ -1180,8 +1185,10 @@
 #'   token order. `NULL` (default) resolves class-aware:
 #'   \itemize{
 #'     \item `lm`, `estimatr::lm_robust()`: `c("nobs", "r2",
-#'       "adj_r2")`. `estimatr::iv_robust()` gets `"nobs"` alone --
-#'       the 2SLS R-squared is not the classical one.
+#'       "adj_r2")`. `estimatr::iv_robust()` gets `"nobs"` alone,
+#'       and an IV `fixest::feols()` neither R-squared nor AIC -- the
+#'       2SLS R-squared is not the classical one. Asked for, it is
+#'       the R-squared of `ivreg()`, on the structural residuals.
 #'     \item `glm`, ordinal `polr` / `clm`:
 #'       `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
 #'       "aic")` (McFadden = Stata `ologit` default,
@@ -2266,8 +2273,18 @@ table_regression <- function(
     # disclosure (etable, modelsummary and esttab all default it on),
     # then n, R2 and the FE-partialled within R2 (feols; both rows
     # auto-drop as all-NA for feglm / fepois, which carry fixest's
-    # McFadden "pr2" instead) and AIC.
+    # McFadden "pr2" instead) and AIC. The second stage of an IV feols
+    # leaves the two R2 and AIC out, as ivreg and iv_robust do: the
+    # 2SLS R-squared is not the classical one, and 2SLS is not a
+    # likelihood fit.
     any_fixest <- any(vapply(models, inherits, logical(1), "fixest"))
+    any_fixest_not_iv <- any(vapply(
+      models,
+      function(m) {
+        inherits(m, "fixest") && !.fixest_is_iv_second_stage(m)
+      },
+      logical(1)
+    ))
     any_fixest_glm <- any(vapply(
       models,
       function(m) {
@@ -2279,10 +2296,9 @@ table_regression <- function(
       show_fit_stats <- c(
         show_fit_stats,
         if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
-        "r2",
-        "within_r2",
+        if (any_fixest_not_iv) c("r2", "within_r2"),
         if (any_fixest_glm) "pseudo_r2_mcfadden",
-        "aic"
+        if (any_fixest_not_iv) "aic"
       )
     }
     # Survey-design fits: the observed count AND the population it
@@ -3333,11 +3349,22 @@ table_regression <- function(
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
           "with `tau = `, or `\"risk_diff\"` with `at_time = `."
         )
+      } else if (any(lean_fe <- vapply(frames, .fixest_lean_fe, logical(1)))) {
+        sprintf(
+          paste0(
+            "%s: a fixest fit with fixed effects and `lean = TRUE` keeps ",
+            "too little for marginaleffects to predict from it. ",
+            "Re-estimate it with `lean = FALSE`."
+          ),
+          paste(.model_display_names(models)[lean_fe], collapse = ", ")
+        )
       } else if (any(classes == "fixest")) {
         paste0(
-          "The AME of a non-linear fixest model with fixed effects would ",
-          "need the uncertainty of the fixed effects, which fixest does ",
-          "not estimate. It is available for `feols()` and for a GLM ",
+          "marginaleffects, which computes the AME, refuses a fixest GLM ",
+          "with fixed effects (`feglm()`, `fepois()`, `femlm()`, ",
+          "`fenegbin()`, whatever the family): it cannot take into account ",
+          "the uncertainty of the fixed effects, which fixest does not ",
+          "estimate. The AME is available for `feols()` and for a GLM ",
           "without fixed effects."
         )
       } else {

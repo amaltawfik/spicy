@@ -416,8 +416,10 @@ reference out of the row.}
 model-level rows below the coefficients; row order follows
 token order. \code{NULL} (default) resolves class-aware:
 \itemize{
-\item \code{lm}, \code{estimatr::lm_robust()}: \code{c("nobs", "r2", "adj_r2")}. \code{estimatr::iv_robust()} gets \code{"nobs"} alone --
-the 2SLS R-squared is not the classical one.
+\item \code{lm}, \code{estimatr::lm_robust()}: \code{c("nobs", "r2", "adj_r2")}. \code{estimatr::iv_robust()} gets \code{"nobs"} alone,
+and an IV \code{fixest::feols()} neither R-squared nor AIC -- the
+2SLS R-squared is not the classical one. Asked for, it is
+the R-squared of \code{ivreg()}, on the structural residuals.
 \item \code{glm}, ordinal \code{polr} / \code{clm}:
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")} (McFadden = Stata \code{ologit} default,
 Nagelkerke = SPSS PLUM).
@@ -1094,7 +1096,8 @@ Varying-slope-only factors (\code{Origin[[x]]}) absorb no
 intercept: they read No when another model absorbs that
 factor, and contribute no row otherwise.
 \code{"within_r2"} is the FE-partialed within
-R-squared (a default for \code{feols}, opt-in for \code{estimatr};
+R-squared (a default for \code{feols}, except an IV one; opt-in
+for \code{estimatr};
 GLM-family fixest fits report fixest's McFadden \code{pr2}
 instead). Both tokens are refused when no model in the table
 absorbs fixed effects.
@@ -1527,8 +1530,11 @@ coefficient tests:
 It applies to \code{lm} under \code{"HC0"}-\code{"HC5"} (and \code{"CR1S"}, on
 \eqn{G - 1} degrees of freedom), \code{rms::ols} under \code{"CR0"} or
 after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
-\code{"ker"}, and a \code{fixest::feols} fit estimated with a non-iid vcov
-(on fixest's own degrees of freedom, as \code{fixest::wald()}). Under
+\code{"ker"}, and a fixest fit estimated with a non-iid vcov whose
+coefficient tests are t (on fixest's own degrees of freedom, as
+\code{fixest::wald()}): \code{feols}, and \code{feglm} with a family whose
+dispersion is estimated (gaussian, Gamma, inverse Gaussian and
+the quasi families). Under
 \code{"CR0"}-\code{"CR3"}, \code{lm}, \code{glm} (\code{MASS::glm.nb} included),
 \code{lme4::lmer} and \code{nlme::lme} use the HTZ test of
 \code{clubSandwich::Wald_test()}, the small-sample correction of their
@@ -1543,9 +1549,10 @@ under \code{"CR0"} to \code{coxph} and \code{rms::lrm} / \code{cph} / \code{Glm}
 and under \code{"CR1"} to \code{survreg}, \code{mgcv::gam} and \code{bam}, \code{polr},
 \code{clm}, \code{betareg}, \code{multinom}, \code{mlogit}, \code{zeroinfl} and
 \code{hurdle}; also to
-\code{survreg(robust = TRUE)}, a \code{fixest::fepois} or \code{feglm} fit with
-a non-iid vcov, and an \code{rms} fit of these classes passed through
-\code{robcov()}.
+\code{survreg(robust = TRUE)}, a fixest fit with a non-iid vcov whose
+coefficient tests are z (\code{fepois}, \code{femlm}, \code{fenegbin}, and
+\code{feglm} with the binomial or Poisson family), and an \code{rms} fit of
+these classes passed through \code{robcov()}.
 }
 \eqn{\Delta R^2}{Delta R^2}, the information criteria and the
 deviance change do not depend on the vcov and are unchanged, and a

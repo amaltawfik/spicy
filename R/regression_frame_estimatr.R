@@ -318,7 +318,11 @@ as_regression_frame.iv_robust <- function(
     } else {
       NA_real_
     },
-    title_prefix = .estimatr_title_prefix(se_type, is_iv),
+    title_prefix = .estimatr_title_prefix(
+      se_type,
+      is_iv,
+      has_fe = length(fixef_sizes) > 0L
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     se_type = se_type,
@@ -356,15 +360,22 @@ as_regression_frame.iv_robust <- function(
 
 # Model-type note. The SE family belongs in it: a "none" fit reports no
 # uncertainty at all and a "classical" one is not robust, so neither may
-# announce robust SE.
-.estimatr_title_prefix <- function(se_type, is_iv) {
+# announce robust SE. Absorbed fixed effects (`fixed_effects = ~ f`) add
+# the qualifier of a fixest fit, as in "IV regression (2SLS, fixed
+# effects)".
+.estimatr_title_prefix <- function(se_type, is_iv, has_fe = FALSE) {
   kind <- switch(
     se_type,
     "none" = "no SE computed",
     "classical" = "classical SE",
     "robust SE"
   )
-  paste0(if (is_iv) "IV regression (" else "Linear regression (", kind, ")")
+  paste0(
+    if (is_iv) "IV regression (" else "Linear regression (",
+    kind,
+    if (has_fe) ", fixed effects",
+    ")"
+  )
 }
 
 

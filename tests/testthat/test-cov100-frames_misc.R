@@ -139,40 +139,52 @@ test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
   # The glm title of the family and link: no R family code, and the link
   # decides the binomial title.
   expect_identical(
-    spicy:::.fixest_title_prefix(list(family = "Gamma", link = "log"), TRUE),
+    spicy:::.fixest_title_prefix(
+      list(family = "Gamma", link = "log"),
+      TRUE,
+      has_fe = TRUE
+    ),
     "Gamma regression (fixed effects)"
   )
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "inverse.gaussian", link = "1/mu^2"),
-      TRUE
+      TRUE,
+      has_fe = TRUE
     ),
     "Inverse-Gaussian regression (fixed effects)"
   )
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "quasipoisson", link = "log"),
-      TRUE
+      TRUE,
+      has_fe = TRUE
     ),
     "Quasi-Poisson regression (fixed effects)"
   )
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "binomial", link = "probit"),
-      TRUE
+      TRUE,
+      has_fe = TRUE
     ),
     "Probit regression (fixed effects)"
   )
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "gaussian", link = "identity"),
-      TRUE
+      TRUE,
+      has_fe = TRUE
     ),
     "Linear regression (fixed effects)"
   )
   # A gaussian GLM with another link is named by its family.
   expect_identical(
-    spicy:::.fixest_title_prefix(list(family = "gaussian", link = "log"), TRUE),
+    spicy:::.fixest_title_prefix(
+      list(family = "gaussian", link = "log"),
+      TRUE,
+      has_fe = TRUE
+    ),
     "Gaussian regression (fixed effects)"
   )
 })

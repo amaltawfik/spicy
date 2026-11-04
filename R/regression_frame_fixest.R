@@ -5,19 +5,20 @@
 # ... all share class "fixest" -- the family slot disambiguates them.
 #
 # Key quirks vs lm/glm:
-#   * NO (Intercept) row in coef -- fixed effects absorb it. The frame
-#     omits it from the coefs table; the fixed-effect grouping sizes
-#     are stashed in info$extras$fixef_sizes and info$n_groups.
+#   * NO (Intercept) row in coef when fixed effects absorb it; the
+#     fixed-effect grouping sizes are stashed in info$extras$fixef_sizes
+#     and info$n_groups. A fit without fixed effects keeps its intercept.
 #   * stats::model.frame(fit) returns an empty list. Polymorphic
 #     accessor .spicy_get_xlevels() routes through
 #     eval(fit$call$data, envir = fit$call_env) instead.
 #   * stats::family(fit) errors for feols (OLS-only); for feglm /
 #     fepois it returns the family object.
 #   * Inference comes from summary(fit)$coeftable. For OLS the columns
-#     are "Estimate / Std. Error / t value / Pr(>|t|)" (Wald-t with
-#     df.residual). For GLM-like fits the columns are "z value /
-#     Pr(>|z|)" (Wald z-asymptotic), except the families whose dispersion
-#     fixest estimates (gaussian, Gamma, quasi-*), which report t.
+#     are "Estimate / Std. Error / t value / Pr(>|t|)" (Wald-t on
+#     degrees_freedom(fit, "t")). For GLM-like fits the columns are
+#     "z value / Pr(>|z|)" (Wald z-asymptotic), except the families whose
+#     dispersion fixest estimates (gaussian, Gamma, quasi-*), which
+#     report t.
 #   * attr(coeftable, "vcov_type") carries a human label like "IID",
 #     "Clustered (Month)", "Newey-West", etc. -- surfaced directly in
 #     info$vcov_label.
@@ -43,6 +44,26 @@ as_regression_frame.fixest <- function(
   ...
 ) {
   .check_fixest_available()
+  # A model with fixed effects only (`y ~ 1 | f`) has no coefficient, so
+  # no row to show (and vcov() is NULL): refuse it as table_regression()
+  # refuses any model with no row to show, naming it as that refusal
+  # does ("Model 2", or the name the user gave it).
+  if (length(stats::coef(fit)) == 0L) {
+    spicy_abort(
+      c(
+        paste0(
+          sub("^M([0-9]+)$", "Model \\1", model_id),
+          " has no rows to show: it has fixed effects only."
+        ),
+        "i" = paste0(
+          "fixest absorbs fixed effects instead of reporting them as ",
+          "coefficients."
+        ),
+        "i" = "Add a predictor before the `|` of the formula."
+      ),
+      class = "spicy_empty_table"
+    )
+  }
 
   # Family disambiguation. feglm / fepois store fit$family as a glm-family
   # *list* (gaussian / binomial / poisson / Gamma / ...). femlm and
@@ -61,17 +82,22 @@ as_regression_frame.fixest <- function(
   # reports; "IID" unless the user asked for something else at
   # estimation or in summary()), and spicy's HC* / CR* / resampling
   # tokens are refused up front by .robust_vcov_support(), which grants
-  # fixest "classical" only. A non-linear fit with fixed effects has no
-  # AME (see .fixest_ame_ok()), so none is attempted.
+  # fixest "classical" only. A GLM with fixed effects has no AME (see
+  # .fixest_ame_ok()), so none is attempted. The AME rows take the
+  # distribution of the B rows: t on fixest's degrees of freedom when
+  # fixest reports t, z otherwise.
   if (.fixest_ame_ok(fit, is_glm)) {
+    b <- coefs[!coefs$is_ref, , drop = FALSE]
     coefs <- .attach_ame_to_frame_coefs(
       coefs,
       fit,
       ci_level,
       show_columns,
       vcov_type = vcov,
-      cluster = cluster
+      cluster = cluster,
+      df = if (all(b$test_type == "t")) b$df[1L] else Inf
     )
+    coefs <- .fixest_align_ame_rows(coefs, fit)
   }
   info <- .fixest_info(
     fit,
@@ -127,14 +153,16 @@ as_regression_frame.fixest <- function(
     ci_upper <- est + z_crit * se
     test_type_col <- rep("z", length(est))
   } else {
-    # OLS, or a GLM family with an estimated dispersion: Wald-t with
-    # df.residual.
+    # OLS, or a GLM family with an estimated dispersion: Wald-t on the
+    # degrees of freedom of fixest's own p-values and confint(). They
+    # equal df.residual under iid errors and are far fewer under
+    # clustered ones (by default the number of clusters minus one), so
+    # the interval must take them from fixest too.
     stat <- unname(sm[nm, "t value"])
     p_value <- unname(sm[nm, "Pr(>|t|)"])
-    dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
-    # nocov: defensive; df.residual.fixest always returns a finite numeric
-    # for a valid OLS feols, and the tryCatch above already maps any error
-    # to Inf, so this NULL/non-finite normalizer is never exercised.
+    dfr <- fixest::degrees_freedom(fit, "t")
+    # nocov: defensive; degrees_freedom() is NA only when fixest could not
+    # compute the variance, whose standard errors are then NA too.
     if (is.null(dfr) || !is.finite(dfr)) {
       dfr <- Inf # nocov
     }
@@ -316,7 +344,7 @@ as_regression_frame.fixest <- function(
   supports <- list(
     ame = .fixest_ame_ok(fit, is_glm),
     partial_effect_size = FALSE,
-    classical_r2 = !is_glm,
+    classical_r2 = !is_glm && !.fixest_is_iv_second_stage(fit),
     nested_lrt = TRUE,
     exponentiate = exp_ok,
     standardise_refit = FALSE
@@ -329,7 +357,12 @@ as_regression_frame.fixest <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = .fixest_title_prefix(fam, is_glm),
+    title_prefix = .fixest_title_prefix(
+      fam,
+      is_glm,
+      has_fe = length(fit$fixef_vars) > 0L,
+      is_iv = .fixest_is_iv_second_stage(fit)
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     fixef_sizes = fixef_sizes,
@@ -386,6 +419,22 @@ as_regression_frame.fixest <- function(
   } else {
     NULL
   }
+  if (!is_glm && .fixest_is_iv_second_stage(fit)) {
+    # The R-squared of ivreg and iv_robust: 1 - RSS/TSS on the
+    # structural residuals y - Xb (fit$ssr, weighted), where fitstat()
+    # uses the second-stage residuals; adjusted as fixest adjusts it,
+    # which is summary.ivreg()'s (n - 1) / (n - k) without fixed
+    # effects. The within R-squared has no structural version: NA.
+    n <- stats::nobs(fit)
+    k0 <- length(fit$fixef_vars) > 0L ||
+      "(Intercept)" %in% names(fit$coefficients)
+    rr <- fit$ssr / fit$ssr_null
+    r2 <- list(
+      r2 = 1 - rr,
+      ar2 = 1 - rr * (n - k0) / (n - fit$nparams),
+      wr2 = NA_real_
+    )
+  }
   pr2 <- if (is_glm) {
     tryCatch(
       as.numeric(fixest::fitstat(fit, "pr2", simplify = TRUE)),
@@ -434,16 +483,232 @@ as_regression_frame.fixest <- function(
 }
 
 
-# TRUE when the fit has an average marginal effect: feols, or a
-# non-linear fit without fixed effects. With fixed effects, the
-# delta-method variance of a non-linear fit would need the uncertainty of
-# the fixed effects, which fixest does not estimate, and marginaleffects
-# refuses the fit ("cannot take into account the uncertainty in
-# fixed-effects parameters", checked with marginaleffects 1.0.0 on
-# fepois, feglm and fenegbin). Declaring it lets table_regression()
-# refuse the request with a reason instead of a column of dashes.
+# TRUE when the fit has an average marginal effect: feols, or a GLM
+# (feglm, fepois, femlm, fenegbin) without fixed effects. marginaleffects
+# refuses a GLM with fixed effects, whatever its family, the gaussian
+# included: it "cannot take into account the uncertainty in fixed-effects
+# parameters", which fixest does not estimate (checked with
+# marginaleffects 1.0.0 on fepois, feglm, femlm and fenegbin). Declaring
+# it lets table_regression() refuse the request with a reason instead of
+# a column of dashes. A `lean = TRUE` fit with fixed effects is refused
+# too: marginaleffects cannot predict from it (marginaleffects 1.0.0).
 .fixest_ame_ok <- function(fit, is_glm) {
-  !is_glm || length(fit$fixef_vars) == 0L
+  length(fit$fixef_vars) == 0L || (!is_glm && !isTRUE(fit$lean))
+}
+
+# TRUE for the frame of a `lean = TRUE` fixest fit with fixed effects,
+# so the AME refusal can name the remedy.
+.fixest_lean_fe <- function(frame) {
+  fit <- attr(frame, "fit")
+  inherits(fit, "fixest") && isTRUE(fit$lean) && length(fit$fixef_vars) > 0L
+}
+
+
+# The AME rows of a fixest fit, set on its B rows. The shared builder
+# reads the data, where a logical or a factor is a level row ("long",
+# "TRUE"), while a B row may keep the coefficient's name ("longTRUE":
+# a factor beside i(), whose formula has no xlevels): each AME row takes
+# the parent, label and level position of the B row of its term, so a
+# coefficient never prints twice. The second stage of an IV fit names
+# an endogenous regressor "fit_<x>" where the AME names <x>. fixest
+# drops a collinear coefficient (fit$collin.var) where lm keeps an NA,
+# so the AME marginaleffects computes for it (a 0) is dropped too.
+.fixest_align_ame_rows <- function(coefs, fit) {
+  # marginaleffects can report the response of an IV fit whose
+  # endogenous regressor is transformed (`log(x)`) as a regressor, with
+  # a slope of 0: it is not one.
+  coefs <- coefs[
+    !(coefs$estimate_type == "ame" &
+      coefs$term %in% all.vars(fit[["fml"]][[2L]])),
+    ,
+    drop = FALSE
+  ]
+  is_ame <- coefs$estimate_type == "ame"
+  is_b <- coefs$estimate_type == "B"
+  endo_fit <- as.character(fit[["iv_endo_names_fit"]])[
+    match(coefs$term, fit[["iv_endo_names"]])
+  ]
+  hit <- is_ame & endo_fit %in% coefs$term[is_b]
+  coefs$term[hit] <- endo_fit[hit]
+  # i() names a coefficient "<x>::<level>": the AME row of that level,
+  # contrasted with the same reference (.fixest_ame_newdata()), goes on
+  # it. An AME row of an i() variable left without a coefficient row
+  # (a second reference level, or the slope of a numeric variable that
+  # i() enters as categories) has no reference the reader can see: it
+  # is dropped, with a warning.
+  key <- paste0(coefs$parent_var, "::", coefs$label)
+  hit <- is_ame & !coefs$term %in% coefs$term[is_b] & key %in% coefs$term
+  coefs$term[hit] <- key[hit]
+  # marginaleffects names a transformed variable by the variable
+  # (`rincome` for `log(rincome)`, `Month` with a level for
+  # `factor(Month)6`): its AME goes on the one coefficient that
+  # transforms that variable alone, as lm() places it.
+  b_terms <- coefs$term[is_b]
+  b_one <- b_terms[!grepl(":", b_terms, fixed = TRUE)]
+  for (i in which(is_ame & !coefs$term %in% b_terms)) {
+    v <- coefs$parent_var[i]
+    lvl <- if (isTRUE(coefs$label[i] != v)) coefs$label[i] else ""
+    pre <- b_one[endsWith(b_one, lvl)]
+    pre <- substr(pre, 1L, nchar(pre) - nchar(lvl))
+    one <- vapply(
+      pre,
+      function(p) {
+        grepl(paste0("(", v, ")"), p, fixed = TRUE) &&
+          identical(
+            tryCatch(all.vars(str2lang(p)), error = function(e) NULL),
+            v
+          )
+      },
+      logical(1)
+    )
+    if (sum(one) == 1L) {
+      coefs$term[i] <- paste0(pre[one], lvl)
+    }
+  }
+  collin <- as.character(fit[["collin.var"]])
+  # Every factor of a coefficient "<x>::<a>:<z>::<b>" is an i() variable.
+  i_names <- function(x) {
+    unique(unlist(regmatches(x, gregexpr("[^:]+(?=::)", x, perl = TRUE))))
+  }
+  i_vars <- i_names(b_terms)
+  # A coefficient that fixest drops for collinearity, an i() one too
+  # (named "<x>::<level>"), takes its AME with it.
+  collin_vars <- setdiff(i_names(collin), i_vars)
+  dropped <- is_ame &
+    ((coefs$term %in% collin) |
+      (key %in% collin) |
+      (coefs$parent_var %in% collin_vars))
+  orphan <- is_ame &
+    !dropped &
+    coefs$parent_var %in% i_vars &
+    !coefs$term %in% b_terms
+  # A level absent from the estimation sample (an unused factor level,
+  # which marginaleffects still contrasts) is dropped without a word.
+  d <- if (any(orphan)) .fixest_model_data(fit)
+  absent <- orphan &
+    coefs$label != coefs$parent_var &
+    coefs$parent_var %in% names(d)
+  for (i in which(absent)) {
+    absent[i] <- !coefs$label[i] %in% as.character(d[[coefs$parent_var[i]]])
+  }
+  warn <- orphan & !absent
+  if (any(warn)) {
+    what <- ifelse(
+      coefs$label == coefs$parent_var,
+      paste0("`", coefs$parent_var, "`"),
+      paste0("`", coefs$parent_var, "` (level ", coefs$label, ")")
+    )
+    # A variable that i() enters only in an interaction (`i(g, x)`,
+    # `i(f1, i.f2)`) has no row of its own, whatever its level.
+    main <- i_names(b_terms[!grepl("::[^:]+:", b_terms)])
+    inter <- warn & !coefs$parent_var %in% main
+    spicy_warn(
+      c(
+        paste0(
+          "No AME shown for ",
+          paste(unique(what[warn]), collapse = ", "),
+          ": no coefficient of the table matches it."
+        ),
+        "i" = if (any(inter)) {
+          paste0(
+            "`i()` enters ",
+            paste0("`", unique(coefs$parent_var[inter]), "`", collapse = ", "),
+            " only in an interaction, which has no row for its AME. ",
+            "Enter a variable as a factor outside `i()` to see its AME."
+          )
+        },
+        "i" = if (any(warn & !inter)) {
+          paste0(
+            "`i()` enters it as categories: its AME is shown on the rows ",
+            "of its coefficients, against their reference, and nowhere ",
+            "else."
+          )
+        }
+      ),
+      class = "spicy_undefined_stat"
+    )
+  }
+  m <- match(coefs$term, b_terms)
+  hit <- is_ame & !is.na(m)
+  for (col in c("parent_var", "label", "factor_level_pos")) {
+    coefs[[col]][hit] <- coefs[[col]][is_b][m[hit]]
+  }
+  coefs[!dropped & !orphan, , drop = FALSE]
+}
+
+
+# The data on which marginaleffects computes the AME of a fit whose i()
+# factors take a reference other than their first level (`i(x, ref =
+# "H")`). marginaleffects contrasts a factor with its first level, the
+# coefficients with the level i() leaves out: making that level the
+# first one in the estimation sample gives the AME the reference of the
+# coefficients, and leaves every prediction unchanged (i() codes the
+# levels by value). NULL when no factor needs it, or when the sample
+# cannot be read. A level that fixest drops for collinearity has a
+# coefficient, if a dropped one: it is not the reference.
+.fixest_ame_newdata <- function(fit) {
+  b <- grep(
+    "^[^:]+::[^:]+$",
+    c(names(stats::coef(fit)), as.character(fit[["collin.var"]])),
+    value = TRUE
+  )
+  d <- if (length(b) > 0L) .fixest_model_data(fit)
+  if (!is.data.frame(d) || nrow(d) != stats::nobs(fit)) {
+    return(NULL)
+  }
+  changed <- FALSE
+  for (v in intersect(unique(sub("::.*$", "", b)), names(d))) {
+    if (!is.factor(d[[v]]) && !is.character(d[[v]])) {
+      next
+    }
+    lv <- .spicy_cat_levels(d[[v]])
+    lv <- lv[lv %in% d[[v]]]
+    ref <- setdiff(lv, sub("^.*::", "", b[startsWith(b, paste0(v, "::"))]))
+    if (length(ref) == 1L && ref != lv[1L]) {
+      d[[v]] <- factor(d[[v]], levels = c(ref, setdiff(lv, ref)))
+      changed <- TRUE
+    }
+  }
+  if (changed) d
+}
+
+
+# TRUE for the second stage of an IV fit, the model an IV feols reports.
+# Its first stage (`summary(fit, stage = 1)`, iv_stage 1) is the OLS of
+# the endogenous regressor on the instruments.
+.fixest_is_iv_second_stage <- function(fit) {
+  isTRUE(fit$is_iv) && !isTRUE(fit$iv_stage == 1)
+}
+
+
+# The data of a fixest fit: its estimation sample, or the original data
+# when the fit no longer records which rows it used (`lean = TRUE`,
+# where fixest_data()'s estimation sample errors). `sample = "original"`
+# reads the original data directly, for a caller that needs only the
+# column types: subsetting a large panel to its sample copies it. NULL
+# when the data cannot be found at all. fixest looks the data of a lean
+# fit up from its own namespace, where `d`, `l` and `f` are functions:
+# the call's data is then read as .spicy_get_xlevels_base() reads it.
+.fixest_model_data <- function(fit, sample = c("estimation", "original")) {
+  d <- if (identical(match.arg(sample), "estimation")) {
+    tryCatch(
+      fixest::fixest_data(fit, sample = "estimation"),
+      error = function(e) NULL
+    )
+  }
+  if (!is.data.frame(d)) {
+    d <- tryCatch(
+      fixest::fixest_data(fit, sample = "original"),
+      error = function(e) NULL
+    )
+  }
+  if (!is.data.frame(d)) {
+    d <- tryCatch(
+      eval(fit$call$data, envir = fit$call_env %||% globalenv()),
+      error = function(e) NULL
+    )
+  }
+  if (is.data.frame(d)) d
 }
 
 
@@ -453,8 +718,9 @@ as_regression_frame.fixest <- function(
 # binomial, the Pearson estimate otherwise); femlm stores none, so its
 # poisson and logit take the fixed 1 and its gaussian the sigma() of the
 # fit, the same square root. Blank for the negative binomial, whose
-# dispersion is the theta row. fixest's own sigma() is a response-scale
-# RMSE on these fits, which is why it is not used for them.
+# dispersion is the theta row. fixest's own sigma() is the square root of
+# the deviance over the residual degrees of freedom: the glm sigma for
+# the gaussian family only, so the other families do not use it.
 .fixest_glm_sigma <- function(fit, fam_name, sigma_fit) {
   if (identical(fam_name, "negbin")) {
     return(NA_real_)
@@ -473,10 +739,22 @@ as_regression_frame.fixest <- function(
 }
 
 
-# Title prefix: the glm title of the family and link, plus "(fixed
-# effects)" -- so a probit feglm is not titled logistic, and no title
-# carries R's family code ("Quasipoisson").
-.fixest_title_prefix <- function(fam, is_glm) {
+# Title prefix: the glm title of the family and link -- so a probit
+# feglm is not titled logistic, and no title carries R's family code
+# ("Quasipoisson") -- plus "(fixed effects)" when the fit has any. A fit
+# without them is titled as lm and glm title the same model, and an IV
+# feols as ivreg titles two-stage least squares, the qualifier inside
+# its parentheses.
+.fixest_title_prefix <- function(fam, is_glm, has_fe, is_iv = FALSE) {
+  if (is_iv) {
+    return(
+      if (has_fe) {
+        "IV regression (2SLS, fixed effects)"
+      } else {
+        "IV regression (2SLS)"
+      }
+    )
+  }
   base <- if (!is_glm) {
     "Linear regression"
   } else if (identical(fam$family, "negbin")) {
@@ -484,13 +762,23 @@ as_regression_frame.fixest <- function(
   } else {
     spicy_glm_title_prefix(fam$family, fam$link)
   }
-  paste0(base, " (fixed effects)")
+  if (has_fe) paste0(base, " (fixed effects)") else base
 }
 
 
 # vcov_label normalizer. fixest's "vcov_type" attribute already carries
 # a near-renderer-ready label; we keep it verbatim but rename "IID"
 # to the "Classical" of the other engines, for cross-engine consistency.
+# A cluster on combined fixed effects (`~id^period`) is named by an
+# internal fixest call, "combine_fixef_keep_names(id, period)": it is
+# written back as the user wrote it, "id^period".
 .fixest_vcov_label <- function(vt) {
-  if (identical(vt, "IID")) spicy_str("note_vcov_classical_plain") else vt
+  if (identical(vt, "IID")) {
+    return(spicy_str("note_vcov_classical_plain"))
+  }
+  m <- gregexpr("combine_fixef_keep_names\\([^()]*\\)", vt)
+  regmatches(vt, m) <- lapply(regmatches(vt, m), function(s) {
+    gsub(", ", "^", substr(s, 26L, nchar(s) - 1L), fixed = TRUE)
+  })
+  vt
 }

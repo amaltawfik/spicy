@@ -508,11 +508,20 @@
 #' varying-slope-only factors are not absorbed intercepts and read
 #' No), with per-factor `N (<factor>)` counts via the opt-in
 #' `n_groups` token and the within R-squared in the default fit
-#' statistics for `fixest` (opt-in via `within_r2` for `estimatr`).
-#' AME is refused for a non-linear `fixest` model with fixed effects
-#' (`fepois()`, `feglm()`, `femlm()`, `fenegbin()`): its variance would
-#' need the uncertainty of the fixed effects, which fixest does not
-#' estimate. `feols()` and a GLM without fixed effects have it.
+#' statistics for `fixest` except an IV `feols()` (opt-in via
+#' `within_r2` for `estimatr`).
+#' AME is refused for a `fixest` GLM with fixed effects (`feglm()`,
+#' `fepois()`, `femlm()`, `fenegbin()`, whatever the family):
+#' marginaleffects, which computes it, cannot take into account the
+#' uncertainty of the fixed effects. It is refused too for a `feols()`
+#' with fixed effects fitted with `lean = TRUE`, which marginaleffects
+#' cannot predict from (re-estimate it with `lean = FALSE`). Other
+#' `feols()` fits and a GLM without fixed effects have it. The AME of
+#' a factor in `i()` sits on the rows of its
+#' coefficients, against the reference `i()` gives them (`ref =`); a
+#' level of a factor in `i()`, or a numeric variable that `i()` enters
+#' as categories, with no coefficient row gets no AME, nor does a factor
+#' that `i()` enters only in an interaction.
 #'
 #' @section Bayesian models:
 #' Posterior median, posterior MAD SD, and equal-tailed credible

@@ -106,26 +106,59 @@ test_that("the rms Glm titles are bridged", {
 })
 
 test_that("the fixest titles are bridged", {
-  .expect_bridged(c(
-    spicy:::.fixest_title_prefix(
-      list(family = "gaussian", link = "identity"),
-      is_glm = FALSE
-    ),
-    # fenegbin and femlm(family = "negbin").
-    spicy:::.fixest_title_prefix(
-      list(family = "negbin", link = "log"),
-      is_glm = TRUE
-    ),
-    .titles(.fams(), spicy:::.fixest_title_prefix, is_glm = TRUE)
-  ))
+  # With fixed effects and without them (a fit without them takes the
+  # plain title of its family).
+  for (has_fe in c(TRUE, FALSE)) {
+    .expect_bridged(c(
+      spicy:::.fixest_title_prefix(
+        list(family = "gaussian", link = "identity"),
+        is_glm = FALSE,
+        has_fe = has_fe
+      ),
+      # The second stage of an IV feols.
+      spicy:::.fixest_title_prefix(
+        list(family = "gaussian", link = "identity"),
+        is_glm = FALSE,
+        has_fe = has_fe,
+        is_iv = TRUE
+      ),
+      # fenegbin and femlm(family = "negbin").
+      spicy:::.fixest_title_prefix(
+        list(family = "negbin", link = "log"),
+        is_glm = TRUE,
+        has_fe = has_fe
+      ),
+      .titles(
+        .fams(),
+        spicy:::.fixest_title_prefix,
+        is_glm = TRUE,
+        has_fe = has_fe
+      )
+    ))
+  }
 })
 
 test_that("the estimatr titles are bridged", {
   se <- c("classical", "none", "HC0", "HC1", "HC2", "HC3", "stata", "CR2")
-  .expect_bridged(c(
-    vapply(se, spicy:::.estimatr_title_prefix, character(1), is_iv = FALSE),
-    vapply(se, spicy:::.estimatr_title_prefix, character(1), is_iv = TRUE)
-  ))
+  # With absorbed fixed effects (`fixed_effects = ~ f`) and without them.
+  for (has_fe in c(TRUE, FALSE)) {
+    .expect_bridged(c(
+      vapply(
+        se,
+        spicy:::.estimatr_title_prefix,
+        character(1),
+        is_iv = FALSE,
+        has_fe = has_fe
+      ),
+      vapply(
+        se,
+        spicy:::.estimatr_title_prefix,
+        character(1),
+        is_iv = TRUE,
+        has_fe = has_fe
+      )
+    ))
+  }
 })
 
 test_that("the GEE titles are bridged", {

@@ -301,11 +301,20 @@ disclose their absorbed fixed effects as a default-on
 varying-slope-only factors are not absorbed intercepts and read
 No), with per-factor \verb{N (<factor>)} counts via the opt-in
 \code{n_groups} token and the within R-squared in the default fit
-statistics for \code{fixest} (opt-in via \code{within_r2} for \code{estimatr}).
-AME is refused for a non-linear \code{fixest} model with fixed effects
-(\code{fepois()}, \code{feglm()}, \code{femlm()}, \code{fenegbin()}): its variance would
-need the uncertainty of the fixed effects, which fixest does not
-estimate. \code{feols()} and a GLM without fixed effects have it.
+statistics for \code{fixest} except an IV \code{feols()} (opt-in via
+\code{within_r2} for \code{estimatr}).
+AME is refused for a \code{fixest} GLM with fixed effects (\code{feglm()},
+\code{fepois()}, \code{femlm()}, \code{fenegbin()}, whatever the family):
+marginaleffects, which computes it, cannot take into account the
+uncertainty of the fixed effects. It is refused too for a \code{feols()}
+with fixed effects fitted with \code{lean = TRUE}, which marginaleffects
+cannot predict from (re-estimate it with \code{lean = FALSE}). Other
+\code{feols()} fits and a GLM without fixed effects have it. The AME of
+a factor in \code{i()} sits on the rows of its
+coefficients, against the reference \code{i()} gives them (\verb{ref =}); a
+level of a factor in \code{i()}, or a numeric variable that \code{i()} enters
+as categories, with no coefficient row gets no AME, nor does a factor
+that \code{i()} enters only in an interaction.
 }
 
 \section{Bayesian models}{

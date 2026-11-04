@@ -396,7 +396,13 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
     }
     return(.design_analytic_weights(fit, n_obs))
   }
-  w <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  # fixest: weights() pads the rows dropped for NA with NA, while
+  # fit$weights holds the estimation-sample weights.
+  w <- if (inherits(fit, "fixest")) {
+    fit$weights
+  } else {
+    tryCatch(stats::weights(fit), error = function(e) NULL)
+  }
   if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
     na_act <- tryCatch(stats::na.action(fit), error = function(e) NULL)
     if (
@@ -897,10 +903,14 @@ extract_ame_glm <- function(
     # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
     # uses the fit's own vcov (the model-based one, or the design-based estimator
     # for svyglm).
+    # NULL (marginaleffects' own data) but for a fixest fit whose i()
+    # factors take another reference than their first level.
+    newdata <- if (inherits(fit, "fixest")) .fixest_ame_newdata(fit)
     do_slopes <- function(vcarg) {
       suppressWarnings(suppressMessages(
         marginaleffects::avg_slopes(
           fit,
+          newdata = newdata,
           conf_level = ci_level,
           df = df,
           vcov = vcarg,
@@ -964,10 +974,15 @@ extract_ame_glm <- function(
   })
   # Engine-aware data-frame retrieval: stats::model.frame() returns
   # the lmeStruct (not the data) for nlme::lme fits, so we use
-  # nlme::getData() instead. lme4 + glmmTMB + lm / glm all return a
-  # plain data.frame via stats::model.frame().
+  # nlme::getData() instead, and an empty list for fixest fits, whose
+  # data .fixest_model_data() reads (the estimation sample, or the
+  # original data for a `lean = TRUE` fit, which no longer records its
+  # sample while avg_slopes() still succeeds on it). lme4 + glmmTMB +
+  # lm / glm all return a plain data.frame via stats::model.frame().
   mf <- if (inherits(fit, c("lme", "gls"))) {
     tryCatch(nlme::getData(fit), error = function(e) NULL)
+  } else if (inherits(fit, "fixest")) {
+    .fixest_model_data(fit)
   } else {
     tryCatch(stats::model.frame(fit), error = function(e) NULL)
   }
@@ -1020,7 +1035,24 @@ extract_ame_glm <- function(
     # inline factor() calls): rebuild from the model-frame column.
     lvl_str <- NA_character_
     lvl_pos <- NA_integer_
-    if (is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)) {
+    # A fixest fit reads the raw data, where `factor(Month)` is still
+    # the integer Month: its contrasts keep their level too, for
+    # .fixest_align_ame_rows() to set each on its coefficient. Not for a
+    # variable in i(), whose rows that function sets by their reference.
+    is_contrast <- !is.na(contrast_str) && grepl(" - ", contrast_str)
+    if (
+      is_contrast &&
+        !is_factor_var &&
+        inherits(fit, "fixest") &&
+        !any(grepl(
+          paste0("(^|:)\\Q", col_name, "\\E::"),
+          c(names(stats::coef(fit)), as.character(fit[["collin.var"]])),
+          perl = TRUE
+        ))
+    ) {
+      lvl_str <- sub(" - .*$", "", contrast_str)
+    }
+    if (is_factor_var && is_contrast) {
       lvl_str <- sub(" - .*$", "", contrast_str)
       lvl_pos <- match(lvl_str, .spicy_cat_levels(mf[[col_name]]))
     }

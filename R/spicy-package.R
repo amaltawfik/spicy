@@ -215,8 +215,8 @@
 #'         spicy does not compute it (e.g., weighted group tests in
 #'         [table_continuous()]); the message names an alternative.
 #'       \item \code{spicy_empty_table} -- [table_regression()] has no row
-#'         left to show for a model once the requested row blocks are
-#'         switched off.
+#'         to show for a model: it has no coefficient, or every requested
+#'         row block is switched off.
 #'       \item \code{spicy_ame_satt_unsupported_formula} -- signaled
 #'         together with \code{spicy_unsupported} when AME
 #'         Satterthwaite degrees of freedom are unavailable for the

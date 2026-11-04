@@ -74,6 +74,38 @@
   sub("[0-9.]+\\)$", paste0(.footer_num(tau, 2L, decimal_mark), ")"), prefix)
 }
 
+# The title prefix of each model of a table, as the title and the type
+# note compare them. Prefixes that differ only by the fixed-effects
+# qualifier name one family -- the pooled and fixed-effects fits of one
+# model, the classic panel table -- so the table takes the family's
+# title, and its "Fixed effects" block says which model absorbs what.
+# When every model has fixed effects, the prefixes agree and keep it.
+.table_title_prefixes <- function(frames) {
+  prefixes <- vapply(
+    frames,
+    function(f) {
+      f$info$extras$title_prefix %||% "Regression"
+    },
+    character(1)
+  )
+  # The fixed-effects fits of one model by estimatr and by fixest, whose
+  # titles differ only by estimatr's SE qualifier: the SE is in the note.
+  family <- sub(
+    " \\((robust|classical|no) SE( computed)?, fixed effects\\)$",
+    " (fixed effects)",
+    prefixes
+  )
+  if (length(unique(prefixes)) > 1L && length(unique(family)) == 1L) {
+    return(family)
+  }
+  family <- sub(" \\(fixed effects\\)$", "", prefixes)
+  family <- sub(", fixed effects\\)$", ")", family)
+  if (length(unique(prefixes)) > 1L && length(unique(family)) == 1L) {
+    return(family)
+  }
+  prefixes
+}
+
 build_regression_title_from_frames <- function(
   frames,
   nested = FALSE,
@@ -104,13 +136,7 @@ build_regression_title_from_frames <- function(
   outcomes <- outcomes[!is.na(outcomes)]
   n <- length(frames)
 
-  prefixes <- vapply(
-    frames,
-    function(f) {
-      f$info$extras$title_prefix %||% "Regression"
-    },
-    character(1)
-  )
+  prefixes <- .table_title_prefixes(frames)
   mixed <- length(unique(prefixes)) > 1L
   prefix <- if (mixed) "Regression" else prefixes[1L]
 
@@ -392,13 +418,7 @@ build_regression_type_footer_block_from_frames <- function(
   # we apply capitalize_first(); for mid-sentence positions (after
   # "Model 1:") we only lowercase the FIRST character so the title
   # reads naturally without losing acronyms further in.
-  types <- vapply(
-    frames,
-    function(f) {
-      f$info$extras$title_prefix %||% "Regression"
-    },
-    character(1)
-  )
+  types <- .table_title_prefixes(frames)
   # Decision 42: the single-model and same-family arms translate (the
   # prefix through the bridge, the plural through its whole-sentence
   # key). The mixed-family arm below stays English wholesale --

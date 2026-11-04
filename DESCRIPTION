@@ -45,7 +45,7 @@ Suggests:
     effectsize,
     emmeans,
     estimatr (>= 1.0.0),
-    fixest (>= 0.11),
+    fixest (>= 0.12.0),
     flexsurv (>= 2.2),
     flextable,
     geepack (>= 1.3.9),
