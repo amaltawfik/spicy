@@ -1713,3 +1713,51 @@ test_that("a glmmTMB fit without random effects takes the fixed-effects title", 
     "R\u00e9gression de Poisson tronqu\u00e9e en z\u00e9ro\u00a0: count"
   )
 })
+
+test_that("a glmmTMB offset variable gets no AME row", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("marginaleffects")
+  set.seed(4)
+  n <- 300
+  d <- data.frame(
+    x = stats::rnorm(n),
+    g = factor(sample(c("a", "b", "c"), n, TRUE)),
+    id = factor(sample(1:20, n, TRUE)),
+    exposure = stats::runif(n, 1, 5)
+  )
+  d$y <- stats::rpois(n, d$exposure * exp(0.3 * d$x))
+  fit <- glmmTMB::glmmTMB(
+    y ~ x + g + offset(log(exposure)) + (1 | id),
+    data = d,
+    family = stats::poisson
+  )
+  co <- as_regression_frame(fit, show_columns = c("b", "ame"))$coefs
+  a <- co[co$estimate_type == "ame" & !co$is_ref, ]
+  ame <- function(...) {
+    as.data.frame(suppressWarnings(suppressMessages(
+      marginaleffects::avg_slopes(fit, ...)
+    )))
+  }
+  expect_true("exposure" %in% ame()$term)
+  # The other rows are avg_slopes() over the predictors, unchanged.
+  ref <- ame(variables = c("x", "g"))
+  key <- ifelse(
+    grepl(" - ", ref$contrast, fixed = TRUE),
+    paste0(ref$term, sub(" - .*$", "", ref$contrast)),
+    ref$term
+  )
+  expect_setequal(a$term, key)
+  i <- match(a$term, key)
+  expect_equal(a$estimate, ref$estimate[i], tolerance = 1e-10)
+  expect_equal(a$std_error, ref$std.error[i], tolerance = 1e-10)
+  # A variable of the zero-inflation formula is a predictor: its row stays.
+  # (the data carry no excess zero: the zero part converges poorly)
+  zi <- suppressWarnings(glmmTMB::glmmTMB(
+    y ~ x + offset(log(exposure)),
+    ziformula = ~exposure,
+    data = d,
+    family = stats::poisson
+  ))
+  co <- suppressWarnings(as_regression_frame(zi, show_columns = c("b", "ame")))
+  expect_true("exposure" %in% co$coefs$term[co$coefs$estimate_type == "ame"])
+})

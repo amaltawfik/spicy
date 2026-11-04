@@ -938,3 +938,52 @@ test_that("CR1S reproduces Stata regress vce(cluster): vcovCL(HC1) SE + t(G-1)",
     class = "spicy_invalid_input"
   )
 })
+
+test_that("a formula cluster follows the fit's subset and its NA rows", {
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("betareg")
+  set.seed(2)
+  n <- 240
+  d <- data.frame(
+    x = stats::rnorm(n),
+    grp = factor(sample(letters[1:4], n, TRUE)),
+    cl = sample(1:15, n, TRUE)
+  )
+  d$y <- stats::rbinom(n, 1, stats::plogis(0.4 * d$x))
+  d$o <- factor(sample(1:3, n, TRUE))
+  d$p <- stats::plogis(d$x / 2 + stats::rnorm(n) / 2)
+  d$x[c(3, 50, 77)] <- NA
+  rownames(d) <- paste0("r", seq_len(n))
+  # The cluster of the rows the fits use, built by hand.
+  cl_used <- d$cl[d$grp != "c" & !is.na(d$x)]
+  se <- function(fit) {
+    out <- table_regression(fit, cluster = ~cl, vcov = "CR1", output = "long")
+    b <- out[out$estimate_type == "B" & !is.na(out$std.error), ]
+    stats::setNames(b$std.error, b$term)
+  }
+  oracle <- function(fit) {
+    sqrt(diag(sandwich::vcovCL(fit, cluster = cl_used, type = "HC0")))
+  }
+  g <- stats::glm(y ~ x, binomial, data = d, subset = grp != "c")
+  fits <- list(
+    glm = g,
+    lm = stats::lm(p ~ x, data = d, subset = grp != "c"),
+    polr = MASS::polr(o ~ x, data = d, subset = grp != "c", Hess = TRUE),
+    betareg = betareg::betareg(p ~ x, data = d, subset = grp != "c")
+  )
+  for (nm in names(fits)) {
+    s <- se(fits[[nm]])
+    expect_equal(s, oracle(fits[[nm]])[names(s)], tolerance = 1e-6, info = nm)
+  }
+  # glmmTMB without random effects: CR1 is vcovCL() of its glm twin.
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  tm <- glmmTMB::glmmTMB(
+    y ~ x,
+    family = binomial,
+    data = d,
+    subset = grp != "c"
+  )
+  s <- se(tm)
+  expect_equal(s, oracle(g)[names(s)], tolerance = 1e-6)
+})

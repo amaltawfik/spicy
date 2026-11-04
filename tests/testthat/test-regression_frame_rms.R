@@ -1172,7 +1172,8 @@ test_that("the AME of a binary lrm, an ols and a Glm take the robust vcov", {
     # 1e-6: the glm twin's coefficients and finite differences agree with
     # the Glm's to about 1e-7.
     expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-6, info = nm)
-    expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-6, info = nm)
+    # The SE go through a numeric Jacobian: Linux differs at 2e-5.
+    expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-4, info = nm)
   }
 })
 
@@ -1468,13 +1469,16 @@ test_that("the AME of an lrm or a polr with an offset keep the offset", {
     co <- as_regression_frame(fit, show_columns = c("b", "ame"))$coefs
     co <- co[co$estimate_type == "ame" & !co$is_ref, ]
     co$var <- sub("smokeyes", "smoke", co$term, fixed = TRUE)
-    co$var <- sub("offset(off)", "off", co$var, fixed = TRUE)
     co
   }
   # clm keeps the offset in its predictions on new data: avg_slopes() on
-  # the clm twin of the ordinal model is the oracle.
+  # the clm twin of the ordinal model is the oracle. The offset variable
+  # has no fitted effect and no AME row.
   cl <- ordinal::clm(yc ~ x1 + smoke + offset(off), data = d)
-  ref <- as.data.frame(marginaleffects::avg_slopes(cl))
+  ref <- as.data.frame(marginaleffects::avg_slopes(
+    cl,
+    variables = c("x1", "smoke")
+  ))
   fits <- list(
     lrm = rms::lrm(yc ~ x1 + smoke + offset(off), data = d),
     polr = MASS::polr(yc ~ x1 + smoke + offset(off), data = d, Hess = TRUE)
@@ -1497,7 +1501,10 @@ test_that("the AME of an lrm or a polr with an offset keep the offset", {
     data = d,
     family = stats::binomial
   )
-  refb <- as.data.frame(marginaleffects::avg_slopes(g))
+  refb <- as.data.frame(marginaleffects::avg_slopes(
+    g,
+    variables = c("x1", "smoke")
+  ))
   co <- ame(fb)
   i <- match(co$var, refb$term)
   expect_false(anyNA(i))

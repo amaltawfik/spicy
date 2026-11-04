@@ -88,7 +88,6 @@ as_regression_frame.ols <- function(
     cluster = cluster,
     vcov_matrix = .rms_ame_vcov(vc, fit)
   )
-  coefs <- .rms_ame_rows(coefs, fit)
   info <- .rms_info(
     fit,
     vcov_kind = vcov,
@@ -167,7 +166,6 @@ as_regression_frame.lrm <- function(
     cluster = cluster,
     vcov_matrix = .rms_ame_vcov(vc, fit)
   )
-  coefs <- .rms_ame_rows(coefs, fit)
   info <- .rms_info(
     fit,
     vcov_kind = vcov,
@@ -301,7 +299,6 @@ as_regression_frame.Glm <- function(
     cluster = cluster,
     vcov_matrix = .rms_ame_vcov(vc, fit)
   )
-  coefs <- .rms_ame_rows(coefs, fit)
   info <- .rms_info(
     fit,
     vcov_kind = vcov,
@@ -827,23 +824,6 @@ as_regression_frame.Glm <- function(
   }
   dimnames(vc) <- rep(list(names(stats::coef(fit))), 2L)
   vc
-}
-
-
-# The AME rows of an rms fit. An ols predicts new data without its
-# offset, so the AME of the offset term reads 0: that row goes (the
-# others hold, the model is linear).
-.rms_ame_rows <- function(coefs, fit) {
-  ame <- coefs$estimate_type == "ame"
-  if (!any(ame)) {
-    return(coefs)
-  }
-  tt <- stats::terms(fit)
-  if (inherits(fit, "ols") && !is.null(attr(tt, "offset"))) {
-    off <- as.character(attr(tt, "variables"))[-1L][attr(tt, "offset")]
-    coefs <- coefs[!(ame & coefs$term %in% off), , drop = FALSE]
-  }
-  coefs
 }
 
 

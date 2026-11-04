@@ -510,6 +510,10 @@ extract_ame_marginaleffects <- function(
   if (is.null(ame_table)) {
     return(empty_coefs_long())
   }
+  ame_table <- .drop_offset_ame_rows(ame_table, fit)
+  if (nrow(ame_table) == 0L) {
+    return(empty_coefs_long())
+  }
 
   # Format marginaleffects rows as our long format. The column
   # `term` in ame_table is the variable name; for factors the
@@ -703,6 +707,10 @@ extract_ame_glm <- function(
   if (is.null(ame_table)) {
     return(empty_coefs_long())
   }
+  ame_table <- .drop_offset_ame_rows(ame_table, fit)
+  if (nrow(ame_table) == 0L) {
+    return(empty_coefs_long())
+  }
 
   # CR* augmentation: Satterthwaite df from clubSandwich, mapped to
   # AME rows via the dominant-coef approximation.
@@ -844,6 +852,40 @@ extract_ame_glm <- function(
   out$`.spicy_var` <- NULL
   out$`.spicy_lvl_pos` <- NULL
   out
+}
+
+
+# The variables of a fit that appear only inside offset() terms, in any
+# of its formulas (conditional, zero-inflation, dispersion, ...).
+.offset_only_vars <- function(fit) {
+  fo <- tryCatch(
+    insight::find_formula(fit, verbose = FALSE),
+    error = function(e) NULL
+  )
+  off <- rest <- character(0)
+  for (f in Filter(function(x) inherits(x, "formula"), unlist(fo))) {
+    tt <- tryCatch(stats::terms(f), error = function(e) NULL)
+    if (is.null(tt)) {
+      next
+    }
+    v <- as.list(attr(tt, "variables"))[-1L]
+    i <- attr(tt, "offset")
+    keep <- setdiff(seq_along(v), c(i, attr(tt, "response")))
+    off <- c(off, all.vars(as.call(c(quote(list), v[i]))))
+    rest <- c(rest, all.vars(as.call(c(quote(list), v[keep]))))
+  }
+  setdiff(off, rest)
+}
+
+# A variable that enters the model only through offset() has no fitted
+# effect, but avg_slopes() reports a slope for it: that row goes.
+.drop_offset_ame_rows <- function(ame_table, fit) {
+  off_only <- .offset_only_vars(fit)
+  if (length(off_only) == 0L) {
+    return(ame_table)
+  }
+  ame_table <- as.data.frame(ame_table)
+  ame_table[!ame_table$term %in% off_only, , drop = FALSE]
 }
 
 
@@ -1210,6 +1252,10 @@ extract_ame_glm <- function(
       )
       return(NULL)
     }
+  }
+  ame_table <- .drop_offset_ame_rows(ame_table, fit)
+  if (nrow(ame_table) == 0L) {
+    return(NULL)
   }
 
   factor_meta <- tryCatch(detect_factor_term_meta(fit), error = function(e) {

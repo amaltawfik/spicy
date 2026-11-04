@@ -343,6 +343,15 @@
   listed in the note (`show_thresholds = FALSE`) are separated by
   semicolons, which cannot be read as decimal commas.
 
+* `table_regression()` no longer shows an AME row for a variable that
+  enters the model only through `offset()` (`offset(log(exposure))`,
+  for example): an offset has no fitted effect. The row showed the
+  slope of the offset variable, with an SE and a p-value.
+
+* `table_regression()` with a formula `cluster` (`cluster = ~id`) uses
+  the rows the fit kept after `subset` and the removal of missing
+  values. A fit with `subset` failed on the length of the cluster.
+
 * `table_regression()`: `vcov = "CR1"` for `survreg`, `gam`, `polr`,
   `clm`, `betareg`, `mlogit`, `multinom`, `zeroinfl` and `hurdle` models
   counts only the clusters present in the data. Unused levels of a

@@ -648,7 +648,16 @@ cluster_lookup_data <- function(fit, vars) {
     # downstream length validation / capability gates handle the rest.
     if (!is.na(n_fit) && nrow(orig) != n_fit && !is.null(mf)) {
       na_action <- attr(mf, "na.action")
+      # The model frame keeps the row names of the rows the fit used,
+      # those left by `subset` and by the NA handling.
+      rn <- rownames(mf)
       if (
+        nrow(mf) == n_fit &&
+          all(rn %in% rownames(orig)) &&
+          !any(names(na_action) %in% rn)
+      ) {
+        orig <- orig[rn, , drop = FALSE]
+      } else if (
         !is.null(na_action) &&
           nrow(orig) - length(na_action) == n_fit
       ) {

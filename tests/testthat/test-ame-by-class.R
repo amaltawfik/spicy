@@ -539,3 +539,41 @@ test_that("character predictor AME aligns level rows exactly like factor()", {
   expect_false(any(is.na(df_ch$AME[lvl_rows])))
   expect_false(any(df_ch$AME[lvl_rows] == ""))
 })
+
+test_that("a variable that enters only through offset() gets no AME row", {
+  # avg_slopes() reports a slope with respect to the offset variable, which
+  # a reader would take for a fitted exposure effect.
+  skip_if_not_installed("marginaleffects")
+  set.seed(4)
+  d <- make_d()
+  d$exposure <- runif(nrow(d), 1, 5)
+  d$cnt <- rpois(nrow(d), d$exposure * exp(0.3 * d$x1))
+  check <- function(fit, twin = NULL) {
+    a <- ame_rows(as_regression_frame(fit, show_columns = c("b", "ame")))
+    orc <- oracle_slopes(fit)
+    expect_true("exposure" %in% orc$term)
+    orc <- as.data.frame(suppressWarnings(suppressMessages(
+      marginaleffects::avg_slopes(fit, variables = c("x1", "f"))
+    )))
+    okey <- oracle_term_id(orc)
+    expect_setequal(a$term, okey)
+    idx <- match(a$term, okey)
+    expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-10)
+    expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-10)
+    if (!is.null(twin)) {
+      b <- ame_rows(as_regression_frame(twin, show_columns = c("b", "ame")))
+      expect_identical(b$term, a$term)
+      expect_equal(b$estimate, a$estimate, tolerance = 1e-8)
+      expect_equal(b$std_error, a$std_error, tolerance = 1e-8)
+    }
+  }
+  # The same glm with the offset as an argument has no offset term.
+  check(
+    stats::glm(cnt ~ x1 + f + offset(log(exposure)), poisson, data = d),
+    stats::glm(cnt ~ x1 + f, poisson, data = d, offset = log(exposure))
+  )
+  skip_if_not_installed("mgcv")
+  check(mgcv::gam(cnt ~ x1 + f + offset(log(exposure)), poisson, data = d))
+  skip_if_not_installed("fixest")
+  check(fixest::fepois(cnt ~ x1 + f + offset(log(exposure)), data = d))
+})
