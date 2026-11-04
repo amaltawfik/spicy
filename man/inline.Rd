@@ -12,7 +12,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}},
 \code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} or
 \code{\link[=table_multiresponse]{table_multiresponse()}} (default output) -- every family
-\code{\link[=as_structured]{as_structured()}} accepts.}
+\code{\link[=as_structured]{as_structured()}} accepts. A stacked table of \code{\link[=table_stack]{table_stack()}} holds
+several tables and is refused: pass the panel that holds the cell,
+\code{attr(x, "panels")[["Women"]]}.}
 
 \item{variable}{The source variable, unquoted or as a string; or a
 fit-statistic token (\code{"nobs"}, \code{"r2"}, ...) or label (\code{"n"}).}

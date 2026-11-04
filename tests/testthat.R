@@ -55,6 +55,7 @@ cran_tier <- c(
   # regression tables
   "table_regression",
   "table_regression_models",
+  "table_stack",
   "regression_uv",
   "regression_structured",
   "regression_broom",

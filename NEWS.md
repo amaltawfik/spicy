@@ -71,6 +71,22 @@
 
 ## New features
 
+* New `table_stack()`, experimental, stacks regression tables one under
+  the other: each table becomes a panel opened by a row with its name
+  (or its entry in `panel_labels`), under one column header when the
+  panels share their columns and with its own header otherwise. The
+  notes are merged as for the models side by side, a sentence that
+  holds for some panels only opening with their names. Tables built in
+  different languages, with different decimal marks or alignments, or
+  under styles that format a cell differently are refused.
+
+* `table_regression()` gains `layout = "stacked"`: one panel per model,
+  each with the columns of the model alone, its confidence interval
+  included. Under `nested = TRUE` the change statistics of each model
+  sit in its panel, labeled "vs" the model before it. `tidy()`,
+  `glance()` and `output = "long"` return the rows of the models side
+  by side, with a leading `panel` column.
+
 * `table_regression()`: glmmTMB models take `vcov = "CR1"`, glmmTMB's
   cluster sandwich scaled by G/(G - 1) for G clusters, as for the other
   likelihood classes. It covers the coefficients, the zero-inflation
@@ -434,6 +450,29 @@
   `exponentiate = TRUE`), next to a Bayesian R² that brms flags as
   invalid for these families, and `stan_polr()` failed on its default
   fit statistics.
+
+* `table_regression()`: gt tables now rule off the "Thresholds",
+  "Random effects" and component blocks, as the console, tinytable,
+  flextable and Excel already did.
+
+* `table_regression()`: the console no longer draws the rule of a total
+  above a row whose label contains the word "Total".
+
+* `table_regression()`: a `keep`, `drop`, `show_intercept = FALSE` or
+  `show_thresholds = FALSE` that leaves no coefficient row now stops
+  with `spicy_empty_table`, naming the model and the setting, instead of
+  returning a table with a header only.
+
+* `table_regression()`: a multinomial model placed beside other models
+  now keeps its intercepts under `keep` or `drop` and hides them under
+  `show_intercept = FALSE`, as the other models do. `keep` dropped them
+  and `show_intercept = FALSE` kept them. `tidy()` now marks them in
+  `is_intercept`.
+
+* `table_regression()`: the standard-error note writes each model's
+  label in lower case after the model's name ("Model 1: robust (HC1)"),
+  as the other sentences of the note do. A label that opens with an
+  acronym or a name keeps its capital ("HC1", "Newey-West (L=1)").
 
 * `table_regression_uv()` titles name the family as `table_regression()`
   does ("inverse-Gaussian" instead of "Inverse.gaussian") and a Cox model

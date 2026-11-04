@@ -66,6 +66,8 @@
 #'         Excel workbook, and its PDF), since 0.14.0
 #'   \item Multiple-response questions: [table_multiresponse()], since
 #'         0.14.0
+#'   \item Stacked tables: [table_stack()], with
+#'         `table_regression(layout = "stacked")`, since 0.15.0
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
@@ -80,10 +82,12 @@
 #' `spicy_categorical_table`, `spicy_categorical_svy_table`,
 #' `spicy_continuous_table`, `spicy_continuous_svy_table`,
 #' `spicy_continuous_lm_table`, `spicy_outcome_table`,
-#' `spicy_multiresponse_table`, and `spicy_regression_table`, and the
-#' `output = "long"` frame of every table function, speak one
-#' vocabulary: broom's name wherever broom defines one, and one
-#' snake_case name per concept otherwise, the same in every function.
+#' `spicy_multiresponse_table`, `spicy_regression_table` and
+#' `spicy_stack_table`, and the `output = "long"` frame of every table
+#' function, speak one vocabulary: broom's name wherever broom defines
+#' one, and one snake_case name per concept otherwise, the same in every
+#' function. The outputs of a stacked table ([table_stack()]) open with
+#' a `panel` column, the label of the panel a row belongs to.
 #' One exception, the estimates: `tidy()` gives them broom's names, and
 #' the long output of a descriptive table names each statistic it holds
 #' (see the table below).
@@ -152,7 +156,11 @@
 #' `variable`, `label` (and the `level` or `group` of the row, and
 #' `.row_role`, the role of the printed row, where the table adds rows),
 #' then the printed columns under their names. The two are identical for
-#' every class. `output = "excel"` and `"word"` return the path of the
+#' every class. A stacked table ([table_stack()]) is the exception to one
+#' row per printed row: its data frame binds the data frames of its
+#' panels by rows, under a leading `panel` column, without the rows that
+#' open the panels or repeat their headers. `output = "excel"` and
+#' `"word"` return the path of the
 #' file, invisibly. The columns of the object `output = "default"`
 #' returns are internal and can change without notice: the contracts are
 #' `output = "data.frame"`, `output = "long"`, `tidy()`, `glance()` and
@@ -215,8 +223,16 @@
 #'         spicy does not compute it (e.g., weighted group tests in
 #'         [table_continuous()]); the message names an alternative.
 #'       \item \code{spicy_empty_table} -- [table_regression()] has no row
-#'         to show for a model: it has no coefficient, or every requested
-#'         row block is switched off.
+#'         to show for a model: it has no coefficient, every requested
+#'         row block is switched off, or no coefficient row is left once
+#'         `keep`, `drop` or `show_intercept = FALSE` have chosen the rows
+#'         (for a panel of `layout = "stacked"`, or for every model of
+#'         the table); [table_stack()] received a table without rows.
+#'       \item \code{spicy_stack_mismatch} -- [table_stack()] received
+#'         tables built in different languages, with different decimal
+#'         marks or alignments, or under styles that format a cell
+#'         differently. Signaled together with
+#'         \code{spicy_invalid_input}.
 #'       \item \code{spicy_ame_satt_unsupported_formula} -- signaled
 #'         together with \code{spicy_unsupported} when AME
 #'         Satterthwaite degrees of freedom are unavailable for the

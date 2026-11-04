@@ -10,7 +10,8 @@
 \item{x}{A \code{data.frame} of class \code{"spicy_regression_table"} as
 returned by \code{\link[=table_regression]{table_regression()}} with \code{output = "default"}.}
 
-\item{...}{Additional arguments (currently ignored).}
+\item{...}{Passed to \code{\link[=spicy_print_table]{spicy_print_table()}} (e.g. \code{padding}, which
+overrides the padding the table was built with).}
 }
 \value{
 Invisibly returns \code{x}.

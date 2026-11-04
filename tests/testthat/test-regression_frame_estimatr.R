@@ -658,3 +658,34 @@ test_that("iv_robust with se_type = 'none' names IV and the missing SE", {
     "IV regression (no SE computed)"
   )
 })
+
+test_that("the standard-error note writes each estimatr label in lower case after the model's name", {
+  skip_on_cran()
+  skip_if_not_installed("estimatr")
+  hc1 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "HC1")
+  cl <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "classical")
+  cr <- estimatr::lm_robust(mpg ~ wt, data = mtcars, clusters = cyl)
+  # The label each model writes alone, at the head of the sentence.
+  expect_match(
+    attr(table_regression(hc1), "note"),
+    "Std. errors: Robust (HC1).",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(table_regression(cl), "note"),
+    "Std. errors: Classical.",
+    fixed = TRUE
+  )
+  note <- attr(
+    table_regression(list(hc1, cl, cr, stats::lm(mpg ~ wt, data = mtcars))),
+    "note"
+  )
+  expect_match(
+    note,
+    paste0(
+      "Std. errors: Model 1: robust (HC1), Model 2: classical, ",
+      "Model 3: cluster-robust (CR2), Model 4: classical (OLS)."
+    ),
+    fixed = TRUE
+  )
+})

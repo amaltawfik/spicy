@@ -487,3 +487,34 @@ test_that("the exponentiate scope sentence cites the spanner labels", {
   )
   expect_match(txt, "Logit: coefficients exponentiated", fixed = TRUE)
 })
+
+test_that("a standard-error label keeps the capital of an acronym or a surname", {
+  labels <- c(
+    "Classical",
+    "Robust (HC1)",
+    "HC1",
+    "CR1S",
+    "IID",
+    "Satterthwaite",
+    "Newey-West (L=1)",
+    "Driscoll-Kraay (L=1)",
+    "Conley (190km)",
+    "Stata HC1",
+    "Wald asymptotic (z)"
+  )
+  refs <- LETTERS[seq_along(labels)]
+  expect_identical(
+    .note_std_errors(labels, refs),
+    paste0(
+      "Std. errors: A: classical, B: robust (HC1), C: HC1, D: CR1S, ",
+      "E: IID, F: Satterthwaite, G: Newey-West (L=1), ",
+      "H: Driscoll-Kraay (L=1), I: Conley (190km), J: Stata HC1, ",
+      "K: Wald asymptotic (z)."
+    )
+  )
+  # One estimator for every model: one label, at the head of the sentence.
+  expect_identical(
+    .note_std_errors(c("Classical", "Classical"), c("A", "B")),
+    "Std. errors: Classical."
+  )
+})

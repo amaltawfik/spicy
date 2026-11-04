@@ -277,10 +277,11 @@ render_regression_table <- function(
     setNames(character(0), character(0))
 
   rows <- list()
-  # Body-row index of the "Thresholds" block header (ordinal cut-points) so the
-  # ASCII printer can rule it off from the predictors above -- exposed via the
-  # section_sep_rows attr, read only by print.spicy_regression_table().
-  # integer(0) = no Thresholds block.
+  # Body-row index of the header of each subordinate block (ordinal
+  # cut-points, random effects, components) so every engine can rule it off
+  # from the rows above -- exposed via the section_sep_rows attr, which the
+  # console and the rich writers union with group_sep_rows. integer(0) = no
+  # such block.
   thr_sep <- integer(0)
   current_factor <- NA_character_
   # Set of factor_term values that have already received the
@@ -443,31 +444,11 @@ render_regression_table <- function(
   # the print engine via the `align` attribute and applied at
   # output-dispatch time.
   if (identical(align, "decimal")) {
-    data_cols <- setdiff(names(body), .REG_KEY_VARIABLE)
-    # Detect CI-only columns by inspecting the col_spec: a CI col
-    # has fields == c("ci_low", "ci_high"). Map col_name -> field-set
-    # for the per-column dispatch.
-    ci_cols <- vapply(
-      col_spec,
-      function(cs) {
-        identical(cs$fields, c("ci_low", "ci_high"))
-      },
-      logical(1)
+    body <- .reg_align_char_body(
+      body,
+      .reg_ci_col_names(col_spec),
+      decimal_mark
     )
-    ci_col_names <- vapply(col_spec[ci_cols], `[[`, character(1), "col_name")
-    for (col in data_cols) {
-      if (col %in% ci_col_names) {
-        body[[col]] <- align_ci_strings(
-          body[[col]],
-          decimal_mark = decimal_mark
-        )
-      } else {
-        body[[col]] <- decimal_align_strings(
-          body[[col]],
-          decimal_mark = decimal_mark
-        )
-      }
-    }
   }
 
   attr(body, "title") <- title
@@ -514,6 +495,42 @@ render_regression_table <- function(
     re_columns = re_columns
   )
 
+  body
+}
+
+
+# The bracketed-interval columns of a display body: the col_spec entries
+# whose fields are c("ci_low", "ci_high").
+.reg_ci_col_names <- function(col_spec) {
+  ci_cols <- vapply(
+    col_spec,
+    function(cs) {
+      identical(cs$fields, c("ci_low", "ci_high"))
+    },
+    logical(1)
+  )
+  vapply(col_spec[ci_cols], `[[`, character(1), "col_name")
+}
+
+# Decimal alignment of the value cells of a display body, column by
+# column: `align_ci_strings()` for the bracketed interval columns
+# (`ci_col_names`), which aligns the two bounds inside the brackets,
+# `decimal_align_strings()` for the others. `rows` are the rows aligned
+# together: every row of a table; the rows of a stacked table but its
+# header rows, so that its panels align as one column.
+.reg_align_char_body <- function(
+  body,
+  ci_col_names,
+  decimal_mark,
+  rows = seq_len(nrow(body))
+) {
+  for (col in setdiff(names(body), .REG_KEY_VARIABLE)) {
+    body[[col]][rows] <- if (col %in% ci_col_names) {
+      align_ci_strings(body[[col]][rows], decimal_mark = decimal_mark)
+    } else {
+      decimal_align_strings(body[[col]][rows], decimal_mark = decimal_mark)
+    }
+  }
   body
 }
 
@@ -1460,7 +1477,9 @@ format_term_label <- function(
 ) {
   term <- term_row$term
 
-  if (isTRUE(term_row$is_intercept)) {
+  # A multinomial intercept ("Student: (Intercept)", grouped under
+  # "(Intercept):") keeps its outcome-prefixed label.
+  if (isTRUE(term_row$is_intercept) && is.na(term_row$factor_term)) {
     return(resolve_label("(Intercept)", labels))
   }
   if (isTRUE(term_row$is_reference)) {

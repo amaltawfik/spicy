@@ -236,6 +236,9 @@ as_regression_frame.multinom <- function(
       ci_upper = ci_upper,
       test_type = rep("z", length(pred_names)),
       outcome_level = rep(out, length(pred_names)),
+      # The prefixed "<outcome>: (Intercept)" rows are the model's
+      # intercepts: `show_intercept` and `keep` / `drop` treat them so.
+      is_intercept = pred_names == "(Intercept)",
       stringsAsFactors = FALSE
     )
     ref_rows <- .multinom_reference_rows(fit, outcome = out)
@@ -281,6 +284,7 @@ as_regression_frame.multinom <- function(
       ci_upper = NA_real_,
       test_type = NA_character_,
       outcome_level = outcome,
+      is_intercept = FALSE,
       stringsAsFactors = FALSE
     )
   }
@@ -296,6 +300,7 @@ as_regression_frame.multinom <- function(
 .empty_multinom_block <- function() {
   out <- .empty_coefs_frame()
   out$outcome_level <- character(0)
+  out$is_intercept <- logical(0)
   out
 }
 

@@ -199,10 +199,15 @@
   prefixes
 }
 
+# `stacked = TRUE`: the title of a stacked table (`layout = "stacked"`),
+# whose note gives the type of each panel in the sentence of its panel,
+# in the language of the table: a mixed-family stack translates its
+# title like a single-family one.
 build_regression_title_from_frames <- function(
   frames,
   nested = FALSE,
-  decimal_mark = NULL
+  decimal_mark = NULL,
+  stacked = FALSE
 ) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(spicy_str("title_regression_fallback"))
@@ -239,7 +244,13 @@ build_regression_title_from_frames <- function(
   # its type footer is the frozen English "Model k: ..." list, and a
   # French title over an English footer is the hybrid the rule forbids
   # -- even though the fallback prefix "Regression" has a bridge entry.
-  disp <- if (mixed) NULL else .title_prefix_display(prefix, decimal_mark)
+  # The note of a stack is worded in the language of the table, so its
+  # title is too.
+  disp <- if (mixed && !isTRUE(stacked)) {
+    NULL
+  } else {
+    .title_prefix_display(prefix, decimal_mark)
+  }
   if (!is.null(disp)) {
     if (n == 1L) {
       if (length(outcomes) == 0L) {
@@ -314,7 +325,8 @@ build_regression_footer_from_frames <- function(
   frames_display = frames,
   decimal_mark = ".",
   model_labels = NULL,
-  note_add = NULL
+  note_add = NULL,
+  parts = FALSE
 ) {
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
@@ -357,17 +369,25 @@ build_regression_footer_from_frames <- function(
   # The note of every table of the family (`.compose_note()`): the
   # general note, one paragraph whose themes come in four kinds -- each
   # kind keeping the order its themes had -- then the stars legend, the
-  # probability note, on its own line.
-  .compose_note(
+  # probability note, on its own line. `parts = TRUE` returns the parts
+  # the note is composed of (`.compose_note_parts()`), the abbreviations
+  # as the items their block is written from: `table_stack()` merges the
+  # notes of its panels from them. The two themes that speak of each
+  # model -- its type, which opens (a), and its standard errors, which
+  # open (c) -- are kept apart, with the item of each model (`models`),
+  # so that the merge words them as the side-by-side table does.
+  p <- list(
     # (a) What the numbers are: the model, its design, its working
     # correlation, its distribution, the scale of its coefficients, the
     # state of the fit, a statistic it does not report, and what its
     # coefficients are read against.
-    what = .footer_paragraph(
+    type = .footer_paragraph(
       build_regression_type_footer_block_from_frames(
         frames,
         decimal_mark = decimal_mark
-      ),
+      )
+    ),
+    what = .footer_paragraph(
       # Before the variance label (c), so a design table reads "what the
       # design is" then "where the standard errors come from" -- the
       # order the descriptive twins use.
@@ -398,8 +418,8 @@ build_regression_footer_from_frames <- function(
     ),
     # (c) The inference: the standard errors, the intervals, the tests,
     # the adjustment, the predictive accuracy.
+    vcov = .footer_paragraph(build_vcov_footer_block_from_frames(frames)),
     inference = .footer_paragraph(
-      build_vcov_footer_block_from_frames(frames),
       build_ci_method_footer_block_from_frames(
         frames,
         show_columns,
@@ -442,18 +462,42 @@ build_regression_footer_from_frames <- function(
     ),
     # The abbreviations of the headers and of the stub, where the rule in
     # force puts them.
-    abbreviations = build_abbreviations_footer_block_from_frames(
+    abbreviation_items = build_abbreviations_footer_block_from_frames(
       show_columns,
       frames,
       standardized,
       show_fit_stats = show_fit_stats,
-      re_scale = re_scale
+      re_scale = re_scale,
+      as_items = TRUE
     ),
     probability = build_stars_footer_block(stars, decimal_mark),
     # The sentences of `note_add`, last in the general note, before the
     # legend of the stars.
-    add = note_add
+    add = note_add,
+    # The item of each model in the two themes kept apart: the prefix of
+    # its type (the key the title and the type sentence are worded
+    # from) and the label of its standard errors.
+    models = list(
+      type = vapply(
+        frames,
+        function(f) f$info$extras$title_prefix %||% "Regression",
+        character(1)
+      ),
+      vcov = vapply(frames, format_vcov_label_from_frame, character(1)),
+      # The method and the family sizes of each model, when the p-values
+      # are adjusted.
+      p_adjust = if (!is.null(p_adjust) && !identical(p_adjust, "none")) {
+        c(
+          list(method = p_adjust),
+          .p_adjust_families(frames, show_columns)
+        )
+      }
+    )
   )
+  if (isTRUE(parts)) {
+    return(p)
+  }
+  .compose_note_parts(p)
 }
 
 # The sentences of footer themes, ready for the paragraph of the general
@@ -584,7 +628,9 @@ build_regression_type_footer_block_from_frames <- function(
 # Poisson regression" -- lowercasing a surname is a typo, not style.
 # So does a title that starts with an acronym ("IV regression (2SLS)").
 # "Gamma" is the name of a distribution, not of a person: mid-title it
-# is "gamma regression".
+# is "gamma regression". The same rule writes a standard-error label
+# after a model's name: "classical (OLS)", but "Wald asymptotic (z)",
+# "HC1", "Newey-West (L=1)".
 lowercase_first <- function(s) {
   if (!length(s) || !nzchar(s)) {
     return(s)
@@ -603,10 +649,17 @@ lowercase_first <- function(s) {
     "Bell",
     "Royston",
     "Heckman",
-    "Tobit"
+    "Tobit",
+    "Wald",
+    "Satterthwaite",
+    "Kenward",
+    "Newey",
+    "Driscoll",
+    "Conley",
+    "Stata"
   )
   first_word <- sub("[ -].*$", "", s)
-  if (first_word %in% proper || grepl("^[A-Z]{2,}$", first_word)) {
+  if (first_word %in% proper || grepl("^[A-Z]{2,}[0-9A-Z]*$", first_word)) {
     return(s)
   }
   paste0(tolower(substr(s, 1L, 1L)), substring(s, 2L))
@@ -723,7 +776,16 @@ build_vcov_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  labels <- vapply(frames, format_vcov_label_from_frame, character(1))
+  .note_std_errors(
+    vapply(frames, format_vcov_label_from_frame, character(1)),
+    vapply(seq_along(frames), function(i) .model_ref(frames, i), character(1))
+  )
+}
+
+# The standard errors sentence from the label of the estimator of each
+# model and the reference that names the model: of the side-by-side
+# table, and of the panels of a stacked table (`table_stack()`).
+.note_std_errors <- function(labels, refs) {
   if (all(labels == labels[1])) {
     return(spicy_fmt("note_std_errors_single", labels[1]))
   }
@@ -734,7 +796,9 @@ build_vcov_footer_block_from_frames <- function(frames) {
   # one of them holds a comma (`.join_note_vars()`).
   per <- vapply(
     seq_along(labels),
-    function(i) .model_line(frames, i, labels[i]),
+    function(i) {
+      spicy_fmt("note_model_line", refs[[i]], lowercase_first(labels[[i]]))
+    },
     character(1)
   )
   spicy_fmt("note_std_errors_single", .join_note_vars(per))
@@ -917,7 +981,8 @@ build_abbreviations_footer_block_from_frames <- function(
   frames = list(),
   standardized = "none",
   show_fit_stats = character(0),
-  re_scale = "sd"
+  re_scale = "sd",
+  as_items = FALSE
 ) {
   if (!is.list(frames)) {
     frames <- list() # nocov -- every caller passes the list of frames
@@ -1049,6 +1114,11 @@ build_abbreviations_footer_block_from_frames <- function(
       recursive = FALSE
     )
   )
+  # The items themselves for a caller that merges the blocks of several
+  # tables (`.compose_note_parts()`, `table_stack()`).
+  if (isTRUE(as_items)) {
+    return(items)
+  }
   .note_abbreviations(items)
 }
 
@@ -2992,6 +3062,15 @@ build_p_adjust_footer_block_from_frames <- function(
   ) {
     return(NULL)
   }
+  fam <- .p_adjust_families(frames, show_columns)
+  .p_adjust_note_text(p_adjust, fam$m, fam$ame)
+}
+
+# The families of tests the p-value note counts, one size per model:
+# `m`, the family of the coefficients (or of the AME, when the table
+# shows only their p-values), and `ame`, the AME family of each model
+# that has one, when the table shows the AME p-values.
+.p_adjust_families <- function(frames, show_columns = NULL) {
   # The size of one family of a model: the rows of one estimate type that
   # apply_p_adjust_to_frame_coefs() adjusts together.
   family_size <- function(f, type) {
@@ -3033,17 +3112,22 @@ build_p_adjust_footer_block_from_frames <- function(
   if (length(ame) > 0L && (all(sizes == 0L) || !"p" %in% show_columns)) {
     sizes <- ame
   }
+  list(m = sizes, ame = ame)
+}
+
+# The p-value note of families `m` and `ame` (`.p_adjust_families()`).
+.p_adjust_note_text <- function(p_adjust, m, ame = integer(0)) {
   # No coefficient tested, nothing adjusted: no sentence, as in the
   # descriptive tables.
-  if (all(sizes == 0L)) {
+  if (all(m == 0L)) {
     return(NULL)
   }
   # Each coefficient is a test, and the family is one model. The sentence
   # keeps its subject, "P-values adjusted ...": no "P-values:" lead comes
   # before it here, unlike in the descriptive tables
   # (`.desc_p_adjust_note()`).
-  out <- .p_adjust_sentence(p_adjust, sizes)
-  if (length(ame) > 0L && !identical(ame, sizes)) {
+  out <- .p_adjust_sentence(p_adjust, m)
+  if (length(ame) > 0L && !identical(ame, m)) {
     out <- paste(out, .p_adjust_sentence(p_adjust, ame, ame = TRUE))
   }
   out

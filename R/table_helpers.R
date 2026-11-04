@@ -1088,11 +1088,12 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # so that the arguments named are those typed and the message of one
 # argument reads the same in every function. `args` are their names,
 # `when` the condition that voids them ("when `by` is not used").
-.warn_ignored <- function(args, when) {
+.warn_ignored <- function(args, when, ...) {
   for (arg in args) {
     spicy_warn(
       sprintf("`%s` is ignored %s.", arg, when),
-      class = "spicy_ignored_arg"
+      class = "spicy_ignored_arg",
+      ...
     )
   }
   invisible(NULL)
@@ -1786,6 +1787,24 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     return(NULL)
   }
   .note_with_prefix(paste(lines, collapse = "\n"))
+}
+
+# The note composed from its parts, as a regression table records them
+# (`build_regression_footer_from_frames(parts = TRUE)`): the arguments of
+# `.compose_note()`, the type sentence and the standard errors sentence
+# apart (they open the first and the third kind), the abbreviations as
+# the items their block is written from. The same note, byte for byte,
+# as composing it directly.
+.compose_note_parts <- function(p) {
+  .compose_note(
+    what = c(p$type, p$what),
+    missing = p$missing,
+    inference = c(p$vcov, p$inference),
+    definitions = p$definitions,
+    abbreviations = .note_abbreviations(p$abbreviation_items),
+    probability = p$probability,
+    add = p$add
+  )
 }
 
 # A sentence of a note that ends on a label with a closing mark of its

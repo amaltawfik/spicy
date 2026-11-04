@@ -323,10 +323,10 @@ cells, leaving the rest of the table intact.
 
 ## Multiple models side by side
 
-Pass a list of `lm()` fits. The default column layout places each
-model in its own panel under a centered **spanner label** showing
-the model name; sub-columns (`B / SE / p`) are repeated under the
-spanner. When dependent variables differ across models and the
+Pass a list of `lm()` fits. The default column layout gives each
+model its own group of columns under a centered **spanner label**
+showing the model name; sub-columns (`B / SE / p`) are repeated under
+the spanner. When dependent variables differ across models and the
 user did not supply labels (`model_labels = ` or named list), each
 outcome is lifted into the spanner automatically: its variable name
 by default, its label attribute with `labels = TRUE` (see *Display
@@ -344,6 +344,40 @@ When all models share the same DV, the DV appears in the title.
 Use a named list — e.g. `list(Crude = m1, Adjusted = m2)` — to
 set the spanner labels explicitly; pass `model_labels = c(...)`
 to override the names from the list.
+
+## Models one under the other
+
+Side by side, models that share few predictors leave a wide and
+sparse table, and the default drops the confidence intervals to save
+width. `layout = "stacked"` sets the models one under the other
+instead: each model gets a panel with the columns it would have on its
+own, its interval included, opened by a row with its label.
+
+```{r stacked}
+table_regression(
+  list(Wellbeing = m_wellbeing, BMI = m_bmi),
+  layout = "stacked"
+)
+```
+
+`table_stack()` stacks tables built separately, each with its own
+arguments. A panel whose columns differ from the first one opens with
+its own header, here the odds ratios of a logistic model:
+
+```{r table-stack}
+m_dentist <- glm(dentist_12m ~ age + sex + smoking,
+                 data = sochealth, family = binomial)
+table_stack(
+  BMI = table_regression(m_bmi),
+  Dentist = table_regression(m_dentist, exponentiate = TRUE)
+)
+```
+
+The notes of the panels are merged as the note of the same models side
+by side: one sentence gives the type of each model, one its standard
+errors, and a sentence that holds for one panel only opens with its
+label. A table without a name takes its label from `panel_labels`, else
+from a title you typed for it, else from its outcome.
 
 ## Univariable screening
 

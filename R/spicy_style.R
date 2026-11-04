@@ -1513,8 +1513,12 @@ print.spicy_style <- function(x, ...) {
     # overrides the locale, lever by lever -- it came from an explicit
     # style, and the locale is the weakest layer everywhere. (A call
     # WITH a style keeps its historical semantics: its own frame,
-    # outer frame masked.) No shipped entry point nests frames today;
-    # this guards the first bundle that will.
+    # outer frame masked.) The stacked layout nests frames:
+    # `table_regression(layout = "stacked")` pushes its frame, then each
+    # panel, a call of the same function with the same arguments, pushes
+    # one inside it, as does the stack when it restores the style of its
+    # first panel. The outer frame there carries the language and the
+    # style of the panels, so the merge changes no lever.
     outer <- .style_fmt()
     if (!is.null(outer)) {
       fmt[names(outer)] <- outer

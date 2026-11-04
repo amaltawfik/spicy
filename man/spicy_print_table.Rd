@@ -22,6 +22,8 @@ spicy_print_table(
   display_labels = NULL,
   fit_stats_start = NULL,
   qualify_companions = FALSE,
+  body_spanners = NULL,
+  blank_row_groups = NULL,
   ...
 )
 }
@@ -105,6 +107,18 @@ column on their left, as in a coefficient table. In a layout whose
 qualifying it would attribute it to whichever column happened to
 sit before it. Defaults to \code{FALSE}.}
 
+\item{body_spanners}{Optional list of column group rows inside the
+body (see \code{\link[=build_ascii_table]{build_ascii_table()}}), in the columns of \code{x}. When the
+table splits into stacked panels, each panel repeats a label over
+the columns of its group it holds. Defaults to \code{NULL}.}
+
+\item{blank_row_groups}{Optional list of integer vectors, each a set
+of rows that go together (the rows of a panel of a stacked table,
+or one of its fit-statistic rows). When the table splits into
+stacked panels, continuation panels leave out every group none of
+whose rows has a data cell there. An alternative to
+\code{fit_stats_start}, not to be combined with it. Defaults to \code{NULL}.}
+
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }
 \value{
@@ -139,7 +153,8 @@ ANSI color (\code{\link[crayon:has_color]{crayon::has_color()}}) and fall back t
 otherwise.
 
 The layout arguments \code{spanners}, \code{display_labels},
-\code{fit_stats_start}, \code{total_row_idx} and \code{group_sep_rows} are
+\code{fit_stats_start}, \code{total_row_idx}, \code{group_sep_rows},
+\code{body_spanners} and \code{blank_row_groups} are
 plumbing consumed by spicy's own print methods; they are
 documented for completeness and are rarely useful when calling
 this function directly.

@@ -143,7 +143,9 @@
 #'   [table_continuous_lm()], [table_outcome()],
 #'   [table_categorical_svy()], [table_continuous_svy()] or
 #'   [table_multiresponse()] (default output) -- every family
-#'   [as_structured()] accepts.
+#'   [as_structured()] accepts. A stacked table of [table_stack()] holds
+#'   several tables and is refused: pass the panel that holds the cell,
+#'   `attr(x, "panels")[["Women"]]`.
 #' @param variable The source variable, unquoted or as a string; or a
 #'   fit-statistic token (`"nobs"`, `"r2"`, ...) or label (`"n"`).
 #' @param level For a factor variable, the level, as a string: a
@@ -193,6 +195,20 @@ inline <- function(
   column = NULL,
   model = NULL
 ) {
+  # A stack holds several tables: the cell to cite is in one of them.
+  if (inherits(x, "spicy_stack_table")) {
+    first <- names(attr(x, "panels", exact = TRUE))[[1L]]
+    spicy_abort(
+      c(
+        "`inline()` cites a cell of one table, not of a stacked table.",
+        "i" = sprintf(
+          "Pass the panel that holds it: `attr(x, \"panels\")[[%s]]`.",
+          .quote_val(first)
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   # The table's own style, back in force for the length of this call --
   # otherwise the sentence re-formats under spicy's defaults and quotes
   # a number the table never printed: a Lancet p-value at four decimals

@@ -71,6 +71,11 @@ LEAST_SQUARES_CLASSES <- c("lm", "nls")
   "p_change"
 )
 
+# The change statistics of the Wald test a pair takes under a
+# non-classical vcov (`nested_wald_change()`): rows of their own, added
+# only when some pair filled them (`insert_wald_change_tokens()`).
+.NESTED_WALD_CHANGE_TOKENS <- c("wald_f_change", "wald_chi2_change")
+
 # The change tokens that are DIFFERENCES between adjacent models, current
 # minus previous (R^2, adj. R^2, f^2, AIC, AICc and BIC changes): they
 # print with an explicit sign in every output -- the console
@@ -458,11 +463,16 @@ check_nested_fixest_fe_pair <- function(fit_prev, fit_curr) {
 # current model adds, on the current model's matrix (see
 # nested_wald_change()); without them every pair keeps its classical
 # test.
+#
+# `k_offset` numbers the pairs from a later model: a panel of a stacked
+# table compares model k with model k - 1 alone, as a pair of two fits
+# whose messages still name models k - 1 and k.
 compute_nested_comparisons <- function(
   fits,
   frames = NULL,
   vcov_list = NULL,
-  cluster_list = NULL
+  cluster_list = NULL,
+  k_offset = 0L
 ) {
   if (length(fits) < 2L) {
     return(empty_nested_comparisons())
@@ -502,7 +512,7 @@ compute_nested_comparisons <- function(
       frame = frames[[k + 1L]],
       vcov = vcov_list[[k + 1L]],
       cluster = cluster_list[[k + 1L]],
-      k = k
+      k = k + k_offset
     )
     stats <- if (pair_rms) {
       compute_one_pair_rms(fit_prev, fit_curr)
@@ -527,7 +537,11 @@ compute_nested_comparisons <- function(
       stats$p_change <- wald$p
     }
     result[[k]] <- data.frame(
-      comparison = sprintf("Model %d vs Model %d", k + 1L, k),
+      comparison = sprintf(
+        "Model %d vs Model %d",
+        k + 1L + k_offset,
+        k + k_offset
+      ),
       r2_change = stats$r2_change,
       adj_r2_change = stats$adj_r2_change,
       f_change = stats$f_change,
@@ -809,7 +823,7 @@ insert_wald_change_tokens <- function(show_fit_stats, frames) {
       logical(1)
     ))
   }
-  wald <- c("wald_f_change", "wald_chi2_change")
+  wald <- .NESTED_WALD_CHANGE_TOKENS
   wald <- wald[vapply(wald, filled, logical(1))]
   anchor <- match(c("f_change", "lrt_change"), show_fit_stats)
   anchor <- anchor[!is.na(anchor)]
@@ -1183,7 +1197,8 @@ attach_nested_stats_to_frames <- function(
   frames,
   fits,
   vcov_list = NULL,
-  cluster_list = NULL
+  cluster_list = NULL,
+  k_offset = 0L
 ) {
   if (!isTRUE(length(fits) >= 2L)) {
     return(frames)
@@ -1192,7 +1207,8 @@ attach_nested_stats_to_frames <- function(
     fits,
     frames = frames,
     vcov_list = vcov_list,
-    cluster_list = cluster_list
+    cluster_list = cluster_list,
+    k_offset = k_offset
   )
   if (nrow(comp) == 0L) {
     return(frames) # nocov -- >= 2 fits always yield >= 1 comparison row

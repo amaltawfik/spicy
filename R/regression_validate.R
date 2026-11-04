@@ -2800,10 +2800,11 @@ validate_boot_n <- function(boot_n, call = rlang::caller_env()) {
 
 # The one wording of a `boot_n` typed in a call that runs no bootstrap.
 # `applies_to` names what would use it in the calling function.
-.warn_boot_n_ignored <- function(applies_to) {
+.warn_boot_n_ignored <- function(applies_to, ...) {
   .warn_ignored(
     "boot_n",
-    sprintf("when no bootstrap runs: it applies to %s", applies_to)
+    sprintf("when no bootstrap runs: it applies to %s", applies_to),
+    ...
   )
 }
 
@@ -3280,7 +3281,15 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
 # ---- Phase E \u2013 cross-arg semantic warnings (no errors) --------------------
 
 # Step 25: standardized != "none" x non-additive terms -> spicy_caveat warning
-emit_standardized_caveat_if_needed <- function(models, standardized) {
+#
+# `panel`, the request of a panel of a stacked table: its model is
+# numbered as in the whole list, and the driver gathers the lines of
+# every panel into the one warning the side-by-side table gives.
+emit_standardized_caveat_if_needed <- function(
+  models,
+  standardized,
+  panel = NULL
+) {
   if (identical(standardized, "none")) {
     return(invisible(NULL))
   }
@@ -3318,7 +3327,7 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
         lines,
         sprintf(
           "Model %d: %s",
-          i,
+          .reg_model_index(i, panel),
           paste(parts, collapse = "; ")
         )
       )
@@ -3340,7 +3349,7 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
     )
   }
 
-  spicy_warn(
+  msg <- function(it) {
     c(
       sprintf(
         paste0(
@@ -3349,11 +3358,16 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
         ),
         standardized
       ),
-      lines,
+      it$lines,
       "i" = caveat_msg,
       "i" = "Friedrich (1982); Cohen, Cohen, West & Aiken (2003) \u00A77.7."
-    ),
-    class = "spicy_caveat"
+    )
+  }
+  items <- list(lines = lines)
+  spicy_warn(
+    msg(items),
+    class = "spicy_caveat",
+    spicy_gather = .reg_gather(panel, "standardized_caveat", items, msg)
   )
 }
 
