@@ -2235,7 +2235,7 @@ test_that("the standard-error lines of fixest follow the language", {
   expect_identical(
     .se_line_en_fr(two),
     c(
-      "Std. errors: Model 1: Clustered (id), Model 2: Newey-West (L=2).",
+      "Std. errors: Model 1: clustered (id), Model 2: Newey-West (L=2).",
       paste0(
         "Erreurs standards\u00A0: Mod\u00E8le 1\u00A0: robustes aux ",
         "grappes (id), Mod\u00E8le 2\u00A0: Newey-West (L = 2)."
