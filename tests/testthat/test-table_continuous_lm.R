@@ -2632,7 +2632,9 @@ test_that("options(OutDec) cannot reach the renderers outside the shared formatt
   # The two sites this branch taught the mark, asserted by value: the
   # change tokens used to read "+0.07" over cells reading "0,75".
   expect_true(any(grepl("+0,07", com, fixed = TRUE)))
-  expect_true(any(grepl("+12,38", com, fixed = TRUE)))
+  # F-change is a test statistic: the mark, and no sign.
+  expect_true(any(grepl(" 12,38", com, fixed = TRUE)))
+  expect_false(any(grepl("+12,38", com, fixed = TRUE)))
   expect_false(any(grepl("+0.07", com, fixed = TRUE)))
   expect_true(any(grepl("alpha = 0,08", com, fixed = TRUE)))
 })

@@ -42,7 +42,7 @@
        R²          │  0.75                0.84
        Adj. R²     │  0.74                0.82
        ΔR²         │   –                 +0.08
-       F-change    │   –                 +7.29
+       F-change    │   –                  7.29
        p (change)  │   –                   .003
       
       Note. Linear regression models. Std. errors: classical (OLS).

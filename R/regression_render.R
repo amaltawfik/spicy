@@ -2158,7 +2158,7 @@ fit_stat_label <- function(token) {
 #   r2 / adj_r2 / omega2 / f2  \u2192 fit_digits
 #   sigma / rmse               \u2192 fit_digits
 #   AIC / AICc / BIC           \u2192 ic_digits
-#   deviance                   \u2192 digits
+#   deviance                   \u2192 ic_digits
 format_fit_stat_value <- function(
   token,
   val,
@@ -2173,21 +2173,6 @@ format_fit_stat_value <- function(
   # stats it marks a stat not defined for that model's class in a
   # mixed table (e.g. R\u00b2 on a glm column), per the documented
   # "en-dashes per cell" contract of `show_fit_stats`.
-  is_change <- token %in%
-    c(
-      "r2_change",
-      "adj_r2_change",
-      "f_change",
-      "f2_change",
-      "lrt_change",
-      "wald_f_change",
-      "wald_chi2_change",
-      "aic_change",
-      "aicc_change",
-      "bic_change",
-      "deviance_change",
-      "p_change"
-    )
   if (is.null(val) || is.na(val)) {
     # Structural per-class counts keep the blank convention of the
     # n_groups / fixed_effects block family: an em-dashed "N events"
@@ -2255,10 +2240,12 @@ format_fit_stat_value <- function(
     deviance_change = ic_digits,
     digits
   )
-  if (is_change) {
-    # Explicit "+" prefix on positive change values (signals
-    # improvement on R\u00b2 / \u0394\u03c7\u00b2 / \u0394f\u00b2, worsening on \u0394deviance / \u0394AIC
-    # depending on direction). Same convention as APA / modelsummary.
+  if (token %in% .NESTED_SIGNED_TOKENS) {
+    # A difference between adjacent models (.NESTED_SIGNED_TOKENS) shows
+    # its sign: "+0.07", "-9.4", an exact zero unsigned. Test statistics,
+    # the deviance drop and p (change) stay unsigned. The token set is
+    # shared with `.cell_to_string()` and the Excel number format, so
+    # every output signs the same rows.
     return(format_signed(val, prec, decimal_mark))
   }
   format_number(val, prec, decimal_mark)

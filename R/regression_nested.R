@@ -10,16 +10,27 @@
 #
 # Tokens (all *_change suffix for consistency):
 #
-#   r2_change       (lm)        -- DeltaR^2 (signed)
-#   adj_r2_change   (lm)        -- DeltaAdj. R^2 (signed)
-#   f_change        (lm)        -- partial F (anova(m_i, m_{i+1}))
-#   f2_change       (lm)        -- Cohen's f^2 for added predictors
-#   lrt_change      (lm/glm/me) -- likelihood-ratio chi^2
-#   p_change        (all)       -- p-value of the chosen test
-#   aic_change      (all)       -- DeltaAIC (signed)
-#   aicc_change     (all)       -- DeltaAICc (signed)
-#   bic_change      (all)       -- DeltaBIC (signed)
-#   deviance_change (all)       -- drop in residual deviance
+#   r2_change        (lm)        -- DeltaR^2 (signed)
+#   adj_r2_change    (lm)        -- DeltaAdj. R^2 (signed)
+#   f_change         (lm)        -- partial F (anova(m_i, m_{i+1}))
+#   f2_change        (lm)        -- Deltaf^2, Cohen's f^2 for added
+#                                   predictors (signed)
+#   lrt_change       (lm/glm/me) -- likelihood-ratio chi^2
+#   wald_f_change,
+#   wald_chi2_change (robust)    -- Wald test of the added coefficients
+#   p_change         (all)       -- p-value of the chosen test
+#   aic_change       (all)       -- DeltaAIC (signed)
+#   aicc_change      (all)       -- DeltaAICc (signed)
+#   bic_change       (all)       -- DeltaBIC (signed)
+#   deviance_change  (all)       -- Deltadeviance, the DROP in residual
+#                                   deviance (previous - current, the
+#                                   reverse of the other Delta rows;
+#                                   the LR chi^2 for an ML fit): unsigned
+#
+# "Signed" is a display rule, read from .NESTED_SIGNED_TOKENS below by
+# every output: a difference (current - previous) carries its sign
+# ("+0.07", "-9.4", an exact zero unsigned). Test statistics, the
+# deviance drop and p_change are never signed.
 #
 # Class-aware default token sets (injected by table_regression() when
 # `nested = TRUE` and the user did not supply `show_fit_stats`):
@@ -58,6 +69,23 @@ LEAST_SQUARES_CLASSES <- c("lm", "nls")
   "bic_change",
   "deviance_change",
   "p_change"
+)
+
+# The change tokens that are DIFFERENCES between adjacent models, current
+# minus previous (R^2, adj. R^2, f^2, AIC, AICc and BIC changes): they
+# print with an explicit sign in every output -- the console
+# (format_fit_stat_value()), the string engines (.cell_to_string()) and
+# the Excel number format. One set, so the outputs cannot sign different
+# rows. Not here although labelled with a Delta: the LR chi-square (a
+# test statistic) and deviance_change, the drop previous - current, whose
+# sign would read the wrong way beside Delta AIC.
+.NESTED_SIGNED_TOKENS <- c(
+  "r2_change",
+  "adj_r2_change",
+  "f2_change",
+  "aic_change",
+  "aicc_change",
+  "bic_change"
 )
 
 # TRUE when logLik() yields a finite scalar, i.e. the fit carries a
@@ -1787,10 +1815,11 @@ comparable_nobs <- function(fit_prev, fit_curr) {
 }
 
 
-# ---- Signed formatter (used by render layer for change tokens) ----------
+# ---- Signed formatter (the .NESTED_SIGNED_TOKENS rows) -----------------
 
 # Signed numeric format with explicit "+" prefix for positive values
-# (helps readability of delta tables).
+# (helps readability of delta tables). Called for the difference tokens
+# of .NESTED_SIGNED_TOKENS by both the console and `.cell_to_string()`.
 #
 # `decimal_mark` is threaded like `format_number()`'s, and for the same
 # reason: this is the sibling branch of the very same fit-stat cell (see

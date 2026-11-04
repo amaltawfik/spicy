@@ -644,9 +644,9 @@ tests. See \emph{Hierarchical (nested) model comparison} for the rule,
 the classes it covers and its small-sample caution.}
 
 \item{digits}{Decimal places for general numeric tokens
-(\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change},
-\code{deviance}, \code{deviance_change}, \code{ame}, \code{ame_se},
-\code{weighted_nobs}). Default \code{2L}.}
+(\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change}, \code{ame},
+\code{ame_se}, \code{weighted_nobs}; the Wald change statistics under a
+robust \code{vcov} follow \code{f_change}). Default \code{2L}.}
 
 \item{p_digits}{Decimal places for p-values (\code{p}, \code{ame_p},
 \code{p_change}). APA-strict: leading zero stripped, \verb{<.001} (or
@@ -663,8 +663,9 @@ effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},
 \code{adj_r2_change}, \code{omega2}, \code{f2}, \code{f2_change}, \code{sigma},
 \code{rmse}). Default \code{2L}.}
 
-\item{ic_digits}{Decimals for information criteria (\code{AIC},
-\code{AICc}, \code{BIC}, and their \verb{_change} form). Default \code{1L}.}
+\item{ic_digits}{Decimals for information criteria and deviance
+(\code{AIC}, \code{AICc}, \code{BIC}, \code{deviance}, and their \verb{_change} form).
+Default \code{1L}.}
 
 \item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
 default) or \code{","} in most styles; the Lancet style of
@@ -1145,7 +1146,13 @@ row labels stay \code{AIC} / \code{AICc} / \code{BIC}).
 comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
 \code{"f_change"}, \code{"f2_change"}, \code{"lrt_change"},
 \code{"aic_change"}, \code{"aicc_change"}, \code{"bic_change"},
-\code{"deviance_change"}, \code{"p_change"}.
+\code{"deviance_change"}, \code{"p_change"}. The differences, current
+model minus previous (\code{"r2_change"}, \code{"adj_r2_change"},
+\code{"f2_change"}, and the AIC, AICc and BIC changes), print with an
+explicit sign (\code{+0.07}, \code{-9.4}) in every output. The test
+statistics and \code{"p_change"} are never signed. \code{"deviance_change"}
+is the drop in deviance (previous minus current), positive when
+the larger model fits better, and is not signed either.
 }
 
 Default (resolved when \code{NULL}) is class-aware: lm and

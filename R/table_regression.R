@@ -231,7 +231,13 @@
 #'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
 #'     `"f_change"`, `"f2_change"`, `"lrt_change"`,
 #'     `"aic_change"`, `"aicc_change"`, `"bic_change"`,
-#'     `"deviance_change"`, `"p_change"`.
+#'     `"deviance_change"`, `"p_change"`. The differences, current
+#'     model minus previous (`"r2_change"`, `"adj_r2_change"`,
+#'     `"f2_change"`, and the AIC, AICc and BIC changes), print with an
+#'     explicit sign (`+0.07`, `-9.4`) in every output. The test
+#'     statistics and `"p_change"` are never signed. `"deviance_change"`
+#'     is the drop in deviance (previous minus current), positive when
+#'     the larger model fits better, and is not signed either.
 #' }
 #'
 #' Default (resolved when `NULL`) is class-aware: lm and
@@ -1448,9 +1454,9 @@
 #'   tests. See *Hierarchical (nested) model comparison* for the rule,
 #'   the classes it covers and its small-sample caution.
 #' @param digits Decimal places for general numeric tokens
-#'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`,
-#'   `deviance`, `deviance_change`, `ame`, `ame_se`,
-#'   `weighted_nobs`). Default `2L`.
+#'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`, `ame`,
+#'   `ame_se`, `weighted_nobs`; the Wald change statistics under a
+#'   robust `vcov` follow `f_change`). Default `2L`.
 #' @param p_digits Decimal places for p-values (`p`, `ame_p`,
 #'   `p_change`). APA-strict: leading zero stripped, `<.001` (or
 #'   `<.0001` etc. depending on `p_digits`) for small values.
@@ -1463,8 +1469,9 @@
 #'   effect-size fit stats (`r2`, `adj_r2`, `r2_change`,
 #'   `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`,
 #'   `rmse`). Default `2L`.
-#' @param ic_digits Decimals for information criteria (`AIC`,
-#'   `AICc`, `BIC`, and their `_change` form). Default `1L`.
+#' @param ic_digits Decimals for information criteria and deviance
+#'   (`AIC`, `AICc`, `BIC`, `deviance`, and their `_change` form).
+#'   Default `1L`.
 #' @param decimal_mark The decimal mark, a single character: `"."` (the
 #'   default) or `","` in most styles; the Lancet style of
 #'   [spicy_style()] uses the middle dot. When

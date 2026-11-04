@@ -1139,7 +1139,8 @@ test_that("glm hierarchical: lrt_change cell matches anova(test='LRT')", {
   # Cross-check the value
   av <- anova(m1, m2, test = "LRT")
   expected_lrt <- av$Deviance[2]
-  expected_str <- sprintf("+%.2f", expected_lrt)
+  # A test statistic, so unsigned (only the Delta differences are).
+  expected_str <- sprintf("%.2f", expected_lrt)
   expect_equal(cell, expected_str)
 })
 

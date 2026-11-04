@@ -18,7 +18,7 @@
        R²            │   0.13                 0.18
        Adj. R²       │   0.13                 0.17
        ΔR²           │    –                  +0.05
-       Wald F-change │    –                  +5.39
+       Wald F-change │    –                   5.39
        p (change)    │    –                    .005
       
       Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
@@ -43,7 +43,7 @@
        R² (McFadden)    │   0.02                0.04
        R² (Nagelkerke)  │   0.04                0.07
        AIC              │ 275.2               273.6
-       Wald χ² (change) │    –                 +5.31
+       Wald χ² (change) │    –                  5.31
        p (change)       │    –                   .070
       
       Note. Logistic regression models. Std. errors: heteroskedasticity-robust (HC0). AIC = Akaike information criterion.
@@ -68,7 +68,7 @@
        R²                    │   0,13                  0,18
        R² ajusté             │   0,13                  0,17
        ΔR²                   │    –                   +0,05
-       F de Wald (variation) │    –                   +5,39
+       F de Wald (variation) │    –                    5,39
        p (variation)         │    –                    0,005
       
       Note. Modèles de régression linéaire. Erreurs standards : robustes à l'hétéroscédasticité (HC3).
@@ -93,7 +93,7 @@
        R² (McFadden)          │   0,02                 0,04
        R² (Nagelkerke)        │   0,04                 0,07
        AIC                    │ 275,2                273,6
-       χ² de Wald (variation) │    –                  +5,31
+       χ² de Wald (variation) │    –                   5,31
        p (variation)          │    –                   0,070
       
       Note. Modèles de régression logistique. Erreurs standards : robustes à l'hétéroscédasticité (HC0). AIC = critère d'information d'Akaike.
