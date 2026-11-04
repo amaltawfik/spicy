@@ -420,6 +420,48 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
   expect_oracle_covered(n_checked, nrow(b_rows))
 })
 
+test_that("clm with constrained cut-points: the null model keeps them", {
+  skip_if_not_installed("ordinal")
+  d <- ordinal::wine
+  set.seed(3)
+  d$w <- sample(1:3, nrow(d), TRUE)
+  # The marginal frequencies are the null of flexible cut-points only:
+  # an equidistant or symmetric null is refitted under that structure, as
+  # update(fit, . ~ 1) does (the McFadden R2 was 0.153, not 0.163, for the
+  # unweighted equidistant fit).
+  for (th in c("equidistant", "symmetric", "symmetric2")) {
+    for (wt in c(FALSE, TRUE)) {
+      fit <- if (wt) {
+        ordinal::clm(
+          rating ~ temp + contact,
+          data = d,
+          threshold = th,
+          weights = w
+        )
+      } else {
+        ordinal::clm(rating ~ temp + contact, data = d, threshold = th)
+      }
+      ll0 <- as.numeric(stats::logLik(stats::update(fit, . ~ 1)))
+      ll1 <- as.numeric(stats::logLik(fit))
+      n <- sum(if (wt) d$w else rep(1, nrow(d)))
+      fs <- as_regression_frame(fit)$info$fit_stats
+      info <- paste(th, if (wt) "weighted")
+      expect_equal(
+        fs$pseudo_r2_mcfadden,
+        1 - ll1 / ll0,
+        tolerance = 1e-6,
+        info = info
+      )
+      expect_equal(
+        fs$pseudo_r2_nagelkerke,
+        (1 - exp(2 * (ll0 - ll1) / n)) / (1 - exp(2 * ll0 / n)),
+        tolerance = 1e-6,
+        info = info
+      )
+    }
+  }
+})
+
 
 test_that("clm cut-points declare the asymptotic normal they are computed under", {
   skip_if_not_installed("ordinal")

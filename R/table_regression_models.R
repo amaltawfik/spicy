@@ -224,7 +224,14 @@
       "selection component"
     ),
     c("rms", "ols", "rms::ols()", "yes", "-", "-"),
-    c("rms", "lrm", "rms::lrm()", "yes", "OR", "-"),
+    c(
+      "rms",
+      "lrm",
+      "rms::lrm()",
+      "yes (per category for an ordinal outcome)",
+      "OR",
+      paste0(.REG_BLOCK_THRESH, " (ordinal outcome)")
+    ),
     c("rms", "Glm", "rms::Glm()", "yes", "link-dependent", "-"),
     c(
       "Bayesian",

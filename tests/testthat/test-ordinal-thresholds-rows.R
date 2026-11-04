@@ -253,3 +253,251 @@ test_that("exp gloss names the true cut-point scale per link", {
   )
   expect_false(grepl("log-odds scale", n_hr, fixed = TRUE))
 })
+
+# ---- p_adjust: the family is the slopes ------------------------------------
+
+test_that("p_adjust counts and adjusts an ordinal model's slopes, not its cut-points", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("rms")
+  d <- make_ord()
+  pf <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  lf <- rms::lrm(yc ~ x1 + smoke, data = d)
+  # Raw Wald p of the two slopes and the three cut-points, from each engine.
+  wald_p <- function(z) unname(2 * stats::pnorm(-abs(z)))
+  sm <- summary(pf)$coefficients
+  k <- lf$non.slopes
+  z_l <- stats::coef(lf) / sqrt(diag(stats::vcov(lf)))
+  raw <- list(
+    polr = list(
+      slopes = wald_p(sm[c("x1", "smokeyes"), "t value"]),
+      cuts = wald_p(sm[names(pf$zeta), "t value"])
+    ),
+    lrm = list(
+      slopes = wald_p(z_l[-seq_len(k)]),
+      cuts = wald_p(z_l[seq_len(k)])
+    )
+  )
+  fits <- list(polr = pf, lrm = lf)
+  for (nm in names(fits)) {
+    expect_match(
+      attr(table_regression(fits[[nm]], p_adjust = "holm"), "note"),
+      "P-values adjusted for 2 tests (Holm method).",
+      fixed = TRUE
+    )
+    df <- table_regression(fits[[nm]], p_adjust = "holm", output = "data.frame")
+    thr <- df$variable == "Thresholds" & df$.row_role == "level"
+    slope <- df$.row_role %in% c("coef", "level") & !thr
+    expect_equal(
+      df$p[slope],
+      stats::p.adjust(raw[[nm]]$slopes, "holm"),
+      tolerance = 1e-8
+    )
+    expect_equal(df$p[thr], raw[[nm]]$cuts, tolerance = 1e-8)
+  }
+})
+
+test_that("with the AME p-values shown, the note counts the AME family", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("rms")
+  skip_if_not_installed("marginaleffects")
+  d <- make_ord()
+  fits <- list(
+    polr = MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE),
+    lrm = rms::lrm(yc ~ x1 + smoke, data = d)
+  )
+  # Two slopes, each with an AME on the four categories: a family of 8.
+  m_ame <- 2L * nlevels(d$yc)
+  note_of <- function(fit, cols, method = "bonferroni") {
+    attr(table_regression(fit, show_columns = cols, p_adjust = method), "note")
+  }
+  is_ame <- function(x) x$estimate_type == "ame" & !x$is_reference
+  for (nm in names(fits)) {
+    f <- fits[[nm]]
+    cols <- c("b", "ame", "ame_p")
+    raw <- table_regression(f, show_columns = cols, output = "long")
+    adj <- table_regression(
+      f,
+      show_columns = cols,
+      p_adjust = "bonferroni",
+      output = "long"
+    )
+    expect_length(raw$p.value[is_ame(raw)], m_ame)
+    expect_equal(
+      adj$p.value[is_ame(adj)],
+      stats::p.adjust(raw$p.value[is_ame(raw)], "bonferroni"),
+      tolerance = 1e-10
+    )
+    # The AME p-values alone: the note counts their family.
+    expect_match(
+      note_of(f, cols),
+      sprintf("P-values adjusted for %d tests (Bonferroni method).", m_ame),
+      fixed = TRUE
+    )
+    # Both columns of p-values: each family with its count.
+    expect_match(
+      note_of(f, c("b", "p", "ame", "ame_p")),
+      sprintf(
+        paste(
+          "P-values adjusted for 2 tests (Bonferroni method).",
+          "AME p-values adjusted for %d tests (Bonferroni method)."
+        ),
+        m_ame
+      ),
+      fixed = TRUE
+    )
+    # The AME p-values hidden: the coefficients alone (an lrm also warns
+    # that the p column is the coefficients').
+    n_b <- suppressWarnings(note_of(f, c("b", "p", "ame")))
+    expect_match(
+      n_b,
+      "P-values adjusted for 2 tests (Bonferroni method).",
+      fixed = TRUE
+    )
+    expect_false(grepl("AME p-values", n_b, fixed = TRUE))
+  }
+  # An AME family as large as the coefficients' needs one sentence.
+  g <- stats::glm(
+    I(yc >= "Good") ~ x1 + smoke,
+    data = d,
+    family = stats::binomial
+  )
+  n_g <- note_of(g, c("b", "p", "ame", "ame_p"), "holm")
+  expect_match(
+    n_g,
+    "P-values adjusted for 2 tests (Holm method).",
+    fixed = TRUE
+  )
+  expect_false(grepl("AME p-values", n_g, fixed = TRUE))
+  # Several models: the AME counts per model, in their order.
+  expect_match(
+    note_of(list(fits$polr, g), c("b", "p", "ame", "ame_p")),
+    sprintf(
+      paste(
+        "P-values adjusted within each model for 2 tests (Bonferroni method).",
+        "AME p-values adjusted within each model (Bonferroni method), for",
+        "%d and 2 tests respectively."
+      ),
+      m_ame
+    ),
+    fixed = TRUE
+  )
+  # The French sentence, from its own keys.
+  withr::local_options(spicy.language = "fr")
+  n_fr <- note_of(fits$polr, c("b", "p", "ame", "ame_p"))
+  expect_match(n_fr, "Valeurs p des AME ajust", fixed = TRUE)
+  expect_match(n_fr, sprintf("pour %d tests (m", m_ame), fixed = TRUE)
+})
+
+test_that("the note of the AME p-values leaves out a model with no AME", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("marginaleffects")
+  d <- make_ord()
+  pf <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+  # Two slopes, each with an AME on the four categories: a family of 8.
+  # The Cox model has no AME, hence no AME family.
+  m_ame <- 2L * nlevels(d$yc)
+  note_of <- function(cols) {
+    attr(
+      suppressWarnings(
+        table_regression(list(pf, cx), show_columns = cols, p_adjust = "holm")
+      ),
+      "note"
+    )
+  }
+  both <- note_of(c("b", "p", "ame", "ame_p"))
+  expect_match(
+    both,
+    sprintf(
+      paste(
+        "P-values adjusted within each model for 2 tests (Holm method).",
+        "AME p-values adjusted for %d tests (Holm method)."
+      ),
+      m_ame
+    ),
+    fixed = TRUE
+  )
+  expect_false(grepl("0 tests", both, fixed = TRUE))
+  ame_only <- note_of(c("b", "ame", "ame_p"))
+  expect_match(
+    ame_only,
+    sprintf("P-values adjusted for %d tests (Holm method).", m_ame),
+    fixed = TRUE
+  )
+  expect_false(grepl("0 tests", ame_only, fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  n_fr <- note_of(c("b", "p", "ame", "ame_p"))
+  expect_match(
+    n_fr,
+    sprintf(
+      "Valeurs p des AME ajust\u00e9es pour %d tests (m\u00e9thode de Holm).",
+      m_ame
+    ),
+    fixed = TRUE
+  )
+  expect_false(grepl("0 tests", n_fr, fixed = TRUE))
+})
+
+test_that("a family of one AME test, and equal AME families, have their keys", {
+  skip_if_not_installed("marginaleffects")
+  # poly(wt, 2) has two coefficients and one AME (that of wt): the AME
+  # family is 1, and 2 with hp beside it.
+  g <- stats::glm(am ~ poly(wt, 2), data = mtcars, family = stats::binomial)
+  h <- suppressWarnings(stats::glm(
+    am ~ hp + poly(wt, 2),
+    data = mtcars,
+    family = stats::binomial
+  ))
+  note_of <- function(x) {
+    attr(
+      suppressWarnings(table_regression(
+        x,
+        show_columns = c("b", "p", "ame", "ame_p"),
+        p_adjust = "holm"
+      )),
+      "note"
+    )
+  }
+  en <- list(
+    one = c(
+      "P-values adjusted for 2 tests (Holm method).",
+      "AME p-values adjusted for 1 test (Holm method)."
+    ),
+    per_model_one = c(
+      "P-values adjusted within each model for 2 tests (Holm method).",
+      "AME p-values adjusted within each model for 1 test (Holm method)."
+    ),
+    per_model = c(
+      "P-values adjusted within each model for 3 tests (Holm method).",
+      "AME p-values adjusted within each model for 2 tests (Holm method)."
+    )
+  )
+  fits <- list(one = g, per_model_one = list(g, g), per_model = list(h, h))
+  for (nm in names(fits)) {
+    expect_match(
+      note_of(fits[[nm]]),
+      paste(en[[nm]], collapse = " "),
+      fixed = TRUE,
+      info = nm
+    )
+  }
+  withr::local_options(spicy.language = "fr")
+  fr <- list(
+    one = "Valeurs p des AME ajust\u00e9es pour 1 test (m\u00e9thode de Holm).",
+    per_model_one = paste0(
+      "Valeurs p des AME ajust\u00e9es dans chaque mod\u00e8le pour 1 test ",
+      "(m\u00e9thode de Holm)."
+    ),
+    per_model = paste0(
+      "Valeurs p des AME ajust\u00e9es dans chaque mod\u00e8le pour 2 tests ",
+      "(m\u00e9thode de Holm)."
+    )
+  )
+  for (nm in names(fits)) {
+    expect_match(note_of(fits[[nm]]), fr[[nm]], fixed = TRUE, info = nm)
+  }
+})

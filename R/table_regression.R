@@ -113,7 +113,9 @@
 #' \itemize{
 #'   \item Counts: `"nobs"`, `"weighted_nobs"`, `"n_events"` (Cox
 #'     models: number of events, reported alongside `n` per the
-#'     field convention; blank for other classes).
+#'     field convention; blank for other classes). `"nobs"` and the
+#'     BIC follow the engine's [stats::nobs()], which for a weighted
+#'     `polr` or `clm` fit is the sum of the weights.
 #'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
 #'     `"omega2"`.
 #'   \item Pseudo-\eqn{R^2}{R^2} (`glm` and ordinal `polr` / `clm`):
@@ -1065,10 +1067,13 @@
 #'   p-value use `"ame_p"`.
 #' @param keep Character vector of regexes. Only coefficient rows
 #'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
-#'   `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are
-#'   kept. The intercept and the subordinate blocks (thresholds, random
-#'   effects) are exempt from `keep` and `drop`: `show_intercept`,
-#'   `show_thresholds` and `show_re` govern them.
+#'   `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the
+#'   spelling of `lm()`, `"cyl6"` for rms's `"cyl=6"` and `"wt:cyl6"`
+#'   for `"wt * cyl=6"`) matches at
+#'   least one pattern are kept. The intercept and the subordinate
+#'   blocks (thresholds, random effects) are exempt from `keep` and
+#'   `drop`: `show_intercept`, `show_thresholds` and `show_re` govern
+#'   them.
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -1078,14 +1083,19 @@
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param show_thresholds For ordinal cumulative-link models
-#'   (`MASS::polr`, `ordinal::clm`, `ordinal::clmm`, `glmmTMB` with the
-#'   ordinal family), whether to display the estimated
+#'   (`MASS::polr`, `ordinal::clm`, `ordinal::clmm`, `survey::svyolr`,
+#'   `glmmTMB` with the ordinal family, `rms::lrm` with more than two
+#'   outcome levels), whether to display the estimated
 #'   category thresholds (cut-points) as a subordinate `"Thresholds"`
 #'   block of rows below the predictors, carrying B / SE / CI / p like
 #'   the predictor rows. Default `TRUE`. `FALSE` collapses them to a
 #'   compact one-line footer note instead. Thresholds are reported on
 #'   the log-odds (B) scale and are **never exponentiated** (under
 #'   `exponentiate = TRUE` their rows stay on the log-odds scale).
+#'   They follow the `polr` convention, link(P(Y <= j)) = threshold -
+#'   linear predictor: an `rms::lrm` fit, which models P(Y >= j), shows
+#'   its intercepts with the sign reversed, named `"3|4"` (displayed
+#'   `"3 | 4"`) rather than `"y>=4"`.
 #'   Has no effect on non-ordinal models, and the rows are shown only
 #'   when a coefficient column (`"b"`/`"beta"`) is in `show_columns`.
 #' @param show_components For models with secondary components,
@@ -1464,14 +1474,18 @@
 #'   The names are model identifiers, not display text: the outcome, the
 #'   term labels of [stats::terms()] (`"age"`, `"sex"`, `"age:sex"`, a
 #'   factor's term naming its header), and the coefficient names
-#'   (`"(Intercept)"`, `"sexMale"`), each naming one row. They keep that
-#'   form whatever the language of the table. Classes with no `terms`
+#'   (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the spelling
+#'   of `lm()`, `"sexMale"` for rms's `"sex=Male"` and `"age:sexMale"`
+#'   for `"age * sex=Male"`), each naming one
+#'   row. They keep that form whatever the language of the table.
+#'   Classes with no `terms`
 #'   component (`nls()`, `sampleSelection::selection()`) are keyed on
 #'   their coefficient (or parameter) names alone. With several models,
 #'   a name is looked up in the terms of all of them and lands on the
 #'   rows where it exists. A name that matches nothing in the table warns
-#'   (class `spicy_unknown_name`) and is left out, so one vector can still
-#'   serve every table of a project. The headers of the
+#'   (class `spicy_unknown_name`), with the list of its terms, and is left
+#'   out, so one vector can still serve every table of a project. The
+#'   headers of the
 #'   subordinate blocks (`Random effects`, `Thresholds`,
 #'   `Zero-inflation`, ...) are set by the package and cannot be
 #'   relabeled here.
@@ -3532,17 +3546,20 @@ table_regression <- function(
   # its `labels`. Before the explode, which copies each frame's info.
   # A name of `labels` or `note_labels` that is no outcome, term label or
   # coefficient name of the table warns, and is left out, as in the
-  # descriptive tables (`.warn_unknown_label_names()`).
+  # descriptive tables (`.warn_unknown_label_names()`). The warning lists
+  # the terms, which the models name and the reader may not know.
+  label_keys <- .reg_label_keys(models)
   .warn_unknown_label_names(
     c(
-      .reg_label_keys(models),
+      label_keys,
       unlist(lapply(frames, function(f) {
         dv <- f$info$dv %||% NA_character_
         c(dv, .reg_bare_var(dv))
       }))
     ),
     labels,
-    note_labels
+    note_labels,
+    hint = .reg_terms_sentence(label_keys)
   )
   var_labs <- .reg_variable_labels(labels, models, frames)
   for (i in seq_along(frames)) {

@@ -3187,9 +3187,18 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
   # lme returns random-effect-augmented coefficients; clm mixes
   # thresholds in). .spicy_fixed_coef_names() knows each class.
   all_coefs <- unlist(lapply(models, function(fit) {
-    tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
+    nm <- tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
       names(stats::coef(fit))
     })
+    # An rms fit names its rows in lm's spelling (.rms_row_terms()), and
+    # the cut-points of an ordinal lrm are its Thresholds block.
+    if (inherits(fit, "rms")) {
+      nm <- .rms_row_terms(
+        setdiff(nm, .lrm_cut_names(fit)),
+        .rms_logical_vars(fit)
+      )
+    }
+    nm
   }))
   unique(c(all_terms, all_coefs))
 }

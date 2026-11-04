@@ -33,7 +33,8 @@ test_that("ols CR* matches rms::robcov (Wald t, df.residual, intercept aligned)"
   fr <- as_regression_frame(f, vcov = "CR0", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
   orc <- sqrt(diag(rms::robcov(f, d$g)$var))
-  names(orc) <- norm_nm(names(stats::coef(f)))
+  # The rows carry lm's names ("fb" for rms's "f=b"), in rms's order.
+  names(orc) <- names(stats::coef(stats::lm(y ~ x1 + x2 + f, data = d)))
   expect_equal(b$std_error, unname(orc[b$term]), tolerance = 1e-9)
   expect_true(all(b$test_type == "t"))
   expect_equal(unique(b$df), stats::df.residual(f), tolerance = 1e-9)
@@ -95,6 +96,72 @@ test_that("Glm CR* matches rms::robcov (Wald z)", {
   names(orc) <- norm_nm(names(stats::coef(f)))
   expect_equal(b$std_error, unname(orc[b$term]), tolerance = 1e-9)
   expect_true(all(b$test_type == "z"))
+})
+
+test_that("factor rows of lrm, Glm and cph take robcov's SE under lm's names", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  d <- make_rms_data()
+  d$time <- rexp(nrow(d), exp(-0.2 * d$x1))
+  d$status <- rbinom(nrow(d), 1, 0.7)
+  lm_nm <- names(stats::coef(stats::lm(y ~ x1 + f, data = d)))
+  fits <- list(
+    lrm = rms::lrm(yb ~ x1 + f, data = d, x = TRUE, y = TRUE),
+    Glm = rms::Glm(
+      yb ~ x1 + f,
+      data = d,
+      family = binomial,
+      x = TRUE,
+      y = TRUE
+    ),
+    cph = rms::cph(
+      survival::Surv(time, status) ~ x1 + f,
+      data = d,
+      x = TRUE,
+      y = TRUE
+    )
+  )
+  for (nm in names(fits)) {
+    f <- fits[[nm]]
+    b <- b_rows(as_regression_frame(f, vcov = "CR0", cluster = d$g))
+    orc <- sqrt(diag(rms::robcov(f, d$g)$var))
+    # rms's order, lm's names ("fb" for rms's "f=b"); cph has no intercept.
+    expect_identical(b$term, if (nm == "cph") lm_nm[-1L] else lm_nm, info = nm)
+    expect_equal(b$std_error, unname(orc), tolerance = 1e-9, info = nm)
+  }
+})
+
+test_that("a factor level spelled \"\" keeps its row and its robust SE", {
+  skip_if_not_installed("rms")
+  set.seed(2)
+  n <- 300
+  d <- data.frame(
+    x = rnorm(n),
+    f = factor(
+      sample(c("a", "", "b=c"), n, TRUE),
+      levels = c("a", "", "b=c")
+    ),
+    g = sample(12, n, TRUE)
+  )
+  d$y <- rbinom(n, 1, plogis(0.5 * d$x + (d$f == "") * 0.7))
+  fit <- rms::lrm(y ~ x + f, data = d, x = TRUE, y = TRUE)
+  # rms names the level "f=". Its lm spelling would be "f", the factor's own
+  # name, so the row keeps rms's name and the sandwich still finds it.
+  fr <- as_regression_frame(fit, vcov = "CR0", cluster = d$g)
+  b <- b_rows(fr)
+  expect_identical(b$term, c("(Intercept)", "x", "f=", "fb=c"))
+  expect_identical(b$parent_var, c("(Intercept)", "x", "f", "f"))
+  expect_equal(
+    b$std_error,
+    unname(sqrt(diag(rms::robcov(fit, d$g)$var))),
+    tolerance = 1e-9
+  )
+  # `labels` names that row by its term too, as every other row.
+  out <- capture.output(print(table_regression(
+    fit,
+    labels = c("f=" = "Blank")
+  )))
+  expect_true(any(grepl("^ +Blank ", out)))
 })
 
 test_that("rms fit without x=TRUE,y=TRUE gives a clear x/y error", {
@@ -168,6 +235,6 @@ test_that("rms model-based default is unchanged by the robust wiring", {
   f <- rms::ols(y ~ x1 + x2 + f, data = d, x = TRUE, y = TRUE)
   b <- b_rows(as_regression_frame(f))
   orc <- sqrt(diag(stats::vcov(f)))
-  names(orc) <- norm_nm(names(stats::coef(f)))
+  names(orc) <- names(stats::coef(stats::lm(y ~ x1 + x2 + f, data = d)))
   expect_equal(b$std_error, unname(orc[b$term]), tolerance = 1e-9)
 })

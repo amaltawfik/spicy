@@ -970,6 +970,15 @@
   note_p_adjusted_per_model = "P-values adjusted within each model for %s tests (%s method).",
   note_p_adjusted_per_model_one = "P-values adjusted within each model for 1 test (%s method).",
   note_p_adjusted_per_model_unequal = "P-values adjusted within each model (%s method), for %s tests respectively.",
+  # The AME p-values are adjusted as a family of their own. When the table
+  # shows them beside the coefficients' and the two families differ in
+  # size (an AME on each outcome category), a second sentence counts
+  # theirs, with the same holes and the same variants.
+  note_p_adjusted_ame = "AME p-values adjusted for %s tests (%s method).",
+  note_p_adjusted_ame_one = "AME p-values adjusted for 1 test (%s method).",
+  note_p_adjusted_ame_per_model = "AME p-values adjusted within each model for %s tests (%s method).",
+  note_p_adjusted_ame_per_model_one = "AME p-values adjusted within each model for 1 test (%s method).",
+  note_p_adjusted_ame_per_model_unequal = "AME p-values adjusted within each model (%s method), for %s tests respectively.",
   # The descriptive tables (`.desc_p_adjust_note()`) put the sentence
   # right after the one that names the test, whose lead ("P-values:",
   # "Item p-values:") is its subject: the participle agrees with the

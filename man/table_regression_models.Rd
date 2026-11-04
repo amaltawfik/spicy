@@ -73,7 +73,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \cr
    Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \cr
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \cr
-   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes \tab OR \tab - \cr
+   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes (per category for an ordinal outcome) \tab OR \tab Thresholds (ordinal outcome) \cr
    rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \cr
    Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr
    Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr

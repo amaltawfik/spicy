@@ -162,6 +162,15 @@ as_regression_frame.survreg <- function(
   ...
 ) {
   .check_survival_available()
+  if (inherits(fit, "psm")) {
+    spicy_abort(
+      c(
+        "`rms::psm()` fits are not supported by `table_regression()`.",
+        "i" = "Fit the model with `survival::survreg()`, which is supported."
+      ),
+      class = "spicy_unsupported_class"
+    )
+  }
 
   coefs <- .survreg_coefs(fit, ci_level = ci_level)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.

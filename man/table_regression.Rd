@@ -288,10 +288,13 @@ p-value use \code{"ame_p"}.}
 
 \item{keep}{Character vector of regexes. Only coefficient rows
 whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
-\code{"cyl6"}, \code{"factor(cyl)8"}) matches at least one pattern are
-kept. The intercept and the subordinate blocks (thresholds, random
-effects) are exempt from \code{keep} and \code{drop}: \code{show_intercept},
-\code{show_thresholds} and \code{show_re} govern them.
+\code{"cyl6"}, \code{"factor(cyl)8"}; the terms of an \code{rms} fit in the
+spelling of \code{lm()}, \code{"cyl6"} for rms's \code{"cyl=6"} and \code{"wt:cyl6"}
+for \code{"wt * cyl=6"}) matches at
+least one pattern are kept. The intercept and the subordinate
+blocks (thresholds, random effects) are exempt from \code{keep} and
+\code{drop}: \code{show_intercept}, \code{show_thresholds} and \code{show_re} govern
+them.
 Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
@@ -304,14 +307,19 @@ Mutually exclusive with \code{keep}. Default \code{NULL}.}
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}
 
 \item{show_thresholds}{For ordinal cumulative-link models
-(\code{MASS::polr}, \code{ordinal::clm}, \code{ordinal::clmm}, \code{glmmTMB} with the
-ordinal family), whether to display the estimated
+(\code{MASS::polr}, \code{ordinal::clm}, \code{ordinal::clmm}, \code{survey::svyolr},
+\code{glmmTMB} with the ordinal family, \code{rms::lrm} with more than two
+outcome levels), whether to display the estimated
 category thresholds (cut-points) as a subordinate \code{"Thresholds"}
 block of rows below the predictors, carrying B / SE / CI / p like
 the predictor rows. Default \code{TRUE}. \code{FALSE} collapses them to a
 compact one-line footer note instead. Thresholds are reported on
 the log-odds (B) scale and are \strong{never exponentiated} (under
 \code{exponentiate = TRUE} their rows stay on the log-odds scale).
+They follow the \code{polr} convention, link(P(Y <= j)) = threshold -
+linear predictor: an \code{rms::lrm} fit, which models P(Y >= j), shows
+its intercepts with the sign reversed, named \code{"3|4"} (displayed
+\code{"3 | 4"}) rather than \code{"y>=4"}.
 Has no effect on non-ordinal models, and the rows are shown only
 when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
 
@@ -715,14 +723,18 @@ is \code{labels = TRUE}.
 The names are model identifiers, not display text: the outcome, the
 term labels of \code{\link[stats:terms]{stats::terms()}} (\code{"age"}, \code{"sex"}, \code{"age:sex"}, a
 factor's term naming its header), and the coefficient names
-(\code{"(Intercept)"}, \code{"sexMale"}), each naming one row. They keep that
-form whatever the language of the table. Classes with no \code{terms}
+(\code{"(Intercept)"}, \code{"sexMale"}; those of an \code{rms} fit in the spelling
+of \code{lm()}, \code{"sexMale"} for rms's \code{"sex=Male"} and \code{"age:sexMale"}
+for \code{"age * sex=Male"}), each naming one
+row. They keep that form whatever the language of the table.
+Classes with no \code{terms}
 component (\code{nls()}, \code{sampleSelection::selection()}) are keyed on
 their coefficient (or parameter) names alone. With several models,
 a name is looked up in the terms of all of them and lands on the
 rows where it exists. A name that matches nothing in the table warns
-(class \code{spicy_unknown_name}) and is left out, so one vector can still
-serve every table of a project. The headers of the
+(class \code{spicy_unknown_name}), with the list of its terms, and is left
+out, so one vector can still serve every table of a project. The
+headers of the
 subordinate blocks (\verb{Random effects}, \code{Thresholds},
 \code{Zero-inflation}, ...) are set by the package and cannot be
 relabeled here.
@@ -1015,7 +1027,9 @@ side-by-side layout; restore it explicitly when needed).
 \itemize{
 \item Counts: \code{"nobs"}, \code{"weighted_nobs"}, \code{"n_events"} (Cox
 models: number of events, reported alongside \code{n} per the
-field convention; blank for other classes).
+field convention; blank for other classes). \code{"nobs"} and the
+BIC follow the engine's \code{\link[stats:nobs]{stats::nobs()}}, which for a weighted
+\code{polr} or \code{clm} fit is the sum of the weights.
 \item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
 \code{"omega2"}.
 \item Pseudo-\eqn{R^2}{R^2} (\code{glm} and ordinal \code{polr} / \code{clm}):

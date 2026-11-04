@@ -42,12 +42,14 @@ test_that("the compact thresholds footer follows the mark", {
     spicy:::build_ordinal_thresholds_footer_block_from_frames(list(fr)),
     "Thresholds: 1|2 = -1.34, 2|3 = 1.25, 3|4 = 3.47."
   )
+  # Under a comma the cut-points are separated by a semicolon, which no
+  # decimal comma can be mistaken for.
   expect_identical(
     spicy:::build_ordinal_thresholds_footer_block_from_frames(
       list(fr),
       decimal_mark = ","
     ),
-    "Thresholds: 1|2 = -1,34, 2|3 = 1,25, 3|4 = 3,47."
+    "Thresholds: 1|2 = -1,34; 2|3 = 1,25; 3|4 = 3,47."
   )
 })
 

@@ -45,6 +45,19 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 
 # ---- keep / drop filter ---------------------------------------------------
 
+# "The terms of this table: ...", the first twelve: the names a regression
+# table builds from its models, listed where a pattern of `keep` / `drop`
+# or a name of `labels` matches none of them.
+.reg_terms_sentence <- function(terms) {
+  terms <- unique(terms)
+  paste0(
+    "The terms of this table: ",
+    paste(.quote_val(utils::head(terms, 12L)), collapse = ", "),
+    if (length(terms) > 12L) ", ..." else "",
+    "."
+  )
+}
+
 # Filter the aligned long format by regular expression match on the
 # `term` column. Applied AFTER p_adjust (so adjusted p-values
 # reflect the model's full coefficient family, not just the
@@ -103,11 +116,9 @@ apply_keep_drop_filter <- function(aligned, keep = NULL, drop = NULL) {
         ),
         "i" = paste0(
           "Patterns match term names as in `stats::coef()` (e.g. ",
-          "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
-          "The terms of this table: ",
-          paste(.quote_val(utils::head(unique(terms), 12L)), collapse = ", "),
-          if (length(unique(terms)) > 12L) ", ..." else "",
-          "."
+          "\"sexMale\", \"factor(cyl)8\"; an rms fit's in lm's spelling, ",
+          "\"sexMale\" for \"sex=Male\"), never display labels. ",
+          .reg_terms_sentence(terms)
         )
       ),
       class = "spicy_no_match"

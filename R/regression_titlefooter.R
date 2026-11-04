@@ -327,7 +327,7 @@ build_regression_footer_from_frames <- function(
         decimal_mark = decimal_mark
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
-      build_p_adjust_footer_block_from_frames(frames, p_adjust),
+      build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
       build_re_se_skipped_footer_block_from_frames(frames),
       build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
@@ -1482,7 +1482,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 
 .format_ordinal_thresholds_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
-  if (!cls %in% c("polr", "clm", "svyolr", "clmm", "glmmTMB")) {
+  if (!cls %in% c("polr", "clm", "svyolr", "clmm", "glmmTMB", "lrm")) {
     return(NULL)
   }
   th <- frame$info$extras$thresholds
@@ -1504,10 +1504,12 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
     },
     character(1)
   )
+  # Under a decimal comma each item holds one ("Poor|Fair = -0,89"), and
+  # `.join_note_vars()` separates the items with a semicolon.
   spicy_fmt(
     "note_thresholds_compact",
     spicy_str("label_block_thresholds"),
-    paste(parts, collapse = ", ")
+    .join_note_vars(parts)
   )
 }
 
@@ -2784,7 +2786,11 @@ build_exponentiate_footer_block_from_frames <- function(
 #   cf$is_intercept  -> derived (term == "(Intercept)")
 #   cf$is_reference  -> coefs$is_ref          (renamed)
 #   cf$p_value       -> coefs$p_value         (same)
-build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
+build_p_adjust_footer_block_from_frames <- function(
+  frames,
+  p_adjust,
+  show_columns = NULL
+) {
   if (
     identical(p_adjust, "none") ||
       is.null(p_adjust) ||
@@ -2793,29 +2799,47 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
   ) {
     return(NULL)
   }
-  sizes <- vapply(
-    frames,
-    function(f) {
-      cf <- f$coefs
-      if (is.null(cf) || nrow(cf) == 0L) {
-        return(0L)
-      }
-      # Mirror apply_p_adjust_to_frame_coefs() exactly: component-block
-      # intercepts ("zero_(Intercept)", "zi.(Intercept)") are excluded
-      # from the family by their display LABEL -- counting them here made
-      # the footer's m overstate the adjustment actually performed.
-      # (label may be absent on synthetic frames; treat as non-intercept.)
-      lbl <- cf$label %||% rep(NA_character_, nrow(cf))
-      sum(
-        cf$estimate_type == "B" &
-          cf$term != "(Intercept)" &
-          !(lbl %in% "(Intercept)") &
-          !cf$is_ref &
-          !is.na(cf$p_value)
-      )
-    },
-    integer(1)
-  )
+  # The size of one family of a model: the rows of one estimate type that
+  # apply_p_adjust_to_frame_coefs() adjusts together.
+  family_size <- function(f, type) {
+    cf <- f$coefs
+    if (is.null(cf) || nrow(cf) == 0L) {
+      return(0L)
+    }
+    # Mirror apply_p_adjust_to_frame_coefs() exactly: component-block
+    # intercepts ("zero_(Intercept)", "zi.(Intercept)") are excluded
+    # from the family by their display LABEL -- counting them here made
+    # the footer's m overstate the adjustment actually performed.
+    # (label may be absent on synthetic frames; treat as non-intercept.)
+    # The cut-points of an ordinal model and the scale effects of a clm
+    # join the rows after the adjustment, outside its family.
+    lbl <- cf$label %||% rep(NA_character_, nrow(cf))
+    thr <- cf$is_threshold %||% rep(FALSE, nrow(cf))
+    pv <- cf$parent_var %||% rep(NA_character_, nrow(cf))
+    sum(
+      cf$estimate_type == type &
+        cf$term != "(Intercept)" &
+        !(lbl %in% "(Intercept)") &
+        !cf$is_ref &
+        !(thr %in% TRUE) &
+        !(pv %in% .REG_BLOCK_SCALE) &
+        !is.na(cf$p_value)
+    )
+  }
+  sizes <- vapply(frames, family_size, integer(1), type = "B")
+  # The AME p-values are a family of their own, which the note counts when
+  # the table shows them: as large as the coefficients' for a single
+  # outcome, k times larger for the AME on k outcome categories.
+  ame <- if ("ame_p" %in% show_columns) {
+    vapply(frames, family_size, integer(1), type = "ame")
+  } else {
+    integer(length(frames))
+  }
+  # A model with no AME (a Cox model, a fallback) has no family there.
+  ame <- ame[ame > 0L]
+  if (length(ame) > 0L && (all(sizes == 0L) || !"p" %in% show_columns)) {
+    sizes <- ame
+  }
   # No coefficient tested, nothing adjusted: no sentence, as in the
   # descriptive tables.
   if (all(sizes == 0L)) {
@@ -2825,7 +2849,11 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
   # keeps its subject, "P-values adjusted ...": no "P-values:" lead comes
   # before it here, unlike in the descriptive tables
   # (`.desc_p_adjust_note()`).
-  .p_adjust_sentence(p_adjust, sizes)
+  out <- .p_adjust_sentence(p_adjust, sizes)
+  if (length(ame) > 0L && !identical(ame, sizes)) {
+    out <- paste(out, .p_adjust_sentence(p_adjust, ame, ame = TRUE))
+  }
+  out
 }
 
 

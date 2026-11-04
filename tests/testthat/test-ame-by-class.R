@@ -98,10 +98,42 @@ test_that("betareg AME matches avg_slopes (single-outcome, lean frame)", {
 
 test_that("gam AME matches avg_slopes (single-outcome)", {
   skip_if_not_installed("mgcv")
-  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("marginaleffects", "1.0.0")
   d <- make_d()
   fit <- mgcv::gam(y ~ x1 + f, data = d)
-  xval_single(as_regression_frame(fit, show_columns = c("b", "ame")), fit)
+  # The oracle is given the data: a gam's formula has the global
+  # environment, where marginaleffects would look `d` up.
+  xval_single(
+    as_regression_frame(fit, show_columns = c("b", "ame")),
+    marginaleffects::set_modeldata(fit, d)
+  )
+})
+
+test_that("gam AME use the fit's data, not a global object of the same name", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("marginaleffects", "1.0.0")
+  # mgcv gives a gam's formula the global environment. A gam fitted on a
+  # local data set must not take its AME over a global object that has
+  # the same name (and here the same columns, x1 shifted).
+  nm <- "spicy_gam_ame_data"
+  skip_if(exists(nm, envir = globalenv(), inherits = FALSE))
+  d <- make_d()
+  d$y <- 1 + d$x1^2 + stats::rnorm(nrow(d))
+  fit <- local({
+    spicy_gam_ame_data <- d
+    mgcv::gam(y ~ s(x1) + f, data = spicy_gam_ame_data)
+  })
+  decoy <- d
+  decoy$x1 <- decoy$x1 + 3
+  assign(nm, decoy, envir = globalenv())
+  withr::defer(rm(list = nm, envir = globalenv()))
+  a <- ame_rows(as_regression_frame(fit, show_columns = c("b", "ame")))
+  orc <- as.data.frame(marginaleffects::avg_slopes(fit, newdata = d))
+  idx <- match(a$term, oracle_term_id(orc))
+  expect_false(anyNA(idx))
+  expect_identical(nrow(a), nrow(orc))
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
 
 test_that("svyglm AME matches avg_slopes (design-based, single-outcome)", {

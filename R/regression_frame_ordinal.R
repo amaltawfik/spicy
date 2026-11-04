@@ -1211,6 +1211,19 @@ as_regression_frame.clmm <- function(
   if (is.null(w)) {
     w <- rep(1, length(y))
   }
+  # With an offset the null model is the cut-points plus the offset, as
+  # glm's null deviance is the intercept plus the offset
+  # (compute_intercept_only_loglik_glm()) and as rms::lrm() reports it.
+  # The marginal frequencies no longer maximize it: the fit's engine
+  # refits it on the evaluated response, weights and offset. So for a clm
+  # whose cut-points are constrained ("equidistant", "symmetric"): its
+  # null keeps that structure, which the frequencies need not fit.
+  off <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
+  constrained <- inherits(fit, "clm") &&
+    !identical(fit$threshold %||% "flexible", "flexible")
+  if (inherits(fit, c("polr", "clm")) && (any(off != 0) || constrained)) {
+    return(.ordinal_null_loglik_refit(fit, y, w, off %||% 0))
+  }
   Wk <- tapply(w, y, sum)
   Wk <- Wk[is.finite(Wk) & Wk > 0]
   W <- sum(Wk)
@@ -1218,6 +1231,39 @@ as_regression_frame.clmm <- function(
     return(NA_real_)
   }
   sum(Wk * log(Wk / W))
+}
+
+
+# Log-likelihood of the null model of a polr or clm fit with an offset or
+# constrained cut-points: the cut-points alone, under the fit's link and
+# threshold structure, the offset kept, refitted on a fresh data frame
+# (see .ordinal_null_loglik() for the data-scoping trap of update()). A
+# clm's scale and nominal parts are left out, as in the closed form.
+.ordinal_null_loglik_refit <- function(fit, y, w, off) {
+  d <- data.frame(y = y, w = w, off = off)
+  null_fit <- tryCatch(
+    suppressWarnings(
+      if (inherits(fit, "polr")) {
+        MASS::polr(y ~ offset(off), data = d, weights = w, method = fit$method)
+      } else {
+        ordinal::clm(
+          y ~ offset(off),
+          data = d,
+          weights = w,
+          link = fit$link,
+          threshold = fit$threshold
+        )
+      }
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(null_fit)) {
+    # nocov start: the cut-points alone are fitted wherever the model with
+    # its predictors was; the guard is defensive only.
+    return(NA_real_)
+    # nocov end
+  }
+  as.numeric(stats::logLik(null_fit))
 }
 
 
