@@ -2987,3 +2987,122 @@ test_that("each panel's standard-error label opens in lower case after its name"
     )
   })
 })
+
+
+# ---- 14. Excel signs and p-value families, with main's rules -----------------
+
+test_that("a stacked nested table signs the differences in Excel, not the F-change", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  models <- .st_hierarchy()[1:2]
+  p <- withr::local_tempfile(fileext = ".xlsx")
+  table_regression(
+    models,
+    nested = TRUE,
+    layout = "stacked",
+    show_fit_stats = c(
+      "nobs",
+      "r2",
+      "aic",
+      "r2_change",
+      "f_change",
+      "p_change",
+      "aic_change"
+    ),
+    output = "excel",
+    excel_path = p
+  )
+  xl <- .st_xl_read(p)
+  delta <- intToUtf8(0x0394L)
+  row_of <- function(label) {
+    r <- which(xl$grid[, 1L] %in% paste(label, "vs Model 1"))
+    expect_length(r, 1L)
+    r
+  }
+  s1 <- summary(models[[1L]])
+  s2 <- summary(models[[2L]])
+  cells <- list(
+    list(
+      label = paste0(delta, "R", intToUtf8(0x00B2L)),
+      value = s2$r.squared - s1$r.squared,
+      fmt = "+0.00;-0.00;0.00"
+    ),
+    list(
+      label = paste0(delta, "AIC"),
+      value = stats::AIC(models[[2L]]) - stats::AIC(models[[1L]]),
+      fmt = "+0.0;-0.0;0.0"
+    ),
+    # A test statistic keeps an unsigned format.
+    list(
+      label = "F-change",
+      value = stats::anova(models[[1L]], models[[2L]])$F[[2L]],
+      fmt = "0.00"
+    )
+  )
+  for (cl in cells) {
+    ref <- paste0("B", row_of(cl$label))
+    # A number, with the sign in its format (decimals as the token's).
+    expect_identical(xl$type(ref), "number", info = cl$label)
+    expect_equal(
+      as.numeric(xl$grid[as.integer(sub("B", "", ref)), 2L]),
+      cl$value,
+      tolerance = 1e-10,
+      info = cl$label
+    )
+    expect_identical(xl$numfmt(ref), cl$fmt, info = cl$label)
+  }
+  # The difference is negative for the AIC, positive for the R-squared.
+  expect_lt(cells[[2L]]$value, 0)
+  expect_gt(cells[[1L]]$value, 0)
+})
+
+test_that("a stacked note counts the coefficient and AME families as side by side", {
+  skip_on_cran()
+  skip_if_not_installed("marginaleffects")
+  models <- list(
+    stats::lm(mpg ~ wt + I(wt^2), data = mtcars),
+    stats::lm(mpg ~ wt + I(wt^2) + hp, data = mtcars)
+  )
+  sc <- c("b", "se", "ci", "p", "ame", "ame_p")
+  # The hand count: the coefficients but the intercept, and one AME per
+  # predictor (wt^2 is wt's).
+  n_coef <- vapply(models, function(m) length(stats::coef(m)) - 1L, integer(1))
+  n_ame <- vapply(
+    models,
+    function(m) length(all.vars(stats::formula(m))[-1L]),
+    integer(1)
+  )
+  expect_identical(n_coef, c(2L, 3L))
+  expect_identical(n_ame, c(1L, 2L))
+  sentence <- paste0(
+    sprintf(
+      "P-values adjusted within each model (Holm method), for %d and %d tests respectively.",
+      n_coef[[1L]],
+      n_coef[[2L]]
+    ),
+    " ",
+    sprintf(
+      "AME p-values adjusted within each model (Holm method), for %d and %d tests respectively.",
+      n_ame[[1L]],
+      n_ame[[2L]]
+    )
+  )
+  side <- attr(
+    table_regression(models, p_adjust = "holm", show_columns = sc),
+    "note"
+  )
+  st <- attr(
+    table_regression(
+      models,
+      layout = "stacked",
+      p_adjust = "holm",
+      show_columns = sc
+    ),
+    "note"
+  )
+  expect_match(side, sentence, fixed = TRUE)
+  expect_match(st, sentence, fixed = TRUE)
+  # Each panel's own sentence, a table of one model, is replaced.
+  expect_no_match(st, "for 2 tests (", fixed = TRUE)
+  expect_no_match(st, "Model 1: P-values", fixed = TRUE)
+})
