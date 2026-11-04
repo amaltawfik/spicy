@@ -2191,6 +2191,87 @@ test_that("the robust standard-error lines of estimatr follow the language", {
   )
 })
 
+test_that("the standard-error lines of fixest follow the language", {
+  skip_if_not_installed("fixest")
+  d <- fixest::base_did
+  fe <- function(...) fixest::feols(y ~ x1 | id, data = d, ...)
+  hetero <- fe(vcov = "hetero")
+  fits <- list(
+    iid = fe(vcov = "iid"),
+    hetero = hetero,
+    cluster = fe(vcov = ~id),
+    twoway = fixest::feols(
+      y ~ x1 | id + period,
+      data = d,
+      vcov = ~ id + period
+    ),
+    nw = fe(panel.id = ~ id + period, vcov = fixest::NW(2)),
+    dk = fe(panel.id = ~ id + period, vcov = fixest::DK(2)),
+    custom = summary(fe(), vcov = stats::vcov(hetero) * 2)
+  )
+  fr <- c(
+    iid = "classiques",
+    hetero = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9",
+    cluster = "robustes aux grappes (id)",
+    twoway = "robustes aux grappes (id & period)",
+    nw = "Newey-West (L = 2)",
+    dk = "Driscoll-Kraay (L = 2)",
+    custom = "personnalis\u00E9es"
+  )
+  for (k in names(fits)) {
+    # The English line is fixest's own label, IID named as elsewhere.
+    vt <- attr(summary(fits[[k]])$coeftable, "vcov_type")
+    en <- if (identical(vt, "IID")) "Classical" else vt
+    expect_identical(
+      .se_line_en_fr(fits[[k]]),
+      c(
+        paste0("Std. errors: ", en, "."),
+        paste0("Erreurs standards\u00A0: ", fr[[k]], ".")
+      )
+    )
+  }
+  # Two models with different estimators: one sentence, model by model.
+  two <- list(fits$cluster, fits$nw)
+  expect_identical(
+    .se_line_en_fr(two),
+    c(
+      "Std. errors: Model 1: Clustered (id), Model 2: Newey-West (L=2).",
+      paste0(
+        "Erreurs standards\u00A0: Mod\u00E8le 1\u00A0: robustes aux ",
+        "grappes (id), Mod\u00E8le 2\u00A0: Newey-West (L = 2)."
+      )
+    )
+  )
+})
+
+test_that("the Conley standard-error line of fixest follows the language", {
+  skip_if_not_installed("fixest")
+  set.seed(1)
+  d <- fixest::base_did[1:200, ]
+  d$lat <- stats::runif(200, 40, 45)
+  d$lng <- stats::runif(200, 5, 10)
+  fit <- fixest::feols(y ~ x1, data = d, vcov = fixest::conley(100))
+  expect_identical(attr(summary(fit)$coeftable, "vcov_type"), "Conley (100km)")
+  expect_identical(
+    .se_line_en_fr(fit),
+    c(
+      "Std. errors: Conley (100km).",
+      "Erreurs standards\u00A0: Conley (100\u00A0km)."
+    )
+  )
+  # A cutoff in miles; a function passed as `vcov`, which fixest names
+  # by its call, is shown verbatim in both languages.
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .fixest_vcov_label("Conley (62.5mi)"),
+    "Conley (62.5\u00A0mi)"
+  )
+  expect_identical(
+    .fixest_vcov_label("vcov(x, vcov = \"hetero\")"),
+    "vcov(x, vcov = \"hetero\")"
+  )
+})
+
 test_that("the univariable table title and sample note follow the language", {
   withr::local_options(spicy.language = "fr")
   cc <- table_regression_uv(

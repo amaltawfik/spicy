@@ -767,8 +767,13 @@ as_regression_frame.fixest <- function(
 
 
 # vcov_label normalizer. fixest's "vcov_type" attribute already carries
-# a near-renderer-ready label; we keep it verbatim but rename "IID"
-# to the "Classical" of the other engines, for cross-engine consistency.
+# a near-renderer-ready label, in English: "IID" becomes the "Classical"
+# of the other engines, for cross-engine consistency, and the labels of
+# fixest's built-in estimators go through the registry so that they
+# follow the table language. Their variables, lag and cutoff are kept as
+# fixest gives them ("Clustered (id & period)", "Newey-West (L=2)",
+# "Conley (100km)"). Any other label -- a function passed as `vcov`,
+# which fixest names by its call -- stays verbatim.
 # A cluster on combined fixed effects (`~id^period`) is named by an
 # internal fixest call, "combine_fixef_keep_names(id, period)": it is
 # written back as the user wrote it, "id^period".
@@ -780,5 +785,24 @@ as_regression_frame.fixest <- function(
   regmatches(vt, m) <- lapply(regmatches(vt, m), function(s) {
     gsub(", ", "^", substr(s, 26L, nchar(s) - 1L), fixed = TRUE)
   })
+  if (identical(vt, "Heteroskedasticity-robust")) {
+    return(spicy_str("note_vcov_fixest_hetero"))
+  }
+  if (identical(vt, "Custom")) {
+    return(spicy_str("note_vcov_fixest_custom"))
+  }
+  part <- function(re) regmatches(vt, regexec(re, vt))[[1L]]
+  p <- part("^Clustered \\((.+)\\)$")
+  if (length(p)) {
+    return(spicy_fmt("note_vcov_fixest_cluster", p[2L]))
+  }
+  p <- part("^(Newey-West|Driscoll-Kraay) \\(L=([0-9]+)\\)$")
+  if (length(p)) {
+    return(spicy_fmt("note_vcov_fixest_lag", p[2L], p[3L]))
+  }
+  p <- part("^Conley \\(([0-9.]+)(km|mi)\\)$")
+  if (length(p)) {
+    return(spicy_fmt("note_vcov_fixest_conley", p[2L], p[3L]))
+  }
   vt
 }

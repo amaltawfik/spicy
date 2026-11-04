@@ -1332,6 +1332,15 @@
   # An estimatr fit with `se_type = "none"`, which computes no standard
   # errors.
   note_vcov_none_plain = "None (se_type = \"none\")",
+  # fixest's own labels, worded and capitalized as fixest prints them.
+  # The holes keep fixest's detail: the cluster variables ("id & period"),
+  # the estimator and its lag ("Newey-West", "2"), the Conley cutoff and
+  # its unit ("100", "km"). "Custom" is a matrix the user supplied.
+  note_vcov_fixest_hetero = "Heteroskedasticity-robust",
+  note_vcov_fixest_cluster = "Clustered (%s)",
+  note_vcov_fixest_lag = "%s (L=%s)",
+  note_vcov_fixest_conley = "Conley (%s%s)",
+  note_vcov_fixest_custom = "Custom",
   # The default of mgcv::gam() and bam(): the Bayesian posterior
   # covariance of the coefficients (mgcv's Vp), whatever the smoothing
   # method (GCV, REML, ML). The note names the method, not the package.

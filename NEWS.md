@@ -108,8 +108,9 @@
   reads "GAM de Poisson.", and a family the titles do not know keeps a
   French title ("Régression univariable et multivariable"). The survival
   note names the distribution in French ("Distribution : log-normale")
-  and the standard errors of `estimatr` models are translated
-  ("robustes à l'hétéroscédasticité (HC2)").
+  and the standard errors of `estimatr` and fixest models are
+  translated ("robustes à l'hétéroscédasticité (HC2)", "robustes aux grappes
+  (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
 

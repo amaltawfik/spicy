@@ -953,3 +953,19 @@ Relecture des 454 chaînes du registre français faite par Claude sur instructio
 ## Décision 54 — Libellés des variables : noms par défaut, attributs sur demande (2026-10-17)
 
 Un libellé de variable documente le fichier de données ; un tableau publié porte la formulation que l'analyste choisit, ce qui est l'objet même de spicy. Les tableaux n'affichent donc plus l'attribut `label` par défaut. Argument `labels`, identique dans les huit fonctions table_* : `FALSE` (défaut, nom de colonne), `TRUE` (attribut, sinon nom), vecteur nommé `c(bmi = "IMC")` (les autres colonnes suivent `options(spicy.var_labels)`), `var_labels(bmi = "IMC")` (les autres colonnes gardent leur attribut, quelle que soit l'option). Le défaut est lu dans `options(spicy.var_labels)`, logique de jtools (`confint = getOption("summ-confint", FALSE)`) ; `NULL` et les vecteurs non nommés sont des erreurs (pré-1.0, personne ne passait `NULL`). Précédents : tableone (`varLabels = FALSE`), Stata esttab (`label` et `varlabels()`), modelsummary (`coef_rename = TRUE | vecteur nommé | fonction`), readr (`col_names`). Rupture documentée dans NEWS : les tableaux descriptifs de la 0.13.0 lisaient l'attribut par défaut ; les régressions ne changent pas (l'attribut était calculé pour la ligne Outcome mais jamais affiché) ; migration `labels = TRUE`. En régression, `TRUE` touche la variable dépendante (titre, et l'en-tête de colonnes quand les modèles ont des réponses différentes), les termes numériques et l'en-tête de facteur ; niveaux, interactions et termes transformés gardent leur nom.
+
+## Décision 55 — Empilement des tableaux : `panel_labels` et fusion de table-stack (2026-11-04)
+
+La branche table-stack (`table_stack()`, `table_regression(layout = "stacked")`) est fusionnée dans main dès que sa suite est verte, sans attendre la relecture des sept amendements de l'ADR `dev/decisions/2026-10-16-table-stack.md`, qui restent à relire et peuvent être amendés avant publication. L'argument des libellés de panneaux s'appelle `panel_labels` : la décision 54 réserve `labels` aux libellés de variables dans les huit fonctions table_*, et `panel_labels` fait la paire avec `model_labels`. Un ancien `labels =` passé à `table_stack()` est refusé par un message qui nomme `panel_labels`.
+
+## Décision 56 — Mots français : « Panneau », « vs » et les étiquettes vcov de fixest traduites (2026-11-04)
+
+`label_panel_name` = « Panneau %d », pas « Panel » (qui désigne en français un groupe de personnes interrogées ou les données de panel, source de confusion dans un tableau fixest) ni « Volet ». `fitstat_change_vs` reste « vs », admis dans les tableaux où la place manque. Les étiquettes d'erreurs standards des modèles fixest (hétéroscédasticité, grappes, Newey-West, Driscoll-Kraay, Conley, matrice fournie) sont traduites comme celles d'estimatr, ce qui étend le mode français de la décision 42 à ces notes : le repli anglais n'y est plus la règle.
+
+## Décision 57 — Les conditions R restent en anglais (2026-11-04)
+
+Erreurs, avertissements et messages de spicy restent en anglais, y compris l'avertissement de `survreg()` sous `exponentiate = TRUE` pour une distribution sur l'échelle du temps. Une première condition traduite ouvrirait la question pour toutes les autres, et ces messages se lisent à côté de ceux de R et des paquets, en anglais. Des conditions bilingues seraient une décision de cycle, pas un cas isolé.
+
+## Décision 58 — Deux signalements amont préparés, envoi réservé à Amal (2026-11-04)
+
+Un commentaire pour runehaubo/ordinal#76 (l'inversion cloglog/loglog des `clmm` ne touche que le chemin à une seule ordonnée aléatoire sans `useMatrix`) et une issue pour pscl (les méthodes `estfun` des `zeroinfl()` et `hurdle()` binomiaux négatifs omettent le score de θ, d'où un sandwich incomplet) sont rédigés avec un sondage capturé par affirmation, selon le protocole d'octobre, et déposés dans `dev/upstream`. Amal décide de l'envoi.
