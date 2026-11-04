@@ -521,9 +521,8 @@ inform_lmertest_hint <- function() {
   # glmer.nb: the NB2 theta and alpha = 1/theta, the rows of glm.nb. Its
   # sigma() is the family's fixed 1, not a residual scale, and its
   # dispersion is the theta row, so the sigma cell stays blank, as for
-  # glm.nb.
-  is_nb <- inherits(fit, "glmerMod") &&
-    startsWith(stats::family(fit)$family, "Negative Binomial(")
+  # glm.nb. Every negative-binomial glmer is treated so (.glmer_is_nb()).
+  is_nb <- .glmer_is_nb(fit)
   if (is_nb) {
     fit_stats$sigma <- NA_real_
   }
@@ -643,6 +642,16 @@ inform_lmertest_hint <- function() {
     supports = supports,
     extras = extras
   )
+}
+
+
+# TRUE for a negative-binomial glmer: a glmer.nb() fit, its update() and
+# refit() refits (glmer() calls with the estimate written in), and a
+# glmer() with MASS::negative.binomial(theta). All show their theta, as
+# lme4 counts it in the logLik degrees of freedom of each of them.
+.glmer_is_nb <- function(fit) {
+  inherits(fit, "glmerMod") &&
+    isTRUE(startsWith(stats::family(fit)$family, "Negative Binomial("))
 }
 
 

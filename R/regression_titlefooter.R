@@ -33,8 +33,9 @@
   # The one prefix with a number in it: the quantile regression carries
   # its tau, so no fixed key can match it. The bridge translates
   # "Quantile regression", and the tau, read back from the English key
-  # (pinned at the point), is written in the table's decimal mark, the
-  # language's when the caller passes none.
+  # (pinned at the point), is written with the decimals it needs
+  # (.rq_tau_num()) in the table's decimal mark, the language's when the
+  # caller passes none.
   tau <- .rq_prefix_tau(prefix)
   if (!is.null(tau)) {
     rq_head <- unname(bridge["Quantile regression"])
@@ -42,7 +43,18 @@
       return(NULL)
     }
     mark <- decimal_mark %||% .spicy_locale_table(lang)$decimal_mark %||% "."
-    return(paste0(rq_head, " (\u03C4 = ", .footer_num(tau, 2L, mark), ")"))
+    return(paste0(rq_head, " (\u03C4 = ", .rq_tau_num(tau, 4L, mark), ")"))
+  }
+  # The GAM of a family the titles do not know carries the family's own
+  # name ("Generalized additive model (GAM, myfam)"), so no fixed key can
+  # match it either: the head is translated and the name kept.
+  gam <- .gam_prefix_family(prefix)
+  if (!is.null(gam)) {
+    gam_head <- unname(bridge["Generalized additive model (GAM)"])
+    if (is.na(gam_head)) {
+      return(NULL)
+    }
+    return(paste0(sub("\\)$", "", gam_head), ", ", gam, ")"))
   }
   # Single-bracket on purpose: `[[` on a named vector ERRORS on a
   # missing name, `[` answers NA -- and NA here means "no entry".
@@ -51,6 +63,67 @@
     return(NULL)
   }
   hit
+}
+
+# A title family as a note writes it mid-sentence, in the table language:
+# the English head lowercased as a title is ("negative-binomial",
+# "Poisson"), or the word the language's titles compose with (French
+# "binomiale negative", "de Poisson": .FR_TITLE_FAMILIES). A head the
+# language has no word for keeps its English word. `lang` defaults to the
+# table language.
+.title_family_word <- function(head, lang = NULL) {
+  head <- unclass(head)
+  lang <- lang %||% .spicy_language_option(getOption("spicy.language", "en"))
+  words <- .spicy_title_family_table(lang)
+  hit <- if (is.null(words)) NA_character_ else unname(words[head])
+  if (is.na(hit)) lowercase_first(head) else hit
+}
+
+# The family name of a GAM title that names its family
+# (.gam_title_prefix()), NULL for any other prefix.
+.gam_prefix_family <- function(prefix) {
+  pattern <- "^Generalized additive model \\(GAM, (.+)\\)$"
+  if (!grepl(pattern, prefix)) {
+    return(NULL)
+  }
+  sub(pattern, "\\1", prefix)
+}
+
+# The plural of a GAM title, which a type note writes for several models
+# of that title: "<title> models." would name the model twice ("Poisson
+# GAM models."). English pluralizes the model, "Generalized additive
+# models (GAM)", "Poisson GAMs". French keeps the acronym invariable and
+# makes the words that qualify it agree ("Modeles additifs generalises
+# (GAM)", "GAM binomiaux negatifs", "GAM de Poisson censures"). The word
+# after "de" (the complement noun), the words after "a" and those inside
+# parentheses qualify something else and stay.
+.gam_title_plural <- function(title, lang) {
+  if (!identical(lang, "fr")) {
+    if (grepl("model (GAM", title, fixed = TRUE)) {
+      return(sub("model (GAM", "models (GAM", title, fixed = TRUE))
+    }
+    return(sub("\\bGAM\\b(?![),])", "GAMs", title, perl = TRUE))
+  }
+  cut <- regexpr(" (\\(|\u00e0 )", title)
+  head <- if (cut > 0L) substr(title, 1L, cut - 1L) else title
+  tail <- if (cut > 0L) substring(title, cut) else ""
+  words <- strsplit(head, " ", fixed = TRUE)[[1L]]
+  skip <- FALSE
+  for (i in seq_along(words)) {
+    w <- words[i]
+    if (skip) {
+      skip <- FALSE
+    } else if (identical(w, "de")) {
+      skip <- TRUE
+    } else if (identical(w, "Mod\u00e8le")) {
+      words[i] <- "Mod\u00e8les"
+    } else if (grepl("al$", w)) {
+      words[i] <- sub("al$", "aux", w)
+    } else if (grepl("(\u00e9|if|ique|ien|aire|erse)$", w)) {
+      words[i] <- paste0(w, "s")
+    }
+  }
+  paste0(paste(words, collapse = " "), tail)
 }
 
 # The tau of a quantile-regression prefix, NULL for any other prefix.
@@ -64,14 +137,66 @@
   as.numeric(sub(pattern, "\\1", prefix))
 }
 
+# The tau of a quantile regression as a number: two decimals, and as
+# many more as it needs to be exact, up to `digits` -- 0.50, 0.975,
+# 0.125. A title writes it with four at most (1/3 reads 0.3333); the
+# prefix key, with fifteen, so two quantiles never share a key.
+.rq_tau_num <- function(tau, digits = 4L, decimal_mark = ".") {
+  out <- formatC(tau, digits = digits, format = "f", decimal.mark = ".")
+  out <- sub("0+$", "", out)
+  pad <- 2L - nchar(sub("^[^.]*[.]?", "", out))
+  out <- paste0(out, strrep("0", max(0L, pad)))
+  if (!identical(decimal_mark, ".")) {
+    out <- chartr(".", decimal_mark, out)
+  }
+  out
+}
+
 # An English prefix as the table writes it: the tau of a quantile
-# regression takes the table's decimal mark, as every number does.
+# regression with the decimals it needs (.rq_tau_num()), in the table's
+# decimal mark, as every number is.
 .prefix_with_mark <- function(prefix, decimal_mark = NULL) {
   tau <- .rq_prefix_tau(prefix)
-  if (is.null(tau) || is.null(decimal_mark) || identical(decimal_mark, ".")) {
+  if (is.null(tau)) {
     return(prefix)
   }
-  sub("[0-9.]+\\)$", paste0(.footer_num(tau, 2L, decimal_mark), ")"), prefix)
+  sub(
+    "[0-9.]+\\)$",
+    paste0(.rq_tau_num(tau, 4L, decimal_mark %||% "."), ")"),
+    prefix
+  )
+}
+
+# The title prefix of each model of a table, as the title and the type
+# note compare them. Prefixes that differ only by the fixed-effects
+# qualifier name one family -- the pooled and fixed-effects fits of one
+# model, the classic panel table -- so the table takes the family's
+# title, and its "Fixed effects" block says which model absorbs what.
+# When every model has fixed effects, the prefixes agree and keep it.
+.table_title_prefixes <- function(frames) {
+  prefixes <- vapply(
+    frames,
+    function(f) {
+      f$info$extras$title_prefix %||% "Regression"
+    },
+    character(1)
+  )
+  # The fixed-effects fits of one model by estimatr and by fixest, whose
+  # titles differ only by estimatr's SE qualifier: the SE is in the note.
+  family <- sub(
+    " \\((robust|classical|no) SE( computed)?, fixed effects\\)$",
+    " (fixed effects)",
+    prefixes
+  )
+  if (length(unique(prefixes)) > 1L && length(unique(family)) == 1L) {
+    return(family)
+  }
+  family <- sub(" \\(fixed effects\\)$", "", prefixes)
+  family <- sub(", fixed effects\\)$", ")", family)
+  if (length(unique(prefixes)) > 1L && length(unique(family)) == 1L) {
+    return(family)
+  }
+  prefixes
 }
 
 # `stacked = TRUE`: the title of a stacked table (`layout = "stacked"`),
@@ -109,13 +234,7 @@ build_regression_title_from_frames <- function(
   outcomes <- outcomes[!is.na(outcomes)]
   n <- length(frames)
 
-  prefixes <- vapply(
-    frames,
-    function(f) {
-      f$info$extras$title_prefix %||% "Regression"
-    },
-    character(1)
-  )
+  prefixes <- .table_title_prefixes(frames)
   mixed <- length(unique(prefixes)) > 1L
   prefix <- if (mixed) "Regression" else prefixes[1L]
 
@@ -321,7 +440,7 @@ build_regression_footer_from_frames <- function(
         decimal_mark = decimal_mark
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
-      build_p_adjust_footer_block_from_frames(frames, p_adjust),
+      build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
       build_re_se_skipped_footer_block_from_frames(frames),
       build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
@@ -365,10 +484,13 @@ build_regression_footer_from_frames <- function(
         character(1)
       ),
       vcov = vapply(frames, format_vcov_label_from_frame, character(1)),
-      # The method and the family size of each model, when the p-values
+      # The method and the family sizes of each model, when the p-values
       # are adjusted.
       p_adjust = if (!is.null(p_adjust) && !identical(p_adjust, "none")) {
-        list(method = p_adjust, m = .p_adjust_family_sizes(frames))
+        c(
+          list(method = p_adjust),
+          .p_adjust_families(frames, show_columns)
+        )
       }
     )
   )
@@ -433,13 +555,7 @@ build_regression_type_footer_block_from_frames <- function(
   # we apply capitalize_first(); for mid-sentence positions (after
   # "Model 1:") we only lowercase the FIRST character so the title
   # reads naturally without losing acronyms further in.
-  types <- vapply(
-    frames,
-    function(f) {
-      f$info$extras$title_prefix %||% "Regression"
-    },
-    character(1)
-  )
+  types <- .table_title_prefixes(frames)
   # Decision 42: the single-model and same-family arms translate (the
   # prefix through the bridge, the plural through its whole-sentence
   # key). The mixed-family arm below stays English wholesale --
@@ -467,6 +583,22 @@ build_regression_type_footer_block_from_frames <- function(
     return(paste0(capitalize_first(types_en[1]), "."))
   }
   if (length(unique(types)) == 1L) {
+    # A title that already names a model has a plural of its own
+    # (.spicy_title_plural_table()): "Generalized additive model (GAM)
+    # models." would name the model twice.
+    lang <- if (is.null(disp)) {
+      "en"
+    } else {
+      .spicy_language_option(getOption("spicy.language", "en"))
+    }
+    if (grepl("GAM", types[1], fixed = TRUE)) {
+      gam_title <- if (identical(lang, "en")) types_en[1] else disp
+      return(paste0(capitalize_first(.gam_title_plural(gam_title, lang)), "."))
+    }
+    plural <- .spicy_title_plural_table(lang)[types[1]]
+    if (length(plural) == 1L && !is.na(plural)) {
+      return(paste0(unname(plural), "."))
+    }
     if (!is.null(disp)) {
       return(spicy_fmt("note_type_models", lowercase_first(disp)))
     }
@@ -1529,7 +1661,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 
 .format_ordinal_thresholds_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
-  if (!cls %in% c("polr", "clm", "svyolr", "clmm", "glmmTMB")) {
+  if (!cls %in% c("polr", "clm", "svyolr", "clmm", "glmmTMB", "lrm")) {
     return(NULL)
   }
   th <- frame$info$extras$thresholds
@@ -1551,10 +1683,12 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
     },
     character(1)
   )
+  # Under a decimal comma each item holds one ("Poor|Fair = -0,89"), and
+  # `.join_note_vars()` separates the items with a semicolon.
   spicy_fmt(
     "note_thresholds_compact",
     spicy_str("label_block_thresholds"),
-    paste(parts, collapse = ", ")
+    .join_note_vars(parts)
   )
 }
 
@@ -1663,7 +1797,7 @@ build_survival_footer_block_from_frames <- function(
   if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
     parts <- c(
       parts,
-      spicy_fmt("note_survival_distribution", .surv_title_dist(dist))
+      spicy_fmt("note_survival_distribution", .surv_note_dist(dist))
     )
   }
   if (!is.null(scale) && is.finite(scale)) {
@@ -1686,7 +1820,7 @@ build_survival_footer_block_from_frames <- function(
   if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
     parts <- c(
       parts,
-      spicy_fmt("note_survival_distribution", .surv_title_dist(dist))
+      spicy_fmt("note_survival_distribution", .surv_note_dist(dist))
     )
   }
   if (!is.null(aux) && is.numeric(aux) && length(aux) > 0L) {
@@ -1694,7 +1828,7 @@ build_survival_footer_block_from_frames <- function(
       sprintf(
         "%s = %s",
         names(aux),
-        .footer_num(unname(aux), 2L, decimal_mark)
+        .surv_param_num(unname(aux), decimal_mark)
       ),
       collapse = ", "
     )
@@ -1704,6 +1838,36 @@ build_survival_footer_block_from_frames <- function(
     return(NULL) # nocov
   }
   paste0(paste(parts, collapse = spicy_str("note_survival_sep")), ".")
+}
+
+
+# A parameter of a parametric survival distribution in its note: two
+# decimals, or as many as two significant digits need below 0.1, so a
+# rate or a scale on a long time axis ("rate = 0.0017") never prints as
+# zero. The mark is the table's.
+.surv_param_num <- function(x, decimal_mark = ".") {
+  vapply(
+    x,
+    function(v) {
+      digits <- max(2L, .signif_decimals(v, 2L, cap = 50L))
+      .footer_num(v, digits, decimal_mark)
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+}
+
+
+# The distribution a parametric survival note names, in the table
+# language: the English name (.surv_title_dist()), or the language's
+# word for it (.spicy_surv_dist_table()). A name the language has no
+# word for keeps its English form.
+.surv_note_dist <- function(dist) {
+  en <- .surv_title_dist(dist)
+  lang <- .spicy_language_option(getOption("spicy.language", "en"))
+  words <- .spicy_surv_dist_table(lang)
+  hit <- if (is.null(words)) NA_character_ else unname(words[en])
+  if (is.na(hit)) en else hit
 }
 
 
@@ -1736,8 +1900,10 @@ build_survival_footer_block_from_frames <- function(
     survspline = "Royston-Parmar spline",
     gaussian = "Gaussian",
     logistic = "Logistic",
-    extreme = "Extreme-value",
-    `t` = "Student-t",
+    # Spelled as the censored-regression title spells them ("Censored
+    # regression (extreme value)"), capitalized by position only.
+    extreme = "Extreme value",
+    `t` = "Student t",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
 }
@@ -1958,7 +2124,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
   # the footer must name the df the rows carry: the cluster-robust
-  # Satterthwaite df. (glmmTMB under CR0 keeps its Wald z line: its
+  # Satterthwaite df. (glmmTMB under CR0 / CR1 keeps its Wald z line: its
   # sandwich SEs are tested against the normal, and the Std. errors line
   # names the estimator.)
   if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
@@ -2045,40 +2211,60 @@ build_nested_ml_refit_footer_block_from_frames <- function(
 # rendered in the table (gated on is_component rows actually present, so
 # show_components = FALSE prints nothing), naming what each block models and
 # its scale under exponentiate. A robust vcov covers the component rows too
-# (pscl: the whole-model vcovCL; glmmTMB: the full CR0 sandwich), so the
+# (pscl: the whole-model vcovCL; glmmTMB: its full cluster sandwich), so the
 # Std. errors line speaks for every row and no disclosure is needed here.
 build_component_blocks_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
 
-  lines <- character(0)
-  seen <- character(0)
-  for (f in frames) {
+  # One entry per block of each model: the block's IDENTITY, the model,
+  # and the gloss as the note prints it.
+  keys <- character(0)
+  idx <- integer(0)
+  texts <- character(0)
+  for (i in seq_along(frames)) {
+    f <- frames[[i]]
     cf <- f$coefs
     if (is.null(cf$is_component) || !any(cf$is_component %in% TRUE)) {
       next
     }
     for (blk in f$info$extras$component_blocks %||% list()) {
-      # Deduplicate on the block's IDENTITY, never on the gloss text: two
-      # models contributing the same block must produce one footer line,
-      # and that decision has to survive a translated caption.
-      key <- blk$label
-      if (key %in% seen) {
-        next
-      }
-      seen <- c(seen, key)
       gl <- blk$gloss
       if (isTRUE(blk$exp_applied)) {
         gl <- paste0(gl, " ", spicy_str("note_component_exp_or"))
       } else if (isTRUE(f$info$extras$exp_applied) && !isTRUE(blk$exp_ok)) {
         gl <- paste0(gl, " ", spicy_str("note_component_not_exp"))
       }
-      lines <- c(lines, gl)
+      keys <- c(keys, blk$label)
+      idx <- c(idx, i)
+      texts <- c(texts, gl)
     }
   }
-  if (length(lines) == 0L) {
+  if (length(keys) == 0L) {
     return(NULL)
+  }
+  # Grouped on the block's IDENTITY, never on the caption, so the decision
+  # survives a translated caption. Models that share a block and its gloss
+  # print it once. Models that share a block but not its gloss (a pscl
+  # hurdle with a binomial zero part beside one with a Poisson zero part)
+  # print each gloss, attributed to its model as the other per-model
+  # notes are: keeping only the first gloss read it into every column.
+  lines <- character(0)
+  for (k in unique(keys)) {
+    on <- which(keys == k)
+    if (length(unique(texts[on])) == 1L) {
+      lines <- c(lines, texts[on[1L]])
+    } else {
+      lines <- c(
+        lines,
+        vapply(
+          on,
+          function(j) .model_line(frames, idx[j], texts[j]),
+          character(1)
+        )
+      )
+    }
   }
   paste(lines, collapse = "\n")
 }
@@ -2125,12 +2311,19 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
     }
 
     new <- data.frame(
-      term = rows$term,
+      # A row of the table is keyed by its block and its coefficient
+      # ("Zero-inflation::(Intercept)"): each model fills only the rows of
+      # its own blocks, and the same coefficient of two engines' zero
+      # parts (the frames carry the bare coefficient name, no "zero_" /
+      # "zi." prefix) shares one row within a block. Keyed by the term
+      # alone, a zero-inflated and a hurdle fit printed each zero part
+      # under both blocks.
+      term = paste0(blk$label, "::", rows$term),
       # THE relay from the frame layer to the coefs layer: a component
       # block's `label` field (written by the glmmTMB / pscl frames from
-      # `.REG_BLOCK_ZI` / `_HURDLE` / `_DISP`) becomes the `parent_var`
-      # that every downstream site matches on. It is an identity string
-      # on both sides, so nothing is resolved here.
+      # `.REG_BLOCK_ZI` / `_HURDLE` / `_HURDLE_ZERO` / `_DISP`) becomes
+      # the `parent_var` that every downstream site matches on. It is an
+      # identity string on both sides, so nothing is resolved here.
       parent_var = blk$label,
       label = rows$label,
       factor_level_pos = seq_len(nrow(rows)),
@@ -2363,7 +2556,21 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
 
   lrt <- re$null_lrt
   lrt_part <- NULL
-  if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
+  if (
+    !is.null(lrt) &&
+      is.finite(lrt$chi2) &&
+      is.finite(lrt$df) &&
+      isTRUE(lrt$unnamed)
+  ) {
+    # A null without a short name (a glmmTMB fit with a random term in
+    # its zi or dispersion formula, which the null keeps): the test alone.
+    lrt_part <- spicy_fmt(
+      "note_re_lrt_unnamed",
+      as.integer(lrt$df),
+      .footer_num(lrt$chi2, 2L, decimal_mark),
+      format_p_value_for_panel(lrt$p_chibar2, decimal_mark)
+    )
+  } else if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
     p_str <- format_p_value_for_panel(lrt$p_chibar2, decimal_mark)
     # The null model in the table language, from the key its producer
     # chose; a frame built without one keeps its English label.
@@ -2371,9 +2578,20 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
       lrt$family_label %||% "no-random model"
     } else {
       # A number among the holes (the theta of a negative binomial) is
-      # formatted as the statistic beside it.
+      # formatted as the statistic beside it; a family hole (the null of
+      # a two-part glmmTMB fit) is written as the titles of the table
+      # language write the family, French two-part titles included
+      # (.fr_two_part(): "binomiale negative NB1 (modele hurdle)").
+      lang <- .spicy_language_option(getOption("spicy.language", "en"))
       args <- lapply(lrt$family_args, function(a) {
-        if (is.numeric(a)) .footer_num(a, 2L, decimal_mark) else a
+        if (is.numeric(a)) {
+          .footer_num(a, 2L, decimal_mark)
+        } else if (inherits(a, "spicy_family_hole")) {
+          word <- .title_family_word(a, lang)
+          if (identical(lang, "fr")) .fr_two_part(word) else word
+        } else {
+          a
+        }
       })
       do.call(spicy_fmt, c(list(lrt$family_key), args))
     }
@@ -2831,7 +3049,11 @@ build_exponentiate_footer_block_from_frames <- function(
 #   cf$is_intercept  -> derived (term == "(Intercept)")
 #   cf$is_reference  -> coefs$is_ref          (renamed)
 #   cf$p_value       -> coefs$p_value         (same)
-build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
+build_p_adjust_footer_block_from_frames <- function(
+  frames,
+  p_adjust,
+  show_columns = NULL
+) {
   if (
     identical(p_adjust, "none") ||
       is.null(p_adjust) ||
@@ -2840,45 +3062,75 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
   ) {
     return(NULL)
   }
-  sizes <- .p_adjust_family_sizes(frames)
+  fam <- .p_adjust_families(frames, show_columns)
+  .p_adjust_note_text(p_adjust, fam$m, fam$ame)
+}
+
+# The families of tests the p-value note counts, one size per model:
+# `m`, the family of the coefficients (or of the AME, when the table
+# shows only their p-values), and `ame`, the AME family of each model
+# that has one, when the table shows the AME p-values.
+.p_adjust_families <- function(frames, show_columns = NULL) {
+  # The size of one family of a model: the rows of one estimate type that
+  # apply_p_adjust_to_frame_coefs() adjusts together.
+  family_size <- function(f, type) {
+    cf <- f$coefs
+    if (is.null(cf) || nrow(cf) == 0L) {
+      return(0L)
+    }
+    # Mirror apply_p_adjust_to_frame_coefs() exactly: component-block
+    # intercepts ("Zero-inflation::(Intercept)", ...) are excluded
+    # from the family by their display LABEL -- counting them here made
+    # the footer's m overstate the adjustment actually performed.
+    # (label may be absent on synthetic frames; treat as non-intercept.)
+    # The cut-points of an ordinal model and the scale effects of a clm
+    # join the rows after the adjustment, outside its family.
+    lbl <- cf$label %||% rep(NA_character_, nrow(cf))
+    thr <- cf$is_threshold %||% rep(FALSE, nrow(cf))
+    pv <- cf$parent_var %||% rep(NA_character_, nrow(cf))
+    sum(
+      cf$estimate_type == type &
+        cf$term != "(Intercept)" &
+        !(lbl %in% "(Intercept)") &
+        !cf$is_ref &
+        !(thr %in% TRUE) &
+        !(pv %in% .REG_BLOCK_SCALE) &
+        !is.na(cf$p_value)
+    )
+  }
+  sizes <- vapply(frames, family_size, integer(1), type = "B")
+  # The AME p-values are a family of their own, which the note counts when
+  # the table shows them: as large as the coefficients' for a single
+  # outcome, k times larger for the AME on k outcome categories.
+  ame <- if ("ame_p" %in% show_columns) {
+    vapply(frames, family_size, integer(1), type = "ame")
+  } else {
+    integer(length(frames))
+  }
+  # A model with no AME (a Cox model, a fallback) has no family there.
+  ame <- ame[ame > 0L]
+  if (length(ame) > 0L && (all(sizes == 0L) || !"p" %in% show_columns)) {
+    sizes <- ame
+  }
+  list(m = sizes, ame = ame)
+}
+
+# The p-value note of families `m` and `ame` (`.p_adjust_families()`).
+.p_adjust_note_text <- function(p_adjust, m, ame = integer(0)) {
   # No coefficient tested, nothing adjusted: no sentence, as in the
   # descriptive tables.
-  if (all(sizes == 0L)) {
+  if (all(m == 0L)) {
     return(NULL)
   }
   # Each coefficient is a test, and the family is one model. The sentence
   # keeps its subject, "P-values adjusted ...": no "P-values:" lead comes
   # before it here, unlike in the descriptive tables
   # (`.desc_p_adjust_note()`).
-  .p_adjust_sentence(p_adjust, sizes)
-}
-
-# The size of the family of tests of each model: its coefficients with a
-# p-value, the intercepts and the reference levels apart.
-.p_adjust_family_sizes <- function(frames) {
-  vapply(
-    frames,
-    function(f) {
-      cf <- f$coefs
-      if (is.null(cf) || nrow(cf) == 0L) {
-        return(0L)
-      }
-      # Mirror apply_p_adjust_to_frame_coefs() exactly: component-block
-      # intercepts ("zero_(Intercept)", "zi.(Intercept)") are excluded
-      # from the family by their display LABEL -- counting them here made
-      # the footer's m overstate the adjustment actually performed.
-      # (label may be absent on synthetic frames; treat as non-intercept.)
-      lbl <- cf$label %||% rep(NA_character_, nrow(cf))
-      sum(
-        cf$estimate_type == "B" &
-          cf$term != "(Intercept)" &
-          !(lbl %in% "(Intercept)") &
-          !cf$is_ref &
-          !is.na(cf$p_value)
-      )
-    },
-    integer(1)
-  )
+  out <- .p_adjust_sentence(p_adjust, m)
+  if (length(ame) > 0L && !identical(ame, m)) {
+    out <- paste(out, .p_adjust_sentence(p_adjust, ame, ame = TRUE))
+  }
+  out
 }
 
 
@@ -3067,7 +3319,18 @@ build_reference_categories_footer_block_from_frames <- function(
         next
       }
       seen <- c(seen, key)
-      pairs <- c(pairs, sprintf("%s = %s", ft, lvl))
+      # The reference row of a component block carries its factor in its
+      # label ("mined: yes"): the pair is the block caption and that label,
+      # as the table shows them, so a caption with "=" in it ("Zero
+      # hurdle, Pr(y = 0)") never reads as the pair's equation.
+      pairs <- c(
+        pairs,
+        if (.reg_is_block(ft)) {
+          paste(spicy_fmt("label_block_header", .reg_block_label(ft)), lvl)
+        } else {
+          sprintf("%s = %s", ft, lvl)
+        }
+      )
     }
   }
   if (!length(pairs)) {

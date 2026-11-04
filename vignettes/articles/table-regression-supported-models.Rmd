@@ -179,17 +179,18 @@ Family by family:
   `"bootstrap"` / `"jackknife"` resampling estimators.
 * **Mixed effects** -- `lmer` and `nlme::lme` take `CR*` via
   `clubSandwich`. `glmmTMB` takes `CR0` from glmmTMB's own sandwich
-  (glmmTMB >= 1.1.15), for the coefficients and the zero-inflation and
-  dispersion blocks, clustered by default on the top-level grouping
-  factor of the random effects; `CR1`--`CR3`, `HC*`, REML fits and the
-  ordinal family are refused. The estimator needs independent clusters
+  (glmmTMB >= 1.1.15), and `CR1`, the same scaled by G/(G-1), for the
+  coefficients and the zero-inflation and dispersion blocks, clustered
+  by default on the top-level grouping factor of the random effects;
+  `CR2`, `CR3`, `HC*`, REML fits and the ordinal family are refused.
+  The estimator needs independent clusters
   that contain the random effects, every group within one cluster, so
   crossed random effects need a cluster that contains them all. It
   keeps the standard errors valid when the random-effects distribution
   or the conditional variance is misspecified, provided the estimates
   themselves stay consistent (Liang & Zeger 1986; Verbeke & Lesaffre
-  1997), and with few clusters it understates the variance, with no
-  small-sample correction for this class (Cameron & Miller 2015).
+  1997), and with few clusters it understates the variance, which the
+  factor of `CR1` offsets only in part (Cameron & Miller 2015).
   `glmer` and `gls` are model-based only (`clubSandwich` has no working
   backend for `glmer`, and its `gls` backend is not yet wired and
   validated in spicy).
@@ -216,7 +217,13 @@ Family by family:
   `sandwich::vcovCL()`.
 * **`gam` / `bam`, `betareg`, `pscl` two-part** -- `CR1` via
   `sandwich::vcovCL()`; zero-inflated and hurdle fits cluster both
-  components. For `gam` / `bam`, spicy forms the sandwich itself,
+  components. A negative-binomial `zeroinfl` or `hurdle` is
+  model-based only: the sandwich of these fits leaves out the score of
+  theta. With a negative-binomial count part, the glmmTMB fit takes
+  `CR0` and `CR1` (its zero hurdle is binomial). With a
+  negative-binomial zero hurdle alone, the default
+  `zero.dist = "binomial"` keeps `CR1`.
+  For `gam` / `bam`, spicy forms the sandwich itself,
   from the score and the penalized covariance of the fit, and
   `vcovCL()` only does the clustering arithmetic. For every
   `vcovCL()` class (these, the ordinal and categorical fits and

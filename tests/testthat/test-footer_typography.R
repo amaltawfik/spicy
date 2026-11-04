@@ -42,12 +42,14 @@ test_that("the compact thresholds footer follows the mark", {
     spicy:::build_ordinal_thresholds_footer_block_from_frames(list(fr)),
     "Thresholds: 1|2 = -1.34, 2|3 = 1.25, 3|4 = 3.47."
   )
+  # Under a comma the cut-points are separated by a semicolon, which no
+  # decimal comma can be mistaken for.
   expect_identical(
     spicy:::build_ordinal_thresholds_footer_block_from_frames(
       list(fr),
       decimal_mark = ","
     ),
-    "Thresholds: 1|2 = -1,34, 2|3 = 1,25, 3|4 = 3,47."
+    "Thresholds: 1|2 = -1,34; 2|3 = 1,25; 3|4 = 3,47."
   )
 })
 
@@ -144,6 +146,29 @@ test_that("the flexsurv auxiliary parameters follow the mark", {
       decimal_mark = ","
     ),
     "Distribution: Weibull; shape = 1,33, scale = 531,05."
+  )
+})
+
+test_that("a small flexsurv parameter keeps two significant digits, never 0.00", {
+  # Gompertz shape and rate of the lung data, on a day axis: two decimals
+  # wrote both "0.00". Expected values rounded by hand.
+  fr <- .ft_frame(
+    "flexsurvreg",
+    list(
+      distribution = "gompertz",
+      aux_parameters = c(shape = 0.001394352, rate = 0.0002432249)
+    )
+  )
+  expect_identical(
+    spicy:::build_survival_footer_block_from_frames(list(fr)),
+    "Distribution: Gompertz; shape = 0.0014, rate = 0.00024."
+  )
+  expect_identical(
+    spicy:::build_survival_footer_block_from_frames(
+      list(fr),
+      decimal_mark = ","
+    ),
+    "Distribution: Gompertz; shape = 0,0014, rate = 0,00024."
   )
 })
 

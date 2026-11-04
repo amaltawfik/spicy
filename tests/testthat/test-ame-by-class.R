@@ -98,10 +98,42 @@ test_that("betareg AME matches avg_slopes (single-outcome, lean frame)", {
 
 test_that("gam AME matches avg_slopes (single-outcome)", {
   skip_if_not_installed("mgcv")
-  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("marginaleffects", "1.0.0")
   d <- make_d()
   fit <- mgcv::gam(y ~ x1 + f, data = d)
-  xval_single(as_regression_frame(fit, show_columns = c("b", "ame")), fit)
+  # The oracle is given the data: a gam's formula has the global
+  # environment, where marginaleffects would look `d` up.
+  xval_single(
+    as_regression_frame(fit, show_columns = c("b", "ame")),
+    marginaleffects::set_modeldata(fit, d)
+  )
+})
+
+test_that("gam AME use the fit's data, not a global object of the same name", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("marginaleffects", "1.0.0")
+  # mgcv gives a gam's formula the global environment. A gam fitted on a
+  # local data set must not take its AME over a global object that has
+  # the same name (and here the same columns, x1 shifted).
+  nm <- "spicy_gam_ame_data"
+  skip_if(exists(nm, envir = globalenv(), inherits = FALSE))
+  d <- make_d()
+  d$y <- 1 + d$x1^2 + stats::rnorm(nrow(d))
+  fit <- local({
+    spicy_gam_ame_data <- d
+    mgcv::gam(y ~ s(x1) + f, data = spicy_gam_ame_data)
+  })
+  decoy <- d
+  decoy$x1 <- decoy$x1 + 3
+  assign(nm, decoy, envir = globalenv())
+  withr::defer(rm(list = nm, envir = globalenv()))
+  a <- ame_rows(as_regression_frame(fit, show_columns = c("b", "ame")))
+  orc <- as.data.frame(marginaleffects::avg_slopes(fit, newdata = d))
+  idx <- match(a$term, oracle_term_id(orc))
+  expect_false(anyNA(idx))
+  expect_identical(nrow(a), nrow(orc))
+  expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
 
 test_that("svyglm AME matches avg_slopes (design-based, single-outcome)", {
@@ -329,8 +361,9 @@ test_that("glmmTMB AME is model-based and pinned; CR2 is refused up front", {
   d$g <- factor(sample(14, nrow(d), TRUE))
   fit <- glmmTMB::glmmTMB(y ~ x1 + f + (1 | g), data = d)
   am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
-  # CR2 never reaches the AME path: glmmTMB's sandwich has one type, CR0,
-  # so compute_model_vcov() refuses before any fallback could happen.
+  # CR2 never reaches the AME path: glmmTMB's sandwich gives CR0 and its
+  # CR1 scaling only, so compute_model_vcov() refuses before any fallback
+  # could happen.
   expect_error(
     as_regression_frame(
       fit,
@@ -351,7 +384,7 @@ test_that("glmmTMB AME is model-based and pinned; CR2 is refused up front", {
   expect_equal(am$std_error, orc$std.error[idx], tolerance = 1e-10)
 })
 
-test_that("glmmTMB CR0 AME: marginaleffects' delta method on the sandwich", {
+test_that("glmmTMB CR0 / CR1 AME: marginaleffects' delta method on the sandwich", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   skip_if_not_installed("marginaleffects", "0.29.0")
   d <- make_d()
@@ -379,6 +412,25 @@ test_that("glmmTMB CR0 AME: marginaleffects' delta method on the sandwich", {
   expect_equal(a1$std_error, orc$std.error[idx], tolerance = 1e-10)
   expect_equal(a1$p_value, orc$p.value[idx], tolerance = 1e-8)
   expect_equal(a1$ci_lower, orc$conf.low[idx], tolerance = 1e-10)
+  # CR1 scales the matrix by G / (G - 1): the AME SEs by its square root.
+  G <- length(unique(d$g))
+  a2 <- ame_rows(as_regression_frame(fit, vcov = "CR1", show_columns = "ame"))
+  idx2 <- match(a2$term, oracle_term_id(orc))
+  se2 <- orc$std.error[idx2] * sqrt(G / (G - 1))
+  expect_equal(a2$std_error, se2, tolerance = 1e-8)
+  # Wald z on that SE: p and the 95% CI by hand.
+  z2 <- orc$estimate[idx2] / se2
+  expect_equal(a2$p_value, 2 * stats::pnorm(-abs(z2)), tolerance = 1e-8)
+  expect_equal(
+    a2$ci_lower,
+    orc$estimate[idx2] - stats::qnorm(0.975) * se2,
+    tolerance = 1e-8
+  )
+  expect_equal(
+    a2$ci_upper,
+    orc$estimate[idx2] + stats::qnorm(0.975) * se2,
+    tolerance = 1e-8
+  )
   # The same matrix as the coefficient rows: J V J' with V the CR0 matrix.
   ref <- suppressWarnings(marginaleffects::avg_slopes(fit))
   J <- marginaleffects::components(ref, "jacobian")

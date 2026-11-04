@@ -838,10 +838,15 @@ table_stack <- function(
     adj <- lapply(parts[auto], function(p) p$models$p_adjust)
     method <- unique(unlist(lapply(adj, `[[`, "method")))
     m <- unlist(lapply(adj, `[[`, "m"))
+    ame <- unlist(lapply(adj, `[[`, "ame")) %||% integer(0)
     if (length(method) == 1L && length(m) == sum(auto) && all(m > 0L)) {
-      whole <- .p_adjust_sentence(method, m)
+      whole <- .p_adjust_note_text(method, m, ame)
       for (j in which(auto)) {
-        own <- .p_adjust_sentence(method, parts[[j]]$models$p_adjust$m)
+        own <- .p_adjust_note_text(
+          method,
+          parts[[j]]$models$p_adjust$m,
+          parts[[j]]$models$p_adjust$ame
+        )
         inf <- parts[[j]]$inference
         parts[[j]]$inference[inf %in% own] <- whole
       }

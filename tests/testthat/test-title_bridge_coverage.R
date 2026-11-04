@@ -5,9 +5,65 @@
 # but it is a gap in the language. The prefixes are enumerated by
 # calling each engine's title helper with every family, link and
 # distribution it can receive, with no model fitted; a title an engine
-# sets as a fixed string is listed with the engine that sets it.
+# sets as a fixed string is listed with the engine that sets it, and read
+# from the sources as well.
 
 .bridge_keys <- function() names(spicy:::.FR_TITLE_PREFIXES)
+
+# The title prefixes the sources write as string literals: the value of a
+# `title_prefix =` argument or of an `$title_prefix <-` assignment, or of
+# a branch of it (`if` / `else`, `%||%`, `{`). A prefix built by a helper
+# (a call) is enumerated by calling the helper below.
+.literal_prefixes <- function(r_dir) {
+  leaves <- function(e) {
+    if (is.character(e) && length(e) == 1L) {
+      return(e)
+    }
+    if (!is.call(e)) {
+      return(character(0))
+    }
+    fn <- e[[1L]]
+    if (identical(fn, as.name("if"))) {
+      return(unlist(lapply(as.list(e)[-c(1L, 2L)], leaves)))
+    }
+    if (identical(fn, as.name("{")) && length(e) > 1L) {
+      return(leaves(e[[length(e)]]))
+    }
+    if (identical(fn, as.name("%||%")) || identical(fn, as.name("("))) {
+      return(unlist(lapply(as.list(e)[-1L], leaves)))
+    }
+    character(0)
+  }
+  found <- character(0)
+  walk <- function(e) {
+    if (!is.call(e)) {
+      return(invisible(NULL))
+    }
+    fn <- e[[1L]]
+    is_assign <- identical(fn, as.name("<-")) || identical(fn, as.name("="))
+    if (
+      is_assign && is.call(e[[2L]]) && identical(e[[2L]][[1L]], as.name("$"))
+    ) {
+      if (identical(e[[2L]][[3L]], as.name("title_prefix"))) {
+        found <<- c(found, leaves(e[[3L]]))
+      }
+    }
+    nms <- names(e)
+    for (i in seq_along(e)) {
+      if (!is.null(nms) && identical(nms[i], "title_prefix")) {
+        found <<- c(found, leaves(e[[i]]))
+      }
+      if (is.call(e[[i]])) walk(e[[i]])
+    }
+    invisible(NULL)
+  }
+  for (f in list.files(r_dir, pattern = "[.]R$", full.names = TRUE)) {
+    for (e in parse(f, keep.source = FALSE, encoding = "UTF-8")) {
+      walk(e)
+    }
+  }
+  unique(found)
+}
 
 .expect_bridged <- function(prefixes) {
   missing <- setdiff(unique(prefixes), .bridge_keys())
@@ -93,6 +149,29 @@ test_that("the fixed titles are bridged", {
   ))
 })
 
+test_that("the title literals of the sources are bridged", {
+  # Read from R/, so that renaming a fixed title in an engine cannot pass
+  # unseen: the list above is hand-kept. Only meaningful against the
+  # sources (a known source file is probed, as test-i18n.R does).
+  r_dir <- testthat::test_path("..", "..", "R")
+  skip_if_not(
+    file.exists(file.path(r_dir, "regression_frame_lm.R")),
+    "package sources not available"
+  )
+  found <- .literal_prefixes(r_dir)
+  # The walker reaches the sites it was written for: an argument, an
+  # assignment and an `if` branch.
+  expect_true(all(
+    c(
+      "Heckman selection model",
+      "Tobit regression",
+      "Cumulative complementary log-log mixed-effects regression"
+    ) %in%
+      found
+  ))
+  .expect_bridged(found)
+})
+
 test_that("the glm titles are bridged", {
   .expect_bridged(.titles(.fams(), function(f) {
     spicy:::spicy_glm_title_prefix(f$family, f$link)
@@ -106,26 +185,59 @@ test_that("the rms Glm titles are bridged", {
 })
 
 test_that("the fixest titles are bridged", {
-  .expect_bridged(c(
-    spicy:::.fixest_title_prefix(
-      list(family = "gaussian", link = "identity"),
-      is_glm = FALSE
-    ),
-    # fenegbin and femlm(family = "negbin").
-    spicy:::.fixest_title_prefix(
-      list(family = "negbin", link = "log"),
-      is_glm = TRUE
-    ),
-    .titles(.fams(), spicy:::.fixest_title_prefix, is_glm = TRUE)
-  ))
+  # With fixed effects and without them (a fit without them takes the
+  # plain title of its family).
+  for (has_fe in c(TRUE, FALSE)) {
+    .expect_bridged(c(
+      spicy:::.fixest_title_prefix(
+        list(family = "gaussian", link = "identity"),
+        is_glm = FALSE,
+        has_fe = has_fe
+      ),
+      # The second stage of an IV feols.
+      spicy:::.fixest_title_prefix(
+        list(family = "gaussian", link = "identity"),
+        is_glm = FALSE,
+        has_fe = has_fe,
+        is_iv = TRUE
+      ),
+      # fenegbin and femlm(family = "negbin").
+      spicy:::.fixest_title_prefix(
+        list(family = "negbin", link = "log"),
+        is_glm = TRUE,
+        has_fe = has_fe
+      ),
+      .titles(
+        .fams(),
+        spicy:::.fixest_title_prefix,
+        is_glm = TRUE,
+        has_fe = has_fe
+      )
+    ))
+  }
 })
 
 test_that("the estimatr titles are bridged", {
   se <- c("classical", "none", "HC0", "HC1", "HC2", "HC3", "stata", "CR2")
-  .expect_bridged(c(
-    vapply(se, spicy:::.estimatr_title_prefix, character(1), is_iv = FALSE),
-    vapply(se, spicy:::.estimatr_title_prefix, character(1), is_iv = TRUE)
-  ))
+  # With absorbed fixed effects (`fixed_effects = ~ f`) and without them.
+  for (has_fe in c(TRUE, FALSE)) {
+    .expect_bridged(c(
+      vapply(
+        se,
+        spicy:::.estimatr_title_prefix,
+        character(1),
+        is_iv = FALSE,
+        has_fe = has_fe
+      ),
+      vapply(
+        se,
+        spicy:::.estimatr_title_prefix,
+        character(1),
+        is_iv = TRUE,
+        has_fe = has_fe
+      )
+    ))
+  }
 })
 
 test_that("the GEE titles are bridged", {
@@ -156,9 +268,21 @@ test_that("the GAM titles are bridged", {
     list(family = "Scaled t(7.075,0.327)", link = "identity"),
     list(family = "Zero inflated Poisson(0.172,0)", link = "identity"),
     list(family = "Ordered Categorical(-1,2.95)", link = "identity"),
-    list(family = "gaulss", link = "identity")
+    list(family = "Cox PH", link = "identity"),
+    list(family = "cnorm(1.254)", link = "identity"),
+    list(family = "clog(0.726)", link = "identity"),
+    list(family = "cpois", link = "log")
   )
-  .expect_bridged(c(.titles(.fams(), gam), .titles(extended, gam)))
+  # The location-scale and multi-formula families (gaulss, ziplss, ...)
+  # are refused before any title (.gam_refuse_multi_formula()); a family
+  # no title knows keeps its R name and the whole English title, so it is
+  # not enumerated.
+  glm <- .fams(setdiff(names(.glm_links), "tweedie"))
+  .expect_bridged(c(.titles(glm, gam), .titles(extended, gam)))
+  expect_identical(
+    gam(list(family = "tweedie", link = "log")),
+    "Generalized additive model (GAM, tweedie)"
+  )
 })
 
 test_that("the lme4 titles are bridged", {
@@ -180,9 +304,10 @@ test_that("the lme4 titles are bridged", {
 
 test_that("the glmmTMB titles are bridged", {
   # Every family of the label table, alone and with a zero-inflation
-  # formula (a zero-truncated family with one is a hurdle model), and
-  # the ordinal family on the links glmmTMB fits it with (no
-  # zero-inflation: "not implemented for the ordinal family").
+  # formula (a zero-truncated family or a Gamma with one is a hurdle
+  # model), and the ordinal family on the links glmmTMB fits it with (no
+  # zero-inflation: "not implemented for the ordinal family"); each with
+  # random effects and without (the fixed-effects title of the family).
   fams <- c(
     .fams(c("gaussian", "binomial")),
     lapply(names(spicy:::.GLMMTMB_FAMILY_LABELS), function(f) {
@@ -192,11 +317,16 @@ test_that("the glmmTMB titles are bridged", {
   ordinal <- lapply(c("logit", "probit", "cloglog"), function(l) {
     list(family = "ordinal", link = l)
   })
-  .expect_bridged(c(
-    .titles(fams, spicy:::.glmmTMB_title_prefix, has_zi = FALSE),
-    .titles(fams, spicy:::.glmmTMB_title_prefix, has_zi = TRUE),
-    .titles(ordinal, spicy:::.glmmTMB_title_prefix, has_zi = FALSE)
-  ))
+  titles <- function(mixed) {
+    c(
+      .titles(fams, spicy:::.glmmTMB_title_prefix, FALSE, mixed = mixed),
+      .titles(fams, spicy:::.glmmTMB_title_prefix, TRUE, mixed = mixed),
+      .titles(ordinal, spicy:::.glmmTMB_title_prefix, FALSE, mixed = mixed)
+    )
+  }
+  # The two sets differ, so the second is enumerated, not assumed.
+  expect_false(any(titles(FALSE) %in% titles(TRUE)))
+  .expect_bridged(c(titles(TRUE), titles(FALSE)))
 })
 
 test_that("the cumulative-link titles are bridged", {
@@ -262,11 +392,16 @@ test_that("the parametric survival titles are bridged", {
     "llogis",
     "survspline"
   )
+  # A survreg distribution is titled by the scale survival fits it on
+  # (an AFT model of log T, or a censored regression of T itself).
+  survreg_title <- function(d) {
+    spicy:::.survreg_title_prefix(
+      d,
+      spicy:::.survreg_dist(list(dist = d))$raw_time
+    )
+  }
   .expect_bridged(c(
-    paste0(
-      vapply(survreg, spicy:::.survreg_dist_title, character(1)),
-      " AFT regression"
-    ),
+    vapply(survreg, survreg_title, character(1)),
     vapply(flexsurv, spicy:::.flexsurv_title_prefix, character(1))
   ))
 })
@@ -298,8 +433,9 @@ test_that("the Bayesian titles are bridged", {
       "zero_inflated_negbinomial",
       "hurdle_poisson",
       "hurdle_negbinomial",
-      # A family the title does not know.
-      "cumulative"
+      # A family the title does not know (the ordinal and categorical
+      # families of brms are refused, .brms_refuse_ordinal()).
+      "frechet"
     ),
     function(f) list(family = f, link = "log")
   )
@@ -312,23 +448,75 @@ test_that("the Bayesian titles are bridged", {
 })
 
 test_that("the univariable screen titles are bridged", {
-  # The screen's title runs its prefix through the bridge capitalized.
-  # A family the glm title does not know keeps its R name and the whole
-  # English title, so it is not enumerated.
-  glm <- Filter(
-    function(f) {
-      !identical(f$family, "tweedie") &&
+  # The screen's title runs its prefix through the bridge capitalized,
+  # the Tweedie families of statmod ("Tweedie") and mgcv ("Tweedie(1.5)")
+  # included. The Cox model has whole templates of its own.
+  glm <- c(
+    Filter(
+      function(f) {
         !(identical(f$family, "gaussian") && identical(f$link, "identity"))
-    },
-    .fams()
+      },
+      .fams()
+    ),
+    list(
+      list(family = "Tweedie", link = "mu^0"),
+      list(family = "Tweedie(1.5)", link = "log")
+    )
   )
   .expect_bridged(c(
     spicy:::capitalize_first(spicy:::.uv_title_prefix("lm", NULL)),
-    spicy:::capitalize_first(spicy:::.uv_title_prefix("coxph", NULL)),
     .titles(glm, function(f) {
       spicy:::capitalize_first(spicy:::.uv_title_prefix("glm", f))
     })
   ))
+})
+
+test_that("a univariable screen of an unknown family keeps a French title", {
+  # A family no title knows: poisson renamed. English names it by its R
+  # name; French falls back to the generic title, never to English.
+  fam <- stats::poisson()
+  fam$family <- "foo"
+  d <- mtcars
+  d$cnt <- round(d$mpg)
+  screen <- function(multivariable) {
+    attr(
+      table_regression_uv(
+        d,
+        outcome = "cnt",
+        predictors = c("wt", "hp"),
+        family = fam,
+        multivariable = multivariable
+      ),
+      "title"
+    )
+  }
+  expect_identical(
+    screen(TRUE),
+    "Univariable and multivariable foo regression: cnt"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    screen(TRUE),
+    "Régression univariable et multivariable\u00a0: cnt"
+  )
+  expect_identical(
+    screen(FALSE),
+    "Régression univariable (présélection)\u00a0: cnt"
+  )
+})
+
+test_that("a French title spells out its method, without an English acronym", {
+  fr <- spicy:::.FR_TITLE_PREFIXES
+  expect_false(any(grepl("(PH)", fr, fixed = TRUE)))
+  expect_false(any(grepl("2SLS", fr, fixed = TRUE)))
+  expect_identical(
+    unname(fr["Weibull (PH) parametric survival regression"]),
+    "Régression de survie paramétrique de Weibull (risques proportionnels)"
+  )
+  expect_identical(
+    unname(fr["IV regression (2SLS)"]),
+    "Régression par variables instrumentales (doubles moindres carrés)"
+  )
 })
 
 test_that("the quantile title translates, its tau in the decimal comma", {
@@ -339,5 +527,37 @@ test_that("the quantile title translates, its tau in the decimal comma", {
       0.5
     )),
     "Régression quantile (τ = 0,50)"
+  )
+  # A tau with three decimals keeps them.
+  expect_identical(
+    spicy:::.title_prefix_display("Quantile regression (τ = 0.975)"),
+    "Régression quantile (τ = 0,975)"
+  )
+})
+
+test_that("a French table of quantile regressions keeps the decimals of tau", {
+  skip_if_not_installed("quantreg")
+  set.seed(1)
+  d <- data.frame(y = stats::rnorm(200), x = stats::rnorm(200))
+  q975 <- quantreg::rq(y ~ x, tau = 0.975, data = d)
+  withr::local_options(spicy.language = "fr")
+  tbl <- table_regression(q975)
+  expect_identical(
+    attr(tbl, "title"),
+    "Régression quantile (τ = 0,975)\u00a0: y"
+  )
+  expect_match(
+    attr(tbl, "note"),
+    "Note. Régression quantile (τ = 0,975).",
+    fixed = TRUE
+  )
+  # A mixed-type table (lm + rq) keeps the English title and type line
+  # (coherent or nothing, decision 42), the tau in the table's mark.
+  mixed <- table_regression(list(stats::lm(y ~ x, data = d), q975))
+  expect_identical(attr(mixed, "title"), "Regression comparison: y")
+  expect_match(
+    attr(mixed, "note"),
+    "Model 1: linear regression; Model 2: quantile regression (τ = 0,975).",
+    fixed = TRUE
   )
 })

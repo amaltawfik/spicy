@@ -52,7 +52,7 @@ Clustered or repeated ratings take a cumulative-link mixed model:
 described below and add the *Random effects* block of [*Mixed-effects
 regression tables*](table-regression-mixed.html). They take the
 model-based variance only, without average marginal effects:
-`vcov = "CR0"` and the AME columns are refused for both, so the
+`vcov = "CR0"` or `"CR1"` and the AME columns are refused for both, so the
 cluster-robust and marginal-effects sections below apply to `polr` and
 `clm`.
 

@@ -136,7 +136,7 @@ test_that(".geeglm_title_prefix names the family as the glm title does", {
   )
   # A family the glm source does not know is not named.
   expect_identical(
-    title("Tweedie", "log"),
+    title("foo", "log"),
     "Population-averaged regression (GEE)"
   )
 })

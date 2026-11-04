@@ -7,8 +7,11 @@
   qu'un « Bug in loglog-link for clmm fits fixed » de 2010 (ancien code).
 - **Envoyé** : 2026-10-09, issue [#76](https://github.com/runehaubo/ordinal/issues/76)
 - **Statut** : ouvert
-- **Côté spicy** : regression_frame_ordinal.R, méthode clmm : `exponentiate`
-  refusé sous cloglog, titre sans « proportional hazards »
+- **Côté spicy** : regression_frame_ordinal.R, méthode clmm : sur le
+  chemin à intercept aléatoire unique seulement, `exponentiate` refusé
+  sous cloglog et titre sans « proportional hazards » ; le nul du test
+  LR des effets aléatoires est réajusté avec le lien effectivement
+  estimé
 - **Vérifications, toutes refaites par moi le 2026-10-09** : chaque
   numéro de ligne lu dans le tarball CRAN ; chaîne d'appel suivie dans
   le code (clmm.ssr.R → NRalgv3 ligne 252, getNAGQ 199, getNGHQ_C 165 →

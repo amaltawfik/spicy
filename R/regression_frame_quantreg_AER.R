@@ -352,8 +352,13 @@ as_regression_frame.rq <- function(
     # it translates "Quantile regression" and writes the tau back in
     # the language's decimal mark. When 251-C makes the prefix a
     # registry key with the tau as data, the tau follows the table's
-    # mark for free -- that is the fix, not a `chartr()` on a key.
-    title_prefix = sprintf("Quantile regression (\u03C4 = %.2f)", tau),
+    # mark for free -- that is the fix, not a `chartr()` on a key. The
+    # key keeps the tau exact (.rq_tau_num(), up to fifteen decimals), so
+    # two quantiles never share a type; a title shows four at most.
+    title_prefix = sprintf(
+      "Quantile regression (\u03C4 = %s)",
+      .rq_tau_num(tau, 15L)
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     tau = tau,

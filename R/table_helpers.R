@@ -180,8 +180,10 @@ resolve_variable_labels <- function(data, cols, labels) {
 # goes on without them: one vector can still serve every table of a
 # project, and a typo no longer passes in silence. `given` are the names
 # the argument holds, `known` what they can name in this table. A name
-# given twice is the error of each argument's own validator.
-.warn_unknown_names <- function(arg, given, known) {
+# given twice is the error of each argument's own validator. `hint`, a
+# last line, lists the names a regression table builds from its models,
+# which the reader does not type and may not know.
+.warn_unknown_names <- function(arg, given, known, hint = NULL) {
   unknown <- unique(setdiff(given, known))
   if (!length(unknown)) {
     return(invisible(character(0)))
@@ -199,7 +201,8 @@ resolve_variable_labels <- function(data, cols, labels) {
       "i" = paste(
         if (one) "It is ignored." else "They are ignored.",
         "Check the spelling, or wrap the call in `suppressWarnings()` when one vector serves several tables."
-      )
+      ),
+      if (!is.null(hint)) c("i" = hint)
     ),
     class = "spicy_unknown_name"
   )
@@ -210,12 +213,12 @@ resolve_variable_labels <- function(data, cols, labels) {
 # can name in the table (`.warn_unknown_names()`): the variables of a
 # descriptive table, the outcomes, terms and coefficients of a regression
 # table. TRUE and FALSE name nothing.
-.warn_unknown_label_names <- function(cols, labels, note_labels) {
+.warn_unknown_label_names <- function(cols, labels, note_labels, hint = NULL) {
   if (is.character(labels)) {
-    .warn_unknown_names("labels", names(labels), cols)
+    .warn_unknown_names("labels", names(labels), cols, hint)
   }
   if (length(note_labels)) {
-    .warn_unknown_names("note_labels", names(note_labels), cols)
+    .warn_unknown_names("note_labels", names(note_labels), cols, hint)
   }
   invisible(NULL)
 }
@@ -1359,31 +1362,42 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # several models are adjusted within each model, and when their counts
 # differ the sentence gives them in the order of the models, "2 and 1
 # tests respectively". A family of one test has its own keys, so no
-# language needs a plural rule.
-.p_adjust_sentence <- function(method, m) {
+# language needs a plural rule. `ame = TRUE` words the sentence of the
+# AME p-values, for a table that shows them beside the coefficients'
+# when the two families differ in size.
+.p_adjust_sentence <- function(method, m, ame = FALSE) {
   method_name <- .p_adjust_method_name(method)
+  key <- if (ame) {
+    c(
+      one = "note_p_adjusted_ame_one",
+      many = "note_p_adjusted_ame",
+      per_model_one = "note_p_adjusted_ame_per_model_one",
+      per_model = "note_p_adjusted_ame_per_model",
+      unequal = "note_p_adjusted_ame_per_model_unequal"
+    )
+  } else {
+    c(
+      one = "note_p_adjusted_one",
+      many = "note_p_adjusted",
+      per_model_one = "note_p_adjusted_per_model_one",
+      per_model = "note_p_adjusted_per_model",
+      unequal = "note_p_adjusted_per_model_unequal"
+    )
+  }
   one <- all(m == 1L)
   if (length(m) == 1L) {
     if (one) {
-      return(spicy_fmt("note_p_adjusted_one", method_name))
+      return(spicy_fmt(key[["one"]], method_name))
     }
-    return(spicy_fmt("note_p_adjusted", as.character(m), method_name))
+    return(spicy_fmt(key[["many"]], as.character(m), method_name))
   }
   if (one) {
-    return(spicy_fmt("note_p_adjusted_per_model_one", method_name))
+    return(spicy_fmt(key[["per_model_one"]], method_name))
   }
   if (length(unique(m)) == 1L) {
-    return(spicy_fmt(
-      "note_p_adjusted_per_model",
-      as.character(m[[1L]]),
-      method_name
-    ))
+    return(spicy_fmt(key[["per_model"]], as.character(m[[1L]]), method_name))
   }
-  spicy_fmt(
-    "note_p_adjusted_per_model_unequal",
-    method_name,
-    .join_and(as.character(m))
-  )
+  spicy_fmt(key[["unequal"]], method_name, .join_and(as.character(m)))
 }
 
 # A list of items joined with the conjunction of the language: "2 and 1",

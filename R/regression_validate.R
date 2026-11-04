@@ -100,8 +100,8 @@
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur",
     # NB2 negative-binomial dispersion (glm.nb, glmer.nb, fixest
-    # fenegbin, glmmTMB nbinom2): theta (V = mu + mu^2/theta) and
-    # alpha = 1/theta.
+    # fenegbin, mgcv nb(), pscl negbin, glmmTMB nbinom2): theta
+    # (V = mu + mu^2/theta) and alpha = 1/theta.
     "theta",
     "alpha",
     # NB1 negative-binomial dispersion (glmmTMB nbinom1): delta, with
@@ -109,9 +109,10 @@
     # Hilbe, but "alpha" is already NB2's 1/theta here, so it takes the
     # name Stata gives it (`nbreg, dispersion(constant)`).
     "delta",
-    # Beta-regression precision (betareg, glmmTMB beta, betabinomial and
-    # ordbeta): phi (Ferrari & Cribari-Neto 2004; Var(y) =
-    # mu(1-mu)/(1+phi)).
+    # Beta precision phi: of beta regression (betareg, mgcv betar(),
+    # glmmTMB beta; Ferrari & Cribari-Neto 2004, Var(y) =
+    # mu(1-mu)/(1+phi)), and of the beta part of glmmTMB's betabinomial
+    # and ordbeta.
     "phi",
     # GEE (geepack::geeglm) only: quasi-likelihood information
     # criteria (Pan 2001), the estimated scale (dispersion)
@@ -350,6 +351,27 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
   }
 
   models
+}
+
+# The scope refusals of the model frames, run by table_regression() on
+# every model before it resolves any argument against them: an ordinal
+# or categorical Bayesian fit (.stan_refuse_ordinal(),
+# .brms_refuse_ordinal()) and a GAM with several linear predictors
+# (.gam_refuse_multi_formula()). Run later, the refusal of an ordinal
+# stan_polr fit was hidden by the Bayesian fit-statistics gate, which
+# refused the ordinal defaults the user never asked for. Each frame
+# method runs its own as well, so as_regression_frame() refuses alike.
+.refuse_out_of_scope_model <- function(fit) {
+  if (inherits(fit, "stanreg")) {
+    .stan_refuse_ordinal(fit)
+  }
+  if (inherits(fit, "brmsfit")) {
+    .brms_refuse_ordinal(fit)
+  }
+  if (inherits(fit, "gam")) {
+    .gam_refuse_multi_formula(fit)
+  }
+  invisible(NULL)
 }
 
 # Per-fit class classifier: NULL if OK, message string otherwise.
@@ -860,6 +882,12 @@ validate_vcov_cluster_lists <- function(
           call = call
         )
       }
+      # Negative-binomial pscl fits: the sandwich has no score for theta
+      # (R/vcov.R). Sandwich tokens only: the resamplers are refused
+      # below for a reason of their own.
+      if (.pscl_is_negbin(models[[i]]) && grepl("^(HC|CR)", vt)) {
+        .pscl_negbin_refuse_vcov(models[[i]], vt, call = call)
+      }
       # multinom / mlogit HC*: name the reason instead of a bare
       # supported-types list -- the refusal is statistical, not a
       # not-yet-wired gap.
@@ -1042,8 +1070,9 @@ validate_vcov_cluster_lists <- function(
           call = call
         )
       }
-      # glmmTMB: one estimator, CR0, through glmmTMB's own sandwich; every
-      # other token is refused with its reason (R/vcov_glmmTMB.R).
+      # glmmTMB: CR0 through glmmTMB's own sandwich, and CR1, its G/(G-1)
+      # scaling; every other token is refused with its reason
+      # (R/vcov_glmmTMB.R).
       if (inherits(models[[i]], "glmmTMB")) {
         .glmmTMB_refuse_vcov(models[[i]], vt, call = call)
       }
@@ -1260,7 +1289,25 @@ validate_vcov_cluster_lists <- function(
           "summary(fit, vcov = ~cluster_var)."
         )
       } else if (inherits(models[[i]], "glmmTMB")) {
-        "Set `vcov` to `\"CR0\"` to use the cluster vector for cluster-robust SE."
+        paste0(
+          "Set `vcov` to `\"CR0\"` or `\"CR1\"` to use the cluster vector ",
+          "for cluster-robust SE."
+        )
+      } else if (.pscl_is_negbin(models[[i]])) {
+        # Its one cluster token, CR1, is refused (R/vcov.R).
+        if (.pscl_count_is_negbin(models[[i]])) {
+          paste0(
+            "This negative-binomial fit has no cluster-robust `vcov`: fit ",
+            "it with glmmTMB to use `vcov = \"CR1\"` with the cluster vector.",
+            .pscl_glmmTMB_zero_note(models[[i]])
+          )
+        } else {
+          paste0(
+            "This negative-binomial zero hurdle has no cluster-robust ",
+            "`vcov`: refit with `zero.dist = \"binomial\"` to use ",
+            "`vcov = \"CR1\"` with the cluster vector."
+          )
+        }
       } else if (!is.null(.single_cluster_token(models[[i]]))) {
         sprintf(
           "Set `vcov` to `\"%s\"` to use the cluster vector for cluster-robust SE.",
@@ -1351,7 +1398,10 @@ validate_show_columns <- function(
 # Fits whose dispersion is the NB2 theta (the "theta" / "alpha" rows),
 # the NB1 delta (the "delta" row), and fits whose precision is the beta
 # phi (the "phi" row). A pre-frame class sniff, like
-# absorbs_fixed_effects() below.
+# absorbs_fixed_effects() below. A theta or phi fixed in the call is not
+# an estimate and has no row: glm's negative.binomial(theta), mgcv's
+# negbin(theta), nb(theta) and betar(theta). A negative-binomial glmer
+# always has the row (.glmer_is_nb()).
 .is_nb2_fit <- function(model) {
   if (inherits(model, "negbin")) {
     return(TRUE)
@@ -1363,17 +1413,21 @@ validate_show_columns <- function(
       is.character(model$family) && identical(model$family[[1L]], "negbin")
     )
   }
-  # mgcv's nb() estimates theta; negbin(theta) fixes it, as glm's
-  # negative.binomial(theta) does, and has no theta row.
+  # pscl: the theta of a negative-binomial count part.
+  if (inherits(model, c("zeroinfl", "hurdle"))) {
+    return(.pscl_count_is_negbin(model))
+  }
   if (inherits(model, "gam")) {
     return(.gam_is_nb_estimated(model))
   }
-  fam <- tryCatch(stats::family(model)$family, error = function(e) "")
   if (inherits(model, "glmerMod")) {
-    return(isTRUE(startsWith(fam, "Negative Binomial(")))
+    return(.glmer_is_nb(model))
   }
   inherits(model, "glmmTMB") &&
-    isTRUE(fam %in% c("nbinom2", "truncated_nbinom2"))
+    isTRUE(
+      tryCatch(stats::family(model)$family, error = function(e) "") %in%
+        c("nbinom2", "truncated_nbinom2")
+    )
 }
 
 .is_nb1_fit <- function(model) {
@@ -1386,8 +1440,12 @@ validate_show_columns <- function(
 
 # glmmTMB's sigma() is the beta precision for beta_family() and, by its
 # help page, for betabinomial() ("the same parameterization ... as beta")
-# and ordbeta() ("see details for beta").
+# and ordbeta() ("see details for beta"). mgcv's betar() keeps it in
+# its theta.
 .is_beta_fit <- function(model) {
+  if (inherits(model, "gam")) {
+    return(.gam_is_betar_estimated(model))
+  }
   inherits(model, "betareg") ||
     (inherits(model, "glmmTMB") &&
       isTRUE(
@@ -1970,10 +2028,11 @@ validate_class_appropriate_tokens <- function(
   }
 
   # Dispersion and precision tokens: theta / alpha for NB2 fits
-  # (MASS::glm.nb, lme4::glmer.nb, fixest fenegbin, mgcv nb(), glmmTMB nbinom2 /
-  # truncated_nbinom2), delta for NB1 fits (glmmTMB nbinom1 /
-  # truncated_nbinom1), phi for beta fits. ANY-gates, like the GEE
-  # tokens below: Poisson beside NB2, or NB1 beside NB2, is the
+  # (MASS::glm.nb, lme4::glmer.nb, fixest fenegbin, mgcv nb(), pscl
+  # negbin, glmmTMB nbinom2 / truncated_nbinom2), delta for NB1 fits
+  # (glmmTMB nbinom1 / truncated_nbinom1), phi for beta fits (betareg,
+  # mgcv betar(), glmmTMB beta / betabinomial / ordbeta). ANY-gates,
+  # like the GEE tokens below: Poisson beside NB2, or NB1 beside NB2, is the
   # comparison these rows are for, and a column whose model lacks the
   # parameter renders blank. Refused when no model in the table carries
   # it -- silently dropping the row would hide the request (pre-1.0
@@ -1986,7 +2045,7 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, glmmTMB `nbinom2`), and no model in the table is one.",
+            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, pscl `zeroinfl()` or `hurdle()` with `dist = \"negbin\"`, glmmTMB `nbinom2`), and no model in the table is one.",
             paste(.quote_val(nb2_tokens), collapse = ", ")
           ),
           "i" = paste0(
@@ -1994,6 +2053,11 @@ validate_class_appropriate_tokens <- function(
             "alpha its reciprocal. An NB1 fit (glmmTMB `nbinom1`) ",
             "reports 'delta' instead; other families have no such ",
             "parameter."
+          ),
+          "i" = paste0(
+            "A theta fixed in the call (`negative.binomial(theta)` in ",
+            "`glm()`, mgcv `negbin(theta)` or `nb(theta)`) is not an ",
+            "estimate and has no row."
           )
         ),
         class = "spicy_invalid_input",
@@ -2033,14 +2097,19 @@ validate_class_appropriate_tokens <- function(
         c(
           paste0(
             "Token 'phi' in `show_fit_stats` is defined only ",
-            "for beta-regression fits (`betareg::betareg()`, ",
-            "glmmTMB `beta_family()`, `betabinomial()`, `ordbeta()`), ",
-            "and no model in the table is one."
+            "for fits with a beta precision (`betareg::betareg()`, ",
+            "mgcv `betar()`, glmmTMB `beta_family()`, `betabinomial()`, ",
+            "`ordbeta()`), and no model in the table is one."
           ),
           "i" = paste0(
-            "phi is the beta-distribution precision ",
-            "(Var(y) = mu(1-mu)/(1+phi); higher phi = less ",
-            "dispersion); other families have no such parameter."
+            "In beta regression, Var(y) = mu(1-mu)/(1+phi): higher phi = ",
+            "less dispersion. For `betabinomial()` and `ordbeta()`, phi is ",
+            "the precision parameter of the beta part. Other families have ",
+            "no such parameter."
+          ),
+          "i" = paste0(
+            "A phi fixed in the call (mgcv `betar(theta)` with theta > 0) ",
+            "is not an estimate and has no row."
           )
         ),
         class = "spicy_invalid_input",
@@ -2052,6 +2121,10 @@ validate_class_appropriate_tokens <- function(
       function(m) {
         if (inherits(m, "glmmTMB")) {
           return(!.glmmTMB_constant_dispersion(m))
+        }
+        # mgcv's betar() has one precision, never covariates.
+        if (inherits(m, "gam")) {
+          return(FALSE)
         }
         length(tryCatch(
           stats::coef(m, model = "precision"),
@@ -3188,9 +3261,18 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
   # lme returns random-effect-augmented coefficients; clm mixes
   # thresholds in). .spicy_fixed_coef_names() knows each class.
   all_coefs <- unlist(lapply(models, function(fit) {
-    tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
+    nm <- tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
       names(stats::coef(fit))
     })
+    # An rms fit names its rows in lm's spelling (.rms_row_terms()), and
+    # the cut-points of an ordinal lrm are its Thresholds block.
+    if (inherits(fit, "rms")) {
+      nm <- .rms_row_terms(
+        setdiff(nm, .lrm_cut_names(fit)),
+        .rms_logical_vars(fit)
+      )
+    }
+    nm
   }))
   unique(c(all_terms, all_coefs))
 }

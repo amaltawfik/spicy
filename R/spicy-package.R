@@ -223,11 +223,11 @@
 #'         spicy does not compute it (e.g., weighted group tests in
 #'         [table_continuous()]); the message names an alternative.
 #'       \item \code{spicy_empty_table} -- [table_regression()] has no row
-#'         left to show for a model once the requested row blocks are
-#'         switched off, or no coefficient row once `keep`, `drop` or
-#'         `show_intercept = FALSE` have chosen the rows (for a panel of
-#'         `layout = "stacked"`, or for every model of the table);
-#'         [table_stack()] received a table without rows.
+#'         to show for a model: it has no coefficient, every requested
+#'         row block is switched off, or no coefficient row is left once
+#'         `keep`, `drop` or `show_intercept = FALSE` have chosen the rows
+#'         (for a panel of `layout = "stacked"`, or for every model of
+#'         the table); [table_stack()] received a table without rows.
 #'       \item \code{spicy_stack_mismatch} -- [table_stack()] received
 #'         tables built in different languages, with different decimal
 #'         marks or alignments, or under styles that format a cell

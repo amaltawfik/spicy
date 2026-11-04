@@ -51,7 +51,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \cr
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \cr
-   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) \cr
+   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) \cr
    Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
    Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \cr
@@ -73,7 +73,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \cr
    Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \cr
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \cr
-   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes \tab OR \tab - \cr
+   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes (per category for an ordinal outcome) \tab OR \tab Thresholds (ordinal outcome) \cr
    rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \cr
    Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr
    Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \cr
@@ -118,7 +118,8 @@ test. \code{N (groups)} and \code{ICC} are fit-stat rows; Nakagawa marginal /
 conditional R-squared are the default R-squared family. \verb{CR*}
 cluster-robust standard errors are available for \code{lmer} and \code{lme} fits,
 via \pkg{clubSandwich} with Satterthwaite degrees of freedom. \code{glmmTMB}
-fits take \code{"CR0"} from glmmTMB's own sandwich (Wald z), clustered by
+fits take \code{"CR0"} from glmmTMB's own sandwich, or \code{"CR1"}, the same
+scaled by G/(G-1) for G clusters (Wald z for both), clustered by
 default on the top-level grouping factor; see the robust-SE section of
 \code{\link[=table_regression]{table_regression()}} for when it holds. \code{glmer} fits keep their
 model-based standard errors: a \verb{CR*} request on them is refused with a
@@ -164,24 +165,28 @@ AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
 \code{vcov}, \code{ci_method = "profile"} and \code{standardized} are refused, as is
 \code{nested = TRUE} for \code{clmm}. \code{exponentiate} follows the \code{clm} rule
 (odds ratios under logit, hazard ratios under cloglog), except for a
-\code{clmm} fit with the cloglog link, where it is refused: on the current
-\code{ordinal}, the cloglog and loglog links of \code{clmm()} do not match those
-of \code{clm()} and of \code{glmmTMB()}.
+\code{clmm} fit with the cloglog link and a single random intercept, where
+it is refused: on the current \code{ordinal}, \code{clmm()} fits such a model
+with the loglog link, and the reverse. The random-effects LR test
+refits its null with the link actually fitted.
 }
 
 \section{Counts and two-part models}{
 
 Two-part models show their full model: the zero component renders as a
 \code{Zero-inflation} block (\code{zeroinfl}, glmmTMB \code{ziformula}: probability of a
-structural zero) or a \verb{Zero hurdle} block (\code{hurdle}: probability of a
-nonzero count -- the opposite direction, hence the distinct label; a
-glmmTMB hurdle model, a zero-truncated family with \code{ziformula}, also
-shows a \verb{Zero hurdle} block, which models the probability of a zero), and a
-\code{Dispersion} block when \code{dispformula} has covariates. Component
+structural zero), a \verb{Zero hurdle, Pr(y > 0)} block (\code{hurdle}: probability
+of a nonzero count -- the opposite direction, hence the distinct label)
+or a \verb{Zero hurdle, Pr(y = 0)} block (a glmmTMB hurdle model, a
+zero-truncated family, \code{ziGamma()}, \code{lognormal()} or \code{beta_family()}
+with \code{ziformula}: probability of a zero), and a \code{Dispersion} block when
+\code{dispformula} has covariates. Component
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). \code{"CR1"} for \code{pscl} fits covers both
-components via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
+combined-response effect on E(Y). \code{"CR1"} for Poisson and geometric \code{pscl}
+fits covers both components via \code{sandwich::vcovCL()}; a negative-binomial
+\code{pscl} fit keeps its model-based standard errors, its sandwich having no
+score for theta. \code{"CR0"} and \code{"CR1"} for \code{glmmTMB} fits cover the
 zero-inflation and dispersion blocks. Opt out with \code{show_components = FALSE}.
 
 The dispersion of a negative-binomial fit is an opt-in fit-statistic
@@ -301,11 +306,20 @@ disclose their absorbed fixed effects as a default-on
 varying-slope-only factors are not absorbed intercepts and read
 No), with per-factor \verb{N (<factor>)} counts via the opt-in
 \code{n_groups} token and the within R-squared in the default fit
-statistics for \code{fixest} (opt-in via \code{within_r2} for \code{estimatr}).
-AME is refused for a non-linear \code{fixest} model with fixed effects
-(\code{fepois()}, \code{feglm()}, \code{femlm()}, \code{fenegbin()}): its variance would
-need the uncertainty of the fixed effects, which fixest does not
-estimate. \code{feols()} and a GLM without fixed effects have it.
+statistics for \code{fixest} except an IV \code{feols()} (opt-in via
+\code{within_r2} for \code{estimatr}).
+AME is refused for a \code{fixest} GLM with fixed effects (\code{feglm()},
+\code{fepois()}, \code{femlm()}, \code{fenegbin()}, whatever the family):
+marginaleffects, which computes it, cannot take into account the
+uncertainty of the fixed effects. It is refused too for a \code{feols()}
+with fixed effects fitted with \code{lean = TRUE}, which marginaleffects
+cannot predict from (re-estimate it with \code{lean = FALSE}). Other
+\code{feols()} fits and a GLM without fixed effects have it. The AME of
+a factor in \code{i()} sits on the rows of its
+coefficients, against the reference \code{i()} gives them (\verb{ref =}); a
+level of a factor in \code{i()}, or a numeric variable that \code{i()} enters
+as categories, with no coefficient row gets no AME, nor does a factor
+that \code{i()} enters only in an interaction.
 }
 
 \section{Bayesian models}{

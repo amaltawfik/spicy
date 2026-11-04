@@ -396,7 +396,13 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
     }
     return(.design_analytic_weights(fit, n_obs))
   }
-  w <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  # fixest: weights() pads the rows dropped for NA with NA, while
+  # fit$weights holds the estimation-sample weights.
+  w <- if (inherits(fit, "fixest")) {
+    fit$weights
+  } else {
+    tryCatch(stats::weights(fit), error = function(e) NULL)
+  }
   if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
     na_act <- tryCatch(stats::na.action(fit), error = function(e) NULL)
     if (
@@ -841,6 +847,176 @@ extract_ame_glm <- function(
 }
 
 
+# The AME of an lrm or a polr fit with an offset, whose predict() leaves
+# the offset out of a prediction on new data. Each row of the
+# avg_slopes() table `ame_table` (a predictor, its contrast, an outcome
+# category) is computed again as avg_slopes() computes it, on
+# probabilities whose linear predictor keeps the offset: the slope of a
+# numeric predictor is the centered difference over 1e-4 times its
+# range, the effect of a categorical one the difference between two of
+# its levels, each averaged over the fit's data with its weights. The
+# probabilities are those of each outcome category (an ordinal lrm's
+# tails P(Y >= j) differenced, as in .lrm_category_ame()), or P(Y = 1)
+# for a binary lrm. The SE are the delta method sqrt(diag(J V J')), J
+# the Jacobian of the AME in the coefficients (centered differences) and
+# V their variance, `vc` or the model's. Errors when a row cannot be
+# rebuilt (a contrast not found, a design that does not match the
+# coefficients): the caller then leaves the AME out with a warning.
+.ordinal_offset_ame <- function(ame_table, fit, vc, ci_level, df = Inf) {
+  tt <- stats::terms(fit)
+  dat <- insight::get_data(fit, verbose = FALSE)
+  used <- intersect(all.vars(tt), names(dat))
+  dat <- dat[stats::complete.cases(dat[used]), , drop = FALSE]
+  off_terms <- as.character(attr(tt, "variables"))[-1L][attr(tt, "offset")]
+  is_polr <- inherits(fit, "polr")
+  if (is_polr) {
+    theta <- c(fit$coefficients, fit$zeta)
+    n_cut <- length(fit$zeta)
+    lev <- fit$lev
+    pfun <- switch(
+      fit$method,
+      logistic = stats::plogis,
+      probit = stats::pnorm,
+      loglog = function(q) exp(-exp(-q)),
+      cloglog = function(q) -expm1(-exp(q)),
+      cauchit = stats::pcauchy
+    )
+  } else {
+    theta <- stats::coef(fit)
+    n_cut <- fit$non.slopes
+    lev <- .lrm_levels(fit)
+  }
+  n_slope <- length(theta) - n_cut
+  # The design matrix (no intercept) and the offset of the data `nd`.
+  design <- function(nd) {
+    X <- if (is_polr) {
+      Terms <- stats::delete.response(tt)
+      m <- stats::model.frame(
+        Terms,
+        nd,
+        na.action = stats::na.pass,
+        xlev = fit$xlevels
+      )
+      X <- stats::model.matrix(Terms, m, contrasts.arg = fit$contrasts)
+      X[, colnames(X) != "(Intercept)", drop = FALSE]
+    } else {
+      stats::predict(fit, nd, type = "x")
+    }
+    if (NCOL(X) != n_slope) {
+      stop("the design of the data does not match the coefficients.")
+    }
+    off <- lapply(off_terms, function(o) {
+      eval(str2lang(o), nd, environment(tt))
+    })
+    list(X = as.matrix(X), off = Reduce(`+`, off))
+  }
+  # The probability of each outcome category at the coefficients `b`
+  # (one column for a binary lrm, P(Y = 1)).
+  probs <- function(b, d) {
+    slope <- if (is_polr) seq_len(n_slope) else n_cut + seq_len(n_slope)
+    eta <- drop(d$X %*% b[slope]) + d$off
+    if (is_polr) {
+      cum <- pfun(outer(-eta, b[n_slope + seq_len(n_cut)], "+"))
+      return(cbind(cum, 1) - cbind(0, cum))
+    }
+    up <- stats::plogis(outer(eta, b[seq_len(n_cut)], "+"))
+    if (n_cut == 1L) up else cbind(1, up) - cbind(up, 0)
+  }
+  w <- .spicy_ame_fit_wts(fit) %||% rep(1, nrow(dat))
+  if (length(w) != nrow(dat)) {
+    stop("the weights do not match the data.")
+  }
+  block <- unique(as.data.frame(ame_table)[c("term", "contrast")])
+  setups <- lapply(seq_len(nrow(block)), function(i) {
+    v <- block$term[i]
+    x <- dat[[v]]
+    lo <- hi <- dat
+    if (identical(block$contrast[i], "dY/dX") && is.numeric(x)) {
+      h <- 1e-4 * diff(range(x, finite = TRUE))
+      h <- if (h == 0) 1e-4 else h
+      lo[[v]] <- x - h / 2
+      hi[[v]] <- x + h / 2
+    } else {
+      lv <- if (is.factor(x)) {
+        levels(x)
+      } else if (is.logical(x)) {
+        c("FALSE", "TRUE")
+      } else {
+        as.character(sort(unique(x)))
+      }
+      pair <- expand.grid(a = lv, b = lv, stringsAsFactors = FALSE)
+      hit <- which(paste(pair$a, "-", pair$b) == block$contrast[i])
+      if (length(hit) != 1L) {
+        stop(sprintf("no contrast \"%s\" of `%s`.", block$contrast[i], v))
+      }
+      at <- function(val) {
+        if (is.logical(x)) {
+          return(rep(as.logical(val), length(x)))
+        }
+        if (is.numeric(x)) {
+          return(rep(as.numeric(val), length(x)))
+        }
+        x[seq_along(x)] <- val
+        x
+      }
+      hi[[v]] <- at(pair$a[hit])
+      lo[[v]] <- at(pair$b[hit])
+      h <- 1
+    }
+    list(lo = design(lo), hi = design(hi), h = h)
+  })
+  ame_at <- function(b) {
+    unlist(lapply(setups, function(s) {
+      colSums(w * (probs(b, s$hi) - probs(b, s$lo))) / (s$h * sum(w))
+    }))
+  }
+  est <- ame_at(theta)
+  J <- vapply(
+    seq_along(theta),
+    function(j) {
+      e <- 1e-6 * max(1, abs(theta[[j]]))
+      up <- dn <- theta
+      up[j] <- up[j] + e
+      dn[j] <- dn[j] - e
+      (ame_at(up) - ame_at(dn)) / (2 * e)
+    },
+    numeric(length(est))
+  )
+  J <- matrix(J, nrow = length(est))
+  V <- as.matrix(vc %||% suppressMessages(stats::vcov(fit)))
+  if (all(names(theta) %in% rownames(V))) {
+    V <- V[names(theta), names(theta), drop = FALSE]
+  } else if (nrow(V) != length(theta)) {
+    stop("the variance matrix does not match the coefficients.")
+  }
+  se <- sqrt(rowSums((J %*% V) * J))
+  k <- length(est) / nrow(block)
+  stat <- est / se
+  if (is.finite(df)) {
+    p <- 2 * stats::pt(-abs(stat), df)
+    crit <- stats::qt(1 - (1 - ci_level) / 2, df)
+  } else {
+    p <- 2 * stats::pnorm(-abs(stat))
+    crit <- stats::qnorm(1 - (1 - ci_level) / 2)
+  }
+  out <- data.frame(
+    term = rep(block$term, each = k),
+    contrast = rep(block$contrast, each = k),
+    estimate = est,
+    std.error = se,
+    statistic = stat,
+    p.value = p,
+    conf.low = est - crit * se,
+    conf.high = est + crit * se,
+    stringsAsFactors = FALSE
+  )
+  if (k > 1L) {
+    out$group <- rep(lev, times = nrow(block))
+  }
+  out
+}
+
+
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
 # Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
@@ -897,10 +1073,33 @@ extract_ame_glm <- function(
     # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
     # uses the fit's own vcov (the model-based one, or the design-based estimator
     # for svyglm).
+    #
+    # mgcv gives a gam's formula the global environment, where
+    # marginaleffects evaluates the call's `data` to recover the data: a
+    # gam fitted on a local `d` met the global `d`, another data set or
+    # none. The model frame is the fit's own data, attached with
+    # set_modeldata() (marginaleffects 1.0.0).
+    fit_ame <- fit
+    if (
+      inherits(fit, "gam") &&
+        utils::packageVersion("marginaleffects") >= "1.0.0"
+    ) {
+      mf_gam <- tryCatch(
+        insight::get_data(fit, source = "frame", verbose = FALSE),
+        error = function(e) NULL
+      )
+      if (is.data.frame(mf_gam)) {
+        fit_ame <- marginaleffects::set_modeldata(fit, mf_gam)
+      }
+    }
+    # NULL (marginaleffects' own data) but for a fixest fit whose i()
+    # factors take another reference than their first level.
+    newdata <- if (inherits(fit, "fixest")) .fixest_ame_newdata(fit)
     do_slopes <- function(vcarg) {
       suppressWarnings(suppressMessages(
         marginaleffects::avg_slopes(
-          fit,
+          fit_ame,
+          newdata = newdata,
           conf_level = ci_level,
           df = df,
           vcov = vcarg,
@@ -958,16 +1157,75 @@ extract_ame_glm <- function(
   if (is.null(ame_table) || nrow(ame_table) == 0L) {
     return(NULL)
   }
+  # predict() of an lrm or a polr leaves the offset out of a prediction
+  # on new data, so avg_slopes() took every AME at offset 0: each row of
+  # its table is computed again with the offset.
+  if (
+    inherits(fit, c("lrm", "polr")) &&
+      !is.null(attr(stats::terms(fit), "offset"))
+  ) {
+    reason <- NULL
+    ame_table <- tryCatch(
+      .ordinal_offset_ame(ame_table, fit, vc, ci_level, df),
+      error = function(e) {
+        reason <<- conditionMessage(e)
+        NULL
+      }
+    )
+    if (is.null(ame_table)) {
+      spicy_warn(
+        c(
+          "The AME of this model with an offset cannot be computed.",
+          "x" = paste0("Reason: ", reason),
+          "i" = "AME column will be en-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      return(NULL)
+    }
+  } else if (length(.lrm_cut_names(fit)) > 0L) {
+    # An ordinal lrm: marginaleffects predicts rms's upper tails
+    # P(Y >= j); the table reports the category probabilities of polr's
+    # AME.
+    reason <- paste0(
+      "`marginaleffects::avg_slopes()` did not return the ",
+      "probabilities P(Y >= j) the category probabilities are ",
+      "derived from."
+    )
+    ame_table <- tryCatch(
+      .lrm_category_ame(ame_table, fit, vc, ci_level),
+      error = function(e) {
+        reason <<- conditionMessage(e)
+        NULL
+      }
+    )
+    if (is.null(ame_table)) {
+      spicy_warn(
+        c(
+          "The AME of this ordinal `lrm` fit could not be computed.",
+          "x" = paste0("Reason: ", reason),
+          "i" = "AME column will be en-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      return(NULL)
+    }
+  }
 
   factor_meta <- tryCatch(detect_factor_term_meta(fit), error = function(e) {
     list()
   })
   # Engine-aware data-frame retrieval: stats::model.frame() returns
   # the lmeStruct (not the data) for nlme::lme fits, so we use
-  # nlme::getData() instead. lme4 + glmmTMB + lm / glm all return a
-  # plain data.frame via stats::model.frame().
+  # nlme::getData() instead, and an empty list for fixest fits, whose
+  # data .fixest_model_data() reads (the estimation sample, or the
+  # original data for a `lean = TRUE` fit, which no longer records its
+  # sample while avg_slopes() still succeeds on it). lme4 + glmmTMB +
+  # lm / glm all return a plain data.frame via stats::model.frame().
   mf <- if (inherits(fit, c("lme", "gls"))) {
     tryCatch(nlme::getData(fit), error = function(e) NULL)
+  } else if (inherits(fit, "fixest")) {
+    .fixest_model_data(fit)
   } else {
     tryCatch(stats::model.frame(fit), error = function(e) NULL)
   }
@@ -1020,7 +1278,24 @@ extract_ame_glm <- function(
     # inline factor() calls): rebuild from the model-frame column.
     lvl_str <- NA_character_
     lvl_pos <- NA_integer_
-    if (is_factor_var && !is.na(contrast_str) && grepl(" - ", contrast_str)) {
+    # A fixest fit reads the raw data, where `factor(Month)` is still
+    # the integer Month: its contrasts keep their level too, for
+    # .fixest_align_ame_rows() to set each on its coefficient. Not for a
+    # variable in i(), whose rows that function sets by their reference.
+    is_contrast <- !is.na(contrast_str) && grepl(" - ", contrast_str)
+    if (
+      is_contrast &&
+        !is_factor_var &&
+        inherits(fit, "fixest") &&
+        !any(grepl(
+          paste0("(^|:)\\Q", col_name, "\\E::"),
+          c(names(stats::coef(fit)), as.character(fit[["collin.var"]])),
+          perl = TRUE
+        ))
+    ) {
+      lvl_str <- sub(" - .*$", "", contrast_str)
+    }
+    if (is_factor_var && is_contrast) {
       lvl_str <- sub(" - .*$", "", contrast_str)
       lvl_pos <- match(lvl_str, .spicy_cat_levels(mf[[col_name]]))
     }

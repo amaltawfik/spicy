@@ -253,11 +253,258 @@ test_that("gam titles name the family in words, never by its R code", {
     title("Ordered Categorical(-1,2.95)", "identity"),
     "Cumulative logit GAM (proportional odds)"
   )
-  # Any other family is not named.
+  expect_identical(title("Cox PH", "identity"), "Cox proportional hazards GAM")
+  expect_identical(title("cnorm(1.254)", "identity"), "Censored normal GAM")
+  expect_identical(title("clog(0.726)", "identity"), "Censored logistic GAM")
+  expect_identical(title("cpois"), "Censored Poisson GAM")
   expect_identical(
-    title("gaulss", "identity"),
-    "Generalized additive model (GAM)"
+    title("bcg(0.006,0.494)", "identity"),
+    "Censored Box-Cox normal GAM"
   )
+  expect_identical(
+    title("gfam{gaussian,poisson}", "identity"),
+    "Grouped-family GAM"
+  )
+  # A family from outside mgcv keeps the name its author gave it, its
+  # parameters dropped, and never the title of the gaussian model.
+  expect_identical(
+    title("Some family(0.5)", "identity"),
+    "Generalized additive model (GAM, Some family)"
+  )
+  # In French the head is translated and the name kept.
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::.title_prefix_display(
+      "Generalized additive model (GAM, Some family)"
+    ),
+    "Mod\u00e8le additif g\u00e9n\u00e9ralis\u00e9 (GAM, Some family)"
+  )
+})
+
+test_that("the type note of several GAMs names the model once", {
+  # One rule for every GAM title: English pluralizes the model, French
+  # keeps the acronym and makes its qualifiers agree.
+  frames <- function(prefix) {
+    rep(list(list(info = list(extras = list(title_prefix = prefix)))), 2L)
+  }
+  note <- function(prefix, lang = "en") {
+    withr::with_options(
+      list(spicy.language = lang),
+      spicy:::build_regression_type_footer_block_from_frames(frames(prefix))
+    )
+  }
+  expected <- list(
+    "Generalized additive model (GAM)" = c(
+      "Generalized additive models (GAM).",
+      "Mod\u00e8les additifs g\u00e9n\u00e9ralis\u00e9s (GAM)."
+    ),
+    "Poisson GAM" = c("Poisson GAMs.", "GAM de Poisson."),
+    "Negative-binomial GAM" = c(
+      "Negative-binomial GAMs.",
+      "GAM binomiaux n\u00e9gatifs."
+    ),
+    "Censored normal GAM" = c(
+      "Censored normal GAMs.",
+      "GAM normaux censur\u00e9s."
+    ),
+    "Censored Poisson GAM" = c(
+      "Censored Poisson GAMs.",
+      "GAM de Poisson censur\u00e9s."
+    ),
+    "Inverse-Gaussian GAM" = c(
+      "Inverse-Gaussian GAMs.",
+      "GAM gaussiens inverses."
+    ),
+    "Cumulative logit GAM (proportional odds)" = c(
+      "Cumulative logit GAMs (proportional odds).",
+      "GAM \u00e0 logit cumulatif (cotes proportionnelles)."
+    ),
+    "Zero-inflated Poisson GAM" = c(
+      "Zero-inflated Poisson GAMs.",
+      "GAM de Poisson (inflation de z\u00e9ros)."
+    ),
+    "Generalized additive model (GAM, Some family)" = c(
+      "Generalized additive models (GAM, Some family).",
+      "Mod\u00e8les additifs g\u00e9n\u00e9ralis\u00e9s (GAM, Some family)."
+    )
+  )
+  for (prefix in names(expected)) {
+    expect_identical(note(prefix), expected[[prefix]][1L], label = prefix)
+    expect_identical(note(prefix, "fr"), expected[[prefix]][2L], label = prefix)
+  }
+  # Every GAM title has a French title and a French plural without the
+  # word "Mod\u00e8les de".
+  gam <- grep("GAM", names(spicy:::.FR_TITLE_PREFIXES), value = TRUE)
+  for (prefix in gam) {
+    expect_no_match(note(prefix, "fr"), "^Mod\u00e8les de ", label = prefix)
+    expect_no_match(note(prefix), " models\\.$", label = prefix)
+  }
+})
+
+
+test_that("the censored and Cox families of mgcv are titled by their model", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  n <- 300
+  d <- data.frame(x = stats::runif(n), z = stats::rnorm(n))
+  eta <- sin(2 * pi * d$x) + 0.5 * d$z
+  d$time <- stats::rexp(n, exp(0.3 * eta))
+  d$ev <- stats::rbinom(n, 1, 0.8)
+  d$y <- eta + stats::rnorm(n)
+  d$y_hi <- ifelse(d$y > 1, Inf, d$y)
+  d$cnt <- pmax(round(exp(1 + 0.3 * d$z) + stats::rnorm(n)), 0)
+  d$cnt_hi <- ifelse(d$cnt > 4, Inf, d$cnt)
+  fits <- list(
+    "Cox PH" = mgcv::gam(
+      time ~ s(x) + z,
+      data = d,
+      family = mgcv::cox.ph(),
+      weights = ev
+    ),
+    cnorm = mgcv::gam(
+      cbind(y, y_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::cnorm()
+    ),
+    clog = mgcv::gam(
+      cbind(y, y_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::clog()
+    ),
+    cpois = mgcv::gam(
+      cbind(cnt, cnt_hi) ~ s(x) + z,
+      data = d,
+      family = mgcv::cpois()
+    )
+  )
+  expected <- c(
+    "Cox PH" = "Cox proportional hazards GAM",
+    cnorm = "Censored normal GAM",
+    clog = "Censored logistic GAM",
+    cpois = "Censored Poisson GAM"
+  )
+  gaussian <- mgcv::gam(y ~ s(x) + z, data = d)
+  for (nm in names(fits)) {
+    # The family is the one mgcv reports for the fit.
+    expect_true(startsWith(stats::family(fits[[nm]])$family, nm), info = nm)
+    prefix <- as_regression_frame(fits[[nm]])$info$extras$title_prefix
+    expect_identical(prefix, expected[[nm]], info = nm)
+    expect_false(
+      identical(prefix, as_regression_frame(gaussian)$info$extras$title_prefix)
+    )
+  }
+  # Beside a gaussian GAM, the table names both models.
+  note <- attr(
+    table_regression(list(Gaussian = gaussian, Cox = fits[["Cox PH"]])),
+    "note"
+  )
+  expect_match(
+    note,
+    "Gaussian: generalized additive model (GAM); Cox: Cox proportional hazards GAM.",
+    fixed = TRUE
+  )
+})
+
+test_that("a Cox PH GAM reports hazard ratios under exponentiate = TRUE", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("broom")
+  d <- survival::lung
+  d <- d[stats::complete.cases(d[, c("time", "status", "age", "sex")]), ]
+  d$ev <- as.integer(d$status == 2)
+  d$sex <- factor(d$sex, labels = c("M", "F"))
+  # Without a smooth term the GAM is coxph() with Breslow ties: same
+  # hazard ratios, delta-method SE and Wald CI.
+  g <- mgcv::gam(
+    time ~ age + sex,
+    data = d,
+    family = mgcv::cox.ph(),
+    weights = ev
+  )
+  cx <- survival::coxph(
+    survival::Surv(time, ev) ~ age + sex,
+    data = d,
+    ties = "breslow"
+  )
+  tab <- expect_no_warning(table_regression(g, exponentiate = TRUE))
+  expect_match(paste(capture.output(print(tab)), collapse = "\n"), "HR")
+  td <- broom::tidy(tab)
+  sc <- summary(cx)
+  expect_equal(
+    td$estimate,
+    unname(sc$coefficients[, "exp(coef)"]),
+    tolerance = 1e-5
+  )
+  expect_equal(
+    td$std.error,
+    unname(sc$coefficients[, "exp(coef)"] * sc$coefficients[, "se(coef)"]),
+    tolerance = 1e-4
+  )
+  expect_equal(
+    td$conf.low,
+    unname(sc$conf.int[, "lower .95"]),
+    tolerance = 1e-4
+  )
+  expect_equal(
+    td$conf.high,
+    unname(sc$conf.int[, "upper .95"]),
+    tolerance = 1e-4
+  )
+  # With a smooth term: the GAM's own exp(coef) on the parametric terms.
+  g1 <- mgcv::gam(
+    time ~ s(age) + sex,
+    data = d,
+    family = mgcv::cox.ph(),
+    weights = ev
+  )
+  td1 <- broom::tidy(table_regression(g1, exponentiate = TRUE))
+  expect_equal(td1$estimate, unname(exp(stats::coef(g1)["sexF"])))
+  expect_equal(
+    td1$std.error,
+    unname(exp(stats::coef(g1)["sexF"]) * sqrt(diag(stats::vcov(g1))["sexF"]))
+  )
+})
+
+test_that("a GAM with several linear predictors is refused", {
+  skip_if_not_installed("mgcv")
+  set.seed(4)
+  n <- 200
+  d <- data.frame(x = stats::runif(n), z = stats::rnorm(n))
+  d$y <- d$z + stats::rnorm(n, sd = exp(d$x))
+  d$k <- sample(0:2, n, replace = TRUE)
+  d$cnt <- stats::rpois(n, 2) * stats::rbinom(n, 1, 0.7)
+  fits <- list(
+    gaulss = mgcv::gam(
+      list(y ~ s(x) + z, ~ s(x)),
+      data = d,
+      family = mgcv::gaulss()
+    ),
+    ziplss = mgcv::gam(
+      list(cnt ~ s(x), ~ s(z)),
+      data = d,
+      family = mgcv::ziplss()
+    ),
+    multinom = mgcv::gam(
+      list(k ~ s(x), ~ s(z)),
+      data = d,
+      family = mgcv::multinom(K = 2)
+    )
+  )
+  for (nm in names(fits)) {
+    # mgcv fits them from a list of formulas, one per linear predictor.
+    expect_true(is.list(stats::formula(fits[[nm]])), info = nm)
+    expect_error(
+      table_regression(fits[[nm]]),
+      paste0("several linear predictors (family `", nm, "`)"),
+      fixed = TRUE,
+      class = "spicy_unsupported"
+    )
+    expect_error(
+      as_regression_frame(fits[[nm]]),
+      "several linear predictors",
+      class = "spicy_unsupported"
+    )
+  }
 })
 
 test_that("a probit GAM is not titled logistic", {
@@ -392,4 +639,174 @@ test_that("an nb() GAM has theta and alpha rows and no sigma; negbin(theta) keep
     table_regression(fixed, show_fit_stats = "theta"),
     class = "spicy_invalid_input"
   )
+})
+
+test_that("nb(theta) with theta fixed is negbin(theta): sigma 1, no theta row", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  d <- data.frame(x = stats::runif(200))
+  d$y <- stats::rnbinom(200, mu = exp(1 + d$x), size = 2)
+  # mgcv: a positive theta given to nb() is a known constant (n.theta =
+  # 0), a negative one a starting value (n.theta = 1).
+  fixed <- mgcv::gam(y ~ s(x), family = mgcv::nb(theta = 2), data = d)
+  start <- mgcv::gam(y ~ s(x), family = mgcv::nb(theta = -2), data = d)
+  plain <- mgcv::gam(y ~ s(x), family = mgcv::negbin(2), data = d)
+  fixed_bam <- mgcv::bam(y ~ s(x), family = mgcv::nb(theta = 2), data = d)
+  expect_equal(fixed$family$n.theta, 0)
+  expect_equal(fixed_bam$family$n.theta, 0)
+  expect_equal(start$family$n.theta, 1)
+  # The fixed theta keeps mgcv's scale, the 1 the family fixes, as
+  # negbin(2) does, and has no theta row.
+  for (fit in list(fixed, fixed_bam, plain)) {
+    fs <- as_regression_frame(fit, model_id = "M1")$info$fit_stats
+    expect_equal(fs$sigma, sqrt(fit$sig2))
+    expect_equal(fs$sigma, 1)
+    expect_null(fs$theta)
+    expect_null(fs$alpha)
+  }
+  expect_error(
+    table_regression(fixed, show_fit_stats = "theta"),
+    "no model in the table",
+    class = "spicy_invalid_input"
+  )
+  # A starting value is estimated: the row is mgcv's estimate.
+  fs_start <- as_regression_frame(start, model_id = "M1")$info$fit_stats
+  expect_equal(fs_start$theta, start$family$getTheta(TRUE))
+  expect_true(is.na(fs_start$sigma))
+  # One table: the fixed theta reads as negbin(2), the estimate has its rows.
+  df <- as.data.frame(table_regression(
+    list(Fixed = fixed, Negbin = plain, Est = start),
+    show_fit_stats = c("theta", "sigma")
+  ))
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_true(is.na(row("theta")[["Fixed: B"]]))
+  expect_true(is.na(row("theta")[["Negbin: B"]]))
+  expect_equal(row("theta")[["Est: B"]], start$family$getTheta(TRUE))
+  expect_equal(row("sigma")[["Fixed: B"]], 1)
+  expect_equal(row("sigma")[["Negbin: B"]], 1)
+  expect_true(is.na(row("sigma")[["Est: B"]]))
+})
+
+test_that("a betar() GAM has the phi of betareg and glmmTMB, and no sigma", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("glmmTMB")
+  set.seed(20261104)
+  d <- data.frame(x = stats::rnorm(400))
+  m <- stats::plogis(-0.3 + 0.5 * d$x)
+  d$y <- stats::rbeta(400, 7 * m, 7 * (1 - m))
+  # method = "ML": the default REML criterion of mgcv estimates theta
+  # with a correction for the fixed effects, so only the ML fit has the
+  # maximum-likelihood phi of betareg and glmmTMB.
+  fit <- mgcv::gam(y ~ x, family = mgcv::betar(), data = d, method = "ML")
+  fs <- as_regression_frame(fit, model_id = "M1")$info$fit_stats
+  # mgcv's own value, exactly: betar()'s theta is phi.
+  expect_identical(fs$phi, as.numeric(fit$family$getTheta(TRUE)))
+  # The same model in betareg and glmmTMB (beta_family(), whose sigma()
+  # is phi).
+  br <- betareg::betareg(y ~ x, data = d)
+  tb <- glmmTMB::glmmTMB(y ~ x, data = d, family = glmmTMB::beta_family())
+  expect_equal(
+    as.numeric(stats::logLik(fit)),
+    as.numeric(stats::logLik(br)),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    fs$phi,
+    unname(stats::coef(br, model = "precision")),
+    tolerance = 1e-4
+  )
+  expect_equal(fs$phi, stats::sigma(tb), tolerance = 1e-4)
+  # mgcv fixes the scale at 1: no residual scale, as betareg has none.
+  expect_equal(fit$sig2, 1)
+  expect_true(is.na(fs$sigma))
+  df <- as.data.frame(table_regression(
+    list(betareg = br, GAM = fit),
+    show_fit_stats = c("phi", "sigma")
+  ))
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_equal(row("phi")[["GAM: B"]], fit$family$getTheta(TRUE))
+  # Neither model has a residual scale: the sigma row is dropped.
+  expect_identical(nrow(row("sigma")), 0L)
+  # betar(theta) with theta > 0 fixes phi: no row, and alone it is refused.
+  fixed <- mgcv::gam(y ~ x, family = mgcv::betar(theta = 5), data = d)
+  expect_equal(fixed$family$n.theta, 0)
+  expect_null(as_regression_frame(fixed, model_id = "M1")$info$fit_stats$phi)
+  err <- expect_error(
+    table_regression(fixed, show_fit_stats = "phi"),
+    "no model in the table",
+    class = "spicy_invalid_input"
+  )
+  # The refusal says why: the phi of the call is no estimate.
+  expect_match(
+    conditionMessage(err),
+    "A phi fixed in the call (mgcv `betar(theta)` with theta > 0)",
+    fixed = TRUE
+  )
+})
+
+test_that("an extended family shows sigma only when the GAM estimates a scale", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("withr")
+  # tw() looks up mgcv's ldTweedie() on the search path.
+  withr::local_package("mgcv")
+  set.seed(42)
+  n <- 300
+  d <- data.frame(x = stats::runif(n))
+  d$yt <- 1 + 2 * d$x + 0.8 * stats::rt(n, df = 4)
+  d$yz <- ifelse(stats::runif(n) < 0.3, 0L, stats::rpois(n, exp(0.5 + d$x)))
+  d$yo <- as.integer(cut(2 * d$x + stats::rlogis(n), c(-Inf, 0, 1, 2, Inf)))
+  d$ytw <- mgcv::rTweedie(exp(1 + d$x), p = 1.5, phi = 1.2)
+  d$yc <- stats::rpois(n, exp(0.5 + d$x))
+  sigma_of <- function(fit) {
+    as_regression_frame(fit, model_id = "M1")$info$fit_stats$sigma
+  }
+  # scat(), ziP() and ocat() fix the scale at 1 (no family$scale, sig2 =
+  # 1): the 1 is no residual scale, and the cell is blank. scat()'s own
+  # scale is in its theta, a parameter of the t distribution, as the
+  # sigma() of glmmTMB's t_family().
+  fixed <- list(
+    scat = mgcv::gam(yt ~ x, family = mgcv::scat(), data = d),
+    ziP = mgcv::gam(yz ~ x, family = mgcv::ziP(), data = d),
+    ocat = mgcv::gam(yo ~ x, family = mgcv::ocat(R = 4), data = d),
+    bam_scat = mgcv::bam(yt ~ x, family = mgcv::scat(), data = d)
+  )
+  for (nm in names(fixed)) {
+    fit <- fixed[[nm]]
+    expect_null(fit$family$scale, label = nm)
+    expect_equal(fit$sig2, 1, label = nm)
+    expect_true(is.na(sigma_of(fit)), label = nm)
+  }
+  # bam() flags every extended family as scale-estimated: that flag
+  # cannot be the test.
+  expect_true(fixed$bam_scat$scale.estimated)
+  expect_false(fixed$scat$scale.estimated)
+  # Alone in the table, the sigma row has no value and is dropped.
+  out <- paste(
+    utils::capture.output(print(table_regression(
+      fixed$scat,
+      show_fit_stats = c("nobs", "sigma")
+    ))),
+    collapse = "\n"
+  )
+  expect_false(grepl(fit_stat_label("sigma"), out, fixed = TRUE))
+  # tw() estimates its scale: sigma is the square root of mgcv's
+  # estimate, as for a Tweedie glm.
+  tw_fits <- list(
+    gam = mgcv::gam(ytw ~ x, family = mgcv::tw(), data = d),
+    bam = mgcv::bam(ytw ~ x, family = mgcv::tw(), data = d)
+  )
+  for (nm in names(tw_fits)) {
+    fit <- tw_fits[[nm]]
+    expect_true(fit$scale.estimated, label = nm)
+    expect_equal(
+      sigma_of(fit),
+      sqrt(summary(fit)$dispersion),
+      tolerance = 1e-12,
+      label = nm
+    )
+  }
+  # A glm family keeps the glm rule: the fixed 1 of the Poisson.
+  pois <- mgcv::gam(yc ~ x, family = stats::poisson(), data = d)
+  expect_equal(sigma_of(pois), summary(pois)$dispersion)
 })

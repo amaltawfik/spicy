@@ -247,20 +247,20 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
     tp("ordinal", "cauchit"),
     "Cumulative cauchit mixed-effects regression (parallel slopes)"
   )
-  # Zero-inflation suffix.
+  # Zero-inflation, in pscl's word order.
   expect_identical(
     tp("poisson", zi = TRUE),
-    "Poisson mixed-effects regression (zero-inflated)"
+    "Zero-inflated Poisson mixed-effects regression"
   )
   # A zero-truncated family with a zi formula is a hurdle model, named
   # after its count family.
   expect_identical(
     tp("truncated_poisson", zi = TRUE),
-    "Poisson mixed-effects regression (hurdle)"
+    "Poisson hurdle mixed-effects regression"
   )
   expect_identical(
     tp("truncated_nbinom1", zi = TRUE),
-    "Negative-binomial (NB1) mixed-effects regression (hurdle)"
+    "Negative-binomial (NB1) hurdle mixed-effects regression"
   )
   # Every family glmmTMB can return has a label, and every label has a
   # French title (plain, and hurdle for the truncated count families).
@@ -285,13 +285,16 @@ test_that("glmmTMB title prefix covers binomial links and family arms", {
   titles <- c(
     vapply(fams, tp, character(1)),
     vapply(
-      grep("^truncated_", fams, value = TRUE),
+      fams,
       tp,
       character(1),
       zi = TRUE
     )
   )
   expect_true(all(titles %in% names(.FR_TITLE_PREFIXES)))
+  # No title stacks two pairs of parentheses, in either language.
+  expect_false(any(grepl("\\).*\\(", titles)))
+  expect_false(any(grepl("\\).*\\(", .FR_TITLE_PREFIXES[titles])))
   # A title names the method, never the engine that fitted it.
   engine <- "\\((glmmTMB|nlme|rms|mlogit|stanreg|brmsfit)\\)"
   for (fam in c("gaussian", "binomial", "poisson", "nbinom2", "ordinal")) {

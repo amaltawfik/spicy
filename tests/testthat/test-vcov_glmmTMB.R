@@ -2,10 +2,15 @@
 # (R/vcov_glmmTMB.R). The oracles, from the most direct to the least:
 #   * without random effects the CR0 matrix is sandwich::vcovCL() of the
 #     same glm / lm with type = "HC0" and cadjust = FALSE: no finite-sample
-#     factor at all;
+#     factor at all; CR1 is the same with cadjust = TRUE, CR0 times
+#     G / (G - 1);
+#   * a zero-inflated Poisson without random effects: pscl::zeroinfl() and
+#     sandwich::vcovCL(type = "HC0", cadjust = FALSE), zero rows included;
 #   * the per-cluster scores are the numerical gradients of each cluster's
 #     Laplace marginal log-likelihood, built from that cluster's rows alone,
-#     and bread %*% meat %*% bread rebuilt from them is the sandwich;
+#     and bread %*% meat %*% bread rebuilt from them is the sandwich (a
+#     Poisson GLMM, and an NB2 GLMM with zero-inflation and dispersion
+#     formulas);
 #   * a gaussian LMM: lme4 + merDeriv's scores summed by cluster, with
 #     merDeriv's full bread;
 #   * a Poisson GLMM: lme4::glmer(nAGQ = 1) + merDeriv, within the gap
@@ -46,7 +51,25 @@
   d
 }
 
-test_that("without random effects, CR0 is vcovCL(type = 'HC0', cadjust = FALSE)", {
+# An NB2 count with a random intercept by site, zero-inflation and a
+# modeled dispersion.
+.tmb_zinb_disp_data <- function() {
+  set.seed(3)
+  d <- data.frame(
+    site = factor(rep(1:15, each = 12)),
+    x = stats::rnorm(180),
+    z = stats::rnorm(180)
+  )
+  d$y <- stats::rnbinom(
+    180,
+    mu = exp(0.5 + 0.4 * d$x + stats::rnorm(15, sd = 0.4)[d$site]),
+    size = 2
+  ) *
+    stats::rbinom(180, 1, 0.8)
+  d
+}
+
+test_that("without random effects, CR0 and CR1 are vcovCL(type = 'HC0') without and with cadjust", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   set.seed(7)
   n <- 200
@@ -82,6 +105,13 @@ test_that("without random effects, CR0 is vcovCL(type = 'HC0', cadjust = FALSE)"
   # The convention, pinned: no G / (G - 1) factor, which cadjust = TRUE adds.
   adjusted <- sandwich::vcovCL(m_glm, cluster = d$g, type = "HC0")
   expect_equal(unname(adjusted / vc), matrix(25 / 24, 4, 4), tolerance = 1e-6)
+  # CR1 is that adjusted matrix, the CR1 of the vcovCL() classes.
+  expect_identical(nlevels(droplevels(d$g)), 25L)
+  expect_equal(
+    unname(spicy:::compute_model_vcov(m_tmb, type = "CR1", cluster = d$g)),
+    unname(adjusted),
+    tolerance = 1e-6
+  )
   # One observation per cluster is HC0.
   expect_equal(
     unname(spicy:::compute_model_vcov(
@@ -114,6 +144,87 @@ test_that("without random effects, CR0 is vcovCL(type = 'HC0', cadjust = FALSE)"
     )),
     tolerance = 1e-6
   )
+})
+
+test_that("zero-inflation rows: CR0 of a ZIP without random effects is pscl's vcovCL()", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("pscl")
+  sal <- glmmTMB::Salamanders
+  m_pscl <- pscl::zeroinfl(
+    count ~ mined + spp | mined,
+    data = sal,
+    dist = "poisson",
+    control = pscl::zeroinfl.control(reltol = 1e-12, maxit = 5000)
+  )
+  # Started at pscl's optimum: both fits hold the same estimates.
+  m_tmb <- glmmTMB::glmmTMB(
+    count ~ mined + spp,
+    ziformula = ~mined,
+    data = sal,
+    family = stats::poisson,
+    start = list(
+      beta = unname(stats::coef(m_pscl, "count")),
+      betazi = unname(stats::coef(m_pscl, "zero"))
+    )
+  )
+  oracle <- sandwich::vcovCL(
+    m_pscl,
+    cluster = sal$site,
+    type = "HC0",
+    cadjust = FALSE
+  )
+  vc <- spicy:::compute_model_vcov(m_tmb, type = "CR0", cluster = sal$site)
+  # Count rows then zero rows, in the same order on both sides.
+  expect_equal(
+    unname(sqrt(diag(vc))),
+    unname(sqrt(diag(oracle))),
+    tolerance = 1e-8
+  )
+  # The rendered zero-inflation block reads those rows.
+  fr <- as_regression_frame(m_tmb, vcov = "CR0", cluster = sal$site)
+  blk <- fr$info$extras$component_blocks[[1L]]$coefs
+  se_zero <- sqrt(diag(oracle))[c("zero_(Intercept)", "zero_minedno")]
+  expect_equal(
+    blk$std_error[match(c("(Intercept)", "minedno"), blk$term)],
+    unname(se_zero),
+    tolerance = 1e-8
+  )
+})
+
+test_that("CR1 is CR0 times G / (G - 1), G the clusters used", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  d <- .tmb_cluster_data()
+  fit <- glmmTMB::glmmTMB(
+    y ~ x + g + (1 | site),
+    data = d,
+    family = stats::poisson
+  )
+  G <- nlevels(d$site)
+  vc0 <- spicy:::compute_model_vcov(fit, type = "CR0")
+  factor_matrix <- matrix(G / (G - 1), nrow(vc0), ncol(vc0))
+  # Exact up to the reproducibility of a GLMM's sandwich (about 1e-11:
+  # the inner Laplace optimization), over every parameter.
+  expect_equal(
+    unname(spicy:::compute_model_vcov(fit, type = "CR1") / vc0),
+    factor_matrix,
+    tolerance = 1e-8
+  )
+  # A level no observation carries is not a cluster.
+  cl <- factor(d$site, levels = c(levels(d$site), "none"))
+  expect_equal(
+    unname(spicy:::compute_model_vcov(fit, type = "CR1", cluster = cl) / vc0),
+    factor_matrix,
+    tolerance = 1e-8
+  )
+  # One cluster carries the score of the whole sample, 0 at the
+  # estimates: CR0 would show standard errors near 0, and CR1's factor is
+  # undefined.
+  for (v in c("CR0", "CR1")) {
+    expect_error(
+      spicy:::compute_model_vcov(fit, type = v, cluster = rep(1L, nrow(d))),
+      class = "spicy_invalid_input"
+    )
+  }
 })
 
 test_that("the cluster scores are the gradients of the cluster likelihoods", {
@@ -169,6 +280,52 @@ test_that("the cluster scores are the gradients of the cluster likelihoods", {
     unname((B %*% crossprod(scores) %*% B)[beta, beta]),
     unname(vc[beta, beta]),
     tolerance = 1e-5
+  )
+})
+
+test_that("zero-inflation and dispersion scores are the cluster gradients too", {
+  # The same check on an NB2 GLMM with zi and disp formulas: the rows of
+  # the zero-inflation and dispersion blocks rest on these scores.
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("numDeriv")
+  d <- .tmb_zinb_disp_data()
+  fit_one <- function(data, ...) {
+    glmmTMB::glmmTMB(
+      y ~ x + (1 | site),
+      ziformula = ~z,
+      dispformula = ~z,
+      data = data,
+      family = glmmTMB::nbinom2,
+      ...
+    )
+  }
+  fit <- fit_one(d)
+  par <- fit$fit$par
+  nll <- lapply(levels(d$site), function(s) {
+    glmmTMB::fitTMB(
+      fit_one(droplevels(d[d$site == s, ]), doFit = FALSE),
+      doOptim = FALSE
+    )$fn
+  })
+  expect_equal(
+    sum(vapply(nll, function(f) f(par), numeric(1))),
+    as.numeric(fit$obj$fn(par)),
+    tolerance = 1e-8
+  )
+  scores <- t(vapply(
+    nll,
+    function(f) -numDeriv::grad(f, par),
+    numeric(length(par))
+  ))
+  # beta, zi, disp and the random-effect SD: every fixed parameter.
+  ef <- glmmTMB::estfun(fit, full = TRUE, cluster = d$site)
+  expect_true(all(c("zi~z", "disp~z") %in% colnames(ef)))
+  expect_equal(scores, unname(ef), tolerance = 1e-6)
+  B <- stats::vcov(fit, full = TRUE)
+  expect_equal(
+    unname(B %*% crossprod(scores) %*% B),
+    unname(spicy:::compute_model_vcov(fit, type = "CR0")),
+    tolerance = 1e-6
   )
 })
 
@@ -242,7 +399,7 @@ test_that("Poisson GLMM: CR0 agrees with glmer + merDeriv within its approximati
   )
 })
 
-test_that("table_regression(vcov = 'CR0') shows glmmTMB's sandwich SEs", {
+test_that("table_regression(vcov = 'CR0' / 'CR1') shows glmmTMB's sandwich SEs", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   d <- .tmb_cluster_data()
   fit <- glmmTMB::glmmTMB(
@@ -270,9 +427,32 @@ test_that("table_regression(vcov = 'CR0') shows glmmTMB's sandwich SEs", {
   # A user cluster is honored and named as the user wrote it.
   note_u <- attr(table_regression(fit, vcov = "CR0", cluster = ~site), "note")
   expect_match(note_u, "clusters by site.", fixed = TRUE)
+  # CR1: the same sandwich times G / (G - 1), still Wald z, labeled CR1
+  # as for every other class.
+  G <- nlevels(d$site)
+  out1 <- table_regression(fit, vcov = "CR1", output = "long")
+  b1 <- out1[out1$estimate_type == "B" & !is.na(out1$std.error), ]
+  expect_equal(
+    b1$std.error,
+    unname(oracle[b1$term]) * sqrt(G / (G - 1)),
+    tolerance = 1e-8
+  )
+  expect_identical(unique(b1$test_type), "z")
+  expect_identical(unique(b1$df), Inf)
+  note1 <- attr(out1, "note")
+  expect_match(
+    note1,
+    "Std. errors: cluster-robust (CR1), clusters by site.",
+    fixed = TRUE
+  )
+  expect_match(
+    note1,
+    "P-values: Wald z-test, large-sample approximation.",
+    fixed = TRUE
+  )
 })
 
-test_that("CR0 factor joint tests and betas use glmmTMB's sandwich", {
+test_that("CR0 / CR1 factor joint tests and betas use glmmTMB's sandwich", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   d <- .tmb_cluster_data()
   fit <- glmmTMB::glmmTMB(
@@ -300,6 +480,31 @@ test_that("CR0 factor joint tests and betas use glmmTMB's sandwich", {
   expect_equal(
     beta$std_error[match(slopes, beta$term)],
     b$std_error[match(slopes, b$term)] * scale,
+    tolerance = 1e-5
+  )
+  # CR1: the joint test on the matrix times G / (G - 1), and the refit's
+  # own CR1 for the betas.
+  G <- nlevels(d$site)
+  fr1 <- as_regression_frame(
+    fit,
+    vcov = "CR1",
+    show_columns = c("b", "partial_chi2"),
+    standardized = "refit"
+  )
+  V1 <- V * G / (G - 1)
+  w1 <- as.numeric(t(bhat) %*% solve(V1[names(bhat), names(bhat)]) %*% bhat)
+  chi2_1 <- fr1$coefs[fr1$coefs$estimate_type == "partial_chi2", ]
+  expect_equal(chi2_1$estimate[chi2_1$term == "gb"], w1, tolerance = 1e-8)
+  b1 <- fr1$coefs[fr1$coefs$estimate_type == "B" & !fr1$coefs$is_ref, ]
+  beta1 <- fr1$coefs[fr1$coefs$estimate_type == "beta", ]
+  expect_equal(
+    b1$std_error[match(slopes, b1$term)],
+    unname(sqrt(diag(V1))[slopes]),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    beta1$std_error[match(slopes, beta1$term)],
+    b1$std_error[match(slopes, b1$term)] * scale,
     tolerance = 1e-5
   )
 })
@@ -333,18 +538,7 @@ test_that("nested random effects cluster on the top-level factor", {
 
 test_that("zero-inflation and dispersion rows come from the same sandwich", {
   skip_if_not_installed("glmmTMB", "1.1.15")
-  set.seed(3)
-  d <- data.frame(
-    site = factor(rep(1:15, each = 12)),
-    x = stats::rnorm(180),
-    z = stats::rnorm(180)
-  )
-  d$y <- stats::rnbinom(
-    180,
-    mu = exp(0.5 + 0.4 * d$x + stats::rnorm(15, sd = 0.4)[d$site]),
-    size = 2
-  ) *
-    stats::rbinom(180, 1, 0.8)
+  d <- .tmb_zinb_disp_data()
   fit <- glmmTMB::glmmTMB(
     y ~ x + (1 | site),
     ziformula = ~z,
@@ -360,6 +554,19 @@ test_that("zero-inflation and dispersion rows come from the same sandwich", {
   # One estimator for the table: no "model-based" disclosure in the footer.
   note <- attr(table_regression(fit, vcov = "CR0"), "note")
   expect_false(grepl("model-based", note, fixed = TRUE))
+  # CR1 scales those rows with the conditional ones.
+  G <- nlevels(d$site)
+  blocks1 <- as_regression_frame(fit, vcov = "CR1")$info$extras$component_blocks
+  expect_equal(
+    blocks1[[1L]]$coefs$std_error,
+    unname(sqrt(diag(oracle$zi) * G / (G - 1))),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    blocks1[[2L]]$coefs$std_error,
+    unname(sqrt(diag(oracle$disp) * G / (G - 1))),
+    tolerance = 1e-8
+  )
 })
 
 test_that("computing the sandwich leaves the fit as it was", {
@@ -398,20 +605,35 @@ test_that("computing the sandwich leaves the fit as it was", {
   expect_identical(fit$obj$fn(fit$fit$par), ref$obj$fn(ref$fit$par))
 })
 
-test_that("glmmTMB refuses every token but CR0, each with its reason", {
+test_that("glmmTMB refuses every token but CR0 and CR1, each with its reason", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   skip_if_not_installed("lme4")
   d <- .tmb_cluster_data()
   fit <- glmmTMB::glmmTMB(y ~ x + (1 | site), data = d, family = stats::poisson)
-  expect_identical(spicy:::.robust_vcov_support(fit), c("classical", "CR0"))
-  for (v in c("CR1", "CR2", "CR3", "HC0", "HC3", "bootstrap")) {
+  expect_identical(
+    spicy:::.robust_vcov_support(fit),
+    c("classical", "CR0", "CR1")
+  )
+  for (v in c("CR2", "CR3", "CR1S", "HC0", "HC3", "bootstrap", "jackknife")) {
     expect_error(
       table_regression(fit, vcov = v),
       class = "spicy_unsupported_vcov"
     )
   }
+  # No residuals and no hat values: the reason holds for CR2 and CR3, and
+  # no longer claims that CR1 cannot be formed.
   err <- expect_error(table_regression(fit, vcov = "CR2"))
   expect_match(conditionMessage(err), "one score per cluster", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "the CR2 and CR3 corrections cannot be formed",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "Use `vcov = \"CR0\"` or `\"CR1\"`.",
+    fixed = TRUE
+  )
   err <- expect_error(table_regression(fit, vcov = "HC3"))
   expect_match(conditionMessage(err), "per-observation (HC)", fixed = TRUE)
   # The internal route refuses too: sandwich::vcovHC() would have answered
@@ -431,6 +653,11 @@ test_that("glmmTMB refuses every token but CR0, each with its reason", {
     class = "spicy_unsupported_vcov"
   )
   expect_match(conditionMessage(err), "REML = FALSE", fixed = TRUE)
+  expect_identical(spicy:::.robust_vcov_support(fit_reml), "classical")
+  expect_error(
+    table_regression(fit_reml, vcov = "CR1"),
+    class = "spicy_unsupported_vcov"
+  )
 })
 
 test_that("the glmmTMB vcov refusals name table_regression(), not a helper", {
@@ -444,9 +671,10 @@ test_that("the glmmTMB vcov refusals name table_regression(), not a helper", {
     family = glmmTMB::ordinal()
   )
   calls <- list(
-    quote(table_regression(fit, vcov = "CR1")),
+    quote(table_regression(fit, vcov = "CR2")),
     quote(table_regression(fit, vcov = "bootstrap")),
-    quote(table_regression(fit_ord, vcov = "CR0"))
+    quote(table_regression(fit_ord, vcov = "CR0")),
+    quote(table_regression(fit_ord, vcov = "CR1"))
   )
   for (cl in calls) {
     err <- expect_error(eval(cl), class = "spicy_unsupported_vcov")
@@ -525,13 +753,17 @@ test_that("the cluster is checked: length, missing ids, no random effects", {
     "note"
   )
   expect_match(note, "clusters by site.", fixed = TRUE)
-  # A cluster without a CR vcov is ignored, and the hint names the one
-  # type this class takes.
+  # A cluster without a CR vcov is ignored, and the hint names the two
+  # types this class takes.
   w <- expect_warning(
     table_regression(fit, cluster = ~site),
     class = "spicy_ignored_arg"
   )
-  expect_match(conditionMessage(w), "`\"CR0\"` to use", fixed = TRUE)
+  expect_match(
+    conditionMessage(w),
+    "`\"CR0\"` or `\"CR1\"` to use",
+    fixed = TRUE
+  )
   expect_false(grepl("CR2", conditionMessage(w), fixed = TRUE))
 })
 
@@ -553,9 +785,23 @@ test_that("CR0 needs glmmTMB >= 1.1.15, checked when it is computed", {
     format(utils::packageVersion("glmmTMB")),
     fixed = TRUE
   )
+  # The message names the token requested.
+  err1 <- with_mocked_bindings(
+    expect_error(
+      table_regression(fit, vcov = "CR1"),
+      class = "spicy_unsupported_vcov"
+    ),
+    .GLMMTMB_SANDWICH_MIN_VERSION = "99.0",
+    .package = "spicy"
+  )
+  expect_match(
+    conditionMessage(err1),
+    "`vcov = \"CR1\"` for a `glmmTMB` fit requires",
+    fixed = TRUE
+  )
 })
 
-test_that("nested = TRUE under CR0 tests the added block on that matrix", {
+test_that("nested = TRUE under CR0 / CR1 tests the added block on that matrix", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   d <- .tmb_nested_data()
   models <- list(
@@ -585,4 +831,19 @@ test_that("nested = TRUE under CR0 tests the added block on that matrix", {
   expect_equal(got$p_change, stats::pchisq(w, 1, lower.tail = FALSE))
   expect_identical(got$wald_df2, Inf)
   expect_true(is.na(got$lrt_change))
+  # CR1: the block test on glmmTMB's sandwich clustered by school, times
+  # G / (G - 1) with G = 10 schools.
+  frames1 <- lapply(models, as_regression_frame, vcov = "CR1")
+  got1 <- spicy:::compute_nested_comparisons(
+    models,
+    frames = frames1,
+    vcov_list = list("CR1", "CR1"),
+    cluster_list = list(NULL, NULL)
+  )
+  V_school <- glmmTMB::sandwich(models[[2L]], cluster = d$school)
+  w1 <- unname(
+    glmmTMB::fixef(models[[2L]])$cond["x"]^2 / (V_school["x", "x"] * 10 / 9)
+  )
+  expect_equal(got1$wald_chi2_change, w1, tolerance = 1e-8)
+  expect_identical(got1$wald_df2, Inf)
 })

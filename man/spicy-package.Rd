@@ -233,11 +233,11 @@ non-2x2 table).
 spicy does not compute it (e.g., weighted group tests in
 \code{\link[=table_continuous]{table_continuous()}}); the message names an alternative.
 \item \code{spicy_empty_table} -- \code{\link[=table_regression]{table_regression()}} has no row
-left to show for a model once the requested row blocks are
-switched off, or no coefficient row once \code{keep}, \code{drop} or
-\code{show_intercept = FALSE} have chosen the rows (for a panel of
-\code{layout = "stacked"}, or for every model of the table);
-\code{\link[=table_stack]{table_stack()}} received a table without rows.
+to show for a model: it has no coefficient, every requested
+row block is switched off, or no coefficient row is left once
+\code{keep}, \code{drop} or \code{show_intercept = FALSE} have chosen the rows
+(for a panel of \code{layout = "stacked"}, or for every model of
+the table); \code{\link[=table_stack]{table_stack()}} received a table without rows.
 \item \code{spicy_stack_mismatch} -- \code{\link[=table_stack]{table_stack()}} received
 tables built in different languages, with different decimal
 marks or alignments, or under styles that format a cell

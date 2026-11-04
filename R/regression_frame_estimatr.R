@@ -318,7 +318,11 @@ as_regression_frame.iv_robust <- function(
     } else {
       NA_real_
     },
-    title_prefix = .estimatr_title_prefix(se_type, is_iv),
+    title_prefix = .estimatr_title_prefix(
+      se_type,
+      is_iv,
+      has_fe = length(fixef_sizes) > 0L
+    ),
     exp_applied = FALSE,
     exp_header = NA_character_,
     se_type = se_type,
@@ -356,33 +360,38 @@ as_regression_frame.iv_robust <- function(
 
 # Model-type note. The SE family belongs in it: a "none" fit reports no
 # uncertainty at all and a "classical" one is not robust, so neither may
-# announce robust SE.
-.estimatr_title_prefix <- function(se_type, is_iv) {
+# announce robust SE. Absorbed fixed effects (`fixed_effects = ~ f`) add
+# the qualifier of a fixest fit, as in "IV regression (2SLS, fixed
+# effects)".
+.estimatr_title_prefix <- function(se_type, is_iv, has_fe = FALSE) {
   kind <- switch(
     se_type,
     "none" = "no SE computed",
     "classical" = "classical SE",
     "robust SE"
   )
-  paste0(if (is_iv) "IV regression (" else "Linear regression (", kind, ")")
+  paste0(
+    if (is_iv) "IV regression (" else "Linear regression (",
+    kind,
+    if (has_fe) ", fixed effects",
+    ")"
+  )
 }
 
 
-# Map estimatr's se_type slot to a human-readable vcov_label. The cluster-
-# robust labels carry "(CR2)" suffix etc. to disambiguate.
+# Map estimatr's se_type slot to a human-readable vcov_label, in the
+# table language. The cluster-robust labels carry "(CR2)" suffix etc. to
+# disambiguate. se_type = "stata" is Stata's cluster-robust CR1:
+# estimatr stores an unclustered "stata" fit as "HC1".
 .estimatr_vcov_label <- function(se_type, clustered) {
   base <- switch(
     se_type,
-    "HC0" = "Robust (HC0)",
-    "HC1" = "Robust (HC1)",
-    "HC2" = "Robust (HC2)",
-    "HC3" = "Robust (HC3)",
     "classical" = spicy_str("note_vcov_classical_plain"),
-    "stata" = "Robust (Stata HC1)",
-    "CR0" = "Cluster-robust (CR0)",
-    "CR2" = "Cluster-robust (CR2)",
-    "none" = "None (se_type = \"none\")",
-    paste0("Robust (", se_type, ")")
+    "stata" = spicy_fmt("note_vcov_cluster_robust_plain", "Stata CR1"),
+    "CR0" = ,
+    "CR2" = spicy_fmt("note_vcov_cluster_robust_plain", se_type),
+    "none" = spicy_str("note_vcov_none_plain"),
+    spicy_fmt("note_vcov_robust_plain", se_type)
   )
   base
 }

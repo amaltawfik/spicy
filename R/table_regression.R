@@ -113,7 +113,9 @@
 #' \itemize{
 #'   \item Counts: `"nobs"`, `"weighted_nobs"`, `"n_events"` (Cox
 #'     models: number of events, reported alongside `n` per the
-#'     field convention; blank for other classes).
+#'     field convention; blank for other classes). `"nobs"` and the
+#'     BIC follow the engine's [stats::nobs()], which for a weighted
+#'     `polr` or `clm` fit is the sum of the weights.
 #'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
 #'     `"omega2"`.
 #'   \item Pseudo-\eqn{R^2}{R^2} (`glm` and ordinal `polr` / `clm`):
@@ -125,14 +127,22 @@
 #'     fits, it is the square root of the dispersion (so a gaussian glm
 #'     reads as lm), and 1 when the family fixes it (binomial, Poisson).
 #'     For `survreg`, it is the scale \eqn{\sigma}{sigma} of
-#'     \eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} (the
-#'     standard deviation of \eqn{\log T}{log T} for the log-normal),
+#'     \eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} for the
+#'     distributions fitted on \eqn{\log T}{log T} (the standard deviation
+#'     of \eqn{\log T}{log T} for the log-normal), and of
+#'     \eqn{T = X'\beta + \sigma W}{T = X'beta + sigma W} for those that
+#'     model \eqn{T}{T} itself (gaussian, logistic, extreme value, t),
 #'     blank when strata give one scale per stratum. For `glmmTMB`, it is
 #'     the same square root for the gaussian, Gamma and Tweedie families,
 #'     and the fixed 1 of Poisson and binomial. It is blank for the
 #'     negative-binomial and beta fits below, whose dispersion has its
 #'     own row, and for the other `glmmTMB` families, whose `sigma()` is
-#'     a family-specific parameter.
+#'     a family-specific parameter. For `mgcv::gam` and `bam`, a glm
+#'     family follows the glm rule; an extended family shows the square
+#'     root of its scale only when the GAM estimates one (`tw()`), and is
+#'     blank otherwise (an estimated `nb()`, `betar()`, `scat()`, `ziP()`,
+#'     `ocat()`):
+#'     mgcv fixes their scale at 1.
 #'   \item Survey designs (`survey::svyglm` only): `"eff_p"`, the
 #'     effective number of parameters of the design (the first element
 #'     of survey's `extractAIC`, the sum of the Rao-Scott eigenvalues).
@@ -147,22 +157,38 @@
 #'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
 #'   \item Negative-binomial dispersion. NB2 fits (`MASS::glm.nb`,
 #'     `lme4::glmer.nb`, `fixest::fenegbin`, `mgcv::gam` with `nb()`,
-#'     and `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"`
+#'     `pscl::zeroinfl` and `pscl::hurdle` with `dist = "negbin"`, whose
+#'     theta is that of the count part, and `glmmTMB` with `nbinom2` or
+#'     `truncated_nbinom2`): `"theta"`
 #'     (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and `"alpha"`
 #'     (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg` convention).
 #'     NB1 fits (`glmmTMB` with `nbinom1` or `truncated_nbinom1`):
 #'     `"delta"` (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
 #'     \eqn{\delta}{delta} of Stata's `nbreg, dispersion(constant)`).
-#'   \item Beta precision (`betareg::betareg`, and `glmmTMB` with
-#'     `beta_family()`, `betabinomial()` or `ordbeta()`):
-#'     `"phi"` (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
-#'     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
-#'     \eqn{\phi}{phi} = less dispersion). A constant precision is
+#'   \item Beta precision: `"phi"`. In beta regression
+#'     (`betareg::betareg`, `mgcv::gam` with `betar()`, and `glmmTMB`
+#'     with `beta_family()`), \eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
+#'     mu(1-mu)/(1+phi)} (Ferrari & Cribari-Neto 2004; higher
+#'     \eqn{\phi}{phi} = less dispersion). For `glmmTMB` with
+#'     `betabinomial()` or `ordbeta()`, \eqn{\phi}{phi} is the precision
+#'     parameter of the beta part. A constant precision is
 #'     back-transformed from its link, so `y ~ x | 1` reports the
 #'     same \eqn{\phi}{phi} as `y ~ x`.
 #'   \item For these dispersion rows (`"theta"`, `"alpha"`, `"delta"`,
 #'     `"phi"`), a column whose model lacks the parameter is blank, so a
 #'     Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+#'     A parameter fixed in the call is not an estimate and has no row:
+#'     `MASS::negative.binomial(theta)` in `glm()`, mgcv's
+#'     `negbin(theta)`, and `nb(theta)` or `betar(theta)` with
+#'     `theta > 0`. Such a negative-binomial model keeps the glm rule for
+#'     `"sigma"`. A negative-binomial `glmer()` always shows its theta,
+#'     which lme4 counts in the degrees of freedom of the model: a
+#'     `glmer.nb()` fit, its `update()` refits, and a `glmer()` with
+#'     `negative.binomial(theta)`.
+#'     For `mgcv::gam` and `bam`, theta and phi are estimated with the
+#'     smoothing parameters (REML by default), so they differ from the
+#'     maximum-likelihood values of `glm.nb()`, betareg or `glmmTMB`.
+#'     `method = "ML"` gives those.
 #'     A token is refused only when no model in the table has the
 #'     parameter, or when a model of that family has dispersion
 #'     covariates (a `glmmTMB` `dispformula`, or a betareg `y ~ x | z`),
@@ -194,7 +220,8 @@
 #'     intercept: they read No when another model absorbs that
 #'     factor, and contribute no row otherwise.
 #'     `"within_r2"` is the FE-partialed within
-#'     R-squared (a default for `feols`, opt-in for `estimatr`;
+#'     R-squared (a default for `feols`, except an IV one; opt-in
+#'     for `estimatr`;
 #'     GLM-family fixest fits report fixest's McFadden `pr2`
 #'     instead). Both tokens are refused when no model in the table
 #'     absorbs fixed effects.
@@ -207,7 +234,13 @@
 #'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
 #'     `"f_change"`, `"f2_change"`, `"lrt_change"`,
 #'     `"aic_change"`, `"aicc_change"`, `"bic_change"`,
-#'     `"deviance_change"`, `"p_change"`.
+#'     `"deviance_change"`, `"p_change"`. The differences, current
+#'     model minus previous (`"r2_change"`, `"adj_r2_change"`,
+#'     `"f2_change"`, and the AIC, AICc and BIC changes), print with an
+#'     explicit sign (`+0.07`, `-9.4`) in every output. The test
+#'     statistics and `"p_change"` are never signed. `"deviance_change"`
+#'     is the drop in deviance (previous minus current), positive when
+#'     the larger model fits better, and is not signed either.
 #' }
 #'
 #' Default (resolved when `NULL`) is class-aware: lm and
@@ -364,7 +397,10 @@
 #'     remains the recommended modern choice. `"CR1S"` is refused
 #'     for `glm` with an explanation: Stata's ML commands use a
 #'     different convention (`G/(G-1)` scaling, z), so the label
-#'     would not match Stata output there.}
+#'     would not match Stata output there. For `MASS::glm.nb`, the
+#'     sandwich holds theta at its estimate, so robust standard errors
+#'     can differ by a few percent from software that includes the
+#'     score of theta.}
 #'   \item{`mlogit`}{`classical` + `"CR1"` only (cluster at the
 #'     choice-situation level) -- `sandwich::vcovHC()` mis-scales the
 #'     sandwich for mlogit's per-choice-situation scores, so `HC*` is
@@ -387,7 +423,16 @@
 #'     `multinom` needs \pkg{sandwich} >= 3.1-2 (which added its
 #'     `estfun()` method); its `cluster` is one entry per
 #'     observation. For the two-part `pscl` fits the cluster
-#'     sandwich covers both components (count and zero) at once.}
+#'     sandwich covers both components (count and zero) at once. A
+#'     negative-binomial `zeroinfl` or `hurdle` is `classical` only:
+#'     the sandwich of these fits leaves out the score of theta. When
+#'     the count part is negative binomial, fit the model with
+#'     `glmmTMB` instead (family `nbinom2` with `ziformula`, or
+#'     `truncated_nbinom2` for a hurdle), whose sandwich includes it;
+#'     glmmTMB's zero hurdle is binomial, as with
+#'     `zero.dist = "binomial"`. When only the zero hurdle is negative
+#'     binomial, the default
+#'     `zero.dist = "binomial"` keeps `"CR1"`.}
 #'   \item{`quantreg::rq`}{its own estimator family, not the sandwich
 #'     vocabulary: `classical` (= `"nid"`, quantreg's large-sample
 #'     default), `"iid"`, `"ker"`, `"rank"` (intervals only) and a
@@ -412,9 +457,12 @@
 #'     refused; set the estimator through the fitting package instead
 #'     (`se_type =` for estimatr; `vcov =` at estimation or in
 #'     `summary()` for fixest).}
-#'   \item{`glmmTMB`}{`classical` + `"CR0"` only, from glmmTMB's own
-#'     sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the coefficients,
-#'     the zero-inflation and dispersion blocks and the AME. Without
+#'   \item{`glmmTMB`}{`classical`, `"CR0"` and `"CR1"`, from glmmTMB's
+#'     own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
+#'     coefficients, the zero-inflation and dispersion blocks and the
+#'     AME. `"CR0"` is the sandwich as glmmTMB computes it; `"CR1"`
+#'     scales it by \eqn{G/(G-1)}{G/(G-1)}, `G` the number of clusters,
+#'     as for the [sandwich::vcovCL()] classes. Both use Wald z. Without
 #'     `cluster`, the cluster is the top-level grouping factor of the
 #'     random effects. The estimator needs independent clusters that
 #'     contain the random effects -- every group within one cluster --
@@ -423,10 +471,11 @@
 #'     distribution or the conditional variance is misspecified,
 #'     provided the estimates themselves stay consistent (Liang & Zeger
 #'     1986; Verbeke & Lesaffre 1997); with few clusters it understates
-#'     the variance, and this class has no small-sample correction
-#'     (Cameron & Miller 2015). `"CR1"`-`"CR3"` and `HC*` are refused
-#'     (the sandwich has one score per cluster), as are REML fits and
-#'     the ordinal family.}
+#'     the variance, which the factor of `"CR1"` offsets only in part:
+#'     this class has no bias-reduced correction (Cameron & Miller
+#'     2015). `"CR2"`, `"CR3"` and `HC*` are refused (the sandwich has
+#'     one score per cluster, with no residuals and no hat values), as
+#'     are REML fits and the ordinal family.}
 #'   \item{Other classes (`glmer`, `rstanarm`/`brms`, ...)}{`classical`
 #'     (model-based) only (\pkg{clubSandwich} has no working backend for
 #'     `glmer`).}
@@ -436,7 +485,11 @@
 #' estimator covers the fixed effects: their coefficients, their joint
 #' tests (`"partial_chi2"`), the standardized coefficients and the AME.
 #' The random-effect variance components keep their model-based
-#' inference.
+#' inference. glmmTMB's sandwich takes one likelihood score per cluster
+#' over the fixed and variance parameters, while the `CR*` estimators of
+#' `lmer` and `lme` come from \pkg{clubSandwich} over the fixed effects
+#' alone: on the same model the two agree as the clusters grow, but not
+#' exactly.
 #'
 #' Cluster-robust backends differ by class but are each cross-validated
 #' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use
@@ -444,7 +497,7 @@
 #' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
 #' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
-#' `pscl` two-part fits use
+#' Poisson and geometric `pscl` two-part fits use
 #' [sandwich::vcovCL()]. For `gam`/`bam`, spicy forms the sandwich
 #' itself, from the GLM score and the penalized covariance of the fit,
 #' and lets `vcovCL()` do only the clustering arithmetic: the sandwich
@@ -460,9 +513,10 @@
 #' requested as `"CR0"`, and the other `CR*` tokens are refused rather
 #' than mapped. `glmmTMB` fits use
 #' `glmmTMB::sandwich()`, with one score per cluster (the gradient of
-#' the cluster's marginal log-likelihood) and no finite-sample factor;
-#' its one estimator is requested as `"CR0"`, and the other `CR*`
-#' tokens are refused rather than mapped. `cluster` length is one
+#' the cluster's marginal log-likelihood) and no finite-sample factor:
+#' `"CR0"` requests it as computed, `"CR1"` scaled by
+#' \eqn{G/(G-1)}{G/(G-1)}, and `"CR2"` and `"CR3"` are refused rather
+#' than mapped. `cluster` length is one
 #' entry per observation, except `mlogit` (one per choice situation)
 #' and censored `coxph` (one per subject).
 #'
@@ -656,8 +710,11 @@
 #'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
 #'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"` or
 #'     after `rms::robcov()`, `quantreg::rq` under `"iid"` and
-#'     `"ker"`, and a `fixest::feols` fit estimated with a non-iid vcov
-#'     (on fixest's own degrees of freedom, as `fixest::wald()`). Under
+#'     `"ker"`, and a fixest fit estimated with a non-iid vcov whose
+#'     coefficient tests are t (on fixest's own degrees of freedom, as
+#'     `fixest::wald()`): `feols`, and `feglm` with a family whose
+#'     dispersion is estimated (gaussian, Gamma, inverse Gaussian and
+#'     the quasi families). Under
 #'     `"CR0"`-`"CR3"`, `lm`, `glm` (`MASS::glm.nb` included),
 #'     `lme4::lmer` and `nlme::lme` use the HTZ test of
 #'     `clubSandwich::Wald_test()`, the small-sample correction of their
@@ -668,13 +725,15 @@
 #'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
 #'     `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
 #'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`,
+#'     `glmmTMB` under `"CR0"` and `"CR1"`,
 #'     under `"CR0"` to `coxph` and `rms::lrm` / `cph` / `Glm`,
 #'     and under `"CR1"` to `survreg`, `mgcv::gam` and `bam`, `polr`,
 #'     `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
-#'     `hurdle`; also to
-#'     `survreg(robust = TRUE)`, a `fixest::fepois` or `feglm` fit with
-#'     a non-iid vcov, and an `rms` fit of these classes passed through
-#'     `robcov()`.
+#'     `hurdle` (not negative binomial); also to
+#'     `survreg(robust = TRUE)`, a fixest fit with a non-iid vcov whose
+#'     coefficient tests are z (`fepois`, `femlm`, `fenegbin`, and
+#'     `feglm` with the binomial or Poisson family), and an `rms` fit of
+#'     these classes passed through `robcov()`.
 #' }
 #' \eqn{\Delta R^2}{Delta R^2}, the information criteria and the
 #' deviance change do not depend on the vcov and are unchanged, and a
@@ -1090,10 +1149,13 @@
 #'   p-value use `"ame_p"`.
 #' @param keep Character vector of regexes. Only coefficient rows
 #'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
-#'   `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are
-#'   kept. The intercept and the subordinate blocks (thresholds, random
-#'   effects) are exempt from `keep` and `drop`: `show_intercept`,
-#'   `show_thresholds` and `show_re` govern them.
+#'   `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the
+#'   spelling of `lm()`, `"cyl6"` for rms's `"cyl=6"` and `"wt:cyl6"`
+#'   for `"wt * cyl=6"`) matches at
+#'   least one pattern are kept. The intercept and the subordinate
+#'   blocks (thresholds, random effects) are exempt from `keep` and
+#'   `drop`: `show_intercept`, `show_thresholds` and `show_re` govern
+#'   them.
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -1103,14 +1165,19 @@
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param show_thresholds For ordinal cumulative-link models
-#'   (`MASS::polr`, `ordinal::clm`, `ordinal::clmm`, `glmmTMB` with the
-#'   ordinal family), whether to display the estimated
+#'   (`MASS::polr`, `ordinal::clm`, `ordinal::clmm`, `survey::svyolr`,
+#'   `glmmTMB` with the ordinal family, `rms::lrm` with more than two
+#'   outcome levels), whether to display the estimated
 #'   category thresholds (cut-points) as a subordinate `"Thresholds"`
 #'   block of rows below the predictors, carrying B / SE / CI / p like
 #'   the predictor rows. Default `TRUE`. `FALSE` collapses them to a
 #'   compact one-line footer note instead. Thresholds are reported on
 #'   the log-odds (B) scale and are **never exponentiated** (under
 #'   `exponentiate = TRUE` their rows stay on the log-odds scale).
+#'   They follow the `polr` convention, link(P(Y <= j)) = threshold -
+#'   linear predictor: an `rms::lrm` fit, which models P(Y >= j), shows
+#'   its intercepts with the sign reversed, named `"3|4"` (displayed
+#'   `"3 | 4"`) rather than `"y>=4"`.
 #'   Has no effect on non-ordinal models, and the rows are shown only
 #'   when a coefficient column (`"b"`/`"beta"`) is in `show_columns`.
 #' @param show_components For models with secondary components,
@@ -1121,12 +1188,15 @@
 #'     \item `pscl::zeroinfl` and `glmmTMB(ziformula = )`: a
 #'       `Zero-inflation` block -- the model for the probability of a
 #'       **structural (excess) zero**.
-#'     \item `pscl::hurdle`: a `Zero hurdle` block -- the model for the
-#'       probability of a **nonzero count** (note the opposite direction
-#'       vs zero-inflation; the footer names each block's meaning).
-#'       A `glmmTMB` hurdle model (a zero-truncated family with
-#'       `ziformula`) also shows a `Zero hurdle` block, but glmmTMB
-#'       models the probability of a **zero count**: the footer says so.
+#'     \item `pscl::hurdle`: a `Zero hurdle, Pr(y > 0)` block -- the model
+#'       for the probability of a **nonzero count** (note the opposite
+#'       direction vs zero-inflation; the footer names each block's
+#'       meaning).
+#'     \item A `glmmTMB` hurdle model (a zero-truncated family,
+#'       `glmmTMB::ziGamma()`, `glmmTMB::lognormal()` or
+#'       `glmmTMB::beta_family()`, with `ziformula`): a
+#'       `Zero hurdle, Pr(y = 0)` block -- glmmTMB models the probability
+#'       of a **zero**, the opposite event of the `pscl::hurdle` block.
 #'     \item `glmmTMB(dispformula = )`: a `Dispersion` block (only when
 #'       dispersion was actually modeled; log scale, never
 #'       exponentiated).
@@ -1210,8 +1280,10 @@
 #'   token order. `NULL` (default) resolves class-aware:
 #'   \itemize{
 #'     \item `lm`, `estimatr::lm_robust()`: `c("nobs", "r2",
-#'       "adj_r2")`. `estimatr::iv_robust()` gets `"nobs"` alone --
-#'       the 2SLS R-squared is not the classical one.
+#'       "adj_r2")`. `estimatr::iv_robust()` gets `"nobs"` alone,
+#'       and an IV `fixest::feols()` neither R-squared nor AIC -- the
+#'       2SLS R-squared is not the classical one. Asked for, it is
+#'       the R-squared of `ivreg()`, on the structural residuals.
 #'     \item `glm`, ordinal `polr` / `clm`:
 #'       `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
 #'       "aic")` (McFadden = Stata `ologit` default,
@@ -1425,9 +1497,9 @@
 #'   tests. See *Hierarchical (nested) model comparison* for the rule,
 #'   the classes it covers and its small-sample caution.
 #' @param digits Decimal places for general numeric tokens
-#'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`,
-#'   `deviance`, `deviance_change`, `ame`, `ame_se`,
-#'   `weighted_nobs`). Default `2L`.
+#'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`, `ame`,
+#'   `ame_se`, `weighted_nobs`; the Wald change statistics under a
+#'   robust `vcov` follow `f_change`). Default `2L`.
 #' @param p_digits Decimal places for p-values (`p`, `ame_p`,
 #'   `p_change`). APA-strict: leading zero stripped, `<.001` (or
 #'   `<.0001` etc. depending on `p_digits`) for small values.
@@ -1440,8 +1512,9 @@
 #'   effect-size fit stats (`r2`, `adj_r2`, `r2_change`,
 #'   `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`,
 #'   `rmse`). Default `2L`.
-#' @param ic_digits Decimals for information criteria (`AIC`,
-#'   `AICc`, `BIC`, and their `_change` form). Default `1L`.
+#' @param ic_digits Decimals for information criteria and deviance
+#'   (`AIC`, `AICc`, `BIC`, `deviance`, and their `_change` form).
+#'   Default `1L`.
 #' @param decimal_mark The decimal mark, a single character: `"."` (the
 #'   default) or `","` in most styles; the Lancet style of
 #'   [spicy_style()] uses the middle dot. When
@@ -1494,14 +1567,18 @@
 #'   The names are model identifiers, not display text: the outcome, the
 #'   term labels of [stats::terms()] (`"age"`, `"sex"`, `"age:sex"`, a
 #'   factor's term naming its header), and the coefficient names
-#'   (`"(Intercept)"`, `"sexMale"`), each naming one row. They keep that
-#'   form whatever the language of the table. Classes with no `terms`
+#'   (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the spelling
+#'   of `lm()`, `"sexMale"` for rms's `"sex=Male"` and `"age:sexMale"`
+#'   for `"age * sex=Male"`), each naming one
+#'   row. They keep that form whatever the language of the table.
+#'   Classes with no `terms`
 #'   component (`nls()`, `sampleSelection::selection()`) are keyed on
 #'   their coefficient (or parameter) names alone. With several models,
 #'   a name is looked up in the terms of all of them and lands on the
 #'   rows where it exists. A name that matches nothing in the table warns
-#'   (class `spicy_unknown_name`) and is left out, so one vector can still
-#'   serve every table of a project. The headers of the
+#'   (class `spicy_unknown_name`), with the list of its terms, and is left
+#'   out, so one vector can still serve every table of a project. The
+#'   headers of the
 #'   subordinate blocks (`Random effects`, `Thresholds`,
 #'   `Zero-inflation`, ...) are set by the package and cannot be
 #'   relabeled here.
@@ -2021,6 +2098,12 @@ table_regression <- function(
   # Phase A -- input class (steps 1-3)
   models <- validate_models_input(models)
   n_models <- length(models)
+  # A model outside the scope of its frame (an ordinal or categorical
+  # Bayesian fit, a GAM with several linear predictors) is refused before
+  # any argument is resolved against it.
+  for (m in models) {
+    .with_public_call(.refuse_out_of_scope_model(m), public_call)
+  }
 
   # `layout = "stacked"`: one panel per model, each built by a call of
   # this function on that model alone, then stacked
@@ -2328,8 +2411,18 @@ table_regression <- function(
     # disclosure (etable, modelsummary and esttab all default it on),
     # then n, R2 and the FE-partialled within R2 (feols; both rows
     # auto-drop as all-NA for feglm / fepois, which carry fixest's
-    # McFadden "pr2" instead) and AIC.
+    # McFadden "pr2" instead) and AIC. The second stage of an IV feols
+    # leaves the two R2 and AIC out, as ivreg and iv_robust do: the
+    # 2SLS R-squared is not the classical one, and 2SLS is not a
+    # likelihood fit.
     any_fixest <- any(vapply(models, inherits, logical(1), "fixest"))
+    any_fixest_not_iv <- any(vapply(
+      models,
+      function(m) {
+        inherits(m, "fixest") && !.fixest_is_iv_second_stage(m)
+      },
+      logical(1)
+    ))
     any_fixest_glm <- any(vapply(
       models,
       function(m) {
@@ -2341,10 +2434,9 @@ table_regression <- function(
       show_fit_stats <- c(
         show_fit_stats,
         if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
-        "r2",
-        "within_r2",
+        if (any_fixest_not_iv) c("r2", "within_r2"),
         if (any_fixest_glm) "pseudo_r2_mcfadden",
-        "aic"
+        if (any_fixest_not_iv) "aic"
       )
     }
     # Survey-design fits: the observed count AND the population it
@@ -3405,11 +3497,22 @@ table_regression <- function(
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
           "with `tau = `, or `\"risk_diff\"` with `at_time = `."
         )
+      } else if (any(lean_fe <- vapply(frames, .fixest_lean_fe, logical(1)))) {
+        sprintf(
+          paste0(
+            "%s: a fixest fit with fixed effects and `lean = TRUE` keeps ",
+            "too little for marginaleffects to predict from it. ",
+            "Re-estimate it with `lean = FALSE`."
+          ),
+          paste(.model_display_names(models)[lean_fe], collapse = ", ")
+        )
       } else if (any(classes == "fixest")) {
         paste0(
-          "The AME of a non-linear fixest model with fixed effects would ",
-          "need the uncertainty of the fixed effects, which fixest does ",
-          "not estimate. It is available for `feols()` and for a GLM ",
+          "marginaleffects, which computes the AME, refuses a fixest GLM ",
+          "with fixed effects (`feglm()`, `fepois()`, `femlm()`, ",
+          "`fenegbin()`, whatever the family): it cannot take into account ",
+          "the uncertainty of the fixed effects, which fixest does not ",
+          "estimate. The AME is available for `feols()` and for a GLM ",
           "without fixed effects."
         )
       } else {
@@ -3568,19 +3671,23 @@ table_regression <- function(
   # its `labels`. Before the explode, which copies each frame's info.
   # A name of `labels` or `note_labels` that is no outcome, term label or
   # coefficient name of the table warns, and is left out, as in the
-  # descriptive tables (`.warn_unknown_label_names()`). The panel of a
-  # stack names one model only: its driver checks the names against all.
+  # descriptive tables (`.warn_unknown_label_names()`). The warning lists
+  # the terms, which the models name and the reader may not know. The
+  # panel of a stack names one model only: its driver checks the names
+  # against all.
   if (is.null(panel_req)) {
+    label_keys <- .reg_label_keys(models)
     .warn_unknown_label_names(
       c(
-        .reg_label_keys(models),
+        label_keys,
         unlist(lapply(frames, function(f) {
           dv <- f$info$dv %||% NA_character_
           c(dv, .reg_bare_var(dv))
         }))
       ),
       labels,
-      note_labels
+      note_labels,
+      hint = .reg_terms_sentence(label_keys)
     )
   }
   var_labs <- .reg_variable_labels(labels, models, frames)
@@ -4104,14 +4211,51 @@ table_regression <- function(
         logical(1)
       ))
   ) {
+    # A survreg distribution that models the time itself (extreme,
+    # gaussian, logistic, t) is named, with why exp(B) is no time ratio.
+    raw_time <- vapply(
+      frames,
+      function(fr) {
+        identical(fr$info$class, "survreg") &&
+          identical(fr$info$family$link, "identity")
+      },
+      logical(1)
+    )
+    dists <- unique(vapply(
+      frames[raw_time],
+      function(fr) as.character(fr$info$extras$distribution)[1L],
+      character(1)
+    ))
+    dist_txt <- paste0("`dist = \"", dists, "\"`", collapse = " / ")
     spicy_warn(
       c(
-        "`exponentiate = TRUE` has no effect on identity-link fits.",
-        "i" = paste0(
-          "exp() is only applied to fits whose coefficients are on a log / ",
-          "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
-          "argument for identity-link (gaussian) fits."
-        )
+        if (all(raw_time)) {
+          paste0(
+            "`exponentiate = TRUE` has no effect on a `survreg()` model ",
+            "with ",
+            dist_txt,
+            "."
+          )
+        } else {
+          "`exponentiate = TRUE` has no effect on identity-link fits."
+        },
+        "i" = if (any(raw_time)) {
+          paste0(
+            "With ",
+            dist_txt,
+            " the model is on the time scale, not the log-time scale: a ",
+            "coefficient is a difference in time, and exp(B) is not a time ",
+            "ratio. Time ratios come from a log-time distribution ",
+            "(\"weibull\", \"lognormal\", \"loglogistic\")."
+          )
+        },
+        "i" = if (!all(raw_time)) {
+          paste0(
+            "exp() is only applied to fits whose coefficients are on a log / ",
+            "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
+            "argument for identity-link (gaussian) fits."
+          )
+        }
       ),
       class = "spicy_ignored_arg"
     )

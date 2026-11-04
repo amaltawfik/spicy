@@ -1551,15 +1551,19 @@ build_structured_body <- function(
       "icc",
       "r2_change",
       "adj_r2_change",
-      "f2_change",
-      "f_change",
-      "wald_f_change"
+      "f2_change"
     )
+  # The test statistics (f_change, wald_f_change, lrt_change,
+  # wald_chi2_change) take `digits`, and deviance sits with the
+  # information criteria, as in format_fit_stat_value(): the two
+  # buckets used to differ, so a rich output printed "9.12" where the
+  # console printed "9.1".
   is_ic <- token %in%
     c(
       "aic",
       "aicc",
       "bic",
+      "deviance",
       "elpd_loo",
       "looic",
       "waic",
@@ -1567,7 +1571,8 @@ build_structured_body <- function(
       "qicu",
       "aic_change",
       "aicc_change",
-      "bic_change"
+      "bic_change",
+      "deviance_change"
     )
   is_p <- identical(token, "p_change")
   if (is_int) {
@@ -1676,9 +1681,16 @@ build_structured_body <- function(
 #   precision = N    -> "0.<N zeros>" (e.g., "0.00")
 #   p_style = "apa"  -> "#.<N zeros>" so leading-zero "0" is dropped
 #                       on the displayed value (".005" not "0.005")
+#   signed = TRUE    -> "+0.00;-0.00;0.00": the explicit sign of a
+#                       nested-comparison difference (.NESTED_SIGNED_TOKENS),
+#                       an exact zero unsigned
 # `decimal_mark` is irrelevant: Excel format codes always use "."
 # internally; the rendered separator follows the cell's locale.
-.excel_numfmt <- function(precision, p_style) {
+.excel_numfmt <- function(precision, p_style, signed = FALSE) {
+  if (isTRUE(signed)) {
+    fmt <- .excel_numfmt(precision, NULL)
+    return(paste0("+", fmt, ";-", fmt, ";", fmt))
+  }
   precision <- as.integer(precision)
   if (is.na(precision) || precision < 0L) {
     precision <- 0L
@@ -1808,7 +1820,13 @@ build_structured_body <- function(
   if (!is.null(cfmt$threshold)) {
     precision <- .style_p_decimals(val, precision)
   }
-  s <- format_number(val, precision, decimal_mark)
+  # A nested-comparison difference (Delta R^2, Delta AIC, ...) carries
+  # its sign, as in the console: the token set is the shared one.
+  s <- if (isTRUE(cfmt$fit_stat %in% .NESTED_SIGNED_TOKENS)) {
+    format_signed(val, precision, decimal_mark)
+  } else {
+    format_number(val, precision, decimal_mark)
+  }
   if (identical(cfmt$p_style, "apa")) {
     s <- sub("^0(?=[\\.,])", "", s, perl = TRUE)
     s <- sub("^-0(?=[\\.,])", "-", s, perl = TRUE)
@@ -1992,8 +2010,12 @@ build_structured_body <- function(
     for (ov in col_meta_entry$fit_stat_overrides) {
       if (identical(ov$row, row_idx)) {
         prec <- ov$precision %||% prec
-        p_style <- ov$p_style %||% p_style
-        threshold <- ov$threshold %||% threshold
+        # Every override is a fit-statistic row, whose p style and floor
+        # are its own (NULL but for p_change): falling back to the
+        # column's would print a negative Delta AIC as "<.001" and strip
+        # the leading zero of an R^2 when the table shows only `p`.
+        p_style <- ov$p_style
+        threshold <- ov$threshold
         fit_stat <- ov$fit_stat %||% NULL
         break
       }

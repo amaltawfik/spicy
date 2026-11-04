@@ -148,6 +148,7 @@ as_regression_frame.brmsfit <- function(
     .brms_refuse_out_of_scope_beta(fit)
   }
   .stan_check_standardized(standardized)
+  .brms_refuse_ordinal(fit)
 
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
@@ -660,6 +661,60 @@ as_regression_frame.brmsfit <- function(
         "Bayesian models are tabulated for linear and generalized linear ",
         "families; an ordinal outcome is supported for `MASS::polr()` and ",
         "`ordinal::clm()` fits."
+      )
+    ),
+    class = "spicy_unsupported"
+  )
+}
+
+
+# A brms fit of an ordinal family (cumulative, sratio, cratio, acat) or of
+# a family with one linear predictor per category (categorical,
+# multinomial, and the compositional dirichlet, dirichlet2 and
+# logistic_normal) is outside the Bayesian scope too: read as a
+# regression, its cut-points (or the coefficients of every category, in
+# one column) printed as plain coefficients, exponentiated as odds ratios,
+# beside a Bayesian R2 that treats the categories as numbers.
+.brms_refuse_ordinal <- function(fit) {
+  fam <- fit$family
+  family <- if (is.list(fam)) fam$family else NULL
+  ordinal <- c("cumulative", "sratio", "cratio", "acat")
+  compositional <- c("dirichlet", "dirichlet2", "logistic_normal")
+  if (
+    !is.character(family) ||
+      length(family) != 1L ||
+      !family %in% c(ordinal, "categorical", "multinomial", compositional)
+  ) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "%s `brms` models (family `%s`) are not supported.",
+        if (family %in% ordinal) {
+          "Ordinal"
+        } else if (family %in% compositional) {
+          "Compositional"
+        } else if (identical(family, "multinomial")) {
+          "Multinomial"
+        } else {
+          "Categorical"
+        },
+        family
+      ),
+      # A compositional outcome has no frequentist counterpart to point
+      # to: the hint stops at the Bayesian scope.
+      "i" = paste0(
+        "Bayesian models are tabulated for linear and generalized linear ",
+        if (family %in% compositional) {
+          "families."
+        } else {
+          paste0(
+            "families; an ordinal outcome is supported for `MASS::polr()` ",
+            "and `ordinal::clm()` fits, a categorical one for ",
+            "`nnet::multinom()` fits."
+          )
+        }
       )
     ),
     class = "spicy_unsupported"

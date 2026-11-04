@@ -731,6 +731,10 @@ detect_factor_term_meta <- function(fit) {
         nlme::getData(fit)
       } else if (inherits(fit, c("brmsfit", "stanreg"))) {
         fit$data
+      } else if (inherits(fit, "fixest")) {
+        # model.frame() is empty for fixest; only the column types
+        # are read here, so the original data does.
+        .fixest_model_data(fit, sample = "original")
       } else {
         stats::model.frame(fit)
       }
@@ -826,7 +830,26 @@ detect_factor_term_meta <- function(fit) {
         if (is.null(d)) {
           return(NULL) # nocov: feols() requires `data`; eval() yields a df or errors (caught below)
         }
-        stats::.getXlevels(stats::terms(fit), d)
+        # .getXlevels() reads a model frame, whose columns are the
+        # variables as written ("factor(Month)"): each is evaluated in
+        # the data, one by one, so an i() term (a matrix, or an error
+        # when fixest is not attached) is left out, not the whole list.
+        tt <- stats::terms(fit)
+        vars <- vapply(as.list(attr(tt, "variables"))[-1L], deparse1, "")
+        if (attr(tt, "response") > 0L) {
+          vars <- vars[-attr(tt, "response")]
+        }
+        mf <- lapply(stats::setNames(nm = vars), function(v) {
+          tryCatch(eval(str2lang(v), d, environment(tt)), error = function(e) {
+            NULL
+          })
+        })
+        mf <- Filter(function(x) is.factor(x) || is.character(x), mf)
+        if (length(mf) == 0L) {
+          NULL
+        } else {
+          lapply(mf, function(x) levels(as.factor(x)))
+        }
       },
       error = function(e) NULL
     ))

@@ -111,3 +111,35 @@ test_that("tidy() names the response category of per-category AME rows", {
   expect_true("outcome_level" %in% names(td_lm))
   expect_true(all(is.na(td_lm$outcome_level)))
 })
+
+
+test_that("p_adjust counts and adjusts the location slopes, not the scale effects", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clm(
+    self_rated_health ~ age + smoking,
+    scale = ~smoking,
+    data = sochealth
+  )
+  # summary.clm stacks the cut-points, the location, then the scale rows.
+  sm <- summary(fit)$coefficients
+  n_a <- length(fit$alpha)
+  p_loc <- unname(sm[n_a + seq_along(fit$beta), "Pr(>|z|)"])
+  p_scale <- unname(sm[nrow(sm), "Pr(>|z|)"])
+  tab <- table_regression(fit, p_adjust = "holm")
+  expect_match(
+    attr(tab, "note"),
+    "P-values adjusted for 2 tests (Holm method).",
+    fixed = TRUE
+  )
+  td <- broom::tidy(tab)
+  expect_equal(
+    td$p.value[match(c("age", "smokingYes"), td$term)],
+    stats::p.adjust(p_loc, "holm"),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    td$p.value[td$term == "scale_smokingYes"],
+    p_scale,
+    tolerance = 1e-8
+  )
+})

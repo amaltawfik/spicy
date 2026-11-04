@@ -958,3 +958,433 @@ test_that("snapshot - Wald change rows, lm HC3 and glm HC0, English and French",
     )))
   }
 })
+
+
+# ============================================================================
+# Signs of the change rows: one rule in every output
+# ============================================================================
+#
+# A change token that is a DIFFERENCE between adjacent models, current
+# minus previous (Delta R^2, Delta AIC, ...), carries its sign in every
+# output; a test statistic (F-change, chi-square, Wald F / chi-square),
+# the deviance drop (previous minus current) and p (change) are never
+# signed. The console used to sign every change row ("+12.38"
+# for an F) while gt / tinytable / flextable / Word / the clipboard
+# signed none ("0.07" for a Delta R^2), and Excel wrote "0.00". The
+# oracles are the engines' own numbers (summary(), anova(), AIC(),
+# deviance(), sandwich), formatted with sprintf().
+
+.sg_signed <- function(x, d, mark = ".") {
+  chartr(".", mark, sprintf(paste0("%+.", d, "f"), x))
+}
+.sg_plain <- function(x, d, mark = ".") {
+  chartr(".", mark, sprintf(paste0("%.", d, "f"), x))
+}
+# p as the table prints it: three decimals, the leading zero dropped
+# under the English style and kept under the French one.
+.sg_p <- function(x, mark = ".") {
+  s <- .sg_plain(x, 3L, mark)
+  if (identical(mark, ".")) sub("^0", "", s) else s
+}
+
+# Engines pad with figure spaces and print the minus as U+2212; the
+# content is what is compared.
+.sg_norm <- function(x) {
+  x <- gsub("−", "-", as.character(x), fixed = TRUE)
+  pad <- paste0("[ \t", intToUtf8(c(0x2007L, 0x00A0L)), "]+")
+  gsub(paste0("^", pad, "|", pad, "$"), "", x)
+}
+
+# Cells `cols` of the row labelled `label` in a list of rows.
+.sg_pick <- function(rows, label, cols) {
+  hit <- Filter(function(r) identical(.sg_norm(r[1L]), label), rows)
+  expect_length(hit, 1L)
+  .sg_norm(hit[[1L]][cols])
+}
+.sg_df_rows <- function(df) {
+  df <- as.data.frame(df, stringsAsFactors = FALSE)
+  lapply(seq_len(nrow(df)), function(i) {
+    vapply(df[i, ], as.character, character(1))
+  })
+}
+
+# Every string output of `build(output, path)`, as lists of rows.
+.sg_string_outputs <- function(build) {
+  out <- list(
+    console = .sg_df_rows(structure(build("default"), class = "data.frame")),
+    clipboard = strsplit(
+      strsplit(spicy:::clipboard_payload(build("default"), "\t"), "\n")[[1L]],
+      "\t",
+      fixed = TRUE
+    )
+  )
+  if (requireNamespace("gt", quietly = TRUE)) {
+    out$gt <- .sg_df_rows(build("gt")[["_data"]])
+  }
+  if (requireNamespace("tinytable", quietly = TRUE)) {
+    out$tinytable <- .sg_df_rows(build("tinytable")@data)
+  }
+  if (requireNamespace("flextable", quietly = TRUE)) {
+    out$flextable <- .sg_df_rows(build("flextable")$body$dataset)
+    if (requireNamespace("officer", quietly = TRUE)) {
+      path <- tempfile(fileext = ".docx")
+      build("word", path)
+      s <- officer::docx_summary(officer::read_docx(path))
+      cells <- s[s$content_type == "table cell", ]
+      out$word <- lapply(
+        split(cells, cells$row_id),
+        function(r) r$text[order(r$cell_id)]
+      )
+    }
+  }
+  out
+}
+
+# `expected`: named list label -> display strings of the model columns
+# `cols`, the same in every string output.
+.sg_expect_strings <- function(build, expected, cols) {
+  for (engine in names(outs <- .sg_string_outputs(build))) {
+    for (label in names(expected)) {
+      expect_identical(
+        .sg_pick(outs[[engine]], label, cols),
+        expected[[label]],
+        label = paste(engine, label)
+      )
+    }
+  }
+}
+
+# Excel: value and number format of the cells `cols` of row `label`.
+.sg_excel <- function(build, label, cols) {
+  path <- tempfile(fileext = ".xlsx")
+  build("excel", path)
+  wb <- openxlsx2::wb_load(path)
+  d <- openxlsx2::wb_to_df(wb, col_names = FALSE)
+  r <- which(.sg_norm(d[[1L]]) == label)
+  expect_length(r, 1L)
+  xl_row <- as.integer(rownames(d)[r])
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  fmts <- wb$styles_mgr$styles$numFmts
+  refs <- paste0(LETTERS[cols], xl_row)
+  numfmt <- vapply(
+    refs,
+    function(ref) {
+      s <- as.integer(cc$c_s[cc$r == ref][1L])
+      id <- sub(
+        '.*numFmtId="([0-9]+)".*',
+        "\\1",
+        wb$styles_mgr$styles$cellXfs[[s + 1L]]
+      )
+      hit <- grep(paste0('numFmtId="', id, '"'), fmts, value = TRUE)
+      sub('.*formatCode="([^"]*)".*', "\\1", hit[1L])
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  list(value = unlist(d[r, cols], use.names = FALSE), numfmt = numfmt)
+}
+
+# Call `f` with the file path of the one route that takes it: an
+# output-scoped argument typed for another output warns, even as NULL.
+.sg_route <- function(output, path, f) {
+  switch(
+    output,
+    word = f(word_path = path),
+    excel = f(excel_path = path),
+    f()
+  )
+}
+
+.sg_lm_fits <- function() {
+  list(
+    lm(mpg ~ wt, mtcars),
+    lm(mpg ~ wt + hp, mtcars),
+    lm(mpg ~ wt + hp + qsec, mtcars)
+  )
+}
+
+test_that("change rows: Delta R^2 signed, F-change and p unsigned, in every output", {
+  h <- .sg_lm_fits()
+  r2 <- vapply(h, function(m) summary(m)$r.squared, numeric(1))
+  a12 <- anova(h[[1L]], h[[2L]])
+  a23 <- anova(h[[2L]], h[[3L]])
+  f <- c(a12$F[2L], a23$F[2L])
+  p <- c(a12[["Pr(>F)"]][2L], a23[["Pr(>F)"]][2L])
+  # Model 2 and Model 3 estimate columns (Variable | B SE p | B SE p | ...).
+  cols <- c(5L, 8L)
+  for (mark in c(".", ",")) {
+    lang <- if (identical(mark, ".")) "en" else "fr"
+    withr::local_options(spicy.language = lang)
+    build <- function(output, path = NULL) {
+      .sg_route(output, path, function(...) {
+        table_regression(h, nested = TRUE, output = output, ...)
+      })
+    }
+    labels <- if (lang == "en") {
+      c("ΔR²", "F-change", "p (change)")
+    } else {
+      c("ΔR²", "F (variation)", "p (variation)")
+    }
+    expected <- stats::setNames(
+      list(
+        .sg_signed(diff(r2), 2L, mark), # "+0.07" "+0.01"
+        .sg_plain(f, 2L, mark), # "12.38" "1.35"
+        .sg_p(p, mark) # ".001" ".255"
+      ),
+      labels
+    )
+    .sg_expect_strings(build, expected, cols)
+    if (requireNamespace("openxlsx2", quietly = TRUE)) {
+      xr2 <- .sg_excel(build, labels[1L], cols)
+      xf <- .sg_excel(build, labels[2L], cols)
+      if (lang == "en") {
+        # Real numbers, the sign carried by the number format.
+        expect_equal(as.numeric(xr2$value), diff(r2), tolerance = 1e-12)
+        expect_identical(xr2$numfmt, rep("+0.00;-0.00;0.00", 2L))
+        expect_equal(as.numeric(xf$value), f, tolerance = 1e-12)
+        expect_identical(xf$numfmt, rep("0.00", 2L))
+      } else {
+        # A comma table goes out as text (the viewer's locale cannot be
+        # set from the file): the text is the console's.
+        expect_identical(xr2$value, expected[[1L]])
+        expect_identical(xf$value, expected[[2L]])
+      }
+    }
+  }
+})
+
+test_that("change rows: glm chi-square and deviance drop unsigned, Delta AIC signed", {
+  g <- list(
+    glm(am ~ wt, binomial, mtcars),
+    glm(am ~ wt + hp, binomial, mtcars)
+  )
+  lrt <- anova(g[[1L]], g[[2L]], test = "LRT")
+  chi2 <- lrt$Deviance[2L]
+  d_aic <- AIC(g[[2L]]) - AIC(g[[1L]]) # negative: Model 2 fits better
+  d_dev <- deviance(g[[1L]]) - deviance(g[[2L]]) # the drop, positive
+  cols <- 5L
+  for (mark in c(".", ",")) {
+    lang <- if (identical(mark, ".")) "en" else "fr"
+    withr::local_options(spicy.language = lang)
+    build <- function(output, path = NULL) {
+      .sg_route(output, path, function(...) {
+        table_regression(
+          g,
+          nested = TRUE,
+          show_fit_stats = c(
+            "lrt_change",
+            "aic_change",
+            "deviance_change",
+            "p_change"
+          ),
+          output = output,
+          ...
+        )
+      })
+    }
+    labels <- if (lang == "en") {
+      c("Δχ²", "ΔAIC", "ΔDeviance", "p (change)")
+    } else {
+      c("Δχ²", "ΔAIC", "ΔDéviance", "p (variation)")
+    }
+    expected <- stats::setNames(
+      list(
+        .sg_plain(chi2, 2L, mark), # "9.12"
+        .sg_signed(d_aic, 1L, mark), # "-7.1"
+        # "9.1": one decimal, as Delta AIC, but no sign -- the drop
+        # (previous - current) would read as a rise beside Delta AIC.
+        .sg_plain(d_dev, 1L, mark),
+        .sg_p(lrt[["Pr(>Chi)"]][2L], mark) # ".003"
+      ),
+      labels
+    )
+    .sg_expect_strings(build, expected, cols)
+    if (lang == "en" && requireNamespace("openxlsx2", quietly = TRUE)) {
+      xa <- .sg_excel(build, labels[2L], cols)
+      xd <- .sg_excel(build, labels[3L], cols)
+      xc <- .sg_excel(build, labels[1L], cols)
+      expect_equal(as.numeric(xa$value), d_aic, tolerance = 1e-10)
+      expect_identical(xa$numfmt, "+0.0;-0.0;0.0")
+      expect_equal(as.numeric(xd$value), d_dev, tolerance = 1e-10)
+      expect_identical(xd$numfmt, "0.0")
+      expect_identical(xc$numfmt, "0.00")
+    }
+  }
+})
+
+test_that("change rows: robust Wald F and Wald chi-square are never signed", {
+  h <- .sg_lm_fits()[1:2]
+  V <- sandwich::vcovHC(h[[2L]], type = "HC3")
+  wald_f <- unname(coef(h[[2L]])["hp"]^2 / V["hp", "hp"]) # q = 1
+  r2 <- vapply(h, function(m) summary(m)$r.squared, numeric(1))
+  build_lm <- function(output, path = NULL) {
+    .sg_route(output, path, function(...) {
+      table_regression(h, nested = TRUE, vcov = "HC3", output = output, ...)
+    })
+  }
+  .sg_expect_strings(
+    build_lm,
+    list(
+      "ΔR²" = .sg_signed(diff(r2), 2L), # "+0.07"
+      "Wald F-change" = .sg_plain(wald_f, 2L) # "11.46"
+    ),
+    5L
+  )
+  g <- list(
+    glm(am ~ wt, binomial, mtcars),
+    glm(am ~ wt + hp, binomial, mtcars)
+  )
+  Vg <- sandwich::vcovHC(g[[2L]], type = "HC0")
+  wald_chi2 <- unname(coef(g[[2L]])["hp"]^2 / Vg["hp", "hp"])
+  tbl <- table_regression(g, nested = TRUE, vcov = "HC0")
+  body <- .sg_df_rows(structure(tbl, class = "data.frame"))
+  lab <- trimws(vapply(body, `[`, "", 1L))
+  w_row <- grep("Wald", lab, value = TRUE)
+  expect_length(w_row, 1L)
+  expect_identical(.sg_pick(body, w_row, 5L), .sg_plain(wald_chi2, 2L))
+  expect_identical(
+    .sg_pick(
+      .sg_df_rows(spicy:::.format_structured_to_string_body(as_structured(
+        tbl
+      ))),
+      w_row,
+      5L
+    ),
+    .sg_plain(wald_chi2, 2L)
+  )
+})
+
+test_that("change rows: the string outputs take the console's decimals", {
+  # The structured path used to give F-change `fit_digits` and deviance
+  # `digits`, where the console gives `digits` and `ic_digits`.
+  skip_if_not_installed("gt")
+  h <- .sg_lm_fits()[1:2]
+  f <- anova(h[[1L]], h[[2L]])$F[2L]
+  tbl <- function(output) {
+    table_regression(h, nested = TRUE, digits = 3L, output = output)
+  }
+  expect_identical(
+    .sg_pick(.sg_df_rows(tbl("gt")[["_data"]]), "F-change", 5L),
+    .sg_plain(f, 3L)
+  )
+  # The robust Wald F follows `digits` too (q = 1: b^2 / V[hp, hp]).
+  V <- sandwich::vcovHC(h[[2L]], type = "HC3")
+  wald_f <- unname(coef(h[[2L]])["hp"]^2 / V["hp", "hp"])
+  expect_identical(
+    .sg_pick(
+      .sg_df_rows(
+        table_regression(
+          h,
+          nested = TRUE,
+          vcov = "HC3",
+          digits = 3L,
+          output = "gt"
+        )[["_data"]]
+      ),
+      "Wald F-change",
+      5L
+    ),
+    .sg_plain(wald_f, 3L) # "11.461"
+  )
+  g <- list(
+    glm(am ~ wt, binomial, mtcars),
+    glm(am ~ wt + hp, binomial, mtcars)
+  )
+  gtab <- table_regression(
+    g,
+    nested = TRUE,
+    show_fit_stats = c("deviance", "deviance_change"),
+    output = "gt"
+  )
+  rows <- .sg_df_rows(gtab[["_data"]])
+  expect_identical(
+    .sg_pick(rows, "Deviance", c(2L, 5L)),
+    .sg_plain(c(deviance(g[[1L]]), deviance(g[[2L]])), 1L) # "19.2" "10.1"
+  )
+})
+
+test_that("fit-stat rows in a p column keep their own format", {
+  # With show_columns = "p" the fit statistics sit in the p column. They
+  # used to inherit its floor and APA style: a negative Delta AIC printed
+  # "<.001" and an R^2 lost its leading zero, in every string output and
+  # Excel, while the console printed the numbers.
+  h <- .sg_lm_fits()
+  r2 <- vapply(h, function(m) summary(m)$r.squared, numeric(1))
+  d_aic <- diff(vapply(h, AIC, numeric(1))) # -9.4, +1.0 (approx.)
+  p23 <- anova(h[[2L]], h[[3L]])[["Pr(>F)"]][2L]
+  build <- function(output, path = NULL) {
+    .sg_route(output, path, function(...) {
+      table_regression(
+        h,
+        nested = TRUE,
+        show_columns = "p",
+        show_fit_stats = c("r2", "aic_change", "p_change"),
+        output = output,
+        ...
+      )
+    })
+  }
+  cols <- 3:4 # Variable | p | p | p
+  .sg_expect_strings(
+    build,
+    list(
+      "R²" = .sg_plain(r2[2:3], 2L), # "0.83" "0.83"
+      "ΔAIC" = .sg_signed(d_aic, 1L), # "-9.4" "+1.0"
+      "p (change)" = c(
+        .sg_p(anova(h[[1L]], h[[2L]])[["Pr(>F)"]][2L]),
+        .sg_p(p23)
+      )
+    ),
+    cols
+  )
+  skip_if_not_installed("openxlsx2")
+  xa <- .sg_excel(build, "ΔAIC", cols)
+  expect_equal(as.numeric(xa$value), d_aic, tolerance = 1e-10)
+  expect_identical(xa$numfmt, rep("+0.0;-0.0;0.0", 2L))
+  xr <- .sg_excel(build, "R²", cols)
+  expect_identical(xr$numfmt, rep("0.00", 2L))
+  # Outside nested comparison: a negative AIC is a number too.
+  m <- lm(I(mpg / 1000) ~ wt, mtcars)
+  skip_if_not_installed("gt")
+  rows <- .sg_df_rows(
+    table_regression(
+      m,
+      show_columns = "p",
+      show_fit_stats = "aic",
+      output = "gt"
+    )[["_data"]]
+  )
+  expect_identical(.sg_pick(rows, "AIC", 2L), .sg_plain(AIC(m), 1L)) # "-276.1"
+})
+
+test_that("Excel writes a p (change) below the floor as text in any column", {
+  # p (change) sits in the estimate column, which has no floor of its
+  # own: Excel used to write the bare number (".000" on screen) where
+  # every other output prints "<.001".
+  skip_if_not_installed("openxlsx2")
+  h <- list(lm(mpg ~ qsec, mtcars), lm(mpg ~ qsec + wt, mtcars))
+  p <- anova(h[[1L]], h[[2L]])[["Pr(>F)"]][2L]
+  expect_lt(p, 0.001) # 2.5e-11
+  build <- function(output, path = NULL) {
+    .sg_route(output, path, function(...) {
+      table_regression(h, nested = TRUE, output = output, ...)
+    })
+  }
+  expect_identical(.sg_excel(build, "p (change)", 5L)$value, "<.001")
+})
+
+test_that("change rows: machine outputs keep the raw numbers", {
+  h <- .sg_lm_fits()
+  r2 <- vapply(h, function(m) summary(m)$r.squared, numeric(1))
+  tbl <- table_regression(h, nested = TRUE)
+  body <- as_structured(tbl)$body
+  row <- which(trimws(body$Variable) == "ΔR²")
+  expect_length(row, 1L)
+  got <- unlist(body[row, c(5L, 8L)], use.names = FALSE)
+  expect_type(got, "double")
+  expect_equal(got, diff(r2), tolerance = 1e-12)
+  # The long and tidy outputs carry no display string at all.
+  long <- table_regression(h, nested = TRUE, output = "long")
+  chr <- vapply(long, is.character, logical(1))
+  expect_false(any(grepl("^\\+", unlist(long[chr]))))
+})

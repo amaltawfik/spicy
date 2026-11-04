@@ -1139,7 +1139,8 @@ test_that("glm hierarchical: lrt_change cell matches anova(test='LRT')", {
   # Cross-check the value
   av <- anova(m1, m2, test = "LRT")
   expected_lrt <- av$Deviance[2]
-  expected_str <- sprintf("+%.2f", expected_lrt)
+  # A test statistic, so unsigned (only the Delta differences are).
+  expected_str <- sprintf("%.2f", expected_lrt)
   expect_equal(cell, expected_str)
 })
 
@@ -3356,6 +3357,9 @@ test_that("spicy_glm_title_prefix names every family in words", {
   expect_identical(title("quasipoisson", "log"), "Quasi-Poisson regression")
   # An unknown family is not named.
   expect_identical(title("tweedie", "log"), "Regression")
+  # The Tweedie families of statmod ("Tweedie") and mgcv ("Tweedie(1.5)").
+  expect_identical(title("Tweedie", "mu^0"), "Tweedie regression")
+  expect_identical(title("Tweedie(1.5)", "log"), "Tweedie regression")
   # A glm with MASS's family carries the same title as glm.nb.
   skip_if_not_installed("MASS")
   fit <- glm(
@@ -3367,4 +3371,39 @@ test_that("spicy_glm_title_prefix names every family in words", {
     as_regression_frame(fit)$info$extras$title_prefix,
     "Negative-binomial regression"
   )
+})
+
+test_that("a Tweedie glm is titled as its univariable screen names it", {
+  skip_if_not_installed("statmod")
+  # One method, one title: the oracle is the model table_regression_uv()
+  # names for the same glm, "Univariable and multivariable Tweedie
+  # regression".
+  fam <- statmod::tweedie(var.power = 1.5, link.power = 0)
+  fit <- glm(carb ~ wt + hp, data = mtcars, family = fam)
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    uv <- attr(
+      suppressWarnings(table_regression_uv(
+        mtcars,
+        outcome = "carb",
+        predictors = c("wt", "hp"),
+        method = "glm",
+        family = fam
+      )),
+      "title"
+    )
+    title <- attr(table_regression(fit), "title")
+    expected <- if (lang == "en") {
+      "Tweedie regression: carb"
+    } else {
+      "R\u00e9gression de Tweedie\u00a0: carb"
+    }
+    expect_identical(title, expected, label = lang)
+    model <- sub("(\u00a0)?: carb$", "", title)
+    if (lang == "en") {
+      expect_match(uv, "Tweedie regression", fixed = TRUE)
+    } else {
+      expect_match(uv, model, fixed = TRUE)
+    }
+  }
 })

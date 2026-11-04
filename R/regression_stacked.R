@@ -281,16 +281,18 @@
     )
   }
   .reg_emit_gathered(gathered, n, public_call)
+  label_keys <- .reg_label_keys(models)
   .warn_unknown_label_names(
     c(
-      .reg_label_keys(models),
+      label_keys,
       unlist(lapply(frames, function(f) {
         dv <- f$info$dv %||% NA_character_
         c(dv, .reg_bare_var(dv))
       }))
     ),
     arg("labels"),
-    arg("note_labels")
+    arg("note_labels"),
+    hint = .reg_terms_sentence(label_keys)
   )
   .reg_warn_exponentiate_noop(frames, arg("exponentiate"))
 

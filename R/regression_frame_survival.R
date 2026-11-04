@@ -35,6 +35,7 @@
 #   survreg dist=weibull     -> "Weibull AFT regression"
 #   survreg dist=lognormal   -> "Log-normal AFT regression"
 #   survreg dist=exponential -> "Exponential AFT regression"
+#   survreg dist=gaussian    -> "Censored regression (Gaussian)" (T itself)
 #   etc.
 #
 # Subclasses that do NOT belong here: survey::svycoxph() inherits "coxph"
@@ -162,6 +163,15 @@ as_regression_frame.survreg <- function(
   ...
 ) {
   .check_survival_available()
+  if (inherits(fit, "psm")) {
+    spicy_abort(
+      c(
+        "`rms::psm()` fits are not supported by `table_regression()`.",
+        "i" = "Fit the model with `survival::survreg()`, which is supported."
+      ),
+      class = "spicy_unsupported_class"
+    )
+  }
 
   coefs <- .survreg_coefs(fit, ci_level = ci_level)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.
@@ -237,8 +247,8 @@ as_regression_frame.survreg <- function(
 # .coxph_info / .survreg_info) rather than stats::family(fit) the way
 # .apply_exp_to_mixed_frame() does. Header: Cox -> "HR" (hazard ratio);
 # log-scale survreg dists -> "TR" (time ratio). When the link is identity
-# (gaussian / logistic / t survreg) supports$exponentiate is FALSE and the
-# coefs pass through unchanged.
+# (gaussian / logistic / extreme / t survreg) supports$exponentiate is
+# FALSE and the coefs pass through unchanged.
 .apply_exp_to_survival_frame <- function(coefs, info, exponentiate) {
   out <- .apply_exp_to_frame(coefs, info, exponentiate)
   # Log-scale survreg dists (weibull / exponential / lognormal / loglogistic)
@@ -561,23 +571,23 @@ as_regression_frame.survreg <- function(
   })
 
   # Family-link convention for survreg: report the distribution name
-  # as `family`. Link is "log" for the log-transformed dists (the AFT
-  # convention: log T = X'beta + sigma*epsilon -- weibull / exponential /
-  # lognormal / loglogistic, which carry trans = log in
-  # survival::survreg.distributions). The remaining dists (gaussian /
-  # logistic / t) model T directly on the identity scale, so link is
-  # "identity".
-  dist <- fit$dist %||% "weibull"
-  identity_dists <- c("gaussian", "logistic", "t")
-  link <- if (dist %in% identity_dists) "identity" else "log"
+  # as `family`. Link is "log" for a distribution fitted on log T (the
+  # AFT model log T = X'beta + sigma W: weibull / exponential / rayleigh
+  # / lognormal / loglogistic, whose survival::survreg.distributions
+  # entry carries a `trans`), "identity" for one that models T itself
+  # (gaussian / logistic / extreme / t, which carry none).
+  surv_dist <- .survreg_dist(fit)
+  dist <- surv_dist$name
+  link <- if (surv_dist$raw_time) "identity" else "log"
   fam <- list(family = dist, link = link)
 
   if (is.null(ci_method)) {
     ci_method <- "wald"
   }
 
-  # The scale sigma of log T = X'beta + sigma W (the AFT error scale).
-  # strata() give each stratum its own scale: there is then no single
+  # The scale sigma of the error term: of log T = X'beta + sigma W for a
+  # log-time distribution (the AFT error scale), of T itself for the
+  # others. strata() give each stratum its own scale: there is then no single
   # value, and the sigma row and the footer's scale stay blank.
   aft_scale <- if (length(fit$scale) == 1L) {
     as.numeric(fit$scale)
@@ -597,11 +607,11 @@ as_regression_frame.survreg <- function(
     nobs = as.integer(stats::nobs(fit))
   )
 
-  # Exponentiating gives time ratios (TR = exp(coef)) for log-scale dists
-  # (weibull / lognormal / loglogistic / exponential). For the identity-scale
-  # dists (gaussian / logistic / t) the model is on the identity scale, so
-  # exp(coef) is not a time ratio and exponentiation is not meaningful.
-  exp_ok <- !dist %in% identity_dists
+  # Exponentiating gives time ratios (TR = exp(coef)) for the log-time
+  # dists. For the dists that model T itself (gaussian / logistic /
+  # extreme / t), exp(coef) is not a time ratio and exponentiation is not
+  # meaningful.
+  exp_ok <- !surv_dist$raw_time
 
   supports <- list(
     ame = TRUE,
@@ -619,7 +629,7 @@ as_regression_frame.survreg <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = paste0(.survreg_dist_title(dist), " AFT regression"),
+    title_prefix = .survreg_title_prefix(dist, surv_dist$raw_time),
     exp_applied = FALSE,
     exp_header = NA_character_,
     scale_parameter = aft_scale,
@@ -643,6 +653,50 @@ as_regression_frame.survreg <- function(
     supports = supports,
     extras = extras
   )
+}
+
+
+# The distribution of a survreg fit: the name of its
+# survival::survreg.distributions entry, and whether it models T itself
+# (an entry without `trans`: gaussian, logistic, extreme, t) rather than
+# log T. `fit$dist` holds that name, or the list passed as `dist`: an
+# entry of the table, named by its `name` field ("Extreme value"), or a
+# distribution of the user's own, which keeps the name it was given. The
+# list's own `trans` decides the scale.
+.survreg_dist <- function(fit) {
+  d <- fit$dist %||% "weibull"
+  if (is.character(d)) {
+    entry <- survival::survreg.distributions[[d]]
+    return(list(name = d, raw_time = is.null(entry$trans)))
+  }
+  table <- survival::survreg.distributions
+  hit <- match(d$name, vapply(table, function(e) e$name, character(1)))
+  list(
+    name = if (is.na(hit)) d$name else names(table)[hit],
+    raw_time = is.null(d$trans)
+  )
+}
+
+
+# The title of a survreg fit. A distribution fitted on log T is the AFT
+# model of that distribution ("Weibull AFT regression"). One that models
+# T itself is a censored regression of T, named by its distribution
+# ("Censored regression (extreme value)"): its coefficients are
+# differences in time, not log time ratios. A distribution of the user's
+# own is named as they named it.
+.survreg_title_prefix <- function(dist, raw_time) {
+  if (!raw_time) {
+    return(paste0(.survreg_dist_title(dist), " AFT regression"))
+  }
+  word <- switch(
+    dist,
+    gaussian = "Gaussian",
+    logistic = "logistic",
+    extreme = "extreme value",
+    `t` = "Student t",
+    dist
+  )
+  paste0("Censored regression (", word, ")")
 }
 
 

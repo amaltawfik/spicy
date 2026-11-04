@@ -85,6 +85,10 @@
         c(
           .REG_BLOCK_RE,
           .REG_BLOCK_ZI,
+          paste0(
+            .REG_BLOCK_HURDLE_ZERO,
+            " for a zero-truncated family, ziGamma, lognormal or beta_family"
+          ),
           .REG_BLOCK_DISP,
           paste0(.REG_BLOCK_THRESH, " (ordinal family)")
         ),
@@ -224,7 +228,14 @@
       "selection component"
     ),
     c("rms", "ols", "rms::ols()", "yes", "-", "-"),
-    c("rms", "lrm", "rms::lrm()", "yes", "OR", "-"),
+    c(
+      "rms",
+      "lrm",
+      "rms::lrm()",
+      "yes (per category for an ordinal outcome)",
+      "OR",
+      paste0(.REG_BLOCK_THRESH, " (ordinal outcome)")
+    ),
     c("rms", "Glm", "rms::Glm()", "yes", "link-dependent", "-"),
     c(
       "Bayesian",
@@ -339,7 +350,8 @@
 #' conditional R-squared are the default R-squared family. `CR*`
 #' cluster-robust standard errors are available for `lmer` and `lme` fits,
 #' via \pkg{clubSandwich} with Satterthwaite degrees of freedom. `glmmTMB`
-#' fits take `"CR0"` from glmmTMB's own sandwich (Wald z), clustered by
+#' fits take `"CR0"` from glmmTMB's own sandwich, or `"CR1"`, the same
+#' scaled by G/(G-1) for G clusters (Wald z for both), clustered by
 #' default on the top-level grouping factor; see the robust-SE section of
 #' [table_regression()] for when it holds. `glmer` fits keep their
 #' model-based standard errors: a `CR*` request on them is refused with a
@@ -381,22 +393,26 @@
 #' `vcov`, `ci_method = "profile"` and `standardized` are refused, as is
 #' `nested = TRUE` for `clmm`. `exponentiate` follows the `clm` rule
 #' (odds ratios under logit, hazard ratios under cloglog), except for a
-#' `clmm` fit with the cloglog link, where it is refused: on the current
-#' `ordinal`, the cloglog and loglog links of `clmm()` do not match those
-#' of `clm()` and of `glmmTMB()`.
+#' `clmm` fit with the cloglog link and a single random intercept, where
+#' it is refused: on the current `ordinal`, `clmm()` fits such a model
+#' with the loglog link, and the reverse. The random-effects LR test
+#' refits its null with the link actually fitted.
 #'
 #' @section Counts and two-part models:
 #' Two-part models show their full model: the zero component renders as a
 #' `Zero-inflation` block (`zeroinfl`, glmmTMB `ziformula`: probability of a
-#' structural zero) or a `Zero hurdle` block (`hurdle`: probability of a
-#' nonzero count -- the opposite direction, hence the distinct label; a
-#' glmmTMB hurdle model, a zero-truncated family with `ziformula`, also
-#' shows a `Zero hurdle` block, which models the probability of a zero), and a
-#' `Dispersion` block when `dispformula` has covariates. Component
+#' structural zero), a `Zero hurdle, Pr(y > 0)` block (`hurdle`: probability
+#' of a nonzero count -- the opposite direction, hence the distinct label)
+#' or a `Zero hurdle, Pr(y = 0)` block (a glmmTMB hurdle model, a
+#' zero-truncated family, `ziGamma()`, `lognormal()` or `beta_family()`
+#' with `ziformula`: probability of a zero), and a `Dispersion` block when
+#' `dispformula` has covariates. Component
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
-#' combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
-#' components via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
+#' combined-response effect on E(Y). `"CR1"` for Poisson and geometric `pscl`
+#' fits covers both components via `sandwich::vcovCL()`; a negative-binomial
+#' `pscl` fit keeps its model-based standard errors, its sandwich having no
+#' score for theta. `"CR0"` and `"CR1"` for `glmmTMB` fits cover the
 #' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
 #'
 #' The dispersion of a negative-binomial fit is an opt-in fit-statistic
@@ -508,11 +524,20 @@
 #' varying-slope-only factors are not absorbed intercepts and read
 #' No), with per-factor `N (<factor>)` counts via the opt-in
 #' `n_groups` token and the within R-squared in the default fit
-#' statistics for `fixest` (opt-in via `within_r2` for `estimatr`).
-#' AME is refused for a non-linear `fixest` model with fixed effects
-#' (`fepois()`, `feglm()`, `femlm()`, `fenegbin()`): its variance would
-#' need the uncertainty of the fixed effects, which fixest does not
-#' estimate. `feols()` and a GLM without fixed effects have it.
+#' statistics for `fixest` except an IV `feols()` (opt-in via
+#' `within_r2` for `estimatr`).
+#' AME is refused for a `fixest` GLM with fixed effects (`feglm()`,
+#' `fepois()`, `femlm()`, `fenegbin()`, whatever the family):
+#' marginaleffects, which computes it, cannot take into account the
+#' uncertainty of the fixed effects. It is refused too for a `feols()`
+#' with fixed effects fitted with `lean = TRUE`, which marginaleffects
+#' cannot predict from (re-estimate it with `lean = FALSE`). Other
+#' `feols()` fits and a GLM without fixed effects have it. The AME of
+#' a factor in `i()` sits on the rows of its
+#' coefficients, against the reference `i()` gives them (`ref =`); a
+#' level of a factor in `i()`, or a numeric variable that `i()` enters
+#' as categories, with no coefficient row gets no AME, nor does a factor
+#' that `i()` enters only in an interaction.
 #'
 #' @section Bayesian models:
 #' Posterior median, posterior MAD SD, and equal-tailed credible

@@ -14,8 +14,8 @@
 # coefs table covers the COUNT component; the zero component ships as a
 # fully-inferenced component block (info$extras$component_blocks) that the
 # orchestrator promotes to a labeled subordinate block of table rows --
-# "Zero-inflation" (zeroinfl: models P(structural zero)) or "Zero hurdle"
-# (hurdle: models P(y > 0); verified numerically equal to
+# "Zero-inflation" (zeroinfl: models P(structural zero)) or "Zero hurdle,
+# Pr(y > 0)" (hurdle: models P(y > 0); verified numerically equal to
 # glm(I(y > 0) ~ ...) for the binomial/logit case). See
 # dev/component_blocks_spec.md.
 #
@@ -336,6 +336,14 @@ as_regression_frame.zeroinfl <- function(
     sigma = NA_real_,
     nobs = as.integer(fit$n %||% NA_integer_)
   )
+  # A negative-binomial count part: its NB2 theta and alpha = 1/theta,
+  # the rows of glmmTMB's nbinom2 (truncated_nbinom2 for a hurdle) with a
+  # ziformula, which fits the same model.
+  if (.pscl_count_is_negbin(fit)) {
+    theta <- .pscl_count_theta(fit)
+    fit_stats$theta <- theta
+    fit_stats$alpha <- 1 / theta
+  }
 
   supports <- list(
     ame = TRUE,
@@ -414,6 +422,24 @@ as_regression_frame.zeroinfl <- function(
 }
 
 
+# TRUE when the count part of a pscl fit is negative binomial: its theta
+# is the NB2 dispersion of the counts (V = mu + mu^2/theta). The zero
+# part of a hurdle can be negbin too, with a theta of its own, which
+# belongs to the zero hurdle and is not the count dispersion.
+.pscl_count_is_negbin <- function(fit) {
+  dist <- if (inherits(fit, "hurdle")) fit$dist$count else fit$dist
+  identical(dist, "negbin")
+}
+
+# The theta of the negative-binomial count part: a number for zeroinfl,
+# the "count" element for a hurdle (whose fit$theta also holds a
+# "zero" element when the zero hurdle is negbin).
+.pscl_count_theta <- function(fit) {
+  theta <- if (inherits(fit, "hurdle")) fit$theta[["count"]] else fit$theta
+  as.numeric(theta)
+}
+
+
 # The title of a hurdle or zero-inflated model, named by its count
 # distribution: "Poisson hurdle regression", "Zero-inflated Poisson
 # regression".
@@ -447,7 +473,9 @@ as_regression_frame.zeroinfl <- function(
 #
 # The labels are per-SEMANTICS (dev/component_blocks_spec.md D1): zeroinfl
 # models P(structural zero) -> "Zero-inflation"; hurdle models P(y > 0) ->
-# "Zero hurdle" (verified numerically == glm(I(y > 0) ~ .) for binomial/logit).
+# "Zero hurdle, Pr(y > 0)" (verified numerically == glm(I(y > 0) ~ .) for
+# binomial/logit). glmmTMB's hurdle models the opposite event, Pr(y = 0),
+# in a block of its own.
 .pscl_component_block <- function(
   fit,
   is_hurdle,
@@ -497,8 +525,14 @@ as_regression_frame.zeroinfl <- function(
   }
 
   label_chr <- if (is_hurdle) .REG_BLOCK_HURDLE else .REG_BLOCK_ZI
+  # Terms are the coefficient names of the zero part, without pscl's
+  # "zero_" prefix: .append_component_rows() keys them by block, so a
+  # glmmTMB zero-inflation part with the same term shares the row.
   rows <- data.frame(
-    term = paste0("zero_", nm),
+    term = nm,
+    # "factor: level" with an ASCII colon in every language: the label
+    # is also the row's level, which inline() and tidy() address, and
+    # an identifier never follows the table language.
     label = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
     factor_level_pos = as.integer(pos),
     is_ref = FALSE,
@@ -523,7 +557,7 @@ as_regression_frame.zeroinfl <- function(
       rows <- rbind(
         rows,
         data.frame(
-          term = paste0("zero_", v, ref[1L]),
+          term = paste0(v, ref[1L]),
           label = paste0(v, ": ", ref[1L]),
           factor_level_pos = as.integer(match(ref[1L], lvls)),
           is_ref = TRUE,
@@ -549,7 +583,7 @@ as_regression_frame.zeroinfl <- function(
       spicy_fmt(
         "note_component_gloss_hurdle_censored",
         spicy_str("label_block_zero_hurdle"),
-        zero_dist
+        .pscl_zero_dist_word(zero_dist)
       )
     } else if (is_logit) {
       spicy_fmt(
@@ -582,6 +616,20 @@ as_regression_frame.zeroinfl <- function(
     exp_ok = identical(zero_link, "logit"),
     gloss = gloss,
     coefs = rows
+  )
+}
+
+
+# The distribution of a count-type hurdle zero part in words, in the table
+# language, never pscl's code ("negbin"). A code pscl adds later prints as
+# it is.
+.pscl_zero_dist_word <- function(dist) {
+  switch(
+    dist,
+    poisson = spicy_str("note_component_dist_poisson"),
+    negbin = spicy_str("note_component_dist_negbin"),
+    geometric = spicy_str("note_component_dist_geometric"),
+    dist
   )
 }
 

@@ -1700,7 +1700,10 @@ test_that("a zero part on another link than logit names it in its gloss", {
   )
   expect_match(
     note(hu),
-    "Zero hurdle component: probability of a nonzero count on the probit scale.",
+    paste0(
+      "Zero hurdle, Pr(y > 0) component: probability of a nonzero count ",
+      "on the probit scale."
+    ),
     fixed = TRUE
   )
   expect_false(grepl("log-odds", note(zi), fixed = TRUE))
@@ -1717,7 +1720,7 @@ test_that("a zero part on another link than logit names it in its gloss", {
   expect_match(
     note(hu),
     paste0(
-      "Composante \u00AB\u00A0Hurdle (z\u00E9ro)\u00A0\u00BB\u00A0: ",
+      "Composante \u00AB\u00A0Hurdle (z\u00E9ro), Pr(y > 0)\u00A0\u00BB\u00A0: ",
       "probabilit\u00E9 d'un effectif non nul sur l'\u00E9chelle probit."
     ),
     fixed = TRUE
@@ -1959,6 +1962,82 @@ test_that("the reference-level, survival and AME notes follow the language", {
   )
 })
 
+test_that("the survival notes name the distribution in the language", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("flexsurv")
+  withr::local_options(spicy.language = "fr")
+  lung <- stats::na.omit(survival::lung[, c("time", "status", "age", "sex")])
+  aft <- function(dist) {
+    survival::survreg(
+      survival::Surv(time, status) ~ age + sex,
+      data = lung,
+      dist = dist
+    )
+  }
+  # The scale is survreg's own, written with the French comma.
+  scale_fr <- function(fit) {
+    formatC(fit$scale, digits = 2L, format = "f", decimal.mark = ",")
+  }
+  ext <- aft("extreme")
+  out <- table_regression(ext)
+  expect_identical(
+    attr(out, "title"),
+    "R\u00E9gression censur\u00E9e (valeurs extr\u00EAmes)\u00A0: survival::Surv(time, status)"
+  )
+  expect_identical(
+    .note_line(out, "Distribution"),
+    paste0(
+      "Distribution\u00A0: valeurs extr\u00EAmes\u00A0; \u00E9chelle = ",
+      scale_fr(ext),
+      "."
+    )
+  )
+  lnorm <- aft("lognormal")
+  expect_identical(
+    .note_line(table_regression(lnorm), "Distribution"),
+    paste0(
+      "Distribution\u00A0: log-normale\u00A0; \u00E9chelle = ",
+      scale_fr(lnorm),
+      "."
+    )
+  )
+  flex <- function(dist) {
+    flexsurv::flexsurvreg(
+      survival::Surv(time, status) ~ age,
+      data = lung,
+      dist = dist
+    )
+  }
+  expect_match(
+    attr(table_regression(flex("gengamma")), "note"),
+    "Distribution\u00A0: gamma g\u00E9n\u00E9ralis\u00E9e\u00A0; mu = ",
+    fixed = TRUE
+  )
+  ph <- table_regression(flex("weibullPH"))
+  expect_identical(
+    attr(ph, "title"),
+    paste0(
+      "R\u00E9gression de survie param\u00E9trique de Weibull ",
+      "(risques proportionnels)\u00A0: survival::Surv(time, status)"
+    )
+  )
+  expect_match(
+    attr(ph, "note"),
+    "Distribution\u00A0: Weibull (risques proportionnels)\u00A0; shape = ",
+    fixed = TRUE
+  )
+  spline <- flexsurv::flexsurvspline(
+    survival::Surv(time, status) ~ age,
+    data = lung,
+    k = 1
+  )
+  expect_match(
+    attr(table_regression(spline), "note"),
+    "Distribution\u00A0: spline de Royston-Parmar\u00A0; gamma0 = ",
+    fixed = TRUE
+  )
+})
+
 test_that("the GEE and quantile-regression notes follow the language", {
   skip_if_not_installed("geepack")
   gee <- geepack::geeglm(
@@ -2081,6 +2160,37 @@ test_that("the classical line of rms, fixest and estimatr follows the language",
   }
 })
 
+test_that("the robust standard-error lines of estimatr follow the language", {
+  skip_if_not_installed("estimatr")
+  hc <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "HC2")
+  expect_identical(
+    .se_line_en_fr(hc),
+    c(
+      "Std. errors: Robust (HC2).",
+      paste0(
+        "Erreurs standards\u00A0: robustes \u00E0 ",
+        "l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (HC2)."
+      )
+    )
+  )
+  cr <- estimatr::lm_robust(mpg ~ wt, data = mtcars, clusters = cyl)
+  expect_identical(
+    .se_line_en_fr(cr),
+    c(
+      "Std. errors: Cluster-robust (CR2).",
+      "Erreurs standards\u00A0: robustes aux grappes (CR2)."
+    )
+  )
+  none <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "none")
+  expect_identical(
+    .se_line_en_fr(none),
+    c(
+      "Std. errors: None (se_type = \"none\").",
+      "Erreurs standards\u00A0: aucune (se_type = \"none\")."
+    )
+  )
+})
+
 test_that("the univariable table title and sample note follow the language", {
   withr::local_options(spicy.language = "fr")
   cc <- table_regression_uv(
@@ -2128,7 +2238,8 @@ test_that("the univariable table title and sample note follow the language", {
     attr(screen, "title"),
     "R\u00E9gression logistique univariable (pr\u00E9s\u00E9lection)\u00A0: smoking"
   )
-  # A family the title bridge does not carry keeps the whole English title
+  # A family the title bridge does not carry takes the generic French
+  # title, as table_regression() titles such a glm, never the English one
   # (the bridge is mocked without its Gamma entry).
   local_mocked_bindings(
     .spicy_title_prefix_table = function(lang) {
@@ -2144,6 +2255,38 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(gamma, "title"),
-    "Univariable and multivariable gamma regression: income"
+    "R\u00E9gression univariable et multivariable\u00A0: income"
+  )
+})
+
+test_that("the univariable Cox title places univariable before its qualifier", {
+  skip_if_not_installed("survival")
+  withr::local_options(spicy.language = "fr")
+  d <- stats::na.omit(survival::lung[, c("time", "status", "age", "sex")])
+  cox <- function(multivariable) {
+    attr(
+      table_regression_uv(
+        d,
+        outcome = Surv(time, status),
+        predictors = c(age, sex),
+        method = "coxph",
+        multivariable = multivariable
+      ),
+      "title"
+    )
+  }
+  expect_identical(
+    cox(TRUE),
+    paste0(
+      "R\u00E9gression de Cox univariable et multivariable ",
+      "\u00E0 risques proportionnels\u00A0: Surv(time, status)"
+    )
+  )
+  expect_identical(
+    cox(FALSE),
+    paste0(
+      "R\u00E9gression de Cox univariable \u00E0 risques proportionnels ",
+      "(pr\u00E9s\u00E9lection)\u00A0: Surv(time, status)"
+    )
   )
 })

@@ -2470,7 +2470,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
             if (is.null(f)) {
               NA_character_
             } else {
-              .excel_numfmt(f$precision, f$p_style)
+              .excel_numfmt(
+                f$precision,
+                f$p_style,
+                signed = isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS)
+              )
             }
           },
           character(1)
@@ -2499,12 +2503,14 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           dims = openxlsx2::wb_dims(rows = body_rows_idx, cols = j),
           numfmt = default_fmt
         )
-        # Per-row precision overrides (fit-stat rows: e.g. "n" integer)
+        # Per-row precision overrides (fit-stat rows: e.g. "n" integer;
+        # the signed format of a nested-comparison difference)
         if (!is.null(meta$fit_stat_overrides)) {
           for (ov in meta$fit_stat_overrides) {
             ov_fmt <- .excel_numfmt(
               ov$precision %||% meta$precision,
-              ov$p_style %||% meta$p_style
+              ov$p_style,
+              signed = isTRUE(ov$fit_stat %in% .NESTED_SIGNED_TOKENS)
             )
             excel_row <- body_first_row + ov$row - 1L
             wb <- openxlsx2::wb_add_numfmt(
@@ -2582,7 +2588,10 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       #     nothing.
       status_col <- .struct_cell_status(struct, col_name)
       text_rows[nzchar(status_col)] <- TRUE
-      # (7) Below-threshold p-values ("<.001").
+      # (7) Below-threshold p-values ("<.001"). A fit-statistic row
+      #     takes its own floor (p_change) or none (a negative Delta AIC
+      #     in a `p` column is a number), as `.resolve_cell_fmt()` does;
+      #     the cells of a stacked table take their panel's.
       if (!is.null(row_fmt)) {
         thr <- vapply(
           seq_len(nrow(body)),
@@ -2592,10 +2601,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           },
           numeric(1)
         )
-        text_rows[!is.na(col_vals) & !is.na(thr) & col_vals < thr] <- TRUE
-      } else if (!is.null(meta$threshold)) {
-        text_rows[!is.na(col_vals) & col_vals < meta$threshold] <- TRUE
+      } else {
+        thr <- rep(meta$threshold %||% NA_real_, nrow(body))
+        for (ov in meta$fit_stat_overrides) {
+          thr[ov$row] <- ov$threshold %||% NA_real_
+        }
       }
+      text_rows[!is.na(col_vals) & !is.na(thr) & col_vals < thr] <- TRUE
 
       txt_col <- txt_body[[j]]
       if (all(text_rows)) {

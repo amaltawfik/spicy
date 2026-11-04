@@ -1497,7 +1497,7 @@ format_term_label <- function(
       # the bare factor_level string.
       lbl <- resolve_label(term, labels)
       if (identical(lbl, term)) {
-        lbl <- lvl
+        lbl <- .reg_component_level_display(lvl, term_row$factor_term)
       }
       return(paste0("  ", lbl, ref_sep, reference_label))
     }
@@ -1517,6 +1517,7 @@ format_term_label <- function(
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
     }
+    lvl <- .reg_component_level_display(lvl, term_row$factor_term)
     return(paste0(if (isTRUE(group_factor_levels)) "  " else "", lvl))
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
@@ -1533,6 +1534,24 @@ format_term_label <- function(
     return(paste0("  ", lbl))
   }
   resolve_label(term, labels)
+}
+
+# The level of a component row ("mined: no") is an identifier, the same
+# in every language, which inline() and tidy() address. Its display takes
+# the colon of the table language, as the factor header of the main
+# block does ("mined\u00a0: no" in French): display only.
+.reg_component_level_display <- function(lvl, block) {
+  component <- c(
+    .REG_BLOCK_ZI,
+    .REG_BLOCK_HURDLE,
+    .REG_BLOCK_HURDLE_ZERO,
+    .REG_BLOCK_DISP
+  )
+  if (!isTRUE(block %in% component)) {
+    return(lvl)
+  }
+  sep <- paste0(spicy_fmt("label_block_header", ""), " ")
+  sub(": ", sep, lvl, fixed = TRUE)
 }
 
 # Look up a user-provided label for a term name; fall back to the
@@ -2177,7 +2196,7 @@ fit_stat_label <- function(token) {
 #   r2 / adj_r2 / omega2 / f2  \u2192 fit_digits
 #   sigma / rmse               \u2192 fit_digits
 #   AIC / AICc / BIC           \u2192 ic_digits
-#   deviance                   \u2192 digits
+#   deviance                   \u2192 ic_digits
 format_fit_stat_value <- function(
   token,
   val,
@@ -2192,21 +2211,6 @@ format_fit_stat_value <- function(
   # stats it marks a stat not defined for that model's class in a
   # mixed table (e.g. R\u00b2 on a glm column), per the documented
   # "en-dashes per cell" contract of `show_fit_stats`.
-  is_change <- token %in%
-    c(
-      "r2_change",
-      "adj_r2_change",
-      "f_change",
-      "f2_change",
-      "lrt_change",
-      "wald_f_change",
-      "wald_chi2_change",
-      "aic_change",
-      "aicc_change",
-      "bic_change",
-      "deviance_change",
-      "p_change"
-    )
   if (is.null(val) || is.na(val)) {
     # Structural per-class counts keep the blank convention of the
     # n_groups / fixed_effects block family: an em-dashed "N events"
@@ -2274,10 +2278,12 @@ format_fit_stat_value <- function(
     deviance_change = ic_digits,
     digits
   )
-  if (is_change) {
-    # Explicit "+" prefix on positive change values (signals
-    # improvement on R\u00b2 / \u0394\u03c7\u00b2 / \u0394f\u00b2, worsening on \u0394deviance / \u0394AIC
-    # depending on direction). Same convention as APA / modelsummary.
+  if (token %in% .NESTED_SIGNED_TOKENS) {
+    # A difference between adjacent models (.NESTED_SIGNED_TOKENS) shows
+    # its sign: "+0.07", "-9.4", an exact zero unsigned. Test statistics,
+    # the deviance drop and p (change) stay unsigned. The token set is
+    # shared with `.cell_to_string()` and the Excel number format, so
+    # every output signs the same rows.
     return(format_signed(val, prec, decimal_mark))
   }
   format_number(val, prec, decimal_mark)

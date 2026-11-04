@@ -240,11 +240,18 @@ test_that("table_regression(list, nested = TRUE) renders LRT change rows for lme
   expect_match(combined, "Δχ²", fixed = TRUE)
   expect_match(combined, "p (change)", fixed = TRUE)
   # Rendered cell values pin to the anova() oracle at the default digits
-  # (lrt_change -> digits = 2, aic/bic_change -> ic_digits = 1).
+  # (lrt_change -> digits = 2, aic/bic_change -> ic_digits = 1); the
+  # differences carry their sign, the chi-square does not.
   av <- suppressWarnings(suppressMessages(stats::anova(fits$m1, fits$m2)))
   expect_match(
     combined,
-    spicy:::format_signed(as.numeric(av[["Chisq"]][2L]), 2L),
+    sprintf("%.2f", as.numeric(av[["Chisq"]][2L])),
+    fixed = TRUE
+  )
+  # The chi-square is a test statistic: never signed.
+  expect_no_match(
+    combined,
+    paste0("+", sprintf("%.2f", as.numeric(av[["Chisq"]][2L]))),
     fixed = TRUE
   )
   expect_match(
@@ -279,7 +286,13 @@ test_that("table_regression(list, nested = TRUE) renders LRT change rows for glm
   av <- suppressWarnings(suppressMessages(stats::anova(fits$m1, fits$m2)))
   expect_match(
     combined,
-    spicy:::format_signed(as.numeric(av[["Chisq"]][2L]), 2L),
+    sprintf("%.2f", as.numeric(av[["Chisq"]][2L])),
+    fixed = TRUE
+  )
+  # The chi-square is a test statistic: never signed.
+  expect_no_match(
+    combined,
+    paste0("+", sprintf("%.2f", as.numeric(av[["Chisq"]][2L]))),
     fixed = TRUE
   )
 })
@@ -297,7 +310,13 @@ test_that("table_regression(list, nested = TRUE) renders LRT change rows for lme
   av <- suppressWarnings(suppressMessages(stats::anova(fits$m1, fits$m2)))
   expect_match(
     combined,
-    spicy:::format_signed(as.numeric(av[["L.Ratio"]][2L]), 2L),
+    sprintf("%.2f", as.numeric(av[["L.Ratio"]][2L])),
+    fixed = TRUE
+  )
+  # The chi-square is a test statistic: never signed.
+  expect_no_match(
+    combined,
+    paste0("+", sprintf("%.2f", as.numeric(av[["L.Ratio"]][2L]))),
     fixed = TRUE
   )
 })
@@ -318,7 +337,13 @@ test_that("nested = TRUE on REML-fit lmer pair does not error (auto-refit by ano
   combined <- paste(out, collapse = "\n")
   expect_match(
     combined,
-    spicy:::format_signed(as.numeric(av[["Chisq"]][2L]), 2L),
+    sprintf("%.2f", as.numeric(av[["Chisq"]][2L])),
+    fixed = TRUE
+  )
+  # The chi-square is a test statistic: never signed.
+  expect_no_match(
+    combined,
+    paste0("+", sprintf("%.2f", as.numeric(av[["Chisq"]][2L]))),
     fixed = TRUE
   )
 })

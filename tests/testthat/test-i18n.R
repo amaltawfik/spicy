@@ -497,13 +497,21 @@ test_that("every frozen block identity equals its English caption", {
     names(.REG_BLOCK_STR_KEYS)
   )
   expect_false(.reg_is_block(.REG_SECTION_ALT_INVARIANT))
+  # One deliberate exception: the pscl zero hurdle keeps the identity it
+  # was published under, "Zero hurdle", while its caption names the event
+  # it models, as the glmmTMB zero hurdle's does.
+  renamed <- c("Zero hurdle" = "Zero hurdle, Pr(y > 0)")
   for (blk in names(.REG_BLOCK_STR_KEYS)) {
     expect_identical(
       .reg_block_label(blk),
       spicy_str(.REG_BLOCK_STR_KEYS[[blk]]),
       info = blk
     )
-    expect_identical(.reg_block_label(blk), blk, info = blk)
+    expect_identical(
+      .reg_block_label(blk),
+      if (blk %in% names(renamed)) renamed[[blk]] else blk,
+      info = blk
+    )
   }
   # A total function of its input: a real factor variable is its own
   # caption, and so is a vector or a missing value, so every header can

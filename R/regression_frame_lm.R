@@ -320,8 +320,9 @@ as_regression_frame.glm <- function(fit, ...) {
     singular_terms = legacy$singular_terms %||% character(0),
     has_weights = isTRUE(legacy$has_weights),
     weighted_n = legacy$weighted_n %||% NA_real_,
-    title_prefix = legacy$title_prefix %||%
-      (if (is_glm) "Generalized linear regression" else "Linear regression"),
+    # extract_lm_phase1() always sets it: "Linear regression" or the glm
+    # title of the family (spicy_glm_title_prefix(), never NULL).
+    title_prefix = legacy$title_prefix,
     exp_applied = isTRUE(legacy$exp_applied),
     exp_header = legacy$exp_header %||% NA_character_,
     boot_n_valid = legacy$boot_n_valid %||% NA_integer_,

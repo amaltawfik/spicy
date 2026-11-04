@@ -28,6 +28,7 @@
 .REG_BLOCK_TERMS <- c(
   "Zero-inflation",
   "Zero hurdle",
+  "Zero hurdle, Pr(y = 0)",
   "Dispersion",
   "Scale effects",
   # Before Thresholds, matching the single-model layout.
@@ -36,7 +37,15 @@
   "Random effects"
 )
 .REG_BLOCK_ZI <- "Zero-inflation"
+# The two zero hurdles model opposite events, so they are two blocks:
+# pscl::hurdle()'s zero part models Pr(y > 0), glmmTMB's (a hurdle family
+# with a ziformula, see .glmmTMB_is_hurdle()) models Pr(y = 0). Under one
+# block, a table holding both printed one gloss for the two columns, and
+# one column's sign read backwards. The pscl block keeps the identity it
+# was published under, "Zero hurdle"; only its caption names the event
+# (`label_block_zero_hurdle`).
 .REG_BLOCK_HURDLE <- "Zero hurdle"
+.REG_BLOCK_HURDLE_ZERO <- "Zero hurdle, Pr(y = 0)"
 .REG_BLOCK_DISP <- "Dispersion"
 .REG_BLOCK_SCALE <- "Scale effects"
 .REG_BLOCK_NPO <- "Non-proportional effects"
@@ -53,7 +62,7 @@
 # `factor_term` is NA for every row that belongs to no factor group.
 #
 # Known limitation, pre-existing and unchanged here: a user variable
-# literally named `Thresholds` (or any of the other six) is treated as a
+# literally named `Thresholds` (or any of the other seven) is treated as a
 # block by every one of these sites -- exempted from `keep` / `drop`,
 # sorted to the bottom, preceded by a section rule. The identity is a
 # string, so a collision is indistinguishable from the real thing.
@@ -67,6 +76,7 @@
 .REG_BLOCK_STR_KEYS <- c(
   "Zero-inflation" = "label_block_zero_inflation",
   "Zero hurdle" = "label_block_zero_hurdle",
+  "Zero hurdle, Pr(y = 0)" = "label_block_zero_hurdle_zero",
   "Dispersion" = "label_block_dispersion",
   "Scale effects" = "label_block_scale_effects",
   "Non-proportional effects" = "label_block_non_proportional",

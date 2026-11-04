@@ -18,8 +18,8 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   }
 
   # Intercepts are excluded from the family: the main one by term, and the
-  # component-block ones (zero-inflation / dispersion, terms "zero_(Intercept)"
-  # / "zi.(Intercept)") by their display label.
+  # component-block ones (zero-inflation / dispersion, terms
+  # "Zero-inflation::(Intercept)", ...) by their display label.
   family_mask <- coefs$term != "(Intercept)" &
     !(coefs$label %in% "(Intercept)") &
     !coefs$is_ref &
@@ -44,6 +44,19 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 
 
 # ---- keep / drop filter ---------------------------------------------------
+
+# "The terms of this table: ...", the first twelve: the names a regression
+# table builds from its models, listed where a pattern of `keep` / `drop`
+# or a name of `labels` matches none of them.
+.reg_terms_sentence <- function(terms) {
+  terms <- unique(terms)
+  paste0(
+    "The terms of this table: ",
+    paste(.quote_val(utils::head(terms, 12L)), collapse = ", "),
+    if (length(terms) > 12L) ", ..." else "",
+    "."
+  )
+}
 
 # Filter the aligned long format by regular expression match on the
 # `term` column. Applied AFTER p_adjust (so adjusted p-values
@@ -191,11 +204,9 @@ apply_keep_drop_filter <- function(
       ),
       "i" = paste0(
         "Patterns match term names as in `stats::coef()` (e.g. ",
-        "\"sexMale\", \"factor(cyl)8\"), never display labels. ",
-        "The terms of this table: ",
-        paste(.quote_val(utils::head(unique(terms), 12L)), collapse = ", "),
-        if (length(unique(terms)) > 12L) ", ..." else "",
-        "."
+        "\"sexMale\", \"factor(cyl)8\"; an rms fit's in lm's spelling, ",
+        "\"sexMale\" for \"sex=Male\"), never display labels. ",
+        .reg_terms_sentence(terms)
       )
     ),
     class = "spicy_no_match"

@@ -300,14 +300,14 @@ test_that("glmmTMB zero-inflated: info$extras$has_zi = TRUE; component block cap
   expect_identical(blk$label, "Zero-inflation")
   expect_identical(blk$link, "logit")
   non_ref <- blk$coefs[!blk$coefs$is_ref, , drop = FALSE]
-  expect_setequal(non_ref$term, paste0("zi.", names(glmmTMB::fixef(fit)$zi)))
+  expect_setequal(non_ref$term, names(glmmTMB::fixef(fit)$zi))
   expect_true(all(is.finite(non_ref$std_error)))
 })
 
-test_that("glmmTMB zero-inflated: title_prefix suffixed '(zero-inflated)'", {
+test_that("glmmTMB zero-inflated: title_prefix starts 'Zero-inflated'", {
   fit <- .fit_glmmTMB_zi()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$extras$title_prefix, "(zero-inflated)", fixed = TRUE)
+  expect_match(fr$info$extras$title_prefix, "^Zero-inflated ")
 })
 
 test_that("glmmTMB non-zi: zi_coefs is NULL, has_zi = FALSE", {
@@ -1251,18 +1251,24 @@ test_that("glmmTMB hurdle: title names the count family, null LRT too", {
   fr <- as_regression_frame(fit)
   expect_identical(
     fr$info$extras$title_prefix,
-    "Negative-binomial mixed-effects regression (hurdle)"
+    "Negative-binomial hurdle mixed-effects regression"
   )
   expect_equal(fr$info$fit_stats$theta, stats::sigma(fit), tolerance = 1e-10)
   note <- attr(table_regression(fit), "note")
-  expect_match(note, "LR test vs negative-binomial regression, ", fixed = TRUE)
+  # The null keeps the zero part (the hurdle model without the random
+  # effect), and is named so.
+  expect_match(
+    note,
+    "LR test vs negative-binomial hurdle regression, ",
+    fixed = TRUE
+  )
   expect_no_match(note, "truncated", fixed = TRUE)
   # The zi part is the zero hurdle, which glmmTMB models as Pr(y = 0).
   blk <- fr$info$extras$component_blocks[[1L]]
-  expect_identical(blk$label, "Zero hurdle")
+  expect_identical(blk$label, "Zero hurdle, Pr(y = 0)")
   expect_match(
     note,
-    "Zero hurdle component: log-odds of a zero count.",
+    "Zero hurdle, Pr(y = 0) component: log-odds of a zero count.",
     fixed = TRUE
   )
   expect_no_match(note, "structural", fixed = TRUE)
@@ -1288,5 +1294,422 @@ test_that("every glmmTMB null-model key exists in English and French", {
   expect_setequal(
     c(names(.GLMMTMB_NULL_KEYS), own_arm),
     names(.GLMMTMB_FAMILY_LABELS)
+  )
+})
+
+# ---- Hurdle-Gamma, two-part nulls, fits without random effects ------------
+
+test_that("glmmTMB ziGamma with a zi formula is a hurdle model", {
+  skip_if_not_installed("glmmTMB")
+  set.seed(20261104)
+  n <- 400
+  d <- data.frame(
+    x = stats::rnorm(n),
+    g = factor(sample(sprintf("g%02d", 1:20), n, replace = TRUE))
+  )
+  u <- stats::rnorm(20, sd = 0.4)[as.integer(d$g)]
+  mu <- exp(0.5 + 0.3 * d$x + u)
+  d$y <- ifelse(
+    stats::runif(n) < 0.3,
+    0,
+    stats::rgamma(n, shape = 2, rate = 2 / mu)
+  )
+  fit <- glmmTMB::glmmTMB(
+    y ~ x + (1 | g),
+    ziformula = ~1,
+    data = d,
+    family = glmmTMB::ziGamma(link = "log")
+  )
+  # A Gamma has no zeros, so the zi part models them all: with an
+  # intercept-only zi formula its estimate is the empirical log-odds of a
+  # zero (an oracle by hand).
+  expect_equal(
+    unname(glmmTMB::fixef(fit)$zi),
+    stats::qlogis(mean(d$y == 0)),
+    tolerance = 1e-5
+  )
+  fr <- as_regression_frame(fit)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Gamma hurdle mixed-effects regression"
+  )
+  expect_identical(
+    fr$info$extras$component_blocks[[1L]]$label,
+    "Zero hurdle, Pr(y = 0)"
+  )
+  note <- attr(table_regression(fit), "note")
+  # The response is continuous: its zero is a value, not a count.
+  expect_match(
+    note,
+    "Zero hurdle, Pr(y = 0) component: log-odds of a zero.",
+    fixed = TRUE
+  )
+  expect_no_match(note, "structural", fixed = TRUE)
+  expect_match(note, "LR test vs gamma hurdle regression, ", fixed = TRUE)
+  # Without the random intercept, the fixed-effects title of the family.
+  fit0 <- glmmTMB::glmmTMB(
+    y ~ x,
+    ziformula = ~1,
+    data = d,
+    family = glmmTMB::ziGamma(link = "log")
+  )
+  expect_identical(
+    as_regression_frame(fit0)$info$extras$title_prefix,
+    "Gamma hurdle regression"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    attr(table_regression(fit), "title"),
+    "R\u00e9gression gamma \u00e0 effets mixtes (mod\u00e8le hurdle)\u00a0: y"
+  )
+})
+
+test_that("glmmTMB lognormal and beta_family with a zi formula are hurdle models", {
+  skip_if_not_installed("glmmTMB")
+  set.seed(20261105)
+  n <- 400
+  d <- data.frame(
+    x = stats::rnorm(n),
+    g = factor(sample(sprintf("g%02d", 1:20), n, replace = TRUE))
+  )
+  u <- stats::rnorm(20, sd = 0.4)[as.integer(d$g)]
+  zero <- stats::runif(n) < 0.3
+  d$y_ln <- ifelse(zero, 0, stats::rlnorm(n, 0.5 + 0.3 * d$x + u, 0.6))
+  d$y_b <- ifelse(zero, 0, stats::plogis(0.2 * d$x + u + stats::rnorm(n)))
+  cases <- list(
+    list(y = "y_ln", family = glmmTMB::lognormal(), head = "Log-normal"),
+    list(y = "y_b", family = glmmTMB::beta_family(), head = "Beta")
+  )
+  for (cs in cases) {
+    f_re <- stats::as.formula(paste(cs$y, "~ x + (1 | g)"))
+    f_fe <- stats::as.formula(paste(cs$y, "~ x"))
+    fit <- suppressWarnings(glmmTMB::glmmTMB(
+      f_re,
+      ziformula = ~1,
+      data = d,
+      family = cs$family
+    ))
+    fit0 <- suppressWarnings(glmmTMB::glmmTMB(
+      f_fe,
+      ziformula = ~1,
+      data = d,
+      family = cs$family
+    ))
+    # The density has no mass at zero, so the zi part models every zero:
+    # with an intercept-only zi formula its estimate is the empirical
+    # log-odds of a zero (an oracle by hand).
+    for (m in list(fit, fit0)) {
+      expect_equal(
+        unname(glmmTMB::fixef(m)$zi),
+        stats::qlogis(mean(d[[cs$y]] == 0)),
+        tolerance = 1e-4,
+        label = cs$head
+      )
+    }
+    fr <- as_regression_frame(fit)
+    expect_identical(
+      fr$info$extras$title_prefix,
+      paste(cs$head, "hurdle mixed-effects regression")
+    )
+    expect_identical(
+      as_regression_frame(fit0)$info$extras$title_prefix,
+      paste(cs$head, "hurdle regression")
+    )
+    expect_identical(
+      fr$info$extras$component_blocks[[1L]]$label,
+      "Zero hurdle, Pr(y = 0)"
+    )
+    note <- attr(table_regression(fit), "note")
+    expect_match(
+      note,
+      "Zero hurdle, Pr(y = 0) component: log-odds of a zero.",
+      fixed = TRUE
+    )
+    expect_no_match(note, "structural", fixed = TRUE)
+    expect_match(
+      note,
+      paste0("LR test vs ", tolower(cs$head), " hurdle regression, "),
+      fixed = TRUE
+    )
+    fr_title <- withr::with_options(
+      list(spicy.language = "fr"),
+      attr(table_regression(fit0), "title")
+    )
+    expect_match(fr_title, "^R\u00e9gression .* \\(mod\u00e8le hurdle\\)")
+  }
+})
+
+test_that("the null of a two-part glmmTMB fit keeps its zero part, and its name", {
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  ll <- function(m) as.numeric(stats::logLik(m))
+  cases <- list(
+    list(
+      family = glmmTMB::truncated_poisson,
+      en = "Poisson hurdle regression",
+      fr = "r\u00e9gression de Poisson (mod\u00e8le hurdle)"
+    ),
+    list(
+      family = glmmTMB::truncated_nbinom2,
+      en = "negative-binomial hurdle regression",
+      fr = "r\u00e9gression binomiale n\u00e9gative (mod\u00e8le hurdle)"
+    ),
+    list(
+      family = stats::poisson,
+      en = "zero-inflated Poisson regression",
+      fr = "r\u00e9gression de Poisson (inflation de z\u00e9ros)"
+    ),
+    list(
+      family = glmmTMB::nbinom2,
+      en = "zero-inflated negative-binomial regression",
+      fr = "r\u00e9gression binomiale n\u00e9gative (inflation de z\u00e9ros)"
+    ),
+    # NB1: the French null is written as the French two-part title writes
+    # it, "binomiale negative NB1 (...)", without a second parenthesis.
+    list(
+      family = glmmTMB::nbinom1,
+      en = "zero-inflated negative-binomial (NB1) regression",
+      fr = "r\u00e9gression binomiale n\u00e9gative NB1 (inflation de z\u00e9ros)"
+    ),
+    list(
+      family = glmmTMB::truncated_nbinom1,
+      en = "negative-binomial (NB1) hurdle regression",
+      fr = "r\u00e9gression binomiale n\u00e9gative NB1 (mod\u00e8le hurdle)"
+    )
+  )
+  for (cs in cases) {
+    full <- glmmTMB::glmmTMB(
+      count ~ mined + (1 | site),
+      ziformula = ~mined,
+      data = d,
+      family = cs$family
+    )
+    # The oracle: the same two-part model refitted without the random
+    # intercept, by glmmTMB.
+    null <- glmmTMB::glmmTMB(
+      count ~ mined,
+      ziformula = ~mined,
+      data = d,
+      family = cs$family
+    )
+    fr <- as_regression_frame(full)
+    lrt <- fr$info$random_effects$null_lrt
+    expect_equal(lrt$chi2, 2 * (ll(full) - ll(null)), tolerance = 1e-6)
+    expect_identical(lrt$family_label, cs$en)
+    line_en <- spicy:::.format_random_effects_for_frame(fr, ".")
+    expect_match(line_en, paste0("LR test vs ", cs$en, ", "), fixed = TRUE)
+    line_fr <- withr::with_options(
+      list(spicy.language = "fr"),
+      spicy:::.format_random_effects_for_frame(fr, ",")
+    )
+    expect_match(line_fr, paste0("contre la ", cs$fr, ", "), fixed = TRUE)
+    expect_no_match(line_fr, "(NB1) (", fixed = TRUE)
+  }
+  # A zero-inflated Gaussian is named as its title names it: linear.
+  set.seed(3)
+  dg <- data.frame(
+    x = stats::rnorm(200),
+    g = factor(sample(letters[1:8], 200, replace = TRUE))
+  )
+  dg$y <- ifelse(
+    stats::runif(200) < 0.2,
+    0,
+    2 + dg$x + stats::rnorm(200) + stats::rnorm(8)[as.integer(dg$g)]
+  )
+  zg <- glmmTMB::glmmTMB(
+    y ~ x + (1 | g),
+    ziformula = ~1,
+    data = dg,
+    family = stats::gaussian
+  )
+  fr <- as_regression_frame(zg)
+  expect_identical(
+    fr$info$extras$title_prefix,
+    "Zero-inflated linear mixed-effects regression"
+  )
+  expect_identical(
+    fr$info$random_effects$null_lrt$family_label,
+    "zero-inflated linear regression"
+  )
+  # The family word of a note: the English head lowercased as in a title,
+  # or the word the French titles compose with; a family the language has
+  # no word for keeps its English word.
+  expect_identical(
+    spicy:::.title_family_word("Negative-binomial", "en"),
+    "negative-binomial"
+  )
+  expect_identical(spicy:::.title_family_word("Poisson", "fr"), "de Poisson")
+  expect_identical(spicy:::.title_family_word("Foo-bar", "fr"), "foo-bar")
+})
+
+test_that("a glmmTMB null that keeps a zi or dispersion random term is not named", {
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  ll <- function(m) as.numeric(stats::logLik(m))
+  cases <- list(
+    zi = list(
+      full = list(
+        count ~ mined + (1 | site),
+        ziformula = ~ mined + (1 | site),
+        family = stats::poisson
+      ),
+      null = list(
+        count ~ mined,
+        ziformula = ~ mined + (1 | site),
+        family = stats::poisson
+      )
+    ),
+    disp = list(
+      full = list(
+        count ~ mined + (1 | site),
+        dispformula = ~ (1 | spp),
+        family = glmmTMB::nbinom2
+      ),
+      null = list(
+        count ~ mined,
+        dispformula = ~ (1 | spp),
+        family = glmmTMB::nbinom2
+      )
+    )
+  )
+  for (nm in names(cases)) {
+    cs <- cases[[nm]]
+    full <- suppressWarnings(do.call(
+      glmmTMB::glmmTMB,
+      c(cs$full, list(data = d))
+    ))
+    # The oracle: glmmTMB's own refit without the conditional random
+    # intercept, which keeps the random term of the zi or dispersion part.
+    null <- suppressWarnings(do.call(
+      glmmTMB::glmmTMB,
+      c(cs$null, list(data = d))
+    ))
+    oracle <- 2 * (ll(full) - ll(null))
+    lrt <- as_regression_frame(full)$info$random_effects$null_lrt
+    expect_equal(lrt$chi2, oracle, tolerance = 1e-6, label = nm)
+    note <- attr(table_regression(full), "note")
+    expect_match(
+      note,
+      sprintf("LR test, \u03c7\u0304\u00b2(1) = %.2f, p ", oracle),
+      fixed = TRUE,
+      label = nm
+    )
+    expect_no_match(note, "LR test vs", fixed = TRUE)
+    note_fr <- withr::with_options(
+      list(spicy.language = "fr"),
+      attr(table_regression(full), "note")
+    )
+    expect_match(
+      note_fr,
+      "test du rapport de vraisemblance, \u03c7\u0304\u00b2(1) = ",
+      fixed = TRUE,
+      label = nm
+    )
+    expect_no_match(note_fr, "contre la", fixed = TRUE)
+  }
+})
+
+test_that("a glmmTMB fit without random effects takes the fixed-effects title", {
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  title_of <- function(fit) as_regression_frame(fit)$info$extras$title_prefix
+  pois <- glmmTMB::glmmTMB(count ~ mined, data = d, family = stats::poisson)
+  # One method, one title: the oracle is the title of the same model fitted
+  # by stats::glm(), or by ordinal::clm() for the ordinal family.
+  glm_fit <- stats::glm(count ~ mined, data = d, family = stats::poisson)
+  expect_identical(title_of(pois), title_of(glm_fit))
+  expect_identical(title_of(pois), "Poisson regression")
+  expect_identical(
+    attr(table_regression(list(glm_fit, pois)), "title"),
+    "Poisson regression comparison: count"
+  )
+  w <- ordinal::wine
+  ord <- glmmTMB::glmmTMB(
+    rating ~ temp + contact,
+    data = w,
+    family = glmmTMB::ordinal("logit")
+  )
+  expect_identical(
+    title_of(ord),
+    title_of(ordinal::clm(rating ~ temp + contact, data = w))
+  )
+  # A two-part model takes the title of the same model fitted by pscl, and
+  # a pscl and glmmTMB pair of it the family title of a comparison.
+  hu <- glmmTMB::glmmTMB(
+    count ~ mined,
+    ziformula = ~mined,
+    data = d,
+    family = glmmTMB::truncated_poisson
+  )
+  p_hu <- pscl::hurdle(count ~ mined | mined, data = d, dist = "poisson")
+  expect_identical(title_of(hu), title_of(p_hu))
+  expect_identical(
+    attr(table_regression(list(p_hu, hu)), "title"),
+    paste0(title_of(p_hu), " comparison: count")
+  )
+  zi <- glmmTMB::glmmTMB(
+    count ~ mined,
+    ziformula = ~mined,
+    data = d,
+    family = glmmTMB::nbinom2
+  )
+  p_zi <- pscl::zeroinfl(count ~ mined | mined, data = d, dist = "negbin")
+  expect_identical(title_of(zi), title_of(p_zi))
+  expect_identical(
+    attr(table_regression(list(p_zi, zi)), "title"),
+    paste0(title_of(p_zi), " comparison: count")
+  )
+  # NB1 keeps one pair of parentheses.
+  zi1 <- glmmTMB::glmmTMB(
+    count ~ mined,
+    ziformula = ~mined,
+    data = d,
+    family = glmmTMB::nbinom1
+  )
+  expect_identical(
+    title_of(zi1),
+    "Zero-inflated negative-binomial (NB1) regression"
+  )
+  tr <- glmmTMB::glmmTMB(
+    count ~ mined,
+    data = d[d$count > 0, ],
+    family = glmmTMB::truncated_poisson
+  )
+  expect_identical(title_of(tr), "Zero-truncated Poisson regression")
+  # No random term: no random-effects test either.
+  expect_no_match(attr(table_regression(hu), "note"), "LR test", fixed = TRUE)
+  # A random intercept in the zi formula alone still makes a mixed model.
+  zi_re <- glmmTMB::glmmTMB(
+    count ~ mined,
+    ziformula = ~ (1 | site),
+    data = d,
+    family = stats::poisson
+  )
+  expect_identical(
+    title_of(zi_re),
+    "Zero-inflated Poisson mixed-effects regression"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    attr(table_regression(hu), "title"),
+    "R\u00e9gression de Poisson (mod\u00e8le hurdle)\u00a0: count"
+  )
+  expect_identical(
+    attr(table_regression(list(p_zi, zi)), "title"),
+    paste0(
+      "R\u00e9gression binomiale n\u00e9gative (inflation de z\u00e9ros) ",
+      "\u2014 comparaison de mod\u00e8les\u00a0: count"
+    )
+  )
+  expect_identical(
+    attr(table_regression(zi1), "title"),
+    paste0(
+      "R\u00e9gression binomiale n\u00e9gative NB1 ",
+      "(inflation de z\u00e9ros)\u00a0: count"
+    )
+  )
+  expect_identical(
+    attr(table_regression(tr), "title"),
+    "R\u00e9gression de Poisson tronqu\u00e9e en z\u00e9ro\u00a0: count"
   )
 })
