@@ -22,7 +22,10 @@ print(x, ...)
 
 - ...:
 
-  Additional arguments (currently ignored).
+  Passed to
+  [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  (e.g. `padding`, which overrides the padding the table was built
+  with).
 
 ## Value
 

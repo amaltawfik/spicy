@@ -161,9 +161,10 @@ table_regression_uv(
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   (`exponentiate`, `vcov`, `cluster`, `p_adjust`, `digits`, `output`,
   ...), each by its full name: an unknown or abbreviated name is an
-  error. `nested` is not meaningful for a screen and is refused.
-  `cluster` must be a single vector with one value per row of `data`; it
-  is aligned to each fit's own estimation sample automatically.
+  error. `nested` and `layout` are not meaningful for a screen and are
+  refused. `cluster` must be a single vector with one value per row of
+  `data`; it is aligned to each fit's own estimation sample
+  automatically.
 
 - note_labels:
 

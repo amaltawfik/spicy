@@ -152,6 +152,8 @@ since 0.13.0</p></li>
 Excel workbook, and its PDF), since 0.14.0</p></li>
 <li><p>Multiple-response questions: <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, since
 0.14.0</p></li>
+<li><p>Stacked tables: <code><a href="table_stack.html">table_stack()</a></code>, with
+<code>table_regression(layout = "stacked")</code>, since 0.15.0</p></li>
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
 without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitive: <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
 (<code><a href="build_ascii_table.html">build_ascii_table()</a></code> is no longer exported)</p></li>
@@ -164,10 +166,12 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 <code>spicy_categorical_table</code>, <code>spicy_categorical_svy_table</code>,
 <code>spicy_continuous_table</code>, <code>spicy_continuous_svy_table</code>,
 <code>spicy_continuous_lm_table</code>, <code>spicy_outcome_table</code>,
-<code>spicy_multiresponse_table</code>, and <code>spicy_regression_table</code>, and the
-<code>output = "long"</code> frame of every table function, speak one
-vocabulary: broom's name wherever broom defines one, and one
-snake_case name per concept otherwise, the same in every function.
+<code>spicy_multiresponse_table</code>, <code>spicy_regression_table</code> and
+<code>spicy_stack_table</code>, and the <code>output = "long"</code> frame of every table
+function, speak one vocabulary: broom's name wherever broom defines
+one, and one snake_case name per concept otherwise, the same in every
+function. The outputs of a stacked table (<code><a href="table_stack.html">table_stack()</a></code>) open with
+a <code>panel</code> column, the label of the panel a row belongs to.
 One exception, the estimates: <code>tidy()</code> gives them broom's names, and
 the long output of a descriptive table names each statistic it holds
 (see the table below).</p><table class="table table"><tr><td>Concept</td><td>Column</td></tr><tr><td>the variable a row describes, its displayed label</td><td><code>variable</code>, <code>label</code></td></tr><tr><td>the level of a categorical variable, the group of <code>by</code> (in the tables that take a <code>by</code>)</td><td><code>level</code>, <code>group</code></td></tr><tr><td>the role of the row's <code>level</code> (or item): a level, the row of missing values, ...</td><td><code>.row_role</code> (<code>"level"</code>, <code>"missing"</code>, <code>"summary"</code>, ...)</td></tr><tr><td>the role of <code>group</code>: a group, the column of missing <code>by</code> values, the margin</td><td><code>.group_role</code> (<code>"group"</code>, <code>"missing"</code>, <code>"total"</code>)</td></tr><tr><td>the <code>Total</code> margin of the groups</td><td><code>total</code> (logical)</td></tr><tr><td>a count, a percentage, a proportion between 0 and 1</td><td><code>n</code>, <code>pct</code>, <code>proportion</code>, named by their base where a table has two (<code>pct_cases</code>, <code>pct_responses</code>, <code>proportion_cases</code>, <code>proportion_responses</code>)</td></tr><tr><td>the estimate of a row, its standard error and interval</td><td>in <code>tidy()</code>, and in the long output of <code><a href="table_regression.html">table_regression()</a></code>: <code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>; in the long output of the descriptive tables, the name of the statistic: <code>mean</code>, <code>se</code>, <code>ci_lower</code>, <code>ci_upper</code> (<code>median</code>, <code>med_ci_lower</code>, ...; <code>emmean</code>, <code>emmean_se</code>, <code>estimate_ci_lower</code>, ... in <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>)</td></tr><tr><td>the test: its name and statistic</td><td><code>test_type</code>, <code>statistic</code></td></tr><tr><td>the degrees of freedom, which follow the statistic</td><td><code>df</code> for a <em>t</em> or a chi-squared (<code>Inf</code> for a <em>z</em>); <code>df</code> and <code>df.residual</code> for an <em>F</em>, the Rao-Scott <em>F</em> and the <em>F</em> of a linear model included</td></tr><tr><td>the p-value, and the raw one under <code>p_adjust</code></td><td><code>p.value</code>, <code>p_unadjusted</code></td></tr><tr><td>the effect size: its measure, value and interval</td><td><code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code></td></tr><tr><td>the standardized mean difference</td><td><code>smd_type</code>, <code>smd_value</code></td></tr><tr><td>the observations of a variable or of a model, and their weighted count</td><td><code>nobs</code>, <code>weighted_nobs</code></td></tr><tr><td>the weighted count of a group (beside its <code>n</code>)</td><td><code>weighted_n</code></td></tr><tr><td>the counts of the groups of <code>by</code>, of the categories of a variable</td><td><code>n_groups</code>, <code>n_levels</code></td></tr><tr><td>the fit of a model</td><td><code>r.squared</code>, <code>adj.r.squared</code> as columns; as a row, its <code>show_fit_stats</code> token in <code>variable</code> (<code>r2</code>, <code>adj_r2</code>, <code>aic</code>, ...)</td></tr></table><p><code>variable</code> holds the name of the column a row describes and <code>label</code>
@@ -214,7 +218,11 @@ is displayed, one row per printed row, with numbers: the key columns
 <code>variable</code>, <code>label</code> (and the <code>level</code> or <code>group</code> of the row, and
 <code>.row_role</code>, the role of the printed row, where the table adds rows),
 then the printed columns under their names. The two are identical for
-every class. <code>output = "excel"</code> and <code>"word"</code> return the path of the
+every class. A stacked table (<code><a href="table_stack.html">table_stack()</a></code>) is the exception to one
+row per printed row: its data frame binds the data frames of its
+panels by rows, under a leading <code>panel</code> column, without the rows that
+open the panels or repeat their headers. <code>output = "excel"</code> and
+<code>"word"</code> return the path of the
 file, invisibly. The columns of the object <code>output = "default"</code>
 returns are internal and can change without notice: the contracts are
 <code>output = "data.frame"</code>, <code>output = "long"</code>, <code>tidy()</code>, <code>glance()</code> and
@@ -276,8 +284,16 @@ non-2x2 table).</p></li>
 spicy does not compute it (e.g., weighted group tests in
 <code><a href="table_continuous.html">table_continuous()</a></code>); the message names an alternative.</p></li>
 <li><p><code>spicy_empty_table</code> – <code><a href="table_regression.html">table_regression()</a></code> has no row
-to show for a model: it has no coefficient, or every requested
-row block is switched off.</p></li>
+to show for a model: it has no coefficient, every requested
+row block is switched off, or no coefficient row is left once
+<code>keep</code>, <code>drop</code> or <code>show_intercept = FALSE</code> have chosen the rows
+(for a panel of <code>layout = "stacked"</code>, or for every model of
+the table); <code><a href="table_stack.html">table_stack()</a></code> received a table without rows.</p></li>
+<li><p><code>spicy_stack_mismatch</code> – <code><a href="table_stack.html">table_stack()</a></code> received
+tables built in different languages, with different decimal
+marks or alignments, or under styles that format a cell
+differently. Signaled together with
+<code>spicy_invalid_input</code>.</p></li>
 <li><p><code>spicy_ame_satt_unsupported_formula</code> – signaled
 together with <code>spicy_unsupported</code> when AME
 Satterthwaite degrees of freedom are unavailable for the

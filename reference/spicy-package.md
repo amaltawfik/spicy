@@ -103,6 +103,10 @@ clock rather than the parent family's):
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   since 0.14.0
 
+- Stacked tables:
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
+  with `table_regression(layout = "stacked")`, since 0.15.0
+
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
 
@@ -119,13 +123,17 @@ and
 methods of every table class, `spicy_categorical_table`,
 `spicy_categorical_svy_table`, `spicy_continuous_table`,
 `spicy_continuous_svy_table`, `spicy_continuous_lm_table`,
-`spicy_outcome_table`, `spicy_multiresponse_table`, and
-`spicy_regression_table`, and the `output = "long"` frame of every table
-function, speak one vocabulary: broom's name wherever broom defines one,
-and one snake_case name per concept otherwise, the same in every
-function. One exception, the estimates: `tidy()` gives them broom's
-names, and the long output of a descriptive table names each statistic
-it holds (see the table below).
+`spicy_outcome_table`, `spicy_multiresponse_table`,
+`spicy_regression_table` and `spicy_stack_table`, and the
+`output = "long"` frame of every table function, speak one vocabulary:
+broom's name wherever broom defines one, and one snake_case name per
+concept otherwise, the same in every function. The outputs of a stacked
+table
+([`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md))
+open with a `panel` column, the label of the panel a row belongs to. One
+exception, the estimates: `tidy()` gives them broom's names, and the
+long output of a descriptive table names each statistic it holds (see
+the table below).
 
 |  |  |
 |----|----|
@@ -211,10 +219,15 @@ the table as it is displayed, one row per printed row, with numbers: the
 key columns `variable`, `label` (and the `level` or `group` of the row,
 and `.row_role`, the role of the printed row, where the table adds
 rows), then the printed columns under their names. The two are identical
-for every class. `output = "excel"` and `"word"` return the path of the
-file, invisibly. The columns of the object `output = "default"` returns
-are internal and can change without notice: the contracts are
-`output = "data.frame"`, `output = "long"`, `tidy()`, `glance()` and
+for every class. A stacked table
+([`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md))
+is the exception to one row per printed row: its data frame binds the
+data frames of its panels by rows, under a leading `panel` column,
+without the rows that open the panels or repeat their headers.
+`output = "excel"` and `"word"` return the path of the file, invisibly.
+The columns of the object `output = "default"` returns are internal and
+can change without notice: the contracts are `output = "data.frame"`,
+`output = "long"`, `tidy()`, `glance()` and
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 
 The set of columns produced by each method is considered **stabilizing**
@@ -284,8 +297,19 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_empty_table` –
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-    has no row to show for a model: it has no coefficient, or every
-    requested row block is switched off.
+    has no row to show for a model: it has no coefficient, every
+    requested row block is switched off, or no coefficient row is left
+    once `keep`, `drop` or `show_intercept = FALSE` have chosen the rows
+    (for a panel of `layout = "stacked"`, or for every model of the
+    table);
+    [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+    received a table without rows.
+
+  - `spicy_stack_mismatch` –
+    [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+    received tables built in different languages, with different decimal
+    marks or alignments, or under styles that format a cell differently.
+    Signaled together with `spicy_invalid_input`.
 
   - `spicy_ame_satt_unsupported_formula` – signaled together with
     `spicy_unsupported` when AME Satterthwaite degrees of freedom are

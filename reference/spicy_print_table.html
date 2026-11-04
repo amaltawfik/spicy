@@ -116,6 +116,8 @@ arguments can change without notice.</p>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fit_stats_start <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  qualify_companions <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  blank_row_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -233,6 +235,22 @@ qualifying it would attribute it to whichever column happened to
 sit before it. Defaults to <code>FALSE</code>.</p></dd>
 
 
+<dt id="arg-body-spanners">body_spanners<a class="anchor" aria-label="anchor" href="#arg-body-spanners"></a></dt>
+<dd><p>Optional list of column group rows inside the
+body (see <code><a href="build_ascii_table.html">build_ascii_table()</a></code>), in the columns of <code>x</code>. When the
+table splits into stacked panels, each panel repeats a label over
+the columns of its group it holds. Defaults to <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-blank-row-groups">blank_row_groups<a class="anchor" aria-label="anchor" href="#arg-blank-row-groups"></a></dt>
+<dd><p>Optional list of integer vectors, each a set
+of rows that go together (the rows of a panel of a stacked table,
+or one of its fit-statistic rows). When the table splits into
+stacked panels, continuation panels leave out every group none of
+whose rows has a data cell there. An alternative to
+<code>fit_stats_start</code>, not to be combined with it. Defaults to <code>NULL</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to <code><a href="build_ascii_table.html">build_ascii_table()</a></code>.</p></dd>
 
@@ -255,7 +273,8 @@ default; colored separators are drawn when the terminal supports
 ANSI color (<code><a href="http://r-lib.github.io/crayon/reference/has_color.html" class="external-link">crayon::has_color()</a></code>) and fall back to monochrome
 otherwise.</p>
 <p>The layout arguments <code>spanners</code>, <code>display_labels</code>,
-<code>fit_stats_start</code>, <code>total_row_idx</code> and <code>group_sep_rows</code> are
+<code>fit_stats_start</code>, <code>total_row_idx</code>, <code>group_sep_rows</code>,
+<code>body_spanners</code> and <code>blank_row_groups</code> are
 plumbing consumed by spicy's own print methods; they are
 documented for completeness and are rarely useful when calling
 this function directly.</p>

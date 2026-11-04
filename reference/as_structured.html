@@ -110,13 +110,16 @@ markers and a format specification.</p>
 <code><a href="table_regression.html">table_regression()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>
 or the survey twins <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> and
-<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>. All return the same schema.</p></dd>
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>. All return the same schema. A stacked
+table of <code><a href="table_stack.html">table_stack()</a></code> is accepted too.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with the structured view (see Details for the
-schema).</p>
+schema). For a stacked table of <code><a href="table_stack.html">table_stack()</a></code>, a list of such
+views, one per panel, named by the labels of the panels: each is the
+view of the table stacked in that panel.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

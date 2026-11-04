@@ -29,11 +29,17 @@ as_structured(x)
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md).
-  All return the same schema.
+  All return the same schema. A stacked table of
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  is accepted too.
 
 ## Value
 
-A list with the structured view (see Details for the schema).
+A list with the structured view (see Details for the schema). For a
+stacked table of
+[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
+a list of such views, one per panel, named by the labels of the panels:
+each is the view of the table stacked in that panel.
 
 ## Details
 

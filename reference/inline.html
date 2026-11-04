@@ -104,7 +104,9 @@ R chunks in Quarto / R Markdown:</p>
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>,
 <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> or
 <code><a href="table_multiresponse.html">table_multiresponse()</a></code> (default output) – every family
-<code><a href="as_structured.html">as_structured()</a></code> accepts.</p></dd>
+<code><a href="as_structured.html">as_structured()</a></code> accepts. A stacked table of <code><a href="table_stack.html">table_stack()</a></code> holds
+several tables and is refused: pass the panel that holds the cell,
+<code>attr(x, "panels")[["Women"]]</code>.</p></dd>
 
 
 <dt id="arg-variable">variable<a class="anchor" aria-label="anchor" href="#arg-variable"></a></dt>

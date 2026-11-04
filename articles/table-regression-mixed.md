@@ -1288,7 +1288,7 @@ table_regression(
 #>  BIC                     │    –                          464.1                        
 #>  Max cluster size        │   4                              –                         
 #> 
-#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Population-averaged: Robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The active-treatment odds ratio is the same effect asked two ways: the

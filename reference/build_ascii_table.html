@@ -103,6 +103,7 @@ per-column alignment.</p>
 <span>  group_sep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  total_row_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -212,6 +213,15 @@ visual header is swapped. Used by <code><a href="print.spicy_regression_table.ht
 so a <code>B + AME</code> table shows the bare label (<code>95% CI</code>, <code>p</code>) in both
 blocks rather than R's deduplicated <code>95% CI.2</code> / <code>p.2</code>. Defaults
 to <code>NULL</code> (use <code>colnames(x)</code> verbatim).</p></dd>
+
+
+<dt id="arg-body-spanners">body_spanners<a class="anchor" aria-label="anchor" href="#arg-body-spanners"></a></dt>
+<dd><p>Optional list of column group rows inside the
+body, each a list with <code>row</code> (the row index) and <code>spans</code> (a named
+list like <code>spanners</code>). The row is drawn as the spanner row is: each
+label centered over its columns, a thin rule under them. Its cells
+should be blank. Used by <code><a href="print.spicy_stack_table.html">print.spicy_stack_table()</a></code> for the column
+groups of a panel's own header. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

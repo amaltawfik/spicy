@@ -416,7 +416,7 @@ rest of the table intact.
 ## Multiple models side by side
 
 Pass a list of [`lm()`](https://rdrr.io/r/stats/lm.html) fits. The
-default column layout places each model in its own panel under a
+default column layout gives each model its own group of columns under a
 centered **spanner label** showing the model name; sub-columns
 (`B / SE / p`) are repeated under the spanner. When dependent variables
 differ across models and the user did not supply labels
@@ -457,6 +457,110 @@ When all models share the same DV, the DV appears in the title. Use a
 named list — e.g. `list(Crude = m1, Adjusted = m2)` — to set the spanner
 labels explicitly; pass `model_labels = c(...)` to override the names
 from the list.
+
+## Models one under the other
+
+Side by side, models that share few predictors leave a wide and sparse
+table, and the default drops the confidence intervals to save width.
+`layout = "stacked"` sets the models one under the other instead: each
+model gets a panel with the columns it would have on its own, its
+interval included, opened by a row with its label.
+
+``` r
+
+table_regression(
+  list(Wellbeing = m_wellbeing, BMI = m_bmi),
+  layout = "stacked"
+)
+#> Linear regression comparison
+#> 
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  Wellbeing:      │                                      
+#>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
+#>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
+#>  sex:            │                                      
+#>    Female (ref.) │     –     –          –          –    
+#>    Male          │    3.86  0.91  [ 2.08,  5.63]  <.001 
+#>  smoking:        │                                      
+#>    No (ref.)     │     –     –          –          –    
+#>    Yes           │   -1.72  1.11  [-3.89,  0.45]   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R²              │    0.02                              
+#>  Adj. R²         │    0.02                              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  BMI:            │                                      
+#>  (Intercept)     │   23.98  0.40  [23.20, 24.75]  <.001 
+#>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
+#>  sex:            │                                      
+#>    Female (ref.) │     –     –          –          –    
+#>    Male          │    0.51  0.22  [ 0.09,  0.94]   .018 
+#>  smoking:        │                                      
+#>    No (ref.)     │     –     –          –          –    
+#>    Yes           │   -0.06  0.26  [-0.58,  0.46]   .822 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                 
+#>  R²              │    0.02                              
+#>  Adj. R²         │    0.02                              
+#> 
+#> Note. Linear regression models. Std. errors: classical (OLS). CI = confidence interval.
+```
+
+[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+stacks tables built separately, each with its own arguments. A panel
+whose columns differ from the first one opens with its own header, here
+the odds ratios of a logistic model:
+
+``` r
+
+m_dentist <- glm(dentist_12m ~ age + sex + smoking,
+                 data = sochealth, family = binomial)
+table_stack(
+  BMI = table_regression(m_bmi),
+  Dentist = table_regression(m_dentist, exponentiate = TRUE)
+)
+#>  Variable        │    B      SE       95% CI        p   
+#> ─────────────────┼──────────────────────────────────────
+#>  BMI:            │                                      
+#>  (Intercept)     │   23.98  0.40  [23.20, 24.75]  <.001 
+#>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
+#>  sex:            │                                      
+#>    Female (ref.) │     –     –          –          –    
+#>    Male          │    0.51  0.22  [ 0.09,  0.94]   .018 
+#>  smoking:        │                                      
+#>    No (ref.)     │     –     –          –          –    
+#>    Yes           │   -0.06  0.26  [-0.58,  0.46]   .822 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                                 
+#>  R²              │    0.02                              
+#>  Adj. R²         │    0.02                              
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist:        │                                      
+#>                  │   OR      SE       95% CI        p   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  (Intercept)     │    1.66  0.39  [ 1.05,  2.62]   .030 
+#>  age             │    1.01  0.00  [ 1.00,  1.02]   .064 
+#>  sex:            │                                      
+#>    Female (ref.) │     –     –          –          –    
+#>    Male          │    1.00  0.13  [ 0.77,  1.28]   .975 
+#>  smoking:        │                                      
+#>    No (ref.)     │     –     –          –          –    
+#>    Yes           │    0.95  0.15  [ 0.70,  1.30]   .767 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                                 
+#>  R² (McFadden)   │    0.00                              
+#>  R² (Nagelkerke) │    0.00                              
+#>  AIC             │ 1421.8                               
+#> 
+#> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
+```
+
+The notes of the panels are merged as the note of the same models side
+by side: one sentence gives the type of each model, one its standard
+errors, and a sentence that holds for one panel only opens with its
+label. A table without a name takes its label from `panel_labels`, else
+from a title you typed for it, else from its outcome.
 
 ## Univariable screening
 

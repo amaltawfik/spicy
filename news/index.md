@@ -94,6 +94,26 @@
 
 ### New features
 
+- New
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
+  experimental, stacks regression tables one under the other: each table
+  becomes a panel opened by a row with its name (or its entry in
+  `panel_labels`), under one column header when the panels share their
+  columns and with its own header otherwise. The notes are merged as for
+  the models side by side, a sentence that holds for some panels only
+  opening with their names. Tables built in different languages, with
+  different decimal marks or alignments, or under styles that format a
+  cell differently are refused.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `layout = "stacked"`: one panel per model, each with the columns
+  of the model alone, its confidence interval included. Under
+  `nested = TRUE` the change statistics of each model sit in its panel,
+  labeled “vs” the model before it.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html), `glance()`
+  and `output = "long"` return the rows of the models side by side, with
+  a leading `panel` column.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   glmmTMB models take `vcov = "CR1"`, glmmTMB’s cluster sandwich scaled
   by G/(G - 1) for G clusters, as for the other likelihood classes. It
@@ -142,7 +162,8 @@
   titles do not know keeps a French title (“Régression univariable et
   multivariable”). The survival note names the distribution in French
   (“Distribution : log-normale”) and the standard errors of `estimatr`
-  models are translated (“robustes à l’hétéroscédasticité (HC2)”).
+  and fixest models are translated (“robustes à l’hétéroscédasticité
+  (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
 
@@ -434,6 +455,18 @@
   (`show_thresholds = FALSE`) are separated by semicolons, which cannot
   be read as decimal commas.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  no longer shows an AME row for a variable that enters the model only
+  through [`offset()`](https://rdrr.io/r/stats/offset.html)
+  (`offset(log(exposure))`, for example): an offset has no fitted
+  effect. The row showed the slope of the offset variable, with an SE
+  and a p-value.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with a formula `cluster` (`cluster = ~id`) uses the rows the fit kept
+  after `subset` and the removal of missing values. A fit with `subset`
+  failed on the length of the cluster.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `vcov = "CR1"` for `survreg`, `gam`, `polr`, `clm`, `betareg`,
   `mlogit`, `multinom`, `zeroinfl` and `hurdle` models counts only the
@@ -541,6 +574,35 @@
   brms flags as invalid for these families, and
   [`stan_polr()`](https://mc-stan.org/rstanarm/reference/stan_polr.html)
   failed on its default fit statistics.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  gt tables now rule off the “Thresholds”, “Random effects” and
+  component blocks, as the console, tinytable, flextable and Excel
+  already did.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the console no longer draws the rule of a total above a row whose
+  label contains the word “Total”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a `keep`, `drop`, `show_intercept = FALSE` or
+  `show_thresholds = FALSE` that leaves no coefficient row now stops
+  with `spicy_empty_table`, naming the model and the setting, instead of
+  returning a table with a header only.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a multinomial model placed beside other models now keeps its
+  intercepts under `keep` or `drop` and hides them under
+  `show_intercept = FALSE`, as the other models do. `keep` dropped them
+  and `show_intercept = FALSE` kept them.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) now marks
+  them in `is_intercept`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the standard-error note writes each model’s label in lower case after
+  the model’s name (“Model 1: robust (HC1)”), as the other sentences of
+  the note do. A label that opens with an acronym or a name keeps its
+  capital (“HC1”, “Newey-West (L=1)”).
 
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   titles name the family as

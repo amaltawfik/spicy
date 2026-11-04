@@ -32,6 +32,8 @@ spicy_print_table(
   display_labels = NULL,
   fit_stats_start = NULL,
   qualify_companions = FALSE,
+  body_spanners = NULL,
+  blank_row_groups = NULL,
   ...
 )
 ```
@@ -150,6 +152,23 @@ spicy_print_table(
   whole block it has no carrier, and qualifying it would attribute it to
   whichever column happened to sit before it. Defaults to `FALSE`.
 
+- body_spanners:
+
+  Optional list of column group rows inside the body (see
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)),
+  in the columns of `x`. When the table splits into stacked panels, each
+  panel repeats a label over the columns of its group it holds. Defaults
+  to `NULL`.
+
+- blank_row_groups:
+
+  Optional list of integer vectors, each a set of rows that go together
+  (the rows of a panel of a stacked table, or one of its fit-statistic
+  rows). When the table splits into stacked panels, continuation panels
+  leave out every group none of whose rows has a data cell there. An
+  alternative to `fit_stats_start`, not to be combined with it. Defaults
+  to `NULL`.
+
 - ...:
 
   Additional arguments passed to
@@ -179,9 +198,10 @@ separators are drawn when the terminal supports ANSI color
 and fall back to monochrome otherwise.
 
 The layout arguments `spanners`, `display_labels`, `fit_stats_start`,
-`total_row_idx` and `group_sep_rows` are plumbing consumed by spicy's
-own print methods; they are documented for completeness and are rarely
-useful when calling this function directly.
+`total_row_idx`, `group_sep_rows`, `body_spanners` and
+`blank_row_groups` are plumbing consumed by spicy's own print methods;
+they are documented for completeness and are rarely useful when calling
+this function directly.
 
 ## See also
 

@@ -22,6 +22,7 @@ build_ascii_table(
   group_sep_rows = integer(0),
   total_row_idx = NULL,
   display_labels = NULL,
+  body_spanners = NULL,
   ...
 )
 ```
@@ -131,6 +132,15 @@ build_ascii_table(
   so a `B + AME` table shows the bare label (`95% CI`, `p`) in both
   blocks rather than R's deduplicated `95% CI.2` / `p.2`. Defaults to
   `NULL` (use `colnames(x)` verbatim).
+
+- body_spanners:
+
+  Optional list of column group rows inside the body, each a list with
+  `row` (the row index) and `spans` (a named list like `spanners`). The
+  row is drawn as the spanner row is: each label centered over its
+  columns, a thin rule under them. Its cells should be blank. Used by
+  [`print.spicy_stack_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_stack_table.md)
+  for the column groups of a panel's own header. Defaults to `NULL`.
 
 - ...:
 

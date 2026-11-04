@@ -896,7 +896,8 @@ degrees of freedom and tests, every number delegated to survey (Lumley).
 
 ## Regression tables
 
-One or more fitted models side by side, and the univariable screen.
+One or more fitted models side by side or one under the other, and the
+univariable screen.
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
 returns the supported model classes; its page describes the behavior of
 each family (inference, robust-variance backends, exponentiation,
@@ -906,6 +907,8 @@ marginal effects, labeled blocks).
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   : Univariable screening table (with optional multivariable merge)
+- [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  : Stack tables one under the other
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
   : Supported models and per-family behavior of table_regression()
 
@@ -1015,6 +1018,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [`print(`*`<spicy_regression_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md)
   : Print method for regression tables
 
+- [`print(`*`<spicy_stack_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_stack_table.md)
+  : Print method for stacked tables
+
 - [`print(`*`<spicy_style>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_style.md)
   : Print method for table styles
 
@@ -1073,6 +1079,12 @@ Documented here for direct invocation with custom arguments (e.g.,
 
   Convert a `spicy_regression_table` to a plain data.frame / tibble
 
+- [`as.data.frame(`*`<spicy_stack_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_stack_table.md)
+  [`as_tibble(`*`<spicy_stack_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_stack_table.md)
+  :
+
+  Convert a `spicy_stack_table` to a data frame
+
 - [`tidy(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
   [`glance(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
   :
@@ -1120,6 +1132,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   :
 
   Tidy / glance methods for `spicy_regression_table`
+
+- [`tidy(`*`<spicy_stack_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_stack_table.md)
+  [`glance(`*`<spicy_stack_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_stack_table.md)
+  :
+
+  Tidy / glance methods for `spicy_stack_table`
 
 - [`terms(`*`<spicy_uv_screen>`*`)`](https://amaltawfik.github.io/spicy/reference/terms.spicy_uv_screen.md)
   : Terms method for univariable screen bundles

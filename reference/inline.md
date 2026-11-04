@@ -29,7 +29,10 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   (default output) – every family
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  accepts.
+  accepts. A stacked table of
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  holds several tables and is refused: pass the panel that holds the
+  cell, `attr(x, "panels")[["Women"]]`.
 
 - variable:
 

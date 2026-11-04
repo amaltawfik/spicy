@@ -315,7 +315,7 @@
       </dl></div><div class="section level2">
       <h2 id="regression-tables">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables"></a></h2>
 
-      <div class="section-desc"><p>One or more fitted models side by side, and the univariable screen. <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> returns the supported model classes; its page describes the behavior of each family (inference, robust-variance backends, exponentiation, marginal effects, labeled blocks).</p></div>
+      <div class="section-desc"><p>One or more fitted models side by side or one under the other, and the univariable screen. <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> returns the supported model classes; its page describes the behavior of each family (inference, robust-variance backends, exponentiation, marginal effects, labeled blocks).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -335,6 +335,13 @@
 
         </dt>
         <dd>Univariable screening table (with optional multivariable merge)</dd>
+
+        <dt>
+
+          <code><a href="table_stack.html">table_stack()</a></code>
+
+        </dt>
+        <dd>Stack tables one under the other</dd>
 
         <dt>
 
@@ -567,6 +574,13 @@
 
         <dt>
 
+          <code><a href="print.spicy_stack_table.html">print(<i>&lt;spicy_stack_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for stacked tables</dd>
+
+        <dt>
+
           <code><a href="print.spicy_style.html">print(<i>&lt;spicy_style&gt;</i>)</a></code>
 
         </dt>
@@ -637,6 +651,13 @@
 
         <dt>
 
+          <code><a href="as.data.frame.spicy_stack_table.html">as.data.frame(<i>&lt;spicy_stack_table&gt;</i>)</a></code> <code><a href="as.data.frame.spicy_stack_table.html">as_tibble(<i>&lt;spicy_stack_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Convert a <code>spicy_stack_table</code> to a data frame</dd>
+
+        <dt>
+
           <code><a href="tidy.spicy_categorical_svy_table.html">tidy(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code> <code><a href="tidy.spicy_categorical_svy_table.html">glance(<i>&lt;spicy_categorical_svy_table&gt;</i>)</a></code>
 
         </dt>
@@ -690,6 +711,13 @@
 
         </dt>
         <dd>Tidy / glance methods for <code>spicy_regression_table</code></dd>
+
+        <dt>
+
+          <code><a href="tidy.spicy_stack_table.html">tidy(<i>&lt;spicy_stack_table&gt;</i>)</a></code> <code><a href="tidy.spicy_stack_table.html">glance(<i>&lt;spicy_stack_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidy / glance methods for <code>spicy_stack_table</code></dd>
 
         <dt>
 
