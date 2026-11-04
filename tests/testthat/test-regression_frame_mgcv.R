@@ -393,3 +393,173 @@ test_that("an nb() GAM has theta and alpha rows and no sigma; negbin(theta) keep
     class = "spicy_invalid_input"
   )
 })
+
+test_that("nb(theta) with theta fixed is negbin(theta): sigma 1, no theta row", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  d <- data.frame(x = stats::runif(200))
+  d$y <- stats::rnbinom(200, mu = exp(1 + d$x), size = 2)
+  # mgcv: a positive theta given to nb() is a known constant (n.theta =
+  # 0), a negative one a starting value (n.theta = 1).
+  fixed <- mgcv::gam(y ~ s(x), family = mgcv::nb(theta = 2), data = d)
+  start <- mgcv::gam(y ~ s(x), family = mgcv::nb(theta = -2), data = d)
+  plain <- mgcv::gam(y ~ s(x), family = mgcv::negbin(2), data = d)
+  fixed_bam <- mgcv::bam(y ~ s(x), family = mgcv::nb(theta = 2), data = d)
+  expect_equal(fixed$family$n.theta, 0)
+  expect_equal(fixed_bam$family$n.theta, 0)
+  expect_equal(start$family$n.theta, 1)
+  # The fixed theta keeps mgcv's scale, the 1 the family fixes, as
+  # negbin(2) does, and has no theta row.
+  for (fit in list(fixed, fixed_bam, plain)) {
+    fs <- as_regression_frame(fit, model_id = "M1")$info$fit_stats
+    expect_equal(fs$sigma, sqrt(fit$sig2))
+    expect_equal(fs$sigma, 1)
+    expect_null(fs$theta)
+    expect_null(fs$alpha)
+  }
+  expect_error(
+    table_regression(fixed, show_fit_stats = "theta"),
+    "no model in the table",
+    class = "spicy_invalid_input"
+  )
+  # A starting value is estimated: the row is mgcv's estimate.
+  fs_start <- as_regression_frame(start, model_id = "M1")$info$fit_stats
+  expect_equal(fs_start$theta, start$family$getTheta(TRUE))
+  expect_true(is.na(fs_start$sigma))
+  # One table: the fixed theta reads as negbin(2), the estimate has its rows.
+  df <- as.data.frame(table_regression(
+    list(Fixed = fixed, Negbin = plain, Est = start),
+    show_fit_stats = c("theta", "sigma")
+  ))
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_true(is.na(row("theta")[["Fixed: B"]]))
+  expect_true(is.na(row("theta")[["Negbin: B"]]))
+  expect_equal(row("theta")[["Est: B"]], start$family$getTheta(TRUE))
+  expect_equal(row("sigma")[["Fixed: B"]], 1)
+  expect_equal(row("sigma")[["Negbin: B"]], 1)
+  expect_true(is.na(row("sigma")[["Est: B"]]))
+})
+
+test_that("a betar() GAM has the phi of betareg and glmmTMB, and no sigma", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("glmmTMB")
+  set.seed(20261104)
+  d <- data.frame(x = stats::rnorm(400))
+  m <- stats::plogis(-0.3 + 0.5 * d$x)
+  d$y <- stats::rbeta(400, 7 * m, 7 * (1 - m))
+  # method = "ML": the default REML criterion of mgcv estimates theta
+  # with a correction for the fixed effects, so only the ML fit has the
+  # maximum-likelihood phi of betareg and glmmTMB.
+  fit <- mgcv::gam(y ~ x, family = mgcv::betar(), data = d, method = "ML")
+  fs <- as_regression_frame(fit, model_id = "M1")$info$fit_stats
+  # mgcv's own value, exactly: betar()'s theta is phi.
+  expect_identical(fs$phi, as.numeric(fit$family$getTheta(TRUE)))
+  # The same model in betareg and glmmTMB (beta_family(), whose sigma()
+  # is phi).
+  br <- betareg::betareg(y ~ x, data = d)
+  tb <- glmmTMB::glmmTMB(y ~ x, data = d, family = glmmTMB::beta_family())
+  expect_equal(
+    as.numeric(stats::logLik(fit)),
+    as.numeric(stats::logLik(br)),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    fs$phi,
+    unname(stats::coef(br, model = "precision")),
+    tolerance = 1e-4
+  )
+  expect_equal(fs$phi, stats::sigma(tb), tolerance = 1e-4)
+  # mgcv fixes the scale at 1: no residual scale, as betareg has none.
+  expect_equal(fit$sig2, 1)
+  expect_true(is.na(fs$sigma))
+  df <- as.data.frame(table_regression(
+    list(betareg = br, GAM = fit),
+    show_fit_stats = c("phi", "sigma")
+  ))
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_equal(row("phi")[["GAM: B"]], fit$family$getTheta(TRUE))
+  # Neither model has a residual scale: the sigma row is dropped.
+  expect_identical(nrow(row("sigma")), 0L)
+  # betar(theta) with theta > 0 fixes phi: no row, and alone it is refused.
+  fixed <- mgcv::gam(y ~ x, family = mgcv::betar(theta = 5), data = d)
+  expect_equal(fixed$family$n.theta, 0)
+  expect_null(as_regression_frame(fixed, model_id = "M1")$info$fit_stats$phi)
+  err <- expect_error(
+    table_regression(fixed, show_fit_stats = "phi"),
+    "no model in the table",
+    class = "spicy_invalid_input"
+  )
+  # The refusal says why: the phi of the call is no estimate.
+  expect_match(
+    conditionMessage(err),
+    "A phi fixed in the call (mgcv `betar(theta)` with theta > 0)",
+    fixed = TRUE
+  )
+})
+
+test_that("an extended family shows sigma only when the GAM estimates a scale", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("withr")
+  # tw() looks up mgcv's ldTweedie() on the search path.
+  withr::local_package("mgcv")
+  set.seed(42)
+  n <- 300
+  d <- data.frame(x = stats::runif(n))
+  d$yt <- 1 + 2 * d$x + 0.8 * stats::rt(n, df = 4)
+  d$yz <- ifelse(stats::runif(n) < 0.3, 0L, stats::rpois(n, exp(0.5 + d$x)))
+  d$yo <- as.integer(cut(2 * d$x + stats::rlogis(n), c(-Inf, 0, 1, 2, Inf)))
+  d$ytw <- mgcv::rTweedie(exp(1 + d$x), p = 1.5, phi = 1.2)
+  d$yc <- stats::rpois(n, exp(0.5 + d$x))
+  sigma_of <- function(fit) {
+    as_regression_frame(fit, model_id = "M1")$info$fit_stats$sigma
+  }
+  # scat(), ziP() and ocat() fix the scale at 1 (no family$scale, sig2 =
+  # 1): the 1 is no residual scale, and the cell is blank. scat()'s own
+  # scale is in its theta, a parameter of the t distribution, as the
+  # sigma() of glmmTMB's t_family().
+  fixed <- list(
+    scat = mgcv::gam(yt ~ x, family = mgcv::scat(), data = d),
+    ziP = mgcv::gam(yz ~ x, family = mgcv::ziP(), data = d),
+    ocat = mgcv::gam(yo ~ x, family = mgcv::ocat(R = 4), data = d),
+    bam_scat = mgcv::bam(yt ~ x, family = mgcv::scat(), data = d)
+  )
+  for (nm in names(fixed)) {
+    fit <- fixed[[nm]]
+    expect_null(fit$family$scale, label = nm)
+    expect_equal(fit$sig2, 1, label = nm)
+    expect_true(is.na(sigma_of(fit)), label = nm)
+  }
+  # bam() flags every extended family as scale-estimated: that flag
+  # cannot be the test.
+  expect_true(fixed$bam_scat$scale.estimated)
+  expect_false(fixed$scat$scale.estimated)
+  # Alone in the table, the sigma row has no value and is dropped.
+  out <- paste(
+    utils::capture.output(print(table_regression(
+      fixed$scat,
+      show_fit_stats = c("nobs", "sigma")
+    ))),
+    collapse = "\n"
+  )
+  expect_false(grepl(fit_stat_label("sigma"), out, fixed = TRUE))
+  # tw() estimates its scale: sigma is the square root of mgcv's
+  # estimate, as for a Tweedie glm.
+  tw_fits <- list(
+    gam = mgcv::gam(ytw ~ x, family = mgcv::tw(), data = d),
+    bam = mgcv::bam(ytw ~ x, family = mgcv::tw(), data = d)
+  )
+  for (nm in names(tw_fits)) {
+    fit <- tw_fits[[nm]]
+    expect_true(fit$scale.estimated, label = nm)
+    expect_equal(
+      sigma_of(fit),
+      sqrt(summary(fit)$dispersion),
+      tolerance = 1e-12,
+      label = nm
+    )
+  }
+  # A glm family keeps the glm rule: the fixed 1 of the Poisson.
+  pois <- mgcv::gam(yc ~ x, family = stats::poisson(), data = d)
+  expect_equal(sigma_of(pois), summary(pois)$dispersion)
+})

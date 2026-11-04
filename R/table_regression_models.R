@@ -346,7 +346,8 @@
 #' conditional R-squared are the default R-squared family. `CR*`
 #' cluster-robust standard errors are available for `lmer` and `lme` fits,
 #' via \pkg{clubSandwich} with Satterthwaite degrees of freedom. `glmmTMB`
-#' fits take `"CR0"` from glmmTMB's own sandwich (Wald z), clustered by
+#' fits take `"CR0"` from glmmTMB's own sandwich, or `"CR1"`, the same
+#' scaled by G/(G-1) for G clusters (Wald z for both), clustered by
 #' default on the top-level grouping factor; see the robust-SE section of
 #' [table_regression()] for when it holds. `glmer` fits keep their
 #' model-based standard errors: a `CR*` request on them is refused with a
@@ -402,8 +403,10 @@
 #' `Dispersion` block when `dispformula` has covariates. Component
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
-#' combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
-#' components via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
+#' combined-response effect on E(Y). `"CR1"` for Poisson and geometric `pscl`
+#' fits covers both components via `sandwich::vcovCL()`; a negative-binomial
+#' `pscl` fit keeps its model-based standard errors, its sandwich having no
+#' score for theta. `"CR0"` and `"CR1"` for `glmmTMB` fits cover the
 #' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
 #'
 #' The dispersion of a negative-binomial fit is an opt-in fit-statistic

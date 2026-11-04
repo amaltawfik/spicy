@@ -11,10 +11,12 @@
 # fixed parameters (vcov(full = TRUE)), the meat the cross-product of
 # the scores, with no finite-sample factor: CR0, which equals
 # sandwich::vcovCL(type = "HC0", cadjust = FALSE) on a fit without
-# random effects (pinned in test-vcov_glmmTMB.R). Per-cluster scores
-# leave nothing for the CR1-CR3 corrections to work on (no residuals,
-# no hat values), so CR0 is the one type, and HC* -- one score per
-# observation -- does not exist for this class.
+# random effects (pinned in test-vcov_glmmTMB.R). CR1 is that matrix
+# times G/(G-1), G the number of clusters: the CR1 spicy computes for
+# its vcovCL() classes (type = "HC0", cadjust = TRUE), and
+# clubSandwich's. Per-cluster scores leave nothing for the CR2 and CR3
+# corrections to work on (no residuals, no hat values), and HC* -- one
+# score per observation -- does not exist for this class.
 #
 # What spicy checks rather than trusts:
 #   * every random-effect group sits within one cluster, so the cluster
@@ -26,6 +28,9 @@
 #     random effects have no such factor. glmmTMB's warning that the
 #     cluster log-likelihoods do not add up is turned into an error: the
 #     matrix that comes with it is wrong;
+#   * there are at least two clusters. A single cluster holds the score
+#     of the whole sample, 0 at the estimates: CR0 came out near 0
+#     (SE 1e-7 on a Poisson GLMM, 2026-11-04) and CR1 is undefined;
 #   * the fit is ML (glmmTMB has no sandwich for REML) and not of the
 #     ordinal family (its sandwich does not cover the cut-points);
 #   * glmmTMB >= 1.1.15. Up to 1.1.14, estfun() left the TMB object at
@@ -39,13 +44,13 @@
 
 .GLMMTMB_SANDWICH_MIN_VERSION <- "1.1.15"
 
-# The vcov tokens a glmmTMB fit supports: CR0, except where glmmTMB's
-# sandwich does not apply.
+# The vcov tokens a glmmTMB fit supports: CR0 and CR1, except where
+# glmmTMB's sandwich does not apply.
 .glmmTMB_robust_vcov_support <- function(fit) {
   if (is_reml_glmmTMB_fit(fit) || .glmmTMB_is_ordinal(fit)) {
     return("classical")
   }
-  c("classical", "CR0")
+  c("classical", "CR0", "CR1")
 }
 
 # The refusal, with its reason, for a token a glmmTMB fit does not
@@ -55,7 +60,7 @@
   why <- if (is_reml_glmmTMB_fit(fit)) {
     c(
       "i" = "glmmTMB's sandwich is defined for maximum-likelihood fits only.",
-      "i" = "Refit with `REML = FALSE` to use `vcov = \"CR0\"`."
+      "i" = "Refit with `REML = FALSE` to use `vcov = \"CR0\"` or `\"CR1\"`."
     )
   } else if (.glmmTMB_is_ordinal(fit)) {
     c(
@@ -64,14 +69,14 @@
         "ordinal family."
       )
     )
-  } else if (startsWith(type, "CR")) {
+  } else if (type %in% c("CR2", "CR3")) {
     c(
       "i" = paste0(
         "glmmTMB's sandwich has one score per cluster, the gradient of the ",
         "cluster's marginal log-likelihood: with no residuals and no hat ",
-        "values, the CR1-CR3 corrections cannot be formed."
+        "values, the CR2 and CR3 corrections cannot be formed."
       ),
-      "i" = "Use `vcov = \"CR0\"`."
+      "i" = "Use `vcov = \"CR0\"` or `\"CR1\"`."
     )
   } else if (startsWith(type, "HC")) {
     c(
@@ -80,12 +85,14 @@
         "own, so there is no per-observation (HC) sandwich."
       ),
       "i" = paste0(
-        "Use `vcov = \"CR0\"`, clustered by default on the top-level ",
-        "grouping factor."
+        "Use `vcov = \"CR0\"` or `\"CR1\"`, clustered by default on the ",
+        "top-level grouping factor."
       )
     )
   } else {
-    c("i" = "This class supports `vcov = \"classical\"` and `\"CR0\"`.")
+    c(
+      "i" = "This class supports `vcov = \"classical\"`, `\"CR0\"` and `\"CR1\"`."
+    )
   }
   spicy_abort(
     c(
@@ -117,8 +124,9 @@
 # gives it: the user's cluster when there is one (its name is the
 # caller's), else the coarsest grouping factor that contains all the
 # others. Refuses a cluster that cuts through a random-effect group,
-# and crossed random effects without a cluster.
-.glmmTMB_cluster <- function(fit, cluster = NULL) {
+# and crossed random effects without a cluster. `type` is the requested
+# token, named in the messages.
+.glmmTMB_cluster <- function(fit, cluster = NULL, type = "CR0") {
   groups <- .glmmTMB_grouping_factors(fit)
   if (!is.null(cluster)) {
     .check_cluster_length(fit, cluster)
@@ -150,7 +158,7 @@
   if (length(groups) == 0L) {
     spicy_abort(
       c(
-        "`vcov = \"CR0\"` requires `cluster` to be specified.",
+        sprintf("`vcov = \"%s\"` requires `cluster` to be specified.", type),
         "i" = paste0(
           "This `glmmTMB` fit has no random effects, so there is no ",
           "grouping factor to cluster by default."
@@ -167,7 +175,10 @@
   if (!any(contains_all)) {
     spicy_abort(
       c(
-        "`vcov = \"CR0\"` has no default cluster for this `glmmTMB` fit.",
+        sprintf(
+          "`vcov = \"%s\"` has no default cluster for this `glmmTMB` fit.",
+          type
+        ),
         "x" = sprintf(
           paste0(
             "The random effects are crossed (%s): no grouping factor ",
@@ -189,15 +200,17 @@
   list(cluster = factor(top[[pick]]), name = names(top)[pick])
 }
 
-# The CR0 sandwich of every fixed parameter of a glmmTMB fit
+# The cluster sandwich of every fixed parameter of a glmmTMB fit
 # (glmmTMB::sandwich(full = TRUE)): the conditional coefficients under
 # their own names, the zero-inflation and dispersion ones as "zi~<term>"
-# and "disp~<term>", then the random-effect parameters. One computation
-# serves the coefficient rows, the component blocks, the AME and the
-# nested Wald test (the frame stores it in info$vcov_matrix).
+# and "disp~<term>", then the random-effect parameters. CR0 is glmmTMB's
+# matrix, CR1 that matrix times G/(G-1). One computation serves the
+# coefficient rows, the component blocks, the AME and the nested Wald
+# test (the frame stores it in info$vcov_matrix).
 .glmmTMB_cluster_robust_vcov <- function(fit, type, cluster = NULL) {
   if (
-    !identical(type, "CR0") || !"CR0" %in% .glmmTMB_robust_vcov_support(fit)
+    !type %in% c("CR0", "CR1") ||
+      !type %in% .glmmTMB_robust_vcov_support(fit)
   ) {
     .glmmTMB_refuse_vcov(fit, type)
   }
@@ -206,7 +219,8 @@
     spicy_abort(
       c(
         sprintf(
-          "`vcov = \"CR0\"` for a `glmmTMB` fit requires glmmTMB >= %s; %s is installed.",
+          "`vcov = \"%s\"` for a `glmmTMB` fit requires glmmTMB >= %s; %s is installed.",
+          type,
           .GLMMTMB_SANDWICH_MIN_VERSION,
           format(found)
         ),
@@ -219,7 +233,13 @@
       class = "spicy_unsupported_vcov"
     )
   }
-  cl <- .glmmTMB_cluster(fit, cluster)$cluster
+  cl <- .glmmTMB_cluster(fit, cluster, type)$cluster
+  # The clusters used (factor() has dropped the unused levels); at least
+  # two (see the header).
+  G <- nlevels(cl)
+  if (G < 2L) {
+    .abort_single_cluster(type)
+  }
   env <- fit$obj$env
   saved <- mget(
     intersect(
@@ -255,7 +275,10 @@
   if (not_nested) {
     spicy_abort(
       c(
-        "`vcov = \"CR0\"` could not be computed for this `glmmTMB` fit.",
+        sprintf(
+          "`vcov = \"%s\"` could not be computed for this `glmmTMB` fit.",
+          type
+        ),
         "x" = paste0(
           "The cluster log-likelihoods do not add up to the likelihood of ",
           "the model: the random effects are not nested in the clusters."
@@ -264,6 +287,9 @@
       ),
       class = "spicy_unsupported_vcov"
     )
+  }
+  if (identical(type, "CR1")) {
+    V <- V * (G / (G - 1))
   }
   V
 }

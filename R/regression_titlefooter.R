@@ -1913,7 +1913,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
   # the footer must name the df the rows carry: the cluster-robust
-  # Satterthwaite df. (glmmTMB under CR0 keeps its Wald z line: its
+  # Satterthwaite df. (glmmTMB under CR0 / CR1 keeps its Wald z line: its
   # sandwich SEs are tested against the normal, and the Std. errors line
   # names the estimator.)
   if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
@@ -2000,7 +2000,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(
 # rendered in the table (gated on is_component rows actually present, so
 # show_components = FALSE prints nothing), naming what each block models and
 # its scale under exponentiate. A robust vcov covers the component rows too
-# (pscl: the whole-model vcovCL; glmmTMB: the full CR0 sandwich), so the
+# (pscl: the whole-model vcovCL; glmmTMB: its full cluster sandwich), so the
 # Std. errors line speaks for every row and no disclosure is needed here.
 build_component_blocks_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {

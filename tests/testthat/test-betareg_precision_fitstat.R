@@ -54,10 +54,24 @@ test_that("phi stays out of the default betareg block", {
 
 test_that("phi is refused when no model in the table is a beta fit", {
   fit_lm <- stats::lm(mpg ~ wt, data = mtcars)
-  expect_error(
+  err <- expect_error(
     table_regression(fit_lm, show_fit_stats = c("nobs", "phi")),
     "no model in the table",
     class = "spicy_invalid_input"
+  )
+  # The variance formula is that of beta regression. For glmmTMB's
+  # betabinomial() and ordbeta(), phi is the precision of the beta part
+  # (?glmmTMB::sigma.glmmTMB), and the formula does not give Var(y).
+  msg <- conditionMessage(err)
+  expect_match(
+    msg,
+    "In beta regression, Var(y) = mu(1-mu)/(1+phi)",
+    fixed = TRUE
+  )
+  expect_match(
+    msg,
+    "For `betabinomial()` and `ordbeta()`, phi is the precision parameter of the beta part.",
+    fixed = TRUE
   )
 })
 

@@ -496,6 +496,12 @@
   # Two holes: the block caption, then the censoring distribution (an
   # identifier from the fit).
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
+  # The censoring distribution of a pscl zero hurdle, named in the
+  # gloss above in place of the code pscl stores (poisson, negbin,
+  # geometric).
+  note_component_dist_poisson = "Poisson",
+  note_component_dist_negbin = "negative binomial",
+  note_component_dist_geometric = "geometric",
   # "Log-odds" holds for the logit link only: a pscl fit whose zero part
   # has another link (probit, cloglog, cauchit, log) takes these
   # instead. Two holes: the block caption, then the link as pscl stores

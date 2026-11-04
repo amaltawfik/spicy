@@ -134,7 +134,12 @@
 #'     and the fixed 1 of Poisson and binomial. It is blank for the
 #'     negative-binomial and beta fits below, whose dispersion has its
 #'     own row, and for the other `glmmTMB` families, whose `sigma()` is
-#'     a family-specific parameter.
+#'     a family-specific parameter. For `mgcv::gam` and `bam`, a glm
+#'     family follows the glm rule; an extended family shows the square
+#'     root of its scale only when the GAM estimates one (`tw()`), and is
+#'     blank otherwise (an estimated `nb()`, `betar()`, `scat()`, `ziP()`,
+#'     `ocat()`):
+#'     mgcv fixes their scale at 1.
 #'   \item Survey designs (`survey::svyglm` only): `"eff_p"`, the
 #'     effective number of parameters of the design (the first element
 #'     of survey's `extractAIC`, the sum of the Rao-Scott eigenvalues).
@@ -149,22 +154,38 @@
 #'     (Watanabe-Akaike; PSIS-LOO is generally preferred).
 #'   \item Negative-binomial dispersion. NB2 fits (`MASS::glm.nb`,
 #'     `lme4::glmer.nb`, `fixest::fenegbin`, `mgcv::gam` with `nb()`,
-#'     and `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"`
+#'     `pscl::zeroinfl` and `pscl::hurdle` with `dist = "negbin"`, whose
+#'     theta is that of the count part, and `glmmTMB` with `nbinom2` or
+#'     `truncated_nbinom2`): `"theta"`
 #'     (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and `"alpha"`
 #'     (\eqn{= 1/\theta}{= 1/theta}, the Stata `nbreg` convention).
 #'     NB1 fits (`glmmTMB` with `nbinom1` or `truncated_nbinom1`):
 #'     `"delta"` (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
 #'     \eqn{\delta}{delta} of Stata's `nbreg, dispersion(constant)`).
-#'   \item Beta precision (`betareg::betareg`, and `glmmTMB` with
-#'     `beta_family()`, `betabinomial()` or `ordbeta()`):
-#'     `"phi"` (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
-#'     mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
-#'     \eqn{\phi}{phi} = less dispersion). A constant precision is
+#'   \item Beta precision: `"phi"`. In beta regression
+#'     (`betareg::betareg`, `mgcv::gam` with `betar()`, and `glmmTMB`
+#'     with `beta_family()`), \eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
+#'     mu(1-mu)/(1+phi)} (Ferrari & Cribari-Neto 2004; higher
+#'     \eqn{\phi}{phi} = less dispersion). For `glmmTMB` with
+#'     `betabinomial()` or `ordbeta()`, \eqn{\phi}{phi} is the precision
+#'     parameter of the beta part. A constant precision is
 #'     back-transformed from its link, so `y ~ x | 1` reports the
 #'     same \eqn{\phi}{phi} as `y ~ x`.
 #'   \item For these dispersion rows (`"theta"`, `"alpha"`, `"delta"`,
 #'     `"phi"`), a column whose model lacks the parameter is blank, so a
 #'     Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+#'     A parameter fixed in the call is not an estimate and has no row:
+#'     `MASS::negative.binomial(theta)` in `glm()`, mgcv's
+#'     `negbin(theta)`, and `nb(theta)` or `betar(theta)` with
+#'     `theta > 0`. Such a negative-binomial model keeps the glm rule for
+#'     `"sigma"`. A negative-binomial `glmer()` always shows its theta,
+#'     which lme4 counts in the degrees of freedom of the model: a
+#'     `glmer.nb()` fit, its `update()` refits, and a `glmer()` with
+#'     `negative.binomial(theta)`.
+#'     For `mgcv::gam` and `bam`, theta and phi are estimated with the
+#'     smoothing parameters (REML by default), so they differ from the
+#'     maximum-likelihood values of `glm.nb()`, betareg or `glmmTMB`.
+#'     `method = "ML"` gives those.
 #'     A token is refused only when no model in the table has the
 #'     parameter, or when a model of that family has dispersion
 #'     covariates (a `glmmTMB` `dispformula`, or a betareg `y ~ x | z`),
@@ -337,7 +358,10 @@
 #'     remains the recommended modern choice. `"CR1S"` is refused
 #'     for `glm` with an explanation: Stata's ML commands use a
 #'     different convention (`G/(G-1)` scaling, z), so the label
-#'     would not match Stata output there.}
+#'     would not match Stata output there. For `MASS::glm.nb`, the
+#'     sandwich holds theta at its estimate, so robust standard errors
+#'     can differ by a few percent from software that includes the
+#'     score of theta.}
 #'   \item{`mlogit`}{`classical` + `"CR1"` only (cluster at the
 #'     choice-situation level) -- `sandwich::vcovHC()` mis-scales the
 #'     sandwich for mlogit's per-choice-situation scores, so `HC*` is
@@ -360,7 +384,16 @@
 #'     `multinom` needs \pkg{sandwich} >= 3.1-2 (which added its
 #'     `estfun()` method); its `cluster` is one entry per
 #'     observation. For the two-part `pscl` fits the cluster
-#'     sandwich covers both components (count and zero) at once.}
+#'     sandwich covers both components (count and zero) at once. A
+#'     negative-binomial `zeroinfl` or `hurdle` is `classical` only:
+#'     the sandwich of these fits leaves out the score of theta. When
+#'     the count part is negative binomial, fit the model with
+#'     `glmmTMB` instead (family `nbinom2` with `ziformula`, or
+#'     `truncated_nbinom2` for a hurdle), whose sandwich includes it;
+#'     glmmTMB's zero hurdle is binomial, as with
+#'     `zero.dist = "binomial"`. When only the zero hurdle is negative
+#'     binomial, the default
+#'     `zero.dist = "binomial"` keeps `"CR1"`.}
 #'   \item{`quantreg::rq`}{its own estimator family, not the sandwich
 #'     vocabulary: `classical` (= `"nid"`, quantreg's large-sample
 #'     default), `"iid"`, `"ker"`, `"rank"` (intervals only) and a
@@ -385,9 +418,12 @@
 #'     refused; set the estimator through the fitting package instead
 #'     (`se_type =` for estimatr; `vcov =` at estimation or in
 #'     `summary()` for fixest).}
-#'   \item{`glmmTMB`}{`classical` + `"CR0"` only, from glmmTMB's own
-#'     sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the coefficients,
-#'     the zero-inflation and dispersion blocks and the AME. Without
+#'   \item{`glmmTMB`}{`classical`, `"CR0"` and `"CR1"`, from glmmTMB's
+#'     own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
+#'     coefficients, the zero-inflation and dispersion blocks and the
+#'     AME. `"CR0"` is the sandwich as glmmTMB computes it; `"CR1"`
+#'     scales it by \eqn{G/(G-1)}{G/(G-1)}, `G` the number of clusters,
+#'     as for the [sandwich::vcovCL()] classes. Both use Wald z. Without
 #'     `cluster`, the cluster is the top-level grouping factor of the
 #'     random effects. The estimator needs independent clusters that
 #'     contain the random effects -- every group within one cluster --
@@ -396,10 +432,11 @@
 #'     distribution or the conditional variance is misspecified,
 #'     provided the estimates themselves stay consistent (Liang & Zeger
 #'     1986; Verbeke & Lesaffre 1997); with few clusters it understates
-#'     the variance, and this class has no small-sample correction
-#'     (Cameron & Miller 2015). `"CR1"`-`"CR3"` and `HC*` are refused
-#'     (the sandwich has one score per cluster), as are REML fits and
-#'     the ordinal family.}
+#'     the variance, which the factor of `"CR1"` offsets only in part:
+#'     this class has no bias-reduced correction (Cameron & Miller
+#'     2015). `"CR2"`, `"CR3"` and `HC*` are refused (the sandwich has
+#'     one score per cluster, with no residuals and no hat values), as
+#'     are REML fits and the ordinal family.}
 #'   \item{Other classes (`glmer`, `rstanarm`/`brms`, ...)}{`classical`
 #'     (model-based) only (\pkg{clubSandwich} has no working backend for
 #'     `glmer`).}
@@ -409,7 +446,11 @@
 #' estimator covers the fixed effects: their coefficients, their joint
 #' tests (`"partial_chi2"`), the standardized coefficients and the AME.
 #' The random-effect variance components keep their model-based
-#' inference.
+#' inference. glmmTMB's sandwich takes one likelihood score per cluster
+#' over the fixed and variance parameters, while the `CR*` estimators of
+#' `lmer` and `lme` come from \pkg{clubSandwich} over the fixed effects
+#' alone: on the same model the two agree as the clusters grow, but not
+#' exactly.
 #'
 #' Cluster-robust backends differ by class but are each cross-validated
 #' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use
@@ -417,7 +458,7 @@
 #' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
 #' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
-#' `pscl` two-part fits use
+#' Poisson and geometric `pscl` two-part fits use
 #' [sandwich::vcovCL()]. For `gam`/`bam`, spicy forms the sandwich
 #' itself, from the GLM score and the penalized covariance of the fit,
 #' and lets `vcovCL()` do only the clustering arithmetic: the sandwich
@@ -433,9 +474,10 @@
 #' requested as `"CR0"`, and the other `CR*` tokens are refused rather
 #' than mapped. `glmmTMB` fits use
 #' `glmmTMB::sandwich()`, with one score per cluster (the gradient of
-#' the cluster's marginal log-likelihood) and no finite-sample factor;
-#' its one estimator is requested as `"CR0"`, and the other `CR*`
-#' tokens are refused rather than mapped. `cluster` length is one
+#' the cluster's marginal log-likelihood) and no finite-sample factor:
+#' `"CR0"` requests it as computed, `"CR1"` scaled by
+#' \eqn{G/(G-1)}{G/(G-1)}, and `"CR2"` and `"CR3"` are refused rather
+#' than mapped. `cluster` length is one
 #' entry per observation, except `mlogit` (one per choice situation)
 #' and censored `coxph` (one per subject).
 #'
@@ -644,10 +686,11 @@
 #'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
 #'     `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
 #'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`,
+#'     `glmmTMB` under `"CR0"` and `"CR1"`,
 #'     under `"CR0"` to `coxph` and `rms::lrm` / `cph` / `Glm`,
 #'     and under `"CR1"` to `survreg`, `mgcv::gam` and `bam`, `polr`,
 #'     `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
-#'     `hurdle`; also to
+#'     `hurdle` (not negative binomial); also to
 #'     `survreg(robust = TRUE)`, a fixest fit with a non-iid vcov whose
 #'     coefficient tests are z (`fepois`, `femlm`, `fenegbin`, and
 #'     `feglm` with the binomial or Poisson family), and an `rms` fit of

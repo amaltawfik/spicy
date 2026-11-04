@@ -174,7 +174,7 @@ test_that("component-blocks footer needs no robust-SE scope disclosure", {
 # End-to-end proof of the dedup branch above, through table_regression().
 
 test_that("ZI glmmTMB refuses CR2; classical footer dedups the ZI gloss", {
-  # glmmTMB's sandwich has one type, CR0: CR2 is refused up front.
+  # glmmTMB's sandwich gives CR0 and CR1 only: CR2 is refused up front.
   suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
   set.seed(99)

@@ -336,6 +336,14 @@ as_regression_frame.zeroinfl <- function(
     sigma = NA_real_,
     nobs = as.integer(fit$n %||% NA_integer_)
   )
+  # A negative-binomial count part: its NB2 theta and alpha = 1/theta,
+  # the rows of glmmTMB's nbinom2 (truncated_nbinom2 for a hurdle) with a
+  # ziformula, which fits the same model.
+  if (.pscl_count_is_negbin(fit)) {
+    theta <- .pscl_count_theta(fit)
+    fit_stats$theta <- theta
+    fit_stats$alpha <- 1 / theta
+  }
 
   supports <- list(
     ame = TRUE,
@@ -411,6 +419,24 @@ as_regression_frame.zeroinfl <- function(
     supports = supports,
     extras = extras
   )
+}
+
+
+# TRUE when the count part of a pscl fit is negative binomial: its theta
+# is the NB2 dispersion of the counts (V = mu + mu^2/theta). The zero
+# part of a hurdle can be negbin too, with a theta of its own, which
+# belongs to the zero hurdle and is not the count dispersion.
+.pscl_count_is_negbin <- function(fit) {
+  dist <- if (inherits(fit, "hurdle")) fit$dist$count else fit$dist
+  identical(dist, "negbin")
+}
+
+# The theta of the negative-binomial count part: a number for zeroinfl,
+# the "count" element for a hurdle (whose fit$theta also holds a
+# "zero" element when the zero hurdle is negbin).
+.pscl_count_theta <- function(fit) {
+  theta <- if (inherits(fit, "hurdle")) fit$theta[["count"]] else fit$theta
+  as.numeric(theta)
 }
 
 
@@ -546,10 +572,16 @@ as_regression_frame.zeroinfl <- function(
   is_logit <- identical(zero_link, "logit")
   gloss <- if (is_hurdle) {
     if (!identical(zero_dist, "binomial")) {
+      # pscl stores the distribution as a code; the gloss names it.
+      dist_key <- c(
+        poisson = "note_component_dist_poisson",
+        negbin = "note_component_dist_negbin",
+        geometric = "note_component_dist_geometric"
+      )[[zero_dist]]
       spicy_fmt(
         "note_component_gloss_hurdle_censored",
         spicy_str("label_block_zero_hurdle"),
-        zero_dist
+        spicy_str(dist_key)
       )
     } else if (is_logit) {
       spicy_fmt(

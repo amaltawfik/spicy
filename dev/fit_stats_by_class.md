@@ -35,7 +35,7 @@ Columns:
 | `rq` | `quantreg::rq` | ✅ | — | — |
 | `feols` / `feglm` | `fixest::*` | ✅ | feglm: OR/IRR | 🔶 fixed-effects summary |
 | `lmerMod` / `glmerMod` | `lme4::lmer` / `glmer` | ✅ | glmer: OR/IRR | **Random effects rows** ✅ (+ opt-in `re_test` lrt/rlrt) |
-| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (CR0: the sandwich through marginaleffects' Jacobian) | link-dep (IRR for nbinom*/truncated_*) | **Random effects rows** ✅ + **Zero-inflation** ✅ + **Dispersion** ✅ |
+| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (CR0 / CR1: the sandwich through marginaleffects' Jacobian) | link-dep (IRR for nbinom*/truncated_*) | **Random effects rows** ✅ + **Zero-inflation** ✅ + **Dispersion** ✅ |
 | `lme` | `nlme::lme` | ✅ | — | **Random effects rows** ✅ (+ `re_test` for simple single-group random formulas) |
 | `polr` | `MASS::polr` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
 | `clm` | `ordinal::clm` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
@@ -82,9 +82,9 @@ the per-class passes.
 | `polr` / `clm` | classical, CR0–CR3 (**no HC***) | wald, **profile** (predictors via `confint`; thresholds stay Wald) | refit (posthoc/basic run but dubious on a categorical outcome) |
 | mixed (`lmer`/`lme`) | ✅ classical, CR* (clubSandwich, Satterthwaite df) | wald (+ Satterthwaite df) | refit |
 | `glmer` | ✅ classical only (no clubSandwich method) | wald | refit |
-| `glmmTMB` | ✅ classical, CR0 only (glmmTMB's own sandwich, >= 1.1.15; covers the zi / disp blocks too; default cluster = top-level grouping factor; REML, ordinal family and crossed REs without a containing cluster refused) | wald | refit |
+| `glmmTMB` | ✅ classical, CR0 and CR1 (glmmTMB's own sandwich, >= 1.1.15; CR1 = CR0 x G/(G-1); covers the zi / disp blocks too; default cluster = top-level grouping factor; REML, ordinal family and crossed REs without a containing cluster refused) | wald | refit |
 | `coxph` / `cph` | ✅ classical, CR* (Lin–Wei dfbeta) | wald | refit |
-| `zeroinfl` / `hurdle` | ✅ classical, CR* (`sandwich::vcovCL`; covers BOTH components; **no HC***) | wald | refit |
+| `zeroinfl` / `hurdle` | ✅ classical, CR1 (`sandwich::vcovCL`; covers BOTH components; **no HC***); negative-binomial fits classical only (estfun() has no score for theta) | wald | refit |
 | others | 🔶 per-class | 🔶 | 🔶 |
 
 Notes:
@@ -173,8 +173,13 @@ renderable), `lr_chisq` (+ df / p).
 
 `MASS::glm.nb`: opt-in `show_fit_stats` tokens `theta` (NB2 dispersion,
 V = mu + mu^2/theta) and `alpha` (= 1/theta, Stata nbreg convention).
-Hard error for every other class. SHIPPED with the counts-vignette
-backlog clearance; values sourced from fit$theta (oracle-exact).
+SHIPPED with the counts-vignette backlog clearance; values sourced from
+fit$theta (oracle-exact). Update 2026-11-04: the rows now also cover
+`lme4::glmer.nb()` (and every negative-binomial `glmer`), fixest
+`fenegbin()`, mgcv `nb()`, negative-binomial pscl `zeroinfl()` /
+`hurdle()` (count theta) and glmmTMB `nbinom2`; `delta` covers glmmTMB
+`nbinom1`. They are ANY-gates: refused only when no model in the table
+has the parameter; a theta fixed in a `glm()` or mgcv call has no row.
 
 ## Addendum 2026-07-21: shipped since the last refresh (supersedes rows above)
 

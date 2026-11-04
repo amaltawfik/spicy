@@ -770,3 +770,100 @@ test_that("glmer.nb: sigma blank, theta only in its own column", {
   expect_true(is.na(row("theta")[["Poisson: B"]]))
   expect_true(is.na(row("sigma")[["NB: B"]]))
 })
+
+test_that("every negative-binomial glmer shows its theta, as lme4 counts it", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("MASS")
+  d <- glmmTMB::Salamanders
+  nb <- suppressWarnings(lme4::glmer.nb(count ~ mined + (1 | site), data = d))
+  fixed <- lme4::glmer(
+    count ~ mined + (1 | site),
+    data = d,
+    family = MASS::negative.binomial(theta = 2)
+  )
+  pois <- lme4::glmer(count ~ mined + (1 | site), data = d, family = poisson)
+  # update() on a glmer.nb() fit evaluates its glmer() call, theta written
+  # in at the estimate; glmer.nb() alone leaves the count of its search.
+  refit <- suppressWarnings(stats::update(nb, . ~ . - mined))
+  # lme4::refit() on new data drops the count too.
+  refit_y <- suppressWarnings(lme4::refit(nb, newresp = d$count + 1L))
+  expect_false(is.null(attr(nb, "nevals")))
+  expect_null(attr(fixed, "nevals"))
+  expect_null(attr(refit, "nevals"))
+  expect_null(attr(refit_y, "nevals"))
+  # lme4 counts theta in the logLik degrees of freedom of all three: the
+  # coefficients, the site SD and theta (the refit has no `mined`), one
+  # more than the Poisson fit of the same terms.
+  expect_equal(attr(stats::logLik(nb), "df"), 4)
+  expect_equal(attr(stats::logLik(fixed), "df"), 4)
+  expect_equal(attr(stats::logLik(refit), "df"), 3)
+  expect_equal(attr(stats::logLik(pois), "df"), 3)
+  # So each shows the theta lme4 holds, and alpha = 1/theta, with sigma
+  # blank, as for glm.nb.
+  for (m in list(nb, fixed, refit, refit_y)) {
+    theta <- lme4::getME(m, "glmer.nb.theta")
+    fs <- as_regression_frame(m)$info$fit_stats
+    expect_equal(fs$theta, theta, tolerance = 1e-12)
+    expect_equal(fs$alpha, 1 / theta, tolerance = 1e-12)
+    expect_true(is.na(fs$sigma))
+  }
+  expect_equal(lme4::getME(fixed, "glmer.nb.theta"), 2)
+  df <- as.data.frame(table_regression(
+    list(NB = nb, Fixed = fixed),
+    show_fit_stats = c("theta", "sigma")
+  ))
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  expect_equal(
+    row("theta")[["NB: B"]],
+    lme4::getME(nb, "glmer.nb.theta"),
+    tolerance = 1e-10
+  )
+  expect_equal(row("theta")[["Fixed: B"]], 2)
+  expect_true(all(is.na(unlist(row("sigma")[c("NB: B", "Fixed: B")]))))
+})
+
+test_that("nested glmer.nb() built with update(): theta in every column", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  d <- glmmTMB::Salamanders
+  nb <- suppressWarnings(lme4::glmer.nb(count ~ mined + (1 | site), data = d))
+  m0 <- suppressWarnings(stats::update(nb, . ~ . - mined))
+  m2 <- suppressWarnings(stats::update(nb, . ~ . + spp))
+  fits <- list(m0 = m0, m1 = nb, m2 = m2)
+  tbl <- table_regression(
+    fits,
+    nested = TRUE,
+    show_fit_stats = c("nobs", "theta", "alpha", "sigma", "aic")
+  )
+  df <- as.data.frame(tbl)
+  row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
+  for (nm in names(fits)) {
+    theta <- lme4::getME(fits[[nm]], "glmer.nb.theta")
+    col <- paste0(nm, ": B")
+    expect_equal(row("theta")[[col]], theta, tolerance = 1e-12, info = nm)
+    expect_equal(row("alpha")[[col]], 1 / theta, tolerance = 1e-12, info = nm)
+    expect_equal(row("aic")[[col]], stats::AIC(fits[[nm]]), info = nm)
+    expect_true(all(is.na(row("sigma")[[col]])), info = nm)
+  }
+  # The random-effect test of each column, in the footer, names the theta
+  # its row shows.
+  txt <- gsub(
+    "\\s+",
+    " ",
+    paste(utils::capture.output(print(tbl)), collapse = " ")
+  )
+  theta <- vapply(fits, lme4::getME, numeric(1), name = "glmer.nb.theta")
+  shown <- stats::setNames(sprintf("%.2f", theta), names(fits))
+  for (nm in names(fits)) {
+    expect_match(
+      txt,
+      sprintf(
+        "%s: Random effects \\(ML\\): LR test vs negative-binomial regression \\([^=]+= %s\\)",
+        nm,
+        shown[[nm]]
+      ),
+      info = nm
+    )
+  }
+})

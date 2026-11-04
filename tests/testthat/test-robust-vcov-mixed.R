@@ -93,12 +93,13 @@ test_that("lmer / lme CR2: factor joint tests and betas use the robust matrix", 
   }
 })
 
-test_that("glmmTMB CR2 is refused (its own sandwich has one type, CR0)", {
+test_that("glmmTMB CR2 is refused (its own sandwich gives CR0 and CR1 only)", {
   # clubSandwich has no vcovCR.glmmTMB: the call would dispatch to
   # vcovCR.default, whose result is numerically invalid for glmmTMB
   # (~360x-deflated SEs on a Poisson random-intercept check, 2026-08-05).
-  # CR0 comes from glmmTMB's own sandwich (test-vcov_glmmTMB.R); the
-  # bias-reduced CR1-CR3 are refused up front.
+  # CR0 comes from glmmTMB's own sandwich and CR1 scales it
+  # (test-vcov_glmmTMB.R); the bias-reduced CR2 and CR3 are refused up
+  # front.
   suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
   fit <- suppressWarnings(

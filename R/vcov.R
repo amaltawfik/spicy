@@ -56,6 +56,23 @@
 # through the frame builders of every class; the truth cannot travel from
 # here on its own. Refusing keeps the guarantee where it can be enforced:
 # what spicy labels robust IS robust.
+# A cluster-robust token with one cluster among the observations the fit
+# uses (glmmTMB and the vcovCL() classes).
+.abort_single_cluster <- function(type, call = rlang::caller_env()) {
+  spicy_abort(
+    c(
+      sprintf("`vcov = \"%s\"` needs at least two clusters.", type),
+      "x" = "The cluster has a single level in the rows the model uses.",
+      "i" = paste0(
+        "A cluster-robust variance is built from the variation between ",
+        "clusters: cluster on a variable with at least two values."
+      )
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
 .abort_vcov_failed <- function(type, cnd, callee) {
   spicy_abort(
     c(
@@ -225,6 +242,13 @@ compute_model_vcov <- function(
     return(.glmmTMB_cluster_robust_vcov(fit, type = type, cluster = cluster))
   }
 
+  # A negative-binomial pscl fit: vcovCL() would return a sandwich without
+  # the score of theta (.pscl_is_negbin()). The public gate refuses it
+  # first; this closes the internal route.
+  if (.pscl_is_negbin(fit) && grepl("^(HC|CR)", type)) {
+    .pscl_negbin_refuse_vcov(fit, type)
+  }
+
   if (identical(type, "bootstrap")) {
     return(compute_resample_vcov_bootstrap(
       fit,
@@ -281,7 +305,7 @@ compute_model_vcov <- function(
     #   * the .VCOVCL_CLASSES -> sandwich::vcovCL (clubSandwich has no usable
     #     method for these classes): CR1. gam / bam reach it through the
     #     wrapper of R/vcov_mgcv.R, which supplies the score and mgcv's
-    #     penalized bread.
+    #     penalized bread. Negative-binomial pscl fits are refused above.
     #   * lm / glm / lmer / lme -> clubSandwich bias-reduced CR*.
     one_token <- .single_cluster_token(fit)
     if (!is.null(one_token) && !identical(type, one_token)) {
@@ -297,6 +321,15 @@ compute_model_vcov <- function(
     }
     if (inherits(fit, .VCOVCL_CLASSES)) {
       cl_fit <- if (inherits(fit, "gam")) .mgcv_sandwich_wrap(fit) else fit
+      # vcovCL() takes G, of its G/(G-1), from the levels of a factor:
+      # unused levels would count as clusters.
+      if (is.factor(cluster)) {
+        cluster <- droplevels(cluster)
+      }
+      # One cluster: vcovCL() fails with "non-conformable arrays".
+      if (length(unique(cluster)) < 2L) {
+        .abort_single_cluster(type)
+      }
       return(tryCatch(
         sandwich::vcovCL(
           cl_fit,
@@ -1047,7 +1080,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
     # Satterthwaite df. glmer is NOT granted: clubSandwich has no vcovCR
     # method for it (glmerMod errors outright). glmmTMB takes CR0 from its
-    # own sandwich (R/vcov_glmmTMB.R) -- never clubSandwich, whose
+    # own sandwich, and CR1 as its G/(G-1) scaling (R/vcov_glmmTMB.R) --
+    # never clubSandwich, whose
     # vcovCR.default returned SEs ~360x deflated on a Poisson
     # random-intercept check (2026-08-05).
     lmerMod = cr_only,
@@ -1094,8 +1128,10 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Two-part count models (pscl): sandwich::estfun / bread work for BOTH
     # components (verified 2026-07-02), so the CL cluster sandwich covers the
     # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
-    zeroinfl = cl_only,
-    hurdle = cl_only,
+    # A negative-binomial fit is classical only: estfun() has no score for
+    # theta (.pscl_negbin_refuse_vcov()).
+    zeroinfl = ,
+    hurdle = if (.pscl_is_negbin(fit)) "classical" else cl_only,
     # quantreg::rq: its own summary.rq() estimator family, not the
     # sandwich vocabulary. "classical" resolves to the nid sandwich
     # (Hendricks-Koenker; quantreg's own large-sample default and what
@@ -1247,6 +1283,78 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # than crashing deep inside estfun. Plain proportional-odds clm keeps cl_only.
 .clm_robust_vcov_support <- function(fit, cl_only) {
   if (!is.null(fit$S.terms) || !is.null(fit$nom.terms)) "classical" else cl_only
+}
+
+# pscl fits with a negative-binomial part: zeroinfl(dist = "negbin"), and a
+# hurdle whose count or zero part is "negbin". sandwich's estfun() methods
+# for these classes return the scores of the count and zero coefficients
+# and leave out the score of log(theta), while the bread is the
+# coefficient block of the full inverse Hessian: the sandwich is not
+# consistent. On glmmTMB::Salamanders, `count ~ mined + spp | mined`
+# clustered by site, the CR1 SE of the zero-inflation `minedno` row was
+# 2.56, against 1.19 for the full sandwich (glmmTMB's, which scores
+# theta; 2026-11-04). Poisson and geometric fits have no theta and keep
+# CR1.
+.pscl_is_negbin <- function(fit) {
+  if (inherits(fit, "zeroinfl")) {
+    return(identical(fit$dist, "negbin"))
+  }
+  inherits(fit, "hurdle") && "negbin" %in% unlist(fit$dist)
+}
+
+# A hurdle negbin in both parts: glmmTMB's zero hurdle is a logit, so the
+# glmmTMB fit the hints point to has a different zero part.
+.pscl_glmmTMB_zero_note <- function(fit) {
+  if (inherits(fit, "hurdle") && identical(fit$dist$zero, "negbin")) {
+    " glmmTMB's zero hurdle is binomial, as with `zero.dist = \"binomial\"`."
+  } else {
+    ""
+  }
+}
+
+# The refusal of a sandwich-based token (HC*, CR*) for a negative-binomial
+# pscl fit (.pscl_is_negbin()). Shared by the public gate and the compute
+# path; `call` is the function the user called, so the error names it.
+.pscl_negbin_refuse_vcov <- function(fit, type, call = rlang::caller_env()) {
+  # A hurdle whose zero hurdle alone is negbin: glmmTMB has no such zero
+  # part (its zero model is a logit), but the default binomial zero hurdle
+  # keeps CR1.
+  zero_only <- !.pscl_count_is_negbin(fit)
+  spicy_abort(
+    c(
+      if (zero_only) {
+        sprintf(
+          "`vcov = \"%s\"` is not available for a `hurdle` fit with a negative-binomial zero hurdle.",
+          type
+        )
+      } else {
+        sprintf(
+          "`vcov = \"%s\"` is not available for a negative-binomial `%s` fit.",
+          type,
+          class(fit)[1L]
+        )
+      },
+      "i" = paste0(
+        "The sandwich of these fits leaves out the score of theta, so its ",
+        "standard errors are inconsistent."
+      ),
+      "i" = if (zero_only) {
+        paste0(
+          "Refit with `zero.dist = \"binomial\"` (the default), which keeps ",
+          "`vcov = \"CR1\"`."
+        )
+      } else {
+        paste0(
+          "Fit the model with glmmTMB, family `nbinom2` with `ziformula` ",
+          "(`truncated_nbinom2` for a hurdle), for which spicy computes the ",
+          "full sandwich with `vcov = \"CR0\"` or `\"CR1\"`.",
+          .pscl_glmmTMB_zero_note(fit)
+        )
+      }
+    ),
+    class = "spicy_unsupported_vcov",
+    call = call
+  )
 }
 
 # The classes whose cluster-robust matrix is sandwich::vcovCL(). spicy calls

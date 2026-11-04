@@ -354,7 +354,15 @@ components shift together under one CR1 estimator. With genuinely
 clustered data, positive within-cluster dependence widens the
 intervals further, and borderline effects are typically the first
 casualties. `HC*` and the resampling estimators have no two-part
-backend and are refused with a clear error.
+backend and are refused with a clear error. So is any sandwich for a
+negative-binomial `zeroinfl()` or `hurdle()`: their sandwich leaves
+out the score of θ, so its standard errors are inconsistent. When the
+count part is negative binomial, the glmmTMB fit (family `nbinom2`
+with `ziformula`, or `truncated_nbinom2` for a hurdle) has a sandwich
+that includes θ, with `vcov = "CR0"` or `"CR1"`. Its zero hurdle is
+binomial, as with `zero.dist = "binomial"`. A hurdle whose zero part
+alone is negative binomial keeps `"CR1"` with the default
+`zero.dist = "binomial"`.
 
 ## Mixed counts: `glmmTMB`
 
@@ -367,7 +375,8 @@ the `(1 | site)` term below does, and the standard errors are
 model-based by default. `vcov = "CR0"` replaces them with cluster-robust
 ones from glmmTMB's own sandwich (glmmTMB >= 1.1.15), clustered by
 default on the top-level grouping factor (here `site`), for the count
-and zero-inflation blocks alike. `"CR1"`–`"CR3"` and `HC*` are refused:
+and zero-inflation blocks alike; `vcov = "CR1"` scales that sandwich
+by G/(G − 1) for G clusters. `"CR2"`, `"CR3"` and `HC*` are refused:
 the sandwich has one score per cluster, and `clubSandwich` has no
 working `glmmTMB` backend. The same convention is documented in the
 companion [*Mixed-effects regression tables*](table-regression-mixed.html)

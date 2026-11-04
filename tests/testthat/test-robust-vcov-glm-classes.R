@@ -459,6 +459,293 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
   }
 })
 
+## ---- zeroinfl / hurdle: negative-binomial fits ------------------------------
+
+test_that("negative-binomial pscl fits refuse the sandwich; the others keep CR1", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("numDeriv")
+  # sandwich's estfun() for zeroinfl / hurdle leaves out the score of
+  # log(theta) while the bread is the coefficient block of the full
+  # inverse Hessian: the sandwich of a negbin part is inconsistent.
+  data("bioChemists", package = "pscl", envir = environment())
+  d <- get("bioChemists", envir = environment())
+  set.seed(2)
+  d$lab <- factor(sample(1:40, nrow(d), TRUE))
+  negbin <- list(
+    zeroinfl = pscl::zeroinfl(
+      art ~ fem + ment | ment,
+      data = d,
+      dist = "negbin"
+    ),
+    hurdle = pscl::hurdle(art ~ fem + ment | ment, data = d, dist = "negbin"),
+    hurdle_zero = pscl::hurdle(
+      art ~ fem + ment | ment,
+      data = d,
+      zero.dist = "negbin"
+    )
+  )
+  for (nm in names(negbin)) {
+    m <- negbin[[nm]]
+    # Only the zero hurdle negbin: glmmTMB has no such zero part, and the
+    # message points to the binomial zero hurdle instead.
+    zero_only <- identical(nm, "hurdle_zero")
+    hint <- if (zero_only) "zero.dist = \"binomial\"" else "glmmTMB"
+    expect_identical(spicy:::.robust_vcov_support(m), "classical", info = nm)
+    for (v in c("CR1", "HC3")) {
+      err <- expect_error(
+        table_regression(m, vcov = v, cluster = ~lab),
+        class = "spicy_unsupported_vcov"
+      )
+      expect_match(conditionMessage(err), "score of theta", fixed = TRUE)
+      expect_match(conditionMessage(err), hint, fixed = TRUE)
+      expect_identical(
+        grepl("glmmTMB", conditionMessage(err), fixed = TRUE),
+        !zero_only,
+        info = nm
+      )
+      expect_identical(
+        grepl("negative-binomial zero hurdle", conditionMessage(err)),
+        zero_only,
+        info = nm
+      )
+    }
+    expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+    # The internal routes refuse too, before vcovCL() could answer.
+    expect_error(
+      as_regression_frame(m, vcov = "CR1", cluster = d$lab),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_error(
+      spicy:::compute_model_vcov(m, type = "CR1", cluster = d$lab),
+      class = "spicy_unsupported_vcov"
+    )
+    # A cluster without a cluster-robust vcov: the hint does not send the
+    # user to the refused CR1.
+    w <- expect_warning(
+      table_regression(m, cluster = ~lab),
+      class = "spicy_ignored_arg"
+    )
+    expect_match(conditionMessage(w), hint, fixed = TRUE)
+  }
+  # The suggested refit, a binomial zero hurdle, keeps CR1: vcovCL's
+  # cluster sandwich with G/(G-1).
+  refit <- stats::update(negbin$hurdle_zero, zero.dist = "binomial")
+  expect_equal(
+    unname(spicy:::compute_model_vcov(refit, type = "CR1", cluster = d$lab)),
+    unname(sandwich::vcovCL(
+      refit,
+      cluster = d$lab,
+      type = "HC0",
+      cadjust = TRUE
+    )),
+    tolerance = 1e-12
+  )
+
+  # Poisson and geometric parts have no theta and keep CR1, which is the
+  # full sandwich: the fit's bread around the cluster sums of scores taken
+  # by numerical differentiation of a hand-written log-likelihood.
+  X <- stats::model.matrix(~ fem + ment, d)
+  Z <- stats::model.matrix(~ment, d)
+  G <- nlevels(d$lab)
+  for (dist in c("poisson", "geometric")) {
+    m <- pscl::zeroinfl(art ~ fem + ment | ment, data = d, dist = dist)
+    expect_identical(
+      spicy:::.robust_vcov_support(m),
+      c("classical", "CR1"),
+      info = dist
+    )
+    loglik_i <- function(p) {
+      mu <- exp(drop(X %*% p[seq_len(ncol(X))]))
+      pz <- stats::plogis(drop(Z %*% p[ncol(X) + seq_len(ncol(Z))]))
+      f <- function(k, log = FALSE) {
+        if (dist == "poisson") {
+          stats::dpois(k, mu, log = log)
+        } else {
+          stats::dnbinom(k, size = 1, mu = mu, log = log)
+        }
+      }
+      ifelse(
+        d$art == 0,
+        log(pz + (1 - pz) * f(0)),
+        log(1 - pz) + f(d$art, log = TRUE)
+      )
+    }
+    S <- rowsum(numDeriv::jacobian(loglik_i, stats::coef(m)), d$lab)
+    B <- stats::vcov(m)
+    expect_equal(
+      unname(spicy:::compute_model_vcov(m, type = "CR1", cluster = d$lab)),
+      unname(B %*% crossprod(S) %*% B) * G / (G - 1),
+      tolerance = 1e-8,
+      info = dist
+    )
+  }
+  for (dist in c("poisson", "geometric")) {
+    m <- pscl::hurdle(art ~ fem + ment | ment, data = d, dist = dist)
+    expect_identical(
+      spicy:::.robust_vcov_support(m),
+      c("classical", "CR1"),
+      info = dist
+    )
+  }
+})
+
+test_that("a hurdle negbin in both parts is told glmmTMB's zero hurdle is binomial", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("glmmTMB")
+  data("bioChemists", package = "pscl", envir = environment())
+  d <- get("bioChemists", envir = environment())
+  set.seed(2)
+  d$lab <- factor(sample(1:40, nrow(d), TRUE))
+  nb_nb <- pscl::hurdle(
+    art ~ fem + ment | ment,
+    data = d,
+    dist = "negbin",
+    zero.dist = "negbin"
+  )
+  nb_bin <- pscl::hurdle(art ~ fem + ment | ment, data = d, dist = "negbin")
+  # Oracle, outside spicy: the glmmTMB fit the hint points to is the
+  # binomial-zero hurdle, not the negbin-negbin one.
+  tmb <- glmmTMB::glmmTMB(
+    art ~ fem + ment,
+    ziformula = ~ment,
+    family = glmmTMB::truncated_nbinom2,
+    data = d
+  )
+  expect_equal(
+    as.numeric(stats::logLik(tmb)),
+    as.numeric(stats::logLik(nb_bin)),
+    tolerance = 1e-6
+  )
+  expect_gt(
+    abs(as.numeric(stats::logLik(tmb)) - as.numeric(stats::logLik(nb_nb))),
+    1
+  )
+  note <- "glmmTMB's zero hurdle is binomial"
+  err <- expect_error(
+    table_regression(nb_nb, vcov = "CR1", cluster = ~lab),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err), note, fixed = TRUE)
+  w <- expect_warning(
+    table_regression(nb_nb, cluster = ~lab),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(conditionMessage(w), note, fixed = TRUE)
+  # A binomial zero hurdle is the model glmmTMB fits: no such note.
+  err <- expect_error(
+    table_regression(nb_bin, vcov = "CR1", cluster = ~lab),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_false(grepl(note, conditionMessage(err), fixed = TRUE))
+  w <- expect_warning(
+    table_regression(nb_bin, cluster = ~lab),
+    class = "spicy_ignored_arg"
+  )
+  expect_false(grepl(note, conditionMessage(w), fixed = TRUE))
+})
+
+## ---- vcovCL classes: a single cluster ---------------------------------------
+
+test_that("vcovCL classes refuse a single cluster with a classed error", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("sandwich")
+  data("bioChemists", package = "pscl", envir = environment())
+  d <- get("bioChemists", envir = environment())
+  n <- nrow(d)
+  set.seed(5)
+  d$y3 <- factor(cut(d$ment, c(-Inf, 3, 8, Inf)), ordered = TRUE)
+  d$prop <- stats::plogis(stats::rnorm(n, -0.5 + 0.02 * d$ment, 0.5))
+  fits <- list(
+    zip = pscl::zeroinfl(art ~ fem + ment | ment, data = d),
+    polr = MASS::polr(y3 ~ fem + art, data = d, Hess = TRUE),
+    betareg = betareg::betareg(prop ~ ment, data = d)
+  )
+  # One distinct value, then one used level next to an unused one.
+  clusters <- list(
+    constant = rep(1L, n),
+    one_used = factor(rep("a", n), levels = c("a", "b"))
+  )
+  for (nm in names(fits)) {
+    for (cn in names(clusters)) {
+      # Oracle: sandwich::vcovCL() itself cannot compute it from the
+      # clusters the fit uses.
+      expect_error(
+        sandwich::vcovCL(
+          fits[[nm]],
+          cluster = droplevels(factor(clusters[[cn]])),
+          type = "HC0",
+          cadjust = TRUE
+        )
+      )
+      expect_error(
+        spicy:::compute_model_vcov(
+          fits[[nm]],
+          type = "CR1",
+          cluster = clusters[[cn]]
+        ),
+        class = "spicy_invalid_input",
+        regexp = "at least two clusters",
+        info = paste(nm, cn)
+      )
+    }
+  }
+  d$one <- 1L
+  expect_error(
+    table_regression(fits$zip, vcov = "CR1", cluster = ~one),
+    class = "spicy_invalid_input",
+    regexp = "at least two clusters"
+  )
+})
+
+## ---- vcovCL classes: unused factor levels -----------------------------------
+
+test_that("vcovCL classes count only the clusters the fit uses", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  data("bioChemists", package = "pscl", envir = environment())
+  d <- get("bioChemists", envir = environment())
+  set.seed(1)
+  d$lab <- factor(sample(1:60, nrow(d), TRUE))
+  # The analysis keeps 30 labs; the factor keeps its 60 levels.
+  d2 <- subset(d, as.integer(lab) <= 30)
+  expect_identical(nlevels(d2$lab), 60L)
+  expect_identical(length(unique(d2$lab)), 30L)
+  zp <- pscl::zeroinfl(art ~ fem + ment | ment, data = d2)
+  # vcovCL() takes G from the factor levels: the oracle has them dropped.
+  oracle <- sandwich::vcovCL(
+    zp,
+    cluster = droplevels(d2$lab),
+    type = "HC0",
+    cadjust = TRUE
+  )
+  expect_equal(
+    unname(spicy:::compute_model_vcov(zp, type = "CR1", cluster = d2$lab)),
+    unname(oracle),
+    tolerance = 1e-12
+  )
+  lo <- table_regression(zp, vcov = "CR1", cluster = ~lab, output = "long")
+  lo <- lo[lo$estimate_type == "B" & !is.na(lo$std.error), ]
+  expect_equal(lo$std.error, unname(sqrt(diag(oracle))), tolerance = 1e-10)
+  # The glmmTMB twin, whose CR1 counts the clusters it sees, agrees.
+  tz <- glmmTMB::glmmTMB(
+    art ~ fem + ment,
+    ziformula = ~ment,
+    family = stats::poisson,
+    data = d2,
+    start = list(
+      beta = unname(stats::coef(zp, "count")),
+      betazi = unname(stats::coef(zp, "zero"))
+    )
+  )
+  lt <- table_regression(tz, vcov = "CR1", cluster = ~lab, output = "long")
+  lt <- lt[lt$estimate_type == "B" & !is.na(lt$std.error), ]
+  expect_equal(lt$std.error, lo$std.error, tolerance = 1e-5)
+})
+
 ## ---- Phase 3 matrix (lot T2) ----------------------------------------------
 
 # Phase 3 matrix: rd-vcov-classes:cr-only-class-set
@@ -466,8 +753,9 @@ test_that("zeroinfl and hurdle accept a formula cluster outside the formula", {
 # clm, betareg, survreg. Each supports classical + CR* ONLY: HC* and the
 # lm/glm-refitting resamplers are refused up front. lme computes CR2
 # (clubSandwich); the vcovCL() classes compute CR1 alone and refuse CR2.
-# glmmTMB and svyglm are classical-only (no valid clubSandwich
-# backend; design-native variance) -- every robust token is refused.
+# glmmTMB takes only CR0 and CR1, from its own sandwich (no valid
+# clubSandwich backend), and svyglm is classical-only (design-native
+# variance): HC*, CR2 and the resamplers are refused for both.
 test_that("cr-only classes refuse HC* / bootstrap and accept their CR token", {
   skip_if_not_installed("nlme")
   skip_if_not_installed("MASS")
@@ -525,7 +813,7 @@ test_that("cr-only classes refuse HC* / bootstrap and accept their CR token", {
   }
 })
 
-test_that("glmmTMB and svyglm refuse every robust token including CR*", {
+test_that("glmmTMB and svyglm refuse HC*, CR2 and the resamplers", {
   # suppressWarnings: absorbs the advisory TMB-version warning some
   # local toolchains emit on the first glmmTMB namespace load.
   suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))

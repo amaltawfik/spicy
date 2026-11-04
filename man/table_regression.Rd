@@ -1048,7 +1048,12 @@ the same square root for the gaussian, Gamma and Tweedie families,
 and the fixed 1 of Poisson and binomial. It is blank for the
 negative-binomial and beta fits below, whose dispersion has its
 own row, and for the other \code{glmmTMB} families, whose \code{sigma()} is
-a family-specific parameter.
+a family-specific parameter. For \code{mgcv::gam} and \code{bam}, a glm
+family follows the glm rule; an extended family shows the square
+root of its scale only when the GAM estimates one (\code{tw()}), and is
+blank otherwise (an estimated \code{nb()}, \code{betar()}, \code{scat()}, \code{ziP()},
+\code{ocat()}):
+mgcv fixes their scale at 1.
 \item Survey designs (\code{survey::svyglm} only): \code{"eff_p"}, the
 effective number of parameters of the design (the first element
 of survey's \code{extractAIC}, the sum of the Rao-Scott eigenvalues).
@@ -1063,22 +1068,38 @@ footer discloses the elpd standard error), and \code{"waic"}
 (Watanabe-Akaike; PSIS-LOO is generally preferred).
 \item Negative-binomial dispersion. NB2 fits (\code{MASS::glm.nb},
 \code{lme4::glmer.nb}, \code{fixest::fenegbin}, \code{mgcv::gam} with \code{nb()},
-and \code{glmmTMB} with \code{nbinom2} or \code{truncated_nbinom2}): \code{"theta"}
+\code{pscl::zeroinfl} and \code{pscl::hurdle} with \code{dist = "negbin"}, whose
+theta is that of the count part, and \code{glmmTMB} with \code{nbinom2} or
+\code{truncated_nbinom2}): \code{"theta"}
 (\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and \code{"alpha"}
 (\eqn{= 1/\theta}{= 1/theta}, the Stata \code{nbreg} convention).
 NB1 fits (\code{glmmTMB} with \code{nbinom1} or \code{truncated_nbinom1}):
 \code{"delta"} (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
 \eqn{\delta}{delta} of Stata's \verb{nbreg, dispersion(constant)}).
-\item Beta precision (\code{betareg::betareg}, and \code{glmmTMB} with
-\code{beta_family()}, \code{betabinomial()} or \code{ordbeta()}):
-\code{"phi"} (\eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
-    mu(1-mu)/(1+phi)}, Ferrari & Cribari-Neto 2004; higher
-\eqn{\phi}{phi} = less dispersion). A constant precision is
+\item Beta precision: \code{"phi"}. In beta regression
+(\code{betareg::betareg}, \code{mgcv::gam} with \code{betar()}, and \code{glmmTMB}
+with \code{beta_family()}), \eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
+    mu(1-mu)/(1+phi)} (Ferrari & Cribari-Neto 2004; higher
+\eqn{\phi}{phi} = less dispersion). For \code{glmmTMB} with
+\code{betabinomial()} or \code{ordbeta()}, \eqn{\phi}{phi} is the precision
+parameter of the beta part. A constant precision is
 back-transformed from its link, so \code{y ~ x | 1} reports the
 same \eqn{\phi}{phi} as \code{y ~ x}.
 \item For these dispersion rows (\code{"theta"}, \code{"alpha"}, \code{"delta"},
 \code{"phi"}), a column whose model lacks the parameter is blank, so a
 Poisson model can stand beside an NB2 model, or NB1 beside NB2.
+A parameter fixed in the call is not an estimate and has no row:
+\code{MASS::negative.binomial(theta)} in \code{glm()}, mgcv's
+\code{negbin(theta)}, and \code{nb(theta)} or \code{betar(theta)} with
+\code{theta > 0}. Such a negative-binomial model keeps the glm rule for
+\code{"sigma"}. A negative-binomial \code{glmer()} always shows its theta,
+which lme4 counts in the degrees of freedom of the model: a
+\code{glmer.nb()} fit, its \code{update()} refits, and a \code{glmer()} with
+\code{negative.binomial(theta)}.
+For \code{mgcv::gam} and \code{bam}, theta and phi are estimated with the
+smoothing parameters (REML by default), so they differ from the
+maximum-likelihood values of \code{glm.nb()}, betareg or \code{glmmTMB}.
+\code{method = "ML"} gives those.
 A token is refused only when no model in the table has the
 parameter, or when a model of that family has dispersion
 covariates (a \code{glmmTMB} \code{dispformula}, or a betareg \code{y ~ x | z}),
@@ -1252,7 +1273,10 @@ Stata tables; \code{"CR2"} (Bell-McCaffrey, Satterthwaite df)
 remains the recommended modern choice. \code{"CR1S"} is refused
 for \code{glm} with an explanation: Stata's ML commands use a
 different convention (\code{G/(G-1)} scaling, z), so the label
-would not match Stata output there.}
+would not match Stata output there. For \code{MASS::glm.nb}, the
+sandwich holds theta at its estimate, so robust standard errors
+can differ by a few percent from software that includes the
+score of theta.}
 \item{\code{mlogit}}{\code{classical} + \code{"CR1"} only (cluster at the
 choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
 sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
@@ -1275,7 +1299,16 @@ nominal (partial-PO) component is \code{classical} only.
 \code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
 \code{estfun()} method); its \code{cluster} is one entry per
 observation. For the two-part \code{pscl} fits the cluster
-sandwich covers both components (count and zero) at once.}
+sandwich covers both components (count and zero) at once. A
+negative-binomial \code{zeroinfl} or \code{hurdle} is \code{classical} only:
+the sandwich of these fits leaves out the score of theta. When
+the count part is negative binomial, fit the model with
+\code{glmmTMB} instead (family \code{nbinom2} with \code{ziformula}, or
+\code{truncated_nbinom2} for a hurdle), whose sandwich includes it;
+glmmTMB's zero hurdle is binomial, as with
+\code{zero.dist = "binomial"}. When only the zero hurdle is negative
+binomial, the default
+\code{zero.dist = "binomial"} keeps \code{"CR1"}.}
 \item{\code{quantreg::rq}}{its own estimator family, not the sandwich
 vocabulary: \code{classical} (= \code{"nid"}, quantreg's large-sample
 default), \code{"iid"}, \code{"ker"}, \code{"rank"} (intervals only) and a
@@ -1300,9 +1333,12 @@ produced -- and spicy never overwrites it. A \code{vcov} request is
 refused; set the estimator through the fitting package instead
 (\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
 \code{summary()} for fixest).}
-\item{\code{glmmTMB}}{\code{classical} + \code{"CR0"} only, from glmmTMB's own
-sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the coefficients,
-the zero-inflation and dispersion blocks and the AME. Without
+\item{\code{glmmTMB}}{\code{classical}, \code{"CR0"} and \code{"CR1"}, from glmmTMB's
+own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
+coefficients, the zero-inflation and dispersion blocks and the
+AME. \code{"CR0"} is the sandwich as glmmTMB computes it; \code{"CR1"}
+scales it by \eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters,
+as for the \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} classes. Both use Wald z. Without
 \code{cluster}, the cluster is the top-level grouping factor of the
 random effects. The estimator needs independent clusters that
 contain the random effects -- every group within one cluster --
@@ -1311,10 +1347,11 @@ all. It keeps the standard errors valid when the random-effects
 distribution or the conditional variance is misspecified,
 provided the estimates themselves stay consistent (Liang & Zeger
 1986; Verbeke & Lesaffre 1997); with few clusters it understates
-the variance, and this class has no small-sample correction
-(Cameron & Miller 2015). \code{"CR1"}-\code{"CR3"} and \verb{HC*} are refused
-(the sandwich has one score per cluster), as are REML fits and
-the ordinal family.}
+the variance, which the factor of \code{"CR1"} offsets only in part:
+this class has no bias-reduced correction (Cameron & Miller
+2015). \code{"CR2"}, \code{"CR3"} and \verb{HC*} are refused (the sandwich has
+one score per cluster, with no residuals and no hat values), as
+are REML fits and the ordinal family.}
 \item{Other classes (\code{glmer}, \code{rstanarm}/\code{brms}, ...)}{\code{classical}
 (model-based) only (\pkg{clubSandwich} has no working backend for
 \code{glmer}).}
@@ -1324,7 +1361,11 @@ For the mixed-effects fits (\code{lmer}, \code{lme}, \code{glmmTMB}), the robust
 estimator covers the fixed effects: their coefficients, their joint
 tests (\code{"partial_chi2"}), the standardized coefficients and the AME.
 The random-effect variance components keep their model-based
-inference.
+inference. glmmTMB's sandwich takes one likelihood score per cluster
+over the fixed and variance parameters, while the \verb{CR*} estimators of
+\code{lmer} and \code{lme} come from \pkg{clubSandwich} over the fixed effects
+alone: on the same model the two agree as the clusters grow, but not
+exactly.
 
 Cluster-robust backends differ by class but are each cross-validated
 to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
@@ -1332,7 +1373,7 @@ to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 \code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
 \code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
-\code{pscl} two-part fits use
+Poisson and geometric \code{pscl} two-part fits use
 \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}. For \code{gam}/\code{bam}, spicy forms the sandwich
 itself, from the GLM score and the penalized covariance of the fit,
 and lets \code{vcovCL()} do only the clustering arithmetic: the sandwich
@@ -1348,9 +1389,10 @@ sandwiches have no small-sample factor: their one estimator is
 requested as \code{"CR0"}, and the other \verb{CR*} tokens are refused rather
 than mapped. \code{glmmTMB} fits use
 \code{glmmTMB::sandwich()}, with one score per cluster (the gradient of
-the cluster's marginal log-likelihood) and no finite-sample factor;
-its one estimator is requested as \code{"CR0"}, and the other \verb{CR*}
-tokens are refused rather than mapped. \code{cluster} length is one
+the cluster's marginal log-likelihood) and no finite-sample factor:
+\code{"CR0"} requests it as computed, \code{"CR1"} scaled by
+\eqn{G/(G-1)}{G/(G-1)}, and \code{"CR2"} and \code{"CR3"} are refused rather
+than mapped. \code{cluster} length is one
 entry per observation, except \code{mlogit} (one per choice situation)
 and censored \code{coxph} (one per subject).
 }
@@ -1559,10 +1601,11 @@ coefficient tests.
 \code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} and
 \code{glm.nb} under \code{"HC0"}-\code{"HC5"}, \code{lm} and \code{glm} under
 \code{"bootstrap"} and \code{"jackknife"}, \code{rq} under \code{"bootstrap"},
+\code{glmmTMB} under \code{"CR0"} and \code{"CR1"},
 under \code{"CR0"} to \code{coxph} and \code{rms::lrm} / \code{cph} / \code{Glm},
 and under \code{"CR1"} to \code{survreg}, \code{mgcv::gam} and \code{bam}, \code{polr},
 \code{clm}, \code{betareg}, \code{multinom}, \code{mlogit}, \code{zeroinfl} and
-\code{hurdle}; also to
+\code{hurdle} (not negative binomial); also to
 \code{survreg(robust = TRUE)}, a fixest fit with a non-iid vcov whose
 coefficient tests are z (\code{fepois}, \code{femlm}, \code{fenegbin}, and
 \code{feglm} with the binomial or Poisson family), and an \code{rms} fit of

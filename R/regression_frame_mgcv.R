@@ -303,17 +303,41 @@ as_regression_frame.gam <- function(
     sigma = tryCatch(stats::sigma(fit), error = function(e) NA_real_),
     nobs = as.integer(stats::nobs(fit))
   )
-  # nb() estimates the NB2 theta: the theta / alpha rows of glm.nb, and
-  # no sigma, whose fixed 1 would contradict them. negbin(theta) fixes
-  # theta, as glm's negative.binomial(theta) does, and keeps the glm rule.
-  if (.gam_is_nb_estimated(fit)) {
+  # sigma is a residual scale. A glm family keeps the glm rule: the
+  # square root of mgcv's scale, 1 when the family fixes it (Poisson,
+  # binomial). An extended family of mgcv fixes the scale at 1 unless it
+  # has one to estimate (tw()). That 1 is no residual scale: the
+  # dispersion is a family parameter (the theta of nb(), the phi of
+  # betar(), the scale and degrees of freedom of scat()) or there is
+  # none (ocat(), ziP()), so the cell is blank. mgcv's own test is
+  # family$scale, negative when the scale is estimated;
+  # fit$scale.estimated is TRUE for every extended family under bam().
+  # nb(theta) with theta fixed is negbin(theta) written another way: it
+  # keeps the glm rule, and has no theta row.
+  fam_obj <- fit$family
+  is_nb <- .gam_is_nb_estimated(fit)
+  nb_fixed <- .gam_is_nb(fit) && !is_nb
+  if (
+    inherits(fam_obj, "extended.family") &&
+      !isTRUE(fam_obj$scale < 0) &&
+      !nb_fixed
+  ) {
+    fit_stats$sigma <- NA_real_
+  }
+  # nb() estimates the NB2 theta: the theta / alpha rows of glm.nb.
+  # betar() estimates the beta precision phi: the phi row of betareg.
+  # getTheta(TRUE) gives either on its natural scale.
+  if (is_nb || .gam_is_betar_estimated(fit)) {
     theta <- tryCatch(
-      as.numeric(fit$family$getTheta(TRUE)),
+      as.numeric(fam_obj$getTheta(TRUE)),
       error = function(e) NA_real_
     )
-    fit_stats$sigma <- NA_real_
-    fit_stats$theta <- theta
-    fit_stats$alpha <- 1 / theta
+    if (is_nb) {
+      fit_stats$theta <- theta
+      fit_stats$alpha <- 1 / theta
+    } else {
+      fit_stats$phi <- theta
+    }
   }
 
   exp_ok <- !identical(fam$link, "identity")
@@ -400,13 +424,30 @@ as_regression_frame.gam <- function(
 }
 
 
-# TRUE for a GAM whose negative-binomial theta is estimated: mgcv's nb()
-# extended family. negbin(theta) is a plain family with theta fixed by
-# the call, like glm's negative.binomial(theta).
-.gam_is_nb_estimated <- function(fit) {
+# TRUE for a GAM with mgcv's nb() extended family. negbin(theta) is a
+# plain family with theta fixed by the call, like glm's
+# negative.binomial(theta).
+.gam_is_nb <- function(fit) {
   fam <- fit$family
   inherits(fam, "extended.family") &&
     isTRUE(startsWith(fam$family, "Negative Binomial("))
+}
+
+# TRUE for a GAM whose negative-binomial theta is estimated: nb(), but
+# not nb(theta) with theta > 0, which fixes it (n.theta = 0), as
+# negbin(theta) does. A negative theta is a starting value.
+.gam_is_nb_estimated <- function(fit) {
+  .gam_is_nb(fit) && isTRUE(fit$family$n.theta > 0)
+}
+
+# TRUE for a GAM whose beta precision is estimated: mgcv's betar(), whose
+# theta is phi (Var(y) = mu(1-mu)/(1+phi)), unless betar(theta) with
+# theta > 0 fixes it (n.theta = 0).
+.gam_is_betar_estimated <- function(fit) {
+  fam <- fit$family
+  inherits(fam, "extended.family") &&
+    isTRUE(startsWith(fam$family, "Beta regression")) &&
+    isTRUE(fam$n.theta > 0)
 }
 
 

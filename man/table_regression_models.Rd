@@ -118,7 +118,8 @@ test. \code{N (groups)} and \code{ICC} are fit-stat rows; Nakagawa marginal /
 conditional R-squared are the default R-squared family. \verb{CR*}
 cluster-robust standard errors are available for \code{lmer} and \code{lme} fits,
 via \pkg{clubSandwich} with Satterthwaite degrees of freedom. \code{glmmTMB}
-fits take \code{"CR0"} from glmmTMB's own sandwich (Wald z), clustered by
+fits take \code{"CR0"} from glmmTMB's own sandwich, or \code{"CR1"}, the same
+scaled by G/(G-1) for G clusters (Wald z for both), clustered by
 default on the top-level grouping factor; see the robust-SE section of
 \code{\link[=table_regression]{table_regression()}} for when it holds. \code{glmer} fits keep their
 model-based standard errors: a \verb{CR*} request on them is refused with a
@@ -180,8 +181,10 @@ shows a \verb{Zero hurdle} block, which models the probability of a zero), and a
 \code{Dispersion} block when \code{dispformula} has covariates. Component
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). \code{"CR1"} for \code{pscl} fits covers both
-components via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
+combined-response effect on E(Y). \code{"CR1"} for Poisson and geometric \code{pscl}
+fits covers both components via \code{sandwich::vcovCL()}; a negative-binomial
+\code{pscl} fit keeps its model-based standard errors, its sandwich having no
+score for theta. \code{"CR0"} and \code{"CR1"} for \code{glmmTMB} fits cover the
 zero-inflation and dispersion blocks. Opt out with \code{show_components = FALSE}.
 
 The dispersion of a negative-binomial fit is an opt-in fit-statistic

@@ -101,12 +101,12 @@ as_regression_frame.glmmTMB <- function(
   # through either way.
   .mute_glmmTMB_nan_warnings(.glmmTMB_is_nonconverged(fit), {
     coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
-    # CR0: glmmTMB's own cluster sandwich (R/vcov_glmmTMB.R), computed
-    # ONCE -- every cluster retapes the TMB object -- and shared by the
-    # coefficient rows, the joint tests of the terms, the component blocks,
-    # the AME and the nested Wald test (the standardized refit gets its
-    # own). Without a `cluster`, the cluster is the top-level grouping
-    # factor, and the footer names it.
+    # CR0 / CR1: glmmTMB's own cluster sandwich (R/vcov_glmmTMB.R), CR1
+    # scaled by G/(G-1), computed ONCE -- every cluster retapes the TMB
+    # object -- and shared by the coefficient rows, the joint tests of the
+    # terms, the component blocks, the AME and the nested Wald test (the
+    # standardized refit gets its own). Without a `cluster`, the cluster is
+    # the top-level grouping factor, and the footer names it.
     vc <- NULL
     if (!.is_model_vcov(vcov)) {
       vc <- compute_model_vcov(fit, type = vcov, cluster = cluster)
@@ -361,9 +361,9 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-# Build the info list for a glmmTMB fit. `vc` is the CR0 sandwich of
-# every fixed parameter (NULL under the model-based default); the
-# component blocks read their rows of it.
+# Build the info list for a glmmTMB fit. `vc` is the cluster sandwich
+# (CR0 or CR1) of every fixed parameter (NULL under the model-based
+# default); the component blocks read their rows of it.
 .glmmTMB_info <- function(
   fit,
   vcov_kind,
@@ -693,8 +693,8 @@ as_regression_frame.glmmTMB <- function(
 # Build one component block (zi / disp) for a glmmTMB fit: a standardized
 # `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
 # promotes to a labeled subordinate rows block. Full Wald inference straight
-# from summary(fit)$coefficients[[component]] -- no refit. Under CR0 the SEs
-# come from the "zi~" / "disp~" rows of the same sandwich as the conditional
+# from summary(fit)$coefficients[[component]] -- no refit. Under CR0 / CR1 the
+# SEs come from the "zi~" / "disp~" rows of the same sandwich as the conditional
 # rows (`vc`), so one estimator covers the whole table, as for the pscl
 # two-part fits. Terms are "<component>."-prefixed for uniqueness against
 # the conditional rows (matching glmmTMB's own confint() rownames convention).
