@@ -166,7 +166,7 @@ table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 #>  R²                 │    0.00            0.01         
 #>  Adj. R²            │    0.00            0.01         
 #>  ΔR²                │     –             +0.01         
-#>  F-change           │     –             +3.13         
+#>  F-change           │     –              3.13         
 #>  p (change)         │     –               .025        
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
@@ -228,7 +228,7 @@ table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
 #>  R²               │    0.00            0.01         
 #>  Adj. R²          │    0.00            0.00         
 #>  ΔR²              │     –             +0.00         
-#>  F-change         │     –             +0.89         
+#>  F-change         │     –              0.89         
 #>  p (change)       │     –               .485        
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
@@ -336,7 +336,7 @@ table_regression(list(g_lin, g_fac), nested = TRUE,
 #>  R² (McFadden)            │    0.02            0.02         
 #>  R² (Nagelkerke)          │    0.03            0.03         
 #>  AIC                      │ 1198.9          1200.9          
-#>  Δχ²                      │     –             +0.03         
+#>  Δχ²                      │     –              0.03         
 #>  p (change)               │     –               .852        
 #> 
 #> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
@@ -388,7 +388,7 @@ table_regression(list(s_lin, s_fac), nested = TRUE,
 #>  R²            │    0.33            0.35         
 #>  Adj. R²       │    0.33            0.34         
 #>  ΔR²           │     –             +0.01         
-#>  F-change      │     –            +12.96         
+#>  F-change      │     –             12.96         
 #>  p (change)    │     –              <.001        
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).

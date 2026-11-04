@@ -38,8 +38,8 @@ An ordered outcome takes a cumulative-link mixed model:
 with `family = glmmTMB::ordinal()`. Both render the same *Random
 effects* block below their thresholds (see [*Ordinal regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)),
-with the model-based variance only: `vcov = "CR0"` and the average
-marginal effects are refused for both.
+with the model-based variance only: `vcov = "CR0"` or `"CR1"` and the
+average marginal effects are refused for both.
 
 The Bayesian mixed engines
 ([`stan_lmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html)
@@ -1150,7 +1150,7 @@ zfit <- glmmTMB::glmmTMB(
   family = poisson(), data = Salamanders
 )
 table_regression(zfit, exponentiate = TRUE)
-#> Poisson mixed-effects regression (zero-inflated): count
+#> Zero-inflated Poisson mixed-effects regression: count
 #> 
 #>  Variable             │   IRR     SE      95% CI       p   
 #> ──────────────────────┼────────────────────────────────────
@@ -1174,7 +1174,7 @@ table_regression(zfit, exponentiate = TRUE)
 #>  AIC                  │ 1908.5                             
 #>  BIC                  │ 1930.8                             
 #> 
-#> Note. Poisson mixed-effects regression (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Note the per-block exponentiation: the count coefficients become
@@ -1331,17 +1331,17 @@ table_regression(fit_ri, vcov = "CR2", cluster = ~Subject)
 ```
 
 `glmmTMB` fits take `"CR0"` from glmmTMB’s own sandwich (glmmTMB \>=
-1.1.15), clustered by default on the top-level grouping factor of the
-random effects; the conditions under which it holds are listed in
-[*Supported
+1.1.15), or `"CR1"`, the same scaled by G/(G − 1) for G clusters,
+clustered by default on the top-level grouping factor of the random
+effects; the conditions under which it holds are listed in [*Supported
 models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
 
 Requests that have no valid backend are refused with a clear error
 rather than silently ignored: `HC*` (a single-level estimator whose
 sandwich assumes independent observations — the very dependence the
 random effects exist to model; use `CR*` instead), `CR*` on `glmer` (no
-`clubSandwich` method), `"CR1"`–`"CR3"` on `glmmTMB` (its sandwich has
-one score per cluster and no small-sample correction), and the
+`clubSandwich` method), `"CR2"` and `"CR3"` on `glmmTMB` (its sandwich
+has one score per cluster, with no residuals and no hat values), and the
 resampling estimators.
 
 ## Standardized coefficients

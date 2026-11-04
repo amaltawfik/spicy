@@ -362,12 +362,12 @@ package itself uses, so it cannot drift from the code. Call
 <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> to get it as a data frame.</p>
 <table class="table">
 <colgroup>
+<col width="8%">
+<col width="3%">
+<col width="24%">
 <col width="10%">
-<col width="4%">
-<col width="30%">
-<col width="11%">
-<col width="19%">
-<col width="22%">
+<col width="15%">
+<col width="38%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Family</th>
@@ -493,8 +493,9 @@ package itself uses, so it cannot drift from the code. Call
 <td align="left">yes (no for the ordinal family)</td>
 <td align="left">link-dependent (IRR for count families, OR for ordinal
 logit)</td>
-<td align="left">Random effects; Zero-inflation; Dispersion; Thresholds
-(ordinal family)</td>
+<td align="left">Random effects; Zero-inflation; Zero hurdle, Pr(y = 0)
+for a zero-truncated family, ziGamma, lognormal or beta_family;
+Dispersion; Thresholds (ordinal family)</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -670,9 +671,9 @@ logit)</td>
 <td align="left"></td>
 <td align="left"><code>lrm</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td>
-<td align="left">yes</td>
+<td align="left">yes (per category for an ordinal outcome)</td>
 <td align="left">OR</td>
-<td align="left">-</td>
+<td align="left">Thresholds (ordinal outcome)</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -752,18 +753,19 @@ bias-reduced with Satterthwaite df), plus <code>"bootstrap"</code> /
 <strong>Mixed effects</strong> – <code>lmer</code> and
 <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> take <code>CR*</code> via
 <code>clubSandwich</code>. <code>glmmTMB</code> takes <code>CR0</code>
-from glmmTMB’s own sandwich (glmmTMB &gt;= 1.1.15), for the coefficients
-and the zero-inflation and dispersion blocks, clustered by default on
-the top-level grouping factor of the random effects;
-<code>CR1</code>–<code>CR3</code>, <code>HC*</code>, REML fits and the
-ordinal family are refused. The estimator needs independent clusters
-that contain the random effects, every group within one cluster, so
-crossed random effects need a cluster that contains them all. It keeps
-the standard errors valid when the random-effects distribution or the
-conditional variance is misspecified, provided the estimates themselves
-stay consistent (Liang &amp; Zeger 1986; Verbeke &amp; Lesaffre 1997),
-and with few clusters it understates the variance, with no small-sample
-correction for this class (Cameron &amp; Miller 2015).
+from glmmTMB’s own sandwich (glmmTMB &gt;= 1.1.15), and
+<code>CR1</code>, the same scaled by G/(G-1), for the coefficients and
+the zero-inflation and dispersion blocks, clustered by default on the
+top-level grouping factor of the random effects; <code>CR2</code>,
+<code>CR3</code>, <code>HC*</code>, REML fits and the ordinal family are
+refused. The estimator needs independent clusters that contain the
+random effects, every group within one cluster, so crossed random
+effects need a cluster that contains them all. It keeps the standard
+errors valid when the random-effects distribution or the conditional
+variance is misspecified, provided the estimates themselves stay
+consistent (Liang &amp; Zeger 1986; Verbeke &amp; Lesaffre 1997), and
+with few clusters it understates the variance, which the factor of
+<code>CR1</code> offsets only in part (Cameron &amp; Miller 2015).
 <code>glmer</code> and <code>gls</code> are model-based only
 (<code>clubSandwich</code> has no working backend for
 <code>glmer</code>, and its <code>gls</code> backend is not yet wired
@@ -801,13 +803,19 @@ takes <code>CR1</code> via <code><a href="https://zeileis.codeberg.page/sandwich
 <strong><code>gam</code> / <code>bam</code>, <code>betareg</code>,
 <code>pscl</code> two-part</strong> – <code>CR1</code> via
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
-both components. For <code>gam</code> / <code>bam</code>, spicy forms
-the sandwich itself, from the score and the penalized covariance of the
-fit, and <code>vcovCL()</code> only does the clustering arithmetic. For
-every <code>vcovCL()</code> class (these, the ordinal and categorical
-fits and <code>survreg</code>), CR1 is the one estimator, the CR0
-sandwich scaled by G/(G-1) with G clusters; <code>CR0</code>,
-<code>CR2</code> and <code>CR3</code> are refused.</li>
+both components. A negative-binomial <code>zeroinfl</code> or
+<code>hurdle</code> is model-based only: the sandwich of these fits
+leaves out the score of theta. With a negative-binomial count part, the
+glmmTMB fit takes <code>CR0</code> and <code>CR1</code> (its zero hurdle
+is binomial). With a negative-binomial zero hurdle alone, the default
+<code>zero.dist = "binomial"</code> keeps <code>CR1</code>. For
+<code>gam</code> / <code>bam</code>, spicy forms the sandwich itself,
+from the score and the penalized covariance of the fit, and
+<code>vcovCL()</code> only does the clustering arithmetic. For every
+<code>vcovCL()</code> class (these, the ordinal and categorical fits and
+<code>survreg</code>), CR1 is the one estimator, the CR0 sandwich scaled
+by G/(G-1) with G clusters; <code>CR0</code>, <code>CR2</code> and
+<code>CR3</code> are refused.</li>
 <li>
 <strong>Own-estimator classes</strong> – <code>estimatr</code> fits
 keep the robust SEs they were computed with; <code>fixest</code> fits

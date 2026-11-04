@@ -353,34 +353,34 @@ not a default to accept.</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_hur</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson hurdle regression: art</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>    1.88  0.13  [1.63, 2.16]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  fem:            <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Men (ref.)    <span style="color: #9E9E9E;">│</span>     –     –         –         –    </span></span>
-<span><span class="co">#&gt;    Women         <span style="color: #9E9E9E;">│</span>    0.80  0.05  [0.70, 0.90]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  mar:            <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    Single (ref.) <span style="color: #9E9E9E;">│</span>     –     –         –         –    </span></span>
-<span><span class="co">#&gt;    Married       <span style="color: #9E9E9E;">│</span>    1.10  0.08  [0.96, 1.27]   .169 </span></span>
-<span><span class="co">#&gt;  kid5            <span style="color: #9E9E9E;">│</span>    0.87  0.04  [0.79, 0.95]   .003 </span></span>
-<span><span class="co">#&gt;  ment            <span style="color: #9E9E9E;">│</span>    1.02  0.00  [1.01, 1.02]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Zero hurdle:    <span style="color: #9E9E9E;">│</span>                                    </span></span>
-<span><span class="co">#&gt;    (Intercept)   <span style="color: #9E9E9E;">│</span>    1.28  0.14  [1.04, 1.58]   .021 </span></span>
-<span><span class="co">#&gt;    ment          <span style="color: #9E9E9E;">│</span>    1.08  0.01  [1.06, 1.11]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span>  915                               </span></span>
-<span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 3233.8                             </span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>    1.88  0.13  [1.63, 2.16]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  fem:                    <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Men (ref.)            <span style="color: #9E9E9E;">│</span>     –     –         –         –    </span></span>
+<span><span class="co">#&gt;    Women                 <span style="color: #9E9E9E;">│</span>    0.80  0.05  [0.70, 0.90]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  mar:                    <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    Single (ref.)         <span style="color: #9E9E9E;">│</span>     –     –         –         –    </span></span>
+<span><span class="co">#&gt;    Married               <span style="color: #9E9E9E;">│</span>    1.10  0.08  [0.96, 1.27]   .169 </span></span>
+<span><span class="co">#&gt;  kid5                    <span style="color: #9E9E9E;">│</span>    0.87  0.04  [0.79, 0.95]   .003 </span></span>
+<span><span class="co">#&gt;  ment                    <span style="color: #9E9E9E;">│</span>    1.02  0.00  [1.01, 1.02]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Zero hurdle, Pr(y &gt; 0): <span style="color: #9E9E9E;">│</span>                                    </span></span>
+<span><span class="co">#&gt;    (Intercept)           <span style="color: #9E9E9E;">│</span>    1.28  0.14  [1.04, 1.58]   .021 </span></span>
+<span><span class="co">#&gt;    ment                  <span style="color: #9E9E9E;">│</span>    1.08  0.01  [1.06, 1.11]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  915                               </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 3233.8                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle, Pr(y &gt; 0) component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Compare the <code>ment</code> row in the two zero blocks — the same
 predictor, the same substantive finding, and <em>opposite-looking</em>
 odds ratios:</p>
 <ul>
 <li>Zero-inflation block: OR 0.88 — each mentor publication
 <strong>lowers the odds of being a structural zero</strong>.</li>
-<li>Zero hurdle block: OR 1.08 — each mentor publication <strong>raises
-the odds of publishing at all</strong>.</li>
+<li>Zero hurdle, Pr(y &gt; 0) block: OR 1.08 — each mentor publication
+<strong>raises the odds of publishing at all</strong>.</li>
 </ul>
 <p>Both blocks say the same thing: a productive mentor makes an observed
 zero less likely. Reading either number without its block label invites
@@ -581,7 +581,17 @@ one CR1 estimator. With genuinely clustered data, positive
 within-cluster dependence widens the intervals further, and borderline
 effects are typically the first casualties. <code>HC*</code> and the
 resampling estimators have no two-part backend and are refused with a
-clear error.</p>
+clear error. So is any sandwich for a negative-binomial
+<code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">zeroinfl()</a></code> or <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">hurdle()</a></code>: their sandwich leaves
+out the score of θ, so its standard errors are inconsistent. When the
+count part is negative binomial, the glmmTMB fit (family
+<code>nbinom2</code> with <code>ziformula</code>, or
+<code>truncated_nbinom2</code> for a hurdle) has a sandwich that
+includes θ, with <code>vcov = "CR0"</code> or <code>"CR1"</code>. Its
+zero hurdle is binomial, as with <code>zero.dist = "binomial"</code>. A
+hurdle whose zero part alone is negative binomial keeps
+<code>"CR1"</code> with the default
+<code>zero.dist = "binomial"</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="mixed-counts-glmmtmb">Mixed counts: <code>glmmTMB</code><a class="anchor" aria-label="anchor" href="#mixed-counts-glmmtmb"></a>
@@ -596,11 +606,12 @@ lives in the random-effects structure itself, as the
 model-based by default. <code>vcov = "CR0"</code> replaces them with
 cluster-robust ones from glmmTMB’s own sandwich (glmmTMB &gt;= 1.1.15),
 clustered by default on the top-level grouping factor (here
-<code>site</code>), for the count and zero-inflation blocks alike.
-<code>"CR1"</code>–<code>"CR3"</code> and <code>HC*</code> are refused:
-the sandwich has one score per cluster, and <code>clubSandwich</code>
-has no working <code>glmmTMB</code> backend. The same convention is
-documented in the companion <a href="table-regression-mixed.html"><em>Mixed-effects regression
+<code>site</code>), for the count and zero-inflation blocks alike;
+<code>vcov = "CR1"</code> scales that sandwich by G/(G − 1) for G
+clusters. <code>"CR2"</code>, <code>"CR3"</code> and <code>HC*</code>
+are refused: the sandwich has one score per cluster, and
+<code>clubSandwich</code> has no working <code>glmmTMB</code> backend.
+The same convention is documented in the companion <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a> article:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
@@ -610,7 +621,7 @@ tables</em></a> article:</p>
 <span>  family <span class="op">=</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/glmmTMB/man/nbinom2.html" class="external-link">nbinom2</a></span>, data <span class="op">=</span> <span class="va">Salamanders</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_mix</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Negative-binomial mixed-effects regression (zero-inflated): count</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Zero-inflated negative-binomial mixed-effects regression: count</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable             <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────┼────────────────────────────────────</span></span></span>
@@ -634,7 +645,7 @@ tables</em></a> article:</p>
 <span><span class="co">#&gt;  AIC                  <span style="color: #9E9E9E;">│</span> 1741.4                             </span></span>
 <span><span class="co">#&gt;  BIC                  <span style="color: #9E9E9E;">│</span> 1768.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Negative-binomial mixed-effects regression (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated negative-binomial mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Among streams not in the structural-zero state, unmined ones host
 salamanders at over four times the rate of mined ones (IRR 4.34); they
 are also far less likely to be structural zeros in the first place (OR
@@ -1270,21 +1281,22 @@ criterion.
 </div>
 </div>
 <p>In <a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a> the
-zero-component terms carry a <code>zero_</code> prefix, so the two parts
-separate cleanly:</p>
+zero-component terms are keyed by their block
+(<code>Zero-inflation::(Intercept)</code>), so the two parts separate
+cleanly:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate_type"</span>, <span class="st">"estimate"</span>, <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
-<span><span class="co">#&gt;   term             estimate_type estimate  p.value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)      B               0.609  2.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-19</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> femWomen         B              -<span style="color: #BB0000;">0.218</span>  2.05<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> marMarried       B               0.135  4.07<span style="color: #949494;">e</span><span style="color: #BB0000;">- 2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> kid5             B              -<span style="color: #BB0000;">0.163</span>  1.75<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ment             B               0.018<span style="text-decoration: underline;">2</span> 1.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> zero_(Intercept) B              -<span style="color: #BB0000;">0.686</span>  8.47<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> zero_ment        B              -<span style="color: #BB0000;">0.130</span>  1.22<span style="color: #949494;">e</span><span style="color: #BB0000;">- 3</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   term                        estimate_type estimate  p.value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)                 B               0.609  2.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-19</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> femWomen                    B              -<span style="color: #BB0000;">0.218</span>  2.05<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> marMarried                  B               0.135  4.07<span style="color: #949494;">e</span><span style="color: #BB0000;">- 2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> kid5                        B              -<span style="color: #BB0000;">0.163</span>  1.75<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ment                        B               0.018<span style="text-decoration: underline;">2</span> 1.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Zero-inflation::(Intercept) B              -<span style="color: #BB0000;">0.686</span>  8.47<span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Zero-inflation::ment        B              -<span style="color: #BB0000;">0.130</span>  1.22<span style="color: #949494;">e</span><span style="color: #BB0000;">- 3</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

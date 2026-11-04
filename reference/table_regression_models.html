@@ -127,7 +127,7 @@ supported set. Feature requests are welcome on the issue tracker.</p>
     <div class="section level2">
     <h2 id="supported-classes">Supported classes<a class="anchor" aria-label="anchor" href="#supported-classes"></a></h2>
 
-<table class="table table"><tr><td>Family</td><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td><code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code></td><td>yes</td><td>IRR</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td><code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls()</a></code></td><td>no</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes (no for a GLM with fixed effects)</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></td><td>yes (no for the ordinal family)</td><td>link-dependent (IRR for count families, OR for ordinal logit)</td><td>Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects</td></tr><tr><td>Ordinal</td><td><code>clmm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code></td><td>no</td><td>OR (logit)</td><td>Thresholds; Random effects</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td><code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code></td><td>per outcome</td><td>OR</td><td>per-outcome blocks</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td><code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code></td><td>no</td><td>OR</td><td>per-alternative rows</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero-inflation</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero hurdle</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td></tr><tr><td>Survival</td><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td><td>yes (design-based)</td><td>OR / IRR</td><td>-</td></tr><tr><td>Survey-weighted</td><td><code>svyolr</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">survey::svyolr()</a></code></td><td>per category (design-based)</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Survey-weighted</td><td><code>svycoxph</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td><code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">mgcv::bam()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td><td>yes</td><td>OR (mean link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td><td>no</td><td>-</td><td>selection component</td></tr><tr><td>rms</td><td><code>ols</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>rms</td><td><code>lrm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td><td>yes</td><td>OR</td><td>-</td></tr><tr><td>rms</td><td><code>Glm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code></td><td>yes</td><td>link-dependent</td><td>-</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td><code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">rstanarm::stan_glmer()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td><code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr></table></div>
+<table class="table table"><tr><td>Family</td><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td><code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td><code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code></td><td>yes</td><td>IRR</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td><code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls()</a></code></td><td>no</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes (no for a GLM with fixed effects)</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td><code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></td><td>yes (no for the ordinal family)</td><td>link-dependent (IRR for count families, OR for ordinal logit)</td><td>Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code></td><td>yes</td><td>-</td><td>Random effects</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td><code><a href="https://rdrr.io/pkg/nlme/man/gls.html" class="external-link">nlme::gls()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code></td><td>yes</td><td>OR / IRR / RR / MR / HR (link)</td><td>-</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects</td></tr><tr><td>Ordinal</td><td><code>clmm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code></td><td>no</td><td>OR (logit)</td><td>Thresholds; Random effects</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td><code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code></td><td>per outcome</td><td>OR</td><td>per-outcome blocks</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td><code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code></td><td>no</td><td>OR</td><td>per-alternative rows</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero-inflation</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td><code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code></td><td>yes (combined response)</td><td>IRR (count) + OR (logit zero part)</td><td>Zero hurdle</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td></tr><tr><td>Survival</td><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code></td><td>yes (design-based)</td><td>OR / IRR</td><td>-</td></tr><tr><td>Survey-weighted</td><td><code>svyolr</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">survey::svyolr()</a></code></td><td>per category (design-based)</td><td>OR (logit)</td><td>Thresholds</td></tr><tr><td>Survey-weighted</td><td><code>svycoxph</code></td><td><code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code></td><td>no</td><td>HR</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td><code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>, <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">mgcv::bam()</a></code></td><td>yes</td><td>OR / IRR (link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td><td>yes</td><td>OR (mean link)</td><td>-</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td><td>no</td><td>-</td><td>selection component</td></tr><tr><td>rms</td><td><code>ols</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code></td><td>yes</td><td>-</td><td>-</td></tr><tr><td>rms</td><td><code>lrm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code></td><td>yes (per category for an ordinal outcome)</td><td>OR</td><td>Thresholds (ordinal outcome)</td></tr><tr><td>rms</td><td><code>Glm</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code></td><td>yes</td><td>link-dependent</td><td>-</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td><code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">rstanarm::stan_glm()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">rstanarm::stan_glmer()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td><code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code></td><td>yes (draws)</td><td>link-dependent</td><td>Random effects (if multilevel)</td></tr></table></div>
     <div class="section level2">
     <h2 id="shared-semantics-all-classes-">Shared semantics (all classes)<a class="anchor" aria-label="anchor" href="#shared-semantics-all-classes-"></a></h2>
 
@@ -167,7 +167,8 @@ test. <code>N (groups)</code> and <code>ICC</code> are fit-stat rows; Nakagawa m
 conditional R-squared are the default R-squared family. <code>CR*</code>
 cluster-robust standard errors are available for <code>lmer</code> and <code>lme</code> fits,
 via <span class="pkg">clubSandwich</span> with Satterthwaite degrees of freedom. <code>glmmTMB</code>
-fits take <code>"CR0"</code> from glmmTMB's own sandwich (Wald z), clustered by
+fits take <code>"CR0"</code> from glmmTMB's own sandwich, or <code>"CR1"</code>, the same
+scaled by G/(G-1) for G clusters (Wald z for both), clustered by
 default on the top-level grouping factor; see the robust-SE section of
 <code><a href="table_regression.html">table_regression()</a></code> for when it holds. <code>glmer</code> fits keep their
 model-based standard errors: a <code>CR*</code> request on them is refused with a
@@ -214,9 +215,10 @@ AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
 <code>vcov</code>, <code>ci_method = "profile"</code> and <code>standardized</code> are refused, as is
 <code>nested = TRUE</code> for <code>clmm</code>. <code>exponentiate</code> follows the <code>clm</code> rule
 (odds ratios under logit, hazard ratios under cloglog), except for a
-<code>clmm</code> fit with the cloglog link, where it is refused: on the current
-<code>ordinal</code>, the cloglog and loglog links of <code>clmm()</code> do not match those
-of <code>clm()</code> and of <code>glmmTMB()</code>.</p>
+<code>clmm</code> fit with the cloglog link and a single random intercept, where
+it is refused: on the current <code>ordinal</code>, <code>clmm()</code> fits such a model
+with the loglog link, and the reverse. The random-effects LR test
+refits its null with the link actually fitted.</p>
     </div>
     <div class="section level2">
     <h2 id="counts-and-two-part-models">Counts and two-part models<a class="anchor" aria-label="anchor" href="#counts-and-two-part-models"></a></h2>
@@ -224,15 +226,18 @@ of <code>clm()</code> and of <code>glmmTMB()</code>.</p>
 
 <p>Two-part models show their full model: the zero component renders as a
 <code>Zero-inflation</code> block (<code>zeroinfl</code>, glmmTMB <code>ziformula</code>: probability of a
-structural zero) or a <code>Zero hurdle</code> block (<code>hurdle</code>: probability of a
-nonzero count – the opposite direction, hence the distinct label; a
-glmmTMB hurdle model, a zero-truncated family with <code>ziformula</code>, also
-shows a <code>Zero hurdle</code> block, which models the probability of a zero), and a
-<code>Dispersion</code> block when <code>dispformula</code> has covariates. Component
+structural zero), a <code>Zero hurdle, Pr(y &gt; 0)</code> block (<code>hurdle</code>: probability
+of a nonzero count – the opposite direction, hence the distinct label)
+or a <code>Zero hurdle, Pr(y = 0)</code> block (a glmmTMB hurdle model, a
+zero-truncated family, <code>ziGamma()</code>, <code>lognormal()</code> or <code>beta_family()</code>
+with <code>ziformula</code>: probability of a zero), and a <code>Dispersion</code> block when
+<code>dispformula</code> has covariates. Component
 coefficients join the <code>p_adjust</code> family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). <code>"CR1"</code> for <code>pscl</code> fits covers both
-components via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, and <code>"CR0"</code> for <code>glmmTMB</code> fits covers the
+combined-response effect on E(Y). <code>"CR1"</code> for Poisson and geometric <code>pscl</code>
+fits covers both components via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; a negative-binomial
+<code>pscl</code> fit keeps its model-based standard errors, its sandwich having no
+score for theta. <code>"CR0"</code> and <code>"CR1"</code> for <code>glmmTMB</code> fits cover the
 zero-inflation and dispersion blocks. Opt out with <code>show_components = FALSE</code>.</p>
 <p>The dispersion of a negative-binomial fit is an opt-in fit-statistic
 row: <code>"theta"</code> and <code>"alpha"</code> (= 1/theta) for NB2 fits, <code>"delta"</code> for
@@ -349,11 +354,20 @@ disclose their absorbed fixed effects as a default-on
 varying-slope-only factors are not absorbed intercepts and read
 No), with per-factor <code>N (&lt;factor&gt;)</code> counts via the opt-in
 <code>n_groups</code> token and the within R-squared in the default fit
-statistics for <code>fixest</code> (opt-in via <code>within_r2</code> for <code>estimatr</code>).
-AME is refused for a non-linear <code>fixest</code> model with fixed effects
-(<code>fepois()</code>, <code>feglm()</code>, <code>femlm()</code>, <code>fenegbin()</code>): its variance would
-need the uncertainty of the fixed effects, which fixest does not
-estimate. <code>feols()</code> and a GLM without fixed effects have it.</p>
+statistics for <code>fixest</code> except an IV <code>feols()</code> (opt-in via
+<code>within_r2</code> for <code>estimatr</code>).
+AME is refused for a <code>fixest</code> GLM with fixed effects (<code>feglm()</code>,
+<code>fepois()</code>, <code>femlm()</code>, <code>fenegbin()</code>, whatever the family):
+marginaleffects, which computes it, cannot take into account the
+uncertainty of the fixed effects. It is refused too for a <code>feols()</code>
+with fixed effects fitted with <code>lean = TRUE</code>, which marginaleffects
+cannot predict from (re-estimate it with <code>lean = FALSE</code>). Other
+<code>feols()</code> fits and a GLM without fixed effects have it. The AME of
+a factor in <code>i()</code> sits on the rows of its
+coefficients, against the reference <code>i()</code> gives them (<code>ref =</code>); a
+level of a factor in <code>i()</code>, or a numeric variable that <code>i()</code> enters
+as categories, with no coefficient row gets no AME, nor does a factor
+that <code>i()</code> enters only in an interaction.</p>
     </div>
     <div class="section level2">
     <h2 id="bayesian-models">Bayesian models<a class="anchor" aria-label="anchor" href="#bayesian-models"></a></h2>
@@ -478,46 +492,46 @@ articles.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 37                                                                              rms::Glm()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 38                                            rstanarm::stan_glm(), rstanarm::stan_glmer()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 39                                                                             brms::brm()</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                      ame</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                     no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                    yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 yes (no for a GLM with fixed effects)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14       yes (no for the ordinal family)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18                          per category</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19                          per category</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21                           per outcome</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23               yes (combined response)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24               yes (combined response)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25                      RMST / risk diff</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26                yes + RMST / risk diff</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29                    yes (design-based)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30           per category (design-based)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                    no</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37                                   yes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38                           yes (draws)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39                           yes (draws)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          ame</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                         no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                        yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11     yes (no for a GLM with fixed effects)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14           yes (no for the ordinal family)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                              per category</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                              per category</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                               per outcome</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23                   yes (combined response)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24                   yes (combined response)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                          RMST / risk diff</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                    yes + RMST / risk diff</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                        yes (design-based)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30               per category (design-based)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                        no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36 yes (per category for an ordinal outcome)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                                       yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                               yes (draws)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39                               yes (draws)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                     exponentiate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                              -</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 OR / IRR / RR / MR / HR (link)</span>
@@ -558,46 +572,46 @@ articles.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 37                                                link-dependent</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 38                                                link-dependent</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 39                                                link-dependent</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                     blocks</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                                                        -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18                                                              Thresholds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19                                    Thresholds; Non-proportional effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                              Thresholds; Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21                                                      per-outcome blocks</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                                    per-alternative rows</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23                                                          Zero-inflation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24                                                             Zero hurdle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28                                                 distribution parameters</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                              Thresholds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                     selection component</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37                                                                       -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38                                          Random effects (if multilevel)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39                                          Random effects (if multilevel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                                                            blocks</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                                                                                                                                               -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                                                                                                                                                     Thresholds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                                                                                                                           Thresholds; Non-proportional effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                                                                                                                                     Thresholds; Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                                                                                                                                             per-outcome blocks</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                                                                                                                                           per-alternative rows</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23                                                                                                                                                 Zero-inflation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24                                                                                                                                                    Zero hurdle</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28                                                                                                                                        distribution parameters</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                                                                                                                     Thresholds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                                                                                                            selection component</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                                                                                                                                   Thresholds (ordinal outcome)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                                                                                                                                                              -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                                                                                                                                 Random effects (if multilevel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39                                                                                                                                 Random effects (if multilevel)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># All engines of one family:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">table_regression_models</span><span class="op">(</span><span class="op">)</span>, <span class="va">family</span> <span class="op">==</span> <span class="st">"Mixed effects"</span><span class="op">)</span></span></span>
@@ -613,12 +627,12 @@ articles.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 14 link-dependent (IRR for count families, OR for ordinal logit)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 15                                                             -</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 16                                                             -</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                     blocks</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                                          Random effects</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                                                       -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                                                            blocks</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                                                                                                                                                 Random effects</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                                                                                                                                              -</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

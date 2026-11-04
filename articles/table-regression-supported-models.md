@@ -119,7 +119,7 @@ to get it as a data frame.
 |  | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
 |  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
-|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) |
+|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) |
 |  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
@@ -141,7 +141,7 @@ to get it as a data frame.
 |  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
 |  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
-|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes | OR | \- |
+|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) |
 |  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
 | Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
 |  | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
@@ -185,20 +185,20 @@ Family by family:
 - **Mixed effects** – `lmer` and
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
   `clubSandwich`. `glmmTMB` takes `CR0` from glmmTMB’s own sandwich
-  (glmmTMB \>= 1.1.15), for the coefficients and the zero-inflation and
-  dispersion blocks, clustered by default on the top-level grouping
-  factor of the random effects; `CR1`–`CR3`, `HC*`, REML fits and the
-  ordinal family are refused. The estimator needs independent clusters
-  that contain the random effects, every group within one cluster, so
-  crossed random effects need a cluster that contains them all. It keeps
-  the standard errors valid when the random-effects distribution or the
-  conditional variance is misspecified, provided the estimates
-  themselves stay consistent (Liang & Zeger 1986; Verbeke & Lesaffre
-  1997), and with few clusters it understates the variance, with no
-  small-sample correction for this class (Cameron & Miller 2015).
-  `glmer` and `gls` are model-based only (`clubSandwich` has no working
-  backend for `glmer`, and its `gls` backend is not yet wired and
-  validated in spicy).
+  (glmmTMB \>= 1.1.15), and `CR1`, the same scaled by G/(G-1), for the
+  coefficients and the zero-inflation and dispersion blocks, clustered
+  by default on the top-level grouping factor of the random effects;
+  `CR2`, `CR3`, `HC*`, REML fits and the ordinal family are refused. The
+  estimator needs independent clusters that contain the random effects,
+  every group within one cluster, so crossed random effects need a
+  cluster that contains them all. It keeps the standard errors valid
+  when the random-effects distribution or the conditional variance is
+  misspecified, provided the estimates themselves stay consistent (Liang
+  & Zeger 1986; Verbeke & Lesaffre 1997), and with few clusters it
+  understates the variance, which the factor of `CR1` offsets only in
+  part (Cameron & Miller 2015). `glmer` and `gls` are model-based only
+  (`clubSandwich` has no working backend for `glmer`, and its `gls`
+  backend is not yet wired and validated in spicy).
 - **Ordinal (`polr`, `clm`)** – `CR1` via
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
   no `HC*`; the cut-point thresholds are reweighted from the same
@@ -225,7 +225,12 @@ Family by family:
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 - **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR1` via
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-  zero-inflated and hurdle fits cluster both components. For `gam` /
+  zero-inflated and hurdle fits cluster both components. A
+  negative-binomial `zeroinfl` or `hurdle` is model-based only: the
+  sandwich of these fits leaves out the score of theta. With a
+  negative-binomial count part, the glmmTMB fit takes `CR0` and `CR1`
+  (its zero hurdle is binomial). With a negative-binomial zero hurdle
+  alone, the default `zero.dist = "binomial"` keeps `CR1`. For `gam` /
   `bam`, spicy forms the sandwich itself, from the score and the
   penalized covariance of the fit, and `vcovCL()` only does the
   clustering arithmetic. For every `vcovCL()` class (these, the ordinal

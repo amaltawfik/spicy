@@ -148,8 +148,8 @@ space, plus zero-inflation and dispersion components.</li>
 <code>family = glmmTMB::ordinal()</code>. Both render the same
 <em>Random effects</em> block below their thresholds (see <a href="table-regression-ordinal.html"><em>Ordinal regression
 tables</em></a>), with the model-based variance only:
-<code>vcov = "CR0"</code> and the average marginal effects are refused
-for both.</p>
+<code>vcov = "CR0"</code> or <code>"CR1"</code> and the average marginal
+effects are refused for both.</p>
 <p>The Bayesian mixed engines (<code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_lmer()</a></code> /
 <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_glmer()</a></code>, <code>brm()</code> with grouping terms)
 render the same <em>Random effects</em> block from their posterior draws
@@ -1214,7 +1214,7 @@ abundance where salamanders can occur:</p>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">Salamanders</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">zfit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson mixed-effects regression (zero-inflated): count</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Zero-inflated Poisson mixed-effects regression: count</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable             <span style="color: #9E9E9E;">│</span>   IRR     SE      95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────┼────────────────────────────────────</span></span></span>
@@ -1238,7 +1238,7 @@ abundance where salamanders can occur:</p>
 <span><span class="co">#&gt;  AIC                  <span style="color: #9E9E9E;">│</span> 1908.5                             </span></span>
 <span><span class="co">#&gt;  BIC                  <span style="color: #9E9E9E;">│</span> 1930.8                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson mixed-effects regression (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs Poisson regression, χ̄²(1) = 19.46, p &lt; .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p &lt; .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Note the per-block exponentiation: the count coefficients become
 <strong>IRR</strong>, while the logit zero-inflation coefficients become
 <strong>odds ratios of a structural zero</strong>. Read one number from
@@ -1387,7 +1387,8 @@ dependence:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: cluster-robust (CR2), clusters by Subject. P-values: Satterthwaite t-test, cluster-robust df. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p><code>glmmTMB</code> fits take <code>"CR0"</code> from glmmTMB’s own
-sandwich (glmmTMB &gt;= 1.1.15), clustered by default on the top-level
+sandwich (glmmTMB &gt;= 1.1.15), or <code>"CR1"</code>, the same scaled
+by G/(G − 1) for G clusters, clustered by default on the top-level
 grouping factor of the random effects; the conditions under which it
 holds are listed in <a href="table-regression-supported-models.html"><em>Supported
 models</em></a>.</p>
@@ -1396,9 +1397,9 @@ rather than silently ignored: <code>HC*</code> (a single-level estimator
 whose sandwich assumes independent observations — the very dependence
 the random effects exist to model; use <code>CR*</code> instead),
 <code>CR*</code> on <code>glmer</code> (no <code>clubSandwich</code>
-method), <code>"CR1"</code>–<code>"CR3"</code> on <code>glmmTMB</code>
-(its sandwich has one score per cluster and no small-sample correction),
-and the resampling estimators.</p>
+method), <code>"CR2"</code> and <code>"CR3"</code> on
+<code>glmmTMB</code> (its sandwich has one score per cluster, with no
+residuals and no hat values), and the resampling estimators.</p>
 </div>
 <div class="section level2">
 <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a>

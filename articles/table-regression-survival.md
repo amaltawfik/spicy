@@ -373,7 +373,7 @@ table_regression(list(cx0, cx), nested = TRUE, exponentiate = TRUE,
 #>  n             │  226             226            
 #>  N events      │  163             163            
 #>  AIC           │ 1469.0          1454.2          
-#>  Δχ²           │     –            +16.78         
+#>  Δχ²           │     –             16.78         
 #>  p (change)    │     –              <.001        
 #> 
 #> Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). HR = hazard ratio; AIC = Akaike information criterion.

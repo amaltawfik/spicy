@@ -284,8 +284,8 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_empty_table` –
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-    has no row left to show for a model once the requested row blocks
-    are switched off.
+    has no row to show for a model: it has no coefficient, or every
+    requested row block is switched off.
 
   - `spicy_ame_satt_unsupported_formula` – signaled together with
     `spicy_unsupported` when AME Satterthwaite degrees of freedom are

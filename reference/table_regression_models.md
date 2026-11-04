@@ -48,7 +48,7 @@ A data frame with one row per supported engine and columns `family`,
 | Robust, IV, quantile, panel | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
 | Mixed effects | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
-| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) |
+| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) |
 | Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
@@ -70,7 +70,7 @@ A data frame with one row per supported engine and columns `family`,
 | Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
 | Additive, proportions, selection | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
-| rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes | OR | \- |
+| rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) |
 | rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
 | Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
 | Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
@@ -116,7 +116,8 @@ and `ICC` are fit-stat rows; Nakagawa marginal / conditional R-squared
 are the default R-squared family. `CR*` cluster-robust standard errors
 are available for `lmer` and `lme` fits, via clubSandwich with
 Satterthwaite degrees of freedom. `glmmTMB` fits take `"CR0"` from
-glmmTMB's own sandwich (Wald z), clustered by default on the top-level
+glmmTMB's own sandwich, or `"CR1"`, the same scaled by G/(G-1) for G
+clusters (Wald z for both), clustered by default on the top-level
 grouping factor; see the robust-SE section of
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 for when it holds. `glmer` fits keep their model-based standard errors:
@@ -161,26 +162,31 @@ mixed-model fit statistics (n, groups, AIC, BIC; no R-squared). Their
 inference is Wald only: AME, a robust `vcov`, `ci_method = "profile"`
 and `standardized` are refused, as is `nested = TRUE` for `clmm`.
 `exponentiate` follows the `clm` rule (odds ratios under logit, hazard
-ratios under cloglog), except for a `clmm` fit with the cloglog link,
-where it is refused: on the current `ordinal`, the cloglog and loglog
-links of `clmm()` do not match those of `clm()` and of `glmmTMB()`.
+ratios under cloglog), except for a `clmm` fit with the cloglog link and
+a single random intercept, where it is refused: on the current
+`ordinal`, `clmm()` fits such a model with the loglog link, and the
+reverse. The random-effects LR test refits its null with the link
+actually fitted.
 
 ## Counts and two-part models
 
 Two-part models show their full model: the zero component renders as a
 `Zero-inflation` block (`zeroinfl`, glmmTMB `ziformula`: probability of
-a structural zero) or a `Zero hurdle` block (`hurdle`: probability of a
-nonzero count – the opposite direction, hence the distinct label; a
-glmmTMB hurdle model, a zero-truncated family with `ziformula`, also
-shows a `Zero hurdle` block, which models the probability of a zero),
-and a `Dispersion` block when `dispformula` has covariates. Component
+a structural zero), a `Zero hurdle, Pr(y > 0)` block (`hurdle`:
+probability of a nonzero count – the opposite direction, hence the
+distinct label) or a `Zero hurdle, Pr(y = 0)` block (a glmmTMB hurdle
+model, a zero-truncated family, `ziGamma()`, `lognormal()` or
+`beta_family()` with `ziformula`: probability of a zero), and a
+`Dispersion` block when `dispformula` has covariates. Component
 coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
-combined-response effect on E(Y). `"CR1"` for `pscl` fits covers both
-components via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
-and `"CR0"` for `glmmTMB` fits covers the zero-inflation and dispersion
-blocks. Opt out with `show_components = FALSE`.
+combined-response effect on E(Y). `"CR1"` for Poisson and geometric
+`pscl` fits covers both components via
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
+a negative-binomial `pscl` fit keeps its model-based standard errors,
+its sandwich having no score for theta. `"CR0"` and `"CR1"` for
+`glmmTMB` fits cover the zero-inflation and dispersion blocks. Opt out
+with `show_components = FALSE`.
 
 The dispersion of a negative-binomial fit is an opt-in fit-statistic
 row: `"theta"` and `"alpha"` (= 1/theta) for NB2 fits, `"delta"` for NB1
@@ -298,11 +304,18 @@ fixed effects as a default-on `Fixed effects:` block (one Yes / No row
 per factor; varying-slope-only factors are not absorbed intercepts and
 read No), with per-factor `N (<factor>)` counts via the opt-in
 `n_groups` token and the within R-squared in the default fit statistics
-for `fixest` (opt-in via `within_r2` for `estimatr`). AME is refused for
-a non-linear `fixest` model with fixed effects (`fepois()`, `feglm()`,
-`femlm()`, `fenegbin()`): its variance would need the uncertainty of the
-fixed effects, which fixest does not estimate. `feols()` and a GLM
-without fixed effects have it.
+for `fixest` except an IV `feols()` (opt-in via `within_r2` for
+`estimatr`). AME is refused for a `fixest` GLM with fixed effects
+(`feglm()`, `fepois()`, `femlm()`, `fenegbin()`, whatever the family):
+marginaleffects, which computes it, cannot take into account the
+uncertainty of the fixed effects. It is refused too for a `feols()` with
+fixed effects fitted with `lean = TRUE`, which marginaleffects cannot
+predict from (re-estimate it with `lean = FALSE`). Other `feols()` fits
+and a GLM without fixed effects have it. The AME of a factor in `i()`
+sits on the rows of its coefficients, against the reference `i()` gives
+them (`ref =`); a level of a factor in `i()`, or a numeric variable that
+`i()` enters as categories, with no coefficient row gets no AME, nor
+does a factor that `i()` enters only in an interaction.
 
 ## Bayesian models
 
@@ -425,46 +438,46 @@ table_regression_models()
 #> 37                                                                              rms::Glm()
 #> 38                                            rstanarm::stan_glm(), rstanarm::stan_glmer()
 #> 39                                                                             brms::brm()
-#>                                      ame
-#> 1                                    yes
-#> 2                                    yes
-#> 3                                    yes
-#> 4                                    yes
-#> 5                                     no
-#> 6                                    yes
-#> 7                                    yes
-#> 8                                    yes
-#> 9                                    yes
-#> 10                                   yes
-#> 11 yes (no for a GLM with fixed effects)
-#> 12                                   yes
-#> 13                                   yes
-#> 14       yes (no for the ordinal family)
-#> 15                                   yes
-#> 16                                   yes
-#> 17                                   yes
-#> 18                          per category
-#> 19                          per category
-#> 20                                    no
-#> 21                           per outcome
-#> 22                                    no
-#> 23               yes (combined response)
-#> 24               yes (combined response)
-#> 25                      RMST / risk diff
-#> 26                yes + RMST / risk diff
-#> 27                                    no
-#> 28                                    no
-#> 29                    yes (design-based)
-#> 30           per category (design-based)
-#> 31                                    no
-#> 32                                   yes
-#> 33                                   yes
-#> 34                                    no
-#> 35                                   yes
-#> 36                                   yes
-#> 37                                   yes
-#> 38                           yes (draws)
-#> 39                           yes (draws)
+#>                                          ame
+#> 1                                        yes
+#> 2                                        yes
+#> 3                                        yes
+#> 4                                        yes
+#> 5                                         no
+#> 6                                        yes
+#> 7                                        yes
+#> 8                                        yes
+#> 9                                        yes
+#> 10                                       yes
+#> 11     yes (no for a GLM with fixed effects)
+#> 12                                       yes
+#> 13                                       yes
+#> 14           yes (no for the ordinal family)
+#> 15                                       yes
+#> 16                                       yes
+#> 17                                       yes
+#> 18                              per category
+#> 19                              per category
+#> 20                                        no
+#> 21                               per outcome
+#> 22                                        no
+#> 23                   yes (combined response)
+#> 24                   yes (combined response)
+#> 25                          RMST / risk diff
+#> 26                    yes + RMST / risk diff
+#> 27                                        no
+#> 28                                        no
+#> 29                        yes (design-based)
+#> 30               per category (design-based)
+#> 31                                        no
+#> 32                                       yes
+#> 33                                       yes
+#> 34                                        no
+#> 35                                       yes
+#> 36 yes (per category for an ordinal outcome)
+#> 37                                       yes
+#> 38                               yes (draws)
+#> 39                               yes (draws)
 #>                                                     exponentiate
 #> 1                                                              -
 #> 2                                 OR / IRR / RR / MR / HR (link)
@@ -505,46 +518,46 @@ table_regression_models()
 #> 37                                                link-dependent
 #> 38                                                link-dependent
 #> 39                                                link-dependent
-#>                                                                     blocks
-#> 1                                                                        -
-#> 2                                                                        -
-#> 3                                                                        -
-#> 4                                                                        -
-#> 5                                                                        -
-#> 6                                                                        -
-#> 7                                                                        -
-#> 8                                                                        -
-#> 9                                                                        -
-#> 10                                                                       -
-#> 11                                                                       -
-#> 12                                                          Random effects
-#> 13                                                          Random effects
-#> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)
-#> 15                                                          Random effects
-#> 16                                                                       -
-#> 17                                                                       -
-#> 18                                                              Thresholds
-#> 19                                    Thresholds; Non-proportional effects
-#> 20                                              Thresholds; Random effects
-#> 21                                                      per-outcome blocks
-#> 22                                                    per-alternative rows
-#> 23                                                          Zero-inflation
-#> 24                                                             Zero hurdle
-#> 25                                                                       -
-#> 26                                                                       -
-#> 27                                                                       -
-#> 28                                                 distribution parameters
-#> 29                                                                       -
-#> 30                                                              Thresholds
-#> 31                                                                       -
-#> 32                                                                       -
-#> 33                                                                       -
-#> 34                                                     selection component
-#> 35                                                                       -
-#> 36                                                                       -
-#> 37                                                                       -
-#> 38                                          Random effects (if multilevel)
-#> 39                                          Random effects (if multilevel)
+#>                                                                                                                                                            blocks
+#> 1                                                                                                                                                               -
+#> 2                                                                                                                                                               -
+#> 3                                                                                                                                                               -
+#> 4                                                                                                                                                               -
+#> 5                                                                                                                                                               -
+#> 6                                                                                                                                                               -
+#> 7                                                                                                                                                               -
+#> 8                                                                                                                                                               -
+#> 9                                                                                                                                                               -
+#> 10                                                                                                                                                              -
+#> 11                                                                                                                                                              -
+#> 12                                                                                                                                                 Random effects
+#> 13                                                                                                                                                 Random effects
+#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)
+#> 15                                                                                                                                                 Random effects
+#> 16                                                                                                                                                              -
+#> 17                                                                                                                                                              -
+#> 18                                                                                                                                                     Thresholds
+#> 19                                                                                                                           Thresholds; Non-proportional effects
+#> 20                                                                                                                                     Thresholds; Random effects
+#> 21                                                                                                                                             per-outcome blocks
+#> 22                                                                                                                                           per-alternative rows
+#> 23                                                                                                                                                 Zero-inflation
+#> 24                                                                                                                                                    Zero hurdle
+#> 25                                                                                                                                                              -
+#> 26                                                                                                                                                              -
+#> 27                                                                                                                                                              -
+#> 28                                                                                                                                        distribution parameters
+#> 29                                                                                                                                                              -
+#> 30                                                                                                                                                     Thresholds
+#> 31                                                                                                                                                              -
+#> 32                                                                                                                                                              -
+#> 33                                                                                                                                                              -
+#> 34                                                                                                                                            selection component
+#> 35                                                                                                                                                              -
+#> 36                                                                                                                                   Thresholds (ordinal outcome)
+#> 37                                                                                                                                                              -
+#> 38                                                                                                                                 Random effects (if multilevel)
+#> 39                                                                                                                                 Random effects (if multilevel)
 
 # All engines of one family:
 subset(table_regression_models(), family == "Mixed effects")
@@ -560,10 +573,10 @@ subset(table_regression_models(), family == "Mixed effects")
 #> 14 link-dependent (IRR for count families, OR for ordinal logit)
 #> 15                                                             -
 #> 16                                                             -
-#>                                                                     blocks
-#> 12                                                          Random effects
-#> 13                                                          Random effects
-#> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)
-#> 15                                                          Random effects
-#> 16                                                                       -
+#>                                                                                                                                                            blocks
+#> 12                                                                                                                                                 Random effects
+#> 13                                                                                                                                                 Random effects
+#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)
+#> 15                                                                                                                                                 Random effects
+#> 16                                                                                                                                                              -
 ```

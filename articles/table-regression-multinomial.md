@@ -537,7 +537,7 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #>  R² (McFadden)                        │    0.01            0.02         
 #>  R² (Nagelkerke)                      │    0.03            0.04         
 #>  AIC                                  │ 2514.3          2515.8          
-#>  Δχ²                                  │     –             +4.52         
+#>  Δχ²                                  │     –              4.52         
 #>  p (change)                           │     –               .211        
 #> 
 #> Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.

@@ -143,9 +143,10 @@ cumulative link model, with optional scale and partial-proportional-odds
 <code>Thresholds</code> block described below and add the <em>Random
 effects</em> block of <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a>. They take the model-based variance only, without
-average marginal effects: <code>vcov = "CR0"</code> and the AME columns
-are refused for both, so the cluster-robust and marginal-effects
-sections below apply to <code>polr</code> and <code>clm</code>.</p>
+average marginal effects: <code>vcov = "CR0"</code> or
+<code>"CR1"</code> and the AME columns are refused for both, so the
+cluster-robust and marginal-effects sections below apply to
+<code>polr</code> and <code>clm</code>.</p>
 <p>The model used throughout is a self-rated-health rating regressed on
 age, sex, smoking, and physical activity, using the bundled
 <code>sochealth</code> survey data (<code><a href="../reference/sochealth.html">?sochealth</a></code>).
@@ -1478,7 +1479,7 @@ row is labeled by its response category in the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rated_hea… Fair          age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">691</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rated_hea… Poor          sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rated_hea… Fair          sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>   </span></span>

@@ -35,9 +35,9 @@ block described below and add the *Random effects* block of
 [*Mixed-effects regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
 They take the model-based variance only, without average marginal
-effects: `vcov = "CR0"` and the AME columns are refused for both, so the
-cluster-robust and marginal-effects sections below apply to `polr` and
-`clm`.
+effects: `vcov = "CR0"` or `"CR1"` and the AME columns are refused for
+both, so the cluster-robust and marginal-effects sections below apply to
+`polr` and `clm`.
 
 The model used throughout is a self-rated-health rating regressed on
 age, sex, smoking, and physical activity, using the bundled `sochealth`
@@ -855,7 +855,7 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
 #>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

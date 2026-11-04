@@ -574,7 +574,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R²              │    0.02                  0.02                   0.04        
 #>  Adj. R²         │    0.02                  0.02                   0.04        
 #>  ΔR²             │     –                   +0.00                  +0.02        
-#>  F-change        │     –                   +2.28                 +28.13        
+#>  F-change        │     –                    2.28                  28.13        
 #>  p (change)      │     –                     .132                  <.001       
 #> 
 #>                    Mode… 
@@ -656,7 +656,7 @@ table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 #>  R²              │    0.02                  0.02                   0.04        
 #>  Adj. R²         │    0.02                  0.02                   0.04        
 #>  ΔR²             │     –                   +0.00                  +0.02        
-#>  Wald F-change   │     –                   +2.24                 +29.34        
+#>  Wald F-change   │     –                    2.24                  29.34        
 #>  p (change)      │     –                     .135                  <.001       
 #> 
 #>                    Mode… 
@@ -1395,7 +1395,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R² (McFadden)            │    0.00                  0.00               
 #>  R² (Nagelkerke)          │    0.00                  0.00               
 #>  AIC                      │ 1217.6                1218.5                
-#>  Δχ²                      │     –                   +1.10               
+#>  Δχ²                      │     –                    1.10               
 #>  p (change)               │     –                     .294              
 #> 
 #>                                    Model 3        
@@ -1416,7 +1416,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  R² (McFadden)            │    0.02               
 #>  R² (Nagelkerke)          │    0.03               
 #>  AIC                      │ 1200.9                
-#>  Δχ²                      │  +21.64               
+#>  Δχ²                      │   21.64               
 #>  p (change)               │    <.001              
 #> 
 #> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.

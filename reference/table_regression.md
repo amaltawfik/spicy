@@ -322,12 +322,15 @@ table_regression(
 
   Character vector of regexes. Only coefficient rows whose term name (as
   in [`stats::coef()`](https://rdrr.io/r/stats/coef.html) – e.g. `"wt"`,
-  `"cyl6"`, `"factor(cyl)8"`) matches at least one pattern are kept. The
-  intercept and the subordinate blocks (thresholds, random effects) are
-  exempt from `keep` and `drop`: `show_intercept`, `show_thresholds` and
-  `show_re` govern them. Mutually exclusive with `drop`. Filtering is a
-  display choice; `p_adjust` runs against the full coefficient family
-  before filtering. Default `NULL` (no filter).
+  `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the spelling
+  of [`lm()`](https://rdrr.io/r/stats/lm.html), `"cyl6"` for rms's
+  `"cyl=6"` and `"wt:cyl6"` for `"wt * cyl=6"`) matches at least one
+  pattern are kept. The intercept and the subordinate blocks
+  (thresholds, random effects) are exempt from `keep` and `drop`:
+  `show_intercept`, `show_thresholds` and `show_re` govern them.
+  Mutually exclusive with `drop`. Filtering is a display choice;
+  `p_adjust` runs against the full coefficient family before filtering.
+  Default `NULL` (no filter).
 
 - drop:
 
@@ -346,15 +349,22 @@ table_regression(
   ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
   [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html),
   [`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html),
-  `glmmTMB` with the ordinal family), whether to display the estimated
-  category thresholds (cut-points) as a subordinate `"Thresholds"` block
-  of rows below the predictors, carrying B / SE / CI / p like the
-  predictor rows. Default `TRUE`. `FALSE` collapses them to a compact
-  one-line footer note instead. Thresholds are reported on the
-  log-odds (B) scale and are **never exponentiated** (under
-  `exponentiate = TRUE` their rows stay on the log-odds scale). Has no
-  effect on non-ordinal models, and the rows are shown only when a
-  coefficient column (`"b"`/`"beta"`) is in `show_columns`.
+  [`survey::svyolr`](https://rdrr.io/pkg/survey/man/svyolr.html),
+  `glmmTMB` with the ordinal family,
+  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) with more than two
+  outcome levels), whether to display the estimated category thresholds
+  (cut-points) as a subordinate `"Thresholds"` block of rows below the
+  predictors, carrying B / SE / CI / p like the predictor rows. Default
+  `TRUE`. `FALSE` collapses them to a compact one-line footer note
+  instead. Thresholds are reported on the log-odds (B) scale and are
+  **never exponentiated** (under `exponentiate = TRUE` their rows stay
+  on the log-odds scale). They follow the `polr` convention, link(P(Y
+  \<= j)) = threshold - linear predictor: an
+  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) fit, which models
+  P(Y \>= j), shows its intercepts with the sign reversed, named `"3|4"`
+  (displayed `"3 | 4"`) rather than `"y>=4"`. Has no effect on
+  non-ordinal models, and the rows are shown only when a coefficient
+  column (`"b"`/`"beta"`) is in `show_columns`.
 
 - show_components:
 
@@ -367,12 +377,18 @@ table_regression(
     the probability of a **structural (excess) zero**.
 
   - [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html): a
-    `Zero hurdle` block – the model for the probability of a **nonzero
-    count** (note the opposite direction vs zero-inflation; the footer
-    names each block's meaning). A `glmmTMB` hurdle model (a
-    zero-truncated family with `ziformula`) also shows a `Zero hurdle`
-    block, but glmmTMB models the probability of a **zero count**: the
-    footer says so.
+    `Zero hurdle, Pr(y > 0)` block – the model for the probability of a
+    **nonzero count** (note the opposite direction vs zero-inflation;
+    the footer names each block's meaning).
+
+  - A `glmmTMB` hurdle model (a zero-truncated family,
+    [`glmmTMB::ziGamma()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html),
+    [`glmmTMB::lognormal()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html)
+    or
+    [`glmmTMB::beta_family()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html),
+    with `ziformula`): a `Zero hurdle, Pr(y = 0)` block – glmmTMB models
+    the probability of a **zero**, the opposite event of the
+    [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html) block.
 
   - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
     dispersion was actually modeled; log scale, never exponentiated).
@@ -473,7 +489,11 @@ table_regression(
     [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html):
     `c("nobs", "r2", "adj_r2")`.
     [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
-    gets `"nobs"` alone – the 2SLS R-squared is not the classical one.
+    gets `"nobs"` alone, and an IV
+    [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+    neither R-squared nor AIC – the 2SLS R-squared is not the classical
+    one. Asked for, it is the R-squared of `ivreg()`, on the structural
+    residuals.
 
   - `glm`, ordinal `polr` / `clm`:
     `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`
@@ -704,8 +724,9 @@ table_regression(
 - digits:
 
   Decimal places for general numeric tokens (`b`, `beta`, `se`, `ci`,
-  `t`, `f_change`, `lrt_change`, `deviance`, `deviance_change`, `ame`,
-  `ame_se`, `weighted_nobs`). Default `2L`.
+  `t`, `f_change`, `lrt_change`, `ame`, `ame_se`, `weighted_nobs`; the
+  Wald change statistics under a robust `vcov` follow `f_change`).
+  Default `2L`.
 
 - p_digits:
 
@@ -728,8 +749,8 @@ table_regression(
 
 - ic_digits:
 
-  Decimals for information criteria (`AIC`, `AICc`, `BIC`, and their
-  `_change` form). Default `1L`.
+  Decimals for information criteria and deviance (`AIC`, `AICc`, `BIC`,
+  `deviance`, and their `_change` form). Default `1L`.
 
 - decimal_mark:
 
@@ -796,7 +817,10 @@ table_regression(
   The names are model identifiers, not display text: the outcome, the
   term labels of [`stats::terms()`](https://rdrr.io/r/stats/terms.html)
   (`"age"`, `"sex"`, `"age:sex"`, a factor's term naming its header),
-  and the coefficient names (`"(Intercept)"`, `"sexMale"`), each naming
+  and the coefficient names (`"(Intercept)"`, `"sexMale"`; those of an
+  `rms` fit in the spelling of
+  [`lm()`](https://rdrr.io/r/stats/lm.html), `"sexMale"` for rms's
+  `"sex=Male"` and `"age:sexMale"` for `"age * sex=Male"`), each naming
   one row. They keep that form whatever the language of the table.
   Classes with no `terms` component
   ([`nls()`](https://rdrr.io/r/stats/nls.html),
@@ -804,10 +828,11 @@ table_regression(
   are keyed on their coefficient (or parameter) names alone. With
   several models, a name is looked up in the terms of all of them and
   lands on the rows where it exists. A name that matches nothing in the
-  table warns (class `spicy_unknown_name`) and is left out, so one
-  vector can still serve every table of a project. The headers of the
-  subordinate blocks (`Random effects`, `Thresholds`, `Zero-inflation`,
-  ...) are set by the package and cannot be relabeled here.
+  table warns (class `spicy_unknown_name`), with the list of its terms,
+  and is left out, so one vector can still serve every table of a
+  project. The headers of the subordinate blocks (`Random effects`,
+  `Thresholds`, `Zero-inflation`, ...) are set by the package and cannot
+  be relabeled here.
 
   The default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
   typed in the call wins over it. Any other value, `NULL` included, is
@@ -1097,7 +1122,9 @@ restore it explicitly when needed).
 
 - Counts: `"nobs"`, `"weighted_nobs"`, `"n_events"` (Cox models: number
   of events, reported alongside `n` per the field convention; blank for
-  other classes).
+  other classes). `"nobs"` and the BIC follow the engine's
+  [`stats::nobs()`](https://rdrr.io/r/stats/nobs.html), which for a
+  weighted `polr` or `clm` fit is the sum of the weights.
 
 - Variance explained (`lm` only): `"r2"`, `"adj_r2"`, `"omega2"`.
 
@@ -1109,14 +1136,21 @@ restore it explicitly when needed).
   \\\hat{\sigma}\\. For glm and the GLM-like `fixest` fits, it is the
   square root of the dispersion (so a gaussian glm reads as lm), and 1
   when the family fixes it (binomial, Poisson). For `survreg`, it is the
-  scale \\\sigma\\ of \\\log T = X'\beta + \sigma W\\ (the standard
-  deviation of \\\log T\\ for the log-normal), blank when strata give
-  one scale per stratum. For `glmmTMB`, it is the same square root for
-  the gaussian, Gamma and Tweedie families, and the fixed 1 of Poisson
-  and binomial. It is blank for the negative-binomial and beta fits
-  below, whose dispersion has its own row, and for the other `glmmTMB`
-  families, whose [`sigma()`](https://rdrr.io/r/stats/sigma.html) is a
-  family-specific parameter.
+  scale \\\sigma\\ of \\\log T = X'\beta + \sigma W\\ for the
+  distributions fitted on \\\log T\\ (the standard deviation of \\\log
+  T\\ for the log-normal), and of \\T = X'\beta + \sigma W\\ for those
+  that model \\T\\ itself (gaussian, logistic, extreme value, t), blank
+  when strata give one scale per stratum. For `glmmTMB`, it is the same
+  square root for the gaussian, Gamma and Tweedie families, and the
+  fixed 1 of Poisson and binomial. It is blank for the negative-binomial
+  and beta fits below, whose dispersion has its own row, and for the
+  other `glmmTMB` families, whose
+  [`sigma()`](https://rdrr.io/r/stats/sigma.html) is a family-specific
+  parameter. For [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)
+  and `bam`, a glm family follows the glm rule; an extended family shows
+  the square root of its scale only when the GAM estimates one (`tw()`),
+  and is blank otherwise (an estimated `nb()`, `betar()`, `scat()`,
+  `ziP()`, `ocat()`): mgcv fixes their scale at 1.
 
 - Survey designs
   ([`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html) only):
@@ -1136,24 +1170,45 @@ restore it explicitly when needed).
   ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
   [`lme4::glmer.nb`](https://rdrr.io/pkg/lme4/man/glmer.nb.html),
   [`fixest::fenegbin`](https://lrberge.github.io/fixest/reference/femlm.html),
-  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) with `nb()`, and
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) with `nb()`,
+  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
+  [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html) with
+  `dist = "negbin"`, whose theta is that of the count part, and
   `glmmTMB` with `nbinom2` or `truncated_nbinom2`): `"theta"` (\\V =
   \mu + \mu^2/\theta\\) and `"alpha"` (\\= 1/\theta\\, the Stata `nbreg`
   convention). NB1 fits (`glmmTMB` with `nbinom1` or
   `truncated_nbinom1`): `"delta"` (\\V = \mu(1 + \delta)\\, the
   \\\delta\\ of Stata's `nbreg, dispersion(constant)`).
 
-- Beta precision
+- Beta precision: `"phi"`. In beta regression
   ([`betareg::betareg`](https://rdrr.io/pkg/betareg/man/betareg.html),
-  and `glmmTMB` with `beta_family()`, `betabinomial()` or `ordbeta()`):
-  `"phi"` (\\Var(y) = \mu(1-\mu)/(1+\phi)\\, Ferrari & Cribari-Neto
-  2004; higher \\\phi\\ = less dispersion). A constant precision is
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) with `betar()`,
+  and `glmmTMB` with `beta_family()`), \\Var(y) = \mu(1-\mu)/(1+\phi)\\
+  (Ferrari & Cribari-Neto 2004; higher \\\phi\\ = less dispersion). For
+  `glmmTMB` with `betabinomial()` or `ordbeta()`, \\\phi\\ is the
+  precision parameter of the beta part. A constant precision is
   back-transformed from its link, so `y ~ x | 1` reports the same
   \\\phi\\ as `y ~ x`.
 
 - For these dispersion rows (`"theta"`, `"alpha"`, `"delta"`, `"phi"`),
   a column whose model lacks the parameter is blank, so a Poisson model
-  can stand beside an NB2 model, or NB1 beside NB2. A token is refused
+  can stand beside an NB2 model, or NB1 beside NB2. A parameter fixed in
+  the call is not an estimate and has no row:
+  `MASS::negative.binomial(theta)` in
+  [`glm()`](https://rdrr.io/r/stats/glm.html), mgcv's `negbin(theta)`,
+  and `nb(theta)` or `betar(theta)` with `theta > 0`. Such a
+  negative-binomial model keeps the glm rule for `"sigma"`. A
+  negative-binomial [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html)
+  always shows its theta, which lme4 counts in the degrees of freedom of
+  the model: a
+  [`glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) fit, its
+  [`update()`](https://rdrr.io/r/stats/update.html) refits, and a
+  [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) with
+  `negative.binomial(theta)`. For
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam`, theta
+  and phi are estimated with the smoothing parameters (REML by default),
+  so they differ from the maximum-likelihood values of `glm.nb()`,
+  betareg or `glmmTMB`. `method = "ML"` gives those. A token is refused
   only when no model in the table has the parameter, or when a model of
   that family has dispersion covariates (a `glmmTMB` `dispformula`, or a
   betareg `y ~ x | z`), so the parameter is not a single number.
@@ -1183,9 +1238,9 @@ restore it explicitly when needed).
   Varying-slope-only factors (`Origin[[x]]`) absorb no intercept: they
   read No when another model absorbs that factor, and contribute no row
   otherwise. `"within_r2"` is the FE-partialed within R-squared (a
-  default for `feols`, opt-in for `estimatr`; GLM-family fixest fits
-  report fixest's McFadden `pr2` instead). Both tokens are refused when
-  no model in the table absorbs fixed effects.
+  default for `feols`, except an IV one; opt-in for `estimatr`;
+  GLM-family fixest fits report fixest's McFadden `pr2` instead). Both
+  tokens are refused when no model in the table absorbs fixed effects.
 
 - Effect size: `"f2"`.
 
@@ -1197,7 +1252,12 @@ restore it explicitly when needed).
   `nested = TRUE`; see *Hierarchical comparison* below): `"r2_change"`,
   `"adj_r2_change"`, `"f_change"`, `"f2_change"`, `"lrt_change"`,
   `"aic_change"`, `"aicc_change"`, `"bic_change"`, `"deviance_change"`,
-  `"p_change"`.
+  `"p_change"`. The differences, current model minus previous
+  (`"r2_change"`, `"adj_r2_change"`, `"f2_change"`, and the AIC, AICc
+  and BIC changes), print with an explicit sign (`+0.07`, `-9.4`) in
+  every output. The test statistics and `"p_change"` are never signed.
+  `"deviance_change"` is the drop in deviance (previous minus current),
+  positive when the larger model fits better, and is not signed either.
 
 Default (resolved when `NULL`) is class-aware: lm and `lm_robust` fits
 get `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
@@ -1333,7 +1393,11 @@ silent model-based result under a robust label:
   Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
   refused for `glm` with an explanation: Stata's ML commands use a
   different convention (`G/(G-1)` scaling, z), so the label would not
-  match Stata output there.
+  match Stata output there. For
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), the
+  sandwich holds theta at its estimate, so robust standard errors can
+  differ by a few percent from software that includes the score of
+  theta.
 
 - `mlogit`:
 
@@ -1369,7 +1433,14 @@ silent model-based result under a robust label:
   only. `multinom` needs sandwich \>= 3.1-2 (which added its `estfun()`
   method); its `cluster` is one entry per observation. For the two-part
   `pscl` fits the cluster sandwich covers both components (count and
-  zero) at once.
+  zero) at once. A negative-binomial `zeroinfl` or `hurdle` is
+  `classical` only: the sandwich of these fits leaves out the score of
+  theta. When the count part is negative binomial, fit the model with
+  `glmmTMB` instead (family `nbinom2` with `ziformula`, or
+  `truncated_nbinom2` for a hurdle), whose sandwich includes it;
+  glmmTMB's zero hurdle is binomial, as with `zero.dist = "binomial"`.
+  When only the zero hurdle is negative binomial, the default
+  `zero.dist = "binomial"` keeps `"CR1"`.
 
 - [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html):
 
@@ -1405,9 +1476,13 @@ silent model-based result under a robust label:
 
 - `glmmTMB`:
 
-  `classical` + `"CR0"` only, from glmmTMB's own sandwich (glmmTMB \>=
-  1.1.15), which covers the coefficients, the zero-inflation and
-  dispersion blocks and the AME. Without `cluster`, the cluster is the
+  `classical`, `"CR0"` and `"CR1"`, from glmmTMB's own sandwich (glmmTMB
+  \>= 1.1.15), which covers the coefficients, the zero-inflation and
+  dispersion blocks and the AME. `"CR0"` is the sandwich as glmmTMB
+  computes it; `"CR1"` scales it by \\G/(G-1)\\, `G` the number of
+  clusters, as for the
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  classes. Both use Wald z. Without `cluster`, the cluster is the
   top-level grouping factor of the random effects. The estimator needs
   independent clusters that contain the random effects – every group
   within one cluster – so crossed random effects need a `cluster` that
@@ -1415,10 +1490,11 @@ silent model-based result under a robust label:
   random-effects distribution or the conditional variance is
   misspecified, provided the estimates themselves stay consistent (Liang
   & Zeger 1986; Verbeke & Lesaffre 1997); with few clusters it
-  understates the variance, and this class has no small-sample
-  correction (Cameron & Miller 2015). `"CR1"`-`"CR3"` and `HC*` are
-  refused (the sandwich has one score per cluster), as are REML fits and
-  the ordinal family.
+  understates the variance, which the factor of `"CR1"` offsets only in
+  part: this class has no bias-reduced correction (Cameron & Miller
+  2015). `"CR2"`, `"CR3"` and `HC*` are refused (the sandwich has one
+  score per cluster, with no residuals and no hat values), as are REML
+  fits and the ordinal family.
 
 - Other classes (`glmer`, `rstanarm`/`brms`, ...):
 
@@ -1429,6 +1505,10 @@ For the mixed-effects fits (`lmer`, `lme`, `glmmTMB`), the robust
 estimator covers the fixed effects: their coefficients, their joint
 tests (`"partial_chi2"`), the standardized coefficients and the AME. The
 random-effect variance components keep their model-based inference.
+glmmTMB's sandwich takes one likelihood score per cluster over the fixed
+and variance parameters, while the `CR*` estimators of `lmer` and `lme`
+come from clubSandwich over the fixed effects alone: on the same model
+the two agree as the clusters grow, but not exactly.
 
 Cluster-robust backends differ by class but are each cross-validated to
 the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
@@ -1436,7 +1516,7 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 `coxph`/`cph` use the Lin-Wei grouped-dfbeta sandwich (identical to
 `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
-`pscl` two-part fits use
+Poisson and geometric `pscl` two-part fits use
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
 the penalized covariance of the fit, and lets `vcovCL()` do only the
@@ -1453,10 +1533,11 @@ have no small-sample factor: their one estimator is requested as
 `glmmTMB` fits use
 [`glmmTMB::sandwich()`](https://rdrr.io/pkg/glmmTMB/man/sandwich.html),
 with one score per cluster (the gradient of the cluster's marginal
-log-likelihood) and no finite-sample factor; its one estimator is
-requested as `"CR0"`, and the other `CR*` tokens are refused rather than
-mapped. `cluster` length is one entry per observation, except `mlogit`
-(one per choice situation) and censored `coxph` (one per subject).
+log-likelihood) and no finite-sample factor: `"CR0"` requests it as
+computed, `"CR1"` scaled by \\G/(G-1)\\, and `"CR2"` and `"CR3"` are
+refused rather than mapped. `cluster` length is one entry per
+observation, except `mlogit` (one per choice situation) and censored
+`coxph` (one per subject).
 
 ### How to specify `cluster`
 
@@ -1648,12 +1729,12 @@ coefficient tests:
   [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) under `"CR0"` or
   after [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
   [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html) under
-  `"iid"` and `"ker"`, and a
-  [`fixest::feols`](https://lrberge.github.io/fixest/reference/feols.html)
-  fit estimated with a non-iid vcov (on fixest's own degrees of freedom,
-  as
-  [`fixest::wald()`](https://lrberge.github.io/fixest/reference/wald.html)).
-  Under `"CR0"`-`"CR3"`, `lm`, `glm`
+  `"iid"` and `"ker"`, and a fixest fit estimated with a non-iid vcov
+  whose coefficient tests are t (on fixest's own degrees of freedom, as
+  [`fixest::wald()`](https://lrberge.github.io/fixest/reference/wald.html)):
+  `feols`, and `feglm` with a family whose dispersion is estimated
+  (gaussian, Gamma, inverse Gaussian and the quasi families). Under
+  `"CR0"`-`"CR3"`, `lm`, `glm`
   ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) included),
   [`lme4::lmer`](https://rdrr.io/pkg/lme4/man/lmer.html) and
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) use the HTZ test
@@ -1665,16 +1746,17 @@ coefficient tests:
   replaces the likelihood-ratio row: \\W\\ on \\q\\ degrees of freedom,
   the convention of `lmtest::waldtest(test = "Chisq")`. It applies to
   `glm` and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
-  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, under
-  `"CR0"` to `coxph` and
+  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, `glmmTMB`
+  under `"CR0"` and `"CR1"`, under `"CR0"` to `coxph` and
   [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph` / `Glm`,
   and under `"CR1"` to `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam`,
   `polr`, `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
-  `hurdle`; also to `survreg(robust = TRUE)`, a
-  [`fixest::fepois`](https://lrberge.github.io/fixest/reference/feglm.html)
-  or `feglm` fit with a non-iid vcov, and an `rms` fit of these classes
-  passed through `robcov()`.
+  `hurdle` (not negative binomial); also to `survreg(robust = TRUE)`, a
+  fixest fit with a non-iid vcov whose coefficient tests are z
+  (`fepois`, `femlm`, `fenegbin`, and `feglm` with the binomial or
+  Poisson family), and an `rms` fit of these classes passed through
+  `robcov()`.
 
 \\\Delta R^2\\, the information criteria and the deviance change do not
 depend on the vcov and are unchanged, and a `vcov` list tests each pair
@@ -2207,7 +2289,7 @@ table_regression(
 #>  R²              │    0.00                  0.02                   0.02        
 #>  Adj. R²         │    0.00                  0.02                   0.02        
 #>  ΔR²             │     –                   +0.02                  +0.00        
-#>  F-change        │     –                  +18.26                  +2.41        
+#>  F-change        │     –                   18.26                   2.41        
 #>  p (change)      │     –                    <.001                   .121       
 #> 
 #>                    Step… 
@@ -2363,7 +2445,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  BIC                             │ 1926.1                1814.9                
 #>  ΔAIC                            │     –                 -114.5                
 #>  ΔBIC                            │     –                 -111.3                
-#>  Δχ²                             │     –                 +116.46               
+#>  Δχ²                             │     –                  116.46               
 #>  p (change)                      │     –                    <.001              
 #> 
 #>                                           Model 3        
@@ -2388,7 +2470,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  BIC                             │ 1783.1                
 #>  ΔAIC                            │  -38.1                
 #>  ΔBIC                            │  -31.8                
-#>  Δχ²                             │  +42.14               
+#>  Δχ²                             │   42.14               
 #>  p (change)                      │    <.001              
 #> 
 #> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.

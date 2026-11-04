@@ -268,26 +268,26 @@ fit_hur <- hurdle(art ~ fem + mar + kid5 + ment | ment,
 table_regression(fit_hur, exponentiate = TRUE)
 #> Poisson hurdle regression: art
 #> 
-#>  Variable        │   IRR     SE      95% CI       p   
-#> ─────────────────┼────────────────────────────────────
-#>  (Intercept)     │    1.88  0.13  [1.63, 2.16]  <.001 
-#>  fem:            │                                    
-#>    Men (ref.)    │     –     –         –         –    
-#>    Women         │    0.80  0.05  [0.70, 0.90]  <.001 
-#>  mar:            │                                    
-#>    Single (ref.) │     –     –         –         –    
-#>    Married       │    1.10  0.08  [0.96, 1.27]   .169 
-#>  kid5            │    0.87  0.04  [0.79, 0.95]   .003 
-#>  ment            │    1.02  0.00  [1.01, 1.02]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Zero hurdle:    │                                    
-#>    (Intercept)   │    1.28  0.14  [1.04, 1.58]   .021 
-#>    ment          │    1.08  0.01  [1.06, 1.11]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │  915                               
-#>  AIC             │ 3233.8                             
+#>  Variable                │   IRR     SE      95% CI       p   
+#> ─────────────────────────┼────────────────────────────────────
+#>  (Intercept)             │    1.88  0.13  [1.63, 2.16]  <.001 
+#>  fem:                    │                                    
+#>    Men (ref.)            │     –     –         –         –    
+#>    Women                 │    0.80  0.05  [0.70, 0.90]  <.001 
+#>  mar:                    │                                    
+#>    Single (ref.)         │     –     –         –         –    
+#>    Married               │    1.10  0.08  [0.96, 1.27]   .169 
+#>  kid5                    │    0.87  0.04  [0.79, 0.95]   .003 
+#>  ment                    │    1.02  0.00  [1.01, 1.02]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Zero hurdle, Pr(y > 0): │                                    
+#>    (Intercept)           │    1.28  0.14  [1.04, 1.58]   .021 
+#>    ment                  │    1.08  0.01  [1.06, 1.11]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │  915                               
+#>  AIC                     │ 3233.8                             
 #> 
-#> Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle, Pr(y > 0) component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Compare the `ment` row in the two zero blocks — the same predictor, the
@@ -295,8 +295,8 @@ same substantive finding, and *opposite-looking* odds ratios:
 
 - Zero-inflation block: OR 0.88 — each mentor publication **lowers the
   odds of being a structural zero**.
-- Zero hurdle block: OR 1.08 — each mentor publication **raises the odds
-  of publishing at all**.
+- Zero hurdle, Pr(y \> 0) block: OR 1.08 — each mentor publication
+  **raises the odds of publishing at all**.
 
 Both blocks say the same thing: a productive mentor makes an observed
 zero less likely. Reading either number without its block label invites
@@ -516,6 +516,16 @@ one CR1 estimator. With genuinely clustered data, positive
 within-cluster dependence widens the intervals further, and borderline
 effects are typically the first casualties. `HC*` and the resampling
 estimators have no two-part backend and are refused with a clear error.
+So is any sandwich for a negative-binomial
+[`zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) or
+[`hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html): their sandwich
+leaves out the score of θ, so its standard errors are inconsistent. When
+the count part is negative binomial, the glmmTMB fit (family `nbinom2`
+with `ziformula`, or `truncated_nbinom2` for a hurdle) has a sandwich
+that includes θ, with `vcov = "CR0"` or `"CR1"`. Its zero hurdle is
+binomial, as with `zero.dist = "binomial"`. A hurdle whose zero part
+alone is negative binomial keeps `"CR1"` with the default
+`zero.dist = "binomial"`.
 
 ## Mixed counts: `glmmTMB`
 
@@ -528,10 +538,11 @@ itself, as the `(1 | site)` term below does, and the standard errors are
 model-based by default. `vcov = "CR0"` replaces them with cluster-robust
 ones from glmmTMB’s own sandwich (glmmTMB \>= 1.1.15), clustered by
 default on the top-level grouping factor (here `site`), for the count
-and zero-inflation blocks alike. `"CR1"`–`"CR3"` and `HC*` are refused:
-the sandwich has one score per cluster, and `clubSandwich` has no
-working `glmmTMB` backend. The same convention is documented in the
-companion [*Mixed-effects regression
+and zero-inflation blocks alike; `vcov = "CR1"` scales that sandwich by
+G/(G − 1) for G clusters. `"CR2"`, `"CR3"` and `HC*` are refused: the
+sandwich has one score per cluster, and `clubSandwich` has no working
+`glmmTMB` backend. The same convention is documented in the companion
+[*Mixed-effects regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 article:
 
@@ -544,7 +555,7 @@ fit_mix <- glmmTMB::glmmTMB(
   family = glmmTMB::nbinom2, data = Salamanders
 )
 table_regression(fit_mix, exponentiate = TRUE)
-#> Negative-binomial mixed-effects regression (zero-inflated): count
+#> Zero-inflated negative-binomial mixed-effects regression: count
 #> 
 #>  Variable             │   IRR     SE      95% CI       p   
 #> ──────────────────────┼────────────────────────────────────
@@ -568,7 +579,7 @@ table_regression(fit_mix, exponentiate = TRUE)
 #>  AIC                  │ 1741.4                             
 #>  BIC                  │ 1768.2                             
 #> 
-#> Note. Negative-binomial mixed-effects regression (zero-inflated). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Zero-inflated negative-binomial mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Among streams not in the structural-zero state, unmined ones host
@@ -749,22 +760,23 @@ rate ratio; CI = confidence interval; AIC = Akaike information
 criterion.
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
-terms carry a `zero_` prefix, so the two parts separate cleanly:
+terms are keyed by their block (`Zero-inflation::(Intercept)`), so the
+two parts separate cleanly:
 
 ``` r
 
 td <- broom::tidy(table_regression(fit_zip))
 td[, c("term", "estimate_type", "estimate", "p.value")]
 #> # A tibble: 7 × 4
-#>   term             estimate_type estimate  p.value
-#>   <chr>            <chr>            <dbl>    <dbl>
-#> 1 (Intercept)      B               0.609  2.37e-19
-#> 2 femWomen         B              -0.218  2.05e- 4
-#> 3 marMarried       B               0.135  4.07e- 2
-#> 4 kid5             B              -0.163  1.75e- 4
-#> 5 ment             B               0.0182 1.91e-16
-#> 6 zero_(Intercept) B              -0.686  8.47e- 4
-#> 7 zero_ment        B              -0.130  1.22e- 3
+#>   term                        estimate_type estimate  p.value
+#>   <chr>                       <chr>            <dbl>    <dbl>
+#> 1 (Intercept)                 B               0.609  2.37e-19
+#> 2 femWomen                    B              -0.218  2.05e- 4
+#> 3 marMarried                  B               0.135  4.07e- 2
+#> 4 kid5                        B              -0.163  1.75e- 4
+#> 5 ment                        B               0.0182 1.91e-16
+#> 6 Zero-inflation::(Intercept) B              -0.686  8.47e- 4
+#> 7 Zero-inflation::ment        B              -0.130  1.22e- 3
 ```
 
 ## References
