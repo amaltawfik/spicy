@@ -508,7 +508,7 @@ test_that("a univariable screen of an unknown family keeps a French title", {
 test_that("a French title spells out its method, without an English acronym", {
   fr <- spicy:::.FR_TITLE_PREFIXES
   expect_false(any(grepl("(PH)", fr, fixed = TRUE)))
-  expect_false(any(grepl("(2SLS)", fr, fixed = TRUE)))
+  expect_false(any(grepl("2SLS", fr, fixed = TRUE)))
   expect_identical(
     unname(fr["Weibull (PH) parametric survival regression"]),
     "Régression de survie paramétrique de Weibull (risques proportionnels)"

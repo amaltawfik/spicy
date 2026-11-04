@@ -1140,7 +1140,7 @@
   "IV regression (classical SE, fixed effects)" = "R\u00E9gression par variables instrumentales (ES classiques, effets fixes)",
   "IV regression (no SE computed, fixed effects)" = "R\u00E9gression par variables instrumentales (sans ES, effets fixes)",
   "IV regression (2SLS)" = "R\u00E9gression par variables instrumentales (doubles moindres carr\u00E9s)",
-  "IV regression (2SLS, fixed effects)" = "R\u00E9gression par variables instrumentales (2SLS, effets fixes)",
+  "IV regression (2SLS, fixed effects)" = "R\u00E9gression par variables instrumentales (doubles moindres carr\u00E9s, effets fixes)",
   "Robust linear regression (M-estimator)" = "R\u00E9gression lin\u00E9aire robuste (estimateur M)",
   "Beta regression" = "R\u00E9gression b\u00EAta",
   "Tobit regression" = "R\u00E9gression tobit",

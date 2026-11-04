@@ -956,7 +956,7 @@ test_that("an IV feols is titled as ivreg titles two-stage least squares", {
   withr::local_options(spicy.language = "fr")
   expect_identical(
     build_regression_title_from_frames(list(as_regression_frame(iv_fe))),
-    "R\u00e9gression par variables instrumentales (2SLS, effets fixes)\u00a0: y"
+    "R\u00e9gression par variables instrumentales (doubles moindres carr\u00e9s, effets fixes)\u00a0: y"
   )
 })
 

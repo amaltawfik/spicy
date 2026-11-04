@@ -185,7 +185,7 @@ test_that("zero-inflation rows: CR0 of a ZIP without random effects is pscl's vc
   blk <- fr$info$extras$component_blocks[[1L]]$coefs
   se_zero <- sqrt(diag(oracle))[c("zero_(Intercept)", "zero_minedno")]
   expect_equal(
-    blk$std_error[match(c("zi.(Intercept)", "zi.minedno"), blk$term)],
+    blk$std_error[match(c("(Intercept)", "minedno"), blk$term)],
     unname(se_zero),
     tolerance = 1e-8
   )
