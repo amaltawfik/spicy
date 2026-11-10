@@ -71,6 +71,21 @@
 
 ## New features
 
+* New `table_battery()` tabulates a battery of items rated on one scale
+  (a Likert grid): one row per item, one column per level, row
+  percentages and their base `n`. `levels` sets the scale and keeps the
+  other answers out of the base, `top` adds a column summing some
+  levels, `sort` orders the items (`"top-"`, `"name+"`, `"<level>-"`),
+  and `drop_na = FALSE` adds a column of missing answers. With `by`,
+  each group gets a block of columns and each item a chi-squared or
+  Fisher's exact test, Holm-adjusted by default. `inline()` cites its
+  cells (#13).
+
+* `table_categorical()` and `table_categorical_svy()` gain
+  `factor_levels`, as in `freq()`: `"all"` shows the declared levels
+  with no observation, at 0 in every column. These rows change no
+  percentage of the other rows and no test (#12).
+
 * New `table_stack()`, experimental, stacks regression tables one under
   the other: each table becomes a panel opened by a row with its name
   (or its entry in `panel_labels`), under one column header when the
@@ -176,8 +191,9 @@
   block is written after the block's caption ("Zero hurdle, Pr(y > 0):
   fem: Men") instead of "Zero hurdle = fem: Men", and the caption is
   translated in French. In French tables the component rows display the
-  French colon ("mined : no") as the main block does; their names in
-  `inline()` and `tidy()` do not change with the language.
+  French colon ("mined : no") as the main block does, and so does the
+  reference line of the note; their names in `inline()` and `tidy()` do
+  not change with the language.
 
 * `table_regression()`: the random-effects test of an `ordinal::clmm()`
   model with the cloglog or loglog link and a single random intercept
@@ -298,7 +314,8 @@
 
 * `table_regression()` refuses a fixest model with fixed effects only
   (`y ~ 1 | f`), which has no coefficient to show, with an error that
-  names the model. It used to fail with a base R error.
+  names the model as the list names it, in a stacked table too. It used
+  to fail with a base R error.
 
 * `table_regression()` names a cluster on combined fixed effects as it
   was written ("Clustered (id^period)") instead of fixest's internal
@@ -354,7 +371,9 @@
   adjusted), and with the AME p-values shown (`"ame_p"`) it counts the
   tests the AME p-values were adjusted for: one per category and
   predictor for an ordinal or multinomial model. It gave the number of
-  coefficients.
+  coefficients. When some models of the table have no test of a family
+  (no AME, or an intercept-only model), the note names the models it
+  counts, in a stacked table too.
 
 * `table_regression()`: under `decimal_mark = ","`, the cut-points
   listed in the note (`show_thresholds = FALSE`) are separated by
@@ -368,6 +387,41 @@
 * `table_regression()` with a formula `cluster` (`cluster = ~id`) uses
   the rows the fit kept after `subset` and the removal of missing
   values. A fit with `subset` failed on the length of the cluster.
+
+* `table_categorical()` and `table_categorical_svy()` show a declared
+  level that `levels_keep` names when it has no observation, with a
+  count of 0. `table_categorical()` dropped it silently from a vector
+  (the variable, with a warning, when it was the only level kept) and
+  refused it in a named list; `table_categorical_svy()` refused it in
+  both forms (#12).
+
+* `table_categorical()`, `table_continuous()` and `table_continuous_lm()`
+  no longer merge the empty header cells of their Word and flextable
+  outputs into one cell.
+
+* `table_regression()`: the AIC and BIC of a fixest model are those of
+  its `lm()`, `glm()` or `MASS::glm.nb()` twin. A `feols()` model counts
+  its residual variance, a Gaussian, Gamma or inverse-Gaussian `feglm()`
+  its dispersion and a `fenegbin()` its theta, which fixest's own
+  `AIC()` leaves out. With `nested = TRUE`, the likelihood-ratio test of
+  two `feglm()` models is the test `anova()` gives their `glm()` twins.
+
+* `table_regression()`: with `nested = TRUE`, the AICc row of a model
+  without an AICc of its own (fixest, Cox, ordinal and other likelihood
+  models) showed the change of AICc. It shows the AICc, and the change
+  of AICc counts the parameters the AIC counts (it counted one too many
+  for a `glm()` without a dispersion).
+
+* `table_regression()`: `labels` keyed by the term of an interaction
+  (`"age:wc"`) labels its row (`"age:wcyes"`) when the term has one row.
+  A term with several rows warns and lists them, in a stacked table too.
+
+* `table_regression()`: `p_adjust` leaves out of the family the
+  intercepts of a multinomial model and of a
+  `sampleSelection::selection()` model, as it does other intercepts, and
+  `show_intercept = FALSE`, `keep` and `drop` treat the intercepts of a
+  `sampleSelection::selection()` model as they do the intercept of other
+  models.
 
 * `table_regression()`: `vcov = "CR1"` for `survreg`, `gam`, `polr`,
   `clm`, `betareg`, `mlogit`, `multinom`, `zeroinfl` and `hurdle` models
