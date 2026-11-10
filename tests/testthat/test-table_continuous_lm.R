@@ -1260,11 +1260,11 @@ test_that("a categorical by decks its headers in the console, Typst, Word and th
     cells$text[cells$row_id == 1L],
     c("Variable", "M", "\u0394", "95% CI", "p", "R\u00b2", "n")
   )
-  # The blank cells of p, R2 and n merge, as the row of the interval
-  # alone merged them.
+  # The blank cells of p, R2 and n stay apart: an empty cell is not a
+  # spanner.
   expect_identical(
     cells$text[cells$row_id == 2L],
-    c("", "Never smoker", "Current smoker", "", "LL", "UL", "")
+    c("", "Never smoker", "Current smoker", "", "LL", "UL", "", "", "")
   )
 
   # The typed view: each mean headed by its group (its `level` too), the
@@ -7143,4 +7143,30 @@ test_that("the default object stores the title it prints", {
     spicy:::spicy_fmt("title_continuous_lm_by", "sex")
   )
   expect_identical(capture.output(print(fr))[[1L]], attr(fr, "title"))
+})
+
+test_that("the Word header merges the spanners and no empty cell", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  path <- tempfile(fileext = ".docx")
+  on.exit(unlink(path), add = TRUE)
+  table_continuous_lm(
+    sochealth,
+    select = c(bmi, wellbeing_score),
+    by = sex,
+    covariates = age,
+    output = "word",
+    word_path = path
+  )
+  s <- officer::docx_summary(officer::read_docx(path))
+  hd <- s[s$content_type == "table cell" & s$is_header, ]
+  # The mean spans its two groups, the CI its two limits.
+  top <- hd[hd$row_id == 1L, ]
+  expect_identical(as.integer(top$col_span[top$text == "M"]), 2L)
+  expect_identical(as.integer(top$col_span[top$text == "95% CI"]), 2L)
+  # The empty cells of the second row never span (no `gridSpan`).
+  bot <- hd[hd$row_id == 2L, ]
+  expect_identical(nrow(bot), 9L)
+  expect_true(all(bot$col_span[bot$text == ""] == 1L))
 })

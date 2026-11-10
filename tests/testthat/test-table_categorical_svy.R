@@ -2334,3 +2334,117 @@ test_that("a level holding the word \"Total\" takes no rule in the console", {
   expect_length(at, 1L)
   expect_false(grepl("─", out[at - 1L]))
 })
+
+# ---- factor_levels and empty declared levels (issue #12) -----------------
+
+test_that("factor_levels = 'all' shows an empty level at 0 and moves no test", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- .svycat_design("clus1")
+  d$variables$stype <- factor(
+    d$variables$stype,
+    levels = c("E", "H", "M", "X")
+  )
+  # Oracles: survey's weighted table for the percentages, the unweighted
+  # table for the counts, and svychisq() on the observed levels.
+  wtab <- survey::svytable(~ stype + sch.wide, d)
+  ntab <- table(d$variables$stype, d$variables$sch.wide)
+  p_obs <- survey::svychisq(~ stype + sch.wide, .svycat_design("clus1"))
+  obs <- .svycat_df(d, select = stype, by = sch.wide)
+  expect_identical(obs$level, c(NA, "E", "H", "M"))
+  all_lv <- .svycat_df(d, select = stype, by = sch.wide, factor_levels = "all")
+  expect_identical(all_lv$level, c(NA, "E", "H", "M", "X"))
+  for (gr in c("No", "Yes")) {
+    expect_equal(all_lv[[paste(gr, "n")]][-1L], as.numeric(ntab[, gr]))
+    expect_equal(
+      all_lv[[paste(gr, "%")]][-1L],
+      100 * as.numeric(prop.table(wtab, 2L)[, gr]),
+      tolerance = 1e-12
+    )
+  }
+  expect_equal(all_lv[["Total n"]][-1L], as.numeric(rowSums(ntab)))
+  expect_equal(
+    all_lv[["Total %"]][-1L],
+    100 * as.numeric(prop.table(rowSums(wtab))),
+    tolerance = 1e-12
+  )
+  expect_equal(all_lv$p[[1L]], p_obs$p.value[[1L]], tolerance = 1e-12)
+  expect_identical(all_lv$p[[1L]], obs$p[[1L]])
+  expect_equal(all_lv[1:4, ], obs, ignore_attr = TRUE)
+})
+
+test_that("levels_keep shows an empty declared level whatever factor_levels says", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- .svycat_design("clus1")
+  d$variables$stype <- factor(
+    d$variables$stype,
+    levels = c("E", "H", "M", "X")
+  )
+  d$variables$chr <- as.character(d$variables$sch.wide)
+  # Cross-function oracle: freq() with the design weights gives the same
+  # point estimates, the empty level at 0.
+  fq <- freq(
+    d$variables$stype,
+    weights = d$variables$pw,
+    factor_levels = "all",
+    output = "data.frame"
+  )
+  fq <- fq[!is.na(fq$value), ]
+  for (keep in list(c("E", "X"), list(stype = c("E", "X")))) {
+    kept <- .svycat_df(d, select = stype, levels_keep = keep)
+    expect_identical(kept$level, c(NA, "E", "X"))
+    expect_equal(kept$n[-1L], c(sum(d$variables$stype == "E"), 0))
+    expect_equal(
+      kept[["%"]][-1L],
+      100 * fq$prop[match(c("E", "X"), fq$value)],
+      tolerance = 1e-12
+    )
+  }
+  expect_error(
+    table_categorical_svy(d, select = stype, levels_keep = list(stype = "Z")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical_svy(d, select = stype, factor_levels = "none"),
+    class = "spicy_invalid_input"
+  )
+  # A character column declares no level: `"all"` changes nothing.
+  expect_identical(
+    .svycat_df(d, select = chr, factor_levels = "all"),
+    .svycat_df(d, select = chr)
+  )
+})
+
+test_that("factor_levels = 'all' puts the empty level before (Missing)", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- .svycat_design("clus1")
+  st <- factor(d$variables$stype, levels = c("E", "H", "M", "X"))
+  st[1:3] <- NA
+  d$variables$stype <- st
+  out <- .svycat_df(d, select = stype, factor_levels = "all")
+  expect_identical(out$level, c(NA, "E", "H", "M", "X", "(Missing)"))
+  expect_equal(out$n[-1L], c(as.numeric(table(st)), sum(is.na(st))))
+  expect_equal(out[["%"]][[5L]], 0)
+  # A declared level labelled as the missing row is refused when shown.
+  d$variables$stype <- factor(st, levels = c("E", "H", "M", "(Missing)"))
+  expect_error(
+    table_categorical_svy(d, select = stype, factor_levels = "all"),
+    class = "spicy_label_collision"
+  )
+  expect_identical(
+    .svycat_df(d, select = stype)$level,
+    c(NA, "E", "H", "M", "(Missing)")
+  )
+  # The levels_keep error lists the declared levels and the missing row.
+  cnd <- expect_error(
+    table_categorical_svy(d, select = stype, levels_keep = list(stype = "Z")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(cnd),
+    'Levels: "E", "H", "M", "(Missing)".',
+    fixed = TRUE
+  )
+})

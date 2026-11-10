@@ -456,7 +456,21 @@
 #'   the wording you set here. `note_labels` gives a variable a shorter
 #'   label in the title and the notes.
 #' @param levels_keep Levels to keep, as a character vector (all
-#'   variables) or a named list (per variable).
+#'   variables) or a named list (per variable). A declared level with no
+#'   observation that it names is shown with a count of 0, whatever
+#'   `factor_levels` says.
+#' @param factor_levels Character. Controls how factor and labelled values
+#'   are displayed in the table, as in [freq()]. `"observed"` (the
+#'   default; matches Stata's `tab` and SPSS `FREQUENCIES`, which both
+#'   list only values present in the data) shows only levels present in
+#'   the data. `"all"` keeps every declared level, including unused ones,
+#'   which appear with `n = 0` and a percentage of 0 (in every column
+#'   under `by`). A character or logical column declares no level. The
+#'   rows of unused levels are displayed only: they change no percentage
+#'   of the other rows and no test, which runs on the observed levels.
+#'   Under `proportion_ci = TRUE`, an unused level gets the exact interval
+#'   of a percentage of 0, the one a group that does not observe a level
+#'   gets.
 #' @param include_total Add a `Total` column block with the whole
 #'   design's percentages (default `TRUE`, only with `by`). A group
 #'   displayed with the label of that block is an error, as in
@@ -593,6 +607,7 @@ table_categorical_svy <- function(
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
   levels_keep = NULL,
+  factor_levels = c("observed", "all"),
   include_total = TRUE,
   drop_na = FALSE,
   proportion_ci = FALSE,
@@ -645,6 +660,7 @@ table_categorical_svy <- function(
   align <- spicy_match_arg(align)
   chisq_statistic_explicit <- !missing(chisq_statistic)
   ci_method <- spicy_match_arg(ci_method)
+  factor_levels <- match_varlist_factor_levels(factor_levels)
   cfg <- .svy_validate_common(
     design = design,
     fn = "table_categorical_svy",
@@ -962,9 +978,51 @@ table_categorical_svy <- function(
     if (var_no_data && length(levels_all) == 0L) {
       levels_all <- levels(x_f)
     }
+    # A declared level with no observation that the table shows
+    # (`factor_levels = "all"`, or named by `levels_keep`) joins the
+    # levels of the design variable: survey estimates 0 for it, as for a
+    # level one domain does not observe, and the test drops it
+    # (`.cat_svy_test()`). It goes in its declared place, before the
+    # `(Missing)` level. A declared level with the label of that row would
+    # be displayed beside it, and is refused as an observed one is
+    # (`.svy_by_levels()`).
+    if (
+      identical(factor_levels, "all") &&
+        !is.na(lv$missing_label) &&
+        lv$missing_label %in% levels(x_f)
+    ) {
+      .abort_label_collision(
+        lv$missing_label,
+        nm,
+        "level",
+        "the row spicy adds for missing values",
+        "row",
+        "row_missing_level",
+        "(Not stated)"
+      )
+    }
+    empty_i <- setdiff(
+      .cat_empty_levels(
+        x_f[!nd_rows],
+        NULL,
+        factor_levels,
+        keep_spec[[nm]]
+      )$shown,
+      c(levels_all, lv$missing_label)
+    )
+    if (length(empty_i)) {
+      levels_all <- c(
+        intersect(levels(x_f), c(levels_all, empty_i)),
+        setdiff(levels_all, levels(x_f))
+      )
+    }
     levels_i <- levels_all
     if (!is.null(keep_spec[[nm]])) {
-      .cat_check_kept_levels(keep_spec[[nm]], levels_i, nm)
+      .cat_check_kept_levels(
+        keep_spec[[nm]],
+        union(levels(x_f), levels_i),
+        nm
+      )
       levels_i <- levels_i[levels_i %in% keep_spec[[nm]]]
     }
     if (length(levels_i) == 0L && !lone) {

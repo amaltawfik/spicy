@@ -6685,3 +6685,28 @@ test_that("`note_labels` takes the named forms of `labels`, nothing else", {
   )
   expect_identical(attr(via, "title"), "Descriptive statistics by sex at birth")
 })
+
+test_that("the Word header merges the CI spanner and no empty cell", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  path <- tempfile(fileext = ".docx")
+  on.exit(unlink(path), add = TRUE)
+  table_continuous(
+    sochealth,
+    select = c(age, bmi),
+    by = sex,
+    p_value = TRUE,
+    effect_size = "auto",
+    output = "word",
+    word_path = path
+  )
+  s <- officer::docx_summary(officer::read_docx(path))
+  hd <- s[s$content_type == "table cell" & s$is_header, ]
+  top <- hd[hd$row_id == 1L, ]
+  expect_identical(as.integer(top$col_span[top$text == "95% CI"]), 2L)
+  # The empty cells of the second row never span (no `gridSpan`).
+  bot <- hd[hd$row_id == 2L, ]
+  expect_identical(nrow(bot), 11L)
+  expect_true(all(bot$col_span[bot$text == ""] == 1L))
+})

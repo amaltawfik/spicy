@@ -4580,16 +4580,15 @@ export_desc_table <- function(
     )
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
-    # Spanner geometry by equality of TEXT: `merge_h()` merges adjacent
-    # header cells holding the same string, and `map$top` now carries the
-    # resolved labels where it used to carry the keys. Second
+    # Spanner geometry by equality of TEXT: neighboring header cells
+    # holding the same non-empty string are merged, and `map$top` carries
+    # the resolved labels where it used to carry the keys. Second
     # label-indexed mechanism of the family after `gspec` above, and the
     # same stage-2 hazard: two neighboring columns whose headers
     # translate alike would merge into a phantom spanner.
     # `map$col_keys` stays the frozen key, so only the header geometry is
-    # exposed. Kept as-is -- replacing it with explicit `merge_at()`
-    # calls changes the mechanism and has to be proven on its own.
-    ft <- flextable::merge_h(ft, part = "header")
+    # exposed. The empty cells stay apart (`merge_h()` merged them).
+    ft <- .ft_merge_header_spanners(ft, map[names(map) != "col_keys"])
 
     bd <- spicy_fp_border(color = "black", width = 1)
     bd_light <- spicy_fp_border(color = "#cccccc", width = 0.5)

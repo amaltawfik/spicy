@@ -2220,3 +2220,26 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   }
   df # nocov
 }
+
+# The spanners of a flextable header: neighboring cells of one header row
+# (`rows`, one label vector per row, top first) that carry the same
+# non-empty label are merged, as a group label over its n and % columns or
+# "95% CI" over its two limits. `flextable::merge_h()` merges the empty
+# cells too, the ones under the stub and the statistics columns among
+# them. Shared by the flextable and Word routes of `table_categorical()`,
+# `table_continuous()` and `table_continuous_lm()`.
+.ft_merge_header_spanners <- function(ft, rows) {
+  for (i in seq_along(rows)) {
+    r <- rle(as.character(rows[[i]]))
+    ends <- cumsum(r$lengths)
+    for (k in which(r$lengths > 1L & !is.na(r$values) & nzchar(r$values))) {
+      ft <- flextable::merge_at(
+        ft,
+        i = i,
+        j = (ends[[k]] - r$lengths[[k]] + 1L):ends[[k]],
+        part = "header"
+      )
+    }
+  }
+  ft
+}

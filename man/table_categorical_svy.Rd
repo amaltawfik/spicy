@@ -11,6 +11,7 @@ table_categorical_svy(
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
   levels_keep = NULL,
+  factor_levels = c("observed", "all"),
   include_total = TRUE,
   drop_na = FALSE,
   proportion_ci = FALSE,
@@ -109,7 +110,22 @@ that another variable of the table shows is an error (class
 variable.}
 
 \item{levels_keep}{Levels to keep, as a character vector (all
-variables) or a named list (per variable).}
+variables) or a named list (per variable). A declared level with no
+observation that it names is shown with a count of 0, whatever
+\code{factor_levels} says.}
+
+\item{factor_levels}{Character. Controls how factor and labelled values
+are displayed in the table, as in \code{\link[=freq]{freq()}}. \code{"observed"} (the
+default; matches Stata's \code{tab} and SPSS \code{FREQUENCIES}, which both
+list only values present in the data) shows only levels present in
+the data. \code{"all"} keeps every declared level, including unused ones,
+which appear with \code{n = 0} and a percentage of 0 (in every column
+under \code{by}). A character or logical column declares no level. The
+rows of unused levels are displayed only: they change no percentage
+of the other rows and no test, which runs on the observed levels.
+Under \code{proportion_ci = TRUE}, an unused level gets the exact interval
+of a percentage of 0, the one a group that does not observe a level
+gets.}
 
 \item{include_total}{Add a \code{Total} column block with the whole
 design's percentages (default \code{TRUE}, only with \code{by}). A group

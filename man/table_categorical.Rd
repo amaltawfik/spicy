@@ -11,6 +11,7 @@ table_categorical(
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
   levels_keep = NULL,
+  factor_levels = c("observed", "all"),
   include_total = TRUE,
   total_row = FALSE,
   drop_na = FALSE,
@@ -123,7 +124,9 @@ that another variable of the table shows is an error (class
 variable.}
 
 \item{levels_keep}{Levels to keep, in the order to display them. If
-\code{NULL} (the default), all observed levels are kept. Entries must
+\code{NULL} (the default), all the levels \code{factor_levels} displays are
+kept. A declared level with no observation that it names is shown
+with a count of 0, whatever \code{factor_levels} says. Entries must
 match the level strings the table displays (for labelled columns
 these are the \code{"[code] label"} strings, not the bare label text).
 Two forms, as in \code{\link[=table_categorical_svy]{table_categorical_svy()}}:
@@ -134,10 +137,20 @@ the table with a classed warning (\code{spicy_no_selection}) listing
 its level strings;
 \item a named list applies per variable
 (\code{levels_keep = list(smoking = "Yes")}): each name must be a
-variable of the table, each level one the variable displays (an
-error otherwise), and the variables it does not name keep all
-their levels.
+variable of the table, each level one the variable declares or
+displays (an error otherwise), and the variables it does not name
+keep all their levels.
 }}
+
+\item{factor_levels}{Character. Controls how factor and labelled values
+are displayed in the table, as in \code{\link[=freq]{freq()}}. \code{"observed"} (the
+default; matches Stata's \code{tab} and SPSS \code{FREQUENCIES}, which both
+list only values present in the data) shows only levels present in
+the data. \code{"all"} keeps every declared level, including unused ones,
+which appear with \code{n = 0} (in every column under \code{by}). A character
+or logical column declares no level. The rows of unused levels are
+displayed only: they change no percentage of the other rows and no
+test or association measure.}
 
 \item{include_total}{Logical. If \code{TRUE} (the default), includes a \code{Total} group
 when available. A level of \code{by} displayed with the label of that

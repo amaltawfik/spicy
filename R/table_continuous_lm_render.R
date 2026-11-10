@@ -1247,13 +1247,12 @@ export_continuous_lm_table <- function(
     )
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
-    # `merge_h()` merges ADJACENT header cells carrying the same TEXT:
+    # ADJACENT header cells carrying the same non-empty TEXT are merged:
     # the geometry of the CI spanner is born of a string equality, not
     # of the pairing the caller already knows. Two neighboring columns
-    # whose headers read alike would merge into a phantom spanner. Kept
-    # as-is: replacing it by explicit merges is a mechanism change to be
-    # proved on its own.
-    ft <- flextable::merge_h(ft, part = "header")
+    # whose headers read alike would merge into a phantom spanner. The
+    # empty cells stay apart (`merge_h()` merged them).
+    ft <- .ft_merge_header_spanners(ft, map[names(map) != "col_keys"])
 
     bd <- spicy_fp_border(color = "black", width = 1)
     ci_j <- which(col_keys %in% c(.LM_KEY_CI_LL, .LM_KEY_CI_UL))

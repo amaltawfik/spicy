@@ -198,21 +198,25 @@
 
 # The row of missing values of one variable, before it is appended
 # (`.add_missing_level()`): refused when the variable displays a level
-# with its label (`.abort_label_collision()`). A declared level with that
-# label and no observation is never displayed (the rows show the observed
-# levels), so it is dropped instead: the two cannot share one factor.
+# with its label (`.abort_label_collision()`), an observed level or a
+# declared one that `factor_levels = "all"` displays with no observation.
+# Otherwise a declared level with that label and no observation is not
+# displayed, so it is dropped: the two cannot share one factor.
 # `levels_keep` names levels by their label and cannot tell the two rows
 # apart, so it does not lift the refusal.
 .cat_missing_row_guard <- function(
   x,
   missing_label,
   var,
+  factor_levels = "observed",
   call = rlang::caller_env()
 ) {
   if (!missing_label %in% levels(x)) {
     return(x)
   }
-  if (any(x == missing_label, na.rm = TRUE)) {
+  if (
+    any(x == missing_label, na.rm = TRUE) || identical(factor_levels, "all")
+  ) {
     .abort_label_collision(
       missing_label,
       var,
@@ -496,7 +500,7 @@
           paste(.quote_val(unknown), collapse = ", ")
         ),
         "i" = sprintf(
-          "Observed: %s.",
+          "Levels: %s.",
           paste(.quote_val(available), collapse = ", ")
         )
       ),
@@ -525,6 +529,25 @@
     .cat_check_kept_levels(keep, levels, var, call = call)
   }
   intersect(keep, available)
+}
+
+# The declared levels of the factor `x` with no observation, split into
+# those the table shows (`shown`: all of them under `factor_levels =
+# "all"`, else those `keep`, the variable's `levels_keep` entry, names)
+# and those it leaves out (`hidden`). A row with a missing weight is not
+# an observation: `freq()` and `cross_tab()` remove it before counting.
+# The shown ones are display rows: they enter no base and no test.
+.cat_empty_levels <- function(x, w, factor_levels, keep = NULL) {
+  if (!is.null(w)) {
+    x <- x[!is.na(w)]
+  }
+  empty <- setdiff(levels(x), as.character(x))
+  shown <- if (identical(factor_levels, "all")) {
+    empty
+  } else {
+    intersect(empty, keep)
+  }
+  list(shown = shown, hidden = setdiff(empty, shown))
 }
 
 # Resolve the user-supplied `assoc_measure` into a named character vector
@@ -1074,7 +1097,9 @@
 #'   `spicy_label_collision`): choose another one, or relabel the other
 #'   variable.
 #' @param levels_keep Levels to keep, in the order to display them. If
-#'   `NULL` (the default), all observed levels are kept. Entries must
+#'   `NULL` (the default), all the levels `factor_levels` displays are
+#'   kept. A declared level with no observation that it names is shown
+#'   with a count of 0, whatever `factor_levels` says. Entries must
 #'   match the level strings the table displays (for labelled columns
 #'   these are the `"[code] label"` strings, not the bare label text).
 #'   Two forms, as in [table_categorical_svy()]:
@@ -1084,9 +1109,18 @@
 #'     its level strings;
 #'   * a named list applies per variable
 #'     (`levels_keep = list(smoking = "Yes")`): each name must be a
-#'     variable of the table, each level one the variable displays (an
-#'     error otherwise), and the variables it does not name keep all
-#'     their levels.
+#'     variable of the table, each level one the variable declares or
+#'     displays (an error otherwise), and the variables it does not name
+#'     keep all their levels.
+#' @param factor_levels Character. Controls how factor and labelled values
+#'   are displayed in the table, as in [freq()]. `"observed"` (the
+#'   default; matches Stata's `tab` and SPSS `FREQUENCIES`, which both
+#'   list only values present in the data) shows only levels present in
+#'   the data. `"all"` keeps every declared level, including unused ones,
+#'   which appear with `n = 0` (in every column under `by`). A character
+#'   or logical column declares no level. The rows of unused levels are
+#'   displayed only: they change no percentage of the other rows and no
+#'   test or association measure.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
 #'   when available. A level of `by` displayed with the label of that
 #'   margin is then an error (class `spicy_label_collision`): rename the
@@ -1918,6 +1952,7 @@ table_categorical <- function(
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
   levels_keep = NULL,
+  factor_levels = c("observed", "all"),
   include_total = TRUE,
   total_row = FALSE,
   drop_na = FALSE,
@@ -1988,6 +2023,7 @@ table_categorical <- function(
   test <- spicy_match_arg(test)
   percent <- spicy_match_arg(percent)
   percent_base <- spicy_match_arg(percent_base)
+  factor_levels <- match_varlist_factor_levels(factor_levels)
 
   .check_data_frame(data, "table_categorical")
   .check_labels_arg(labels)
@@ -2822,14 +2858,22 @@ table_categorical <- function(
       }
       x_has_na <- !drop_na && anyNA(x)
       if (x_has_na) {
-        x <- .cat_missing_row_guard(x, missing_label, select_names[i])
+        x <- .cat_missing_row_guard(
+          x,
+          missing_label,
+          select_names[i],
+          factor_levels
+        )
         x <- .add_missing_level(x, missing_label)
         missing_vars <- c(missing_vars, select_names[i])
       }
 
+      # Every declared level comes back from `freq()`, and those with no
+      # observation stay only when the table shows them.
       ft <- if (is.null(w)) {
         spicy::freq(
           x,
+          factor_levels = "all",
           rescale = rescale,
           valid = FALSE,
           output = "data.frame"
@@ -2838,13 +2882,16 @@ table_categorical <- function(
         .quiet_weights_na(spicy::freq(
           x,
           weights = w,
+          factor_levels = "all",
           rescale = rescale,
           valid = FALSE,
           output = "data.frame"
         ))
       }
+      keep_i <- levels_keep[[select_names[i]]]
+      empty_i <- .cat_empty_levels(x, w, factor_levels, keep_i)
       vals <- as.character(ft$value)
-      raw_levels <- vals[!is.na(vals)]
+      raw_levels <- vals[!is.na(vals) & !vals %in% empty_i$hidden]
       # The base of the percentages (`percent_base`). Under "total", every
       # row, as `freq()` gives it; under "valid", the observed values of
       # the variable, those of the levels `levels_keep` hides included,
@@ -2862,7 +2909,6 @@ table_categorical <- function(
         )
       }
 
-      keep_i <- levels_keep[[select_names[i]]]
       lv_use <- if (is.null(keep_i)) {
         # The row of missing values goes last, and only a variable that
         # has one: elsewhere a level with its label keeps its own place.
@@ -2872,7 +2918,12 @@ table_categorical <- function(
         missing_end <- intersect(raw_levels, ml)
         c(known, extra, missing_end)
       } else {
-        .cat_kept_levels(levels_keep, select_names[i], raw_levels)
+        .cat_kept_levels(
+          levels_keep,
+          select_names[i],
+          union(levels(x), raw_levels),
+          available = raw_levels
+        )
       }
       if (!is.null(keep_i) && length(lv_use) == 0L) {
         .warn_levels_keep_no_match(select_names[i], raw_levels)
@@ -3999,7 +4050,12 @@ table_categorical <- function(
       x_has_na <- anyNA(x)
       g_has_na <- anyNA(g)
       if (x_has_na) {
-        x <- .cat_missing_row_guard(x, missing_label, select_names[i])
+        x <- .cat_missing_row_guard(
+          x,
+          missing_label,
+          select_names[i],
+          factor_levels
+        )
         x <- .add_missing_level(x, missing_label)
         missing_vars <- c(missing_vars, select_names[i])
       }
@@ -4255,6 +4311,13 @@ table_categorical <- function(
     margin_rows_n <- attr(ct_n, "total_row_idx")
     raw_levels <- unique(vals_n[setdiff(seq_along(vals_n), margin_rows_n)])
     keep_i <- levels_keep[[select_names[i]]]
+    # `cross_tab()` counts the observed levels; a declared level with no
+    # observation that the table shows is a row of zeros (see the loop).
+    empty_shown <- setdiff(
+      .cat_empty_levels(x, w, factor_levels, keep_i)$shown,
+      raw_levels
+    )
+    raw_levels <- c(raw_levels, empty_shown)
     lv_use <- if (is.null(keep_i)) {
       # Reorder to match original factor/occurrence order, the row of
       # missing values last in the variable that has one (see the no-by
@@ -4268,8 +4331,8 @@ table_categorical <- function(
       .cat_kept_levels(
         levels_keep,
         select_names[i],
-        raw_levels,
-        available = vals_n
+        union(levels(x), raw_levels),
+        available = c(vals_n, empty_shown)
       )
     }
     if (!is.null(keep_i) && length(lv_use) == 0L) {
@@ -4321,9 +4384,14 @@ table_categorical <- function(
     }
 
     for (lv in lv_use) {
-      in_n <- match(lv, vals_n)
-      in_p <- match(lv, vals_p)
-      if (is.na(in_n) || is.na(in_p)) {
+      # A declared level with no observation (`empty_shown`) has no row in
+      # `cross_tab()`: 0 and 0 % in every column, those of a group with
+      # no data aside. It is never looked up, as its label may be that of
+      # the margin row.
+      empty_lv <- lv %in% empty_shown
+      in_n <- if (empty_lv) NA_integer_ else match(lv, vals_n)
+      in_p <- if (empty_lv) NA_integer_ else match(lv, vals_p)
+      if (!empty_lv && (is.na(in_n) || is.na(in_p))) {
         next # nocov: lv_use is derived from vals_n, and ct_n / ct_pct share the same x,g so they expose identical levels; neither match() is NA. Defensive.
       }
 
@@ -4336,7 +4404,9 @@ table_categorical <- function(
         # declared-but-unobserved level named "Total" leaves the margin
         # column literally called "Total" -- a whole-table name lookup
         # would hand the margin counts to that zero-observation group.
-        n_val <- if (identical(gr, margin_key)) {
+        n_val <- if (empty_lv) {
+          0
+        } else if (identical(gr, margin_key)) {
           ct_n[in_n, ncol(ct_n)]
         } else if (gr %in% groups_present) {
           ct_n[in_n, gr]
@@ -4344,7 +4414,9 @@ table_categorical <- function(
           # Declared-but-unobserved group: zero count, zero percent.
           0
         }
-        pct_val <- if (identical(gr, margin_key)) {
+        pct_val <- if (empty_lv) {
+          0
+        } else if (identical(gr, margin_key)) {
           # Under row percentages the margin is the row over itself: the
           # 100 cross_tab() prints, which its sum of shares reaches only up
           # to the last bit of a double, and 0 on a row that holds nothing,
@@ -5655,7 +5727,7 @@ table_categorical <- function(
       check.names = FALSE
     )
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
-    ft <- flextable::merge_h(ft, part = "header")
+    ft <- .ft_merge_header_spanners(ft, list(top_header_span, bot_header))
 
     bd <- spicy_fp_border(color = "black", width = 1)
 

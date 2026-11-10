@@ -2347,9 +2347,9 @@ test_that("table_categorical one-way levels_keep with no match returns empty", {
     class = "spicy_no_selection"
   )
   expect_equal(nrow(out), 0L)
-  # levels_keep includes "C" which exists in factor levels but has 0 obs
-  # -> covers the `next` at match(lv, vals) returning NA; partial
-  # matches keep their intersect semantics with no warning
+  # levels_keep includes "C", a declared level with 0 obs: it is shown
+  # with a count of 0 (issue #12); partial matches keep their intersect
+  # semantics with no warning
   expect_silent(
     out2 <- table_categorical(
       df,
@@ -2358,9 +2358,10 @@ test_that("table_categorical one-way levels_keep with no match returns empty", {
       output = "data.frame"
     )
   )
-  # The header row of `x`, then its one level.
-  expect_identical(out2$.row_role, c("factor_header", "level"))
-  expect_equal(out2$level[[2L]], "A")
+  # The header row of `x`, then its two kept levels.
+  expect_identical(out2$.row_role, c("factor_header", "level", "level"))
+  expect_identical(out2$level[2:3], c("A", "C"))
+  expect_identical(out2$n[2:3], c(1, 0))
   # Also test default output path (covers make_report_wide_oneway empty path)
   expect_warning(
     out3 <- table_categorical(
@@ -7977,5 +7978,332 @@ test_that("the engines draw the rule above the Total row", {
       info = by
     )
     unlink(xl)
+  }
+})
+
+# ---- factor_levels and empty declared levels (issue #12) -----------------
+
+test_that("factor_levels = 'all' and levels_keep show an empty declared level", {
+  d <- data.frame(x = factor(c("a", "a", "b", NA), levels = c("a", "b", "c")))
+  # Oracles independent of the table: counts on the declared levels, and
+  # percentages on the observed values (the default `percent_base`).
+  tab <- table(d$x, useNA = "no")
+  pct <- 100 * as.numeric(prop.table(tab))
+  # The default is unchanged: the empty level is not shown.
+  out <- table_categorical(d, select = x, output = "data.frame")
+  expect_identical(out$level, c(NA, "a", "b", "(Missing)"))
+  all_lv <- table_categorical(
+    d,
+    select = x,
+    factor_levels = "all",
+    output = "data.frame"
+  )
+  expect_identical(all_lv$level, c(NA, "a", "b", "c", "(Missing)"))
+  expect_equal(all_lv$n[2:4], as.numeric(tab))
+  expect_equal(all_lv[["%"]][2:4], pct)
+  # Named in `levels_keep`, the level is shown whatever `factor_levels`
+  # says, as a vector or per variable.
+  for (keep in list(c("a", "b", "c"), list(x = c("a", "b", "c")))) {
+    kept <- table_categorical(
+      d,
+      select = x,
+      levels_keep = keep,
+      output = "data.frame"
+    )
+    expect_identical(kept$level, c(NA, "a", "b", "c"))
+    expect_equal(kept$n[-1L], as.numeric(tab))
+    expect_equal(kept[["%"]][-1L], pct)
+  }
+  # A level that is not declared stays an error, and so does a bad value.
+  expect_error(
+    table_categorical(d, select = x, levels_keep = list(x = c("a", "z"))),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(d, select = x, factor_levels = "none"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("factor_levels = 'all' agrees with freq() on the same data", {
+  skip_on_cran()
+  d <- data.frame(
+    x = factor(c("a", "a", "b", NA, "a"), levels = c("a", "b", "c", "d"))
+  )
+  fq <- freq(d$x, factor_levels = "all", output = "data.frame")
+  fq <- fq[!is.na(fq$value), ]
+  for (drop_na in c(FALSE, TRUE)) {
+    out <- table_categorical(
+      d,
+      select = x,
+      factor_levels = "all",
+      drop_na = drop_na,
+      output = "data.frame"
+    )
+    lv <- out$.row_role == "level"
+    expect_identical(out$level[lv], fq$value, info = drop_na)
+    expect_equal(out$n[lv], fq$n, info = drop_na)
+    expect_equal(out[["%"]][lv], 100 * fq$valid_prop, info = drop_na)
+    expect_identical("(Missing)" %in% out$level, !drop_na, info = drop_na)
+  }
+})
+
+test_that("under by, an empty level is 0 in every column and moves no test", {
+  skip_on_cran()
+  # `b` is empty in group v, `c` everywhere, and `x` has a missing value.
+  d <- data.frame(
+    x = factor(
+      c("a", "b", "b", "a", "a", "a", NA),
+      levels = c("a", "b", "c")
+    ),
+    g = c("u", "u", "u", "v", "v", "v", "v")
+  )
+  tab <- table(d$x, d$g, useNA = "no")
+  out <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    factor_levels = "all",
+    output = "data.frame"
+  )
+  expect_identical(out$level, c(NA, "a", "b", "c", "(Missing)"))
+  for (gr in c("u", "v")) {
+    expect_equal(out[[paste(gr, "n")]][2:4], as.numeric(tab[, gr]))
+    expect_equal(
+      out[[paste(gr, "%")]][2:4],
+      100 * as.numeric(prop.table(tab, 2L)[, gr])
+    )
+  }
+  expect_equal(out[["Total n"]][2:4], as.numeric(rowSums(tab)))
+  expect_equal(
+    out[["Total %"]][2:4],
+    100 * as.numeric(prop.table(rowSums(tab)))
+  )
+  # The rows of the observed levels are those of the default table.
+  obs <- table_categorical(d, select = x, by = g, output = "data.frame")
+  shared <- c("a", "b", "(Missing)")
+  expect_equal(
+    out[out$level %in% shared, names(obs)[-(1:4)]],
+    obs[obs$level %in% shared, names(obs)[-(1:4)]],
+    ignore_attr = TRUE
+  )
+  expect_identical(out$p[[1L]], obs$p[[1L]])
+  # The long output carries the zero rows too.
+  long <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    factor_levels = "all",
+    output = "long"
+  )
+  cc <- long[long$level == "c", ]
+  expect_setequal(cc$group, c("u", "v", "Total"))
+  expect_true(all(cc$n == 0 & cc$pct == 0))
+})
+
+test_that("the test and the measure read the observed levels only", {
+  skip_on_cran()
+  d <- sochealth
+  d$edu <- factor(
+    d$education,
+    levels = c(levels(d$education), "Doctorate")
+  )
+  tab_obs <- table(droplevels(d$edu), d$sex)
+  chi <- suppressWarnings(stats::chisq.test(tab_obs, correct = FALSE))
+  run <- function(...) {
+    table_categorical(
+      d,
+      select = edu,
+      by = sex,
+      test = "chisq",
+      output = "data.frame",
+      ...
+    )
+  }
+  obs <- run()
+  all_lv <- run(factor_levels = "all")
+  expect_identical(all_lv$level, c(NA, levels(d$education), "Doctorate"))
+  expect_equal(all_lv$p[[1L]], chi$p.value, tolerance = 1e-12)
+  expect_identical(all_lv$p[[1L]], obs$p[[1L]])
+  expect_equal(
+    all_lv$V[[1L]],
+    sqrt(unname(chi$statistic) / (sum(tab_obs) * (min(dim(tab_obs)) - 1L))),
+    tolerance = 1e-12
+  )
+  expect_identical(all_lv$V[[1L]], obs$V[[1L]])
+  # The gt and Excel routes show the same rows.
+  skip_if_not_installed("gt")
+  skip_if_not_installed("openxlsx2")
+  gtd <- table_categorical(
+    d,
+    select = edu,
+    by = sex,
+    factor_levels = "all",
+    output = "gt"
+  )[["_data"]]
+  expect_identical(nrow(gtd), 5L)
+  expect_match(gtd[[1L]][[5L]], "Doctorate", fixed = TRUE)
+  expect_identical(
+    unname(trimws(unlist(gtd[5L, 2:7]), whitespace = "\\h")),
+    rep(c("0", "0.0"), 3L)
+  )
+  xl <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(xl), add = TRUE)
+  table_categorical(
+    d,
+    select = edu,
+    by = sex,
+    factor_levels = "all",
+    output = "excel",
+    excel_path = xl
+  )
+  sheet <- openxlsx2::read_xlsx(xl, col_names = FALSE)
+  at <- grep("Doctorate", sheet[[1L]], fixed = TRUE)
+  expect_length(at, 1L)
+  expect_equal(unname(as.numeric(unlist(sheet[at, 2:7]))), rep(0, 6L))
+})
+
+test_that("factor_levels follows freq() for character and labelled columns", {
+  skip_on_cran()
+  skip_if_not_installed("haven")
+  d <- data.frame(ch = c("a", "a", "b"), lg = c(TRUE, TRUE, TRUE))
+  # No declared level: `"all"` changes nothing.
+  expect_identical(
+    table_categorical(d, factor_levels = "all", output = "data.frame"),
+    table_categorical(d, output = "data.frame")
+  )
+  # A labelled column declares its value labels, those of a declared
+  # missing code aside: the rows are freq()'s valid values.
+  d <- data.frame(id = 1:5)
+  d$x <- haven::labelled_spss(
+    c(1, 1, 2, 99, NA),
+    labels = c(Low = 1, Mid = 2, High = 3, Refused = 99),
+    na_values = 99
+  )
+  fq <- freq(d$x, factor_levels = "all", output = "data.frame")
+  fq <- fq[!is.na(fq$valid_prop), ]
+  out <- table_categorical(
+    d,
+    select = x,
+    factor_levels = "all",
+    output = "data.frame"
+  )
+  lv <- out$.row_role == "level"
+  expect_identical(out$level[lv], fq$value)
+  expect_identical(out$level[lv], c("[1] Low", "[2] Mid", "[3] High"))
+  expect_equal(out$n[lv], fq$n)
+  expect_equal(out[["%"]][lv], 100 * fq$valid_prop)
+  default <- table_categorical(d, select = x, output = "data.frame")
+  expect_false("[3] High" %in% default$level)
+})
+
+test_that("the Word header merges the spanners and no empty cell", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  path <- tempfile(fileext = ".docx")
+  on.exit(unlink(path), add = TRUE)
+  table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    output = "word",
+    word_path = path
+  )
+  s <- officer::docx_summary(officer::read_docx(path))
+  hd <- s[s$content_type == "table cell" & s$is_header, ]
+  # The group label spans its n and % columns.
+  top <- hd[hd$row_id == 1L, ]
+  expect_identical(
+    as.integer(top$col_span[top$text %in% c("Female", "Male", "Total")]),
+    c(2L, 2L, 2L)
+  )
+  # Under the p-value and the measure, one cell each: an empty cell
+  # never spans (no `gridSpan`).
+  bot <- hd[hd$row_id == 2L, ]
+  expect_identical(nrow(bot), 9L)
+  expect_true(all(bot$col_span[bot$text == ""] == 1L))
+})
+
+test_that("a level whose rows all have a missing weight is not observed", {
+  skip_on_cran()
+  # `c` occurs only where the weight is missing: freq() removes those rows
+  # before counting, so the default table does not show `c`.
+  d <- data.frame(
+    x = factor(c("a", "a", "b", "c"), levels = c("a", "b", "c", "d")),
+    w = c(1, 2, 1, NA)
+  )
+  fq <- suppressWarnings(freq(d$x, weights = d$w, output = "data.frame"))
+  out <- table_categorical(d, select = x, weights = w, output = "data.frame")
+  expect_identical(out$level, c(NA, "a", "b"))
+  expect_identical(out$level[-1L], fq$value[!is.na(fq$value)])
+  all_lv <- table_categorical(
+    d,
+    select = x,
+    weights = w,
+    factor_levels = "all",
+    output = "data.frame"
+  )
+  expect_identical(all_lv$level, c(NA, "a", "b", "c", "d"))
+  expect_equal(all_lv$n[-1L], c(3, 1, 0, 0))
+})
+
+test_that("under by, a levels_keep list shows an empty declared level at 0", {
+  skip_on_cran()
+  d <- data.frame(
+    x = factor(c("a", "b", "a", "b"), levels = c("a", "b", "c", "d")),
+    g = c("u", "u", "v", "v")
+  )
+  tab <- table(d$x, d$g)
+  out <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    levels_keep = list(x = c("a", "d")),
+    output = "data.frame"
+  )
+  expect_identical(out$level, c(NA, "a", "d"))
+  expect_equal(out[["u n"]][-1L], as.numeric(tab[c("a", "d"), "u"]))
+  expect_equal(out[["v n"]][-1L], as.numeric(tab[c("a", "d"), "v"]))
+  expect_equal(out[["Total n"]][-1L], c(2, 0))
+  expect_equal(out[["u %"]][[3L]], 0)
+  expect_equal(out[["Total %"]][[3L]], 0)
+})
+
+test_that("a declared empty level labelled as the missing row is refused under 'all'", {
+  skip_on_cran()
+  d <- data.frame(x = factor(c("a", "a", NA), levels = c("a", "(Missing)")))
+  # Not displayed by default: the missing row takes the label alone.
+  out <- table_categorical(d, select = x, output = "data.frame")
+  expect_identical(out$level, c(NA, "a", "(Missing)"))
+  expect_identical(out$n[[3L]], 1)
+  # Displayed under "all", it would sit beside that row.
+  expect_error(
+    table_categorical(d, select = x, factor_levels = "all"),
+    class = "spicy_label_collision"
+  )
+})
+
+test_that("the levels_keep error lists the levels the variable can display", {
+  skip_on_cran()
+  d <- data.frame(
+    x = factor(c("a", "b", NA), levels = c("a", "b", "c")),
+    g = c("u", "v", "v")
+  )
+  for (by in list(NULL, "g")) {
+    cnd <- expect_error(
+      table_categorical(
+        d,
+        select = x,
+        by = !!by,
+        levels_keep = list(x = "z")
+      ),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(cnd),
+      'Levels: "a", "b", "c", "(Missing)".',
+      fixed = TRUE
+    )
   }
 })
