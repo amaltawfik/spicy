@@ -1,6 +1,6 @@
 # ADR 2026-11-10 — table_battery() : une batterie d'items sur une échelle commune
 
-**Statut** : besoin posé par Amal (issue #13, 2026-10-30). Choix d'API pris par délégation le 2026-11-10, à confirmer avant publication.
+**Statut** : besoin posé par Amal (issue #13, 2026-10-30). Choix d'API pris par délégation et confirmés par Amal le 2026-11-10 (issue #13 fermée).
 
 ## Contexte
 
