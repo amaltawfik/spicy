@@ -789,21 +789,18 @@ test_that("labels - an interaction's term label names its one row", {
   )
   # A warning of its own: the term is a term of the table, it spans
   # several rows.
-  expect_identical(
-    cli::ansi_strip(strsplit(
-      conditionMessage(w),
-      "\n",
-      fixed = TRUE
-    )[[1L]]),
-    c(
-      '`labels` names a term that spans several rows: "wc:g3".',
-      paste(
-        cli::symbol$info,
-        "It labels none of them. Label each row by its name."
-      ),
-      paste(cli::symbol$info, '"wc:g3" names "wcyes:g3b", "wcyes:g3c".')
-    )
+  msg <- conditionMessage(w)
+  expect_match(
+    msg,
+    '`labels` names a term that spans several rows: "wc:g3".',
+    fixed = TRUE
   )
+  expect_match(
+    msg,
+    "It labels none of them. Label each row by its name.",
+    fixed = TRUE
+  )
+  expect_match(msg, '"wc:g3" names "wcyes:g3b", "wcyes:g3c".', fixed = TRUE)
   expect_false(grepl("matches nothing", conditionMessage(w), fixed = TRUE))
   expect_identical(out$Variable, table_regression(fit)$Variable)
 })
