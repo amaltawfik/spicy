@@ -734,6 +734,9 @@ as_regression_frame.fixest <- function(
 # The feglm families whose dispersion is estimated, and counted.
 .FIXEST_DISP_FAMS <- c("gaussian", "Gamma", "inverse.gaussian")
 
+# The quasi-likelihood families: a dispersion, no likelihood.
+.FIXEST_QUASI_FAMS <- c("quasipoisson", "quasibinomial", "quasi")
+
 # The log-likelihood of a fixest fit and, as its "df", the parameters it
 # counts, as the lm() or glm() twin of the model counts them; the fixed
 # effects stay counted as fixest counts them (`fit$nparams`). fixest's

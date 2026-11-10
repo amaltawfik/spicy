@@ -404,7 +404,8 @@
   its residual variance, a Gaussian, Gamma or inverse-Gaussian `feglm()`
   its dispersion and a `fenegbin()` its theta, which fixest's own
   `AIC()` leaves out. With `nested = TRUE`, the likelihood-ratio test of
-  two `feglm()` models is the test `anova()` gives their `glm()` twins.
+  two `feglm()` models is the test `anova()` gives their `glm()` twins,
+  for a quasi-Poisson or quasi-binomial pair too.
 
 * `table_regression()`: with `nested = TRUE`, the AICc row of a model
   without an AICc of its own (fixest, Cox, ordinal and other likelihood

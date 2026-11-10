@@ -1095,7 +1095,11 @@ test_that("fixest pairs: LRT / p match anova() on the glm twins", {
     gaussian = list(gaussian(), "mpg", "| cyl", "+ cyl"),
     poisson = list(poisson(), "carb", "| cyl", "+ cyl"),
     binomial = list(binomial(), "am", "", ""),
-    inverse.gaussian = list(inverse.gaussian("log"), "mpg", "", "")
+    inverse.gaussian = list(inverse.gaussian("log"), "mpg", "", ""),
+    # No likelihood: the change of deviance over the dispersion, as
+    # anova.glm() tests the twins.
+    quasipoisson = list(quasipoisson(), "carb", "| cyl", "+ cyl"),
+    quasibinomial = list(quasibinomial(), "am", "", "")
   )
   for (nm in names(fams)) {
     fm <- fams[[nm]][[1]]
@@ -1121,8 +1125,20 @@ test_that("fixest pairs: LRT / p match anova() on the glm twins", {
     got <- function(v) df[["Model 2: B"]][df$variable == v]
     # Except for the inverse Gaussian, whose fits of the two engines
     # differ in their slopes by about 1e-6 on these data (a flat
-    # optimum): its test agrees to 1e-4.
-    tol <- if (nm == "inverse.gaussian") 1e-4 else 1e-10
+    # optimum): its test agrees to 1e-4. And except for the quasi
+    # families, whose coefficients and deviances agree to 1e-15 but
+    # whose dispersion summary.glm() computes from the working weights
+    # and residuals of the last IRLS iteration, one step behind the
+    # fit; the twin test divides by the Pearson chi-square of the fit
+    # itself, which a tighter glm.control(epsilon) brings to the same
+    # value. They agree to 1e-5 at the default tolerance.
+    tol <- switch(
+      nm,
+      inverse.gaussian = 1e-4,
+      quasipoisson = ,
+      quasibinomial = 1e-5,
+      1e-10
+    )
     expect_equal(got("lrt_change"), stat, tolerance = tol, label = nm)
     expect_equal(
       got("p_change"),

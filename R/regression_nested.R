@@ -103,16 +103,29 @@ has_usable_loglik <- function(fit) {
   length(ll) >= 1L && is.finite(as.numeric(ll)[1L])
 }
 
-# A pair rides the likelihood-ratio path when BOTH fits carry a
-# likelihood and NEITHER is a least-squares fit. Requiring both sides
-# keeps a mismatched pair (lm + survreg, say) on the least-squares path,
-# where a failed anova() en-dashes the whole column instead of inventing
-# a cross-family LRT.
+# A feglm of a quasi family has no likelihood, but a deviance that
+# anova.glm() tests over the dispersion, as a quasi glm's is tested. The
+# glm rides the likelihood-ratio path by its class; the feglm by its
+# family.
+is_fixest_quasi <- function(fit) {
+  inherits(fit, "fixest") &&
+    is.list(fit$family) &&
+    isTRUE(fit$family$family %in% .FIXEST_QUASI_FAMS)
+}
+
+# A fit rides the likelihood-ratio path when it is not a least-squares
+# fit and carries a likelihood, or a quasi-likelihood deviance.
+rides_lrt_path <- function(fit) {
+  !inherits(fit, LEAST_SQUARES_CLASSES) &&
+    (has_usable_loglik(fit) || is_fixest_quasi(fit))
+}
+
+# A pair rides the likelihood-ratio path when BOTH fits do. Requiring
+# both sides keeps a mismatched pair (lm + survreg, say) on the
+# least-squares path, where a failed anova() en-dashes the whole column
+# instead of inventing a cross-family LRT.
 is_likelihood_pair <- function(fit_prev, fit_curr) {
-  !inherits(fit_prev, LEAST_SQUARES_CLASSES) &&
-    !inherits(fit_curr, LEAST_SQUARES_CLASSES) &&
-    has_usable_loglik(fit_prev) &&
-    has_usable_loglik(fit_curr)
+  rides_lrt_path(fit_prev) && rides_lrt_path(fit_curr)
 }
 
 # A pair BOTH of whose members are rms fits (ols, lrm, cph, Glm, psm,
@@ -149,13 +162,7 @@ all_likelihood_path <- function(models) {
     return(TRUE)
   }
   length(models) > 0L &&
-    all(vapply(
-      models,
-      function(m) {
-        !inherits(m, LEAST_SQUARES_CLASSES) && has_usable_loglik(m)
-      },
-      logical(1)
-    ))
+    all(vapply(models, rides_lrt_path, logical(1)))
 }
 
 
@@ -1719,16 +1726,18 @@ loglik_lrt <- function(fit_prev, fit_curr) {
 
 # The likelihood-ratio test of two nested fixest fits, as their lm() or
 # glm() twins are tested. A feglm whose dispersion is estimated
-# (Gaussian, Gamma, inverse Gaussian) is tested as anova.glm() tests the
-# twins: the change of deviance over the Pearson dispersion of the larger
-# model. The others take the change of their twin log-likelihoods
+# (Gaussian, Gamma, inverse Gaussian, and the quasi families, which have
+# no likelihood at all) is tested as anova.glm() tests the twins: the
+# change of deviance over the Pearson dispersion of the larger model.
+# The others take the change of their twin log-likelihoods
 # (`.fixest_twin_loglik()`), which is fixest's own for Poisson and
 # binomial. NA when the pair is not admissible.
 fixest_twin_lrt <- function(fit_prev, fit_curr) {
   na <- list(stat = NA_real_, p = NA_real_)
   fam <- fit_curr$family
+  disp_fams <- c(.FIXEST_DISP_FAMS, .FIXEST_QUASI_FAMS)
   stat <- tryCatch(
-    if (is.list(fam) && isTRUE(fam$family %in% .FIXEST_DISP_FAMS)) {
+    if (is.list(fam) && isTRUE(fam$family %in% disp_fams)) {
       mu <- fit_curr$fitted.values
       r <- stats::residuals(fit_curr, type = "response")
       w <- fit_curr$weights %||% 1
