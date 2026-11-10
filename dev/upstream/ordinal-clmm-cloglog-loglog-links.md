@@ -7,6 +7,7 @@
   qu'un « Bug in loglog-link for clmm fits fixed » de 2010 (ancien code).
 - **Envoyé** : 2026-10-09, issue [#76](https://github.com/runehaubo/ordinal/issues/76)
 - **Statut** : ouvert
+- **Suivi** : commentaire du 2026-11-10 restreignant la portée au chemin à intercept aléatoire unique (`useMatrix = FALSE`) et signalant `clm2(link = "loglog")` en échec : [ordinal-clmm-links-ssr-path-comment.md](ordinal-clmm-links-ssr-path-comment.md)
 - **Côté spicy** : regression_frame_ordinal.R, méthode clmm : sur le
   chemin à intercept aléatoire unique seulement, `exponentiate` refusé
   sous cloglog et titre sans « proportional hazards » ; le nul du test
