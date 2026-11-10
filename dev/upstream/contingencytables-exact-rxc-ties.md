@@ -4,6 +4,7 @@
 - **Canal** : issue GitHub [ocbe-uio/contingencytables#71](https://github.com/ocbe-uio/contingencytables/issues/71)
 - **Posté** : 2026-10-21
 - **Statut** : ouvert
+- **Statut au 2026-11-10** : fermé le 2026-10-29 par le mainteneur (« Fixed on #79 » : PR #79 fusionnée, fea3f154, tolérance de 1e-7 relatif comme proposé). Correctif dans `develop` (3.1.1.9007), pas dans 3.1.1 sur CRAN. Dans `develop`, nos trois exemples donnent les valeurs attendues (P = 1 et mid-P = 0,5 pour `x` et `y`, LR de `floor(table_7.3 / 10)` P = 0,5882353 et mid-P = 0,4595588). La 3.1.1 donne encore les valeurs fausses.
 - **Côté spicy** : non exposé (spicy ne dépend pas de contingencytables).
 
 ---

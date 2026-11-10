@@ -4,6 +4,7 @@
 - **Canal** : issue GitHub [ocbe-uio/contingencytables#72](https://github.com/ocbe-uio/contingencytables/issues/72)
 - **Posté** : 2026-10-21
 - **Statut** : ouvert
+- **Statut au 2026-11-10** : fermé le 2026-10-28 par le mainteneur (fusion 368a9dce de la branche issue-72, commit d8f54a9a). Défauts `a = seq_len(nrow(n))` et `b = seq_len(ncol(n))`, ceux que nous proposions, aussi dans le `.Rd`. Correctif dans `develop` (3.1.1.9007), pas dans 3.1.1 sur CRAN. Dans `develop`, `table_7.8` donne Z = 7,572 et `table_7.3` Z = -3,477 sans scores. La 3.1.1 donne encore NA.
 - **Côté spicy** : non exposé (spicy ne dépend pas de contingencytables).
 
 ---

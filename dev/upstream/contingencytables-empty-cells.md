@@ -4,6 +4,7 @@
 - **Canal** : issue GitHub [ocbe-uio/contingencytables#68](https://github.com/ocbe-uio/contingencytables/issues/68)
 - **Posté** : 2026-10-21
 - **Statut** : ouvert
+- **Statut au 2026-11-10** : fermé le 2026-10-27 par le mainteneur (fusion a702eaf6 de la branche issue-68 : la boucle passe par `R/to_long.R` avec `seq_len()`, appelé par les cinq fonctions). Correctif dans contingencytables 3.1.1 (CRAN). Nos exemples y donnent les valeurs attendues (Z = -1,993 et P = 0,0462 pour `ritland_2007`, r = -0,1566 pour `n3`, IC BCa de tau-b de -0,3415 à 0,0690, Z = 7,572 et r = 0,6590 pour `table_7.8`).
 - **Côté spicy** : non exposé. spicy ne dépend pas de contingencytables ; le paquet servait d'oracle de triangulation pour les tests de Fisher (#62).
 
 ---

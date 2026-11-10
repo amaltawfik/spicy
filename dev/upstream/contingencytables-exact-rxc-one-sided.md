@@ -4,6 +4,7 @@
 - **Canal** : issue GitHub [ocbe-uio/contingencytables#69](https://github.com/ocbe-uio/contingencytables/issues/69)
 - **Posté** : 2026-10-21
 - **Statut** : ouvert
+- **Statut au 2026-11-10** : fermé le 2026-10-27 par le mainteneur (commit 5714efff, notre correctif repris : statistiques au carré, égalités à 1e-7 relatif plus 1e-12). Correctif dans contingencytables 3.1.1 (CRAN). Nos exemples y donnent les valeurs attendues dans les deux ordres de lignes (linéaire P = 0,0005126 et mid-P = 0,0004197, Jonckheere-Terpstra P = 0,0005177 et mid-P = 0,0005140).
 - **Côté spicy** : non exposé (spicy ne dépend pas de contingencytables).
 
 ---
