@@ -24,6 +24,7 @@ tables
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
 and the survey twins
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
 and
@@ -482,7 +483,8 @@ Everything above extends beyond regression. The same accessor reads
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
 and the survey twins, and returns the same schema – the same identity
 columns, the same `cell_status`, the same `display_cells` mechanism for
 composite cells. A consumer written for one table reads the others.

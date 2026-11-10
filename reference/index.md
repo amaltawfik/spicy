@@ -69,6 +69,8 @@
   : Describe one continuous outcome across several groupings
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   : Multiple-response summary table
+- [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  : Item battery table
 
 ## Survey-design tables
 
@@ -157,6 +159,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
   : Print an association measures summary table
 
+- [`print(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
+  : Print method for item battery tables
+
 - [`print(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_svy_table.md)
   : Print method for categorical survey-design tables
 
@@ -218,6 +223,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   Print a
   [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
   value
+
+- [`as.data.frame(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as_tibble(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  :
+
+  Coerce a `spicy_battery_table` to a plain data frame or tibble
 
 - [`as.data.frame(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)
   [`as_tibble(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)

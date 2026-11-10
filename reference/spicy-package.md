@@ -103,6 +103,10 @@ clock rather than the parent family's):
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   since 0.14.0
 
+- Item batteries:
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
+  since 0.15.0
+
 - Stacked tables:
   [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
   with `table_regression(layout = "stacked")`, since 0.15.0

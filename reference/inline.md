@@ -24,9 +24,10 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  or
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  or
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   (default output) – every family
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   accepts. A stacked table of
@@ -163,6 +164,14 @@ number of respondents, addressed as the fit statistic `"nobs"`:
 belong to no group and are cited without `model`
 (`inline(tbl, info_internet, column = "p")`).
 
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+has one row per item and one column per level of its scale: `level`
+names the column, as a level of the scale, the header of the summary
+column of `top` (`"Agree + Strongly agree"`), or `"(Missing)"`, and
+`model` the group under `by`
+(`inline(tbl, q1, "Agree", "pct", model = "Female")`). The base `n` and
+the item `p` are cited without `level`.
+
 ## Columns
 
 The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
@@ -225,4 +234,14 @@ inline(cn, bmi, model = "Female")
 #> [1] "25.69"
 inline(cn, bmi, column = "p")
 #> [1] ".018"
+
+# A battery: the level of the scale is `level`, the group `model`.
+sat <- sochealth["sex"]
+sat$health <- factor(sochealth$life_sat_health, levels = 1:5)
+sat$work <- factor(sochealth$life_sat_work, levels = 1:5)
+bt <- table_battery(sat, select = c(health, work), by = sex)
+inline(bt, health, "5", "pct", model = "Female")
+#> [1] "27.8"
+inline(bt, health, column = "p")
+#> [1] ".767"
 ```

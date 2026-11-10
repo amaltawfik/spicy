@@ -24,7 +24,8 @@ as_structured(x)
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   or the survey twins
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
@@ -197,6 +198,13 @@ association measure.
   responses), `"statistic"` and `"p"`. Each group owns its columns under
   its own spanner, and the margin is flagged `col_meta$<col>$total`.
 
+- [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  – one `"summary"` row per item. Tokens: `"pct"` (a row percentage:
+  `col_meta$<col>$level` names the level it shows, `missing` flags the
+  column of missing answers, and `top` the summary column, with the
+  levels it adds up in `top_levels`), `"n"` (the base of the row) and
+  `"p"`. Under `by`, each group owns its columns under its own spanner.
+
 Cells the console builds from more than one number – a `"Mdn [Q1, Q3]"`,
 a test gloss, an effect size with its interval – keep their numeric
 anchor in `body` and their exact printed string in
@@ -209,9 +217,10 @@ Under `p_adjust`, the p-value column holds the adjusted values and its
 `col_meta` adds `p_adjust` (the method), `p_adjust_m` (the number of
 tests adjusted together) and `p_unadjusted` (the raw p-value of each
 cell, as long as `body`). In
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 and
-[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
 the p-value column's `col_meta` also carries `test_type`, the test of
 each cell, as long as `body` (`"chi_squared"`, `"n1_chi_squared"`,
 `"fisher_exact"`, `"fisher_midp"`, `"fisher_exact_mc"`, `NA` where the

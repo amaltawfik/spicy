@@ -81,6 +81,15 @@
   a global test with the second-order Rao-Scott correction, rendered by
   the same output engines as table_categorical().
 
+- [Item
+  batteries](https://amaltawfik.github.io/spicy/articles/table-battery.md):
+
+  Tabulate a battery of survey items rated on one scale in R with
+  table_battery(): one row per item, one column per level, row
+  percentages with their base, a summary column for the top of the
+  scale, and, across groups, a test per item with a Holm adjustment,
+  rendered by the same output engines as table_categorical().
+
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):
 
@@ -118,7 +127,8 @@
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   and the survey twins: a numeric body with per-row identity columns,
   per-column metadata, per-cell status, and the format specification.
   Filter rows programmatically, aggregate raw values, or build a custom

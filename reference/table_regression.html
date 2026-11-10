@@ -52,6 +52,7 @@ Gamma / inverse.gaussian / quasi families with any link."><meta property="og:ima
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-multiresponse.html">Multiple-response questions</a></li>
+    <li><a class="dropdown-item" href="../articles/table-battery.html">Item batteries</a></li>
     <li><a class="dropdown-item" href="../articles/survey-tables.html">Summary tables from a survey design</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
@@ -887,7 +888,8 @@ and rows it names these labels, and every other variable its
 is <code>labels = TRUE</code>.</p></li>
 </ul><p>The names are model identifiers, not display text: the outcome, the
 term labels of <code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">stats::terms()</a></code> (<code>"age"</code>, <code>"sex"</code>, <code>"age:sex"</code>, a
-factor's term naming its header), and the coefficient names
+factor's term naming its header, an interaction's term its row when
+it has one row), and the coefficient names
 (<code>"(Intercept)"</code>, <code>"sexMale"</code>; those of an <code>rms</code> fit in the spelling
 of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code>"sexMale"</code> for rms's <code>"sex=Male"</code> and <code>"age:sexMale"</code>
 for <code>"age * sex=Male"</code>), each naming one
@@ -1302,7 +1304,16 @@ absorbs fixed effects.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
 <li><p>Information criteria: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code>,
 <code>"deviance"</code> (lowercase like every other token; the rendered
-row labels stay <code>AIC</code> / <code>AICc</code> / <code>BIC</code>).</p></li>
+row labels stay <code>AIC</code> / <code>AICc</code> / <code>BIC</code>). The AIC and BIC of a
+<code>fixest</code> model are those of its <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> or
+<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> twin with the fixed effects as dummies: <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>'s
+log-likelihood for a Gaussian, Gamma or inverse-Gaussian <code>feglm()</code>,
+with the residual variance, dispersion or theta counted, which
+fixest's <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC()</a></code> leaves out. A Gaussian <code>femlm()</code> follows the same
+rule; Poisson, binomial and IV fits keep fixest's values. A lean
+fit (<code>lean = TRUE</code>) that lost what they need, its weights or the
+fitted values of a Gamma or inverse-Gaussian <code>feglm()</code>, shows no
+AIC, BIC or nested rows.</p></li>
 <li><p>Change-stats for hierarchical comparison
 (active under <code>nested = TRUE</code>; see <em>Hierarchical
 comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,

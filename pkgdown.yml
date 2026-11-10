@@ -9,6 +9,7 @@ articles:
   spicy: spicy.html
   articles/summary-tables-reporting: summary-tables-reporting.html
   articles/survey-tables: survey-tables.html
+  articles/table-battery: table-battery.html
   articles/table-categorical: table-categorical.html
   articles/table-continuous-lm: table-continuous-lm.html
   articles/table-continuous: table-continuous.html
@@ -24,7 +25,7 @@ articles:
   articles/table-regression-survival: table-regression-survival.html
   articles/table-regression: table-regression.html
   articles/variable-exploration: variable-exploration.html
-last_built: 2026-11-10T15:42Z
+last_built: 2026-11-10T19:03Z
 urls:
   reference: https://amaltawfik.github.io/spicy/reference
   article: https://amaltawfik.github.io/spicy/articles

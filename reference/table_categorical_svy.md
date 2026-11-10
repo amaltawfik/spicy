@@ -27,6 +27,7 @@ table_categorical_svy(
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
   levels_keep = NULL,
+  factor_levels = c("observed", "all"),
   include_total = TRUE,
   drop_na = FALSE,
   proportion_ci = FALSE,
@@ -152,7 +153,24 @@ table_categorical_svy(
 - levels_keep:
 
   Levels to keep, as a character vector (all variables) or a named list
-  (per variable).
+  (per variable). A declared level with no observation that it names is
+  shown with a count of 0, whatever `factor_levels` says.
+
+- factor_levels:
+
+  Character. Controls how factor and labelled values are displayed in
+  the table, as in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
+  `"observed"` (the default; matches Stata's `tab` and SPSS
+  `FREQUENCIES`, which both list only values present in the data) shows
+  only levels present in the data. `"all"` keeps every declared level,
+  including unused ones, which appear with `n = 0` and a percentage of 0
+  (in every column under `by`). A character or logical column declares
+  no level. The rows of unused levels are displayed only: they change no
+  percentage of the other rows and no test, which runs on the observed
+  levels. Under `proportion_ci = TRUE`, an unused level gets the exact
+  interval of a percentage of 0, the one a group that does not observe a
+  level gets.
 
 - include_total:
 

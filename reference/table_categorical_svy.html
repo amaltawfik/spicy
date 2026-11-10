@@ -50,6 +50,7 @@ of freedom."><meta property="og:image" content="https://amaltawfik.github.io/spi
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-multiresponse.html">Multiple-response questions</a></li>
+    <li><a class="dropdown-item" href="../articles/table-battery.html">Item batteries</a></li>
     <li><a class="dropdown-item" href="../articles/survey-tables.html">Summary tables from a survey design</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
@@ -108,6 +109,7 @@ of freedom.</p>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels_keep <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  include_total <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  proportion_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -217,7 +219,24 @@ variable.</p></dd>
 
 <dt id="arg-levels-keep">levels_keep<a class="anchor" aria-label="anchor" href="#arg-levels-keep"></a></dt>
 <dd><p>Levels to keep, as a character vector (all
-variables) or a named list (per variable).</p></dd>
+variables) or a named list (per variable). A declared level with no
+observation that it names is shown with a count of 0, whatever
+<code>factor_levels</code> says.</p></dd>
+
+
+<dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
+<dd><p>Character. Controls how factor and labelled values
+are displayed in the table, as in <code><a href="freq.html">freq()</a></code>. <code>"observed"</code> (the
+default; matches Stata's <code>tab</code> and SPSS <code>FREQUENCIES</code>, which both
+list only values present in the data) shows only levels present in
+the data. <code>"all"</code> keeps every declared level, including unused ones,
+which appear with <code>n = 0</code> and a percentage of 0 (in every column
+under <code>by</code>). A character or logical column declares no level. The
+rows of unused levels are displayed only: they change no percentage
+of the other rows and no test, which runs on the observed levels.
+Under <code>proportion_ci = TRUE</code>, an unused level gets the exact interval
+of a percentage of 0, the one a group that does not observe a level
+gets.</p></dd>
 
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>

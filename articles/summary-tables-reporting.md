@@ -57,6 +57,7 @@ Use the function that matches the unit you want to report:
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
 | [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md) (experimental) | A “check all that apply” question, one row per item | `select` (the items), `by` | Chi-squared or Fisher’s exact test per item with a Holm adjustment, a global test that allows for several answers per respondent |
+| [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md) (experimental) | Several items rated on one scale, one row per item and one column per level | `select` (the items), `by` | Row percentages and their base, a summary column of the top of the scale, a chi-squared or Fisher’s exact test per item with a Holm adjustment |
 | [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md), [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md) | The same descriptive tables from a [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html) (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
 | [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 39 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [*Supported models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
@@ -1066,7 +1067,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_fose4j8h5pgxr46o13s9 .table
+Categorical table by education {#tinytable_3nxbs6b9j0fkokq6d6gy .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

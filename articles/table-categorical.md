@@ -1048,6 +1048,14 @@ tests, as [*Multiple-response
 questions*](https://amaltawfik.github.io/spicy/articles/table-multiresponse.md)
 explains.
 
+A battery of items rated on one scale, such as a Likert grid, reads
+better with one row per item and one column per level than with one
+block of rows per item:
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+gives that layout, as [*Item
+batteries*](https://amaltawfik.github.io/spicy/articles/table-battery.md)
+shows.
+
 ## Rendered outputs and export
 
 The rendered formats produce publication-ready tables for HTML and Word
@@ -1097,7 +1105,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_k1054htp7hc3q1cgzgas .table
+Categorical table by sex {#tinytable_e6u6l8s34w8rya5bmx2u .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

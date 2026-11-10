@@ -828,13 +828,13 @@ table_regression(
 
   The names are model identifiers, not display text: the outcome, the
   term labels of [`stats::terms()`](https://rdrr.io/r/stats/terms.html)
-  (`"age"`, `"sex"`, `"age:sex"`, a factor's term naming its header),
-  and the coefficient names (`"(Intercept)"`, `"sexMale"`; those of an
-  `rms` fit in the spelling of
-  [`lm()`](https://rdrr.io/r/stats/lm.html), `"sexMale"` for rms's
-  `"sex=Male"` and `"age:sexMale"` for `"age * sex=Male"`), each naming
-  one row. They keep that form whatever the language of the table.
-  Classes with no `terms` component
+  (`"age"`, `"sex"`, `"age:sex"`, a factor's term naming its header, an
+  interaction's term its row when it has one row), and the coefficient
+  names (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the
+  spelling of [`lm()`](https://rdrr.io/r/stats/lm.html), `"sexMale"` for
+  rms's `"sex=Male"` and `"age:sexMale"` for `"age * sex=Male"`), each
+  naming one row. They keep that form whatever the language of the
+  table. Classes with no `terms` component
   ([`nls()`](https://rdrr.io/r/stats/nls.html),
   [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
   are keyed on their coefficient (or parameter) names alone. With
@@ -1260,7 +1260,19 @@ restore it explicitly when needed).
 
 - Information criteria: `"aic"`, `"aicc"`, `"bic"`, `"deviance"`
   (lowercase like every other token; the rendered row labels stay `AIC`
-  / `AICc` / `BIC`).
+  / `AICc` / `BIC`). The AIC and BIC of a `fixest` model are those of
+  its [`lm()`](https://rdrr.io/r/stats/lm.html),
+  [`glm()`](https://rdrr.io/r/stats/glm.html) or
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) twin with
+  the fixed effects as dummies:
+  [`glm()`](https://rdrr.io/r/stats/glm.html)'s log-likelihood for a
+  Gaussian, Gamma or inverse-Gaussian `feglm()`, with the residual
+  variance, dispersion or theta counted, which fixest's
+  [`AIC()`](https://rdrr.io/r/stats/AIC.html) leaves out. A Gaussian
+  `femlm()` follows the same rule; Poisson, binomial and IV fits keep
+  fixest's values. A lean fit (`lean = TRUE`) that lost what they need,
+  its weights or the fitted values of a Gamma or inverse-Gaussian
+  `feglm()`, shows no AIC, BIC or nested rows.
 
 - Change-stats for hierarchical comparison (active under
   `nested = TRUE`; see *Hierarchical comparison* below): `"r2_change"`,

@@ -44,6 +44,7 @@ Smokers had higher odds (`r inline(tbl, smoking, &quot;Yes&quot;, &quot;or&quot;
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
     <li><a class="dropdown-item" href="../articles/table-multiresponse.html">Multiple-response questions</a></li>
+    <li><a class="dropdown-item" href="../articles/table-battery.html">Item batteries</a></li>
     <li><a class="dropdown-item" href="../articles/survey-tables.html">Summary tables from a survey design</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
@@ -102,8 +103,9 @@ R chunks in Quarto / R Markdown:</p>
 <dd><p>A table returned by <code><a href="table_regression.html">table_regression()</a></code>,
 <code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>,
-<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> or
-<code><a href="table_multiresponse.html">table_multiresponse()</a></code> (default output) – every family
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>,
+<code><a href="table_multiresponse.html">table_multiresponse()</a></code> or <code><a href="table_battery.html">table_battery()</a></code> (default output) –
+every family
 <code><a href="as_structured.html">as_structured()</a></code> accepts. A stacked table of <code><a href="table_stack.html">table_stack()</a></code> holds
 several tables and is refused: pass the panel that holds the cell,
 <code>attr(x, "panels")[["Women"]]</code>.</p></dd>
@@ -210,6 +212,12 @@ name, then the rows of <code>none_row</code>, addressed as <code>"none"</code> a
 the fit statistic <code>"nobs"</code>: <code>inline(tbl, "nobs", model = "Total")</code>.
 The item <code>p</code> and <code>statistic</code> belong to no group and are cited without
 <code>model</code> (<code>inline(tbl, info_internet, column = "p")</code>).</p>
+<p><code><a href="table_battery.html">table_battery()</a></code> has one row per item and one column per level of its
+scale: <code>level</code> names the column, as a level of the scale, the header of
+the summary column of <code>top</code> (<code>"Agree + Strongly agree"</code>), or
+<code>"(Missing)"</code>, and <code>model</code> the group under <code>by</code>
+(<code>inline(tbl, q1, "Agree", "pct", model = "Female")</code>). The base <code>n</code> and
+the item <code>p</code> are cited without <code>level</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="columns">Columns<a class="anchor" aria-label="anchor" href="#columns"></a></h2>
@@ -272,6 +280,16 @@ addressing.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "25.69"</span>
 <span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">cn</span>, <span class="va">bmi</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] ".018"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A battery: the level of the scale is `level`, the group `model`.</span></span></span>
+<span class="r-in"><span><span class="va">sat</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="st">"sex"</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">sat</span><span class="op">$</span><span class="va">health</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_health</span>, levels <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sat</span><span class="op">$</span><span class="va">work</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_work</span>, levels <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">health</span>, <span class="va">work</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">bt</span>, <span class="va">health</span>, <span class="st">"5"</span>, <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "27.8"</span>
+<span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">bt</span>, <span class="va">health</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] ".767"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

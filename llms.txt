@@ -38,6 +38,11 @@ extraction, and row-wise summaries.
   “check all that apply” items read as one question, overall or by
   group, with a global test that allows for several answers per
   respondent. The function is experimental in this release.
+- **Item batteries** with
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
+  several items rated on one scale, one row per item and one column per
+  level, with a test per item across groups. The function is
+  experimental in this release.
 - **Outcome-first summary tables** with
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md):
   one continuous outcome described across several groupings, one block
@@ -729,6 +734,8 @@ Each workflow has a dedicated article on the package site:
   groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.html)
 - [Multiple-response
   questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+- [Item
+  batteries](https://amaltawfik.github.io/spicy/articles/table-battery.html)
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
 - [Publication-ready regression
@@ -881,6 +888,8 @@ details.
   : Describe one continuous outcome across several groupings
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   : Multiple-response summary table
+- [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  : Item battery table
 
 ## Survey-design tables
 
@@ -969,6 +978,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [`print(`*`<spicy_assoc_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_assoc_table.md)
   : Print an association measures summary table
 
+- [`print(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
+  : Print method for item battery tables
+
 - [`print(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_svy_table.md)
   : Print method for categorical survey-design tables
 
@@ -1030,6 +1042,12 @@ Documented here for direct invocation with custom arguments (e.g.,
   Print a
   [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
   value
+
+- [`as.data.frame(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as_tibble(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  :
+
+  Coerce a `spicy_battery_table` to a plain data frame or tibble
 
 - [`as.data.frame(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)
   [`as_tibble(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)
@@ -1228,6 +1246,15 @@ Documented here for direct invocation with custom arguments (e.g.,
   a global test with the second-order Rao-Scott correction, rendered by
   the same output engines as table_categorical().
 
+- [Item
+  batteries](https://amaltawfik.github.io/spicy/articles/table-battery.md):
+
+  Tabulate a battery of survey items rated on one scale in R with
+  table_battery(): one row per item, one column per level, row
+  percentages with their base, a summary column for the top of the
+  scale, and, across groups, a test per item with a Holm adjustment,
+  rendered by the same output engines as table_categorical().
+
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):
 
@@ -1265,7 +1292,8 @@ Documented here for direct invocation with custom arguments (e.g.,
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   and the survey twins: a numeric body with per-row identity columns,
   per-column metadata, per-cell status, and the format specification.
   Filter rows programmatically, aggregate raw values, or build a custom
