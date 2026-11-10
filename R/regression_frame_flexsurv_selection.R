@@ -494,6 +494,10 @@ as_regression_frame.selection <- function(
     ci_upper = ci_upper,
     test_type = rep("z", length(nm)),
     outcome_level = rep(outcome_label, length(nm)),
+    # The prefixed "selection: (Intercept)" and "outcome: (Intercept)"
+    # rows are the intercepts of the two equations: `show_intercept` and
+    # `keep` / `drop` treat them so.
+    is_intercept = nm == "(Intercept)",
     stringsAsFactors = FALSE
   )
 }

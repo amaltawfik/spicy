@@ -442,6 +442,113 @@ test_that("the note of the AME p-values leaves out a model with no AME", {
   expect_false(grepl("0 tests", n_fr, fixed = TRUE))
 })
 
+test_that("the AME p-value note names its models when one between has none", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("marginaleffects")
+  d <- make_ord()
+  pf <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+  g <- stats::glm(I(yc >= "Good") ~ x1 + smoke, data = d, family = binomial)
+  # Hand count: two slopes of the polr, each with an AME on the four
+  # categories (8 tests); the two slopes of the glm (2 tests); the Cox
+  # model has none.
+  m_pf <- 2L * nlevels(d$yc)
+  m_g <- 2L
+  note_of <- function() {
+    attr(
+      suppressWarnings(table_regression(
+        list(pf, cx, g),
+        show_columns = c("b", "p", "ame", "ame_p"),
+        p_adjust = "holm"
+      )),
+      "note"
+    )
+  }
+  en <- note_of()
+  expect_match(
+    en,
+    sprintf(
+      paste0(
+        "AME p-values adjusted within each model for %d and %d tests ",
+        "(Model 1 and Model 3, Holm method)."
+      ),
+      m_pf,
+      m_g
+    ),
+    fixed = TRUE
+  )
+  expect_false(grepl("respectively", en, fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note_of(),
+    sprintf(
+      paste0(
+        "Valeurs p des AME ajust\u00e9es dans chaque mod\u00e8le pour %d et ",
+        "%d tests (Mod\u00e8le 1 et Mod\u00e8le 3, m\u00e9thode de Holm)."
+      ),
+      m_pf,
+      m_g
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("the AME p-values alone: the note names the models it counts", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("marginaleffects")
+  d <- make_ord()
+  pf <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+  g <- stats::glm(I(yc >= "Good") ~ x1 + smoke, data = d, family = binomial)
+  # Hand count: 2 slopes x 4 categories for the polr, 2 for the glm; the
+  # Cox model shows no p-value and has no AME.
+  note_of <- function() {
+    attr(
+      suppressWarnings(table_regression(
+        list(pf, cx, g),
+        show_columns = c("b", "ame", "ame_p"),
+        p_adjust = "holm"
+      )),
+      "note"
+    )
+  }
+  en <- note_of()
+  expect_match(
+    en,
+    sprintf(
+      paste0(
+        "P-values adjusted within each model for %d and %d tests ",
+        "(Model 1 and Model 3, Holm method)."
+      ),
+      2L * nlevels(d$yc),
+      2L
+    ),
+    fixed = TRUE
+  )
+  expect_false(grepl("respectively", en, fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note_of(),
+    sprintf(
+      paste0(
+        "Valeurs p ajust\u00e9es dans chaque mod\u00e8le pour %d et %d tests ",
+        "(Mod\u00e8le 1 et Mod\u00e8le 3, m\u00e9thode de Holm)."
+      ),
+      2L * nlevels(d$yc),
+      2L
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("a family of one AME test, and equal AME families, have their keys", {
   skip_if_not_installed("marginaleffects")
   # poly(wt, 2) has two coefficients and one AME (that of wt): the AME

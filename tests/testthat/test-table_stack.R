@@ -3106,3 +3106,169 @@ test_that("a stacked note counts the coefficient and AME families as side by sid
   expect_no_match(st, "for 2 tests (", fixed = TRUE)
   expect_no_match(st, "Model 1: P-values", fixed = TRUE)
 })
+
+test_that("a stacked note names the models of a family as side by side", {
+  skip_on_cran()
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("marginaleffects")
+  set.seed(1)
+  d <- data.frame(
+    x1 = stats::rnorm(220),
+    smoke = factor(sample(c("no", "yes"), 220, TRUE)),
+    yc = factor(
+      sample(c("Poor", "Fair", "Good", "Very good"), 220, TRUE),
+      levels = c("Poor", "Fair", "Good", "Very good"),
+      ordered = TRUE
+    )
+  )
+  # A Cox panel refuses the AME columns in a stack: the panel between
+  # without an AME is an intercept-only model.
+  models <- list(
+    MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE),
+    stats::glm(I(yc >= "Good") ~ 1, data = d, family = stats::binomial),
+    stats::glm(I(yc >= "Good") ~ x1 + smoke, data = d, family = stats::binomial)
+  )
+  # Hand count: 2 slopes x 4 categories for the polr, 2 for the last glm.
+  n_ame <- c(2L * nlevels(d$yc), 2L)
+  note_of <- function(sc, ...) {
+    attr(
+      suppressWarnings(table_regression(
+        models,
+        p_adjust = "holm",
+        show_columns = sc,
+        ...
+      )),
+      "note"
+    )
+  }
+  sentences <- list(
+    with_p = paste(
+      "P-values adjusted within each model for 2 and 2 tests",
+      "(Model 1 and Model 3, Holm method).",
+      sprintf(
+        paste0(
+          "AME p-values adjusted within each model for %d and %d tests ",
+          "(Model 1 and Model 3, Holm method)."
+        ),
+        n_ame[[1L]],
+        n_ame[[2L]]
+      )
+    ),
+    ame_only = sprintf(
+      paste0(
+        "P-values adjusted within each model for %d and %d tests ",
+        "(Model 1 and Model 3, Holm method)."
+      ),
+      n_ame[[1L]],
+      n_ame[[2L]]
+    )
+  )
+  cols <- list(
+    with_p = c("b", "p", "ame", "ame_p"),
+    ame_only = c("b", "ame", "ame_p")
+  )
+  for (k in names(cols)) {
+    side <- note_of(cols[[k]])
+    st <- note_of(cols[[k]], layout = "stacked")
+    expect_match(side, sentences[[k]], fixed = TRUE, label = k)
+    expect_match(st, sentences[[k]], fixed = TRUE, label = k)
+    expect_false(grepl("Model 1: P-values", st, fixed = TRUE), label = k)
+  }
+})
+
+test_that("a stacked table warns of an interaction term with several rows", {
+  skip_on_cran()
+  set.seed(2)
+  d <- data.frame(
+    age = stats::rnorm(120, 40, 10),
+    wc = factor(sample(c("no", "yes"), 120, TRUE)),
+    g3 = factor(sample(c("a", "b", "c"), 120, TRUE))
+  )
+  d$y <- d$age / 10 + stats::rnorm(120)
+  models <- list(
+    stats::lm(y ~ age * wc, data = d),
+    stats::lm(y ~ wc * g3, data = d)
+  )
+  # The engine's names: "wc:g3" is a term of two coefficients.
+  expect_identical(
+    grep(":", names(stats::coef(models[[2L]])), fixed = TRUE, value = TRUE),
+    c("wcyes:g3b", "wcyes:g3c")
+  )
+  side <- expect_warning(
+    table_regression(models, labels = c("wc:g3" = "WC x G3")),
+    class = "spicy_unknown_name"
+  )
+  st <- expect_warning(
+    out <- table_regression(
+      models,
+      layout = "stacked",
+      labels = c("wc:g3" = "WC x G3", "age:wc" = "Age x WC")
+    ),
+    class = "spicy_unknown_name"
+  )
+  expect_match(
+    conditionMessage(st),
+    '"wc:g3" names "wcyes:g3b", "wcyes:g3c".',
+    fixed = TRUE
+  )
+  expect_identical(conditionMessage(st), conditionMessage(side))
+  # The term with one row labels it in its panel.
+  expect_true("Age x WC" %in% trimws(out$Variable))
+  expect_false("WC x G3" %in% trimws(out$Variable))
+})
+
+test_that("an intercept-only model between: the note names the models tested", {
+  skip_on_cran()
+  models <- list(
+    stats::lm(mpg ~ wt + hp, data = mtcars),
+    stats::lm(mpg ~ 1, data = mtcars),
+    stats::lm(mpg ~ wt, data = mtcars)
+  )
+  # Hand count: the coefficients but the intercept.
+  n_coef <- vapply(models, function(m) length(stats::coef(m)) - 1L, integer(1))
+  expect_identical(n_coef, c(2L, 0L, 1L))
+  note_of <- function(...) {
+    attr(table_regression(models, p_adjust = "holm", ...), "note")
+  }
+  en <- sprintf(
+    paste0(
+      "P-values adjusted within each model for %d and %d tests ",
+      "(Model 1 and Model 3, Holm method)."
+    ),
+    n_coef[[1L]],
+    n_coef[[3L]]
+  )
+  expect_match(note_of(), en, fixed = TRUE)
+  expect_match(note_of(layout = "stacked"), en, fixed = TRUE)
+  expect_false(grepl("respectively", note_of(), fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  fr <- sprintf(
+    paste0(
+      "Valeurs p ajust\u00e9es dans chaque mod\u00e8le pour %d et %d tests ",
+      "(Mod\u00e8le 1 et Mod\u00e8le 3, m\u00e9thode de Holm)."
+    ),
+    n_coef[[1L]],
+    n_coef[[3L]]
+  )
+  expect_match(note_of(), fr, fixed = TRUE)
+  expect_match(note_of(layout = "stacked"), fr, fixed = TRUE)
+})
+
+test_that("a stacked table refuses fixest models with fixed effects only", {
+  skip_on_cran()
+  skip_if_not_installed("fixest")
+  d <- na.omit(airquality)
+  d$Month <- factor(d$Month)
+  fe_only <- fixest::feols(Ozone ~ 1 | Month, data = d)
+  full <- fixest::feols(Ozone ~ Wind | Month, data = d)
+  # The engine estimates no coefficient for it.
+  expect_length(stats::coef(fe_only), 0L)
+  err <- expect_error(
+    table_regression(list(fe_only, full, fe_only), layout = "stacked"),
+    class = "spicy_empty_table"
+  )
+  expect_identical(
+    strsplit(conditionMessage(err), "\n", fixed = TRUE)[[1L]][1L],
+    "Model 1, Model 3 have no rows to show: they have fixed effects only."
+  )
+})

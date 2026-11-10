@@ -27,6 +27,46 @@
 #     is the FE-partialled-out variant.
 # ---------------------------------------------------------------------------
 
+# A fixest model with fixed effects only (`y ~ 1 | f`) has no coefficient,
+# so no row to show (and vcov() is NULL): refuse it as table_regression()
+# refuses any model with no row to show. Called before the frames are
+# built, so the message names the model as the other refusals do
+# ("Model 2", or the name the user gave it, even "M2").
+.refuse_fixest_fe_only <- function(models, panel = NULL) {
+  fe_only <- vapply(
+    models,
+    function(m) inherits(m, "fixest") && length(stats::coef(m)) == 0L,
+    logical(1)
+  )
+  if (!any(fe_only)) {
+    return(invisible(NULL))
+  }
+  # A panel of a stacked table is gathered with the others by its driver.
+  msg <- function(it) {
+    nm <- it$names
+    c(
+      sprintf(
+        "%s %s no rows to show: %s fixed effects only.",
+        paste(nm, collapse = ", "),
+        if (length(nm) > 1L) "have" else "has",
+        if (length(nm) > 1L) "they have" else "it has"
+      ),
+      "i" = paste0(
+        "fixest absorbs fixed effects instead of reporting them as ",
+        "coefficients."
+      ),
+      "i" = "Add a predictor before the `|` of the formula."
+    )
+  }
+  items <- list(names = .model_display_names(models, panel)[fe_only])
+  spicy_abort(
+    msg(items),
+    class = "spicy_empty_table",
+    spicy_gather = .reg_gather(panel, "fe_only", items, msg)
+  )
+}
+
+
 #' `as_regression_frame()` method for `fixest` fits.
 #'
 #' @keywords internal
@@ -44,26 +84,6 @@ as_regression_frame.fixest <- function(
   ...
 ) {
   .check_fixest_available()
-  # A model with fixed effects only (`y ~ 1 | f`) has no coefficient, so
-  # no row to show (and vcov() is NULL): refuse it as table_regression()
-  # refuses any model with no row to show, naming it as that refusal
-  # does ("Model 2", or the name the user gave it).
-  if (length(stats::coef(fit)) == 0L) {
-    spicy_abort(
-      c(
-        paste0(
-          sub("^M([0-9]+)$", "Model \\1", model_id),
-          " has no rows to show: it has fixed effects only."
-        ),
-        "i" = paste0(
-          "fixest absorbs fixed effects instead of reporting them as ",
-          "coefficients."
-        ),
-        "i" = "Add a predictor before the `|` of the formula."
-      ),
-      class = "spicy_empty_table"
-    )
-  }
 
   # Family disambiguation. feglm / fepois store fit$family as a glm-family
   # *list* (gaussian / binomial / poisson / Gamma / ...). femlm and
@@ -455,6 +475,7 @@ as_regression_frame.fixest <- function(
   } else {
     NA_real_
   }
+  ll <- .fixest_twin_loglik(fit)
   list(
     r_squared = as.numeric(r2$r2 %||% NA_real_),
     adj_r_squared = as.numeric(r2$ar2 %||% NA_real_),
@@ -466,11 +487,9 @@ as_regression_frame.fixest <- function(
     } else {
       NULL
     },
-    aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-    bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-      NA_real_
-    }),
+    aic = -2 * ll + 2 * attr(ll, "df"),
+    bic = -2 * ll + log(stats::nobs(fit)) * attr(ll, "df"),
+    log_lik = as.numeric(ll),
     deviance = tryCatch(
       suppressWarnings(stats::deviance(fit)),
       error = function(e) NA_real_
@@ -709,6 +728,77 @@ as_regression_frame.fixest <- function(
     )
   }
   if (is.data.frame(d)) d
+}
+
+
+# The feglm families whose dispersion is estimated, and counted.
+.FIXEST_DISP_FAMS <- c("gaussian", "Gamma", "inverse.gaussian")
+
+# The log-likelihood of a fixest fit and, as its "df", the parameters it
+# counts, as the lm() or glm() twin of the model counts them; the fixed
+# effects stay counted as fixest counts them (`fit$nparams`). fixest's
+# own AIC() leaves out the residual variance of a feols, and the
+# log-likelihood of a feglm whose dispersion is estimated (Gaussian,
+# Gamma, inverse Gaussian) is not the one glm() reports: both are
+# computed here as logLik.lm() and logLik.glm() compute them. A Gaussian
+# femlm is the ML fit of the same model and counts its variance too. An
+# IV feols, which no twin gives a likelihood, and the Poisson and
+# binomial fits keep fixest's; a fenegbin counts its theta, as
+# MASS::glm.nb() does. A lean fit whose weights are gone, or a lean
+# Gamma or inverse-Gaussian feglm, has no log-likelihood; a lean
+# Gaussian one is computed from its deviance.
+.fixest_twin_loglik <- function(fit) {
+  fam_name <- if (is.list(fit$family)) fit$family$family else fit$family
+  k <- fit$nparams
+  out <- function(ll, df) structure(as.numeric(ll), df = df)
+  weighted <- !is.null(fit$call$weights)
+  w <- fit$weights %||% if (!weighted) 1
+  is_ols <- identical(fit$method_type, "feols")
+  if (is_ols && !.fixest_is_iv_second_stage(fit)) {
+    if (is.null(w)) {
+      return(out(NA_real_, k + 1))
+    }
+    n <- stats::nobs(fit)
+    w <- rep_len(w, n)
+    ll <- 0.5 *
+      (sum(log(w)) - n * (log(2 * pi) + 1 - log(n) + log(fit$ssr)))
+    return(out(ll, k + 1))
+  }
+  if (
+    !is_ols && is.list(fit$family) && isTRUE(fam_name %in% .FIXEST_DISP_FAMS)
+  ) {
+    if (is.null(w)) {
+      return(out(NA_real_, k + 1))
+    }
+    if (identical(fam_name, "gaussian")) {
+      # glm()'s Gaussian log-likelihood needs n, the deviance and the
+      # weights only, which a lean fit keeps.
+      n <- stats::nobs(fit)
+      w <- rep_len(w, n)
+      dev <- fit$deviance
+      ll <- 0.5 * (sum(log(w)) - n * (log(2 * pi * dev / n) + 1))
+      return(out(ll, k + 1))
+    }
+    mu <- fit$fitted.values
+    if (is.null(mu)) {
+      return(out(NA_real_, k + 1))
+    }
+    y <- mu + stats::residuals(fit, type = "response")
+    aic <- fit$family$aic(
+      y,
+      rep(1, length(y)),
+      mu,
+      rep_len(w, length(y)),
+      stats::deviance(fit)
+    )
+    return(out(1 - aic / 2, k + 1))
+  }
+  ll <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+    NA_real_
+  })
+  # A Gaussian femlm counts its variance, a fenegbin its theta, as
+  # glm() and MASS::glm.nb() count them.
+  out(ll, k + isTRUE(!is_ols && fam_name %in% c("gaussian", "negbin")))
 }
 
 

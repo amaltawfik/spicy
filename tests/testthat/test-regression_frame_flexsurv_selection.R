@@ -325,3 +325,86 @@ test_that("selection accepts `labels =` keyed on coefficient names", {
   out <- table_regression(fit, labels = c(educ = "Years of education"))
   expect_true(any(grepl("Years of education", out$Variable, fixed = TRUE)))
 })
+
+test_that("the intercepts of the two Heckman equations are intercepts", {
+  fit <- .fit_selection_heckman()
+  # The engine's names: one "(Intercept)" per equation.
+  expect_identical(sum(names(stats::coef(fit)) == "(Intercept)"), 2L)
+  ints <- c("selection: (Intercept)", "outcome: (Intercept)")
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_identical(fr$coefs$term[fr$coefs$is_intercept], ints)
+  shown <- function(...) trimws(table_regression(...)$Variable)
+  expect_true(all(ints %in% shown(fit)))
+  # show_intercept = FALSE hides them, alone and beside another model.
+  expect_false(any(grepl(
+    "(Intercept)",
+    shown(fit, show_intercept = FALSE),
+    fixed = TRUE
+  )))
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  ols <- stats::lm(wage ~ exper + educ, data = Mroz87)
+  expect_false(any(grepl(
+    "(Intercept)",
+    shown(list(ols, fit), show_intercept = FALSE),
+    fixed = TRUE
+  )))
+  # keep / drop leave them to show_intercept, as they do the intercept
+  # of lm().
+  expect_true(all(ints %in% shown(fit, keep = "educ")))
+  expect_true("(Intercept)" %in% shown(ols, keep = "educ"))
+})
+
+test_that("p_adjust leaves the intercepts of the two equations out", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("nnet")
+  fit <- .fit_selection_heckman()
+  # Hand count: the slopes of both equations, without the two
+  # intercepts and the sigma and rho of the model.
+  nm <- names(stats::coef(fit))
+  n_slopes <- sum(!nm %in% c("(Intercept)", "invMillsRatio", "sigma", "rho"))
+  expect_identical(n_slopes, 7L)
+  tab <- table_regression(fit, p_adjust = "holm")
+  expect_match(
+    attr(tab, "note"),
+    sprintf("P-values adjusted for %d tests (Holm method).", n_slopes),
+    fixed = TRUE
+  )
+  # The displayed slope p-values are Holm over those slopes alone, the
+  # engine's own p-values (two-step fit, whose standard errors are finite).
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  fit2 <- sampleSelection::selection(
+    lfp ~ age + faminc + kids5 + educ,
+    wage ~ exper + educ + city,
+    data = Mroz87,
+    method = "2step"
+  )
+  est <- summary(fit2)$estimate
+  n_sel <- length(fit2$param$index$betaS)
+  n_out <- length(fit2$param$index$betaO)
+  keys <- c(
+    paste0("selection: ", rownames(est)[seq_len(n_sel)]),
+    paste0("outcome: ", rownames(est)[n_sel + seq_len(n_out)])
+  )
+  p_raw <- est[seq_len(n_sel + n_out), "Pr(>|t|)"]
+  slope <- !grepl("(Intercept)", keys, fixed = TRUE)
+  td <- as.data.frame(broom::tidy(table_regression(fit2, p_adjust = "holm")))
+  expect_equal(
+    td$p.value[match(keys[slope], td$term)],
+    unname(stats::p.adjust(p_raw[slope], "holm")),
+    tolerance = 1e-12
+  )
+  # A multinomial model follows the same rule.
+  m <- nnet::multinom(
+    Species ~ Sepal.Length + Sepal.Width,
+    data = iris,
+    trace = FALSE
+  )
+  expect_match(
+    attr(table_regression(m, p_adjust = "holm"), "note"),
+    sprintf(
+      "P-values adjusted for %d tests (Holm method).",
+      sum(colnames(stats::coef(m)) != "(Intercept)") * nrow(stats::coef(m))
+    ),
+    fixed = TRUE
+  )
+})

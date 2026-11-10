@@ -1085,3 +1085,183 @@ test_that("a quantile hierarchy refuses the tokens it cannot report", {
     c("f_change", "p_change")
   )
 })
+
+test_that("fixest pairs: LRT / p match anova() on the glm twins", {
+  skip_if_no("fixest")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  fams <- list(
+    Gamma = list(Gamma("log"), "mpg", "| cyl", "+ cyl"),
+    gaussian = list(gaussian(), "mpg", "| cyl", "+ cyl"),
+    poisson = list(poisson(), "carb", "| cyl", "+ cyl"),
+    binomial = list(binomial(), "am", "", ""),
+    inverse.gaussian = list(inverse.gaussian("log"), "mpg", "", "")
+  )
+  for (nm in names(fams)) {
+    fm <- fams[[nm]][[1]]
+    y <- fams[[nm]][[2]]
+    f <- function(rhs) stats::as.formula(paste(y, "~", rhs))
+    # Default convergence on both sides: the two engines run the same
+    # IRLS iterations, and their tests agree.
+    fx <- function(rhs) fixest::feglm(f(rhs), d, family = fm)
+    gl <- function(rhs) stats::glm(f(rhs), data = d, family = fm)
+    fx0 <- fx(paste("wt", fams[[nm]][[3]]))
+    fx1 <- fx(paste("wt + hp", fams[[nm]][[3]]))
+    g0 <- gl(paste("wt", fams[[nm]][[4]]))
+    g1 <- gl(paste("wt + hp", fams[[nm]][[4]]))
+    av <- stats::anova(g0, g1, test = "LRT")
+    # anova.glm() tests the deviance change over the dispersion of the
+    # larger model (1 for Poisson and binomial).
+    stat <- av$Deviance[2L] / summary(g1)$dispersion
+    df <- as.data.frame(table_regression(
+      list(fx0, fx1),
+      nested = TRUE,
+      show_fit_stats = c("lrt_change", "deviance_change", "p_change")
+    ))
+    got <- function(v) df[["Model 2: B"]][df$variable == v]
+    # Except for the inverse Gaussian, whose fits of the two engines
+    # differ in their slopes by about 1e-6 on these data (a flat
+    # optimum): its test agrees to 1e-4.
+    tol <- if (nm == "inverse.gaussian") 1e-4 else 1e-10
+    expect_equal(got("lrt_change"), stat, tolerance = tol, label = nm)
+    expect_equal(
+      got("p_change"),
+      av[["Pr(>Chi)"]][2L],
+      tolerance = tol,
+      label = nm
+    )
+    expect_equal(
+      got("deviance_change"),
+      av$Deviance[2L],
+      tolerance = 1e-6,
+      label = nm
+    )
+  }
+})
+
+test_that("fixest pairs: weighted, feols and fenegbin LR tests match their twins", {
+  skip_if_no("fixest", "lmtest", "MASS")
+  d <- mtcars
+  lr_of <- function(fits) {
+    df <- as.data.frame(table_regression(
+      fits,
+      nested = TRUE,
+      show_fit_stats = c("lrt_change", "p_change")
+    ))
+    c(
+      df[["Model 2: B"]][df$variable == "lrt_change"],
+      df[["Model 2: B"]][df$variable == "p_change"]
+    )
+  }
+  # A weighted Gamma pair: anova.glm() on the weighted twins.
+  fw0 <- fixest::feglm(mpg ~ wt, d, family = Gamma("log"), weights = ~qsec)
+  fw1 <- fixest::feglm(
+    mpg ~ wt + hp,
+    d,
+    family = Gamma("log"),
+    weights = ~qsec
+  )
+  g0 <- stats::glm(mpg ~ wt, data = d, family = Gamma("log"), weights = qsec)
+  g1 <- stats::glm(
+    mpg ~ wt + hp,
+    data = d,
+    family = Gamma("log"),
+    weights = qsec
+  )
+  av <- stats::anova(g0, g1, test = "LRT")
+  expect_equal(
+    lr_of(list(fw0, fw1)),
+    c(av$Deviance[2L] / summary(g1)$dispersion, av[["Pr(>Chi)"]][2L]),
+    tolerance = 1e-8
+  )
+  # A weighted feols pair: lmtest::lrtest() on the weighted lm() twins.
+  lw <- lmtest::lrtest(
+    stats::lm(mpg ~ wt, data = d, weights = qsec),
+    stats::lm(mpg ~ wt + hp, data = d, weights = qsec)
+  )
+  expect_equal(
+    lr_of(list(
+      fixest::feols(mpg ~ wt, d, weights = ~qsec),
+      fixest::feols(mpg ~ wt + hp, d, weights = ~qsec)
+    )),
+    c(lw$Chisq[2L], lw[["Pr(>Chisq)"]][2L]),
+    tolerance = 1e-10
+  )
+  # A fenegbin pair: lmtest::lrtest() on the glm.nb() twins (theta is
+  # estimated by each engine, to about 1e-6).
+  q <- MASS::quine
+  ln <- lmtest::lrtest(
+    MASS::glm.nb(Days ~ Sex + Age, data = q),
+    MASS::glm.nb(Days ~ Sex + Age + Eth, data = q)
+  )
+  expect_equal(
+    lr_of(list(
+      fixest::fenegbin(Days ~ Sex + Age, data = q),
+      fixest::fenegbin(Days ~ Sex + Age + Eth, data = q)
+    )),
+    c(ln$Chisq[2L], ln[["Pr(>Chisq)"]][2L]),
+    tolerance = 1e-5
+  )
+})
+
+test_that("nested AICc rows and their change count the parameters of the AIC", {
+  skip_if_no("fixest", "survival", "MASS", "broom")
+  # Hand oracle: -2 logLik + 2k + 2k(k + 1) / (n - k - 1), k and n those
+  # of logLik() and nobs() (of the lm() twin for feols).
+  aicc <- function(m) {
+    l <- stats::logLik(m)
+    k <- attr(l, "df")
+    n <- stats::nobs(m)
+    -2 * as.numeric(l) + 2 * k + 2 * k * (k + 1) / (n - k - 1)
+  }
+  d <- mtcars
+  h <- MASS::housing
+  lung <- survival::lung
+  cases <- list(
+    feols = list(
+      list(
+        fixest::feols(mpg ~ wt, data = d),
+        fixest::feols(mpg ~ wt + hp, data = d)
+      ),
+      list(stats::lm(mpg ~ wt, data = d), stats::lm(mpg ~ wt + hp, data = d))
+    ),
+    coxph = list(
+      list(
+        survival::coxph(survival::Surv(time, status) ~ age, data = lung),
+        survival::coxph(survival::Surv(time, status) ~ age + sex, data = lung)
+      )
+    ),
+    polr = list(
+      list(
+        MASS::polr(Sat ~ Infl, data = h, weights = Freq, Hess = TRUE),
+        MASS::polr(Sat ~ Infl + Type, data = h, weights = Freq, Hess = TRUE)
+      )
+    ),
+    glm = list(
+      list(
+        stats::glm(am ~ wt, data = d, family = stats::binomial),
+        stats::glm(am ~ wt + hp, data = d, family = stats::binomial)
+      )
+    )
+  )
+  for (nm in names(cases)) {
+    fits <- cases[[nm]][[1L]]
+    twins <- if (length(cases[[nm]]) > 1L) cases[[nm]][[2L]] else fits
+    tab <- table_regression(
+      fits,
+      nested = TRUE,
+      show_fit_stats = c("aicc", "aicc_change")
+    )
+    df <- as.data.frame(tab)
+    row <- function(v, j) df[[sprintf("Model %d: B", j)]][df$variable == v]
+    oracle <- vapply(twins, aicc, numeric(1))
+    # The AICc row is the AICc, not its change.
+    expect_equal(c(row("aicc", 1L), row("aicc", 2L)), oracle, label = nm)
+    expect_equal(row("aicc_change", 2L), diff(oracle), label = nm)
+    expect_equal(
+      as.data.frame(broom::glance(tab))$AICc,
+      oracle,
+      label = nm
+    )
+  }
+})

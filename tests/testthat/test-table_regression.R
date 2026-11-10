@@ -716,6 +716,98 @@ test_that("labels – a key that exists in only ONE model applies there only", {
   )
 })
 
+test_that("labels - an interaction's term label names its one row", {
+  skip_on_cran()
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("rms")
+  set.seed(2)
+  d <- data.frame(
+    age = rnorm(200, 40, 10),
+    wc = factor(sample(c("no", "yes"), 200, TRUE)),
+    g3 = factor(sample(c("a", "b", "c"), 200, TRUE))
+  )
+  d$y <- d$age / 10 + (d$wc == "yes") + rnorm(200)
+  d$yo <- cut(d$y, 4, ordered_result = TRUE)
+  d$yb <- as.integer(d$y > stats::median(d$y))
+  fits <- list(
+    lm = stats::lm(y ~ age * wc, data = d),
+    glm = stats::glm(yb ~ age * wc, data = d, family = stats::binomial),
+    ols = rms::ols(y ~ age * wc, data = d),
+    polr = MASS::polr(yo ~ age * wc, data = d, Hess = TRUE)
+  )
+  for (nm in names(fits)) {
+    fit <- fits[[nm]]
+    # The engine's own names: one interaction term, one coefficient of it.
+    expect_true("age:wc" %in% attr(stats::terms(fit), "term.labels"))
+    inter <- grep(
+      "age.*wc",
+      setdiff(names(stats::coef(fit)), "age"),
+      value = TRUE
+    )
+    expect_length(inter, 1L)
+    base <- trimws(table_regression(fit)$Variable)
+    out <- trimws(
+      table_regression(fit, labels = c("age:wc" = "Age x WC"))$Variable
+    )
+    # The row shown under the coefficient name takes the label, in place.
+    expect_identical(out[base == "age:wcyes"], "Age x WC", label = nm)
+    expect_identical(out[base != "age:wcyes"], base[base != "age:wcyes"])
+    # The coefficient key, given too, wins.
+    both <- trimws(
+      table_regression(
+        fit,
+        labels = c("age:wc" = "Term", "age:wcyes" = "Row")
+      )$Variable
+    )
+    expect_identical(both[base == "age:wcyes"], "Row", label = nm)
+  }
+  # A variable whose name opens another's: "age:wc" names "age:wcyes",
+  # never "age2:wcyes", which belongs to "age2:wc".
+  d$age2 <- d$age^2 / 100
+  fit2 <- stats::lm(y ~ age2 + age + wc + age2:wc + age:wc, data = d)
+  expect_true(all(
+    c("age:wc", "age2:wc") %in% attr(stats::terms(fit2), "term.labels")
+  ))
+  expect_true(all(c("age:wcyes", "age2:wcyes") %in% names(stats::coef(fit2))))
+  base2 <- trimws(table_regression(fit2)$Variable)
+  out2 <- trimws(
+    table_regression(
+      fit2,
+      labels = c("age:wc" = "Age x WC", "age2:wc" = "Age2 x WC")
+    )$Variable
+  )
+  expect_identical(out2[base2 == "age:wcyes"], "Age x WC")
+  expect_identical(out2[base2 == "age2:wcyes"], "Age2 x WC")
+  # A factor by a three-level factor: the term names two rows, labels
+  # none, and the warning lists them.
+  fit <- stats::lm(y ~ wc * g3, data = d)
+  rows <- grep(":", names(stats::coef(fit)), fixed = TRUE, value = TRUE)
+  expect_identical(rows, c("wcyes:g3b", "wcyes:g3c"))
+  w <- expect_warning(
+    out <- table_regression(fit, labels = c("wc:g3" = "WC x G3")),
+    class = "spicy_unknown_name"
+  )
+  # A warning of its own: the term is a term of the table, it spans
+  # several rows.
+  expect_identical(
+    cli::ansi_strip(strsplit(
+      conditionMessage(w),
+      "\n",
+      fixed = TRUE
+    )[[1L]]),
+    c(
+      '`labels` names a term that spans several rows: "wc:g3".',
+      paste(
+        cli::symbol$info,
+        "It labels none of them. Label each row by its name."
+      ),
+      paste(cli::symbol$info, '"wc:g3" names "wcyes:g3b", "wcyes:g3c".')
+    )
+  )
+  expect_false(grepl("matches nothing", conditionMessage(w), fixed = TRUE))
+  expect_identical(out$Variable, table_regression(fit)$Variable)
+})
+
 
 # ============================================================================
 # labels contract (decision 54): names by default, the label attributes on
@@ -3040,7 +3132,11 @@ test_that("a row selection that leaves no coefficient row is refused", {
     ),
     class = "spicy_empty_table"
   )
-  expect_match(conditionMessage(err), "A, B have no rows to show.", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "A, B have no rows to show.",
+    fixed = TRUE
+  )
   # Side by side, a model left without coefficients keeps its fit
   # statistics beside the others: the table is built.
   tbl <- table_regression(

@@ -3260,21 +3260,70 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
   # per-GROUP coefficient list, so its names are the grouping factors;
   # lme returns random-effect-augmented coefficients; clm mixes
   # thresholds in). .spicy_fixed_coef_names() knows each class.
-  all_coefs <- unlist(lapply(models, function(fit) {
-    nm <- tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
-      names(stats::coef(fit))
-    })
-    # An rms fit names its rows in lm's spelling (.rms_row_terms()), and
-    # the cut-points of an ordinal lrm are its Thresholds block.
-    if (inherits(fit, "rms")) {
-      nm <- .rms_row_terms(
-        setdiff(nm, .lrm_cut_names(fit)),
-        .rms_logical_vars(fit)
-      )
-    }
-    nm
-  }))
+  all_coefs <- unlist(lapply(models, .reg_coef_keys_of))
   unique(c(all_terms, all_coefs))
+}
+
+# The coefficient names one fit's rows are keyed by.
+.reg_coef_keys_of <- function(fit) {
+  nm <- tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
+    names(stats::coef(fit))
+  })
+  # An rms fit names its rows in lm's spelling (.rms_row_terms()), and
+  # the cut-points of an ordinal lrm are its Thresholds block.
+  if (inherits(fit, "rms")) {
+    nm <- .rms_row_terms(
+      setdiff(nm, .lrm_cut_names(fit)),
+      .rms_logical_vars(fit)
+    )
+  }
+  nm
+}
+
+# The coefficient rows each interaction term label of `keys` names, over
+# every model: "age:wc" names "age:wcyes", and "wc:g3" names "wcyes:g3b"
+# and "wcyes:g3c". A row belongs to the term when its ":"-pieces open, in
+# order, with the pieces of the term, each piece read as the longest
+# piece of the model's terms that opens it ("age2:wcyes" belongs to
+# "age2:wc", not to "age:wc"). A named list, one entry per key that is an
+# interaction term of some model.
+.reg_interaction_rows <- function(models, keys) {
+  keys <- unique(keys[grepl(":", keys, fixed = TRUE)])
+  out <- list()
+  if (length(keys) == 0L) {
+    return(out)
+  }
+  for (fit in models) {
+    tl <- tryCatch(
+      attr(.spicy_get_terms(fit), "term.labels"),
+      error = function(e) character(0)
+    )
+    cand <- intersect(keys, tl)
+    if (length(cand) == 0L) {
+      next
+    }
+    nm <- .reg_coef_keys_of(fit)
+    pieces <- unique(unlist(strsplit(tl, ":", fixed = TRUE)))
+    pieces <- pieces[order(-nchar(pieces))]
+    owner <- function(p) {
+      hit <- pieces[startsWith(p, pieces)]
+      if (length(hit) > 0L) hit[[1L]] else NA_character_
+    }
+    nm_pieces <- strsplit(nm, ":", fixed = TRUE)
+    for (k in cand) {
+      kp <- strsplit(k, ":", fixed = TRUE)[[1L]]
+      hit <- vapply(
+        nm_pieces,
+        function(s) {
+          length(s) == length(kp) &&
+            identical(unname(vapply(s, owner, character(1))), kp)
+        },
+        logical(1)
+      )
+      out[[k]] <- unique(c(out[[k]], nm[hit]))
+    }
+  }
+  out
 }
 
 

@@ -1118,6 +1118,15 @@ test_that("a fixest model with fixed effects only is refused: no row to show", {
     class = "spicy_empty_table"
   )
   expect_match(conditionMessage(err), "^Baseline has no rows to show")
+  # A model the user named "M2" keeps that name.
+  err <- expect_error(
+    table_regression(list(M1 = full, M2 = fe_only[[2]])),
+    class = "spicy_empty_table"
+  )
+  expect_identical(
+    strsplit(conditionMessage(err), "\n", fixed = TRUE)[[1]][1],
+    "M2 has no rows to show: it has fixed effects only."
+  )
 })
 
 # ---- 14. IV R-squared, data read for types, i() reference -----------------
@@ -1752,5 +1761,121 @@ test_that("a factor(), character or logical term of fixest takes lm's layout", {
   expect_identical(
     df$level[df$variable == "factor(Month)"],
     c(NA, "5", "6", "7", "8", "9")
+  )
+})
+
+test_that("fixest AIC and BIC count the parameters lm() and glm() count", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("MASS")
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  ic_of <- function(fit, ...) {
+    df <- as.data.frame(
+      table_regression(fit, show_fit_stats = c("aic", "bic"), ...)
+    )
+    stats::setNames(df$B[df$.row_role == "fit_stat"], c("aic", "bic"))
+  }
+  twin_ic <- function(fit) c(aic = stats::AIC(fit), bic = stats::BIC(fit))
+  # Without fixed effects: the lm() and glm() twins, weights included.
+  pairs <- list(
+    feols = list(
+      fixest::feols(mpg ~ wt + hp, data = d),
+      stats::lm(mpg ~ wt + hp, data = d)
+    ),
+    feols_w = list(
+      fixest::feols(mpg ~ wt + hp, data = d, weights = ~qsec),
+      stats::lm(mpg ~ wt + hp, data = d, weights = qsec)
+    ),
+    gaussian = list(
+      fixest::feglm(mpg ~ wt + hp, data = d, family = gaussian),
+      stats::glm(mpg ~ wt + hp, data = d, family = gaussian)
+    ),
+    gamma = list(
+      fixest::feglm(mpg ~ wt + hp, data = d, family = Gamma("log")),
+      stats::glm(mpg ~ wt + hp, data = d, family = Gamma("log"))
+    ),
+    inv_gaussian = list(
+      fixest::feglm(mpg ~ wt + hp, data = d, family = inverse.gaussian("log")),
+      stats::glm(mpg ~ wt + hp, data = d, family = inverse.gaussian("log"))
+    ),
+    poisson = list(
+      fixest::fepois(carb ~ wt + hp, data = d),
+      stats::glm(carb ~ wt + hp, data = d, family = poisson)
+    ),
+    binomial = list(
+      fixest::feglm(am ~ wt, data = d, family = binomial),
+      stats::glm(am ~ wt, data = d, family = binomial)
+    ),
+    gamma_w = list(
+      fixest::feglm(
+        mpg ~ wt + hp,
+        data = d,
+        family = Gamma("log"),
+        weights = ~qsec
+      ),
+      stats::glm(mpg ~ wt + hp, data = d, family = Gamma("log"), weights = qsec)
+    ),
+    # A lean fit keeps what a Gaussian likelihood needs.
+    feols_lean = list(
+      fixest::feols(mpg ~ wt + hp, data = d, lean = TRUE),
+      stats::lm(mpg ~ wt + hp, data = d)
+    ),
+    gaussian_lean = list(
+      fixest::feglm(mpg ~ wt + hp, data = d, family = gaussian, lean = TRUE),
+      stats::glm(mpg ~ wt + hp, data = d, family = gaussian)
+    ),
+    # theta counted, as MASS::glm.nb() counts it.
+    negbin = list(
+      fixest::fenegbin(Days ~ Sex + Age + Eth, data = MASS::quine),
+      MASS::glm.nb(Days ~ Sex + Age + Eth, data = MASS::quine)
+    )
+  )
+  for (nm in names(pairs)) {
+    expect_equal(
+      ic_of(pairs[[nm]][[1]]),
+      twin_ic(pairs[[nm]][[2]]),
+      tolerance = 1e-8,
+      label = nm
+    )
+  }
+  # Poisson and binomial keep fixest's own values.
+  expect_equal(
+    unname(ic_of(pairs$poisson[[1]])),
+    c(stats::AIC(pairs$poisson[[1]]), stats::BIC(pairs$poisson[[1]])),
+    tolerance = 1e-10
+  )
+  # With fixed effects, counted as fixest counts them: fixest's AIC plus
+  # the residual variance, and the twin with the fixed effects as dummies.
+  fe <- fixest::feols(mpg ~ wt + hp | cyl, data = d)
+  n <- stats::nobs(fe)
+  expect_equal(
+    unname(ic_of(fe)),
+    c(stats::AIC(fe) + 2, stats::BIC(fe) + log(n)),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    ic_of(fe),
+    twin_ic(stats::lm(mpg ~ wt + hp + cyl, data = d)),
+    tolerance = 1e-8
+  )
+  fe_g <- fixest::feglm(mpg ~ wt + hp | cyl, data = d, family = Gamma("log"))
+  expect_equal(
+    ic_of(fe_g),
+    twin_ic(stats::glm(mpg ~ wt + hp + cyl, data = d, family = Gamma("log"))),
+    tolerance = 1e-8
+  )
+  # The change of a nested comparison is the change of the rows.
+  small <- fixest::feglm(mpg ~ wt | cyl, data = d, family = Gamma("log"))
+  df <- as.data.frame(table_regression(
+    list(small, fe_g),
+    nested = TRUE,
+    show_fit_stats = c("aic", "aic_change")
+  ))
+  twin_small <- stats::glm(mpg ~ wt + cyl, data = d, family = Gamma("log"))
+  twin_big <- stats::glm(mpg ~ wt + hp + cyl, data = d, family = Gamma("log"))
+  expect_equal(
+    df[["Model 2: B"]][df$variable == "aic_change"],
+    stats::AIC(twin_big) - stats::AIC(twin_small),
+    tolerance = 1e-8
   )
 })

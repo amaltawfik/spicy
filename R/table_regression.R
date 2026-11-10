@@ -228,7 +228,16 @@
 #'   \item Effect size: `"f2"`.
 #'   \item Information criteria: `"aic"`, `"aicc"`, `"bic"`,
 #'     `"deviance"` (lowercase like every other token; the rendered
-#'     row labels stay `AIC` / `AICc` / `BIC`).
+#'     row labels stay `AIC` / `AICc` / `BIC`). The AIC and BIC of a
+#'     `fixest` model are those of its `lm()`, `glm()` or
+#'     `MASS::glm.nb()` twin with the fixed effects as dummies: `glm()`'s
+#'     log-likelihood for a Gaussian, Gamma or inverse-Gaussian `feglm()`,
+#'     with the residual variance, dispersion or theta counted, which
+#'     fixest's `AIC()` leaves out. A Gaussian `femlm()` follows the same
+#'     rule; Poisson, binomial and IV fits keep fixest's values. A lean
+#'     fit (`lean = TRUE`) that lost what they need, its weights or the
+#'     fitted values of a Gamma or inverse-Gaussian `feglm()`, shows no
+#'     AIC, BIC or nested rows.
 #'   \item Change-stats for hierarchical comparison
 #'     (active under `nested = TRUE`; see *Hierarchical
 #'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
@@ -1566,7 +1575,8 @@
 #'
 #'   The names are model identifiers, not display text: the outcome, the
 #'   term labels of [stats::terms()] (`"age"`, `"sex"`, `"age:sex"`, a
-#'   factor's term naming its header), and the coefficient names
+#'   factor's term naming its header, an interaction's term its row when
+#'   it has one row), and the coefficient names
 #'   (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the spelling
 #'   of `lm()`, `"sexMale"` for rms's `"sex=Male"` and `"age:sexMale"`
 #'   for `"age * sex=Male"`), each naming one
@@ -3027,6 +3037,10 @@ table_regression <- function(
     vapply(seq_len(n_models), default_id, character(1))
   }
 
+  # A fixest model with fixed effects only has no row to show: refused
+  # before the frames, where the messages know the names of the models.
+  .with_public_call(.refuse_fixest_fe_only(models, panel_req), public_call)
+
   # Phase 0c sub-step C5: orchestrator now builds ONLY the frames list.
   # The legacy `extracts` list, the `.frame_to_legacy_extract()` adapter,
   # the legacy `apply_p_adjust()` -- all gone. Every downstream renderer
@@ -3676,19 +3690,7 @@ table_regression <- function(
   # panel of a stack names one model only: its driver checks the names
   # against all.
   if (is.null(panel_req)) {
-    label_keys <- .reg_label_keys(models)
-    .warn_unknown_label_names(
-      c(
-        label_keys,
-        unlist(lapply(frames, function(f) {
-          dv <- f$info$dv %||% NA_character_
-          c(dv, .reg_bare_var(dv))
-        }))
-      ),
-      labels,
-      note_labels,
-      hint = .reg_terms_sentence(label_keys)
-    )
+    .reg_warn_label_names(models, frames, labels, note_labels)
   }
   var_labs <- .reg_variable_labels(labels, models, frames)
   for (i in seq_along(frames)) {
@@ -4065,6 +4067,69 @@ table_regression <- function(
     labels = var_labs$terms
   )
 }
+
+# A name of `labels` or `note_labels` that is no outcome, term label or
+# coefficient name of the models warns, and is left out
+# (`.warn_unknown_label_names()`), with the terms the models name. An
+# interaction term label that names several rows ("wc:g3" for
+# "wcyes:g3b" and "wcyes:g3c") labels none of them: it warns too, with
+# its rows. The side-by-side table and the driver of a stack check the
+# names of all the models here.
+.reg_warn_label_names <- function(models, frames, labels, note_labels) {
+  label_keys <- .reg_label_keys(models)
+  several <- if (is.character(labels)) {
+    Filter(
+      function(r) length(r) > 1L,
+      .reg_interaction_rows(models, names(labels))
+    )
+  }
+  if (length(several) > 0L) {
+    one <- length(several) == 1L
+    spicy_warn(
+      c(
+        sprintf(
+          "`labels` names %s that %s several rows: %s.",
+          if (one) "a term" else sprintf("%d terms", length(several)),
+          if (one) "spans" else "span",
+          paste(.quote_val(names(several)), collapse = ", ")
+        ),
+        "i" = paste(
+          if (one) "It labels none of them." else "They label none of them.",
+          "Label each row by its name."
+        ),
+        stats::setNames(
+          vapply(
+            names(several),
+            function(k) {
+              sprintf(
+                "%s names %s.",
+                .quote_val(k),
+                paste(.quote_val(several[[k]]), collapse = ", ")
+              )
+            },
+            character(1),
+            USE.NAMES = FALSE
+          ),
+          rep("i", length(several))
+        )
+      ),
+      class = "spicy_unknown_name"
+    )
+  }
+  .warn_unknown_label_names(
+    c(
+      label_keys,
+      unlist(lapply(frames, function(f) {
+        dv <- f$info$dv %||% NA_character_
+        c(dv, .reg_bare_var(dv))
+      }))
+    ),
+    labels,
+    note_labels,
+    hint = .reg_terms_sentence(setdiff(label_keys, names(several)))
+  )
+}
+
 
 # Display names for a list of fitted models: their names when all are
 # named, positional "Model k" otherwise. Every warning that cites a

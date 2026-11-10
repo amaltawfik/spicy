@@ -1038,7 +1038,14 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
   # report, and the one lmtest::lrtest() computes. Both members of the
   # pair are replaced at once so the statistic and its p-value always
   # come from the same computation.
-  if (!is.finite(lrt_stat) || !is.finite(p_val)) {
+  # A fixest pair is tested as its lm() or glm() twins are
+  # (`fixest_twin_lrt()`), not from fixest's own log-likelihoods.
+  fixest_pair <- inherits(fit_prev, "fixest") && inherits(fit_curr, "fixest")
+  if (fixest_pair) {
+    twin <- fixest_twin_lrt(fit_prev, fit_curr)
+    lrt_stat <- twin$stat
+    p_val <- twin$p
+  } else if (!is.finite(lrt_stat) || !is.finite(p_val)) {
     fallback <- loglik_lrt(fit_prev, fit_curr)
     if (!is.null(fallback)) {
       lrt_stat <- fallback$stat
@@ -1710,6 +1717,38 @@ loglik_lrt <- function(fit_prev, fit_curr) {
   )
 }
 
+# The likelihood-ratio test of two nested fixest fits, as their lm() or
+# glm() twins are tested. A feglm whose dispersion is estimated
+# (Gaussian, Gamma, inverse Gaussian) is tested as anova.glm() tests the
+# twins: the change of deviance over the Pearson dispersion of the larger
+# model. The others take the change of their twin log-likelihoods
+# (`.fixest_twin_loglik()`), which is fixest's own for Poisson and
+# binomial. NA when the pair is not admissible.
+fixest_twin_lrt <- function(fit_prev, fit_curr) {
+  na <- list(stat = NA_real_, p = NA_real_)
+  fam <- fit_curr$family
+  stat <- tryCatch(
+    if (is.list(fam) && isTRUE(fam$family %in% .FIXEST_DISP_FAMS)) {
+      mu <- fit_curr$fitted.values
+      r <- stats::residuals(fit_curr, type = "response")
+      w <- fit_curr$weights %||% 1
+      phi <- sum(w * r^2 / fam$variance(mu)) /
+        (stats::nobs(fit_curr) - fit_curr$nparams)
+      (stats::deviance(fit_prev) - stats::deviance(fit_curr)) / phi
+    } else {
+      2 *
+        (as.numeric(.fixest_twin_loglik(fit_curr)) -
+          as.numeric(.fixest_twin_loglik(fit_prev)))
+    },
+    error = function(e) NA_real_
+  )
+  df_diff <- fit_curr$nparams - fit_prev$nparams
+  if (!is.finite(stat) || !lrt_admissible(stat, df_diff)) {
+    return(na)
+  }
+  list(stat = stat, p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE))
+}
+
 # Parameter-count increase from prev to curr, from logLik()'s own "df"
 # attribute. NA when either count is unknown.
 loglik_df_increase <- function(fit_prev, fit_curr) {
@@ -1745,20 +1784,38 @@ lrt_admissible <- function(stat, df_increase) {
 
 # AIC / BIC that survive a class without the method.
 ic_or_na <- function(fun, fit) {
+  # A fixest fit counts its parameters as its lm() or glm() twin does, as
+  # its AIC and BIC rows do (`.fixest_twin_loglik()`).
+  if (inherits(fit, "fixest")) {
+    ll <- tryCatch(.fixest_twin_loglik(fit), error = function(e) NULL)
+    if (is.null(ll)) {
+      return(NA_real_)
+    }
+    pen <- if (identical(fun, stats::BIC)) log(stats::nobs(fit)) else 2
+    return(scalar_or_na(-2 * as.numeric(ll) + pen * attr(ll, "df")))
+  }
   scalar_or_na(tryCatch(fun(fit), error = function(e) NULL))
 }
 
-# AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma). isTRUE()
-# on the comparison, not a bare `if`: .spicy_nobs() returns NA for a
-# class with no usable count, and `if (NA > 0)` is an abort.
+# AICc -- Hurvich & Tsai (1989), with the parameters and n the AIC and
+# BIC count (`.aicc_from_ic()`), so that the change is the change of the
+# AICc rows: a fixest fit counts its twin's. k = length(coef) + 1 counted
+# a sigma a glm has not.
 aicc_of <- function(fit, aic_v) {
-  k <- length(tryCatch(stats::coef(fit), error = function(e) NULL)) + 1L
-  n <- tryCatch(.spicy_nobs(fit), error = function(e) NA_real_)
-  if (isTRUE(n - k - 1L > 0L)) {
-    aic_v + (2 * k * (k + 1L)) / (n - k - 1L)
-  } else {
-    NA_real_
-  }
+  ll <- tryCatch(
+    if (inherits(fit, "fixest")) {
+      .fixest_twin_loglik(fit)
+    } else {
+      suppressWarnings(stats::logLik(fit))
+    },
+    error = function(e) NULL
+  )
+  .aicc_from_ic(
+    aic_v,
+    ic_or_na(stats::BIC, fit),
+    scalar_or_na(as.numeric(ll)),
+    tryCatch(.spicy_nobs(fit), error = function(e) NA_real_)
+  )
 }
 
 # deviance() is a finite scalar for glm but NULL for coxph and gls (no

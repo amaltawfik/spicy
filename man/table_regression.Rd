@@ -735,7 +735,8 @@ is \code{labels = TRUE}.
 
 The names are model identifiers, not display text: the outcome, the
 term labels of \code{\link[stats:terms]{stats::terms()}} (\code{"age"}, \code{"sex"}, \code{"age:sex"}, a
-factor's term naming its header), and the coefficient names
+factor's term naming its header, an interaction's term its row when
+it has one row), and the coefficient names
 (\code{"(Intercept)"}, \code{"sexMale"}; those of an \code{rms} fit in the spelling
 of \code{lm()}, \code{"sexMale"} for rms's \code{"sex=Male"} and \code{"age:sexMale"}
 for \code{"age * sex=Male"}), each naming one
@@ -1156,7 +1157,16 @@ absorbs fixed effects.
 \item Effect size: \code{"f2"}.
 \item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
 \code{"deviance"} (lowercase like every other token; the rendered
-row labels stay \code{AIC} / \code{AICc} / \code{BIC}).
+row labels stay \code{AIC} / \code{AICc} / \code{BIC}). The AIC and BIC of a
+\code{fixest} model are those of its \code{lm()}, \code{glm()} or
+\code{MASS::glm.nb()} twin with the fixed effects as dummies: \code{glm()}'s
+log-likelihood for a Gaussian, Gamma or inverse-Gaussian \code{feglm()},
+with the residual variance, dispersion or theta counted, which
+fixest's \code{AIC()} leaves out. A Gaussian \code{femlm()} follows the same
+rule; Poisson, binomial and IV fits keep fixest's values. A lean
+fit (\code{lean = TRUE}) that lost what they need, its weights or the
+fitted values of a Gamma or inverse-Gaussian \code{feglm()}, shows no
+AIC, BIC or nested rows.
 \item Change-stats for hierarchical comparison
 (active under \code{nested = TRUE}; see \emph{Hierarchical
 comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},

@@ -1626,6 +1626,16 @@ resolve_label <- function(term, labels) {
   if (length(terms) > 0L) {
     terms <- terms[names(terms) %in% .reg_label_keys(models)]
   }
+  # An interaction keyed by its term label ("age:wc") labels its row
+  # ("age:wcyes") when it names one row; the coefficient name, when given
+  # too, wins. One that names several rows has warned.
+  inter <- .reg_interaction_rows(models, names(user))
+  for (k in names(inter)) {
+    row <- inter[[k]]
+    if (length(row) == 1L && !row %in% names(user)) {
+      terms[row] <- user[[k]]
+    }
+  }
   list(outcomes = outcomes, terms = if (length(terms) > 0L) terms)
 }
 

@@ -3063,7 +3063,7 @@ build_p_adjust_footer_block_from_frames <- function(
     return(NULL)
   }
   fam <- .p_adjust_families(frames, show_columns)
-  .p_adjust_note_text(p_adjust, fam$m, fam$ame)
+  .p_adjust_note_text(p_adjust, fam$m, fam$ame, fam$ame_ref, fam$m_ref)
 }
 
 # The families of tests the p-value note counts, one size per model:
@@ -3092,6 +3092,7 @@ build_p_adjust_footer_block_from_frames <- function(
       cf$estimate_type == type &
         cf$term != "(Intercept)" &
         !(lbl %in% "(Intercept)") &
+        !((cf$is_intercept %||% FALSE) %in% TRUE) &
         !cf$is_ref &
         !(thr %in% TRUE) &
         !(pv %in% .REG_BLOCK_SCALE) &
@@ -3107,28 +3108,83 @@ build_p_adjust_footer_block_from_frames <- function(
   } else {
     integer(length(frames))
   }
-  # A model with no AME (a Cox model, a fallback) has no family there.
-  ame <- ame[ame > 0L]
-  if (length(ame) > 0L && (all(sizes == 0L) || !"p" %in% show_columns)) {
-    sizes <- ame
-  }
-  list(m = sizes, ame = ame)
+  refs <- vapply(
+    seq_along(frames),
+    function(i) .model_ref(frames, i),
+    character(1)
+  )
+  c(
+    .p_adjust_combine(sizes, ame, "p" %in% show_columns, refs),
+    # Each model's own counts, which a stacked table combines over its
+    # panels as this function combines them over the models.
+    list(b_raw = sizes, ame_raw = ame, show_p = "p" %in% show_columns)
+  )
 }
 
-# The p-value note of families `m` and `ame` (`.p_adjust_families()`).
-.p_adjust_note_text <- function(p_adjust, m, ame = integer(0)) {
+# The families the note counts from each model's own counts: `b`, the
+# coefficients', and `ame`, the AME's (0 for a model with no AME, a Cox
+# model, a fallback). `show_p`, whether the table shows the coefficients'
+# p-values; `refs`, the names of the models. When the table shows only
+# the AME p-values, the AME family is the family of the note. When two
+# models at least carry a family and another does not (an intercept-only
+# model, a Cox model beside AME), the family is named by its models
+# (`m_ref`, `ame_ref`): "respectively" would count over the wrong models.
+.p_adjust_combine <- function(b, ame, show_p, refs) {
+  ref_of <- function(x) {
+    has <- x > 0L
+    if (any(!has) && sum(has) >= 2L) refs[has]
+  }
+  ame_ref <- ref_of(ame)
+  ame <- ame[ame > 0L]
+  if (length(ame) > 0L && (all(b == 0L) || !show_p)) {
+    return(list(m = ame, ame = ame, ame_ref = ame_ref, m_ref = ame_ref))
+  }
+  m_ref <- ref_of(b)
+  if (!is.null(m_ref)) {
+    b <- b[b > 0L]
+  }
+  list(m = b, ame = ame, ame_ref = ame_ref, m_ref = m_ref)
+}
+
+# The p-value note of families `m` and `ame` (`.p_adjust_families()`),
+# each named by its models (`m_ref`, `ame_ref`) when not every model of
+# the table has one.
+.p_adjust_note_text <- function(
+  p_adjust,
+  m,
+  ame = integer(0),
+  ame_ref = NULL,
+  m_ref = NULL
+) {
   # No coefficient tested, nothing adjusted: no sentence, as in the
   # descriptive tables.
   if (all(m == 0L)) {
     return(NULL)
   }
+  named <- function(key, sizes, ref) {
+    spicy_fmt(
+      key,
+      .join_and(as.character(sizes)),
+      .join_and(ref),
+      .p_adjust_method_name(p_adjust)
+    )
+  }
   # Each coefficient is a test, and the family is one model. The sentence
   # keeps its subject, "P-values adjusted ...": no "P-values:" lead comes
   # before it here, unlike in the descriptive tables
   # (`.desc_p_adjust_note()`).
-  out <- .p_adjust_sentence(p_adjust, m)
-  if (length(ame) > 0L && !identical(ame, m)) {
-    out <- paste(out, .p_adjust_sentence(p_adjust, ame, ame = TRUE))
+  out <- if (length(m_ref) == length(m)) {
+    named("note_p_adjusted_per_named_model", m, m_ref)
+  } else {
+    .p_adjust_sentence(p_adjust, m)
+  }
+  if (length(ame) > 0L && !(identical(ame, m) && identical(ame_ref, m_ref))) {
+    ame_txt <- if (length(ame_ref) == length(ame)) {
+      named("note_p_adjusted_ame_per_named_model", ame, ame_ref)
+    } else {
+      .p_adjust_sentence(p_adjust, ame, ame = TRUE)
+    }
+    out <- paste(out, ame_txt)
   }
   out
 }
@@ -3322,11 +3378,15 @@ build_reference_categories_footer_block_from_frames <- function(
       # The reference row of a component block carries its factor in its
       # label ("mined: yes"): the pair is the block caption and that label,
       # as the table shows them, so a caption with "=" in it ("Zero
-      # hurdle, Pr(y = 0)") never reads as the pair's equation.
+      # hurdle, Pr(y = 0)") never reads as the pair's equation. The label
+      # takes the colon of the table language, as the Variable cell does.
       pairs <- c(
         pairs,
         if (.reg_is_block(ft)) {
-          paste(spicy_fmt("label_block_header", .reg_block_label(ft)), lvl)
+          paste(
+            spicy_fmt("label_block_header", .reg_block_label(ft)),
+            .reg_component_level_display(lvl, ft)
+          )
         } else {
           sprintf("%s = %s", ft, lvl)
         }

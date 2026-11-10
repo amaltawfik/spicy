@@ -795,13 +795,19 @@ test_that("the reference footer never reads a block caption as an equation", {
   expect_no_match(note, "Pr(y = 0) =", fixed = TRUE)
   withr::local_options(spicy.language = "fr")
   note_fr <- attr(table_regression(fit, reference_style = "footer"), "note")
+  # The component label takes the French colon the Variable cell shows;
+  # the main-block pair keeps its "=".
   expect_match(
     note_fr,
     paste0(
       "mined = yes\u00a0; Hurdle (z\u00e9ro), Pr(y = 0)\u00a0: ",
-      "mined: yes."
+      "mined\u00a0: yes."
     ),
     fixed = TRUE
   )
+  expect_no_match(note_fr, "mined: yes", fixed = TRUE)
+  expect_true(any(
+    startsWith(trimws(table_regression(fit)$Variable), "mined\u00a0: yes")
+  ))
   expect_no_match(note_fr, "Pr(y = 0) =", fixed = TRUE)
 })

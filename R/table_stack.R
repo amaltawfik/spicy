@@ -838,9 +838,18 @@ table_stack <- function(
     adj <- lapply(parts[auto], function(p) p$models$p_adjust)
     method <- unique(unlist(lapply(adj, `[[`, "method")))
     m <- unlist(lapply(adj, `[[`, "m"))
-    ame <- unlist(lapply(adj, `[[`, "ame")) %||% integer(0)
-    if (length(method) == 1L && length(m) == sum(auto) && all(m > 0L)) {
-      whole <- .p_adjust_note_text(method, m, ame)
+    # The families combined over the panels as a side-by-side table
+    # combines them over its models, the panels named as its models are.
+    fam <- .p_adjust_combine(
+      unlist(lapply(adj, `[[`, "b_raw")),
+      unlist(lapply(adj, `[[`, "ame_raw")),
+      isTRUE(adj[[1L]]$show_p),
+      refs
+    )
+    whole <- if (length(method) == 1L && length(m) == sum(auto)) {
+      .p_adjust_note_text(method, fam$m, fam$ame, fam$ame_ref, fam$m_ref)
+    }
+    if (!is.null(whole)) {
       for (j in which(auto)) {
         own <- .p_adjust_note_text(
           method,
@@ -848,7 +857,13 @@ table_stack <- function(
           parts[[j]]$models$p_adjust$ame
         )
         inf <- parts[[j]]$inference
-        parts[[j]]$inference[inf %in% own] <- whole
+        # A panel with nothing adjusted (an intercept-only model) has no
+        # sentence of its own: it shares the table's.
+        if (is.null(own)) {
+          parts[[j]]$inference <- c(inf, whole)
+        } else {
+          parts[[j]]$inference[inf %in% own] <- whole
+        }
       }
     }
   }

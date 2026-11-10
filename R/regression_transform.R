@@ -17,11 +17,14 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
     return(coefs)
   }
 
-  # Intercepts are excluded from the family: the main one by term, and the
+  # Intercepts are excluded from the family: the main one by term, the
   # component-block ones (zero-inflation / dispersion, terms
-  # "Zero-inflation::(Intercept)", ...) by their display label.
+  # "Zero-inflation::(Intercept)", ...) by their display label, and the
+  # prefixed ones of a multinomial or Heckman model ("Student:
+  # (Intercept)", "selection: (Intercept)") by `is_intercept`.
   family_mask <- coefs$term != "(Intercept)" &
     !(coefs$label %in% "(Intercept)") &
+    !((coefs$is_intercept %||% FALSE) %in% TRUE) &
     !coefs$is_ref &
     !is.na(coefs$p_value)
 

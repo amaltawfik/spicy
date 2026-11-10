@@ -995,6 +995,9 @@
   note_p_adjusted_per_model = "P-values adjusted within each model for %s tests (%s method).",
   note_p_adjusted_per_model_one = "P-values adjusted within each model for 1 test (%s method).",
   note_p_adjusted_per_model_unequal = "P-values adjusted within each model (%s method), for %s tests respectively.",
+  # The same sentence naming its models, when the table shows the AME
+  # p-values alone and some models have no AME (`_ame_per_named_model`).
+  note_p_adjusted_per_named_model = "P-values adjusted within each model for %s tests (%s, %s method).",
   # The AME p-values are adjusted as a family of their own. When the table
   # shows them beside the coefficients' and the two families differ in
   # size (an AME on each outcome category), a second sentence counts
@@ -1004,6 +1007,10 @@
   note_p_adjusted_ame_per_model = "AME p-values adjusted within each model for %s tests (%s method).",
   note_p_adjusted_ame_per_model_one = "AME p-values adjusted within each model for 1 test (%s method).",
   note_p_adjusted_ame_per_model_unequal = "AME p-values adjusted within each model (%s method), for %s tests respectively.",
+  # When some models of the table have no AME (a Cox model), the AME
+  # sentence names the models that carry the family: the numbers of the
+  # models in order, then the models, then the method.
+  note_p_adjusted_ame_per_named_model = "AME p-values adjusted within each model for %s tests (%s, %s method).",
   # The descriptive tables (`.desc_p_adjust_note()`) put the sentence
   # right after the one that names the test, whose lead ("P-values:",
   # "Item p-values:") is its subject: the participle agrees with the

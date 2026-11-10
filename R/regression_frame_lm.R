@@ -373,37 +373,37 @@ as_regression_frame.glm <- function(fit, ...) {
   out <- list(
     model_id = model_id,
     outcome = outcome,
-    nobs = .scalar_or_na(fs$nobs),
-    n_events = .scalar_or_na(fs$n_events),
-    weighted_nobs = .scalar_or_na(fs$weighted_nobs),
-    r2 = .scalar_or_na(fs$r2 %||% fs$r_squared),
-    adj_r2 = .scalar_or_na(fs$adj_r2 %||% fs$adj_r_squared),
-    omega2 = .scalar_or_na(fs$omega2),
-    pseudo_r2_mcfadden = .scalar_or_na(fs$pseudo_r2_mcfadden),
-    theta = .scalar_or_na(fs$theta),
-    alpha = .scalar_or_na(fs$alpha),
-    delta = .scalar_or_na(fs$delta),
-    phi = .scalar_or_na(fs$phi),
-    r2_bayes = .scalar_or_na(fs$r2_bayes),
-    elpd_loo = .scalar_or_na(fs$elpd_loo),
-    looic = .scalar_or_na(fs$looic),
-    waic = .scalar_or_na(fs$waic),
+    nobs = .scalar_or_na(fs[["nobs"]]),
+    n_events = .scalar_or_na(fs[["n_events"]]),
+    weighted_nobs = .scalar_or_na(fs[["weighted_nobs"]]),
+    r2 = .scalar_or_na(fs[["r2"]] %||% fs[["r_squared"]]),
+    adj_r2 = .scalar_or_na(fs[["adj_r2"]] %||% fs[["adj_r_squared"]]),
+    omega2 = .scalar_or_na(fs[["omega2"]]),
+    pseudo_r2_mcfadden = .scalar_or_na(fs[["pseudo_r2_mcfadden"]]),
+    theta = .scalar_or_na(fs[["theta"]]),
+    alpha = .scalar_or_na(fs[["alpha"]]),
+    delta = .scalar_or_na(fs[["delta"]]),
+    phi = .scalar_or_na(fs[["phi"]]),
+    r2_bayes = .scalar_or_na(fs[["r2_bayes"]]),
+    elpd_loo = .scalar_or_na(fs[["elpd_loo"]]),
+    looic = .scalar_or_na(fs[["looic"]]),
+    waic = .scalar_or_na(fs[["waic"]]),
     # GEE (geepack::geeglm): quasi-likelihood information criteria,
     # scale (dispersion) parameter, largest cluster.
-    qic = .scalar_or_na(fs$qic),
-    qicu = .scalar_or_na(fs$qicu),
-    scale = .scalar_or_na(fs$scale),
-    max_cluster_size = .scalar_or_na(fs$max_cluster_size),
-    pseudo_r2_nagelkerke = .scalar_or_na(fs$pseudo_r2_nagelkerke),
-    pseudo_r2_tjur = .scalar_or_na(fs$pseudo_r2_tjur),
+    qic = .scalar_or_na(fs[["qic"]]),
+    qicu = .scalar_or_na(fs[["qicu"]]),
+    scale = .scalar_or_na(fs[["scale"]]),
+    max_cluster_size = .scalar_or_na(fs[["max_cluster_size"]]),
+    pseudo_r2_nagelkerke = .scalar_or_na(fs[["pseudo_r2_nagelkerke"]]),
+    pseudo_r2_tjur = .scalar_or_na(fs[["pseudo_r2_tjur"]]),
     # fixest within (FE-partialled) R-squared, stashed in the
     # pseudo_r2 nested list by .fixest_fit_stats().
     within_r2 = .scalar_or_na(
-      fs$within_r2 %||%
-        fs$pseudo_r2$within_r2
+      fs[["within_r2"]] %||%
+        fs[["pseudo_r2"]][["within_r2"]]
     ),
-    r2_marginal = .scalar_or_na(fs$r2_marginal),
-    r2_conditional = .scalar_or_na(fs$r2_conditional),
+    r2_marginal = .scalar_or_na(fs[["r2_marginal"]]),
+    r2_conditional = .scalar_or_na(fs[["r2_conditional"]]),
     # Mixed-effects group structure. icc is a numeric scalar rendered
     # as a fit-stat row. n_groups stays in the legacy schema as a
     # placeholder column only: both fit-stat builders render one
@@ -412,18 +412,29 @@ as_regression_frame.glm <- function(fit, ...) {
     # info$n_groups), never from this compacted shape.
     icc = .scalar_or_na(icc),
     n_groups = NA_character_,
-    sigma = .scalar_or_na(fs$sigma),
-    rmse = .scalar_or_na(fs$rmse),
-    f2 = .scalar_or_na(fs$f2),
-    aic = .scalar_or_na(fs$AIC %||% fs$aic),
-    aicc = .scalar_or_na(fs$AICc %||% fs$aicc),
-    bic = .scalar_or_na(fs$BIC %||% fs$bic),
-    deviance = .scalar_or_na(fs$deviance),
+    sigma = .scalar_or_na(fs[["sigma"]]),
+    rmse = .scalar_or_na(fs[["rmse"]]),
+    f2 = .scalar_or_na(fs[["f2"]]),
+    aic = .scalar_or_na(fs[["AIC"]] %||% fs[["aic"]]),
+    # Exact lookups throughout: `fs$aicc` matched `aicc_change` on a
+    # frame without an AICc and printed the change in the AICc row.
+    aicc = .scalar_or_na(
+      fs[["AICc"]] %||%
+        fs[["aicc"]] %||%
+        .aicc_from_ic(
+          .scalar_or_na(fs[["aic"]]),
+          .scalar_or_na(fs[["bic"]]),
+          .scalar_or_na(fs[["log_lik"]]),
+          .scalar_or_na(fs[["nobs"]])
+        )
+    ),
+    bic = .scalar_or_na(fs[["BIC"]] %||% fs[["bic"]]),
+    deviance = .scalar_or_na(fs[["deviance"]]),
     # survey::svyglm only: the effective number of parameters of the
     # design. NA everywhere else, so the row is dropped unless a design
     # glm is in the table AND the token was asked for.
-    eff_p = .scalar_or_na(fs$eff_p),
-    df_residual = .scalar_or_na(fs$df_residual)
+    eff_p = .scalar_or_na(fs[["eff_p"]]),
+    df_residual = .scalar_or_na(fs[["df_residual"]])
   )
   # Nested-LRT change tokens (present only when attach_nested_stats_*
   # ran for this model). Included only when present in `fs` -- this
@@ -463,6 +474,26 @@ as_regression_frame.glm <- function(fit, ...) {
 # .compact_fit_stats_for_legacy() to normalize the per-class
 # variations (e.g. estimatr's stats::sigma(lm_robust) returns
 # numeric(0)).
+# AICc (Hurvich & Tsai 1989) from the AIC, BIC and log-likelihood a frame
+# reports, with the parameters the AIC counts, k = (AIC + 2 logLik) / 2,
+# and the n the BIC counts, log n = (BIC + 2 logLik) / k: the count of
+# `attr(logLik(fit), "df")` and `stats::nobs()` that the AICc of lm() and
+# glm() uses, and that of the twin for a fixest model. `n` serves when the
+# BIC is missing. NA when the correction is undefined (n <= k + 1).
+.aicc_from_ic <- function(aic, bic, log_lik, n = NA_real_) {
+  k <- (aic + 2 * log_lik) / 2
+  if (!isTRUE(is.finite(k) && k > 0)) {
+    return(NA_real_)
+  }
+  if (isTRUE(is.finite(bic))) {
+    n <- exp((bic + 2 * log_lik) / k)
+  }
+  if (!isTRUE(n - k - 1 > 0)) {
+    return(NA_real_)
+  }
+  aic + 2 * k * (k + 1) / (n - k - 1)
+}
+
 .scalar_or_na <- function(x) {
   if (is.null(x) || length(x) == 0L) {
     return(NA_real_)
