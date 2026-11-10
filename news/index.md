@@ -524,7 +524,8 @@
   leaves out. With `nested = TRUE`, the likelihood-ratio test of two
   `feglm()` models is the test
   [`anova()`](https://rdrr.io/r/stats/anova.html) gives their
-  [`glm()`](https://rdrr.io/r/stats/glm.html) twins.
+  [`glm()`](https://rdrr.io/r/stats/glm.html) twins, for a quasi-Poisson
+  or quasi-binomial pair too.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   with `nested = TRUE`, the AICc row of a model without an AICc of its
