@@ -556,6 +556,11 @@ the chi-squared test of the items-by-groups table is not valid.
 bases, percentages, and tests, as
 [*Multiple-response questions*](table-multiresponse.html) explains.
 
+A battery of items rated on one scale, such as a Likert grid, reads
+better with one row per item and one column per level than with one
+block of rows per item: `table_battery()` gives that layout, as
+[*Item batteries*](table-battery.html) shows.
+
 ## Rendered outputs and export
 
 The rendered formats produce publication-ready tables for HTML and

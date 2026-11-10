@@ -1697,3 +1697,54 @@ test_that("the errors of inline() name inline(), not one of its helpers", {
   )
   expect_identical(rlang::call_name(conditionCall(err)), "inline")
 })
+
+# ---- table_battery() --------------------------------------------------------
+
+# Two items of `sochealth` rated 1 to 5, as factors.
+.il_bat <- function(...) {
+  d <- sochealth["sex"]
+  d$health <- factor(sochealth$life_sat_health, levels = 1:5)
+  d$work <- factor(sochealth$life_sat_work, levels = 1:5)
+  .il_quiet(table_battery(d, select = c(health, work), ...))
+}
+
+test_that("a battery cites a level of its scale with `level`, a group with `model`", {
+  tbl <- .il_bat(top = c("4", "5"), drop_na = FALSE)
+  shown <- attr(tbl, "display_df")
+  oracle <- 100 * mean(sochealth$life_sat_work %in% 3)
+  expect_identical(inline(tbl, work, "3", "pct"), sprintf("%.1f", oracle))
+  expect_identical(inline(tbl, work, "3"), trimws(shown[["3"]][[2L]]))
+  expect_identical(inline(tbl, work, "4 + 5"), trimws(shown[["4 + 5"]][[2L]]))
+  expect_identical(
+    inline(tbl, work, "(Missing)"),
+    trimws(shown[["(Missing)"]][[2L]])
+  )
+  expect_identical(inline(tbl, work), trimws(shown$n[[2L]]))
+  expect_error(
+    inline(tbl, work, column = "pct"),
+    "pick one with `level`",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    inline(tbl, work, "9"),
+    "No level",
+    class = "spicy_invalid_input"
+  )
+
+  by_tbl <- .il_bat(by = sex)
+  shown <- attr(by_tbl, "display_df")
+  expect_identical(
+    inline(by_tbl, health, "5", "pct", model = "Female"),
+    trimws(shown[["Female 5"]][[1L]])
+  )
+  expect_identical(
+    inline(by_tbl, health, column = "n", model = "Male"),
+    trimws(shown[["Male n"]][[1L]])
+  )
+  expect_identical(inline(by_tbl, health, column = "p"), trimws(shown$p[[1L]]))
+  expect_error(
+    inline(by_tbl, health, "Female"),
+    "select it with `model = \"Female\"`",
+    class = "spicy_invalid_input"
+  )
+})

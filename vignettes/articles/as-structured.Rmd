@@ -4,7 +4,8 @@ description: >
   `as_structured()` exposes the typed representation behind every
   spicy table, from `table_regression()` to `table_categorical()`,
   `table_continuous()`, `table_continuous_lm()`, `table_outcome()`,
-  `table_multiresponse()` and the survey twins: a numeric body with
+  `table_multiresponse()`, `table_battery()` and the survey twins: a
+  numeric body with
   per-row identity columns, per-column metadata, per-cell status, and
   the format specification. Filter rows programmatically, aggregate raw
   values, or build a custom renderer -- against one schema for all of
@@ -40,7 +41,7 @@ output engines (Excel, gt, tinytable, flextable, clipboard) consume
 internally -- nothing about it is second-class -- and the
 descriptive tables (`table_categorical()`, `table_continuous()`,
 `table_continuous_lm()`, `table_outcome()`, `table_multiresponse()`,
-and the survey twins `table_categorical_svy()` and
+`table_battery()`, and the survey twins `table_categorical_svy()` and
 `table_continuous_svy()`) expose the same schema, covered at the end
 of this article. The tour below uses a regression table; everything
 it shows reads identically on the others.
@@ -278,8 +279,8 @@ the coefficients and it renders the way it prints.
 
 Everything above extends beyond regression. The same accessor reads
 `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
-`table_outcome()`, `table_multiresponse()` and the survey twins, and
-returns the same schema -- the same identity columns, the same
+`table_outcome()`, `table_multiresponse()`, `table_battery()` and the
+survey twins, and returns the same schema -- the same identity columns, the same
 `cell_status`, the same `display_cells` mechanism for composite cells.
 A consumer written for one table reads the others.
 `table_categorical()` lays out one factor header row per variable and

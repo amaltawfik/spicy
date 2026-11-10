@@ -1169,6 +1169,30 @@
   note_multiresponse_not_tested = "Not tested (no variation, shown as \u2013): %s.",
   excel_sheet_multiresponse = "Multiple responses",
 
+  # -- table_battery(): title, base and notes ------------------------------
+  # A battery of items rated on one scale, one row per item. The
+  # percentages are row percentages, said by the family's
+  # `note_percent_row`; the base takes the template of
+  # `table_multiresponse()`, `note_multiresponse_base`, whose hole receives
+  # `note_battery_population_valid` (`drop_na = TRUE`) or
+  # `note_battery_population_all` (`drop_na = FALSE`, or
+  # `note_battery_population_all_but_left_out` when `levels` leaves
+  # answers out). The levels that
+  # `levels` leaves out are listed in `note_battery_levels_excluded`,
+  # joined by `.join_note_vars()`; the sentence opens with a noun so that
+  # no participle has to agree with the levels. The tests reuse the item
+  # sentences of `table_multiresponse()`. The header of the summary column
+  # of `top` is the list of its levels joined by " + ", which needs no key.
+  title_battery = "Item battery",
+  title_battery_by = "Item battery by %s",
+  note_battery_population_valid = "respondents who answered the item",
+  note_battery_population_all = "all respondents, including those who did not answer the item",
+  # `drop_na = FALSE` with answers that `levels` leaves out: the base is
+  # every respondent but those, so it cannot say "all respondents".
+  note_battery_population_all_but_left_out = "all respondents but those whose answer is left out, including those who did not answer the item",
+  note_battery_levels_excluded = "Answers left out of the percentages and the base: %s.",
+  excel_sheet_battery = "Item battery",
+
   # -- survey twins: the self-documenting design footer ---------------------
   # A design-based table must say what design produced it, or its
   # standard errors are unreadable. Three sentences, assembled by

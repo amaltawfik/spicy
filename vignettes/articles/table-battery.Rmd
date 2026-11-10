@@ -1,0 +1,261 @@
+---
+title: "Item batteries"
+description: >
+  Tabulate a battery of survey items rated on one scale in R with
+  table_battery(): one row per item, one column per level, row
+  percentages with their base, a summary column for the top of the
+  scale, and, across groups, a test per item with a Holm adjustment,
+  rendered by the same output engines as table_categorical().
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+
+source("_pkgdown-helpers.R")
+```
+
+```{r setup}
+library(spicy)
+```
+
+A battery is a set of items that respondents rate on the same scale: a
+Likert grid, a block of satisfaction questions, the "array" question of
+a survey tool. `table_battery()` gives each item one row and each level
+of the scale one column. The percentages are row percentages, and the
+last column gives the base of each row. Items can then be compared at a
+glance, which a table with one block of rows per item does not allow.
+
+The function is experimental in this release: its arguments and its
+output may still change.
+
+## The data
+
+The `sochealth` data hold four items rated from 1 to 5: satisfaction
+with health, work, relationships and standard of living. They are
+integer columns. Giving them the labels of the scale makes the table
+readable:
+
+```{r data}
+scale_labels <- c(
+  "Very dissatisfied",
+  "Dissatisfied",
+  "Neutral",
+  "Satisfied",
+  "Very satisfied"
+)
+sat <- sochealth[c("sex", "age_group", "weight")]
+for (v in grep("^life_sat_", names(sochealth), value = TRUE)) {
+  sat[[v]] <- factor(sochealth[[v]], levels = 1:5, labels = scale_labels)
+  attr(sat[[v]], "label") <- attr(sochealth[[v]], "label")
+}
+```
+
+The items share one scale. Factors, and labelled columns with value
+labels, must declare the same levels: an item whose levels differ is an
+error that names it, so a typo in one recode does not go unnoticed.
+Numeric and text items take the union of the values they hold, so a
+level that only one item holds is a column of every item. `levels`
+gives the scale outright: the integer items of `sochealth` can be
+tabulated as they are with `levels = 1:5`, which also keeps a level
+that nobody chose.
+
+## A first table
+
+```{r first}
+table_battery(sat, select = starts_with("life_sat_"), labels = TRUE)
+```
+
+Each row sums to 100. The base `n` is the number of respondents who
+answered the item, so it can differ from one item to the next. A level
+that nobody chose keeps its column, at 0: it was offered and not chosen,
+which is worth reporting.
+
+## Levels and base
+
+`levels` chooses the levels shown and their order. A level left out
+leaves the percentages and the base, and the note names it. This is the
+way to keep a "Don't know" answer out of the base. Here the neutral
+level is left out:
+
+```{r levels}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  levels = scale_labels[-3]
+)
+```
+
+By default the missing answers leave the base. With `drop_na = FALSE`,
+a column of missing answers follows the levels and the base of each
+item becomes every respondent:
+
+```{r drop-na}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  drop_na = FALSE
+)
+```
+
+## The top of the scale and the order of the rows
+
+`top` adds a summary column, the sum of the percentages of some levels.
+Its header lists them, joined by `+`. `sort` orders the rows, with the
+suffix grammar of `freq()`: `+` for increasing and `-` for decreasing
+order, after `top` (the summary column), `name` (the labels) or a level
+(`"Neutral-"`). `"-"` alone sorts on the summary column. Whole
+percentages are enough to compare the items, and `percent_digits = 0`
+prints them:
+
+```{r top}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  labels = TRUE,
+  top = c("Very satisfied", "Satisfied"),
+  sort = "top-",
+  percent_digits = 0
+)
+```
+
+## Comparing groups
+
+With `by`, each group gets a block of columns, and each item a test of
+independence of the item and the group. The test is the chi-squared
+test, or Fisher's exact test when an expected count is below 5, as in
+`table_categorical()`. The items of a battery are read together, so the
+p-values are adjusted for the family of the items by Holm's method, as
+in `table_multiresponse()`:
+
+```{r by}
+table_battery(sat, select = starts_with("life_sat_"), by = sex)
+```
+
+A wide table is printed in panels that fit the console, the item labels
+repeated in each. With `top`, each group keeps only the summary column
+and its base, the usual table for comparing groups:
+
+```{r by-top}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  by = age_group,
+  labels = TRUE,
+  top = c("Very satisfied", "Satisfied")
+)
+```
+
+`p_adjust = "none"` reports the raw p-values, and `p_value = FALSE`
+removes the tests. `test` chooses another test, as in
+`table_categorical()`.
+
+## Weights
+
+`weights` takes frequency weights, as in `table_categorical()`. The
+counts, the percentages, the base and the tests are weighted, and the
+note says so:
+
+```{r weights}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  weights = weight,
+  top = c("Very satisfied", "Satisfied")
+)
+```
+
+The percentages of a survey are right under its weights, but its tests
+need the design. A design-based version of this table is planned.
+
+## Data frames
+
+`output = "data.frame"` returns the displayed table with its numbers,
+one row per item:
+
+```{r data-frame}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  by = sex,
+  top = c("Very satisfied", "Satisfied"),
+  output = "data.frame"
+)
+```
+
+`output = "long"` returns one row per item, group and level, with the
+test of each item:
+
+```{r long}
+long <- table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  by = sex,
+  output = "long"
+)
+head(long)
+```
+
+`inline()` cites a cell in running text: the item, then the level of the
+scale, and the group with `model`:
+
+```{r inline}
+tbl <- table_battery(sat, select = starts_with("life_sat_"), by = sex)
+inline(tbl, life_sat_work, "Very satisfied", "pct", model = "Female")
+```
+
+## Output engines
+
+The same table renders through six further engines, the console being
+the reference.
+
+```{r engines-list, eval = FALSE}
+table_battery(sat, select = starts_with("life_sat_"), output = "gt")
+table_battery(sat, select = starts_with("life_sat_"), output = "tinytable")
+table_battery(sat, select = starts_with("life_sat_"), output = "flextable")
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  output = "excel",
+  excel_path = "satisfaction.xlsx"
+)
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  output = "word",
+  word_path = "satisfaction.docx"
+)
+table_battery(sat, select = starts_with("life_sat_"), output = "clipboard")
+```
+
+## Rendered output
+
+```{r gt, eval = build_rich_tables}
+pkgdown_dark_gt(
+  table_battery(
+    sat,
+    select = starts_with("life_sat_"),
+    by = sex,
+    labels = TRUE,
+    top = c("Very satisfied", "Satisfied"),
+    output = "gt"
+  )
+)
+```
+
+## See also
+
+- [*Categorical summary tables*](table-categorical.html) for one block
+  of levels per variable, with column or row percentages.
+- [*Multiple-response questions*](table-multiresponse.html) for "check
+  all that apply" questions.
+- [*The structured view*](as-structured.html) for the typed view behind
+  this table: one `summary` row per item.

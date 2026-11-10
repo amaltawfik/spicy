@@ -389,6 +389,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_continuous_lm = "There is no design twin of this table: fit the model on the design and tabulate it with `table_regression(survey::svyglm(y ~ group, design = ))`.",
   table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time.",
   table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
+  table_battery = "There is no design twin of this table yet: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
   table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`."
 )
 

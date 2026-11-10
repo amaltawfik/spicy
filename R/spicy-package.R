@@ -66,6 +66,7 @@
 #'         Excel workbook, and its PDF), since 0.14.0
 #'   \item Multiple-response questions: [table_multiresponse()], since
 #'         0.14.0
+#'   \item Item batteries: [table_battery()], since 0.15.0
 #'   \item Stacked tables: [table_stack()], with
 #'         `table_regression(layout = "stacked")`, since 0.15.0
 #' }

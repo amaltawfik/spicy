@@ -139,6 +139,11 @@ test_that("every family sets its gt title at the size of the table text", {
       d,
       c(info_doctor, info_internet),
       output = "gt"
+    ),
+    battery = table_battery(
+      d,
+      c(life_sat_health, life_sat_work),
+      output = "gt"
     )
   )
   for (nm in names(tables)) {
@@ -172,6 +177,15 @@ test_that("the gt title equals the title the console prints", {
     output = "gt"
   )
   expect_identical(.gt_title(gt_cat), console_first_line(cat_tbl))
+
+  bat <- table_battery(d, select = c(life_sat_health, life_sat_work), by = sex)
+  gt_bat <- table_battery(
+    d,
+    select = c(life_sat_health, life_sat_work),
+    by = sex,
+    output = "gt"
+  )
+  expect_identical(.gt_title(gt_bat), console_first_line(bat))
 })
 
 # ---- the note travels with the file, like the title -----------------------

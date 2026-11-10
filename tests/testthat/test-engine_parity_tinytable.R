@@ -435,6 +435,12 @@ test_that("the note prefix is in italics in Typst, LaTeX and markdown", {
     p <- spicy_str("note_prefix_emphasis")
     tables <- list(
       multiresponse = .pt_mr(),
+      battery = table_battery(
+        d,
+        c(life_sat_health, life_sat_work),
+        by = sex,
+        output = "tinytable"
+      ),
       continuous = table_continuous(
         d,
         c(bmi, wellbeing_score),

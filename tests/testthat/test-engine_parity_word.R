@@ -345,6 +345,18 @@ test_that("descriptive tables carry their console title as the Word caption", {
           word_path = p
         )
       }
+    ),
+    list(
+      title = "Item battery by sex",
+      write = function(p) {
+        table_battery(
+          d,
+          select = c("life_sat_health", "life_sat_work"),
+          by = "sex",
+          output = "word",
+          word_path = p
+        )
+      }
     )
   )
 

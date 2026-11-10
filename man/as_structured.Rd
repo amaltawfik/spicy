@@ -9,8 +9,8 @@ as_structured(x)
 \arguments{
 \item{x}{A spicy table built with \code{output = "default"}:
 \code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}
-or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}},
+\code{\link[=table_battery]{table_battery()}} or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
 \code{\link[=table_continuous_svy]{table_continuous_svy()}}. All return the same schema. A stacked
 table of \code{\link[=table_stack]{table_stack()}} is accepted too.}
 }
@@ -165,6 +165,12 @@ respondents of each group. Tokens: \code{"n"}, \code{"pct"} (percentage of
 cases), \code{"pct_responses"} (percentage of responses), \code{"statistic"}
 and \code{"p"}. Each group owns its columns under its own spanner, and the
 margin is flagged \verb{col_meta$<col>$total}.
+\item \code{\link[=table_battery]{table_battery()}} -- one \code{"summary"} row per item. Tokens: \code{"pct"}
+(a row percentage: \verb{col_meta$<col>$level} names the level it shows,
+\code{missing} flags the column of missing answers, and \code{top} the summary
+column, with the levels it adds up in \code{top_levels}), \code{"n"} (the base of
+the row) and \code{"p"}. Under \code{by}, each group owns its columns under its
+own spanner.
 }
 
 Cells the console builds from more than one number -- a
@@ -178,8 +184,9 @@ descriptive tables carry no significance markers.
 Under \code{p_adjust}, the p-value column holds the adjusted values and its
 \code{col_meta} adds \code{p_adjust} (the method), \code{p_adjust_m} (the number of
 tests adjusted together) and \code{p_unadjusted} (the raw p-value of each
-cell, as long as \code{body}). In \code{\link[=table_categorical]{table_categorical()}} and
-\code{\link[=table_multiresponse]{table_multiresponse()}}, the p-value column's \code{col_meta} also carries
+cell, as long as \code{body}). In \code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_multiresponse]{table_multiresponse()}} and \code{\link[=table_battery]{table_battery()}}, the p-value column's
+\code{col_meta} also carries
 \code{test_type}, the test of each cell, as long as \code{body}
 (\code{"chi_squared"}, \code{"n1_chi_squared"}, \code{"fisher_exact"},
 \code{"fisher_midp"}, \code{"fisher_exact_mc"}, \code{NA} where the cell holds no

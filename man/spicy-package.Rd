@@ -72,6 +72,7 @@ since 0.13.0
 Excel workbook, and its PDF), since 0.14.0
 \item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, since
 0.14.0
+\item Item batteries: \code{\link[=table_battery]{table_battery()}}, since 0.15.0
 \item Stacked tables: \code{\link[=table_stack]{table_stack()}}, with
 \code{table_regression(layout = "stacked")}, since 0.15.0
 }

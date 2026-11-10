@@ -67,6 +67,8 @@ navbar:
           href: articles/table-outcome.html
         - text: Multiple-response questions
           href: articles/table-multiresponse.html
+        - text: Item batteries
+          href: articles/table-battery.html
         - text: Summary tables from a survey design
           href: articles/survey-tables.html
         - text: Model-based continuous summary tables
@@ -113,6 +115,7 @@ articles:
       - articles/table-continuous-lm
       - articles/table-outcome
       - articles/table-multiresponse
+      - articles/table-battery
       - articles/survey-tables
       - articles/table-regression
       - articles/table-regression-supported-models
@@ -164,6 +167,7 @@ reference:
       - table_continuous_lm
       - table_outcome
       - table_multiresponse
+      - table_battery
   - title: Survey-design tables
     desc: >
       The descriptive tables from a `survey::svydesign()` or

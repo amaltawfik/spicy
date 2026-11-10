@@ -466,6 +466,16 @@ test_that("the linear-model family carries its note on the gt object", {
         output = o,
         ...
       )
+    },
+    battery = function(o, ...) {
+      table_battery(
+        d,
+        c(life_sat_health, life_sat_work),
+        by = sex,
+        style = style,
+        output = o,
+        ...
+      )
     }
   )
 }

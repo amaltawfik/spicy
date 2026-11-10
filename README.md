@@ -43,6 +43,9 @@ extraction, and row-wise summaries.
   that apply” items read as one question, overall or by group, with a
   global test that allows for several answers per respondent. The
   function is experimental in this release.
+- **Item batteries** with `table_battery()`: several items rated on one
+  scale, one row per item and one column per level, with a test per item
+  across groups. The function is experimental in this release.
 - **Outcome-first summary tables** with `table_outcome()`: one
   continuous outcome described across several groupings, one block of
   rows per grouping variable, a group comparison per block, and a
@@ -668,6 +671,8 @@ Each workflow has a dedicated article on the package site:
   groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.html)
 - [Multiple-response
   questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+- [Item
+  batteries](https://amaltawfik.github.io/spicy/articles/table-battery.html)
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
 - [Publication-ready regression

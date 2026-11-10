@@ -299,6 +299,15 @@ test_that("the descriptive families carry their title as an HTML caption", {
     ))),
     "Continuous outcomes by Highest education level"
   )
+  expect_identical(
+    .pf_caption(.pf_html(table_battery(
+      d,
+      select = c("life_sat_health", "life_sat_work"),
+      by = "sex",
+      output = "flextable"
+    ))),
+    "Item battery by sex"
+  )
 })
 
 test_that("the caption is the title the console prints, in the table font", {

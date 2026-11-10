@@ -505,6 +505,26 @@ test_that("table_continuous_lm writes the title above its table", {
   expect_equal(.xl_at(m, 5L, "A"), "bmi")
 })
 
+test_that("table_battery writes the title above its table", {
+  .xl_skip()
+  d <- .xl_data()
+  obj <- table_battery(d, select = c(life_sat_health, life_sat_work), by = sex)
+  path <- .xl_write(function(p) {
+    table_battery(
+      d,
+      select = c(life_sat_health, life_sat_work),
+      by = sex,
+      output = "excel",
+      excel_path = p
+    )
+  })
+  m <- .xl_grid(path)
+  expect_equal(.xl_at(m, 1L, "A"), "Item battery by sex")
+  expect_equal(.xl_at(m, 3L, "A"), "Variable")
+  expect_equal(.xl_at(m, 5L, "A"), "life_sat_health")
+  expect_true(attr(obj, "note") %in% m[, "A"])
+})
+
 
 # ---- (g) column widths ----------------------------------------------------
 

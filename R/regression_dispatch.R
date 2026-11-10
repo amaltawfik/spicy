@@ -3131,7 +3131,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 
 # ---- as_structured() accessor --------------------------------------------
 
-# The eight table classes that carry a structured view, mapped to the
+# The nine table classes that carry a structured view, mapped to the
 # function that builds each: `as_structured()` names the builder of a
 # table without a view, `table_stack()` the builder of a table that
 # cannot be a panel yet.
@@ -3143,7 +3143,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
   spicy_outcome_table = "table_outcome()",
   spicy_continuous_svy_table = "table_continuous_svy()",
   spicy_categorical_svy_table = "table_categorical_svy()",
-  spicy_multiresponse_table = "table_multiresponse()"
+  spicy_multiresponse_table = "table_multiresponse()",
+  spicy_battery_table = "table_battery()"
 )
 
 #' Extract the typed (structured) view of a spicy table
@@ -3171,8 +3172,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' @param x A spicy table built with `output = "default"`:
 #'   [table_regression()], [table_categorical()], [table_continuous()],
-#'   [table_continuous_lm()], [table_outcome()], [table_multiresponse()]
-#'   or the survey twins [table_categorical_svy()] and
+#'   [table_continuous_lm()], [table_outcome()], [table_multiresponse()],
+#'   [table_battery()] or the survey twins [table_categorical_svy()] and
 #'   [table_continuous_svy()]. All return the same schema. A stacked
 #'   table of [table_stack()] is accepted too.
 #'
@@ -3297,6 +3298,12 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   cases), `"pct_responses"` (percentage of responses), `"statistic"`
 #'   and `"p"`. Each group owns its columns under its own spanner, and the
 #'   margin is flagged `col_meta$<col>$total`.
+#' * [table_battery()] -- one `"summary"` row per item. Tokens: `"pct"`
+#'   (a row percentage: `col_meta$<col>$level` names the level it shows,
+#'   `missing` flags the column of missing answers, and `top` the summary
+#'   column, with the levels it adds up in `top_levels`), `"n"` (the base of
+#'   the row) and `"p"`. Under `by`, each group owns its columns under its
+#'   own spanner.
 #'
 #' Cells the console builds from more than one number -- a
 #' `"Mdn [Q1, Q3]"`, a test gloss, an effect size with its interval --
@@ -3309,8 +3316,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' Under `p_adjust`, the p-value column holds the adjusted values and its
 #' `col_meta` adds `p_adjust` (the method), `p_adjust_m` (the number of
 #' tests adjusted together) and `p_unadjusted` (the raw p-value of each
-#' cell, as long as `body`). In [table_categorical()] and
-#' [table_multiresponse()], the p-value column's `col_meta` also carries
+#' cell, as long as `body`). In [table_categorical()],
+#' [table_multiresponse()] and [table_battery()], the p-value column's
+#' `col_meta` also carries
 #' `test_type`, the test of each cell, as long as `body`
 #' (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
 #' `"fisher_midp"`, `"fisher_exact_mc"`, `NA` where the cell holds no
@@ -3390,7 +3398,8 @@ as_structured <- function(x) {
     spicy_outcome_table = "0.13.0",
     spicy_continuous_svy_table = "0.13.0",
     spicy_categorical_svy_table = "0.13.0",
-    spicy_multiresponse_table = "0.14.0"
+    spicy_multiresponse_table = "0.14.0",
+    spicy_battery_table = "0.15.0"
   )
   family <- names(builders)[names(builders) %in% class(x)]
   if (length(family) == 0L) {

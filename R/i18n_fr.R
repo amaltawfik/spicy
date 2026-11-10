@@ -501,6 +501,17 @@
   note_multiresponse_not_tested = "Non test\u00E9 (sans variation, signal\u00E9 par \u2013)\u00A0: %s.",
   excel_sheet_multiresponse = "R\u00E9ponses multiples",
 
+  # -- table_battery(): title, base and notes ------------------------------
+  # The base sentence fills "Base\u00A0: %s." (`note_multiresponse_base`)
+  # as in English.
+  title_battery = "Batterie d'items",
+  title_battery_by = "Batterie d'items selon %s",
+  note_battery_population_valid = "personnes ayant r\u00E9pondu \u00E0 l'item",
+  note_battery_population_all = "toutes les personnes, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
+  note_battery_population_all_but_left_out = "toutes les personnes sauf celles dont la r\u00E9ponse est \u00E9cart\u00E9e, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
+  note_battery_levels_excluded = "R\u00E9ponses \u00E9cart\u00E9es des pourcentages et de la base\u00A0: %s.",
+  excel_sheet_battery = "Batterie d'items",
+
   # -- survey twins: the self-documenting design footer ---------------------
   note_design_line = "Plan de sondage\u00A0: %s\u00A0; %s.",
   note_design_stratified = "stratifi\u00E9 (%s)",

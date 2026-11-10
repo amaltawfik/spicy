@@ -23,6 +23,22 @@ print.spicy_multiresponse_table <- function(x, ...) {
   if (is.null(display_df) || is.null(s) || nrow(display_df) != nrow(x)) {
     return(invisible(NextMethod()))
   }
+  # The base row is ruled off from the rows above, from its typed role.
+  .desc_items_print(
+    x,
+    display_df,
+    s,
+    group_sep_rows = which(s$body$.row_role == "fit_stat")
+  )
+}
+
+# Internal: the console table of the descriptive tables with one row per
+# item, `table_multiresponse()` and `table_battery()`: the headers of the
+# typed view, the alignment of the numeric columns, compact padding when
+# the table would overflow the console (which then prints it in panels),
+# and the rows ruled off from those above (`group_sep_rows`). Returns `x`
+# invisibly.
+.desc_items_print <- function(x, display_df, s, group_sep_rows = integer(0)) {
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
 
@@ -83,8 +99,7 @@ print.spicy_multiresponse_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = 1L,
     align_center_cols = align_center,
-    # The base row is ruled off from the rows above, from its typed role.
-    group_sep_rows = which(s$body$.row_role == "fit_stat"),
+    group_sep_rows = group_sep_rows,
     # No total row: without an index the printer looks for the word
     # "Total" in the rows and rules off an item "Total score".
     total_row_idx = integer(0),

@@ -904,6 +904,61 @@
   )
 }
 
+# The exact tests condition on counts, which a weighted table with
+# fractional cells does not hold. The test the call asked for by name
+# stops; one a rule chose (`"auto"`, Campbell's rule of `"n1"`) gives way
+# to the chi-squared it would otherwise take, with a warning. Returns the
+# test kept. `var` names the variable (or the item of `table_battery()`);
+# `svy_twin` adds the design twin to the way out, for a table that has
+# one. Shared by `table_categorical()` and `table_battery()`.
+.cat_exact_fallback <- function(
+  kind,
+  test,
+  tab,
+  var,
+  svy_twin = TRUE,
+  call = rlang::caller_env()
+) {
+  if (identical(kind, test)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`test = \"%s\"` needs counts: the weighted table of `%s` has cells that are not whole numbers.",
+          test,
+          var
+        ),
+        "i" = if (svy_twin) {
+          "Use `test = \"chisq\"` or `\"auto\"`, frequency weights in whole numbers, or `table_categorical_svy()` for survey weights."
+        } else {
+          "Use `test = \"chisq\"` or `\"auto\"`, or frequency weights in whole numbers."
+        }
+      ),
+      class = "spicy_unsupported",
+      call = call
+    )
+  }
+  n1_rule <- identical(test, "n1") && all(dim(tab) == 2L)
+  spicy_warn(
+    c(
+      sprintf(
+        if (n1_rule) {
+          "`%s` keeps the N-1 chi-squared test although an expected count is below 1: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
+        } else {
+          "`%s` keeps the chi-squared test although an expected count is below 5: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
+        },
+        var
+      ),
+      "i" = if (svy_twin) {
+        "Frequency weights in whole numbers give the exact test; `table_categorical_svy()` gives the design-based test for survey weights."
+      } else {
+        "Frequency weights in whole numbers give the exact test."
+      }
+    ),
+    class = "spicy_fallback"
+  )
+  if (n1_rule) "n1" else "chisq"
+}
+
 # The test `.cat_resolve_test()` chose, when it is not the Pearson
 # chi-squared (which `cross_tab()` computes): its p-value, its key, and
 # the statistic and degrees of freedom of a chi-squared (NA for an exact
@@ -4131,35 +4186,12 @@ table_categorical <- function(
       if (
         test_kind %in% c("fisher", "midp") && !.cat_is_count_table(test_tab)
       ) {
-        if (identical(test_kind, test)) {
-          spicy_abort(
-            c(
-              sprintf(
-                "`test = \"%s\"` needs counts: the weighted table of `%s` has cells that are not whole numbers.",
-                test,
-                select_names[i]
-              ),
-              "i" = "Use `test = \"chisq\"` or `\"auto\"`, frequency weights in whole numbers, or `table_categorical_svy()` for survey weights."
-            ),
-            class = "spicy_unsupported"
-          )
-        }
-        n1_rule <- identical(test, "n1") && all(dim(test_tab) == 2L)
-        spicy_warn(
-          c(
-            sprintf(
-              if (n1_rule) {
-                "`%s` keeps the N-1 chi-squared test although an expected count is below 1: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
-              } else {
-                "`%s` keeps the chi-squared test although an expected count is below 5: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
-              },
-              select_names[i]
-            ),
-            "i" = "Frequency weights in whole numbers give the exact test; `table_categorical_svy()` gives the design-based test for survey weights."
-          ),
-          class = "spicy_fallback"
+        test_kind <- .cat_exact_fallback(
+          test_kind,
+          test,
+          test_tab,
+          select_names[i]
         )
-        test_kind <- if (n1_rule) "n1" else "chisq"
       }
     }
     chi_correct <- correct && identical(test_kind, "chisq")

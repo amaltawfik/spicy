@@ -100,6 +100,13 @@
 #' The item `p` and `statistic` belong to no group and are cited without
 #' `model` (`inline(tbl, info_internet, column = "p")`).
 #'
+#' [table_battery()] has one row per item and one column per level of its
+#' scale: `level` names the column, as a level of the scale, the header of
+#' the summary column of `top` (`"Agree + Strongly agree"`), or
+#' `"(Missing)"`, and `model` the group under `by`
+#' (`inline(tbl, q1, "Agree", "pct", model = "Female")`). The base `n` and
+#' the item `p` are cited without `level`.
+#'
 #' # Columns
 #'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
@@ -141,8 +148,9 @@
 #' @param x A table returned by [table_regression()],
 #'   [table_categorical()], [table_continuous()],
 #'   [table_continuous_lm()], [table_outcome()],
-#'   [table_categorical_svy()], [table_continuous_svy()] or
-#'   [table_multiresponse()] (default output) -- every family
+#'   [table_categorical_svy()], [table_continuous_svy()],
+#'   [table_multiresponse()] or [table_battery()] (default output) --
+#'   every family
 #'   [as_structured()] accepts. A stacked table of [table_stack()] holds
 #'   several tables and is refused: pass the panel that holds the cell,
 #'   `attr(x, "panels")[["Women"]]`.
@@ -188,6 +196,14 @@
 #' cn <- table_continuous(sochealth, select = bmi, by = sex)
 #' inline(cn, bmi, model = "Female")
 #' inline(cn, bmi, column = "p")
+#'
+#' # A battery: the level of the scale is `level`, the group `model`.
+#' sat <- sochealth["sex"]
+#' sat$health <- factor(sochealth$life_sat_health, levels = 1:5)
+#' sat$work <- factor(sochealth$life_sat_work, levels = 1:5)
+#' bt <- table_battery(sat, select = c(health, work), by = sex)
+#' inline(bt, health, "5", "pct", model = "Female")
+#' inline(bt, health, column = "p")
 inline <- function(
   x,
   variable,
@@ -243,6 +259,15 @@ inline <- function(
     cols <- .inline_model_cols(s, model)
   }
 
+  # A battery sets the levels of its scale out as columns, not rows:
+  # `level` picks the column (`.inline_scale_cols()`), and the row is the
+  # item's.
+  scale_cols <- .inline_scale_cols(s, cols, level, var_chr, column)
+  if (!is.null(scale_cols)) {
+    cols <- scale_cols
+    level <- NULL
+    column <- column %||% "pct"
+  }
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)
   }
@@ -648,6 +673,110 @@ inline <- function(
   }
   braced <- regmatches(column, gregexpr("\\{[^{}]+\\}", column))[[1L]]
   setdiff(unique(substring(braced, 2L, nchar(braced) - 1L)), "ci_label")
+}
+
+# ---- the scale of a battery -------------------------------------------------
+#
+# `table_battery()` gives each item one row and each level of its scale a
+# percentage column, flagged in `col_meta`: `scale_level` names the level,
+# `missing` marks the column of missing answers and `top` the summary
+# column, whose header is its levels joined by " + ". `level` addresses
+# one of them, as it addresses a row of the other tables: the level, the
+# header of the summary column, or "(Missing)" by role, whatever its
+# displayed label. NULL for a table without scale columns, or when
+# `level` is not given and the request is not an ambiguous percentage.
+# The columns kept are those of `cols` (already filtered by `model`) that
+# are the level's, and every column that is not a percentage (`n`, `p`).
+.inline_scale_cols <- function(
+  s,
+  cols,
+  level,
+  var_chr,
+  column,
+  call = rlang::caller_env()
+) {
+  meta <- s$col_meta[cols]
+  is_scale <- vapply(
+    meta,
+    function(m) {
+      !is.null(m$scale_level) || isTRUE(m$missing) || isTRUE(m$top)
+    },
+    logical(1)
+  )
+  if (!any(is_scale)) {
+    return(NULL)
+  }
+  name_of <- function(m) {
+    if (!is.null(m$scale_level)) {
+      m$scale_level
+    } else if (isTRUE(m$top)) {
+      paste(m$top_levels, collapse = " + ")
+    } else {
+      "(Missing)"
+    }
+  }
+  names_shown <- unique(vapply(meta[is_scale], name_of, character(1)))
+  if (is.null(level)) {
+    asked <- if (is.null(column)) {
+      character(0)
+    } else {
+      .inline_requested_tokens(column)
+    }
+    if (
+      "pct" %in%
+        asked &&
+        length(unique(vapply(meta[is_scale], name_of, ""))) > 1L
+    ) {
+      spicy_abort(
+        c(
+          sprintf(
+            "%s has a percentage per level of its scale: pick one with `level`.",
+            .quote_val(var_chr)
+          ),
+          "i" = paste0(
+            "Available: ",
+            paste(.quote_val(names_shown), collapse = ", "),
+            "."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    return(NULL)
+  }
+  hit <- vapply(
+    meta[is_scale],
+    function(m) {
+      identical(name_of(m), level) ||
+        (isTRUE(m$missing) && .inline_addresses_missing(level))
+    },
+    logical(1)
+  )
+  if (!any(hit)) {
+    spicy_abort(
+      c(
+        sprintf("No level %s for %s.", .quote_val(level), .quote_val(var_chr)),
+        "i" = paste0(
+          "Available: ",
+          paste(.quote_val(names_shown), collapse = ", "),
+          "."
+        ),
+        if (rlang::is_string(level) && level %in% names(s$spanners)) {
+          c(
+            "i" = sprintf(
+              "%s is a column group of this table: select it with `model = %s`.",
+              .quote_val(level),
+              .quote_val(level)
+            )
+          )
+        }
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  c(cols[is_scale][hit], cols[!is_scale])
 }
 
 # ---- groups of `by` -------------------------------------------------------

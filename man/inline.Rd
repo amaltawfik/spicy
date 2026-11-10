@@ -10,8 +10,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 \item{x}{A table returned by \code{\link[=table_regression]{table_regression()}},
 \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}},
-\code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} or
-\code{\link[=table_multiresponse]{table_multiresponse()}} (default output) -- every family
+\code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}},
+\code{\link[=table_multiresponse]{table_multiresponse()}} or \code{\link[=table_battery]{table_battery()}} (default output) --
+every family
 \code{\link[=as_structured]{as_structured()}} accepts. A stacked table of \code{\link[=table_stack]{table_stack()}} holds
 several tables and is refused: pass the panel that holds the cell,
 \code{attr(x, "panels")[["Women"]]}.}
@@ -119,6 +120,13 @@ name, then the rows of \code{none_row}, addressed as \code{"none"} and
 the fit statistic \code{"nobs"}: \code{inline(tbl, "nobs", model = "Total")}.
 The item \code{p} and \code{statistic} belong to no group and are cited without
 \code{model} (\code{inline(tbl, info_internet, column = "p")}).
+
+\code{\link[=table_battery]{table_battery()}} has one row per item and one column per level of its
+scale: \code{level} names the column, as a level of the scale, the header of
+the summary column of \code{top} (\code{"Agree + Strongly agree"}), or
+\code{"(Missing)"}, and \code{model} the group under \code{by}
+(\code{inline(tbl, q1, "Agree", "pct", model = "Female")}). The base \code{n} and
+the item \code{p} are cited without \code{level}.
 }
 
 \section{Columns}{
@@ -172,6 +180,14 @@ inline(ct, smoking, "Yes", "pct", model = "Female")
 cn <- table_continuous(sochealth, select = bmi, by = sex)
 inline(cn, bmi, model = "Female")
 inline(cn, bmi, column = "p")
+
+# A battery: the level of the scale is `level`, the group `model`.
+sat <- sochealth["sex"]
+sat$health <- factor(sochealth$life_sat_health, levels = 1:5)
+sat$work <- factor(sochealth$life_sat_work, levels = 1:5)
+bt <- table_battery(sat, select = c(health, work), by = sex)
+inline(bt, health, "5", "pct", model = "Female")
+inline(bt, health, column = "p")
 }
 \seealso{
 \code{\link[=as_structured]{as_structured()}} for the typed contract behind the

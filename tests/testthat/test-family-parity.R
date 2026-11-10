@@ -15,7 +15,8 @@
   "table_continuous",
   "table_continuous_lm",
   "table_regression",
-  "table_multiresponse"
+  "table_multiresponse",
+  "table_battery"
 )
 
 test_that("the table builders share the reporting grammar", {
@@ -44,6 +45,7 @@ test_that("the table builders share the reporting grammar", {
   }
   expect_true("percent_digits" %in% names(formals(table_categorical)))
   expect_true("percent_digits" %in% names(formals(table_multiresponse)))
+  expect_true("percent_digits" %in% names(formals(table_battery)))
 
   # One output vocabulary across the whole family.
   vocab <- lapply(.table_family, function(fn) {
@@ -400,6 +402,11 @@ test_that("tidy() and glance() of the descriptive tables name `variable` and `la
   d[17:18, c("mq1", "mq2", "mq3", "mq4")] <- NA
   d
 }
+# A second item on the scale of `qc3`, for `table_battery()`.
+.fp_battery_data <- function(d) {
+  d$qc3b <- rev(d$qc3)
+  d
+}
 .fp_note_labels <- c(
   qa1 = "Alpha score",
   qb2 = "Beta score",
@@ -482,6 +489,15 @@ test_that("tidy() and glance() of the descriptive tables name `variable` and `la
         select = c(mq1, mq2, mq3, mq4),
         by = qe5,
         labels = lab,
+        output = o
+      ))
+    },
+    table_battery = function(o) {
+      q(table_battery(
+        .fp_battery_data(d),
+        select = c(qc3, qc3b),
+        by = qe5,
+        labels = c(lab, qc3b = "Gamma flag again"),
         output = o
       ))
     }
@@ -629,7 +645,7 @@ test_that("in French the colon lead-in takes its no-break space, in every table"
   }
 })
 
-# ---- `note`, `note_add` and `note_labels` across the nine ------------------
+# ---- `note`, `note_add` and `note_labels` across the ten -------------------
 #
 # One builder per table function on the data of the notes above, each
 # variable labelled; `...` reaches the call. `rename` and `clash` name, for
@@ -709,6 +725,19 @@ test_that("in French the colon lead-in takes its no-break space, in every table"
       rename = "qe5",
       clash = "mq1"
     ),
+    table_battery = list(
+      build = function(...) {
+        q(table_battery(
+          .fp_battery_data(d),
+          select = c(qc3, qc3b),
+          by = qe5,
+          labels = lab,
+          ...
+        ))
+      },
+      rename = "qe5",
+      clash = "qc3"
+    ),
     table_regression = list(
       build = function(...) q(table_regression(fit, labels = lab, ...)),
       rename = "qa1",
@@ -764,9 +793,9 @@ test_that("in French the colon lead-in takes its no-break space, in every table"
   out
 }
 
-test_that("the nine table functions take `note` and `note_add`, alike", {
+test_that("the ten table functions take `note` and `note_add`, alike", {
   builders <- .fp_note_arg_builders()
-  expect_length(builders, 9L)
+  expect_length(builders, 10L)
   add <- c("Data: a survey.", "Weights not applied")
   for (fn in names(builders)) {
     b <- builders[[fn]]$build
@@ -825,7 +854,7 @@ test_that("the nine table functions take `note` and `note_add`, alike", {
   }
 })
 
-test_that("the nine table functions take `note_labels`, alike", {
+test_that("the ten table functions take `note_labels`, alike", {
   builders <- .fp_note_arg_builders()
   lab <- .fp_note_labels
   short <- c(qa1 = "alpha", qc3 = "gamma", qe5 = "epsilon")
@@ -902,6 +931,7 @@ test_that("every descriptive table but the survey twins and multiresponse opens 
   # survey twin ("N = 240 (weighted ...).").
   for (fn in c(
     "table_multiresponse",
+    "table_battery",
     "table_regression",
     "table_regression_uv"
   )) {
@@ -942,6 +972,9 @@ test_that("a name that matches nothing in the table warns, alike, in every funct
     table_outcome = function(...) table_outcome(d, qa1, c(qe5, qd4), ...),
     table_multiresponse = function(...) {
       table_multiresponse(d, c(mq1, mq3), by = qe5, ...)
+    },
+    table_battery = function(...) {
+      table_battery(.fp_battery_data(d), c(qc3, qc3b), by = qe5, ...)
     },
     table_regression = function(...) table_regression(fit, ...),
     table_regression_uv = function(...) {
@@ -1039,7 +1072,7 @@ test_that("a name that matches nothing in the table warns, alike, in every funct
 test_that("every table function's gt output is a spicy_gt, note or no note", {
   skip_if_not_installed("gt")
   builders <- .fp_note_arg_builders()
-  expect_length(builders, 9L)
+  expect_length(builders, 10L)
   for (fn in names(builders)) {
     b <- builders[[fn]]$build
     with_note <- b(output = "gt")
@@ -4429,6 +4462,8 @@ test_that("every table of the family keeps the title it prints as `title`", {
         select = c(m1, m2),
         by = g
       )),
+      table_battery = q(table_battery(d, select = c(m1, m2), by = g)),
+      table_battery_noby = q(table_battery(d, select = c(m1, m2))),
       table_regression = q(table_regression(stats::lm(xn ~ age, data = d))),
       table_regression_uv = q(table_regression_uv(
         d,
@@ -4545,6 +4580,8 @@ test_that("every table function refuses data with no rows, first", {
       table_outcome(d0, y, select = c(g, f)),
       table_multiresponse(d0, select = c(q1, q2)),
       table_multiresponse(d0, select = c(q1, q2), by = g),
+      table_battery(d0, select = c(q1, q2)),
+      table_battery(d0, select = c(q1, q2), by = g),
       table_regression_uv(d0, outcome = y, predictors = c(f, g))
     ),
     "data"
@@ -5350,7 +5387,8 @@ test_that("no builder rules off a row that holds the word \"Total\"", {
       labels = lab
     )),
     table_outcome = q(table_outcome(d, outcome = a, select = x)),
-    table_multiresponse = q(table_multiresponse(d, c(i1, i2), labels = lab))
+    table_multiresponse = q(table_multiresponse(d, c(i1, i2), labels = lab)),
+    table_battery = q(table_battery(d, c(i1, i2), labels = lab))
   )
   if (
     requireNamespace("survey", quietly = TRUE) &&
