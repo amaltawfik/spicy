@@ -2,6 +2,18 @@
 
 ## Breaking changes
 
+* `table_regression()`, `table_regression_uv()` and `table_stack()` test a
+  `glm()` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian,
+  Tweedie and the quasi families) as `summary()` tests it: a t statistic
+  on the residual degrees of freedom instead of a z statistic. The
+  p-values, the Wald confidence intervals, the statistic header, the
+  standardized coefficients and the average marginal effects follow. With
+  `nested = TRUE`, the change test of such a pair is the F test `anova()`
+  reports (`f_change`; `lrt_change` is refused), and under an `HC*` vcov a
+  Wald F-change. `feglm()` fits of these families follow their `glm()`
+  twins. Binomial, Poisson and `MASS::glm.nb()` fits keep their z test and
+  likelihood-ratio test.
+
 * `table_regression()`: in `tidy()` and `output = "long"`, the terms of
   the zero-inflation, zero-hurdle and dispersion rows are keyed by their
   block, so that the zero parts of a `pscl` and a `glmmTMB` fit of the
@@ -151,6 +163,11 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression(standardized = "refit")` on a `MASS::glm.nb()` fit
+  tests the standardized coefficients at a dispersion of 1, as the fit
+  itself is tested. Their standard errors were scaled by the Pearson
+  dispersion of the refit, and their p-values could be far too small.
 
 * `cross_tab()` writes the chi-squared statistic of its note with the
   symbol, `χ²(df) = …` (was `Chi-2(df) = …`).
