@@ -1066,7 +1066,7 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
   # base leaves out.
   expect_identical(
     unique(all$label[all$.row_role != "summary"]),
-    c("(No item chosen)", "(No data for the question)")
+    c("(No item chosen)", "(No answer to the question)")
   )
   expect_identical(
     unique(all$variable[all$.row_role != "summary"]),
@@ -1789,7 +1789,7 @@ test_that("each base shows its rows: valid one, all two, answered none", {
       "x1",
       "x2",
       "(No item chosen)",
-      "(No data for the question)",
+      "(No answer to the question)",
       "Base"
     )
   )
@@ -1989,7 +1989,7 @@ test_that("the rows of none_row are translated", {
     .mr_none_tbl(base = "all")$label[3:5],
     c(
       "(Aucun item coché)",
-      "(Sans donnée pour la question)",
+      "(Sans réponse à la question)",
       "Base"
     )
   )
@@ -2028,7 +2028,7 @@ test_that("data.frame, long and the typed view mark the rows of none_row by role
   expect_false(grepl("[[:alpha:]]", printed[[resp - 1L]]))
   expect_match(
     printed[[resp - 2L]],
-    "(No data for the question)",
+    "(No answer to the question)",
     fixed = TRUE
   )
 })
@@ -2047,7 +2047,7 @@ test_that("tidy() reads the items only, and glance() does not move", {
 # base row.
 .mr_none_order <- function(cells) {
   pos <- match(
-    c("x2", "(No item chosen)", "(No data for the question)", "Base"),
+    c("x2", "(No item chosen)", "(No answer to the question)", "Base"),
     trimws(cells)
   )
   !anyNA(pos) && !is.unsorted(pos)
@@ -2135,9 +2135,9 @@ test_that("an item displaying a label the table adds is refused", {
       what = "the respondents with no item chosen"
     ),
     list(
-      labels = c(x2 = "(No data for the question)"),
+      labels = c(x2 = "(No answer to the question)"),
       key = "row_multiresponse_nodata",
-      what = "the respondents with no data for the question"
+      what = "the respondents with no answer to the question"
     )
   )
   for (cs in cases) {
@@ -2172,7 +2172,7 @@ test_that("both ways out of the refusal work", {
       "Chose none (item)",
       "Respondent count",
       "(No item chosen)",
-      "(No data for the question)",
+      "(No answer to the question)",
       "Base"
     )
   )
@@ -2187,7 +2187,7 @@ test_that("both ways out of the refusal work", {
     "(No item chosen)",
     "Base",
     "(None of these)",
-    "(No data for the question)",
+    "(No answer to the question)",
     "All respondents"
   )
   tbl <- .mr_none_tbl(base = "all", labels = labs, output = "default")
@@ -2233,8 +2233,8 @@ test_that("only a displayed row collides, and the French labels do", {
   # `base = "valid"` there is no row of respondents without data, under
   # `"answered"` no row at all, and `none_row = FALSE` shows neither.
   expect_identical(
-    .mr_none_tbl(labels = c(x2 = "(No data for the question)"))$label,
-    c("x1", "(No data for the question)", "(No item chosen)", "Base")
+    .mr_none_tbl(labels = c(x2 = "(No answer to the question)"))$label,
+    c("x1", "(No answer to the question)", "(No item chosen)", "Base")
   )
   none <- c(x1 = "(No item chosen)")
   expect_identical(
@@ -2249,7 +2249,7 @@ test_that("only a displayed row collides, and the French labels do", {
   for (labs in list(
     c(x1 = "(Aucun item coché)"),
     c(x2 = "Base"),
-    c(x2 = "(Sans donnée pour la question)")
+    c(x2 = "(Sans réponse à la question)")
   )) {
     expect_error(
       .mr_none_tbl(base = "all", labels = labs),
@@ -2267,7 +2267,7 @@ test_that("only a displayed row collides, and the French labels do", {
       "(No item chosen)",
       "x2",
       "(Aucun item coché)",
-      "(Sans donnée pour la question)",
+      "(Sans réponse à la question)",
       "Base"
     )
   )
@@ -2290,7 +2290,7 @@ test_that("an engine renders the relabeled rows", {
       "x1",
       "Base",
       "(No item chosen)",
-      "(No data for the question)",
+      "(No answer to the question)",
       "All respondents"
     )
   )

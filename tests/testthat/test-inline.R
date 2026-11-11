@@ -1465,7 +1465,7 @@ test_that("an untested item and an empty group refuse with the reason", {
 # ---- identity first: tokens, labels, and their collisions -----------------
 
 # Two items, the second named `nm`: x1 = 4, the item = 3, "(No item
-# chosen)" = 2, "(No data for the question)" = 1, "Base" = 7. In
+# chosen)" = 2, "(No answer to the question)" = 1, "Base" = 7. In
 # group "a" (rows 1 to 3), one respondent chose no item.
 .il_token_item <- function(nm, ...) {
   d <- data.frame(
@@ -1490,7 +1490,7 @@ test_that("an item column named like a generated row's token keeps both rows", {
       expect_identical(inline(tbl, !!other), generated[[other]])
     }
     expect_identical(inline(tbl, "(No item chosen)"), "2")
-    expect_identical(inline(tbl, "(No data for the question)"), "1")
+    expect_identical(inline(tbl, "(No answer to the question)"), "1")
     expect_identical(inline(tbl, "Base"), "7")
   }
   # The token names the item, which has no level.

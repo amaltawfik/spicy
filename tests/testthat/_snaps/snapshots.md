@@ -153,7 +153,7 @@
       ──────────┼─────────────┼─────────
        Total    │    3      3 │       6 
       
-      Chi-2(2) = 1.3, p = .513
+      χ²(2) = 1.3, p = .513
       Cramér's V = 0.47
       Warning: 6 expected cells < 5 (100%). 2 expected cells < 1. Minimum expected = 0.5. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
@@ -172,7 +172,7 @@
       ──────────┼────────────────┼───────────────
        Total    │   50.0    50.0 │   100.0    12 
       
-      Chi-2(2) = 0.0, p = 1.000
+      χ²(2) = 0.0, p = 1.000
       Cramér's V = 0.00
       Warning: 6 expected cells < 5 (100%). Minimum expected = 2. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 
@@ -191,7 +191,7 @@
        Total    │   100.0    100.0 │   100.0 
        N        │       2        6 │       8 
       
-      Chi-2(1) = 0.0, p = 1.000
+      χ²(1) = 0.0, p = 1.000
       Cramér's V = 0.00
       Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
       Weight: w
@@ -206,7 +206,7 @@
        Total    │   100.0    100.0 │   100.0 
        N        │       2        6 │       8 
       
-      Chi-2(1) = 0.0, p = 1.000
+      χ²(1) = 0.0, p = 1.000
       Cramér's V = 0.00
       Warning: 4 expected cells < 5 (100%). Minimum expected = 1. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
       Weight: w

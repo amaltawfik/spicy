@@ -86,23 +86,23 @@
     Output
       Multiple responses by g
       
-       Variable                   │ a n  a % of cases  a % of responses  b n  b % of cases  b % of responses  Total n 
-      ────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────
-       x1                         │  1       33.3           100.0         2       66.7            66.7           3    
-       x2                         │  0        0.0             0.0         1       33.3            33.3           1    
-       (No item chosen)           │  1       33.3              –          1       33.3              –            2    
-       (No data for the question) │  1       33.3              –          0        0.0              –            1    
-      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-       Base                       │  3                                    3                                      6    
+       Variable                    │ a n  a % of cases  a % of responses  b n  b % of cases  b % of responses  Total n 
+      ─────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────
+       x1                          │  1       33.3           100.0         2       66.7            66.7           3    
+       x2                          │  0        0.0             0.0         1       33.3            33.3           1    
+       (No item chosen)            │  1       33.3              –          1       33.3              –            2    
+       (No answer to the question) │  1       33.3              –          0        0.0              –            1    
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       Base                        │  3                                    3                                      6    
       
-       Variable                   │ Total % of cases  Total % of responses      Test        p   
-      ────────────────────────────┼─────────────────────────────────────────────────────────────
-       x1                         │       50.0                75.0          χ²(1) = 0.67   .547 
-       x2                         │       16.7                25.0          χ²(1) = 1.20   .547 
-       (No item chosen)           │       33.3                  –                    –     –    
-       (No data for the question) │       16.7                  –                    –     –    
-      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-       Base                       │                                                             
+       Variable                    │ Total % of cases  Total % of responses      Test        p   
+      ─────────────────────────────┼─────────────────────────────────────────────────────────────
+       x1                          │       50.0                75.0          χ²(1) = 0.67   .547 
+       x2                          │       16.7                25.0          χ²(1) = 1.20   .547 
+       (No item chosen)            │       33.3                  –                    –     –    
+       (No answer to the question) │       16.7                  –                    –     –    
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       Base                        │                                                             
       
       Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: all respondents. Missing values removed: g (1). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 2 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(2.49) = 2.32, p = .410.
 

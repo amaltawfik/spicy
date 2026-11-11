@@ -316,7 +316,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p < .001
+#> χ²(2) = 21.6, p < .001
 #> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```

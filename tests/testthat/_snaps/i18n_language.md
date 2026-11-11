@@ -28,7 +28,7 @@
        Total     │   100,0    100,0 │   100,0 
        N         │       4        3 │       7 
       
-      Khi-2(1) = 0,2, p = 0,659
+      χ²(1) = 0,2, p = 0,659
       V de Cramér = 0,17
       Avertissement : 4 cellules avec effectif théorique < 5 (100 %). Effectif théorique minimal = 1,29. Envisagez `simulate_p = TRUE` ou définissez-le globalement via `options(spicy.simulate_p = TRUE)`.
       Valeurs manquantes retirées : smoke (1).

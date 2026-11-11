@@ -111,7 +111,7 @@ as such are already read as missing).}
 \item{none_row}{Logical. If \code{TRUE} (the default), the respondents of the
 base who chose no item get a row of their own, after the items and
 before the \code{Base} row: "(No item chosen)" under \code{base = "valid"}
-and \code{"all"}, and, under \code{"all"}, "(No data for the question)" for the
+and \code{"all"}, and, under \code{"all"}, "(No answer to the question)" for the
 respondents with every indicator missing. Each row appears only when
 its count is above 0. \code{base = "answered"} leaves both groups out of
 the base and shows neither row. A row gives the count and the
@@ -319,7 +319,7 @@ and a last row with the base. Columns: \code{variable} (the item's
 column, \code{"none"}, \code{"no_data"}, or \code{"nobs"} on the base row),
 \code{label} (the label the row displays), \code{.row_role} (what the row
 is: \code{"summary"} for an item, \code{"none"} for "(No item chosen)",
-\code{"missing"} for "(No data for the question)", \code{"fit_stat"} for the
+\code{"missing"} for "(No answer to the question)", \code{"fit_stat"} for the
 base, the roles of \code{\link[=as_structured]{as_structured()}}), then the printed columns:
 the count and the percentage of each group of \code{by} and of the
 \code{Total} margin (\verb{<group> n} and \verb{<group> \%}, or
@@ -502,7 +502,7 @@ chosen). The base holds the second and leaves out the first under
 \code{"valid"}, leaves out both under \code{"answered"}, and holds both under
 \code{"all"}; a count of zero is not mentioned. Under \code{none_row = TRUE}, the
 default, the respondents of these two kinds that the base holds are
-rows of the table, "(No item chosen)" and "(No data for the question)",
+rows of the table, "(No item chosen)" and "(No answer to the question)",
 with their count and percentage in each group, and the note counts only
 those the base leaves out. An item displayed with the label of a row the
 table adds is an error (class \code{spicy_label_collision}): choose another

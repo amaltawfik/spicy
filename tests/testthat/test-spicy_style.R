@@ -612,8 +612,8 @@ test_that("jama and lancet head the mean and the median in full, keys unchanged"
   skip_on_cran()
   # The AMA Manual of Style and the Lancet model tables write "mean (SD)"
   # and "median (IQR)" (2026-10-30). Display only: the keys are the
-  # English default headers, and the default, apa, and French keep their
-  # own word.
+  # English default headers, and the default and apa keep their own word.
+  # French spells them out too, "Moyenne" and "M\u00E9diane" (2026-11-11).
   keys <- c("M", "Mdn", "Mdn [Q1, Q3]")
   tokens <- c("m", "med", "med_iqr")
   d <- fixed_data()
@@ -683,12 +683,27 @@ test_that("jama and lancet head the mean and the median in full, keys unchanged"
   ))
   expect_false(grepl("Mdn", attr(x, "note"), fixed = TRUE))
   expect_match(attr(x, "note"), "Median 95% CI = ", fixed = TRUE)
-  # A translation keeps its own word under the theme.
+  # A translation spells out its own words under the theme, and keeps its
+  # symbols under the others.
   withr::local_options(spicy.language = "fr")
+  for (th in c("default", spicy_style_names())) {
+    style <- if (th != "default") th
+    x <- quietly(builders$table_continuous(style = style))
+    expect_identical(
+      unname(headers(x)),
+      if (th %in% c("jama", "lancet")) {
+        c("Moyenne", "M\u00E9diane", "M\u00E9diane [Q1, Q3]")
+      } else {
+        c("M", "M\u00E9d.", "M\u00E9d. [Q1, Q3]")
+      },
+      info = th
+    )
+    expect_true(all(keys %in% names(as.data.frame(x))), info = th)
+  }
+  # A spicy.labels override of the symbol keeps its word under the theme.
+  withr::local_options(spicy.labels = list(header_median = "Md"))
   x <- quietly(builders$table_continuous(style = "jama"))
-  expect_identical(headers(x)[["Mdn"]], "Méd.")
-  expect_identical(headers(x)[["M"]], spicy_str("header_mean"))
-  expect_true(all(keys %in% names(as.data.frame(x))))
+  expect_identical(headers(x)[["Mdn"]], "Md")
 })
 
 test_that("the minus_sign lever is validated and printed, and no theme sets it", {

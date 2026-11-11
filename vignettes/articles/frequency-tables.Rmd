@@ -254,7 +254,7 @@ cross_tab(students, self_rated_health, education)
 The warning itself names the remedy: `simulate_p = TRUE` replaces
 the asymptotic p-value with one estimated by Monte Carlo simulation
 (`simulate_B` random tables). A simulated test has no degrees of
-freedom, which is why the statistic prints as `Chi-2(NA)`:
+freedom, which is why the statistic prints as `χ²(NA)`:
 
 ```{r cross-simulate}
 cross_tab(students, self_rated_health, education,

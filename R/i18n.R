@@ -183,7 +183,7 @@
   # -- cross_tab() statistics note ------------------------------------------
   note_p_prefix_lt = "p < %s",
   note_p_prefix_eq = "p = %s",
-  test_chisq = "Chi-2(%s) = %s, %s",
+  test_chisq = "\u03C7\u00B2(%s) = %s, %s",
   note_chisq_simulated = " (simulated)",
   # The 95 is hardcoded upstream (dev/i18n_string_census.md section 4.7,
   # inconsistency 2); the literal "%" here is why this key is read through
@@ -784,7 +784,7 @@
   note_exp_ci_gloss_hdi_asym = "CI: highest-density interval of the exponentiated draws (asymmetric)",
   # Appended to the sentence for a cumulative-cloglog fit, hence the
   # leading space.
-  note_exp_hr_negated = " HR is the grouped-time proportional-hazards ratio exp(\u2212B): the cumulative parametrization cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 places the hazard on \u2212B (Prentice & Gloeckler 1978; McCullagh 1980).",
+  note_exp_hr_negated = " HR is the grouped-time hazard ratio exp(\u2212B): the cumulative parametrization cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 places the hazard on \u2212B (Prentice & Gloeckler 1978; McCullagh 1980).",
   # The sentence itself. Holes, in order: the scope, the header (twice
   # in `_with_se_single`; the headers joined in the `_multi` forms), the
   # SE gloss (`_with_se_*` only), the CI gloss, the cloglog sentence
@@ -1137,7 +1137,7 @@
   # Under `none_row` (the default), the respondents of the two counts that
   # the base holds are rows of the table, between the items and the base
   # row: `row_multiresponse_none` (data, no item chosen) and
-  # `row_multiresponse_nodata` (no data for the question), in parentheses
+  # `row_multiresponse_nodata` (no answer to the question), in parentheses
   # like `row_missing_level` so that they do not read as items. A count
   # shown as a row leaves the "including" clause of the base sentence.
   # An item displaying one of the three row labels is refused
@@ -1146,7 +1146,7 @@
   title_multiresponse_by = "Multiple responses by %s",
   row_multiresponse_base = "Base",
   row_multiresponse_none = "(No item chosen)",
-  row_multiresponse_nodata = "(No data for the question)",
+  row_multiresponse_nodata = "(No answer to the question)",
   header_pct_cases = "% of cases",
   header_pct_responses = "% of responses",
   note_multiresponse_pct_cases = "Multiple answers possible: percentages can sum to more than 100%.",

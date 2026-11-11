@@ -159,7 +159,7 @@ test_that("cross_tab() drops the association line on an unclassed error", {
     cramer_v = function(...) stop("plain unclassed failure"),
     .package = "spicy"
   )
-  expect_match(attr(out, "note"), "Chi-2(2)", fixed = TRUE)
+  expect_match(attr(out, "note"), "\u03c7\u00b2(2)", fixed = TRUE)
   expect_false(grepl("Cram\u00e9r", attr(out, "note"), fixed = TRUE))
   expect_true(all(is.na(attr(out, "assoc_estimate") %||% NA_real_)))
 })
@@ -188,7 +188,7 @@ test_that("cross_tab() creates the note from the declared-missing line", {
   # Contrast: with the statistics on, the same line is appended after
   # the chi-square block instead of replacing it.
   ct2 <- cross_tab(d, xx, yy, include_stats = TRUE)
-  expect_match(attr(ct2, "note"), "Chi-2(1)", fixed = TRUE)
+  expect_match(attr(ct2, "note"), "\u03c7\u00b2(1)", fixed = TRUE)
   expect_match(
     attr(ct2, "note"),
     "\nDeclared missing values removed: xx (2).",

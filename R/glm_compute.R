@@ -113,7 +113,7 @@ spicy_glm_exp_header <- function(family_name, link_name) {
     return(spicy_str("header_exp_or")) # proportional-odds ratio (ordinal: polr / clm)
   }
   if (identical(family_name, "cumulative") && identical(link_name, "cloglog")) {
-    return(spicy_str("header_exp_hr")) # proportional-hazards ratio (ordinal cloglog link)
+    return(spicy_str("header_exp_hr")) # grouped-time hazard ratio (ordinal cloglog link)
   }
   if (identical(family_name, "multinomial") && identical(link_name, "logit")) {
     return(spicy_str("header_exp_or")) # multinomial odds / relative-risk ratio (multinom / mlogit)

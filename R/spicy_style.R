@@ -1600,19 +1600,25 @@ print.spicy_style <- function(x, ...) {
 
 # The header of registry key `key` under the style in force: the word a
 # named theme spells its own way (the `headers` of its registry entry,
-# "Mean" and "Median" under "jama" and "lancet") where an English table
-# would print the English default, `spicy_str(key)` otherwise. Another
-# language keeps its word, even one it shares with English (the French
-# "M"), and so does a `spicy.labels` override. Display only: no column
-# key reads it.
+# "Mean" and "Median" under "jama" and "lancet", "Moyenne" and "Mediane"
+# in French) where the table would print the language's own default,
+# `spicy_str(key)` otherwise. A `spicy.labels` override of `key` keeps its
+# word, and so does a language that does not translate the spelled-out
+# key (it would fall back to English). Display only: no column key reads
+# it.
 .style_header <- function(key) {
   out <- spicy_str(key)
   alt <- .style_fmt()$headers
   i <- match(key, names(alt))
+  if (is.na(i)) {
+    return(out)
+  }
+  set <- .spicy_language_table(.spicy_language_code())
+  j <- match(key, names(set))
+  own <- if (is.na(j)) .spicy_strings[[key]] else set[[j]]
   if (
-    is.na(i) ||
-      !identical(getOption("spicy.language", "en"), "en") ||
-      !identical(out, unname(.spicy_strings[[key]]))
+    !identical(out, unname(own)) ||
+      (!is.null(set) && !alt[[i]] %in% names(set))
   ) {
     return(out)
   }

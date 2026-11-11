@@ -253,7 +253,7 @@ table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 The 36 respondents who skipped the question now enter the base, and
 every percentage counts them as choosing nothing. The table still keeps
 them apart from the 67 who chose no source: each group has its row,
-`(No data for the question)` and `(No item chosen)`.
+`(No answer to the question)` and `(No item chosen)`.
 
 These rows count respondents, not answers. Each gives a count and a
 percentage of cases per group, on the base of the column as for an

@@ -80,7 +80,7 @@
   excel_sheet_regression = "R\u00E9gression",
   excel_sheet_categorical = "Cat\u00E9gorielles",
   excel_sheet_continuous_lm = "Mod\u00E8les lin\u00E9aires",
-  excel_sheet_outcome = "Variable \u00E9tudi\u00E9e",
+  excel_sheet_outcome = "Variable d\u00E9pendante",
 
   # -- table titles ---------------------------------------------------------
   title_categorical = "Tableau des variables cat\u00E9gorielles",
@@ -130,7 +130,6 @@
   # -- cross_tab() statistics note ------------------------------------------
   note_p_prefix_lt = "p\u00A0<\u00A0%s",
   note_p_prefix_eq = "p\u00A0=\u00A0%s",
-  test_chisq = "Khi-2(%s) = %s, %s",
   note_chisq_simulated = " (simul\u00E9)",
   note_assoc_ci = ", IC \u00E0 95\u00A0% [",
   note_yates_applied = "Correction de continuit\u00E9 de Yates appliqu\u00E9e.",
@@ -206,7 +205,7 @@
   row_outcome = "Variable d\u00E9pendante",
 
   # -- table_regression(): subordinate block footers ------------------------
-  note_thresholds_rows_gloss = "%s\u00A0: points de coupure entre les cat\u00E9gories de r\u00E9ponse sur l'\u00E9chelle latente",
+  note_thresholds_rows_gloss = "%s\u00A0: points de coupure entre les modalit\u00E9s de r\u00E9ponse sur l'\u00E9chelle latente",
   note_thresholds_scale_suffix = " (%s, non exponenti\u00E9s)",
   note_scale_log_odds = "\u00E9chelle logit",
   note_scale_log_cumhazard = "\u00E9chelle du log-risque cumul\u00E9",
@@ -362,7 +361,7 @@
   abbrev_omega2_partial = "om\u00E9ga-carr\u00E9 partiel",
   abbrev_chi2_lrt = "khi-deux partiel du rapport de vraisemblance",
   abbrev_chi2_wald = "khi-deux partiel de Wald",
-  abbrev_ame_category = "effet marginal moyen sur la probabilit\u00E9 d'une cat\u00E9gorie de r\u00E9ponse",
+  abbrev_ame_category = "effet marginal moyen sur la probabilit\u00E9 d'une modalit\u00E9 de r\u00E9ponse",
   abbrev_pd = "probabilit\u00E9 de direction",
   abbrev_mcse = "erreur standard de Monte-Carlo de la m\u00E9diane a posteriori",
   abbrev_deff = "effet de plan",
@@ -390,7 +389,7 @@
   note_exp_ci_gloss_standard_asym = "bornes de l'IC exponenti\u00E9es (asym\u00E9triques)",
   note_exp_ci_gloss_hdi = "IC\u00A0: intervalle de plus haute densit\u00E9 des tirages exponenti\u00E9s",
   note_exp_ci_gloss_hdi_asym = "IC\u00A0: intervalle de plus haute densit\u00E9 des tirages exponenti\u00E9s (asym\u00E9trique)",
-  note_exp_hr_negated = " HR est le rapport de risques proportionnels en temps group\u00E9 exp(\u2212B)\u00A0: la param\u00E9trisation cumulative cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 place le risque sur \u2212B (Prentice et Gloeckler 1978\u00A0; McCullagh 1980).",
+  note_exp_hr_negated = " HR est le hazard ratio en temps group\u00E9 exp(\u2212B)\u00A0: la param\u00E9trisation cumulative cloglog P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 place le risque sur \u2212B (Prentice et Gloeckler 1978\u00A0; McCullagh 1980).",
   note_exp_with_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; erreur standard sur l'\u00E9chelle des %s (%s)\u00A0; %s.%s",
   note_exp_with_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s)\u00A0; %s.%s",
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
@@ -411,6 +410,8 @@
   header_group = "Groupe",
   header_sd = "ET",
   header_median = "M\u00E9d.",
+  header_mean_spelled = "Moyenne",
+  header_median_spelled = "M\u00E9diane",
   header_iqr = "EIQ",
   header_smd = "DMS",
   header_weighted_n = "n pond\u00E9r\u00E9",
@@ -479,7 +480,7 @@
   title_multiresponse_by = "R\u00E9ponses multiples selon %s",
   row_multiresponse_base = "Base",
   row_multiresponse_none = "(Aucun item coch\u00E9)",
-  row_multiresponse_nodata = "(Sans donn\u00E9e pour la question)",
+  row_multiresponse_nodata = "(Sans r\u00E9ponse \u00E0 la question)",
   header_pct_cases = "% des cas",
   header_pct_responses = "% des r\u00E9ponses",
   note_multiresponse_pct_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages peuvent totaliser plus de 100\u00A0%.",

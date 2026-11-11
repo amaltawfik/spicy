@@ -777,7 +777,7 @@ test_that("a French language writes the whole pair under the comma", {
   )))
   expect_false(any(grepl("[0-9]\\.[0-9]", c(fq, ct))))
   expect_true(any(grepl("50,0", fq, fixed = TRUE)))
-  expect_true(any(grepl("Khi-2(1) = 0,2", ct, fixed = TRUE)))
+  expect_true(any(grepl("\u03c7\u00b2(1) = 0,2", ct, fixed = TRUE)))
   # The interval separator switches with the mark, as everywhere else.
   expect_true(any(grepl("[0,00; 0,82]", ct, fixed = TRUE)))
 })
@@ -1744,7 +1744,7 @@ test_that("the threshold and scale-effect notes follow the language", {
   expect_match(
     note(logit),
     paste0(
-      "Seuils\u00A0: points de coupure entre les cat\u00E9gories de ",
+      "Seuils\u00A0: points de coupure entre les modalit\u00E9s de ",
       "r\u00E9ponse sur l'\u00E9chelle latente (\u00E9chelle logit, non ",
       "exponenti\u00E9s)."
     ),
@@ -1758,7 +1758,7 @@ test_that("the threshold and scale-effect notes follow the language", {
   expect_match(
     note(cloglog),
     paste0(
-      " HR est le rapport de risques proportionnels en temps group\u00E9 ",
+      " HR est le hazard ratio en temps group\u00E9 ",
       "exp(\u2212B)\u00A0: la param\u00E9trisation cumulative cloglog ",
       "P(Y \u2264 j) = \u03B6_j \u2212 x\u03B2 place le risque sur \u2212B"
     ),
@@ -2369,5 +2369,24 @@ test_that("the univariable Cox title places univariable before its qualifier", {
       "R\u00E9gression de Cox univariable \u00E0 risques proportionnels ",
       "(pr\u00E9s\u00E9lection)\u00A0: Surv(time, status)"
     )
+  )
+})
+
+test_that("the French outcome, value and multiresponse words reach the tables", {
+  withr::local_options(spicy.language = "fr", width = 100)
+  # The header over the valid / missing / total blocks of freq(),
+  # "Category" in English: it heads no values of the variable, so it stays
+  # "cat\u00E9gorie" and not "modalit\u00E9" (2026-11-11).
+  fq <- capture.output(print(freq(mtcars$cyl)))
+  expect_true(any(grepl("Cat\u00E9gorie", fq, fixed = TRUE)))
+  expect_false(any(grepl("Modalit\u00E9", fq, fixed = TRUE)))
+  # The outcome is the "variable d\u00E9pendante" in every key, the
+  # worksheet of table_outcome() included.
+  skip_if_not_installed("openxlsx2")
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  table_outcome(mtcars, mpg, select = am, output = "excel", excel_path = path)
+  expect_identical(
+    unname(openxlsx2::wb_load(path)$get_sheet_names()),
+    "Variable d\u00E9pendante"
   )
 })

@@ -112,7 +112,7 @@ test_that("cross_tab respects global options spicy.simulate_p and spicy.rescale"
   # Verify attributes and global option effect. The simulated p-value
   # varies run to run, so pin the deterministic parts of the note.
   note <- attr(res, "note")
-  expect_match(note, "Chi-2(NA) = 17.7, p", fixed = TRUE)
+  expect_match(note, "\u03c7\u00b2(NA) = 17.7, p", fixed = TRUE)
   expect_match(note, "(simulated)", fixed = TRUE)
   expect_match(note, "Weight: mpg (rescaled)", fixed = TRUE)
   expect_true(isTRUE(all.equal(round(attr(res, "n_total")), nrow(data))))
@@ -223,7 +223,7 @@ test_that("cross_tab computes by-group stats on non-empty margins", {
   expect_identical(
     note_b,
     paste(
-      "Chi-2(1) = 0.0, p = 1.000",
+      "\u03c7\u00b2(1) = 0.0, p = 1.000",
       "Cram\u00e9r's V = 0.00",
       "Yates continuity correction applied.",
       "Stats computed on 2x2 sub-table after dropping empty rows / columns.",
@@ -282,13 +282,21 @@ test_that("cross_tab assoc_ci adds CI to note", {
 test_that("cross_tab assoc_measure = 'none' omits coefficient line", {
   res <- cross_tab(mtcars, cyl, gear, assoc_measure = "none")
   expect_false(grepl("Cram\u00e9r", attr(res, "note")))
-  expect_match(attr(res, "note"), "Chi-2(4) = 18.0, p = .001", fixed = TRUE)
+  expect_match(
+    attr(res, "note"),
+    "\u03c7\u00b2(4) = 18.0, p = .001",
+    fixed = TRUE
+  )
 })
 
-test_that("cross_tab note uses new Chi-2(df) format", {
+test_that("cross_tab note writes the chi-squared symbol with its df", {
   res <- cross_tab(mtcars, cyl, gear)
-  expect_true(grepl("Chi-2\\(\\d+\\) =", attr(res, "note")))
-  expect_match(attr(res, "note"), "Chi-2(4) = 18.0, p = .001", fixed = TRUE)
+  expect_true(grepl("\u03c7\u00b2\\(\\d+\\) =", attr(res, "note")))
+  expect_match(
+    attr(res, "note"),
+    "\u03c7\u00b2(4) = 18.0, p = .001",
+    fixed = TRUE
+  )
 })
 
 # ── Percentage modes ─────────────────────────────────────────────────────
@@ -412,7 +420,7 @@ test_that("cross_tab adds weight note", {
   # Pin the complete note (fully deterministic).
   expect_identical(
     attr(res, "note"),
-    "Chi-2(4) = 355.1, p < .001\nCram\u00e9r's V = 0.53\nWeight: mpg"
+    "\u03c7\u00b2(4) = 355.1, p < .001\nCram\u00e9r's V = 0.53\nWeight: mpg"
   )
 })
 
@@ -454,7 +462,7 @@ test_that("cross_tab simulate_p adds (simulated) to note", {
   res <- cross_tab(mtcars, cyl, gear, simulate_p = TRUE)
   # The simulated p-value varies run to run; pin the deterministic
   # prefix (df becomes NA under simulation) and the suffix marker.
-  expect_match(attr(res, "note"), "Chi-2(NA) = 18.0, p", fixed = TRUE)
+  expect_match(attr(res, "note"), "\u03c7\u00b2(NA) = 18.0, p", fixed = TRUE)
   expect_match(attr(res, "note"), "(simulated)", fixed = TRUE)
 })
 
@@ -536,8 +544,8 @@ test_that("cross_tab `decimal_mark = ','` propagates to all printed numbers", {
     decimal_mark = ","
   )
   note <- attr(res, "note")
-  # Chi-2 value should use comma decimal
-  expect_match(note, "Chi-2\\(\\d+\\) = \\d+,\\d")
+  # The chi-squared value uses the comma decimal
+  expect_match(note, "\u03c7\u00b2\\(\\d+\\) = \\d+,\\d")
   # Cramer's V estimate
   expect_match(note, "Cram\u00e9r's V = \\d+,\\d{2}")
   # CI uses ";" separator under decimal_mark = ","
@@ -870,7 +878,7 @@ test_that("cross_tab skips stats when single non-empty column", {
     y = c("X", "X", "X", "X")
   )
   out <- capture.output(cross_tab(d, x, y))
-  expect_false(any(grepl("Chi-2", out)))
+  expect_false(any(grepl("\u03c7\u00b2", out)))
 })
 
 test_that("cross_tab weighted without stats shows weight note alone", {
