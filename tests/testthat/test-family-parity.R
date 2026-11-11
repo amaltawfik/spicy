@@ -4694,16 +4694,17 @@ test_that("every table function refuses data with no rows, first", {
       }
     }
     s <- it$symbol %||% spicy_str(reg[[it$id]]$symbol)
-    # jama and lancet head the mean and the median "Mean" and "Median" in
-    # English, which need no definition; a translation keeps its symbol.
-    spelled <- c(mean = "Mean", median = "Median")
-    if (
-      it$id %in%
-        names(spelled) &&
-        rule %in% c("jama", "lancet") &&
-        identical(getOption("spicy.language"), "en")
-    ) {
-      s <- spelled[[it$id]]
+    # jama and lancet head the mean and the median with the spelled-out
+    # word ("Mean" and "Median", "Moyenne" and "Médiane"), which needs
+    # no definition; a language without the spelled-out key keeps its
+    # symbol, as `.style_header()` does.
+    spelled <- c(mean = "header_mean_spelled", median = "header_median_spelled")
+    if (it$id %in% names(spelled) && rule %in% c("jama", "lancet")) {
+      lang <- getOption("spicy.language", "en")
+      set <- if (identical(lang, "en")) NULL else .spicy_language_table(lang)
+      if (identical(lang, "en") || spelled[[it$id]] %in% names(set)) {
+        s <- spicy_str(spelled[[it$id]])
+      }
     }
     t <- it$term %||% spicy_str(reg[[it$id]]$term)
     if (identical(tolower(s), tolower(t)) || any(ids == it$id & sym == s)) {
