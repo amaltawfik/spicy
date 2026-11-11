@@ -81,6 +81,13 @@
   Fisher's exact test, Holm-adjusted by default. `inline()` cites its
   cells (#13).
 
+* New `table_battery_svy()`, the survey-design twin of `table_battery()`:
+  the same table from a `survey::svydesign()` or replicate-weights
+  design. The percentages are estimated under the design on each item's
+  respondents, `n` is their observed count and, with `by`, each item
+  gets a design-based test (`chisq_statistic`, Rao-Scott by default),
+  Holm-adjusted by default. `table_battery()` points a design to it.
+
 * `table_categorical()` and `table_categorical_svy()` gain
   `factor_levels`, as in `freq()`: `"all"` shows the declared levels
   with no observation, at 0 in every column. These rows change no
@@ -144,6 +151,21 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `cross_tab()` writes the chi-squared statistic of its note with the
+  symbol, `χ²(df) = …` (was `Chi-2(df) = …`).
+
+* `table_multiresponse()` labels the row of respondents who left the
+  question blank "(No answer to the question)", as its note says (was
+  "(No data for the question)").
+
+* `table_regression()` names the ratio of an ordinal cloglog model "the
+  grouped-time hazard ratio" in its note (was "proportional-hazards
+  ratio").
+
+* Under the `jama` and `lancet` themes, a French table spells out
+  "Moyenne" and "Médiane" as an English one spells out "Mean" and
+  "Median".
 
 * Table notes name the statistical method, never the package that
   computes it: "P-values: Satterthwaite t-test." instead of "...
