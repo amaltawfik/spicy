@@ -688,7 +688,7 @@
   header_valid = "Valides",
   header_missing = "Manquants",
   header_declared_missing = "Manquants d\u00E9clar\u00E9s",
-  header_declared_codes = "Codes d\u00E9clar\u00E9s manquants",
+  header_declared_codes = "Codes manquants d\u00E9clar\u00E9s",
   header_distinct = "Valeurs distinctes",
   header_categories = "Modalit\u00E9s",
   header_earliest = "Premi\u00E8re date",
