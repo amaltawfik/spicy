@@ -3144,7 +3144,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
   spicy_continuous_svy_table = "table_continuous_svy()",
   spicy_categorical_svy_table = "table_categorical_svy()",
   spicy_multiresponse_table = "table_multiresponse()",
-  spicy_battery_table = "table_battery()"
+  spicy_battery_table = "table_battery()",
+  spicy_battery_svy_table = "table_battery_svy()"
 )
 
 #' Extract the typed (structured) view of a spicy table
@@ -3173,8 +3174,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' @param x A spicy table built with `output = "default"`:
 #'   [table_regression()], [table_categorical()], [table_continuous()],
 #'   [table_continuous_lm()], [table_outcome()], [table_multiresponse()],
-#'   [table_battery()] or the survey twins [table_categorical_svy()] and
-#'   [table_continuous_svy()]. All return the same schema. A stacked
+#'   [table_battery()] or the survey twins [table_categorical_svy()],
+#'   [table_continuous_svy()] and [table_battery_svy()]. All return the
+#'   same schema. A stacked
 #'   table of [table_stack()] is accepted too.
 #'
 #' @return A list with the structured view (see Details for the
@@ -3303,7 +3305,8 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   `missing` flags the column of missing answers, and `top` the summary
 #'   column, with the levels it adds up in `top_levels`), `"n"` (the base of
 #'   the row) and `"p"`. Under `by`, each group owns its columns under its
-#'   own spanner.
+#'   own spanner. [table_battery_svy()] has the same view, its `"n"` the
+#'   observed count.
 #'
 #' Cells the console builds from more than one number -- a
 #' `"Mdn [Q1, Q3]"`, a test gloss, an effect size with its interval --
@@ -3399,7 +3402,8 @@ as_structured <- function(x) {
     spicy_continuous_svy_table = "0.13.0",
     spicy_categorical_svy_table = "0.13.0",
     spicy_multiresponse_table = "0.14.0",
-    spicy_battery_table = "0.15.0"
+    spicy_battery_table = "0.15.0",
+    spicy_battery_svy_table = "0.15.0"
   )
   family <- names(builders)[names(builders) %in% class(x)]
   if (length(family) == 0L) {

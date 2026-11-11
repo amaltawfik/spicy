@@ -51,6 +51,7 @@ cran_tier <- c(
   "table_multiresponse",
   "table_battery",
   "table_categorical_svy",
+  "table_battery_svy",
   "table_continuous_svy",
   "var_labels",
   # regression tables

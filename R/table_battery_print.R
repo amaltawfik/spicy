@@ -7,13 +7,14 @@
 #' table using [spicy_print_table()]. A table wider than the console is
 #' printed in panels, the item labels repeated in each.
 #'
-#' @param x A `data.frame` of class `"spicy_battery_table"` as returned by
-#'   [table_battery()] with `output = "default"`.
+#' @param x A `data.frame` of class `"spicy_battery_table"` or
+#'   `"spicy_battery_svy_table"` as returned by [table_battery()] or
+#'   [table_battery_svy()] with `output = "default"`.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return Invisibly returns `x`.
 #'
-#' @seealso [table_battery()], [spicy_print_table()]
+#' @seealso [table_battery()], [table_battery_svy()], [spicy_print_table()]
 #' @keywords internal
 #' @export
 print.spicy_battery_table <- function(x, ...) {
@@ -26,6 +27,11 @@ print.spicy_battery_table <- function(x, ...) {
   }
   .desc_items_print(x, display_df, s)
 }
+
+# The design twin prints, and coerces, as the battery it is.
+#' @rdname print.spicy_battery_table
+#' @export
+print.spicy_battery_svy_table <- print.spicy_battery_table
 
 # Internal: the title of a battery table, from the label of the grouping
 # variable (`NULL` without `by`). Single source for the console and the
@@ -72,7 +78,8 @@ print.spicy_battery_table <- function(x, ...) {
 #' `as_tibble()` returns the same table as a tibble. The original `x` is
 #' unaffected, and `print(x)` continues to render the formatted table.
 #'
-#' @param x A `spicy_battery_table` returned by [table_battery()].
+#' @param x A `spicy_battery_table` returned by [table_battery()], or a
+#'   `spicy_battery_svy_table` returned by [table_battery_svy()].
 #' @param row.names,optional Standard [base::as.data.frame()] arguments,
 #'   currently ignored.
 #' @param ... Further arguments passed to [tibble::as_tibble()] (for the
@@ -104,3 +111,11 @@ as_tibble.spicy_battery_table <- function(x, ...) {
   }
   tibble::as_tibble(.bat_data_frame(x), ...)
 }
+
+#' @rdname as.data.frame.spicy_battery_table
+#' @exportS3Method base::as.data.frame
+as.data.frame.spicy_battery_svy_table <- as.data.frame.spicy_battery_table
+
+#' @rdname as.data.frame.spicy_battery_table
+#' @exportS3Method tibble::as_tibble
+as_tibble.spicy_battery_svy_table <- as_tibble.spicy_battery_table

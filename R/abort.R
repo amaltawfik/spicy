@@ -380,16 +380,16 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   )
 }
 
-# Where each plain builder sends a caller who handed it a design. Two
-# of the four have a twin; the other two name the function that does
-# carry the design-based version of what they compute.
+# Where each plain builder sends a caller who handed it a design. Three
+# have a twin; the others name the function that does carry the
+# design-based version of what they compute, or say there is none.
 .DESIGN_REGIME_HINT <- c(
   table_continuous = "Use `table_continuous_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_categorical = "Use `table_categorical_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_continuous_lm = "There is no design twin of this table: fit the model on the design and tabulate it with `table_regression(survey::svyglm(y ~ group, design = ))`.",
   table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time.",
   table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
-  table_battery = "There is no design twin of this table yet: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
+  table_battery = "Use `table_battery_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`."
 )
 

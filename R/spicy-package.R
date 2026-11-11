@@ -66,7 +66,8 @@
 #'         Excel workbook, and its PDF), since 0.14.0
 #'   \item Multiple-response questions: [table_multiresponse()], since
 #'         0.14.0
-#'   \item Item batteries: [table_battery()], since 0.15.0
+#'   \item Item batteries: [table_battery()] and its design twin
+#'         [table_battery_svy()], since 0.15.0
 #'   \item Stacked tables: [table_stack()], with
 #'         `table_regression(layout = "stacked")`, since 0.15.0
 #' }
@@ -285,8 +286,8 @@
 #'         (e.g., Tau-b on a table with all-zero marginals).
 #'       \item \code{spicy_negative_weights_no_test} -- signaled
 #'         together with \code{spicy_undefined_stat} when
-#'         [table_continuous_svy()] or [table_categorical_svy()]
-#'         withholds a group comparison because the analytic sample
+#'         [table_continuous_svy()], [table_categorical_svy()] or
+#'         [table_battery_svy()] withholds a group comparison because the analytic sample
 #'         carries negatively weighted rows; the estimates are still
 #'         reported and the table note says so.
 #'       \item \code{spicy_dropped_na} -- `NA` observations were

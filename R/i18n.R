@@ -69,6 +69,8 @@
   # `table_categorical_svy()` says the column one too.
   note_percent_column = "Percentages are column percentages.",
   note_percent_row = "Percentages are row percentages.",
+  # `table_battery_svy()`: the row percentages are estimates of the design.
+  note_percent_row_svy = "Percentages are row percentages estimated under the design.",
   # A variable with no observed value in a group (every value missing
   # there, typically a question not asked in that group) has no data in
   # it, which is not a missing answer: its cells in that group show
@@ -1192,6 +1194,13 @@
   note_battery_population_all_but_left_out = "all respondents but those whose answer is left out, including those who did not answer the item",
   note_battery_levels_excluded = "Answers left out of the percentages and the base: %s.",
   excel_sheet_battery = "Item battery",
+  # `table_battery_svy()`: the design-based test labels are long, so the
+  # item sentence puts the label last; and a battery shows percentages,
+  # not variances, so its sentence of negative weights says what a
+  # percentage can do. Same two holes as `note_negative_weights`.
+  note_battery_svy_items_p = "Item p-values, each item by group: %s.",
+  note_battery_svy_items_p_one = "Item p-value, by group: %s.",
+  note_negative_weights_battery = "Calibration gave %d of %d rows a negative weight: a weighted percentage can fall below 0 or above 100.",
 
   # -- survey twins: the self-documenting design footer ---------------------
   # A design-based table must say what design produced it, or its

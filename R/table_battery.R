@@ -108,7 +108,8 @@
 #'   percentages, `n` and the tests are weighted. Rows with an `NA` weight
 #'   leave the table, and the note says how many. Fisher's exact test needs
 #'   whole numbers: see *Tests*. For survey weights, the percentages are
-#'   right but the tests are not, which need the design.
+#'   right but the tests are not, which need the design: see
+#'   [table_battery_svy()].
 #' @param test The test of each item's p-value, as in [table_categorical()]:
 #'   `"auto"` (the default) takes Pearson's chi-squared test when every
 #'   expected count of the item's table is at least 5 and Fisher's exact
@@ -262,7 +263,8 @@
 #' items adjusted together.
 #'
 #' @seealso [table_categorical()] for one block of rows per variable,
-#'   [table_multiresponse()] for a "check all that apply" question; the
+#'   [table_multiresponse()] for a "check all that apply" question,
+#'   [table_battery_svy()] for a survey design; the
 #'   article [Item batteries](https://amaltawfik.github.io/spicy/articles/table-battery.html).
 #'
 #' @examples
@@ -603,44 +605,7 @@ table_battery <- function(
   item_df <- adj$df[ord, , drop = FALSE]
   p_adjust_info <- adj$info
 
-  # ---- frames ----------------------------------------------------------------
-  cols <- .bat_columns(
-    blocks,
-    shown,
-    top_arg,
-    has_group,
-    drop_na,
-    show_n,
-    show_p,
-    missing_label
-  )
-  .bat_check_column_keys(cols)
-  value_of <- function(e, b) {
-    switch(
-      e$kind,
-      level = pct[b, ord, match(e$level, shown)],
-      missing = pct_miss[b, ord],
-      top = pct_top[b, ord],
-      n = base[b, ord],
-      p = item_df$p
-    )
-  }
-  wide <- data.frame(
-    Variable = item_labels[ord],
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
-  for (e in cols) {
-    wide[[e$key]] <- value_of(e, match(e$block, blocks))
-  }
-  if (!is.null(test_res) && show_p) {
-    for (nm in intersect(c("test_type", "chi2", "df"), names(item_df))) {
-      wide[[nm]] <- item_df[[nm]]
-    }
-    if ("p_unadjusted" %in% names(item_df)) {
-      wide[["p_unadjusted"]] <- item_df[["p_unadjusted"]]
-    }
-  }
+  # ---- title and note ----------------------------------------------------------
   # An item with answers in fewer than two groups has no test: its p cell
   # is blank, not the mark of an item without variation.
   untestable <- if (is.null(test_res)) {
@@ -648,30 +613,6 @@ table_battery <- function(
   } else {
     !test_res$testable[ord]
   }
-  display_df <- .bat_display_df(
-    wide,
-    cols,
-    percent_digits,
-    p_digits,
-    decimal_mark,
-    untestable
-  )
-
-  long <- .bat_long(
-    items = select_names[ord],
-    labels_shown = item_labels[ord],
-    blocks = blocks,
-    has_group = has_group,
-    shown = shown,
-    counts = counts[, ord, , drop = FALSE],
-    pct = pct[, ord, , drop = FALSE],
-    miss = if (!drop_na) miss[, ord, drop = FALSE],
-    pct_miss = if (!drop_na) pct_miss[, ord, drop = FALSE],
-    missing_label = missing_label,
-    item_df = if (!is.null(test_res) && show_p) item_df
-  )
-
-  # ---- title and note ----------------------------------------------------------
   untested <- if (is.null(test_res)) {
     character(0)
   } else {
@@ -708,6 +649,150 @@ table_battery <- function(
     note_add
   )
 
+  .bat_render(
+    items = select_names,
+    item_labels = item_labels,
+    ord = ord,
+    blocks = blocks,
+    has_group = has_group,
+    shown = shown,
+    top_arg = top_arg,
+    drop_na = drop_na,
+    show_n = show_n,
+    show_p = show_p,
+    missing_label = missing_label,
+    counts = counts,
+    pct = pct,
+    miss = miss,
+    pct_miss = pct_miss,
+    pct_top = pct_top,
+    base = base,
+    item_df = item_df,
+    tested = !is.null(test_res) && show_p,
+    untestable = untestable,
+    p_adjust_info = p_adjust_info,
+    title_txt = title_txt,
+    note_txt = note_txt,
+    output = output,
+    align = align,
+    percent_digits = percent_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    excel_path = excel_path,
+    excel_sheet = excel_sheet,
+    clipboard_delim = clipboard_delim,
+    word_path = word_path,
+    by_name = by_name,
+    by_note = by_note,
+    class = "spicy_battery_table"
+  )
+}
+
+
+# ---- the outputs -----------------------------------------------------------------
+
+# The frames and the outputs of a battery, from its numbers. `table_battery()`
+# and its design twin `table_battery_svy()` compute the counts, the
+# percentages and the tests each in its own regime, and share everything
+# from here. The arrays are blocks by items (by levels), in the order of
+# `items`; `ord` is the order of the rows, and `item_df` holds the tests
+# already in that order. `tested`: the tests ran and the `p` column shows.
+.bat_render <- function(
+  items,
+  item_labels,
+  ord,
+  blocks,
+  has_group,
+  shown,
+  top_arg,
+  drop_na,
+  show_n,
+  show_p,
+  missing_label,
+  counts,
+  pct,
+  miss,
+  pct_miss,
+  pct_top,
+  base,
+  item_df,
+  tested,
+  untestable,
+  p_adjust_info,
+  title_txt,
+  note_txt,
+  output,
+  align,
+  percent_digits,
+  p_digits,
+  decimal_mark,
+  excel_path,
+  excel_sheet,
+  clipboard_delim,
+  word_path,
+  by_name,
+  by_note,
+  class
+) {
+  cols <- .bat_columns(
+    blocks,
+    shown,
+    top_arg,
+    has_group,
+    drop_na,
+    show_n,
+    show_p,
+    missing_label
+  )
+  .bat_check_column_keys(cols)
+  value_of <- function(e, b) {
+    switch(
+      e$kind,
+      level = pct[b, ord, match(e$level, shown)],
+      missing = pct_miss[b, ord],
+      top = pct_top[b, ord],
+      n = base[b, ord],
+      p = item_df$p
+    )
+  }
+  wide <- data.frame(
+    Variable = item_labels[ord],
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  for (e in cols) {
+    wide[[e$key]] <- value_of(e, match(e$block, blocks))
+  }
+  if (tested) {
+    for (nm in intersect(c("test_type", "chi2", "df"), names(item_df))) {
+      wide[[nm]] <- item_df[[nm]]
+    }
+    if ("p_unadjusted" %in% names(item_df)) {
+      wide[["p_unadjusted"]] <- item_df[["p_unadjusted"]]
+    }
+  }
+  display_df <- .bat_display_df(
+    wide,
+    cols,
+    percent_digits,
+    p_digits,
+    decimal_mark,
+    untestable
+  )
+
+  long <- .bat_long(
+    items = items[ord],
+    labels_shown = item_labels[ord],
+    blocks = blocks,
+    has_group = has_group,
+    shown = shown,
+    counts = counts[, ord, , drop = FALSE],
+    pct = pct[, ord, , drop = FALSE],
+    miss = if (!drop_na) miss[, ord, drop = FALSE],
+    pct_miss = if (!drop_na) pct_miss[, ord, drop = FALSE],
+    missing_label = missing_label,
+    item_df = if (tested) item_df
+  )
   if (identical(output, "long")) {
     attr(long, "note") <- note_txt
     return(long)
@@ -740,14 +825,14 @@ table_battery <- function(
       wide = wide,
       display_df = display_df,
       cols = cols,
-      items = select_names[ord],
+      items = items[ord],
       percent_digits = percent_digits,
       p_digits = p_digits,
       decimal_mark = decimal_mark
     ),
     p_adjust_info
   )
-  if (show_p && !is.null(test_res)) {
+  if (tested) {
     structured <- .struct_attach_test_type(
       structured,
       stats::setNames(item_df$test_type, item_df$variable)
@@ -759,13 +844,13 @@ table_battery <- function(
   attr(out, "title") <- title_txt
   attr(out, "note") <- note_txt
   attr(out, "long_data") <- long
-  attr(out, "items") <- select_names[ord]
+  attr(out, "items") <- items[ord]
   attr(out, "group_var") <- by_name
   attr(out, "group_label") <- by_note
   attr(out, "align") <- align
   attr(out, "decimal_mark") <- decimal_mark
   out <- .style_stamp(out)
-  class(out) <- c("spicy_battery_table", "spicy_table", "data.frame")
+  class(out) <- c(class, "spicy_table", "data.frame")
   if (identical(output, "data.frame")) {
     return(as.data.frame(out))
   }
@@ -1572,7 +1657,10 @@ table_battery <- function(
 #       items without data;
 #   (c) the tests of the items, named by their test, the adjustment, and
 #       the items without variation;
-# then the sentences of `note_add`.
+# then the sentences of `note_add`. `svy` carries what the design twin
+# says beside: the design line, which opens the note, the sentence of
+# negative weights, the label of the design-based test, and the gloss of
+# the observed count (`table_battery_svy()`).
 .bat_note <- function(
   drop_na,
   left_out,
@@ -1586,10 +1674,12 @@ table_battery <- function(
   n_p,
   p_adjust_info,
   untested,
-  add = NULL
+  add = NULL,
+  svy = NULL
 ) {
   what <- c(
-    spicy_str("note_percent_row"),
+    svy$design_line,
+    spicy_str(if (is.null(svy)) "note_percent_row" else "note_percent_row_svy"),
     spicy_fmt(
       "note_multiresponse_base",
       spicy_str(
@@ -1605,7 +1695,8 @@ table_battery <- function(
     if (length(left_out)) {
       spicy_fmt("note_battery_levels_excluded", .join_note_vars(left_out))
     },
-    if (!is.null(weights_name)) spicy_fmt("note_weighted_by", weights_name)
+    if (!is.null(weights_name)) spicy_fmt("note_weighted_by", weights_name),
+    svy$negative_weights
   )
   missing <- c(
     if (n_na_weights > 0L) {
@@ -1626,15 +1717,26 @@ table_battery <- function(
   )
   inference <- character(0)
   if (show_p) {
-    phrase <- .cat_test_phrase(
-      unname(item_types),
-      names(item_types),
-      B = .MR_FISHER_MC_B
-    )
+    phrase <- if (is.null(svy)) {
+      .cat_test_phrase(
+        unname(item_types),
+        names(item_types),
+        B = .MR_FISHER_MC_B
+      )
+    } else if (!is.null(svy$test_label)) {
+      list(text = svy$test_label, single = TRUE)
+    }
     inference <- c(
       if (!is.null(phrase)) {
         spicy_fmt(
-          if (!phrase$single) {
+          if (!is.null(svy)) {
+            # The design-based labels are long: the label goes last.
+            if (n_p == 1L) {
+              "note_battery_svy_items_p_one"
+            } else {
+              "note_battery_svy_items_p"
+            }
+          } else if (!phrase$single) {
             "note_multiresponse_items_p_mixed"
           } else if (n_p == 1L) {
             "note_multiresponse_items_p_one"
@@ -1657,6 +1759,7 @@ table_battery <- function(
     what = what,
     missing = missing,
     inference = inference,
+    definitions = svy$definitions,
     abbreviations = .note_abbreviations(list()),
     add = add
   )

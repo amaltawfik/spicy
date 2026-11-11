@@ -306,11 +306,18 @@
 # refusal clause is appended rather than said separately: one fact, one
 # block (decision 36 / ARB-3). `test_refused` is a regime from
 # `.design_refusal_regime()`.
-.design_negative_weights_note <- function(k, n_obs, test_refused = "none") {
+# `key` is the sentence of the fact: `table_battery_svy()`, which shows
+# percentages and no variance, says what they can do instead.
+.design_negative_weights_note <- function(
+  k,
+  n_obs,
+  test_refused = "none",
+  key = "note_negative_weights"
+) {
   if (k <= 0L) {
     return(character(0))
   }
-  txt <- spicy_fmt("note_negative_weights", as.integer(k), as.integer(n_obs))
+  txt <- spicy_fmt(key, as.integer(k), as.integer(n_obs))
   clause <- switch(
     test_refused,
     all = spicy_str("note_negative_weights_no_test"),

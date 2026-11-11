@@ -74,6 +74,7 @@
   note_sample_size_groups_unweighted = "N = %s (non pond\u00E9r\u00E9)\u00A0: %s.",
   note_percent_column = "Pourcentages en colonne.",
   note_percent_row = "Pourcentages en ligne.",
+  note_percent_row_svy = "Pourcentages en ligne estim\u00E9s sous le plan de sondage.",
   note_no_data = "Aucune donn\u00E9e pour %s.",
   note_no_data_in = "Aucune donn\u00E9e pour %s dans %s.",
   excel_sheet_regression = "R\u00E9gression",
@@ -511,6 +512,9 @@
   note_battery_population_all_but_left_out = "toutes les personnes sauf celles dont la r\u00E9ponse est \u00E9cart\u00E9e, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
   note_battery_levels_excluded = "R\u00E9ponses \u00E9cart\u00E9es des pourcentages et de la base\u00A0: %s.",
   excel_sheet_battery = "Batterie d'items",
+  note_battery_svy_items_p = "Valeurs p des items, chaque item selon le groupe\u00A0: %s.",
+  note_battery_svy_items_p_one = "Valeur p de l'item, selon le groupe\u00A0: %s.",
+  note_negative_weights_battery = "Le calage a donn\u00E9 un poids n\u00E9gatif \u00E0 %d lignes sur %d\u00A0: un pourcentage pond\u00E9r\u00E9 peut descendre sous 0 ou d\u00E9passer 100.",
 
   # -- survey twins: the self-documenting design footer ---------------------
   note_design_line = "Plan de sondage\u00A0: %s\u00A0; %s.",

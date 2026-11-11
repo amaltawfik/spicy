@@ -3,14 +3,21 @@
 \name{as.data.frame.spicy_battery_table}
 \alias{as.data.frame.spicy_battery_table}
 \alias{as_tibble.spicy_battery_table}
+\alias{as.data.frame.spicy_battery_svy_table}
+\alias{as_tibble.spicy_battery_svy_table}
 \title{Coerce a \code{spicy_battery_table} to a plain data frame or tibble}
 \usage{
 \method{as.data.frame}{spicy_battery_table}(x, row.names = NULL, optional = FALSE, ...)
 
 \method{as_tibble}{spicy_battery_table}(x, ...)
+
+\method{as.data.frame}{spicy_battery_svy_table}(x, row.names = NULL, optional = FALSE, ...)
+
+\method{as_tibble}{spicy_battery_svy_table}(x, ...)
 }
 \arguments{
-\item{x}{A \code{spicy_battery_table} returned by \code{\link[=table_battery]{table_battery()}}.}
+\item{x}{A \code{spicy_battery_table} returned by \code{\link[=table_battery]{table_battery()}}, or a
+\code{spicy_battery_svy_table} returned by \code{\link[=table_battery_svy]{table_battery_svy()}}.}
 
 \item{row.names, optional}{Standard \code{\link[base:as.data.frame]{base::as.data.frame()}} arguments,
 currently ignored.}

@@ -114,7 +114,8 @@ single column of \code{data}, unquoted or as a string. The counts, the
 percentages, \code{n} and the tests are weighted. Rows with an \code{NA} weight
 leave the table, and the note says how many. Fisher's exact test needs
 whole numbers: see \emph{Tests}. For survey weights, the percentages are
-right but the tests are not, which need the design.}
+right but the tests are not, which need the design: see
+\code{\link[=table_battery_svy]{table_battery_svy()}}.}
 
 \item{test}{The test of each item's p-value, as in \code{\link[=table_categorical]{table_categorical()}}:
 \code{"auto"} (the default) takes Pearson's chi-squared test when every
@@ -453,6 +454,7 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 }
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}} for one block of rows per variable,
-\code{\link[=table_multiresponse]{table_multiresponse()}} for a "check all that apply" question; the
+\code{\link[=table_multiresponse]{table_multiresponse()}} for a "check all that apply" question,
+\code{\link[=table_battery_svy]{table_battery_svy()}} for a survey design; the
 article \href{https://amaltawfik.github.io/spicy/articles/table-battery.html}{Item batteries}.
 }

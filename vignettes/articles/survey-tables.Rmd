@@ -21,9 +21,9 @@ degrees of freedom are a count of sampling units rather than of rows,
 and the tests are corrected for the design. None of that can be
 recovered from a column of weights.
 
-spicy has two functions for that case, and they compute nothing
-themselves: `table_continuous_svy()` and `table_categorical_svy()`
-delegate every number to the **survey** package (Lumley, 2004, 2010)
+spicy has three functions for that case, and they compute nothing
+themselves: `table_continuous_svy()`, `table_categorical_svy()` and
+`table_battery_svy()` delegate every number to the **survey** package (Lumley, 2004, 2010)
 and put spicy's
 restitution layer around it -- the same columns, the same nine output
 routes, the same typed view, plus a footer that says what design
@@ -175,6 +175,25 @@ established design-based variance, and the intervals
 design-based measure of association is the test in the `p` column; for
 an effect size, model it:
 `table_regression(survey::svyglm(...))`.
+
+## Item batteries
+
+`table_battery_svy()` is the design twin of `table_battery()`: several
+items answered on one scale, one row per item and one column per level.
+
+```{r battery}
+table_battery_svy(
+  dclus1,
+  select = c(awards, sch.wide, comp.imp, both),
+  by = stype
+)
+```
+
+The base of a row is the schools that answered the item, `n` their
+observed count, and each percentage is `svymean()` on that domain.
+Each item is tested against `stype` by `svychisq()`, Rao-Scott
+corrected, and the four p-values are adjusted together by Holm's
+method.
 
 ## Replicate weights
 
@@ -393,7 +412,7 @@ rbind(math = q("math"), spicy = q("spicy"), hf7 = q("hf7"))
 
 ## Downstream
 
-Both tables carry the typed view the rest of the package uses, so
+These tables carry the typed view the rest of the package uses, so
 `as_structured()` and `inline()` work as they do elsewhere:
 
 ```{r structured}

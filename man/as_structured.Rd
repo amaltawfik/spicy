@@ -10,8 +10,9 @@ as_structured(x)
 \item{x}{A spicy table built with \code{output = "default"}:
 \code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}},
-\code{\link[=table_battery]{table_battery()}} or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
-\code{\link[=table_continuous_svy]{table_continuous_svy()}}. All return the same schema. A stacked
+\code{\link[=table_battery]{table_battery()}} or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}},
+\code{\link[=table_continuous_svy]{table_continuous_svy()}} and \code{\link[=table_battery_svy]{table_battery_svy()}}. All return the
+same schema. A stacked
 table of \code{\link[=table_stack]{table_stack()}} is accepted too.}
 }
 \value{
@@ -170,7 +171,8 @@ margin is flagged \verb{col_meta$<col>$total}.
 \code{missing} flags the column of missing answers, and \code{top} the summary
 column, with the levels it adds up in \code{top_levels}), \code{"n"} (the base of
 the row) and \code{"p"}. Under \code{by}, each group owns its columns under its
-own spanner.
+own spanner. \code{\link[=table_battery_svy]{table_battery_svy()}} has the same view, its \code{"n"} the
+observed count.
 }
 
 Cells the console builds from more than one number -- a

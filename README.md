@@ -56,7 +56,9 @@ extraction, and row-wise summaries.
   SEs and CIs from the `survey` package (Taylor linearization or
   replicate weights), design degrees of freedom, observed and weighted
   counts – the design twins of the two families above, with the same
-  statistic vocabulary and output engines.
+  statistic vocabulary and output engines. `table_battery_svy()` is the
+  design twin of `table_battery()`: percentages estimated under the
+  design and a design-based test per item.
 - **Model-based continuous summary tables** with `table_continuous_lm()`
   for linear-model reporting: classical / HC\* / cluster-robust /
   bootstrap / jackknife variance, four effect-size families (f², Cohen’s

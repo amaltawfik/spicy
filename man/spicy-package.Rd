@@ -72,7 +72,8 @@ since 0.13.0
 Excel workbook, and its PDF), since 0.14.0
 \item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, since
 0.14.0
-\item Item batteries: \code{\link[=table_battery]{table_battery()}}, since 0.15.0
+\item Item batteries: \code{\link[=table_battery]{table_battery()}} and its design twin
+\code{\link[=table_battery_svy]{table_battery_svy()}}, since 0.15.0
 \item Stacked tables: \code{\link[=table_stack]{table_stack()}}, with
 \code{table_regression(layout = "stacked")}, since 0.15.0
 }
@@ -295,8 +296,8 @@ statistic is undefined for this input; result is \code{NA}
 (e.g., Tau-b on a table with all-zero marginals).
 \item \code{spicy_negative_weights_no_test} -- signaled
 together with \code{spicy_undefined_stat} when
-\code{\link[=table_continuous_svy]{table_continuous_svy()}} or \code{\link[=table_categorical_svy]{table_categorical_svy()}}
-withholds a group comparison because the analytic sample
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}} or
+\code{\link[=table_battery_svy]{table_battery_svy()}} withholds a group comparison because the analytic sample
 carries negatively weighted rows; the estimates are still
 reported and the table note says so.
 \item \code{spicy_dropped_na} -- \code{NA} observations were

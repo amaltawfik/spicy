@@ -2,13 +2,17 @@
 % Please edit documentation in R/table_battery_print.R
 \name{print.spicy_battery_table}
 \alias{print.spicy_battery_table}
+\alias{print.spicy_battery_svy_table}
 \title{Print method for item battery tables}
 \usage{
 \method{print}{spicy_battery_table}(x, ...)
+
+\method{print}{spicy_battery_svy_table}(x, ...)
 }
 \arguments{
-\item{x}{A \code{data.frame} of class \code{"spicy_battery_table"} as returned by
-\code{\link[=table_battery]{table_battery()}} with \code{output = "default"}.}
+\item{x}{A \code{data.frame} of class \code{"spicy_battery_table"} or
+\code{"spicy_battery_svy_table"} as returned by \code{\link[=table_battery]{table_battery()}} or
+\code{\link[=table_battery_svy]{table_battery_svy()}} with \code{output = "default"}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }
@@ -21,6 +25,6 @@ table using \code{\link[=spicy_print_table]{spicy_print_table()}}. A table wider
 printed in panels, the item labels repeated in each.
 }
 \seealso{
-\code{\link[=table_battery]{table_battery()}}, \code{\link[=spicy_print_table]{spicy_print_table()}}
+\code{\link[=table_battery]{table_battery()}}, \code{\link[=table_battery_svy]{table_battery_svy()}}, \code{\link[=spicy_print_table]{spicy_print_table()}}
 }
 \keyword{internal}
