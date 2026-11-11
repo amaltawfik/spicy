@@ -349,17 +349,17 @@ correct response is simply ‘none’” (p. 107).
 table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 #> Multiple responses
 #> 
-#>  Variable                     │   n       %    
-#> ──────────────────────────────┼────────────────
-#>  info_doctor                  │   721    60.1  
-#>  info_pharmacist              │   256    21.3  
-#>  info_internet                │   523    43.6  
-#>  info_family                  │   360    30.0  
-#>  info_media                   │   141    11.8  
-#>  (No item chosen)             │    67     5.6  
-#>  (No data for the question)   │    36     3.0  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base                         │  1200          
+#>  Variable                      │   n       %    
+#> ───────────────────────────────┼────────────────
+#>  info_doctor                   │   721    60.1  
+#>  info_pharmacist               │   256    21.3  
+#>  info_internet                 │   523    43.6  
+#>  info_family                   │   360    30.0  
+#>  info_media                    │   141    11.8  
+#>  (No item chosen)              │    67     5.6  
+#>  (No answer to the question)   │    36     3.0  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base                          │  1200          
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: all respondents.
 ```
@@ -367,7 +367,7 @@ table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 The 36 respondents who skipped the question now enter the base, and
 every percentage counts them as choosing nothing. The table still keeps
 them apart from the 67 who chose no source: each group has its row,
-`(No data for the question)` and `(No item chosen)`.
+`(No answer to the question)` and `(No item chosen)`.
 
 These rows count respondents, not answers. Each gives a count and a
 percentage of cases per group, on the base of the column as for an item,
@@ -1005,7 +1005,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_qd8dq44fqjtssb8qcjcq .table
+Multiple responses by Sex {#tinytable_erg21lc7b8szo0jxxbp7 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

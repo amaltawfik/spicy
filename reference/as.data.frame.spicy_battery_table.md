@@ -20,6 +20,12 @@ as.data.frame(x, row.names = NULL, optional = FALSE, ...)
 
 # S3 method for class 'spicy_battery_table'
 as_tibble(x, ...)
+
+# S3 method for class 'spicy_battery_svy_table'
+as.data.frame(x, row.names = NULL, optional = FALSE, ...)
+
+# S3 method for class 'spicy_battery_svy_table'
+as_tibble(x, ...)
 ```
 
 ## Arguments
@@ -27,7 +33,9 @@ as_tibble(x, ...)
 - x:
 
   A `spicy_battery_table` returned by
-  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md).
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
+  or a `spicy_battery_svy_table` returned by
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md).
 
 - row.names, optional:
 

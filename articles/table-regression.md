@@ -709,7 +709,9 @@ incremental evidence for `smoking`.
 Default change tokens auto-injected:
 `c("r2_change", "f_change", "p_change")` for `lm` (APA
 hierarchical-regression standard), `c("lrt_change", "p_change")` for
-`glm` (Hosmer & Lemeshow §3.5),
+`glm` (Hosmer & Lemeshow §3.5), `c("f_change", "p_change")` for a `glm`
+whose dispersion is estimated (the F test `anova(test = "F")` reports
+for gaussian, Gamma, inverse Gaussian, Tweedie and quasi families),
 `c("aic_change", "bic_change", "lrt_change", "p_change")` for
 mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) — Pinheiro & Bates
@@ -732,9 +734,10 @@ listwise-deletion trap and suggests refitting on the common subset.
 The change test follows `vcov`. Under any estimator other than the
 classical one, each pair is tested by a Wald test of the coefficients
 the current model adds, on that model’s robust matrix, so the block test
-and the coefficients agree. The row then reads *Wald F-change* (*Wald χ²
-(change)* for `glm`, `coxph` and the other likelihood classes), and ΔR²
-is unchanged. A Wald test of a large block in a small sample rejects too
+and the coefficients agree. The row then reads *Wald F-change* (also for
+a `glm` whose dispersion is estimated; *Wald χ² (change)* for the other
+`glm` fits, `coxph` and the other likelihood classes), and ΔR² is
+unchanged. A Wald test of a large block in a small sample rejects too
 often, so read it with care when many predictors enter at once.
 
 ``` r
@@ -1110,19 +1113,14 @@ table_regression(
 ## Generalized linear models (glm)
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-accepts any [`glm()`](https://rdrr.io/r/stats/glm.html) fit. Inference
-defaults to the `z`-asymptotic Wald regime — the convention
-[`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html) applies to
-fixed-dispersion families (binomial, Poisson), shared by Stata’s
-`logit, or` and SPSS `LOGISTIC REGRESSION`. One caveat for
-cross-checking: for families with an estimated dispersion (gaussian,
-Gamma, inverse.gaussian, and the quasi- families),
-[`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html) switches to
-`t` statistics on the residual degrees of freedom, so its p-values run
-larger than the table’s `z`-based ones in small samples — there the
-table follows Stata’s `glm` default rather than
-[`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html). The table
-title becomes family-aware (“Logistic regression”, “Poisson regression”,
+accepts any [`glm()`](https://rdrr.io/r/stats/glm.html) fit. Its Wald
+test is the one
+[`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html) reports: `t`
+on the residual degrees of freedom when the dispersion is estimated
+(gaussian, Gamma, inverse.gaussian and the quasi- families), `z` when
+the family fixes it (binomial, Poisson). The confidence interval and the
+average marginal effects use the same distribution. The table title
+becomes family-aware (“Logistic regression”, “Poisson regression”,
 “Probit regression”, …) and the default fit-statistics block swaps in
 `nobs`, `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `aic` instead
 of `R²` and `Adj. R²`.
@@ -1417,9 +1415,10 @@ in the *Robust variance* section applies to `glm` AME as well.
 
 ### Profile-likelihood CIs: `ci_method = "profile"`
 
-The default is `ci_method = "wald"` (symmetric `estimate ± z × SE`,
-matching `summary.glm`). For `glm` you can also request
-`ci_method = "profile"`, which calls
+The default is `ci_method = "wald"` (symmetric `estimate ± q × SE`, with
+`q` the quantile of the coefficient’s test, t or z as
+[`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html) reports it).
+For `glm` you can also request `ci_method = "profile"`, which calls
 [`MASS::confint.glm()`](https://rdrr.io/pkg/MASS/man/confint.html) to
 compute the profile-likelihood CI — asymmetric, obtained by inverting
 the likelihood-ratio statistic rather than the quadratic Wald
@@ -1456,7 +1455,7 @@ table_regression(fit, ci_method = "profile")
 One consequence worth naming when combining with `exponentiate = TRUE`:
 the CI bounds are the exponentiated profile bounds (asymmetric), while
 the `SE` column is the delta-method SE on the ratio scale — the interval
-can no longer be reconstructed as `estimate ± z × SE`. Both choices are
+can no longer be reconstructed as `estimate ± q × SE`. Both choices are
 disclosed in the footer, which is why the table names them rather than
 leaving the mismatch for a careful reader to discover.
 

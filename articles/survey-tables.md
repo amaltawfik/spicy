@@ -8,11 +8,12 @@ freedom are a count of sampling units rather than of rows, and the tests
 are corrected for the design. None of that can be recovered from a
 column of weights.
 
-spicy has two functions for that case, and they compute nothing
+spicy has three functions for that case, and they compute nothing
 themselves:
-[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-and
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+and
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
 delegate every number to the **survey** package (Lumley, 2004, 2010) and
 put spicy’s restitution layer around it – the same columns, the same
 nine output routes, the same typed view, plus a footer that says what
@@ -261,6 +262,40 @@ established design-based variance, and the intervals
 gives them assume simple random sampling. The design-based measure of
 association is the test in the `p` column; for an effect size, model it:
 `table_regression(survey::svyglm(...))`.
+
+## Item batteries
+
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+is the design twin of
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
+several items answered on one scale, one row per item and one column per
+level.
+
+``` r
+
+table_battery_svy(
+  dclus1,
+  select = c(awards, sch.wide, comp.imp, both),
+  by = stype
+)
+#> Item battery by stype
+#> 
+#>  Variable │ E No  E Yes  E n  H No  H Yes  H n  M No  M Yes  M n   p   
+#> ──────────┼────────────────────────────────────────────────────────────
+#>  awards   │ 22.9  77.1   144  57.1  42.9   14   48.0  52.0   25   .075 
+#>  sch.wide │  8.3  91.7   144  21.4  78.6   14   32.0  68.0   25   .075 
+#>  comp.imp │ 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 
+#>  both     │ 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 
+#> 
+#> Note. Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.
+```
+
+The base of a row is the schools that answered the item, `n` their
+observed count, and each percentage is
+[`svymean()`](https://rdrr.io/pkg/survey/man/surveysummary.html) on that
+domain. Each item is tested against `stype` by
+[`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html), Rao-Scott
+corrected, and the four p-values are adjusted together by Holm’s method.
 
 ## Replicate weights
 
@@ -589,7 +624,7 @@ rbind(math = q("math"), spicy = q("spicy"), hf7 = q("hf7"))
 
 ## Downstream
 
-Both tables carry the typed view the rest of the package uses, so
+These tables carry the typed view the rest of the package uses, so
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 and [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
 work as they do elsewhere:

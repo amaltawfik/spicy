@@ -152,7 +152,8 @@ table_battery(
   percentages, `n` and the tests are weighted. Rows with an `NA` weight
   leave the table, and the note says how many. Fisher's exact test needs
   whole numbers: see *Tests*. For survey weights, the percentages are
-  right but the tests are not, which need the design.
+  right but the tests are not, which need the design: see
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md).
 
 - test:
 
@@ -482,7 +483,9 @@ The note names the method and the number of items adjusted together.
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 for one block of rows per variable,
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-for a "check all that apply" question; the article [Item
+for a "check all that apply" question,
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+for a survey design; the article [Item
 batteries](https://amaltawfik.github.io/spicy/articles/table-battery.html).
 
 ## Examples

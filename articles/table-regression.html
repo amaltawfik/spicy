@@ -801,7 +801,10 @@ for <code>smoking</code>.</p>
 <code>c("r2_change", "f_change", "p_change")</code> for <code>lm</code>
 (APA hierarchical-regression standard),
 <code>c("lrt_change", "p_change")</code> for <code>glm</code> (Hosmer
-&amp; Lemeshow §3.5),
+&amp; Lemeshow §3.5), <code>c("f_change", "p_change")</code> for a
+<code>glm</code> whose dispersion is estimated (the F test
+<code>anova(test = "F")</code> reports for gaussian, Gamma, inverse
+Gaussian, Tweedie and quasi families),
 <code>c("aic_change", "bic_change", "lrt_change", "p_change")</code> for
 mixed-effects fits (<code>lmer</code> / <code>glmer</code> /
 <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> — Pinheiro &amp; Bates
@@ -828,8 +831,9 @@ common subset.</p>
 than the classical one, each pair is tested by a Wald test of the
 coefficients the current model adds, on that model’s robust matrix, so
 the block test and the coefficients agree. The row then reads <em>Wald
-F-change</em> (<em>Wald χ² (change)</em> for <code>glm</code>,
-<code>coxph</code> and the other likelihood classes), and ΔR² is
+F-change</em> (also for a <code>glm</code> whose dispersion is
+estimated; <em>Wald χ² (change)</em> for the other <code>glm</code>
+fits, <code>coxph</code> and the other likelihood classes), and ΔR² is
 unchanged. A Wald test of a large block in a small sample rejects too
 often, so read it with care when many predictors enter at once.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -1200,21 +1204,17 @@ European decimal notation and automatically changes the CI separator to
 <h2 id="generalized-linear-models-glm">Generalized linear models (glm)<a class="anchor" aria-label="anchor" href="#generalized-linear-models-glm"></a>
 </h2>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> accepts any <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fit.
-Inference defaults to the <code>z</code>-asymptotic Wald regime — the
-convention <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> applies to fixed-dispersion
-families (binomial, Poisson), shared by Stata’s <code>logit, or</code>
-and SPSS <code>LOGISTIC REGRESSION</code>. One caveat for
-cross-checking: for families with an estimated dispersion (gaussian,
-Gamma, inverse.gaussian, and the quasi- families),
-<code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> switches to <code>t</code> statistics on the
-residual degrees of freedom, so its p-values run larger than the table’s
-<code>z</code>-based ones in small samples — there the table follows
-Stata’s <code>glm</code> default rather than <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code>.
-The table title becomes family-aware (“Logistic regression”, “Poisson
-regression”, “Probit regression”, …) and the default fit-statistics
-block swaps in <code>nobs</code>, <code>pseudo_r2_mcfadden</code>,
-<code>pseudo_r2_nagelkerke</code>, and <code>aic</code> instead of
-<code>R²</code> and <code>Adj. R²</code>.</p>
+Its Wald test is the one <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> reports:
+<code>t</code> on the residual degrees of freedom when the dispersion is
+estimated (gaussian, Gamma, inverse.gaussian and the quasi- families),
+<code>z</code> when the family fixes it (binomial, Poisson). The
+confidence interval and the average marginal effects use the same
+distribution. The table title becomes family-aware (“Logistic
+regression”, “Poisson regression”, “Probit regression”, …) and the
+default fit-statistics block swaps in <code>nobs</code>,
+<code>pseudo_r2_mcfadden</code>, <code>pseudo_r2_nagelkerke</code>, and
+<code>aic</code> instead of <code>R²</code> and
+<code>Adj. R²</code>.</p>
 <p>We illustrate with a logistic regression of <code>smoking</code> on
 <code>sex</code>, <code>age</code>, and <code>education</code> from
 <code>sochealth</code>, reusing <code>sh</code> — the copy of
@@ -1499,8 +1499,9 @@ variance</em> section applies to <code>glm</code> AME as well.</p>
 <h3 id="profile-likelihood-cis-ci_method-profile">Profile-likelihood CIs: <code>ci_method = "profile"</code><a class="anchor" aria-label="anchor" href="#profile-likelihood-cis-ci_method-profile"></a>
 </h3>
 <p>The default is <code>ci_method = "wald"</code> (symmetric
-<code>estimate ± z × SE</code>, matching <code>summary.glm</code>). For
-<code>glm</code> you can also request
+<code>estimate ± q × SE</code>, with <code>q</code> the quantile of the
+coefficient’s test, t or z as <code><a href="https://rdrr.io/r/stats/summary.glm.html" class="external-link">summary.glm()</a></code> reports it).
+For <code>glm</code> you can also request
 <code>ci_method = "profile"</code>, which calls
 <code><a href="https://rdrr.io/pkg/MASS/man/confint.html" class="external-link">MASS::confint.glm()</a></code> to compute the profile-likelihood CI —
 asymmetric, obtained by inverting the likelihood-ratio statistic rather
@@ -1534,7 +1535,7 @@ Wald; <code>"profile"</code> only refines the CI bounds:</p>
 <code>exponentiate = TRUE</code>: the CI bounds are the exponentiated
 profile bounds (asymmetric), while the <code>SE</code> column is the
 delta-method SE on the ratio scale — the interval can no longer be
-reconstructed as <code>estimate ± z × SE</code>. Both choices are
+reconstructed as <code>estimate ± q × SE</code>. Both choices are
 disclosed in the footer, which is why the table names them rather than
 leaving the mismatch for a careful reader to discover.</p>
 </div>

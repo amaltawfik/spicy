@@ -822,8 +822,14 @@ by G/(G-1) with G clusters; <code>CR0</code>, <code>CR2</code> and
 keep the robust SEs they were computed with; <code>fixest</code> fits
 keep their estimator (the footer carries fixest’s own label – clustered,
 Newey-West, Conley, …; fixest’s “IID” is normalized to “Classical”).
-spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for
-both.</li>
+spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for both.
+With IID errors, fixest’s default small-sample correction
+(<code><a href="https://lrberge.github.io/fixest/reference/ssc.html" class="external-link">fixest::ssc()</a></code>) multiplies the standard errors of a
+<code>feglm()</code> fit by sqrt((n - 1) / (n - K)) over those of its
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> twin with the fixed effects as dummies (a
+<code>feols()</code> fit already matches <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), and
+<code>summary(fit, ssc = fixest::ssc(K.adj = FALSE))</code> gives the
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> values.</li>
 <li>
 <strong>Robust by construction</strong> – <code>svyglm</code> is
 design-based (Taylor / replicate): the design variance <em>is</em> the

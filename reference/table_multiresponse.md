@@ -146,7 +146,7 @@ table_multiresponse(
   Logical. If `TRUE` (the default), the respondents of the base who
   chose no item get a row of their own, after the items and before the
   `Base` row: "(No item chosen)" under `base = "valid"` and `"all"`,
-  and, under `"all"`, "(No data for the question)" for the respondents
+  and, under `"all"`, "(No answer to the question)" for the respondents
   with every indicator missing. Each row appears only when its count is
   above 0. `base = "answered"` leaves both groups out of the base and
   shows neither row. A row gives the count and the percentage of cases
@@ -424,8 +424,8 @@ Depends on `output`:
   item's column, `"none"`, `"no_data"`, or `"nobs"` on the base row),
   `label` (the label the row displays), `.row_role` (what the row is:
   `"summary"` for an item, `"none"` for "(No item chosen)", `"missing"`
-  for "(No data for the question)", `"fit_stat"` for the base, the roles
-  of
+  for "(No answer to the question)", `"fit_stat"` for the base, the
+  roles of
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
   then the printed columns: the count and the percentage of each group
   of `by` and of the `Total` margin (`<group> n` and `<group> %`, or
@@ -598,7 +598,7 @@ second and leaves out the first under `"valid"`, leaves out both under
 `"answered"`, and holds both under `"all"`; a count of zero is not
 mentioned. Under `none_row = TRUE`, the default, the respondents of
 these two kinds that the base holds are rows of the table, "(No item
-chosen)" and "(No data for the question)", with their count and
+chosen)" and "(No answer to the question)", with their count and
 percentage in each group, and the note counts only those the base leaves
 out. An item displayed with the label of a row the table adds is an
 error (class `spicy_label_collision`): choose another label in `labels`,

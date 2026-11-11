@@ -60,6 +60,11 @@ extraction, and row-wise summaries.
   linearization or replicate weights), design degrees of freedom,
   observed and weighted counts – the design twins of the two families
   above, with the same statistic vocabulary and output engines.
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  is the design twin of
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
+  percentages estimated under the design and a design-based test per
+  item.
 - **Model-based continuous summary tables** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /
@@ -354,7 +359,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p < .001
+#> χ²(2) = 21.6, p < .001
 #> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -900,6 +905,8 @@ degrees of freedom and tests, every number delegated to survey (Lumley).
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   : Categorical summary table from a survey design
+- [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  : Item battery table from a survey design
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   : Descriptive statistics from a survey design
 
@@ -979,6 +986,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   : Print an association measures summary table
 
 - [`print(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
+  [`print(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
   : Print method for item battery tables
 
 - [`print(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_svy_table.md)
@@ -1045,6 +1053,8 @@ Documented here for direct invocation with custom arguments (e.g.,
 
 - [`as.data.frame(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
   [`as_tibble(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as.data.frame(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as_tibble(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
   :
 
   Coerce a `spicy_battery_table` to a plain data frame or tibble

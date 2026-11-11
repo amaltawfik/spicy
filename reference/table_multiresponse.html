@@ -243,7 +243,7 @@ as such are already read as missing).</p></dd>
 <dd><p>Logical. If <code>TRUE</code> (the default), the respondents of the
 base who chose no item get a row of their own, after the items and
 before the <code>Base</code> row: "(No item chosen)" under <code>base = "valid"</code>
-and <code>"all"</code>, and, under <code>"all"</code>, "(No data for the question)" for the
+and <code>"all"</code>, and, under <code>"all"</code>, "(No answer to the question)" for the
 respondents with every indicator missing. Each row appears only when
 its count is above 0. <code>base = "answered"</code> leaves both groups out of
 the base and shows neither row. A row gives the count and the
@@ -485,7 +485,7 @@ and a last row with the base. Columns: <code>variable</code> (the item's
 column, <code>"none"</code>, <code>"no_data"</code>, or <code>"nobs"</code> on the base row),
 <code>label</code> (the label the row displays), <code>.row_role</code> (what the row
 is: <code>"summary"</code> for an item, <code>"none"</code> for "(No item chosen)",
-<code>"missing"</code> for "(No data for the question)", <code>"fit_stat"</code> for the
+<code>"missing"</code> for "(No answer to the question)", <code>"fit_stat"</code> for the
 base, the roles of <code><a href="as_structured.html">as_structured()</a></code>), then the printed columns:
 the count and the percentage of each group of <code>by</code> and of the
 <code>Total</code> margin (<code>&lt;group&gt; n</code> and <code>&lt;group&gt; %</code>, or
@@ -640,7 +640,7 @@ chosen). The base holds the second and leaves out the first under
 <code>"valid"</code>, leaves out both under <code>"answered"</code>, and holds both under
 <code>"all"</code>; a count of zero is not mentioned. Under <code>none_row = TRUE</code>, the
 default, the respondents of these two kinds that the base holds are
-rows of the table, "(No item chosen)" and "(No data for the question)",
+rows of the table, "(No item chosen)" and "(No answer to the question)",
 with their count and percentage in each group, and the note counts only
 those the base leaves out. An item displayed with the label of a row the
 table adds is an error (class <code>spicy_label_collision</code>): choose another

@@ -864,15 +864,15 @@ French JAMA table keeps the comma:
 table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #> Statistiques descriptives selon sex
 #> 
-#>  Variable │ Groupe    M     ET    Min    Max   IC à 95 % LI  IC à 95 % LS   n  
-#> ──────────┼────────────────────────────────────────────────────────────────────
-#>  bmi      │ Female  25,69  3,78  16,00  38,90     25,39         25,98      616 
-#>           │ Male    26,20  3,64  16,00  37,70     25,90         26,50      572 
+#>  Variable │ Groupe  Moyenne   ET    Min    Max   IC à 95 % LI  IC à 95 % LS 
+#> ──────────┼─────────────────────────────────────────────────────────────────
+#>  bmi      │ Female   25,69   3,78  16,00  38,90     25,39         25,98     
+#>           │ Male     26,20   3,64  16,00  37,70     25,90         26,50     
 #> 
-#>  Variable │ Groupe   p  
-#> ──────────┼─────────────
-#>  bmi      │ Female  ,02 
-#>           │ Male        
+#>  Variable │ Groupe   n    p  
+#> ──────────┼──────────────────
+#>  bmi      │ Female  616  ,02 
+#>           │ Male    572      
 #> 
 #> Abréviations : LI, limite inférieure ; LS, limite supérieure.
 #> N = 1200 : Female (n = 620), Male (n = 580). Valeurs manquantes retirées : bmi (12). Valeur p : test t de Welch.
@@ -1067,7 +1067,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_vl62rt448hykq7aki9zn .table
+Categorical table by education {#tinytable_2izd8d7dvvdoi4eh66ye .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

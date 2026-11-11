@@ -461,8 +461,11 @@ and the tests are weighted, and the note says so:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. Statistics weighted by weight.</span></span></span></code></pre></div>
 <p>The percentages of a survey are right under its weights, but its
-tests need the design. A design-based version of this table is
-planned.</p>
+tests need the design. <code><a href="../reference/table_battery_svy.html">table_battery_svy()</a></code> takes the design
+itself, a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign()</a></code> or replicate-weights object:
+the same rows and columns, the percentages estimated by survey, and a
+design-based test per item. See <a href="survey-tables.html#item-batteries"><em>Summary tables from a
+survey design</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="data-frames">Data frames<a class="anchor" aria-label="anchor" href="#data-frames"></a>

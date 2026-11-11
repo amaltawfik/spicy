@@ -60,6 +60,11 @@ extraction, and row-wise summaries.
   linearization or replicate weights), design degrees of freedom,
   observed and weighted counts – the design twins of the two families
   above, with the same statistic vocabulary and output engines.
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  is the design twin of
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
+  percentages estimated under the design and a design-based test per
+  item.
 - **Model-based continuous summary tables** with
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   for linear-model reporting: classical / HC\* / cluster-robust /
@@ -354,7 +359,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p < .001
+#> χ²(2) = 21.6, p < .001
 #> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```

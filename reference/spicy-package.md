@@ -104,7 +104,9 @@ clock rather than the parent family's):
   since 0.14.0
 
 - Item batteries:
-  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  and its design twin
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
   since 0.15.0
 
 - Stacked tables:
@@ -378,9 +380,10 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_negative_weights_no_test` – signaled together with
     `spicy_undefined_stat` when
-    [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-    or
+    [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
     [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+    or
+    [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
     withholds a group comparison because the analytic sample carries
     negatively weighted rows; the estimates are still reported and the
     table note says so.

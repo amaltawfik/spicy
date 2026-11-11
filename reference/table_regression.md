@@ -274,7 +274,7 @@ table_regression(
   effects for those models via the AME column instead. Note that the
   displayed CI is the link-scale CI with exponentiated endpoints (Wald
   or profile per `ci_method`), so it is asymmetric around the ratio and
-  cannot be reconstructed as `estimate ± z × SE`; the delta-method SE
+  cannot be reconstructed as `estimate ± q × SE`; the delta-method SE
   follows the Stata convention (`[R] logistic`, Methods and formulas:
   `se(OR) = OR × se(b)`) and the log-scale CI endpoints carry the
   uncertainty more faithfully than this SE. The footer states the SE
@@ -1294,7 +1294,8 @@ fits get `c("nobs", "n_groups", "max_cluster_size")` (the cluster
 structure, Stata `xtgee`-header style). When `nested = TRUE`, the
 class-aware default is extended with change tokens
 (`c("r2_change", "f_change", "p_change")` for lm,
-`c("lrt_change", "p_change")` for glm). The order of tokens in
+`c("lrt_change", "p_change")` for glm, `c("f_change", "p_change")` for a
+glm whose dispersion is estimated). The order of tokens in
 `show_fit_stats` controls the order of the rows.
 
 ## Multi-model semantics
@@ -1388,8 +1389,13 @@ errors side-by-side.
 
 Inferential regimes for `lm` / `glm` (B and AME share the same regime):
 
-- `classical`, `HC*` -\> t with `df.residual` (`lm`) / z-asymptotic
-  (`glm`).
+- `classical`, `HC*` -\> t with `df.residual` (`lm`). For `glm`, the
+  test [`summary()`](https://rdrr.io/r/base/summary.html) of the model
+  reports: t on the residual degrees of freedom when the dispersion is
+  estimated (gaussian, Gamma, inverse Gaussian, Tweedie,
+  `negative.binomial(theta)` and the quasi families), z otherwise
+  (binomial, Poisson,
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)).
 
 - `bootstrap`, `jackknife` -\> z asymptotic.
 
@@ -1405,8 +1411,8 @@ Inferential regimes for `lm` / `glm` (B and AME share the same regime):
   to z-asymptotic with a `spicy_fallback` warning.
 
 For other classes the t-vs-z axis follows the estimator's native
-reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
-`betareg`, `mlogit` use z; `lm`, `lme`, `lmer`,
+reference distribution (e.g. `glmmTMB`, survival, ordinal, `betareg`,
+`mlogit` use z; `lm`, `lme`, `lmer`,
 [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) use t).
 
 ### Multinomial models: outcome categories as columns
@@ -1529,7 +1535,15 @@ silent model-based result under a robust label:
   spicy never overwrites it. A `vcov` request is refused; set the
   estimator through the fitting package instead (`se_type =` for
   estimatr; `vcov =` at estimation or in
-  [`summary()`](https://rdrr.io/r/base/summary.html) for fixest).
+  [`summary()`](https://rdrr.io/r/base/summary.html) for fixest). With
+  IID errors, fixest's default small-sample correction
+  ([`fixest::ssc()`](https://lrberge.github.io/fixest/reference/ssc.html))
+  multiplies the standard errors of a `feglm()` fit by sqrt((n - 1) /
+  (n - K)) over those of its [`glm()`](https://rdrr.io/r/stats/glm.html)
+  twin with the fixed effects as dummies (a `feols()` fit already
+  matches [`lm()`](https://rdrr.io/r/stats/lm.html)), and
+  `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
+  [`glm()`](https://rdrr.io/r/stats/glm.html) values.
 
 - `glmmTMB`:
 
@@ -1742,6 +1756,13 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 - All-glm: `c("lrt_change", "p_change")` – Hosmer & Lemeshow Section
   3.5; Long & Freese 2014 Section 3.2.4.
 
+- All-glm whose dispersion is estimated (gaussian, Gamma, inverse
+  Gaussian, Tweedie, quasi families), and the `feglm` fits of these
+  families: `c("f_change", "p_change")`, the F test `anova(test = "F")`
+  reports, \\F = (\Delta D / q) / \hat\phi\\ on \\(q, df)\\, with
+  \\\hat\phi\\ the dispersion and \\df\\ the residual degrees of freedom
+  of the larger model. `"lrt_change"` is refused for such a hierarchy.
+
 - Any other hierarchy that carries a likelihood (`survreg`, `polr`,
   `clm`, `coxph`, `gls`, `betareg`, `multinom`, `fixest`, ...): the same
   `c("lrt_change", "p_change")`.
@@ -1758,16 +1779,19 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 To customize, pass the change tokens directly to `show_fit_stats`. The
 variance-explained change tokens (`"r2_change"`, `"adj_r2_change"`,
 `"f_change"`, `"f2_change"`) raise `spicy_invalid_input` on any
-hierarchy whose nested comparison is a likelihood-ratio test – `glm`,
-and equally every other likelihood class and the mixed-effects families:
-that comparison reports a chi-square, not a variance-explained change,
-and the message points at `"lrt_change"` + `"p_change"`. A quantile
+hierarchy whose nested comparison is a likelihood-ratio test – `glm`
+(`"f_change"` excepted when its dispersion is estimated), and equally
+every other likelihood class and the mixed-effects families: that
+comparison reports a chi-square, not a variance-explained change, and
+the message points at `"lrt_change"` + `"p_change"`. A quantile
 hierarchy refuses them too, and `"lrt_change"` with them, pointing at
 `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
 least-squares tokens.
 
 **The change test follows `vcov`.** Under the classical `vcov` the
-change test is the partial F, the likelihood-ratio test or
+change test is the partial F, the likelihood-ratio test, the F test
+[`anova()`](https://rdrr.io/r/stats/anova.html) reports for a pair whose
+dispersion is estimated, or
 [`quantreg::anova.rq()`](https://rdrr.io/pkg/quantreg/man/anova.rq.html)'s
 Wald test, as above. Under any other `vcov`, and under the classical
 token when the fit carries a robust variance of its own, it is the Wald
@@ -1782,9 +1806,10 @@ coefficient tests:
   and
   [`car::linearHypothesis()`](https://rdrr.io/pkg/car/man/linearHypothesis.html).
   It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on \\G - 1\\
-  degrees of freedom),
-  [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) under `"CR0"` or
-  after [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
+  degrees of freedom), `glm` with an estimated dispersion under
+  `"HC0"`-`"HC5"`, [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html)
+  under `"CR0"` or after
+  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
   [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html) under
   `"iid"` and `"ker"`, and a fixest fit estimated with a non-iid vcov
   whose coefficient tests are t (on fixest's own degrees of freedom, as
@@ -1802,11 +1827,11 @@ coefficient tests:
 - *Chi-square*, in a row labeled "Wald \\\chi^2\\ (change)" that
   replaces the likelihood-ratio row: \\W\\ on \\q\\ degrees of freedom,
   the convention of `lmtest::waldtest(test = "Chisq")`. It applies to
-  `glm` and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
-  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, `glmmTMB`
-  under `"CR0"` and `"CR1"`, under `"CR0"` to `coxph` and
-  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph` / `Glm`,
-  and under `"CR1"` to `survreg`,
+  `glm` with a fixed dispersion and `glm.nb` under `"HC0"`-`"HC5"`, `lm`
+  and `glm` under `"bootstrap"` and `"jackknife"`, `rq` under
+  `"bootstrap"`, `glmmTMB` under `"CR0"` and `"CR1"`, under `"CR0"` to
+  `coxph` and [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph`
+  / `Glm`, and under `"CR1"` to `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam`,
   `polr`, `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl` and
   `hurdle` (not negative binomial); also to `survreg(robust = TRUE)`, a

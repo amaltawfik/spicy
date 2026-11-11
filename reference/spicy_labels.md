@@ -120,6 +120,11 @@ Excel export write its body as text rather than live numbers, since
 Excel would otherwise re-punctuate a numeric cell with the viewer's own
 locale.
 
+Some French notes quote a name between guillemets, which the default
+LaTeX templates of Quarto and R Markdown set under every engine; a
+hand-written preamble compiled with pdflatex needs
+`\usepackage[T1]{fontenc}`, without which LaTeX stops with an error.
+
 ## See also
 
 [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)

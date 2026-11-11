@@ -129,7 +129,7 @@
 <li>
 <strong>Outcome-first summary tables</strong> with <code><a href="reference/table_outcome.html">table_outcome()</a></code>: one continuous outcome described across several groupings, one block of rows per grouping variable, a group comparison per block, and a marginal <code>Overall</code> row – the transpose of <code><a href="reference/table_continuous.html">table_continuous()</a></code>, with the same statistic vocabulary and output engines.</li>
 <li>
-<strong>Design-based summary tables</strong> with <code><a href="reference/table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="reference/table_categorical_svy.html">table_categorical_svy()</a></code> on a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign</a></code> object: estimates, SEs and CIs from the <code>survey</code> package (Taylor linearization or replicate weights), design degrees of freedom, observed and weighted counts – the design twins of the two families above, with the same statistic vocabulary and output engines.</li>
+<strong>Design-based summary tables</strong> with <code><a href="reference/table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="reference/table_categorical_svy.html">table_categorical_svy()</a></code> on a <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">survey::svydesign</a></code> object: estimates, SEs and CIs from the <code>survey</code> package (Taylor linearization or replicate weights), design degrees of freedom, observed and weighted counts – the design twins of the two families above, with the same statistic vocabulary and output engines. <code><a href="reference/table_battery_svy.html">table_battery_svy()</a></code> is the design twin of <code><a href="reference/table_battery.html">table_battery()</a></code>: percentages estimated under the design and a design-based test per item.</li>
 <li>
 <strong>Model-based continuous summary tables</strong> with <code><a href="reference/table_continuous_lm.html">table_continuous_lm()</a></code> for linear-model reporting: classical / HC* / cluster-robust / bootstrap / jackknife variance, four effect-size families (f², Cohen’s d, Hedges’s g, Hays’s omega²) with noncentral CIs, additive covariate adjustment with G-computation (Stata <code>margins</code> style) or equal-weight (<code>emmeans</code> style) marginal means, and weighted comparisons.</li>
 <li>
@@ -356,7 +356,7 @@
 <span><span class="co">#&gt;  Total    │             100.0              100.0       100.0 │   100.0 </span></span>
 <span><span class="co">#&gt;  N        │               257                527         391 │    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; .001</span></span>
+<span><span class="co">#&gt; χ²(2) = 21.6, p &lt; .001</span></span>
 <span><span class="co">#&gt; Cramér's V = 0.14</span></span>
 <span><span class="co">#&gt; Missing values removed: smoking (25).</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>

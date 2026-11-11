@@ -103,6 +103,12 @@ unaffected, and <code>print(x)</code> continues to render the formatted table.</
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x</span>, row.names <span class="op">=</span> <span class="cn">NULL</span>, optional <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'spicy_battery_table'</span></span>
+<span><span class="fu">as_tibble</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'spicy_battery_svy_table'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x</span>, row.names <span class="op">=</span> <span class="cn">NULL</span>, optional <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'spicy_battery_svy_table'</span></span>
 <span><span class="fu">as_tibble</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -111,7 +117,8 @@ unaffected, and <code>print(x)</code> continues to render the formatted table.</
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A <code>spicy_battery_table</code> returned by <code><a href="table_battery.html">table_battery()</a></code>.</p></dd>
+<dd><p>A <code>spicy_battery_table</code> returned by <code><a href="table_battery.html">table_battery()</a></code>, or a
+<code>spicy_battery_svy_table</code> returned by <code><a href="table_battery_svy.html">table_battery_svy()</a></code>.</p></dd>
 
 
 <dt id="arg-row-names-optional">row.names, optional<a class="anchor" aria-label="anchor" href="#arg-row-names-optional"></a></dt>

@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-11-10
+#> Date: 2026-11-11
 #> Observations: 1200
 #> Variables: 4
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -150,7 +150,7 @@ cross_tab(sochealth, smoking, education)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p < .001
+#> χ²(2) = 21.6, p < .001
 #> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -170,7 +170,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p < .001
+#> χ²(2) = 21.6, p < .001
 #> Cramér's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -189,7 +189,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               133                282         191 │     606 
 #> 
-#> Chi-2(2) = 7.1, p = .029
+#> χ²(2) = 7.1, p = .029
 #> Cramér's V = 0.11
 #> Missing values removed: smoking (14).
 #> 
@@ -202,7 +202,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               124                245         200 │     569 
 #> 
-#> Chi-2(2) = 15.6, p < .001
+#> χ²(2) = 15.6, p < .001
 #> Cramér's V = 0.17
 #> Missing values removed: smoking (11).
 ```
@@ -226,7 +226,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │               260                527         393 │    1180 
 #> 
-#> Chi-2(6) = 73.2, p < .001
+#> χ²(6) = 73.2, p < .001
 #> Kendall's Tau-b = 0.20
 #> Missing values removed: self_rated_health (20).
 ```

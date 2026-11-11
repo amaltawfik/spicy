@@ -110,8 +110,9 @@ markers and a format specification.</p>
 <dd><p>A spicy table built with <code>output = "default"</code>:
 <code><a href="table_regression.html">table_regression()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>,
-<code><a href="table_battery.html">table_battery()</a></code> or the survey twins <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> and
-<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>. All return the same schema. A stacked
+<code><a href="table_battery.html">table_battery()</a></code> or the survey twins <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>,
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="table_battery_svy.html">table_battery_svy()</a></code>. All return the
+same schema. A stacked
 table of <code><a href="table_stack.html">table_stack()</a></code> is accepted too.</p></dd>
 
 </dl></div>
@@ -259,7 +260,8 @@ margin is flagged <code>col_meta$&lt;col&gt;$total</code>.</p></li>
 <code>missing</code> flags the column of missing answers, and <code>top</code> the summary
 column, with the levels it adds up in <code>top_levels</code>), <code>"n"</code> (the base of
 the row) and <code>"p"</code>. Under <code>by</code>, each group owns its columns under its
-own spanner.</p></li>
+own spanner. <code><a href="table_battery_svy.html">table_battery_svy()</a></code> has the same view, its <code>"n"</code> the
+observed count.</p></li>
 </ul><p>Cells the console builds from more than one number – a
 <code>"Mdn [Q1, Q3]"</code>, a test gloss, an effect size with its interval –
 keep their numeric anchor in <code>body</code> and their exact printed string

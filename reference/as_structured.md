@@ -27,9 +27,10 @@ as_structured(x)
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   or the survey twins
-  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   and
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md).
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md).
   All return the same schema. A stacked table of
   [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
   is accepted too.
@@ -204,6 +205,8 @@ association measure.
   column of missing answers, and `top` the summary column, with the
   levels it adds up in `top_levels`), `"n"` (the base of the row) and
   `"p"`. Under `by`, each group owns its columns under its own spanner.
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  has the same view, its `"n"` the observed count.
 
 Cells the console builds from more than one number – a `"Mdn [Q1, Q3]"`,
 a test gloss, an effect size with its interval – keep their numeric

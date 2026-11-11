@@ -4,6 +4,24 @@
 
 ### Breaking changes
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  and
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  test a [`glm()`](https://rdrr.io/r/stats/glm.html) whose dispersion is
+  estimated (gaussian, Gamma, inverse Gaussian, Tweedie and the quasi
+  families) as [`summary()`](https://rdrr.io/r/base/summary.html) tests
+  it: a t statistic on the residual degrees of freedom instead of a z
+  statistic. The p-values, the Wald confidence intervals, the statistic
+  header, the standardized coefficients and the average marginal effects
+  follow. With `nested = TRUE`, the change test of such a pair is the F
+  test [`anova()`](https://rdrr.io/r/stats/anova.html) reports
+  (`f_change`; `lrt_change` is refused), and under an `HC*` vcov a Wald
+  F-change. `feglm()` fits of these families follow their
+  [`glm()`](https://rdrr.io/r/stats/glm.html) twins. Binomial, Poisson
+  and [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits
+  keep their z test and likelihood-ratio test.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   in [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
   `output = "long"`, the terms of the zero-inflation, zero-hurdle and
@@ -108,6 +126,19 @@
   cites its cells
   ([\#13](https://github.com/amaltawfik/spicy/issues/13)).
 
+- New
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
+  the survey-design twin of
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
+  the same table from a
+  [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
+  or replicate-weights design. The percentages are estimated under the
+  design on each item’s respondents, `n` is their observed count and,
+  with `by`, each item gets a design-based test (`chisq_statistic`,
+  Rao-Scott by default), Holm-adjusted by default.
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  points a design to it.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
@@ -189,6 +220,29 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- `table_regression(standardized = "refit")` on a
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit tests
+  the standardized coefficients at a dispersion of 1, as the fit itself
+  is tested. Their standard errors were scaled by the Pearson dispersion
+  of the refit, and their p-values could be far too small.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  writes the chi-squared statistic of its note with the symbol,
+  `χ²(df) = …` (was `Chi-2(df) = …`).
+
+- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  labels the row of respondents who left the question blank “(No answer
+  to the question)”, as its note says (was “(No data for the
+  question)”).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  names the ratio of an ordinal cloglog model “the grouped-time hazard
+  ratio” in its note (was “proportional-hazards ratio”).
+
+- Under the `jama` and `lancet` themes, a French table spells out
+  “Moyenne” and “Médiane” as an English one spells out “Mean” and
+  “Median”.
 
 - Table notes name the statistical method, never the package that
   computes it: “P-values: Satterthwaite t-test.” instead of “…

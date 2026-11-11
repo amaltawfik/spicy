@@ -81,6 +81,8 @@ degrees of freedom and tests, every number delegated to survey (Lumley).
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   : Categorical summary table from a survey design
+- [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  : Item battery table from a survey design
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   : Descriptive statistics from a survey design
 
@@ -160,6 +162,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   : Print an association measures summary table
 
 - [`print(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
+  [`print(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_battery_table.md)
   : Print method for item battery tables
 
 - [`print(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_categorical_svy_table.md)
@@ -226,6 +229,8 @@ Documented here for direct invocation with custom arguments (e.g.,
 
 - [`as.data.frame(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
   [`as_tibble(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as.data.frame(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
+  [`as_tibble(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
   :
 
   Coerce a `spicy_battery_table` to a plain data frame or tibble

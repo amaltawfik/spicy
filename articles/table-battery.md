@@ -375,7 +375,14 @@ table_battery(
 ```
 
 The percentages of a survey are right under its weights, but its tests
-need the design. A design-based version of this table is planned.
+need the design.
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+takes the design itself, a
+[`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
+or replicate-weights object: the same rows and columns, the percentages
+estimated by survey, and a design-based test per item. See [*Summary
+tables from a survey
+design*](https://amaltawfik.github.io/spicy/articles/survey-tables.html#item-batteries).
 
 ## Data frames
 

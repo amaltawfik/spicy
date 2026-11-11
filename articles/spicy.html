@@ -172,7 +172,7 @@ the quarto package and Quarto 1.7 or later).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">smoking</span>, <span class="va">bmi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-11-10</span></span>
+<span><span class="co">#&gt; Date: 2026-11-11</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 4</span></span>
 <span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
@@ -241,7 +241,7 @@ default it shows counts, a chi-squared test, and Cramér’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">χ²(2) = 21.6, p &lt; .001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Add percentages with <code>percent</code>:</p>
@@ -257,7 +257,7 @@ default it shows counts, a chi-squared test, and Cramér’s V:</p>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>             100.0              100.0       100.0 <span style="color: #9E9E9E;">│</span>   100.0 </span></span>
 <span><span class="co">#&gt;  N        <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 21.6, p &lt; .001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">χ²(2) = 21.6, p &lt; .001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Group by a third variable with <code>by</code>:</p>
@@ -272,7 +272,7 @@ default it shows counts, a chi-squared test, and Cramér’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               133                282         191 <span style="color: #9E9E9E;">│</span>     606 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 7.1, p = .029</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">χ²(2) = 7.1, p = .029</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.11</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (14).</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -285,7 +285,7 @@ default it shows counts, a chi-squared test, and Cramér’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
 <span><span class="co">#&gt;  Total    <span style="color: #9E9E9E;">│</span>               124                245         200 <span style="color: #9E9E9E;">│</span>     569 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(2) = 15.6, p &lt; .001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">χ²(2) = 15.6, p &lt; .001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramér's V = 0.17</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (11).</span></span></span></code></pre></div>
 <p>When both variables are ordered factors, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
@@ -304,7 +304,7 @@ Cramér’s V:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────────────────────┼─────────</span></span></span>
 <span><span class="co">#&gt;  Total       <span style="color: #9E9E9E;">│</span>               260                527         393 <span style="color: #9E9E9E;">│</span>    1180 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Chi-2(6) = 73.2, p &lt; .001</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">χ²(6) = 73.2, p &lt; .001</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Kendall's Tau-b = 0.20</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: self_rated_health (20).</span></span></span></code></pre></div>
 </div>
