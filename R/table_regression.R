@@ -263,7 +263,8 @@
 #' structure, Stata `xtgee`-header style). When `nested = TRUE`, the
 #' class-aware default is extended with change tokens
 #' (`c("r2_change", "f_change", "p_change")` for lm,
-#' `c("lrt_change", "p_change")` for glm). The order of tokens in
+#' `c("lrt_change", "p_change")` for glm, `c("f_change", "p_change")`
+#' for a glm whose dispersion is estimated). The order of tokens in
 #' `show_fit_stats` controls the order of the rows.
 #'
 #' # Multi-model semantics
@@ -352,8 +353,12 @@
 #' Inferential regimes for `lm` / `glm` (B and AME share the same
 #' regime):
 #' \itemize{
-#'   \item `classical`, `HC*` -> t with `df.residual` (`lm`) /
-#'     z-asymptotic (`glm`).
+#'   \item `classical`, `HC*` -> t with `df.residual` (`lm`). For
+#'     `glm`, the test `summary()` of the model reports: t on the
+#'     residual degrees of freedom when the dispersion is estimated
+#'     (gaussian, Gamma, inverse Gaussian, Tweedie,
+#'     `negative.binomial(theta)` and the quasi families), z otherwise
+#'     (binomial, Poisson, `MASS::glm.nb`).
 #'   \item `bootstrap`, `jackknife` -> z asymptotic.
 #'   \item `CR0`-`CR3` -> t with **Satterthwaite-corrected df** (B
 #'     via [clubSandwich::coef_test()]; AME via
@@ -363,7 +368,7 @@
 #'     `spicy_fallback` warning.
 #' }
 #' For other classes the t-vs-z axis follows the estimator's native
-#' reference distribution (e.g. `glm`, `glmmTMB`, survival, ordinal,
+#' reference distribution (e.g. `glmmTMB`, survival, ordinal,
 #' `betareg`, `mlogit` use z; `lm`, `lme`, `lmer`, `rms::ols` use t).
 #'
 #' ## Multinomial models: outcome categories as columns
@@ -685,6 +690,14 @@
 #'     "p_change")` -- APA hierarchical regression standard.
 #'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
 #'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+#'   \item All-glm whose dispersion is estimated (gaussian, Gamma,
+#'     inverse Gaussian, Tweedie, quasi families), and the `feglm`
+#'     fits of these families: `c("f_change", "p_change")`, the F test
+#'     `anova(test = "F")` reports, \eqn{F = (\Delta D / q) /
+#'     \hat\phi}{F = (Delta D / q) / phi} on \eqn{(q, df)}, with
+#'     \eqn{\hat\phi}{phi} the dispersion and \eqn{df} the residual
+#'     degrees of freedom of the larger model. `"lrt_change"` is
+#'     refused for such a hierarchy.
 #'   \item Any other hierarchy that carries a likelihood
 #'     (`survreg`, `polr`, `clm`, `coxph`, `gls`, `betareg`,
 #'     `multinom`, `fixest`, ...): the same
@@ -699,7 +712,8 @@
 #' `show_fit_stats`. The variance-explained change tokens
 #' (`"r2_change"`, `"adj_r2_change"`, `"f_change"`,
 #' `"f2_change"`) raise `spicy_invalid_input` on any hierarchy
-#' whose nested comparison is a likelihood-ratio test -- `glm`,
+#' whose nested comparison is a likelihood-ratio test -- `glm`
+#' (`"f_change"` excepted when its dispersion is estimated),
 #' and equally every other likelihood class and the
 #' mixed-effects families: that comparison reports a chi-square,
 #' not a variance-explained change, and the message points at
@@ -709,7 +723,8 @@
 #' least-squares tokens.
 #'
 #' **The change test follows `vcov`.** Under the classical `vcov` the
-#' change test is the partial F, the likelihood-ratio test or
+#' change test is the partial F, the likelihood-ratio test, the F test
+#' `anova()` reports for a pair whose dispersion is estimated, or
 #' `quantreg::anova.rq()`'s Wald test, as above. Under any other
 #' `vcov`, and under the classical token when the fit carries a robust
 #' variance of its own, it is the Wald test of the coefficients the
@@ -723,7 +738,8 @@
 #'     \eqn{(q, df)} degrees of freedom, the convention of
 #'     `lmtest::waldtest(test = "F")` and `car::linearHypothesis()`.
 #'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
-#'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"` or
+#'     \eqn{G - 1} degrees of freedom), `glm` with an estimated
+#'     dispersion under `"HC0"`-`"HC5"`, `rms::ols` under `"CR0"` or
 #'     after `rms::robcov()`, `quantreg::rq` under `"iid"` and
 #'     `"ker"`, and a fixest fit estimated with a non-iid vcov whose
 #'     coefficient tests are t (on fixest's own degrees of freedom, as
@@ -737,8 +753,9 @@
 #'   \item *Chi-square*, in a row labeled "Wald \eqn{\chi^2}{chi^2}
 #'     (change)" that replaces the likelihood-ratio row: \eqn{W} on
 #'     \eqn{q} degrees of freedom, the convention of
-#'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
-#'     `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
+#'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` with a
+#'     fixed dispersion and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and
+#'     `glm` under
 #'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`,
 #'     `glmmTMB` under `"CR0"` and `"CR1"`,
 #'     under `"CR0"` to `coxph` and `rms::lrm` / `cph` / `Glm`,
@@ -1111,7 +1128,7 @@
 #'   those models via the AME column instead. Note that the displayed
 #'   CI is the link-scale CI with exponentiated endpoints (Wald or
 #'   profile per `ci_method`), so it is asymmetric around the ratio
-#'   and cannot be reconstructed as `estimate ± z × SE`; the
+#'   and cannot be reconstructed as `estimate ± q × SE`; the
 #'   delta-method SE follows the Stata convention (`[R] logistic`,
 #'   Methods and formulas: `se(OR) = OR × se(b)`) and the log-scale
 #'   CI endpoints carry the uncertainty more faithfully than this SE.

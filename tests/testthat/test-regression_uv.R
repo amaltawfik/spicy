@@ -1629,3 +1629,30 @@ test_that("a screen refuses `layout` and points to table_stack()", {
   expect_match(conditionMessage(e), "`table_stack()`", fixed = TRUE)
   expect_no_match(conditionMessage(e), "Unknown argument", fixed = TRUE)
 })
+
+test_that("a Gamma screen tests each fit as its summary() does", {
+  skip_on_cran()
+  # Oracle: the t p-value summary.glm() reports for each univariable fit.
+  out <- table_regression_uv(
+    mtcars,
+    outcome = "mpg",
+    predictors = c("wt", "hp"),
+    method = "glm",
+    family = stats::Gamma("log"),
+    multivariable = FALSE,
+    output = "data.frame"
+  )
+  p_oracle <- vapply(
+    c("wt", "hp"),
+    function(v) {
+      fit <- glm(reformulate(v, "mpg"), data = mtcars, family = Gamma("log"))
+      summary(fit)$coefficients[2L, "Pr(>|t|)"]
+    },
+    numeric(1)
+  )
+  expect_equal(
+    out[["Univariable: p"]],
+    unname(p_oracle),
+    tolerance = 1e-12
+  )
+})

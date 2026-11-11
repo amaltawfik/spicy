@@ -727,7 +727,8 @@ compute_resample_vcov_jackknife <- function(
 # Class-generic. The reference distribution of the classical / HC* default path
 # is chosen by `test`, NOT by the fit class: `test = "t"` uses df.residual(fit)
 # (or `df_resid` when supplied) -- the OLS / lmer convention; `test = "z"` uses
-# df = Inf -- the ML convention (glm, cox, ordinal, glmmTMB). Resampling
+# df = Inf -- the ML convention (cox, ordinal, glmmTMB, and a glm whose
+# dispersion is fixed; a glm takes the test its summary() reports). Resampling
 # (bootstrap / jackknife) is always asymptotic z; CR* is always clubSandwich
 # Satterthwaite t (falling back to z when coef_test fails).
 compute_coef_inference <- function(

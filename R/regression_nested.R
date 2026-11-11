@@ -12,7 +12,9 @@
 #
 #   r2_change        (lm)        -- DeltaR^2 (signed)
 #   adj_r2_change    (lm)        -- DeltaAdj. R^2 (signed)
-#   f_change         (lm)        -- partial F (anova(m_i, m_{i+1}))
+#   f_change         (lm, glm)   -- partial F (anova(m_i, m_{i+1})); for a
+#                                   glm whose dispersion is estimated,
+#                                   the F of anova(test = "F")
 #   f2_change        (lm)        -- Deltaf^2, Cohen's f^2 for added
 #                                   predictors (signed)
 #   lrt_change       (lm/glm/me) -- likelihood-ratio chi^2
@@ -38,6 +40,7 @@
 #                     Table 7.13
 #   * likelihood    : c("lrt_change", "p_change")  -- Hosmer & Lemeshow
 #                     Section 3.5 / Long & Freese 2014 Section 3.6
+#   * estimated dispersion (glm, feglm): c("f_change", "p_change")
 # Mixed-class hierarchies route through the least-squares path; the
 # likelihood side en-dashes the variance-explained tokens.
 #
@@ -126,6 +129,25 @@ rides_lrt_path <- function(fit) {
 # instead of inventing a cross-family LRT.
 is_likelihood_pair <- function(fit_prev, fit_curr) {
   rides_lrt_path(fit_prev) && rides_lrt_path(fit_curr)
+}
+
+# A glm or feglm whose dispersion is estimated: summary() tests its
+# coefficients on t (gaussian, Gamma, inverse.gaussian, Tweedie, quasi
+# families). Its nested test is the F test anova() reports for it
+# (`dispersion_f_test()`). The glm subclasses with a comparison of their
+# own (gam, svyglm, geeglm, negbin) keep it: the class must be glm itself.
+has_estimated_dispersion <- function(fit) {
+  if (inherits(fit, "fixest")) {
+    return(
+      is.list(fit$family) &&
+        isTRUE(fit$family$family %in% c(.FIXEST_DISP_FAMS, .FIXEST_QUASI_FAMS))
+    )
+  }
+  identical(class(fit)[1L], "glm") && identical(.glm_wald_test(fit), "t")
+}
+
+is_dispersion_pair <- function(fit_prev, fit_curr) {
+  has_estimated_dispersion(fit_prev) && has_estimated_dispersion(fit_curr)
 }
 
 # A pair BOTH of whose members are rms fits (ols, lrm, cph, Glm, psm,
@@ -534,12 +556,15 @@ compute_nested_comparisons <- function(
     }
     if (!is.null(wald)) {
       # The Wald test replaces the pair's classical test and its p: the
-      # partial F on the least-squares and quantile routes, the
-      # likelihood-ratio chi-square everywhere else. Delta R^2, the
+      # partial F on the least-squares and quantile routes and for a glm
+      # whose dispersion is estimated, the likelihood-ratio chi-square
+      # everywhere else. Delta R^2, the
       # information criteria and the deviance do not depend on the vcov.
       f_route <- !pair_rms &&
         !pair_mixed &&
-        (pair_rq || !(pair_glm || pair_lrt))
+        (pair_rq ||
+          is_dispersion_pair(fit_prev, fit_curr) ||
+          !(pair_glm || pair_lrt))
       stats[[if (f_route) "f_change" else "lrt_change"]] <- NA_real_
       stats$p_change <- wald$p
     }
@@ -1060,6 +1085,16 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
     }
   }
 
+  # A pair whose dispersion is estimated reports the F test of anova(),
+  # not the scaled chi-square: one test per pair, in f_change.
+  f_stat <- NA_real_
+  if (is_dispersion_pair(fit_prev, fit_curr)) {
+    ft <- dispersion_f_test(lrt_stat, fit_prev, fit_curr)
+    f_stat <- ft$f
+    p_val <- ft$p
+    lrt_stat <- NA_real_
+  }
+
   aic_p <- ic_or_na(stats::AIC, fit_prev)
   aic_c <- ic_or_na(stats::AIC, fit_curr)
   bic_p <- ic_or_na(stats::BIC, fit_prev)
@@ -1074,7 +1109,7 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
   list(
     r2_change = NA_real_,
     adj_r2_change = NA_real_,
-    f_change = NA_real_,
+    f_change = f_stat,
     f2_change = NA_real_,
     lrt_change = lrt_stat,
     aic_change = aic_c - aic_p,
@@ -1518,6 +1553,10 @@ default_nested_tokens <- function(models) {
     # -- so this branch stays AHEAD of the likelihood branch, which
     # would otherwise claim rq on the strength of that method.
     c("f_change", "p_change")
+  } else if (all(vapply(models, has_estimated_dispersion, logical(1)))) {
+    # A glm or feglm whose dispersion is estimated: the F test anova()
+    # reports for these families.
+    c("f_change", "p_change")
   } else if (all_glm || all_lrt) {
     # Likelihood-based hierarchies (glm; coxph / rms::cph partial
     # likelihood; nnet::multinom; survreg; polr / clm; gls; betareg;
@@ -1756,6 +1795,27 @@ fixest_twin_lrt <- function(fit_prev, fit_curr) {
     return(na)
   }
   list(stat = stat, p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE))
+}
+
+# The nested F test of a pair whose dispersion is estimated, from `stat`,
+# the deviance change over the dispersion of the larger model:
+# F = stat / q on (q, the residual df of the larger model), as
+# anova.glm(test = "F") computes it. A feglm counts its residual df as
+# fixest does, nobs minus the parameters, fixed effects included.
+dispersion_f_test <- function(stat, fit_prev, fit_curr) {
+  res_df <- function(fit) {
+    if (inherits(fit, "fixest")) {
+      stats::nobs(fit) - fit$nparams
+    } else {
+      stats::df.residual(fit)
+    }
+  }
+  q <- res_df(fit_prev) - res_df(fit_curr)
+  df2 <- res_df(fit_curr)
+  if (!is.finite(stat) || !isTRUE(q >= 1) || !isTRUE(df2 > 0)) {
+    return(list(f = NA_real_, p = NA_real_))
+  }
+  list(f = stat / q, p = stats::pf(stat / q, q, df2, lower.tail = FALSE))
 }
 
 # Parameter-count increase from prev to curr, from logLik()'s own "df"

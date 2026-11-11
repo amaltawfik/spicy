@@ -1086,7 +1086,7 @@ test_that("a quantile hierarchy refuses the tokens it cannot report", {
   )
 })
 
-test_that("fixest pairs: LRT / p match anova() on the glm twins", {
+test_that("fixest pairs: the change test / p match anova() on the glm twins", {
   skip_if_no("fixest")
   d <- mtcars
   d$cyl <- factor(d$cyl)
@@ -1113,14 +1113,18 @@ test_that("fixest pairs: LRT / p match anova() on the glm twins", {
     fx1 <- fx(paste("wt + hp", fams[[nm]][[3]]))
     g0 <- gl(paste("wt", fams[[nm]][[4]]))
     g1 <- gl(paste("wt + hp", fams[[nm]][[4]]))
-    av <- stats::anova(g0, g1, test = "LRT")
-    # anova.glm() tests the deviance change over the dispersion of the
-    # larger model (1 for Poisson and binomial).
-    stat <- av$Deviance[2L] / summary(g1)$dispersion
+    # A family whose dispersion is estimated takes the F test
+    # anova(test = "F") reports for the twins; Poisson and binomial the
+    # LR chi-square.
+    disp <- !nm %in% c("poisson", "binomial")
+    av <- stats::anova(g0, g1, test = if (disp) "F" else "LRT")
+    stat_tok <- if (disp) "f_change" else "lrt_change"
+    stat <- if (disp) av$F[2L] else av$Deviance[2L]
+    p_ref <- av[[if (disp) "Pr(>F)" else "Pr(>Chi)"]][2L]
     df <- as.data.frame(table_regression(
       list(fx0, fx1),
       nested = TRUE,
-      show_fit_stats = c("lrt_change", "deviance_change", "p_change")
+      show_fit_stats = c(stat_tok, "deviance_change", "p_change")
     ))
     got <- function(v) df[["Model 2: B"]][df$variable == v]
     # Except for the inverse Gaussian, whose fits of the two engines
@@ -1139,13 +1143,8 @@ test_that("fixest pairs: LRT / p match anova() on the glm twins", {
       quasibinomial = 1e-5,
       1e-10
     )
-    expect_equal(got("lrt_change"), stat, tolerance = tol, label = nm)
-    expect_equal(
-      got("p_change"),
-      av[["Pr(>Chi)"]][2L],
-      tolerance = tol,
-      label = nm
-    )
+    expect_equal(got(stat_tok), stat, tolerance = tol, label = nm)
+    expect_equal(got("p_change"), p_ref, tolerance = tol, label = nm)
     expect_equal(
       got("deviance_change"),
       av$Deviance[2L],
@@ -1155,21 +1154,21 @@ test_that("fixest pairs: LRT / p match anova() on the glm twins", {
   }
 })
 
-test_that("fixest pairs: weighted, feols and fenegbin LR tests match their twins", {
+test_that("fixest pairs: weighted, feols and fenegbin change tests match their twins", {
   skip_if_no("fixest", "lmtest", "MASS")
   d <- mtcars
-  lr_of <- function(fits) {
+  lr_of <- function(fits, tok = "lrt_change") {
     df <- as.data.frame(table_regression(
       fits,
       nested = TRUE,
-      show_fit_stats = c("lrt_change", "p_change")
+      show_fit_stats = c(tok, "p_change")
     ))
     c(
-      df[["Model 2: B"]][df$variable == "lrt_change"],
+      df[["Model 2: B"]][df$variable == tok],
       df[["Model 2: B"]][df$variable == "p_change"]
     )
   }
-  # A weighted Gamma pair: anova.glm() on the weighted twins.
+  # A weighted Gamma pair: anova.glm(test = "F") on the weighted twins.
   fw0 <- fixest::feglm(mpg ~ wt, d, family = Gamma("log"), weights = ~qsec)
   fw1 <- fixest::feglm(
     mpg ~ wt + hp,
@@ -1184,10 +1183,10 @@ test_that("fixest pairs: weighted, feols and fenegbin LR tests match their twins
     family = Gamma("log"),
     weights = qsec
   )
-  av <- stats::anova(g0, g1, test = "LRT")
+  av <- stats::anova(g0, g1, test = "F")
   expect_equal(
-    lr_of(list(fw0, fw1)),
-    c(av$Deviance[2L] / summary(g1)$dispersion, av[["Pr(>Chi)"]][2L]),
+    lr_of(list(fw0, fw1), "f_change"),
+    c(av$F[2L], av[["Pr(>F)"]][2L]),
     tolerance = 1e-8
   )
   # A weighted feols pair: lmtest::lrtest() on the weighted lm() twins.

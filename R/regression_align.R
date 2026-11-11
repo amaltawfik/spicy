@@ -407,8 +407,9 @@ align_frames <- function(
   # Per-model statistic-column header: the "t" TOKEN is API-stable, but
   # the displayed header follows the model's actual reference
   # distribution (coefs$test_type on the B rows): "z" for z-asymptotic
-  # classes (glm, cox, ordinal, glmmTMB, resampling vcov), "t" for
-  # t-referenced ones (lm, lmer-Satterthwaite). Stata prints z for logit
+  # classes (cox, ordinal, glmmTMB, a glm with a fixed dispersion,
+  # resampling vcov), "t" for t-referenced ones (lm, lmer-Satterthwaite,
+  # a glm whose dispersion is estimated). Stata prints z for logit
   # and t for regress; a hardcoded "t" header over z statistics
   # mislabels the column.
   stat_headers_auto <- vapply(

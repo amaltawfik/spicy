@@ -3407,3 +3407,218 @@ test_that("a Tweedie glm is titled as its univariable screen names it", {
     }
   }
 })
+
+
+# ============================================================================
+# The Wald test of a glm is the one summary.glm() reports
+# ============================================================================
+# Oracles: summary(fit)$coefficients, the hand-computed Wald interval on the
+# reference distribution summary() uses, and marginaleffects::avg_slopes()
+# with the same degrees of freedom.
+
+.glm_t_fits <- function() {
+  tw <- if (requireNamespace("statmod", quietly = TRUE)) {
+    list(
+      tweedie = glm(
+        carb ~ wt + hp,
+        data = mt,
+        family = statmod::tweedie(var.power = 1.5, link.power = 0)
+      )
+    )
+  }
+  c(
+    tw,
+    list(
+      gaussian = glm(mpg ~ wt + hp, data = mt, family = gaussian()),
+      Gamma = glm(mpg ~ wt + hp, data = mt, family = Gamma("log")),
+      inverse.gaussian = glm(
+        mpg ~ wt + hp,
+        data = mt,
+        family = inverse.gaussian("1/mu^2")
+      ),
+      quasipoisson = glm(carb ~ wt + hp, data = mt, family = quasipoisson()),
+      quasibinomial = glm(am ~ wt, data = mt, family = quasibinomial())
+    )
+  )
+}
+
+test_that("a glm with an estimated dispersion is tested on t, as summary()", {
+  fits <- .glm_t_fits()
+  for (fam in names(fits)) {
+    fit <- fits[[fam]]
+    sm <- summary(fit)$coefficients
+    expect_identical(colnames(sm)[3L], "t value", label = fam)
+    dfr <- df.residual(fit)
+    q <- qt(0.975, dfr)
+    b <- as_regression_frame(fit)$coefs
+    b <- b[b$estimate_type == "B", ]
+    expect_identical(b$term, rownames(sm), label = fam)
+    expect_identical(unique(b$test_type), "t", label = fam)
+    expect_equal(b$df, rep(dfr, nrow(sm)), label = fam)
+    expect_equal(
+      b$statistic,
+      unname(sm[, 3L]),
+      tolerance = 1e-12,
+      label = fam
+    )
+    expect_equal(b$p_value, unname(sm[, 4L]), tolerance = 1e-12, label = fam)
+    expect_equal(
+      b$ci_lower,
+      unname(sm[, 1L] - q * sm[, 2L]),
+      tolerance = 1e-12,
+      label = fam
+    )
+    expect_equal(
+      b$ci_upper,
+      unname(sm[, 1L] + q * sm[, 2L]),
+      tolerance = 1e-12,
+      label = fam
+    )
+  }
+  # The statistic column is headed t.
+  out <- table_regression(
+    fits$Gamma,
+    show_columns = c("b", "t", "p"),
+    output = "data.frame"
+  )
+  expect_true("t" %in% names(out))
+  expect_false("z" %in% names(out))
+})
+
+test_that("a glm with a fixed dispersion keeps the z test summary() reports", {
+  fits <- list(
+    binomial = glm(am ~ wt, data = mt, family = binomial()),
+    poisson = glm(carb ~ wt + hp, data = mt, family = poisson())
+  )
+  if (requireNamespace("MASS", quietly = TRUE)) {
+    fits$negbin <- suppressWarnings(MASS::glm.nb(carb ~ wt + hp, data = mt))
+  }
+  for (fam in names(fits)) {
+    fit <- fits[[fam]]
+    sm <- summary(fit)$coefficients
+    expect_identical(colnames(sm)[3L], "z value", label = fam)
+    q <- qnorm(0.975)
+    b <- as_regression_frame(fit)$coefs
+    b <- b[b$estimate_type == "B", ]
+    expect_identical(unique(b$test_type), "z", label = fam)
+    expect_true(all(is.infinite(b$df)), label = fam)
+    expect_equal(b$p_value, unname(sm[, "Pr(>|z|)"]), tolerance = 1e-12)
+    expect_equal(b$ci_lower, unname(sm[, 1L] - q * sm[, 2L]), tolerance = 1e-12)
+  }
+})
+
+test_that("an HC* glm with an estimated dispersion is tested on t", {
+  skip_if_not_installed("sandwich")
+  fit <- .glm_t_fits()$Gamma
+  se <- sqrt(diag(sandwich::vcovHC(fit, type = "HC1")))
+  dfr <- df.residual(fit)
+  p <- 2 * pt(-abs(coef(fit) / se), dfr)
+  b <- as_regression_frame(fit, vcov = "HC1")$coefs
+  b <- b[b$estimate_type == "B", ]
+  expect_identical(unique(b$test_type), "t")
+  expect_equal(b$p_value, unname(p), tolerance = 1e-12)
+  expect_equal(
+    b$ci_upper,
+    unname(coef(fit) + qt(0.975, dfr) * se),
+    tolerance = 1e-12
+  )
+})
+
+test_that("glm AME rows follow the test of the coefficient rows", {
+  skip_if_not_installed("marginaleffects")
+  ame_cols <- c("b", "ame", "ame_se", "ame_ci", "ame_p")
+  # Gamma: t on the residual degrees of freedom.
+  fit <- .glm_t_fits()$Gamma
+  a <- as_regression_frame(fit, show_columns = ame_cols)$coefs
+  a <- a[a$estimate_type == "ame", ]
+  me <- marginaleffects::avg_slopes(fit, df = df.residual(fit))
+  i <- match(a$term, me$term)
+  expect_false(anyNA(i))
+  expect_identical(unique(a$test_type), "t")
+  expect_equal(a$df, rep(df.residual(fit), nrow(a)))
+  expect_equal(a$p_value, me$p.value[i], tolerance = 1e-12)
+  expect_equal(a$ci_lower, me$conf.low[i], tolerance = 1e-12)
+  expect_equal(a$ci_upper, me$conf.high[i], tolerance = 1e-12)
+  # Poisson: z.
+  fit <- glm(carb ~ wt + hp, data = mt, family = poisson())
+  a <- as_regression_frame(fit, show_columns = ame_cols)$coefs
+  a <- a[a$estimate_type == "ame", ]
+  me <- marginaleffects::avg_slopes(fit)
+  i <- match(a$term, me$term)
+  expect_identical(unique(a$test_type), "z")
+  expect_equal(a$p_value, me$p.value[i], tolerance = 1e-12)
+})
+
+test_that("glm standardized rows keep the p-value of their B row", {
+  # Linear rescaling leaves the statistic unchanged, so the beta row of a
+  # term carries the p of its B row, here summary()'s t p-value.
+  fit <- .glm_t_fits()$Gamma
+  sm <- summary(fit)$coefficients
+  for (m in c("posthoc", "refit")) {
+    cf <- as_regression_frame(fit, standardized = m)$coefs
+    beta <- cf[cf$estimate_type == "beta" & cf$term != "(Intercept)", ]
+    expect_equal(
+      beta$p_value,
+      unname(sm[beta$term, "Pr(>|t|)"]),
+      tolerance = 1e-12,
+      label = m
+    )
+  }
+})
+
+test_that("a resampled glm with an estimated dispersion stays on z", {
+  # Resampling rows are always z (df = Inf): the B rows, and so the
+  # standardized and AME rows beside them.
+  skip_if_not_installed("marginaleffects")
+  fit <- .glm_t_fits()$Gamma
+  cf <- suppressWarnings(as_regression_frame(
+    fit,
+    vcov = "jackknife",
+    standardized = "posthoc",
+    show_columns = c("b", "ame", "ame_p")
+  ))$coefs
+  b <- cf[cf$estimate_type == "B" & cf$term != "(Intercept)", ]
+  beta <- cf[cf$estimate_type == "beta" & cf$term != "(Intercept)", ]
+  ame <- cf[cf$estimate_type == "ame", ]
+  expect_identical(unique(b$test_type), "z")
+  expect_true(all(is.infinite(c(b$df, beta$df, ame$df))))
+  expect_identical(unique(ame$test_type), "z")
+  expect_equal(beta$p_value, b$p_value[match(beta$term, b$term)])
+})
+
+test_that("a glm.nb refit is standardized at dispersion 1, on z", {
+  skip_if_not_installed("MASS")
+  # carb is underdispersed for a negative binomial: the Pearson
+  # dispersion of the refit is about 0.46, and a refit tested on it
+  # carried a z of 4.92 for hp where the fit itself gives 3.34.
+  fit <- suppressWarnings(MASS::glm.nb(carb ~ wt + hp, data = mt))
+  # Oracle: glm.nb() refitted on the z-scored predictors (theta does not
+  # depend on the scale of X), tested as summary.negbin() tests it. The
+  # two refits agree to their convergence tolerance, about 1e-5.
+  dz <- mt
+  dz$wt <- as.numeric(scale(mt$wt))
+  dz$hp <- as.numeric(scale(mt$hp))
+  oz <- coef(summary(suppressWarnings(
+    MASS::glm.nb(carb ~ wt + hp, data = dz)
+  )))
+  terms <- c("wt", "hp")
+  cf <- suppressWarnings(as_regression_frame(fit, standardized = "refit"))
+  beta <- cf$coefs[cf$coefs$estimate_type == "beta", ]
+  beta <- beta[match(terms, beta$term), ]
+  expect_true(all(is.infinite(beta$df)))
+  expect_equal(beta$statistic, unname(oz[terms, "z value"]), tolerance = 1e-4)
+  expect_equal(beta$p_value, unname(oz[terms, "Pr(>|z|)"]), tolerance = 1e-4)
+  # The posthoc rescaling keeps the B row's test exactly.
+  ph <- suppressWarnings(as_regression_frame(fit, standardized = "posthoc"))
+  ph <- ph$coefs[ph$coefs$estimate_type == "beta", ]
+  expect_equal(
+    beta$p_value,
+    ph$p_value[match(terms, ph$term)],
+    tolerance = 1e-4
+  )
+  expect_equal(
+    ph$p_value[match(terms, ph$term)],
+    unname(coef(summary(fit))[terms, "Pr(>|z|)"]),
+    tolerance = 1e-12
+  )
+})

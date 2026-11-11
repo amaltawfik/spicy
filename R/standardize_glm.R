@@ -30,7 +30,7 @@
 # Inference under all algebraic methods is exact: the t (z) statistic
 # and p-value are invariant under linear rescaling. CIs are recomputed
 # from the scaled SE using the same critical value as the unscaled
-# inference (z for glm -- df = Inf -- matching `compute_coef_inference`).
+# inference (the test summary() reports, as `compute_coef_inference`).
 
 # ---- Public-internal dispatch --------------------------------------------
 
@@ -210,13 +210,23 @@ standardize_refit_glm <- function(
     weights = weights,
     boot_n = boot_n
   )
+  # glm.nb() fixes the dispersion at 1, and theta is invariant to the
+  # rescaling; but the refit is a glm on negative.binomial(theta), whose
+  # summary() estimates a Pearson dispersion. Its model-based matrix is
+  # therefore taken at dispersion 1, as vcov.negbin() takes it.
+  if (inherits(fit, "negbin") && .is_model_vcov(vcov_type)) {
+    vc_std <- stats::vcov(fit_std, dispersion = 1)
+  }
+  # The test is the one of the ORIGINAL fit: a glm.nb() refit would
+  # otherwise report the t of its estimated dispersion.
   glm_coefs_inference_table(
     fit_std,
     vc_std,
     vcov_type,
     cluster,
     ci_level,
-    intercept_to_na = FALSE
+    intercept_to_na = FALSE,
+    test = .glm_wald_test(fit)
   )
 }
 
@@ -301,7 +311,9 @@ standardize_algebraic_glm <- function(
 
   # Inference reconstruction.
   #
-  # Default: z-asymptotic (df = Inf) -- matches glm convention.
+  # Default: the test of the B rows -- t on df.residual when summary()
+  # reports t (estimated dispersion) under a model-based or HC* matrix,
+  # z (df = Inf) otherwise and under resampling.
   #
   # CR* + cluster: Satterthwaite-corrected df via clubSandwich,
   # parallelling `compute_coef_inference()` for the B row. Without
@@ -309,7 +321,7 @@ standardize_algebraic_glm <- function(
   # Satterthwaite, producing inconsistent CIs / p-values for what is
   # mathematically the same test (linear rescaling preserves the
   # statistic, so df / p / CI must follow the same regime).
-  df_vec <- rep(Inf, length(b))
+  df_vec <- rep(.glm_wald_df(fit, vcov_type), length(b))
   use_satt <- startsWith(vcov_type, "CR") &&
     !is.null(cluster) &&
     spicy_pkg_available("clubSandwich")
@@ -464,7 +476,7 @@ compute_menard_sd_y_star <- function(fit) {
 }
 
 
-# ---- Internal: refit-method coefs table (z-asymptotic for glm) -----------
+# ---- Internal: refit-method coefs table (the test summary() reports) -----
 
 glm_coefs_inference_table <- function(
   fit_std,
@@ -472,7 +484,8 @@ glm_coefs_inference_table <- function(
   vcov_type,
   cluster,
   ci_level,
-  intercept_to_na = TRUE
+  intercept_to_na = TRUE,
+  test = .glm_wald_test(fit_std)
 ) {
   cf <- stats::coef(fit_std)
   rows <- lapply(seq_along(cf), function(i) {
@@ -494,7 +507,7 @@ glm_coefs_inference_table <- function(
         vcov_type,
         cluster,
         ci_level,
-        test = "z"
+        test = test
       )
     }
   })

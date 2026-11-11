@@ -454,6 +454,9 @@ incremental evidence for `smoking`.
 Default change tokens auto-injected: `c("r2_change", "f_change",
 "p_change")` for `lm` (APA hierarchical-regression standard),
 `c("lrt_change", "p_change")` for `glm` (Hosmer & Lemeshow §3.5),
+`c("f_change", "p_change")` for a `glm` whose dispersion is
+estimated (the F test `anova(test = "F")` reports for gaussian,
+Gamma, inverse Gaussian, Tweedie and quasi families),
 `c("aic_change", "bic_change", "lrt_change", "p_change")` for
 mixed-effects fits (`lmer` / `glmer` / `glmmTMB` / `nlme::lme` —
 Pinheiro & Bates 2000 §2.4.1). Customize via `show_fit_stats`;
@@ -478,8 +481,9 @@ The change test follows `vcov`. Under any estimator other than the
 classical one, each pair is tested by a Wald test of the
 coefficients the current model adds, on that model's robust
 matrix, so the block test and the coefficients agree. The row then
-reads *Wald F-change* (*Wald χ² (change)* for `glm`, `coxph` and
-the other likelihood classes), and ΔR² is unchanged. A Wald test of
+reads *Wald F-change* (also for a `glm` whose dispersion is
+estimated; *Wald χ² (change)* for the other `glm` fits, `coxph`
+and the other likelihood classes), and ΔR² is unchanged. A Wald test of
 a large block in a small sample rejects too often, so read it with
 care when many predictors enter at once.
 
@@ -684,16 +688,12 @@ table_regression(
 
 ## Generalized linear models (glm)
 
-`table_regression()` accepts any `glm()` fit. Inference defaults
-to the `z`-asymptotic Wald regime — the convention
-`summary.glm()` applies to fixed-dispersion families (binomial,
-Poisson), shared by Stata's `logit, or` and SPSS `LOGISTIC
-REGRESSION`. One caveat for cross-checking: for families with an
-estimated dispersion (gaussian, Gamma, inverse.gaussian, and the
-quasi- families), `summary.glm()` switches to `t` statistics on
-the residual degrees of freedom, so its p-values run larger than
-the table's `z`-based ones in small samples — there the table
-follows Stata's `glm` default rather than `summary.glm()`. The
+`table_regression()` accepts any `glm()` fit. Its Wald test is the
+one `summary.glm()` reports: `t` on the residual degrees of freedom
+when the dispersion is estimated (gaussian, Gamma, inverse.gaussian
+and the quasi- families), `z` when the family fixes it (binomial,
+Poisson). The confidence interval and the average marginal effects
+use the same distribution. The
 table title becomes family-aware ("Logistic regression", "Poisson
 regression", "Probit regression", …) and the default
 fit-statistics block swaps in `nobs`, `pseudo_r2_mcfadden`,
@@ -879,7 +879,8 @@ as well.
 ### Profile-likelihood CIs: `ci_method = "profile"`
 
 The default is `ci_method = "wald"` (symmetric
-`estimate ± z × SE`, matching `summary.glm`). For `glm` you can
+`estimate ± q × SE`, with `q` the quantile of the coefficient's
+test, t or z as `summary.glm()` reports it). For `glm` you can
 also request `ci_method = "profile"`, which calls
 `MASS::confint.glm()` to compute the profile-likelihood CI —
 asymmetric, obtained by inverting the likelihood-ratio statistic
@@ -896,7 +897,7 @@ One consequence worth naming when combining with
 `exponentiate = TRUE`: the CI bounds are the exponentiated profile
 bounds (asymmetric), while the `SE` column is the delta-method SE on
 the ratio scale — the interval can no longer be reconstructed as
-`estimate ± z × SE`. Both choices are disclosed in the footer, which
+`estimate ± q × SE`. Both choices are disclosed in the footer, which
 is why the table names them rather than leaving the mismatch for a
 careful reader to discover.
 

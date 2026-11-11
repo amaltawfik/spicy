@@ -270,6 +270,25 @@ extract_lm_phase1 <- function(
 
 # ---- Per-coefficient B-row builder ----------------------------------------
 
+# The Wald test of a glm is the one summary() reports, read from the name
+# of its statistic column: "t value" (t on df.residual) when the
+# dispersion is estimated (gaussian, Gamma, inverse.gaussian, quasi-*),
+# "z value" when the family fixes it (binomial, poisson; summary.negbin()
+# for MASS::glm.nb()). Same rule as the fixest frame.
+.glm_wald_test <- function(fit) {
+  if ("t value" %in% colnames(stats::coef(summary(fit)))) "t" else "z"
+}
+
+# Degrees of freedom of that test for the glm rows built outside
+# compute_coef_inference() (AME, algebraic beta): df.residual under t,
+# Inf under z and under a resampling matrix, whose rows are always z.
+.glm_wald_df <- function(fit, vcov_type) {
+  df <- stats::df.residual(fit)
+  t_test <- identical(.glm_wald_test(fit), "t") &&
+    !vcov_type %in% c("bootstrap", "jackknife")
+  if (t_test && is.finite(df) && df > 0) df else Inf
+}
+
 # Builds one row per fitted coefficient with estimate_type = "B".
 # Singular coefs (NA in coef(fit)) get NA-shaped rows with
 # is_singular = TRUE; the renderer turns these into en-dashes (Q22).
@@ -326,6 +345,8 @@ build_b_rows <- function(
     }
   }
 
+  wald_test <- if (inherits(fit, "glm")) .glm_wald_test(fit) else "t"
+
   rows <- lapply(seq_along(cf), function(i) {
     nm <- coef_names[i]
     fmeta <- factor_meta[[nm]] # NULL if not a factor contrast
@@ -351,9 +372,8 @@ build_b_rows <- function(
         factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
       )
     } else {
-      # Inference reference distribution follows the ESTIMATOR, not the class:
-      # glm uses z-asymptotic Wald (matches summary.glm / Stata logit / SPSS
-      # LOGISTIC); lm uses t with df.residual (or Satterthwaite df under CR*).
+      # lm uses t with df.residual (or Satterthwaite df under CR*); glm
+      # uses the test summary() reports (.glm_wald_test()).
       inf <- compute_coef_inference(
         fit = fit,
         coef_idx = i,
@@ -361,7 +381,7 @@ build_b_rows <- function(
         vcov_type = vcov_type,
         cluster = cluster,
         ci_level = ci_level,
-        test = if (inherits(fit, "glm")) "z" else "t",
+        test = wald_test,
         ci_method = ci_method
       )
       ci_low_i <- inf$ci_lower

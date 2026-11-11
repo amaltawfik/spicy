@@ -648,8 +648,11 @@ extract_ame_marginaleffects <- function(
 # (response-scale AME = E[link^-1(eta)] is non-linear in beta). Inference
 # regime by vcov:
 #
-#   * classical / HC* / bootstrap / jackknife
-#       -> z-asymptotic (df = Inf), matching summary.glm convention.
+#   * classical / HC*
+#       -> the test summary.glm() reports: t on df.residual when the
+#         dispersion is estimated, z (df = Inf) otherwise.
+#   * bootstrap / jackknife
+#       -> z-asymptotic (df = Inf), as the coefficient rows.
 #
 #   * CR0-CR3 with cluster
 #       -> CR2 SE from our `vc`; df from clubSandwich::coef_test
@@ -680,14 +683,17 @@ extract_ame_glm <- function(
     # nocov end
   }
 
-  # Compute AME on the response scale with our vcov; df = Inf so we
-  # get z-asymptotic SE / CI / p baseline. For CR* we override below.
+  # Compute AME on the response scale with our vcov, on the reference
+  # distribution of the coefficient rows: t on df.residual when summary()
+  # reports t (estimated dispersion) under a model-based or HC* matrix, z
+  # otherwise and under resampling. For CR* we override below.
+  ame_df <- .glm_wald_df(fit, vcov_type)
   ame_table <- tryCatch(
     marginaleffects::avg_slopes(
       fit,
       vcov = vc,
       conf_level = ci_level,
-      df = Inf,
+      df = ame_df,
       # Weighted fit: the AME is the weighted average of the unit-level
       # slopes (Rd Weights section); equal weights otherwise.
       wts = .spicy_ame_fit_wts(fit) %||% FALSE
@@ -772,8 +778,8 @@ extract_ame_glm <- function(
     ci_hi_i <- ame_table$conf.high[i]
     stat_i <- ame_table$statistic[i]
     p_i <- ame_table$p.value[i]
-    df_i <- Inf
-    test_type_i <- "z"
+    df_i <- ame_df
+    test_type_i <- if (is.finite(ame_df)) "t" else "z"
 
     if (!is.null(df_satt_map) && term_id %in% names(df_satt_map)) {
       df_i <- unname(df_satt_map[term_id])

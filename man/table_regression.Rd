@@ -244,7 +244,7 @@ would mislabel the estimate. Report response-scale effects for
 those models via the AME column instead. Note that the displayed
 CI is the link-scale CI with exponentiated endpoints (Wald or
 profile per \code{ci_method}), so it is asymmetric around the ratio
-and cannot be reconstructed as \verb{estimate ± z × SE}; the
+and cannot be reconstructed as \verb{estimate ± q × SE}; the
 delta-method SE follows the Stata convention (\verb{[R] logistic},
 Methods and formulas: \verb{se(OR) = OR × se(b)}) and the log-scale
 CI endpoints carry the uncertainty more faithfully than this SE.
@@ -1192,7 +1192,8 @@ en-dashes the inappropriate cell); Cox fits get
 structure, Stata \code{xtgee}-header style). When \code{nested = TRUE}, the
 class-aware default is extended with change tokens
 (\code{c("r2_change", "f_change", "p_change")} for lm,
-\code{c("lrt_change", "p_change")} for glm). The order of tokens in
+\code{c("lrt_change", "p_change")} for glm, \code{c("f_change", "p_change")}
+for a glm whose dispersion is estimated). The order of tokens in
 \code{show_fit_stats} controls the order of the rows.
 }
 }
@@ -1282,8 +1283,12 @@ compare standard errors side-by-side.
 Inferential regimes for \code{lm} / \code{glm} (B and AME share the same
 regime):
 \itemize{
-\item \code{classical}, \verb{HC*} -> t with \code{df.residual} (\code{lm}) /
-z-asymptotic (\code{glm}).
+\item \code{classical}, \verb{HC*} -> t with \code{df.residual} (\code{lm}). For
+\code{glm}, the test \code{summary()} of the model reports: t on the
+residual degrees of freedom when the dispersion is estimated
+(gaussian, Gamma, inverse Gaussian, Tweedie,
+\code{negative.binomial(theta)} and the quasi families), z otherwise
+(binomial, Poisson, \code{MASS::glm.nb}).
 \item \code{bootstrap}, \code{jackknife} -> z asymptotic.
 \item \code{CR0}-\code{CR3} -> t with \strong{Satterthwaite-corrected df} (B
 via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
@@ -1293,7 +1298,7 @@ via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
 \code{spicy_fallback} warning.
 }
 For other classes the t-vs-z axis follows the estimator's native
-reference distribution (e.g. \code{glm}, \code{glmmTMB}, survival, ordinal,
+reference distribution (e.g. \code{glmmTMB}, survival, ordinal,
 \code{betareg}, \code{mlogit} use z; \code{lm}, \code{lme}, \code{lmer}, \code{rms::ols} use t).
 \subsection{Multinomial models: outcome categories as columns}{
 
@@ -1616,6 +1621,14 @@ Default change tokens auto-injected when \code{show_fit_stats} is
 \item All-lm (and \code{nls}): \code{c("r2_change", "f_change", "p_change")} -- APA hierarchical regression standard.
 \item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
 Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+\item All-glm whose dispersion is estimated (gaussian, Gamma,
+inverse Gaussian, Tweedie, quasi families), and the \code{feglm}
+fits of these families: \code{c("f_change", "p_change")}, the F test
+\code{anova(test = "F")} reports, \eqn{F = (\Delta D / q) /
+    \hat\phi}{F = (Delta D / q) / phi} on \eqn{(q, df)}, with
+\eqn{\hat\phi}{phi} the dispersion and \eqn{df} the residual
+degrees of freedom of the larger model. \code{"lrt_change"} is
+refused for such a hierarchy.
 \item Any other hierarchy that carries a likelihood
 (\code{survreg}, \code{polr}, \code{clm}, \code{coxph}, \code{gls}, \code{betareg},
 \code{multinom}, \code{fixest}, ...): the same
@@ -1629,7 +1642,8 @@ To customize, pass the change tokens directly to
 \code{show_fit_stats}. The variance-explained change tokens
 (\code{"r2_change"}, \code{"adj_r2_change"}, \code{"f_change"},
 \code{"f2_change"}) raise \code{spicy_invalid_input} on any hierarchy
-whose nested comparison is a likelihood-ratio test -- \code{glm},
+whose nested comparison is a likelihood-ratio test -- \code{glm}
+(\code{"f_change"} excepted when its dispersion is estimated),
 and equally every other likelihood class and the
 mixed-effects families: that comparison reports a chi-square,
 not a variance-explained change, and the message points at
@@ -1639,7 +1653,8 @@ them too, and \code{"lrt_change"} with them, pointing at
 least-squares tokens.
 
 \strong{The change test follows \code{vcov}.} Under the classical \code{vcov} the
-change test is the partial F, the likelihood-ratio test or
+change test is the partial F, the likelihood-ratio test, the F test
+\code{anova()} reports for a pair whose dispersion is estimated, or
 \code{quantreg::anova.rq()}'s Wald test, as above. Under any other
 \code{vcov}, and under the classical token when the fit carries a robust
 variance of its own, it is the Wald test of the coefficients the
@@ -1653,7 +1668,8 @@ coefficient tests:
 \eqn{(q, df)} degrees of freedom, the convention of
 \code{lmtest::waldtest(test = "F")} and \code{car::linearHypothesis()}.
 It applies to \code{lm} under \code{"HC0"}-\code{"HC5"} (and \code{"CR1S"}, on
-\eqn{G - 1} degrees of freedom), \code{rms::ols} under \code{"CR0"} or
+\eqn{G - 1} degrees of freedom), \code{glm} with an estimated
+dispersion under \code{"HC0"}-\code{"HC5"}, \code{rms::ols} under \code{"CR0"} or
 after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
 \code{"ker"}, and a fixest fit estimated with a non-iid vcov whose
 coefficient tests are t (on fixest's own degrees of freedom, as
@@ -1667,8 +1683,9 @@ coefficient tests.
 \item \emph{Chi-square}, in a row labeled "Wald \eqn{\chi^2}{chi^2}
 (change)" that replaces the likelihood-ratio row: \eqn{W} on
 \eqn{q} degrees of freedom, the convention of
-\code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} and
-\code{glm.nb} under \code{"HC0"}-\code{"HC5"}, \code{lm} and \code{glm} under
+\code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} with a
+fixed dispersion and \code{glm.nb} under \code{"HC0"}-\code{"HC5"}, \code{lm} and
+\code{glm} under
 \code{"bootstrap"} and \code{"jackknife"}, \code{rq} under \code{"bootstrap"},
 \code{glmmTMB} under \code{"CR0"} and \code{"CR1"},
 under \code{"CR0"} to \code{coxph} and \code{rms::lrm} / \code{cph} / \code{Glm},

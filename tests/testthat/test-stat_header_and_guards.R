@@ -27,7 +27,7 @@ test_that("statistic header: z for glm, t for lm, per-model in mixed tables", {
   )
 })
 
-test_that("statistic header: z for coxph and Gamma-log glm", {
+test_that("statistic header: z for coxph, t for a Gamma-log glm", {
   skip_if_not_installed("survival")
   cx <- survival::coxph(
     survival::Surv(time, status) ~ age,
@@ -39,8 +39,10 @@ test_that("statistic header: z for coxph and Gamma-log glm", {
   set.seed(1)
   d <- data.frame(y = rgamma(100, 2, 0.5), x = rnorm(100))
   gg <- glm(y ~ x, data = d, family = Gamma(link = "log"))
+  # summary() tests a Gamma fit on t (its dispersion is estimated).
+  expect_identical(colnames(summary(gg)$coefficients)[3L], "t value")
   expect_true(
-    "z" %in% names(table_regression(gg, show_columns = c("b", "t", "p")))
+    "t" %in% names(table_regression(gg, show_columns = c("b", "t", "p")))
   )
 })
 

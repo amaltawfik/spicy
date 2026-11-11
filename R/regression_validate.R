@@ -1544,6 +1544,32 @@ validate_class_appropriate_tokens <- function(
     logical(1)
   )
   all_glm <- length(eff_models) > 0L && all(glm_flags)
+  # glm / feglm fits whose dispersion is estimated: their nested test is
+  # the F test of anova(), carried by f_change, and not a chi-square.
+  # Asked only when one of the two tokens is requested (summary() per fit).
+  all_disp <- any(c("lrt_change", "f_change") %in% show_fit_stats) &&
+    length(eff_models) > 0L &&
+    all(vapply(eff_models, has_estimated_dispersion, logical(1)))
+  if (all_disp && "lrt_change" %in% show_fit_stats) {
+    spicy_abort(
+      c(
+        paste0(
+          "Token `\"lrt_change\"` in `show_fit_stats` is not computed for ",
+          "models whose dispersion is estimated."
+        ),
+        "i" = paste0(
+          "Their nested test is the F test `anova()` reports, on the ",
+          "deviance change over the estimated dispersion."
+        ),
+        "i" = paste0(
+          "Use `\"f_change\"` + `\"p_change\"`, which is also what ",
+          "`nested = TRUE` selects for this hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   all_lm <- length(eff_models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
@@ -1581,7 +1607,7 @@ validate_class_appropriate_tokens <- function(
         # Nested change variants of the above
         "r2_change",
         "adj_r2_change",
-        "f_change",
+        if (!all_disp) "f_change",
         "f2_change"
       )
     )
@@ -1631,7 +1657,7 @@ validate_class_appropriate_tokens <- function(
   # with no change token in it).
   bad_fit <- intersect(
     show_fit_stats,
-    c("r2_change", "adj_r2_change", "f_change", "f2_change")
+    c("r2_change", "adj_r2_change", if (!all_disp) "f_change", "f2_change")
   )
   if (length(bad_fit) > 0L && !all_glm && all_likelihood_path(eff_models)) {
     spicy_abort(

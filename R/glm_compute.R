@@ -1,7 +1,8 @@
 # Internal glm-specific computation backbone for table_regression().
 # Mirrors R/lm_compute.R. Contents:
 #   * Family / link helpers (title prefix, exponentiate header)
-#   * Per-coef inference: z-asymptotic Wald, with CR* Satterthwaite
+#   * Per-coef inference: the Wald test summary() reports (t when the
+#     dispersion is estimated, z otherwise), with CR* Satterthwaite
 #     branch via clubSandwich
 #   * Pseudo-R^2 family: McFadden, Nagelkerke, Tjur
 #   * Term-level partial chi-square via the Type-II nested LRT

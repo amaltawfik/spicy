@@ -191,9 +191,10 @@ as_regression_frame.glm <- function(fit, ...) {
     p_value = as.numeric(legacy_coefs$p_value),
     ci_lower = as.numeric(legacy_coefs$ci_low),
     ci_upper = as.numeric(legacy_coefs$ci_high),
-    # Optional per-row test_type ("t" for lm, "z" for glm, NA for ref /
-    # singular / partial / AME rows). Read by broom::tidy.spicy_regression_table
-    # and downstream consumers; preserved as a string column.
+    # Per-row test_type: "t" for lm, "t" or "z" for glm as its summary()
+    # reports, on the B and AME rows; NA for reference, singular, beta
+    # and partial rows. Read by broom::tidy.spicy_regression_table and
+    # downstream consumers; preserved as a string column.
     test_type = as.character(legacy_coefs$test_type),
     stringsAsFactors = FALSE
   )
