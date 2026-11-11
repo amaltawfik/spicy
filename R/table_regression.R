@@ -465,7 +465,13 @@
 #'     produced -- and spicy never overwrites it. A `vcov` request is
 #'     refused; set the estimator through the fitting package instead
 #'     (`se_type =` for estimatr; `vcov =` at estimation or in
-#'     `summary()` for fixest).}
+#'     `summary()` for fixest). With IID errors, fixest's default
+#'     small-sample correction ([fixest::ssc()]) multiplies the
+#'     standard errors of a `feglm()` fit by sqrt((n - 1) / (n - K))
+#'     over those of its `glm()` twin with the fixed effects as
+#'     dummies (a `feols()` fit already matches `lm()`), and
+#'     `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
+#'     `glm()` values.}
 #'   \item{`glmmTMB`}{`classical`, `"CR0"` and `"CR1"`, from glmmTMB's
 #'     own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
 #'     coefficients, the zero-inflation and dispersion blocks and the

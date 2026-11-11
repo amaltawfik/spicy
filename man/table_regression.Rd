@@ -1395,7 +1395,13 @@ fits carry the variance they were computed with -- estimatr's
 produced -- and spicy never overwrites it. A \code{vcov} request is
 refused; set the estimator through the fitting package instead
 (\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
-\code{summary()} for fixest).}
+\code{summary()} for fixest). With IID errors, fixest's default
+small-sample correction (\code{\link[fixest:ssc]{fixest::ssc()}}) multiplies the
+standard errors of a \code{feglm()} fit by sqrt((n - 1) / (n - K))
+over those of its \code{glm()} twin with the fixed effects as
+dummies (a \code{feols()} fit already matches \code{lm()}), and
+\code{summary(fit, ssc = fixest::ssc(K.adj = FALSE))} gives the
+\code{glm()} values.}
 \item{\code{glmmTMB}}{\code{classical}, \code{"CR0"} and \code{"CR1"}, from glmmTMB's
 own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
 coefficients, the zero-inflation and dispersion blocks and the

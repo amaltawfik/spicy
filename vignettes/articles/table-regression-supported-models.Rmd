@@ -233,7 +233,13 @@ Family by family:
   they were computed with; `fixest` fits keep their estimator (the
   footer carries fixest's own label -- clustered, Newey-West,
   Conley, ...; fixest's "IID" is normalized to "Classical"). spicy's
-  `HC*` / `CR*` tokens are refused for both.
+  `HC*` / `CR*` tokens are refused for both. With IID errors,
+  fixest's default small-sample correction (`fixest::ssc()`)
+  multiplies the standard errors of a `feglm()` fit by
+  sqrt((n - 1) / (n - K)) over those of its `glm()` twin with the
+  fixed effects as dummies (a `feols()` fit already matches `lm()`),
+  and `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
+  `glm()` values.
 * **Robust by construction** -- `svyglm` is design-based (Taylor /
   replicate): the design variance *is* the robust variance, and
   clustering belongs in the design itself

@@ -2123,6 +2123,11 @@ spicy_fmt <- function(key, ...) {
 #' numbers, since Excel would otherwise re-punctuate a numeric cell
 #' with the viewer's own locale.
 #'
+#' Some French notes quote a name between guillemets, which the default
+#' LaTeX templates of Quarto and R Markdown set under every engine; a
+#' hand-written preamble compiled with pdflatex needs
+#' `\usepackage[T1]{fontenc}`, without which LaTeX stops with an error.
+#'
 #' @param language A language name (`"en"`, `"fr"`), or `NULL` (the
 #'   default) to report the labels in force. Any
 #'   `options(spicy.labels)` override applies either way.
