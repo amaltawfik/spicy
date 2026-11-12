@@ -99,6 +99,8 @@
   respondents, `n` is their observed count and, with `by`, each item
   gets a design-based test (`chisq_statistic`, Rao-Scott by default),
   Holm-adjusted by default. `table_battery()` points a design to it.
+  A cell the design cannot estimate shows a dash, with a warning and a
+  note sentence, as in `table_categorical_svy()`.
 
 * `table_categorical()` and `table_categorical_svy()` gain
   `factor_levels`, as in `freq()`: `"all"` shows the declared levels
@@ -163,6 +165,26 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_categorical_svy()` and `table_continuous_svy()` say why a cell
+  shows a dash. Under the default `options(survey.lonely.psu = "fail")`,
+  a stratum with a single primary sampling unit stops survey, and the
+  table showed dashes without a word. The call now warns once, quoting
+  survey's messages (class `spicy_svy_estimation_failed`), and the note
+  says "A dash marks an estimate the design could not provide: a stratum
+  has a single primary sampling unit." Any other failure on a shown cell
+  gets "A dash marks an estimate the design could not provide."
+
+* `table_categorical_svy(proportion_ci = TRUE)` under `ci_method = "logit"`
+  or `"likelihood"` leaves the percentage CIs of a domain whose weights
+  change sign blank, warns (class `spicy_negative_weights_no_ci`) naming
+  the five methods that accept negative weights, and says so in the
+  note. The CIs were dashes with no explanation.
+
+* `table_categorical_svy(proportion_ci = TRUE, drop_na = TRUE)` gives the
+  percentage CIs of a variable with missing values on a calibrated or
+  post-stratified design. Every interval was a dash, under every
+  `ci_method`.
 
 * `table_regression(standardized = "refit")` on a `MASS::glm.nb()` fit
   tests the standardized coefficients at a dispersion of 1, as the fit
