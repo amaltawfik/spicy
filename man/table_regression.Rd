@@ -925,8 +925,10 @@ format-specific object: \code{gt_tbl}, \code{flextable}, \code{tinytable}; for
 \code{"data.frame"} the displayed table as a \code{data.frame} (see
 \code{\link[=as.data.frame.spicy_regression_table]{as.data.frame.spicy_regression_table()}}); for \code{"long"} a \code{tbl_df}
 (\code{model_id}, \code{outcome}, \code{term}, \code{estimate_type}, \code{estimate},
-\code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic}, \code{df}, \code{p.value},
-\code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...); the file
+\code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic}, \code{df},
+\code{df.residual} (the second df of an F test, \code{NA} elsewhere),
+\code{p.value}, \code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...);
+the file
 path, invisibly, for \code{"excel"} and \code{"word"}; the table, invisibly,
 for \code{"clipboard"}. The two data frames carry the note as printed in
 \code{attr(x, "note")}. With \code{layout = "stacked"}, the stacked table of
@@ -999,8 +1001,11 @@ chi-square built from the same Type-II hypothesis -- a
 deliberate departure from the Type-III default of SAS PROC
 MIXED and \code{lmerTest} (the two conventions coincide for models
 without interactions). Rendered as \code{value (df)} to
-disambiguate factor terms (k-1 df) from numeric terms (1 df);
-the residual df of the F are given in the table note.
+disambiguate factor terms (k-1 df) from numeric terms (1 df),
+and the partial F as \code{F (q, df)} with both of its degrees of
+freedom, \code{3.45 (2, 28)}, as Stata and SAS report them: each cell
+carries the residual df of its own model, and the note defines
+the statistic only.
 \item Variance explained per fit -- \code{lm} only: \code{"r2"},
 \code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
 populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each

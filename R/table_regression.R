@@ -71,8 +71,11 @@
 #'     deliberate departure from the Type-III default of SAS PROC
 #'     MIXED and `lmerTest` (the two conventions coincide for models
 #'     without interactions). Rendered as `value (df)` to
-#'     disambiguate factor terms (k-1 df) from numeric terms (1 df);
-#'     the residual df of the F are given in the table note.
+#'     disambiguate factor terms (k-1 df) from numeric terms (1 df),
+#'     and the partial F as `F (q, df)` with both of its degrees of
+#'     freedom, `3.45 (2, 28)`, as Stata and SAS report them: each cell
+#'     carries the residual df of its own model, and the note defines
+#'     the statistic only.
 #'   \item Variance explained per fit -- `lm` only: `"r2"`,
 #'     `"adj_r2"`. Like `"n"`, these are *per-fit* columns: they are
 #'     populated by [table_regression_uv()] screens, where each
@@ -1779,8 +1782,10 @@
 #'   `"data.frame"` the displayed table as a `data.frame` (see
 #'   [as.data.frame.spicy_regression_table()]); for `"long"` a `tbl_df`
 #'   (`model_id`, `outcome`, `term`, `estimate_type`, `estimate`,
-#'   `std.error`, `conf.low`, `conf.high`, `statistic`, `df`, `p.value`,
-#'   `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the file
+#'   `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
+#'   `df.residual` (the second df of an F test, `NA` elsewhere),
+#'   `p.value`, `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...);
+#'   the file
 #'   path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
 #'   for `"clipboard"`. The two data frames carry the note as printed in
 #'   `attr(x, "note")`. With `layout = "stacked"`, the stacked table of

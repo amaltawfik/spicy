@@ -954,11 +954,11 @@ build_column_spec <- function(
       header_short = lab("symbol_chi_sq")
     ),
     # Its twin for an lm and a glm whose dispersion is estimated: the
-    # partial F, bundled the same way, "value (q)". The residual df, one
-    # per model, is given by the abbreviation note.
+    # partial F, bundled with both of its df, "value (q, df)", as Stata
+    # prints F(q, df) and SAS its Num DF and Den DF.
     partial_f = list(
       estimate_type = "partial_f",
-      fields = c("estimate", "df"),
+      fields = c("estimate", "df", "df_residual"),
       header_short = lab("symbol_f")
     )
   )
@@ -1283,18 +1283,28 @@ format_cell_value <- function(
   # Compact "value (df)" rendering for partial_chi2 (Phase 3 Step 3) \u2013
   # the `car::Anova` display convention. Df sits in parens to
   # disambiguate factor terms (k-1 df) from numeric terms (1 df)
-  # without burning an extra column.
+  # without burning an extra column. The partial F adds its residual
+  # df, "value (q, df)". Integers, without a thousands separator.
   if (
-    length(cs$fields) == 2L &&
-      identical(cs$fields, c("estimate", "df"))
+    length(cs$fields) >= 2L &&
+      identical(cs$fields[1:2], c("estimate", "df"))
   ) {
     est <- long_row$estimate[1]
-    df_val <- long_row$df[1]
     if (is.na(est)) {
       return(spicy_str("cell_undefined"))
     }
+    df_val <- vapply(
+      cs$fields[-1L],
+      function(f) as.numeric(long_row[[f]][1]),
+      numeric(1)
+    )
+    df_val <- df_val[!is.na(df_val)]
     val_str <- format_number(est, digits_to_use, decimal_mark)
-    df_str <- if (is.na(df_val)) "" else paste0(" (", as.integer(df_val), ")")
+    df_str <- if (length(df_val) == 0L) {
+      ""
+    } else {
+      paste0(" (", paste(as.integer(round(df_val)), collapse = ", "), ")")
+    }
     return(paste0(val_str, df_str))
   }
 

@@ -449,6 +449,7 @@ as_regression_frame.default <- function(fit, ...) {
 # Optional `coefs` columns (type-checked if present):
 #   outcome_level   chr
 #   df              dbl
+#   df_residual     dbl  (the second df of an F; NA elsewhere)
 #   statistic       dbl
 #   p_value         dbl
 #   pd              dbl
@@ -635,6 +636,7 @@ validate_regression_frame <- function(frame) {
   optional_specs <- list(
     outcome_level = "character",
     df = "double",
+    df_residual = "double",
     statistic = "double",
     p_value = "double",
     pd = "double",

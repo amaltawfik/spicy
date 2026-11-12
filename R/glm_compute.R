@@ -785,6 +785,7 @@ compute_partial_f_for_term <- function(fit, term_label, phi = NULL) {
   list(
     f = f,
     df = as.integer(df1),
+    df_residual = df2,
     p_value = stats::pf(f, df1, df2, lower.tail = FALSE)
   )
 }

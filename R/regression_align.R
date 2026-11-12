@@ -218,6 +218,13 @@ align_frames <- function(
       } else {
         rep(NA_real_, nrow(cf))
       }
+      # Optional second df of an F test (the partial F of an lm or of a
+      # glm with an estimated dispersion, the lm effect sizes); NA elsewhere.
+      df_residual_col <- if (!is.null(cf$df_residual)) {
+        as.numeric(cf$df_residual)
+      } else {
+        rep(NA_real_, nrow(cf))
+      }
       data.frame(
         model_id = rep(model_ids[i], nrow(cf)),
         outcome = rep(frames[[i]]$info$dv, nrow(cf)),
@@ -229,6 +236,7 @@ align_frames <- function(
         ci_high = cf$ci_upper,
         statistic = cf$statistic,
         df = cf$df,
+        df_residual = df_residual_col,
         p_value = cf$p_value,
         test_type = test_type_col,
         n_obs = n_obs_col,

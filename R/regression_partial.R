@@ -169,7 +169,10 @@ extract_partial_effect_rows <- function(
         is_reference = FALSE,
         factor_term = fmeta$factor_term %||% NA_character_,
         factor_level = fmeta$factor_level %||% NA_character_,
-        factor_level_pos = fmeta$factor_level_pos %||% NA_integer_
+        factor_level_pos = fmeta$factor_level_pos %||% NA_integer_,
+        # The second df of the F every row of the term is tested on; the
+        # partial F cell prints both, "7.29 (2, 28)".
+        df_residual = eff$df2
       )
     }
   }
@@ -270,7 +273,8 @@ compute_partial_effects_for_term <- function(
 # emit one row per non-reference dummy, all sharing the same term-level
 # statistic (the renderer collapses to a single display per term via
 # the same factor-term grouping used for partial_f2). The df column
-# carries the term's q; the residual df of the F is the model's.
+# carries the term's q; the residual df of the F, the model's, goes in
+# df_residual.
 extract_partial_test_rows_glm <- function(
   fit,
   model_id,
@@ -344,7 +348,8 @@ extract_partial_test_rows_glm <- function(
       is_intercept = FALSE,
       is_reference = FALSE,
       factor_term = fmeta$factor_term %||% NA_character_,
-      factor_level = fmeta$factor_level %||% NA_character_
+      factor_level = fmeta$factor_level %||% NA_character_,
+      df_residual = if (is_f) eff$df_residual else NA_real_
     )
   }
   if (length(rows) == 0L) {

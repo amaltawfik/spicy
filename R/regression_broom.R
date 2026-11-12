@@ -35,13 +35,16 @@
 #' `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2",
 #' "partial_chi2", "partial_f")`; the two term-level tests carry their
 #' term's df in `df` and their test in `test_type` (`"X2"`, `"F"`).
+#' `df.residual` holds the residual df, the second df of the test, on the
+#' rows whose test is an F (the partial F and the effect sizes built on
+#' it), and is `NA` except on those rows.
 #' `outcome_level` names the response category of per-category rows
 #' (ordinal / multinomial average marginal effects) and is `NA` for
 #' single-outcome models. Reference-row placeholders (factor reference
 #' levels) and singular coefficients (NA estimates) are dropped. Columns:
 #' `model_id, outcome, outcome_level, term, estimate_type, estimate,
-#' std.error, conf.low, conf.high, statistic, df, p.value, test_type,
-#' is_intercept, factor_term, factor_level`.
+#' std.error, conf.low, conf.high, statistic, df, df.residual, p.value,
+#' test_type, is_intercept, factor_term, factor_level`.
 #'
 #' `glance()` returns one row per `(model_id, outcome)` with
 #' model-level statistics. Columns: `model_id, outcome, nobs,
@@ -86,6 +89,12 @@ tidy.spicy_regression_table <- function(x, ...) {
   } else {
     rep(NA_character_, nrow(long))
   }
+  # The second df of an F; NA as well for a frame without it.
+  df_residual <- if (!is.null(long$df_residual)) {
+    as.numeric(long$df_residual)
+  } else {
+    rep(NA_real_, nrow(long))
+  }
   out <- data.frame(
     model_id = long$model_id,
     outcome = long$outcome,
@@ -98,6 +107,7 @@ tidy.spicy_regression_table <- function(x, ...) {
     conf.high = long$ci_high,
     statistic = long$statistic,
     df = long$df,
+    df.residual = df_residual,
     p.value = long$p_value,
     test_type = long$test_type,
     is_intercept = long$is_intercept,
@@ -319,6 +329,7 @@ empty_tidy_long <- function() {
     conf.high = numeric(0),
     statistic = numeric(0),
     df = numeric(0),
+    df.residual = numeric(0),
     p.value = numeric(0),
     test_type = character(0),
     is_intercept = logical(0),

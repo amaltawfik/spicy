@@ -150,6 +150,7 @@ as_regression_frame.glm <- function(fit, ...) {
 #   ci_high         -> ci_upper  (renamed)
 #   statistic       -> statistic
 #   df              -> df
+#   df_residual     -> df_residual (the second df of an F)
 #   p_value         -> p_value
 #   test_type       -> dropped (not in schema; legacy footer concern)
 #   is_singular     -> dropped (legacy renderer marker)
@@ -187,6 +188,7 @@ as_regression_frame.glm <- function(fit, ...) {
     estimate = as.numeric(legacy_coefs$estimate),
     std_error = as.numeric(legacy_coefs$se),
     df = as.numeric(legacy_coefs$df),
+    df_residual = as.numeric(legacy_coefs$df_residual),
     statistic = as.numeric(legacy_coefs$statistic),
     p_value = as.numeric(legacy_coefs$p_value),
     ci_lower = as.numeric(legacy_coefs$ci_low),

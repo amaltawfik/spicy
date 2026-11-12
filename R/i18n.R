@@ -263,6 +263,10 @@
   header_risk_diff = "dRisk (%s)",
   header_risk_diff_no_horizon = "dRisk",
   header_ame = "AME",
+  # The degrees of freedom of a term-level test, in the engines that give
+  # them a column of their own: the term's, and the residual df of an F.
+  header_df = "df",
+  header_df_residual = "residual df",
   header_ci_label_confidence = "CI",
   header_ci_label_credible = "CrI",
   header_ci_label_hdi = "HDI",
@@ -728,11 +732,8 @@
   # reads. One hole in `_beta_method`: one of the `note_beta_*` glosses,
   # each led by its `standardized` token (an identifier). The chi-squared
   # of a mixed model is a Wald test, that of a glm a likelihood-ratio test.
-  # The partial F of an lm or of a glm whose dispersion is estimated
-  # carries the residual df of its test (the cell shows the term's): one
-  # hole, the number, or the numbers of the models in order joined by
-  # `.join_and()`; the bare definition when a frame pools several fits.
-  # One residual degree of freedom takes the `_one` key, with no hole.
+  # The partial F of an lm or of a glm whose dispersion is estimated is
+  # defined bare: its cell carries both of its df, "3.45 (2, 28)".
   abbrev_iqr_width = "interquartile range (%s \u2212 %s)",
   abbrev_beta_method = "standardized coefficient (%s)",
   abbrev_f2_partial = "Cohen's partial f\u00B2",
@@ -741,9 +742,6 @@
   abbrev_chi2_lrt = "partial likelihood-ratio chi-squared",
   abbrev_chi2_wald = "partial Wald chi-squared",
   abbrev_f_partial = "partial F statistic",
-  abbrev_f_partial_df = "partial F statistic on %s residual degrees of freedom",
-  abbrev_f_partial_df_one = "partial F statistic on 1 residual degree of freedom",
-  abbrev_f_partial_df_unequal = "partial F statistic on %s residual degrees of freedom respectively",
   abbrev_ame_category = "average marginal effect on a response-category probability",
   abbrev_pd = "probability of direction",
   abbrev_mcse = "Monte Carlo standard error of the posterior median",

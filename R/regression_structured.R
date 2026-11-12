@@ -367,8 +367,10 @@ build_structured_body <- function(
   #       2 cols, names = "<col_name>: LL" and "<col_name>: UL"
   #       (or just "LL"/"UL" if user-friendly; we use the full prefix
   #       to keep multi-model disambiguation)
-  #   * partial_chi2 / partial_f (fields = c("estimate","df")):
+  #   * partial_chi2 (fields = c("estimate","df")):
   #       2 cols, names = "<col_name>" (est) and "<col_name>: df"
+  #   * partial_f (fields = c("estimate","df","df_residual")): the same
+  #       2 cols, then "<col_name>: residual df"
   # ci_label mirrors the console header: "CI" for frequentist tables,
   # "CrI" / "HDI" for all-Bayesian ones -- the rich engines (gt /
   # flextable / tinytable / Excel) display this string as the interval
@@ -406,11 +408,11 @@ build_structured_body <- function(
         ci_label = ci_label_str
       )
     } else if (
-      length(cs$fields) == 2L &&
-        identical(cs$fields, c("estimate", "df"))
+      length(cs$fields) >= 2L &&
+        identical(cs$fields[1:2], c("estimate", "df"))
     ) {
-      # partial_chi2 / partial_f: keep estimate + df as separate
-      # numeric cols.
+      # partial_chi2 / partial_f: keep estimate + df (and the residual
+      # df of the F) as separate numeric cols.
       est_name <- cs$col_name
       df_name <- paste0(cs$col_name, ": df")
       expanded[[length(expanded) + 1L]] <- list(
@@ -424,6 +426,14 @@ build_structured_body <- function(
         cs = cs,
         is_df = TRUE
       )
+      if ("df_residual" %in% cs$fields) {
+        expanded[[length(expanded) + 1L]] <- list(
+          name = paste0(cs$col_name, ": residual df"),
+          source = "df_residual",
+          cs = cs,
+          is_df = TRUE
+        )
+      }
     } else {
       # Single field.
       expanded[[length(expanded) + 1L]] <- list(
@@ -474,7 +484,7 @@ build_structured_body <- function(
     } else {
       digits
     }
-    # df column inside partial_chi2 / partial_f is integer-valued.
+    # The df columns of partial_chi2 / partial_f are integer-valued.
     if (isTRUE(e$is_df)) {
       prec <- 0L
     }
@@ -505,8 +515,15 @@ build_structured_body <- function(
       is_df = isTRUE(e$is_df),
       # Bare display label for engines (e.g. "SE", "p", "AME"),
       # stripped of the dedup `.N` suffix and of any "Model X: "
-      # prefix that's carried separately by `model_id`.
-      display_label = cs$display_label %||% cs$col_name
+      # prefix that's carried separately by `model_id`. A df column has
+      # its own: "chi2 | df", "F | df | residual df".
+      display_label = if (identical(e$source, "df_residual")) {
+        spicy_str("header_df_residual")
+      } else if (isTRUE(e$is_df)) {
+        spicy_str("header_df")
+      } else {
+        cs$display_label %||% cs$col_name
+      }
     )
   }
 

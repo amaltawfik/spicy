@@ -791,6 +791,7 @@ test_that("glm + partial_chi2 - quasi family is refused, its test is partial_f",
   pf_row <- td[td$estimate_type == "partial_f" & td$term == "x", ]
   av <- anova(glm(y ~ 1, data = d, family = quasipoisson), fit, test = "F")
   expect_equal(pf_row$estimate, av$F[2L], tolerance = 1e-10)
+  expect_equal(pf_row$df.residual, av[["Resid. Df"]][2L])
 })
 
 test_that("glm: partial_chi2 with intercept-only fit -> empty rows (no crash)", {

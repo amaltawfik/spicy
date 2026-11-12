@@ -209,8 +209,8 @@ confidence interval derived from noncentral-`F` inversion
 column. The shortcuts `"all_f2"`, `"all_eta2"`, and `"all_omega2"`
 each expand to the point estimate together with its CI column. The
 partial F the three are built on is a column of its own, `partial_f`,
-printed as `value (df)` with the residual degrees of freedom in the
-table note.
+printed as `value (q, df)`: the term's degrees of freedom, then the
+residual degrees of freedom of the model.
 
 `sochealth$education` is stored as an ordered factor, which R
 codes with polynomial contrasts (`.L` = linear, `.Q` = quadratic)
@@ -827,8 +827,9 @@ Gaussian, Tweedie or quasi-family `glm` therefore asks for its twin,
 `partial_f`, the column an `lm` takes too, and refuses `partial_chi2`.
 Its value is the one `car::Anova(type = 2, test.statistic = "F",
 error.estimate = "dispersion")` reports (car's default Pearson estimate
-differs by the IRLS convergence error only), and the table note gives
-its residual degrees of freedom. A gaussian `glm` and its `lm()` twin
+differs by the IRLS convergence error only), and its cell gives both
+of its degrees of freedom, `3.45 (2, 28)` for an F on 2 and 28, as
+Stata and SAS report them. A gaussian `glm` and its `lm()` twin
 print the same F. A table that mixes both kinds of model asks for both
 tokens, and each model fills its own column.
 

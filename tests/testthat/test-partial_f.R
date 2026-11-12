@@ -43,6 +43,21 @@
   d
 }
 
+# The console cell expected for an F on (q, df): "7.29 (2, 28)".
+.pf_cell <- function(f, q, df, mark = ".") {
+  v <- formatC(f, format = "f", digits = 2L)
+  if (!identical(mark, ".")) {
+    v <- sub(".", mark, v, fixed = TRUE)
+  }
+  sprintf("%s (%d, %d)", v, as.integer(q), as.integer(df))
+}
+
+# The console cell of a row of a single-model table.
+.pf_cell_of <- function(tbl, row, col = "F") {
+  body <- structure(tbl, class = "data.frame")
+  trimws(body[[col]][trimws(body$Variable) == row])
+}
+
 # car's default Pearson dispersion is computed at the final fitted means,
 # summary()'s from the working weights of the last IRLS iteration. They
 # differ by the convergence error: up to 1e-5 (relative) at the default
@@ -657,45 +672,92 @@ test_that("the term-level tests are model-based under every vcov", {
 
 # ---- Rendering -------------------------------------------------------------
 
-test_that("the F cell is 'value (q)' and the note gives the residual df", {
+test_that("the F cell is 'value (q, df)', df the residual df of its own model", {
+  skip_on_cran()
   d <- .pf_data()
-  fit <- glm(mpg ~ wt + cyl, data = d, family = Gamma("log"))
-  tbl <- table_regression(fit, show_columns = c("b", "partial_f"))
-  body <- as.data.frame(tbl)
-  expect_true(all(c("F", "F: df") %in% names(body)))
-  expect_equal(body[["F: df"]][body$variable == "cyl" & body$level %in% "6"], 2)
-  expect_match(
-    attr(tbl, "note"),
-    "F = partial F statistic on 28 residual degrees of freedom",
-    fixed = TRUE
+  w <- rep(1, 32)
+  w[1:4] <- 0
+  fits <- list(
+    gamma = glm(mpg ~ wt + cyl, data = d, family = Gamma("log")),
+    lm = lm(mpg ~ wt + cyl, data = d),
+    # Four zero weights leave the residual df at 24, not 28.
+    weighted = lm(mpg ~ wt + cyl, data = d, weights = w)
   )
-  # Two models, two residual df, in the order of the models.
+  for (nm in names(fits)) {
+    fit <- fits[[nm]]
+    dfr <- df.residual(fit)
+    tbl <- table_regression(fit, show_columns = c("b", "partial_f"))
+    rows <- .pf_rows(tbl)
+    # tidy(): the residual df beside the term's q, on every partial F row.
+    expect_equal(rows$df.residual, rep(dfr, nrow(rows)), label = nm)
+    for (tm in c("wt", "cyl")) {
+      r <- .pf_term(rows, tm)
+      expect_identical(
+        .pf_cell_of(tbl, if (tm == "cyl") "6" else tm),
+        .pf_cell(r$estimate, if (tm == "cyl") 2 else 1, dfr),
+        label = paste(nm, tm)
+      )
+    }
+    # The typed view: the residual df in a column of its own, beside q.
+    df_tbl <- as.data.frame(tbl)
+    at_6 <- df_tbl$variable == "cyl" & df_tbl$level %in% "6"
+    expect_equal(df_tbl[["F: df"]][at_6], 2)
+    expect_equal(df_tbl[["F: residual df"]][at_6], dfr, label = nm)
+    meta <- as_structured(tbl)$col_meta[["F: residual df"]]
+    expect_identical(meta$source_field, "df_residual")
+    expect_true(meta$is_df)
+    expect_identical(meta$precision, 0L)
+    # The note defines the statistic only.
+    note <- attr(tbl, "note")
+    expect_match(note, "F = partial F statistic", fixed = TRUE)
+    expect_false(grepl("degree", note, fixed = TRUE))
+  }
+  expect_identical(df.residual(fits$weighted), 24L)
+  # Every row whose test is an F carries its residual df, the effect sizes
+  # built on that F included, and the B rows leave it NA. The effect-size
+  # cells keep a single number. The chi-square keeps "value (q)".
+  es <- c("partial_f2", "partial_eta2", "partial_omega2")
+  tbl_es <- table_regression(fits$lm, show_columns = c("b", es, "partial_f"))
+  td <- broom::tidy(tbl_es)
+  is_f <- td$test_type %in% "F"
+  expect_setequal(unique(td$estimate_type[is_f]), c(es, "partial_f"))
+  expect_equal(unique(td$df.residual[is_f]), df.residual(fits$lm))
+  expect_true(all(is.na(td$df.residual[!is_f])))
+  body_es <- structure(tbl_es, class = "data.frame")
+  es_cells <- unlist(body_es[
+    trimws(body_es$Variable) == "wt",
+    setdiff(names(body_es), c("Variable", "B", "F"))
+  ])
+  expect_length(es_cells, 3L)
+  expect_false(any(grepl("(", es_cells, fixed = TRUE)))
+  expect_identical(
+    grep("residual df", names(as.data.frame(tbl_es)), value = TRUE),
+    "F: residual df"
+  )
+  chi <- table_regression(
+    glm(am ~ wt + cyl, data = d, family = binomial),
+    show_columns = c("b", "partial_chi2")
+  )
+  expect_match(
+    .pf_cell_of(chi, "6", "\u03C7\u00B2"),
+    "^[0-9]+[.][0-9]{2} \\(2\\)$"
+  )
+  expect_true(all(is.na(.pf_rows(chi, "partial_chi2")$df.residual)))
+  expect_false(any(grepl("residual df", names(as.data.frame(chi)))))
+
+  # Two models of the table, two residual df: each cell its own.
+  g30 <- glm(mpg ~ wt, data = d, family = Gamma("log"))
   two <- table_regression(
-    list(fit, glm(mpg ~ wt, data = d, family = Gamma("log"))),
+    list(fits$gamma, g30),
     show_columns = c("b", "partial_f")
   )
-  expect_match(
-    attr(two, "note"),
-    "on 28 and 30 residual degrees of freedom respectively",
-    fixed = TRUE
-  )
-  # An lm alone, and an lm beside a glm with another residual df.
-  fl <- lm(mpg ~ wt + cyl, data = d)
-  expect_match(
-    attr(table_regression(fl, show_columns = c("b", "partial_f")), "note"),
-    "F = partial F statistic on 28 residual degrees of freedom",
-    fixed = TRUE
-  )
-  mixed <- table_regression(
-    list(fl, glm(mpg ~ wt, data = d, family = Gamma("log"))),
-    show_columns = c("b", "partial_f")
-  )
-  expect_match(
-    attr(mixed, "note"),
-    "F = partial F statistic on 28 and 30 residual degrees of freedom respectively",
-    fixed = TRUE
-  )
-  # A univariable screen pools several fits: no single residual df.
+  r2 <- .pf_rows(two)
+  m2 <- r2[r2$model_id == unique(r2$model_id)[2L], ]
+  out <- paste(capture.output(print(two)), collapse = "\n")
+  expect_match(out, .pf_cell(m2$estimate, 1, df.residual(g30)), fixed = TRUE)
+  expect_match(attr(two, "note"), "F = partial F statistic;", fixed = TRUE)
+
+  # A univariable screen: the df of each predictor's own fit.
   uv <- table_regression_uv(
     d,
     outcome = mpg,
@@ -704,68 +766,131 @@ test_that("the F cell is 'value (q)' and the note gives the residual df", {
     family = Gamma("log"),
     show_columns = c("b", "partial_f")
   )
-  expect_match(attr(uv, "note"), "F = partial F statistic;", fixed = TRUE)
-  # One residual degree of freedom: the singular.
-  d1 <- data.frame(
-    y = c(2.1, 3.5, 2.8, 4.9),
-    x = c(1, 2, 3, 4),
-    z = c(0, 1, 1, 0)
+  ruv <- .pf_rows(uv)
+  uni <- ruv[ruv$model_id == "Univariable", ]
+  df_wt <- df.residual(glm(mpg ~ wt, data = d, family = Gamma("log")))
+  df_cyl <- df.residual(glm(mpg ~ cyl, data = d, family = Gamma("log")))
+  expect_identical(c(df_wt, df_cyl), c(30L, 29L))
+  expect_equal(.pf_term(uni, "wt")$df.residual, df_wt)
+  expect_equal(.pf_term(uni, "cyl")$df.residual, df_cyl)
+  expect_equal(
+    unique(ruv$df.residual[ruv$model_id == "Multivariable"]),
+    df.residual(fits$gamma)
   )
-  l1 <- lm(y ~ x + z, data = d1)
+  out <- paste(capture.output(print(uv)), collapse = "\n")
   expect_match(
-    attr(table_regression(l1, show_columns = c("b", "partial_f")), "note"),
-    "F = partial F statistic on 1 residual degree of freedom.",
+    out,
+    .pf_cell(.pf_term(uni, "wt")$estimate, 1, df_wt),
     fixed = TRUE
   )
-  # A stack of tables whose panels have different residual df: one bare
-  # definition, never two F.
-  st <- table_stack(
-    A = table_regression(fit, show_columns = c("b", "partial_f")),
-    B = table_regression(
-      lm(mpg ~ wt, data = d),
-      show_columns = c("b", "partial_f")
-    )
+  expect_match(
+    out,
+    .pf_cell(.pf_term(uni, "cyl")$estimate, 2, df_cyl),
+    fixed = TRUE
+  )
+  expect_match(attr(uv, "note"), "F = partial F statistic;", fixed = TRUE)
+
+  # A stack of two lm panels with different residual df: each panel's
+  # cells carry their own, and the note defines F once.
+  la <- lm(mpg ~ wt + cyl, data = d)
+  lb <- lm(mpg ~ wt, data = d)
+  ta <- table_regression(la, show_columns = c("b", "partial_f"))
+  tb <- table_regression(lb, show_columns = c("b", "partial_f"))
+  st <- table_stack(A = ta, B = tb)
+  out <- paste(capture.output(print(st)), collapse = "\n")
+  f_a <- .pf_term(.pf_rows(ta), "wt")$estimate
+  f_b <- .pf_term(.pf_rows(tb), "wt")$estimate
+  expect_match(out, .pf_cell(f_a, 1, df.residual(la)), fixed = TRUE)
+  expect_match(out, .pf_cell(f_b, 1, df.residual(lb)), fixed = TRUE)
+  st_df <- as.data.frame(st)
+  expect_equal(
+    st_df[["F: residual df"]][st_df$panel == "B" & st_df$variable == "wt"],
+    df.residual(lb)
   )
   st_note <- attr(st, "note")
-  expect_match(st_note, "F = partial F statistic;", fixed = TRUE)
+  expect_match(st_note, "F = partial F statistic.", fixed = TRUE)
   expect_identical(lengths(regmatches(st_note, gregexpr("F = ", st_note))), 1L)
-  same <- table_stack(
-    A = table_regression(fit, show_columns = c("b", "partial_f")),
-    B = table_regression(
-      lm(mpg ~ wt + cyl, data = d),
-      show_columns = c("b", "partial_f")
-    )
-  )
-  expect_match(
-    attr(same, "note"),
-    "F = partial F statistic on 28 residual degrees of freedom",
-    fixed = TRUE
-  )
-  # French.
+  expect_false(grepl("degree", st_note, fixed = TRUE))
+
+  # French: the decimal comma in the statistic, the df unchanged.
   withr::local_options(spicy.language = "fr")
-  fr <- table_regression(fit, show_columns = c("b", "partial_f"))
-  expect_match(
-    attr(fr, "note"),
-    "statistique F partielle sur 28 degr\u00E9s de libert\u00E9 r\u00E9siduels",
-    fixed = TRUE
+  fr <- table_regression(fits$gamma, show_columns = c("b", "partial_f"))
+  r <- .pf_term(.pf_rows(fr), "cyl")
+  expect_identical(
+    .pf_cell_of(fr, "6"),
+    .pf_cell(r$estimate, 2, df.residual(fits$gamma), mark = ",")
   )
-  fr_two <- table_regression(
-    list(fit, glm(mpg ~ wt, data = d, family = Gamma("log"))),
-    show_columns = c("b", "partial_f")
-  )
-  expect_match(
-    attr(fr_two, "note"),
-    "sur 28 et 30 degr\u00E9s de libert\u00E9 r\u00E9siduels respectivement",
-    fixed = TRUE
-  )
-  expect_match(
-    attr(table_regression(l1, show_columns = c("b", "partial_f")), "note"),
-    "statistique F partielle sur 1 degr\u00E9 de libert\u00E9 r\u00E9siduel.",
-    fixed = TRUE
-  )
+  expect_match(attr(fr, "note"), "F = statistique F partielle", fixed = TRUE)
+  expect_false(grepl("libert", attr(fr, "note"), fixed = TRUE))
 })
 
-test_that("output = 'long' names the token, its test and its q", {
+test_that("a residual df of 1000 or more prints without a separator", {
+  skip_on_cran()
+  set.seed(20261112)
+  n <- 1100L
+  big <- data.frame(
+    x = rnorm(n),
+    g = factor(sample(c("a", "b", "c"), n, replace = TRUE))
+  )
+  big$y <- 0.3 * big$x + rnorm(n)
+  fit <- lm(y ~ x + g, data = big)
+  dfr <- df.residual(fit)
+  expect_identical(dfr, 1096L)
+  tbl <- table_regression(fit, show_columns = c("b", "partial_f"))
+  rows <- .pf_rows(tbl)
+  f_x <- .pf_term(rows, "x")$estimate
+  expect_identical(.pf_cell_of(tbl, "x"), .pf_cell(f_x, 1, dfr))
+  expect_identical(
+    .pf_cell_of(tbl, "b"),
+    .pf_cell(.pf_term(rows, "g")$estimate, 2, dfr)
+  )
+  # Nor in French, whose thousands separator is a space.
+  withr::local_options(spicy.language = "fr")
+  fr <- table_regression(fit, show_columns = c("b", "partial_f"))
+  expect_identical(.pf_cell_of(fr, "x"), .pf_cell(f_x, 1, dfr, mark = ","))
+})
+
+test_that("the df columns of the rich engines carry their own header", {
+  skip_on_cran()
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  fb <- glm(am ~ wt + cyl, data = d, family = binomial)
+  chi <- "\u03C7\u00B2"
+  labels_of <- function(fit, tok, cols) {
+    tbl <- table_regression(fit, show_columns = c("b", tok))
+    meta <- as_structured(tbl)$col_meta
+    vapply(cols, function(nm) meta[[nm]]$display_label, "", USE.NAMES = FALSE)
+  }
+  expect_identical(
+    labels_of(fl, "partial_f", c("F", "F: df", "F: residual df")),
+    c("F", "df", "residual df")
+  )
+  expect_identical(
+    labels_of(fb, "partial_chi2", c(chi, paste0(chi, ": df"))),
+    c(chi, "df")
+  )
+  skip_if_not_installed("tinytable")
+  tt_names <- function(fit, tok) {
+    table_regression(
+      fit,
+      show_columns = c("b", tok),
+      output = "tinytable"
+    )@names
+  }
+  expect_identical(
+    tt_names(fl, "partial_f"),
+    c("Variable", "B", "F", "df", "residual df")
+  )
+  expect_identical(tt_names(fb, "partial_chi2"), c("Variable", "B", chi, "df"))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    tt_names(fl, "partial_f"),
+    c("Variable", "B", "F", "ddl", "ddl r\u00E9siduels")
+  )
+  expect_identical(tt_names(fb, "partial_chi2"), c("Variable", "B", chi, "ddl"))
+})
+
+test_that("output = 'long' names the token, its test, its q and its residual df", {
   d <- .pf_data()
   fit <- glm(mpg ~ wt + cyl, data = d, family = Gamma("log"))
   lo <- table_regression(
@@ -777,6 +902,7 @@ test_that("output = 'long' names the token, its test and its q", {
   expect_identical(pf_rows$term, c("wt", "cyl6", "cyl8"))
   expect_identical(unique(pf_rows$test_type), "F")
   expect_equal(pf_rows$df, c(1, 2, 2))
+  expect_equal(pf_rows$df.residual, rep(df.residual(fit), 3L))
 })
 
 test_that("console snapshot of the partial F column", {

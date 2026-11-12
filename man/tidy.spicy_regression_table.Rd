@@ -30,11 +30,14 @@ pipeline.
 \code{tidy()} returns one row per \verb{(model_id, term, estimate_type, outcome_level)} combination, with \code{estimate_type} in
 \code{c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")}; the two term-level tests carry their
 term's df in \code{df} and their test in \code{test_type} (\code{"X2"}, \code{"F"}).
+\code{df.residual} holds the residual df, the second df of the test, on the
+rows whose test is an F (the partial F and the effect sizes built on
+it), and is \code{NA} except on those rows.
 \code{outcome_level} names the response category of per-category rows
 (ordinal / multinomial average marginal effects) and is \code{NA} for
 single-outcome models. Reference-row placeholders (factor reference
 levels) and singular coefficients (NA estimates) are dropped. Columns:
-\verb{model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, p.value, test_type, is_intercept, factor_term, factor_level}.
+\verb{model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, df.residual, p.value, test_type, is_intercept, factor_term, factor_level}.
 
 \code{glance()} returns one row per \verb{(model_id, outcome)} with
 model-level statistics. Columns: \verb{model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual} (numeric --

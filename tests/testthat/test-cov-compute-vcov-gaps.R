@@ -653,6 +653,8 @@ test_that("tidy() supplies outcome_level for a long frame that has none", {
   expect_identical(out$term, "wt")
   expect_identical(out$std.error, 0.56)
   expect_identical(out$conf.low, -6.49)
+  # Nor a residual df: the column is there, NA.
+  expect_identical(out$df.residual, NA_real_)
 })
 
 

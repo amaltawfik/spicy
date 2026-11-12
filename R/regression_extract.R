@@ -416,7 +416,10 @@ build_b_rows <- function(
 
 # Helper to build a single coefs row with all the standard columns.
 # Centralized so all row builders (B, beta, AME, partial_*) use the
-# same column structure -- required by `rbind()` upstream.
+# same column structure -- required by `rbind()` upstream. `df_residual`
+# is the second degree of freedom of an F (the partial rows of an lm,
+# the partial F of a glm); NA
+# elsewhere.
 build_one_b_row <- function(
   nm,
   model_id,
@@ -435,7 +438,8 @@ build_one_b_row <- function(
   factor_term,
   factor_level,
   factor_level_pos = NA_integer_,
-  estimate_type = "B"
+  estimate_type = "B",
+  df_residual = NA_real_
 ) {
   data.frame(
     model_id = model_id,
@@ -448,6 +452,7 @@ build_one_b_row <- function(
     ci_high = ci_high,
     statistic = statistic,
     df = df,
+    df_residual = as.double(df_residual),
     p_value = p_value,
     test_type = test_type,
     is_singular = is_singular,
@@ -1266,6 +1271,7 @@ empty_coefs_long <- function() {
     ci_high = numeric(0),
     statistic = numeric(0),
     df = numeric(0),
+    df_residual = numeric(0),
     p_value = numeric(0),
     test_type = character(0),
     is_singular = logical(0),

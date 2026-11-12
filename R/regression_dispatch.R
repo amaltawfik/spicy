@@ -136,9 +136,9 @@ output_default <- function(rendered, aligned, labels = NULL) {
 # section, with the note as printed (the attribute every data frame of
 # the family carries). Columns:
 #   model_id, term, estimate_type, estimate, std.error, conf.low,
-#   conf.high, statistic, df, p.value, test_type, nobs, r.squared,
-#   adj.r.squared, ..., is_singular, is_intercept, is_reference,
-#   factor_term, factor_level
+#   conf.high, statistic, df, df.residual, p.value, test_type, nobs,
+#   r.squared, adj.r.squared, ..., is_singular, is_intercept,
+#   is_reference, factor_term, factor_level
 output_long <- function(aligned, note = NULL) {
   long <- aligned$coefs_aligned
   if (is.null(long)) {
@@ -147,13 +147,15 @@ output_long <- function(aligned, note = NULL) {
   # broom's names (decision 1 of the ADR of 2026-10-20), the sample size
   # and the fit of a row's own fit included, under the names glance()
   # gives them: a univariable screen fills them per predictor; a single
-  # model leaves them NA here, its values are glance()'s.
+  # model leaves them NA here, its values are glance()'s. The residual df
+  # of an F row is its own test's, filled on every model.
   long <- .rename_cols(
     long,
     c(
       se = "std.error",
       ci_low = "conf.low",
       ci_high = "conf.high",
+      df_residual = "df.residual",
       p_value = "p.value",
       n_obs = "nobs",
       r2 = "r.squared",
