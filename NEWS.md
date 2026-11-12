@@ -536,7 +536,7 @@
 
 * `table_regression()`: the note on skipped variance-component SE and CI
   of large mixed models names the threshold instead of the internal
-  option ("... not computed for n above 1000 (see ?table_regression)").
+  option ("... not computed for n above 1000").
 
 * `table_regression()`: the Word table (`output = "flextable"`) now uses
   a fixed layout with the column widths flextable computes, as the other
