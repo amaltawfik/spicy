@@ -1,6 +1,6 @@
 # ADR 2026-11-11 — table_battery_svy() : la batterie sous un plan de sondage
 
-**Statut** : demandé par Amal le 2026-11-11 (« fais tout ce que tu considères à faire, dont le tableau battery svy »). Choix d'API pris par délégation le 2026-11-11, à confirmer avant publication.
+**Statut** : demandé par Amal le 2026-11-11 (« fais tout ce que tu considères à faire, dont le tableau battery svy »). Choix d'API pris par délégation le 2026-11-11. Confirmés le 2026-11-12 : Amal a délégué la confirmation sur le critère des logiciels de référence (Stata, SPSS, SAS, les meilleurs packages, les recommandations des statisticiens) et chaque choix a été relu sur ce critère (section « Relecture du 2026-11-12 »).
 
 ## Contexte
 
@@ -49,3 +49,7 @@
 ## Garde
 
 `tests/testthat/test-table_battery_svy.R` : oracles `svymean()` sur le plan restreint, proportions pondérées calculées à la main (somme des poids par modalité sur somme des poids du domaine) pour un plan à poids seuls, `svychisq()` par item, `p.adjust()` à la main, plan à répliques (`as.svrepdesign()`) donnant les mêmes pourcentages, calage à poids négatifs retenant le test, refus classés, sorties machine, lecture Excel et Word, snapshot en français. Données : les items oui-non de `survey::apistrat` (`awards`, `sch.wide`, `comp.imp`, `both`) par `stype`, et une batterie construite dont les pourcentages pondérés sont connus. Palier CRAN : un cœur léger inscrit dans la liste blanche de `tests/testthat.R`.
+
+## Relecture du 2026-11-12
+
+Le test par défaut, le F de Rao-Scott, est celui que Stata rapporte sous `svy: tabulate` (« design-based F »), que SAS donne dans PROC SURVEYFREQ (khi-deux de Rao-Scott) et que SPSS Complex Samples appelle « adjusted F ». survey le rend par `svychisq(statistic = "F")`, son défaut. L'effectif non pondéré des répondants dans la colonne `n` suit SAS, qui imprime la fréquence non pondérée à côté de la fréquence pondérée, et la sœur `table_categorical_svy()`. Les pourcentages estimés par `svymean()` sur le plan restreint par `[` sont l'estimation de domaine de Lumley (2010), qui garde la structure du plan. L'ajustement de Holm par défaut est celui de `table_battery()`. Rien à changer.
