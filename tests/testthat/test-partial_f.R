@@ -43,12 +43,14 @@
   d
 }
 
-# The IRLS is driven to convergence: car's Pearson dispersion is computed
-# at the final fitted means, summary()'s from the working weights of the
-# last iteration, and the two agree to rounding only once the iterations
-# stop moving (at the default epsilon they differ by up to 1e-5,
-# relative). The Gamma log fit needs no such control: its working weights
-# are 1 whatever the means.
+# car's default Pearson dispersion is computed at the final fitted means,
+# summary()'s from the working weights of the last IRLS iteration. They
+# differ by the convergence error: up to 1e-5 (relative) at the default
+# epsilon, and still 2e-10 on Linux and macOS at epsilon 1e-20, where
+# Windows reaches 1e-14. The car oracle therefore reads summary()'s
+# dispersion (error.estimate = "dispersion"), which is exact on every
+# platform; the tight control only keeps the Pearson gap small for the
+# eye. The Gamma log fit needs no control: its working weights are 1.
 .pf_families <- function() {
   tight <- glm.control(epsilon = 1e-20, maxit = 100)
   fams <- list(
@@ -93,7 +95,12 @@ test_that("partial_f equals car's Type II F test, additive and with an interacti
         table_regression(fit, show_columns = c("b", "partial_f"))
       ))
       ca <- suppressWarnings(
-        car::Anova(fit, type = 2, test.statistic = "F")
+        car::Anova(
+          fit,
+          type = 2,
+          test.statistic = "F",
+          error.estimate = "dispersion"
+        )
       )
       terms <- setdiff(rownames(ca), "Residuals")
       n_expected <- n_expected + length(terms)
