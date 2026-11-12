@@ -1654,7 +1654,7 @@ for (g in names(.GROUPS)) {
     list(
       title = "`table_continuous()` with an effect size",
       setup = character(0),
-      call = "table_continuous(sochealth, select = c(age, bmi), by = sex, effect_size = TRUE)"
+      call = "table_continuous(sochealth, select = c(age, bmi), by = sex, effect_size = \"auto\")"
     ),
     list(
       title = "`table_regression()`, one linear model",
