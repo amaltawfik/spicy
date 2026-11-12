@@ -202,6 +202,21 @@
   `spicy_svy_estimation_failed`) carries the call of the table function,
   so its header names the table.
 
+* The model-change rows of `table_regression()` (F-change, Wald
+  F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
+  in a stacked hierarchy) show their degrees of freedom in the cell,
+  "12.38 (1, 29)" for an F and "9.12 (1)" for a chi-square, as the
+  partial tests do. The rich outputs print the same cell, Excel keeps
+  the number with a format that displays the df, and `output =
+  "data.frame"` keeps the number. A non-integer df (a CR2 denominator,
+  a gam) prints with one decimal.
+
+* `table_regression()` refuses the HC variances (`vcov = "HC0"` to
+  `"HC5"`) for an `lm()` or `glm()` fitted with zero prior weights.
+  `sandwich::vcovHC()` counts those rows in n while the hat values skip
+  them, so every HC standard error was off (HC0 by n_nonzero/n, HC2 to
+  HC5 by more). The error says to drop the rows and refit.
+
 * `table_categorical_svy()` and `table_continuous_svy()` say why a cell
   shows a dash. Under the default `options(survey.lonely.psu = "fail")`,
   a stratum with a single primary sampling unit stops survey, and the
