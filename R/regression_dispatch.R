@@ -2475,7 +2475,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
               .excel_numfmt(
                 f$precision,
                 f$p_style,
-                signed = isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS)
+                signed = isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS),
+                suffix = f$suffix
               )
             }
           },
@@ -2512,7 +2513,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
             ov_fmt <- .excel_numfmt(
               ov$precision %||% meta$precision,
               ov$p_style,
-              signed = isTRUE(ov$fit_stat %in% .NESTED_SIGNED_TOKENS)
+              signed = isTRUE(ov$fit_stat %in% .NESTED_SIGNED_TOKENS),
+              suffix = ov$suffix
             )
             excel_row <- body_first_row + ov$row - 1L
             wb <- openxlsx2::wb_add_numfmt(
@@ -2543,12 +2545,21 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       if (!identical(format_spec$decimal_mark, ".")) {
         text_rows[] <- TRUE
       }
-      # (2) Composite cells (`display_cells`, today the "events/N"
-      #     counts): no single number expresses them. They exist on
-      #     reference rows too -- a reference level HAS events.
+      # (2) Composite cells (`display_cells`, the "events/N" counts): no
+      #     single number expresses them. They exist on reference rows
+      #     too -- a reference level HAS events. A change test and its df
+      #     ("12.38 (1, 29)") are one number with a literal in its format
+      #     (`suffix`, applied above): they stay numbers.
       disp_col <- meta[["display_cells"]]
       if (!is.null(disp_col)) {
-        text_rows[!is.na(disp_col)] <- TRUE
+        composite <- !is.na(disp_col)
+        for (i in which(composite)) {
+          f <- .resolve_cell_fmt(meta, i)
+          if (length(f$suffix) == 1L && nzchar(f$suffix)) {
+            composite[[i]] <- FALSE
+          }
+        }
+        text_rows[composite] <- TRUE
       }
       # (3) Significance markers: "64.63***" is not a number. Only the
       #     marked cells convert; the rest of the column keeps its
@@ -3239,7 +3250,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   name (token, model_id, precision, p-style, below-threshold,
 #'   CI pair / role / label). A column whose cells cannot be
 #'   reconstructed from one number -- the `"events/N"` counts of
-#'   `show_columns = "n_events"` -- also carries `display_cells`, a
+#'   `show_columns = "n_events"`, a change test with its degrees of
+#'   freedom (`"12.38 (1, 29)"`, the statistic in `body`) -- also
+#'   carries `display_cells`, a
 #'   character vector as long as `body` holding the display string
 #'   of each cell (`NA` where the number formats normally). A
 #'   renderer must prefer it over the numeric value.

@@ -528,7 +528,11 @@ render_regression_table <- function(
     body[[col]][rows] <- if (col %in% ci_col_names) {
       align_ci_strings(body[[col]][rows], decimal_mark = decimal_mark)
     } else {
-      decimal_align_strings(body[[col]][rows], decimal_mark = decimal_mark)
+      decimal_align_strings(
+        body[[col]][rows],
+        decimal_mark = decimal_mark,
+        df_suffix = TRUE
+      )
     }
   }
   body
@@ -1256,6 +1260,36 @@ build_body_row <- function(
 
 # ---- Cell formatter ------------------------------------------------------
 
+# The degrees of freedom a test cell prints after its statistic: " (2)"
+# for a chi-square, " (2, 28)" for an F, "" without df. A whole df prints
+# as an integer, without a thousands separator; a fractional one (the HTZ
+# denominator of a CR2 Wald F, the Df of a gam) with one decimal in the
+# table's mark, " (2, 2.6)", " (2, 2,6)" in French -- the rule of the
+# df of table_continuous_lm()'s test header (`format_df()` inside
+# `.lm_test_render()`), with the mark of table_continuous()'s F(d1, d2).
+# The partial chi-square and partial F cells, the change-test rows and
+# the literal of their Excel number format share it.
+.format_df_suffix <- function(df, decimal_mark = ".") {
+  if (length(df) == 0L) {
+    return("")
+  }
+  txt <- vapply(
+    df,
+    function(d) {
+      if (isTRUE(abs(d - round(d)) < 1e-8)) {
+        return(as.character(as.integer(round(d))))
+      }
+      chartr(
+        ".",
+        decimal_mark,
+        formatC(d, format = "f", digits = 1L, decimal.mark = ".")
+      )
+    },
+    character(1)
+  )
+  paste0(" (", paste(txt, collapse = ", "), ")")
+}
+
 format_cell_value <- function(
   long_row,
   cs,
@@ -1284,7 +1318,8 @@ format_cell_value <- function(
   # the `car::Anova` display convention. Df sits in parens to
   # disambiguate factor terms (k-1 df) from numeric terms (1 df)
   # without burning an extra column. The partial F adds its residual
-  # df, "value (q, df)". Integers, without a thousands separator.
+  # df, "value (q, df)". A whole df prints as an integer, a non-integer
+  # one with one decimal (`.format_df_suffix()`).
   if (
     length(cs$fields) >= 2L &&
       identical(cs$fields[1:2], c("estimate", "df"))
@@ -1300,12 +1335,7 @@ format_cell_value <- function(
     )
     df_val <- df_val[!is.na(df_val)]
     val_str <- format_number(est, digits_to_use, decimal_mark)
-    df_str <- if (length(df_val) == 0L) {
-      ""
-    } else {
-      paste0(" (", paste(as.integer(round(df_val)), collapse = ", "), ")")
-    }
-    return(paste0(val_str, df_str))
+    return(paste0(val_str, .format_df_suffix(df_val, decimal_mark)))
   }
 
   # Outcome event counts: "events/N" (STROBE item 16 / NEJM
@@ -2063,14 +2093,22 @@ build_fit_stats_rows <- function(
         next
       }
       val <- sub[[tk]][1]
-      cells[[target_col]] <- format_fit_stat_value(
-        tk,
-        val,
-        digits = digits,
-        fit_digits = fit_digits,
-        ic_digits = ic_digits,
-        p_digits = p_digits,
-        decimal_mark = decimal_mark
+      # A change test carries its df, "7.29 (1, 28)" (`.NESTED_TEST_DF`).
+      cells[[target_col]] <- paste0(
+        format_fit_stat_value(
+          tk,
+          val,
+          digits = digits,
+          fit_digits = fit_digits,
+          ic_digits = ic_digits,
+          p_digits = p_digits,
+          decimal_mark = decimal_mark
+        ),
+        if (is.na(val)) {
+          ""
+        } else {
+          .format_df_suffix(.nested_test_df(tk, sub), decimal_mark)
+        }
       )
     }
     rows <- push_row(rows, cells)

@@ -128,7 +128,8 @@ m1 <- lm(wellbeing_score ~ age + employment_status, data = d_cc)
 table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 ```
 
-The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
+The `F-change` row is the joint 3-df test, `3.13 (3, 1195)`: F = 3.13
+on 3 and 1195 df, p = .025 —
 employment status improves the model, driven by the unemployed
 contrast. It is not a spicy invention: base R's `anova()` on the
 same two fits prints the identical canonical nested F-test, to the

@@ -79,6 +79,33 @@ LEAST_SQUARES_CLASSES <- c("lm", "nls")
 # only when some pair filled them (`insert_wald_change_tokens()`).
 .NESTED_WALD_CHANGE_TOKENS <- c("wald_f_change", "wald_chi2_change")
 
+# The change tests and the fit-stat keys of their degrees of freedom: df1
+# and df2 for an F, the df for a chi-square. Every output that prints the
+# cell prints them after the statistic, "7.29 (1, 28)", "9.12 (2)", as
+# the partial F cell does. `change_df1` / `change_df2` are those of the
+# classical test of the pair; on the least-squares route the likelihood
+# ratio shares the q of the F.
+.NESTED_TEST_DF <- list(
+  f_change = c("change_df1", "change_df2"),
+  lrt_change = "change_df1",
+  wald_f_change = c("wald_df1", "wald_df2"),
+  wald_chi2_change = "wald_df1"
+)
+
+# The df of the change test `tk` on one row of the fit-stat frame, NULL
+# when `tk` is not a change test or when one of its df is unknown.
+.nested_test_df <- function(tk, fs_row) {
+  keys <- .NESTED_TEST_DF[[tk]]
+  if (is.null(keys)) {
+    return(NULL)
+  }
+  df <- vapply(keys, function(k) scalar_or_na(fs_row[[k]]), numeric(1))
+  if (!all(is.finite(df))) {
+    return(NULL)
+  }
+  unname(df)
+}
+
 # The change tokens that are DIFFERENCES between adjacent models, current
 # minus previous (R^2, adj. R^2, f^2, AIC, AICc and BIC changes): they
 # print with an explicit sign in every output -- the console
@@ -584,6 +611,8 @@ compute_nested_comparisons <- function(
       bic_change = stats$bic_change,
       deviance_change = stats$deviance_change,
       p_change = stats$p_change,
+      change_df1 = stats$change_df1,
+      change_df2 = stats$change_df2,
       wald_f_change = wald$f %||% NA_real_,
       wald_chi2_change = wald$chi2 %||% NA_real_,
       wald_df1 = wald$df1 %||% NA_real_,
@@ -870,7 +899,9 @@ insert_wald_change_tokens <- function(show_fit_stats, frames) {
 
 # All ten tokens are computed in a single pass; the renderer subsets
 # to what's in `show_fit_stats`. Returning the full set keeps the
-# function easy to test (no token-selection branching here).
+# function easy to test (no token-selection branching here). The df of
+# the test, `change_df1` and `change_df2`, travel with them: the five
+# per-pair functions return the same names.
 compute_one_pair_lm <- function(fit_prev, fit_curr) {
   na <- list(
     r2_change = NA_real_,
@@ -882,7 +913,9 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = NA_real_,
     deviance_change = NA_real_,
-    p_change = NA_real_
+    p_change = NA_real_,
+    change_df1 = NA_real_,
+    change_df2 = NA_real_
   )
 
   av <- tryCatch(
@@ -909,6 +942,9 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   F_col <- if ("F" %in% names(av)) "F" else "F value"
   F_stat <- scalar_or_na(av[[F_col]][2])
   p_val <- scalar_or_na(av[["Pr(>F)"]][2])
+  # The df of that F, as anova.lm and anova.nls print them.
+  df1 <- scalar_or_na(av[["Df"]][2])
+  df2 <- scalar_or_na(av[["Res.Df"]][2])
 
   f2_change <- if (is.finite(r2_c) && r2_c < 1) {
     (r2_c - r2_p) / (1 - r2_c)
@@ -947,7 +983,9 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     aicc_change = aicc_c - aicc_p,
     bic_change = bic_c - bic_p,
     deviance_change = dev_p - dev_c, # positive when m_curr fits better
-    p_change = p_val
+    p_change = p_val,
+    change_df1 = df1,
+    change_df2 = df2
   )
 }
 
@@ -981,7 +1019,9 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = NA_real_,
     deviance_change = NA_real_,
-    p_change = NA_real_
+    p_change = NA_real_,
+    change_df1 = NA_real_,
+    change_df2 = NA_real_
   )
 
   # Likelihoods -- and so AIC, BIC, deviance and any LRT built from them
@@ -1035,6 +1075,7 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
   } else {
     NA_real_
   }
+  lrt_df <- anova_test_df(av)
 
   # anova.glm() prints the raw deviance difference but computes its p on
   # that difference divided by the dispersion of the larger model. The
@@ -1077,22 +1118,27 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
     twin <- fixest_twin_lrt(fit_prev, fit_curr)
     lrt_stat <- twin$stat
     p_val <- twin$p
+    lrt_df <- twin$df
   } else if (!is.finite(lrt_stat) || !is.finite(p_val)) {
     fallback <- loglik_lrt(fit_prev, fit_curr)
     if (!is.null(fallback)) {
       lrt_stat <- fallback$stat
       p_val <- fallback$p
+      lrt_df <- fallback$df
     }
   }
 
   # A pair whose dispersion is estimated reports the F test of anova(),
   # not the scaled chi-square: one test per pair, in f_change.
   f_stat <- NA_real_
+  df2 <- NA_real_
   if (is_dispersion_pair(fit_prev, fit_curr)) {
     ft <- dispersion_f_test(lrt_stat, fit_prev, fit_curr)
     f_stat <- ft$f
     p_val <- ft$p
     lrt_stat <- NA_real_
+    lrt_df <- ft$df1
+    df2 <- ft$df2
   }
 
   aic_p <- ic_or_na(stats::AIC, fit_prev)
@@ -1116,7 +1162,9 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
     aicc_change = aicc_c - aicc_p,
     bic_change = bic_c - bic_p,
     deviance_change = dev_p - dev_c,
-    p_change = p_val
+    p_change = p_val,
+    change_df1 = lrt_df,
+    change_df2 = df2
   )
 }
 
@@ -1154,7 +1202,9 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = NA_real_,
     deviance_change = NA_real_,
-    p_change = NA_real_
+    p_change = NA_real_,
+    change_df1 = NA_real_,
+    change_df2 = NA_real_
   )
 
   # Direction is settled BEFORE anova is asked, on the order the CALLER
@@ -1225,7 +1275,9 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = bic_c - bic_p,
     deviance_change = as.numeric(dev_change),
-    p_change = as.numeric(p_val)
+    p_change = as.numeric(p_val),
+    change_df1 = anova_test_df(av),
+    change_df2 = NA_real_
   )
 }
 
@@ -1308,7 +1360,9 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = NA_real_,
     deviance_change = NA_real_,
-    p_change = NA_real_
+    p_change = NA_real_,
+    change_df1 = NA_real_,
+    change_df2 = NA_real_
   )
   av <- tryCatch(
     suppressWarnings(stats::anova(fit_prev, fit_curr)),
@@ -1327,6 +1381,8 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
     list(
       f_change = as.numeric(tb$Tn[1L]),
       p_change = as.numeric(tb$pvalue[1L]),
+      change_df1 = scalar_or_na(tb$ndf[1L]),
+      change_df2 = scalar_or_na(tb$ddf[1L]),
       aic_change = aic_c - aic_p,
       bic_change = bic_c - bic_p
     )
@@ -1402,7 +1458,9 @@ compute_one_pair_rms <- function(fit_prev, fit_curr) {
     aicc_change = NA_real_,
     bic_change = NA_real_,
     deviance_change = NA_real_,
-    p_change = NA_real_
+    p_change = NA_real_,
+    change_df1 = NA_real_,
+    change_df2 = NA_real_
   )
   # Likelihoods fitted on different samples are not comparable at all;
   # settle that before asking rms, exactly as compute_one_pair_lrt()
@@ -1443,7 +1501,8 @@ compute_one_pair_rms <- function(fit_prev, fit_curr) {
       aicc_change = aicc_of(fit_curr, aic_c) - aicc_of(fit_prev, aic_p),
       bic_change = bic_c - bic_p,
       deviance_change = deviance_or_na(fit_prev) - deviance_or_na(fit_curr),
-      p_change = p_val
+      p_change = p_val,
+      change_df1 = st$df
     )
   )
 }
@@ -1463,7 +1522,8 @@ rms_lrtest_stats <- function(fit_prev, fit_curr) {
     fb <- loglik_lrt(fit_prev, fit_curr)
     return(list(
       stat = fb$stat %||% NA_real_,
-      p = fb$p %||% NA_real_
+      p = fb$p %||% NA_real_,
+      df = fb$df %||% NA_real_
     ))
   }
   out <- tryCatch(fun(fit_prev, fit_curr), error = function(e) e)
@@ -1481,7 +1541,7 @@ rms_lrtest_stats <- function(fit_prev, fit_curr) {
   } else {
     scalar_or_na(s[["P"]]) # nocov -- lrtest() aborts when dof is 0
   }
-  list(stat = stat, p = p)
+  list(stat = stat, p = p, df = df)
 }
 
 # The SIGNED likelihood-ratio change of a pair, 2 (l_curr - l_prev),
@@ -1589,6 +1649,25 @@ scalar_or_na <- function(x) {
 # TRUE for an anova() result that carries two model rows.
 usable_anova_table <- function(av) {
   is.data.frame(av) && nrow(av) >= 2L
+}
+
+# The degrees of freedom of the test a two-model anova() table reports,
+# the df its p-value is computed on. Most methods print the difference
+# on the second row ("Df", anova.polr's "   Df", glmmTMB's "Chi Df",
+# anova.clm's "df"); anova.gls and anova.lme print each model's parameter
+# count ("df"), whose difference is the df of the test, as glmmTMB's "Df"
+# is. NA when the table carries none of them.
+anova_test_df <- function(av) {
+  if (!usable_anova_table(av)) {
+    return(NA_real_)
+  }
+  nm <- trimws(names(av))
+  col <- intersect(c("Chi Df", "Df", "df"), nm)
+  if (length(col) == 0L) {
+    return(NA_real_)
+  }
+  d <- suppressWarnings(as.numeric(av[[which(nm == col[1L])[1L]]]))
+  scalar_or_na(if (is.finite(d[1L])) d[2L] - d[1L] else d[2L])
 }
 
 # Two-model anova() for the likelihood path. The anova methods disagree
@@ -1759,7 +1838,8 @@ loglik_lrt <- function(fit_prev, fit_curr) {
   }
   list(
     stat = stat,
-    p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE)
+    p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE),
+    df = df_diff
   )
 }
 
@@ -1772,7 +1852,7 @@ loglik_lrt <- function(fit_prev, fit_curr) {
 # (`.fixest_twin_loglik()`), which is fixest's own for Poisson and
 # binomial. NA when the pair is not admissible.
 fixest_twin_lrt <- function(fit_prev, fit_curr) {
-  na <- list(stat = NA_real_, p = NA_real_)
+  na <- list(stat = NA_real_, p = NA_real_, df = NA_real_)
   fam <- fit_curr$family
   disp_fams <- c(.FIXEST_DISP_FAMS, .FIXEST_QUASI_FAMS)
   stat <- tryCatch(
@@ -1794,7 +1874,11 @@ fixest_twin_lrt <- function(fit_prev, fit_curr) {
   if (!is.finite(stat) || !lrt_admissible(stat, df_diff)) {
     return(na)
   }
-  list(stat = stat, p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE))
+  list(
+    stat = stat,
+    p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE),
+    df = df_diff
+  )
 }
 
 # The nested F test of a pair whose dispersion is estimated, from `stat`,
@@ -1813,9 +1897,14 @@ dispersion_f_test <- function(stat, fit_prev, fit_curr) {
   q <- res_df(fit_prev) - res_df(fit_curr)
   df2 <- res_df(fit_curr)
   if (!is.finite(stat) || !isTRUE(q >= 1) || !isTRUE(df2 > 0)) {
-    return(list(f = NA_real_, p = NA_real_))
+    return(list(f = NA_real_, p = NA_real_, df1 = NA_real_, df2 = NA_real_))
   }
-  list(f = stat / q, p = stats::pf(stat / q, q, df2, lower.tail = FALSE))
+  list(
+    f = stat / q,
+    p = stats::pf(stat / q, q, df2, lower.tail = FALSE),
+    df1 = q,
+    df2 = df2
+  )
 }
 
 # Parameter-count increase from prev to curr, from logLik()'s own "df"
@@ -1996,6 +2085,8 @@ empty_nested_comparisons <- function() {
     bic_change = numeric(0),
     deviance_change = numeric(0),
     p_change = numeric(0),
+    change_df1 = numeric(0),
+    change_df2 = numeric(0),
     stringsAsFactors = FALSE
   )
 }

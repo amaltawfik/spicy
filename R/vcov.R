@@ -73,6 +73,45 @@
   )
 }
 
+# An lm or glm with zero prior weights under an HC* estimator.
+# sandwich::vcovHC() counts the zero-weight rows in n, while the fit's
+# bread and lm.influence() leave them out: every HC* matrix is wrong.
+# HC0 and HC1 are scaled by (n - n0) / n in the standard error, and the
+# hat-based HC2 to HC5 recycle the residuals against hat values that are
+# n0 shorter. Measured with sandwich 3.1.3 on lm(mpg ~ wt + hp, mtcars)
+# with three zero weights: SE(wt) 0.545 (HC0) and 0.691 (HC3), against
+# 0.602 and 0.757 for the fit without those rows, which equals the
+# sandwich computed by hand on the weighted fit.
+.refuse_hc_zero_weights <- function(fit, type) {
+  if (!inherits(fit, c("lm", "glm")) || inherits(fit, "gam")) {
+    return(invisible(NULL))
+  }
+  n0 <- sum(stats::weights(fit) == 0, na.rm = TRUE)
+  if (n0 == 0L) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "`vcov = \"%s\"` is not available for a fit with zero weights.",
+        type
+      ),
+      "x" = sprintf(
+        paste0(
+          "%d row(s) have a prior weight of 0, and `sandwich::vcovHC()` ",
+          "counts them in the sample size: its matrix would be wrong."
+        ),
+        n0
+      ),
+      "i" = paste0(
+        "Drop the rows of zero weight from the data and refit: the ",
+        "estimates are the same, and every HC estimator is then exact."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 .abort_vcov_failed <- function(type, cnd, callee) {
   spicy_abort(
     c(
@@ -267,6 +306,7 @@ compute_model_vcov <- function(
   }
 
   if (startsWith(type, "HC")) {
+    .refuse_hc_zero_weights(fit, type)
     # mgcv fits: spicy supplies the score, the bread and the hat values
     # (R/vcov_mgcv.R); sandwich's own route is wrong for them.
     hc_fit <- if (inherits(fit, "gam")) .mgcv_sandwich_wrap(fit) else fit

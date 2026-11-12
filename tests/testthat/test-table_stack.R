@@ -3031,12 +3031,24 @@ test_that("a stacked nested table signs the differences in Excel, not the F-chan
       label = paste0(delta, "AIC"),
       value = stats::AIC(models[[2L]]) - stats::AIC(models[[1L]]),
       fmt = "+0.0;-0.0;0.0"
-    ),
-    # A test statistic keeps an unsigned format.
-    list(
-      label = "F-change",
-      value = stats::anova(models[[1L]], models[[2L]])$F[[2L]],
-      fmt = "0.00"
+    )
+  )
+  # A test statistic is unsigned and carries its df: a number whose
+  # format ends with the console's df, '0.00" (1, 29)"'.
+  av <- stats::anova(models[[1L]], models[[2L]])
+  ref <- paste0("B", row_of("F-change"))
+  expect_identical(xl$type(ref), "number")
+  expect_equal(
+    as.numeric(xl$grid[as.integer(sub("B", "", ref)), 2L]),
+    av$F[[2L]],
+    tolerance = 1e-10
+  )
+  expect_identical(
+    gsub("&quot;", "\"", xl$numfmt(ref), fixed = TRUE),
+    sprintf(
+      "0.00\" (%d, %d)\"",
+      as.integer(av$Df[[2L]]),
+      as.integer(av$Res.Df[[2L]])
     )
   )
   for (cl in cells) {

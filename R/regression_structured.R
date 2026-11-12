@@ -113,7 +113,9 @@
 #                                   # composite cells no single number
 #                                   # can express -- today the
 #                                   # "events/N" counts of the
-#                                   # `n_events` token -- and, in the
+#                                   # `n_events` token, a change test
+#                                   # with its df, "12.38 (1, 29)" --
+#                                   # and, in the
 #                                   # continuous tables, the cells of a
 #                                   # variable a named `digits` gives
 #                                   # decimals other than `precision`.
@@ -742,6 +744,9 @@ build_structured_body <- function(
       )
       if (length(fr$status) > 0L) {
         status_by_row[[as.character(row_idx)]] <- fr$status
+      }
+      if (length(fr$display) > 0L) {
+        display_by_row[[as.character(row_idx)]] <- fr$display
       }
       # Extend col_meta with per-fit-stat token annotation for the
       # column where the value lives. Precision and (for p_change) APA
@@ -1458,6 +1463,7 @@ build_structured_body <- function(
     row$Variable <- fit_stat_label(tk)
     col_overrides <- list()
     status <- character(0)
+    display <- character(0)
 
     # Per-token precision: same logic as format_fit_stat_value()
     prec <- .fit_stat_precision(
@@ -1502,12 +1508,18 @@ build_structured_body <- function(
       }
       # nocov end
       row[[target_col]] <- as.numeric(val)
+      # A change test prints its df after the statistic, "7.29 (1, 28)".
+      df <- if (is.na(val)) NULL else .nested_test_df(tk, sub)
+      suffix <- if (length(df) > 0L) .format_df_suffix(df, decimal_mark)
 
       col_overrides[[target_col]] <- list(
         fit_stat = tk,
         precision = as.integer(prec),
         p_style = p_style,
-        threshold = threshold
+        threshold = threshold,
+        # The df text after the statistic: the literal of the Excel
+        # number format, so the cell stays a number there.
+        suffix = suffix
       )
       # A fit statistic that is not defined for this model's class in a
       # mixed table: the console prints an en-dash, so the cell is
@@ -1519,11 +1531,28 @@ build_structured_body <- function(
       if (is.na(val) && !tk %in% c("fixed_effects", "n_groups", "n_events")) {
         status[[target_col]] <- "undefined"
       }
+      # The cell keeps its number; the composite string, the console's
+      # own, goes to `display_cells`.
+      if (!is.null(suffix)) {
+        display[[target_col]] <- paste0(
+          format_fit_stat_value(
+            tk,
+            val,
+            digits = digits,
+            fit_digits = fit_digits,
+            ic_digits = ic_digits,
+            p_digits = p_digits,
+            decimal_mark = decimal_mark
+          ),
+          suffix
+        )
+      }
     }
     rows[[length(rows) + 1L]] <- list(
       row = row,
       col_overrides = col_overrides,
       status = status,
+      display = display,
       variable = tk,
       level = NA_character_,
       role = "fit_stat",
@@ -1702,9 +1731,16 @@ build_structured_body <- function(
 #   signed = TRUE    -> "+0.00;-0.00;0.00": the explicit sign of a
 #                       nested-comparison difference (.NESTED_SIGNED_TOKENS),
 #                       an exact zero unsigned
+#   suffix = " (1, 29)" -> '0.00" (1, 29)"': a literal after the number,
+#                       the df of a change test, so the cell keeps its
+#                       value and displays what the console prints
 # `decimal_mark` is irrelevant: Excel format codes always use "."
 # internally; the rendered separator follows the cell's locale.
-.excel_numfmt <- function(precision, p_style, signed = FALSE) {
+.excel_numfmt <- function(precision, p_style, signed = FALSE, suffix = NULL) {
+  if (length(suffix) == 1L && nzchar(suffix)) {
+    sections <- strsplit(.excel_numfmt(precision, p_style, signed), ";")[[1L]]
+    return(paste0(sections, "\"", suffix, "\"", collapse = ";"))
+  }
   if (isTRUE(signed)) {
     fmt <- .excel_numfmt(precision, NULL)
     return(paste0("+", fmt, ";-", fmt, ";", fmt))
@@ -1905,11 +1941,15 @@ build_structured_body <- function(
         rhs[i] <- ""
         next
       }
-      pos <- regexpr(decimal_mark, v, fixed = TRUE)
+      # A test cell carries its df after the number, "12 (1, 29)": the
+      # mark is looked for before them, and they go to the right-hand
+      # part, their space in the place of the mark.
+      core <- sub(" \\([^()]*\\)$", "", v)
+      pos <- regexpr(decimal_mark, core, fixed = TRUE)
       if (pos < 0L) {
         # No decimal mark -- integer-only or special token.
-        lhs[i] <- v
-        rhs[i] <- ""
+        lhs[i] <- core
+        rhs[i] <- substring(v, nchar(core) + 2L)
       } else {
         lhs[i] <- substring(v, 1L, pos - 1L)
         rhs[i] <- substring(v, pos + 1L)
@@ -1946,14 +1986,14 @@ build_structured_body <- function(
         col_vals[i] <- paste0(pad_lhs, na_dash, fig_space, pad_rhs)
         next
       }
-      pos <- regexpr(decimal_mark, v, fixed = TRUE)
+      pos <- regexpr(decimal_mark, sub(" \\([^()]*\\)$", "", v), fixed = TRUE)
       pad_lhs <- strrep(fig_space, max_lhs - nchar(lhs[i]))
       pad_rhs <- strrep(fig_space, max_rhs - nchar(rhs[i]))
       if (pos < 0L) {
         # Integer-only cell: pad LHS, then place a digit-width space
-        # at the implicit decimal column, then trailing figure-spaces
-        # to fill the (absent) RHS digits.
-        col_vals[i] <- paste0(pad_lhs, v, fig_space, pad_rhs)
+        # at the implicit decimal column, then the df if any, then
+        # trailing figure-spaces to fill the (absent) RHS digits.
+        col_vals[i] <- paste0(pad_lhs, lhs[i], fig_space, rhs[i], pad_rhs)
       } else {
         col_vals[i] <- paste0(pad_lhs, lhs[i], decimal_mark, rhs[i], pad_rhs)
       }
@@ -2024,6 +2064,7 @@ build_structured_body <- function(
   p_style <- col_meta_entry$p_style
   threshold <- col_meta_entry$threshold
   fit_stat <- NULL
+  suffix <- NULL
   if (!is.null(col_meta_entry$fit_stat_overrides)) {
     for (ov in col_meta_entry$fit_stat_overrides) {
       if (identical(ov$row, row_idx)) {
@@ -2035,6 +2076,7 @@ build_structured_body <- function(
         p_style <- ov$p_style
         threshold <- ov$threshold
         fit_stat <- ov$fit_stat %||% NULL
+        suffix <- ov$suffix
         break
       }
     }
@@ -2044,7 +2086,9 @@ build_structured_body <- function(
     p_style = p_style,
     threshold = threshold,
     fit_stat = fit_stat,
-    signif = col_meta_entry$signif
+    signif = col_meta_entry$signif,
+    # The df text of a change test, the literal of its Excel format.
+    suffix = suffix
   )
 }
 

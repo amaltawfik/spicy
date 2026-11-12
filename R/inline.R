@@ -234,7 +234,7 @@ inline <- function(
   on.exit(.style_end(.style_pushed), add = TRUE)
 
   s <- as_structured(x)
-  formatted <- .format_structured_to_string_body(s)
+  formatted <- .format_structured_to_string_body(.inline_bare_change_tests(s))
 
   var_chr <- .inline_variable_chr(rlang::enquo(variable))
   # Two stages, and the order matters. The variable is resolved FIRST,
@@ -1115,6 +1115,21 @@ inline <- function(
       )
   }
   rows[keep]
+}
+
+# The view whose change-test rows are formatted without their df: the
+# table prints "12.38 (1, 29)", a sentence cites the statistic, as it
+# cites a partial F whose df are columns of their own.
+.inline_bare_change_tests <- function(s) {
+  rows <- s$body$.row_role %in%
+    "fit_stat" &
+    s$body$.variable %in% names(.NESTED_TEST_DF)
+  for (nm in names(s$col_meta)) {
+    if (!is.null(s$col_meta[[nm]]$display_cells)) {
+      s$col_meta[[nm]]$display_cells[rows] <- NA_character_
+    }
+  }
+  s
 }
 
 # The candidate columns after the `model` filter: NULL model on a

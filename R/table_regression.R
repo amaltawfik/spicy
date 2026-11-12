@@ -274,7 +274,16 @@
 #'     model minus previous (`"r2_change"`, `"adj_r2_change"`,
 #'     `"f2_change"`, and the AIC, AICc and BIC changes), print with an
 #'     explicit sign (`+0.07`, `-9.4`) in every output. The test
-#'     statistics and `"p_change"` are never signed. `"deviance_change"`
+#'     statistics and `"p_change"` are never signed. The test statistics
+#'     carry their degrees of freedom, as the partial F cell does:
+#'     `12.38 (1, 29)` for an F, the number of added parameters and the
+#'     residual df of the larger model (the denominator df for the Wald F
+#'     of a robust `vcov`), `9.12 (1)` for a chi-square. A df that is not
+#'     a whole number (the HTZ denominator under `"CR2"`, the df of a
+#'     smooth term) prints with one decimal, `174.77 (2, 0.8)`.
+#'     `inline()` cites the statistic alone, `output = "data.frame"` keeps
+#'     it as a number, and Excel writes the number with the df in its
+#'     number format. `"deviance_change"`
 #'     is the drop in deviance (previous minus current), positive when
 #'     the larger model fits better, and is not signed either.
 #' }

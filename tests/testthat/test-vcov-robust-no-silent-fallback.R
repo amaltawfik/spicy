@@ -287,3 +287,49 @@ test_that("the rq family keeps its own class-level refusals", {
   err2 <- tryCatch(compute_model_vcov(m, "HC7"), error = identity)
   expect_s3_class(err2, "spicy_invalid_input")
 })
+
+# sandwich::vcovHC() counts the rows of zero prior weight in n while the
+# bread and the hat values of the fit leave them out: every HC* matrix of
+# such an lm or glm is wrong (sandwich 3.1.3), so the request is refused.
+.zw <- function() {
+  w <- rep(1, 32)
+  w[c(3L, 10L, 20L)] <- 0
+  w
+}
+
+test_that("HC* is refused for an lm with zero prior weights", {
+  skip_if_not_installed("sandwich")
+  w <- .zw()
+  fit <- lm(mpg ~ wt + hp, data = mtcars, weights = w)
+  drop <- lm(mpg ~ wt + hp, data = mtcars[w > 0, ])
+  # The defect: HC0 shrinks every SE by 29 / 32 against the fit without
+  # those rows, the same estimates.
+  expect_equal(
+    sqrt(diag(sandwich::vcovHC(fit, type = "HC0"))),
+    sqrt(diag(sandwich::vcovHC(drop, type = "HC0"))) * 29 / 32,
+    tolerance = 1e-10
+  )
+  for (ty in c("HC0", "HC3")) {
+    expect_error(
+      table_regression(fit, vcov = ty),
+      "zero weights",
+      class = "spicy_invalid_input"
+    )
+  }
+  expect_no_error(table_regression(drop, vcov = "HC3"))
+})
+
+test_that("HC* is refused for a glm with zero prior weights", {
+  skip_if_not_installed("sandwich")
+  w <- .zw()
+  fit <- glm(am ~ wt, data = mtcars, family = binomial, weights = w)
+  drop <- glm(am ~ wt, data = mtcars[w > 0, ], family = binomial)
+  for (ty in c("HC1", "HC3")) {
+    expect_error(
+      table_regression(fit, vcov = ty),
+      "zero weights",
+      class = "spicy_invalid_input"
+    )
+  }
+  expect_no_error(table_regression(drop, vcov = "HC3"))
+})

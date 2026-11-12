@@ -455,6 +455,9 @@ as_regression_frame.glm <- function(fit, ...) {
     "bic_change",
     "deviance_change",
     "p_change",
+    # The df of the classical change test, printed after its statistic.
+    "change_df1",
+    "change_df2",
     # The Wald change test under a non-classical vcov, present only when
     # at least one pair of the hierarchy used it.
     "wald_f_change",

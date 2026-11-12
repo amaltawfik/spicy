@@ -136,7 +136,9 @@ na_pair_cov100 <- list(
   aicc_change = NA_real_,
   bic_change = NA_real_,
   deviance_change = NA_real_,
-  p_change = NA_real_
+  p_change = NA_real_,
+  change_df1 = NA_real_,
+  change_df2 = NA_real_
 )
 
 test_that("compute_one_pair_lm returns the all-NA contract when anova fails", {

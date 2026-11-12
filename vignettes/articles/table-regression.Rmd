@@ -445,7 +445,10 @@ m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
 table_regression(list(m1, m2, m3), nested = TRUE)
 ```
 
-Reading the change rows: adding `smoking` in Model 2 does not
+Reading the change rows: each test carries its degrees of freedom,
+`2.28 (1, 1159)` for an F on 1 and 1159 df (the added term and the
+residual df of the larger model), as Stata prints F(1, 1159). Adding
+`smoking` in Model 2 does not
 improve fit over the age + sex baseline (ΔR² = +0.00,
 F-change = 2.28, p = .132) — with a single added term, this test
 is equivalent to the test on the `smoking` coefficient itself

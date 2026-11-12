@@ -615,7 +615,12 @@ safe_glyph_width <- function(x) {
 # appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
 # guidelines. Multi-char placeholders are centered around the
 # decimal-mark position with bias-left for even widths.
-decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
+decimal_align_strings <- function(
+  values,
+  decimal_mark = ".",
+  pad_char = " ",
+  df_suffix = FALSE
+) {
   if (length(values) == 0L) {
     return(character(0))
   }
@@ -639,18 +644,23 @@ decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   # and markdown parsers and is the same convention used by
   # `.pad_for_decimal_align()` in `table_regression()`.
 
-  dot_pos <- regexpr(decimal_mark, values, fixed = TRUE)
+  # `df_suffix` (the regression tables): a test cell carries its df after
+  # the number, "12 (1, 29)". The mark is looked for before them, and
+  # they count on the right, their space in the place of the mark.
+  core <- if (isTRUE(df_suffix)) sub(" \\([^()]*\\)$", "", values) else values
+  sfx <- nchar(values) - nchar(core)
+  dot_pos <- regexpr(decimal_mark, core, fixed = TRUE)
   has_dot <- dot_pos != -1L
 
   before <- ifelse(
     is_blank,
     NA_integer_,
-    ifelse(has_dot, dot_pos - 1L, nchar(values))
+    ifelse(has_dot, dot_pos - 1L, nchar(core))
   )
   after <- ifelse(
     is_blank,
     NA_integer_,
-    ifelse(has_dot, nchar(values) - dot_pos, 0L)
+    ifelse(has_dot, nchar(values) - dot_pos, pmax(sfx - 1L, 0L))
   )
 
   max_before <- max(before, na.rm = TRUE)
@@ -685,9 +695,9 @@ decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
       #       position so it visually replaces the `.` of the
       #       absent value. APA Manual 7 Section 7.13 / Stata
       #       esttab / modelsummary convention.
-      if (grepl("^-?[0-9]+$", v)) {
+      if (grepl("^-?[0-9]+$", core[i])) {
         pad_l <- strrep(pad_char, max_before - before[i])
-        pad_r <- strrep(pad_char, 1L + max_after)
+        pad_r <- strrep(pad_char, 1L + max_after - sfx[i])
         return(paste0(pad_l, v, pad_r))
       }
       g <- safe_glyph_width(v)

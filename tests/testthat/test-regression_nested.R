@@ -1109,6 +1109,12 @@ test_that("change rows: Delta R^2 signed, F-change and p unsigned, in every outp
   a12 <- anova(h[[1L]], h[[2L]])
   a23 <- anova(h[[2L]], h[[3L]])
   f <- c(a12$F[2L], a23$F[2L])
+  # The F carries its df, "12.38 (1, 29)".
+  f_df <- sprintf(
+    " (%d, %d)",
+    as.integer(c(a12$Df[2L], a23$Df[2L])),
+    as.integer(c(a12$Res.Df[2L], a23$Res.Df[2L]))
+  )
   p <- c(a12[["Pr(>F)"]][2L], a23[["Pr(>F)"]][2L])
   # Model 2 and Model 3 estimate columns (Variable | B SE p | B SE p | ...).
   cols <- c(5L, 8L)
@@ -1128,7 +1134,7 @@ test_that("change rows: Delta R^2 signed, F-change and p unsigned, in every outp
     expected <- stats::setNames(
       list(
         .sg_signed(diff(r2), 2L, mark), # "+0.07" "+0.01"
-        .sg_plain(f, 2L, mark), # "12.38" "1.35"
+        paste0(.sg_plain(f, 2L, mark), f_df), # "12.38 (1, 29)" "1.35 (1, 28)"
         .sg_p(p, mark) # ".001" ".255"
       ),
       labels
@@ -1141,8 +1147,12 @@ test_that("change rows: Delta R^2 signed, F-change and p unsigned, in every outp
         # Real numbers, the sign carried by the number format.
         expect_equal(as.numeric(xr2$value), diff(r2), tolerance = 1e-12)
         expect_identical(xr2$numfmt, rep("+0.00;-0.00;0.00", 2L))
+        # The F stays a number; its format ends with the df.
         expect_equal(as.numeric(xf$value), f, tolerance = 1e-12)
-        expect_identical(xf$numfmt, rep("0.00", 2L))
+        expect_identical(
+          gsub("&quot;", "\"", xf$numfmt, fixed = TRUE),
+          paste0("0.00\"", f_df, "\"")
+        )
       } else {
         # A comma table goes out as text (the viewer's locale cannot be
         # set from the file): the text is the console's.
@@ -1189,7 +1199,7 @@ test_that("change rows: glm chi-square and deviance drop unsigned, Delta AIC sig
     }
     expected <- stats::setNames(
       list(
-        .sg_plain(chi2, 2L, mark), # "9.12"
+        paste0(.sg_plain(chi2, 2L, mark), " (", lrt$Df[2L], ")"), # "9.12 (1)"
         .sg_signed(d_aic, 1L, mark), # "-7.1"
         # "9.1": one decimal, as Delta AIC, but no sign -- the drop
         # (previous - current) would read as a rise beside Delta AIC.
@@ -1207,7 +1217,11 @@ test_that("change rows: glm chi-square and deviance drop unsigned, Delta AIC sig
       expect_identical(xa$numfmt, "+0.0;-0.0;0.0")
       expect_equal(as.numeric(xd$value), d_dev, tolerance = 1e-10)
       expect_identical(xd$numfmt, "0.0")
-      expect_identical(xc$numfmt, "0.00")
+      expect_equal(as.numeric(xc$value), chi2, tolerance = 1e-10)
+      expect_identical(
+        gsub("&quot;", "\"", xc$numfmt, fixed = TRUE),
+        sprintf("0.00\" (%d)\"", as.integer(lrt$Df[2L]))
+      )
     }
   }
 })
@@ -1226,7 +1240,13 @@ test_that("change rows: robust Wald F and Wald chi-square are never signed", {
     build_lm,
     list(
       "ΔR²" = .sg_signed(diff(r2), 2L), # "+0.07"
-      "Wald F-change" = .sg_plain(wald_f, 2L) # "11.46"
+      # "11.46 (1, 29)"
+      "Wald F-change" = paste0(
+        .sg_plain(wald_f, 2L),
+        " (1, ",
+        stats::df.residual(h[[2L]]),
+        ")"
+      )
     ),
     5L
   )
@@ -1241,7 +1261,10 @@ test_that("change rows: robust Wald F and Wald chi-square are never signed", {
   lab <- trimws(vapply(body, `[`, "", 1L))
   w_row <- grep("Wald", lab, value = TRUE)
   expect_length(w_row, 1L)
-  expect_identical(.sg_pick(body, w_row, 5L), .sg_plain(wald_chi2, 2L))
+  expect_identical(
+    .sg_pick(body, w_row, 5L),
+    paste0(.sg_plain(wald_chi2, 2L), " (1)")
+  )
   expect_identical(
     .sg_pick(
       .sg_df_rows(spicy:::.format_structured_to_string_body(as_structured(
@@ -1250,7 +1273,7 @@ test_that("change rows: robust Wald F and Wald chi-square are never signed", {
       w_row,
       5L
     ),
-    .sg_plain(wald_chi2, 2L)
+    paste0(.sg_plain(wald_chi2, 2L), " (1)")
   )
 })
 
@@ -1265,7 +1288,7 @@ test_that("change rows: the string outputs take the console's decimals", {
   }
   expect_identical(
     .sg_pick(.sg_df_rows(tbl("gt")[["_data"]]), "F-change", 5L),
-    .sg_plain(f, 3L)
+    paste0(.sg_plain(f, 3L), " (1, 29)")
   )
   # The robust Wald F follows `digits` too (q = 1: b^2 / V[hp, hp]).
   V <- sandwich::vcovHC(h[[2L]], type = "HC3")
@@ -1284,7 +1307,7 @@ test_that("change rows: the string outputs take the console's decimals", {
       "Wald F-change",
       5L
     ),
-    .sg_plain(wald_f, 3L) # "11.461"
+    paste0(.sg_plain(wald_f, 3L), " (1, 29)") # "11.461 (1, 29)"
   )
   g <- list(
     glm(am ~ wt, binomial, mtcars),
@@ -1387,4 +1410,441 @@ test_that("change rows: machine outputs keep the raw numbers", {
   long <- table_regression(h, nested = TRUE, output = "long")
   chr <- vapply(long, is.character, logical(1))
   expect_false(any(grepl("^\\+", unlist(long[chr]))))
+})
+
+# ============================================================================
+# The change tests carry their degrees of freedom
+# ============================================================================
+#
+# An F-change reads "value (df1, df2)" and a chi-square change "value
+# (df)", the form of the partial F cell and of Stata's nestreg, F(1, 29).
+# The df are the ones the p-value is computed on; the oracles are the
+# engines' own anova() tables and the coefficient counts of the fits.
+
+# The cell of the row `label` in the model columns `cols` of the console.
+.cd_cells <- function(tbl, label, cols) {
+  .sg_pick(.sg_df_rows(structure(tbl, class = "data.frame")), label, cols)
+}
+.cd_f <- function(f, df1, df2, mark = ".") {
+  sprintf(
+    "%s (%d, %d)",
+    .sg_plain(f, 2L, mark),
+    as.integer(df1),
+    as.integer(df2)
+  )
+}
+.cd_chi <- function(x, df, mark = ".") {
+  sprintf("%s (%d)", .sg_plain(x, 2L, mark), as.integer(df))
+}
+
+test_that("change df: lm F-change and its LR chi-square, three models, against anova()", {
+  skip_on_cran()
+  h <- .sg_lm_fits()
+  a12 <- anova(h[[1L]], h[[2L]])
+  a23 <- anova(h[[2L]], h[[3L]])
+  tbl <- table_regression(
+    h,
+    nested = TRUE,
+    show_fit_stats = c(
+      "nobs",
+      "r2_change",
+      "f_change",
+      "lrt_change",
+      "p_change"
+    )
+  )
+  expect_identical(
+    .cd_cells(tbl, "F-change", c(5L, 8L)),
+    c(
+      .cd_f(a12$F[2L], a12$Df[2L], a12$Res.Df[2L]),
+      .cd_f(a23$F[2L], a23$Df[2L], a23$Res.Df[2L])
+    )
+  )
+  # The likelihood ratio of a least-squares pair is on the parameters
+  # the larger model adds, the count of its logLik().
+  lr <- function(a, b) 2 * (as.numeric(logLik(b)) - as.numeric(logLik(a)))
+  q <- function(a, b) attr(logLik(b), "df") - attr(logLik(a), "df")
+  expect_identical(
+    .cd_cells(tbl, "Δχ²", c(5L, 8L)),
+    c(
+      .cd_chi(lr(h[[1L]], h[[2L]]), q(h[[1L]], h[[2L]])),
+      .cd_chi(lr(h[[2L]], h[[3L]]), q(h[[2L]], h[[3L]]))
+    )
+  )
+  # The first model has no previous one: a bare en-dash, no df.
+  expect_identical(.cd_cells(tbl, "F-change", 2L), "–")
+  # p (change) is unchanged.
+  expect_identical(
+    .cd_cells(tbl, "p (change)", c(5L, 8L)),
+    .sg_p(c(a12[["Pr(>F)"]][2L], a23[["Pr(>F)"]][2L]))
+  )
+})
+
+test_that("change df: a stacked hierarchy labels each F-change with the model it compares with", {
+  skip_on_cran()
+  h <- .sg_lm_fits()
+  a12 <- anova(h[[1L]], h[[2L]])
+  a23 <- anova(h[[2L]], h[[3L]])
+  st <- table_regression(h, nested = TRUE, layout = "stacked")
+  rows <- .sg_df_rows(structure(st, class = "data.frame"))
+  expect_identical(
+    .sg_pick(rows, "F-change vs Model 1", 2L),
+    .cd_f(a12$F[2L], a12$Df[2L], a12$Res.Df[2L])
+  )
+  expect_identical(
+    .sg_pick(rows, "F-change vs Model 2", 2L),
+    .cd_f(a23$F[2L], a23$Df[2L], a23$Res.Df[2L])
+  )
+})
+
+test_that("change df: the F of a Gamma glm is anova(test = 'F')'s, on (Df, Resid. Df)", {
+  skip_on_cran()
+  g <- list(
+    glm(mpg ~ wt, data = mtcars, family = Gamma(link = "log")),
+    glm(mpg ~ wt + hp + qsec, data = mtcars, family = Gamma(link = "log"))
+  )
+  a <- anova(g[[1L]], g[[2L]], test = "F")
+  tbl <- table_regression(g, nested = TRUE)
+  expect_identical(
+    .cd_cells(tbl, "F-change", 5L),
+    .cd_f(a$F[2L], a$Df[2L], a[["Resid. Df"]][2L])
+  )
+})
+
+test_that("change df: the likelihood ratio of a Poisson pair is on anova()'s Df", {
+  skip_on_cran()
+  g <- list(
+    glm(carb ~ wt, data = mtcars, family = poisson),
+    glm(carb ~ wt + hp + am, data = mtcars, family = poisson)
+  )
+  a <- anova(g[[1L]], g[[2L]], test = "LRT")
+  expect_identical(a$Df[2L], 2)
+  tbl <- table_regression(g, nested = TRUE)
+  expect_identical(
+    .cd_cells(tbl, "Δχ²", 5L),
+    .cd_chi(a$Deviance[2L], a$Df[2L])
+  )
+})
+
+test_that("change df: the Wald F of HC3 is on (q, df.residual()), the Wald chi-square on q", {
+  skip_on_cran()
+  skip_if_not_installed("sandwich")
+  h <- .sg_lm_fits()[c(1L, 3L)]
+  V <- sandwich::vcovHC(h[[2L]], type = "HC3")
+  added <- setdiff(names(coef(h[[2L]])), names(coef(h[[1L]])))
+  b <- coef(h[[2L]])[added]
+  wald_f <- as.numeric(crossprod(b, solve(V[added, added], b))) / length(added)
+  tbl <- table_regression(h, nested = TRUE, vcov = "HC3")
+  expect_identical(
+    .cd_cells(tbl, "Wald F-change", 5L),
+    .cd_f(wald_f, length(added), stats::df.residual(h[[2L]]))
+  )
+  g <- list(
+    glm(carb ~ wt, data = mtcars, family = poisson),
+    glm(carb ~ wt + hp + am, data = mtcars, family = poisson)
+  )
+  Vg <- sandwich::vcovHC(g[[2L]], type = "HC0")
+  added <- setdiff(names(coef(g[[2L]])), names(coef(g[[1L]])))
+  b <- coef(g[[2L]])[added]
+  w <- as.numeric(crossprod(b, solve(Vg[added, added], b)))
+  tbl <- table_regression(g, nested = TRUE, vcov = "HC0")
+  expect_identical(
+    .cd_cells(tbl, "Wald χ² (change)", 5L),
+    .cd_chi(w, length(added))
+  )
+})
+
+test_that("change df: the quantile and mixed routes read the df their p-value uses", {
+  skip_on_cran()
+  skip_if_not_installed("quantreg")
+  r <- list(
+    quantreg::rq(mpg ~ wt, data = mtcars),
+    quantreg::rq(mpg ~ wt + hp + qsec, data = mtcars)
+  )
+  tb <- suppressWarnings(anova(r[[1L]], r[[2L]]))$table
+  got <- suppressWarnings(compute_nested_comparisons(r))
+  expect_identical(c(got$change_df1, got$change_df2), c(tb$ndf, tb$ddf))
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  ss <- lme4::sleepstudy
+  l <- list(
+    lme4::lmer(Reaction ~ 1 + (1 | Subject), data = ss, REML = FALSE),
+    lme4::lmer(Reaction ~ Days + (1 | Subject), data = ss, REML = FALSE)
+  )
+  a <- suppressMessages(anova(l[[1L]], l[[2L]]))
+  expect_identical(compute_nested_comparisons(l)$change_df1, a$Df[2L])
+  # nlme prints each model's parameter count: the test is on their
+  # difference.
+  n <- list(
+    nlme::lme(Reaction ~ 1, random = ~ 1 | Subject, data = ss, method = "ML"),
+    nlme::lme(Reaction ~ Days, random = ~ 1 | Subject, data = ss, method = "ML")
+  )
+  a <- anova(n[[1L]], n[[2L]])
+  expect_identical(compute_nested_comparisons(n)$change_df1, diff(a$df))
+})
+
+test_that("change df: the French table keeps ', ' between the df", {
+  skip_on_cran()
+  h <- .sg_lm_fits()[1:2]
+  a <- anova(h[[1L]], h[[2L]])
+  withr::local_options(spicy.language = "fr")
+  tbl <- table_regression(h, nested = TRUE)
+  expect_identical(
+    .cd_cells(tbl, "F (variation)", 5L),
+    .cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L], mark = ",")
+  )
+  expect_match(.cd_cells(tbl, "F (variation)", 5L), "^12,38 \\(1, 29\\)$")
+})
+
+test_that("change df: the typed view keeps the number, the string engines print the df", {
+  skip_on_cran()
+  h <- .sg_lm_fits()[1:2]
+  a <- anova(h[[1L]], h[[2L]])
+  want <- .cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L])
+  tbl <- table_regression(h, nested = TRUE)
+  s <- as_structured(tbl)
+  row <- which(s$body$.variable == "f_change")
+  expect_equal(s$body[[5L]][row], a$F[2L], tolerance = 1e-12)
+  expect_identical(s$col_meta[[names(s$body)[5L]]]$display_cells[row], want)
+  expect_identical(
+    .sg_norm(spicy:::.format_structured_to_string_body(s)[[5L]][row]),
+    want
+  )
+  # output = "data.frame" keeps the statistic as a number.
+  df <- table_regression(h, nested = TRUE, output = "data.frame")
+  expect_equal(
+    df[["Model 2: B"]][df$variable == "f_change"],
+    a$F[2L],
+    tolerance = 1e-12
+  )
+  # inline() cites the statistic, as before.
+  expect_identical(
+    inline(tbl, "f_change", model = "Model 2"),
+    .sg_plain(a$F[2L], 2L)
+  )
+  # tidy() and the long output hold the coefficients only: no change row
+  # reaches them, and their df / df.residual stay the coefficients'.
+  skip_if_not_installed("broom")
+  td <- broom::tidy(tbl)
+  expect_false(any(td$term %in% names(spicy:::.NESTED_TEST_DF)))
+  expect_true(all(is.na(td$df.residual)))
+})
+
+test_that("change df: tinytable prints the cell under the model's own headers", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  h <- .sg_lm_fits()[1:2]
+  a <- anova(h[[1L]], h[[2L]])
+  tt <- table_regression(h, nested = TRUE, output = "tinytable")
+  plain <- table_regression(h, output = "tinytable")
+  # No df column and no repeated header: the same columns as the table
+  # without the hierarchy.
+  expect_identical(tt@names, plain@names)
+  rows <- .sg_df_rows(tt@data)
+  expect_identical(
+    .sg_pick(rows, "F-change", 5L),
+    .cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L])
+  )
+})
+
+test_that("change df: a fractional df prints with one decimal, a whole one as an integer", {
+  skip_on_cran()
+  skip_if_not_installed("clubSandwich")
+  h <- .sg_lm_fits()[c(1L, 3L)]
+  # The HTZ test of the CR2 matrix the coefficient rows use.
+  V <- clubSandwich::vcovCR(h[[2L]], cluster = mtcars$cyl, type = "CR2")
+  ht <- clubSandwich::Wald_test(
+    h[[2L]],
+    constraints = clubSandwich::constrain_zero(c("hp", "qsec")),
+    vcov = V,
+    test = "HTZ"
+  )
+  tbl <- table_regression(h, nested = TRUE, vcov = "CR2", cluster = ~cyl)
+  # The df the table computed are HTZ's, the denominator fractional.
+  fs <- attr(tbl, "spicy_fit_stats")
+  expect_equal(fs$wald_df1[[2L]], ht$df_num, tolerance = 1e-8)
+  expect_equal(fs$wald_df2[[2L]], ht$df_denom, tolerance = 1e-8)
+  expect_gt(abs(fs$wald_df2[[2L]] - round(fs$wald_df2[[2L]])), 0.1)
+  cell <- .cd_cells(tbl, "Wald F-change", 5L)
+  expect_identical(
+    cell,
+    sprintf(
+      "%.2f (%d, %.1f)",
+      fs$wald_f_change[[2L]],
+      as.integer(fs$wald_df1[[2L]]),
+      fs$wald_df2[[2L]]
+    )
+  )
+  expect_identical(cell, "174.77 (2, 0.8)")
+  withr::with_options(list(spicy.language = "fr"), {
+    tbl_fr <- table_regression(h, nested = TRUE, vcov = "CR2", cluster = ~cyl)
+    expect_identical(
+      .cd_cells(tbl_fr, "F de Wald (variation)", 5L),
+      "174,77 (2, 0,8)"
+    )
+  })
+  # The helper itself: whole df stay integers, a fraction keeps one
+  # decimal in the table's mark.
+  expect_identical(spicy:::.format_df_suffix(c(2, 28)), " (2, 28)")
+  expect_identical(spicy:::.format_df_suffix(c(2, 2.61)), " (2, 2.6)")
+  expect_identical(spicy:::.format_df_suffix(c(2, 2.61), ","), " (2, 2,6)")
+  expect_identical(spicy:::.format_df_suffix(5.922246), " (5.9)")
+  expect_identical(spicy:::.format_df_suffix(1158 + 1e-10), " (1158)")
+  expect_identical(spicy:::.format_df_suffix(numeric(0)), "")
+})
+
+test_that("change df: the partial F cell keeps its integer df", {
+  skip_on_cran()
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  fit <- lm(mpg ~ wt + cyl, data = d)
+  a <- anova(lm(mpg ~ wt, data = d), fit)
+  tbl <- table_regression(fit, show_columns = c("b", "partial_f"))
+  body <- structure(tbl, class = "data.frame")
+  cells <- trimws(body$F[trimws(body$Variable) %in% c("6", "8")])
+  expect_identical(cells, rep(.cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L]), 2L))
+  expect_identical(cells[[1L]], "7.29 (2, 28)")
+})
+
+test_that("change df: Excel keeps the statistic a number, the df in its format", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  h <- .sg_lm_fits()
+  a12 <- anova(h[[1L]], h[[2L]])
+  a23 <- anova(h[[2L]], h[[3L]])
+  build <- function(output, path = NULL) {
+    .sg_route(output, path, function(...) {
+      table_regression(h, nested = TRUE, output = output, ...)
+    })
+  }
+  x <- .sg_excel(build, "F-change", c(5L, 8L))
+  expect_equal(
+    as.numeric(x$value),
+    c(a12$F[2L], a23$F[2L]),
+    tolerance = 1e-12
+  )
+  expect_identical(
+    gsub("&quot;", "\"", x$numfmt, fixed = TRUE),
+    c(
+      sprintf(
+        "0.00\" (%d, %d)\"",
+        as.integer(a12$Df[2L]),
+        as.integer(a12$Res.Df[2L])
+      ),
+      sprintf(
+        "0.00\" (%d, %d)\"",
+        as.integer(a23$Df[2L]),
+        as.integer(a23$Res.Df[2L])
+      )
+    )
+  )
+  # The cells are numbers in the sheet, not text.
+  p <- tempfile(fileext = ".xlsx")
+  build("excel", p)
+  wb <- openxlsx2::wb_load(p)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  d <- openxlsx2::wb_to_df(wb, col_names = FALSE)
+  r <- as.integer(rownames(d)[which(.sg_norm(d[[1L]]) == "F-change")])
+  expect_true(all(
+    is.na(cc$c_t[cc$r %in% paste0(c("E", "H"), r)]) |
+      !nzchar(cc$c_t[cc$r %in% paste0(c("E", "H"), r)])
+  ))
+})
+
+test_that("change df: a fixest pair takes the df of its glm twin's test", {
+  skip_on_cran()
+  skip_if_not_installed("fixest")
+  g <- list(
+    glm(carb ~ wt, data = mtcars, family = poisson),
+    glm(carb ~ wt + hp + am, data = mtcars, family = poisson)
+  )
+  a <- anova(g[[1L]], g[[2L]], test = "LRT")
+  f <- list(
+    fixest::feglm(carb ~ wt, data = mtcars, family = "poisson"),
+    fixest::feglm(carb ~ wt + hp + am, data = mtcars, family = "poisson")
+  )
+  cell <- .cd_cells(
+    table_regression(f, nested = TRUE),
+    "\u0394\u03c7\u00b2",
+    5L
+  )
+  expect_identical(cell, .cd_chi(a$Deviance[2L], a$Df[2L]))
+  expect_identical(cell, "11.16 (2)")
+})
+
+test_that("change df: a polr pair reads anova.polr's padded '   Df' column", {
+  skip_on_cran()
+  skip_if_not_installed("MASS")
+  w <- MASS::housing
+  p <- list(
+    MASS::polr(Sat ~ Infl, weights = Freq, data = w, Hess = TRUE),
+    MASS::polr(Sat ~ Infl + Type + Cont, weights = Freq, data = w, Hess = TRUE)
+  )
+  a <- anova(p[[1L]], p[[2L]])
+  expect_true("   Df" %in% names(a))
+  cell <- .cd_cells(
+    table_regression(p, nested = TRUE),
+    "\u0394\u03c7\u00b2",
+    5L
+  )
+  expect_identical(cell, .cd_chi(a[["LR stat."]][2L], a[["   Df"]][2L]))
+  expect_identical(cell, "64.27 (4)")
+})
+
+test_that("change df: a table or a fit-stat row without df gives none", {
+  # A two-model table with no df column, a test whose df2 is unknown.
+  av <- data.frame(stat = c(NA, 2), p = c(NA, 0.1))
+  expect_identical(spicy:::anova_test_df(av), NA_real_)
+  fs <- data.frame(change_df1 = 1, change_df2 = NA_real_)
+  expect_null(spicy:::.nested_test_df("f_change", fs))
+})
+
+# The column of the decimal mark of each cell of an aligned column, or
+# the end of its integer part when it has none; the df after a test are
+# not read, and a cell without a digit (blank, en-dash) has none.
+.cd_anchor <- function(x, mark = ".") {
+  x <- gsub("\u2007", " ", as.character(x), fixed = TRUE)
+  core <- sub(" +$", "", sub(" \\([^()]*\\) *$", "", x))
+  pos <- regexpr(mark, core, fixed = TRUE)
+  out <- ifelse(pos > 0L, pos, nchar(core) + 1L)
+  out[!grepl("[0-9]", core)] <- NA_integer_
+  unique(stats::na.omit(out))
+}
+
+test_that("change df: with digits = 0 a model column keeps one decimal column", {
+  skip_on_cran()
+  h <- .sg_lm_fits()
+  tbl <- table_regression(h, nested = TRUE, digits = 0L)
+  body <- structure(tbl, class = "data.frame")
+  expect_identical(.cd_cells(tbl, "F-change", 5L), "12 (1, 29)")
+  for (j in c(2L, 5L, 8L)) {
+    expect_length(.cd_anchor(body[[j]]), 1L)
+  }
+  skip_if_not_installed("tinytable")
+  tt <- table_regression(h, nested = TRUE, digits = 0L, output = "tinytable")
+  for (j in c(2L, 5L, 8L)) {
+    expect_length(.cd_anchor(tt@data[[j]]), 1L)
+  }
+})
+
+test_that("change df: a fractional df in a comma table does not move the column", {
+  skip_on_cran()
+  skip_if_not_installed("clubSandwich")
+  h <- .sg_lm_fits()[c(1L, 3L)]
+  build <- function(output) {
+    table_regression(
+      h,
+      nested = TRUE,
+      vcov = "CR2",
+      cluster = ~cyl,
+      digits = 0L,
+      decimal_mark = ",",
+      output = output
+    )
+  }
+  tbl <- build("default")
+  expect_identical(.cd_cells(tbl, "Wald F-change", 5L), "175 (2, 0,8)")
+  expect_length(.cd_anchor(structure(tbl, class = "data.frame")[[5L]], ","), 1L)
+  skip_if_not_installed("tinytable")
+  expect_length(.cd_anchor(build("tinytable")@data[[5L]], ","), 1L)
 })

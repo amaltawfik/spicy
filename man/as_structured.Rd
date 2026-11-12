@@ -100,7 +100,9 @@ keyed by each model's first structured column name.
 name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label). A column whose cells cannot be
 reconstructed from one number -- the \code{"events/N"} counts of
-\code{show_columns = "n_events"} -- also carries \code{display_cells}, a
+\code{show_columns = "n_events"}, a change test with its degrees of
+freedom (\code{"12.38 (1, 29)"}, the statistic in \code{body}) -- also
+carries \code{display_cells}, a
 character vector as long as \code{body} holding the display string
 of each cell (\code{NA} where the number formats normally). A
 renderer must prefer it over the numeric value.

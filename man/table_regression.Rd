@@ -1205,7 +1205,16 @@ comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
 model minus previous (\code{"r2_change"}, \code{"adj_r2_change"},
 \code{"f2_change"}, and the AIC, AICc and BIC changes), print with an
 explicit sign (\code{+0.07}, \code{-9.4}) in every output. The test
-statistics and \code{"p_change"} are never signed. \code{"deviance_change"}
+statistics and \code{"p_change"} are never signed. The test statistics
+carry their degrees of freedom, as the partial F cell does:
+\code{12.38 (1, 29)} for an F, the number of added parameters and the
+residual df of the larger model (the denominator df for the Wald F
+of a robust \code{vcov}), \code{9.12 (1)} for a chi-square. A df that is not
+a whole number (the HTZ denominator under \code{"CR2"}, the df of a
+smooth term) prints with one decimal, \code{174.77 (2, 0.8)}.
+\code{inline()} cites the statistic alone, \code{output = "data.frame"} keeps
+it as a number, and Excel writes the number with the df in its
+number format. \code{"deviance_change"}
 is the drop in deviance (previous minus current), positive when
 the larger model fits better, and is not signed either.
 }

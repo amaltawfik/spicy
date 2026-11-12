@@ -172,7 +172,7 @@ extract_partial_effect_rows <- function(
         factor_level_pos = fmeta$factor_level_pos %||% NA_integer_,
         # The second df of the F every row of the term is tested on; the
         # partial F cell prints both, "7.29 (2, 28)".
-        df_residual = eff$df2
+        df_residual = eff$df_residual
       )
     }
   }
@@ -239,7 +239,7 @@ compute_partial_effects_for_term <- function(
   list(
     f_obs = f_obs,
     df1 = df1,
-    df2 = df2,
+    df_residual = df2,
     p_value = p_value,
     partial_f = list(
       estimate = f_obs,
