@@ -552,6 +552,12 @@ freedom. A domain reduced to one primary sampling unit has none, and its
 interval shows the undefined dash rather than an interval built on
 `qt(p, df = 0)`.
 
+A cell that survey cannot estimate, most often because a stratum holds a
+single primary sampling unit under its default
+`options(survey.lonely.psu = "fail")`, shows a dash: the function warns
+once, quoting survey's messages (class `spicy_svy_estimation_failed`),
+and the note says what the dash means.
+
 The comparison is a single test on the whole design, not a set of
 pairwise ones:
 [`survey::svyttest()`](https://rdrr.io/pkg/survey/man/svyttest.html)

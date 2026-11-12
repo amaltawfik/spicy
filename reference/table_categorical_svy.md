@@ -204,7 +204,12 @@ table_categorical_svy(
   Interval method passed to
   [`survey::svyciprop()`](https://rdrr.io/pkg/survey/man/svyciprop.html):
   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`, `"mean"`,
-  `"xlogit"` or `"wilson"`.
+  `"xlogit"` or `"wilson"`. `"logit"` and `"likelihood"` fit a logistic
+  regression, which does not allow negative weights: where the weights
+  of a domain change sign, as linear calibration can make them, its
+  intervals are not reported, the note says so and the call warns
+  (`spicy_negative_weights_no_ci`). The five other methods accept
+  negative weights.
 
 - ci_level:
 
@@ -452,6 +457,12 @@ Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
 presentation standards for proportions apply to its complement as well
 (Parker et al. 2017, pp. 2-3). The note says so when such a cell is
 shown.
+
+A cell that survey cannot estimate, most often because a stratum holds a
+single primary sampling unit under its default
+`options(survey.lonely.psu = "fail")`, shows a dash: the function warns
+once, quoting survey's messages (class `spicy_svy_estimation_failed`),
+and the note says what the dash means.
 
 ## The test
 

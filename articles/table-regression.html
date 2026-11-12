@@ -351,7 +351,9 @@ confidence interval derived from noncentral-<code>F</code> inversion
 <code>&lt;token&gt;_ci</code> column. The shortcuts
 <code>"all_f2"</code>, <code>"all_eta2"</code>, and
 <code>"all_omega2"</code> each expand to the point estimate together
-with its CI column.</p>
+with its CI column. The partial F the three are built on is a column of
+its own, <code>partial_f</code>, printed as <code>value (df)</code> with
+the residual degrees of freedom in the table note.</p>
 <p><code>sochealth$education</code> is stored as an ordered factor,
 which R codes with polynomial contrasts (<code>.L</code> = linear,
 <code>.Q</code> = quadratic) — trend components across the ordered
@@ -1398,6 +1400,19 @@ the same joint hypothesis are asymptotically equivalent but differ in
 finite samples; many statisticians prefer the likelihood-ratio form when
 both are available (Long &amp; Freese 2014 §3.2.2), which is what
 <code>partial_chi2</code> computes.</p>
+<p>The term-level test of a <code>glm</code> is the F that
+<code>anova(reduced, full, test = "F")</code> reports when the
+dispersion is estimated, the likelihood-ratio chi-square otherwise. A
+gaussian, Gamma, inverse Gaussian, Tweedie or quasi-family
+<code>glm</code> therefore asks for its twin, <code>partial_f</code>,
+the column an <code>lm</code> takes too, and refuses
+<code>partial_chi2</code>. Its value is the one
+<code>car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")</code>
+reports (car’s default Pearson estimate differs by the IRLS convergence
+error only), and the table note gives its residual degrees of freedom. A
+gaussian <code>glm</code> and its <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> twin print the same
+F. A table that mixes both kinds of model asks for both tokens, and each
+model fills its own column.</p>
 <p>The same token extends to mixed-effects models (<code>lmer</code>,
 <code>glmer</code>, <code>glmmTMB</code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), where
 the term-level test is the Wald chi-square built from the same

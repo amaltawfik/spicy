@@ -293,7 +293,12 @@ digit (F = 3.13 on 3 and 1195 df, p = .025):</p>
 <p>For <code>glm</code> fits, the <code>partial_chi2</code> column
 reports the same joint question per term as a likelihood-ratio
 chi-square with its df, without needing a second model (see the main
-article’s <em>Term-level partial chi-square</em>).</p>
+article’s <em>Term-level partial chi-square</em>). An <code>lm</code>
+and a <code>glm</code> whose dispersion is estimated (gaussian, Gamma,
+quasi families) ask it with <code>partial_f</code>, the F test that
+<code>anova(reduced, full, test = "F")</code> reports, the value
+<code>car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")</code>
+gives.</p>
 <p>The rule cuts the other way too:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_r</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>

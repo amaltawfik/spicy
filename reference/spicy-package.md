@@ -388,6 +388,29 @@ parent class plus a leaf class describing the specific cause:
     negatively weighted rows; the estimates are still reported and the
     table note says so.
 
+  - `spicy_negative_weights_no_ci` – signaled together with
+    `spicy_undefined_stat` when
+    [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+    withholds the percentage intervals of a domain whose weights change
+    sign, because its `ci_method` (`"logit"` or `"likelihood"`) fits a
+    logistic regression, which does not allow negative weights. The
+    percentages are still reported, the table note says so, and the
+    warning names the methods that accept negative weights.
+
+  - `spicy_svy_estimation_failed` – signaled together with
+    `spicy_undefined_stat` when survey stops on estimates of
+    [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+    [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+    or
+    [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
+    most often on a stratum with a single primary sampling unit under
+    `options(survey.lonely.psu = "fail")`. The cells that could not be
+    estimated show a dash and the table note says what the dash means.
+    One warning per table quotes each distinct message of survey with
+    the calls that stopped on it; the condition carries them in
+    `survey_message` (a character vector) and `fn` (a list of the same
+    length).
+
   - `spicy_dropped_na` – `NA` observations were silently excluded from
     the computation (e.g., `NA` weights).
 

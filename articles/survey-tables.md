@@ -297,6 +297,43 @@ domain. Each item is tested against `stype` by
 [`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html), Rao-Scott
 corrected, and the four p-values are adjusted together by Holm’s method.
 
+## A stratum with one sampling unit
+
+A stratum with a single primary sampling unit has no variance to
+estimate, and under its default `options(survey.lonely.psu = "fail")`
+survey stops there, point estimate included. The table is still
+produced, with a dash in each cell survey could not estimate and a
+sentence of the note that says what the dash means. The function also
+warns, once, quoting survey’s message. Here the one school left in
+stratum H falls in the `No` group of `sch.wide`, so the other group is
+estimated as usual:
+
+``` r
+
+keep <- c(which(apistrat$stype != "H"), which(apistrat$stype == "H")[1])
+lonely <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat[keep, ]
+)
+table_continuous_svy(lonely, select = api00, by = sch.wide)
+#> Warning: Some estimates of the table could not be computed:
+#> • `survey::svyttest()`, `survey::svymean()`, `survey::svyvar()` stopped: "Stratum (H) has only one PSU at stage 1"
+#> ℹ The cells that could not be estimated show a dash.
+#> ℹ A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).
+#> Descriptive statistics by sch.wide
+#> 
+#>  Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n   p 
+#> ──────────┼─────────────────────────────────────────────────────────────────────
+#>  api00    │ No        –       –    398.00  778.00      –          –       25  – 
+#>           │ Yes    678.42  121.28  421.00  893.00   655.85     700.99    126    
+#> 
+#> Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
+```
+
+The values `"adjust"`, `"average"`, `"remove"` and `"certainty"` of that
+option let survey estimate these cells, each by its own convention
+([`?survey::surveyoptions`](https://rdrr.io/pkg/survey/man/surveyoptions.html)),
+and the table then follows them.
+
 ## Replicate weights
 
 A replicate-weights design goes through the same functions. The point

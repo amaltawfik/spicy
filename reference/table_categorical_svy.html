@@ -266,7 +266,12 @@ observation holds is an error (class <code>spicy_invalid_data</code>).</p></dd>
 <dt id="arg-ci-method">ci_method<a class="anchor" aria-label="anchor" href="#arg-ci-method"></a></dt>
 <dd><p>Interval method passed to <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">survey::svyciprop()</a></code>:
 <code>"logit"</code> (default), <code>"likelihood"</code>, <code>"asin"</code>, <code>"beta"</code>,
-<code>"mean"</code>, <code>"xlogit"</code> or <code>"wilson"</code>.</p></dd>
+<code>"mean"</code>, <code>"xlogit"</code> or <code>"wilson"</code>. <code>"logit"</code> and <code>"likelihood"</code>
+fit a logistic regression, which does not allow negative weights:
+where the weights of a domain change sign, as linear calibration can
+make them, its intervals are not reported, the note says so and the
+call warns (<code>spicy_negative_weights_no_ci</code>). The five other methods
+accept negative weights.</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -497,6 +502,11 @@ and Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
 presentation standards for proportions apply to its complement as well
 (Parker et al. 2017, pp. 2-3). The note says so when such a cell is
 shown.</p>
+<p>A cell that survey cannot estimate, most often because a stratum holds
+a single primary sampling unit under its default
+<code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function
+warns once, quoting survey's messages (class
+<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.</p>
     </div>
     <div class="section level2">
     <h2 id="the-test">The test<a class="anchor" aria-label="anchor" href="#the-test"></a></h2>

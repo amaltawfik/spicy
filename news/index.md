@@ -4,6 +4,26 @@
 
 ### Breaking changes
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  test the terms of a [`glm()`](https://rdrr.io/r/stats/glm.html) whose
+  dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie,
+  `negative.binomial(theta)`, the quasi families) with the partial F
+  test, in the new column `partial_f`: the deviance change over its
+  degrees of freedom and over the dispersion
+  [`summary()`](https://rdrr.io/r/base/summary.html) estimates, on the
+  residual degrees of freedom, the F that
+  `anova(reduced, full, test = "F")` and
+  `car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")`
+  report. `partial_chi2` is refused for these models. It gave a
+  likelihood-ratio chi-square scaled by the dispersion, and nothing for
+  the quasi families, which are now tested. Binomial, Poisson and
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits keep
+  `partial_chi2`, unchanged. A table that mixes both kinds of model asks
+  for both columns: asking for one alone is refused rather than leaving
+  a model without its test.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   and
@@ -112,6 +132,16 @@
 
 ### New features
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `partial_f`, the Type II partial F test of each term, for
+  [`lm()`](https://rdrr.io/r/stats/lm.html) (the F of
+  `car::Anova(type = 2)`) and for a
+  [`glm()`](https://rdrr.io/r/stats/glm.html) whose dispersion is
+  estimated. The cell reads “F (df)” and the note gives the residual
+  degrees of freedom. A gaussian
+  [`glm()`](https://rdrr.io/r/stats/glm.html) and its
+  [`lm()`](https://rdrr.io/r/stats/lm.html) twin print the same F.
+
 - New
   [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   tabulates a battery of items rated on one scale (a Likert grid): one
@@ -137,7 +167,9 @@
   with `by`, each item gets a design-based test (`chisq_statistic`,
   Rao-Scott by default), Holm-adjusted by default.
   [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
-  points a design to it.
+  points a design to it. A cell the design cannot estimate shows a dash,
+  with a warning and a note sentence, as in
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
@@ -220,6 +252,30 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  say why a cell shows a dash. Under the default
+  `options(survey.lonely.psu = "fail")`, a stratum with a single primary
+  sampling unit stops survey, and the table showed dashes without a
+  word. The call now warns once, quoting survey’s messages (class
+  `spicy_svy_estimation_failed`), and the note says “A dash marks an
+  estimate the design could not provide: a stratum has a single primary
+  sampling unit.” Any other failure on a shown cell gets “A dash marks
+  an estimate the design could not provide.”
+
+- `table_categorical_svy(proportion_ci = TRUE)` under
+  `ci_method = "logit"` or `"likelihood"` leaves the percentage CIs of a
+  domain whose weights change sign blank, warns (class
+  `spicy_negative_weights_no_ci`) naming the five methods that accept
+  negative weights, and says so in the note. The CIs were dashes with no
+  explanation.
+
+- `table_categorical_svy(proportion_ci = TRUE, drop_na = TRUE)` gives
+  the percentage CIs of a variable with missing values on a calibrated
+  or post-stratified design. Every interval was a dash, under every
+  `ci_method`.
 
 - `table_regression(standardized = "refit")` on a
   [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit tests

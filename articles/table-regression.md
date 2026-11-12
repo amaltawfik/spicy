@@ -245,7 +245,9 @@ measures are available — Cohen’s `f²` (`partial_f2`), Pearson’s partial
 noncentral-`F` inversion (Smithson 2003; Steiger 2004), exposed as a
 separate `<token>_ci` column. The shortcuts `"all_f2"`, `"all_eta2"`,
 and `"all_omega2"` each expand to the point estimate together with its
-CI column.
+CI column. The partial F the three are built on is a column of its own,
+`partial_f`, printed as `value (df)` with the residual degrees of
+freedom in the table note.
 
 `sochealth$education` is stored as an ordered factor, which R codes with
 polynomial contrasts (`.L` = linear, `.Q` = quadratic) — trend
@@ -1315,6 +1317,19 @@ likelihood-ratio tests of the same joint hypothesis are asymptotically
 equivalent but differ in finite samples; many statisticians prefer the
 likelihood-ratio form when both are available (Long & Freese 2014
 §3.2.2), which is what `partial_chi2` computes.
+
+The term-level test of a `glm` is the F that
+`anova(reduced, full, test = "F")` reports when the dispersion is
+estimated, the likelihood-ratio chi-square otherwise. A gaussian, Gamma,
+inverse Gaussian, Tweedie or quasi-family `glm` therefore asks for its
+twin, `partial_f`, the column an `lm` takes too, and refuses
+`partial_chi2`. Its value is the one
+`car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")`
+reports (car’s default Pearson estimate differs by the IRLS convergence
+error only), and the table note gives its residual degrees of freedom. A
+gaussian `glm` and its [`lm()`](https://rdrr.io/r/stats/lm.html) twin
+print the same F. A table that mixes both kinds of model asks for both
+tokens, and each model fills its own column.
 
 The same token extends to mixed-effects models (`lmer`, `glmer`,
 `glmmTMB`, [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), where

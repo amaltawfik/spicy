@@ -416,6 +416,11 @@ Under <code>drop_na = FALSE</code>, the missing answers are a level of their own
 and stay in the domain. An answer that <code>levels</code> leaves out is outside
 the domain either way. An item that offers one level is 100% by
 arithmetic: survey does not estimate a variable with one level.</p>
+<p>A cell that survey cannot estimate, most often because a stratum holds
+a single primary sampling unit under its default
+<code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function
+warns once, quoting survey's messages (class
+<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.</p>
 <p><code>n</code> is the observed count of the domain, the respondents and not the
 estimated population, as in <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>. A row with a
 missing <code>by</code> leaves the table, and the note gives their count.</p>

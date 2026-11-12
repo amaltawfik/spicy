@@ -575,6 +575,11 @@ strata each domain retains, so a grouped table generally carries a
 of freedom. A domain reduced to one primary sampling unit has none,
 and its interval shows the undefined dash rather than an interval
 built on <code>qt(p, df = 0)</code>.</p>
+<p>A cell that survey cannot estimate, most often because a stratum holds
+a single primary sampling unit under its default
+<code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function
+warns once, quoting survey's messages (class
+<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.</p>
 <p>The comparison is a single test on the whole design, not a set of
 pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">survey::svyttest()</a></code> with two observed groups,
 <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code> on <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code> with three or more,
