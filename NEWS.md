@@ -100,8 +100,9 @@
 
 * `table_regression()` gains `partial_f`, the Type II partial F test of
   each term, for `lm()` (the F of `car::Anova(type = 2)`) and for a
-  `glm()` whose dispersion is estimated. The cell reads "F (df)" and the
-  note gives the residual degrees of freedom. A gaussian `glm()` and its
+  `glm()` whose dispersion is estimated. The cell reads "F (df1, df2)",
+  the term and residual degrees of freedom. `tidy()` and the long output
+  carry them in `df` and `df.residual`. A gaussian `glm()` and its
   `lm()` twin print the same F.
 
 * New `table_battery()` tabulates a battery of items rated on one scale
@@ -186,6 +187,11 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* In the rich outputs (tinytable, gt, flextable, Excel, Word), the
+  degrees of freedom of a term-level test have their own header, "df"
+  and "residual df", instead of repeating the statistic's header
+  ("χ² | χ²").
 
 * `table_categorical_svy()` and `table_continuous_svy()` say why a cell
   shows a dash. Under the default `options(survey.lonely.psu = "fail")`,
