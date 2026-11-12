@@ -193,6 +193,15 @@
   and "residual df", instead of repeating the statistic's header
   ("χ² | χ²").
 
+* The survey-design tables say survey's own warnings once. Under
+  `options(survey.lonely.psu = "adjust", survey.adjust.domain.lonely =
+  TRUE)`, a stratum lonely within a domain made survey warn at every
+  estimate, up to six times for one table. Each distinct warning is now
+  raised once per table, with the number of times survey raised it. The
+  warning that a cell could not be estimated (class
+  `spicy_svy_estimation_failed`) carries the call of the table function,
+  so its header names the table.
+
 * `table_categorical_svy()` and `table_continuous_svy()` say why a cell
   shows a dash. Under the default `options(survey.lonely.psu = "fail")`,
   a stratum with a single primary sampling unit stops survey, and the
