@@ -137,8 +137,10 @@
   [`lm()`](https://rdrr.io/r/stats/lm.html) (the F of
   `car::Anova(type = 2)`) and for a
   [`glm()`](https://rdrr.io/r/stats/glm.html) whose dispersion is
-  estimated. The cell reads “F (df)” and the note gives the residual
-  degrees of freedom. A gaussian
+  estimated. The cell reads “F (df1, df2)”, the term and residual
+  degrees of freedom.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and the
+  long output carry them in `df` and `df.residual`. A gaussian
   [`glm()`](https://rdrr.io/r/stats/glm.html) and its
   [`lm()`](https://rdrr.io/r/stats/lm.html) twin print the same F.
 
@@ -252,6 +254,11 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- In the rich outputs (tinytable, gt, flextable, Excel, Word), the
+  degrees of freedom of a term-level test have their own header, “df”
+  and “residual df”, instead of repeating the statistic’s header (“χ² \|
+  χ²”).
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
@@ -2103,7 +2110,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonization across the table family

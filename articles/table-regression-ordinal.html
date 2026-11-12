@@ -455,7 +455,7 @@ only when the response has more than two categories.</p>
 </h2>
 <p>The <code>polr</code> and <code>clm</code> fits accept one
 cluster-robust estimator, <code>vcov = "CR1"</code>, computed by
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>: the CR0 sandwich scaled by G/(G − 1)
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>: the CR0 sandwich scaled by G/(G − 1)
 for G clusters. The CR2 / CR3 small-sample bias-reduction adjustments
 are defined for (generalized) linear models — <code>clubSandwich</code>
 has no method for an ordinal MLE — so <code>"CR0"</code>,
@@ -1474,7 +1474,7 @@ row is labeled by its response category in the
 <code>outcome_level</code> column:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 17</span></span></span>
 <span><span class="co">#&gt;    model_id outcome         outcome_level term  estimate_type estimate std.error</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
@@ -1488,9 +1488,9 @@ row is labeled by its response category in the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> M1       self_rated_hea… Very good     sexM… ame            3.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.020<span style="text-decoration: underline;">4</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            sexM… B              1.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.110    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 13 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   df &lt;dbl&gt;, p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 10 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   df &lt;dbl&gt;, df.residual &lt;dbl&gt;, p.value &lt;dbl&gt;, test_type &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

@@ -352,8 +352,9 @@ confidence interval derived from noncentral-<code>F</code> inversion
 <code>"all_f2"</code>, <code>"all_eta2"</code>, and
 <code>"all_omega2"</code> each expand to the point estimate together
 with its CI column. The partial F the three are built on is a column of
-its own, <code>partial_f</code>, printed as <code>value (df)</code> with
-the residual degrees of freedom in the table note.</p>
+its own, <code>partial_f</code>, printed as <code>value (q, df)</code>:
+the term’s degrees of freedom, then the residual degrees of freedom of
+the model.</p>
 <p><code>sochealth$education</code> is stored as an ordered factor,
 which R codes with polynomial contrasts (<code>.L</code> = linear,
 <code>.Q</code> = quadratic) — trend components across the ordered
@@ -893,7 +894,7 @@ are also available via <code>vcov = "bootstrap"</code> /
 <p>When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set
 <code>vcov = "HC*"</code> for sandwich-style standard errors via
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
 through <code>HC5</code>; <code>HC3</code> is the small-sample-friendly
 default (Long and Ervin 2000):</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -1409,10 +1410,11 @@ the column an <code>lm</code> takes too, and refuses
 <code>partial_chi2</code>. Its value is the one
 <code>car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")</code>
 reports (car’s default Pearson estimate differs by the IRLS convergence
-error only), and the table note gives its residual degrees of freedom. A
-gaussian <code>glm</code> and its <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> twin print the same
-F. A table that mixes both kinds of model asks for both tokens, and each
-model fills its own column.</p>
+error only), and its cell gives both of its degrees of freedom,
+<code>3.45 (2, 28)</code> for an F on 2 and 28, as Stata and SAS report
+them. A gaussian <code>glm</code> and its <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> twin print
+the same F. A table that mixes both kinds of model asks for both tokens,
+and each model fills its own column.</p>
 <p>The same token extends to mixed-effects models (<code>lmer</code>,
 <code>glmer</code>, <code>glmmTMB</code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), where
 the term-level test is the Wald chi-square built from the same
@@ -2224,7 +2226,7 @@ Satterthwaite df flows through verbatim:</p>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 17</span></span></span>
 <span><span class="co">#&gt;   model_id outcome outcome_level term  estimate_type estimate std.error conf.low</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            (Int… B              65.2       1.66    62.0   </span></span>
@@ -2235,9 +2237,9 @@ Satterthwaite df flows through verbatim:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            sexM… beta            0.247     0.057<span style="text-decoration: underline;">9</span>   0.133 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            smok… beta           -<span style="color: #BB0000;">0.110</span>     0.070<span style="text-decoration: underline;">8</span>  -<span style="color: #BB0000;">0.249</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   factor_level &lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   df.residual &lt;dbl&gt;, p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 15</span></span></span>
 <span><span class="co">#&gt;   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma</span></span>

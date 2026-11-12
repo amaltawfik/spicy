@@ -1030,9 +1030,10 @@ other `output` values, returns the format-specific object: `gt_tbl`,
 [`as.data.frame.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md));
 for `"long"` a `tbl_df` (`model_id`, `outcome`, `term`, `estimate_type`,
 `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
-`p.value`, `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the
-file path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
-for `"clipboard"`. The two data frames carry the note as printed in
+`df.residual` (the second df of an F test, `NA` elsewhere), `p.value`,
+`test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the file path,
+invisibly, for `"excel"` and `"word"`; the table, invisibly, for
+`"clipboard"`. The two data frames carry the note as printed in
 `attr(x, "note")`. With `layout = "stacked"`, the stacked table of
 [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
 whose value is described there.
@@ -1096,8 +1097,10 @@ Each token = one displayed column.
   deliberate departure from the Type-III default of SAS PROC MIXED and
   `lmerTest` (the two conventions coincide for models without
   interactions). Rendered as `value (df)` to disambiguate factor terms
-  (k-1 df) from numeric terms (1 df); the residual df of the F are given
-  in the table note.
+  (k-1 df) from numeric terms (1 df), and the partial F as `F (q, df)`
+  with both of its degrees of freedom, `3.45 (2, 28)`, as Stata and SAS
+  report them: each cell carries the residual df of its own model, and
+  the note defines the statistic only.
 
 - Variance explained per fit – `lm` only: `"r2"`, `"adj_r2"`. Like
   `"n"`, these are *per-fit* columns: they are populated by
@@ -1397,7 +1400,7 @@ statistics beside the others.
 - `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)).
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)).
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
@@ -1477,7 +1480,7 @@ silent model-based result under a robust label:
   all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`. `lm`
   additionally takes `"CR1S"` – the full Stata `regress, vce(cluster)`
   convention: the CR1S small-sample scaling (equal to
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
   with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
   clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
   Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
@@ -1492,7 +1495,7 @@ silent model-based result under a robust label:
 - `mlogit`:
 
   `classical` + `"CR1"` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
@@ -1515,7 +1518,7 @@ silent model-based result under a robust label:
   [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`:
 
   `classical` + `"CR1"` only:
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
   computes one cluster estimator for these, the CR0 sandwich scaled by
   \\G/(G-1)\\, `G` the number of clusters (clubSandwich's CR1). `"CR0"`,
   `"CR2"` and `"CR3"` are refused, as are `HC*` and the resamplers.
@@ -1579,7 +1582,7 @@ silent model-based result under a robust label:
   dispersion blocks and the AME. `"CR0"` is the sandwich as glmmTMB
   computes it; `"CR1"` scales it by \\G/(G-1)\\, `G` the number of
   clusters, as for the
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
   classes. Both use Wald z. Without `cluster`, the cluster is the
   top-level grouping factor of the random effects. The estimator needs
   independent clusters that contain the random effects – every group
@@ -1615,7 +1618,7 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 Poisson and geometric `pscl` two-part fits use
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
 For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
 the penalized covariance of the fit, and lets `vcovCL()` do only the
 clustering arithmetic: the sandwich methods for these fits are wrong for
@@ -1646,7 +1649,7 @@ Three accepted forms, in order of preference:
     `model.frame(fit)` first, then in the original `data` argument
     captured by the fit. **Recommended**: independent of the dataset's
     name, composable for multi-way clustering, consistent with
-    [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+    [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
     /
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
 
@@ -2469,16 +2472,16 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 if (requireNamespace("broom", quietly = TRUE)) {
   broom::tidy(table_regression(fit))
 }
-#> # A tibble: 4 × 16
+#> # A tibble: 4 × 17
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
 #> 2 M1       wellbe… NA            age   B               0.0465    0.0307  -0.0137
 #> 3 M1       wellbe… NA            sexM… B               3.86      0.905    2.08  
 #> 4 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
-#> # ℹ 8 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
-#> #   p.value <dbl>, test_type <chr>, is_intercept <lgl>, factor_term <chr>,
-#> #   factor_level <chr>
+#> # ℹ 9 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
+#> #   factor_term <chr>, factor_level <chr>
 
 # \donttest{
 # ---- Mixed-effects models ----------------------------------------

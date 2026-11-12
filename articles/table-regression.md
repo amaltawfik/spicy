@@ -246,8 +246,8 @@ noncentral-`F` inversion (Smithson 2003; Steiger 2004), exposed as a
 separate `<token>_ci` column. The shortcuts `"all_f2"`, `"all_eta2"`,
 and `"all_omega2"` each expand to the point estimate together with its
 CI column. The partial F the three are built on is a column of its own,
-`partial_f`, printed as `value (df)` with the residual degrees of
-freedom in the table note.
+`partial_f`, printed as `value (q, df)`: the term’s degrees of freedom,
+then the residual degrees of freedom of the model.
 
 `sochealth$education` is stored as an ordered factor, which R codes with
 polynomial contrasts (`.L` = linear, `.Q` = quadratic) — trend
@@ -797,7 +797,7 @@ available via `vcov = "bootstrap"` / `"jackknife"`.
 When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set `vcov = "HC*"` for
 sandwich-style standard errors via
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html).
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html).
 The valid types are `HC0` through `HC5`; `HC3` is the
 small-sample-friendly default (Long and Ervin 2000):
 
@@ -1326,7 +1326,8 @@ twin, `partial_f`, the column an `lm` takes too, and refuses
 `partial_chi2`. Its value is the one
 `car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")`
 reports (car’s default Pearson estimate differs by the IRLS convergence
-error only), and the table note gives its residual degrees of freedom. A
+error only), and its cell gives both of its degrees of freedom,
+`3.45 (2, 28)` for an F on 2 and 28, as Stata and SAS report them. A
 gaussian `glm` and its [`lm()`](https://rdrr.io/r/stats/lm.html) twin
 print the same F. A table that mixes both kinds of model asks for both
 tokens, and each model fills its own column.
@@ -1737,7 +1738,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 out <- table_regression(fit, standardized = "refit")
 
 broom::tidy(out)
-#> # A tibble: 8 × 16
+#> # A tibble: 8 × 17
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
@@ -1748,9 +1749,9 @@ broom::tidy(out)
 #> 6 M1       wellbe… NA            sexM… beta            0.247     0.0579   0.133 
 #> 7 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
 #> 8 M1       wellbe… NA            smok… beta           -0.110     0.0708  -0.249 
-#> # ℹ 8 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
-#> #   p.value <dbl>, test_type <chr>, is_intercept <lgl>, factor_term <chr>,
-#> #   factor_level <chr>
+#> # ℹ 9 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
+#> #   factor_term <chr>, factor_level <chr>
 broom::glance(out)
 #> # A tibble: 1 × 15
 #>   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma

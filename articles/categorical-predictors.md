@@ -200,7 +200,7 @@ chi-square*). An `lm` and a `glm` whose dispersion is estimated
 (gaussian, Gamma, quasi families) ask it with `partial_f`, the F test
 that `anova(reduced, full, test = "F")` reports, the value
 `car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")`
-gives.
+gives, printed with both of its degrees of freedom, `F (q, df)`.
 
 The rule cuts the other way too:
 

@@ -355,7 +355,7 @@ than two categories.
 
 The `polr` and `clm` fits accept one cluster-robust estimator,
 `vcov = "CR1"`, computed by
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html):
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html):
 the CR0 sandwich scaled by G/(G − 1) for G clusters. The CR2 / CR3
 small-sample bias-reduction adjustments are defined for (generalized)
 linear models — `clubSandwich` has no method for an ordinal MLE — so
@@ -849,7 +849,7 @@ column:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 23 × 16
+#> # A tibble: 23 × 17
 #>    model_id outcome         outcome_level term  estimate_type estimate std.error
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
@@ -863,9 +863,9 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>  9 M1       self_rated_hea… Very good     sexM… ame            3.21e-3 0.0204   
 #> 10 M1       self_rated_hea… NA            sexM… B              1.73e-2 0.110    
 #> # ℹ 13 more rows
-#> # ℹ 9 more variables: conf.low <dbl>, conf.high <dbl>, statistic <dbl>,
-#> #   df <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
-#> #   factor_term <chr>, factor_level <chr>
+#> # ℹ 10 more variables: conf.low <dbl>, conf.high <dbl>, statistic <dbl>,
+#> #   df <dbl>, df.residual <dbl>, p.value <dbl>, test_type <chr>,
+#> #   is_intercept <lgl>, factor_term <chr>, factor_level <chr>
 ```
 
 ## References

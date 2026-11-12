@@ -639,15 +639,15 @@ scale, as displayed:
 ``` r
 
 broom::tidy(table_regression(cx, exponentiate = TRUE))
-#> # A tibble: 3 × 16
+#> # A tibble: 3 × 17
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       Surv(t… NA            age   B                1.01    0.00937    0.993
 #> 2 M1       Surv(t… NA            sexF… B                0.573   0.0963     0.412
 #> 3 M1       Surv(t… NA            ph.e… B                1.60    0.183      1.28 
-#> # ℹ 8 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
-#> #   p.value <dbl>, test_type <chr>, is_intercept <lgl>, factor_term <chr>,
-#> #   factor_level <chr>
+#> # ℹ 9 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
+#> #   factor_term <chr>, factor_level <chr>
 ```
 
 ## References

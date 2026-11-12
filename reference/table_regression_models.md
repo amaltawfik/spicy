@@ -182,11 +182,11 @@ coefficients join the `p_adjust` family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). `"CR1"` for Poisson and geometric
 `pscl` fits covers both components via
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-a negative-binomial `pscl` fit keeps its model-based standard errors,
-its sandwich having no score for theta. `"CR0"` and `"CR1"` for
-`glmmTMB` fits cover the zero-inflation and dispersion blocks. Opt out
-with `show_components = FALSE`.
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html); a
+negative-binomial `pscl` fit keeps its model-based standard errors, its
+sandwich having no score for theta. `"CR0"` and `"CR1"` for `glmmTMB`
+fits cover the zero-inflation and dispersion blocks. Opt out with
+`show_components = FALSE`.
 
 The dispersion of a negative-binomial fit is an opt-in fit-statistic
 row: `"theta"` and `"alpha"` (= 1/theta) for NB2 fits, `"delta"` for NB1
@@ -209,7 +209,7 @@ working residuals. `mlogit` renders per-alternative rows; AME is refused
 (no `slopes()` method exists for its data format). `"CR1"` is available
 with one cluster value per choice situation, and `n` counts choice
 situations; `HC*` is refused
-([`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+([`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
 mis-scales the meat for mlogit's per-chooser score structure).
 
 ## Survival models
@@ -227,7 +227,7 @@ For `survreg`: the closed-form AFT curves are standardized directly
 sandwich (`coxph`) or
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (`cph`, needs
 `x = TRUE, y = TRUE`); `survreg` takes `"CR1"`, from
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
 `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
 
 ## Survey-design models
