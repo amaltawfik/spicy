@@ -160,6 +160,15 @@ spicy_abort <- function(
 #                               group comparison because the analytic
 #                               sample carries negatively weighted
 #                               rows; decision 36 / ARB-2)
+#      |- spicy_negative_weights_no_ci (table_categorical_svy() withheld
+#                               the percentage CIs of a domain whose
+#                               weights change sign, under a ci_method
+#                               that fits a logistic regression)
+#      |- spicy_svy_estimation_failed (survey stopped on estimates of a
+#                               design table, which show a dash; one
+#                               warning per table quotes survey's
+#                               messages, typically a stratum with a
+#                               single PSU)
 #   |- spicy_dropped_na        (NA observations silently excluded from
 #                               the computation, e.g., NA weights)
 #   |- spicy_ignored_arg       (an argument is ignored due to context,

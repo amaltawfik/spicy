@@ -485,6 +485,9 @@
 # tests, how the percentages were bounded, the test, the adjustment
 # (`p_adjust_info`); (d) the glosses of the columns; then the sentences
 # of `note_add` (`add`). `n_p` is the number of p-values the table shows.
+# `not_estimated` is the sentence of the dashes survey left
+# (`.svy_failure_note()`), said with the design; `ci_refused`, that the
+# intervals of a domain whose weights change sign were withheld.
 # `percent_column`: a table with `by`, whose percentages are column
 # percentages within each domain, says so after the sample size, as
 # `table_categorical()` does (decision of 2026-10-28).
@@ -507,6 +510,8 @@
   n_negative_weights = 0L,
   test_refused = "none",
   ci_bound = FALSE,
+  ci_refused = FALSE,
+  not_estimated = NULL,
   no_data = NULL,
   p_adjust_info = NULL,
   add = NULL,
@@ -553,6 +558,8 @@
       meta$n_obs,
       test_refused = test_refused
     ),
+    if (isTRUE(ci_refused)) spicy_str("note_negative_weights_no_ci"),
+    not_estimated,
     if (identical(deff, "replace")) spicy_str("note_deff_replace")
   )
   missing <- c(

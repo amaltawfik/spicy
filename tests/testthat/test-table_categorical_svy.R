@@ -2448,3 +2448,457 @@ test_that("factor_levels = 'all' puts the empty level before (Missing)", {
     fixed = TRUE
   )
 })
+
+# ---- a stratum with a single primary sampling unit -------------------------
+# The two designs and the sentence of the note: helper-svy-lonely.R.
+
+test_that("a lonely PSU leaves dashes, warns once and says so in the note", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  # The oracle: survey stops on the design itself, for the percentage, its
+  # interval and the test, and estimates the domain without the lonely
+  # stratum.
+  msg <- tryCatch(survey::svymean(~awards, d), error = conditionMessage)
+  expect_identical(msg, "Stratum (H) has only one PSU at stage 1")
+  expect_error(survey::svyciprop(~ I(awards == "Yes"), d), msg, fixed = TRUE)
+  expect_error(survey::svychisq(~ awards + sch.wide, d), msg, fixed = TRUE)
+  yes <- subset(d, sch.wide == "Yes")
+  pct_yes <- 100 * as.numeric(stats::coef(survey::svymean(~awards, yes)))
+  ci_yes <- 100 *
+    as.numeric(stats::confint(survey::svyciprop(
+      ~ I(awards == "Yes"),
+      yes,
+      method = "logit",
+      df = survey::degf(yes)
+    )))
+  x <- d$variables
+
+  # Without `by`: every percentage is a dash, every count stands, and one
+  # warning for the two variables.
+  run <- .svy_collect_warnings(table_categorical_svy(
+    d,
+    select = c(awards, comp.imp),
+    output = "long"
+  ))
+  out <- run$value
+  failed <- .svy_failed_warnings(run$warnings)
+  expect_length(run$warnings, 1L)
+  expect_length(failed, 1L)
+  expect_s3_class(failed[[1L]], "spicy_undefined_stat")
+  expect_identical(failed[[1L]]$survey_message, msg)
+  expect_identical(failed[[1L]]$fn, list("survey::svymean()"))
+  expect_match(conditionMessage(failed[[1L]]), msg, fixed = TRUE)
+  expect_true(all(is.na(out$pct)))
+  expect_equal(
+    out$n,
+    c(as.numeric(table(x$awards)), as.numeric(table(x$comp.imp)))
+  )
+  expect_match(attr(out, "note"), .SVY_LONELY_EN, fixed = TRUE)
+
+  # With `by`: the group that holds the lonely school and the margin are
+  # dashed, the other group is survey's own, interval included, and the
+  # test of the whole design stops.
+  run <- .svy_collect_warnings(table_categorical_svy(
+    d,
+    select = awards,
+    by = sch.wide,
+    proportion_ci = TRUE,
+    output = "data.frame"
+  ))
+  out <- run$value
+  failed <- .svy_failed_warnings(run$warnings)
+  expect_length(failed, 1L)
+  expect_identical(
+    failed[[1L]]$fn,
+    list(c("survey::svychisq()", "survey::svymean()"))
+  )
+  lv <- out$.row_role == "level"
+  expect_identical(out$level[lv], c("No", "Yes"))
+  for (col in c(
+    "No %",
+    "No 95% CI LL",
+    "No 95% CI UL",
+    "Total %",
+    "Total 95% CI LL",
+    "Total 95% CI UL",
+    "p"
+  )) {
+    expect_true(all(is.na(out[[col]])), info = col)
+  }
+  expect_equal(out[["Yes %"]][lv], pct_yes, tolerance = 1e-12)
+  expect_equal(
+    c(out[["Yes 95% CI LL"]][lv][[2L]], out[["Yes 95% CI UL"]][lv][[2L]]),
+    ci_yes,
+    tolerance = 1e-10
+  )
+  tab <- table(x$awards, x$sch.wide)
+  expect_equal(out[["No n"]][lv], as.numeric(tab[, "No"]))
+  expect_equal(out[["Yes n"]][lv], as.numeric(tab[, "Yes"]))
+  expect_equal(out[["Total n"]][lv], as.numeric(rowSums(tab)))
+  expect_match(attr(out, "note"), .SVY_LONELY_EN, fixed = TRUE)
+
+  # survey's domain option changes nothing here: the stratum is lonely in
+  # the design, not only in the domain.
+  withr::local_options(survey.adjust.domain.lonely = TRUE)
+  run2 <- .svy_collect_warnings(table_categorical_svy(
+    d,
+    select = awards,
+    by = sch.wide,
+    proportion_ci = TRUE,
+    output = "data.frame"
+  ))
+  expect_length(.svy_failed_warnings(run2$warnings), 1L)
+  expect_equal(run2$value, out, ignore_attr = TRUE)
+
+  # The note says it in the language of the table, without survey's words.
+  withr::local_options(spicy.language = "fr")
+  note_fr <- attr(
+    suppressWarnings(table_categorical_svy(d, select = awards)),
+    "note"
+  )
+  expect_match(note_fr, .SVY_LONELY_FR, fixed = TRUE)
+  expect_false(grepl("only one PSU", note_fr, fixed = TRUE))
+})
+
+test_that("under the other lonely.psu options the table is survey's, silent", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  for (opt in c("remove", "adjust", "average", "certainty")) {
+    withr::local_options(
+      survey.lonely.psu = opt,
+      survey.adjust.domain.lonely = FALSE
+    )
+    m <- survey::svymean(~awards, d)
+    expect_no_warning(
+      out <- table_categorical_svy(
+        d,
+        select = awards,
+        proportion_ci = TRUE,
+        output = "long"
+      )
+    )
+    expect_equal(out$pct, 100 * as.numeric(stats::coef(m)), tolerance = 1e-12)
+    expect_false(anyNA(out[c("pct", "ci_lower", "ci_upper")]))
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})
+
+test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
+  skip_on_cran()
+  d <- .svy_domain_lonely_design()
+  for (opt in c("fail", "remove", "adjust", "average", "certainty")) {
+    withr::local_options(
+      survey.lonely.psu = opt,
+      survey.adjust.domain.lonely = TRUE
+    )
+    ref <- .svy_collect_warnings(
+      survey::svymean(~awards, subset(d, grp == "B"))
+    )
+    expect_identical(
+      vapply(ref$warnings, conditionMessage, character(1)),
+      "Stratum (H) has only one PSU at stage 1"
+    )
+    run <- .svy_collect_warnings(table_categorical_svy(
+      d,
+      select = awards,
+      by = grp,
+      output = "long"
+    ))
+    out <- run$value
+    # survey's own warning reaches the caller; spicy adds none.
+    expect_length(.svy_failed_warnings(run$warnings), 0L)
+    msgs <- vapply(run$warnings, conditionMessage, character(1))
+    expect_gt(length(msgs), 0L)
+    expect_true(all(msgs == "Stratum (H) has only one PSU at stage 1"))
+    expect_equal(
+      out$pct[out$group == "B"],
+      100 * as.numeric(stats::coef(ref$value)),
+      tolerance = 1e-12
+    )
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})
+
+test_that("a table with one observed level on a side is not tested, silently", {
+  skip_on_cran()
+  d <- .svycat_design("clus1")
+  d$variables$one <- "x"
+  d$variables$const <- factor(rep("k", nrow(d$variables)))
+  # The oracle: survey stops on such a table, which has no association
+  # to test. spicy does not ask, so nothing reads as a failure of the
+  # design.
+  expect_error(survey::svychisq(~ stype + one, d))
+  expect_error(survey::svychisq(~ const + sch.wide, d))
+  p_stype <- survey::svychisq(~ stype + sch.wide, d)$p.value[[1L]]
+  expect_no_warning(
+    out <- table_categorical_svy(
+      d,
+      select = stype,
+      by = one,
+      output = "data.frame"
+    )
+  )
+  expect_true(all(is.na(out$p)))
+  expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  expect_no_warning(
+    out <- table_categorical_svy(
+      d,
+      select = c(const, stype),
+      by = sch.wide,
+      output = "data.frame"
+    )
+  )
+  p <- out$p[out$.row_role == "factor_header"]
+  expect_true(is.na(p[[1L]]))
+  expect_equal(p[[2L]], p_stype, tolerance = 1e-12)
+  expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+})
+
+test_that("the dash sentence sits with the design sentences", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  d$variables$awards[2L] <- NA
+  note <- attr(
+    suppressWarnings(table_categorical_svy(
+      d,
+      select = awards,
+      by = sch.wide,
+      drop_na = TRUE,
+      deff = "replace"
+    )),
+    "note"
+  )
+  pos <- .svy_note_positions(
+    note,
+    c(
+      "N = ",
+      "Percentages are column percentages.",
+      "Design: ",
+      .SVY_LONELY_EN,
+      "Design effects are computed",
+      "Missing values removed",
+      "Std. errors"
+    )
+  )
+  expect_true(all(pos > 0L))
+  expect_false(is.unsorted(pos))
+})
+
+# ---- negative weights and the logistic-regression intervals ---------------
+
+test_that("negative weights withhold the logistic-regression CIs, and say so", {
+  skip_on_cran()
+  neg <- .svycat_neg_design()
+  # The oracle: survey refuses the "logit" and "likelihood" intervals on
+  # these weights and gives the "xlogit" one; the percentage is svymean's
+  # whatever the interval.
+  expect_error(
+    survey::svyciprop(~ I(awards == "Yes"), neg, method = "logit")
+  )
+  expect_error(
+    survey::svyciprop(~ I(awards == "Yes"), neg, method = "likelihood")
+  )
+  pct <- 100 * as.numeric(stats::coef(survey::svymean(~awards, neg)))
+  ci_x <- 100 *
+    as.numeric(stats::confint(survey::svyciprop(
+      ~ I(awards == "Yes"),
+      neg,
+      method = "xlogit",
+      df = survey::degf(neg)
+    )))
+  sentence <- "Where the weights change sign, the percentage CIs are not defined: their method rests on a logistic regression, which does not allow negative weights."
+  for (method in c("logit", "likelihood")) {
+    run <- .svy_collect_warnings(table_categorical_svy(
+      neg,
+      select = awards,
+      proportion_ci = TRUE,
+      ci_method = method,
+      output = "data.frame"
+    ))
+    out <- run$value
+    expect_length(run$warnings, 1L)
+    w <- run$warnings[[1L]]
+    expect_s3_class(w, "spicy_negative_weights_no_ci")
+    expect_s3_class(w, "spicy_undefined_stat")
+    expect_match(conditionMessage(w), "\"xlogit\"", fixed = TRUE)
+    lv <- out$.row_role == "level"
+    expect_equal(out[["%"]][lv], pct, tolerance = 1e-12)
+    expect_true(all(is.na(out[["95% CI LL"]][lv])))
+    expect_true(all(is.na(out[["95% CI UL"]][lv])))
+    note <- attr(out, "note")
+    expect_match(note, sentence, fixed = TRUE)
+    expect_false(grepl("A dash marks", note, fixed = TRUE))
+    pos <- .svy_note_positions(note, c("a negative weight", sentence))
+    expect_true(all(pos > 0L))
+    expect_false(is.unsorted(pos))
+  }
+  # A method that accepts negative weights: the intervals are survey's.
+  expect_no_warning(
+    out <- table_categorical_svy(
+      neg,
+      select = awards,
+      proportion_ci = TRUE,
+      ci_method = "xlogit",
+      output = "data.frame"
+    )
+  )
+  lv <- out$.row_role == "level"
+  expect_equal(
+    c(out[["95% CI LL"]][lv][[2L]], out[["95% CI UL"]][lv][[2L]]),
+    ci_x,
+    tolerance = 1e-10
+  )
+  expect_false(grepl("Where the weights", attr(out, "note"), fixed = TRUE))
+  # In French.
+  withr::local_options(spicy.language = "fr")
+  note_fr <- attr(
+    suppressWarnings(table_categorical_svy(
+      neg,
+      select = awards,
+      proportion_ci = TRUE
+    )),
+    "note"
+  )
+  e <- intToUtf8(0xE9L)
+  expect_match(
+    note_fr,
+    paste0(
+      "L",
+      intToUtf8(0xE0L),
+      " o",
+      intToUtf8(0xF9L),
+      " les poids changent de signe, les IC des pourcentages ne sont pas d",
+      e,
+      "finis",
+      intToUtf8(0xA0L),
+      ": leur m",
+      e,
+      "thode repose sur une r",
+      e,
+      "gression logistique, qui n'admet pas de poids n",
+      e,
+      "gatifs."
+    ),
+    fixed = TRUE
+  )
+})
+
+# ---- a calibrated design with missing values -------------------------------
+
+test_that("a calibrated design with missing values keeps its percentage CIs", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  data(api, package = "survey", envir = environment())
+  d <- apiclus1
+  set.seed(11)
+  d$awards[sample(nrow(d), 9)] <- NA
+  cal <- survey::calibrate(
+    survey::svydesign(id = ~dnum, weights = ~pw, data = d, fpc = ~fpc),
+    ~stype,
+    pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  )
+  # On a calibrated design `[` keeps the rows of a missing answer at weight
+  # zero, and survey stops on their NA. The oracle values them 0, survey's
+  # own convention in `svymean(na.rm = TRUE)`.
+  expect_error(
+    survey::svyciprop(~ I(awards == "Yes"), subset(cal, !is.na(awards)))
+  )
+  oracle <- function(sub, dom, level, method) {
+    f <- stats::as.formula(sprintf(
+      "~I(!is.na(awards) & awards == \"%s\")",
+      level
+    ))
+    100 *
+      as.numeric(stats::confint(suppressWarnings(survey::svyciprop(
+        f,
+        sub,
+        method = method,
+        df = survey::degf(dom)
+      ))))
+  }
+  methods <- c(
+    "logit",
+    "likelihood",
+    "mean",
+    "beta",
+    "xlogit",
+    "asin",
+    "wilson"
+  )
+  sub <- subset(cal, !is.na(awards))
+  pct <- 100 *
+    as.numeric(stats::coef(survey::svymean(~awards, sub, na.rm = TRUE)))
+  for (m in methods) {
+    expect_no_warning(
+      out <- table_categorical_svy(
+        cal,
+        select = awards,
+        drop_na = TRUE,
+        proportion_ci = TRUE,
+        ci_method = m,
+        output = "data.frame"
+      )
+    )
+    lv <- which(out$.row_role == "level")
+    expect_equal(out[["%"]][lv], pct, tolerance = 1e-12, info = m)
+    for (j in lv) {
+      expect_equal(
+        c(out[["95% CI LL"]][[j]], out[["95% CI UL"]][[j]]),
+        oracle(sub, cal, out$level[[j]], m),
+        tolerance = 1e-10,
+        info = paste(m, out$level[[j]])
+      )
+    }
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+  # With `by`, on each domain.
+  for (m in methods) {
+    expect_no_warning(
+      out <- table_categorical_svy(
+        cal,
+        select = awards,
+        by = stype,
+        drop_na = TRUE,
+        proportion_ci = TRUE,
+        ci_method = m,
+        output = "data.frame"
+      )
+    )
+    lv <- which(out$.row_role == "level")
+    for (g in c("E", "H", "M")) {
+      dom <- subset(cal, stype == g)
+      sub_g <- subset(cal, stype == g & !is.na(awards))
+      expect_equal(
+        out[[paste(g, "%")]][lv],
+        100 *
+          as.numeric(stats::coef(survey::svymean(
+            ~awards,
+            sub_g,
+            na.rm = TRUE
+          ))),
+        tolerance = 1e-12,
+        info = paste(m, g)
+      )
+      for (j in lv) {
+        expect_equal(
+          c(
+            out[[paste(g, "95% CI LL")]][[j]],
+            out[[paste(g, "95% CI UL")]][[j]]
+          ),
+          oracle(sub_g, dom, out$level[[j]], m),
+          tolerance = 1e-10,
+          info = paste(m, g, out$level[[j]])
+        )
+      }
+    }
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})

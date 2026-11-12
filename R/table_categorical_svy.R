@@ -87,7 +87,10 @@
     ul = rep(NA_real_, k),
     deff = rep(NA_real_, k),
     # TRUE where the interval is the exact one of a percentage of 0 or 100.
-    exact = rep(FALSE, k)
+    exact = rep(FALSE, k),
+    # TRUE when an interval was not asked of survey: its method fits a
+    # logistic regression and the weights of the domain change sign.
+    ci_refused = FALSE
   )
   x <- as.character(design$variables[[var]])
   w <- .design_weights(design)
@@ -113,12 +116,15 @@
   }
   form <- .svy_formula(var)
   m <- if (!one_level) {
-    .svy_try(survey::svymean(
-      form,
-      design,
-      na.rm = TRUE,
-      deff = if (isFALSE(deff_mode)) FALSE else deff_mode
-    ))
+    .svy_try(
+      survey::svymean(
+        form,
+        design,
+        na.rm = TRUE,
+        deff = if (isFALSE(deff_mode)) FALSE else deff_mode
+      ),
+      "survey::svymean()"
+    )
   }
   if (!is.null(m)) {
     # `svymean()` on a factor names its coefficients "<var><level>";
@@ -133,7 +139,7 @@
     # effect at all". The interval beside it is already dashed; this
     # makes the two agree.
     if (!isFALSE(deff_mode) && is.finite(degf_dom) && degf_dom > 0) {
-      d <- .svy_try(survey::deff(m))
+      d <- .svy_try(survey::deff(m), "survey::deff()")
       if (!is.null(d)) {
         out$deff[!is.na(idx)] <- as.numeric(d)[idx[!is.na(idx)]]
       }
@@ -152,9 +158,20 @@
     # which is why nothing red showed. Cutting here puts the interval on
     # the same rows the percentage describes.
     dom_i <- .design_subset(design, !is.na(design$variables[[var]]))
+    # On a calibrated design `[` keeps the rows it cuts, at weight zero,
+    # and their NA stopped `svyciprop()` under every method. survey's own
+    # `svymean(na.rm = TRUE)` keeps them so and sets their value to 0: here
+    # they take an observed level, which at weight zero moves nothing.
+    xi <- dom_i$variables[[var]]
+    dom_i$variables[[var]][is.na(xi)] <- xi[!is.na(xi)][[1L]]
     # The unweighted count of the column: the denominator of its
     # percentages, at least 1 here (an empty column returned above).
     n_col <- sum(ok & !is.na(x))
+    # "logit" and "likelihood" fit a logistic regression, which `glm()`
+    # refuses when a weight is negative: the interval is not defined
+    # there, and survey is not asked for it (`.CAT_SVY_CI_GLM_METHODS`).
+    glm_refuses <- (ci_method %in% .CAT_SVY_CI_GLM_METHODS) &&
+      .weights_go_negative(.design_weights(dom_i))
     for (i in seq_len(k)) {
       if (is.na(out$pct[[i]])) {
         next
@@ -166,13 +183,33 @@
         out$exact[[i]] <- TRUE
         next
       }
-      ci <- .svy_try(stats::confint(survey::svyciprop(
-        .cat_svy_indicator(var, levels[[i]]),
-        dom_i,
-        method = ci_method,
-        level = ci_level,
-        df = df
-      )))
+      if (glm_refuses) {
+        out$ci_refused <- TRUE
+        next
+      }
+      ci <- .svy_try(
+        stats::confint(withCallingHandlers(
+          survey::svyciprop(
+            .cat_svy_indicator(var, levels[[i]]),
+            dom_i,
+            method = ci_method,
+            level = ci_level,
+            df = df
+          ),
+          # Those rows at weight zero make the logistic fit of "logit" and
+          # "likelihood" warn, from `summary.glm()`, that they leave its
+          # dispersion: true, and of no consequence for the design-based
+          # interval. Told by its call, never by its translated text, as
+          # in `.cat_svy_test()`.
+          warning = function(w) {
+            cl <- conditionCall(w)
+            if (is.call(cl) && identical(cl[[1L]], quote(summary.glm))) {
+              invokeRestart("muffleWarning")
+            }
+          }
+        )),
+        "survey::svyciprop()"
+      )
       if (!is.null(ci)) {
         out$ll[[i]] <- as.numeric(ci)[[1L]]
         out$ul[[i]] <- as.numeric(ci)[[2L]]
@@ -261,6 +298,17 @@
     design$variables[[group_var]],
     w
   )
+  # A table with one observed level on either side has no association to
+  # test. survey stops there ("contrasts can be applied only to factors
+  # with 2 or more levels"), which is no failure of the design and must
+  # not be reported as one: a one-level `by` or a constant variable is
+  # not tested, as in `table_battery_svy()`.
+  if (
+    nlevels(design$variables[[var]]) < 2L ||
+      nlevels(design$variables[[group_var]]) < 2L
+  ) {
+    return(list(p = NA_real_, refused = FALSE))
+  }
   form <- stats::as.formula(paste0("~`", var, "` + `", group_var, "`"))
   # survey gets the Pearson statistic from `chisq.test()`, whose warning on
   # an expected cell count below 5 speaks of the chi-squared approximation
@@ -270,15 +318,18 @@
   # unclassed and translated. It is muffled here, as `table_categorical()`
   # muffles the same warning (inside `cross_tab()`), and told by its call,
   # never by its localized text.
-  r <- .svy_try(withCallingHandlers(
-    survey::svychisq(form, design, statistic = statistic),
-    warning = function(w) {
-      cl <- conditionCall(w)
-      if (is.call(cl) && identical(cl[[1L]], quote(chisq.test))) {
-        invokeRestart("muffleWarning")
+  r <- .svy_try(
+    withCallingHandlers(
+      survey::svychisq(form, design, statistic = statistic),
+      warning = function(w) {
+        cl <- conditionCall(w)
+        if (is.call(cl) && identical(cl[[1L]], quote(chisq.test))) {
+          invokeRestart("muffleWarning")
+        }
       }
-    }
-  ))
+    ),
+    "survey::svychisq()"
+  )
   if (is.null(r)) {
     return(list(p = NA_real_, refused = FALSE))
   }
@@ -339,6 +390,12 @@
 #' presentation standards for proportions apply to its complement as well
 #' (Parker et al. 2017, pp. 2-3). The note says so when such a cell is
 #' shown.
+#'
+#' A cell that survey cannot estimate, most often because a stratum holds
+#' a single primary sampling unit under its default
+#' `options(survey.lonely.psu = "fail")`, shows a dash: the function
+#' warns once, quoting survey's messages (class
+#' `spicy_svy_estimation_failed`), and the note says what the dash means.
 #'
 #' # The test
 #'
@@ -488,7 +545,12 @@
 #' @param proportion_ci Add the confidence interval of each percentage.
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,
-#'   `"mean"`, `"xlogit"` or `"wilson"`.
+#'   `"mean"`, `"xlogit"` or `"wilson"`. `"logit"` and `"likelihood"`
+#'   fit a logistic regression, which does not allow negative weights:
+#'   where the weights of a domain change sign, as linear calibration can
+#'   make them, its intervals are not reported, the note says so and the
+#'   call warns (`spicy_negative_weights_no_ci`). The five other methods
+#'   accept negative weights.
 #' @param ci_level Confidence level of the intervals of `proportion_ci`
 #'   (default `0.95`): a number strictly between 0 and 1.
 #' @param chisq_statistic Statistic for `survey::svychisq()`: `"F"`
@@ -926,6 +988,9 @@ table_categorical_svy <- function(
   n_test_ran <- 0L
   # Whether a displayed percentage of 0 or 100 got the exact interval.
   ci_bound <- FALSE
+  # Whether an interval was withheld under negative weights
+  # (`.CAT_SVY_CI_GLM_METHODS`).
+  ci_refused <- FALSE
   # The groups of `by` in which a variable has no data: rows there, and
   # not one observed value -- typically a question not asked in that
   # group. That is not a missing answer, as in `table_categorical()`. The
@@ -939,6 +1004,8 @@ table_categorical_svy <- function(
   in_sample <- !is.na(w_design) & w_design != 0
   no_data_groups <- list()
   no_data_vars <- character(0)
+  # survey's errors, each raised once after the table is built.
+  svy_log <- .svy_failure_log()
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
     x_f <- .tab_factor(vars[[nm]])
@@ -1071,14 +1138,17 @@ table_categorical_svy <- function(
       # promoted to a level, so this mask is the genuine complete-case
       # one: the `(Missing)` row is displayed and not tested, exactly as
       # `table_categorical()` does it.
-      tr <- .cat_svy_test(
-        .design_subset(
-          design,
-          !is.na(vars[[nm]]) & !is.na(vars[[group_col_name]])
+      tr <- withCallingHandlers(
+        .cat_svy_test(
+          .design_subset(
+            design,
+            !is.na(vars[[nm]]) & !is.na(vars[[group_col_name]])
+          ),
+          nm,
+          group_col_name,
+          chisq_statistic
         ),
-        nm,
-        group_col_name,
-        chisq_statistic
+        spicy_svy_estimation_failed = svy_log$record
       )
       n_test_attempted <- n_test_attempted + 1L
       if (isTRUE(tr$refused)) {
@@ -1126,19 +1196,23 @@ table_categorical_svy <- function(
       } else {
         dom <- domains[[.cat_svy_block_id(b)]]
         dom_df <- .design_degf(dom)
-        st <- .cat_svy_level_stats(
-          dom,
-          nm,
-          levels_i,
-          ci_level,
-          df_user %||% dom_df,
-          deff,
-          ci_method,
-          proportion_ci,
-          degf_dom = dom_df
+        st <- withCallingHandlers(
+          .cat_svy_level_stats(
+            dom,
+            nm,
+            levels_i,
+            ci_level,
+            df_user %||% dom_df,
+            deff,
+            ci_method,
+            proportion_ci,
+            degf_dom = dom_df
+          ),
+          spicy_svy_estimation_failed = svy_log$record
         )
       }
       ci_bound <- ci_bound || any(st$exact)
+      ci_refused <- ci_refused || isTRUE(st$ci_refused)
       for (j in seq_along(levels_i)) {
         body[[j]][[.cat_svy_key_n(b)]] <- st$n[[j]]
         body[[j]][[.cat_svy_key_pct(b)]] <- st$pct[[j]] * 100
@@ -1192,6 +1266,7 @@ table_categorical_svy <- function(
   )
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
+  svy_failures <- svy_log$failures()
   # The note names each variable by its label in the apparatus.
   label_of <- stats::setNames(note_labs, select_names)
   # The variables with no data, in the order of `select`: one sentence per
@@ -1218,12 +1293,14 @@ table_categorical_svy <- function(
       proportion_ci = proportion_ci,
       ci_method = ci_method,
       ci_bound = ci_bound,
+      ci_refused = ci_refused,
       deff = deff,
       p_value = p_value && n_test_ran > 0L,
       chisq_statistic = chisq_statistic,
       n_p = .n_p_shown(result[[.CAT_KEY_P]], result$variable),
       n_negative_weights = .design_negative_weights(design),
       test_refused = test_refused,
+      not_estimated = .svy_failure_note(svy_failures),
       no_data = no_data_note,
       p_adjust_info = p_adjust_info,
       add = note_add,
@@ -1233,6 +1310,10 @@ table_categorical_svy <- function(
     note_add
   )
   .warn_negative_weights_no_test(test_refused)
+  if (ci_refused) {
+    .warn_negative_weights_no_ci(ci_method)
+  }
+  .warn_svy_failures(svy_failures)
 
   attr(result, "ci_level") <- ci_level
   attr(result, "percent_digits") <- percent_digits

@@ -2297,3 +2297,309 @@ test_that("the design's weights, clusters and fpc are outside the selection", {
     class = "spicy_invalid_input"
   )
 })
+
+# ---- a stratum with a single primary sampling unit -------------------------
+# The two designs and the sentence of the note: helper-svy-lonely.R.
+
+test_that("a lonely PSU leaves dashes, warns once and says so in the note", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  # The oracle: survey stops on the design itself, mean and variance alike,
+  # and estimates the domain without the lonely stratum.
+  msg <- tryCatch(survey::svymean(~api00, d), error = conditionMessage)
+  expect_identical(msg, "Stratum (H) has only one PSU at stage 1")
+  expect_error(survey::svyvar(~api00, d), msg, fixed = TRUE)
+  yes <- subset(d, sch.wide == "Yes")
+  m_yes <- survey::svymean(~api00, yes)
+  sd_yes <- sqrt(as.numeric(stats::coef(survey::svyvar(~api00, yes))))
+
+  # Without `by`: every design-based cell is a dash, the counts and the
+  # range stand, and one warning for the two variables and the two
+  # functions.
+  run <- .svy_collect_warnings(table_continuous_svy(
+    d,
+    select = c(api00, api99),
+    show_columns = c("m", "sd", "se", "med", "min", "max", "ci", "n"),
+    output = "long"
+  ))
+  out <- run$value
+  failed <- .svy_failed_warnings(run$warnings)
+  expect_length(run$warnings, 1L)
+  expect_length(failed, 1L)
+  expect_s3_class(failed[[1L]], "spicy_undefined_stat")
+  expect_identical(failed[[1L]]$survey_message, msg)
+  expect_identical(
+    failed[[1L]]$fn,
+    list(c("survey::svymean()", "survey::svyvar()"))
+  )
+  expect_match(conditionMessage(failed[[1L]]), msg, fixed = TRUE)
+  expect_match(
+    conditionMessage(failed[[1L]]),
+    "`survey::svymean()`, `survey::svyvar()` stopped",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(failed[[1L]]),
+    "options(survey.lonely.psu = \"fail\")",
+    fixed = TRUE
+  )
+  for (col in c("mean", "sd", "se", "ci_lower", "ci_upper")) {
+    expect_true(all(is.na(out[[col]])), info = col)
+  }
+  x <- d$variables
+  expect_equal(out$n, c(nrow(x), nrow(x)))
+  expect_equal(out$min, c(min(x$api00), min(x$api99)))
+  expect_equal(out$max, c(max(x$api00), max(x$api99)))
+  # The median asks survey for no variance, so survey gives it.
+  q <- survey::svyquantile(~api00, d, 0.5, ci = FALSE, se = FALSE)
+  expect_identical(out$median[[1L]], as.numeric(q[[1L]]))
+  expect_match(attr(out, "note"), .SVY_LONELY_EN, fixed = TRUE)
+
+  # With `by`: the domain that holds the lonely school is dashed, the
+  # other one is survey's own, and the test of the whole design stops.
+  run <- .svy_collect_warnings(table_continuous_svy(
+    d,
+    select = api00,
+    by = sch.wide,
+    show_columns = c("m", "sd", "se", "n"),
+    output = "long"
+  ))
+  out <- run$value
+  failed <- .svy_failed_warnings(run$warnings)
+  expect_length(failed, 1L)
+  expect_identical(
+    failed[[1L]]$fn,
+    list(c("survey::svyttest()", "survey::svymean()", "survey::svyvar()"))
+  )
+  expect_identical(out$group, c("No", "Yes"))
+  expect_true(is.na(out$mean[[1L]]) && is.na(out$sd[[1L]]))
+  expect_equal(
+    out$mean[[2L]],
+    as.numeric(stats::coef(m_yes)),
+    tolerance = 1e-12
+  )
+  expect_equal(out$se[[2L]], as.numeric(survey::SE(m_yes)), tolerance = 1e-12)
+  expect_equal(out$sd[[2L]], sd_yes, tolerance = 1e-12)
+  expect_equal(out$n, as.numeric(table(x$sch.wide)[c("No", "Yes")]))
+  expect_true(is.na(out$p.value[[1L]]))
+
+  # survey's domain option changes nothing here: the lonely stratum is
+  # lonely in the design, not only in the domain.
+  withr::local_options(survey.adjust.domain.lonely = TRUE)
+  run2 <- .svy_collect_warnings(table_continuous_svy(
+    d,
+    select = api00,
+    by = sch.wide,
+    show_columns = c("m", "sd", "se", "n"),
+    output = "long"
+  ))
+  expect_length(.svy_failed_warnings(run2$warnings), 1L)
+  expect_equal(run2$value, out, ignore_attr = TRUE)
+
+  # The note says it in the language of the table, without survey's words.
+  withr::local_options(spicy.language = "fr")
+  note_fr <- attr(
+    suppressWarnings(table_continuous_svy(d, select = api00, output = "long")),
+    "note"
+  )
+  expect_match(note_fr, .SVY_LONELY_FR, fixed = TRUE)
+  expect_false(grepl("only one PSU", note_fr, fixed = TRUE))
+})
+
+test_that("under the other lonely.psu options the table is survey's, silent", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  for (opt in c("remove", "adjust", "average", "certainty")) {
+    withr::local_options(
+      survey.lonely.psu = opt,
+      survey.adjust.domain.lonely = FALSE
+    )
+    m <- survey::svymean(~api00, d)
+    v <- survey::svyvar(~api00, d)
+    expect_no_warning(
+      out <- table_continuous_svy(
+        d,
+        select = api00,
+        show_columns = c("m", "sd", "se", "ci", "n"),
+        output = "long"
+      )
+    )
+    expect_equal(out$mean, as.numeric(stats::coef(m)), tolerance = 1e-12)
+    expect_equal(out$se, as.numeric(survey::SE(m)), tolerance = 1e-12)
+    expect_equal(out$sd, sqrt(as.numeric(stats::coef(v))), tolerance = 1e-12)
+    expect_false(anyNA(out[c("mean", "sd", "se", "ci_lower", "ci_upper")]))
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})
+
+test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
+  skip_on_cran()
+  d <- .svy_domain_lonely_design()
+  for (opt in c("fail", "remove", "adjust", "average", "certainty")) {
+    withr::local_options(
+      survey.lonely.psu = opt,
+      survey.adjust.domain.lonely = TRUE
+    )
+    # survey warns on the domain and estimates it, "average" with a larger
+    # standard error.
+    ref <- .svy_collect_warnings(survey::svymean(~api00, subset(d, grp == "B")))
+    expect_identical(
+      vapply(ref$warnings, conditionMessage, character(1)),
+      "Stratum (H) has only one PSU at stage 1"
+    )
+    m_b <- ref$value
+    run <- .svy_collect_warnings(table_continuous_svy(
+      d,
+      select = api00,
+      by = grp,
+      show_columns = c("m", "se", "n"),
+      output = "long"
+    ))
+    out <- run$value
+    # survey's own warning reaches the caller; spicy adds none.
+    expect_length(.svy_failed_warnings(run$warnings), 0L)
+    msgs <- vapply(run$warnings, conditionMessage, character(1))
+    expect_true(all(msgs == "Stratum (H) has only one PSU at stage 1"))
+    expect_gt(length(msgs), 0L)
+    expect_equal(
+      out$mean[[2L]],
+      as.numeric(stats::coef(m_b)),
+      tolerance = 1e-12
+    )
+    expect_equal(out$se[[2L]], as.numeric(survey::SE(m_b)), tolerance = 1e-12)
+    expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})
+
+test_that("the console prints the dashes of a lonely PSU with their note", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  expect_snapshot(table_continuous_svy(d, select = api00, by = sch.wide))
+})
+
+test_that("a failure on a statistic the table does not show is not reported", {
+  skip_on_cran()
+  d <- .svy_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  # Quartiles and counts need no variance: `svymean()` and `svyvar()` stop
+  # on the lonely stratum, but no cell of this table is theirs, so there is
+  # no dash to explain.
+  q <- survey::svyquantile(
+    ~api00,
+    d,
+    c(0.25, 0.5, 0.75),
+    ci = FALSE,
+    se = FALSE
+  )
+  expect_error(survey::svymean(~api00, d))
+  cols <- c("med", "q1", "q3", "n")
+  expect_no_warning(
+    out <- table_continuous_svy(d, select = api00, show_columns = cols)
+  )
+  expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  expect_no_warning(
+    long <- table_continuous_svy(
+      d,
+      select = api00,
+      show_columns = cols,
+      output = "long"
+    )
+  )
+  expect_equal(c(long$q1, long$median, long$q3), as.numeric(q[[1L]]))
+  # The long shape still returns every statistic, the missing mean too.
+  expect_true(is.na(long$mean))
+  # The mean shown, the failure is the table's.
+  w <- expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = api00,
+      show_columns = c("m", "med", "n")
+    ),
+    class = "spicy_svy_estimation_failed"
+  )
+  expect_identical(w$fn, list("survey::svymean()"))
+  expect_match(attr(out, "note"), .SVY_LONELY_EN, fixed = TRUE)
+})
+
+test_that("two lonely strata give one warning holding both messages", {
+  skip_on_cran()
+  d <- .svy_two_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "fail",
+    survey.adjust.domain.lonely = FALSE
+  )
+  # The oracle: each group meets its own lonely stratum.
+  msg_no <- tryCatch(
+    survey::svymean(~api00, subset(d, sch.wide == "No")),
+    error = conditionMessage
+  )
+  msg_yes <- tryCatch(
+    survey::svymean(~api00, subset(d, sch.wide == "Yes")),
+    error = conditionMessage
+  )
+  expect_identical(msg_no, "Stratum (H) has only one PSU at stage 1")
+  expect_identical(msg_yes, "Stratum (M) has only one PSU at stage 1")
+  run <- .svy_collect_warnings(table_continuous_svy(
+    d,
+    select = api00,
+    by = sch.wide,
+    show_columns = c("m", "sd", "n"),
+    p_value = FALSE,
+    output = "long"
+  ))
+  expect_length(run$warnings, 1L)
+  w <- run$warnings[[1L]]
+  expect_s3_class(w, "spicy_svy_estimation_failed")
+  expect_identical(w$survey_message, c(msg_no, msg_yes))
+  expect_identical(
+    w$fn,
+    rep(list(c("survey::svymean()", "survey::svyvar()")), 2L)
+  )
+  txt <- conditionMessage(w)
+  count <- function(s) lengths(regmatches(txt, gregexpr(s, txt, fixed = TRUE)))
+  expect_identical(count(msg_no), 1L)
+  expect_identical(count(msg_yes), 1L)
+  expect_identical(
+    count("The cells that could not be estimated show a dash."),
+    1L
+  )
+  expect_identical(count("options(survey.lonely.psu = \"fail\")"), 1L)
+  expect_true(all(is.na(run$value$mean)))
+  expect_match(attr(run$value, "note"), .SVY_LONELY_EN, fixed = TRUE)
+})
+
+test_that("a lonely unit at stage 2 takes the general sentence", {
+  skip_on_cran()
+  d <- .svy_stage2_design()
+  withr::local_options(survey.lonely.psu = "fail")
+  # The oracle: survey stops, on a design with no strata.
+  msg <- tryCatch(survey::svymean(~y, d), error = conditionMessage)
+  expect_identical(
+    msg,
+    "At least one stratum contains only one PSU at stage 2"
+  )
+  w <- expect_warning(
+    out <- table_continuous_svy(d, select = y, output = "long"),
+    class = "spicy_svy_estimation_failed"
+  )
+  expect_identical(w$survey_message, msg)
+  expect_false(grepl("survey.lonely.psu", conditionMessage(w), fixed = TRUE))
+  expect_true(is.na(out$mean))
+  expect_match(attr(out, "note"), .SVY_NOT_ESTIMATED_EN, fixed = TRUE)
+  expect_false(grepl(
+    "primary sampling unit",
+    attr(out, "note"),
+    fixed = TRUE
+  ))
+})

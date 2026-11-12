@@ -195,6 +195,29 @@ Each item is tested against `stype` by `svychisq()`, Rao-Scott
 corrected, and the four p-values are adjusted together by Holm's
 method.
 
+## A stratum with one sampling unit
+
+A stratum with a single primary sampling unit has no variance to
+estimate, and under its default `options(survey.lonely.psu = "fail")`
+survey stops there, point estimate included. The table is still
+produced, with a dash in each cell survey could not estimate and a
+sentence of the note that says what the dash means. The function also
+warns, once, quoting survey's message. Here the one school left in
+stratum H falls in the `No` group of `sch.wide`, so the other group is
+estimated as usual:
+
+```{r lonely}
+keep <- c(which(apistrat$stype != "H"), which(apistrat$stype == "H")[1])
+lonely <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat[keep, ]
+)
+table_continuous_svy(lonely, select = api00, by = sch.wide)
+```
+
+The values `"adjust"`, `"average"`, `"remove"` and `"certainty"` of
+that option let survey estimate these cells, each by its own convention
+(`?survey::surveyoptions`), and the table then follows them.
+
 ## Replicate weights
 
 A replicate-weights design goes through the same functions. The point

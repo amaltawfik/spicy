@@ -177,12 +177,15 @@ order_continuous_svy_tokens <- function(tokens) {
   out$min <- min(x[keep])
   out$max <- max(x[keep])
 
-  m <- .svy_try(survey::svymean(
-    form,
-    design,
-    na.rm = TRUE,
-    deff = if (isFALSE(deff_mode)) FALSE else deff_mode
-  ))
+  m <- .svy_try(
+    survey::svymean(
+      form,
+      design,
+      na.rm = TRUE,
+      deff = if (isFALSE(deff_mode)) FALSE else deff_mode
+    ),
+    "survey::svymean()"
+  )
   if (!is.null(m)) {
     out$mean <- as.numeric(stats::coef(m))[[1L]]
     out$se <- as.numeric(survey::SE(m))[[1L]]
@@ -203,7 +206,10 @@ order_continuous_svy_tokens <- function(tokens) {
       out$se <- NA_real_
     }
     ci <- if (estimable && is.finite(df) && df > 0) {
-      .svy_try(stats::confint(m, level = ci_level, df = df))
+      .svy_try(
+        stats::confint(m, level = ci_level, df = df),
+        "stats::confint()"
+      )
     } else {
       NULL
     }
@@ -212,7 +218,7 @@ order_continuous_svy_tokens <- function(tokens) {
       out$ci_upper <- as.numeric(ci[1L, 2L])
     }
     if (!isFALSE(deff_mode) && estimable) {
-      d <- .svy_try(survey::deff(m))
+      d <- .svy_try(survey::deff(m), "survey::deff()")
       if (!is.null(d)) {
         out$deff <- as.numeric(d)[[1L]]
       }
@@ -222,22 +228,28 @@ order_continuous_svy_tokens <- function(tokens) {
   # `svyvar()` returns a VARIANCE (there is no `svysd()` in survey
   # 4.5), and its standard error would need a delta method: the twin
   # displays the standard deviation and no interval around it.
-  v <- .svy_try(survey::svyvar(form, design, na.rm = TRUE))
+  v <- .svy_try(
+    survey::svyvar(form, design, na.rm = TRUE),
+    "survey::svyvar()"
+  )
   if (!is.null(v)) {
     vv <- as.numeric(stats::coef(v))[[1L]]
     out$sd <- if (is.na(vv) || vv < 0) NA_real_ else sqrt(vv)
   }
 
-  q <- .svy_try(survey::svyquantile(
-    form,
-    design,
-    quantiles = c(0.25, 0.5, 0.75),
-    na.rm = TRUE,
-    ci = FALSE,
-    se = FALSE,
-    qrule = .svy_resolve_qrule(qrule),
-    df = df
-  ))
+  q <- .svy_try(
+    survey::svyquantile(
+      form,
+      design,
+      quantiles = c(0.25, 0.5, 0.75),
+      na.rm = TRUE,
+      ci = FALSE,
+      se = FALSE,
+      qrule = .svy_resolve_qrule(qrule),
+      df = df
+    ),
+    "survey::svyquantile()"
+  )
   # `svyquantile()` returns a matrix whose ORIENTATION follows `ci`:
   # one row per quantile with the interval, one row of three columns
   # without it. Only the three estimates are wanted here (`med_ci` has
@@ -259,8 +271,36 @@ order_continuous_svy_tokens <- function(tokens) {
 # reader needs ("Finite population correction dropped in conversion",
 # a zero-variance stratum) and swallowing them would be worse than the
 # noise.
-.svy_try <- function(expr) {
-  tryCatch(expr, error = function(e) NULL)
+#
+# The error itself is not swallowed either: it comes back as a warning
+# (`spicy_svy_estimation_failed`) quoting survey's message and naming
+# `fn`, the call that stopped. The table functions collect these around
+# their estimation calls (`.svy_failure_log()`), raise one warning for
+# the table, and say in the note what the dash means.
+.svy_try <- function(expr, fn) {
+  tryCatch(expr, error = function(e) {
+    .warn_svy_failed(conditionMessage(e), list(fn))
+    NULL
+  })
+}
+
+# The display tokens each delegation of `.svy_var_stats()` serves. The
+# statistics are all computed whatever the table shows (`output = "long"`
+# returns them all), so a call can stop on a statistic no cell displays:
+# that failure leaves no dash and is not reported. The group tests are
+# not listed, since they run only when the table shows them.
+.svy_fn_tokens <- list(
+  "survey::svymean()" = c("m", "se", "ci", "deff"),
+  "stats::confint()" = "ci",
+  "survey::deff()" = "deff",
+  "survey::svyvar()" = "sd",
+  "survey::svyquantile()" = c("med", "iqr", "med_iqr", "q1", "q3")
+)
+
+# Whether a failure of `fn` leaves a dash on a table showing `tokens`.
+.svy_fn_shown <- function(fn, tokens) {
+  served <- .svy_fn_tokens[[fn]]
+  is.null(served) || any(served %in% tokens)
 }
 
 # The group comparison, delegated whole.
@@ -371,6 +411,15 @@ order_continuous_svy_tokens <- function(tokens) {
   }
   ddf <- .design_degf(sub)
   form <- stats::as.formula(paste0("`", var, "` ~ `", group_var, "`"))
+  # The function a failure is reported under: the one that estimates the
+  # design variance in each branch below.
+  fn <- if (identical(test, "nonparametric")) {
+    "survey::svyranktest()"
+  } else if (k == 2L) {
+    "survey::svyttest()"
+  } else {
+    "survey::svyglm()"
+  }
 
   res <- .svy_try(
     if (identical(test, "nonparametric")) {
@@ -422,7 +471,8 @@ order_continuous_svy_tokens <- function(tokens) {
         as.numeric(rt$ddf),
         as.numeric(rt$p)
       )
-    }
+    },
+    fn
   )
   if (is.null(res)) {
     return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
@@ -553,6 +603,12 @@ order_continuous_svy_tokens <- function(tokens) {
 #' of freedom. A domain reduced to one primary sampling unit has none,
 #' and its interval shows the undefined dash rather than an interval
 #' built on `qt(p, df = 0)`.
+#'
+#' A cell that survey cannot estimate, most often because a stratum holds
+#' a single primary sampling unit under its default
+#' `options(survey.lonely.psu = "fail")`, shows a dash: the function
+#' warns once, quoting survey's messages (class
+#' `spicy_svy_estimation_failed`), and the note says what the dash means.
 #'
 #' The comparison is a single test on the whole design, not a set of
 #' pairwise ones: `survey::svyttest()` with two observed groups,
@@ -1170,11 +1226,17 @@ table_continuous_svy <- function(
   # rows serves that comparison and refuses the others.
   n_test_attempted <- 0L
   n_test_refused <- 0L
+  # survey's errors on the cells shown, raised once after the table is
+  # built.
+  svy_log <- .svy_failure_log(function(fn) .svy_fn_shown(fn, tokens))
   for (i in seq_along(numeric_cols)) {
     nm <- numeric_cols[[i]]
     test_row <- NULL
     if (do_test) {
-      tr <- .svy_group_test(design, nm, group_col_name, test)
+      tr <- withCallingHandlers(
+        .svy_group_test(design, nm, group_col_name, test),
+        spicy_svy_estimation_failed = svy_log$record
+      )
       n_test_attempted <- n_test_attempted + 1L
       if (isTRUE(tr$refused)) {
         n_test_refused <- n_test_refused + 1L
@@ -1193,14 +1255,17 @@ table_continuous_svy <- function(
         dfj <- df_user %||% dom_df
         degf_used <- c(degf_used, dfj)
         degf_dom_used <- c(degf_dom_used, dom_df)
-        desc <- .svy_var_stats(
-          dom,
-          nm,
-          ci_level,
-          dfj,
-          deff,
-          qrule,
-          degf_dom = dom_df
+        desc <- withCallingHandlers(
+          .svy_var_stats(
+            dom,
+            nm,
+            ci_level,
+            dfj,
+            deff,
+            qrule,
+            degf_dom = dom_df
+          ),
+          spicy_svy_estimation_failed = svy_log$record
         )
         # No data for the variable in this domain: its count is
         # undefined too, not a zero.
@@ -1239,14 +1304,17 @@ table_continuous_svy <- function(
       dfj <- df_user %||% meta$degf
       degf_used <- c(degf_used, dfj)
       degf_dom_used <- c(degf_dom_used, meta$degf)
-      desc <- .svy_var_stats(
-        design,
-        nm,
-        ci_level,
-        dfj,
-        deff,
-        qrule,
-        degf_dom = meta$degf
+      desc <- withCallingHandlers(
+        .svy_var_stats(
+          design,
+          nm,
+          ci_level,
+          dfj,
+          deff,
+          qrule,
+          degf_dom = meta$degf
+        ),
+        spicy_svy_estimation_failed = svy_log$record
       )
       if (nm %in% nodata_vars) {
         desc$n <- NA_integer_
@@ -1275,6 +1343,7 @@ table_continuous_svy <- function(
   result <- .desc_drop_test_block(result, p_value, do_test)
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
+  svy_failures <- svy_log$failures()
   # The note names each variable by its label in the apparatus.
   label_of <- stats::setNames(note_labs, numeric_cols)
   table_note <- .svy_continuous_note(
@@ -1299,6 +1368,7 @@ table_continuous_svy <- function(
     test_ddf = test_ddf,
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused,
+    not_estimated = .svy_failure_note(svy_failures),
     no_data = if (has_group) {
       .no_data_sentences(note_labs, unname(nodata_groups))
     } else if (length(nodata_vars)) {
@@ -1310,6 +1380,7 @@ table_continuous_svy <- function(
   # `note` replaces or removes it, for every route.
   table_note <- .table_note(table_note, note, note_add)
   .warn_negative_weights_no_test(test_refused)
+  .warn_svy_failures(svy_failures)
 
   # The two machine shapes of the family (decision 5 of the ADR of
   # 2026-10-20): `"long"` is the compute frame in the vocabulary of the
@@ -1671,7 +1742,9 @@ table_continuous_svy <- function(
 # sample, how the estimates were referred and the groups compared, and
 # what the abbreviations mean, then the sentences of `note_add` (`add`).
 # `test_labels` is the comparison of each variable, named by column, NA
-# where none ran; `var_labels` is named by column too.
+# where none ran; `var_labels` is named by column too. `not_estimated` is
+# the sentence of the dashes survey left (`.svy_failure_note()`), said
+# with the design.
 .svy_continuous_note <- function(
   meta,
   degf_used,
@@ -1693,6 +1766,7 @@ table_continuous_svy <- function(
   test_ddf = NA_real_,
   n_negative_weights = 0L,
   test_refused = "none",
+  not_estimated = NULL,
   no_data = NULL,
   p_adjust_info = NULL,
   add = NULL
@@ -1740,6 +1814,7 @@ table_continuous_svy <- function(
         meta$n_obs,
         test_refused = test_refused
       ),
+      not_estimated,
       if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {
         spicy_fmt("note_quantile_rule", .svy_qrule_label(qrule))
       },

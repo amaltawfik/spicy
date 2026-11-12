@@ -88,6 +88,12 @@
 #' the domain either way. An item that offers one level is 100% by
 #' arithmetic: survey does not estimate a variable with one level.
 #'
+#' A cell that survey cannot estimate, most often because a stratum holds
+#' a single primary sampling unit under its default
+#' `options(survey.lonely.psu = "fail")`, shows a dash: the function
+#' warns once, quoting survey's messages (class
+#' `spicy_svy_estimation_failed`), and the note says what the dash means.
+#'
 #' `n` is the observed count of the domain, the respondents and not the
 #' estimated population, as in [table_categorical_svy()]. A row with a
 #' missing `by` leaves the table, and the note gives their count.
@@ -433,6 +439,8 @@ table_battery_svy <- function(
   tested <- rep(FALSE, n_items)
   n_attempted <- 0L
   n_refused <- 0L
+  # survey's errors, each raised once after the table is built.
+  svy_log <- .svy_failure_log()
   for (j in seq_len(n_items)) {
     nm <- select_names[[j]]
     a <- answers[[j]]
@@ -445,15 +453,18 @@ table_battery_svy <- function(
       if (!any(keep)) {
         return(NULL)
       }
-      st <- .cat_svy_level_stats(
-        .design_subset(design, keep),
-        nm,
-        est_levels,
-        ci_level = 0.95,
-        df = NA_real_,
-        deff_mode = FALSE,
-        ci_method = "logit",
-        proportion_ci = FALSE
+      st <- withCallingHandlers(
+        .cat_svy_level_stats(
+          .design_subset(design, keep),
+          nm,
+          est_levels,
+          ci_level = 0.95,
+          df = NA_real_,
+          deff_mode = FALSE,
+          ci_method = "logit",
+          proportion_ci = FALSE
+        ),
+        spicy_svy_estimation_failed = svy_log$record
       )
       list(n = st$n, pct = 100 * st$pct)
     }
@@ -489,11 +500,14 @@ table_battery_svy <- function(
     if (!tested[[j]]) {
       next
     }
-    tr <- .cat_svy_test(
-      .design_subset(design, !is.na(gi) & a %in% shown),
-      nm,
-      by_name,
-      chisq_statistic
+    tr <- withCallingHandlers(
+      .cat_svy_test(
+        .design_subset(design, !is.na(gi) & a %in% shown),
+        nm,
+        by_name,
+        chisq_statistic
+      ),
+      spicy_svy_estimation_failed = svy_log$record
     )
     n_attempted <- n_attempted + 1L
     n_refused <- n_refused + isTRUE(tr$refused)
@@ -538,6 +552,7 @@ table_battery_svy <- function(
   item_df <- adj$df[ord, , drop = FALSE]
   p_adjust_info <- adj$info
   test_refused <- .design_refusal_regime(n_refused, n_attempted)
+  svy_failures <- svy_log$failures()
 
   # ---- title and note ----------------------------------------------------------
   untestable <- if (test_runs) !testable[ord] else rep(FALSE, n_items)
@@ -575,6 +590,7 @@ table_battery_svy <- function(
           test_refused = test_refused,
           key = "note_negative_weights_battery"
         ),
+        not_estimated = .svy_failure_note(svy_failures),
         # No p-value, every test refused or none run: no test to name.
         test_label = if (any(!is.na(p_raw))) {
           .cat_svy_test_label(chisq_statistic)
@@ -588,6 +604,7 @@ table_battery_svy <- function(
     note_add
   )
   .warn_negative_weights_no_test(test_refused)
+  .warn_svy_failures(svy_failures)
 
   .bat_render(
     items = select_names,

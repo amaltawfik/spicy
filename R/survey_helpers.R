@@ -94,10 +94,10 @@
 # session still load 4.4 without a word. The two features the floor
 # exists for fail quietly rather than loudly -- `svyciprop(method =
 # "wilson")` is a 4.5 addition and would land in `.svy_try()` as a
-# column of dashes, and `svyby(covmat = TRUE)` is only correct from 4.5
-# on designs where `subset()` drops rows. A refusal naming the version
-# found is the only thing that turns those into something a caller can
-# act on.
+# column of dashes under a warning that does not name the version, and
+# `svyby(covmat = TRUE)` is only correct from 4.5 on designs where
+# `subset()` drops rows. A refusal naming the version found is the only
+# thing that turns those into something a caller can act on.
 .require_survey <- function(fn) {
   if (!spicy_pkg_available("survey")) {
     spicy_abort(
@@ -352,6 +352,135 @@
     class = c("spicy_negative_weights_no_test", "spicy_undefined_stat")
   )
   invisible(TRUE)
+}
+
+# ---- survey errors behind a dash ---------------------------------------------
+
+# `.svy_try()` turns an error of survey into an absent number, which the
+# table shows as a dash, and says so with this warning. Under survey's
+# default `options(survey.lonely.psu = "fail")`, a stratum with a single
+# primary sampling unit stops `svymean()`, `svyvar()`, `svyciprop()`,
+# `svychisq()` and the group tests, point estimate included.
+#
+# `msgs` are survey's messages, each quoted in a bullet with the calls
+# that stopped on it (`fns`, a list parallel to `msgs`): `.svy_try()`
+# signals one, a table raises ONE warning holding all the distinct
+# messages it met (`.warn_svy_failures()`). The message stays in
+# English, as every condition of the package.
+.warn_svy_failed <- function(msgs, fns) {
+  bullets <- vapply(
+    seq_along(msgs),
+    function(i) {
+      sprintf(
+        "%s stopped: %s",
+        paste0("`", fns[[i]], "`", collapse = ", "),
+        .quote_val(msgs[[i]])
+      )
+    },
+    character(1)
+  )
+  names(bullets) <- rep("*", length(bullets))
+  spicy_warn(
+    c(
+      "Some estimates of the table could not be computed:",
+      bullets,
+      "i" = "The cells that could not be estimated show a dash.",
+      "i" = if (any(.svy_lonely_psu(msgs))) {
+        "A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = \"fail\")`: \"adjust\", \"average\", \"remove\" or \"certainty\" estimate these cells (see `?survey::surveyoptions`)."
+      }
+    ),
+    class = c("spicy_svy_estimation_failed", "spicy_undefined_stat"),
+    survey_message = msgs,
+    fn = fns
+  )
+}
+
+# survey's two wordings of a lonely primary sampling unit, untranslated
+# in survey 4.5: "Stratum (H) has only one PSU at stage 1" and "At least
+# one stratum contains only one PSU at stage 1". A lonely unit at a later
+# stage (a primary unit with one sampled secondary unit) is no stratum
+# with a single PSU, and takes the general sentence.
+.svy_lonely_psu <- function(msg) {
+  grepl("only one PSU at stage 1", msg, fixed = TRUE)
+}
+
+# The survey errors one table met. A table function puts `record` around
+# each of its estimation calls, as the calling handler of
+# `spicy_svy_estimation_failed`: it keeps each distinct message once, with
+# the calls that stopped on it, and muffles the warning, so that the
+# table raises one warning once it is built (`.warn_svy_failures()`).
+# `reported(fn)` says whether a call serves a cell the table shows; a
+# failure that leaves no dash on the table is muffled and not kept. Local
+# to the call: nothing outlives the table.
+.svy_failure_log <- function(reported = function(fn) TRUE) {
+  msgs <- character(0)
+  fns <- list()
+  list(
+    record = function(w) {
+      for (k in seq_along(w$survey_message)) {
+        f <- Filter(reported, w$fn[[k]])
+        if (length(f) == 0L) {
+          next
+        }
+        msg <- w$survey_message[[k]]
+        i <- match(msg, msgs)
+        if (is.na(i)) {
+          msgs <<- c(msgs, msg)
+          fns[[length(msgs)]] <<- f
+        } else {
+          fns[[i]] <<- union(fns[[i]], f)
+        }
+      }
+      invokeRestart("muffleWarning")
+    },
+    failures = function() list(message = msgs, fn = fns)
+  )
+}
+
+# One warning for the table, after it is built.
+.warn_svy_failures <- function(failures) {
+  if (length(failures$message) == 0L) {
+    return(invisible(FALSE))
+  }
+  .warn_svy_failed(failures$message, failures$fn)
+  invisible(TRUE)
+}
+
+# The sentence of the note that says what such a dash is, or NULL. The
+# lonely primary sampling unit is named only when it explains every dash;
+# any other error of survey gets the general sentence. The note never
+# quotes survey's message: the warning does.
+.svy_failure_note <- function(failures) {
+  msgs <- failures$message
+  if (length(msgs) == 0L) {
+    return(NULL)
+  }
+  if (all(.svy_lonely_psu(msgs))) {
+    spicy_str("note_design_not_estimated_lonely_psu")
+  } else {
+    spicy_str("note_design_not_estimated")
+  }
+}
+
+# The methods of `svyciprop()` that fit a logistic regression, which
+# `glm()` refuses under negative weights ("negative weights not allowed");
+# "mean", "beta", "xlogit", "asin" and "wilson" accept them. On a domain
+# whose weights change sign the table does not ask survey for these
+# intervals (`.cat_svy_level_stats()`), and says so once: in the note
+# (`note_negative_weights_no_ci`) and with this warning.
+.CAT_SVY_CI_GLM_METHODS <- c("logit", "likelihood")
+
+.warn_negative_weights_no_ci <- function(ci_method) {
+  spicy_warn(
+    c(
+      sprintf(
+        "Percentage CIs are not reported where the weights change sign: `ci_method = %s` rests on a logistic regression, which does not allow negative weights.",
+        .quote_val(ci_method)
+      ),
+      "i" = "`ci_method = \"mean\"`, `\"beta\"`, `\"xlogit\"`, `\"asin\"` or `\"wilson\"` accepts negative weights."
+    ),
+    class = c("spicy_negative_weights_no_ci", "spicy_undefined_stat")
+  )
 }
 
 # The number of observations a design fit actually used.

@@ -174,11 +174,40 @@ test_that("a delegation that fails leaves an undefined cell, not an error", {
     svyvar = function(...) stop("no variance here"),
     .package = "survey"
   )
-  out <- table_continuous_svy(d, select = api00, output = "long")
-  expect_true(is.na(out$sd))
+  # Not silent: one warning quotes survey's message and names the
+  # function, and the note says what the dash is, in the general sentence
+  # since the error is no lonely primary sampling unit.
+  w <- expect_warning(
+    out <- table_continuous_svy(d, select = c(api00, api99), output = "long"),
+    class = "spicy_svy_estimation_failed"
+  )
+  expect_identical(w$survey_message, "no variance here")
+  expect_identical(w$fn, list("survey::svyvar()"))
+  expect_match(
+    conditionMessage(w),
+    "`survey::svyvar()` stopped: \"no variance here\"",
+    fixed = TRUE
+  )
+  expect_false(grepl("survey.lonely.psu", conditionMessage(w), fixed = TRUE))
+  expect_true(all(is.na(out$sd)))
+  expect_match(
+    attr(out, "note"),
+    "A dash marks an estimate the design could not provide. ",
+    fixed = TRUE
+  )
+  expect_false(grepl("primary sampling unit", attr(out, "note"), fixed = TRUE))
+  # In French, the general sentence too.
+  withr::with_options(list(spicy.language = "fr"), {
+    note_fr <- attr(
+      suppressWarnings(table_continuous_svy(d, select = api00)),
+      "note"
+    )
+  })
+  expect_match(note_fr, .SVY_NOT_ESTIMATED_FR, fixed = TRUE)
+  expect_false(grepl("primaire", note_fr, fixed = TRUE))
   # Everything else still comes through: the guard is per delegation,
   # not per table.
-  expect_equal(out$mean, 644.16939890710387, tolerance = 1e-12)
+  expect_equal(out$mean[[1L]], 644.16939890710387, tolerance = 1e-12)
 })
 
 test_that("a failing quantile leaves the position statistics undefined", {
@@ -187,14 +216,38 @@ test_that("a failing quantile leaves the position statistics undefined", {
     svyquantile = function(...) stop("singular"),
     .package = "survey"
   )
-  out <- table_continuous_svy(
-    d,
-    select = api00,
-    show_columns = c("m", "med", "q1", "q3", "iqr"),
-    output = "long"
+  expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = api00,
+      show_columns = c("m", "med", "q1", "q3", "iqr"),
+      output = "long"
+    ),
+    class = "spicy_svy_estimation_failed"
   )
   expect_true(all(is.na(c(out$median, out$q1, out$q3, out$iqr))))
   expect_false(is.na(out$mean))
+})
+
+test_that("a failing quantile is reported only when a quantile is shown", {
+  d <- .svyedge_design()
+  local_mocked_bindings(
+    svyquantile = function(...) stop("no quantile"),
+    .package = "survey"
+  )
+  # The default columns show no quantile: no dash, nothing to say.
+  expect_no_warning(out <- table_continuous_svy(d, select = api00))
+  expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  w <- expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = api00,
+      show_columns = c("m", "iqr")
+    ),
+    class = "spicy_svy_estimation_failed"
+  )
+  expect_identical(w$fn, list("survey::svyquantile()"))
+  expect_match(attr(out, "note"), .SVY_NOT_ESTIMATED_EN, fixed = TRUE)
 })
 
 test_that("a failing test leaves the p empty rather than the table broken", {
@@ -203,14 +256,23 @@ test_that("a failing test leaves the p empty rather than the table broken", {
     svychisq = function(...) stop("no test"),
     .package = "survey"
   )
-  out <- table_categorical_svy(
-    d,
-    select = stype,
-    by = sch.wide,
-    output = "data.frame"
+  w <- expect_warning(
+    out <- table_categorical_svy(
+      d,
+      select = stype,
+      by = sch.wide,
+      output = "data.frame"
+    ),
+    class = "spicy_svy_estimation_failed"
   )
+  expect_identical(w$fn, list("survey::svychisq()"))
   expect_identical(unique(out$p), NA_real_)
   expect_false(is.na(out[["Yes %"]][[2L]]))
+  expect_match(
+    attr(out, "note"),
+    "A dash marks an estimate the design could not provide. ",
+    fixed = TRUE
+  )
 })
 
 test_that("a failing group comparison leaves the continuous test columns empty", {
@@ -219,13 +281,17 @@ test_that("a failing group comparison leaves the continuous test columns empty",
     svyttest = function(...) stop("no test"),
     .package = "survey"
   )
-  out <- table_continuous_svy(
-    d,
-    select = api00,
-    by = sch.wide,
-    statistic = TRUE,
-    output = "long"
+  w <- expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = api00,
+      by = sch.wide,
+      statistic = TRUE,
+      output = "long"
+    ),
+    class = "spicy_svy_estimation_failed"
   )
+  expect_identical(w$fn, list("survey::svyttest()"))
   expect_true(all(is.na(out$p.value)))
   expect_false(is.na(out$mean[[1L]]))
 })
@@ -236,13 +302,83 @@ test_that("a failing design effect leaves its column undefined", {
     deff = function(...) stop("no deff"),
     .package = "survey"
   )
-  out <- table_continuous_svy(d, select = api00, deff = TRUE, output = "long")
+  expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = api00,
+      deff = TRUE,
+      output = "long"
+    ),
+    class = "spicy_svy_estimation_failed"
+  )
   expect_true(is.na(out$deff))
-  out2 <- table_categorical_svy(
-    d,
-    select = stype,
-    deff = TRUE,
-    output = "data.frame"
+  expect_warning(
+    out2 <- table_categorical_svy(
+      d,
+      select = stype,
+      deff = TRUE,
+      output = "data.frame"
+    ),
+    class = "spicy_svy_estimation_failed"
   )
   expect_identical(unique(out2$DEff), NA_real_)
+})
+
+test_that("a failing test of the battery says what its dash is", {
+  d <- .svyedge_design()
+  local_mocked_bindings(
+    svychisq = function(...) stop("no test"),
+    .package = "survey"
+  )
+  # Four items, four tests, one message: one warning.
+  w <- expect_warning(
+    out <- table_battery_svy(
+      d,
+      select = c(awards, sch.wide, comp.imp, both),
+      by = stype,
+      output = "long"
+    ),
+    class = "spicy_svy_estimation_failed"
+  )
+  expect_identical(w$survey_message, "no test")
+  expect_identical(w$fn, list("survey::svychisq()"))
+  expect_true(all(is.na(out$p.value)))
+  expect_false(anyNA(out$pct))
+  expect_match(
+    attr(out, "note"),
+    "A dash marks an estimate the design could not provide. ",
+    fixed = TRUE
+  )
+})
+
+test_that("the note names the lonely unit only when it explains every dash", {
+  lonely <- "Stratum (H) has only one PSU at stage 1"
+  expect_null(.svy_failure_note(list(message = character(0), fn = list())))
+  expect_identical(
+    .svy_failure_note(list(
+      message = c(
+        lonely,
+        "At least one stratum contains only one PSU at stage 1"
+      ),
+      fn = list("survey::svymean()", "survey::svyvar()")
+    )),
+    spicy_str("note_design_not_estimated_lonely_psu")
+  )
+  # A lonely unit at a later stage is no stratum with a single PSU.
+  expect_identical(
+    .svy_failure_note(list(
+      message = "At least one stratum contains only one PSU at stage 2",
+      fn = list("survey::svymean()")
+    )),
+    spicy_str("note_design_not_estimated")
+  )
+  # A second error of another kind: the dashes are not all the lonely
+  # unit's, and the general sentence is the true one.
+  expect_identical(
+    .svy_failure_note(list(
+      message = c(lonely, "singular"),
+      fn = list("survey::svymean()", "survey::svyquantile()")
+    )),
+    spicy_str("note_design_not_estimated")
+  )
 })

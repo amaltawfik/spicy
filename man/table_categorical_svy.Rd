@@ -147,7 +147,12 @@ observation holds is an error (class \code{spicy_invalid_data}).}
 
 \item{ci_method}{Interval method passed to \code{survey::svyciprop()}:
 \code{"logit"} (default), \code{"likelihood"}, \code{"asin"}, \code{"beta"},
-\code{"mean"}, \code{"xlogit"} or \code{"wilson"}.}
+\code{"mean"}, \code{"xlogit"} or \code{"wilson"}. \code{"logit"} and \code{"likelihood"}
+fit a logistic regression, which does not allow negative weights:
+where the weights of a domain change sign, as linear calibration can
+make them, its intervals are not reported, the note says so and the
+call warns (\code{spicy_negative_weights_no_ci}). The five other methods
+accept negative weights.}
 
 \item{ci_level}{Confidence level of the intervals of \code{proportion_ci}
 (default \code{0.95}): a number strictly between 0 and 1.}
@@ -351,6 +356,12 @@ and Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
 presentation standards for proportions apply to its complement as well
 (Parker et al. 2017, pp. 2-3). The note says so when such a cell is
 shown.
+
+A cell that survey cannot estimate, most often because a stratum holds
+a single primary sampling unit under its default
+\code{options(survey.lonely.psu = "fail")}, shows a dash: the function
+warns once, quoting survey's messages (class
+\code{spicy_svy_estimation_failed}), and the note says what the dash means.
 }
 
 \section{The test}{

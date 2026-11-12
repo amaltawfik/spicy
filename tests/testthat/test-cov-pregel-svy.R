@@ -129,7 +129,13 @@ test_that("a domain survey declines to estimate keeps its counts", {
   )
   des <- survey::svydesign(id = ~psu, strata = ~strat, weights = ~w, data = d)
 
-  tbl <- table_categorical_svy(des, v, by = g, proportion_ci = TRUE)
+  # survey's error is raised once, as a warning (lot LPSU).
+  expect_warning(
+    tbl <- table_categorical_svy(des, v, by = g, proportion_ci = TRUE),
+    "Stratum (s3) has only one PSU at stage 1",
+    fixed = TRUE,
+    class = "spicy_svy_estimation_failed"
+  )
   lv <- tbl$.row_role == "level"
   expect_identical(tbl$level[lv], c("x", "y"))
 

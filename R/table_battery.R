@@ -1659,8 +1659,9 @@ table_battery <- function(
 #       the items without variation;
 # then the sentences of `note_add`. `svy` carries what the design twin
 # says beside: the design line, which opens the note, the sentence of
-# negative weights, the label of the design-based test, and the gloss of
-# the observed count (`table_battery_svy()`).
+# negative weights, that of the dashes survey left, the label of the
+# design-based test, and the gloss of the observed count
+# (`table_battery_svy()`).
 .bat_note <- function(
   drop_na,
   left_out,
@@ -1696,7 +1697,8 @@ table_battery <- function(
       spicy_fmt("note_battery_levels_excluded", .join_note_vars(left_out))
     },
     if (!is.null(weights_name)) spicy_fmt("note_weighted_by", weights_name),
-    svy$negative_weights
+    svy$negative_weights,
+    svy$not_estimated
   )
   missing <- c(
     if (n_na_weights > 0L) {

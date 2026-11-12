@@ -286,6 +286,12 @@ and stay in the domain. An answer that \code{levels} leaves out is outside
 the domain either way. An item that offers one level is 100\% by
 arithmetic: survey does not estimate a variable with one level.
 
+A cell that survey cannot estimate, most often because a stratum holds
+a single primary sampling unit under its default
+\code{options(survey.lonely.psu = "fail")}, shows a dash: the function
+warns once, quoting survey's messages (class
+\code{spicy_svy_estimation_failed}), and the note says what the dash means.
+
 \code{n} is the observed count of the domain, the respondents and not the
 estimated population, as in \code{\link[=table_categorical_svy]{table_categorical_svy()}}. A row with a
 missing \code{by} leaves the table, and the note gives their count.

@@ -1296,7 +1296,23 @@
   # The method line above it is true of the comparisons that ran, and
   # this names the ones that did not.
   note_negative_weights_no_test_some = "For variables whose complete cases include negatively weighted rows, the group comparison is not reported: a design-based test is not defined when the weights change sign.",
+  # Said after the sentence of the negative weights when a percentage CI
+  # of `table_categorical_svy()` was withheld: "logit" and "likelihood"
+  # fit a logistic regression, which `glm()` refuses under negative
+  # weights, and the table does not ask survey for an interval it cannot
+  # give (`.CAT_SVY_CI_GLM_METHODS`). "Where": a domain whose weights stay
+  # positive keeps its intervals.
+  note_negative_weights_no_ci = "Where the weights change sign, the percentage CIs are not defined: their method rests on a logistic regression, which does not allow negative weights.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
+  # An estimate survey stopped on shows a dash (`.svy_try()`), and the
+  # note says what that dash is (`.svy_failure_note()`). A stratum with a
+  # single primary sampling unit, which survey's default
+  # `options(survey.lonely.psu = "fail")` refuses, is named when it
+  # explains every dash; any other error of survey takes the general
+  # sentence. survey's own message and the remedy go in the warning,
+  # never here: a published note holds no code.
+  note_design_not_estimated_lonely_psu = "A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit.",
+  note_design_not_estimated = "A dash marks an estimate the design could not provide.",
   # The design-based comparisons, named for `note_p_values_test`.
   test_design_t = "design-based t-test",
   test_design_wald = "design-based Wald test",

@@ -47,3 +47,23 @@
       
       Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; DEff = design effect.
 
+# the console prints the dashes of a lonely PSU with their note
+
+    Code
+      table_continuous_svy(d, select = api00, by = sch.wide)
+    Condition
+      Warning:
+      Some estimates of the table could not be computed:
+      * `survey::svyttest()`, `survey::svymean()`, `survey::svyvar()` stopped: "Stratum (H) has only one PSU at stage 1"
+      i The cells that could not be estimated show a dash.
+      i A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).
+    Output
+      Descriptive statistics by sch.wide
+      
+       Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n   p 
+      ──────────┼─────────────────────────────────────────────────────────────────────
+       api00    │ No        –       –    398.00  778.00      –          –       25  – 
+                │ Yes    678.42  121.28  421.00  893.00   655.85     700.99    126    
+      
+      Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
+
