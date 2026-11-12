@@ -93,6 +93,10 @@
 #' `options(survey.lonely.psu = "fail")`, shows a dash: the function
 #' warns once, quoting survey's messages (class
 #' `spicy_svy_estimation_failed`), and the note says what the dash means.
+#' A warning of survey's own, such as the one on a stratum with a single
+#' primary sampling unit in a domain under
+#' `options(survey.adjust.domain.lonely = TRUE)`, is said once per table,
+#' with the number of times survey raised it.
 #'
 #' `n` is the observed count of the domain, the respondents and not the
 #' estimated population, as in [table_categorical_svy()]. A row with a
@@ -439,7 +443,9 @@ table_battery_svy <- function(
   tested <- rep(FALSE, n_items)
   n_attempted <- 0L
   n_refused <- 0L
-  # survey's errors, each raised once after the table is built.
+  # survey's errors, each raised once after the table is built, and
+  # survey's own warnings, each said once.
+  svy_warns <- .svy_warning_log()
   svy_log <- .svy_failure_log()
   for (j in seq_len(n_items)) {
     nm <- select_names[[j]]
@@ -464,7 +470,8 @@ table_battery_svy <- function(
           ci_method = "logit",
           proportion_ci = FALSE
         ),
-        spicy_svy_estimation_failed = svy_log$record
+        spicy_svy_estimation_failed = svy_log$record,
+        warning = svy_warns$record
       )
       list(n = st$n, pct = 100 * st$pct)
     }
@@ -507,7 +514,8 @@ table_battery_svy <- function(
         by_name,
         chisq_statistic
       ),
-      spicy_svy_estimation_failed = svy_log$record
+      spicy_svy_estimation_failed = svy_log$record,
+      warning = svy_warns$record
     )
     n_attempted <- n_attempted + 1L
     n_refused <- n_refused + isTRUE(tr$refused)
@@ -603,6 +611,7 @@ table_battery_svy <- function(
     note,
     note_add
   )
+  svy_warns$resignal()
   .warn_negative_weights_no_test(test_refused)
   .warn_svy_failures(svy_failures)
 

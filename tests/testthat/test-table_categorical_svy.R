@@ -2623,6 +2623,65 @@ test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
   }
 })
 
+test_that("survey's own warnings are said once per table, with their count", {
+  skip_on_cran()
+  d <- .svy_two_domain_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "adjust",
+    survey.adjust.domain.lonely = TRUE
+  )
+  # The oracle: survey on the two lonely domains, one warning per variable
+  # in each.
+  vars <- c("awards", "comp.imp")
+  ref <- .svy_domain_warnings(d, vars, survey::svymean)
+  expect_identical(
+    unname(ref$msg),
+    c(
+      "Stratum (H) has only one PSU at stage 1",
+      "Stratum (M) has only one PSU at stage 1"
+    )
+  )
+  expect_true(all(ref$n > 1L))
+  run <- .svy_collect_warnings(table_categorical_svy(
+    d,
+    select = c(awards, comp.imp),
+    by = grp,
+    output = "long"
+  ))
+  out <- run$value
+  # One warning per message, in the order survey raised them, each with
+  # its count, survey's classes and survey's call.
+  ws <- run$warnings
+  expect_identical(
+    vapply(ws, conditionMessage, character(1)),
+    unname(mapply(.svy_counted, ref$msg, ref$n))
+  )
+  for (w in ws) {
+    expect_identical(class(w), c("simpleWarning", "warning", "condition"))
+  }
+  expect_identical(conditionCall(ws[[1L]]), conditionCall(ref$first))
+  # The percentages are survey's.
+  for (g in c("B", "C")) {
+    for (x in vars) {
+      expect_equal(
+        out$pct[out$group == g & out$variable == x],
+        100 * ref$est[[paste(g, x)]],
+        tolerance = 1e-12
+      )
+    }
+  }
+  # Raised once, a message is survey's own words.
+  one <- .svy_collect_warnings(table_categorical_svy(
+    d,
+    select = awards,
+    by = grp
+  ))
+  expect_identical(
+    vapply(one$warnings, conditionMessage, character(1)),
+    unname(ref$msg)
+  )
+})
+
 test_that("a table with one observed level on a side is not tested, silently", {
   skip_on_cran()
   d <- .svycat_design("clus1")

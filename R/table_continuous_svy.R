@@ -270,7 +270,7 @@ order_continuous_svy_tokens <- function(tokens) {
 # dash. Warnings pass through -- survey has things to say that the
 # reader needs ("Finite population correction dropped in conversion",
 # a zero-variance stratum) and swallowing them would be worse than the
-# noise.
+# noise. The table says each of them once (`.svy_warning_log()`).
 #
 # The error itself is not swallowed either: it comes back as a warning
 # (`spicy_svy_estimation_failed`) quoting survey's message and naming
@@ -609,6 +609,10 @@ order_continuous_svy_tokens <- function(tokens) {
 #' `options(survey.lonely.psu = "fail")`, shows a dash: the function
 #' warns once, quoting survey's messages (class
 #' `spicy_svy_estimation_failed`), and the note says what the dash means.
+#' A warning of survey's own, such as the one on a stratum with a single
+#' primary sampling unit in a domain under
+#' `options(survey.adjust.domain.lonely = TRUE)`, is said once per table,
+#' with the number of times survey raised it.
 #'
 #' The comparison is a single test on the whole design, not a set of
 #' pairwise ones: `survey::svyttest()` with two observed groups,
@@ -1227,7 +1231,8 @@ table_continuous_svy <- function(
   n_test_attempted <- 0L
   n_test_refused <- 0L
   # survey's errors on the cells shown, raised once after the table is
-  # built.
+  # built, and survey's own warnings, each said once.
+  svy_warns <- .svy_warning_log()
   svy_log <- .svy_failure_log(function(fn) .svy_fn_shown(fn, tokens))
   for (i in seq_along(numeric_cols)) {
     nm <- numeric_cols[[i]]
@@ -1235,7 +1240,8 @@ table_continuous_svy <- function(
     if (do_test) {
       tr <- withCallingHandlers(
         .svy_group_test(design, nm, group_col_name, test),
-        spicy_svy_estimation_failed = svy_log$record
+        spicy_svy_estimation_failed = svy_log$record,
+        warning = svy_warns$record
       )
       n_test_attempted <- n_test_attempted + 1L
       if (isTRUE(tr$refused)) {
@@ -1265,7 +1271,8 @@ table_continuous_svy <- function(
             qrule,
             degf_dom = dom_df
           ),
-          spicy_svy_estimation_failed = svy_log$record
+          spicy_svy_estimation_failed = svy_log$record,
+          warning = svy_warns$record
         )
         # No data for the variable in this domain: its count is
         # undefined too, not a zero.
@@ -1314,7 +1321,8 @@ table_continuous_svy <- function(
           qrule,
           degf_dom = meta$degf
         ),
-        spicy_svy_estimation_failed = svy_log$record
+        spicy_svy_estimation_failed = svy_log$record,
+        warning = svy_warns$record
       )
       if (nm %in% nodata_vars) {
         desc$n <- NA_integer_
@@ -1379,6 +1387,7 @@ table_continuous_svy <- function(
   )
   # `note` replaces or removes it, for every route.
   table_note <- .table_note(table_note, note, note_add)
+  svy_warns$resignal()
   .warn_negative_weights_no_test(test_refused)
   .warn_svy_failures(svy_failures)
 

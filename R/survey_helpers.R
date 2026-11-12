@@ -365,9 +365,10 @@
 # `msgs` are survey's messages, each quoted in a bullet with the calls
 # that stopped on it (`fns`, a list parallel to `msgs`): `.svy_try()`
 # signals one, a table raises ONE warning holding all the distinct
-# messages it met (`.warn_svy_failures()`). The message stays in
-# English, as every condition of the package.
-.warn_svy_failed <- function(msgs, fns) {
+# messages it met (`.warn_svy_failures()`). That warning carries the
+# table's `call`, which the header of the warning names. The message
+# stays in English, as every condition of the package.
+.warn_svy_failed <- function(msgs, fns, call = NULL) {
   bullets <- vapply(
     seq_along(msgs),
     function(i) {
@@ -382,7 +383,7 @@
   names(bullets) <- rep("*", length(bullets))
   spicy_warn(
     c(
-      "Some estimates of the table could not be computed:",
+      "Some cells could not be estimated:",
       bullets,
       "i" = "The cells that could not be estimated show a dash.",
       "i" = if (any(.svy_lonely_psu(msgs))) {
@@ -391,7 +392,8 @@
     ),
     class = c("spicy_svy_estimation_failed", "spicy_undefined_stat"),
     survey_message = msgs,
-    fn = fns
+    fn = fns,
+    call = call
   )
 }
 
@@ -437,13 +439,69 @@
   )
 }
 
-# One warning for the table, after it is built.
-.warn_svy_failures <- function(failures) {
+# One warning for the table, after it is built, with the table's call.
+.warn_svy_failures <- function(failures, call = rlang::caller_env()) {
   if (length(failures$message) == 0L) {
     return(invisible(FALSE))
   }
-  .warn_svy_failed(failures$message, failures$fn)
+  .warn_svy_failed(failures$message, failures$fn, call)
   invisible(TRUE)
+}
+
+# survey's own warnings in the estimation calls of one table, each said
+# once. Under `options(survey.adjust.domain.lonely = TRUE)` and any
+# `survey.lonely.psu` but "fail", survey warns on every estimate of a
+# domain whose stratum holds a single primary sampling unit ("Stratum (H)
+# has only one PSU at stage 1"): the same words six times in a table of
+# two variables by two groups. A table function puts `record` around its
+# estimation calls, as the calling handler of `warning`: it keeps the
+# first condition of each distinct message with a count, and muffles it.
+# `resignal()`, once the estimates are made, raises each again in the
+# order they first came, with survey's classes and call, and adds the
+# count on a line of its own when the message came more than once.
+# spicy's own warnings are not survey's and go through untouched, such as
+# the one of the group test on a variable with no variance. A warning that
+# survey silences with `options(warn = -1)` still reaches calling
+# handlers, so the log would raise it again after the block: the only such
+# site today, `chisq.test()` inside `svychisq()`, is muffled by the inner
+# handler of `.cat_svy_test()`, which comes first, and removing that muffle
+# would bring the warning back through here. Local to the call, as
+# `.svy_failure_log()`.
+.svy_warning_log <- function() {
+  conds <- list()
+  msgs <- character(0)
+  n <- integer(0)
+  list(
+    record = function(w) {
+      if (inherits(w, "spicy_warning")) {
+        return(invisible(NULL))
+      }
+      msg <- conditionMessage(w)
+      i <- match(msg, msgs)
+      if (is.na(i)) {
+        msgs <<- c(msgs, msg)
+        n <<- c(n, 1L)
+        conds[[length(msgs)]] <<- w
+      } else {
+        n[[i]] <<- n[[i]] + 1L
+      }
+      tryInvokeRestart("muffleWarning")
+    },
+    resignal = function() {
+      for (i in seq_along(conds)) {
+        w <- conds[[i]]
+        if (n[[i]] > 1L) {
+          w$message <- sprintf(
+            "%s\n(raised %d times for this table)",
+            msgs[[i]],
+            n[[i]]
+          )
+        }
+        warning(w)
+      }
+      invisible(length(conds) > 0L)
+    }
+  )
 }
 
 # The sentence of the note that says what such a dash is, or NULL. The

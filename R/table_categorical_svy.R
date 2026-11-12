@@ -396,6 +396,10 @@
 #' `options(survey.lonely.psu = "fail")`, shows a dash: the function
 #' warns once, quoting survey's messages (class
 #' `spicy_svy_estimation_failed`), and the note says what the dash means.
+#' A warning of survey's own, such as the one on a stratum with a single
+#' primary sampling unit in a domain under
+#' `options(survey.adjust.domain.lonely = TRUE)`, is said once per table,
+#' with the number of times survey raised it.
 #'
 #' # The test
 #'
@@ -1004,7 +1008,9 @@ table_categorical_svy <- function(
   in_sample <- !is.na(w_design) & w_design != 0
   no_data_groups <- list()
   no_data_vars <- character(0)
-  # survey's errors, each raised once after the table is built.
+  # survey's errors, each raised once after the table is built, and
+  # survey's own warnings, each said once.
+  svy_warns <- .svy_warning_log()
   svy_log <- .svy_failure_log()
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
@@ -1148,7 +1154,8 @@ table_categorical_svy <- function(
           group_col_name,
           chisq_statistic
         ),
-        spicy_svy_estimation_failed = svy_log$record
+        spicy_svy_estimation_failed = svy_log$record,
+        warning = svy_warns$record
       )
       n_test_attempted <- n_test_attempted + 1L
       if (isTRUE(tr$refused)) {
@@ -1208,7 +1215,8 @@ table_categorical_svy <- function(
             proportion_ci,
             degf_dom = dom_df
           ),
-          spicy_svy_estimation_failed = svy_log$record
+          spicy_svy_estimation_failed = svy_log$record,
+          warning = svy_warns$record
         )
       }
       ci_bound <- ci_bound || any(st$exact)
@@ -1309,6 +1317,7 @@ table_categorical_svy <- function(
     note,
     note_add
   )
+  svy_warns$resignal()
   .warn_negative_weights_no_test(test_refused)
   if (ci_refused) {
     .warn_negative_weights_no_ci(ci_method)

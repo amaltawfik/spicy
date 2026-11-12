@@ -1098,17 +1098,69 @@ test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
       output = "long"
     ))
     out <- run$value
-    # survey's own warning reaches the caller; spicy adds none.
+    # survey's own warning reaches the caller, once for the table; spicy
+    # adds none.
     expect_length(.svy_failed_warnings(run$warnings), 0L)
-    msgs <- vapply(run$warnings, conditionMessage, character(1))
-    expect_gt(length(msgs), 0L)
-    expect_true(all(msgs == "Stratum (H) has only one PSU at stage 1"))
+    expect_length(run$warnings, 1L)
+    expect_true(startsWith(
+      conditionMessage(run$warnings[[1L]]),
+      "Stratum (H) has only one PSU at stage 1\n(raised "
+    ))
     expect_equal(
       out$pct[out$group == "B" & out$variable == "awards"],
       100 * as.numeric(stats::coef(ref$value)),
       tolerance = 1e-12
     )
     expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
+  }
+})
+
+test_that("survey's own warnings are said once per table, with their count", {
+  skip_on_cran()
+  d <- .svy_two_domain_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "adjust",
+    survey.adjust.domain.lonely = TRUE
+  )
+  # The oracle: survey on the two lonely domains, one warning per item in
+  # each.
+  items <- c("awards", "comp.imp", "both")
+  ref <- .svy_domain_warnings(d, items, survey::svymean)
+  expect_identical(
+    unname(ref$msg),
+    c(
+      "Stratum (H) has only one PSU at stage 1",
+      "Stratum (M) has only one PSU at stage 1"
+    )
+  )
+  expect_true(all(ref$n > 1L))
+  run <- .svy_collect_warnings(table_battery_svy(
+    d,
+    select = c(awards, comp.imp, both),
+    by = grp,
+    output = "long"
+  ))
+  out <- run$value
+  # One warning per message, in the order survey raised them, each with
+  # its count, survey's classes and survey's call.
+  ws <- run$warnings
+  expect_identical(
+    vapply(ws, conditionMessage, character(1)),
+    unname(mapply(.svy_counted, ref$msg, ref$n))
+  )
+  for (w in ws) {
+    expect_identical(class(w), c("simpleWarning", "warning", "condition"))
+  }
+  expect_identical(conditionCall(ws[[1L]]), conditionCall(ref$first))
+  # The percentages are survey's.
+  for (g in c("B", "C")) {
+    for (x in items) {
+      expect_equal(
+        out$pct[out$group == g & out$variable == x],
+        100 * ref$est[[paste(g, x)]],
+        tolerance = 1e-12
+      )
+    }
   }
 })
 

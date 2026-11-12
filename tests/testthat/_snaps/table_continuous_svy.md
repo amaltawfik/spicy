@@ -52,8 +52,8 @@
     Code
       table_continuous_svy(d, select = api00, by = sch.wide)
     Condition
-      Warning:
-      Some estimates of the table could not be computed:
+      Warning in `table_continuous_svy()`:
+      Some cells could not be estimated:
       * `survey::svyttest()`, `survey::svymean()`, `survey::svyvar()` stopped: "Stratum (H) has only one PSU at stage 1"
       i The cells that could not be estimated show a dash.
       i A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).

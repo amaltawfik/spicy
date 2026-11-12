@@ -2460,11 +2460,14 @@ test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
       output = "long"
     ))
     out <- run$value
-    # survey's own warning reaches the caller; spicy adds none.
+    # survey's own warning reaches the caller, once for the table; spicy
+    # adds none.
     expect_length(.svy_failed_warnings(run$warnings), 0L)
-    msgs <- vapply(run$warnings, conditionMessage, character(1))
-    expect_true(all(msgs == "Stratum (H) has only one PSU at stage 1"))
-    expect_gt(length(msgs), 0L)
+    expect_length(run$warnings, 1L)
+    expect_true(startsWith(
+      conditionMessage(run$warnings[[1L]]),
+      "Stratum (H) has only one PSU at stage 1\n(raised "
+    ))
     expect_equal(
       out$mean[[2L]],
       as.numeric(stats::coef(m_b)),
@@ -2473,6 +2476,59 @@ test_that("a lonely PSU of a domain only is survey's warning, not a dash", {
     expect_equal(out$se[[2L]], as.numeric(survey::SE(m_b)), tolerance = 1e-12)
     expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
   }
+})
+
+test_that("survey's own warnings are said once per table, with their count", {
+  skip_on_cran()
+  d <- .svy_two_domain_lonely_design()
+  withr::local_options(
+    survey.lonely.psu = "adjust",
+    survey.adjust.domain.lonely = TRUE
+  )
+  # The oracle: survey on the two lonely domains, where `svyvar()` warns
+  # as well as `svymean()`.
+  vars <- c("api00", "api99")
+  m <- .svy_domain_warnings(d, vars, survey::svymean)
+  v <- .svy_domain_warnings(d, vars, survey::svyvar)
+  expect_identical(
+    unname(m$msg),
+    c(
+      "Stratum (H) has only one PSU at stage 1",
+      "Stratum (M) has only one PSU at stage 1"
+    )
+  )
+  expect_identical(v$msg, m$msg)
+  n <- m$n + v$n
+  expect_true(all(n > 1L))
+  run <- .svy_collect_warnings(table_continuous_svy(
+    d,
+    select = c(api00, api99),
+    by = grp,
+    show_columns = c("m", "sd", "se", "n"),
+    output = "long"
+  ))
+  out <- run$value
+  # One warning per message, in the order survey raised them, each with
+  # its count, survey's classes and survey's call.
+  ws <- run$warnings
+  expect_identical(
+    vapply(ws, conditionMessage, character(1)),
+    unname(mapply(.svy_counted, m$msg, n))
+  )
+  for (w in ws) {
+    expect_identical(class(w), c("simpleWarning", "warning", "condition"))
+  }
+  expect_identical(conditionCall(ws[[1L]]), conditionCall(m$first))
+  # The estimates are survey's.
+  for (g in c("B", "C")) {
+    for (x in vars) {
+      row <- out$group == g & out$variable == x
+      key <- paste(g, x)
+      expect_equal(out$mean[row], m$est[[key]], tolerance = 1e-12)
+      expect_equal(out$sd[row], sqrt(v$est[[key]]), tolerance = 1e-12)
+    }
+  }
+  expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
 })
 
 test_that("the console prints the dashes of a lonely PSU with their note", {

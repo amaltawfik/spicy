@@ -183,6 +183,15 @@ test_that("a delegation that fails leaves an undefined cell, not an error", {
   )
   expect_identical(w$survey_message, "no variance here")
   expect_identical(w$fn, list("survey::svyvar()"))
+  # Its call is the table the user called.
+  expect_true(startsWith(
+    conditionMessage(w),
+    "Some cells could not be estimated:\n"
+  ))
+  expect_identical(
+    conditionCall(w),
+    quote(table_continuous_svy(d, select = c(api00, api99), output = "long"))
+  )
   expect_match(
     conditionMessage(w),
     "`survey::svyvar()` stopped: \"no variance here\"",
@@ -266,6 +275,19 @@ test_that("a failing test leaves the p empty rather than the table broken", {
     class = "spicy_svy_estimation_failed"
   )
   expect_identical(w$fn, list("survey::svychisq()"))
+  expect_true(startsWith(
+    conditionMessage(w),
+    "Some cells could not be estimated:\n"
+  ))
+  expect_identical(
+    conditionCall(w),
+    quote(table_categorical_svy(
+      d,
+      select = stype,
+      by = sch.wide,
+      output = "data.frame"
+    ))
+  )
   expect_identical(unique(out$p), NA_real_)
   expect_false(is.na(out[["Yes %"]][[2L]]))
   expect_match(
@@ -342,6 +364,19 @@ test_that("a failing test of the battery says what its dash is", {
   )
   expect_identical(w$survey_message, "no test")
   expect_identical(w$fn, list("survey::svychisq()"))
+  expect_true(startsWith(
+    conditionMessage(w),
+    "Some cells could not be estimated:\n"
+  ))
+  expect_identical(
+    conditionCall(w),
+    quote(table_battery_svy(
+      d,
+      select = c(awards, sch.wide, comp.imp, both),
+      by = stype,
+      output = "long"
+    ))
+  )
   expect_true(all(is.na(out$p.value)))
   expect_false(anyNA(out$pct))
   expect_match(
@@ -349,6 +384,31 @@ test_that("a failing test of the battery says what its dash is", {
     "A dash marks an estimate the design could not provide. ",
     fixed = TRUE
   )
+})
+
+test_that("the warning log of a table counts survey's, not spicy's own", {
+  skip_on_cran()
+  log <- .svy_warning_log()
+  # spicy's own warning goes through as raised; survey's are kept.
+  w <- expect_warning(
+    withCallingHandlers(
+      {
+        warning("twice")
+        spicy_warn("own", class = "spicy_undefined_stat")
+        warning("once")
+        warning("twice")
+      },
+      warning = log$record
+    ),
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(conditionMessage(w), "own")
+  ws <- .svy_collect_warnings(log$resignal())$warnings
+  expect_identical(
+    vapply(ws, conditionMessage, character(1)),
+    c("twice\n(raised 2 times for this table)", "once")
+  )
+  expect_identical(class(ws[[1L]]), c("simpleWarning", "warning", "condition"))
 })
 
 test_that("the note names the lonely unit only when it explains every dash", {

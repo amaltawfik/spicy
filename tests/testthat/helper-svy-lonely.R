@@ -39,6 +39,50 @@
   survey::svydesign(id = ~1, strata = ~stype, weights = ~pw, data = d)
 }
 
+# `apistrat` whole, with a group `B` holding one school of stratum H and a
+# group `C` holding one school of stratum M: two domains with a lonely
+# unit each, which survey reports under
+# `options(survey.adjust.domain.lonely = TRUE)` in two messages.
+.svy_two_domain_lonely_design <- function() {
+  skip_if_not_installed("survey", "4.5")
+  data(api, package = "survey", envir = environment())
+  d <- apistrat
+  e <- which(d$stype == "E")
+  m <- which(d$stype == "M")
+  d$grp <- "A"
+  d$grp[c(e[1:20], m[1:10], which(d$stype == "H")[1L])] <- "B"
+  d$grp[c(e[21:40], m[11L])] <- "C"
+  survey::svydesign(id = ~1, strata = ~stype, weights = ~pw, data = d)
+}
+
+# survey's own warnings on the domains `B` and `C` of that design for
+# `fun` on each of `vars`, the oracle of the deduplicated warnings: the
+# estimates, the message of each domain, how many times it came, and the
+# first condition.
+.svy_domain_warnings <- function(d, vars, fun) {
+  out <- list(est = list(), msg = character(0), n = integer(0), first = NULL)
+  for (g in c("B", "C")) {
+    ws <- list()
+    for (v in vars) {
+      r <- .svy_collect_warnings(fun(
+        stats::as.formula(paste0("~", v)),
+        subset(d, grp == g)
+      ))
+      out$est[[paste(g, v)]] <- as.numeric(stats::coef(r$value))
+      ws <- c(ws, r$warnings)
+    }
+    out$msg[[g]] <- unique(vapply(ws, conditionMessage, character(1)))
+    out$n[[g]] <- length(ws)
+    out$first <- out$first %||% ws[[1L]]
+  }
+  out
+}
+
+# A message said `n` times, as a table says it once.
+.svy_counted <- function(msg, n) {
+  if (n > 1L) sprintf("%s\n(raised %d times for this table)", msg, n) else msg
+}
+
 # Every warning of a call, muffled and kept, with the value.
 .svy_collect_warnings <- function(expr) {
   ws <- list()

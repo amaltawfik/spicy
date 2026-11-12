@@ -439,6 +439,10 @@ a single primary sampling unit under its default
 \code{options(survey.lonely.psu = "fail")}, shows a dash: the function
 warns once, quoting survey's messages (class
 \code{spicy_svy_estimation_failed}), and the note says what the dash means.
+A warning of survey's own, such as the one on a stratum with a single
+primary sampling unit in a domain under
+\code{options(survey.adjust.domain.lonely = TRUE)}, is said once per table,
+with the number of times survey raised it.
 
 The comparison is a single test on the whole design, not a set of
 pairwise ones: \code{survey::svyttest()} with two observed groups,

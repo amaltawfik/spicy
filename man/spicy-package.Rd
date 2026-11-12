@@ -315,10 +315,10 @@ estimates of \code{\link[=table_continuous_svy]{table_continuous_svy()}},
 on a stratum with a single primary sampling unit under
 \code{options(survey.lonely.psu = "fail")}. The cells that could not
 be estimated show a dash and the table note says what the dash
-means. One warning per table quotes each distinct message of
-survey with the calls that stopped on it; the condition
-carries them in \code{survey_message} (a character vector) and \code{fn}
-(a list of the same length).
+means. One warning per table, which carries the table call,
+quotes each distinct message of survey with the calls that
+stopped on it; the condition carries them in \code{survey_message}
+(a character vector) and \code{fn} (a list of the same length).
 \item \code{spicy_dropped_na} -- \code{NA} observations were
 silently excluded from the computation (e.g., \code{NA}
 weights).
