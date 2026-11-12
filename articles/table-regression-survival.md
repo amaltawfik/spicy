@@ -360,21 +360,21 @@ table_regression(list(cx0, cx), nested = TRUE, exponentiate = TRUE,
                  show_columns = c("b", "p"))
 #> Hierarchical Cox proportional hazards regression: Surv(time, status)
 #> 
-#>                     Model 1          Model 2     
-#>                  ──────────────  ─────────────── 
-#>  Variable      │   HR       p       HR       p   
-#> ───────────────┼─────────────────────────────────
-#>  age           │    1.02   .062     1.01    .225 
-#>  sex:          │                                 
-#>    Male (ref.) │     –     –         –      –    
-#>    Female      │    0.60   .003     0.57   <.001 
-#>  ph.ecog       │                    1.60   <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n             │  226             226            
-#>  N events      │  163             163            
-#>  AIC           │ 1469.0          1454.2          
-#>  Δχ²           │     –             16.78         
-#>  p (change)    │     –              <.001        
+#>                     Model 1           Model 2       
+#>                  ──────────────  ────────────────── 
+#>  Variable      │   HR       p        HR         p   
+#> ───────────────┼────────────────────────────────────
+#>  age           │    1.02   .062     1.01       .225 
+#>  sex:          │                                    
+#>    Male (ref.) │     –     –         –         –    
+#>    Female      │    0.60   .003     0.57      <.001 
+#>  ph.ecog       │                    1.60      <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n             │  226             226               
+#>  N events      │  163             163               
+#>  AIC           │ 1469.0          1454.2             
+#>  Δχ²           │     –             16.78 (1)        
+#>  p (change)    │     –              <.001           
 #> 
 #> Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). HR = hazard ratio; AIC = Akaike information criterion.
 ```

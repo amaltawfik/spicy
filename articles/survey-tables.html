@@ -376,7 +376,7 @@ estimated as usual:</p>
 <span>  id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>, strata <span class="op">=</span> <span class="op">~</span><span class="va">stype</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apistrat</span><span class="op">[</span><span class="va">keep</span>, <span class="op">]</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">lonely</span>, select <span class="op">=</span> <span class="va">api00</span>, by <span class="op">=</span> <span class="va">sch.wide</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Some estimates of the table could not be computed:</span></span>
+<span><span class="co">#&gt; Warning in table_continuous_svy(lonely, select = api00, by = sch.wide): Some cells could not be estimated:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `survey::svyttest()`, `survey::svymean()`, `survey::svyvar()` stopped: "Stratum (H) has only one PSU at stage 1"</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> The cells that could not be estimated show a dash.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).</span></span>
@@ -391,8 +391,11 @@ estimated as usual:</p>
 <p>The values <code>"adjust"</code>, <code>"average"</code>,
 <code>"remove"</code> and <code>"certainty"</code> of that option let
 survey estimate these cells, each by its own convention
-(<code><a href="https://rdrr.io/pkg/survey/man/surveyoptions.html" class="external-link">?survey::surveyoptions</a></code>), and the table then follows
-them.</p>
+(<code><a href="https://rdrr.io/pkg/survey/man/surveyoptions.html" class="external-link">?survey::surveyoptions</a></code>), and the table then follows them.
+A warning of survey’s own, such as the one on a stratum with a single
+primary sampling unit in a domain under
+<code>options(survey.adjust.domain.lonely = TRUE)</code>, is said once
+per table, with the number of times survey raised it.</p>
 </div>
 <div class="section level2">
 <h2 id="replicate-weights">Replicate weights<a class="anchor" aria-label="anchor" href="#replicate-weights"></a>

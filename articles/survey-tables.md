@@ -315,7 +315,7 @@ lonely <- svydesign(
   id = ~1, strata = ~stype, weights = ~pw, data = apistrat[keep, ]
 )
 table_continuous_svy(lonely, select = api00, by = sch.wide)
-#> Warning: Some estimates of the table could not be computed:
+#> Warning in table_continuous_svy(lonely, select = api00, by = sch.wide): Some cells could not be estimated:
 #> • `survey::svyttest()`, `survey::svymean()`, `survey::svyvar()` stopped: "Stratum (H) has only one PSU at stage 1"
 #> ℹ The cells that could not be estimated show a dash.
 #> ℹ A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).
@@ -332,7 +332,10 @@ table_continuous_svy(lonely, select = api00, by = sch.wide)
 The values `"adjust"`, `"average"`, `"remove"` and `"certainty"` of that
 option let survey estimate these cells, each by its own convention
 ([`?survey::surveyoptions`](https://rdrr.io/pkg/survey/man/surveyoptions.html)),
-and the table then follows them.
+and the table then follows them. A warning of survey’s own, such as the
+one on a stratum with a single primary sampling unit in a domain under
+`options(survey.adjust.domain.lonely = TRUE)`, is said once per table,
+with the number of times survey raised it.
 
 ## Replicate weights
 

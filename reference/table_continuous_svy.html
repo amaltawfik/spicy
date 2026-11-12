@@ -579,7 +579,11 @@ built on <code>qt(p, df = 0)</code>.</p>
 a single primary sampling unit under its default
 <code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function
 warns once, quoting survey's messages (class
-<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.</p>
+<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.
+A warning of survey's own, such as the one on a stratum with a single
+primary sampling unit in a domain under
+<code>options(survey.adjust.domain.lonely = TRUE)</code>, is said once per table,
+with the number of times survey raised it.</p>
 <p>The comparison is a single test on the whole design, not a set of
 pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">survey::svyttest()</a></code> with two observed groups,
 <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code> on <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code> with three or more,

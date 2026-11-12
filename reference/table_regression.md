@@ -1312,6 +1312,15 @@ restore it explicitly when needed).
   (`"r2_change"`, `"adj_r2_change"`, `"f2_change"`, and the AIC, AICc
   and BIC changes), print with an explicit sign (`+0.07`, `-9.4`) in
   every output. The test statistics and `"p_change"` are never signed.
+  The test statistics carry their degrees of freedom, as the partial F
+  cell does: `12.38 (1, 29)` for an F, the number of added parameters
+  and the residual df of the larger model (the denominator df for the
+  Wald F of a robust `vcov`), `9.12 (1)` for a chi-square. A df that is
+  not a whole number (the HTZ denominator under `"CR2"`, the df of a
+  smooth term) prints with one decimal, `174.77 (2, 0.8)`.
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites the statistic alone, `output = "data.frame"` keeps it as a
+  number, and Excel writes the number with the df in its number format.
   `"deviance_change"` is the drop in deviance (previous minus current),
   positive when the larger model fits better, and is not signed either.
 
@@ -1400,7 +1409,7 @@ statistics beside the others.
 - `"classical"` – OLS (lm) / Fisher information (glm).
 
 - `"HC0"` to `"HC5"` – heteroskedasticity-consistent (via
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)).
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)).
 
 - `"CR0"` to `"CR3"` – cluster-robust with Satterthwaite-corrected df
   (via
@@ -1480,7 +1489,7 @@ silent model-based result under a robust label:
   all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`. `lm`
   additionally takes `"CR1S"` – the full Stata `regress, vce(cluster)`
   convention: the CR1S small-sample scaling (equal to
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
   with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
   clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
   Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
@@ -1495,7 +1504,7 @@ silent model-based result under a robust label:
 - `mlogit`:
 
   `classical` + `"CR1"` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   mis-scales the sandwich for mlogit's per-choice-situation scores, so
   `HC*` is refused.
 
@@ -1518,7 +1527,7 @@ silent model-based result under a robust label:
   [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`:
 
   `classical` + `"CR1"` only:
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
   computes one cluster estimator for these, the CR0 sandwich scaled by
   \\G/(G-1)\\, `G` the number of clusters (clubSandwich's CR1). `"CR0"`,
   `"CR2"` and `"CR3"` are refused, as are `HC*` and the resamplers.
@@ -1582,7 +1591,7 @@ silent model-based result under a robust label:
   dispersion blocks and the AME. `"CR0"` is the sandwich as glmmTMB
   computes it; `"CR1"` scales it by \\G/(G-1)\\, `G` the number of
   clusters, as for the
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
   classes. Both use Wald z. Without `cluster`, the cluster is the
   top-level grouping factor of the random effects. The estimator needs
   independent clusters that contain the random effects – every group
@@ -1618,7 +1627,7 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 Poisson and geometric `pscl` two-part fits use
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
 the penalized covariance of the fit, and lets `vcovCL()` do only the
 clustering arithmetic: the sandwich methods for these fits are wrong for
@@ -1649,7 +1658,7 @@ Three accepted forms, in order of preference:
     `model.frame(fit)` first, then in the original `data` argument
     captured by the fit. **Recommended**: independent of the dataset's
     name, composable for multi-way clustering, consistent with
-    [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html)
+    [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
     /
     [`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md).
 
@@ -2386,38 +2395,45 @@ table_regression(
 )
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                           Step 1                Step 2              Step 3     
-#>                    ────────────────────  ─────────────────────  ────────────── 
-#>  Variable        │    B      SE     p       B       SE     p       B       SE  
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)     │   66.85  1.59  <.001    64.90   1.65  <.001    65.20   1.66 
-#>  age             │    0.04  0.03   .160     0.05   0.03   .143     0.05   0.03 
-#>  sex:            │                                                             
-#>    Female (ref.) │                           –      –     –         –      –   
-#>    Male          │                          3.87   0.91  <.001     3.86   0.91 
-#>  smoking:        │                                                             
-#>    No (ref.)     │                                                  –      –   
-#>    Yes           │                                                -1.72   1.11 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1175                  1175                   1175           
-#>  R²              │    0.00                  0.02                   0.02        
-#>  Adj. R²         │    0.00                  0.02                   0.02        
-#>  ΔR²             │     –                   +0.02                  +0.00        
-#>  F-change        │     –                   18.26                   2.41        
-#>  p (change)      │     –                    <.001                   .121       
+#>                           Step 1                     Step 2             
+#>                    ────────────────────  ────────────────────────────── 
+#>  Variable        │    B      SE     p            B           SE     p   
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  (Intercept)     │   66.85  1.59  <.001    64.90            1.65  <.001 
+#>  age             │    0.04  0.03   .160     0.05            0.03   .143 
+#>  sex:            │                                                      
+#>    Female (ref.) │                           –               –     –    
+#>    Male          │                          3.87            0.91  <.001 
+#>  smoking:        │                                                      
+#>    No (ref.)     │                                                      
+#>    Yes           │                                                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                  1175                           
+#>  R²              │    0.00                  0.02                        
+#>  Adj. R²         │    0.00                  0.02                        
+#>  ΔR²             │     –                   +0.02                        
+#>  F-change        │     –                   18.26 (1, 1172)              
+#>  p (change)      │     –                    <.001                       
 #> 
-#>                    Step… 
-#>                    ───── 
-#>  Variable        │ p (B) 
-#> ─────────────────┼───────
-#>  (Intercept)     │ <.001 
-#>  age             │  .130 
-#>  sex:            │       
-#>    Female (ref.) │  –    
-#>    Male          │ <.001 
-#>  smoking:        │       
-#>    No (ref.)     │  –    
-#>    Yes           │  .121 
+#>                                Step 3             
+#>                    ────────────────────────────── 
+#>  Variable        │         B           SE     p   
+#> ─────────────────┼────────────────────────────────
+#>  (Intercept)     │   65.20            1.66  <.001 
+#>  age             │    0.05            0.03   .130 
+#>  sex:            │                                
+#>    Female (ref.) │     –               –     –    
+#>    Male          │    3.86            0.91  <.001 
+#>  smoking:        │                                
+#>    No (ref.)     │     –               –     –    
+#>    Yes           │   -1.72            1.11   .121 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1175                           
+#>  R²              │    0.02                        
+#>  Adj. R²         │    0.02                        
+#>  ΔR²             │   +0.00                        
+#>  F-change        │    2.41 (1, 1171)              
+#>  p (change)      │     .121                       
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
 # }
@@ -2537,55 +2553,55 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 }
 #> Hierarchical linear mixed-effects regression: Reaction
 #> 
-#>                                          Model 1                Model 2        
-#>                                    ────────────────────  ───────────────────── 
-#>  Variable                        │    B      SE     p       B       SE     p   
-#> ─────────────────────────────────┼─────────────────────────────────────────────
-#>  (Intercept)                     │  298.51  8.79  <.001   251.41   9.51  <.001 
-#>  Days                            │                         10.47   0.80  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                             
-#>    σ Subject (Intercept)         │   34.59  6.72   –       36.01   6.45   –    
-#>    σ Subject Days                │                                             
-#>    ρ Subject ((Intercept), Days) │                                             
-#>    σ (Residual)                  │   44.26  2.46   –       30.90   1.72   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │  180                   180                  
-#>  N (Subject)                     │   18                    18                  
-#>  ICC                             │    0.38                  0.58               
-#>  R² (marginal)                   │    0.00                  0.29               
-#>  R² (conditional)                │    0.38                  0.70               
-#>  AIC                             │ 1916.5                1802.1                
-#>  BIC                             │ 1926.1                1814.9                
-#>  ΔAIC                            │     –                 -114.5                
-#>  ΔBIC                            │     –                 -111.3                
-#>  Δχ²                             │     –                  116.46               
-#>  p (change)                      │     –                    <.001              
+#>                                          Model 1              Model 2      
+#>                                    ────────────────────  ───────────────── 
+#>  Variable                        │    B      SE     p         B        SE  
+#> ─────────────────────────────────┼─────────────────────────────────────────
+#>  (Intercept)                     │  298.51  8.79  <.001   251.41      9.51 
+#>  Days                            │                         10.47      0.80 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                         
+#>    σ Subject (Intercept)         │   34.59  6.72   –       36.01      6.45 
+#>    σ Subject Days                │                                         
+#>    ρ Subject ((Intercept), Days) │                                         
+#>    σ (Residual)                  │   44.26  2.46   –       30.90      1.72 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │  180                   180              
+#>  N (Subject)                     │   18                    18              
+#>  ICC                             │    0.38                  0.58           
+#>  R² (marginal)                   │    0.00                  0.29           
+#>  R² (conditional)                │    0.38                  0.70           
+#>  AIC                             │ 1916.5                1802.1            
+#>  BIC                             │ 1926.1                1814.9            
+#>  ΔAIC                            │     –                 -114.5            
+#>  ΔBIC                            │     –                 -111.3            
+#>  Δχ²                             │     –                  116.46 (1)       
+#>  p (change)                      │     –                    <.001          
 #> 
-#>                                           Model 3        
-#>                                    ───────────────────── 
-#>  Variable                        │    B       SE     p   
-#> ─────────────────────────────────┼───────────────────────
-#>  (Intercept)                     │  251.41   6.63  <.001 
-#>  Days                            │   10.47   1.50  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                       
-#>    σ Subject (Intercept)         │   23.78   5.58   –    
-#>    σ Subject Days                │    5.72   1.19   –    
-#>    ρ Subject ((Intercept), Days) │    0.08   0.32   –    
-#>    σ (Residual)                  │   25.59   1.51   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │  180                  
-#>  N (Subject)                     │   18                  
-#>  ICC                             │     –                 
-#>  R² (marginal)                   │    0.29               
-#>  R² (conditional)                │    0.79               
-#>  AIC                             │ 1763.9                
-#>  BIC                             │ 1783.1                
-#>  ΔAIC                            │  -38.1                
-#>  ΔBIC                            │  -31.8                
-#>  Δχ²                             │   42.14               
-#>  p (change)                      │    <.001              
+#>                                    Mode…          Model 3          
+#>                                    ─────  ──────────────────────── 
+#>  Variable                        │ p (B)       B        SE     p   
+#> ─────────────────────────────────┼─────────────────────────────────
+#>  (Intercept)                     │ <.001   251.41      6.63  <.001 
+#>  Days                            │ <.001    10.47      1.50  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                 
+#>    σ Subject (Intercept)         │  –       23.78      5.58   –    
+#>    σ Subject Days                │           5.72      1.19   –    
+#>    ρ Subject ((Intercept), Days) │           0.08      0.32   –    
+#>    σ (Residual)                  │  –       25.59      1.51   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │         180                     
+#>  N (Subject)                     │          18                     
+#>  ICC                             │            –                    
+#>  R² (marginal)                   │           0.29                  
+#>  R² (conditional)                │           0.79                  
+#>  AIC                             │        1763.9                   
+#>  BIC                             │        1783.1                   
+#>  ΔAIC                            │         -38.1                   
+#>  ΔBIC                            │         -31.8                   
+#>  Δχ²                             │          42.14 (2)              
+#>  p (change)                      │           <.001                 
 #> 
 #> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }

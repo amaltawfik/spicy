@@ -506,7 +506,11 @@ shown.</p>
 a single primary sampling unit under its default
 <code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function
 warns once, quoting survey's messages (class
-<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.</p>
+<code>spicy_svy_estimation_failed</code>), and the note says what the dash means.
+A warning of survey's own, such as the one on a stratum with a single
+primary sampling unit in a domain under
+<code>options(survey.adjust.domain.lonely = TRUE)</code>, is said once per table,
+with the number of times survey raised it.</p>
     </div>
     <div class="section level2">
     <h2 id="the-test">The test<a class="anchor" aria-label="anchor" href="#the-test"></a></h2>

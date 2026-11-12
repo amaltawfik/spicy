@@ -246,7 +246,7 @@ table_regression(m_empty)
 #>  AIC                    │ 47122.8                               
 #>  BIC                    │ 47143.4                               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The **ICC of 0.18** is nothing but the two σ rows combined: 2.93² /
@@ -300,7 +300,7 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>  AIC                    │ 47103.9                46653.2               
 #>  BIC                    │ 47124.6                46680.7               
 #> 
-#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001. Multilevel: SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001. Multilevel: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the two columns against each other, five things change:
@@ -362,7 +362,7 @@ table_regression(m_wb, show_columns = c("b", "se", "p"))
 #>  AIC                    │ 46578.6               
 #>  BIC                    │ 46613.0               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Within a school, a one-point difference in SES is associated with 2.19
@@ -413,7 +413,7 @@ table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
 #>  AIC                            │ 46571.7         
 #>  BIC                            │ 46619.8         
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. SE and CI of the random-effect variance components not computed for n above 1000. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The slope SD is 0.83 achievement points around the average slope of
@@ -465,7 +465,7 @@ table_regression(m_cl, show_columns = c("b", "se", "p"))
 #>  AIC                            │ 46532.5               
 #>  BIC                            │ 46594.5               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001. SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 In public schools the within-school SES slope is 2.79; in Catholic
@@ -925,7 +925,7 @@ table_regression(
 #>  AIC                    │ 9890.8                9884.6                
 #>  BIC                    │ 9916.2                9915.1                
 #> 
-#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: SE and CI of the random-effect variance components not computed for n above 1000 (see ?table_regression). ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the table:

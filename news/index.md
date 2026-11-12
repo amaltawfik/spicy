@@ -260,6 +260,35 @@
   and “residual df”, instead of repeating the statistic’s header (“χ² \|
   χ²”).
 
+- The survey-design tables say survey’s own warnings once. Under
+  `options(survey.lonely.psu = "adjust", survey.adjust.domain.lonely = TRUE)`,
+  a stratum lonely within a domain made survey warn at every estimate,
+  up to six times for one table. Each distinct warning is now raised
+  once per table, with the number of times survey raised it. The warning
+  that a cell could not be estimated (class
+  `spicy_svy_estimation_failed`) carries the call of the table function,
+  so its header names the table.
+
+- The model-change rows of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  (F-change, Wald F-change, the LR χ² change, Wald χ² (change),
+  “F-change vs Model k” in a stacked hierarchy) show their degrees of
+  freedom in the cell, “12.38 (1, 29)” for an F and “9.12 (1)” for a
+  chi-square, as the partial tests do. The rich outputs print the same
+  cell, Excel keeps the number with a format that displays the df, and
+  `output = "data.frame"` keeps the number. A non-integer df (a CR2
+  denominator, a gam) prints with one decimal.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses the HC variances (`vcov = "HC0"` to `"HC5"`) for an
+  [`lm()`](https://rdrr.io/r/stats/lm.html) or
+  [`glm()`](https://rdrr.io/r/stats/glm.html) fitted with zero prior
+  weights.
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+  counts those rows in n while the hat values skip them, so every HC
+  standard error was off (HC0 by n_nonzero/n, HC2 to HC5 by more). The
+  error says to drop the rows and refit.
+
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
@@ -696,7 +725,7 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the note on skipped variance-component SE and CI of large mixed models
   names the threshold instead of the internal option (“… not computed
-  for n above 1000 (see ?table_regression)”).
+  for n above 1000”).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the Word table (`output = "flextable"`) now uses a fixed layout with
@@ -2110,7 +2139,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonization across the table family

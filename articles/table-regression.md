@@ -662,51 +662,61 @@ m3 <- lm(wellbeing_score ~ age + sex + smoking + bmi, data = sochealth_cc)
 table_regression(list(m1, m2, m3), nested = TRUE)
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                          Model 1                Model 2            Model 3     
-#>                    ────────────────────  ─────────────────────  ────────────── 
-#>  Variable        │    B      SE     p       B       SE     p       B       SE  
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)     │   64.70  1.66  <.001    65.00   1.67  <.001    80.57   3.37 
-#>  age             │    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 
-#>  sex:            │                                                             
-#>    Female (ref.) │     –     –     –         –      –     –         –      –   
-#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.90 
-#>  smoking:        │                                                             
-#>    No (ref.)     │                           –      –     –         –      –   
-#>    Yes           │                         -1.68   1.11   .132    -1.71   1.10 
-#>  bmi             │                                                -0.65   0.12 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                  1163                   1163           
-#>  R²              │    0.02                  0.02                   0.04        
-#>  Adj. R²         │    0.02                  0.02                   0.04        
-#>  ΔR²             │     –                   +0.00                  +0.02        
-#>  F-change        │     –                    2.28                  28.13        
-#>  p (change)      │     –                     .132                  <.001       
+#>                          Model 1                    Model 2             
+#>                    ────────────────────  ────────────────────────────── 
+#>  Variable        │    B      SE     p            B           SE     p   
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.66  <.001    65.00            1.67  <.001 
+#>  age             │    0.05  0.03   .118     0.05            0.03   .109 
+#>  sex:            │                                                      
+#>    Female (ref.) │     –     –     –         –               –     –    
+#>    Male          │    3.89  0.91  <.001     3.88            0.91  <.001 
+#>  smoking:        │                                                      
+#>    No (ref.)     │                           –               –     –    
+#>    Yes           │                         -1.68            1.11   .132 
+#>  bmi             │                                                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                           
+#>  R²              │    0.02                  0.02                        
+#>  Adj. R²         │    0.02                  0.02                        
+#>  ΔR²             │     –                   +0.00                        
+#>  F-change        │     –                    2.28 (1, 1159)              
+#>  p (change)      │     –                     .132                       
 #> 
-#>                    Mode… 
-#>                    ───── 
-#>  Variable        │ p (B) 
-#> ─────────────────┼───────
-#>  (Intercept)     │ <.001 
-#>  age             │  .019 
-#>  sex:            │       
-#>    Female (ref.) │  –    
-#>    Male          │ <.001 
-#>  smoking:        │       
-#>    No (ref.)     │  –    
-#>    Yes           │  .119 
-#>  bmi             │ <.001 
+#>                               Model 3             
+#>                    ────────────────────────────── 
+#>  Variable        │         B           SE     p   
+#> ─────────────────┼────────────────────────────────
+#>  (Intercept)     │   80.57            3.37  <.001 
+#>  age             │    0.07            0.03   .019 
+#>  sex:            │                                
+#>    Female (ref.) │     –               –     –    
+#>    Male          │    4.21            0.90  <.001 
+#>  smoking:        │                                
+#>    No (ref.)     │     –               –     –    
+#>    Yes           │   -1.71            1.10   .119 
+#>  bmi             │   -0.65            0.12  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                           
+#>  R²              │    0.04                        
+#>  Adj. R²         │    0.04                        
+#>  ΔR²             │   +0.02                        
+#>  F-change        │   28.13 (1, 1158)              
+#>  p (change)      │    <.001                       
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
-Reading the change rows: adding `smoking` in Model 2 does not improve
-fit over the age + sex baseline (ΔR² = +0.00, F-change = 2.28, p = .132)
-— with a single added term, this test is equivalent to the test on the
-`smoking` coefficient itself (p = .132 in the Model 2 column). Adding
-`bmi` in Model 3 does (ΔR² = +0.02, F-change = 28.13, p \< .001). The
-hierarchical sequence therefore supports retaining `bmi` and provides no
-incremental evidence for `smoking`.
+Reading the change rows: each test carries its degrees of freedom,
+`2.28 (1, 1159)` for an F on 1 and 1159 df (the added term and the
+residual df of the larger model), as Stata prints F(1, 1159). Adding
+`smoking` in Model 2 does not improve fit over the age + sex baseline
+(ΔR² = +0.00, F-change = 2.28, p = .132) — with a single added term,
+this test is equivalent to the test on the `smoking` coefficient itself
+(p = .132 in the Model 2 column). Adding `bmi` in Model 3 does (ΔR² =
++0.02, F-change = 28.13, p \< .001). The hierarchical sequence therefore
+supports retaining `bmi` and provides no incremental evidence for
+`smoking`.
 
 Default change tokens auto-injected:
 `c("r2_change", "f_change", "p_change")` for `lm` (APA
@@ -747,40 +757,47 @@ often, so read it with care when many predictors enter at once.
 table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                          Model 1                Model 2            Model 3     
-#>                    ────────────────────  ─────────────────────  ────────────── 
-#>  Variable        │    B      SE     p       B       SE     p       B       SE  
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  (Intercept)     │   64.70  1.60  <.001    65.00   1.62  <.001    80.57   3.27 
-#>  age             │    0.05  0.03   .114     0.05   0.03   .106     0.07   0.03 
-#>  sex:            │                                                             
-#>    Female (ref.) │     –     –     –         –      –     –         –      –   
-#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.91 
-#>  smoking:        │                                                             
-#>    No (ref.)     │                           –      –     –         –      –   
-#>    Yes           │                         -1.68   1.12   .135    -1.71   1.11 
-#>  bmi             │                                                -0.65   0.12 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │ 1163                  1163                   1163           
-#>  R²              │    0.02                  0.02                   0.04        
-#>  Adj. R²         │    0.02                  0.02                   0.04        
-#>  ΔR²             │     –                   +0.00                  +0.02        
-#>  Wald F-change   │     –                    2.24                  29.34        
-#>  p (change)      │     –                     .135                  <.001       
+#>                          Model 1                    Model 2             
+#>                    ────────────────────  ────────────────────────────── 
+#>  Variable        │    B      SE     p            B           SE     p   
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.60  <.001    65.00            1.62  <.001 
+#>  age             │    0.05  0.03   .114     0.05            0.03   .106 
+#>  sex:            │                                                      
+#>    Female (ref.) │     –     –     –         –               –     –    
+#>    Male          │    3.89  0.91  <.001     3.88            0.91  <.001 
+#>  smoking:        │                                                      
+#>    No (ref.)     │                           –               –     –    
+#>    Yes           │                         -1.68            1.12   .135 
+#>  bmi             │                                                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                           
+#>  R²              │    0.02                  0.02                        
+#>  Adj. R²         │    0.02                  0.02                        
+#>  ΔR²             │     –                   +0.00                        
+#>  Wald F-change   │     –                    2.24 (1, 1159)              
+#>  p (change)      │     –                     .135                       
 #> 
-#>                    Mode… 
-#>                    ───── 
-#>  Variable        │ p (B) 
-#> ─────────────────┼───────
-#>  (Intercept)     │ <.001 
-#>  age             │  .018 
-#>  sex:            │       
-#>    Female (ref.) │  –    
-#>    Male          │ <.001 
-#>  smoking:        │       
-#>    No (ref.)     │  –    
-#>    Yes           │  .122 
-#>  bmi             │ <.001 
+#>                               Model 3             
+#>                    ────────────────────────────── 
+#>  Variable        │         B           SE     p   
+#> ─────────────────┼────────────────────────────────
+#>  (Intercept)     │   80.57            3.27  <.001 
+#>  age             │    0.07            0.03   .018 
+#>  sex:            │                                
+#>    Female (ref.) │     –               –     –    
+#>    Male          │    4.21            0.91  <.001 
+#>  smoking:        │                                
+#>    No (ref.)     │     –               –     –    
+#>    Yes           │   -1.71            1.11   .122 
+#>  bmi             │   -0.65            0.12  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                           
+#>  R²              │    0.04                        
+#>  Adj. R²         │    0.04                        
+#>  ΔR²             │   +0.02                        
+#>  Wald F-change   │   29.34 (1, 1158)              
+#>  p (change)      │    <.001                       
 #> 
 #> Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
 ```
@@ -797,7 +814,7 @@ available via `vcov = "bootstrap"` / `"jackknife"`.
 When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set `vcov = "HC*"` for
 sandwich-style standard errors via
-[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html).
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html).
 The valid types are `HC0` through `HC5`; `HC3` is the
 small-sample-friendly default (Long and Ervin 2000):
 
@@ -1496,47 +1513,47 @@ m3 <- glm(smoking ~ sex + age + education, data = sh, family = binomial)
 table_regression(list(m1, m2, m3), nested = TRUE)
 #> Hierarchical logistic regression: smoking
 #> 
-#>                                   Model 1                Model 2        
-#>                             ────────────────────  ───────────────────── 
-#>  Variable                 │    B      SE     p       B       SE     p   
-#> ──────────────────────────┼─────────────────────────────────────────────
-#>  (Intercept)              │   -1.29  0.10  <.001    -1.54   0.26  <.001 
-#>  sex:                     │                                             
-#>    Female (ref.)          │     –     –     –         –      –     –    
-#>    Male                   │   -0.05  0.14   .713    -0.05   0.14   .722 
-#>  age                      │                          0.01   0.00   .294 
-#>  education:               │                                             
-#>    Lower secondary (ref.) │                                             
-#>    Upper secondary        │                                             
-#>    Tertiary               │                                             
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                  1175                  
-#>  R² (McFadden)            │    0.00                  0.00               
-#>  R² (Nagelkerke)          │    0.00                  0.00               
-#>  AIC                      │ 1217.6                1218.5                
-#>  Δχ²                      │     –                    1.10               
-#>  p (change)               │     –                     .294              
+#>                                   Model 1                 Model 2          
+#>                             ────────────────────  ──────────────────────── 
+#>  Variable                 │    B      SE     p         B        SE     p   
+#> ──────────────────────────┼────────────────────────────────────────────────
+#>  (Intercept)              │   -1.29  0.10  <.001    -1.54      0.26  <.001 
+#>  sex:                     │                                                
+#>    Female (ref.)          │     –     –     –         –         –     –    
+#>    Male                   │   -0.05  0.14   .713    -0.05      0.14   .722 
+#>  age                      │                          0.01      0.00   .294 
+#>  education:               │                                                
+#>    Lower secondary (ref.) │                                                
+#>    Upper secondary        │                                                
+#>    Tertiary               │                                                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                  1175                     
+#>  R² (McFadden)            │    0.00                  0.00                  
+#>  R² (Nagelkerke)          │    0.00                  0.00                  
+#>  AIC                      │ 1217.6                1218.5                   
+#>  Δχ²                      │     –                    1.10 (1)              
+#>  p (change)               │     –                     .294                 
 #> 
-#>                                    Model 3        
-#>                             ───────────────────── 
-#>  Variable                 │    B       SE     p   
-#> ──────────────────────────┼───────────────────────
-#>  (Intercept)              │   -1.11   0.29  <.001 
-#>  sex:                     │                       
-#>    Female (ref.)          │     –      –     –    
-#>    Male                   │   -0.04   0.14   .800 
-#>  age                      │    0.01   0.00   .214 
-#>  education:               │                       
-#>    Lower secondary (ref.) │     –      –     –    
-#>    Upper secondary        │   -0.48   0.17   .005 
-#>    Tertiary               │   -0.91   0.20  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175                  
-#>  R² (McFadden)            │    0.02               
-#>  R² (Nagelkerke)          │    0.03               
-#>  AIC                      │ 1200.9                
-#>  Δχ²                      │   21.64               
-#>  p (change)               │    <.001              
+#>                                     Model 3          
+#>                             ──────────────────────── 
+#>  Variable                 │      B        SE     p   
+#> ──────────────────────────┼──────────────────────────
+#>  (Intercept)              │   -1.11      0.29  <.001 
+#>  sex:                     │                          
+#>    Female (ref.)          │     –         –     –    
+#>    Male                   │   -0.04      0.14   .800 
+#>  age                      │    0.01      0.00   .214 
+#>  education:               │                          
+#>    Lower secondary (ref.) │     –         –     –    
+#>    Upper secondary        │   -0.48      0.17   .005 
+#>    Tertiary               │   -0.91      0.20  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175                     
+#>  R² (McFadden)            │    0.02                  
+#>  R² (Nagelkerke)          │    0.03                  
+#>  AIC                      │ 1200.9                   
+#>  Δχ²                      │   21.64 (2)              
+#>  p (change)               │    <.001                 
 #> 
 #> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
 ```

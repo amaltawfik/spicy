@@ -191,7 +191,9 @@ keyed by each model's first structured column name.</p></li>
 name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label). A column whose cells cannot be
 reconstructed from one number – the <code>"events/N"</code> counts of
-<code>show_columns = "n_events"</code> – also carries <code>display_cells</code>, a
+<code>show_columns = "n_events"</code>, a change test with its degrees of
+freedom (<code>"12.38 (1, 29)"</code>, the statistic in <code>body</code>) – also
+carries <code>display_cells</code>, a
 character vector as long as <code>body</code> holding the display string
 of each cell (<code>NA</code> where the number formats normally). A
 renderer must prefer it over the numeric value.</p></li>
@@ -416,6 +418,9 @@ user-facing entry points.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[1]]$threshold</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[1]]$suffix</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[1]]$row</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -433,6 +438,9 @@ user-facing entry points.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[2]]$threshold</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[2]]$suffix</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[2]]$row</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -448,6 +456,9 @@ user-facing entry points.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[3]]$threshold</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[3]]$suffix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit_stat_overrides[[3]]$row</span>

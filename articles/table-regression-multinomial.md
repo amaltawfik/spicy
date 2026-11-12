@@ -499,46 +499,46 @@ table_regression(list(fit_lin, fit), nested = TRUE,
                  show_columns = c("b", "p"))
 #> Hierarchical multinomial logistic regression: employment_status
 #> 
-#>                                            Model 1          Model 2     
-#>                                         ──────────────  ─────────────── 
-#>  Variable                             │    B       p       B        p   
-#> ──────────────────────────────────────┼─────────────────────────────────
-#>  (Intercept):                         │                                 
-#>    Student: (Intercept)               │   -1.27   .002    -1.43   <.001 
-#>    Unemployed: (Intercept)            │   -0.16   .663    -0.72    .030 
-#>    Inactive: (Intercept)              │   -1.71  <.001    -1.75   <.001 
-#>  age:                                 │                                 
-#>    Student: age                       │   -0.01   .090    -0.01    .097 
-#>    Unemployed: age                    │   -0.00   .581    -0.00    .562 
-#>    Inactive: age                      │    0.00   .697     0.00    .719 
-#>  sex:                                 │                                 
-#>    Student: Female (ref.)             │     –     –         –      –    
-#>    Unemployed: Female (ref.)          │     –     –         –      –    
-#>    Inactive: Female (ref.)            │     –     –         –      –    
-#>    Student: Male                      │    0.11   .549     0.12    .520 
-#>    Unemployed: Male                   │    0.24   .160     0.23    .172 
-#>    Inactive: Male                     │    0.15   .444     0.14    .464 
-#>  educ_score:                          │                                 
-#>    Student: educ_score                │    0.03   .843                  
-#>    Unemployed: educ_score             │   -0.64  <.001                  
-#>    Inactive: educ_score               │   -0.16   .239                  
-#>  education:                           │                                 
-#>    Student: Lower secondary (ref.)    │                     –      –    
-#>    Unemployed: Lower secondary (ref.) │                     –      –    
-#>    Inactive: Lower secondary (ref.)   │                     –      –    
-#>    Student: Upper secondary           │                    0.32    .224 
-#>    Unemployed: Upper secondary        │                   -0.80   <.001 
-#>    Inactive: Upper secondary          │                   -0.37    .145 
-#>    Student: Tertiary                  │                    0.14    .614 
-#>    Unemployed: Tertiary               │                   -1.23   <.001 
-#>    Inactive: Tertiary                 │                   -0.35    .186 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                                    │ 1200            1200            
-#>  R² (McFadden)                        │    0.01            0.02         
-#>  R² (Nagelkerke)                      │    0.03            0.04         
-#>  AIC                                  │ 2514.3          2515.8          
-#>  Δχ²                                  │     –              4.52         
-#>  p (change)                           │     –               .211        
+#>                                            Model 1           Model 2       
+#>                                         ──────────────  ────────────────── 
+#>  Variable                             │    B       p         B         p   
+#> ──────────────────────────────────────┼────────────────────────────────────
+#>  (Intercept):                         │                                    
+#>    Student: (Intercept)               │   -1.27   .002    -1.43      <.001 
+#>    Unemployed: (Intercept)            │   -0.16   .663    -0.72       .030 
+#>    Inactive: (Intercept)              │   -1.71  <.001    -1.75      <.001 
+#>  age:                                 │                                    
+#>    Student: age                       │   -0.01   .090    -0.01       .097 
+#>    Unemployed: age                    │   -0.00   .581    -0.00       .562 
+#>    Inactive: age                      │    0.00   .697     0.00       .719 
+#>  sex:                                 │                                    
+#>    Student: Female (ref.)             │     –     –         –         –    
+#>    Unemployed: Female (ref.)          │     –     –         –         –    
+#>    Inactive: Female (ref.)            │     –     –         –         –    
+#>    Student: Male                      │    0.11   .549     0.12       .520 
+#>    Unemployed: Male                   │    0.24   .160     0.23       .172 
+#>    Inactive: Male                     │    0.15   .444     0.14       .464 
+#>  educ_score:                          │                                    
+#>    Student: educ_score                │    0.03   .843                     
+#>    Unemployed: educ_score             │   -0.64  <.001                     
+#>    Inactive: educ_score               │   -0.16   .239                     
+#>  education:                           │                                    
+#>    Student: Lower secondary (ref.)    │                     –         –    
+#>    Unemployed: Lower secondary (ref.) │                     –         –    
+#>    Inactive: Lower secondary (ref.)   │                     –         –    
+#>    Student: Upper secondary           │                    0.32       .224 
+#>    Unemployed: Upper secondary        │                   -0.80      <.001 
+#>    Inactive: Upper secondary          │                   -0.37       .145 
+#>    Student: Tertiary                  │                    0.14       .614 
+#>    Unemployed: Tertiary               │                   -1.23      <.001 
+#>    Inactive: Tertiary                 │                   -0.35       .186 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                                    │ 1200            1200               
+#>  R² (McFadden)                        │    0.01            0.02            
+#>  R² (Nagelkerke)                      │    0.03            0.04            
+#>  AIC                                  │ 2514.3          2515.8             
+#>  Δχ²                                  │     –              4.52 (3)        
+#>  p (change)                           │     –               .211           
 #> 
 #> Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
 ```
@@ -635,7 +635,8 @@ Three guardrails: average marginal effects are refused for `mlogit`
 (`marginaleffects` has no slopes method for its one-row-per-choice
 structure); the one robust `vcov` is `CR1`, with one cluster value per
 choice situation, not per long-format row; and `HC*` is refused outright
-— [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+—
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
 mis-scales the sandwich for mlogit’s per-choice-situation scores.
 
 ## Several models side by side

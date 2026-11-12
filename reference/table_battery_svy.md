@@ -387,7 +387,10 @@ A cell that survey cannot estimate, most often because a stratum holds a
 single primary sampling unit under its default
 `options(survey.lonely.psu = "fail")`, shows a dash: the function warns
 once, quoting survey's messages (class `spicy_svy_estimation_failed`),
-and the note says what the dash means.
+and the note says what the dash means. A warning of survey's own, such
+as the one on a stratum with a single primary sampling unit in a domain
+under `options(survey.adjust.domain.lonely = TRUE)`, is said once per
+table, with the number of times survey raised it.
 
 `n` is the observed count of the domain, the respondents and not the
 estimated population, as in

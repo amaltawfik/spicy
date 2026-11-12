@@ -150,31 +150,31 @@ m1 <- lm(wellbeing_score ~ age + employment_status, data = d_cc)
 table_regression(list(m0, m1), nested = TRUE, show_columns = c("b", "p"))
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                          Model 1          Model 2     
-#>                       ──────────────  ─────────────── 
-#>  Variable           │    B       p       B        p   
-#> ────────────────────┼─────────────────────────────────
-#>  (Intercept)        │   67.00  <.001    67.38   <.001 
-#>  age                │    0.04   .177     0.04    .181 
-#>  employment_status: │                                 
-#>    Employed (ref.)  │                     –      –    
-#>    Student          │                    1.10    .441 
-#>    Unemployed       │                   -3.60    .006 
-#>    Inactive         │                    0.28    .854 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                  │ 1200            1200            
-#>  R²                 │    0.00            0.01         
-#>  Adj. R²            │    0.00            0.01         
-#>  ΔR²                │     –             +0.01         
-#>  F-change           │     –              3.13         
-#>  p (change)         │     –               .025        
+#>                          Model 1              Model 2          
+#>                       ──────────────  ──────────────────────── 
+#>  Variable           │    B       p            B            p   
+#> ────────────────────┼──────────────────────────────────────────
+#>  (Intercept)        │   67.00  <.001    67.38            <.001 
+#>  age                │    0.04   .177     0.04             .181 
+#>  employment_status: │                                          
+#>    Employed (ref.)  │                     –               –    
+#>    Student          │                    1.10             .441 
+#>    Unemployed       │                   -3.60             .006 
+#>    Inactive         │                    0.28             .854 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1200            1200                     
+#>  R²                 │    0.00            0.01                  
+#>  Adj. R²            │    0.00            0.01                  
+#>  ΔR²                │     –             +0.01                  
+#>  F-change           │     –              3.13 (3, 1195)        
+#>  p (change)         │     –               .025                 
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
 ```
 
-The `F-change` row is the joint 3-df test: F = 3.13, p = .025 —
-employment status improves the model, driven by the unemployed contrast.
-It is not a spicy invention: base R’s
+The `F-change` row is the joint 3-df test, `3.13 (3, 1195)`: F = 3.13 on
+3 and 1195 df, p = .025 — employment status improves the model, driven
+by the unemployed contrast. It is not a spicy invention: base R’s
 [`anova()`](https://rdrr.io/r/stats/anova.html) on the same two fits
 prints the identical canonical nested F-test, to the digit (F = 3.13 on
 3 and 1195 df, p = .025):
@@ -214,26 +214,26 @@ r1 <- lm(wellbeing_score ~ age + region, data = d_r)
 table_regression(list(r0, r1), nested = TRUE, show_columns = c("b", "p"))
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                        Model 1          Model 2     
-#>                     ──────────────  ─────────────── 
-#>  Variable         │    B       p       B        p   
-#> ──────────────────┼─────────────────────────────────
-#>  (Intercept)      │   67.00  <.001    66.62   <.001 
-#>  age              │    0.04   .177     0.04    .193 
-#>  region:          │                                 
-#>    Central (ref.) │                     –      –    
-#>    East           │                    1.07    .514 
-#>    North          │                    1.13    .447 
-#>    Other          │                    1.91    .201 
-#>    South          │                   -0.94    .528 
-#>    West           │                   -0.18    .900 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                │ 1200            1200            
-#>  R²               │    0.00            0.01         
-#>  Adj. R²          │    0.00            0.00         
-#>  ΔR²              │     –             +0.00         
-#>  F-change         │     –              0.89         
-#>  p (change)       │     –               .485        
+#>                        Model 1              Model 2          
+#>                     ──────────────  ──────────────────────── 
+#>  Variable         │    B       p            B            p   
+#> ──────────────────┼──────────────────────────────────────────
+#>  (Intercept)      │   67.00  <.001    66.62            <.001 
+#>  age              │    0.04   .177     0.04             .193 
+#>  region:          │                                          
+#>    Central (ref.) │                     –               –    
+#>    East           │                    1.07             .514 
+#>    North          │                    1.13             .447 
+#>    Other          │                    1.91             .201 
+#>    South          │                   -0.94             .528 
+#>    West           │                   -0.18             .900 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                │ 1200            1200                     
+#>  R²               │    0.00            0.01                  
+#>  Adj. R²          │    0.00            0.00                  
+#>  ΔR²              │     –             +0.00                  
+#>  F-change         │     –              0.89 (5, 1193)        
+#>  p (change)       │     –               .485                 
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
 ```
@@ -321,27 +321,27 @@ table_regression(list(g_lin, g_fac), nested = TRUE,
                  show_columns = c("b", "p"))
 #> Hierarchical logistic regression: smoking
 #> 
-#>                                Model 1          Model 2     
-#>                             ──────────────  ─────────────── 
-#>  Variable                 │    B       p       B        p   
-#> ──────────────────────────┼─────────────────────────────────
-#>  (Intercept)              │   -0.67   .036    -1.11   <.001 
-#>  sex:                     │                                 
-#>    Female (ref.)          │     –     –         –      –    
-#>    Male                   │   -0.04   .805    -0.04    .800 
-#>  age                      │    0.01   .212     0.01    .214 
-#>  educ_score               │   -0.45  <.001                  
-#>  education:               │                                 
-#>    Lower secondary (ref.) │                     –      –    
-#>    Upper secondary        │                   -0.48    .005 
-#>    Tertiary               │                   -0.91   <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │ 1175            1175            
-#>  R² (McFadden)            │    0.02            0.02         
-#>  R² (Nagelkerke)          │    0.03            0.03         
-#>  AIC                      │ 1198.9          1200.9          
-#>  Δχ²                      │     –              0.03         
-#>  p (change)               │     –               .852        
+#>                                Model 1           Model 2       
+#>                             ──────────────  ────────────────── 
+#>  Variable                 │    B       p         B         p   
+#> ──────────────────────────┼────────────────────────────────────
+#>  (Intercept)              │   -0.67   .036    -1.11      <.001 
+#>  sex:                     │                                    
+#>    Female (ref.)          │     –     –         –         –    
+#>    Male                   │   -0.04   .805    -0.04       .800 
+#>  age                      │    0.01   .212     0.01       .214 
+#>  educ_score               │   -0.45  <.001                     
+#>  education:               │                                    
+#>    Lower secondary (ref.) │                     –         –    
+#>    Upper secondary        │                   -0.48       .005 
+#>    Tertiary               │                   -0.91      <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │ 1175            1175               
+#>  R² (McFadden)            │    0.02            0.02            
+#>  R² (Nagelkerke)          │    0.03            0.03            
+#>  AIC                      │ 1198.9          1200.9             
+#>  Δχ²                      │     –              0.03 (1)        
+#>  p (change)               │     –               .852           
 #> 
 #> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
 ```
@@ -375,25 +375,25 @@ table_regression(list(s_lin, s_fac), nested = TRUE,
                  show_columns = c("b", "p"))
 #> Hierarchical linear regression: wellbeing_score
 #> 
-#>                     Model 1          Model 2     
-#>                  ──────────────  ─────────────── 
-#>  Variable      │    B       p       B        p   
-#> ───────────────┼─────────────────────────────────
-#>  (Intercept)   │   34.41  <.001    41.04   <.001 
-#>  age           │    0.05   .043     0.05    .042 
-#>  srh_score     │   10.96  <.001                  
-#>  srh_factor:   │                                 
-#>    Poor (ref.) │                     –      –    
-#>    Fair        │                   14.97   <.001 
-#>    Good        │                   28.01   <.001 
-#>    Very good   │                   35.13   <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n             │ 1180            1180            
-#>  R²            │    0.33            0.35         
-#>  Adj. R²       │    0.33            0.34         
-#>  ΔR²           │     –             +0.01         
-#>  F-change      │     –             12.96         
-#>  p (change)    │     –              <.001        
+#>                     Model 1              Model 2          
+#>                  ──────────────  ──────────────────────── 
+#>  Variable      │    B       p            B            p   
+#> ───────────────┼──────────────────────────────────────────
+#>  (Intercept)   │   34.41  <.001    41.04            <.001 
+#>  age           │    0.05   .043     0.05             .042 
+#>  srh_score     │   10.96  <.001                           
+#>  srh_factor:   │                                          
+#>    Poor (ref.) │                     –               –    
+#>    Fair        │                   14.97            <.001 
+#>    Good        │                   28.01            <.001 
+#>    Very good   │                   35.13            <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n             │ 1180            1180                     
+#>  R²            │    0.33            0.35                  
+#>  Adj. R²       │    0.33            0.34                  
+#>  ΔR²           │     –             +0.01                  
+#>  F-change      │     –             12.96 (2, 1175)        
+#>  p (change)    │     –              <.001                 
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
 ```

@@ -756,50 +756,60 @@ front:</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                          Model 1                Model 2            Model 3     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ─────────────────────  ────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.66  &lt;.001    65.00   1.67  &lt;.001    80.57   3.37 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .118     0.05   0.03   .109     0.07   0.03 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –         –      –     –         –      –   </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88   0.91  &lt;.001     4.21   0.90 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>                           –      –     –         –      –   </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68   1.11   .132    -1.71   1.10 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                                -0.65   0.12 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                   1163           </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
-<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
-<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.00                  +0.02        </span></span>
-<span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>     –                    2.28                  28.13        </span></span>
-<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>     –                     .132                  &lt;.001       </span></span>
+<span><span class="co">#&gt;                          Model 1                    Model 2             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p            B           SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.66  &lt;.001    65.00            1.67  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .118     0.05            0.03   .109 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –         –               –     –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88            0.91  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>                           –               –     –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68            1.11   .132 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                           </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                        </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02                        </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.00                        </span></span>
+<span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>     –                    2.28 (1, 1159)              </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>     –                     .132                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                    Mode… </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> p (B) </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>  .019 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>  .119 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
+<span><span class="co">#&gt;                               Model 3             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>         B           SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   80.57            3.37  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.07            0.03   .019 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –               –     –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    4.21            0.90  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –               –     –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.71            1.10   .119 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   -0.65            0.12  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                           </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.04                        </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.04                        </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>   +0.02                        </span></span>
+<span><span class="co">#&gt;  F-change        <span style="color: #9E9E9E;">│</span>   28.13 (1, 1158)              </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>    &lt;.001                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span></span></code></pre></div>
-<p>Reading the change rows: adding <code>smoking</code> in Model 2 does
-not improve fit over the age + sex baseline (ΔR² = +0.00, F-change =
-2.28, p = .132) — with a single added term, this test is equivalent to
-the test on the <code>smoking</code> coefficient itself (p = .132 in the
-Model 2 column). Adding <code>bmi</code> in Model 3 does (ΔR² = +0.02,
-F-change = 28.13, p &lt; .001). The hierarchical sequence therefore
-supports retaining <code>bmi</code> and provides no incremental evidence
-for <code>smoking</code>.</p>
+<p>Reading the change rows: each test carries its degrees of freedom,
+<code>2.28 (1, 1159)</code> for an F on 1 and 1159 df (the added term
+and the residual df of the larger model), as Stata prints F(1, 1159).
+Adding <code>smoking</code> in Model 2 does not improve fit over the age
++ sex baseline (ΔR² = +0.00, F-change = 2.28, p = .132) — with a single
+added term, this test is equivalent to the test on the
+<code>smoking</code> coefficient itself (p = .132 in the Model 2
+column). Adding <code>bmi</code> in Model 3 does (ΔR² = +0.02, F-change
+= 28.13, p &lt; .001). The hierarchical sequence therefore supports
+retaining <code>bmi</code> and provides no incremental evidence for
+<code>smoking</code>.</p>
 <p>Default change tokens auto-injected:
 <code>c("r2_change", "f_change", "p_change")</code> for <code>lm</code>
 (APA hierarchical-regression standard),
@@ -843,40 +853,47 @@ often, so read it with care when many predictors enter at once.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span>, vcov <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                          Model 1                Model 2            Model 3     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ─────────────────────  ────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p       B       SE  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.60  &lt;.001    65.00   1.62  &lt;.001    80.57   3.27 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .114     0.05   0.03   .106     0.07   0.03 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –         –      –     –         –      –   </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88   0.91  &lt;.001     4.21   0.91 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                             </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>                           –      –     –         –      –   </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68   1.12   .135    -1.71   1.11 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                                -0.65   0.12 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                   1163           </span></span>
-<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
-<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02                   0.04        </span></span>
-<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.00                  +0.02        </span></span>
-<span><span class="co">#&gt;  Wald F-change   <span style="color: #9E9E9E;">│</span>     –                    2.24                  29.34        </span></span>
-<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>     –                     .135                  &lt;.001       </span></span>
+<span><span class="co">#&gt;                          Model 1                    Model 2             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────  ────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE     p            B           SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   64.70  1.60  &lt;.001    65.00            1.62  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03   .114     0.05            0.03   .106 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –     –     –         –               –     –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    3.89  0.91  &lt;.001     3.88            0.91  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>                           –               –     –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>                         -1.68            1.12   .135 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>                                                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                  1163                           </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                  0.02                        </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                  0.02                        </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>     –                   +0.00                        </span></span>
+<span><span class="co">#&gt;  Wald F-change   <span style="color: #9E9E9E;">│</span>     –                    2.24 (1, 1159)              </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>     –                     .135                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                    Mode… </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ───── </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> p (B) </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>  .018 </span></span>
-<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
-<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>       </span></span>
-<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>  –    </span></span>
-<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>  .122 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> &lt;.001 </span></span>
+<span><span class="co">#&gt;                               Model 3             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>         B           SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   80.57            3.27  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.07            0.03   .018 </span></span>
+<span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    Female (ref.) <span style="color: #9E9E9E;">│</span>     –               –     –    </span></span>
+<span><span class="co">#&gt;    Male          <span style="color: #9E9E9E;">│</span>    4.21            0.91  &lt;.001 </span></span>
+<span><span class="co">#&gt;  smoking:        <span style="color: #9E9E9E;">│</span>                                </span></span>
+<span><span class="co">#&gt;    No (ref.)     <span style="color: #9E9E9E;">│</span>     –               –     –    </span></span>
+<span><span class="co">#&gt;    Yes           <span style="color: #9E9E9E;">│</span>   -1.71            1.11   .122 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   -0.65            0.12  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n               <span style="color: #9E9E9E;">│</span> 1163                           </span></span>
+<span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.04                        </span></span>
+<span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.04                        </span></span>
+<span><span class="co">#&gt;  ΔR²             <span style="color: #9E9E9E;">│</span>   +0.02                        </span></span>
+<span><span class="co">#&gt;  Wald F-change   <span style="color: #9E9E9E;">│</span>   29.34 (1, 1158)              </span></span>
+<span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>    &lt;.001                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
 </div>
@@ -894,7 +911,7 @@ are also available via <code>vcov = "bootstrap"</code> /
 <p>When error variance plausibly depends on the predictors (a ubiquitous
 concern in cross-sectional social-science data), set
 <code>vcov = "HC*"</code> for sandwich-style standard errors via
-<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
 through <code>HC5</code>; <code>HC3</code> is the small-sample-friendly
 default (Long and Ervin 2000):</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -1578,47 +1595,47 @@ error that points to the pseudo-R² family and to <code>lrt_change</code>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                   Model 1                Model 2        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ────────────────────  ───────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE     p       B       SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼─────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.29  0.10  &lt;.001    -1.54   0.26  &lt;.001 </span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –     –         –      –     –    </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.05  0.14   .713    -0.05   0.14   .722 </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>                          0.01   0.00   .294 </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                  1175                  </span></span>
-<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.00                  0.00               </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.00                  0.00               </span></span>
-<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1217.6                1218.5                </span></span>
-<span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>     –                    1.10               </span></span>
-<span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>     –                     .294              </span></span>
+<span><span class="co">#&gt;                                   Model 1                 Model 2          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ────────────────────  ──────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B      SE     p         B        SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.29  0.10  &lt;.001    -1.54      0.26  &lt;.001 </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –     –     –         –         –     –    </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.05  0.14   .713    -0.05      0.14   .722 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>                          0.01      0.00   .294 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                  1175                     </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.00                  0.00                  </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.00                  0.00                  </span></span>
+<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1217.6                1218.5                   </span></span>
+<span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>     –                    1.10 (1)              </span></span>
+<span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>     –                     .294                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                    Model 3        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ───────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>    B       SE     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼───────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11   0.29  &lt;.001 </span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –      –     –    </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04   0.14   .800 </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01   0.00   .214 </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –      –     –    </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.48   0.17   .005 </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91   0.20  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                  </span></span>
-<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02               </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03               </span></span>
-<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                </span></span>
-<span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>   21.64               </span></span>
-<span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>    &lt;.001              </span></span>
+<span><span class="co">#&gt;                                     Model 3          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ──────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>      B        SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)              <span style="color: #9E9E9E;">│</span>   -1.11      0.29  &lt;.001 </span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                          </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>     –         –     –    </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span>   -0.04      0.14   .800 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span>    0.01      0.00   .214 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                          </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>     –         –     –    </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span>   -0.48      0.17   .005 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91      0.20  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                     </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                  </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                  </span></span>
+<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                   </span></span>
+<span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>   21.64 (2)              </span></span>
+<span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>    &lt;.001                 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>

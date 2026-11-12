@@ -238,6 +238,9 @@ s$col_meta$B
 #> $fit_stat_overrides[[1]]$threshold
 #> NULL
 #> 
+#> $fit_stat_overrides[[1]]$suffix
+#> NULL
+#> 
 #> $fit_stat_overrides[[1]]$row
 #> [1] 9
 #> 
@@ -255,6 +258,9 @@ s$col_meta$B
 #> $fit_stat_overrides[[2]]$threshold
 #> NULL
 #> 
+#> $fit_stat_overrides[[2]]$suffix
+#> NULL
+#> 
 #> $fit_stat_overrides[[2]]$row
 #> [1] 10
 #> 
@@ -270,6 +276,9 @@ s$col_meta$B
 #> NULL
 #> 
 #> $fit_stat_overrides[[3]]$threshold
+#> NULL
+#> 
+#> $fit_stat_overrides[[3]]$suffix
 #> NULL
 #> 
 #> $fit_stat_overrides[[3]]$row

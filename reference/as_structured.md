@@ -124,10 +124,11 @@ This is the right entry point for users who want to:
 - `col_meta` – per-column metadata keyed by structured column name
   (token, model_id, precision, p-style, below-threshold, CI pair / role
   / label). A column whose cells cannot be reconstructed from one number
-  – the `"events/N"` counts of `show_columns = "n_events"` – also
-  carries `display_cells`, a character vector as long as `body` holding
-  the display string of each cell (`NA` where the number formats
-  normally). A renderer must prefer it over the numeric value.
+  – the `"events/N"` counts of `show_columns = "n_events"`, a change
+  test with its degrees of freedom (`"12.38 (1, 29)"`, the statistic in
+  `body`) – also carries `display_cells`, a character vector as long as
+  `body` holding the display string of each cell (`NA` where the number
+  formats normally). A renderer must prefer it over the numeric value.
 
 - `stars` – `NULL` unless `stars` was requested, otherwise a list with
   `thresholds` (symbol to p cutoff) and `markers` (per-cell marker
@@ -377,6 +378,9 @@ s$col_meta$B                         # column metadata for B
 #> $fit_stat_overrides[[1]]$threshold
 #> NULL
 #> 
+#> $fit_stat_overrides[[1]]$suffix
+#> NULL
+#> 
 #> $fit_stat_overrides[[1]]$row
 #> [1] 7
 #> 
@@ -394,6 +398,9 @@ s$col_meta$B                         # column metadata for B
 #> $fit_stat_overrides[[2]]$threshold
 #> NULL
 #> 
+#> $fit_stat_overrides[[2]]$suffix
+#> NULL
+#> 
 #> $fit_stat_overrides[[2]]$row
 #> [1] 8
 #> 
@@ -409,6 +416,9 @@ s$col_meta$B                         # column metadata for B
 #> NULL
 #> 
 #> $fit_stat_overrides[[3]]$threshold
+#> NULL
+#> 
+#> $fit_stat_overrides[[3]]$suffix
 #> NULL
 #> 
 #> $fit_stat_overrides[[3]]$row
