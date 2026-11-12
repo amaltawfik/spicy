@@ -1902,8 +1902,7 @@ test_that("the random-effects notes follow the language", {
     ),
     paste0(
       "Erreur standard et IC des composantes de la variance des effets ",
-      "al\u00E9atoires non calcul\u00E9s pour n sup\u00E9rieur \u00E0 1000 ",
-      "(voir ?table_regression)."
+      "al\u00E9atoires non calcul\u00E9s pour n sup\u00E9rieur \u00E0 1000."
     )
   )
 })

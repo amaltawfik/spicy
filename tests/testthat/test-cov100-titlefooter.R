@@ -316,7 +316,7 @@ test_that("re_se_skipped footer states the cap once when all models skip", {
     out,
     paste0(
       "SE and CI of the random-effect variance components not computed ",
-      "for n above 1000 (see ?table_regression)."
+      "for n above 1000."
     )
   )
 })
@@ -332,7 +332,7 @@ test_that("re_se_skipped footer prefixes only the affected model", {
     out,
     paste0(
       "Model 2: SE and CI of the random-effect variance components not ",
-      "computed for n above 12500 (see ?table_regression)."
+      "computed for n above 12500."
     )
   )
 })

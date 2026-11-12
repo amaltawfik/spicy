@@ -386,7 +386,7 @@ test_that("the size-cap note names the threshold, not the option", {
     out,
     paste(
       "SE and CI of the random-effect variance components not computed",
-      "for n above 10 (see ?table_regression)."
+      "for n above 10."
     ),
     fixed = TRUE
   )
@@ -396,7 +396,7 @@ test_that("the size-cap note names the threshold, not the option", {
   out_fr <- flat(suppressWarnings(table_regression(fit)))
   expect_match(
     out_fr,
-    "pour n sup\u00E9rieur \u00E0 10 (voir ?table_regression).",
+    "pour n sup\u00E9rieur \u00E0 10.",
     fixed = TRUE
   )
   expect_no_match(out_fr, "spicy.re_se_max_n", fixed = TRUE)
