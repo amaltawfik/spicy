@@ -75,8 +75,9 @@
     # before this file, alphabetically, so the constant exists here):
     # the variance-explained partials for lm, split into estimate-only
     # + CI-only to match the b / ci asymmetry-free convention, then the
-    # LRT-based partial chi-square for glm (the analog of partial F),
-    # kept BUNDLED as "value (df)" because that is the standard
+    # term-level tests, the LRT-based partial chi-square of glm and the
+    # partial F of lm and of a glm whose dispersion is estimated, kept
+    # BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
     .PARTIAL_ES_TOKENS,
     # Probability of direction (Bayesian fits only).
@@ -1494,6 +1495,160 @@ absorbs_fixed_effects <- function(model) {
 }
 
 
+# A `glm` (not a feglm: fixest has no term-level test here) whose
+# dispersion is estimated, the models whose term-level test is the
+# partial F (`partial_f`). summary() is asked quietly: the coefficient
+# rows report its warnings (zero prior weights) once already.
+.is_dispersion_glm <- function(fit) {
+  !inherits(fit, "fixest") && suppressWarnings(has_estimated_dispersion(fit))
+}
+
+# The facts of the term-level tests, one row per fit of `eff_models`
+# (screens unwrapped), computed once: which fits carry `partial_f` (an
+# lm, a glm whose dispersion is estimated), which carry `partial_chi2` (a
+# glm whose dispersion is fixed, glm.nb, the mixed models), and how a
+# message names each one, by its position among `models` and its class
+# (and family). A fit in neither set has no term-level test (coxph,
+# GEE, svyglm, gam, fixest, rlm, ...).
+.term_test_facts <- function(models, eff_models) {
+  owner <- unlist(lapply(seq_along(models), function(i) {
+    m <- models[[i]]
+    rep(i, if (inherits(m, "spicy_uv_screen")) length(m$fits) else 1L)
+  }))
+  disp <- vapply(eff_models, .is_dispersion_glm, logical(1))
+  lm_fit <- vapply(
+    eff_models,
+    function(f) {
+      inherits(f, "lm") && !inherits(f, c("glm", "rlm", "rms"))
+    },
+    logical(1)
+  )
+  chi2 <- !disp &
+    vapply(
+      eff_models,
+      function(f) {
+        glm_or_nb <- class(f)[1L] %in% c("glm", "negbin")
+        glm_or_nb || inherits(f, c("merMod", "glmmTMB", "lme"))
+      },
+      logical(1)
+    )
+  label <- vapply(
+    seq_along(eff_models),
+    function(j) {
+      f <- eff_models[[j]]
+      fam <- if (inherits(f, "glm")) {
+        tryCatch(stats::family(f)$family, error = function(e) NULL)
+      }
+      what <- paste0("`", class(f)[1L], "`", if (length(fam)) paste0(", ", fam))
+      if (length(models) > 1L) {
+        sprintf("model %d (%s)", owner[j], what)
+      } else {
+        sprintf("the model (%s)", what)
+      }
+    },
+    character(1)
+  )
+  list(
+    carries_f = disp | lm_fit,
+    carries_chi2 = chi2,
+    lm = lm_fit,
+    label = label
+  )
+}
+
+# The two term-level tests of `table_regression()`, each refused where
+# it would lose or invent a test. A requested token is refused when
+# (A) no model of the set carries it while some model carries the other
+# one -- its column would be blank for every model -- or (B) some model
+# carries the other token but not this one, and the other token is not
+# requested -- that model's test would vanish without a word. A set
+# where no model has a term-level test at all is left to the GEE arm and
+# to the capability guard of table_regression(), which name the class.
+.check_term_test_tokens <- function(show_columns, facts, call) {
+  q <- function(tok) paste0("`\"", tok, "\"`")
+  cap <- function(x) paste0(toupper(substr(x, 1L, 1L)), substring(x, 2L))
+  for (tok in intersect(c("partial_chi2", "partial_f"), show_columns)) {
+    other <- setdiff(c("partial_chi2", "partial_f"), tok)
+    has <- if (tok == "partial_f") facts$carries_f else facts$carries_chi2
+    has_other <- if (tok == "partial_f") facts$carries_chi2 else facts$carries_f
+    test_of <- if (tok == "partial_f") {
+      paste0(
+        q("partial_f"),
+        " is the Type II partial F of an `lm` and of a `glm` whose ",
+        "dispersion is estimated (gaussian, Gamma, inverse Gaussian, ",
+        "Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi ",
+        "families), the F that `anova(reduced, full, test = \"F\")` reports."
+      )
+    } else {
+      paste0(
+        q("partial_chi2"),
+        " is the likelihood-ratio chi-square of a `glm` whose dispersion ",
+        "is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald ",
+        "chi-square of a mixed-effects model."
+      )
+    }
+    if (!any(has) && any(has_other)) {
+      what <- if (all(facts$lm)) {
+        "`lm` models"
+      } else {
+        paste(unique(facts$label), collapse = ", ")
+      }
+      spicy_abort(
+        c(
+          sprintf(
+            "Token %s in `show_columns` is not defined for %s.",
+            q(tok),
+            what
+          ),
+          "i" = test_of,
+          "i" = if (tok == "partial_chi2" && any(facts$lm)) {
+            paste0(
+              "Use ",
+              q("partial_f"),
+              ", or ",
+              q("partial_f2"),
+              ", ",
+              q("partial_eta2"),
+              " or ",
+              q("partial_omega2"),
+              " for the ",
+              "variance-explained partials of an `lm`."
+            )
+          } else {
+            paste0("Use ", q(other), ".")
+          }
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    lost <- unique(facts$label[has_other & !has])
+    if (length(lost) > 0L && !other %in% show_columns) {
+      spicy_abort(
+        c(
+          sprintf(
+            "%s %s no %s: %s term-level test is %s.",
+            cap(paste(lost, collapse = ", ")),
+            if (length(lost) > 1L) "have" else "has",
+            q(tok),
+            if (length(lost) > 1L) "their" else "its",
+            q(other)
+          ),
+          "i" = test_of,
+          "i" = paste0(
+            "Each test has its own column: add ",
+            q(other),
+            " to `show_columns`, or drop the model."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+  }
+  invisible(TRUE)
+}
+
 # Class-aware token validation. Rejects tokens that are
 # mathematically inappropriate for the model class with a clear
 # remediation pointer toward the right substitute. Called AFTER
@@ -1503,10 +1658,14 @@ absorbs_fixed_effects <- function(model) {
 # error second when the typo is absent.
 #
 # Substitution policy (closest analog per discipline convention):
-#   * lm  -> no  partial_chi2          (use partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
+#   * lm  -> no  partial_chi2          (use partial_f, the Type-II F,
+#                                      or partial_f2 / \u03B7\u00B2 / \u03C9\u00B2)
 #   * lm  -> no  pseudo_r2_*           (use r2 / adj_r2 / omega2)
 #   * glm -> no  partial_f2 / \u03B7\u00B2 / \u03C9\u00B2  (use partial_chi2; Type-II LRT;
-#                                      Long & Freese 2014 \u00A73.2.2, \u00A73.2.4)
+#                                      Long & Freese 2014 \u00A73.2.2, \u00A73.2.4;
+#                                      partial_f, the Type-II F, when the
+#                                      dispersion is estimated)
+#   * partial_chi2 / partial_f: one rule, `.check_term_test_tokens()`
 #   * glm -> no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
 validate_class_appropriate_tokens <- function(
@@ -1544,6 +1703,11 @@ validate_class_appropriate_tokens <- function(
     logical(1)
   )
   all_glm <- length(eff_models) > 0L && all(glm_flags)
+  # The term-level test facts, once per fit and only when a partial token
+  # is requested (summary() per glm).
+  facts <- if (any(.PARTIAL_ES_TOKENS %in% show_columns)) {
+    .term_test_facts(models, eff_models)
+  }
   # glm / feglm fits whose dispersion is estimated: their nested test is
   # the F test of anova(), carried by f_change, and not a chi-square.
   # Asked only when one of the two tokens is requested (summary() per fit).
@@ -1578,20 +1742,62 @@ validate_class_appropriate_tokens <- function(
   if (all_glm) {
     bad <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad) > 0L) {
+      # The analog of each model: the term-level test it carries.
+      analog_tok <- ifelse(
+        facts$carries_f,
+        "partial_f",
+        ifelse(facts$carries_chi2, "partial_chi2", NA_character_)
+      )
+      analog <- if (length(unique(stats::na.omit(analog_tok))) > 1L) {
+        per <- unique(paste0(
+          "`\"",
+          analog_tok,
+          "\"` for ",
+          facts$label
+        )[!is.na(analog_tok)])
+        c(
+          "i" = paste0(
+            "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
+            "does not apply outside the least-squares framework. The ",
+            "analog of each model is its term-level test: ",
+            paste(per, collapse = ", "),
+            "."
+          ),
+          "i" = paste0(
+            "Replace with `\"partial_chi2\"` and `\"partial_f\"` (each ",
+            "model fills its own column) or drop the token."
+          )
+        )
+      } else if (identical(unique(stats::na.omit(analog_tok)), "partial_f")) {
+        c(
+          "i" = paste0(
+            "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
+            "does not apply outside the least-squares framework. The ",
+            "analog for a `glm` whose dispersion is estimated is ",
+            "`\"partial_f\"`, the Type II partial F test that ",
+            "`anova(reduced, full, test = \"F\")` reports."
+          ),
+          "i" = "Replace with `\"partial_f\"` or drop the token."
+        )
+      } else {
+        c(
+          "i" = paste0(
+            "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
+            "does not apply outside the least-squares framework. The ",
+            "`glm`-appropriate analog is `\"partial_chi2\"` (Type-II ",
+            "partial likelihood-ratio chi-square; ",
+            "Long & Freese 2014 \u00A73.2.2, \u00A73.2.4)."
+          ),
+          "i" = "Replace with `\"partial_chi2\"` or drop the token."
+        )
+      }
       spicy_abort(
         c(
           sprintf(
             "Token(s) %s in `show_columns` are not defined for `glm` models.",
             paste(.quote_val(bad), collapse = ", ")
           ),
-          "i" = paste0(
-            "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
-            "does not apply outside the least-squares framework. The ",
-            "`glm`-appropriate analog is `partial_chi2` (Type-II ",
-            "partial likelihood-ratio chi-square; ",
-            "Long & Freese 2014 \u00A73.2.2, \u00A73.2.4)."
-          ),
-          "i" = "Replace with `\"partial_chi2\"` or drop the token."
+          analog
         ),
         class = "spicy_invalid_input",
         call = call
@@ -1630,6 +1836,15 @@ validate_class_appropriate_tokens <- function(
         call = call
       )
     }
+  }
+
+  # The term-level tests: `partial_f`, the F that `anova(reduced, full,
+  # test = "F")` reports for an lm and for a glm whose dispersion is
+  # estimated, and `partial_chi2`, the likelihood-ratio chi-square of a
+  # glm whose dispersion is fixed and the Wald chi-square of the mixed
+  # models. One rule for both, `.check_term_test_tokens()`.
+  if (!is.null(facts)) {
+    .check_term_test_tokens(show_columns, facts, call)
   }
 
   # The same refusal, for the same reason, for every OTHER class whose
@@ -1790,20 +2005,7 @@ validate_class_appropriate_tokens <- function(
   }
 
   if (all_lm) {
-    bad <- intersect(show_columns, "partial_chi2")
-    if (length(bad) > 0L) {
-      spicy_abort(
-        c(
-          "Token \"partial_chi2\" in `show_columns` is not defined for `lm` models.",
-          "i" = paste0(
-            "For `lm`, use `\"partial_f2\"`, `\"partial_eta2\"`, or ",
-            "`\"partial_omega2\"` \u2013 the variance-explained analogs."
-          )
-        ),
-        class = "spicy_invalid_input",
-        call = call
-      )
-    }
+    # `partial_chi2` on an lm: `.check_term_test_tokens()` above.
     bad_fit <- intersect(
       show_fit_stats,
       c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur")
@@ -2290,9 +2492,9 @@ validate_class_appropriate_tokens <- function(
             paste(.quote_val(bad_cols), collapse = ", ")
           ),
           "i" = paste0(
-            "The partial likelihood-ratio chi-square and the ",
-            "variance-explained partials need a true likelihood or ",
-            "an OLS variance partition; GEE has neither."
+            "The partial likelihood-ratio chi-square, the partial F and ",
+            "the variance-explained partials need a true likelihood, a ",
+            "deviance or an OLS variance partition; GEE has none of them."
           )
         ),
         class = "spicy_invalid_input",

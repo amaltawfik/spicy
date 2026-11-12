@@ -115,8 +115,8 @@
 #' composes the interval with the style's brackets and separator, and
 #' so does every other interval token the table carries (`"med_ci"`,
 #' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds.
-#' `"partial_chi2"` cites the statistic alone, without the degrees of
-#' freedom the table prints beside it.
+#' `"partial_chi2"` and `"partial_f"` cite the statistic alone, without
+#' the degrees of freedom the table prints beside it.
 #'
 #' # Patterns
 #'
@@ -1122,8 +1122,9 @@ inline <- function(
 # choice is required as soon as a token is ambiguous across models.
 #
 # The degrees of freedom printed beside a partial chi-squared ("1.10
-# (1)") are a column of their own carrying the same token, flagged
-# `is_df`. They are not a cited cell: `column = "partial_chi2"` quotes
+# (1)") or a partial F are a column of their own carrying the same
+# token, flagged `is_df`. They are not a cited cell: `column =
+# "partial_chi2"` (or `"partial_f"`) quotes
 # the statistic, as `column = "statistic"` does in the descriptive
 # tables. Left among the candidates, the pair read as two columns and
 # the token was refused on every table, `model` or not.

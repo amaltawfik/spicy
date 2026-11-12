@@ -729,10 +729,19 @@ test_that("lm + partial_chi2 - rejected with hint to partial_f2 / eta2 / omega2"
 test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
   fit_lm <- lm(mpg ~ wt, data = mt)
   fit_glm <- glm(am ~ mpg + wt, data = mt, family = binomial)
+  # The chi-square alone would leave the lm without its test (the partial
+  # F): refused, and the table asks for both (test-partial_f.R).
+  expect_error(
+    table_regression(
+      list(fit_lm, fit_glm),
+      show_columns = c("b", "partial_chi2")
+    ),
+    class = "spicy_invalid_input"
+  )
   expect_no_error(
     out <- table_regression(
       list(fit_lm, fit_glm),
-      show_columns = c("b", "partial_chi2")
+      show_columns = c("b", "partial_chi2", "partial_f")
     )
   )
   body <- structure(out, class = "data.frame")
@@ -766,16 +775,22 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
   expect_true(any(nzchar(glm_vals))) # glm side has values
 })
 
-test_that("glm + partial_chi2 - quasi family returns NA (drop1 path), en-dashed", {
+test_that("glm + partial_chi2 - quasi family is refused, its test is partial_f", {
+  # A quasi family has no likelihood: its term-level test is the F test
+  # anova(reduced, full, test = "F") reports (test-partial_f.R), and
+  # partial_chi2 is refused.
   set.seed(123)
   d <- data.frame(y = rpois(50, 3), x = rnorm(50))
   fit <- glm(y ~ x, data = d, family = quasipoisson)
-  out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
-  td <- broom::tidy(out)
-  chi <- td[td$estimate_type == "partial_chi2" & td$term == "x", ]
-  # Either no row (extract returned empty) OR row with finite estimate
-  # (drop1 still returns scaled deviance for quasi). Just ensure no crash.
-  expect_true(nrow(chi) <= 1L)
+  expect_error(
+    table_regression(fit, show_columns = c("b", "partial_chi2")),
+    "partial_f",
+    class = "spicy_invalid_input"
+  )
+  td <- broom::tidy(table_regression(fit, show_columns = c("b", "partial_f")))
+  pf_row <- td[td$estimate_type == "partial_f" & td$term == "x", ]
+  av <- anova(glm(y ~ 1, data = d, family = quasipoisson), fit, test = "F")
+  expect_equal(pf_row$estimate, av$F[2L], tolerance = 1e-10)
 })
 
 test_that("glm: partial_chi2 with intercept-only fit -> empty rows (no crash)", {

@@ -1054,6 +1054,7 @@ build_abbreviations_footer_block_from_frames <- function(
       list(.abbr("chi2", term = spicy_str("abbrev_chi2_wald")))
     }
   )
+  partial_f <- list(.reg_abbrev_partial_f(frames))
   f2 <- .abbr("f2", term = spicy_str("abbrev_f2_partial"))
   eta2 <- .abbr("eta2", term = spicy_str("abbrev_eta2_partial"))
   omega2 <- .abbr("omega2", term = spicy_str("abbrev_omega2_partial"))
@@ -1094,6 +1095,7 @@ build_abbreviations_footer_block_from_frames <- function(
           partial_omega2 = list(omega2),
           partial_omega2_ci = list(omega2, ci_id),
           partial_chi2 = chi2,
+          partial_f = partial_f,
           # n, n_events, p, the t or z statistic and the survival
           # estimands: N, n, p and the test statistics are never defined,
           # and the estimand sentence defines dRMST and dRisk with their
@@ -1120,6 +1122,67 @@ build_abbreviations_footer_block_from_frames <- function(
     return(items)
   }
   .note_abbreviations(items)
+}
+
+# The definition of the partial F of an lm or of a glm whose dispersion
+# is estimated. Its cell shows the term's df, "4.52 (2)", and the note
+# gives the residual df of the test: one number when the models of the
+# table agree, the numbers of the models in order otherwise ("28 and 30
+# respectively"), and none when a frame pools several fits (the
+# univariable screen, whose fit statistics are blank: each predictor's
+# model has its own residual df).
+.reg_abbrev_partial_f <- function(frames) {
+  has_f <- vapply(
+    frames,
+    function(f) any(f$coefs$estimate_type %in% "partial_f"),
+    logical(1)
+  )
+  df <- vapply(
+    frames[has_f],
+    function(f) .scalar_or_na(f$info$fit_stats$df_residual),
+    numeric(1)
+  )
+  term <- if (length(df) == 0L || anyNA(df)) {
+    spicy_str("abbrev_f_partial")
+  } else {
+    df <- as.character(as.integer(round(df)))
+    if (length(unique(df)) == 1L) {
+      # One residual degree of freedom takes the singular, as the
+      # `_one` keys of the p-value adjustment do.
+      if (identical(df[1L], "1")) {
+        spicy_str("abbrev_f_partial_df_one")
+      } else {
+        spicy_fmt("abbrev_f_partial_df", df[1L])
+      }
+    } else {
+      spicy_fmt("abbrev_f_partial_df_unequal", .join_and(df))
+    }
+  }
+  .abbr("f", term = term)
+}
+
+# The partial F definitions of several tables merged into one note (the
+# panels of `table_stack()`): each carries the residual df of its own
+# models, and two of them would define F twice. When they differ, the
+# bare definition stands for all. No other definition of the note
+# carries a model-specific number.
+.reg_merge_partial_f_abbr <- function(items) {
+  is_f <- vapply(
+    items,
+    function(it) is.list(it) && identical(it$id, "f"),
+    logical(1)
+  )
+  terms <- unique(vapply(
+    items[is_f],
+    function(it) it$term %||% "",
+    character(1)
+  ))
+  if (length(terms) <= 1L) {
+    return(items)
+  }
+  first <- which(is_f)[1L]
+  items[[first]] <- .abbr("f", term = spicy_str("abbrev_f_partial"))
+  items[setdiff(seq_along(items), setdiff(which(is_f), first))]
 }
 
 # The concepts of the random-effects block: the standard deviation of a

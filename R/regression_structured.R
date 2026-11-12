@@ -80,7 +80,7 @@
 #         token = "b" | "se" | "ci_low" | "ci_high" | "p" | "stat" |
 #                 "df" | "beta" | "ame" | "partial_f2" |
 #                 "partial_eta2" | "partial_omega2" | "partial_chi2" |
-#                 "ame_se" | "ame_p" | "fit_stat_<key>",
+#                 "partial_f" | "ame_se" | "ame_p" | "fit_stat_<key>",
 #         model_id = chr,
 #         precision = int,          # decimals (0L for nobs, etc.)
 #         p_style = NULL | "apa",   # APA = drop leading zero
@@ -367,7 +367,7 @@ build_structured_body <- function(
   #       2 cols, names = "<col_name>: LL" and "<col_name>: UL"
   #       (or just "LL"/"UL" if user-friendly; we use the full prefix
   #       to keep multi-model disambiguation)
-  #   * partial_chi2 (fields = c("estimate","df")):
+  #   * partial_chi2 / partial_f (fields = c("estimate","df")):
   #       2 cols, names = "<col_name>" (est) and "<col_name>: df"
   # ci_label mirrors the console header: "CI" for frequentist tables,
   # "CrI" / "HDI" for all-Bayesian ones -- the rich engines (gt /
@@ -409,7 +409,8 @@ build_structured_body <- function(
       length(cs$fields) == 2L &&
         identical(cs$fields, c("estimate", "df"))
     ) {
-      # partial_chi2: keep estimate + df as separate numeric cols.
+      # partial_chi2 / partial_f: keep estimate + df as separate
+      # numeric cols.
       est_name <- cs$col_name
       df_name <- paste0(cs$col_name, ": df")
       expanded[[length(expanded) + 1L]] <- list(
@@ -473,7 +474,7 @@ build_structured_body <- function(
     } else {
       digits
     }
-    # df column inside partial_chi2 is integer-valued.
+    # df column inside partial_chi2 / partial_f is integer-valued.
     if (isTRUE(e$is_df)) {
       prec <- 0L
     }

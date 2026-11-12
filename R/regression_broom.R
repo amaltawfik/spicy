@@ -32,7 +32,9 @@
 #'
 #' `tidy()` returns one row per `(model_id, term, estimate_type,
 #' outcome_level)` combination, with `estimate_type` in
-#' `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")`.
+#' `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2",
+#' "partial_chi2", "partial_f")`; the two term-level tests carry their
+#' term's df in `df` and their test in `test_type` (`"X2"`, `"F"`).
 #' `outcome_level` names the response category of per-category rows
 #' (ordinal / multinomial average marginal effects) and is `NA` for
 #' single-outcome models. Reference-row placeholders (factor reference

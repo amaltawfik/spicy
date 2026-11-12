@@ -257,7 +257,7 @@ output_long <- function(aligned, note = NULL) {
 
 # Resolve the display label for a body (char-format) column name.
 # Direct match on `col_meta[[nm]]` handles single-field tokens (B,
-# SE, p, AME, t, β, partial_chi2, ...). CI tokens are split LL/UL in
+# SE, p, AME, t, β, partial_chi2, partial_f, ...). CI tokens are split LL/UL in
 # `col_meta` but merged into one `"95% CI"` / `"95% CI.2"` cell in
 # the char body — the direct lookup misses, so we fall back to the
 # `: LL` variant which carries the same `display_label` ("95% CI").

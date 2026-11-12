@@ -28,7 +28,8 @@ pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(model_id, term, estimate_type, outcome_level)} combination, with \code{estimate_type} in
-\code{c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2")}.
+\code{c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")}; the two term-level tests carry their
+term's df in \code{df} and their test in \code{test_type} (\code{"X2"}, \code{"F"}).
 \code{outcome_level} names the response category of per-category rows
 (ordinal / multinomial average marginal effects) and is \code{NA} for
 single-outcome models. Reference-row placeholders (factor reference

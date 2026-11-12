@@ -220,6 +220,8 @@
   symbol_z = "z",
   # The global Wald F of `table_continuous_lm()`; the three other test
   # glyphs of that family are `symbol_t` / `symbol_z` / `symbol_chi_sq`.
+  # Also the header of the partial F of `table_regression()`, as
+  # `symbol_chi_sq` is that of its partial chi-squared.
   symbol_f = "F",
   symbol_chi_sq = "\u03C7\u00B2",
   symbol_beta = "\u03B2",
@@ -726,6 +728,11 @@
   # reads. One hole in `_beta_method`: one of the `note_beta_*` glosses,
   # each led by its `standardized` token (an identifier). The chi-squared
   # of a mixed model is a Wald test, that of a glm a likelihood-ratio test.
+  # The partial F of an lm or of a glm whose dispersion is estimated
+  # carries the residual df of its test (the cell shows the term's): one
+  # hole, the number, or the numbers of the models in order joined by
+  # `.join_and()`; the bare definition when a frame pools several fits.
+  # One residual degree of freedom takes the `_one` key, with no hole.
   abbrev_iqr_width = "interquartile range (%s \u2212 %s)",
   abbrev_beta_method = "standardized coefficient (%s)",
   abbrev_f2_partial = "Cohen's partial f\u00B2",
@@ -733,6 +740,10 @@
   abbrev_omega2_partial = "partial omega squared",
   abbrev_chi2_lrt = "partial likelihood-ratio chi-squared",
   abbrev_chi2_wald = "partial Wald chi-squared",
+  abbrev_f_partial = "partial F statistic",
+  abbrev_f_partial_df = "partial F statistic on %s residual degrees of freedom",
+  abbrev_f_partial_df_one = "partial F statistic on 1 residual degree of freedom",
+  abbrev_f_partial_df_unequal = "partial F statistic on %s residual degrees of freedom respectively",
   abbrev_ame_category = "average marginal effect on a response-category probability",
   abbrev_pd = "probability of direction",
   abbrev_mcse = "Monte Carlo standard error of the posterior median",

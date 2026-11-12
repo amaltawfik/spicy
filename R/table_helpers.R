@@ -1536,6 +1536,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     tr = e("header_exp_tr", "abbrev_tr"),
     exp_b = e("header_exp_generic", "abbrev_exp_b"),
     chi2 = e("symbol_chi_sq", NULL),
+    f = e("symbol_f", NULL),
     change = e("symbol_delta", "abbrev_change", c("apa", "jama")),
     r2 = e("symbol_r2", "abbrev_r2", c("apa", "jama")),
     # Its symbol is the row label, the author's name included.

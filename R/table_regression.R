@@ -5,8 +5,8 @@
 #' `lm` / `glm` models. Supports standardized coefficients
 #' (\eqn{\beta}{beta}), average marginal effects (AME), partial
 #' effect sizes (*\eqn{f^2}{f^2}* / *\eqn{\eta^2}{eta^2}* /
-#' *\eqn{\omega^2}{omega^2}* for `lm`; partial
-#' *\eqn{\chi^2}{chi-squared}* for `glm`), pseudo-\eqn{R^2}{R^2}
+#' *\eqn{\omega^2}{omega^2}* and partial *F* for `lm`; partial
+#' *\eqn{\chi^2}{chi-squared}* or partial *F* for `glm`), pseudo-\eqn{R^2}{R^2}
 #' (`glm`), and a full vocabulary of variance estimators
 #' (classical / HC* / cluster-robust with Satterthwaite-corrected
 #' df / bootstrap / jackknife). `glm` covers binomial / poisson /
@@ -35,20 +35,44 @@
 #'   \item Partial effect sizes -- `lm` only: `"partial_f2"`,
 #'     `"partial_eta2"`, `"partial_omega2"`, each with a paired
 #'     `_ci` companion (`"partial_f2_ci"`, ...).
-#'   \item Partial effect size -- `glm` and mixed-effects models:
-#'     `"partial_chi2"`, the term-level Type-II partial chi-square.
-#'     Each term is tested under the marginality-respecting
-#'     hypothesis that excludes any higher-order interaction
-#'     containing it (the `car::Anova(type = 2)` convention), so
-#'     the value does not depend on the factor coding. For `glm`
-#'     the statistic is the likelihood-ratio chi-square (Long &
-#'     Freese 2014 Sections 3.2.2, 3.2.4); for `lmer` / `glmer` / `glmmTMB` /
-#'     `nlme::lme` it is the Wald chi-square built from the same
-#'     Type-II hypothesis -- a deliberate departure from the
-#'     Type-III default of SAS PROC MIXED and `lmerTest` (the two
-#'     conventions coincide for models without interactions).
-#'     Rendered as `value (df)` to disambiguate factor terms (k-1
-#'     df) from numeric terms (1 df).
+#'   \item Term-level test -- `lm`, `glm` and mixed-effects models:
+#'     `"partial_chi2"` and its twin `"partial_f"`, the term-level
+#'     Type-II test. Each term is tested under the
+#'     marginality-respecting hypothesis that excludes any
+#'     higher-order interaction containing it (the
+#'     `car::Anova(type = 2)` convention), so the value does not
+#'     depend on the factor coding. For `glm` the term-level test is
+#'     the F that `anova(reduced, full, test = "F")` reports when the
+#'     dispersion is estimated, the likelihood-ratio chi-square
+#'     otherwise: `"partial_f"`,
+#'     \eqn{F = (\Delta D / q) / \hat\phi}{F = (Delta D / q) / phi}
+#'     on \eqn{(q, df)} degrees of freedom, \eqn{q} the term's and
+#'     \eqn{df} the residual degrees of freedom of the model, with
+#'     \eqn{\hat\phi}{phi} the dispersion `summary()` estimates, for
+#'     gaussian, Gamma, inverse Gaussian, Tweedie,
+#'     `MASS::negative.binomial(theta)` fitted by `glm()` and the quasi
+#'     families (the value `car::Anova(type = 2, test.statistic = "F",
+#'     error.estimate = "dispersion")` reports; car's default Pearson
+#'     estimate differs by the IRLS convergence error only, and
+#'     `drop1(test = "F")` divides by the deviance dispersion instead);
+#'     `"partial_chi2"`, the likelihood-ratio chi-square (Long & Freese
+#'     2014 Sections 3.2.2, 3.2.4), for binomial, Poisson and
+#'     `MASS::glm.nb`. For `lm`, `"partial_f"` is the Type II F of
+#'     `car::Anova(type = 2)`, the F the variance-explained partials are
+#'     built on, so a gaussian `glm` and its `lm()` twin print the same
+#'     value. A token is refused when no model of the table carries it,
+#'     and when a model carries the other one while that one is not
+#'     requested (each test has its own column: ask for both). Both come
+#'     from the refits and the model's own dispersion (the residual
+#'     variance of an `lm`) whatever `vcov`.
+#'     For `lmer` / `glmer` /
+#'     `glmmTMB` / `nlme::lme`, `"partial_chi2"` is the Wald
+#'     chi-square built from the same Type-II hypothesis -- a
+#'     deliberate departure from the Type-III default of SAS PROC
+#'     MIXED and `lmerTest` (the two conventions coincide for models
+#'     without interactions). Rendered as `value (df)` to
+#'     disambiguate factor terms (k-1 df) from numeric terms (1 df);
+#'     the residual df of the F are given in the table note.
 #'   \item Variance explained per fit -- `lm` only: `"r2"`,
 #'     `"adj_r2"`. Like `"n"`, these are *per-fit* columns: they are
 #'     populated by [table_regression_uv()] screens, where each
@@ -1167,7 +1191,8 @@
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +
-#'   `"partial_omega2_ci"`, `"partial_chi2"`, `"r2"` / `"adj_r2"`
+#'   `"partial_omega2_ci"`, `"partial_chi2"`, `"partial_f"` (`lm`, and
+#'   `glm` whose dispersion is estimated), `"r2"` / `"adj_r2"`
 #'   (per-fit variance explained, `lm` screens)) and **group tokens**
 #'   (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
 #'   `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
@@ -2530,8 +2555,10 @@ table_regression <- function(
   }
 
   # Class-aware token compatibility -- variance-explained tokens are
-  # rejected on glm with a hint to the partial_chi2 / pseudo_r2_*
-  # substitutes; pseudo_r2_* is rejected on lm. The check runs on
+  # rejected on glm with a hint to the partial_chi2 / partial_f /
+  # pseudo_r2_* substitutes; pseudo_r2_* is rejected on lm, and each
+  # term-level test of the glm family where the other one is the test
+  # (partial_f where the dispersion is estimated). The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
 
@@ -3578,7 +3605,8 @@ table_regression <- function(
   # token rather than render an entirely empty column. The pre-frame
   # gate in validate_class_appropriate_tokens() only arbitrates WHICH
   # partial estimand a class may ask for (variance-explained on lm,
-  # chi-square on glm and on the mixed families); it says nothing about
+  # chi-square on glm and on the mixed families, F on a glm whose
+  # dispersion is estimated); it says nothing about
   # the classes that have neither, and those used to reach the renderer
   # and print a column of dashes. `supports$partial_effect_size` is the
   # authority here, so a builder that mis-declares now visibly changes
@@ -3601,10 +3629,12 @@ table_regression <- function(
           ),
           "i" = paste0(
             "The term-level partial effect size is defined here for the ",
-            "least-squares families (`partial_f2` / `partial_eta2` / ",
-            "`partial_omega2`) and, as a partial likelihood-ratio or Wald ",
-            "chi-square, for `glm` and the mixed-effects families ",
-            "(`partial_chi2`). No such decomposition exists for this class ",
+            "least-squares families (`partial_f` / `partial_f2` / ",
+            "`partial_eta2` / `partial_omega2`) and, as a partial ",
+            "likelihood-ratio or Wald chi-square, for `glm` and the ",
+            "mixed-effects families (`partial_chi2`), or as a partial F ",
+            "test for a `glm` whose dispersion is estimated ",
+            "(`partial_f`). No such decomposition exists for this class ",
             "(see ?table_regression_models)."
           ),
           "i" = "Drop the partial effect-size token(s) from `show_columns`."

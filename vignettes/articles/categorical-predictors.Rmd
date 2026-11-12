@@ -141,7 +141,11 @@ anova(m0, m1)
 For `glm` fits, the `partial_chi2` column reports the same
 joint question per term as a likelihood-ratio chi-square with its df,
 without needing a second model (see the main article's *Term-level
-partial chi-square*).
+partial chi-square*). An `lm` and a `glm` whose dispersion is
+estimated (gaussian, Gamma, quasi families) ask it with `partial_f`,
+the F test that `anova(reduced, full, test = "F")` reports, the value
+`car::Anova(type = 2, test.statistic = "F", error.estimate =
+"dispersion")` gives.
 
 The rule cuts the other way too:
 

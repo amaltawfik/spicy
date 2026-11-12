@@ -715,7 +715,10 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
 # etc.) so the caller can skip the term and the renderer en-dashes the
 # cells. Quasi families (quasibinomial / quasipoisson / quasi) have no
 # proper log-likelihood, so the LRT is undefined; we return NULL --
-# consistent with how the pseudo-R^2 family handles them.
+# consistent with how the pseudo-R^2 family handles them. The table
+# never asks this function for a glm whose dispersion is estimated: its
+# term-level test is the partial F below (`extract_partial_effect_rows()`
+# routes it there).
 compute_partial_chi2_for_term <- function(fit, term_label) {
   if (!inherits(fit, "glm")) {
     return(NULL)
@@ -739,6 +742,63 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
   list(chi2 = chi2, df = as.integer(df1), p_value = p_value)
 }
 
+# Term-level partial F of a glm whose dispersion is estimated
+# (`has_estimated_dispersion()`: gaussian, Gamma, inverse.gaussian,
+# Tweedie, negative.binomial(theta) in glm(), the quasi families): the F
+# that `anova(reduced, full, test = "F")` and `car::Anova(fit, type = 2,
+# test.statistic = "F", error.estimate = "dispersion")` report,
+#
+#   F = (Delta D / q) / phi  ~  F(q, df.residual(fit))
+#
+# with Delta D the deviance difference of the same Type-II refits as
+# the chi-square above (`compute_glm_type2_lrt()`), q their rank
+# difference and phi the Pearson dispersion of the full model, as
+# summary() estimates it (car's default "pearson" estimate, taken at the
+# final means, differs by the IRLS convergence error only).
+# `drop1(test = "F")` divides by the deviance dispersion D / df.residual
+# instead and is not this test. The quasi families get it too: the F
+# needs no likelihood. `phi`, read once per fit by the row builder, is
+# taken here when the function is called alone. Returns NULL on any
+# failure, like the chi-square.
+compute_partial_f_for_term <- function(fit, term_label, phi = NULL) {
+  if (is.null(phi)) {
+    if (!suppressWarnings(has_estimated_dispersion(fit))) {
+      return(NULL)
+    }
+    phi <- .glm_dispersion_quiet(fit)
+  }
+  out <- tryCatch(
+    suppressWarnings(compute_glm_type2_lrt(fit, term_label)),
+    error = function(e) NULL
+  )
+  if (is.null(out)) {
+    return(NULL)
+  }
+  df1 <- out$df
+  df2 <- stats::df.residual(fit)
+  # Defensive floor: a refit that lands a hair below the full deviance
+  # gives F = 0, not a negative F.
+  f <- max(0, out$dev_diff) / df1 / phi
+  if (!is.finite(f) || !isTRUE(df2 > 0)) {
+    return(NULL)
+  }
+  list(
+    f = f,
+    df = as.integer(df1),
+    p_value = stats::pf(f, df1, df2, lower.tail = FALSE)
+  )
+}
+
+# The dispersion summary() estimates, without its warnings (zero prior
+# weights): the coefficient rows report them once already. NA when
+# summary() fails.
+.glm_dispersion_quiet <- function(fit) {
+  tryCatch(
+    suppressWarnings(summary(fit)$dispersion),
+    error = function(e) NA_real_
+  )
+}
+
 # Internal: Type-II nested LRT for one glm term by refits on the
 # fitted estimation sample. Mirrors the `stats::drop1.glm` internals --
 # column subsets of the fitted model.matrix refit via glm.fit with the
@@ -750,7 +810,9 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
 # poisson), the profile-likelihood form n * log(RSS ratio) for
 # gaussian, and the dispersion-scaled deviance difference for the
 # other estimated-dispersion families (Gamma, inverse.gaussian). df is
-# the difference of effective ranks (collinearity-safe).
+# the difference of effective ranks (collinearity-safe). `dev_diff`, the
+# unscaled deviance difference, feeds the partial F of
+# `compute_partial_f_for_term()`.
 compute_glm_type2_lrt <- function(fit, term_label) {
   x <- stats::model.matrix(fit)
   asgn <- attr(x, "assign")
@@ -814,5 +876,5 @@ compute_glm_type2_lrt <- function(fit, term_label) {
     dispersion <- summary(fit, dispersion = NULL)$dispersion
     (base$dev - augmented$dev) / dispersion
   }
-  list(chi2 = max(0, chi2), df = df1)
+  list(chi2 = max(0, chi2), df = df1, dev_diff = base$dev - augmented$dev)
 }

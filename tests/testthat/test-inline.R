@@ -188,7 +188,7 @@ test_that("a multi-model table requires and honors `model`", {
   expect_identical(inline(tbl, age, column = "b", model = 1), b_a)
 })
 
-test_that("a partial chi-squared is cited without its degrees of freedom", {
+test_that("a partial chi-squared or F is cited without its degrees of freedom", {
   skip_on_cran()
   # The table prints "1.10 (1)": the df is a column of its own carrying
   # the same token, and the pair was refused as two columns, `model` or
@@ -210,6 +210,27 @@ test_that("a partial chi-squared is cited without its degrees of freedom", {
   err <- tryCatch(inline(two, age, column = "partial_chi2"), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "\"Model 1\"")
+
+  # Its twin for a glm whose dispersion is estimated, the partial F
+  # ("23.56 (1)"; car::Anova(type = 2, test.statistic = "F") prints
+  # 23.5646 and 5.8567).
+  g1 <- glm(bmi ~ age + sex, data = d, family = Gamma("log"))
+  g2 <- glm(bmi ~ age, data = d, family = Gamma("log"))
+  pf_one <- .il_quiet(table_regression(g1, show_columns = c("b", "partial_f")))
+  expect_identical(inline(pf_one, age, column = "partial_f"), "23.56")
+  expect_identical(inline(pf_one, sex, "Male", "partial_f"), "5.86")
+  expect_identical(
+    inline(pf_one, age, column = "{b}, F = {partial_f}"),
+    "0.00, F = 23.56"
+  )
+  pf_two <- .il_quiet(table_regression(
+    list(g1, g2),
+    show_columns = c("b", "partial_f")
+  ))
+  expect_identical(
+    inline(pf_two, age, column = "partial_f", model = 2),
+    "23.36"
+  )
 
   fl <- .il_quiet(table_regression(
     .il_fit(),

@@ -274,7 +274,8 @@ median, all-Bayesian tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
 \code{"partial_eta2_ci"}, \code{"partial_omega2"} +
-\code{"partial_omega2_ci"}, \code{"partial_chi2"}, \code{"r2"} / \code{"adj_r2"}
+\code{"partial_omega2_ci"}, \code{"partial_chi2"}, \code{"partial_f"} (\code{lm}, and
+\code{glm} whose dispersion is estimated), \code{"r2"} / \code{"adj_r2"}
 (per-fit variance explained, \code{lm} screens)) and \strong{group tokens}
 (\code{"all_b"}, \code{"all_b_compact"}, \code{"all_b_full"}, \code{"all_beta"},
 \code{"all_ame"}, \code{"all_ame_compact"}, \code{"all_f2"}, \code{"all_eta2"},
@@ -936,8 +937,8 @@ Publication-ready coefficient table from one or more fitted
 \code{lm} / \code{glm} models. Supports standardized coefficients
 (\eqn{\beta}{beta}), average marginal effects (AME), partial
 effect sizes (\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} /
-\emph{\eqn{\omega^2}{omega^2}} for \code{lm}; partial
-\emph{\eqn{\chi^2}{chi-squared}} for \code{glm}), pseudo-\eqn{R^2}{R^2}
+\emph{\eqn{\omega^2}{omega^2}} and partial \emph{F} for \code{lm}; partial
+\emph{\eqn{\chi^2}{chi-squared}} or partial \emph{F} for \code{glm}), pseudo-\eqn{R^2}{R^2}
 (\code{glm}), and a full vocabulary of variance estimators
 (classical / HC* / cluster-robust with Satterthwaite-corrected
 df / bootstrap / jackknife). \code{glm} covers binomial / poisson /
@@ -963,20 +964,43 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 \item Partial effect sizes -- \code{lm} only: \code{"partial_f2"},
 \code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
 \verb{_ci} companion (\code{"partial_f2_ci"}, ...).
-\item Partial effect size -- \code{glm} and mixed-effects models:
-\code{"partial_chi2"}, the term-level Type-II partial chi-square.
-Each term is tested under the marginality-respecting
-hypothesis that excludes any higher-order interaction
-containing it (the \code{car::Anova(type = 2)} convention), so
-the value does not depend on the factor coding. For \code{glm}
-the statistic is the likelihood-ratio chi-square (Long &
-Freese 2014 Sections 3.2.2, 3.2.4); for \code{lmer} / \code{glmer} / \code{glmmTMB} /
-\code{nlme::lme} it is the Wald chi-square built from the same
-Type-II hypothesis -- a deliberate departure from the
-Type-III default of SAS PROC MIXED and \code{lmerTest} (the two
-conventions coincide for models without interactions).
-Rendered as \code{value (df)} to disambiguate factor terms (k-1
-df) from numeric terms (1 df).
+\item Term-level test -- \code{lm}, \code{glm} and mixed-effects models:
+\code{"partial_chi2"} and its twin \code{"partial_f"}, the term-level
+Type-II test. Each term is tested under the
+marginality-respecting hypothesis that excludes any
+higher-order interaction containing it (the
+\code{car::Anova(type = 2)} convention), so the value does not
+depend on the factor coding. For \code{glm} the term-level test is
+the F that \code{anova(reduced, full, test = "F")} reports when the
+dispersion is estimated, the likelihood-ratio chi-square
+otherwise: \code{"partial_f"},
+\eqn{F = (\Delta D / q) / \hat\phi}{F = (Delta D / q) / phi}
+on \eqn{(q, df)} degrees of freedom, \eqn{q} the term's and
+\eqn{df} the residual degrees of freedom of the model, with
+\eqn{\hat\phi}{phi} the dispersion \code{summary()} estimates, for
+gaussian, Gamma, inverse Gaussian, Tweedie,
+\code{MASS::negative.binomial(theta)} fitted by \code{glm()} and the quasi
+families (the value \code{car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")} reports; car's default Pearson
+estimate differs by the IRLS convergence error only, and
+\code{drop1(test = "F")} divides by the deviance dispersion instead);
+\code{"partial_chi2"}, the likelihood-ratio chi-square (Long & Freese
+2014 Sections 3.2.2, 3.2.4), for binomial, Poisson and
+\code{MASS::glm.nb}. For \code{lm}, \code{"partial_f"} is the Type II F of
+\code{car::Anova(type = 2)}, the F the variance-explained partials are
+built on, so a gaussian \code{glm} and its \code{lm()} twin print the same
+value. A token is refused when no model of the table carries it,
+and when a model carries the other one while that one is not
+requested (each test has its own column: ask for both). Both come
+from the refits and the model's own dispersion (the residual
+variance of an \code{lm}) whatever \code{vcov}.
+For \code{lmer} / \code{glmer} /
+\code{glmmTMB} / \code{nlme::lme}, \code{"partial_chi2"} is the Wald
+chi-square built from the same Type-II hypothesis -- a
+deliberate departure from the Type-III default of SAS PROC
+MIXED and \code{lmerTest} (the two conventions coincide for models
+without interactions). Rendered as \code{value (df)} to
+disambiguate factor terms (k-1 df) from numeric terms (1 df);
+the residual df of the F are given in the table note.
 \item Variance explained per fit -- \code{lm} only: \code{"r2"},
 \code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
 populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each

@@ -899,10 +899,10 @@ table_stack <- function(
       extra$inference
     ),
     definitions = merge_kind(kind("definitions")),
-    abbreviations = .note_abbreviations(unlist(
+    abbreviations = .note_abbreviations(.reg_merge_partial_f_abbr(unlist(
       lapply(parts[auto], function(p) p$abbreviation_items),
       recursive = FALSE
-    )),
+    ))),
     probability = probability,
     add = c(merge_kind(typed_txt), merge_kind(kind("add")), note_add)
   )

@@ -664,8 +664,8 @@ validate_regression_frame <- function(frame) {
   # lowercase): c("B", "beta", "ame") for coefficient / standardized /
   # average-marginal-effect rows, "vc" for random-effect variance
   # components, the partial-effect-size tokens ("partial_f2",
-  # "partial_eta2", "partial_omega2", "partial_chi2") emitted by
-  # extract_partial_effect_rows(), and the causal survival estimands
+  # "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")
+  # emitted by extract_partial_effect_rows(), and the causal survival estimands
   # ("rmst", "risk_diff") that .coxph_estimand_rows() /
   # .survreg_estimand_rows() rbind onto coefs before the frame is
   # constructed (regression_frame_survival.R). The legacy uppercase
@@ -679,6 +679,7 @@ validate_regression_frame <- function(frame) {
     "partial_eta2",
     "partial_omega2",
     "partial_chi2",
+    "partial_f",
     "rmst",
     "risk_diff"
   )

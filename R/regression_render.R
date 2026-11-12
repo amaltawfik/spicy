@@ -952,6 +952,14 @@ build_column_spec <- function(
       estimate_type = "partial_chi2",
       fields = c("estimate", "df"),
       header_short = lab("symbol_chi_sq")
+    ),
+    # Its twin for an lm and a glm whose dispersion is estimated: the
+    # partial F, bundled the same way, "value (q)". The residual df, one
+    # per model, is given by the abbreviation note.
+    partial_f = list(
+      estimate_type = "partial_f",
+      fields = c("estimate", "df"),
+      header_short = lab("symbol_f")
     )
   )
 

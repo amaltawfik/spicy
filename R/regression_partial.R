@@ -37,17 +37,23 @@
   "partial_eta2_ci",
   "partial_omega2",
   "partial_omega2_ci",
-  "partial_chi2"
+  "partial_chi2",
+  "partial_f"
 )
 
 # The variance-explained half of the set: everything above except the
-# likelihood-ratio chi-square, which is the GLM analog rather than a
+# two term-level tests, the chi-square of a glm and the F of an lm or of
+# a glm whose dispersion is estimated, which are tests rather than a
 # partition of sums of squares. This is the subset the class refusals
 # name -- glm, GEE and mixed fits each reject exactly these, for the same
-# reason -- and the subset the lm extractor computes. Derived, not
+# reason -- and, with the partial F, the subset the lm extractor
+# computes. Derived, not
 # re-spelled, so adding an estimand upstream cannot leave one of the four
 # readers behind.
-.PARTIAL_VARIANCE_ES_TOKENS <- setdiff(.PARTIAL_ES_TOKENS, "partial_chi2")
+.PARTIAL_VARIANCE_ES_TOKENS <- setdiff(
+  .PARTIAL_ES_TOKENS,
+  c("partial_chi2", "partial_f")
+)
 
 # ---- Public-internal entry point ------------------------------------------
 
@@ -58,29 +64,45 @@ extract_partial_effect_rows <- function(
   model_id,
   outcome
 ) {
-  # glm path: only partial_chi2 is defined (variance-explained
-  # tokens were rejected upstream by validate_class_appropriate_tokens).
+  # glm path: one term-level test per fit -- the F that
+  # `anova(reduced, full, test = "F")` reports when the dispersion is
+  # estimated (`partial_f`), the likelihood-ratio chi-square otherwise
+  # (`partial_chi2`). The other token leaves this fit's cells empty, as
+  # in any table that mixes classes; variance-explained tokens were
+  # rejected upstream by validate_class_appropriate_tokens. The
+  # dispersion is asked once per fit, quietly (its warnings are the
+  # coefficient rows').
   if (inherits(fit, "glm")) {
-    if (!"partial_chi2" %in% show_columns) {
+    disp <- suppressWarnings(has_estimated_dispersion(fit))
+    token <- if (disp) "partial_f" else "partial_chi2"
+    if (!token %in% show_columns) {
       return(empty_coefs_long())
     }
-    return(extract_partial_chi2_rows_glm(
+    return(extract_partial_test_rows_glm(
       fit = fit,
       model_id = model_id,
-      outcome = outcome
+      outcome = outcome,
+      token = token
     ))
   }
 
   # lm path: variance-explained partition (partial_f2 / partial_eta2 /
-  # partial_omega2). partial_chi2 was rejected upstream for lm.
+  # partial_omega2) and the Type II partial F they are built on
+  # (partial_f, the F of `car::Anova(type = 2)`, as for the gaussian glm
+  # twin). partial_chi2 was rejected upstream for lm.
   # Map both atomic tokens AND their _ci counterparts to the same
   # underlying long-data computation: `partial_f2_ci` reuses the same
   # CI columns built by `partial_f2`.
-  active <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
+  active <- intersect(
+    show_columns,
+    c(.PARTIAL_VARIANCE_ES_TOKENS, "partial_f")
+  )
   if (length(active) == 0L) {
     return(empty_coefs_long())
   }
   active_tokens <- unique(sub("_ci$", "", active))
+  # The F alone needs none of the noncentral-F inversions.
+  with_ci <- !identical(active_tokens, "partial_f")
 
   cf <- stats::coef(fit)
   cf_names <- names(cf)
@@ -106,7 +128,8 @@ extract_partial_effect_rows <- function(
     cache[[as.character(k)]] <- compute_partial_effects_for_term(
       fit = fit,
       term_label = term_labels[k],
-      ci_level = ci_level
+      ci_level = ci_level,
+      with_ci = with_ci
     )
   }
 
@@ -162,8 +185,15 @@ extract_partial_effect_rows <- function(
 # Compute the Type-II partial F + the three effect-size estimands and
 # their CIs for one model term. Returns NULL on any failure (nested
 # refit failure, non-finite F, etc.) -- the caller skips the term and
-# the renderer en-dashes the corresponding cells.
-compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
+# the renderer en-dashes the corresponding cells. `with_ci = FALSE`
+# skips the noncentral-F inversions (the CIs come back NA), for a table
+# that asks for the partial F alone.
+compute_partial_effects_for_term <- function(
+  fit,
+  term_label,
+  ci_level,
+  with_ci = TRUE
+) {
   fs <- extract_lm_focal_f_stat(fit, term_label)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs < 0) {
     return(NULL)
@@ -195,15 +225,24 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
 
   # CIs -- Steiger 2004 noncentral-F inversion. omega^2 CI uses eta^2 scale
   # bounds (matches effectsize / MBESS convention).
-  ci_eta2 <- compute_omega2_ci_lm(fit, ci_level, focal_term = term_label)
+  if (with_ci) {
+    ci_eta2 <- compute_omega2_ci_lm(fit, ci_level, focal_term = term_label)
+    ci_f2 <- compute_f2_ci_lm(fit, ci_level, focal_term = term_label)
+  } else {
+    ci_eta2 <- ci_f2 <- c(NA_real_, NA_real_)
+  }
   ci_omega2 <- ci_eta2
-  ci_f2 <- compute_f2_ci_lm(fit, ci_level, focal_term = term_label)
 
   list(
     f_obs = f_obs,
     df1 = df1,
     df2 = df2,
     p_value = p_value,
+    partial_f = list(
+      estimate = f_obs,
+      ci_low = NA_real_,
+      ci_high = NA_real_
+    ),
     partial_f2 = list(
       estimate = f2,
       ci_low = ci_f2[1],
@@ -223,13 +262,31 @@ compute_partial_effects_for_term <- function(fit, term_label, ci_level) {
 }
 
 
-# ---- glm path: term-level partial chi^2 via the Type-II nested LRT ----------
+# ---- glm path: term-level test via the Type-II nested refits ---------------
 
-# Build the partial_chi2 rows for one glm fit. One row per non-intercept
-# coef; factor terms emit one row per non-reference dummy, all sharing
-# the same term-level chi^2 (the renderer collapses to a single display
-# per term via the same factor-term grouping used for partial_f2).
-extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
+# Build the term-level test rows of one glm fit: `partial_chi2` (the
+# likelihood-ratio chi-square) or `partial_f` (the F of a glm whose
+# dispersion is estimated). One row per non-intercept coef; factor terms
+# emit one row per non-reference dummy, all sharing the same term-level
+# statistic (the renderer collapses to a single display per term via
+# the same factor-term grouping used for partial_f2). The df column
+# carries the term's q; the residual df of the F is the model's.
+extract_partial_test_rows_glm <- function(
+  fit,
+  model_id,
+  outcome,
+  token = "partial_chi2"
+) {
+  is_f <- identical(token, "partial_f")
+  compute <- if (is_f) {
+    # The dispersion of the full model, read once for every term.
+    phi <- .glm_dispersion_quiet(fit)
+    function(fit, term_label) {
+      compute_partial_f_for_term(fit, term_label, phi = phi)
+    }
+  } else {
+    compute_partial_chi2_for_term
+  }
   cf <- stats::coef(fit)
   cf_names <- names(cf)
   mm <- stats::model.matrix(fit)
@@ -247,7 +304,7 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
     as.character(unique_term_idx)
   )
   for (k in unique_term_idx) {
-    cache[[as.character(k)]] <- compute_partial_chi2_for_term(
+    cache[[as.character(k)]] <- compute(
       fit = fit,
       term_label = term_labels[k]
     )
@@ -269,19 +326,20 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
 
     nm <- cf_names[i]
     fmeta <- factor_meta[[nm]]
+    stat <- if (is_f) eff$f else eff$chi2
     rows[[length(rows) + 1L]] <- build_one_b_row(
       nm = nm,
       model_id = model_id,
       outcome = outcome,
-      estimate_type = "partial_chi2",
-      estimate = eff$chi2,
+      estimate_type = token,
+      estimate = stat,
       se = NA_real_,
       ci_low = NA_real_,
       ci_high = NA_real_,
-      statistic = eff$chi2,
+      statistic = stat,
       df = as.double(eff$df),
       p_value = eff$p_value,
-      test_type = "X2",
+      test_type = if (is_f) "F" else "X2",
       is_singular = FALSE,
       is_intercept = FALSE,
       is_reference = FALSE,
