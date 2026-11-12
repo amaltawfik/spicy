@@ -2,6 +2,21 @@
 
 ## Breaking changes
 
+* `table_regression()` and `table_regression_uv()` test the terms of a
+  `glm()` whose dispersion is estimated (gaussian, Gamma, inverse
+  Gaussian, Tweedie, `negative.binomial(theta)`, the quasi families)
+  with the partial F test, in the new column `partial_f`: the deviance
+  change over its degrees of freedom and over the dispersion
+  `summary()` estimates, on the residual degrees of freedom, the F that
+  `anova(reduced, full, test = "F")` and `car::Anova(type = 2,
+  test.statistic = "F", error.estimate = "dispersion")` report.
+  `partial_chi2` is refused for these models. It gave a likelihood-ratio
+  chi-square scaled by the dispersion, and nothing for the quasi
+  families, which are now tested. Binomial, Poisson and `MASS::glm.nb()`
+  fits keep `partial_chi2`, unchanged. A table that mixes both kinds of
+  model asks for both columns: asking for one alone is refused rather
+  than leaving a model without its test.
+
 * `table_regression()`, `table_regression_uv()` and `table_stack()` test a
   `glm()` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian,
   Tweedie and the quasi families) as `summary()` tests it: a t statistic
@@ -82,6 +97,12 @@
   console does.
 
 ## New features
+
+* `table_regression()` gains `partial_f`, the Type II partial F test of
+  each term, for `lm()` (the F of `car::Anova(type = 2)`) and for a
+  `glm()` whose dispersion is estimated. The cell reads "F (df)" and the
+  note gives the residual degrees of freedom. A gaussian `glm()` and its
+  `lm()` twin print the same F.
 
 * New `table_battery()` tabulates a battery of items rated on one scale
   (a Likert grid): one row per item, one column per level, row
