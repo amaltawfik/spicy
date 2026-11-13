@@ -507,7 +507,7 @@ test_that("a binary lrm table is unchanged by the ordinal thresholds path", {
       ll = c(165.7728831, 9.689377539e-07, NA, NA, 0.192435887, 0.4091175687),
       ul = c(7.81598662e+15, 0.1538742129, NA, NA, 2584.39082, 114989.323),
       p = main_p,
-      note = "Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion."
+      note = "Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion."
     ),
     list(
       # The cluster typed in the call, so that the note names it.

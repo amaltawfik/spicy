@@ -1178,7 +1178,10 @@
 #'   Methods and formulas: `se(OR) = OR × se(b)`) and the log-scale
 #'   CI endpoints carry the uncertainty more faithfully than this SE.
 #'   The footer states the SE scale and the CI asymmetry whenever an
-#'   SE column is displayed. Default `FALSE`.
+#'   SE column is displayed. It also names what a displayed intercept
+#'   estimates once exponentiated, which is no ratio: the baseline odds
+#'   (logit), risk (binomial log), rate (count families, log) or mean
+#'   (other log-link families) at the reference profile. Default `FALSE`.
 #' @param ame_type The quantity the AME columns report for a continuous
 #'   predictor. `"slope"` (default): the average slope dY/dX, the
 #'   derivative of the prediction averaged over the observations (Stata's
@@ -4057,7 +4060,8 @@ table_regression <- function(
     decimal_mark = decimal_mark,
     model_labels = named_model_labels,
     note_add = note_add,
-    parts = TRUE
+    parts = TRUE,
+    show_intercept = show_intercept
   )
   footer_main <- .compose_note_parts(footer_parts)
 

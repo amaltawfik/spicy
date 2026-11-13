@@ -809,6 +809,23 @@
   note_exp_with_se_multi_no_ci = "%s exponentiated and displayed as %s (per family); SE on the displayed ratio scale (%s).%s",
   note_exp_no_se_single_no_ci = "%s exponentiated and displayed as %s.%s",
   note_exp_no_se_multi_no_ci = "%s exponentiated and displayed as %s (per family).%s",
+  # What an exponentiated intercept is, under a ratio header without
+  # being a ratio: the baseline value of what the link models. One hole
+  # in `note_exp_intercept`: an estimand, or the estimands of the models
+  # joined by `note_estimand_sep`, each followed by its models
+  # (`_models`, two holes: the estimand, the model references joined).
+  # The row keeps its label "(Intercept)" in every language; each
+  # estimand carries its article.
+  note_exp_intercept = "The (Intercept) row estimates %s.",
+  note_exp_intercept_models = "%s (%s)",
+  note_exp_intercept_odds = "the baseline odds",
+  note_exp_intercept_rate = "the baseline rate",
+  note_exp_intercept_risk = "the baseline risk",
+  note_exp_intercept_mean = "the baseline mean",
+  note_exp_intercept_cumhazard = "the baseline cumulative hazard",
+  note_exp_intercept_survival_mean = "the baseline mean survival time",
+  note_exp_intercept_survival_median = "the baseline median survival time",
+  note_exp_intercept_survival_p632 = "the baseline 63.2nd percentile of survival time",
 
   # -- table footnotes: the APA prefix --------------------------------------
   # `note_prefix` is what a note BUILDER prepends. `note_prefix_emphasis` is

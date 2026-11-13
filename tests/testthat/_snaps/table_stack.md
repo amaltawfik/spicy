@@ -84,7 +84,7 @@
        N events        │  165                                 
        AIC             │ 1489.7                               
       
-      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Survival: Concordance C = 0.60 (SE = 0.03). Survival: coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion; HR = hazard ratio.
+      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Survival: Concordance C = 0.60 (SE = 0.03). Survival: coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion; HR = hazard ratio.
 
 # a stacked hierarchy prints as pinned
 

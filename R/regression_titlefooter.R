@@ -326,7 +326,8 @@ build_regression_footer_from_frames <- function(
   decimal_mark = ".",
   model_labels = NULL,
   note_add = NULL,
-  parts = FALSE
+  parts = FALSE,
+  show_intercept = TRUE
 ) {
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
@@ -399,6 +400,11 @@ build_regression_footer_from_frames <- function(
       ),
       if (!thresholds_as_rows) thresholds,
       build_exponentiate_footer_block_from_frames(frames, show_columns),
+      build_exp_intercept_footer_block_from_frames(
+        frames,
+        show_columns,
+        show_intercept
+      ),
       build_singular_footer_block_from_frames(frames),
       build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
       build_reference_outcome_footer_block_from_frames(frames),
@@ -2283,6 +2289,25 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
       gl <- blk$gloss
       if (isTRUE(blk$exp_applied)) {
         gl <- paste0(gl, " ", spicy_str("note_component_exp_or"))
+        # A block is exponentiated only under a logit link: its
+        # intercept is the baseline odds of the event its gloss names.
+        has_int <- any(
+          cf$is_component %in%
+            TRUE &
+            cf$parent_var %in% blk$label &
+            cf$label %in% "(Intercept)" &
+            !is.na(cf$estimate)
+        )
+        if (has_int) {
+          gl <- paste0(
+            gl,
+            " ",
+            spicy_fmt(
+              "note_exp_intercept",
+              spicy_str("note_exp_intercept_odds")
+            )
+          )
+        }
       } else if (isTRUE(f$info$extras$exp_applied) && !isTRUE(blk$exp_ok)) {
         gl <- paste0(gl, " ", spicy_str("note_component_not_exp"))
       }
@@ -3090,6 +3115,157 @@ build_exponentiate_footer_block_from_frames <- function(
     list(negation_note)
   )
   do.call(spicy_fmt, c(list(key), args))
+}
+
+
+# The sentence that names an exponentiated intercept. exp(B0) sits under
+# the ratio header without being a ratio: it is the baseline value of
+# what the link models (Stata: "_cons estimates baseline odds"), named
+# from the family and the link `spicy_glm_exp_header()` reads too. One
+# estimand for every model that shows an intercept: no model named.
+# Otherwise each estimand with its models, as the other per-model notes
+# name them. ADR dev/decisions/2026-09-05-exp-intercept-under-ratio-header.md.
+build_exp_intercept_footer_block_from_frames <- function(
+  frames,
+  show_columns = character(0),
+  show_intercept = TRUE
+) {
+  if (
+    !is.list(frames) ||
+      length(frames) == 0L ||
+      !any(c("b", "se", "ci") %in% show_columns)
+  ) {
+    return(NULL)
+  }
+  shown <- vapply(frames, .frame_shows_intercept, logical(1), show_intercept)
+  key <- vapply(
+    seq_along(frames),
+    function(i) {
+      if (!shown[i] || !isTRUE(frames[[i]]$info$extras$exp_applied)) {
+        return(NA_character_)
+      }
+      .exp_intercept_key(frames[[i]]$info)
+    },
+    character(1)
+  )
+  keys <- unique(key[!is.na(key)])
+  if (length(keys) == 0L) {
+    return(NULL)
+  }
+  if (length(keys) == 1L && !anyNA(key[shown])) {
+    return(spicy_fmt("note_exp_intercept", spicy_str(keys)))
+  }
+  items <- vapply(
+    keys,
+    function(k) {
+      refs <- vapply(
+        which(key %in% k),
+        function(i) .model_ref(frames, i),
+        character(1)
+      )
+      spicy_fmt(
+        "note_exp_intercept_models",
+        spicy_str(k),
+        paste(refs, collapse = ", ")
+      )
+    },
+    character(1)
+  )
+  spicy_fmt(
+    "note_exp_intercept",
+    paste(items, collapse = spicy_str("note_estimand_sep"))
+  )
+}
+
+# Whether the table shows an intercept row of the model of `f`: its
+# tagged intercept (`is_intercept`, else the "(Intercept)" term) under
+# `show_intercept = TRUE`, or an intercept `show_intercept` does not
+# govern (the alternative-specific constants of mlogit). The intercepts
+# of the component blocks are named in the gloss of their block.
+.frame_shows_intercept <- function(f, show_intercept = TRUE) {
+  cf <- f$coefs
+  if (is.null(cf) || nrow(cf) == 0L) {
+    return(FALSE)
+  }
+  b <- cf$estimate_type == "B" &
+    !((cf$is_component %||% FALSE) %in% TRUE) &
+    !(cf$is_ref %in% TRUE) &
+    !is.na(cf$estimate)
+  tagged <- if (!is.null(cf$is_intercept)) {
+    cf$is_intercept %in% TRUE
+  } else {
+    cf$term == "(Intercept)"
+  }
+  any(
+    b &
+      ((tagged & isTRUE(show_intercept)) |
+        (!tagged & cf$label %in% "(Intercept)"))
+  )
+}
+
+# The registry key of the estimand of an exponentiated intercept, by
+# family and link; NA when they name no single quantity, and the note
+# then says nothing rather than something wrong. A cumulative (ordinal)
+# model has cut-points, never exponentiated, and a Cox model no
+# intercept. The quantile of a log-time survreg distribution that equals
+# exp(B0) whatever its scale: the mean of the exponential, the median of
+# the lognormal and the log-logistic, the 63.2nd percentile of the
+# Weibull.
+.exp_intercept_key <- function(info) {
+  fam <- info$family$family
+  link <- info$family$link
+  if (!is.character(fam) || length(fam) != 1L || !is.character(link)) {
+    return(NA_character_)
+  }
+  if (identical(info$class, "survreg")) {
+    return(switch(
+      fam,
+      exponential = "note_exp_intercept_survival_mean",
+      lognormal = ,
+      loglogistic = "note_exp_intercept_survival_median",
+      weibull = ,
+      rayleigh = "note_exp_intercept_survival_p632",
+      NA_character_
+    ))
+  }
+  binom <- fam %in% c("binomial", "quasibinomial", "bernoulli")
+  count <- grepl(
+    "poisson|nbinom|negbin|neg_binomial|^Negative Binomial|geometric|genpois|compois",
+    fam
+  )
+  mean_fam <- fam %in%
+    c(
+      "gaussian",
+      "Gamma",
+      "gamma",
+      "inverse.gaussian",
+      "tweedie",
+      "lognormal",
+      "ziGamma",
+      "beta",
+      "quasi"
+    )
+  if (fam %in% c("cumulative", "cox")) {
+    return(NA_character_)
+  }
+  if (identical(link, "logit")) {
+    return("note_exp_intercept_odds")
+  }
+  if (identical(link, "cloglog") && binom) {
+    return("note_exp_intercept_cumhazard")
+  }
+  if (!identical(link, "log")) {
+    return(NA_character_)
+  }
+  if (binom) {
+    "note_exp_intercept_risk"
+  } else if (count) {
+    "note_exp_intercept_rate"
+  } else if (mean_fam) {
+    "note_exp_intercept_mean"
+  } else {
+    NA_character_
+  }
 }
 
 

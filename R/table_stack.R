@@ -882,12 +882,20 @@ table_stack <- function(
   }
   types_own <- unlist(kind("type"), use.names = FALSE)
   exp_scope <- spicy_str("note_exp_scope_all")
+  # "The (Intercept) row estimates ...", the sentence of an exponentiated
+  # intercept, up to its hole.
+  exp_intercept <- sub("%s.*$", "", spicy_str("note_exp_intercept"))
   built <- .compose_note(
     what = c(
       type_txt,
       merge_kind(
         kind(if (is.null(type_txt)) c("type", "what") else "what"),
-        lower = function(x) x %in% types_own || startsWith(x, exp_scope)
+        lower = function(x) {
+          x %in%
+            types_own ||
+            startsWith(x, exp_scope) ||
+            startsWith(x, exp_intercept)
+        }
       )
     ),
     missing = merge_kind(kind("missing")),
