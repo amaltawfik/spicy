@@ -1655,8 +1655,12 @@ validate_regression_frame <- function(frame) {
   if (!requireNamespace("performance", quietly = TRUE)) {
     return(.nakagawa_na())
   }
+  # `verbose = FALSE`: on a singular fit performance prints its notice
+  # with cat(), which suppressMessages() does not catch.
   res <- tryCatch(
-    suppressWarnings(suppressMessages(performance::r2_nakagawa(fit))),
+    suppressWarnings(suppressMessages(
+      performance::r2_nakagawa(fit, verbose = FALSE)
+    )),
     error = function(e) NULL
   )
   if (is.null(res)) {

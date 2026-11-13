@@ -314,6 +314,26 @@ test_that("self-impl refuses cbind() binomial -> falls through to performance", 
   )
 })
 
+test_that("the performance fallback prints nothing on a singular fit", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("performance")
+  set.seed(1)
+  d <- data.frame(
+    x = rnorm(200),
+    g = factor(sample(letters[1:10], 200, TRUE)),
+    k = sample(1:30, 200, TRUE)
+  )
+  d$y <- rbinom(200, d$k, stats::plogis(-0.5 + 0.8 * d$x))
+  fit <- suppressMessages(suppressWarnings(lme4::glmer(
+    cbind(y, k - y) ~ x + (1 | g),
+    data = d,
+    family = binomial
+  )))
+  out <- utils::capture.output(r2 <- spicy:::.nakagawa_r2(fit))
+  expect_identical(out, character(0))
+  expect_true(is.finite(r2$marginal))
+})
+
 test_that("self-impl handles Poisson(log) glmer without falling through", {
   skip_if_not_installed("lme4")
   set.seed(2)
