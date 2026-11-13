@@ -3,7 +3,7 @@
 - **Cible** : sandwich 3.1-3, R 4.6.2
 - **Canal** : courriel à Achim Zeileis (pas de suivi d'issues public)
 - **Envoyé** : non envoyé
-- **Statut** : dossier prêt le 2026-11-12. Reproduction en base R et sandwich
+- **Statut** : dossier prêt le 2026-11-12, corps relu mot à mot le 2026-11-13 (reproducteur court ajouté, trois phrases précisées). Reproduction en base R et sandwich
   seuls (repro.R, repro.log, docs_check.log, findings.txt, archivés avec la
   session du 12.11). Chaque affirmation repose sur une sortie capturée.
 - **Côté spicy** : compute_model_vcov() refuse tout type HC pour un lm ou
@@ -16,38 +16,68 @@
 
 # vcovHC() on lm/glm fits with zero prior weights (sandwich 3.1-3)
 
-## Setup
+sandwich 3.1-3 (current on CRAN), R 4.6.2, Windows 11. I did not check the
+development version on R-Forge.
 
-mtcars, w = 1 except w = 0 on rows 3, 10 and 20 (n = 32, n_nonzero = 29).
-fit <- lm(mpg ~ wt + hp, data = mtcars, weights = w); refit = the same model on
-the 29 rows with w > 0 (same coefficients). Same with glm(am ~ wt, binomial).
+## Reproducer
+
+```r
+library("sandwich")
+d <- mtcars
+d$w <- 1
+d$w[c(3, 10, 20)] <- 0
+fit   <- lm(mpg ~ wt + hp, data = d, weights = w)
+refit <- lm(mpg ~ wt + hp, data = d[d$w > 0, ])
+all.equal(coef(fit), coef(refit))
+#> [1] TRUE
+c(nobs = nobs(fit), estfun_rows = NROW(estfun(fit)),
+  residuals = length(residuals(fit)), hatvalues = length(hatvalues(fit)))
+#>        nobs estfun_rows   residuals   hatvalues
+#>          29          32          32          29
+sqrt(diag(vcovHC(fit, type = "HC0"))) / sqrt(diag(vcovHC(refit, type = "HC0")))
+#> (Intercept)          wt          hp
+#>     0.90625     0.90625     0.90625
+sqrt(diag(vcovHC(fit, type = "HC3"))) / sqrt(diag(vcovHC(refit, type = "HC3")))
+#> (Intercept)          wt          hp
+#>   0.9470938   0.9119261   0.7198574
+#> Warning message:
+#> In residuals^2/(1 - diaghat)^2 :
+#>   longer object length is not a multiple of shorter object length
+```
+
+n = 32, of which 29 rows have a nonzero weight. The same holds for
+glm(am ~ wt, family = binomial, weights = w).
 
 ## What happens
 
-1. HC0 and HC1. bread(fit) is scaled by nobs(fit) = 29 (bread = 29 * solve(X'WX)),
-   while sandwich() divides by NROW(estfun(fit)) = 32 and meatHC(fit, "HC0") is
-   crossprod(estfun(fit)) / 32. So vcovHC(fit, "HC0") = (29/32)^2 * V, where V is
-   both vcovHC(refit, "HC0") and the hand-computed sandwich on the weighted fit
-   (bread = solve(X'WX), meat = sum of (w_i e_i)^2 x_i x_i'). The HC0 standard
-   errors are 29/32 = 0.90625 times the correct ones, for lm and for glm. No
-   warning. HC1 carries a similar factor (0.8125 for lm, 0.815625 for glm).
+1. HC0 and HC1. bread.lm() scales by sum(summary(fit)$df[1:2]) = 29
+   (bread(fit) = 29 * solve(X'WX)), while sandwich() divides by
+   NROW(estfun(fit)) = 32 and meatHC(fit, "HC0") is crossprod(estfun(fit)) / 32.
+   So vcovHC(fit, "HC0") = (29/32)^2 * V, where V is both vcovHC(refit, "HC0")
+   and the sandwich computed by hand on the weighted fit (bread = solve(X'WX),
+   meat = sum of (w_i e_i)^2 x_i x_i'). The HC0 standard errors are
+   29/32 = 0.90625 times the correct ones, for lm and for glm, with no warning.
+   HC1 has no warning either: its covariance is 29(29 - p) / (32(32 - p)) times
+   that of the refit, 0.8125 for the lm (SE ratio 0.9014) and 0.815625 for the
+   glm (SE ratio 0.9031).
 
 2. HC2, HC3, HC4, HC4m, HC5. lm.influence() drops zero-weight cases, so
-   hatvalues(fit) has 29 elements against 32 residuals. The omega formula
-   (residuals^2 / (1 - diaghat)^k) recycles and raises "longer object length is
-   not a multiple of shorter object length". The matrices are wrong and no
-   rescaling fixes them: for lm, HC3 SEs are 2.060 / 0.691 / 0.00675 against
-   2.175 / 0.757 / 0.00937 on the refit; HC4 differs by a factor up to 4.2 in
-   a cell.
+   hatvalues(fit) has 29 elements against 32 residuals. The omega formula in
+   meatHC() (residuals^2 / (1 - diaghat)^2 for HC3) recycles the hat values, and
+   base R warns "longer object length is not a multiple of shorter object
+   length". The SE ratio then varies across coefficients, so no scalar
+   rescaling repairs the matrix. For the lm under HC4 the largest relative
+   difference in a covariance cell, |V_fit - V_refit| / |V_refit|, is 4.2.
 
-3. type = "const" differs from the refit too (no warning).
+3. type = "const" also differs from the refit, with no warning (SE ratios
+   0.924, 0.880, 0.869 for the lm).
 
 ## Documentation
 
-?vcovHC, ?sandwich, ?meat, ?bread and ?estfun say nothing about zero weights.
-?lm.influence states that cases with weights == 0 are dropped; ?lm.summaries
-states that zero weight cases are never omitted from residuals(). The two
-conventions meet inside meatHC().
+?vcovHC, ?sandwich, ?meat, ?bread and ?estfun have no sentence containing
+"zero" or "weight". ?lm.influence states that cases with weights == 0 are
+dropped; ?lm.summaries states that zero weight cases are never omitted from
+residuals(). The two conventions meet in meatHC().
 
 ## Numbers
 
@@ -59,8 +89,5 @@ HC3 standard errors, zero-weight fit / refit:
 lm  (Intercept) 2.060051 / 2.175129, wt 0.6907419 / 0.7574538, hp 0.006747945 / 0.009374003
 glm (Intercept) 4.918682 / 5.699328, wt 1.543135 / 1.771190
 
-Full tables for HC2, HC4, HC4m, HC5, HC1 and const: findings.txt and repro.log.
-
-## Minimal script
-
-repro.R in this folder (Sys.setLanguage("en"), mtcars, sandwich only).
+The attached repro.R (base R and sandwich only) prints every type for both
+models, with the hand-computed HC0; repro.log is its output.
