@@ -781,6 +781,16 @@ test_that("the note opens with the sample size, the rows of the data", {
     note(weights = w, p_value = FALSE),
     "Note. N = 7 (unweighted). Statistics weighted by w."
   ))
+  # So does a row of zero weight, which is in no n either.
+  d0 <- d
+  d0$w[c(1L, 4L)] <- 0
+  x0 <- table_outcome(d0, y, g, weights = w, p_value = FALSE)
+  expect_true(startsWith(
+    attr(x0, "note"),
+    "Note. N = 5 (unweighted). Statistics weighted by w."
+  ))
+  # The Overall n: the rows of positive weight with an observed outcome.
+  expect_identical(x0$n[x0$.row_role == "summary"], 4L)
   withr::local_options(spicy.language = "fr")
   expect_true(startsWith(note(), "Note. N = 8. Valeurs manquantes"))
   expect_true(startsWith(

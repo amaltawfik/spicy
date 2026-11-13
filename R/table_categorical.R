@@ -1557,8 +1557,9 @@
 #' missing `by` under `drop_na = TRUE` and a row with a missing weight
 #' leave the table and are not counted; the note says how many. Under
 #' `weights` the cells hold weighted counts and N counts rows: "N = 60
-#' (unweighted).". One N per table, the missing values of a variable in
-#' its `"(Missing)"` row or in the note. With `by`, the direction of the
+#' (unweighted).", a row of zero weight left out, as [stats::nobs()]
+#' leaves it out of a weighted fit. One N per table, the missing values of
+#' a variable in its `"(Missing)"` row or in the note. With `by`, the direction of the
 #' percentages follows, then the weights. Their base takes no sentence:
 #' the table shows it (see `percent_base`).
 #'
@@ -2356,8 +2357,9 @@ table_categorical <- function(
   }
   # The sample size, the first sentence of the note (decision of
   # 2026-10-28, dev/decisions/2026-10-28-note-effectif.md): the rows of the
-  # data the table describes, less those a missing weight takes out of the
-  # table, and under `by` the rows of each group column, in column order
+  # data the table describes, less those a missing or zero weight takes out
+  # of the table (counted as `nobs()` counts a weighted fit), and under
+  # `by` the rows of each group column, in column order
   # and under the label its spanner shows, the column of missing `by`
   # values included, so that the n add up to N. Under `drop_na = TRUE` a
   # row missing `by` leaves every variable and is not in N (the
@@ -2366,11 +2368,7 @@ table_categorical <- function(
   # never weights, so a weighted table says N is unweighted. `size_groups`,
   # `missing_group` and `g_fac` are read when the note is built.
   build_size_note <- function() {
-    rows_in <- if (is.null(weights_vec)) {
-      rep(TRUE, nrow(data))
-    } else {
-      !is.na(weights_vec)
-    }
+    rows_in <- .weighted_rows_in(weights_vec, nrow(data))
     weighted <- !is.null(weights_vec)
     if (!has_group) {
       return(.sample_size_sentence(sum(rows_in), weighted = weighted))

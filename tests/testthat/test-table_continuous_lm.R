@@ -5334,6 +5334,34 @@ test_that("NA weights are excluded from the analytic sample as documented", {
   )
 })
 
+test_that("a row of zero weight is in no n and not in N, as in nobs()", {
+  skip_on_cran()
+  d <- data.frame(
+    y = c(3, 5, 2, 8, 6, 7, 4, 9, 1, 10),
+    grp = factor(rep(c("a", "b"), 5)),
+    x = c(1, 4, 2, 5, 3, 7, 2, 6, 1, 8),
+    w = c(1, 2, 0, 1, 0, 2, 1, NA, 1, 1)
+  )
+  fit <- stats::lm(y ~ grp, data = d, weights = w)
+  out <- table_continuous_lm(d, select = y, by = grp, weights = w)
+  expect_equal(as.data.frame(out)$n, stats::nobs(fit))
+  expect_equal(broom::glance(out)$nobs, stats::nobs(fit))
+  expect_true(startsWith(
+    attr(out, "note"),
+    "Note. N = 7 (unweighted): a (n = 3), b (n = 4). "
+  ))
+  # A numeric `by`, and a weighted n that does not move.
+  num <- table_continuous_lm(
+    d,
+    select = y,
+    by = x,
+    weights = w,
+    show_weighted_n = TRUE
+  )
+  expect_equal(as.data.frame(num)$n, 7)
+  expect_equal(as.data.frame(num)[["Weighted n"]], sum(d$w, na.rm = TRUE))
+})
+
 test_that("rows dropped for missing by / weights are disclosed in the note", {
   skip_on_cran()
   # Audit phase 2, findings 14 + 32: the family ledger convention.

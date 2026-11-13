@@ -7608,6 +7608,31 @@ test_that("a weighted table gives its unweighted N, rows with a weight", {
       sum(d$g == "Men")
     )
   )
+  # A row of zero weight is in no cell, so it is not in N either, as
+  # nobs() counts a weighted fit; the weighted counts do not move.
+  d0 <- d
+  d0$w[d0$g == "Men"][1:2] <- 0
+  d0$w[d0$g == "Women"][1] <- 0
+  expect_identical(
+    .ss_by(d0, y, by = g, weights = w),
+    sprintf(
+      paste(
+        "Note. N = 57 (unweighted): Women (n = %d), Men (n = %d).",
+        "Percentages are column percentages. Statistics weighted by w."
+      ),
+      sum(d$g == "Women") - 1L,
+      sum(d$g == "Men") - 2L
+    )
+  )
+  expect_identical(
+    .ss_note(table_categorical(d0, y, weights = w)),
+    "Note. N = 57 (unweighted). Statistics weighted by w."
+  )
+  kept <- d0[d0$w > 0, ]
+  expect_identical(
+    table_categorical(d0, y, by = g, weights = w, output = "long")$n,
+    table_categorical(kept, y, by = g, weights = w, output = "long")$n
+  )
   # A row with no weight leaves the table, and N with it.
   d$w[d$g == "Men"][1:3] <- NA
   expect_identical(

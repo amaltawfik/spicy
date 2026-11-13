@@ -5029,6 +5029,31 @@ test_that("the note opens with the sample size, the groups adding up to it", {
   ))
 })
 
+test_that("a row of zero weight is in no n and not in N", {
+  skip_on_cran()
+  d <- data.frame(
+    g = rep(c("A", "B"), 5),
+    x = c(3, 5, 2, 8, 6, 7, 4, 9, 1, 10),
+    w = c(1, 2, 0, 1, 0, 2, 1, NA, 1, 1)
+  )
+  x <- table_continuous(d, x, by = g, weights = w, p_value = FALSE)
+  expect_true(startsWith(
+    attr(x, "note"),
+    "Note. N = 7 (unweighted): A (n = 3), B (n = 4). "
+  ))
+  expect_equal(as.data.frame(x)$n, c(3, 4))
+  # The weighted statistics are those of the rows of positive weight.
+  kept <- d[!is.na(d$w) & d$w > 0, ]
+  expect_equal(
+    x$mean,
+    table_continuous(kept, x, by = g, weights = w, p_value = FALSE)$mean
+  )
+  expect_true(startsWith(
+    attr(table_continuous(d, x, weights = w), "note"),
+    "Note. N = 7 (unweighted). "
+  ))
+})
+
 test_that("an effect size shown alone names the test it belongs to", {
   skip_on_cran()
   d <- data.frame(

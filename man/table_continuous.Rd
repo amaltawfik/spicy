@@ -502,7 +502,8 @@ The note opens with the sample size, as in \code{\link[=table_categorical]{table
 rows the table describes and those of each group (the group of missing
 \code{by} values included), a row missing \code{by} under \code{drop_na = TRUE} or a
 weight left out, rows rather than weights under \code{weights}
-("N = 60 (unweighted)."), the complete cases of each variable in its n
+("N = 60 (unweighted)."), a row of zero weight left out as it is left
+out of every statistic, the complete cases of each variable in its n
 column.
 
 The missing-value disclosure (values excluded from the summaries,

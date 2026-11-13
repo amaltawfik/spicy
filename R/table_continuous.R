@@ -410,7 +410,8 @@
 #' rows the table describes and those of each group (the group of missing
 #' `by` values included), a row missing `by` under `drop_na = TRUE` or a
 #' weight left out, rows rather than weights under `weights`
-#' ("N = 60 (unweighted)."), the complete cases of each variable in its n
+#' ("N = 60 (unweighted)."), a row of zero weight left out as it is left
+#' out of every statistic, the complete cases of each variable in its n
 #' column.
 #'
 #' The missing-value disclosure (values excluded from the summaries,
@@ -1275,7 +1276,8 @@ table_continuous <- function(
   # The sample size, the first sentence of the note, as in
   # table_categorical() (decision (c) of
   # dev/decisions/2026-10-28-note-effectif.md): the rows of the data the
-  # table describes, less those a missing weight takes out of it, and under
+  # table describes, less those a missing or zero weight takes out of it
+  # (as they leave the n column), and under
   # `by` the rows of each group, in table order and under the label the
   # rows show, the group of missing `by` values of `drop_na = FALSE`
   # included, so that the n add up to N. Under `drop_na = TRUE` a row
@@ -1284,11 +1286,7 @@ table_continuous <- function(
   # are in its n column. `groups` and `group_levels` are read when the note
   # is built.
   build_size_note <- function() {
-    rows_in <- if (is.null(weights_vec)) {
-      rep(TRUE, nrow(data))
-    } else {
-      !is.na(weights_vec)
-    }
+    rows_in <- .weighted_rows_in(weights_vec, nrow(data))
     weighted <- !is.null(weights_vec)
     if (!has_group) {
       return(.sample_size_sentence(sum(rows_in), weighted = weighted))

@@ -743,7 +743,8 @@
 #' (see e.g. [cobalt::bal.tab()]).
 #'
 #' The `n` column always reports the unweighted analytic sample size for
-#' each outcome. When `show_weighted_n = TRUE`, an additional
+#' each outcome, the rows of the fit: a row of zero weight is not one, as
+#' [stats::nobs()] counts it. When `show_weighted_n = TRUE`, an additional
 #' `Weighted n` column reports the sum of case weights in the same
 #' analytic sample.
 #'
@@ -771,8 +772,8 @@
 #' The note opens with the sample size, as in [table_categorical()]:
 #' "N = 159." for a numeric `by`,
 #' "N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
-#' rows with a `by` value, a row with a missing weight left out, rows
-#' rather than weights under `weights` ("N = 60 (unweighted)."), the
+#' rows with a `by` value, a row with a missing or zero weight left out,
+#' rows rather than weights under `weights` ("N = 60 (unweighted)."), the
 #' complete cases of each model in its n column.
 #'
 #' When `covariates` is non-empty, the note then names the covariates and
@@ -1839,15 +1840,14 @@ table_continuous_lm <- function(
   # The sample size, the first sentence of the note, as in the
   # descriptive tables (decision (c) of
   # dev/decisions/2026-10-28-note-effectif.md): the rows of the data with
-  # a `by` value, less those a missing weight takes out of the table, and
+  # a `by` value, less those a missing or zero weight takes out of the
+  # table (a zero weight is out of the fit, as `nobs()` says), and
   # under a categorical `by` the rows of each group, in the order and
   # under the labels of the mean columns, so that the n add up to N. The
   # complete cases of each model are in its n column and the
   # missing-values sentence. A numeric `by` has no groups.
-  size_rows <- !is.na(by_vector)
-  if (!is.null(weights_vec)) {
-    size_rows <- size_rows & !is.na(weights_vec)
-  }
+  size_rows <- !is.na(by_vector) &
+    .weighted_rows_in(weights_vec, length(by_vector))
   sample_size <- if (is.null(by_levels)) {
     .sample_size_sentence(sum(size_rows), weighted = !is.null(weights_vec))
   } else {
@@ -2253,7 +2253,7 @@ no_inference_lm_rows <- function(
     out$adj_r2[[1L]] <- 1
   }
   out$es_type[1L] <- pick_es_type_lm(effect_size)
-  out$n <- length(y)
+  out$n <- .tclm_nobs(y, weights)
   out$weighted_n <- if (is.null(weights)) NA_real_ else sum(weights)
   if (categorical) {
     out <- .tclm_expand_levels(out, by_levels %||% levels(x))
@@ -2463,7 +2463,7 @@ fit_numeric_predictor_lm_rows <- function(
     es_ci_upper = es_ci[2],
     r2 = model_stats$r2,
     adj_r2 = model_stats$adj_r2,
-    n = length(y),
+    n = .tclm_nobs(y, weights),
     weighted_n = if (is.null(weights)) NA_real_ else sum(weights),
     # Valid bootstrap replicate count (NA outside vcov = "bootstrap"):
     # surfaces in the table note, mirroring table_regression's
@@ -2781,7 +2781,7 @@ fit_categorical_predictor_lm_rows <- function(
     es_ci_upper = c(es_ci[2], rep(NA_real_, length(levs) - 1L)),
     r2 = c(model_stats$r2, rep(NA_real_, length(levs) - 1L)),
     adj_r2 = c(model_stats$adj_r2, rep(NA_real_, length(levs) - 1L)),
-    n = rep(length(y), length(levs)),
+    n = rep(.tclm_nobs(y, weights), length(levs)),
     weighted_n = rep(
       if (is.null(weights)) NA_real_ else sum(weights),
       length(levs)
@@ -2921,13 +2921,19 @@ fit_categorical_predictor_lm_rows <- function(
     out$boot_n_valid <- as.integer(attr(vc, "boot_n_valid") %||% NA_integer_)
   }
   out$es_type <- pick_es_type_lm(effect_size)
-  out$n <- length(y)
+  out$n <- .tclm_nobs(y, weights)
   out$weighted_n <- if (is.null(weights)) NA_real_ else sum(weights)
   out <- .tclm_expand_levels(out, by_levels)
   # The reference of the table, as the rows of an outcome with no fit
   # name it: no contrast is estimated.
   out$reference <- by_levels[[1L]]
   out
+}
+
+# The n of a model: its complete cases, less the rows of zero weight, which
+# lm() keeps out of the fit (`nobs()`, the residual degrees of freedom).
+.tclm_nobs <- function(y, weights) {
+  if (is.null(weights)) length(y) else sum(weights > 0)
 }
 
 # The rows of an outcome span the levels of the table (`by_levels`), in

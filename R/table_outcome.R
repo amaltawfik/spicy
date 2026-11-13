@@ -641,9 +641,9 @@ abort_outcome_by_renamed <- function() {
 #'
 #' One note sits under the table. It opens with the sample size, as in
 #' [table_categorical()], "N = 159.": the rows of the data, a row with a
-#' missing weight left out, rows rather than weights under `weights`
-#' ("N = 60 (unweighted)."), the outcome's complete cases in the n of the
-#' `Overall` row. It then states what left the analytic
+#' missing or zero weight left out, rows rather than weights under
+#' `weights` ("N = 60 (unweighted)."), the outcome's complete cases in the
+#' n of the `Overall` row. It then states what left the analytic
 #' sample, which group comparison ran in each block, what the displayed
 #' columns mean, and how the blocks and the `Overall` row are to be
 #' read. The rendering engines carry the same sentence as a table note.
@@ -1298,13 +1298,13 @@ table_outcome <- function(
   table_note <- .outcome_note(
     # The sample size, as in table_continuous() without `by` (decision
     # (c) of dev/decisions/2026-10-28-note-effectif.md): the rows of the
-    # data, less those a missing weight takes out of the table, the only
-    # rows that leave every block. The missing values of the outcome are
-    # its own, in the n column and the missing-values sentence; under
-    # `drop_na = TRUE` each block removes its own, which that sentence
-    # counts block by block.
+    # data, less those a missing or zero weight takes out of the table,
+    # the only rows that leave every block. The missing values of the
+    # outcome are its own, in the n column and the missing-values sentence;
+    # under `drop_na = TRUE` each block removes its own, which that
+    # sentence counts block by block.
     sample_size = .sample_size_sentence(
-      length(outcome_vec) - n_na_weights,
+      sum(.weighted_rows_in(weights_vec, length(outcome_vec))),
       weighted = !is.null(weights_vec)
     ),
     outcome_name = outcome_name,

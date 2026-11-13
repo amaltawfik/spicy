@@ -367,6 +367,17 @@ resolve_variable_labels <- function(data, cols, labels) {
   )
 }
 
+# Internal: the rows a weighted table keeps, for the sample-size sentence:
+# those with a weight that is not missing and not zero, as `nobs()` counts
+# the rows of a weighted fit. A zero weight carries no copy of its row, so
+# the row is in no statistic and in no n. Every row without weights.
+.weighted_rows_in <- function(w, n_rows) {
+  if (is.null(w)) {
+    return(rep(TRUE, n_rows))
+  }
+  !is.na(w) & w > 0
+}
+
 # Internal: the rows of each group of a table, for the sample-size
 # sentence (`.sample_size_sentence()`), named by group. `g` is the group
 # of each row as the table shows it (NA for a row in no group), `levels`

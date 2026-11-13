@@ -572,8 +572,9 @@ of missing \code{by} values included, so that the n add up to N. A row
 missing \code{by} under \code{drop_na = TRUE} and a row with a missing weight
 leave the table and are not counted; the note says how many. Under
 \code{weights} the cells hold weighted counts and N counts rows: "N = 60
-(unweighted).". One N per table, the missing values of a variable in
-its \code{"(Missing)"} row or in the note. With \code{by}, the direction of the
+(unweighted).", a row of zero weight left out, as \code{\link[stats:nobs]{stats::nobs()}}
+leaves it out of a weighted fit. One N per table, the missing values of
+a variable in its \code{"(Missing)"} row or in the note. With \code{by}, the direction of the
 percentages follows, then the weights. Their base takes no sentence:
 the table shows it (see \code{percent_base}).
 

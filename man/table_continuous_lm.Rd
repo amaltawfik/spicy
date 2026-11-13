@@ -882,7 +882,8 @@ balance assessment under the Austin and Stuart (2015) convention
 (see e.g. \code{\link[cobalt:bal.tab]{cobalt::bal.tab()}}).
 
 The \code{n} column always reports the unweighted analytic sample size for
-each outcome. When \code{show_weighted_n = TRUE}, an additional
+each outcome, the rows of the fit: a row of zero weight is not one, as
+\code{\link[stats:nobs]{stats::nobs()}} counts it. When \code{show_weighted_n = TRUE}, an additional
 \verb{Weighted n} column reports the sum of case weights in the same
 analytic sample.
 }
@@ -910,8 +911,8 @@ constant across outcomes).
 The note opens with the sample size, as in \code{\link[=table_categorical]{table_categorical()}}:
 "N = 159." for a numeric \code{by},
 "N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
-rows with a \code{by} value, a row with a missing weight left out, rows
-rather than weights under \code{weights} ("N = 60 (unweighted)."), the
+rows with a \code{by} value, a row with a missing or zero weight left out,
+rows rather than weights under \code{weights} ("N = 60 (unweighted)."), the
 complete cases of each model in its n column.
 
 When \code{covariates} is non-empty, the note then names the covariates and
