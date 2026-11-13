@@ -1266,6 +1266,28 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   )
 }
 
+# A `by` with a level that is the empty string. A group is named over its
+# columns or beside its rows and in the note, and the empty string names
+# nothing: the table printed a column with no header, a note "N = 1200:
+# (n = 620)", and the categorical and survey tables lost the counts of
+# that group or failed, their groups being looked up by name. Refused, as
+# `table_battery(levels = )` refuses an empty level; the levels of a
+# variable are rows, which `freq()` and `table_categorical()` show as they
+# are. A factor's declared levels count, since a declared level is shown.
+.check_grouping_named <- function(x, what, call = rlang::caller_env()) {
+  if (!any(.group_levels(x) == "")) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf("%s has a level that is the empty string.", what),
+      "i" = "A group is named in the header and in the note: recode the empty string to `NA` or to a label."
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
 # The `verbose` message of the continuous tables, one wording for the
 # three of them.
 .inform_ignored_non_numeric <- function(fn, ignored) {

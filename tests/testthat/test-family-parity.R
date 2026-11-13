@@ -5443,3 +5443,42 @@ test_that("no builder rules off a row that holds the word \"Total\"", {
     expect_false(any(grepl("─", out[at - 1L])), info = fn)
   }
 })
+
+test_that("a `by` level that is the empty string is refused across the family", {
+  skip_on_cran()
+  # A group is named in the header and in the note; the empty string
+  # names nothing, and the survey twins failed on it.
+  d <- sochealth
+  d$g <- ifelse(d$sex == "Female", "", "x")
+  d$item <- factor(sochealth$life_sat_health, levels = 1:5)
+  calls <- list(
+    table_categorical = function() table_categorical(d, smoking, by = g),
+    table_continuous = function() table_continuous(d, bmi, by = g),
+    table_continuous_lm = function() table_continuous_lm(d, bmi, by = g),
+    table_multiresponse = function() {
+      table_multiresponse(d, c(info_doctor, info_internet), by = g)
+    },
+    table_battery = function() table_battery(d, item, by = g)
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    calls$table_categorical_svy <- function() {
+      table_categorical_svy(des, smoking, by = g)
+    }
+    calls$table_continuous_svy <- function() {
+      table_continuous_svy(des, bmi, by = g)
+    }
+    calls$table_battery_svy <- function() table_battery_svy(des, item, by = g)
+  }
+  for (fn in names(calls)) {
+    expect_error(calls[[fn]](), class = "spicy_invalid_input", info = fn)
+  }
+  # A numeric `by` of table_continuous_lm() has no level to check.
+  expect_s3_class(
+    table_continuous_lm(d, bmi, by = age),
+    "spicy_continuous_lm_table"
+  )
+})

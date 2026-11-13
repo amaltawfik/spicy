@@ -360,6 +360,7 @@ table_battery_svy <- function(
   n_by_na <- 0L
   if (has_group) {
     g0 <- .group_display(.user_na_to_na(vars[[by_name]]))
+    .check_grouping_named(g0, sprintf("`by` (`%s`)", by_name))
     .check_grouping_observed(
       g0[in_sample],
       sprintf("`by` (`%s`)", by_name),

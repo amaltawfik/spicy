@@ -898,6 +898,10 @@ table_categorical_svy <- function(
       vars[[group_col_name]]
     )
     vars <- design$variables
+    .check_grouping_named(
+      vars[[group_col_name]],
+      sprintf("`by` (`%s`)", group_col_name)
+    )
   }
 
   # --- domains -------------------------------------------------------------

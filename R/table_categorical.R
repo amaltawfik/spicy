@@ -3782,6 +3782,7 @@ table_categorical <- function(
   # A labelled `by` names its groups by their value labels, as the rows
   # of a labelled variable name its levels (`.group_display()`).
   g0 <- .group_display(resolve_user_na(data[[by_name]]))
+  .check_grouping_named(g0, sprintf("`by` (`%s`)", by_name))
   # A `by` no observation holds leaves no group once its missing values
   # are removed, whatever levels a factor declares: refused, as across
   # the family.

@@ -1091,6 +1091,7 @@ table_continuous_svy <- function(
     # rows of a labelled variable name its levels (`.group_display()`).
     if (identical(nm, group_col_name)) {
       col <- .group_display(col)
+      .check_grouping_named(col, sprintf("`by` (`%s`)", group_col_name))
     }
     design$variables[[nm]] <- col
     if (n_user > 0L) {

@@ -1459,6 +1459,7 @@ table_continuous <- function(
     # labelled `by` names its groups by their value labels
     # (`.group_display()`).
     groups <- .group_display(resolve_user_na(data[[group_col_name]]))
+    .check_grouping_named(groups, sprintf("`by` (`%s`)", group_col_name))
     n_na_groups <- sum(is.na(groups))
     if (drop_na) {
       .check_grouping_observed(groups, sprintf("`by` (`%s`)", group_col_name))

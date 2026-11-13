@@ -8453,14 +8453,25 @@ test_that("the console groups of `by` follow the display language", {
   expect_identical(names(as.data.frame(x))[5:6], c("Female n", "Female %"))
 })
 
-test_that("a `by` level that is the empty string keeps its full headers", {
+test_that("a `by` level that is the empty string is refused", {
   skip_on_cran()
+  # It showed n = 0 for a group of 620 rows, under no header, and a note
+  # "N = 1200:  (n = 620)": cross_tab() renames the column of an empty
+  # level, so its counts were never found.
   d <- sochealth
   d$g <- ifelse(d$sex == "Female", "", "x")
-  out <- withr::with_options(
-    list(width = 120),
-    capture.output(print(table_categorical(d, select = smoking, by = g)))
+  expect_error(
+    table_categorical(d, select = smoking, by = g),
+    class = "spicy_invalid_input"
   )
-  h <- .cat_header_rows(out)
-  expect_match(h$spanner, "^ +x +Total +$")
+  # A declared level counts, used or not: it would head a column.
+  d$f <- factor(d$g, levels = c("x", "", "y"))
+  expect_error(
+    table_categorical(d, select = smoking, by = f),
+    class = "spicy_invalid_input"
+  )
+  # The levels of a variable are rows, shown as they are, counts included.
+  d$s <- ifelse(d$smoking %in% "Yes", "", as.character(d$smoking))
+  x <- table_categorical(d, select = s, by = sex, output = "long")
+  expect_equal(sum(x$n[x$level %in% "" & !x$total]), 249)
 })

@@ -1348,6 +1348,9 @@ table_continuous_lm <- function(
       class = "spicy_invalid_input"
     )
   }
+  if (!is.numeric(by_vector)) {
+    .check_grouping_named(by_vector, sprintf("`by` (`%s`)", by_name))
+  }
   # A categorical `by` needs at least two observed groups: with a
   # single observed level there is nothing to compare and every fit
   # would degenerate to an all-NA row. Fail up front with the reason
