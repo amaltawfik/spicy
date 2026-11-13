@@ -4228,7 +4228,8 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "nobs"
+      "nobs",
+      "weighted_nobs"
     )
   )
   expect_equal(unique(gl$es_type), "eta2")
@@ -4891,7 +4892,8 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "nobs"
+      "nobs",
+      "weighted_nobs"
     )
   )
 })

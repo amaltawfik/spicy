@@ -40,7 +40,8 @@ p-value is what \code{glance()} is for.
 \code{glance()} returns one row per variable: \code{variable}, \code{label},
 \code{n_levels}, \code{test_type} (the \code{svychisq()} statistic of the test,
 \code{chisq_statistic}; \code{NA} where no test ran), \code{p.value}, \code{degf} (the
-design's own), \code{nobs}, \code{weighted_nobs}.
+design's own), \code{nobs} (the observed rows of the variable, a row of zero
+weight left out), \code{weighted_nobs} (the sum of their sampling weights).
 
 \code{n_levels} counts the levels the TABLE displays, so a \code{(Missing)}
 display level counts; the test behind \code{p.value} runs on the complete

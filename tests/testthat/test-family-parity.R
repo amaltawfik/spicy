@@ -5482,3 +5482,77 @@ test_that("a `by` level that is the empty string is refused across the family", 
     "spicy_continuous_lm_table"
   )
 })
+
+test_that("glance() counts rows in `nobs` and their weights in `weighted_nobs`", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  # ?spicy: `nobs` the observations, `weighted_nobs` their weighted count.
+  # Rows, never weights, and a row of zero weight is in neither, as in the
+  # N of the note: the glance() of a weighted table gives the `nobs` of the
+  # unweighted table of its rows of positive weight.
+  d <- sochealth
+  d$weight[c(2L, 7L, 40L)] <- 0
+  d$weight[9L] <- NA
+  d$item <- factor(sochealth$life_sat_health, levels = 1:5)
+  kept <- d[!is.na(d$weight) & d$weight > 0, ]
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  builders <- list(
+    table_categorical = function(x, ...) {
+      table_categorical(x, c(smoking, education), by = sex, ...)
+    },
+    table_continuous = function(x, ...) {
+      table_continuous(x, c(bmi, age), by = sex, p_value = FALSE, ...)
+    },
+    table_continuous_lm = function(x, ...) {
+      table_continuous_lm(x, bmi, by = sex, ...)
+    },
+    table_outcome = function(x, ...) {
+      table_outcome(x, bmi, select = c(sex, smoking), p_value = FALSE, ...)
+    },
+    table_battery = function(x, ...) table_battery(x, item, by = sex, ...)
+  )
+  for (fn in names(builders)) {
+    b <- builders[[fn]]
+    gw <- broom::glance(q(b(d, weights = weight)))
+    gu <- broom::glance(q(b(kept)))
+    expect_true(all(c("nobs", "weighted_nobs") %in% names(gw)), info = fn)
+    expect_identical(names(gw), names(gu), info = fn)
+    expect_type(gw$nobs, "integer")
+    expect_identical(gw$nobs, gu$nobs, info = fn)
+    expect_true(all(is.na(gu$weighted_nobs)), info = fn)
+  }
+  # The sum of the weights of the rows of the first variable (all of them
+  # in table_categorical(), whose `(Missing)` row counts).
+  wsum <- function(v) sum(kept$weight[!is.na(kept[[v]])])
+  for (fn in names(builders)) {
+    gw <- broom::glance(q(builders[[fn]](d, weights = weight)))
+    v <- switch(fn, table_categorical = "sex", table_battery = "item", "bmi")
+    expect_equal(gw$weighted_nobs[[1L]], wsum(v), info = fn)
+  }
+  skip_if_not_installed("survey", "4.5")
+  # Under a design, the rows of non-zero weight and their sampling weights.
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = kept)
+  des0 <- survey::svydesign(
+    ids = ~1,
+    weights = ~weight,
+    data = d[!is.na(d$weight), ]
+  )
+  svy <- list(
+    table_categorical_svy = function(x) {
+      table_categorical_svy(x, c(smoking, education), by = sex)
+    },
+    table_continuous_svy = function(x) {
+      table_continuous_svy(x, c(bmi, age), by = sex)
+    },
+    table_battery_svy = function(x) table_battery_svy(x, item, by = sex)
+  )
+  for (fn in names(svy)) {
+    g0 <- broom::glance(q(svy[[fn]](des0)))
+    g1 <- broom::glance(q(svy[[fn]](des)))
+    expect_identical(as.integer(g0$nobs), as.integer(g1$nobs), info = fn)
+    expect_equal(g0$weighted_nobs, g1$weighted_nobs, info = fn)
+  }
+  # A variable with missing values sums the weights of its own rows.
+  g <- broom::glance(table_categorical_svy(des, smoking, drop_na = TRUE))
+  expect_equal(g$weighted_nobs, sum(kept$weight[!is.na(kept$smoking)]))
+})

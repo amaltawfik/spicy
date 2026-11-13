@@ -477,12 +477,14 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' [table_categorical()]), `statistic` (the chi-squared, Pearson's or the
 #' N-1, `NA` for an exact test), `df`, `p.value`, `es_type` (the key of
 #' the measure the variable carries: `"phi"`, `"cramer_v"`, ...),
-#' `es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, and
+#' `es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`,
 #' `nobs` (the observations of the variable, the margin and the Total
-#' row not counted twice). Without `by`, only `variable`, `label` and `nobs` are
-#' populated; the other columns are `NA`. The interval bounds are `NA`
-#' unless the table was built with `assoc_ci = TRUE`, and the SMD columns
-#' unless it was built with `smd = TRUE`.
+#' row not counted twice: rows, never weights, a row of zero weight left
+#' out) and `weighted_nobs` (their weighted count, `NA` without
+#' `weights`). Without `by`, only `variable`, `label`, `nobs` and
+#' `weighted_nobs` are populated; the other columns are `NA`. The interval
+#' bounds are `NA` unless the table was built with `assoc_ci = TRUE`, and
+#' the SMD columns unless it was built with `smd = TRUE`.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -644,10 +646,23 @@ glance.spicy_categorical_table <- function(x, ...) {
       if (".row_role" %in% names(b)) {
         b <- b[!b$.row_role %in% "total", , drop = FALSE]
       }
-      as.integer(round(sum(b$n, na.rm = TRUE)))
+      sum(b$n, na.rm = TRUE)
     },
-    integer(1)
+    numeric(1)
   )
+  # `nobs` counts rows and `weighted_nobs` sums their weights, as in the
+  # glance() of `table_continuous_lm()`. Under `weights` the counts above
+  # are weighted, so the rows come from the table: those of the variable's
+  # cells with a weight that is neither missing nor zero.
+  rows_w <- attr(x, "nobs", exact = TRUE)
+  if (is.null(rows_w)) {
+    weighted_nobs <- rep(NA_real_, length(keys))
+  } else {
+    weighted_nobs <- unname(n_total)
+    n_total <- rows_w[keys]
+    n_total[is.na(n_total)] <- 0L
+  }
+  n_total <- as.integer(round(n_total))
 
   pick_first <- function(b, col) {
     if (col %in% names(b) && nrow(b) > 0L) b[[col]][1] else NA
@@ -731,6 +746,7 @@ glance.spicy_categorical_table <- function(x, ...) {
       rep(NA_real_, length(keys))
     },
     nobs = unname(n_total),
+    weighted_nobs = weighted_nobs,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )

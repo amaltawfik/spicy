@@ -3042,7 +3042,8 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "nobs"
+      "nobs",
+      "weighted_nobs"
     )
   )
   expect_equal(nrow(gl), 2L)
@@ -5181,7 +5182,8 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "nobs"
+      "nobs",
+      "weighted_nobs"
     )
   )
 })
@@ -7656,6 +7658,48 @@ test_that("a weighted table gives its unweighted N, rows with a weight", {
     .ss_note(table_categorical(d, y, weights = w)),
     "Note. N = 57 (non pond\u00e9r\u00e9). "
   ))
+})
+
+test_that("glance() counts rows under weights, and sums their weights apart", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  d <- .ss_data()
+  d$w[c(1L, 2L, 30L)] <- 0
+  d$w[5L] <- NA
+  kept <- d[!is.na(d$w) & d$w > 0, ]
+  q <- function(e) suppressWarnings(e)
+  for (args in list(
+    list(select = quote(c(x, y))),
+    list(select = quote(c(x, y)), drop_na = TRUE),
+    list(select = quote(c(x, y)), by = quote(g_na)),
+    list(select = quote(c(x, y)), by = quote(g_na), drop_na = TRUE),
+    list(select = quote(c(x, y)), by = quote(g), levels_keep = c("yes", "hi"))
+  )) {
+    gw <- broom::glance(q(do.call(
+      table_categorical,
+      c(list(d), args, list(weights = quote(w)))
+    )))
+    # The rows of the unweighted table of the rows of positive weight.
+    gu <- broom::glance(q(do.call(table_categorical, c(list(kept), args))))
+    expect_identical(gw$nobs, gu$nobs)
+    # Their weighted count, the sum of the weighted counts of the cells.
+    lw <- q(do.call(
+      table_categorical,
+      c(list(d), args, list(weights = quote(w), output = "long"))
+    ))
+    if (!is.null(lw$total)) {
+      lw <- lw[!lw$total, ]
+    }
+    expect_equal(
+      gw$weighted_nobs,
+      as.numeric(tapply(lw$n, lw$variable, sum, na.rm = TRUE)[gw$variable])
+    )
+    expect_true(all(is.na(gu$weighted_nobs)))
+  }
+  # Without `by`, the N of the note.
+  gw <- broom::glance(table_categorical(d, y, weights = w))
+  expect_identical(gw$nobs, nrow(kept))
+  expect_equal(gw$weighted_nobs, sum(kept$w))
 })
 
 test_that("the sample size goes with the note the table builds", {

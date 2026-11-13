@@ -515,10 +515,15 @@ table_battery <- function(
   # ---- counts: one matrix per item, blocks by levels ------------------------
   counts <- array(0, dim = c(nb, n_items, n_levels))
   miss <- matrix(0, nb, n_items)
+  # The rows of each item's base, for the `nobs` of glance(): rows, never
+  # weights, a row of zero weight left out, as in the N of the family.
+  rows_in <- .weighted_rows_in(weights_vec, n_rows) & !is.na(gi)
+  base_rows <- integer(n_items)
   for (j in seq_len(n_items)) {
     answers <- items$answers[[j]]
     li <- match(answers, shown)
     na_j <- is.na(answers)
+    base_rows[[j]] <- sum(rows_in & (!is.na(li) | (!drop_na & na_j)))
     for (b in seq_len(nb)) {
       in_b <- gi %in% b
       counts[b, j, ] <- vapply(
@@ -685,6 +690,9 @@ table_battery <- function(
     word_path = word_path,
     by_name = by_name,
     by_note = by_note,
+    nobs = if (!is.null(weights_vec)) {
+      data.frame(nobs = base_rows, weighted_nobs = colSums(base))
+    },
     class = "spicy_battery_table"
   )
 }
@@ -698,6 +706,9 @@ table_battery <- function(
 # from here. The arrays are blocks by items (by levels), in the order of
 # `items`; `ord` is the order of the rows, and `item_df` holds the tests
 # already in that order. `tested`: the tests ran and the `p` column shows.
+# `nobs`, one row per item in the order of `items`: the rows of its base
+# (`nobs`) and their weighted count (`weighted_nobs`), for glance(); NULL
+# when the counts of the table are rows.
 .bat_render <- function(
   items,
   item_labels,
@@ -733,7 +744,8 @@ table_battery <- function(
   word_path,
   by_name,
   by_note,
-  class
+  class,
+  nobs = NULL
 ) {
   cols <- .bat_columns(
     blocks,
@@ -850,6 +862,10 @@ table_battery <- function(
   attr(out, "title") <- title_txt
   attr(out, "note") <- note_txt
   attr(out, "long_data") <- long
+  if (!is.null(nobs)) {
+    rownames(nobs) <- items
+    attr(out, "nobs") <- nobs[ord, , drop = FALSE]
+  }
   attr(out, "items") <- items[ord]
   attr(out, "group_var") <- by_name
   attr(out, "group_label") <- by_note

@@ -42,7 +42,9 @@ frame. The schema reads without knowing which function produced it.
 block's own comparison. Columns: \code{outcome}, \code{variable}, \code{label},
 \code{n_levels}, \code{test_type}, \code{statistic}, \code{df}, \code{df.residual},
 \code{p.value}, \code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper},
-\code{nobs}. Index by NAME rather than by position.
+\code{nobs} (the rows of the block's levels, a row of zero weight left
+out), \code{weighted_nobs} (the sum of their weights, \code{NA} without
+\code{weights}). Index by NAME rather than by position.
 
 \code{n_levels} counts the levels the TABLE displays, so a missing-value
 display level counts; the comparison behind \code{test_type} runs on the

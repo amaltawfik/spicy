@@ -115,7 +115,7 @@ the long output of a descriptive table names each statistic it holds
    the p-value, and the raw one under \code{p_adjust} \tab \code{p.value}, \code{p_unadjusted} \cr
    the effect size: its measure, value and interval \tab \code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} \cr
    the standardized mean difference \tab \code{smd_type}, \code{smd_value} \cr
-   the observations of a variable or of a model, and their weighted count \tab \code{nobs}, \code{weighted_nobs} \cr
+   the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count \tab \code{nobs}, \code{weighted_nobs} \cr
    the weighted count of a group (beside its \code{n}) \tab \code{weighted_n} \cr
    the counts of the groups of \code{by}, of the categories of a variable \tab \code{n_groups}, \code{n_levels} \cr
    the fit of a model \tab \code{r.squared}, \code{adj.r.squared} as columns; as a row, its \code{show_fit_stats} token in \code{variable} (\code{r2}, \code{adj_r2}, \code{aic}, ...) \cr

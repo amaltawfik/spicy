@@ -277,7 +277,9 @@ as_tibble.spicy_outcome_table <- function(x, ...) {
 #' block's own comparison. Columns: `outcome`, `variable`, `label`,
 #' `n_levels`, `test_type`, `statistic`, `df`, `df.residual`,
 #' `p.value`, `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`,
-#' `nobs`. Index by NAME rather than by position.
+#' `nobs` (the rows of the block's levels, a row of zero weight left
+#' out), `weighted_nobs` (the sum of their weights, `NA` without
+#' `weights`). Index by NAME rather than by position.
 #'
 #' `n_levels` counts the levels the TABLE displays, so a missing-value
 #' display level counts; the comparison behind `test_type` runs on the
@@ -346,6 +348,17 @@ glance.spicy_outcome_table <- function(x, ...) {
     integer(1),
     USE.NAMES = FALSE
   )
+  # The sum of the weights of those rows, as in the glance() of
+  # `table_continuous_lm()`: NA without `weights`.
+  weighted_nobs <- vapply(
+    headers$variable,
+    function(v) {
+      wn <- lvl$weighted_n[lvl$variable == v]
+      if (is.null(wn) || all(is.na(wn))) NA_real_ else sum(wn, na.rm = TRUE)
+    },
+    numeric(1),
+    USE.NAMES = FALSE
+  )
   # The test columns may be absent from the frame (`p_value = FALSE`
   # drops the p-value, and the rest when nothing ran the test); the
   # summary keeps its fixed schema, NA there.
@@ -367,6 +380,7 @@ glance.spicy_outcome_table <- function(x, ...) {
     es_ci_lower = headers$es_ci_lower,
     es_ci_upper = headers$es_ci_upper,
     nobs = nobs,
+    weighted_nobs = weighted_nobs,
     stringsAsFactors = FALSE,
     check.names = FALSE
   ))

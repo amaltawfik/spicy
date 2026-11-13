@@ -615,6 +615,16 @@ table_battery_svy <- function(
   svy_warns$resignal()
   .warn_negative_weights_no_test(test_refused)
   .warn_svy_failures(svy_failures)
+  # The rows of each item's base and the sum of their sampling weights,
+  # for glance(). `gi` is NA outside the sample and outside the groups.
+  sizes <- vapply(
+    answers,
+    function(a) {
+      rows <- !is.na(gi) & (a %in% shown | (!drop_na & is.na(a)))
+      c(sum(rows), sum(w[rows]))
+    },
+    numeric(2)
+  )
 
   .bat_render(
     items = select_names,
@@ -651,6 +661,7 @@ table_battery_svy <- function(
     word_path = word_path,
     by_name = by_name,
     by_note = by_note,
+    nobs = data.frame(nobs = sizes[1L, ], weighted_nobs = sizes[2L, ]),
     class = "spicy_battery_svy_table"
   )
 }

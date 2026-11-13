@@ -365,9 +365,11 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' comparison (when `by` is used), the requested effect size and the
 #' balance diagnostic. Columns: `variable`, `label`, `test_type`,
 #' `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
-#' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs`.
-#' Without `by`, only `variable`, `label`, and `nobs` are populated;
-#' the other columns are `NA`. The schema is fixed: `smd_type` /
+#' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs` (the
+#' rows described, a row of zero weight left out), `weighted_nobs` (the
+#' sum of their weights, `NA` without `weights`).
+#' Without `by`, only `variable`, `label`, `nobs` and `weighted_nobs` are
+#' populated; the other columns are `NA`. The schema is fixed: `smd_type` /
 #' `smd_value` are present whether or not `smd = TRUE`, like every
 #' other comparison column here, and are `NA` when the table carries
 #' no standardized mean difference, as in
@@ -452,6 +454,11 @@ glance.spicy_continuous_table <- function(x, ...) {
   has_es <- "es_value" %in% names(long)
   has_smd <- "smd_value" %in% names(long)
 
+  # `weighted_nobs`, the sum of the weights of the rows `nobs` counts, as
+  # in the glance() of `table_continuous_lm()`: NA without `weights`.
+  if (is.null(long[["weighted_n"]])) {
+    long$weighted_n <- rep(NA_real_, nrow(long))
+  }
   if (has_group) {
     # Sum n across groups for nobs; pick the test / ES from the
     # first row of each variable block (where they were stored).
@@ -461,9 +468,21 @@ glance.spicy_continuous_table <- function(x, ...) {
       function(b) as.integer(sum(b$n, na.rm = TRUE)),
       integer(1)
     )
+    weighted_nobs <- vapply(
+      by_var,
+      function(b) {
+        if (all(is.na(b$weighted_n))) {
+          NA_real_
+        } else {
+          sum(b$weighted_n, na.rm = TRUE)
+        }
+      },
+      numeric(1)
+    )
     first_idx <- !duplicated(long$variable)
     per_outcome <- long[first_idx, , drop = FALSE]
     per_outcome$nobs <- nobs[per_outcome$variable]
+    per_outcome$weighted_n <- weighted_nobs[per_outcome$variable]
   } else {
     per_outcome <- long
     per_outcome$nobs <- as.integer(per_outcome$n)
@@ -497,6 +516,7 @@ glance.spicy_continuous_table <- function(x, ...) {
     smd_type = if (has_smd) per_outcome$smd_type else NA_character_,
     smd_value = if (has_smd) per_outcome$smd_value else NA_real_,
     nobs = per_outcome$nobs,
+    weighted_nobs = unname(per_outcome$weighted_n),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )

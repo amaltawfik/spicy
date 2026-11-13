@@ -305,7 +305,8 @@ test_that("glance() returns one row per block", {
       "es_value",
       "es_ci_lower",
       "es_ci_upper",
-      "nobs"
+      "nobs",
+      "weighted_nobs"
     )
   )
   expect_identical(nrow(gl), 2L)

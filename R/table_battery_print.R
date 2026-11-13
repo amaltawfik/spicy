@@ -145,9 +145,11 @@ as_tibble.spicy_battery_svy_table <- as_tibble.spicy_battery_table
 #' those of the levels it names.
 #'
 #' `glance()` returns one row per item: `variable`, `label`, `test_type`,
-#' `statistic`, `df`, `p.value`, `p_unadjusted` and `nobs`, the base of
-#' the item summed over the groups (a weighted count under `weights`, as
-#' the `n` column of the table).
+#' `statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, the rows of the
+#' item's base summed over the groups (rows, never weights, a row of zero
+#' weight left out), and `weighted_nobs`, their weighted count (the sum of
+#' the `n` columns under the `weights` of [table_battery()], the sum of the
+#' sampling weights in [table_battery_svy()], `NA` otherwise).
 #'
 #' Both column sets are fixed: a test the table did not run is present and
 #' `NA`. Index by name rather than by position.
@@ -218,6 +220,20 @@ glance.spicy_battery_table <- function(x, ...) {
   long <- .bat_broom_long(x, "glance")
   keys <- unique(long$variable)
   first <- match(keys, long$variable)
+  # Rows and their weighted count: the table records both when its counts
+  # are weighted (`weights`) or its percentages estimated under a design;
+  # otherwise its counts are the rows.
+  sizes <- attr(x, "nobs", exact = TRUE)
+  nobs <- if (is.null(sizes)) {
+    .bat_count(vapply(
+      keys,
+      function(k) sum(long$n[long$variable == k], na.rm = TRUE),
+      numeric(1),
+      USE.NAMES = FALSE
+    ))
+  } else {
+    as.integer(sizes[keys, "nobs"])
+  }
   .as_broom_tbl(data.frame(
     variable = keys,
     label = long$label[first],
@@ -226,12 +242,12 @@ glance.spicy_battery_table <- function(x, ...) {
     df = as.integer(.bat_field(long, "df")[first]),
     p.value = .bat_field(long, "p.value")[first],
     p_unadjusted = .bat_field(long, "p_unadjusted")[first],
-    nobs = .bat_count(vapply(
-      keys,
-      function(k) sum(long$n[long$variable == k], na.rm = TRUE),
-      numeric(1),
-      USE.NAMES = FALSE
-    )),
+    nobs = nobs,
+    weighted_nobs = if (is.null(sizes)) {
+      rep(NA_real_, length(keys))
+    } else {
+      sizes[keys, "weighted_nobs"]
+    },
     stringsAsFactors = FALSE
   ))
 }

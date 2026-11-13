@@ -550,6 +550,14 @@
   list(shown = shown, hidden = setdiff(empty, shown))
 }
 
+# The rows the displayed cells of one variable count, for the `nobs` of
+# glance() under `weights`: those of a level the table shows (`lv_use`, the
+# row of missing values included) whose weight is neither missing nor zero,
+# the rule of the N of the note (`.weighted_rows_in()`).
+.cat_nobs_rows <- function(x, w, lv_use) {
+  sum(.weighted_rows_in(w, length(x)) & as.character(x) %in% lv_use)
+}
+
 # Resolve the user-supplied `assoc_measure` into a named character vector
 # of length(select_names): one resolved measure per row variable. Accepts
 # four input shapes:
@@ -2839,6 +2847,7 @@ table_categorical <- function(
     rows <- list()
     rr <- 1L
     all_level_order <- character(0)
+    nobs_rows <- integer(0)
 
     for (i in seq_along(select_names)) {
       x_raw <- data[[select_names[i]]]
@@ -2988,6 +2997,7 @@ table_categorical <- function(
         .cat_total_row_guard(lv_use, select_names[i], total_label)
       }
       all_level_order <- c(all_level_order, lv_use)
+      nobs_rows[[select_names[i]]] <- .cat_nobs_rows(x, w, lv_use)
       if (valid_base) {
         blank_pct_vars <- c(blank_pct_vars, select_names[i])
       }
@@ -3245,6 +3255,10 @@ table_categorical <- function(
       attr(out, "percent_base") <- percent_base
       # The long frame of `output = "long"`, for tidy() and glance().
       attr(out, "long_data") <- with_keys(with_label(long_raw))
+      # Under `weights`, the rows each variable counts, for glance().
+      if (!is.null(weights_vec)) {
+        attr(out, "nobs") <- nobs_rows
+      }
       attr(out, "structured") <- structured
       # See `.style_stamp()`: the style levers with no argument have to
       # outlive this call, because `inline()` re-formats the typed body
@@ -3910,6 +3924,7 @@ table_categorical <- function(
   rr <- 1L
   measure_col <- NULL
   all_level_order <- character(0)
+  nobs_rows <- integer(0)
   # The test key of each variable shown (NA where none ran), and whether
   # Yates' correction reached it; read by the note after the loop.
   test_types <- character(0)
@@ -4376,6 +4391,7 @@ table_categorical <- function(
       .cat_total_row_guard(lv_use, select_names[i], total_label)
     }
     all_level_order <- c(all_level_order, lv_use)
+    nobs_rows[[select_names[i]]] <- .cat_nobs_rows(x, w, lv_use)
     # For the note: the test of each variable the table shows, and
     # whether Yates' correction reached it (cross_tab() applies it to a
     # tested 2 x 2 table only).
@@ -5138,6 +5154,10 @@ table_categorical <- function(
       long_data$.smd_type <- smd_type_rows
     }
     attr(out, "long_data") <- long_data
+    # Under `weights`, the rows each variable counts, for glance().
+    if (!is.null(weights_vec)) {
+      attr(out, "nobs") <- nobs_rows
+    }
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "abbrev_note") <- abbrev_note
     attr(out, "structured") <- structured

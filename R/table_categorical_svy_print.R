@@ -322,7 +322,8 @@ as_tibble.spicy_categorical_svy_table <- function(x, ...) {
 #' `glance()` returns one row per variable: `variable`, `label`,
 #' `n_levels`, `test_type` (the `svychisq()` statistic of the test,
 #' `chisq_statistic`; `NA` where no test ran), `p.value`, `degf` (the
-#' design's own), `nobs`, `weighted_nobs`.
+#' design's own), `nobs` (the observed rows of the variable, a row of zero
+#' weight left out), `weighted_nobs` (the sum of their sampling weights).
 #'
 #' `n_levels` counts the levels the TABLE displays, so a `(Missing)`
 #' display level counts; the test behind `p.value` runs on the complete
@@ -421,7 +422,15 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
       numeric(1),
       USE.NAMES = FALSE
     ),
-    weighted_nobs = rep(meta$sum_weights %||% NA_real_, length(vars)),
+    # The sum of the sampling weights of those rows: the variable's, not the
+    # design's, which a variable with missing values does not fill.
+    weighted_nobs = unname(
+      (attr(x, "weighted_nobs", exact = TRUE) %||%
+        stats::setNames(
+          rep(meta$sum_weights %||% NA_real_, length(vars)),
+          vars
+        ))[vars]
+    ),
     stringsAsFactors = FALSE,
     check.names = FALSE
   ))

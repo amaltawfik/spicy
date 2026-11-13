@@ -52,12 +52,14 @@ the standardized mean difference: \code{variable}, \code{label}, \code{test_type
 \code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared, Pearson's or the
 N-1, \code{NA} for an exact test), \code{df}, \code{p.value}, \code{es_type} (the key of
 the measure the variable carries: \code{"phi"}, \code{"cramer_v"}, ...),
-\code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, and
+\code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value},
 \code{nobs} (the observations of the variable, the margin and the Total
-row not counted twice). Without \code{by}, only \code{variable}, \code{label} and \code{nobs} are
-populated; the other columns are \code{NA}. The interval bounds are \code{NA}
-unless the table was built with \code{assoc_ci = TRUE}, and the SMD columns
-unless it was built with \code{smd = TRUE}.
+row not counted twice: rows, never weights, a row of zero weight left
+out) and \code{weighted_nobs} (their weighted count, \code{NA} without
+\code{weights}). Without \code{by}, only \code{variable}, \code{label}, \code{nobs} and
+\code{weighted_nobs} are populated; the other columns are \code{NA}. The interval
+bounds are \code{NA} unless the table was built with \code{assoc_ci = TRUE}, and
+the SMD columns unless it was built with \code{smd = TRUE}.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_categorical_table]{as.data.frame.spicy_categorical_table()}} for the raw

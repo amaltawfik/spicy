@@ -890,6 +890,22 @@ test_that("tidy() and glance() read the long output of the design table", {
     gl$nobs,
     as.integer(tapply(long$n, long$variable, sum)[items])
   )
+  # The sum of the sampling weights of the rows of each item's base.
+  v <- des$variables
+  expect_equal(
+    gl$weighted_nobs,
+    vapply(
+      items,
+      function(i) sum(stats::weights(des)[!is.na(v[[i]])]),
+      1,
+      USE.NAMES = FALSE
+    )
+  )
+  # The built design and its missing answers: q1 holds 20 of weight on 9
+  # rows, q2 19 on 8.
+  built <- broom::glance(table_battery_svy(.bsvy_built_design(), c(q1, q2)))
+  expect_identical(built$nobs, c(9L, 8L))
+  expect_equal(built$weighted_nobs, c(20, 19))
   plain <- broom::tidy(table_battery_svy(des, items, show_n = FALSE))
   expect_true(all(is.na(plain$group)) && all(is.na(plain$p.value)))
 })

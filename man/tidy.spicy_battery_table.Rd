@@ -46,9 +46,11 @@ column of \code{top} has no row of its own: its proportion is the sum of
 those of the levels it names.
 
 \code{glance()} returns one row per item: \code{variable}, \code{label}, \code{test_type},
-\code{statistic}, \code{df}, \code{p.value}, \code{p_unadjusted} and \code{nobs}, the base of
-the item summed over the groups (a weighted count under \code{weights}, as
-the \code{n} column of the table).
+\code{statistic}, \code{df}, \code{p.value}, \code{p_unadjusted}, \code{nobs}, the rows of the
+item's base summed over the groups (rows, never weights, a row of zero
+weight left out), and \code{weighted_nobs}, their weighted count (the sum of
+the \code{n} columns under the \code{weights} of \code{\link[=table_battery]{table_battery()}}, the sum of the
+sampling weights in \code{\link[=table_battery_svy]{table_battery_svy()}}, \code{NA} otherwise).
 
 Both column sets are fixed: a test the table did not run is present and
 \code{NA}. Index by name rather than by position.

@@ -332,7 +332,8 @@ test_that("tidy() and glance() read the long output, with and without by", {
     "df",
     "p.value",
     "p_unadjusted",
-    "nobs"
+    "nobs",
+    "weighted_nobs"
   )
   tbl <- .bat_tbl(by = sex)
   long <- .bat_tbl(by = sex, output = "long")
@@ -380,6 +381,53 @@ test_that("tidy() and glance() read the long output, with and without by", {
     broom::tidy(structure(data.frame(), class = "spicy_battery_table")),
     class = "spicy_invalid_data"
   )
+})
+
+test_that("glance() counts rows under weights, and sums their weights apart", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  d <- .bat_sat()
+  d$life_sat_work[1:7] <- NA
+  d$weight[c(2, 10, 11)] <- 0
+  d$weight[12] <- NA
+  tbl <- table_battery(d, tidyselect::all_of(.BAT_ITEMS), weights = weight)
+  gl <- broom::glance(tbl)
+  # The rows of each item's base: an answer, a weight neither 0 nor NA.
+  rows <- !is.na(d$weight) & d$weight > 0
+  expect_identical(
+    gl$nobs,
+    vapply(
+      .BAT_ITEMS,
+      function(v) sum(rows & !is.na(d[[v]])),
+      1L,
+      USE.NAMES = FALSE
+    )
+  )
+  expect_equal(
+    gl$weighted_nobs,
+    vapply(
+      .BAT_ITEMS,
+      function(v) sum(d$weight[rows & !is.na(d[[v]])]),
+      1,
+      USE.NAMES = FALSE
+    )
+  )
+  # The rows of the unweighted table of the rows of positive weight.
+  expect_identical(
+    gl$nobs,
+    broom::glance(table_battery(d[rows, ], tidyselect::all_of(.BAT_ITEMS)))$nobs
+  )
+  # Under `by` and `drop_na = FALSE`, the groups and the missing answers.
+  by_tbl <- table_battery(
+    d,
+    tidyselect::all_of(.BAT_ITEMS),
+    by = sex,
+    drop_na = FALSE,
+    weights = weight
+  )
+  expect_identical(broom::glance(by_tbl)$nobs, rep(sum(rows), 4L))
+  # Without weights, no weighted count.
+  expect_true(all(is.na(broom::glance(.bat_tbl())$weighted_nobs)))
 })
 
 test_that("the default note says what the percentages and the base are", {

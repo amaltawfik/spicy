@@ -109,7 +109,7 @@
 #' | the p-value, and the raw one under `p_adjust` | `p.value`, `p_unadjusted` |
 #' | the effect size: its measure, value and interval | `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper` |
 #' | the standardized mean difference | `smd_type`, `smd_value` |
-#' | the observations of a variable or of a model, and their weighted count | `nobs`, `weighted_nobs` |
+#' | the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count | `nobs`, `weighted_nobs` |
 #' | the weighted count of a group (beside its `n`) | `weighted_n` |
 #' | the counts of the groups of `by`, of the categories of a variable | `n_groups`, `n_levels` |
 #' | the fit of a model | `r.squared`, `adj.r.squared` as columns; as a row, its `show_fit_stats` token in `variable` (`r2`, `adj_r2`, `aic`, ...) |

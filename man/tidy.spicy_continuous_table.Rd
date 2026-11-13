@@ -43,9 +43,11 @@ the columns of \code{\link[=tidy.spicy_continuous_svy_table]{tidy.spicy_continuo
 comparison (when \code{by} is used), the requested effect size and the
 balance diagnostic. Columns: \code{variable}, \code{label}, \code{test_type},
 \code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{es_type}, \code{es_value},
-\code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{nobs}.
-Without \code{by}, only \code{variable}, \code{label}, and \code{nobs} are populated;
-the other columns are \code{NA}. The schema is fixed: \code{smd_type} /
+\code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{nobs} (the
+rows described, a row of zero weight left out), \code{weighted_nobs} (the
+sum of their weights, \code{NA} without \code{weights}).
+Without \code{by}, only \code{variable}, \code{label}, \code{nobs} and \code{weighted_nobs} are
+populated; the other columns are \code{NA}. The schema is fixed: \code{smd_type} /
 \code{smd_value} are present whether or not \code{smd = TRUE}, like every
 other comparison column here, and are \code{NA} when the table carries
 no standardized mean difference, as in
