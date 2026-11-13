@@ -3740,6 +3740,7 @@ test_that("show_columns = \"none\" warns once about the arguments it ignores", {
       exponentiate = TRUE,
       keep = "age",
       ci_level = 0.9,
+      factor_layout = "flat",
       stars = TRUE,
       vcov = "HC3",
       digits = 3L
@@ -3748,7 +3749,7 @@ test_that("show_columns = \"none\" warns once about the arguments it ignores", {
   )
   expect_match(
     conditionMessage(w),
-    "`vcov`, `ci_level`, `exponentiate`, `keep`, `stars` are ignored",
+    "`vcov`, `ci_level`, `exponentiate`, `keep`, `factor_layout`, `stars` are ignored",
     fixed = TRUE
   )
   # Nothing of them reaches the note: no estimator, no stars legend.
@@ -3760,6 +3761,7 @@ test_that("show_columns = \"none\" warns once about the arguments it ignores", {
     show_columns = "none",
     exponentiate = FALSE,
     ci_level = 0.95,
+    factor_layout = "grouped",
     digits = 3L,
     fit_digits = 3L
   ))
