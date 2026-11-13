@@ -162,7 +162,10 @@ group. A statistic another variable displays is
 \item \code{\link[=table_continuous_lm]{table_continuous_lm()}} -- one \code{"summary"} row per outcome.
 Tokens: \code{"emmean"} (a marginal mean; the column says which level
 in \verb{col_meta$<col>$level}, also its \code{display_label}: the table heads
-each mean by its level under the mean symbol), \code{"delta"} (the
+each mean by its level under the mean symbol, which the column
+carries in \verb{col_meta$<col>$spanner_label}, \code{""} when it is emptied;
+\code{spanners} stays empty, the symbol heading a statistic and not a
+group of \code{by}), \code{"delta"} (the
 contrast), \code{"b"} (a numeric predictor's slope), \code{"ci"},
 \code{"statistic"}, \code{"p"}, \code{"r2"}, \code{"es"}, \code{"n"}, \code{"weighted_n"}.
 \item \code{\link[=table_multiresponse]{table_multiresponse()}} -- one \code{"summary"} row per item, then the
