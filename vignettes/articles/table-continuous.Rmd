@@ -410,6 +410,36 @@ table_continuous(
 )
 ```
 
+## Choosing the statistics
+
+`show_columns` chooses the statistics by token: `"m"` (mean), `"sd"`,
+`"med"` (median), `"iqr"`, `"med_iqr"` (the median with its quartiles
+in one cell), `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"` (the confidence
+interval of the mean), `"med_ci"` (the exact interval of the median),
+`"n"` and, under `weights`, `"weighted_n"`. The columns follow the
+order the tokens are written in, so a table that leads with the median
+writes it first:
+
+```{r show-columns}
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  show_columns = c("med", "q1", "q3", "m", "sd", "n")
+)
+```
+
+An interval comes after the statistic it bounds, `"ci"` after `"m"`
+and `"med_ci"` after `"med"` or `"med_iqr"`: written before it, it is
+an error. A token written twice counts once. A named list gives each
+variable its own tokens, `.default` covering the variables it does not
+name; the variables then share no written order, and the columns
+follow the order of the vocabulary above, from the mean to the counts.
+The table tests
+what it shows: a variable displayed by its median without its mean
+takes the rank-based test. The *Choosing the statistics* section of
+`?table_continuous` gives the full vocabulary.
+
 ## Display options
 
 The printed ASCII table and every rendered output share the same

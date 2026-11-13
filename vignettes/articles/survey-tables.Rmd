@@ -78,7 +78,8 @@ footer says so rather than leaving the reader to find out.
 
 `show_columns` takes the tokens of `table_continuous()`, plus `"se"`
 (the design-based standard error) and `"deff"` (the design effect),
-and minus `"med_ci"`:
+and minus `"med_ci"`. As there, the columns follow the order the
+tokens are written in:
 
 ```{r cont-columns}
 table_continuous_svy(

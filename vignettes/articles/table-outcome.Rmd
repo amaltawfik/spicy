@@ -126,7 +126,8 @@ with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
 `"n"`, `"weighted_n"`. See the *Choosing the statistics* section of
 `?table_continuous` for the vocabulary itself; nothing about it changes
-here.
+here. The columns follow the order the tokens are written in, an
+interval after the statistic it bounds.
 
 ```{r tokens}
 table_outcome(
