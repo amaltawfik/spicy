@@ -548,7 +548,11 @@ cloglog — and Poisson log fits, cross-validated against
 `performance::r2_nakagawa()` to 10⁻¹⁰, and delegates the remaining
 families — multi-trial binomial, negative binomial, beta,
 zero-inflation — to `performance`, a Suggests dependency: absent, the
-R² rows render as NA and the rest of the table is unaffected.)
+R² rows render as NA and the rest of the table is unaffected. A
+beta-binomial fit gets no R² rows: the distribution variance
+`performance` uses for that family is not validated, and its
+conditional R² tends to 1 as the overdispersion vanishes, instead of
+joining the binomial's.)
 
 **The ICC row is an interpretation, not a test.** For the
 intercept-only model it comes straight from the two σ rows above it:

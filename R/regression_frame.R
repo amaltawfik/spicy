@@ -1629,6 +1629,20 @@ validate_regression_frame <- function(frame) {
 # every (engine x family) combination spicy supports, in
 # tests/testthat/test-nakagawa_r2.R.
 .nakagawa_r2 <- function(fit) {
+  # No R^2 for a beta-binomial fit. The fallback below would take
+  # insight's distribution variance for that family,
+  # log1p((1 - mu) / (mu * (1 + phi))): the lognormal approximation of a
+  # log link, applied to a logit link and without the trials. It tends
+  # to 0 as phi grows, so the conditional R^2 tends to 1 instead of
+  # joining the binomial's (measured 2026-11-13, insight 1.7.0,
+  # performance 0.19.0: 1.000 against 0.627 on a fit at the boundary,
+  # above the binomial in 25 of 27 simulated data sets), and insight's
+  # help lists the family as not yet validated. The rows stay empty, as
+  # for an ordinal family.
+  fam <- tryCatch(stats::family(fit)$family, error = function(e) NULL)
+  if (identical(fam, "betabinomial")) {
+    return(.nakagawa_na())
+  }
   # Self-implementation: Gaussian + Bernoulli (binomial 1-trial) +
   # Poisson(log). For these three the formula is closed-form per
   # Nakagawa & Schielzeth (2013) / Nakagawa et al. (2017) and the

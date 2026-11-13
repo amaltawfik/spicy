@@ -314,6 +314,43 @@ test_that("self-impl refuses cbind() binomial -> falls through to performance", 
   )
 })
 
+test_that("a beta-binomial glmmTMB fit gets no R^2, the binomial keeps its own", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("performance")
+  d <- lme4::cbpp
+  bb <- suppressWarnings(glmmTMB::glmmTMB(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = d,
+    family = glmmTMB::betabinomial()
+  ))
+  bi <- glmmTMB::glmmTMB(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = d,
+    family = binomial
+  )
+  expect_identical(
+    spicy:::.nakagawa_r2(bb),
+    list(marginal = NA_real_, conditional = NA_real_)
+  )
+  oracle <- performance::r2_nakagawa(bi, verbose = FALSE)
+  expect_equal(
+    spicy:::.nakagawa_r2(bi)$conditional,
+    as.numeric(oracle$R2_conditional),
+    tolerance = 1e-10
+  )
+  fs <- as_regression_frame(bb)$info$fit_stats
+  expect_true(is.na(fs$r2_marginal) && is.na(fs$r2_conditional))
+  # Alone, the table has no R^2 row; beside the binomial, a dash.
+  r2_lines <- function(x) {
+    out <- utils::capture.output(print(suppressWarnings(x)))
+    grep("R² (", out, fixed = TRUE, value = TRUE)
+  }
+  expect_length(r2_lines(table_regression(bb)), 0L)
+  two <- r2_lines(table_regression(list(Binomial = bi, BetaBin = bb)))
+  expect_length(two, 2L)
+  expect_true(all(endsWith(trimws(two), "–")))
+})
+
 test_that("the performance fallback prints nothing on a singular fit", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("performance")
