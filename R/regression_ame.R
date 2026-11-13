@@ -501,7 +501,8 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
   w <- if (inherits(fit, "fixest")) {
     fit$weights
   } else {
-    tryCatch(stats::weights(fit), error = function(e) NULL)
+    .glmmTMB_binomial_trials(fit) %||%
+      tryCatch(stats::weights(fit), error = function(e) NULL)
   }
   if (is.numeric(w) && length(w) > 0L && anyNA(w)) {
     na_act <- tryCatch(stats::na.action(fit), error = function(e) NULL)
@@ -526,6 +527,28 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
     return(NULL)
   }
   as.numeric(w)
+}
+
+
+# The trials of a glmmTMB binomial (or beta-binomial) fit whose response
+# is cbind(successes, failures): the row sums of the response, times the
+# prior weights. glm and glmer weight the AME of such a fit by its
+# trials; glmmTMB's weights() returns them since 1.1.15 and NULL before,
+# which left the AME unweighted. Read from the response, the number no
+# longer depends on the glmmTMB version. NULL for any other fit.
+.glmmTMB_binomial_trials <- function(fit) {
+  if (
+    !inherits(fit, "glmmTMB") ||
+      !stats::family(fit)$family %in% c("binomial", "betabinomial")
+  ) {
+    return(NULL)
+  }
+  mf <- stats::model.frame(fit)
+  resp <- stats::model.response(mf)
+  if (!is.matrix(resp) || ncol(resp) != 2L) {
+    return(NULL)
+  }
+  rowSums(resp) * (mf[["(weights)"]] %||% 1)
 }
 
 

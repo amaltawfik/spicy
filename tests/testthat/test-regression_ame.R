@@ -311,3 +311,56 @@ test_that("ame_type without an AME column warns, and a bad value is refused", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("a glmmTMB cbind() binomial AME is weighted by the trials", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("lme4")
+  set.seed(7)
+  n <- 200
+  d <- data.frame(
+    x = rnorm(n),
+    g = factor(sample(1:10, n, TRUE)),
+    size = sample(2:12, n, TRUE),
+    pw = runif(n, 0.5, 2)
+  )
+  d$s <- rbinom(n, d$size, plogis(-0.3 + 0.7 * d$x))
+  d$f <- d$size - d$s
+  mt <- suppressWarnings(glmmTMB::glmmTMB(
+    cbind(s, f) ~ x + (1 | g),
+    family = binomial,
+    data = d
+  ))
+  # The trials come from the response, whatever weights() returns.
+  expect_identical(.spicy_ame_fit_wts(mt), as.numeric(d$size))
+  # The random-effect variance is ~0 here: glm and glmer give the same
+  # trial-weighted AME, and so does marginaleffects told the trials.
+  ame_mt <- ame_of(mt, "slope")
+  expect_equal(
+    ame_mt,
+    ame_of(glm(cbind(s, f) ~ x, family = binomial, data = d), "slope"),
+    tolerance = 1e-8
+  )
+  mg <- suppressMessages(lme4::glmer(
+    cbind(s, f) ~ x + (1 | g),
+    family = binomial,
+    data = d
+  ))
+  expect_equal(ame_mt, ame_of(mg, "slope"), tolerance = 1e-8)
+  orc <- suppressWarnings(
+    marginaleffects::avg_slopes(mt, variables = "x", wts = d$size)
+  )
+  expect_equal(ame_mt, orc$estimate, tolerance = 1e-10)
+  # Prior weights multiply the trials.
+  mw <- suppressWarnings(glmmTMB::glmmTMB(
+    cbind(s, f) ~ x + (1 | g),
+    family = binomial,
+    data = d,
+    weights = pw
+  ))
+  expect_equal(.spicy_ame_fit_wts(mw), d$size * d$pw)
+  # A 0/1 response has no trials to read.
+  d$yb <- as.integer(d$s > d$f)
+  mb <- glmmTMB::glmmTMB(yb ~ x, family = binomial, data = d)
+  expect_null(.glmmTMB_binomial_trials(mb))
+})
