@@ -1,7 +1,10 @@
 # sandwich : vcovHC() faux pour tout type HC sous des poids a priori nuls
 
 - **Cible** : sandwich 3.1-3, R 4.6.2
-- **Canal** : courriel à Achim Zeileis (pas de suivi d'issues public)
+- **Canal** : courriel à Achim Zeileis. Le suivi public existe (Codeberg zeileis/sandwich) et
+  l'issue #7 du 2026-10-30 (acoppock, estimatr), ouverte et sans réponse au 2026-11-13, signale
+  déjà ce défaut pour lm (HC0, HC2, vcovCL, meat). Le corps ci-dessous est antérieur à ce
+  constat : à ne pas envoyer tel quel.
 - **Envoyé** : non envoyé
 - **Statut** : dossier prêt le 2026-11-12, corps relu mot à mot le 2026-11-13 (reproducteur court ajouté, trois phrases précisées). Reproduction en base R et sandwich
   seuls (repro.R, repro.log, docs_check.log, findings.txt, archivés avec la
