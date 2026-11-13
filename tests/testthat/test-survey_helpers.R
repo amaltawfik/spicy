@@ -367,6 +367,255 @@ test_that("`.design_meta()` counts the rows of non-zero weight, as survey does",
   expect_identical(m$n_obs, 169L)
 })
 
+# ---- the primary units of the design line ---------------------------------
+
+# Rows of weight zero that hold whole primary sampling units, and the
+# shapes where they cannot. `subset()` drops the rows of an ordinary or a
+# replicate design and keeps them at weight zero on a calibrated or
+# post-stratified one (`[.survey.design2` and `[.svyrep.design`, survey
+# 4.5).
+.svy_psu_cases <- function() {
+  skip_if_not_installed("survey", "4.5")
+  data(api, package = "survey", envir = environment())
+  pop <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+  totals <- c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  clus1 <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
+  zs <- apistrat
+  zs$pw[c(1L, 2L, 150L)] <- 0
+  # District 61 at weight zero, and one school of district 716.
+  zc <- apiclus1
+  zc$pw[zc$dnum == 61] <- 0
+  zc$pw[which(zc$dnum == 716)[[1L]]] <- 0
+  clus2 <- survey::svydesign(
+    id = ~ dnum + snum,
+    fpc = ~ fpc1 + fpc2,
+    data = apiclus2
+  )
+  srs <- survey::svydesign(id = ~1, weights = ~pw, data = apisrs, fpc = ~fpc)
+  list(
+    zero_strat = survey::svydesign(
+      id = ~1,
+      strata = ~stype,
+      weights = ~pw,
+      data = zs,
+      fpc = ~fpc
+    ),
+    zero_clus = survey::svydesign(
+      id = ~dnum,
+      weights = ~pw,
+      data = zc,
+      fpc = ~fpc
+    ),
+    subset_plain = subset(clus1, stype == "H"),
+    subset_post = subset(
+      survey::postStratify(clus1, ~stype, pop),
+      stype == "H"
+    ),
+    subset_cal = subset(survey::calibrate(clus1, ~stype, totals), stype == "H"),
+    two_stage = subset(survey::postStratify(clus2, ~stype, pop), stype == "H"),
+    strata = subset(
+      survey::postStratify(.svy_psu_strata_clusters(), ~stype, pop),
+      stype != "H"
+    ),
+    replicate = subset(
+      survey::postStratify(survey::as.svrepdesign(clus1), ~stype, pop),
+      stype == "H"
+    ),
+    no_clusters = subset(survey::postStratify(srs, ~stype, pop), stype == "H")
+  )
+}
+
+# apistrat as districts within school types: strata and clusters at once.
+.svy_psu_strata_clusters <- function() {
+  data(api, package = "survey", envir = environment())
+  survey::svydesign(
+    id = ~dnum,
+    strata = ~stype,
+    weights = ~pw,
+    data = apistrat,
+    nest = TRUE
+  )
+}
+
+# That design post-stratified, with stratum H cut down to its first
+# district: a stratum left with a single primary unit, which survey
+# reports only under `options(survey.adjust.domain.lonely = TRUE)`.
+.svy_psu_lonely <- function() {
+  data(api, package = "survey", envir = environment())
+  pop <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+  first_h <- apistrat$dnum[apistrat$stype == "H"][[1L]]
+  subset(
+    survey::postStratify(.svy_psu_strata_clusters(), ~stype, pop),
+    stype != "H" | dnum == first_h
+  )
+}
+
+test_that("the design line counts the primary units of non-zero weight", {
+  cases <- .svy_psu_cases()
+  lines <- vapply(
+    cases,
+    function(d) .design_note_lines(.design_meta(d))[[1L]],
+    character(1)
+  )
+  expect_identical(
+    unname(lines),
+    c(
+      "Design: stratified (stype), with finite population correction; 194 degrees of freedom.",
+      "Design: cluster (dnum), 14 PSU, with finite population correction; 13 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSU, with finite population correction; 7 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
+      "Design: cluster (dnum), 2 sampling stages, 14 PSU, with finite population correction, calibrated / post-stratified; 13 degrees of freedom.",
+      "Design: stratified (stype), cluster (dnum), 120 PSU, calibrated / post-stratified; 118 degrees of freedom.",
+      "Design: replicate weights (JK1), 15 replicates; 7 degrees of freedom.",
+      "Design: simple random sample, with finite population correction, calibrated / post-stratified; 24 degrees of freedom."
+    )
+  )
+  # PSU and strata counted on the rows `degf.survey.design2()` counts, so
+  # that the line, the N and the df describe the same observations.
+  for (d in cases[names(cases) != "replicate"]) {
+    m <- .design_meta(d)
+    expect_identical(m$n_psu - max(m$n_strata, 1L), as.integer(survey::degf(d)))
+  }
+  expect_identical(.design_meta(cases$strata)$n_strata, 2L)
+  # A plain subset and a post-stratified one keep the same 8 districts.
+  expect_identical(
+    .design_meta(cases$subset_post)$n_psu,
+    .design_meta(cases$subset_plain)$n_psu
+  )
+})
+
+test_that("a stratum left with one primary unit is counted once", {
+  withr::local_options(
+    survey.lonely.psu = "adjust",
+    survey.adjust.domain.lonely = TRUE
+  )
+  skip_if_not_installed("survey", "4.5")
+  r <- .svy_collect_warnings(.svy_psu_lonely())
+  expect_identical(
+    vapply(r$warnings, conditionMessage, character(1)),
+    "1 strata have only one PSU in this subset."
+  )
+  m <- .design_meta(r$value)
+  expect_identical(c(m$n_psu, m$n_strata, m$n_obs), c(121L, 3L, 151L))
+  expect_identical(
+    .design_note_lines(m)[[1L]],
+    "Design: stratified (stype), cluster (dnum), 121 PSU, calibrated / post-stratified; 118 degrees of freedom."
+  )
+})
+
+test_that("every table and regression note carries the same count", {
+  cases <- .svy_psu_cases()
+  d <- cases$subset_post
+  line <- .design_note_lines(.design_meta(d))[[1L]]
+  has_line <- function(x) grepl(line, attr(x, "note"), fixed = TRUE)
+  expect_true(has_line(table_continuous_svy(d, api00, output = "long")))
+  expect_true(has_line(table_categorical_svy(d, awards, output = "long")))
+  expect_true(has_line(table_battery_svy(
+    d,
+    c(sch.wide, awards),
+    output = "long"
+  )))
+  d$variables$event <- as.integer(d$variables$sch.wide == "Yes")
+  glm_fit <- suppressWarnings(survey::svyglm(api00 ~ ell, design = d))
+  cox_fit <- survey::svycoxph(survival::Surv(api00, event) ~ ell, design = d)
+  # The regression line names residual df, the rest of it is the same.
+  scheme <- .design_scheme_parts(.design_meta(d))
+  expect_identical(
+    scheme,
+    "cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified"
+  )
+  for (fit in list(glm_fit, cox_fit)) {
+    note <- attr(table_regression(fit, output = "long"), "note")
+    expect_true(grepl(paste0("Design: ", scheme, ";"), note, fixed = TRUE))
+  }
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_continuous_svy(d, api00, output = "long"), "note"),
+    "8 UPS",
+    fixed = TRUE
+  )
+  # survey 4.5 cannot fit svyolr() on rows of weight zero (`weights()[keep]`
+  # against the full model matrix), so its line never meets them. The day
+  # it can, this goes red and svyolr joins the cases above.
+  d$variables$grade <- ordered(cut(d$variables$api00, c(0, 600, 700, 1000)))
+  expect_error(suppressWarnings(survey::svyolr(grade ~ ell, design = d)))
+})
+
+test_that("the long outputs of these designs do not move with the count", {
+  # Recorded before the count changed (main 18e6ec09), so a change that
+  # moved an estimate, a standard error, a df or a test goes red here.
+  cases <- .svy_psu_cases()
+  withr::local_options(
+    survey.lonely.psu = "adjust",
+    survey.adjust.domain.lonely = TRUE
+  )
+  cases$lonely <- suppressWarnings(.svy_psu_lonely())
+  numbers <- function(x) {
+    x <- as.data.frame(x)
+    keep <- vapply(x, function(v) is.numeric(v) && !all(is.na(v)), logical(1))
+    lapply(x[keep], unname)
+  }
+  # The warnings these designs raise, and only those: survey's lonely
+  # stratum and stats' zero weights in the group comparison's svyglm().
+  expected <- c(
+    "1 strata have only one PSU in this subset.",
+    gettext(
+      "observations with zero weight not used for calculating dispersion",
+      domain = "R-stats"
+    )
+  )
+  quiet <- function(expr) {
+    r <- .svy_collect_warnings(expr)
+    msgs <- vapply(r$warnings, conditionMessage, character(1))
+    expect_true(all(sub("\n.*", "", msgs) %in% expected))
+    numbers(r$value)
+  }
+  out <- lapply(cases, function(d) {
+    d$variables$event <- as.integer(d$variables$sch.wide == "Yes")
+    glm_fit <- suppressWarnings(survey::svyglm(api00 ~ ell + meals, design = d))
+    list(
+      continuous = quiet(table_continuous_svy(
+        d,
+        c(api00, api99),
+        by = sch.wide,
+        statistic = TRUE,
+        output = "long"
+      )),
+      categorical = quiet(table_categorical_svy(
+        d,
+        sch.wide,
+        by = awards,
+        proportion_ci = TRUE,
+        output = "long"
+      )),
+      battery = quiet(table_battery_svy(
+        d,
+        c(sch.wide, awards),
+        output = "long"
+      )),
+      svyglm = quiet(table_regression(glm_fit, output = "long")),
+      svycoxph = quiet(table_regression(
+        survey::svycoxph(survival::Surv(api00, event) ~ ell, design = d),
+        output = "long"
+      ))
+    )
+  })
+  # svyolr() on an ordinary subset, the only kind it fits (see above).
+  olr <- subset(.svy_fixture("clus1"), stype != "H")
+  olr$variables$grade <- ordered(cut(olr$variables$api00, c(0, 600, 700, 1000)))
+  out$svyolr <- numbers(table_regression(
+    survey::svyolr(grade ~ ell, design = olr),
+    output = "long"
+  ))
+  expect_snapshot_value(out, style = "deparse")
+})
+
 # ---- the design's own columns ---------------------------------------------
 
 .svy_columns_data <- function() {

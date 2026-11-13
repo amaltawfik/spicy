@@ -856,10 +856,17 @@
 # table: survey's own convention (`unwtd.count()`, `degf()`), under which
 # a row at weight zero -- one `subset()` keeps on a calibrated, post-
 # stratified or pps design -- is out of the sample. `n_rows` counts every
-# row of the design, for the scheme (`.design_scheme_parts()`).
+# row of the design.
+#
+# The PSU and the strata are counted on the same rows, as
+# `degf.survey.design2()` counts them, so that the PSU, the N and the df
+# of the note describe the same observations: a post-stratified apiclus1
+# cut to `stype == "H"` keeps its 15 districts, 8 of which hold a school
+# of non-zero weight (df 7). `print()` of a design counts every row.
 .design_meta <- function(design) {
   w <- .design_weights(design)
-  n_obs <- sum(!is.na(w) & w != 0)
+  inset <- !is.na(w) & w != 0
+  n_obs <- sum(inset)
   if (inherits(design, "svyrep.design")) {
     return(list(
       kind = "replicate",
@@ -876,9 +883,13 @@
   list(
     kind = "linearized",
     n_stages = ncol(design$cluster),
-    n_psu = length(unique(design$cluster[, 1L])),
+    n_psu = length(unique(design$cluster[inset, 1L])),
     has_strata = has_strata,
-    n_strata = if (has_strata) length(unique(design$strata[, 1L])) else 0L,
+    n_strata = if (has_strata) {
+      length(unique(design$strata[inset, 1L]))
+    } else {
+      0L
+    },
     strata_name = if (has_strata) {
       colnames(design$strata)[1L]
     } else {
@@ -1034,8 +1045,8 @@
   }
   # One PSU per row is a design with no clustering at all: naming a
   # cluster variable there would invent a stage the user did not
-  # declare.
-  clustered <- meta$n_psu < meta$n_rows
+  # declare. Both counts are on the rows of non-zero weight.
+  clustered <- meta$n_psu < meta$n_obs
   if (clustered) {
     parts <- c(parts, spicy_fmt("note_design_cluster", meta$psu_name))
   }

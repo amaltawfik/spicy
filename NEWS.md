@@ -137,6 +137,13 @@
   string. The column was headed `V1`, and the rows of such a `by` group
   were dropped without a word.
 
+* `table_categorical_svy()`, `table_continuous_svy()` and
+  `table_regression()` on a survey fit count in the design line of the
+  note only the primary sampling units that hold a row of non-zero
+  weight, as `survey::degf()` does. After `subset()` on a
+  post-stratified design, the note said "15 PSU" for the 8 units left
+  and 7 degrees of freedom.
+
 ## New features
 
 * `table_categorical()`, `table_categorical_svy()`,
