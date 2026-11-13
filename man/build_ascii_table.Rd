@@ -19,6 +19,7 @@ build_ascii_table(
   total_row_idx = NULL,
   display_labels = NULL,
   body_spanners = NULL,
+  whole_spanners = FALSE,
   ...
 )
 }
@@ -107,6 +108,10 @@ list like \code{spanners}). The row is drawn as the spanner row is: each
 label centered over its columns, a thin rule under them. Its cells
 should be blank. Used by \code{print.spicy_stack_table()} for the column
 groups of a panel's own header. Defaults to \code{NULL}.}
+
+\item{whole_spanners}{Logical. When \code{TRUE}, the columns of each
+spanner widen until its label fits over them, instead of the label
+being truncated. Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

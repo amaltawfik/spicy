@@ -24,6 +24,7 @@ spicy_print_table(
   qualify_companions = FALSE,
   body_spanners = NULL,
   blank_row_groups = NULL,
+  whole_spanners = FALSE,
   ...
 )
 }
@@ -119,6 +120,14 @@ stacked panels, continuation panels leave out every group none of
 whose rows has a data cell there. An alternative to
 \code{fit_stats_start}, not to be combined with it. Defaults to \code{NULL}.}
 
+\item{whole_spanners}{Logical. When \code{TRUE}, each group of \code{spanners}
+is laid out as a unit: its columns widen until its label fits over
+them, and a split into panels keeps them together, unless the group
+alone is wider than the console. Used by the descriptive tables,
+whose spanners are the groups of \code{by}. When \code{FALSE} (the default), a
+label wider than its columns is truncated and a split may fall inside
+a group.}
+
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }
 \value{
@@ -154,7 +163,7 @@ otherwise.
 
 The layout arguments \code{spanners}, \code{display_labels},
 \code{fit_stats_start}, \code{total_row_idx}, \code{group_sep_rows},
-\code{body_spanners} and \code{blank_row_groups} are
+\code{body_spanners}, \code{blank_row_groups} and \code{whole_spanners} are
 plumbing consumed by spicy's own print methods; they are
 documented for completeness and are rarely useful when calling
 this function directly.
