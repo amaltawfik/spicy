@@ -1685,6 +1685,11 @@ test_that("broom tidy() and glance() read a design categorical table", {
   expect_identical(gl$test_type, "F")
   expect_identical(gl$nobs, 183)
   expect_equal(gl$weighted_nobs, sum(stats::weights(d)), tolerance = 1e-12)
+  # A table that lost the weighted count of its variables falls back on
+  # the design's.
+  old <- tbl
+  attr(old, "weighted_nobs") <- NULL
+  expect_identical(broom::glance(old)$weighted_nobs, gl$weighted_nobs)
 
   # One-way: one block, and it is not a margin of anything.
   one_way <- table_categorical_svy(d, select = stype)
