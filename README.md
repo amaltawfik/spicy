@@ -383,38 +383,29 @@ table_categorical(
 )
 #> Categorical table by education
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  Current smoker    │                                                         
-#>    No              │        179               69.6                415        
-#>    Yes             │         78               30.4                112        
-#>    (Missing)       │          4                                    12        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │                                                         
-#>    No              │        177               67.8                310        
-#>    Yes             │         84               32.2                229        
+#>                      Lower secondary  Upper secondary  Tertiary     Total   
+#>                      ───────────────  ───────────────  ─────────  ───────── 
+#>  Variable          │   n        %       n        %      n    %     n    %   
+#> ───────────────────┼────────────────────────────────────────────────────────
+#>  Current smoker    │                                                        
+#>    No              │  179     69.6     415     78.7    332  84.9  926  78.8 
+#>    Yes             │   78     30.4     112     21.3     59  15.1  249  21.2 
+#>    (Missing)       │    4               12               9         25       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │                                                        
+#>    No              │  177     67.8     310     57.5    163  40.8  650  54.2 
+#>    Yes             │   84     32.2     229     42.5    237  59.2  550  45.8 
 #> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  Current smoker    │                                                    
-#>    No              │       78.7            332         84.9       926   
-#>    Yes             │       21.3             59         15.1       249   
-#>    (Missing)       │                         9                     25   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │                                                    
-#>    No              │       57.5            163         40.8       650   
-#>    Yes             │       42.5            237         59.2       550   
-#> 
-#>  Variable          │ Total %    p     V  
-#> ───────────────────┼─────────────────────
-#>  Current smoker    │          <.001  .14 
-#>    No              │  78.8               
-#>    Yes             │  21.2               
-#>    (Missing)       │                     
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Physical activity │          <.001  .21 
-#>    No              │  54.2               
-#>    Yes             │  45.8               
+#>  Variable          │   p     V  
+#> ───────────────────┼────────────
+#>  Current smoker    │ <.001  .14 
+#>    No              │            
+#>    Yes             │            
+#>    (Missing)       │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Physical activity │ <.001  .21 
+#>    No              │            
+#>    Yes             │            
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
@@ -593,16 +584,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164                   
+#>                          Female          Male           Total               
+#>                       ─────────────  ─────────────  ──────────────          
+#>  Variable           │   n      %       n      %       n       %        p    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9    1.000  
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0    1.000  
+#>  info_internet      │  268    44.7    255    45.1     523    44.9    1.000  
+#>  info_family        │  219    36.6    141    25.0     360    30.9    <.001  
+#>  info_media         │   78    13.0     63    11.2     141    12.1    1.000  
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8     –     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164                   
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
