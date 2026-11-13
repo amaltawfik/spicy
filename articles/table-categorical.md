@@ -1105,7 +1105,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_gsz319bwk1vng6dnvkvb .table
+Categorical table by sex {#tinytable_49gunu60b5wobui5coxj .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
