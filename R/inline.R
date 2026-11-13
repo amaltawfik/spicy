@@ -1342,23 +1342,41 @@ inline <- function(
 # told that the column is empty throughout. The context arguments are
 # optional so a caller without a structured table still gets the bare
 # refusal.
+#
+# The row of missing values of a categorical table whose percentages
+# exclude them (`percent_base = "valid"`) has a count and no percentage
+# by design; the refusal says so instead of reading like a defect.
 .inline_refuse_empty <- function(
   txt,
   token,
   s = NULL,
   formatted = NULL,
   cols = NULL,
+  row = NULL,
   call = rlang::caller_env()
 ) {
   if (nzchar(txt)) {
     return(invisible(NULL))
   }
+  missing_pct <- identical(token, "pct") &&
+    !is.null(s) &&
+    !is.null(row) &&
+    identical(s$body$.row_role[row], "missing") &&
+    !is.na(s$body$.level[row])
   spicy_abort(
     c(
       sprintf(
         "The %s cell of this row is empty in the table.",
         .quote_val(token)
       ),
+      if (missing_pct) {
+        c(
+          "i" = paste0(
+            "The percentages exclude missing values: this row has a ",
+            "count only (`column = \"n\"`)."
+          )
+        )
+      },
       .inline_empty_cell_hints(s, token, formatted, cols)
     ),
     class = "spicy_invalid_input",
@@ -1521,7 +1539,7 @@ inline <- function(
   }
   .inline_refuse_status(.struct_cell_status(s, hits)[row], token, call = call)
   out <- trimws(formatted[[hits]][row])
-  .inline_refuse_empty(out, token, s, formatted, cols, call = call)
+  .inline_refuse_empty(out, token, s, formatted, cols, row, call = call)
   out
 }
 

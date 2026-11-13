@@ -629,6 +629,30 @@ test_that("an interval with blank bounds refuses like the scalar does", {
   expect_match(inline(two, bmi, column = "med_ci"), "^[[]")
 })
 
+test_that("the % of the (Missing) row says why it is empty", {
+  d <- data.frame(x = factor(c("a", "a", "b", "b", "b", NA, NA)))
+  ct <- table_categorical(d, x)
+  err <- tryCatch(inline(ct, x, "(Missing)", "pct"), error = function(e) e)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "exclude missing values",
+    fixed = TRUE
+  )
+  expect_identical(inline(ct, x, "(Missing)", "n"), "2")
+  # A blank cell elsewhere keeps the bare refusal.
+  ct2 <- suppressWarnings(table_categorical(
+    as.data.frame(sochealth),
+    select = sex,
+    by = smoking
+  ))
+  err2 <- tryCatch(inline(ct2, sex, "Male", "assoc"), error = function(e) e)
+  expect_no_match(conditionMessage(err2), "exclude missing", fixed = TRUE)
+  # Under percent_base = "total" the cell is filled.
+  tot <- table_categorical(d, x, percent_base = "total")
+  expect_identical(inline(tot, x, "(Missing)", "pct"), "28.6")
+})
+
 
 test_that("a multi-valued `model` is refused, not vectorized into `if`", {
   d <- as.data.frame(sochealth)
