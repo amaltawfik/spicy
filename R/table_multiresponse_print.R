@@ -53,6 +53,9 @@ print.spicy_multiresponse_table <- function(x, ...) {
       USE.NAMES = FALSE
     )
   )
+  # Under `by`, each group heads its own columns, as in the rich engines.
+  hdr <- ascii_group_header(header_labels, attr(x, "header_groups"))
+  header_labels <- hdr$labels
 
   numeric_j <- setdiff(seq_along(display_df), 1L)
   if (identical(align, "decimal") && length(numeric_j) > 0L) {
@@ -85,7 +88,10 @@ print.spicy_multiresponse_table <- function(x, ...) {
     },
     numeric(1)
   )
-  if (sum(col_widths + padding + 2L) + 1L > getOption("width", 80L)) {
+  total_width <- sum(
+    ascii_spanner_widths(col_widths + padding, hdr$spanners, 1L) + 2L
+  )
+  if (total_width + 1L > getOption("width", 80L)) {
     padding <- 0L
   }
 
@@ -103,7 +109,9 @@ print.spicy_multiresponse_table <- function(x, ...) {
     # No total row: without an index the printer looks for the word
     # "Total" in the rows and rules off an item "Total score".
     total_row_idx = integer(0),
-    display_labels = header_labels
+    display_labels = header_labels,
+    spanners = hdr$spanners,
+    whole_spanners = TRUE
   )
   invisible(x)
 }

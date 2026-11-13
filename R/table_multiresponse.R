@@ -1124,6 +1124,11 @@ table_multiresponse <- function(
   }
   out <- wide
   attr(out, "display_df") <- display_df
+  # The column groups of the rich engines' header, which the console
+  # draws too (`.desc_items_print()`).
+  attr(out, "header_groups") <- .mr_header_layout(cols)$spanners(
+    names(display_df)
+  )
   attr(out, "structured") <- structured
   attr(out, "title") <- title_txt
   attr(out, "note") <- note_txt

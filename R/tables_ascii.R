@@ -1171,11 +1171,13 @@ spicy_print_table <- function(
 # A group of several columns becomes a spanner over them, each column
 # headed by its own statistic; a group of one column is headed by the
 # group alone, as `build_header_rows_from()` heads it in the rich engines.
-# Returns the headers and the spanners (NULL when there is none).
+# A group whose label cannot name a spanner (empty, or the label of another
+# group) keeps the full headers. Returns the headers and the spanners (NULL
+# when there is none).
 ascii_group_header <- function(labels, groups) {
   spanners <- list()
   for (g in groups) {
-    if (is.null(g$bounds)) {
+    if (is.null(g$bounds) || !nzchar(g$label) || g$label %in% names(spanners)) {
       next
     }
     if (length(g$cols) > 1L) {

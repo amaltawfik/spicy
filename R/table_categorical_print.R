@@ -94,6 +94,13 @@ print.spicy_categorical_table <- function(x, ...) {
     )
     if (length(labs) == ncol(display_df)) labs else NULL
   }
+  # Under `by`, each group heads its own columns, as in the rich engines.
+  spanners <- NULL
+  if (!is.null(header_labels)) {
+    hdr <- ascii_group_header(header_labels, .categorical_header_groups(s))
+    header_labels <- hdr$labels
+    spanners <- hdr$spanners
+  }
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -121,7 +128,9 @@ print.spicy_categorical_table <- function(x, ...) {
     numeric(1)
   )
   console_w <- getOption("width", 80L)
-  normal_width <- sum(col_widths + padding + 2L) + 1L
+  # The columns of a group widen to its label, as the renderer lays them.
+  col_widths <- ascii_spanner_widths(col_widths + padding, spanners, 1L)
+  normal_width <- sum(col_widths + 2L) + 1L
   if (normal_width > console_w) {
     padding <- 0L
   }
@@ -142,10 +151,45 @@ print.spicy_categorical_table <- function(x, ...) {
     # The index, never NULL: without one the printer would look for the
     # word "Total" in the rows, so a level "Total score" took a rule.
     total_row_idx = total_rows,
-    display_labels = header_labels
+    display_labels = header_labels,
+    spanners = spanners,
+    whole_spanners = TRUE
   )
 
   invisible(x)
+}
+
+# Internal: the groups of `by` over their columns, in the records of a
+# header layer (`ascii_group_header()`): the label of the group (the margin
+# in the words of `.cat_group_label()`) and, under it, the count and the
+# percentage, as every rich engine of the family heads them.
+.categorical_header_groups <- function(s) {
+  keys <- c(.CAT_KEY_VARIABLE, .struct_value_cols(s$body))
+  # By position: a level of `by` can be the empty string, which `[[`
+  # does not match by name.
+  lapply(seq_along(s$spanners), function(i) {
+    g <- names(s$spanners)[[i]]
+    cols <- s$spanners[[i]]
+    meta <- s$col_meta[keys[cols]]
+    list(
+      label = .cat_group_label(g, if (isTRUE(meta[[1L]]$total)) g),
+      cols = cols,
+      bounds = vapply(
+        meta,
+        function(m) {
+          spicy_str(
+            if (identical(m$token, "n")) {
+              "header_n_lower"
+            } else {
+              "header_percent_symbol"
+            }
+          )
+        },
+        character(1),
+        USE.NAMES = FALSE
+      )
+    )
+  })
 }
 
 # ---- Table title ----------------------------------------------------------

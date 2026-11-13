@@ -24,8 +24,21 @@ print.spicy_categorical_svy_table <- function(x, ...) {
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   align <- attr(x, "align") %||% "decimal"
   display_df <- .cat_svy_display_df(x)
-  header_labels <- .cat_svy_header_layout(x)$labels(names(display_df))
+  layout <- .cat_svy_header_layout(x)
+  header_labels <- layout$labels(names(display_df))
   header_labels[[1L]] <- spicy_str("header_variable")
+  # Under `by`, each domain heads its own columns, as in the rich engines.
+  # A one-way table keeps its interval bounds under their full headers, as
+  # the other descriptive tables print them.
+  spanners <- NULL
+  if (!all(is.na(attr(x, "blocks", exact = TRUE)))) {
+    hdr <- ascii_group_header(
+      header_labels,
+      layout$spanners(names(display_df))
+    )
+    header_labels <- hdr$labels
+    spanners <- hdr$spanners
+  }
 
   align_left <- 1L
   numeric_j <- setdiff(seq_along(display_df), align_left)
@@ -58,7 +71,10 @@ print.spicy_categorical_svy_table <- function(x, ...) {
     },
     numeric(1)
   )
-  if (sum(col_widths + padding + 2L) + 1L > getOption("width", 80L)) {
+  total_width <- sum(
+    ascii_spanner_widths(col_widths + padding, spanners, 1L) + 2L
+  )
+  if (total_width + 1L > getOption("width", 80L)) {
     padding <- 0L
   }
 
@@ -76,7 +92,9 @@ print.spicy_categorical_svy_table <- function(x, ...) {
     # No total row: without an index the printer looks for the word
     # "Total" in the rows and rules off a level "Total score".
     total_row_idx = integer(0),
-    display_labels = header_labels
+    display_labels = header_labels,
+    spanners = spanners,
+    whole_spanners = TRUE
   )
 
   invisible(x)
