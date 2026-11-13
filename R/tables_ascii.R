@@ -172,6 +172,9 @@
 #'   label centered over its columns, a thin rule under them. Its cells
 #'   should be blank. Used by `print.spicy_stack_table()` for the column
 #'   groups of a panel's own header. Defaults to `NULL`.
+#' @param whole_spanners Logical. When `TRUE`, the columns of each
+#'   spanner widen until its label fits over them, instead of the label
+#'   being truncated. Defaults to `FALSE`.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return
@@ -198,6 +201,7 @@ build_ascii_table <- function(
   total_row_idx = NULL,
   display_labels = NULL,
   body_spanners = NULL,
+  whole_spanners = FALSE,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -289,6 +293,9 @@ build_ascii_table <- function(
   }
 
   sep_after <- ascii_table_separators(df, first_column_line, row_total_line)
+  if (isTRUE(whole_spanners)) {
+    w <- ascii_spanner_widths(w, spanners, sep_after)
+  }
 
   # Build line for header or data row. `is_header = TRUE` activates
   # `center_headers`: a column that would otherwise right-align its
@@ -439,11 +446,11 @@ build_ascii_table <- function(
         # ellipsis whenever there is room for it.
         if (span_width >= 2L) {
           paste0(
-            substr(lbl, 1L, span_width - 1L),
+            ascii_trunc_width(lbl, span_width - 1L),
             spicy_str("marker_truncation_ellipsis")
           )
         } else {
-          substr(lbl, 1L, span_width)
+          ascii_trunc_width(lbl, span_width)
         }
       } else {
         lbl
@@ -451,9 +458,22 @@ build_ascii_table <- function(
       n_lab <- nchar(lab_disp, type = "width")
       left_pad <- (span_width - n_lab) %/% 2L
       lab_pos <- span_start + left_pad
-      lab_chars <- strsplit(lab_disp, "", fixed = TRUE)[[1]]
-      for (k in seq_along(lab_chars)) {
-        spanner_chars[lab_pos + k - 1L] <- lab_chars[k]
+      # One slot per console column: a wide character fills two (the
+      # second left empty), a combining mark joins the character before
+      # it. One slot per character put every label after a wide or an
+      # accented one off by the difference.
+      p <- lab_pos
+      for (ch in strsplit(lab_disp, "", fixed = TRUE)[[1]]) {
+        cw <- nchar(ch, type = "width")
+        if (cw == 0L && p > lab_pos) {
+          spanner_chars[p - 1L] <- paste0(spanner_chars[p - 1L], ch)
+          next
+        }
+        spanner_chars[p] <- ch
+        if (cw > 1L) {
+          spanner_chars[p + seq_len(cw - 1L)] <- ""
+        }
+        p <- p + max(cw, 1L)
       }
       for (p in span_start:span_end) {
         underline_chars[p] <- "\u2500"
@@ -556,6 +576,51 @@ ascii_table_widths <- function(df, padding) {
   widths + as.integer(padding)
 }
 
+# The column widths with each spanner label fitting over its columns
+# (`whole_spanners`): a group narrower than its label shares the missing
+# width out over its columns, the first ones taking the remainder. A span
+# runs across the gutters between its columns and any vertical bar
+# (`sep_after`).
+ascii_spanner_widths <- function(widths, spanners, sep_after = integer(0)) {
+  for (lbl in names(spanners)) {
+    cols <- spanners[[lbl]]
+    k <- length(cols)
+    span <- sum(widths[cols]) + 2L * (k - 1L) + sum(cols[-k] %in% sep_after)
+    short <- nchar(lbl, type = "width") - span
+    if (short > 0L) {
+      widths[cols] <- widths[cols] + short %/% k + (seq_len(k) <= short %% k)
+    }
+  }
+  widths
+}
+
+# The leading characters of `x` that fill at most `width` console columns:
+# a wide character takes two, a combining mark none.
+ascii_trunc_width <- function(x, width) {
+  chars <- strsplit(x, "", fixed = TRUE)[[1]]
+  paste(chars[cumsum(nchar(chars, type = "width")) <= width], collapse = "")
+}
+
+# Column groups (label -> columns of the table) remapped to the indices of
+# the panel of columns `cols`. When a group's columns are split across
+# panels, each panel displays its label over the surviving subset
+# (matches modelsummary panel-split behavior: the model name reappears at
+# the top of every panel where any of its columns are visible). NULL when
+# no group is left.
+ascii_panel_spans <- function(spans, cols) {
+  out <- list()
+  for (lbl in names(spans)) {
+    local_idx <- sort(match(intersect(spans[[lbl]], cols), cols))
+    # Drop discontiguous slivers (e.g. sticky col 1 between data cols
+    # of the same model would break contiguity -- that doesn't arise
+    # in practice because the Variable column is never in a spanner).
+    if (length(local_idx) && all(diff(local_idx) == 1L)) {
+      out[[lbl]] <- local_idx
+    }
+  }
+  if (length(out)) out
+}
+
 ascii_table_separators <- function(df, first_column_line, row_total_line) {
   sep_after <- integer(0)
 
@@ -575,21 +640,31 @@ ascii_table_total_width <- function(
   df,
   padding,
   first_column_line,
-  row_total_line
+  row_total_line,
+  spanners = NULL
 ) {
-  widths <- ascii_table_widths(df, padding)
   separators <- ascii_table_separators(df, first_column_line, row_total_line)
+  widths <- ascii_spanner_widths(
+    ascii_table_widths(df, padding),
+    spanners,
+    separators
+  )
 
   sum(widths + 2L) + length(separators)
 }
 
+# `groups` (label -> columns, the spanners of `whole_spanners`) are laid
+# out as units: a panel takes a group whole, and the group's columns widen
+# to its label, unless the group alone is wider than the console, when its
+# columns split as single ones do. NULL lays out every column on its own.
 ascii_table_panels <- function(
   df,
   console_width,
   padding,
   first_column_line,
   row_total_line,
-  sticky_cols
+  sticky_cols,
+  groups = NULL
 ) {
   cols <- seq_len(ncol(df))
   if (length(cols) <= 1L) {
@@ -602,15 +677,17 @@ ascii_table_panels <- function(
     sticky_cols <- 1L # nocov
   }
 
-  if (
+  width_of <- function(candidate) {
     ascii_table_total_width(
-      df,
+      df[, candidate, drop = FALSE],
       padding = padding,
       first_column_line = first_column_line,
-      row_total_line = row_total_line
-    ) <=
-      console_width
-  ) {
+      row_total_line = row_total_line,
+      spanners = ascii_panel_spans(groups, candidate)
+    )
+  }
+
+  if (width_of(cols) <= console_width) {
     return(list(cols))
   }
 
@@ -619,20 +696,28 @@ ascii_table_panels <- function(
     return(list(cols)) # nocov
   }
 
+  units <- list()
+  for (col in remaining_cols) {
+    group <- Filter(function(g) col %in% g, groups)
+    unit <- if (length(group)) intersect(group[[1L]], remaining_cols) else col
+    if (col != unit[[1L]]) {
+      next
+    }
+    if (length(unit) > 1L && width_of(c(sticky_cols, unit)) > console_width) {
+      units <- c(units, as.list(unit))
+    } else {
+      units[[length(units) + 1L]] <- unit
+    }
+  }
+
   panels <- list()
   current <- sticky_cols
 
-  for (col in remaining_cols) {
-    candidate <- sort(c(current, col))
-    candidate_width <- ascii_table_total_width(
-      df[, candidate, drop = FALSE],
-      padding = padding,
-      first_column_line = first_column_line,
-      row_total_line = row_total_line
-    )
+  for (unit in units) {
+    candidate <- sort(c(current, unit))
 
     if (
-      candidate_width <= console_width ||
+      width_of(candidate) <= console_width ||
         identical(sort(current), sort(sticky_cols))
     ) {
       current <- candidate
@@ -640,7 +725,7 @@ ascii_table_panels <- function(
     }
 
     panels[[length(panels) + 1L]] <- current
-    current <- sort(c(sticky_cols, col))
+    current <- sort(c(sticky_cols, unit))
   }
 
   panels[[length(panels) + 1L]] <- current
@@ -691,7 +776,7 @@ ascii_table_panels <- function(
 #' @details
 #' The layout arguments `spanners`, `display_labels`,
 #' `fit_stats_start`, `total_row_idx`, `group_sep_rows`,
-#' `body_spanners` and `blank_row_groups` are
+#' `body_spanners`, `blank_row_groups` and `whole_spanners` are
 #' plumbing consumed by spicy's own print methods; they are
 #' documented for completeness and are rarely useful when calling
 #' this function directly.
@@ -755,6 +840,13 @@ ascii_table_panels <- function(
 #'   stacked panels, continuation panels leave out every group none of
 #'   whose rows has a data cell there. An alternative to
 #'   `fit_stats_start`, not to be combined with it. Defaults to `NULL`.
+#' @param whole_spanners Logical. When `TRUE`, each group of `spanners`
+#'   is laid out as a unit: its columns widen until its label fits over
+#'   them, and a split into panels keeps them together, unless the group
+#'   alone is wider than the console. Used by the descriptive tables,
+#'   whose spanners are the groups of `by`. When `FALSE` (the default), a
+#'   label wider than its columns is truncated and a split may fall inside
+#'   a group.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -801,6 +893,7 @@ spicy_print_table <- function(
   qualify_companions = FALSE,
   body_spanners = NULL,
   blank_row_groups = NULL,
+  whole_spanners = FALSE,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -854,36 +947,17 @@ spicy_print_table <- function(
     padding = padding,
     first_column_line = first_column_line,
     row_total_line = row_total_line,
-    sticky_cols = align_left_cols
+    sticky_cols = align_left_cols,
+    groups = if (isTRUE(whole_spanners)) spanners
   )
-
-  # Column groups (label -> columns of `x`) remapped to the indices of the
-  # panel of columns `cols`. When a group's columns are split across
-  # panels, each panel displays its label over the surviving subset
-  # (matches modelsummary panel-split behavior: the model name reappears
-  # at the top of every panel where any of its columns are visible).
-  # NULL when no group is left.
-  panel_spans <- function(spans, cols) {
-    out <- list()
-    for (lbl in names(spans)) {
-      local_idx <- sort(match(intersect(spans[[lbl]], cols), cols))
-      # Drop discontiguous slivers (e.g. sticky col 1 between data cols
-      # of the same model would break contiguity -- that doesn't arise
-      # in practice because the Variable column is never in a spanner).
-      if (length(local_idx) && all(diff(local_idx) == 1L)) {
-        out[[lbl]] <- local_idx
-      }
-    }
-    if (length(out)) out
-  }
 
   txt <- vapply(
     seq_along(panel_cols),
     function(panel_i) {
       cols <- panel_cols[[panel_i]]
-      panel_spanners <- panel_spans(spanners, cols)
+      panel_spanners <- ascii_panel_spans(spanners, cols)
       panel_body_spanners <- lapply(body_spanners, function(b) {
-        list(row = b$row, spans = panel_spans(b$spans, cols))
+        list(row = b$row, spans = ascii_panel_spans(b$spans, cols))
       })
       # `x[, cols]` uniquifies duplicate names ("B"/"B" -> "B"/"B.1");
       # restore the originals so the header row prints the unprefixed
@@ -1062,6 +1136,7 @@ spicy_print_table <- function(
         total_row_idx = panel_total,
         display_labels = panel_display_labels,
         body_spanners = panel_body_spanners,
+        whole_spanners = whole_spanners,
         ...
       )
     },
@@ -1087,4 +1162,28 @@ spicy_print_table <- function(
   }
 
   invisible(x)
+}
+
+# The console header of a descriptive table whose groups of `by` own
+# columns, from the header layer its rich engines read: `groups` are the
+# records of that layer (`label`, `cols`, and `bounds`, the headers under
+# the label, on a group of `by`), `labels` the full header of each column.
+# A group of several columns becomes a spanner over them, each column
+# headed by its own statistic; a group of one column is headed by the
+# group alone, as `build_header_rows_from()` heads it in the rich engines.
+# Returns the headers and the spanners (NULL when there is none).
+ascii_group_header <- function(labels, groups) {
+  spanners <- list()
+  for (g in groups) {
+    if (is.null(g$bounds)) {
+      next
+    }
+    if (length(g$cols) > 1L) {
+      labels[g$cols] <- g$bounds
+      spanners[[g$label]] <- g$cols
+    } else {
+      labels[g$cols] <- g$label
+    }
+  }
+  list(labels = labels, spanners = if (length(spanners)) spanners)
 }
