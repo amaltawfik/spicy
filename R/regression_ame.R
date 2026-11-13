@@ -22,6 +22,83 @@
 # `estimate_type = "ame"`, ready to rbind() with B/beta rows in
 # `extract_lm_phase1()`.
 
+# ---- The quantity an AME row reports (`ame_type`) --------------------------
+
+# `table_regression(ame_type = )`: for a continuous predictor, the average
+# slope dY/dX ("slope"), or the average change in the prediction when the
+# predictor rises by one unit ("unit") or by one standard deviation
+# ("sd") from its observed value. Categorical and 0/1 predictors are
+# contrasts with their reference level under all three. The value is set
+# by table_regression() for the frames it builds, as `.reg_panel` carries
+# the request of a stacked panel (R/regression_stacked.R), so every class
+# that computes an AME reads it here without an argument of its own; the
+# functions below take it as an argument whose default is this value.
+.ame_state <- new.env(parent = emptyenv())
+.ame_state$type <- NULL
+
+.ame_type_in_force <- function() {
+  .ame_state$type %||% "slope"
+}
+
+# The step a continuous predictor takes under "unit" or "sd": from its
+# observed value x to x + 1, or to x + SD(x), the unweighted standard
+# deviation of the predictor in the data the AME is averaged over. A
+# function of the column, so the direction never depends on the option
+# `marginaleffects_contrast_direction` (a numeric gap follows it), and
+# not marginaleffects' "sd" shortcut, which sets every unit to the mean
+# minus and plus half a standard deviation.
+.ame_gap_size <- function(x, ame_type) {
+  if (identical(ame_type, "sd")) stats::sd(x, na.rm = TRUE) else 1
+}
+
+.ame_gap <- function(ame_type) {
+  force(ame_type)
+  function(x) data.frame(lo = x, hi = x + .ame_gap_size(x, ame_type))
+}
+
+# The AME table of `model`, in marginaleffects' shape: avg_slopes() under
+# "slope". Otherwise avg_comparisons() over the same variables, the
+# continuous ones (those avg_slopes() differentiates, "dY/dX") moved by
+# their gap and every other one at its default contrast, the one
+# avg_slopes() reports for it. One table, so its Jacobian and its draws
+# serve the robust, ordinal and Bayesian steps that read them.
+.spicy_avg_ame <- function(model, ame_type = "slope", ...) {
+  args <- list(...)
+  # marginaleffects rebuilds its call from the expressions it is given
+  # and evaluates them in its caller, so each argument is bound to its
+  # own name where the call runs.
+  run <- function(fun, more = list()) {
+    a <- c(args, more)
+    cl <- as.call(c(
+      list(fun, quote(model)),
+      stats::setNames(lapply(names(a), as.name), names(a))
+    ))
+    eval(cl, list2env(c(list(model = model), a)))
+  }
+  slopes <- run(quote(marginaleffects::avg_slopes))
+  if (identical(ame_type, "slope")) {
+    return(slopes)
+  }
+  terms <- unique(as.character(slopes$term))
+  cont <- unique(as.character(slopes$term[slopes$contrast %in% "dY/dX"]))
+  if (length(cont) == 0L) {
+    return(slopes)
+  }
+  variables <- stats::setNames(rep(list(NULL), length(terms)), terms)
+  variables[cont] <- list(.ame_gap(ame_type))
+  run(quote(marginaleffects::avg_comparisons), list(variables = variables))
+}
+
+# The marginaleffects function an AME failure names.
+.ame_me_fun <- function(ame_type) {
+  if (identical(ame_type, "slope")) {
+    "`marginaleffects::avg_slopes()`"
+  } else {
+    "`marginaleffects::avg_comparisons()`"
+  }
+}
+
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_ame_rows <- function(
@@ -32,7 +109,8 @@ extract_ame_rows <- function(
   ci_level,
   use_ame_satterthwaite,
   model_id,
-  outcome
+  outcome,
+  ame_type = .ame_type_in_force()
 ) {
   # Class-aware dispatch (Phase 3 Step 5).
   #
@@ -55,7 +133,8 @@ extract_ame_rows <- function(
       cluster,
       ci_level,
       model_id,
-      outcome
+      outcome,
+      ame_type = ame_type
     ))
   }
 
@@ -68,7 +147,8 @@ extract_ame_rows <- function(
         cluster,
         ci_level,
         model_id,
-        outcome
+        outcome,
+        ame_type = ame_type
       ),
       error = function(e) e
     )
@@ -117,7 +197,15 @@ extract_ame_rows <- function(
     }
   }
   # Path B: marginaleffects with our vcov matrix + df-aware
-  extract_ame_marginaleffects(fit, vc, vcov_type, ci_level, model_id, outcome)
+  extract_ame_marginaleffects(
+    fit,
+    vc,
+    vcov_type,
+    ci_level,
+    model_id,
+    outcome,
+    ame_type = ame_type
+  )
 }
 
 
@@ -133,7 +221,8 @@ extract_ame_satterthwaite <- function(
   cluster,
   ci_level,
   model_id,
-  outcome
+  outcome,
+  ame_type = "slope"
 ) {
   if (!spicy_pkg_available("clubSandwich")) {
     # nocov start
@@ -183,7 +272,10 @@ extract_ame_satterthwaite <- function(
   # Build contrast vectors for each predictor
   contrast_set <- list()
   for (v in preds) {
-    contrast_set <- c(contrast_set, build_ame_contrasts_for_predictor(fit, v))
+    contrast_set <- c(
+      contrast_set,
+      build_ame_contrasts_for_predictor(fit, v, ame_type)
+    )
   }
   if (length(contrast_set) == 0L) {
     return(empty_coefs_long())
@@ -264,16 +356,23 @@ extract_ame_satterthwaite <- function(
 # - numeric v (no interactions or with interactions): one contrast
 #   for "AME of v" averaged over the observed data.
 # - factor v: k-1 contrasts, one per non-reference level.
-build_ame_contrasts_for_predictor <- function(fit, v) {
+build_ame_contrasts_for_predictor <- function(fit, v, ame_type = "slope") {
   data <- stats::model.frame(fit)
   if (!v %in% names(data)) {
     return(list())
   }
 
   if (is.numeric(data[[v]])) {
+    # A 0/1 predictor is a contrast of its two values under every
+    # `ame_type`, as marginaleffects reports it.
+    gap <- if (all(data[[v]] %in% c(0, 1))) {
+      1
+    } else {
+      .ame_gap_size(data[[v]], ame_type)
+    }
     return(list(list(
       term_id = v,
-      vector = build_numeric_ame_contrast(fit, v)
+      vector = build_numeric_ame_contrast(fit, v, gap)
     )))
   }
   if (is.factor(data[[v]])) {
@@ -315,12 +414,13 @@ build_ame_contrasts_for_predictor <- function(fit, v) {
 #                            model.matrix(formula, data_at)) where
 # data_h has v incremented by one unit. For linear formulas this
 # is exact (no derivative approximation needed because the design
-# matrix is linear in v).
-build_numeric_ame_contrast <- function(fit, v) {
+# matrix is linear in v), and the slope and the change for one unit are
+# the same number. `gap` is the step of `ame_type = "sd"`.
+build_numeric_ame_contrast <- function(fit, v, gap = 1) {
   data <- stats::model.frame(fit)
   mm_at <- stats::model.matrix(fit)
   data_h <- data
-  data_h[[v]] <- data_h[[v]] + 1
+  data_h[[v]] <- data_h[[v]] + gap
   mm_h <- stats::model.matrix(stats::formula(fit), data_h)
   .ame_contrast_row_average(mm_h - mm_at, fit)
 }
@@ -464,7 +564,8 @@ extract_ame_marginaleffects <- function(
   vcov_type,
   ci_level,
   model_id,
-  outcome
+  outcome,
+  ame_type = "slope"
 ) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
@@ -486,8 +587,9 @@ extract_ame_marginaleffects <- function(
   }
 
   ame_table <- tryCatch(
-    marginaleffects::avg_slopes(
+    .spicy_avg_ame(
       fit,
+      ame_type,
       vcov = vc,
       conf_level = ci_level,
       df = df_arg,
@@ -498,7 +600,7 @@ extract_ame_marginaleffects <- function(
     error = function(e) {
       spicy_warn(
         c(
-          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
@@ -669,7 +771,8 @@ extract_ame_glm <- function(
   cluster,
   ci_level,
   model_id,
-  outcome
+  outcome,
+  ame_type = "slope"
 ) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
@@ -689,8 +792,9 @@ extract_ame_glm <- function(
   # otherwise and under resampling. For CR* we override below.
   ame_df <- .glm_wald_df(fit, vcov_type)
   ame_table <- tryCatch(
-    marginaleffects::avg_slopes(
+    .spicy_avg_ame(
       fit,
+      ame_type,
       vcov = vc,
       conf_level = ci_level,
       df = ame_df,
@@ -701,7 +805,7 @@ extract_ame_glm <- function(
     error = function(e) {
       spicy_warn(
         c(
-          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
@@ -910,7 +1014,17 @@ extract_ame_glm <- function(
 # V their variance, `vc` or the model's. Errors when a row cannot be
 # rebuilt (a contrast not found, a design that does not match the
 # coefficients): the caller then leaves the AME out with a warning.
-.ordinal_offset_ame <- function(ame_table, fit, vc, ci_level, df = Inf) {
+# Under `ame_type = "unit"` or `"sd"`, a continuous predictor moves from
+# its observed value by its gap (`.ame_gap_size()`), as avg_comparisons()
+# moves it in `.spicy_avg_ame()`.
+.ordinal_offset_ame <- function(
+  ame_table,
+  fit,
+  vc,
+  ci_level,
+  df = Inf,
+  ame_type = "slope"
+) {
   tt <- stats::terms(fit)
   dat <- insight::get_data(fit, verbose = FALSE)
   used <- intersect(all.vars(tt), names(dat))
@@ -979,11 +1093,16 @@ extract_ame_glm <- function(
     v <- block$term[i]
     x <- dat[[v]]
     lo <- hi <- dat
-    if (identical(block$contrast[i], "dY/dX") && is.numeric(x)) {
-      h <- 1e-4 * diff(range(x, finite = TRUE))
-      h <- if (h == 0) 1e-4 else h
-      lo[[v]] <- x - h / 2
-      hi[[v]] <- x + h / 2
+    if (is.numeric(x) && !grepl(" - ", block$contrast[i], fixed = TRUE)) {
+      if (identical(ame_type, "slope")) {
+        h <- 1e-4 * diff(range(x, finite = TRUE))
+        h <- if (h == 0) 1e-4 else h
+        lo[[v]] <- x - h / 2
+        hi[[v]] <- x + h / 2
+      } else {
+        h <- 1
+        hi[[v]] <- x + .ame_gap_size(x, ame_type)
+      }
     } else {
       lv <- if (is.factor(x)) {
         levels(x)
@@ -1098,7 +1217,8 @@ extract_ame_glm <- function(
   ci_level,
   vc = NULL,
   hdi = FALSE,
-  df = Inf
+  df = Inf,
+  ame_type = .ame_type_in_force()
 ) {
   # `df` is the reference distribution of the AME rows. Inf (the
   # default, and every asymptotic class) means z and leaves the table
@@ -1113,7 +1233,12 @@ extract_ame_glm <- function(
     # Bayesian fits: draws-native summaries under the table's own
     # conventions (median / MAD SD / ETI-or-HDI; no statistic, no p).
     # The shared row-mapping below consumes the same column shape.
-    ame_table <- .compute_bayes_ame_table(fit, ci_level, hdi = hdi)
+    ame_table <- .compute_bayes_ame_table(
+      fit,
+      ci_level,
+      hdi = hdi,
+      ame_type = ame_type
+    )
   } else {
     # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
     # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
@@ -1145,8 +1270,9 @@ extract_ame_glm <- function(
     newdata <- if (inherits(fit, "fixest")) .fixest_ame_newdata(fit)
     do_slopes <- function(vcarg) {
       suppressWarnings(suppressMessages(
-        marginaleffects::avg_slopes(
+        .spicy_avg_ame(
           fit_ame,
+          ame_type,
           newdata = newdata,
           conf_level = ci_level,
           df = df,
@@ -1161,7 +1287,7 @@ extract_ame_glm <- function(
     fail_warn <- function(e) {
       spicy_warn(
         c(
-          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
@@ -1214,7 +1340,7 @@ extract_ame_glm <- function(
   ) {
     reason <- NULL
     ame_table <- tryCatch(
-      .ordinal_offset_ame(ame_table, fit, vc, ci_level, df),
+      .ordinal_offset_ame(ame_table, fit, vc, ci_level, df, ame_type),
       error = function(e) {
         reason <<- conditionMessage(e)
         NULL
@@ -1405,11 +1531,17 @@ extract_ame_glm <- function(
 # HDI is not transformation-invariant). statistic / p.value stay NA:
 # a posterior has neither, and the renderer dashes those cells like
 # the B-row p column.
-.compute_bayes_ame_table <- function(fit, ci_level, hdi = FALSE) {
+.compute_bayes_ame_table <- function(
+  fit,
+  ci_level,
+  hdi = FALSE,
+  ame_type = "slope"
+) {
   s <- tryCatch(
     suppressWarnings(suppressMessages(
-      marginaleffects::avg_slopes(
+      .spicy_avg_ame(
         fit,
+        ame_type,
         conf_level = ci_level,
         # Weighted fit: the AME draws average the unit-level slopes
         # with the fit's prior weights, matching every frequentist
@@ -1429,7 +1561,7 @@ extract_ame_glm <- function(
       }
       spicy_warn(
         c(
-          "AME computation via `marginaleffects::avg_slopes()` failed.",
+          sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
           "i" = hint
         ),
@@ -1548,7 +1680,8 @@ extract_ame_glm <- function(
   cluster = NULL,
   hdi = FALSE,
   vcov_matrix = NULL,
-  df = Inf
+  df = Inf,
+  ame_type = .ame_type_in_force()
 ) {
   ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
   if (!any(ame_tokens %in% show_columns)) {
@@ -1604,7 +1737,8 @@ extract_ame_glm <- function(
     ci_level,
     vc = vc,
     hdi = hdi,
-    df = df
+    df = df,
+    ame_type = ame_type
   )
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) {
     return(coefs)

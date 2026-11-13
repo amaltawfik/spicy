@@ -1179,6 +1179,32 @@
 #'   CI endpoints carry the uncertainty more faithfully than this SE.
 #'   The footer states the SE scale and the CI asymmetry whenever an
 #'   SE column is displayed. Default `FALSE`.
+#' @param ame_type The quantity the AME columns report for a continuous
+#'   predictor. `"slope"` (default): the average slope dY/dX, the
+#'   derivative of the prediction averaged over the observations (Stata's
+#'   `margins, dydx()`). `"unit"`: the average change in the prediction
+#'   when the predictor rises by one unit from each observation's own
+#'   value. `"sd"`: the same for a rise of one standard deviation, the
+#'   unweighted standard deviation of the predictor in the estimation
+#'   sample, again from each observation's own value (not the change from
+#'   the mean minus half a standard deviation to the mean plus half that
+#'   the `"sd"` shortcut of [marginaleffects::avg_comparisons()]
+#'   computes). The step is taken on the variable as it is in the data,
+#'   before any transformation the formula applies (`log(x)`,
+#'   `poly(x, 2)`). The three agree when the prediction is linear in the
+#'   predictor (an `lm` without transformed terms: `"unit"` equals the
+#'   slope, `"sd"` the slope times the standard deviation). Under a
+#'   non-identity link they differ, the more so as the coefficient grows:
+#'   with a log link and no interaction, the slope is `b * mean(mu)` and
+#'   the change for one unit `(exp(b) - 1) * mean(mu)`. `"unit"` is the
+#'   quantity the sentence "one more unit of X goes with ... more of Y"
+#'   describes; the slope only approximates it. Categorical, logical and
+#'   0/1 predictors are contrasts with their reference level under every
+#'   value. Weighted fits average with the same weights under every value,
+#'   per-category models (ordinal, multinomial) report the quantity for
+#'   each category probability, and Bayesian fits summarize its draws. The
+#'   table note names the quantity. Ignored, with a warning, when no AME
+#'   column is shown.
 #' @param p_adjust Multiple-comparison adjustment method applied
 #'   to the family of estimated coefficient p-values within each
 #'   model (intercept and reference rows excluded). One of
@@ -2043,6 +2069,7 @@ table_regression <- function(
   at_time = NULL,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
+  ame_type = c("slope", "unit", "sd"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -2155,6 +2182,7 @@ table_regression <- function(
 
   # Resolve enum args (classed spicy_invalid_input on invalid values)
   standardized <- spicy_match_arg(standardized)
+  ame_type <- spicy_match_arg(ame_type)
   ci_method <- spicy_match_arg(ci_method)
   intercept_position <- spicy_match_arg(intercept_position)
   reference_style <- spicy_match_arg(reference_style)
@@ -2291,6 +2319,17 @@ table_regression <- function(
   # Survival estimand horizons: the horizon defines the estimand, so
   # it is explicit and mandatory -- and refused when unused.
   validate_estimand_horizons(show_columns, tau, at_time)
+  # `ame_type` defines the AME columns; a table without one reaches nothing.
+  if (
+    !identical(ame_type, "slope") &&
+      !any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+  ) {
+    .warn_ignored(
+      "ame_type",
+      "when no AME column is shown",
+      spicy_gather = .reg_gather(panel_req, "ame_type")
+    )
+  }
   # Phase 7c23 (item a): coerce `FALSE` to `character(0)` so the
   # downstream class-aware default branch (line ~ 996) treats the
   # explicit "suppress" as "no tokens to inject", instead of leaving
@@ -3120,6 +3159,12 @@ table_regression <- function(
   # the legacy `apply_p_adjust()` -- all gone. Every downstream renderer
   # (title, footer, alignment, nested LRT) consumes frames directly.
   frames <- vector("list", n_models)
+  # The quantity of the AME rows, read by every class that computes them
+  # (`.ame_type_in_force()`, R/regression_ame.R), for the frames of this
+  # call only.
+  ame_type_before <- .ame_state$type
+  .ame_state$type <- ame_type
+  on.exit(.ame_state$type <- ame_type_before, add = TRUE)
   for (i in seq_len(n_models)) {
     # The frame computes the variances (`R/vcov.R`): an estimator that
     # fails there is refused in the name of this function.
@@ -3147,6 +3192,8 @@ table_regression <- function(
       ),
       public_call
     )
+    # What the note names the AME of a continuous predictor by.
+    frames[[i]]$info$extras$ame_type <- ame_type
     # Truthfulness gate: `standardized` requires a class with a real
     # standardized-coefficients path (the beta attach). Classes without
     # one used to accept the argument and render the auto-injected beta

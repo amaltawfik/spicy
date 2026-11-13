@@ -773,6 +773,11 @@
   note_ame_satterthwaite = "AME inference: t-test with Satterthwaite df%s.",
   note_ame_satterthwaite_qual_both = " (closed-form for lm; dominant-coefficient approximation for glm)",
   note_ame_satterthwaite_qual_glm = " (dominant-coefficient approximation)",
+  # The quantity the AME of a continuous predictor is, one sentence per
+  # `ame_type` of table_regression(), the default included.
+  note_ame_slope = "AME of a continuous predictor: average slope (dY/dX).",
+  note_ame_unit = "AME of a continuous predictor: average change in the prediction for a one-unit increase.",
+  note_ame_sd = "AME of a continuous predictor: average change in the prediction for a one-standard-deviation increase.",
   # The exponentiation note. The scope is the subject of the sentence:
   # every coefficient, or the models it names (one hole: the model
   # references, joined). The SE gloss names the mechanism behind the

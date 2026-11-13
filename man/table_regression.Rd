@@ -15,6 +15,7 @@ table_regression(
   at_time = NULL,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
+  ame_type = c("slope", "unit", "sd"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -250,6 +251,33 @@ Methods and formulas: \verb{se(OR) = OR × se(b)}) and the log-scale
 CI endpoints carry the uncertainty more faithfully than this SE.
 The footer states the SE scale and the CI asymmetry whenever an
 SE column is displayed. Default \code{FALSE}.}
+
+\item{ame_type}{The quantity the AME columns report for a continuous
+predictor. \code{"slope"} (default): the average slope dY/dX, the
+derivative of the prediction averaged over the observations (Stata's
+\verb{margins, dydx()}). \code{"unit"}: the average change in the prediction
+when the predictor rises by one unit from each observation's own
+value. \code{"sd"}: the same for a rise of one standard deviation, the
+unweighted standard deviation of the predictor in the estimation
+sample, again from each observation's own value (not the change from
+the mean minus half a standard deviation to the mean plus half that
+the \code{"sd"} shortcut of \code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}}
+computes). The step is taken on the variable as it is in the data,
+before any transformation the formula applies (\code{log(x)},
+\code{poly(x, 2)}). The three agree when the prediction is linear in the
+predictor (an \code{lm} without transformed terms: \code{"unit"} equals the
+slope, \code{"sd"} the slope times the standard deviation). Under a
+non-identity link they differ, the more so as the coefficient grows:
+with a log link and no interaction, the slope is \code{b * mean(mu)} and
+the change for one unit \code{(exp(b) - 1) * mean(mu)}. \code{"unit"} is the
+quantity the sentence "one more unit of X goes with ... more of Y"
+describes; the slope only approximates it. Categorical, logical and
+0/1 predictors are contrasts with their reference level under every
+value. Weighted fits average with the same weights under every value,
+per-category models (ordinal, multinomial) report the quantity for
+each category probability, and Bayesian fits summarize its draws. The
+table note names the quantity. Ignored, with a warning, when no AME
+column is shown.}
 
 \item{p_adjust}{Multiple-comparison adjustment method applied
 to the family of estimated coefficient p-values within each

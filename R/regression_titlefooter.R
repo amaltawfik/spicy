@@ -450,6 +450,7 @@ build_regression_footer_from_frames <- function(
     # subordinate blocks, the scope of a standardized coefficient, the
     # labels of polynomial trends.
     definitions = .footer_paragraph(
+      build_ame_quantity_footer_block_from_frames(frames, show_columns),
       build_survival_estimand_footer_block_from_frames(frames),
       if (thresholds_as_rows) thresholds,
       build_scale_effects_footer_block_from_frames(frames),
@@ -498,6 +499,51 @@ build_regression_footer_from_frames <- function(
     return(p)
   }
   .compose_note_parts(p)
+}
+
+# The quantity the AME of a continuous predictor is (`ame_type`): the
+# average slope, or the average change in the prediction for one unit or
+# one standard deviation more. Named under every value, the default
+# included, whenever an AME column shows such a predictor: a numeric AME
+# row, the one row of its variable, as categorical AME rows carry the
+# position of their level.
+build_ame_quantity_footer_block_from_frames <- function(
+  frames,
+  show_columns = character(0)
+) {
+  if (
+    !is.list(frames) ||
+      !any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+  ) {
+    return(NULL)
+  }
+  types <- unlist(lapply(frames, function(f) {
+    cf <- f$coefs
+    if (is.null(cf) || is.null(cf$factor_level_pos)) {
+      return(NULL)
+    }
+    numeric_ame <- cf$estimate_type == "ame" &
+      !(cf$is_ref %in% TRUE) &
+      !is.na(cf$estimate) &
+      is.na(cf$factor_level_pos)
+    if (any(numeric_ame)) f$info$extras$ame_type %||% "slope"
+  }))
+  if (length(types) == 0L) {
+    return(NULL)
+  }
+  vapply(
+    unique(types),
+    function(t) {
+      spicy_str(switch(
+        t,
+        unit = "note_ame_unit",
+        sd = "note_ame_sd",
+        "note_ame_slope"
+      ))
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # The sentences of footer themes, ready for the paragraph of the general
