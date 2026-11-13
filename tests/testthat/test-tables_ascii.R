@@ -480,3 +480,143 @@ test_that("a missing column name renders blank without desyncing the table", {
     expect_length(gregexpr("┼", r, fixed = TRUE)[[1L]], 1L)
   }
 })
+
+# Column groups laid out as units (`whole_spanners`), the console header
+# of the descriptive tables under `by`.
+.spanner_df <- function() {
+  data.frame(
+    V = c("a", "b"),
+    A = c("1.0", "2.0"),
+    B = c("3.0", "4.0"),
+    C = c("5", "6"),
+    D = c("7", "8")
+  )
+}
+
+test_that("whole_spanners widens a group to its label instead of truncating", {
+  m <- .spanner_df()
+  lbl <- "A rather long group label"
+  names_lbl <- stats::setNames(list(2:3), lbl)
+  wide <- spicy:::build_ascii_table(
+    m,
+    align_left_cols = 1L,
+    spanners = names_lbl,
+    whole_spanners = TRUE
+  )
+  lines <- strsplit(wide, "\n", fixed = TRUE)[[1]]
+  expect_match(lines[[1]], lbl, fixed = TRUE)
+  expect_length(unique(nchar(lines, type = "width")), 1L)
+  # The default keeps the truncation of the regression tables.
+  cut <- spicy:::build_ascii_table(
+    m,
+    align_left_cols = 1L,
+    spanners = names_lbl
+  )
+  expect_false(grepl(lbl, cut, fixed = TRUE))
+  expect_match(cut, "…", fixed = TRUE)
+})
+
+test_that("spanner labels with wide or combining characters stay aligned", {
+  m <- .spanner_df()
+  row_of <- function(first) {
+    out <- spicy:::build_ascii_table(
+      m,
+      align_left_cols = 1L,
+      spanners = stats::setNames(list(2:3, 4:5), c(first, "Osaka"))
+    )
+    strsplit(out, "\n", fixed = TRUE)[[1]]
+  }
+  ascii <- row_of("ABCD")
+  # Two wide characters fill the four columns of "ABCD", and a decomposed
+  # accent adds none: "Osaka" stays where it is.
+  for (first in c("東京", "étéA")) {
+    lines <- row_of(first)
+    expect_length(unique(nchar(lines, type = "width")), 1L)
+    expect_identical(
+      sub("^.*Osaka", "Osaka", lines[[1]]),
+      sub("^.*Osaka", "Osaka", ascii[[1]])
+    )
+    expect_identical(
+      nchar(sub("Osaka.*$", "", lines[[1]]), type = "width"),
+      nchar(sub("Osaka.*$", "", ascii[[1]]), type = "width")
+    )
+  }
+  # A truncated label is cut by console columns too.
+  cut <- spicy:::build_ascii_table(
+    m,
+    align_left_cols = 1L,
+    padding = 0L,
+    spanners = list("東京都の男性" = 2:3)
+  )
+  expect_length(
+    unique(nchar(strsplit(cut, "\n", fixed = TRUE)[[1]], type = "width")),
+    1L
+  )
+  expect_identical(spicy:::ascii_trunc_width("東京都", 5L), "東京")
+  expect_identical(spicy:::ascii_trunc_width("été", 2L), "ét")
+})
+
+test_that("a split into panels keeps each group whole", {
+  df <- data.frame(
+    V = "row",
+    a1 = "11.1",
+    a2 = "22.2",
+    b1 = "33.3",
+    b2 = "44.4",
+    c1 = "55.5",
+    c2 = "66.6"
+  )
+  groups <- list(A = 2:3, B = 4:5, C = 6:7)
+  panels <- function(width, groups) {
+    spicy:::ascii_table_panels(
+      df,
+      console_width = width,
+      padding = 2L,
+      first_column_line = TRUE,
+      row_total_line = FALSE,
+      sticky_cols = 1L,
+      groups = groups
+    )
+  }
+  # Room for one group and a half: the columns alone split inside B.
+  expect_identical(panels(32, NULL), list(1:4, c(1L, 5:7)))
+  expect_identical(panels(32, groups), list(1:3, c(1L, 4:5), c(1L, 6:7)))
+  # A group wider than a panel by itself splits as single columns do.
+  expect_identical(panels(20, groups), panels(20, NULL))
+  # Printed: each panel repeats the label of the groups it holds.
+  out <- withr::with_options(
+    list(width = 32),
+    capture.output(spicy_print_table(
+      df,
+      align_left_cols = 1L,
+      spanners = groups,
+      whole_spanners = TRUE
+    ))
+  )
+  expect_identical(sum(grepl("^ V ", out)), 3L)
+  expect_identical(sum(grepl("\\bA\\b|\\bB\\b|\\bC\\b", out)), 3L)
+})
+
+test_that("ascii_group_header heads the columns of a group", {
+  labels <- c("Variable", "F n", "F %", "M n", "M %", "x 1", "p")
+  groups <- list(
+    list(key = "Variable", label = "Variable", cols = 1L),
+    list(key = "F", label = "F", cols = 2:3, bounds = c("n", "%")),
+    list(key = "M", label = "M", cols = 4:5, bounds = c("n", "%")),
+    list(key = "x", label = "x", cols = 6L, bounds = "1"),
+    list(key = "p", label = "p", cols = 7L)
+  )
+  hdr <- spicy:::ascii_group_header(labels, groups)
+  expect_identical(hdr$labels, c("Variable", "n", "%", "n", "%", "x", "p"))
+  expect_identical(hdr$spanners, list(F = 2:3, M = 4:5))
+  # A label that cannot name a spanner leaves the full headers.
+  groups[[3]]$label <- "F"
+  groups[[2]]$label <- ""
+  hdr <- spicy:::ascii_group_header(labels, groups)
+  expect_identical(hdr$labels[2:5], c("F n", "F %", "n", "%"))
+  expect_identical(hdr$spanners, list(F = 4:5))
+  groups[[2]]$label <- "F"
+  hdr <- spicy:::ascii_group_header(labels, groups)
+  expect_identical(hdr$labels[2:5], c("n", "%", "M n", "M %"))
+  expect_null(spicy:::ascii_group_header(labels, NULL)$spanners)
+})

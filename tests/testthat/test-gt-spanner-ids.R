@@ -81,14 +81,11 @@ test_that("a by level named Total beside the margin is refused", {
     class = "spicy_label_collision"
   )
   withr::local_options(spicy.labels = list(header_margin_total = "All"))
-  out <- paste(
-    capture.output(print(table_categorical(d, f, by = g))),
-    collapse = "\n"
-  )
-  expect_match(out, "Total n", fixed = TRUE) # the user's level, verbatim
-  expect_match(out, "Other n", fixed = TRUE)
-  expect_match(out, "All n", fixed = TRUE) # the margin, relabeled
-  expect_no_match(out, "Total_1", fixed = TRUE)
+  out <- capture.output(print(table_categorical(d, f, by = g)))
+  # The user's level verbatim, then the margin under its new label.
+  spanner <- out[[grep("^ Variable ", out)[[1L]] - 2L]]
+  expect_match(spanner, "^ +Total +Other +All +$")
+  expect_no_match(paste(out, collapse = "\n"), "Total_1", fixed = TRUE)
 })
 
 test_that("the gt spanners carry three distinct ids built from the n columns", {

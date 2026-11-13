@@ -1187,3 +1187,14 @@ test_that("the dash sentence sits with the design sentences", {
   expect_true(all(pos > 0L))
   expect_false(is.unsorted(pos))
 })
+
+test_that("the console heads the groups of `by` above their columns", {
+  skip_on_cran()
+  des <- .bsvy_api("strat")
+  x <- table_battery_svy(des, tidyselect::all_of(.BSVY_ITEMS), by = stype)
+  out <- withr::with_options(list(width = 200), capture.output(print(x)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at - 2L]], "^ +E +H +M +$")
+  expect_match(out[[at]], "\u2502 +No +Yes +n +No +Yes +n +No +Yes +n +p ")
+  expect_true(all(c("E No", "E n") %in% names(as.data.frame(x))))
+})

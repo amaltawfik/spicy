@@ -2961,3 +2961,36 @@ test_that("a calibrated design with missing values keeps its percentage CIs", {
     expect_false(grepl("A dash marks", attr(out, "note"), fixed = TRUE))
   }
 })
+
+test_that("the console heads the domains of `by` above their columns", {
+  skip_on_cran()
+  d <- .svycat_design("clus1")
+  x <- table_categorical_svy(
+    d,
+    select = stype,
+    by = sch.wide,
+    proportion_ci = TRUE,
+    deff = TRUE
+  )
+  out <- withr::with_options(list(width = 200), capture.output(print(x)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at - 2L]], "^ +No +Yes +Total +$")
+  expect_match(
+    out[[at]],
+    "\u2502 +n +% +95% CI LL +95% CI UL +DEff +n +% +95% CI LL "
+  )
+  expect_false(any(grepl("No n", out, fixed = TRUE)))
+  expect_true(all(
+    c("No n", "No %", "No 95% CI LL", "No DEff") %in% names(as.data.frame(x))
+  ))
+  # A one-way table keeps the full headers of its interval bounds.
+  one <- table_categorical_svy(d, select = stype, proportion_ci = TRUE)
+  out <- withr::with_options(list(width = 200), capture.output(print(one)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at]], "95% CI LL +95% CI UL")
+  expect_false(grepl("\u2500", out[[at - 1L]]))
+  # A narrow console keeps each domain whole.
+  narrow <- withr::with_options(list(width = 60), capture.output(print(x)))
+  at <- grep("^ Variable ", narrow)
+  expect_identical(trimws(narrow[at - 2L]), c("No", "Yes", "Total"))
+})

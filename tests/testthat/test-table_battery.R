@@ -1001,3 +1001,35 @@ test_that("drop_na = FALSE says an item has no data in a group, and the base it 
     fixed = TRUE
   )
 })
+
+# ---- the groups of `by` in the console header ------------------------------
+
+test_that("the console heads the groups of `by` above their columns", {
+  skip_on_cran()
+  x <- .bat_tbl(by = sex)
+  out <- withr::with_options(list(width = 200), capture.output(print(x)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at - 2L]], "^ +Female +Male +$")
+  expect_match(out[[at]], "\u2502 +Very dissatisfied +Dissatisfied ")
+  expect_false(any(grepl("Female n", out, fixed = TRUE)))
+  expect_true(all(c("Female n", "Male n") %in% names(as.data.frame(x))))
+  # One column per group: the group heads it alone, as in the rich engines.
+  one <- .bat_tbl(
+    by = sex,
+    top = c("Very satisfied", "Satisfied"),
+    show_n = FALSE
+  )
+  out <- withr::with_options(list(width = 200), capture.output(print(one)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at]], "\u2502 +Female +Male +p +$")
+  expect_false(grepl("\u2500", out[[at - 1L]]))
+  # A group wider than a narrow console splits by its columns, its label
+  # over each part.
+  narrow <- withr::with_options(list(width = 60), capture.output(print(x)))
+  at <- grep("^ Variable ", narrow)
+  expect_gt(length(at), 2L)
+  expect_true(all(trimws(narrow[at - 2L]) %in% c("Female", "Male")))
+  expect_true(all(
+    nchar(narrow[!startsWith(narrow, "Note")], type = "width") <= 60L
+  ))
+})

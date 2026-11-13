@@ -2521,8 +2521,10 @@ test_that("p_value = FALSE: the console table and its typed view", {
   s <- as_structured(tbl)
   expect_identical(unique(vapply(s$col_meta, `[[`, "", "token")), c("n", "pct"))
   printed <- utils::capture.output(print(tbl))
-  header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]
-  expect_match(header, "HS n", fixed = TRUE)
+  at <- grep("Variable", printed, fixed = TRUE)[[1L]]
+  header <- printed[[at]]
+  expect_match(printed[[at - 2L]], "^ +HS +VS ", perl = TRUE)
+  expect_match(header, "│ +n +% +n +% ")
   expect_false(grepl("\\bp\\b", header))
 })
 
@@ -2986,7 +2988,8 @@ test_that("a group displayed with the margin's label is refused", {
   tbl <- table_multiresponse(d, a, by = g)
   expect_identical(attr(tbl, "margin_key"), "Total_1")
   printed <- utils::capture.output(print(tbl))
-  expect_true(any(grepl("All n", printed, fixed = TRUE)))
+  spanner <- printed[[grep("^ Variable ", printed)[[1L]] - 2L]]
+  expect_match(spanner, "^ +Total +x +All +$")
   expect_false(any(grepl("Total_1", printed, fixed = TRUE)))
   td <- broom::tidy(tbl)
   expect_identical(td$total, c(FALSE, FALSE, TRUE))
@@ -3044,4 +3047,56 @@ test_that("the console table is pinned", {
     statistic = TRUE,
     test = "chisq"
   )))
+})
+
+# ---- the groups of `by` in the console header ------------------------------
+
+test_that("the console heads the groups of `by` above their columns", {
+  skip_on_cran()
+  mr <- function() {
+    table_multiresponse(
+      sochealth,
+      select = starts_with("info_"),
+      by = sex,
+      percent = "both",
+      p_value = FALSE
+    )
+  }
+  x <- mr()
+  out <- withr::with_options(list(width = 200), capture.output(print(x)))
+  at <- grep("^ Variable ", out)
+  expect_match(out[[at - 2L]], "^ +Female +Male +Total +$")
+  expect_match(
+    out[[at]],
+    "\u2502 +n +% of cases +% of responses +n +% of cases +% of responses "
+  )
+  expect_false(any(grepl("Female n", out, fixed = TRUE)))
+  expect_identical(
+    names(as.data.frame(x)),
+    c(
+      "variable",
+      "label",
+      ".row_role",
+      "Female n",
+      "Female % of cases",
+      "Female % of responses",
+      "Male n",
+      "Male % of cases",
+      "Male % of responses",
+      "Total n",
+      "Total % of cases",
+      "Total % of responses"
+    )
+  )
+  # A narrow console keeps each group whole, in French too.
+  withr::local_options(spicy.language = "fr")
+  fr <- withr::with_options(list(width = 70), capture.output(print(mr())))
+  at <- grep("^ Variable ", fr)
+  expect_identical(length(at), 3L)
+  expect_identical(
+    trimws(fr[at - 2L]),
+    c("Female", "Male", "Total")
+  )
+  expect_true(all(grepl("n +% des cas +% des r\u00e9ponses", fr[at])))
+  expect_true(all(nchar(fr[at], type = "width") <= 70L))
 })

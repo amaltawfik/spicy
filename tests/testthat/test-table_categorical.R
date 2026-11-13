@@ -4682,7 +4682,9 @@ test_that("a by level displayed beside the margin is refused, with both ways out
   expect_identical(s$col_meta[["Total n"]]$display_label, "Total n")
   expect_null(s$col_meta[["Total n"]]$total)
   printed <- utils::capture.output(print(tbl))
-  expect_true(any(grepl("All n", printed, fixed = TRUE)))
+  # The margin heads its columns under its label, after the user's group.
+  spanner <- printed[[grep("^ Variable ", printed)[[1L]] - 2L]]
+  expect_match(spanner, " Total .* All +$")
   expect_false(any(grepl("Total_1", printed, fixed = TRUE)))
   # tidy() flags the margin by its key, never the user's group.
   td <- broom::tidy(tbl)
@@ -5877,9 +5879,10 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
     paste("P-values: Pearson chi-squared test.", measure_note)
   )
   printed <- utils::capture.output(print(tbl))
-  header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]
-  expect_match(header, "Female n", fixed = TRUE)
-  expect_match(header, "Total %", fixed = TRUE)
+  at <- grep("Variable", printed, fixed = TRUE)[[1L]]
+  header <- printed[[at]]
+  expect_match(printed[[at - 2L]], "^ +Female +Male +Total +$")
+  expect_match(header, "%", fixed = TRUE)
   expect_false(grepl("\\bp\\b", header))
 
   gl <- broom::glance(tbl)
@@ -8306,4 +8309,133 @@ test_that("the levels_keep error lists the levels the variable can display", {
       fixed = TRUE
     )
   }
+})
+
+# ---- the groups of `by` in the console header ------------------------------
+
+# The lines of a printed table: its spanner row, the rule under it and the
+# header row, for each panel.
+.cat_header_rows <- function(out) {
+  at <- grep("^ Variable ", out)
+  list(spanner = out[at - 2L], rule = out[at - 1L], header = out[at])
+}
+
+test_that("the console heads the groups of `by` above their columns", {
+  skip_on_cran()
+  x <- table_categorical(sochealth, select = smoking, by = sex)
+  out <- withr::with_options(list(width = 120), capture.output(print(x)))
+  h <- .cat_header_rows(out)
+  expect_match(h$spanner, "^ +Female +Male +Total +$")
+  expect_match(h$rule, "^ +(─+ +){3}$")
+  expect_match(h$header, "Variable +│ +n +% +n +% +n +% +p +φ +$")
+  expect_false(any(grepl("Female n", out, fixed = TRUE)))
+  # The machine outputs keep their names: only the console changed.
+  expect_identical(
+    names(as.data.frame(x)),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "Female n",
+      "Female %",
+      "Male n",
+      "Male %",
+      "Total n",
+      "Total %",
+      "p",
+      "φ"
+    )
+  )
+  st <- as_structured(x)
+  expect_identical(
+    unname(vapply(st$col_meta, `[[`, "", "display_label")),
+    c(
+      "Female n",
+      "Female %",
+      "Male n",
+      "Male %",
+      "Total n",
+      "Total %",
+      "p",
+      "φ"
+    )
+  )
+  expect_identical(names(st$spanners), c("Female", "Male", "Total"))
+  skip_if_not_installed("tinytable")
+  tt <- table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    output = "tinytable"
+  )
+  expect_identical(names(tt@data), c("", "n", "%", "n", "%", "n", "%", "", ""))
+})
+
+test_that("a narrow console never splits a group of `by` across panels", {
+  skip_on_cran()
+  x <- table_categorical(sochealth, select = smoking, by = age_group)
+  out <- withr::with_options(list(width = 60), capture.output(print(x)))
+  table_lines <- out[nzchar(out) & !startsWith(out, "Note")][-1L]
+  expect_true(all(nchar(table_lines, type = "width") <= 60L))
+  h <- .cat_header_rows(out)
+  expect_gt(length(h$header), 1L)
+  # In every panel, one label over each pair of n and %.
+  labels <- strsplit(trimws(h$spanner), " {2,}")
+  n_cols <- lengths(regmatches(h$header, gregexpr(" n ", h$header)))
+  expect_identical(lengths(labels), n_cols)
+  expect_identical(
+    unlist(labels),
+    c(levels(sochealth$age_group), "Total")
+  )
+})
+
+test_that("long, accented and wide group labels keep the console aligned", {
+  skip_on_cran()
+  d <- sochealth
+  long <- "Femmes âgées de plus de cinquante ans"
+  wide <- "東京都の男性"
+  d$grp <- factor(ifelse(d$sex == "Female", long, wide), levels = c(long, wide))
+  for (width in c(120L, 60L)) {
+    out <- withr::with_options(
+      list(width = width),
+      capture.output(print(table_categorical(d, select = smoking, by = grp)))
+    )
+    h <- .cat_header_rows(out)
+    expect_true(any(grepl(long, h$spanner, fixed = TRUE)))
+    expect_true(any(grepl(wide, h$spanner, fixed = TRUE)))
+    # Every line of a panel is as wide as its rules.
+    starts <- grep("^ Variable ", out) - 2L
+    ends <- c(starts[-1L] - 2L, grep("^Note", out) - 2L)
+    for (i in seq_along(starts)) {
+      expect_length(
+        unique(nchar(out[starts[[i]]:ends[[i]]], type = "width")),
+        1L
+      )
+    }
+  }
+})
+
+test_that("the console groups of `by` follow the display language", {
+  skip_on_cran()
+  withr::local_options(spicy.language = "fr")
+  x <- table_categorical(sochealth, select = smoking, by = sex)
+  out <- withr::with_options(list(width = 120), capture.output(print(x)))
+  h <- .cat_header_rows(out)
+  expect_match(h$spanner, "^ +Female +Male +Total +$")
+  expect_match(h$header, "│ +n +% +n +% +n +% +p ")
+  expect_true(any(grepl("(Manquant)", out, fixed = TRUE)))
+  expect_identical(names(as.data.frame(x))[5:6], c("Female n", "Female %"))
+})
+
+test_that("a `by` level that is the empty string keeps its full headers", {
+  skip_on_cran()
+  d <- sochealth
+  d$g <- ifelse(d$sex == "Female", "", "x")
+  out <- withr::with_options(
+    list(width = 120),
+    capture.output(print(table_categorical(d, select = smoking, by = g)))
+  )
+  h <- .cat_header_rows(out)
+  expect_match(h$spanner, "^ +x +Total +$")
 })
