@@ -188,10 +188,13 @@
 
 ## Improvements and bug fixes
 
-* In the rich outputs (tinytable, gt, flextable, Excel, Word), the
-  degrees of freedom of a term-level test have their own header, "df"
-  and "residual df", instead of repeating the statistic's header
-  ("χ² | χ²").
+* In the rich outputs (tinytable, gt, flextable, Word, Excel, clipboard)
+  a term-level test is one column, as in the console: "F" with
+  "18.08 (1, 28)", "χ²" with "4.52 (2)". They used to split it into
+  columns that all carried the statistic's header ("χ² | χ²"). Excel
+  keeps the statistic as a number with the degrees of freedom in its
+  number format and writes no df column. `output = "data.frame"`,
+  `as_structured()` and `tidy()` keep the separate numeric columns.
 
 * The survey-design tables say survey's own warnings once. Under
   `options(survey.lonely.psu = "adjust", survey.adjust.domain.lonely =
