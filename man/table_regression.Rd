@@ -262,25 +262,34 @@ derivative of the prediction averaged over the observations (Stata's
 when the predictor rises by one unit from each observation's own
 value. \code{"sd"}: the same for a rise of one standard deviation, the
 unweighted standard deviation of the predictor in the estimation
-sample, again from each observation's own value (not the change from
-the mean minus half a standard deviation to the mean plus half that
-the \code{"sd"} shortcut of \code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}}
-computes). The step is taken on the variable as it is in the data,
+sample, again from each observation's own value. These are the
+uncentered unit and standard-deviation changes of Long and Freese
+(2014), averaged over the observations as in Mize, Doan and Long
+(2019). The step is taken on the variable as it is in the data,
 before any transformation the formula applies (\code{log(x)},
-\code{poly(x, 2)}). The three agree when the prediction is linear in the
-predictor (an \code{lm} without transformed terms: \code{"unit"} equals the
-slope, \code{"sd"} the slope times the standard deviation). Under a
-non-identity link they differ, the more so as the coefficient grows:
-with a log link and no interaction, the slope is \code{b * mean(mu)} and
-the change for one unit \code{(exp(b) - 1) * mean(mu)}. \code{"unit"} is the
-quantity the sentence "one more unit of X goes with ... more of Y"
-describes; the slope only approximates it. Categorical, logical and
-0/1 predictors are contrasts with their reference level under every
-value. Weighted fits average with the same weights under every value,
-per-category models (ordinal, multinomial) report the quantity for
-each category probability, and Bayesian fits summarize its draws. The
-table note names the quantity. Ignored, with a warning, when no AME
-column is shown.}
+\code{poly(x, 2)}). For the observations with the highest values, it can
+carry the predictor beyond the values observed: the prediction there
+is an extrapolation of the model. Gelman and Pardoe (2007) consider
+changes only in the region of support of the data. \code{"sd"} is not the
+\code{"sd"} shortcut of \code{\link[marginaleffects:avg_comparisons]{marginaleffects::avg_comparisons()}}, which moves
+every observation between the same two values, the mean minus and
+the mean plus half a standard deviation. For an unweighted fit and
+marginaleffects' default forward contrast, it equals
+\code{avg_comparisons(fit, variables = list(x = sd(x)))}, the standard
+deviation taken over the rows the fit used. The three agree when the
+prediction is linear in the predictor (an \code{lm} without transformed
+terms: \code{"unit"} equals the slope, \code{"sd"} the slope times the standard
+deviation). Under a non-identity link they differ, the more so as the
+coefficient grows: with a log link and no interaction, the slope is
+\code{b * mean(mu)} and the change for one unit \code{(exp(b) - 1) * mean(mu)}.
+\code{"unit"} is the quantity the sentence "one more unit of X goes with
+... more of Y" describes; the slope only approximates it.
+Categorical, logical and 0/1 predictors are contrasts with their
+reference level under every value. Weighted fits average with the
+same weights under every value, per-category models (ordinal,
+multinomial) report the quantity for each category probability, and
+Bayesian fits summarize its draws. The table note names the quantity.
+Ignored, with a warning, when no AME column is shown.}
 
 \item{p_adjust}{Multiple-comparison adjustment method applied
 to the family of estimated coefficient p-values within each
@@ -2158,12 +2167,25 @@ Friedrich, R.J. (1982). In defense of multiplicative terms in
 multiple regression equations. \emph{American Journal of Political
 Science}, 26(4), 797-833.
 
+Gelman, A. & Pardoe, I. (2007). Average predictive comparisons for
+models with nonlinearity, interactions, and variance components.
+\emph{Sociological Methodology}, 37(1), 23-51.
+\doi{10.1111/j.1467-9531.2007.00181.x}
+
 Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and
 efficiency of approximation methods for tied survival times in
 Cox regression. \emph{Biometrics}, 53(3), 1151-1156.
 
 Liang, K.-Y. & Zeger, S.L. (1986). Longitudinal data analysis
 using generalized linear models. \emph{Biometrika}, 73(1), 13-22.
+
+Long, J.S. & Freese, J. (2014). \emph{Regression models for categorical
+dependent variables using Stata} (3rd ed.). Stata Press.
+
+Mize, T.D., Doan, L., & Long, J.S. (2019). A general framework for
+comparing predictions and marginal effects across models.
+\emph{Sociological Methodology}, 49(1), 152-189.
+\doi{10.1177/0081175019852763}
 
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in

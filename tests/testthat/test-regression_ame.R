@@ -105,6 +105,32 @@ test_that("ame_type on a logit matches the closed form and marginaleffects", {
   )
 })
 
+test_that("'sd' is avg_comparisons() with the SD of the estimation sample", {
+  skip_if_not_installed("marginaleffects")
+  d <- make_ame_d()
+  # Rows the fit drops through another variable, x observed there.
+  d$z[c(4, 9, 31)] <- NA
+  d$x[c(4, 9, 31)] <- d$x[c(4, 9, 31)] + 6
+  for (m in list(
+    glm(yb ~ x + z, family = binomial, data = d),
+    glm(yg ~ x + z, family = Gamma(link = "log"), data = d)
+  )) {
+    s <- sd(stats::model.frame(m)$x)
+    orc <- marginaleffects::avg_comparisons(m, variables = list(x = s))
+    a <- ame_long(m, "sd")
+    expect_equal(a$estimate[a$term == "x"], orc$estimate, tolerance = 1e-10)
+    expect_equal(a$std.error[a$term == "x"], orc$std.error, tolerance = 1e-8)
+    # Neither the SD of the whole data nor marginaleffects' "sd" shortcut.
+    whole <- marginaleffects::avg_comparisons(
+      m,
+      variables = list(x = sd(d$x))
+    )
+    short <- marginaleffects::avg_comparisons(m, variables = list(x = "sd"))
+    expect_false(isTRUE(all.equal(orc$estimate, whole$estimate)))
+    expect_false(isTRUE(all.equal(orc$estimate, short$estimate)))
+  }
+})
+
 test_that("ame_type = 'unit' honors weights, interactions, transforms and counts", {
   skip_if_not_installed("marginaleffects")
   d <- make_ame_d()
