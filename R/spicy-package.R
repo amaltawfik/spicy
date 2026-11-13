@@ -84,7 +84,8 @@
 #' `spicy_categorical_table`, `spicy_categorical_svy_table`,
 #' `spicy_continuous_table`, `spicy_continuous_svy_table`,
 #' `spicy_continuous_lm_table`, `spicy_outcome_table`,
-#' `spicy_multiresponse_table`, `spicy_regression_table` and
+#' `spicy_multiresponse_table`, `spicy_battery_table`,
+#' `spicy_battery_svy_table`, `spicy_regression_table` and
 #' `spicy_stack_table`, and the `output = "long"` frame of every table
 #' function, speak one vocabulary: broom's name wherever broom defines
 #' one, and one snake_case name per concept otherwise, the same in every
@@ -118,8 +119,9 @@
 #' model and the single outcome of [table_outcome()]. `group` is a key of
 #' the tables that take a `by` ([table_categorical()],
 #' [table_categorical_svy()], [table_continuous()],
-#' [table_continuous_svy()] and [table_multiresponse()]): their `tidy()`
-#' carries it with or without `by`, `NA` without. [table_outcome()] has
+#' [table_continuous_svy()], [table_multiresponse()], [table_battery()]
+#' and [table_battery_svy()]): their `tidy()` carries it with or without
+#' `by`, `NA` without. [table_outcome()] has
 #' no `group`: its groupings are the `level` of each block. Nor has
 #' [table_continuous_lm()], whose `by` sets the columns of the table: its
 #' levels are the `level` of the long output and the `term` of the
@@ -138,8 +140,9 @@
 #' output of [table_categorical()] and [table_continuous()] carries the
 #' effect-size and SMD columns whether or not they were requested (`NA`
 #' then), and that of [table_continuous_lm()] and [table_outcome()] the
-#' effect-size columns; the survey tables and [table_multiresponse()]
-#' compute neither. `glance()` has a fixed set of columns.
+#' effect-size columns; the survey tables, [table_multiresponse()] and
+#' [table_battery()] compute neither. `glance()` has a fixed set of
+#' columns.
 #' `p_value = FALSE` removes from the long output the test columns that
 #' neither the statistic nor an effect size needs; `glance()` keeps them,
 #' `NA`, as does the `tidy()` of [table_continuous_lm()].

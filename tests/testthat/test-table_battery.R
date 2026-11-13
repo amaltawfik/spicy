@@ -307,6 +307,81 @@ test_that("the machine outputs: data.frame, long, as.data.frame()", {
   expect_identical(s$col_meta$p$p_adjust, "holm")
 })
 
+test_that("tidy() and glance() read the long output, with and without by", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  cols_tidy <- c(
+    "variable",
+    "label",
+    "level",
+    ".row_role",
+    "group",
+    "n",
+    "proportion",
+    "test_type",
+    "statistic",
+    "df",
+    "p.value",
+    "p_unadjusted"
+  )
+  cols_glance <- c(
+    "variable",
+    "label",
+    "test_type",
+    "statistic",
+    "df",
+    "p.value",
+    "p_unadjusted",
+    "nobs"
+  )
+  tbl <- .bat_tbl(by = sex)
+  long <- .bat_tbl(by = sex, output = "long")
+  td <- broom::tidy(tbl)
+  expect_s3_class(td, "tbl_df")
+  expect_identical(names(td), cols_tidy)
+  expect_identical(td$n, as.integer(long$n))
+  expect_equal(td$proportion, long$pct / 100)
+  expect_identical(td$group, long$group)
+  expect_identical(td$p.value, long$p.value)
+  gl <- broom::glance(tbl)
+  expect_identical(names(gl), cols_glance)
+  expect_identical(gl$variable, .BAT_ITEMS)
+  expect_identical(gl$p.value, long$p.value[match(.BAT_ITEMS, long$variable)])
+  # nobs: the base of each item, summed over the groups.
+  df <- as.data.frame(tbl)
+  expect_identical(gl$nobs, as.integer(df[["Female n"]] + df[["Male n"]]))
+  # Without `by`: no group, no test; the column sets are fixed.
+  plain <- .bat_tbl(drop_na = FALSE)
+  td0 <- broom::tidy(plain)
+  expect_identical(names(td0), cols_tidy)
+  expect_true(all(is.na(td0$group)) && all(is.na(td0$p.value)))
+  expect_identical(
+    unique(td0$.row_role[td0$level == "(Missing)"]),
+    "missing"
+  )
+  expect_equal(
+    as.vector(tapply(td0$proportion, td0$variable, sum)[.BAT_ITEMS]),
+    rep(1, 4L)
+  )
+  expect_identical(names(broom::glance(plain)), cols_glance)
+  # `top` and `show_n = FALSE` change the display, not the long reading.
+  top <- .bat_tbl(
+    by = sex,
+    top = c("Very satisfied", "Satisfied"),
+    show_n = FALSE
+  )
+  expect_identical(broom::tidy(top), td)
+  expect_identical(broom::glance(top), gl)
+  # Weighted counts keep their fractions.
+  w <- broom::tidy(.bat_tbl(weights = weight))
+  expect_type(w$n, "double")
+  # A table stripped of its attributes is refused, with the reason.
+  expect_error(
+    broom::tidy(structure(data.frame(), class = "spicy_battery_table")),
+    class = "spicy_invalid_data"
+  )
+})
+
 test_that("the default note says what the percentages and the base are", {
   tbl <- .bat_tbl()
   expect_identical(

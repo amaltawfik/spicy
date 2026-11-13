@@ -253,8 +253,23 @@ test_that("every table class exposes working broom tidy()/glance() methods", {
       mtcars,
       select = c("am", "vs"),
       by = "cyl"
+    ),
+    spicy_battery_table = table_battery(
+      mtcars,
+      select = c("am", "vs"),
+      by = "cyl"
     )
   )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    objs$spicy_battery_svy_table <- table_battery_svy(
+      survey::svydesign(ids = ~1, weights = ~1, data = mtcars),
+      select = c("am", "vs"),
+      by = "cyl"
+    )
+  }
   for (cl in names(objs)) {
     expect_s3_class(objs[[cl]], cl)
     td <- broom::tidy(objs[[cl]])
@@ -316,6 +331,15 @@ test_that("tidy() and glance() of the descriptive tables name `variable` and `la
         labels = TRUE
       ),
       items
+    ),
+    table_battery = list(
+      table_battery(
+        d,
+        c(life_sat_health, life_sat_work),
+        by = sex,
+        labels = TRUE
+      ),
+      c("life_sat_health", "life_sat_work")
     )
   )
   if (
@@ -340,6 +364,15 @@ test_that("tidy() and glance() of the descriptive tables name `variable` and `la
         labels = TRUE
       ),
       nums
+    )
+    tabs$table_battery_svy <- list(
+      table_battery_svy(
+        des,
+        c(life_sat_health, life_sat_work),
+        by = sex,
+        labels = TRUE
+      ),
+      c("life_sat_health", "life_sat_work")
     )
   }
   for (fn in names(tabs)) {

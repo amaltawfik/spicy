@@ -92,7 +92,8 @@ The \code{broom::tidy()} and \code{broom::glance()} methods of every table class
 \code{spicy_categorical_table}, \code{spicy_categorical_svy_table},
 \code{spicy_continuous_table}, \code{spicy_continuous_svy_table},
 \code{spicy_continuous_lm_table}, \code{spicy_outcome_table},
-\code{spicy_multiresponse_table}, \code{spicy_regression_table} and
+\code{spicy_multiresponse_table}, \code{spicy_battery_table},
+\code{spicy_battery_svy_table}, \code{spicy_regression_table} and
 \code{spicy_stack_table}, and the \code{output = "long"} frame of every table
 function, speak one vocabulary: broom's name wherever broom defines
 one, and one snake_case name per concept otherwise, the same in every
@@ -126,8 +127,9 @@ its displayed label. \code{outcome} names the response of a regression
 model and the single outcome of \code{\link[=table_outcome]{table_outcome()}}. \code{group} is a key of
 the tables that take a \code{by} (\code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous]{table_continuous()}},
-\code{\link[=table_continuous_svy]{table_continuous_svy()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}): their \code{tidy()}
-carries it with or without \code{by}, \code{NA} without. \code{\link[=table_outcome]{table_outcome()}} has
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}, \code{\link[=table_battery]{table_battery()}}
+and \code{\link[=table_battery_svy]{table_battery_svy()}}): their \code{tidy()} carries it with or without
+\code{by}, \code{NA} without. \code{\link[=table_outcome]{table_outcome()}} has
 no \code{group}: its groupings are the \code{level} of each block. Nor has
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose \code{by} sets the columns of the table: its
 levels are the \code{level} of the long output and the \code{term} of the
@@ -146,8 +148,9 @@ label, which follows the display language. With \code{by}, the long
 output of \code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_continuous]{table_continuous()}} carries the
 effect-size and SMD columns whether or not they were requested (\code{NA}
 then), and that of \code{\link[=table_continuous_lm]{table_continuous_lm()}} and \code{\link[=table_outcome]{table_outcome()}} the
-effect-size columns; the survey tables and \code{\link[=table_multiresponse]{table_multiresponse()}}
-compute neither. \code{glance()} has a fixed set of columns.
+effect-size columns; the survey tables, \code{\link[=table_multiresponse]{table_multiresponse()}} and
+\code{\link[=table_battery]{table_battery()}} compute neither. \code{glance()} has a fixed set of
+columns.
 \code{p_value = FALSE} removes from the long output the test columns that
 neither the statistic nor an effect size needs; \code{glance()} keeps them,
 \code{NA}, as does the \code{tidy()} of \code{\link[=table_continuous_lm]{table_continuous_lm()}}.

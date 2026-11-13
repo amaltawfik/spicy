@@ -119,3 +119,126 @@ as.data.frame.spicy_battery_svy_table <- as.data.frame.spicy_battery_table
 #' @rdname as.data.frame.spicy_battery_table
 #' @exportS3Method tibble::as_tibble
 as_tibble.spicy_battery_svy_table <- as_tibble.spicy_battery_table
+
+# ---- broom integration ----------------------------------------------------
+
+#' Tidying methods for a `spicy_battery_table`
+#'
+#' Standard [broom::tidy()] and [broom::glance()] interfaces for an object
+#' returned by [table_battery()] or [table_battery_svy()].
+#'
+#' `tidy()` returns one row per item, group and level: the long reading of
+#' the table, the rows of `output = "long"`, with the percentage as a
+#' proportion. Columns: `variable` (the item's column), `label` (the label
+#' the row displays), `level` (the level, or the label of the column of
+#' missing answers), `.row_role` (`"level"`, or `"missing"` on the missing
+#' answers of `drop_na = FALSE`), `group` (the `by` level, `NA` without
+#' `by`), `n` (the count: weighted under the `weights` of
+#' [table_battery()], observed in [table_battery_svy()]), `proportion`
+#' (between 0 and 1, the share of the item's base, estimated under the
+#' design in [table_battery_svy()]), and the test of the item:
+#' `test_type`, `statistic` and `df` (`NA` for an exact test, and in
+#' [table_battery_svy()], whose long output does not carry them),
+#' `p.value` (adjusted under `p_adjust`) and `p_unadjusted`. The summary
+#' column of `top` has no row of its own: its proportion is the sum of
+#' those of the levels it names.
+#'
+#' `glance()` returns one row per item: `variable`, `label`, `test_type`,
+#' `statistic`, `df`, `p.value`, `p_unadjusted` and `nobs`, the base of
+#' the item summed over the groups (a weighted count under `weights`, as
+#' the `n` column of the table).
+#'
+#' Both column sets are fixed: a test the table did not run is present and
+#' `NA`. Index by name rather than by position.
+#'
+#' @param x A `spicy_battery_table` returned by [table_battery()], or a
+#'   `spicy_battery_svy_table` returned by [table_battery_svy()].
+#' @param ... Ignored, for S3 compatibility.
+#'
+#' @return A `tbl_df` (or `data.frame` when tibble is not installed).
+#'
+#' @name tidy.spicy_battery_table
+#' @keywords internal
+NULL
+
+# Internal: the long frame tidy() and glance() read, refused when the
+# object no longer carries it.
+.bat_broom_long <- function(x, fn) {
+  long <- attr(x, "long_data", exact = TRUE)
+  if (is.null(long)) {
+    spicy_abort(
+      sprintf(
+        "`%s()` requires the data attached by `table_battery(output = \"default\")`.",
+        fn
+      ),
+      class = "spicy_invalid_data",
+      call = rlang::caller_env()
+    )
+  }
+  long
+}
+
+# Internal: a column of the long frame, or a column of `na` when the table
+# did not compute it.
+.bat_field <- function(long, nm, na = NA_real_) {
+  if (is.null(long[[nm]])) rep(na, nrow(long)) else long[[nm]]
+}
+
+# Internal: counts stay integer unless weights made them fractional.
+.bat_count <- function(n) {
+  if (all(is.na(n) | abs(n - round(n)) < 1e-8)) as.integer(round(n)) else n
+}
+
+#' @rdname tidy.spicy_battery_table
+#' @exportS3Method broom::tidy
+tidy.spicy_battery_table <- function(x, ...) {
+  long <- .bat_broom_long(x, "tidy")
+  .as_broom_tbl(data.frame(
+    variable = long$variable,
+    label = long$label,
+    level = long$level,
+    .row_role = long$.row_role,
+    group = .bat_field(long, "group", NA_character_),
+    n = .bat_count(long$n),
+    proportion = long$pct / 100,
+    test_type = .bat_field(long, "test_type", NA_character_),
+    statistic = .bat_field(long, "statistic"),
+    df = as.integer(.bat_field(long, "df")),
+    p.value = .bat_field(long, "p.value"),
+    p_unadjusted = .bat_field(long, "p_unadjusted"),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  ))
+}
+
+#' @rdname tidy.spicy_battery_table
+#' @exportS3Method broom::glance
+glance.spicy_battery_table <- function(x, ...) {
+  long <- .bat_broom_long(x, "glance")
+  keys <- unique(long$variable)
+  first <- match(keys, long$variable)
+  .as_broom_tbl(data.frame(
+    variable = keys,
+    label = long$label[first],
+    test_type = .bat_field(long, "test_type", NA_character_)[first],
+    statistic = .bat_field(long, "statistic")[first],
+    df = as.integer(.bat_field(long, "df")[first]),
+    p.value = .bat_field(long, "p.value")[first],
+    p_unadjusted = .bat_field(long, "p_unadjusted")[first],
+    nobs = .bat_count(vapply(
+      keys,
+      function(k) sum(long$n[long$variable == k], na.rm = TRUE),
+      numeric(1),
+      USE.NAMES = FALSE
+    )),
+    stringsAsFactors = FALSE
+  ))
+}
+
+#' @rdname tidy.spicy_battery_table
+#' @exportS3Method broom::tidy
+tidy.spicy_battery_svy_table <- tidy.spicy_battery_table
+
+#' @rdname tidy.spicy_battery_table
+#' @exportS3Method broom::glance
+glance.spicy_battery_svy_table <- glance.spicy_battery_table

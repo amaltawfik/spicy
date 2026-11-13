@@ -852,6 +852,48 @@ test_that("the machine outputs: data.frame, long, as.data.frame(), as_structured
   expect_s3_class(tibble::as_tibble(tbl), "tbl_df")
 })
 
+test_that("tidy() and glance() read the long output of the design table", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  des <- .bsvy_api("clus1")
+  items <- .BSVY_ITEMS
+  tbl <- table_battery_svy(des, items, by = stype, top = "Yes")
+  long <- table_battery_svy(des, items, by = stype, output = "long")
+  td <- broom::tidy(tbl)
+  expect_identical(
+    names(td),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      "n",
+      "proportion",
+      "test_type",
+      "statistic",
+      "df",
+      "p.value",
+      "p_unadjusted"
+    )
+  )
+  # The observed counts, the estimated proportions; survey's F carries no
+  # statistic or df in the long output.
+  expect_identical(td$n, as.integer(long$n))
+  expect_equal(td$proportion, long$pct / 100)
+  expect_identical(unique(td$test_type), "F")
+  expect_true(all(is.na(td$statistic)) && all(is.na(td$df)))
+  gl <- broom::glance(tbl)
+  expect_identical(gl$variable, items)
+  expect_identical(gl$p.value, long$p.value[match(items, long$variable)])
+  expect_identical(
+    gl$nobs,
+    as.integer(tapply(long$n, long$variable, sum)[items])
+  )
+  plain <- broom::tidy(table_battery_svy(des, items, show_n = FALSE))
+  expect_true(all(is.na(plain$group)) && all(is.na(plain$p.value)))
+})
+
 test_that("inline() cites a cell by item, level and group", {
   skip_on_cran()
   des <- .bsvy_api("clus1")
