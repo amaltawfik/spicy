@@ -1374,6 +1374,9 @@ table_battery <- function(
       if (!is.na(b)) {
         e$key <- paste0(b, " ", s$key)
         e$full <- spicy_fmt("header_group_qualified", b, s$sub)
+        # A group reduced to one column (`top` with `show_n = FALSE`)
+        # keeps the statistic under its label, which says nothing else.
+        e$keep_sub <- TRUE
       } else {
         e$full <- s$sub
       }

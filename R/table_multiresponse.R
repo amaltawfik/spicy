@@ -1878,7 +1878,9 @@ table_multiresponse <- function(
 # The header layer handed to `export_desc_table()`: the spanners are the
 # `by` groups, each over its count and percentage columns, and the
 # sub-header row carries the bare statistic. Same shape as the layer of
-# `table_categorical_svy()`, built from this table's column list.
+# `table_categorical_svy()`, built from this table's column list. A column
+# that sets `keep_sub` keeps its sub-header even when its group has no
+# other column (`.spans_columns()`), as the columns of `table_battery()`.
 .mr_header_layout <- function(cols) {
   keys <- vapply(cols, `[[`, "", "key")
   full <- stats::setNames(
@@ -1888,6 +1890,10 @@ table_multiresponse <- function(
   sub <- stats::setNames(vapply(cols, `[[`, "", "sub"), keys)
   block <- stats::setNames(vapply(cols, `[[`, "", "block"), keys)
   group_label <- stats::setNames(vapply(cols, `[[`, "", "group_label"), keys)
+  keep_sub <- stats::setNames(
+    vapply(cols, function(e) isTRUE(e$keep_sub), logical(1)),
+    keys
+  )
   block_of <- function(key) unname(block[key])
   labels_fn <- function(col_keys) {
     out <- unname(full[col_keys])
@@ -1909,7 +1915,8 @@ table_multiresponse <- function(
           key = b,
           label = unname(group_label[[col_keys[[i]]]]),
           cols = i:j,
-          bounds = unname(sub[col_keys[i:j]])
+          bounds = unname(sub[col_keys[i:j]]),
+          keep_bounds = any(keep_sub[col_keys[i:j]])
         )
       } else {
         groups[[length(groups) + 1L]] <- list(

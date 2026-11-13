@@ -1088,7 +1088,9 @@ test_that("the console heads the groups of `by` above their columns", {
   expect_match(out[[at]], "\u2502 +Very dissatisfied +Dissatisfied ")
   expect_false(any(grepl("Female n", out, fixed = TRUE)))
   expect_true(all(c("Female n", "Male n") %in% names(as.data.frame(x))))
-  # One column per group: the group heads it alone, as in the rich engines.
+  # One column per group: the group above, the statistic under it, as with
+  # two columns and as in the rich engines; the title and the note do not
+  # name the statistic.
   one <- .bat_tbl(
     by = sex,
     top = c("Very satisfied", "Satisfied"),
@@ -1096,8 +1098,11 @@ test_that("the console heads the groups of `by` above their columns", {
   )
   out <- withr::with_options(list(width = 200), capture.output(print(one)))
   at <- grep("^ Variable ", out)
-  expect_match(out[[at]], "\u2502 +Female +Male +p +$")
-  expect_false(grepl("\u2500", out[[at - 1L]]))
+  expect_match(out[[at - 2L]], "^ +Female +Male +$")
+  expect_match(
+    out[[at]],
+    "\u2502 +Very satisfied \\+ Satisfied +Very satisfied \\+ Satisfied +p +$"
+  )
   # A group wider than a narrow console splits by its columns, its label
   # over each part.
   narrow <- withr::with_options(list(width = 60), capture.output(print(x)))
@@ -1107,4 +1112,38 @@ test_that("the console heads the groups of `by` above their columns", {
   expect_true(all(
     nchar(narrow[!startsWith(narrow, "Note")], type = "width") <= 60L
   ))
+})
+
+test_that("every engine keeps the statistic under a group of one column", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("openxlsx2")
+  stat <- "Very satisfied + Satisfied"
+  one <- function(output, ...) {
+    .bat_tbl(
+      by = sex,
+      top = c("Very satisfied", "Satisfied"),
+      show_n = FALSE,
+      output = output,
+      ...
+    )
+  }
+  hd <- one("flextable")$header$dataset
+  expect_identical(unname(unlist(hd[1L, 2:3])), c("Female", "Male"))
+  expect_identical(unname(unlist(hd[2L, 2:3])), c(stat, stat))
+  g <- one("gt")
+  expect_identical(g[["_spanners"]]$spanner_label[2:3], list("Female", "Male"))
+  expect_identical(unlist(g[["_boxhead"]]$column_label)[2:3], c(stat, stat))
+  expect_identical(one("tinytable")@names[2:3], c(stat, stat))
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  one("excel", excel_path = path)
+  sheet <- openxlsx2::read_xlsx(
+    path,
+    col_names = FALSE,
+    skip_empty_rows = FALSE
+  )
+  expect_identical(unname(unlist(sheet[3L, 2:3])), c("Female", "Male"))
+  expect_identical(unname(unlist(sheet[4L, 2:3])), c(stat, stat))
 })

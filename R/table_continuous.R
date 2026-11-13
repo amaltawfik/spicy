@@ -4027,9 +4027,10 @@ desc_spanner_groups <- function(
 # engine reads the header through `hl_headers()`, so there is exactly
 # one caller of this function and one place the default lives.
 #
-# `spanned` is FALSE when no spanner covers more than one column: the
-# engines then print `top` as the one header row, with no empty second
-# row under it.
+# `spanned` is FALSE when no spanner covers more than one column (or
+# keeps the header of its one column, `.spans_columns()`): the engines
+# then print `top` as the one header row, with no empty second row under
+# it.
 build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
   nc <- length(col_keys)
   top <- labels_fn(col_keys)
@@ -4037,12 +4038,23 @@ build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
   spanned <- FALSE
   for (g in spanners_fn(col_keys)) {
     top[g$cols] <- g$label
-    if (length(g$cols) > 1L) {
+    if (.spans_columns(g)) {
       bot[g$cols] <- g$bounds
       spanned <- TRUE
     }
   }
   list(top = top, bottom = bot, spanned = spanned)
+}
+
+# Whether a group of the header spans its columns, its label over the
+# headers of its columns, the rule under it drawn. A group of one column
+# is headed by its label alone, unless it asks to keep the header of its
+# column under it (`keep_bounds`): the battery's groups do, since a group
+# that `top` and `show_n = FALSE` reduce to one column would otherwise
+# lose the name of its statistic. Read by every engine, the console
+# included (`ascii_group_header()`).
+.spans_columns <- function(g) {
+  length(g$cols) > 1L || isTRUE(g$keep_bounds)
 }
 
 # --- internal: the count / p-value right-hand columns ---
@@ -4296,7 +4308,7 @@ export_desc_table <- function(
     )
     # Rule under each two-column spanner (the CI pairs).
     for (g in groups_spec) {
-      if (length(g$cols) > 1L) {
+      if (.spans_columns(g)) {
         tt <- tinytable::style_tt(
           tt,
           i = -1,
@@ -4471,7 +4483,7 @@ export_desc_table <- function(
     # Bound columns of every CI spanner (mean CI, median CI).
     ci_cols <- unlist(lapply(
       groups_spec,
-      function(g) if (length(g$cols) > 1L) gt_col_ids[g$cols] else NULL
+      function(g) if (.spans_columns(g)) gt_col_ids[g$cols] else NULL
     ))
     tbl <- gt::tab_style(
       tbl,
@@ -4691,7 +4703,7 @@ export_desc_table <- function(
     # two-column spanner (the CI pairs), and only under those.
     ft <- flextable::hline_top(ft, part = "header", border = bd)
     for (g in groups_spec) {
-      if (length(g$cols) > 1L) {
+      if (.spans_columns(g)) {
         ft <- flextable::hline(
           ft,
           i = 1,
@@ -4757,7 +4769,7 @@ export_desc_table <- function(
     nc <- length(col_keys)
     hdrs <- hl_headers(col_keys)
     groups_spec <- hl_spanners(col_keys)
-    ci_pairs <- Filter(function(g) length(g$cols) > 1L, groups_spec)
+    ci_pairs <- Filter(.spans_columns, groups_spec)
 
     # Block indentation: Excel has no indent style here, so the
     # indentation IS the label -- the console's prefix is swapped for
@@ -4816,7 +4828,7 @@ export_desc_table <- function(
       row_names = FALSE
     )
 
-    for (g in ci_pairs) {
+    for (g in Filter(function(g) length(g$cols) > 1L, ci_pairs)) {
       wb <- openxlsx2::wb_merge_cells(
         wb,
         dims = openxlsx2::wb_dims(rows = top_header_row, cols = g$cols)
