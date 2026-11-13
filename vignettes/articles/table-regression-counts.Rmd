@@ -95,7 +95,10 @@ predictors constant: the expected count for women is about 20% lower
 than for otherwise-similar men (IRR 0.80), and each additional mentor
 publication raises a student's expected count by 2.6% (IRR 1.03 as
 displayed; exp(0.0258) = 1.026). Inference is Wald-z on the link
-scale; the footer records the SE and CI conventions.
+scale; the footer records the SE and CI conventions. The
+`(Intercept)` row is not a ratio: as the note says, it is the baseline
+rate, the expected count of a single man without young children whose
+mentor published nothing, 1.41 articles.
 
 One remark for rate data: the observation window here is a fixed three
 years for everyone, so no exposure adjustment is needed. With unequal
@@ -313,6 +316,53 @@ publish 0.36 fewer articles over the three years than comparable men
 zero-component rows carry no AME of their own because the combined
 effect already includes them.
 
+### The slope or the change for one more child
+
+`kid5` and `ment` are numeric, so their AME is by default the average
+slope, as the note says. A count model is curved in its predictors,
+and `ame_type` asks instead for the average change in the expected
+count when a predictor rises by one unit, or by one standard
+deviation, from each student's own value (the *Slope or discrete
+change* section of [*Publication-ready regression
+tables*](table-regression.html) sets out the three quantities). The
+Poisson baseline shows them side by side:
+
+```{r ame-type, eval = have_me}
+ame_pois <- function(type) {
+  table_regression(fit_pois, show_columns = c("ame", "ame_ci"),
+                   ame_type = type, keep = c("kid5", "ment"),
+                   show_intercept = FALSE, show_fit_stats = FALSE)
+}
+table_stack(
+  Slope = ame_pois("slope"),
+  Unit = ame_pois("unit"),
+  SD = ame_pois("sd")
+)
+```
+
+In a Poisson model without interactions the three have closed forms.
+For a predictor with coefficient b, the slope is b times the mean
+expected count and the change for one more unit is (e^b − 1) times it;
+with an intercept in the model, the mean expected count is the mean
+count, 1.69 articles. For `kid5`, b = −0.185 (the IRR of 0.83) gives a
+slope of −0.31 and a change of −0.29: one more child under six lowers
+the expected count by 0.29 articles, and the slope overstates the drop
+because the exponential curve flattens as the count falls. Long and
+Freese (2014, p. 495) take this change of one child as the most
+reasonable effect of the number of young children; on the same data,
+with doctoral prestige added to the model, they report −0.286 for it,
+−0.223 for a standard deviation and −0.313 for the slope, the values
+`table_regression()` gives for that model. For the mentor's articles a
+unit is small against a range of 0 to 77, so slope and unit agree
+(0.04), and the change for one standard deviation, 9.5 articles, gives
+the better sense of the effect (p. 496): 0.47 more articles.
+
+The change for one more child moves the 16 students who have three,
+the most in the data, to four, a value no student has. Their part of
+the average is an extrapolation of the model, outside the support of
+the data within which Gelman and Pardoe (2007, p. 32) keep such
+comparisons.
+
 For the remaining standard interpretive devices — predicted counts, or
 the probability of specific counts such as Pr(Y = 0), at substantively
 chosen covariate values — go back to the fitted model:
@@ -512,6 +562,9 @@ td[, c("term", "estimate_type", "estimate", "p.value")]
   Journal*, 9(2), 378–400.
 * Cameron, A. C., & Trivedi, P. K. (2013). *Regression Analysis of
   Count Data* (2nd ed.). Cambridge University Press.
+* Gelman, A., & Pardoe, I. (2007). Average predictive comparisons for
+  models with nonlinearity, interactions, and variance components.
+  *Sociological Methodology*, 37(1), 23–51.
 * Lambert, D. (1992). Zero-inflated Poisson regression, with an
   application to defects in manufacturing. *Technometrics*, 34(1),
   1–14.
@@ -519,6 +572,8 @@ td[, c("term", "estimate_type", "estimate", "p.value")]
   *Social Forces*, 68(4), 1297–1316.
 * Long, J. S. (1997). *Regression Models for Categorical and Limited
   Dependent Variables*. Sage.
+* Long, J. S., & Freese, J. (2014). *Regression Models for Categorical
+  Dependent Variables Using Stata* (3rd ed.). Stata Press.
 * Mullahy, J. (1986). Specification and testing of some modified
   count data models. *Journal of Econometrics*, 33(3), 341–365.
 * Price, S. J., Muncy, B. L., Bonner, S. J., Drayer, A. N., & Barton,
