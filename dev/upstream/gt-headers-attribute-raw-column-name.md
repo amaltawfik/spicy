@@ -1,9 +1,9 @@
 # gt : l'attribut headers= des cellules n'est pas échappé
 
 - **Cible** : gt 1.4.0 (CRAN) ; master 76f9ba1a (1.4.0.9000), fichier identique
-- **Canal** : GitHub rstudio/gt, issue à ouvrir
-- **Envoyé** : non envoyé ; mis de côté le 2026-11-12
-- **Statut** : dossier prêt, correctif appliqué et testé le 2026-11-13 sur
+- **Canal** : GitHub rstudio/gt, issue [#2185](https://github.com/rstudio/gt/issues/2185)
+- **Envoyé** : 2026-11-13, issue #2185 (mise de côté le 12, postée le 13 avec le correctif testé)
+- **Statut** : postée, réponse attendue. Correctif appliqué et testé le 2026-11-13 sur
   une copie du source (5 lignes, 1 fichier ; tests de gt : 4 instantanés à
   mettre à jour, aucune régression ; tableaux à noms ordinaires identiques
   octet pour octet). Remesuré le 2026-11-12 sur gt 1.4.0 : la 1.4.0
@@ -18,13 +18,22 @@
 
 ---
 
-*Texte prêt à poster, titre puis corps.*
+*Texte posté le 2026-11-13, titre puis corps.*
 
 **Titre** : headers= on body cells is pasted without an attribute escape: a column name with a double quote breaks the cell markup
 
+## Prework
+
+* [x] Read and agree to the [code of conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html) and [contributing guidelines](https://github.com/rstudio/gt/blob/master/.github/CONTRIBUTING.md).
+* [x] Checked the existing issues: #2085 (closed, fixed by #2173) is the space case of `headers=`, #2184 (open) the group heading id. Neither covers the missing escape.
+
+## Description
+
 gt 1.4.0 (CRAN), R 4.6.2, Windows 11. `R/utils_render_html.R` is identical on master (76f9ba1a, 1.4.0.9000).
 
-## Reproducer
+The `headers=` attribute of body `<td>` cells is pasted without an attribute escape, while the `<th id>` it must match is escaped by htmltools. A column name with a double quote or a character reference gives a `headers` value that matches no id, and the quote truncates the attribute.
+
+## Reproducible example
 
 ```r
 library(gt)
@@ -71,6 +80,10 @@ cat(unlist(regmatches(html2, gregexpr("<t[hd] [^>]*>", html2))), sep = "\n")
 Parsed, the id is `Q&amp;A` and the headers value is `Q&A`: no match.
 
 `<`, `>` and `&` alone are also written raw in `headers=` (`headers="a<b"` against `id="a&lt;b"`); parsers recover and both read `a<b`, so those three show no visible defect.
+
+## Expected result
+
+The `headers` value equals the `<th>` id it refers to: `headers="M-(Q&quot;x)"` and `headers="Q&amp;amp;A"` here, `<th id="summary_stub_plain-group_1">` in the summary case below.
 
 ## Cause
 
@@ -159,3 +172,41 @@ index 6192c4c7f..e551c1cdd 100644
 ```
 
 With this, the three reproducers give `headers="M-(Q&quot;x)"`, `headers="Q&amp;amp;A"` and `<th id="summary_stub_plain-group_1">`, and every parsed `headers` token matches an id. A name with `&`, `<` or `>` now gets the character reference in `headers=`, which parses as before; an apostrophe stays raw on both sides, since `render_as_html()` turns `&#39;` back into `'`. The checked tables without those characters (plain names and names with spaces, a stub, row groups with summary and grand summary rows, spanners with `cols_label()`) render byte for byte the same, except the summary stub id of a group whose name has a space or starts with a digit, which now matches its cells. Of gt's tests, 21 files (summary rows, stubs, spanners, row operations, cell locations, styles, the gt object, HTML rendering; 2,587 expectations) pass except four HTML snapshots holding the old values: `test-summary_rows.R:1877` (`summary_stub_1960s_1`), `test-summary_rows.R:1961` (`summary_stub_Aston Martin_1`) and `test-multicolumn_stub.R:370` and `:406` (`headers="American-&-German ..."`, which parses the same as the escaped form). I can send it as a PR with the snapshot updates.
+
+## Session info
+
+<details>
+<summary>sessionInfo() at the end of the session that ran the three examples above</summary>
+
+```
+R version 4.6.2 (2026-10-29 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26300)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+locale:
+[1] LC_COLLATE=French_Switzerland.utf8  LC_CTYPE=French_Switzerland.utf8
+[3] LC_MONETARY=French_Switzerland.utf8 LC_NUMERIC=C
+[5] LC_TIME=French_Switzerland.utf8
+
+time zone: Europe/Zurich
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] gt_1.4.0
+
+loaded via a namespace (and not attached):
+ [1] digest_0.6.39    R6_2.6.1         fastmap_1.2.0    tidyselect_1.2.1
+ [5] magrittr_2.0.5   glue_1.8.1       tibble_3.3.1     pkgconfig_2.0.3
+ [9] htmltools_0.5.9  dplyr_1.2.1      generics_0.1.4   lifecycle_1.0.5
+[13] xml2_1.6.0       cli_3.6.6        sass_0.4.10      vctrs_0.7.3
+[17] withr_3.0.3      compiler_4.6.2   tools_4.6.2      pillar_1.11.1
+[21] rlang_1.3.0      fs_2.1.0
+```
+
+</details>
