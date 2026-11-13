@@ -850,44 +850,308 @@ test_that("a residual df of 1000 or more prints without a separator", {
   expect_identical(.pf_cell_of(fr, "x"), .pf_cell(f_x, 1, dfr, mark = ","))
 })
 
-test_that("the df columns of the rich engines carry their own header", {
+# ---- The rich outputs -------------------------------------------------------
+#
+# The rich engines (tinytable, gt, flextable, Word, the clipboard) print
+# the term-level test as the console does: one column under the
+# statistic's header, "18.08 (1, 28)". Excel keeps the statistic a number,
+# its df in the number format. The machine outputs keep the three numbers.
+
+# A rendered cell as the console prints it: the engines pad with figure
+# spaces, and flextable prints the minus as U+2212.
+.pf_norm <- function(x) {
+  x <- gsub("\u2212", "-", as.character(x), fixed = TRUE)
+  trimws(gsub("[\u2007\u00A0]", " ", x))
+}
+
+# The cell of the row labelled `row` in column `col` of an engine's data.
+.pf_engine_cell <- function(df, row, col) {
+  df <- as.data.frame(df, stringsAsFactors = FALSE)
+  .pf_norm(df[[col]][.pf_norm(df[[1L]]) == row])
+}
+
+# The rows of a clipboard payload, as character vectors.
+.pf_clip_rows <- function(tbl) {
+  strsplit(
+    strsplit(spicy:::clipboard_payload(tbl, "\t"), "\r?\n")[[1L]],
+    "\t",
+    fixed = TRUE
+  )
+}
+
+# The sheet `output = "excel"` writes: its cells read back, and the
+# number format and the type ("" or NA for a number) of a cell.
+.pf_xlsx <- function(...) {
+  path <- tempfile(fileext = ".xlsx")
+  table_regression(..., output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  styles <- wb$styles_mgr$styles
+  numfmt <- function(ref) {
+    s <- as.integer(cc$c_s[cc$r == ref][1L])
+    id <- sub('.*numFmtId="([0-9]+)".*', "\\1", styles$cellXfs[[s + 1L]])
+    hit <- grep(paste0('numFmtId="', id, '"'), styles$numFmts, value = TRUE)
+    gsub("&quot;", "\"", sub('.*formatCode="([^"]*)".*', "\\1", hit[1L]))
+  }
+  sheet <- openxlsx2::wb_to_df(wb, col_names = FALSE)
+  list(
+    sheet = sheet,
+    # The Excel row of the row labelled `label`.
+    row = function(label) {
+      as.integer(rownames(sheet)[which(.pf_norm(sheet[[1L]]) == label)])
+    },
+    numfmt = numfmt,
+    type = function(ref) cc$c_t[cc$r == ref][1L]
+  )
+}
+
+test_that("tinytable prints the term-level test in one column, as the console", {
   skip_on_cran()
+  skip_if_not_installed("tinytable")
   d <- .pf_data()
   fl <- lm(mpg ~ wt + cyl, data = d)
   fb <- glm(am ~ wt + cyl, data = d, family = binomial)
   chi <- "\u03C7\u00B2"
-  labels_of <- function(fit, tok, cols) {
+  check <- function(fit, tok, head, cells) {
     tbl <- table_regression(fit, show_columns = c("b", tok))
-    meta <- as_structured(tbl)$col_meta
-    vapply(cols, function(nm) meta[[nm]]$display_label, "", USE.NAMES = FALSE)
-  }
-  expect_identical(
-    labels_of(fl, "partial_f", c("F", "F: df", "F: residual df")),
-    c("F", "df", "residual df")
-  )
-  expect_identical(
-    labels_of(fb, "partial_chi2", c(chi, paste0(chi, ": df"))),
-    c(chi, "df")
-  )
-  skip_if_not_installed("tinytable")
-  tt_names <- function(fit, tok) {
-    table_regression(
+    tt <- table_regression(
       fit,
       show_columns = c("b", tok),
       output = "tinytable"
-    )@names
+    )
+    expect_identical(tt@names, c("Variable", "B", head))
+    got <- vapply(
+      c("wt", "6"),
+      function(r) .pf_engine_cell(tt@data, r, 3L),
+      "",
+      USE.NAMES = FALSE
+    )
+    expect_identical(got, cells)
+    expect_identical(
+      got,
+      c(.pf_cell_of(tbl, "wt", head), .pf_cell_of(tbl, "6", head))
+    )
   }
-  expect_identical(
-    tt_names(fl, "partial_f"),
-    c("Variable", "B", "F", "df", "residual df")
-  )
-  expect_identical(tt_names(fb, "partial_chi2"), c("Variable", "B", chi, "df"))
+  check(fl, "partial_f", "F", c("18.08 (1, 28)", "7.29 (2, 28)"))
+  check(fb, "partial_chi2", chi, c("19.27 (1)", "4.52 (2)"))
+  # French: the console's header and the decimal comma, the df unchanged.
   withr::local_options(spicy.language = "fr")
-  expect_identical(
-    tt_names(fl, "partial_f"),
-    c("Variable", "B", "F", "ddl", "ddl r\u00E9siduels")
+  check(fl, "partial_f", "F", c("18,08 (1, 28)", "7,29 (2, 28)"))
+  check(fb, "partial_chi2", chi, c("19,27 (1)", "4,52 (2)"))
+})
+
+test_that("gt, flextable, Word and the clipboard print the same column", {
+  skip_on_cran()
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  build <- function(output = "default", ...) {
+    table_regression(
+      fl,
+      show_columns = c("b", "partial_f"),
+      output = output,
+      ...
+    )
+  }
+  # The clipboard, with an interval after the test and stars: the bounds
+  # keep their columns once the df columns are gone, and the starred B
+  # keeps its marker beside the test.
+  rows <- .pf_clip_rows(
+    table_regression(
+      fl,
+      show_columns = c("b", "partial_f", "ci"),
+      stars = TRUE
+    )
   )
-  expect_identical(tt_names(fb, "partial_chi2"), c("Variable", "B", chi, "ddl"))
+  expect_true(list(c("Variable", "B", "F", "95% CI", "95% CI")) %in% rows)
+  expect_true(list(c("", "", "", "LL", "UL")) %in% rows)
+  wt <- Filter(function(r) identical(r[[1L]], "wt"), rows)[[1L]]
+  expect_identical(wt[1:3], c("wt", "-3.21***", "18.08 (1, 28)"))
+  expect_length(wt, 5L)
+  skip_if_not_installed("gt")
+  g <- build("gt")
+  expect_identical(
+    unlist(g[["_spanners"]]$spanner_label),
+    c("Variable", "B", "F")
+  )
+  expect_identical(.pf_engine_cell(g[["_data"]], "wt", 3L), "18.08 (1, 28)")
+  skip_if_not_installed("flextable")
+  ft <- build("flextable")
+  hdr <- ft$header$dataset
+  expect_identical(unname(unlist(hdr[nrow(hdr), ])), c("Variable", "B", "F"))
+  expect_identical(.pf_engine_cell(ft$body$dataset, "6", 3L), "7.29 (2, 28)")
+  skip_if_not_installed("officer")
+  path <- tempfile(fileext = ".docx")
+  build("word", word_path = path)
+  s <- officer::docx_summary(officer::read_docx(path))
+  cells <- s[s$content_type == "table cell", ]
+  word <- lapply(split(cells, cells$row_id), function(r) {
+    .pf_norm(r$text[order(r$cell_id)])
+  })
+  expect_true(list(c("Variable", "B", "F")) %in% word)
+  expect_true(list(c("wt", "-3.21", "18.08 (1, 28)")) %in% word)
+})
+
+test_that("Excel keeps the statistic a number, its df in the number format", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  fb <- glm(am ~ wt + cyl, data = d, family = binomial)
+  f_rows <- .pf_rows(table_regression(fl, show_columns = c("b", "partial_f")))
+  x <- .pf_xlsx(fl, show_columns = c("b", "partial_f"))
+  # Three columns: the df columns are not written.
+  expect_identical(ncol(x$sheet), 3L)
+  expect_true(
+    list(c("Variable", "B", "F")) %in%
+      lapply(
+        seq_len(nrow(x$sheet)),
+        function(i) unname(unlist(x$sheet[i, ]))
+      )
+  )
+  wt <- x$row("wt")
+  expect_equal(
+    as.numeric(x$sheet[as.character(wt), 3L]),
+    .pf_term(f_rows, "wt")$estimate,
+    tolerance = 1e-12
+  )
+  expect_identical(x$numfmt(paste0("C", wt)), "0.00\" (1, 28)\"")
+  expect_identical(x$numfmt(paste0("C", x$row("6"))), "0.00\" (2, 28)\"")
+  expect_true(x$type(paste0("C", wt)) %in% c(NA, ""))
+  # The chi-square: its one df.
+  y <- .pf_xlsx(fb, show_columns = c("b", "partial_chi2"))
+  expect_identical(ncol(y$sheet), 3L)
+  expect_identical(y$numfmt(paste0("C", y$row("6"))), "0.00\" (2)\"")
+  # A decimal comma sends the body out as text: the console's cell.
+  z <- .pf_xlsx(fl, show_columns = c("b", "partial_f"), decimal_mark = ",")
+  expect_identical(
+    .pf_norm(z$sheet[as.character(z$row("wt")), 3L]),
+    "18,08 (1, 28)"
+  )
+})
+
+test_that("the machine outputs keep the statistic and its df as numbers", {
+  skip_on_cran()
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  tbl <- table_regression(fl, show_columns = c("b", "partial_f"))
+  df_tbl <- as.data.frame(tbl)
+  expect_identical(
+    names(df_tbl)[5:8],
+    c("B", "F", "F: df", "F: residual df")
+  )
+  at_wt <- df_tbl$variable == "wt"
+  expect_equal(
+    unlist(df_tbl[at_wt, c("F: df", "F: residual df")]),
+    c(1, 28),
+    ignore_attr = TRUE
+  )
+  expect_identical(
+    df_tbl,
+    table_regression(
+      fl,
+      show_columns = c("b", "partial_f"),
+      output = "data.frame"
+    )
+  )
+  td <- .pf_rows(tbl)
+  expect_equal(td$df, c(1, 2, 2))
+  expect_equal(td$df.residual, rep(28, 3L))
+  # The typed view: three numeric columns, the console's cell in
+  # `display_cells` of the statistic.
+  s <- as_structured(tbl)
+  expect_true(all(c("F", "F: df", "F: residual df") %in% names(s$body)))
+  expect_true(s$col_meta[["F: residual df"]]$is_df)
+  disp <- s$col_meta$F$display_cells
+  expect_identical(disp[s$body$.variable == "wt"], "18.08 (1, 28)")
+  expect_true(all(is.na(disp[is.na(s$body$F)])))
+  # A sentence cites the statistic.
+  expect_identical(inline(tbl, wt, column = "partial_f"), "18.08")
+})
+
+test_that("each model, panel and screen block has one test column", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  three <- table_regression(
+    list(fl, fl, fl),
+    show_columns = c("b", "partial_f"),
+    output = "tinytable"
+  )
+  expect_identical(three@names, c("Variable", rep(c("B", "F"), 3L)))
+  expect_identical(
+    vapply(c(3L, 5L, 7L), function(j) .pf_engine_cell(three@data, "wt", j), ""),
+    rep("18.08 (1, 28)", 3L)
+  )
+  # The model spanners cover each model's two columns.
+  s3 <- spicy:::.reg_engine_view(
+    as_structured(table_regression(
+      list(fl, fl, fl),
+      show_columns = c("b", "partial_f")
+    ))
+  )
+  expect_identical(unname(s3$spanners), list(2:3, 4:5, 6:7))
+  # A univariable screen and a stack, each panel with its own df.
+  uv <- table_regression_uv(
+    d,
+    outcome = mpg,
+    predictors = c(wt, cyl),
+    method = "lm",
+    show_columns = c("b", "partial_f"),
+    output = "tinytable"
+  )
+  expect_identical(uv@names, c("Variable", "B", "F", "B", "F"))
+  expect_identical(.pf_engine_cell(uv@data, "wt", 3L), "91.38 (1, 30)")
+  tb <- table_regression(
+    lm(mpg ~ wt, data = d),
+    show_columns = c("b", "partial_f")
+  )
+  st <- table_stack(
+    A = table_regression(fl, show_columns = c("b", "partial_f")),
+    B = tb,
+    output = "tinytable"
+  )
+  expect_identical(st@names, c("Variable", "B", "F"))
+  expect_identical(
+    .pf_engine_cell(st@data, "wt", 3L),
+    c("18.08 (1, 28)", "91.38 (1, 30)")
+  )
+  skip_if_not_installed("openxlsx2")
+  path <- tempfile(fileext = ".xlsx")
+  table_stack(A = tb, B = tb, output = "excel", excel_path = path)
+  expect_identical(ncol(openxlsx2::wb_to_df(path, col_names = FALSE)), 3L)
+})
+
+test_that("the test column stays aligned on its decimal mark, digits 2 or 0", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  d <- .pf_data()
+  fl <- lm(mpg ~ wt + cyl, data = d)
+  # The column of the decimal mark of each cell, or the end of its integer
+  # part; the df after the statistic are not read.
+  anchor <- function(x) {
+    x <- gsub("\u2007", " ", as.character(x), fixed = TRUE)
+    core <- sub(" \\([^()]*\\) *$", "", x)
+    core <- sub(" +$", "", core)
+    pos <- regexpr(".", core, fixed = TRUE)
+    out <- ifelse(pos > 0L, pos, nchar(core) + 1L)
+    unique(out[grepl("[0-9]", core)])
+  }
+  for (es in c(2L, 0L)) {
+    args <- list(
+      fl,
+      show_columns = c("b", "partial_f"),
+      digits = es,
+      effect_size_digits = es
+    )
+    cell <- .pf_cell_of(do.call(table_regression, args), "6")
+    expect_identical(cell, if (es == 2L) "7.29 (2, 28)" else "7 (2, 28)")
+    tt <- do.call(table_regression, c(args, output = "tinytable"))
+    g <- do.call(table_regression, c(args, output = "gt"))
+    expect_length(anchor(tt@data[[3L]]), 1L)
+    expect_length(anchor(g[["_data"]][[3L]]), 1L)
+  }
 })
 
 test_that("output = 'long' names the token, its test, its q and its residual df", {

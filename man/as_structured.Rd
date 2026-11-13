@@ -101,11 +101,17 @@ name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label). A column whose cells cannot be
 reconstructed from one number -- the \code{"events/N"} counts of
 \code{show_columns = "n_events"}, a change test with its degrees of
-freedom (\code{"12.38 (1, 29)"}, the statistic in \code{body}) -- also
+freedom (\code{"12.38 (1, 29)"}, the statistic in \code{body}), a partial
+chi-square or partial F with its degrees of freedom (\code{"4.52 (2)"},
+\code{"18.08 (1, 28)"}, the statistic in its column and the df in the
+columns \code{"<column>: df"} and \code{"<column>: residual df"}, which the
+rich outputs do not print) -- also
 carries \code{display_cells}, a
 character vector as long as \code{body} holding the display string
 of each cell (\code{NA} where the number formats normally). A
-renderer must prefer it over the numeric value.
+renderer must prefer it over the numeric value. The df columns of
+a term-level test carry \code{is_df = TRUE} in \code{col_meta}, so a renderer
+that prints \code{display_cells} can leave them out.
 \item \code{stars} -- \code{NULL} unless \code{stars} was requested, otherwise a list
 with \code{thresholds} (symbol to p cutoff) and \code{markers} (per-cell
 marker strings, keyed by column name, \code{""} where a cell takes

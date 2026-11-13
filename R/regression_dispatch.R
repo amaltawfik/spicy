@@ -397,7 +397,7 @@ output_tinytable <- function(rendered) {
   # visually exact decimal alignment in any font whose figure-space
   # matches digit width (true for all common serif / sans / monospace
   # web fonts).
-  struct <- attr(rendered, "structured")
+  struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
   body <- .pad_for_decimal_align(body, struct)
   spanners <- struct$spanners
@@ -782,7 +782,7 @@ output_gt <- function(rendered) {
   # and `cols_align_decimal` entirely. Figure-space (U+2007) is
   # digit-width in every common web font, so the visual alignment is
   # exact when the cells are center-aligned by their fixed width.
-  struct <- attr(rendered, "structured")
+  struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
   body <- .pad_for_decimal_align(body, struct)
   spanners <- struct$spanners
@@ -1593,7 +1593,7 @@ output_flextable <- function(rendered) {
   # then apply figure-space decimal-alignment padding via
   # `.pad_for_decimal_align()` (flextable has no native decimal-align
   # primitive, so we emulate gt's `cols_align_decimal()` manually).
-  struct <- attr(rendered, "structured")
+  struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
   body <- .pad_for_decimal_align(body, struct)
   # The minus sign of the style in force, in the cells after the label
@@ -2279,8 +2279,9 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # The renderer builds a parallel structured view (numeric body, CI
   # pre-split into LL/UL, per-cell precision + p-style + threshold
   # in col_meta, reference/fit-stat row markers). Engines consume it
-  # directly -- no string parsing.
-  struct <- attr(rendered, "structured")
+  # directly -- no string parsing. A term-level test is one column there,
+  # its df in each cell's format (`.reg_engine_view()`).
+  struct <- .reg_engine_view(attr(rendered, "structured"))
   # Value columns only: the dot-prefixed identity columns are metadata
   # about each row, not cells of the table a reader opens.
   body <- .struct_display_body(struct$body) # numeric body
@@ -2547,9 +2548,10 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       }
       # (2) Composite cells (`display_cells`, the "events/N" counts): no
       #     single number expresses them. They exist on reference rows
-      #     too -- a reference level HAS events. A change test and its df
-      #     ("12.38 (1, 29)") are one number with a literal in its format
-      #     (`suffix`, applied above): they stay numbers.
+      #     too -- a reference level HAS events. A change test or a
+      #     term-level test and its df ("12.38 (1, 29)", "18.08 (1, 28)")
+      #     are one number with a literal in its format (`suffix`,
+      #     applied above): they stay numbers.
       disp_col <- meta[["display_cells"]]
       if (!is.null(disp_col)) {
         composite <- !is.na(disp_col)
@@ -2999,7 +3001,7 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   # Source from the structured (typed) body, then derive display strings
   # via the shared formatter. CI is already split into LL / UL columns
   # in the structured body -- no string parsing required.
-  struct <- attr(rendered, "structured")
+  struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
   title <- attr(rendered, "title")
   note <- attr(rendered, "note")
@@ -3251,11 +3253,17 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   CI pair / role / label). A column whose cells cannot be
 #'   reconstructed from one number -- the `"events/N"` counts of
 #'   `show_columns = "n_events"`, a change test with its degrees of
-#'   freedom (`"12.38 (1, 29)"`, the statistic in `body`) -- also
+#'   freedom (`"12.38 (1, 29)"`, the statistic in `body`), a partial
+#'   chi-square or partial F with its degrees of freedom (`"4.52 (2)"`,
+#'   `"18.08 (1, 28)"`, the statistic in its column and the df in the
+#'   columns `"<column>: df"` and `"<column>: residual df"`, which the
+#'   rich outputs do not print) -- also
 #'   carries `display_cells`, a
 #'   character vector as long as `body` holding the display string
 #'   of each cell (`NA` where the number formats normally). A
-#'   renderer must prefer it over the numeric value.
+#'   renderer must prefer it over the numeric value. The df columns of
+#'   a term-level test carry `is_df = TRUE` in `col_meta`, so a renderer
+#'   that prints `display_cells` can leave them out.
 #' * `stars` -- `NULL` unless `stars` was requested, otherwise a list
 #'   with `thresholds` (symbol to p cutoff) and `markers` (per-cell
 #'   marker strings, keyed by column name, `""` where a cell takes

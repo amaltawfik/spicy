@@ -668,7 +668,8 @@ Default \code{3L}; at least \code{1L}, as in the descriptive tables. Every
 \verb{*_digits} argument is a whole number: a fraction is an error.}
 
 \item{effect_size_digits}{Decimals for per-coefficient effect
-sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}).
+sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}) and the
+term-level tests (\code{partial_chi2}, \code{partial_f}).
 Default \code{2L}.}
 
 \item{fit_digits}{Decimals for variance-explained / model-level
@@ -1005,7 +1006,15 @@ disambiguate factor terms (k-1 df) from numeric terms (1 df),
 and the partial F as \code{F (q, df)} with both of its degrees of
 freedom, \code{3.45 (2, 28)}, as Stata and SAS report them: each cell
 carries the residual df of its own model, and the note defines
-the statistic only.
+the statistic only. The console and the rich outputs (tinytable,
+gt, flextable, Word, the clipboard) print the test in one column
+under the statistic's header, and Excel writes the statistic as a
+number with its df in the number format (\verb{0.00" (2, 28)"}).
+\code{output = "data.frame"} and \code{\link[=as_structured]{as_structured()}} keep the statistic
+and its df as numbers, in the statistic's column, then
+\code{"<column>: df"} and, for the F, \code{"<column>: residual df"}.
+\code{tidy()} has them in \code{df} and \code{df.residual}, and \code{inline()} cites
+the statistic alone.
 \item Variance explained per fit -- \code{lm} only: \code{"r2"},
 \code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
 populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each
@@ -1212,9 +1221,10 @@ residual df of the larger model (the denominator df for the Wald F
 of a robust \code{vcov}), \code{9.12 (1)} for a chi-square. A df that is not
 a whole number (the HTZ denominator under \code{"CR2"}, the df of a
 smooth term) prints with one decimal, \code{174.77 (2, 0.8)}.
-\code{inline()} cites the statistic alone, \code{output = "data.frame"} keeps
-it as a number, and Excel writes the number with the df in its
-number format. \code{"deviance_change"}
+The rich outputs print the same cell, \code{inline()} cites the
+statistic alone, \code{output = "data.frame"} keeps it as a number,
+and Excel writes the number with the df in its number format.
+\code{"deviance_change"}
 is the drop in deviance (previous minus current), positive when
 the larger model fits better, and is not signed either.
 }

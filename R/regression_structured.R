@@ -114,7 +114,9 @@
 #                                   # can express -- today the
 #                                   # "events/N" counts of the
 #                                   # `n_events` token, a change test
-#                                   # with its df, "12.38 (1, 29)" --
+#                                   # with its df, "12.38 (1, 29)", a
+#                                   # partial chi-square or partial F
+#                                   # with its df, "18.08 (1, 28)" --
 #                                   # and, in the
 #                                   # continuous tables, the cells of a
 #                                   # variable a named `digits` gives
@@ -225,6 +227,31 @@
 # reader reconstructs it to find the interval's shared display label.
 .reg_ci_sub_name <- function(col_name, role) {
   paste0(col_name, ": ", role)
+}
+
+# Sub-column names of the df of a term-level test in the typed body: the
+# term's ("F: df"), then the residual df of an F ("F: residual df").
+# FROZEN, as the interval bounds are: user code indexes the body by them,
+# and `.reg_engine_view()` finds the df of a statistic column by them.
+.reg_df_sub_names <- function(col_name) {
+  paste0(col_name, c(": df", ": residual df"))
+}
+
+# The statistic columns of the term-level tests (partial chi-square,
+# partial F) of a typed view: the columns whose df columns follow them.
+.reg_test_stat_cols <- function(col_meta) {
+  nm <- names(col_meta)
+  df_cols <- nm[vapply(col_meta, function(m) isTRUE(m$is_df), logical(1))]
+  nm[vapply(nm, function(k) .reg_df_sub_names(k)[[1L]] %in% df_cols, TRUE)]
+}
+
+# The df of the term-level test in column `nm` of a typed body, on row
+# `i`: the term's, then the residual df of an F, the missing ones left
+# out (a chi-square has no residual df).
+.reg_test_df <- function(body, nm, i) {
+  cols <- intersect(.reg_df_sub_names(nm), names(body))
+  df <- vapply(cols, function(k) body[[k]][[i]], numeric(1))
+  unname(df[!is.na(df)])
 }
 
 # The row roles a v3 body may carry. Regression roles first, then the
@@ -373,6 +400,9 @@ build_structured_body <- function(
   #       2 cols, names = "<col_name>" (est) and "<col_name>: df"
   #   * partial_f (fields = c("estimate","df","df_residual")): the same
   #       2 cols, then "<col_name>: residual df"
+  #     The statistic column displays the console's cell, "18.08 (1, 28)"
+  #     (`display_cells`); the rich engines drop the df columns
+  #     (`.reg_engine_view()`), which serve the machine outputs.
   # ci_label mirrors the console header: "CI" for frequentist tables,
   # "CrI" / "HDI" for all-Bayesian ones -- the rich engines (gt /
   # flextable / tinytable / Excel) display this string as the interval
@@ -416,21 +446,21 @@ build_structured_body <- function(
       # partial_chi2 / partial_f: keep estimate + df (and the residual
       # df of the F) as separate numeric cols.
       est_name <- cs$col_name
-      df_name <- paste0(cs$col_name, ": df")
+      df_names <- .reg_df_sub_names(cs$col_name)
       expanded[[length(expanded) + 1L]] <- list(
         name = est_name,
         source = "estimate",
         cs = cs
       )
       expanded[[length(expanded) + 1L]] <- list(
-        name = df_name,
+        name = df_names[[1L]],
         source = "df",
         cs = cs,
         is_df = TRUE
       )
       if ("df_residual" %in% cs$fields) {
         expanded[[length(expanded) + 1L]] <- list(
-          name = paste0(cs$col_name, ": residual df"),
+          name = df_names[[2L]],
           source = "df_residual",
           cs = cs,
           is_df = TRUE
@@ -517,15 +547,10 @@ build_structured_body <- function(
       is_df = isTRUE(e$is_df),
       # Bare display label for engines (e.g. "SE", "p", "AME"),
       # stripped of the dedup `.N` suffix and of any "Model X: "
-      # prefix that's carried separately by `model_id`. A df column has
-      # its own: "chi2 | df", "F | df | residual df".
-      display_label = if (identical(e$source, "df_residual")) {
-        spicy_str("header_df_residual")
-      } else if (isTRUE(e$is_df)) {
-        spicy_str("header_df")
-      } else {
-        cs$display_label %||% cs$col_name
-      }
+      # prefix that's carried separately by `model_id`. A df column
+      # carries its statistic's: no engine displays it, the statistic's
+      # cell printing the df.
+      display_label = cs$display_label %||% cs$col_name
     )
   }
 
@@ -822,6 +847,42 @@ build_structured_body <- function(
     n_body_rows,
     empty = ""
   )
+
+  # ---- Term-level tests: the console's cell -----------------------------
+  # A partial chi-square or partial F prints its df after the statistic,
+  # "18.08 (1, 28)", "4.52 (2)", in every output that prints the cell. The
+  # body keeps the three numbers (the statistic and its df columns, for
+  # the machine outputs); the string goes to `display_cells`, as for a
+  # change test. A cell with a status (a reference level, an undefined
+  # test) or without a test keeps its own display.
+  for (nm in .reg_test_stat_cols(col_meta)) {
+    disp <- col_meta[[nm]][["display_cells"]] %||%
+      rep(NA_character_, n_body_rows)
+    status <- cell_status[[nm]] %||% rep("", n_body_rows)
+    for (i in seq_len(n_body_rows)) {
+      df <- .reg_test_df(body_df, nm, i)
+      if (
+        is.na(body_df[[nm]][[i]]) ||
+          nzchar(status[[i]]) ||
+          !is.na(disp[[i]]) ||
+          length(df) == 0L
+      ) {
+        next
+      }
+      disp[[i]] <- paste0(
+        .cell_to_string(
+          body_df[[nm]][[i]],
+          i,
+          col_meta[[nm]],
+          decimal_mark = decimal_mark
+        ),
+        .format_df_suffix(df, decimal_mark)
+      )
+    }
+    if (any(!is.na(disp))) {
+      col_meta[[nm]][["display_cells"]] <- disp
+    }
+  }
 
   # ---- Spanners on structured columns -----------------------------------
   # The char body's spanners map "label -> integer body col indices
@@ -2048,13 +2109,80 @@ build_structured_body <- function(
   out
 }
 
+# The view the rich engines lay out (tinytable, gt, flextable and Word,
+# Excel, the clipboard, the panels of a stacked table): a term-level test
+# is ONE column, the console's, whose cells print the statistic with its
+# df ("18.08 (1, 28)", its `display_cells`). The df columns, kept in the
+# typed view for the machine outputs, are dropped, the spanners and the
+# interval pairs re-indexed. Each cell of the statistic records its df
+# text as the `suffix` of its format (`row_fmt`, read first by
+# `.resolve_cell_fmt()`): Excel keeps the number and prints the df
+# through its number format, 0.00" (1, 28)", as for a change test.
+.reg_engine_view <- function(struct) {
+  meta <- struct$col_meta
+  stat_cols <- .reg_test_stat_cols(meta)
+  if (length(stat_cols) == 0L) {
+    return(struct)
+  }
+  body <- struct$body
+  decimal_mark <- struct$format_spec$decimal_mark
+  drop <- character(0)
+  for (nm in stat_cols) {
+    m <- meta[[nm]]
+    disp <- m[["display_cells"]]
+    m$row_fmt <- lapply(seq_len(nrow(body)), function(i) {
+      f <- .resolve_cell_fmt(m, i)
+      if (length(disp) >= i && !is.na(disp[[i]]) && is.null(f$suffix)) {
+        df <- .reg_test_df(body, nm, i)
+        if (length(df) > 0L) {
+          f$suffix <- .format_df_suffix(df, decimal_mark)
+        }
+      }
+      f
+    })
+    meta[[nm]] <- m
+    drop <- c(drop, intersect(.reg_df_sub_names(nm), names(body)))
+  }
+  # The spanners and the interval pairs index the columns of the body as
+  # the engines lay it out (`.struct_display_body()`, label column = 1),
+  # whatever the place of the identity columns: the new index of each of
+  # those columns, NA for a dropped one.
+  keep <- !names(.struct_display_body(body)) %in% drop
+  at <- cumsum(keep)
+  at[!keep] <- NA_integer_
+  reindex <- function(idx) {
+    idx <- at[as.integer(idx)]
+    as.integer(idx[!is.na(idx)])
+  }
+  struct$body <- body[, !names(body) %in% drop, drop = FALSE]
+  struct$col_meta <- meta[!names(meta) %in% drop]
+  struct$cell_status <- struct$cell_status[
+    !names(struct$cell_status) %in% drop
+  ]
+  if (!is.null(struct$stars)) {
+    struct$stars$markers <- struct$stars$markers[
+      !names(struct$stars$markers) %in% drop
+    ]
+  }
+  if (length(struct$spanners) > 0L) {
+    struct$spanners <- lapply(struct$spanners, reindex)
+  }
+  struct$ci_pairs <- lapply(struct$ci_pairs, function(p) {
+    p$cols <- reindex(p$cols)
+    p
+  })
+  struct
+}
+
 
 # Resolve the per-cell precision + p_style for column `col_name` at body
 # row index `row_idx`, honoring any fit_stat_overrides recorded by
 # build_structured_body() (fit-stat rows can carry per-row precision
 # that differs from the column default, e.g. integer "n" in the same
 # column as 2-dp coefficients). A stacked table records the format of
-# each cell, its panel's, in `row_fmt` (R/stack_render.R): it wins.
+# each cell, its panel's, in `row_fmt` (R/stack_render.R): it wins. So
+# does the engine view of a term-level test (`.reg_engine_view()`),
+# whose cells each carry the df text of their test.
 .resolve_cell_fmt <- function(col_meta_entry, row_idx) {
   row_fmt <- col_meta_entry$row_fmt
   if (length(row_fmt) >= row_idx && !is.null(row_fmt[[row_idx]])) {

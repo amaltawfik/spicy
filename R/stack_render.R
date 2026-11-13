@@ -25,7 +25,11 @@
 
 .stack_build <- function(tables, panel_labels, title, note) {
   n <- length(tables)
-  views <- lapply(tables, attr, which = "structured", exact = TRUE)
+  # The views the engines lay out: a term-level test is one column, as in
+  # the console (`.reg_engine_view()`).
+  views <- lapply(tables, function(t) {
+    .reg_engine_view(attr(t, "structured", exact = TRUE))
+  })
   vcols <- lapply(views, function(v) .struct_value_cols(v$body))
   dcols <- lapply(tables, function(t) names(t)[-1L])
   shared <- all(vapply(

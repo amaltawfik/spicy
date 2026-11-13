@@ -75,7 +75,15 @@
 #'     and the partial F as `F (q, df)` with both of its degrees of
 #'     freedom, `3.45 (2, 28)`, as Stata and SAS report them: each cell
 #'     carries the residual df of its own model, and the note defines
-#'     the statistic only.
+#'     the statistic only. The console and the rich outputs (tinytable,
+#'     gt, flextable, Word, the clipboard) print the test in one column
+#'     under the statistic's header, and Excel writes the statistic as a
+#'     number with its df in the number format (`0.00" (2, 28)"`).
+#'     `output = "data.frame"` and [as_structured()] keep the statistic
+#'     and its df as numbers, in the statistic's column, then
+#'     `"<column>: df"` and, for the F, `"<column>: residual df"`.
+#'     `tidy()` has them in `df` and `df.residual`, and `inline()` cites
+#'     the statistic alone.
 #'   \item Variance explained per fit -- `lm` only: `"r2"`,
 #'     `"adj_r2"`. Like `"n"`, these are *per-fit* columns: they are
 #'     populated by [table_regression_uv()] screens, where each
@@ -281,9 +289,10 @@
 #'     of a robust `vcov`), `9.12 (1)` for a chi-square. A df that is not
 #'     a whole number (the HTZ denominator under `"CR2"`, the df of a
 #'     smooth term) prints with one decimal, `174.77 (2, 0.8)`.
-#'     `inline()` cites the statistic alone, `output = "data.frame"` keeps
-#'     it as a number, and Excel writes the number with the df in its
-#'     number format. `"deviance_change"`
+#'     The rich outputs print the same cell, `inline()` cites the
+#'     statistic alone, `output = "data.frame"` keeps it as a number,
+#'     and Excel writes the number with the df in its number format.
+#'     `"deviance_change"`
 #'     is the drop in deviance (previous minus current), positive when
 #'     the larger model fits better, and is not signed either.
 #' }
@@ -1575,7 +1584,8 @@
 #'   Default `3L`; at least `1L`, as in the descriptive tables. Every
 #'   `*_digits` argument is a whole number: a fraction is an error.
 #' @param effect_size_digits Decimals for per-coefficient effect
-#'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`).
+#'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) and the
+#'   term-level tests (`partial_chi2`, `partial_f`).
 #'   Default `2L`.
 #' @param fit_digits Decimals for variance-explained / model-level
 #'   effect-size fit stats (`r2`, `adj_r2`, `r2_change`,

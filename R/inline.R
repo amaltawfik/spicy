@@ -1117,15 +1117,18 @@ inline <- function(
   rows[keep]
 }
 
-# The view whose change-test rows are formatted without their df: the
-# table prints "12.38 (1, 29)", a sentence cites the statistic, as it
-# cites a partial F whose df are columns of their own.
+# The view whose test cells are formatted without their df: the table
+# prints "12.38 (1, 29)" for a change test and "18.08 (1, 28)" for a
+# partial F, a sentence cites the statistic.
 .inline_bare_change_tests <- function(s) {
   rows <- s$body$.row_role %in%
     "fit_stat" &
     s$body$.variable %in% names(.NESTED_TEST_DF)
+  tests <- .reg_test_stat_cols(s$col_meta)
   for (nm in names(s$col_meta)) {
-    if (!is.null(s$col_meta[[nm]]$display_cells)) {
+    if (nm %in% tests) {
+      s$col_meta[[nm]]$display_cells <- NULL
+    } else if (!is.null(s$col_meta[[nm]]$display_cells)) {
       s$col_meta[[nm]]$display_cells[rows] <- NA_character_
     }
   }

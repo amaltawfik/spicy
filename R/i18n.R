@@ -263,10 +263,6 @@
   header_risk_diff = "dRisk (%s)",
   header_risk_diff_no_horizon = "dRisk",
   header_ame = "AME",
-  # The degrees of freedom of a term-level test, in the engines that give
-  # them a column of their own: the term's, and the residual df of an F.
-  header_df = "df",
-  header_df_residual = "residual df",
   header_ci_label_confidence = "CI",
   header_ci_label_credible = "CrI",
   header_ci_label_hdi = "HDI",
