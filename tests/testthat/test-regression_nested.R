@@ -1596,6 +1596,106 @@ test_that("change df: the French table keeps ', ' between the df", {
   expect_match(.cd_cells(tbl, "F (variation)", 5L), "^12,38 \\(1, 29\\)$")
 })
 
+# The format of the change rows, as 0.14.1 left it ("+204.01") and as a
+# course reads it now ("204.01 (4)"): pinned against anova() on three
+# models, in the console and in the data frame, in English and French.
+test_that("change format: three binomial glm, chi-square (df) against anova()", {
+  skip_on_cran()
+  g <- list(
+    glm(vs ~ mpg, binomial, mtcars),
+    glm(vs ~ mpg + am, binomial, mtcars),
+    glm(vs ~ mpg + am + drat + gear, binomial, mtcars)
+  )
+  # A binomial dispersion is 1: the table of the three models gives the
+  # two pairwise tests.
+  a <- anova(g[[1L]], g[[2L]], g[[3L]], test = "Chisq")
+  expect_identical(a$Df[2:3], c(1, 2))
+  for (mark in c(".", ",")) {
+    lang <- if (identical(mark, ".")) "en" else "fr"
+    # One panel: the console splits a wide table across the width.
+    withr::local_options(spicy.language = lang, width = 250)
+    tbl <- table_regression(g, nested = TRUE)
+    p_lab <- if (lang == "en") "p (change)" else "p (variation)"
+    # "4.89 (1)" "1.05 (2)", unsigned; the first model has the dash only.
+    chi <- .cd_chi(a$Deviance[2:3], a$Df[2:3], mark)
+    expect_identical(.cd_cells(tbl, "Δχ²", c(2L, 5L, 8L)), c("–", chi))
+    expect_identical(
+      .cd_cells(tbl, p_lab, c(2L, 5L, 8L)),
+      c("–", .sg_p(a[["Pr(>Chi)"]][2:3], mark))
+    )
+    out <- capture.output(print(tbl))
+    row <- out[startsWith(out, " Δχ²")]
+    expect_length(row, 1L)
+    expect_match(row, paste0("–\\s+", gsub("([().])", "\\\\\\1", chi[[1L]])))
+    expect_false(grepl("+", row, fixed = TRUE))
+    # The data frame keeps the numbers, the df left to the cell.
+    df <- table_regression(g, nested = TRUE, output = "data.frame")
+    b <- paste0("Model ", 1:3, ": B")
+    expect_equal(
+      unlist(df[df$variable == "lrt_change", b], use.names = FALSE),
+      c(NA, a$Deviance[2:3]),
+      tolerance = 1e-12
+    )
+    expect_equal(
+      unlist(df[df$variable == "p_change", b], use.names = FALSE),
+      c(NA, a[["Pr(>Chi)"]][2:3]),
+      tolerance = 1e-12
+    )
+    expect_identical(df$label[df$variable == "p_change"], p_lab)
+  }
+})
+
+test_that("change format: three lm, F (df1, df2) against the pairwise anova()", {
+  skip_on_cran()
+  h <- .sg_lm_fits()
+  # The F-change of each step is the pairwise F, on the residual df of
+  # the larger model of the pair. anova() of the three models divides
+  # every row by the residuals of the largest one, so it agrees on the
+  # last step only (12.38 on (1, 29) against 12.53 on (1, 28) for the
+  # second model).
+  a12 <- anova(h[[1L]], h[[2L]], test = "F")
+  a23 <- anova(h[[2L]], h[[3L]], test = "F")
+  a3 <- anova(h[[1L]], h[[2L]], h[[3L]], test = "F")
+  expect_equal(a3$F[3L], a23$F[2L], tolerance = 1e-12)
+  f <- c(a12$F[2L], a23$F[2L])
+  p <- c(a12[["Pr(>F)"]][2L], a23[["Pr(>F)"]][2L])
+  for (mark in c(".", ",")) {
+    lang <- if (identical(mark, ".")) "en" else "fr"
+    withr::local_options(spicy.language = lang, width = 250)
+    tbl <- table_regression(h, nested = TRUE)
+    f_lab <- if (lang == "en") "F-change" else "F (variation)"
+    p_lab <- if (lang == "en") "p (change)" else "p (variation)"
+    cells <- .cd_f(
+      f,
+      c(a12$Df[2L], a23$Df[2L]),
+      c(a12$Res.Df[2L], a23$Res.Df[2L]),
+      mark
+    )
+    expect_identical(.cd_cells(tbl, f_lab, c(2L, 5L, 8L)), c("–", cells))
+    expect_identical(
+      .cd_cells(tbl, p_lab, c(2L, 5L, 8L)),
+      c("–", .sg_p(p, mark))
+    )
+    out <- capture.output(print(tbl))
+    row <- out[startsWith(out, paste0(" ", f_lab))]
+    expect_length(row, 1L)
+    expect_true(grepl(cells[[1L]], row, fixed = TRUE))
+    expect_false(grepl("+", row, fixed = TRUE))
+    df <- table_regression(h, nested = TRUE, output = "data.frame")
+    b <- paste0("Model ", 1:3, ": B")
+    expect_equal(
+      unlist(df[df$variable == "f_change", b], use.names = FALSE),
+      c(NA, f),
+      tolerance = 1e-12
+    )
+    expect_equal(
+      unlist(df[df$variable == "p_change", b], use.names = FALSE),
+      c(NA, p),
+      tolerance = 1e-12
+    )
+  }
+})
+
 test_that("change df: the typed view keeps the number, the string engines print the df", {
   skip_on_cran()
   h <- .sg_lm_fits()[1:2]

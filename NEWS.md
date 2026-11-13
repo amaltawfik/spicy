@@ -94,7 +94,9 @@
   statistics (F-change, χ², Wald) and the deviance drop are no longer
   signed in the console. Those outputs also print the F-change with
   `digits` and the Deviance row and its change with `ic_digits`, as the
-  console does.
+  console does. The cell of a test carries its degrees of freedom: a
+  χ² change printed `+204.01` reads `204.01 (4)`, an F-change
+  `12.38 (1, 29)`. `output = "data.frame"` keeps the statistic alone.
 
 * `table_continuous()`, `table_continuous_svy()` and `table_outcome()`
   show a `show_columns` vector in the order it is written:
