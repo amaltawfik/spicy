@@ -37,12 +37,14 @@
     Output
       Tableau des variables catégorielles selon sex
       
-       Variable       │  F n    F %     M n    M %     Total n    Total %      p       φ    
-      ────────────────┼─────────────────────────────────────────────────────────────────────
-       smoke          │                                                      1,000    0,17  
-         No           │   2     50,0     2     66,7       4        57,1                     
-         Yes          │   2     50,0     1     33,3       3        42,9                     
-         (Manquant)   │   0              1                1                                 
+                             F            M          Total                     
+                        ───────────  ───────────  ───────────                  
+       Variable       │  n     %      n     %      n     %        p       φ    
+      ────────────────┼────────────────────────────────────────────────────────
+       smoke          │                                         1,000    0,17  
+         No           │  2    50,0    2    66,7    4    57,1                   
+         Yes          │  2    50,0    1    33,3    3    42,9                   
+         (Manquant)   │  0            1            1                           
       
       Note. N = 8 : F (n = 4), M (n = 4). Pourcentages en colonne. Valeur p : test exact de Fisher.
     Code
@@ -116,17 +118,13 @@
     Output
       Categorical table by arm
       
-       Variable │ Campus n  Campus %  Control n  Control %  (No answer) n  (No answer) %  All n  All % 
-      ──────────┼──────────────────────────────────────────────────────────────────────────────────────
-       sex      │                                                                                      
-         F      │    0         0.0        2        100.0          1            50.0         3    50.0  
-         M      │    2       100.0        0          0.0          1            50.0         3    50.0  
-      
-       Variable │  p     φ   
-      ──────────┼────────────
-       sex      │ .333  1.00 
-         F      │            
-         M      │            
+                       Campus       Control     (No answer)      All                     
+                    ────────────  ────────────  ───────────  ───────────                 
+       Variable   │  n      %      n      %      n     %      n     %       p       φ    
+      ────────────┼──────────────────────────────────────────────────────────────────────
+       sex        │                                                        .333    1.00  
+         F        │  0      0.0    2    100.0    1    50.0    3    50.0                  
+         M        │  2    100.0    0      0.0    1    50.0    3    50.0                  
       
       Note. N = 6: Campus (n = 2), Control (n = 2), (No answer) (n = 2). Percentages are column percentages. P-value: Fisher exact test.
 

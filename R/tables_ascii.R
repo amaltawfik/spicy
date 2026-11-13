@@ -678,8 +678,15 @@ ascii_table_panels <- function(
   }
 
   width_of <- function(candidate) {
+    sub <- df[, candidate, drop = FALSE]
+    # `[` makes repeated names unique ("n", "%", "n.1", "%.1"): the
+    # columns of groups, whose headers repeat by design, are measured
+    # under the headers they print.
+    if (length(groups)) {
+      names(sub) <- names(df)[candidate]
+    }
     ascii_table_total_width(
-      df[, candidate, drop = FALSE],
+      sub,
       padding = padding,
       first_column_line = first_column_line,
       row_total_line = row_total_line,
@@ -687,7 +694,16 @@ ascii_table_panels <- function(
     )
   }
 
-  if (width_of(cols) <= console_width) {
+  if (
+    ascii_table_total_width(
+      df,
+      padding = padding,
+      first_column_line = first_column_line,
+      row_total_line = row_total_line,
+      spanners = groups
+    ) <=
+      console_width
+  ) {
     return(list(cols))
   }
 
