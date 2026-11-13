@@ -5,7 +5,8 @@
   l'issue #7 du 2026-10-30 (acoppock, estimatr), ouverte et sans réponse au 2026-11-13, signale
   déjà ce défaut pour lm (HC0, HC2, vcovCL, meat). Le corps ci-dessous est antérieur à ce
   constat : à ne pas envoyer tel quel.
-- **Envoyé** : non envoyé
+- **Envoyé** : non envoyé, classé le 2026-11-13 : doublon de l'issue #7 de Codeberg, qui donne le
+  mécanisme complet. Veille : à la correction sur le CRAN, retirer ou conditionner la garde de spicy.
 - **Statut** : dossier prêt le 2026-11-12, corps relu mot à mot le 2026-11-13 (reproducteur court ajouté, trois phrases précisées). Reproduction en base R et sandwich
   seuls (repro.R, repro.log, docs_check.log, findings.txt, archivés avec la
   session du 12.11). Chaque affirmation repose sur une sortie capturée.
