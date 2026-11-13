@@ -7,8 +7,9 @@
 #     alternative-specific intercepts and alternative-invariant
 #     predictors via `<term>:<alt>` naming. Coef extraction is direct
 #     (summary(fit)$CoefTable carries Estimate / SE / z / Pr(>|z|));
-#     parsing the term-alternative syntax into outcome_level is
-#     deferred to the renderer (Phase 7).
+#     .mlogit_coefs() parses the term-alternative syntax into
+#     outcome_level and groups rows into the two-segment layout
+#     (alternative-invariant block, then one section per alternative).
 #   * betareg::betareg -- beta regression for response in (0, 1).
 #     Two components: mean (the regression coefs) + precision (φ).
 #     Mirroring the pscl / glmmTMB convention, the frame's coefs

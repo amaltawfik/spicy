@@ -1,17 +1,19 @@
 # Per-model long-format extractor for table_regression().
 #
 # Architecture per dev/table_regression_design.md Section 2 layer 1.
-# Dispatch is on `class(fit)` (S3 in spirit; implemented as a single
-# internal function `extract_lm_phase1()` with class-aware branches
-# rather than a true S3 generic, since the lm and glm paths share
-# most of the scaffolding -- only the per-coef inference, fit-stats
-# family, and a few transforms differ).
+# A single internal function `extract_lm_phase1()` with class-aware
+# branches serves lm and glm, since the two paths share most of the
+# scaffolding -- only the per-coef inference, fit-stats family, and
+# a few transforms differ.
 #
 # The function name retains the historical `_phase1` suffix for
 # call-site compatibility; functionally it covers both lm (Phase 1)
 # and glm (Phase 3, including all 5 standardize methods, AME +
 # CR2 + Satterthwaite, partial_chi2, exponentiate, profile CI).
-# Phase 4 (merMod) is deferred and will introduce a true S3 generic.
+# It is reached only through as_regression_frame.lm() / .glm()
+# (regression_frame_lm.R); every other class, merMod included, has
+# its own method of the S3 generic as_regression_frame()
+# (regression_frame.R).
 #
 # Returns a list with two main components:
 #   * `coefs`     -- long-format data.frame, one row per
