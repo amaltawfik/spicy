@@ -3579,30 +3579,42 @@ table_regression <- function(
       # DESIGN-based Cox never reaches here: the all-Cox token gate in
       # validate_show_columns() refuses it first, with a hint of its own
       # that points at survey rather than at estimands it also refuses.)
+      fixest_glm_hint <- paste0(
+        "marginaleffects, which computes the AME, refuses a fixest GLM ",
+        "with fixed effects (`feglm()`, `fepois()`, `femlm()`, ",
+        "`fenegbin()`, whatever the family): it cannot take into account ",
+        "the uncertainty of the fixed effects, which fixest does not ",
+        "estimate. The AME is available for `feols()` and for a GLM ",
+        "without fixed effects."
+      )
+      lean_fe <- vapply(frames, .fixest_lean_fe, logical(1))
       hint_main <- if (any(classes == "coxph")) {
         paste0(
           "For a Cox model, the absolute-effect columns are the RMST ",
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
           "with `tau = `, or `\"risk_diff\"` with `at_time = `."
         )
-      } else if (any(lean_fe <- vapply(frames, .fixest_lean_fe, logical(1)))) {
-        sprintf(
-          paste0(
-            "%s: a fixest fit with fixed effects and `lean = TRUE` keeps ",
-            "too little for marginaleffects to predict from it. ",
-            "Re-estimate it with `lean = FALSE`."
+      } else if (any(lean_fe)) {
+        is_fixest <- vapply(
+          frames,
+          function(fr) inherits(attr(fr, "fit"), "fixest"),
+          logical(1)
+        )
+        c(
+          sprintf(
+            paste0(
+              "%s: a fixest fit with fixed effects and `lean = TRUE` keeps ",
+              "too little for marginaleffects to predict from it. ",
+              "Re-estimate it with `lean = FALSE`."
+            ),
+            paste(.model_display_names(models)[lean_fe], collapse = ", ")
           ),
-          paste(.model_display_names(models)[lean_fe], collapse = ", ")
+          # The other refused fixest fits are GLMs with fixed effects:
+          # their own reason, or the refusal would hide it.
+          if (any(is_fixest & !lean_fe)) fixest_glm_hint
         )
       } else if (any(classes == "fixest")) {
-        paste0(
-          "marginaleffects, which computes the AME, refuses a fixest GLM ",
-          "with fixed effects (`feglm()`, `fepois()`, `femlm()`, ",
-          "`fenegbin()`, whatever the family): it cannot take into account ",
-          "the uncertainty of the fixed effects, which fixest does not ",
-          "estimate. The AME is available for `feols()` and for a GLM ",
-          "without fixed effects."
-        )
+        fixest_glm_hint
       } else {
         paste0(
           "No average-marginal-effects backend exists for this class ",
@@ -3615,7 +3627,7 @@ table_regression <- function(
             "AME columns are not available for %s.",
             paste0("`", classes, "`", collapse = " / ")
           ),
-          "i" = hint_main,
+          stats::setNames(hint_main, rep("i", length(hint_main))),
           "i" = "Drop the AME token(s) from `show_columns`."
         ),
         class = "spicy_invalid_input"

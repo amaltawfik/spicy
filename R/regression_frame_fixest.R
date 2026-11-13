@@ -515,11 +515,15 @@ as_regression_frame.fixest <- function(
   length(fit$fixef_vars) == 0L || (!is_glm && !isTRUE(fit$lean))
 }
 
-# TRUE for the frame of a `lean = TRUE` fixest fit with fixed effects,
-# so the AME refusal can name the remedy.
+# TRUE for the frame of a `lean = TRUE` feols fit with fixed effects,
+# so the AME refusal can name the remedy. A GLM with fixed effects is
+# refused whatever `lean`, so `lean = FALSE` is no remedy for it.
 .fixest_lean_fe <- function(frame) {
   fit <- attr(frame, "fit")
-  inherits(fit, "fixest") && isTRUE(fit$lean) && length(fit$fixef_vars) > 0L
+  inherits(fit, "fixest") &&
+    isTRUE(fit$lean) &&
+    length(fit$fixef_vars) > 0L &&
+    !(is.character(fit$family) || is.list(fit$family))
 }
 
 

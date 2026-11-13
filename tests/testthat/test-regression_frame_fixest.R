@@ -1677,6 +1677,33 @@ test_that("a lean feols with fixed effects has no AME, and the refusal says why"
   # Without fixed effects a lean fit keeps its AME.
   lean0 <- fixest::feols(mpg ~ wt + hp, data = d, lean = TRUE)
   expect_true(as_regression_frame(lean0)$info$supports$ame)
+  # Beside a GLM with fixed effects, both reasons are given; a lean GLM
+  # with fixed effects gets the GLM reason, which `lean = FALSE` does
+  # not lift.
+  d$high <- as.integer(d$mpg > 20)
+  glm_fe <- fixest::feglm(high ~ wt | cyl, data = d, family = binomial)
+  err2 <- tryCatch(
+    suppressWarnings(table_regression(
+      list(Lean = fit, Glm = glm_fe),
+      show_columns = c("b", "ame")
+    )),
+    error = function(e) e
+  )
+  expect_s3_class(err2, "spicy_invalid_input")
+  expect_match(conditionMessage(err2), "`lean = FALSE`", fixed = TRUE)
+  expect_match(conditionMessage(err2), "refuses a fixest GLM", fixed = TRUE)
+  glm_lean <- fixest::feglm(
+    high ~ wt | cyl,
+    data = d,
+    family = binomial,
+    lean = TRUE
+  )
+  err3 <- tryCatch(
+    suppressWarnings(table_regression(glm_lean, show_columns = c("b", "ame"))),
+    error = function(e) e
+  )
+  expect_match(conditionMessage(err3), "refuses a fixest GLM", fixed = TRUE)
+  expect_no_match(conditionMessage(err3), "lean = FALSE", fixed = TRUE)
 })
 
 test_that("an estimatr fit with fixed effects is titled as a fixest one", {
