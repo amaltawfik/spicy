@@ -96,7 +96,58 @@
   `digits` and the Deviance row and its change with `ic_digits`, as the
   console does.
 
+* `table_continuous()`, `table_continuous_svy()` and `table_outcome()`
+  show a `show_columns` vector in the order it is written:
+  `c("med", "q1", "q3", "m", "sd", "n")` puts the median first. A token
+  written twice counts once instead of being an error. An interval
+  written before its statistic (`"ci"` before `"m"`, `"med_ci"` before
+  `"med"` or `"med_iqr"`) is an error. The per-variable list form keeps
+  the canonical order.
+
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`
+  and `table_outcome()` leave the rows of zero weight out of the sample
+  size of the note, as `nobs()` does. So do the `n` column of
+  `table_continuous_lm()` and the `nobs` of its `glance()`. Weighted
+  statistics do not change.
+
+* Every table with `by` refuses a level of `by` that is the empty
+  string. `table_categorical()` showed 0 for that group, and the survey
+  tables failed.
+
+* `table_regression()`: a `glmmTMB` beta-binomial mixed model no longer
+  reports the Nakagawa R2. The residual variance it relied on for that
+  family goes to 0 as the overdispersion vanishes, so the R2 went to 1
+  instead of joining that of the binomial model.
+
 ## New features
+
+* `table_categorical()`, `table_categorical_svy()`,
+  `table_multiresponse()`, `table_battery()` and `table_battery_svy()`
+  print the groups of `by` in the console as the rich outputs do: the
+  label of each group sits over its columns, headed `n`, `%`, instead
+  of `Female n`, `Female %`. A table split into panels breaks between
+  groups. The column names of `as.data.frame()`, `tidy()`,
+  `as_structured()` and the rendered outputs do not change.
+
+* `table_regression()` gains `ame_type`. `"slope"` (default, unchanged)
+  reports the average slope dY/dX of a continuous predictor, `"unit"`
+  the average change in the prediction for a one-unit increase from the
+  observed value, `"sd"` the same for an increase of one standard
+  deviation. Factors, logicals and 0/1 predictors stay contrasts with
+  their reference level. The note names the quantity, under the default
+  too.
+
+* `table_regression()` with `exponentiate = TRUE`: the note says what a
+  displayed intercept estimates, since it is not a ratio: the baseline
+  odds, risk, rate or mean, or a quantile of the survival time for
+  `survreg()`. Zero-inflation and hurdle blocks on a logit link name
+  theirs.
+
+* `table_battery()` and `table_battery_svy()` gain `tidy()` and
+  `glance()` methods.
+
+* `as_structured()` of `table_continuous_lm()` gives each mean column
+  the header printed over the levels, in `col_meta$<col>$spanner_label`.
 
 * `table_regression()` gains `partial_f`, the Type II partial F test of
   each term, for `lm()` (the F of `car::Anova(type = 2)`) and for a
@@ -649,6 +700,40 @@
   "Cox proportional hazards regression", as the other tables do.
 
 * The AME column needs marginaleffects 0.29.0 or later.
+
+* The console of `table_continuous()`, `table_continuous_svy()`,
+  `table_outcome()`, `table_continuous_lm()` and of a one-way
+  `table_categorical_svy()` prints "95% CI" over the bounds "LL" and
+  "UL", as the rich outputs do. Column names do not change.
+
+* `table_battery()` and `table_battery_svy()` keep the statistic under
+  the group when `top` and `show_n = FALSE` leave one column per group,
+  in the console and in every rich output.
+
+* `table_regression()`: the AME of a `glmmTMB` binomial or
+  beta-binomial model with a `cbind()` response is weighted by the
+  trials whatever the glmmTMB version. Before glmmTMB 1.1.15 it was
+  unweighted.
+
+* `table_regression()` gives every reason when it refuses the AME of
+  fixest fits: a lean `feols()` with fixed effects beside a GLM with
+  fixed effects names both, and a lean GLM with fixed effects is no
+  longer told to re-estimate with `lean = FALSE`.
+
+* `table_regression()` no longer prints the line "Random effect
+  variances not available" in the console when it computes the R2 of a
+  singular mixed model.
+
+* `inline()` explains why the percentage of the `(Missing)` row of
+  `table_categorical()` is empty under `percent_base = "valid"`, and
+  points to its count.
+
+* `table_categorical_svy()`, `table_continuous_svy()`: the range of
+  design degrees of freedom in the note is written "(7–14)".
+
+* A group label with wide characters or decomposed accents no longer
+  shifts the labels that follow it in the console of
+  `table_regression()`.
 
 # spicy 0.14.1
 
