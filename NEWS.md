@@ -715,6 +715,12 @@
 * `table_regression()`: the console no longer draws the rule of a total
   above a row whose label contains the word "Total".
 
+* `table_regression()`: in the console, a model label wider than its
+  columns widens them when the table still fits the console, instead of
+  being cut ("Mode…" over a single column). A label that would not fit
+  is still cut, with its ellipsis, and the table splits into panels as
+  before.
+
 * `table_regression()`: a `keep`, `drop`, `show_intercept = FALSE` or
   `show_thresholds = FALSE` that leaves no coefficient row now stops
   with `spicy_empty_table`, naming the model and the setting, instead of

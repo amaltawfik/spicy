@@ -597,6 +597,31 @@ test_that("a split into panels keeps each group whole", {
   expect_identical(sum(grepl("\\bA\\b|\\bB\\b|\\bC\\b", out)), 3L)
 })
 
+test_that("whole_spanners = \"fit\" widens a group only where the panel fits", {
+  m <- .spanner_df()
+  lbl <- "A rather long group label"
+  print_at <- function(width, whole) {
+    withr::with_options(
+      list(width = width),
+      capture.output(spicy_print_table(
+        m,
+        align_left_cols = 1L,
+        spanners = stats::setNames(list(2:3), lbl),
+        whole_spanners = whole
+      ))
+    )
+  }
+  # Room for the widened group: the label is whole, as under TRUE.
+  expect_identical(print_at(80, "fit"), print_at(80, TRUE))
+  expect_true(any(grepl(lbl, print_at(80, "fit"), fixed = TRUE)))
+  # No room: the label is cut as under FALSE, and the table keeps to the
+  # console.
+  narrow <- print_at(24, "fit")
+  expect_identical(narrow, print_at(24, FALSE))
+  expect_true(any(grepl("…", narrow, fixed = TRUE)))
+  expect_true(all(nchar(narrow, type = "width") <= 24L))
+})
+
 test_that("ascii_group_header heads the columns of a group", {
   labels <- c("Variable", "F n", "F %", "M n", "M %", "x 1", "p")
   groups <- list(

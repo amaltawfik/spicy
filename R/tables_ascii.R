@@ -862,7 +862,10 @@ ascii_table_panels <- function(
 #'   alone is wider than the console. Used by the descriptive tables,
 #'   whose spanners are the groups of `by`. When `FALSE` (the default), a
 #'   label wider than its columns is truncated and a split may fall inside
-#'   a group.
+#'   a group. `"fit"` keeps the split of `FALSE` and widens the columns of
+#'   the groups of a panel to their labels when the panel, so widened,
+#'   still fits the console; otherwise its labels are truncated as under
+#'   `FALSE`. Used by [table_regression()], whose spanners are the models.
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -1137,6 +1140,24 @@ spicy_print_table <- function(
           names(sub) <- nm
         }
       }
+      # "fit": the labels of this panel's groups widen their columns only
+      # when the panel, so widened, still fits the console.
+      panel_whole <- if (identical(whole_spanners, "fit")) {
+        shown <- sub
+        if (!is.null(panel_display_labels)) {
+          names(shown) <- panel_display_labels
+        }
+        ascii_table_total_width(
+          shown,
+          padding = padding,
+          first_column_line = first_column_line,
+          row_total_line = row_total_line,
+          spanners = panel_spanners
+        ) <=
+          getOption("width", 80L)
+      } else {
+        whole_spanners
+      }
       build_ascii_table(
         sub,
         padding = padding,
@@ -1152,7 +1173,7 @@ spicy_print_table <- function(
         total_row_idx = panel_total,
         display_labels = panel_display_labels,
         body_spanners = panel_body_spanners,
-        whole_spanners = whole_spanners,
+        whole_spanners = panel_whole,
         ...
       )
     },

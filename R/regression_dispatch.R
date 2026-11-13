@@ -3578,11 +3578,21 @@ print.spicy_regression_table <- function(x, ...) {
     raw_gs <- as.integer(attr(x, "group_sep_rows") %||% integer(0))
     if (length(raw_gs)) raw_gs[1L] else NULL
   }
-  .print_regression_like(
-    x,
-    display_labels = display_labels,
-    fit_stats_start = fit_stats_start,
-    ...
+  # A model label wider than its columns widens them when the panel still
+  # fits the console, and is truncated otherwise (`whole_spanners =
+  # "fit"`): the split into panels is the one of the truncated labels.
+  dots <- list(...)
+  dots$whole_spanners <- dots$whole_spanners %||% "fit"
+  do.call(
+    .print_regression_like,
+    c(
+      list(
+        x,
+        display_labels = display_labels,
+        fit_stats_start = fit_stats_start
+      ),
+      dots
+    )
   )
 }
 

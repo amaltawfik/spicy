@@ -72,25 +72,49 @@ test_that("over-wide spanner labels truncate with a visible ellipsis", {
     data = sochealth,
     trace = FALSE
   )
-  out <- withr::with_options(
-    list(width = 130),
-    capture.output(print(table_regression(
-      fit,
-      outcome_labels = c(
-        "Student vs Employed",
-        "Unemployed vs Employed",
-        "Inactive vs Employed"
-      )
-    )))
+  tbl <- table_regression(
+    fit,
+    outcome_labels = c(
+      "Student vs Employed",
+      "Unemployed vs Employed",
+      "Inactive vs Employed"
+    )
   )
+  # 60 columns: the group is narrower than its label, and widening it
+  # would overflow the panel, so the label is cut, and the cut is marked.
+  out <- withr::with_options(list(width = 60), capture.output(print(tbl)))
   combined <- paste(out, collapse = "\n")
-  # The group is narrower than the label: the cut is now marked.
   expect_match(combined, "Unemployed vs Emp…", fixed = TRUE)
+  expect_true(all(nchar(out[!grepl("^Note", out)], type = "width") <= 60L))
   # A label that fits is left whole.
   expect_match(combined, "Student vs Employed", fixed = TRUE)
   # No silently-cut label remains (the old failure mode ended the
   # spanner mid-word with no marker).
   expect_false(grepl("Unemployed vs Empl ", combined, fixed = TRUE))
+  # 130 columns: the widened groups fit, so every label is whole.
+  wide <- withr::with_options(list(width = 130), capture.output(print(tbl)))
+  expect_false(any(grepl("…", wide, fixed = TRUE)))
+  expect_true(any(grepl("Unemployed vs Employed", wide, fixed = TRUE)))
+})
+
+test_that("a model label wider than its column widens it when the panel fits", {
+  m1 <- glm(am ~ wt, data = mtcars, family = binomial)
+  m2 <- glm(am ~ wt + hp, data = mtcars, family = binomial)
+  tbl <- table_regression(list(m1, m2), show_columns = "b")
+  out <- withr::with_options(list(width = 80), capture.output(print(tbl)))
+  expect_match(out[[3L]], "Model 1  Model 2", fixed = TRUE)
+  expect_false(any(grepl("…", out, fixed = TRUE)))
+  # The split into panels is that of the truncated labels: what does not
+  # fit stays truncated rather than overflowing.
+  narrow <- withr::with_options(
+    list(width = 80),
+    capture.output(print(tbl, whole_spanners = FALSE))
+  )
+  expect_match(paste(narrow, collapse = "\n"), "Mode…", fixed = TRUE)
+  expect_identical(
+    sum(grepl("^ Variable", out)),
+    sum(grepl("^ Variable", narrow))
+  )
 })
 
 

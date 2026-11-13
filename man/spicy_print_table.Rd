@@ -126,7 +126,10 @@ them, and a split into panels keeps them together, unless the group
 alone is wider than the console. Used by the descriptive tables,
 whose spanners are the groups of \code{by}. When \code{FALSE} (the default), a
 label wider than its columns is truncated and a split may fall inside
-a group.}
+a group. \code{"fit"} keeps the split of \code{FALSE} and widens the columns of
+the groups of a panel to their labels when the panel, so widened,
+still fits the console; otherwise its labels are truncated as under
+\code{FALSE}. Used by \code{\link[=table_regression]{table_regression()}}, whose spanners are the models.}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }
