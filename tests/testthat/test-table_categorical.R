@@ -1252,6 +1252,44 @@ test_that("assoc_ci shows inline CI in rendered formats", {
   )
   expect_true(any(endsWith(spanners, " [95% CI]")))
 })
+
+test_that("the console shows the association interval as the rich engines do", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("broom")
+  # One cell, ".52 [.21, .74]", under "V [95% CI]": the console printed the
+  # bounds in two columns of their own, the rich engines in the cell.
+  for (mk in c(".", ",")) {
+    args <- list(
+      mtcars,
+      "cyl",
+      "am",
+      assoc_ci = TRUE,
+      smd = TRUE,
+      decimal_mark = mk
+    )
+    tbl <- do.call(table_categorical, args)
+    tt <- do.call(table_categorical, c(args, output = "tinytable"))
+    cell <- grep("[", unlist(tt@data[1L, ]), fixed = TRUE, value = TRUE)
+    expect_identical(
+      unname(cell),
+      if (mk == ".") ".52 [.21, .74]" else "0,52 [0,21; 0,74]"
+    )
+    out <- capture.output(print(tbl))
+    hdr <- out[grepl("Variable", out, fixed = TRUE)]
+    expect_match(hdr, "V [95% CI]", fixed = TRUE, info = mk)
+    expect_false(grepl("LL", hdr, fixed = TRUE), info = mk)
+    expect_true(any(grepl(cell, out, fixed = TRUE)), info = mk)
+    # The machine outputs keep the bounds apart, under their names.
+    expect_true(all(c("95% CI LL", "95% CI UL") %in% names(as.data.frame(tbl))))
+    expect_true(all(
+      c("CI lower", "CI upper") %in% names(as_structured(tbl)$body)
+    ))
+    expect_true(all(
+      c("es_ci_lower", "es_ci_upper") %in% names(broom::glance(tbl))
+    ))
+  }
+})
 # ---- levels_keep ---------------------------------------------------------
 
 test_that("table_categorical levels_keep filters and reorders levels", {
@@ -4181,13 +4219,17 @@ test_that("a variable with nothing to compare has undefined cells and no measure
     spicy:::.CAT_KEY_CI_UL
   )
   for (nm in stat_cols) {
-    expect_identical(disp[[nm]][untested], rep(mark, 2L), info = nm)
     expect_identical(
       s$cell_status[[nm]][untested],
       rep("undefined", 2L),
       info = nm
     )
   }
+  # The console shows the interval in the measure's cell: the mark alone.
+  for (nm in c("p", "Effect size")) {
+    expect_identical(disp[[nm]][untested], rep(mark, 2L), info = nm)
+  }
+  expect_false(any(stat_cols[3:4] %in% names(disp)))
   # The tested variable keeps its numbers; the note names the measure of
   # that variable only (it named "Phi: smoking." and "Cramer's V: constf").
   expect_false(any(disp$p[disp$Variable == "education"] == mark))

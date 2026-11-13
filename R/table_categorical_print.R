@@ -83,15 +83,31 @@ print.spicy_categorical_table <- function(x, ...) {
   header_labels <- if (is.null(s)) {
     NULL
   } else {
-    labs <- c(
-      spicy_str("header_variable"),
-      vapply(
-        .struct_value_cols(s$body),
-        function(nm) s$col_meta[[nm]]$display_label %||% nm,
-        character(1),
-        USE.NAMES = FALSE
-      )
+    vals <- .struct_value_cols(s$body)
+    labs <- vapply(
+      vals,
+      function(nm) s$col_meta[[nm]]$display_label %||% nm,
+      character(1),
+      USE.NAMES = FALSE
     )
+    # The interval of the association measure shares the measure's cell,
+    # as in the rich engines: its bounds have no column of the display
+    # frame, and the measure's header names the interval ("V [95% CI]").
+    ci <- c(.CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
+    if (all(ci %in% vals) && !any(ci %in% names(display_df))) {
+      is_assoc <- vapply(
+        s$col_meta[vals],
+        function(m) identical(m$token, "assoc"),
+        logical(1)
+      )
+      labs[is_assoc] <- spicy_fmt(
+        "header_estimate_ci",
+        labs[is_assoc],
+        s$col_meta[[.CAT_KEY_CI_LL]]$ci_label
+      )
+      labs <- labs[!vals %in% ci]
+    }
+    labs <- c(spicy_str("header_variable"), labs)
     if (length(labs) == ncol(display_df)) labs else NULL
   }
   # Under `by`, each group heads its own columns, as in the rich engines.

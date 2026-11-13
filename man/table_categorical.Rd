@@ -350,13 +350,13 @@ another measure or fall back to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
 95\\% confidence interval of the association measure. In the console
-and in the \code{"data.frame"}, \code{"excel"} and \code{"clipboard"} outputs, two
-extra columns headed \verb{95\% CI LL} / \verb{95\% CI UL} are added, the level
-stated as the other tables state it; in the long output (\code{"long"})
-the bounds fill \code{es_ci_lower} / \code{es_ci_upper}. In rendered formats
-(\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}), the CI is shown
-inline (e.g., \code{.14 [.08, .19]}) under a header that states its level
-(\verb{V [95\% CI]}). Defaults to \code{FALSE}.}
+and in rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
+\code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}) under a
+header that states its level (\verb{V [95\% CI]}). In the \code{"data.frame"},
+\code{"excel"} and \code{"clipboard"} outputs, two extra columns headed
+\verb{95\% CI LL} / \verb{95\% CI UL} are added, the level stated as the other
+tables state it; in the long output (\code{"long"}) the bounds fill
+\code{es_ci_lower} / \code{es_ci_upper}. Defaults to \code{FALSE}.}
 
 \item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
 standardized mean difference between the two groups of \code{by},

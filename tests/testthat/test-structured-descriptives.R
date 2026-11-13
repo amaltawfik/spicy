@@ -326,7 +326,27 @@ test_that("a signed association measure is not read as a bad p-value", {
     ),
     c("95% CI LL", "95% CI UL")
   )
-  expect_faithful(s, cat_display(tbl))
+  # The console shows the interval in the measure's cell, as the rich
+  # engines do; the typed view keeps the bounds apart.
+  disp <- cat_display(tbl)
+  f <- spicy:::.format_structured_to_string_body(s)
+  tau <- "τb"
+  has <- nzchar(f[["CI lower"]])
+  expect_true(any(has))
+  expect_identical(
+    disp[[tau]][has],
+    paste0(
+      f[[tau]][has],
+      " [",
+      f[["CI lower"]][has],
+      ", ",
+      f[["CI upper"]][has],
+      "]"
+    )
+  )
+  expect_false(any(c("CI lower", "CI upper") %in% names(disp)))
+  disp[[tau]] <- f[[tau]]
+  expect_faithful(s, cbind(disp, f[c("CI lower", "CI upper")]))
 })
 
 test_that("weights, no margin and levels_keep keep the typed view faithful", {

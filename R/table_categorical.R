@@ -1362,13 +1362,13 @@
 #'   another measure or fall back to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
 #'   95\% confidence interval of the association measure. In the console
-#'   and in the `"data.frame"`, `"excel"` and `"clipboard"` outputs, two
-#'   extra columns headed `95% CI LL` / `95% CI UL` are added, the level
-#'   stated as the other tables state it; in the long output (`"long"`)
-#'   the bounds fill `es_ci_lower` / `es_ci_upper`. In rendered formats
-#'   (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the CI is shown
-#'   inline (e.g., `.14 [.08, .19]`) under a header that states its level
-#'   (`V [95% CI]`). Defaults to `FALSE`.
+#'   and in rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
+#'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`) under a
+#'   header that states its level (`V [95% CI]`). In the `"data.frame"`,
+#'   `"excel"` and `"clipboard"` outputs, two extra columns headed
+#'   `95% CI LL` / `95% CI UL` are added, the level stated as the other
+#'   tables state it; in the long output (`"long"`) the bounds fill
+#'   `es_ci_lower` / `es_ci_upper`. Defaults to `FALSE`.
 #' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
@@ -5122,9 +5122,61 @@ table_categorical <- function(
     structured <- .struct_attach_test_type(structured, test_types)
   }
 
+  # The console and the rendered formats: the interval of the association
+  # measure in the measure's cell (".52 [.31, .68]"), its bound columns
+  # dropped, as every table of the family shows the interval of an effect
+  # size.
+  merge_ci_inline <- function(df) {
+    if (!show_assoc || !assoc_ci || !(.CAT_KEY_CI_LL %in% names(df))) {
+      return(df)
+    }
+    # A measure or a bound that is undefined keeps its mark alone: no
+    # interval is pasted beside it.
+    has_val <- nzchar(df[[measure_col]]) &
+      df[[measure_col]] != undefined_cell &
+      nzchar(df[[.CAT_KEY_CI_LL]]) &
+      df[[.CAT_KEY_CI_LL]] != undefined_cell
+    # Same disambiguation rule as every other family: under a comma
+    # decimal mark the bound separator becomes "; " (this site used to
+    # hardcode ", ", printing `0,45 [0,31, 0,59]` -- the ambiguity
+    # ci_bracket_separator() exists to avoid). A style may still
+    # replace it.
+    ci_sep <- .style_ci_sep(ci_bracket_separator(decimal_mark))
+    br <- .style_ci_brackets()
+    df[[measure_col]][has_val] <- paste0(
+      df[[measure_col]][has_val],
+      " ",
+      br[[1L]],
+      df[[.CAT_KEY_CI_LL]][has_val],
+      ci_sep,
+      df[[.CAT_KEY_CI_UL]][has_val],
+      br[[2L]]
+    )
+    df[[.CAT_KEY_CI_LL]] <- NULL
+    df[[.CAT_KEY_CI_UL]] <- NULL
+    df
+  }
+  # The header over that merged cell states the level of its interval
+  # ("V [95% CI]"), as the bound headers of the typed view do ("95% CI
+  # LL"): the interval label is theirs. The sheet and the clipboard keep
+  # the bounds in columns of their own, numbers, under the measure's bare
+  # header.
+  measure_label_merged <- measure_label
+  if (show_assoc && assoc_ci) {
+    assoc_ci_label <- structured$col_meta[[.CAT_KEY_CI_LL]]$ci_label
+    if (!is.null(assoc_ci_label)) {
+      measure_label_merged <- spicy_fmt(
+        "header_estimate_ci",
+        measure_label,
+        assoc_ci_label
+      )
+    }
+  }
+
   if (output %in% c("default", "data.frame")) {
     out <- wide_raw
-    attr(out, "display_df") <- report_wide_char
+    # The console shows the interval as the rich engines do.
+    attr(out, "display_df") <- merge_ci_inline(report_wide_char)
     # The title the console prints, from the helper every engine uses.
     attr(out, "title") <- .categorical_title(by_note)
     # The whole note, as print() shows it; `what_note`, `assoc_note` and
@@ -5184,54 +5236,6 @@ table_categorical <- function(
     # still displays the table, while `t <- table_categorical(...)` is
     # silent (the freq() / cross_tab() model).
     return(out)
-  }
-
-  # For rendered formats: merge CI inline into measure column, drop CI cols
-  merge_ci_inline <- function(df) {
-    if (!show_assoc || !assoc_ci || !(.CAT_KEY_CI_LL %in% names(df))) {
-      return(df)
-    }
-    # A measure or a bound that is undefined keeps its mark alone: no
-    # interval is pasted beside it.
-    has_val <- nzchar(df[[measure_col]]) &
-      df[[measure_col]] != undefined_cell &
-      nzchar(df[[.CAT_KEY_CI_LL]]) &
-      df[[.CAT_KEY_CI_LL]] != undefined_cell
-    # Same disambiguation rule as every other family: under a comma
-    # decimal mark the bound separator becomes "; " (this site used to
-    # hardcode ", ", printing `0,45 [0,31, 0,59]` -- the ambiguity
-    # ci_bracket_separator() exists to avoid). A style may still
-    # replace it.
-    ci_sep <- .style_ci_sep(ci_bracket_separator(decimal_mark))
-    br <- .style_ci_brackets()
-    df[[measure_col]][has_val] <- paste0(
-      df[[measure_col]][has_val],
-      " ",
-      br[[1L]],
-      df[[.CAT_KEY_CI_LL]][has_val],
-      ci_sep,
-      df[[.CAT_KEY_CI_UL]][has_val],
-      br[[2L]]
-    )
-    df[[.CAT_KEY_CI_LL]] <- NULL
-    df[[.CAT_KEY_CI_UL]] <- NULL
-    df
-  }
-  # The header over that merged cell states the level of its interval
-  # ("V [95% CI]"), as the console's bound headers do ("95% CI LL"): the
-  # interval label is theirs, read from the typed view. The console, the
-  # sheet and the clipboard keep the bounds in columns of their own and
-  # the measure's bare header.
-  measure_label_merged <- measure_label
-  if (show_assoc && assoc_ci) {
-    assoc_ci_label <- structured$col_meta[[.CAT_KEY_CI_LL]]$ci_label
-    if (!is.null(assoc_ci_label)) {
-      measure_label_merged <- spicy_fmt(
-        "header_estimate_ci",
-        measure_label,
-        assoc_ci_label
-      )
-    }
   }
 
   # Headers (base: without CI; used by rendered formats). Pure DISPLAY:
