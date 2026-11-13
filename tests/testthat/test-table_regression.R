@@ -3457,6 +3457,17 @@ test_that("show_columns = \"none\": machine outputs", {
     names(table_regression(m, nested = TRUE, output = "long"))
   )
   expect_identical(attr(x, "outcome"), rep("dentist_12m", 3L))
+  # The same attribute names the outcome of a model whose rows `keep`
+  # selected away.
+  kd <- table_regression(
+    list(
+      stats::lm(mpg ~ wt, data = mtcars),
+      stats::lm(hp ~ qsec, data = mtcars)
+    ),
+    keep = "wt",
+    show_intercept = FALSE
+  )
+  expect_identical(attr(kd, "outcome"), c("mpg", "hp"))
   s <- as_structured(x)
   expect_null(s$spanners)
   expect_identical(
@@ -3651,6 +3662,15 @@ test_that("show_columns = \"none\": headers, labels and the Outcome row", {
         outcome_labels = FALSE
       ))$body$.row_role
   )
+  # Outcomes that repeat cannot head the columns: the row names them.
+  rep_dv <- as_structured(table_regression(
+    list(a, b, stats::lm(bmi ~ 1, data = d)),
+    show_columns = "none"
+  ))
+  expect_identical(
+    unname(rep_dv$outcome_labels_by_col),
+    c("bmi", "wellbeing_score", "bmi")
+  )
   # A label named like a key column keeps its header; its column name
   # takes a suffix.
   k <- table_regression(list(level = a, label = a), show_columns = "none")
@@ -3679,6 +3699,10 @@ test_that("show_columns = \"none\" refuses what it cannot show", {
     class = "spicy_invalid_input"
   )
   expect_match(conditionMessage(e), "\"b\"", fixed = TRUE)
+  expect_error(
+    table_regression(fit, show_columns = c("none", "none")),
+    class = "spicy_invalid_input"
+  )
   expect_error(
     table_regression(fit, show_columns = "none", show_fit_stats = FALSE),
     class = "spicy_invalid_input"
@@ -3814,6 +3838,28 @@ test_that("show_columns = \"none\" across model classes", {
   expect_equal(df$`Model 1`[df$variable == "aic"], stats::AIC(l))
   expect_equal(df$`Model 2`[df$variable == "aic"], stats::AIC(mx))
   expect_true(is.na(df$`Model 2`[df$variable == "r2"]))
+  # The note keeps the fact of a singular random part, without the
+  # variance components the table does not show; a rank-deficient design
+  # concerns coefficients only.
+  expect_true(lme4::isSingular(mx))
+  expect_match(
+    attr(x, "note"),
+    spicy:::spicy_str("note_singular_mixed_fit"),
+    fixed = TRUE
+  )
+  expect_no_match(attr(x, "note"), "Wald SE", fixed = TRUE)
+  rd <- stats::lm(mpg ~ wt + I(2 * wt), data = mtcars)
+  expect_true(anyNA(stats::coef(rd)))
+  expect_match(
+    attr(table_regression(rd), "note"),
+    "Rank-deficient",
+    fixed = TRUE
+  )
+  expect_no_match(
+    attr(table_regression(rd, show_columns = "none"), "note"),
+    "Rank-deficient",
+    fixed = TRUE
+  )
   p0 <- MASS::polr(education ~ 1, data = d, Hess = TRUE)
   p1 <- MASS::polr(education ~ age, data = d, Hess = TRUE)
   op <- as.data.frame(table_regression(
