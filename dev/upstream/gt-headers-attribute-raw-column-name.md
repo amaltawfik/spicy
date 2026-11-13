@@ -20,7 +20,7 @@
 
 *Texte prêt à poster, titre puis corps.*
 
-**Titre** : `headers=` on body cells is pasted without an attribute escape: a column name with a double quote breaks the cell markup
+**Titre** : headers= on body cells is pasted without an attribute escape: a column name with a double quote breaks the cell markup
 
 gt 1.4.0 (CRAN), R 4.6.2, Windows 11. `R/utils_render_html.R` is identical on master (76f9ba1a, 1.4.0.9000).
 
@@ -84,8 +84,6 @@ The `headers` value goes through the same `valid_html_id()` (L1115-L1126 for the
 https://github.com/rstudio/gt/blob/76f9ba1a2ff62d51741555879037e05951b06e62/R/utils_render_html.R#L1115-L1126
 https://github.com/rstudio/gt/blob/76f9ba1a2ff62d51741555879037e05951b06e62/R/utils_render_html.R#L1886-L1897
 
-`htmltools::htmlEscape(header, attribute = TRUE)` at that point turns these two values into `M-(Q&quot;x)` and `Q&amp;amp;A`, the ids above.
-
 ## Related: summary row stub ids keep the raw group name
 
 `summary_rows()` writes the stub `<th>` id with the raw `group_id` (no `valid_html_id()`, no escape), while the summary cells reference `valid_html_id(group_id)`:
@@ -109,11 +107,11 @@ cat(grep("summary_stub", unlist(regmatches(html3, gregexpr("<t[hd] [^>]*>", html
 
 `summary_stub_plain-group_1` matches no id, and the id itself contains a space. This is the space case of #2085 left over in the summary rows: #2173 hyphenated the `headers` side, summary cells included, but not this id. #2184 (open) covers the group heading id built from the label.
 
-The same mismatch shows when the group name starts with a digit, because `valid_html_id()` prefixes `a` on the `headers` side only. The committed snapshot of `test-summary_rows.R` for the group `1960s` has `<th id="summary_stub_1960s_1">` next to `headers="a1960s summary_stub_a1960s_1 population"`.
+The same mismatch shows when the group name starts with a digit, because `valid_html_id()` prefixes `a` on the `headers` side only. The committed snapshot `tests/testthat/_snaps/summary_rows.md` has, for the group `1960s`, `<th id="summary_stub_1960s_1">` next to `headers="a1960s summary_stub_a1960s_1 population"`.
 
 ## Proposed fix
 
-Escape the pasted values with `htmltools::htmlEscape(x, attribute = TRUE)`, as the summary block already does for `colspan` and `style` (L2352, L2369), and build the summary stub id with `valid_html_id()`. Applied on 76f9ba1a:
+Escape the pasted values with `htmltools::htmlEscape(x, attribute = TRUE)`, as the same function already does for `colspan` and `style` (L2352, L2369), and build the summary stub id with `valid_html_id()`. Applied on 76f9ba1a:
 
 ```diff
 diff --git a/R/utils_render_html.R b/R/utils_render_html.R
@@ -160,4 +158,4 @@ index 6192c4c7f..e551c1cdd 100644
                      )
 ```
 
-With this, the three reproducers give `headers="M-(Q&quot;x)"`, `headers="Q&amp;amp;A"` and `<th id="summary_stub_plain-group_1">`, and every parsed `headers` token matches an id. Tables with ordinary names render byte for byte the same; the only change outside the cases above is the summary stub id of a group whose name has a space or starts with a digit. The 21 test files that touch this code pass (2,587 expectations) except four HTML snapshots holding the old values: `test-summary_rows.R:1877` (`summary_stub_1960s_1`), `test-summary_rows.R:1961` (`summary_stub_Aston Martin_1`) and `test-multicolumn_stub.R:370` and `:406` (`headers="American-&-German ..."`, which parses the same as the escaped form). I can send it as a PR with the snapshot updates.
+With this, the three reproducers give `headers="M-(Q&quot;x)"`, `headers="Q&amp;amp;A"` and `<th id="summary_stub_plain-group_1">`, and every parsed `headers` token matches an id. A name with `&`, `<` or `>` now gets the character reference in `headers=`, which parses as before; an apostrophe stays raw on both sides, since `render_as_html()` turns `&#39;` back into `'`. The checked tables without those characters (plain names and names with spaces, a stub, row groups with summary and grand summary rows, spanners with `cols_label()`) render byte for byte the same, except the summary stub id of a group whose name has a space or starts with a digit, which now matches its cells. Of gt's tests, 21 files (summary rows, stubs, spanners, row operations, cell locations, styles, the gt object, HTML rendering; 2,587 expectations) pass except four HTML snapshots holding the old values: `test-summary_rows.R:1877` (`summary_stub_1960s_1`), `test-summary_rows.R:1961` (`summary_stub_Aston Martin_1`) and `test-multicolumn_stub.R:370` and `:406` (`headers="American-&-German ..."`, which parses the same as the escaped form). I can send it as a PR with the snapshot updates.
