@@ -1290,6 +1290,95 @@ test_that("the console shows the association interval as the rich engines do", {
     ))
   }
 })
+
+test_that("the note defines LL and UL only where the bounds head columns", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("clipr")
+  clip <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(x, ...) {
+      clip <<- x
+      invisible(NULL)
+    },
+    .package = "clipr"
+  )
+  xlsx <- withr::local_tempfile(fileext = ".xlsx")
+  ends <- list(
+    en = c(
+      cell = "V = Cramér's V; CI = confidence interval.",
+      bounds = paste0(
+        "V = Cramér's V; CI = confidence interval; ",
+        "LL = lower limit; UL = upper limit."
+      )
+    ),
+    fr = c(
+      cell = "V = V de Cramér ; IC = intervalle de confiance.",
+      bounds = paste0(
+        "V = V de Cramér ; IC = intervalle de confiance ; ",
+        "LI = limite inférieure ; LS = limite supérieure."
+      )
+    )
+  )
+  ends$fr <- gsub(" ;", " ;", ends$fr, fixed = TRUE)
+  for (lang in names(ends)) {
+    withr::local_options(spicy.language = lang)
+    build <- function(output, ...) {
+      suppressMessages(table_categorical(
+        mtcars,
+        "cyl",
+        "am",
+        assoc_ci = TRUE,
+        output = output,
+        ...
+      ))
+    }
+    cell <- ends[[lang]][["cell"]]
+    bounds <- ends[[lang]][["bounds"]]
+    # The interval in the measure's cell: CI alone.
+    x <- build("default")
+    expect_true(endsWith(attr(x, "note"), cell), info = lang)
+    out <- capture.output(print(x))
+    expect_identical(out[[length(out)]], attr(x, "note"), info = lang)
+    expect_identical(unlist(build("tinytable")@notes), attr(x, "note"))
+    # gt holds the note as escaped Markdown.
+    gt_note <- gsub(
+      "\\",
+      "",
+      paste(unlist(build("gt")[["_source_notes"]]), collapse = ""),
+      fixed = TRUE
+    )
+    expect_true(endsWith(gt_note, cell), info = lang)
+    ch <- flextable::information_data_chunk(build("flextable"))
+    expect_identical(
+      paste(ch$txt[ch$.part == "footer"], collapse = ""),
+      attr(x, "note"),
+      info = lang
+    )
+    # The data frames carry the note print() shows.
+    expect_identical(attr(as.data.frame(x), "note"), attr(x, "note"))
+    expect_identical(attr(build("long"), "note"), attr(x, "note"))
+    # The bounds in two columns: CI, LL and UL.
+    build("excel", excel_path = xlsx)
+    sheet <- as.matrix(openxlsx2::read_xlsx(xlsx, col_names = FALSE))
+    expect_true(endsWith(sheet[nrow(sheet), 1L], bounds), info = lang)
+    build("clipboard")
+    clip_lines <- strsplit(paste(clip, collapse = "\n"), "\n", fixed = TRUE)
+    expect_true(
+      endsWith(trimws(utils::tail(clip_lines[[1L]], 1L)), bounds),
+      info = lang
+    )
+    expect_identical(
+      sub(bounds, "", sheet[nrow(sheet), 1L], fixed = TRUE),
+      sub(cell, "", attr(x, "note"), fixed = TRUE),
+      info = lang
+    )
+  }
+})
 # ---- levels_keep ---------------------------------------------------------
 
 test_that("table_categorical levels_keep filters and reorders levels", {

@@ -4792,13 +4792,15 @@ test_that("every table function refuses data with no rows, first", {
         assoc_ci = TRUE,
         smd = TRUE
       )),
-      list("ci", "ll", "ul", "smd")
+      # The interval of the measure is its cell ("[95% CI]"): no bound
+      # column for LL and UL to define.
+      list("ci", "smd")
     ),
     # One measure for every variable: its symbol heads the column, before
     # the interval of the measure. Phi is a Greek letter, V is not.
     table_categorical_phi = list(
       q(table_categorical(d, select = xc, by = g2, assoc_ci = TRUE)),
-      list("phi", "ci", "ll", "ul")
+      list("phi", "ci")
     ),
     table_categorical_v = list(
       q(table_categorical(d, select = g, by = g2)),

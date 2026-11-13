@@ -764,7 +764,9 @@
 * `table_categorical(assoc_ci = TRUE)` prints the interval of the
   association measure in the measure's cell, `.52 [.21, .74]` under
   `V [95% CI]`, as the rendered tables do. The data frame, Excel and the
-  clipboard keep the bounds in columns of their own.
+  clipboard keep the bounds in columns of their own. The note defines
+  LL and UL only in Excel and the clipboard, whose headers show them.
+  The rendered tables defined them too.
 
 # spicy 0.14.1
 

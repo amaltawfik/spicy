@@ -1368,7 +1368,9 @@
 #'   `"excel"` and `"clipboard"` outputs, two extra columns headed
 #'   `95% CI LL` / `95% CI UL` are added, the level stated as the other
 #'   tables state it; in the long output (`"long"`) the bounds fill
-#'   `es_ci_lower` / `es_ci_upper`. Defaults to `FALSE`.
+#'   `es_ci_lower` / `es_ci_upper`. The note defines `LL` and `UL` in the
+#'   `"excel"` and `"clipboard"` outputs only, whose headers show them.
+#'   Defaults to `FALSE`.
 #' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
@@ -4605,13 +4607,23 @@ table_categorical <- function(
   # The abbreviations of the headers, where the rule in force puts them,
   # in the order a reader meets them: the symbol of the measure, defined
   # as any symbol is (V under the default rule, the Greek letters under
-  # "all", jama and lancet), the interval of the measure ("95% CI LL",
-  # "95% CI UL"), then the SMD.
-  abbrev_note <- .note_abbreviations(c(
-    if (!is.null(measure_symbol)) list(measure_symbol),
-    if (show_assoc && assoc_ci) as.list(.abbrev_ci_bounds()),
-    if (do_smd) list("smd")
-  ))
+  # "all", jama and lancet), the interval of the measure, then the SMD.
+  # The interval is the measure's cell ("V [95% CI]") in the console and
+  # the rendered tables, whose note defines CI alone, and two columns
+  # headed "95% CI LL" and "95% CI UL" in the sheet and the clipboard,
+  # whose note defines the bounds too (`bounds = TRUE`). The data frames
+  # carry the note print() shows: their column names are keys, English
+  # in every language, not headers to define.
+  abbrev_of <- function(bounds) {
+    .note_abbreviations(c(
+      if (!is.null(measure_symbol)) list(measure_symbol),
+      if (show_assoc && assoc_ci) {
+        as.list(if (bounds) .abbrev_ci_bounds() else "ci")
+      },
+      if (do_smd) list("smd")
+    ))
+  }
+  abbrev_note <- abbrev_of(FALSE)
   # The definitions of the note, (d) of `.compose_note()`: which measure
   # each variable carries, then the direction of the SMD. The multivariate
   # sentence appears only when at least one variable has more than two
@@ -4873,20 +4885,25 @@ table_categorical <- function(
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone. `table_note` is the whole note
   # every route prints, print() included, assembled from its four parts
-  # by `.categorical_note()`.
+  # by `.categorical_note()`; `table_note_bounds` is the same note for
+  # the routes that print the bounds of `assoc_ci` in columns.
   what_note <- build_what_note()
   missing_note <- build_missing_note()
-  table_note <- .table_note(
-    .categorical_note(
-      what_note,
-      missing_note,
-      assoc_note_text,
-      abbrev_note,
-      add = note_add
-    ),
-    note,
-    note_add
-  )
+  note_with <- function(abbreviations) {
+    .table_note(
+      .categorical_note(
+        what_note,
+        missing_note,
+        assoc_note_text,
+        abbreviations,
+        add = note_add
+      ),
+      note,
+      note_add
+    )
+  }
+  table_note <- note_with(abbrev_note)
+  table_note_bounds <- note_with(abbrev_of(TRUE))
 
   # ---------------- REPORT WIDE ----------------
   report_cols <- c(
@@ -6129,10 +6146,10 @@ table_categorical <- function(
     }
 
     # The note below the table -- the same text, in the same order, as
-    # the console footer.
+    # the console footer, with the definitions of the bound columns.
     wb <- .spicy_xl_add_note(
       wb,
-      note = table_note,
+      note = table_note_bounds,
       start_row = last_row + 2L
     )
     # Widths from the DISPLAY strings (the char body), not from the
@@ -6158,12 +6175,13 @@ table_categorical <- function(
     # Same title (it names the grouping variable, which nothing else
     # in the payload states) and same disclosure notes -- what left
     # the table, then which association measure each row carries --
-    # as the console, from the same helpers.
+    # as the console, from the same helpers, with the definitions of the
+    # bound columns.
     txt <- .clipboard_payload_desc(
       clip_mat,
       clipboard_delim,
       title = .categorical_title(by_note),
-      note = table_note
+      note = table_note_bounds
     )
     clipr::write_clip(txt)
     spicy_inform("Categorical table copied to clipboard.")

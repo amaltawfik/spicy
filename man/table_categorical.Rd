@@ -356,7 +356,9 @@ header that states its level (\verb{V [95\% CI]}). In the \code{"data.frame"},
 \code{"excel"} and \code{"clipboard"} outputs, two extra columns headed
 \verb{95\% CI LL} / \verb{95\% CI UL} are added, the level stated as the other
 tables state it; in the long output (\code{"long"}) the bounds fill
-\code{es_ci_lower} / \code{es_ci_upper}. Defaults to \code{FALSE}.}
+\code{es_ci_lower} / \code{es_ci_upper}. The note defines \code{LL} and \code{UL} in the
+\code{"excel"} and \code{"clipboard"} outputs only, whose headers show them.
+Defaults to \code{FALSE}.}
 
 \item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
 standardized mean difference between the two groups of \code{by},
