@@ -982,7 +982,11 @@ test_that("`df` moves the intervals, and only the intervals", {
     ),
     "note"
   )
-  expect_match(note, "degrees of freedom vary by group (9\u201314)", fixed = TRUE)
+  expect_match(
+    note,
+    "degrees of freedom vary by group (9\u201314)",
+    fixed = TRUE
+  )
   expect_match(
     note,
     "Confidence intervals use 3 degrees of freedom (supplied in `df`); the tests use the design's own.",

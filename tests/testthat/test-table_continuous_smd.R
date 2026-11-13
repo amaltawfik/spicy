@@ -367,7 +367,9 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
   # rows differ only by the cells of that column, and the note, one
   # paragraph, only by the direction sentence before the definitions and
   # the definition of the SMD at the end of them.
-  expect_length(setdiff(off, on), 5L) # header, rule, two data rows, note
+  # The "95% CI" group row and its rule are padded to the width of the
+  # table, so they differ too.
+  expect_length(setdiff(off, on), 7L) # group row, its rule, header, rule, two data rows, note
   note_off <- off[startsWith(off, "Note.")]
   note_on <- on[startsWith(on, "Note.")]
   expect_length(note_on, 1L)
