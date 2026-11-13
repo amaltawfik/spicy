@@ -977,11 +977,16 @@
     meta <- switch(
       ent$token,
       # Estimated marginal mean of one `by` level: the level is DATA
-      # on the column, so a consumer never parses "M (Male)" back.
+      # on the column, so a consumer never parses "M (Male)" back. The
+      # header over the levels ("M") travels with each column: it is a
+      # statistic's spanner, not a group's, so `spanners` stays empty
+      # (see above), and a reader of `display_label` alone would see
+      # "Female | Male" with nothing to say they are means.
       emmean = list(
         token = "emmean",
         precision = as.integer(digits),
-        level = ent$level
+        level = ent$level,
+        spanner_label = ent$spanner_label %||% ""
       ),
       delta = list(token = "delta", precision = as.integer(digits)),
       ci = list(

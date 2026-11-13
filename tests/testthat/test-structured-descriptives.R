@@ -637,6 +637,28 @@ test_that("as_structured() types a two-level bivariate model table", {
   expect_identical(s$col_meta[["M (Female)"]]$display_label, "Female")
   expect_identical(s$col_meta[["\u0394"]]$display_label, "\u0394")
   expect_null(s$spanners)
+  # The mean's header travels on each mean column instead, the one the
+  # engines print over the levels; emptied, it is "".
+  expect_identical(s$col_meta[["M (Female)"]]$spanner_label, "M")
+  expect_identical(s$col_meta[["M (Male)"]]$spanner_label, "M")
+  expect_null(s$col_meta[["\u0394"]]$spanner_label)
+  withr::with_options(list(spicy.labels = list(header_mean = "")), {
+    s0 <- as_structured(suppressWarnings(table_continuous_lm(
+      sochealth,
+      age,
+      by = sex
+    )))
+  })
+  expect_identical(s0$col_meta[["M (Female)"]]$spanner_label, "")
+  expect_identical(
+    as_structured(table_continuous_lm(
+      sochealth,
+      age,
+      by = sex,
+      style = "jama"
+    ))$col_meta[["M (Female)"]]$spanner_label,
+    "Mean"
+  )
   expect_identical(s$col_meta$t$token, "statistic")
   expect_identical(s$col_meta[["R²"]]$token, "r2")
   expect_identical(s$col_meta$n$precision, 0L)
