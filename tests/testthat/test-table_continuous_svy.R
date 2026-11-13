@@ -645,7 +645,7 @@ test_that("the footer gives the df span when the groups disagree", {
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(
     attr(tbl, "note"),
-    "degrees of freedom vary by group (7 to 14)",
+    "degrees of freedom vary by group (7\u201314)",
     fixed = TRUE
   )
   # A one-way table has one df and must say so as a number.
@@ -982,7 +982,7 @@ test_that("`df` moves the intervals, and only the intervals", {
     ),
     "note"
   )
-  expect_match(note, "degrees of freedom vary by group (9 to 14)", fixed = TRUE)
+  expect_match(note, "degrees of freedom vary by group (9\u201314)", fixed = TRUE)
   expect_match(
     note,
     "Confidence intervals use 3 degrees of freedom (supplied in `df`); the tests use the design's own.",

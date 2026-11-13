@@ -35,7 +35,7 @@
                 │ H                            
                 │ M                            
       
-      Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ---
 
@@ -71,5 +71,5 @@
        api00    │ No        –       –    398.00  778.00     –       –     25  – 
                 │ Yes    678.42  121.28  421.00  893.00  655.85  700.99  126    
       
-      Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
+      Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22–124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 

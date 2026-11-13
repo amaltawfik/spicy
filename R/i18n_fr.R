@@ -541,7 +541,7 @@
   note_design_calibrated = "cal\u00E9 / post-stratifi\u00E9",
   note_design_replicate = "poids r\u00E9pliqu\u00E9s (%s), %d r\u00E9plications",
   note_design_degf = "%d degr\u00E9s de libert\u00E9",
-  note_design_degf_varying = "les degr\u00E9s de libert\u00E9 varient selon le groupe (%d \u00E0 %d)",
+  note_design_degf_varying = "les degr\u00E9s de libert\u00E9 varient selon le groupe (%d\u2013%d)",
   note_design_degf_resid = "%d degr\u00E9s de libert\u00E9 r\u00E9siduels",
   note_design_degf_resid_only = "Les tests utilisent %d degr\u00E9s de libert\u00E9 r\u00E9siduels.",
   note_design_df_used = "Les intervalles de confiance et les tests utilisent les degr\u00E9s de libert\u00E9 du plan de sondage.",

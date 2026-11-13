@@ -596,12 +596,12 @@ test_that("a varying-df table announces the span rather than one number", {
   m <- .design_meta(.svy_fixture("clus1"))
   expect_match(
     .design_note_lines(m, degf_range = c(9, 14))[[1L]],
-    "degrees of freedom vary by group (9 to 14)",
+    "degrees of freedom vary by group (9\u201314)",
     fixed = TRUE
   )
   # A span whose ends coincide is one number, not a range: a two-group
   # table where both domains keep every cluster must not print
-  # "vary by group (14 to 14)".
+  # "vary by group (14-14)" (with the en dash).
   expect_match(
     .design_note_lines(m, degf_range = c(14, 14))[[1L]],
     "14 degrees of freedom",

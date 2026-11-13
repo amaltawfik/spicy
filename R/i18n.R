@@ -1253,8 +1253,8 @@
   # A `by =` table has one domain per group, and survey recomputes the
   # degrees of freedom on the PSU and strata each domain retains: the
   # span is the honest summary of a column of numbers the footer cannot
-  # list.
-  note_design_degf_varying = "degrees of freedom vary by group (%d to %d)",
+  # list. A range, so the en dash closed up, as `note_uv_varying_n`.
+  note_design_degf_varying = "degrees of freedom vary by group (%d\u2013%d)",
   # A REGRESSION under a design tests at the degrees of freedom survey
   # writes on the FIT -- the design's, minus the non-intercept parameters
   # -- not at the design's own. Its own key, because printing
