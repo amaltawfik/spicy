@@ -14,13 +14,17 @@
 #' @param x Row variable (unquoted).
 #' @param y Column variable (unquoted). Required; the `NULL` default
 #'   in the signature is a placeholder and triggers an error if left
-#'   unset (use [freq()] for one-way tables).
+#'   unset (use [freq()] for one-way tables). A level that is the empty
+#'   string heads no column and is refused: recode it to `NA` or to a
+#'   label. A level of `x` that is the empty string is a row like any
+#'   other.
 #' @param by Optional grouping variable or expression. Can be a single variable
 #'   or a combination of multiple variables (e.g. `interaction(vs, am)`).
 #'   A row with a missing `by` belongs to no group and leaves every table,
 #'   where a missing `x` or `y` leaves only its own; each note lists `by`
 #'   with that count after `x` and `y` ("Missing values removed: x (2),
-#'   region (3).").
+#'   region (3)."). A level that is the empty string names no table
+#'   and is refused.
 #' @param weights Optional numeric weights. A logical vector is also
 #'   accepted and coerced to 1/0 (include / exclude).
 #' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
@@ -687,6 +691,15 @@ cross_tab <- function(
   .check_integer64(y_all_raw, "`y`")
   full_x_levels <- make_levels(promote_na_level(resolve_user_na(x_all_raw)))
   full_y_levels <- make_levels(promote_na_level(resolve_user_na(y_all_raw)))
+  # A level of `y` heads its column, and the empty string heads nothing:
+  # the table printed "V1" over it and left its margin cell empty. Refused,
+  # as the family refuses it in a `by`. A level of `x` is a row, shown as
+  # it is.
+  .check_grouping_named(
+    as.character(full_y_levels),
+    sprintf("`y` (`%s`)", y_name),
+    named = "A level of `y` heads its column"
+  )
 
   make_named_row <- function(template_df, values) {
     row <- as.list(rep(NA, ncol(template_df)))
@@ -1326,6 +1339,13 @@ cross_tab <- function(
     # formed, rows counted in the removal note); with user_na = FALSE
     # they define groups like any other value.
     by_vals <- resolve_user_na(rlang::eval_tidy(by_expr, data))
+    # A group named by the empty string is named nowhere: split() lost its
+    # rows without a word. Refused, as the family refuses it.
+    .check_grouping_named(
+      as.character(by_vals),
+      sprintf("`by` (`%s`)", by_name),
+      named = "A level of `by` names its table in the title"
+    )
     # split() drops NA-by rows from every group; disclose the loss in
     # each table's note (read by compute_ctab through its closure).
     n_by_dropped <- sum(is.na(by_vals))

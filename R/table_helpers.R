@@ -1274,14 +1274,23 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # `table_battery(levels = )` refuses an empty level; the levels of a
 # variable are rows, which `freq()` and `table_categorical()` show as they
 # are. A factor's declared levels count, since a declared level is shown.
-.check_grouping_named <- function(x, what, call = rlang::caller_env()) {
+# `named` says where the level is named, for the hint.
+.check_grouping_named <- function(
+  x,
+  what,
+  named = "A group is named in the header and in the note",
+  call = rlang::caller_env()
+) {
   if (!any(.group_levels(x) == "")) {
     return(invisible(NULL))
   }
   spicy_abort(
     c(
       sprintf("%s has a level that is the empty string.", what),
-      "i" = "A group is named in the header and in the note: recode the empty string to `NA` or to a label."
+      "i" = sprintf(
+        "%s: recode the empty string to `NA` or to a label.",
+        named
+      )
     ),
     class = "spicy_invalid_input",
     call = call

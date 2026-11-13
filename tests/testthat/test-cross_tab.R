@@ -1435,3 +1435,29 @@ test_that("cross_tab() falls back to neutral names for inline expressions", {
     "Crosstable: aa x bb (N)"
   )
 })
+
+test_that("cross_tab() refuses an empty-string level of `y` or `by`, and counts one of `x`", {
+  skip_on_cran()
+  d <- data.frame(
+    r = c("a", "b", "a", "b", "a", "", "", "a"),
+    c = c("x", "", "y", "x", "", "y", "x", "y"),
+    k = c("x", "y", "y", "x", "x", "y", "x", "y"),
+    s = c("s1", "s1", "s1", "s2", "s2", "", "", "s1"),
+    stringsAsFactors = FALSE
+  )
+  # The column headed "V1" with an empty margin cell, and the stratum whose
+  # rows split() lost without a word.
+  expect_error(cross_tab(d, r, c), class = "spicy_invalid_input")
+  expect_error(cross_tab(d$r, d$c), class = "spicy_invalid_input")
+  expect_error(cross_tab(d, r, k, by = s), class = "spicy_invalid_input")
+  # A declared level that no row holds is no column.
+  kf <- factor(d$k, levels = c("x", "y", ""))
+  expect_s3_class(
+    cross_tab(d$r, kf, include_stats = FALSE),
+    "spicy_cross_table"
+  )
+  # A level of `x` that is the empty string is a row, and counted.
+  out <- cross_tab(d, r, k, output = "data.frame")
+  expect_identical(out$Values, c("", "a", "b"))
+  expect_equal(c(out$x, out$y), as.vector(table(d$r, d$k)))
+})

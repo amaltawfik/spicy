@@ -5458,7 +5458,11 @@ test_that("a `by` level that is the empty string is refused across the family", 
     table_multiresponse = function() {
       table_multiresponse(d, c(info_doctor, info_internet), by = g)
     },
-    table_battery = function() table_battery(d, item, by = g)
+    table_battery = function() table_battery(d, item, by = g),
+    # The column variable of cross_tab() names its columns as a `by` does,
+    # and its stratification `by` names its tables.
+    cross_tab_y = function() cross_tab(d, smoking, g),
+    cross_tab_by = function() cross_tab(d, smoking, sex, by = g)
   )
   if (
     requireNamespace("survey", quietly = TRUE) &&

@@ -1240,3 +1240,10 @@ test_that("freq() warns when labelled_levels = 'labels' merges duplicate labels"
   expect_silent(res_p <- freq(x, output = "data.frame"))
   expect_equal(nrow(res_p), 3L)
 })
+
+test_that("freq() counts an empty-string level as a row", {
+  skip_on_cran()
+  res <- freq(c("a", "", "b", "", "a", "a"), output = "data.frame")
+  expect_identical(res$value, c("", "a", "b"))
+  expect_equal(res$n, c(2, 3, 1))
+})

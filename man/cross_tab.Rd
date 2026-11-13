@@ -36,14 +36,18 @@ vector-based interface.}
 
 \item{y}{Column variable (unquoted). Required; the \code{NULL} default
 in the signature is a placeholder and triggers an error if left
-unset (use \code{\link[=freq]{freq()}} for one-way tables).}
+unset (use \code{\link[=freq]{freq()}} for one-way tables). A level that is the empty
+string heads no column and is refused: recode it to \code{NA} or to a
+label. A level of \code{x} that is the empty string is a row like any
+other.}
 
 \item{by}{Optional grouping variable or expression. Can be a single variable
 or a combination of multiple variables (e.g. \code{interaction(vs, am)}).
 A row with a missing \code{by} belongs to no group and leaves every table,
 where a missing \code{x} or \code{y} leaves only its own; each note lists \code{by}
 with that count after \code{x} and \code{y} ("Missing values removed: x (2),
-region (3).").}
+region (3)."). A level that is the empty string names no table
+and is refused.}
 
 \item{weights}{Optional numeric weights. A logical vector is also
 accepted and coerced to 1/0 (include / exclude).}
