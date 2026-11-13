@@ -143,10 +143,12 @@ throughout:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">api00</span>, <span class="va">api99</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M       SD     Min     Max    95% CI LL  95% CI UL   n  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   593.68     694.66    183 </span></span>
-<span><span class="co">#&gt;  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span></span>
+<span><span class="co">#&gt;                                                             95% CI              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                                      ──────────────────        </span></span></span>
+<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>    M         SD       Min       Max        LL        UL       n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  api00      <span style="color: #9E9E9E;">│</span>  644.17    105.75    411.00    905.00    593.68    694.66    183  </span></span>
+<span><span class="co">#&gt;  api99      <span style="color: #9E9E9E;">│</span>  606.98    112.85    365.00    890.00    555.02    658.94    183  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>After the sample size, three sentences of the note describe the
@@ -189,15 +191,17 @@ effect), and minus <code>"med_ci"</code>:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M      SE         Mdn [Q1, Q3]        95% CI LL  95% CI UL   n  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  23.54  652.00 [552.00, 719.00]   593.68     694.66    183 </span></span>
+<span><span class="co">#&gt;                                95% CI                                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ──────────────                               </span></span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M      SE      LL      UL         Mdn [Q1, Q3]         n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  23.54  593.68  694.66  652.00 [552.00, 719.00]  183 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Weighted n  DEff </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span>  6194.00    9.35 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; Q1 = first quartile; Q3 = third quartile; DEff = design effect.</span></span></span></code></pre></div>
 <p>The design effect of 9.35 is the point of the whole exercise: the
 variance of this cluster sample is nine times what a simple random
 sample of 183 schools would have given. A table that ignored the design
@@ -222,11 +226,13 @@ footer gives the span:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, by <span class="op">=</span> <span class="va">stype</span>, statistic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by stype</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max    95% CI LL  95% CI UL   n  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> E      648.87  106.16  436.00  905.00   600.91     696.83    144 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H      618.57   96.74  443.00  724.00   528.67     708.48     14 </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M      631.44  109.06  411.00  847.00   561.87     701.01     25 </span></span>
+<span><span class="co">#&gt;                                                        95% CI          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                                   ──────────────      </span></span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max      LL      UL     n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> E      648.87  106.16  436.00  905.00  600.91  696.83  144 </span></span>
+<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H      618.57   96.74  443.00  724.00  528.67  708.48   14 </span></span>
+<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M      631.44  109.06  411.00  847.00  561.87  701.01   25 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Group       Test         p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────────────────</span></span></span>
@@ -234,7 +240,7 @@ footer gives the span:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H                            </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The comparison is one design-based test on the whole design, not a
 set of pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups,
 the Wald <em>F</em> of <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more,
@@ -287,12 +293,14 @@ population (6194) beside the sample size (183).</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>   n      %      95% CI LL    95% CI UL    DEff  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼─────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  stype      <span style="color: #9E9E9E;">│</span>                                                 </span></span>
-<span><span class="co">#&gt;    E        <span style="color: #9E9E9E;">│</span>  144    78.7      67.1         87.0       2.40  </span></span>
-<span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7       3.5         15.8       1.91  </span></span>
-<span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7       8.4         21.3       1.40  </span></span>
+<span><span class="co">#&gt;                                  95% CI             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                             ──────────────         </span></span></span>
+<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>   n      %       LL      UL     DEff  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  stype      <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    E        <span style="color: #9E9E9E;">│</span>  144    78.7    67.1    87.0    2.40  </span></span>
+<span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7     3.5    15.8    1.91  </span></span>
+<span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7     8.4    21.3    1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
 <p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
@@ -305,14 +313,16 @@ interval and not of the proportion.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical_svy.html">table_categorical_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">stype</span>, by <span class="op">=</span> <span class="va">sch.wide</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sch.wide</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>  No n    No %    Yes n    Yes %    Total n    Total %     p    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  stype      <span style="color: #9E9E9E;">│</span>                                                          .022  </span></span>
-<span><span class="co">#&gt;    E        <span style="color: #9E9E9E;">│</span>   12     52.2     132     82.5       144       78.7            </span></span>
-<span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>    3     13.0      11      6.9        14        7.7            </span></span>
-<span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>    8     34.8      17     10.6        25       13.7            </span></span>
+<span><span class="co">#&gt;                    No            Yes           Total             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">              ────────────  ─────────────  ─────────────         </span></span></span>
+<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>  n      %       n      %       n      %       p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  stype      <span style="color: #9E9E9E;">│</span>                                              .022  </span></span>
+<span><span class="co">#&gt;    E        <span style="color: #9E9E9E;">│</span>  12    52.2    132    82.5    144    78.7          </span></span>
+<span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   3    13.0     11     6.9     14     7.7          </span></span>
+<span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   8    34.8     17    10.6     25    13.7          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The <code>p</code> is <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">svychisq()</a></code>: Pearson’s chi-square
 with the Rao-Scott second-order correction, referred to <em>F</em>(ndf,
 <code>degf(design)</code>). <code>chisq_statistic</code> offers
@@ -344,12 +354,14 @@ row per item and one column per level.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery by stype</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> E No  E Yes  E n  H No  H Yes  H n  M No  M Yes  M n   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  awards   <span style="color: #9E9E9E;">│</span> 22.9  77.1   144  57.1  42.9   14   48.0  52.0   25   .075 </span></span>
-<span><span class="co">#&gt;  sch.wide <span style="color: #9E9E9E;">│</span>  8.3  91.7   144  21.4  78.6   14   32.0  68.0   25   .075 </span></span>
-<span><span class="co">#&gt;  comp.imp <span style="color: #9E9E9E;">│</span> 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 </span></span>
-<span><span class="co">#&gt;  both     <span style="color: #9E9E9E;">│</span> 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 </span></span>
+<span><span class="co">#&gt;                    E               H               M              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">            ───────────────  ──────────────  ──────────────       </span></span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>  No   Yes    n    No   Yes   n    No   Yes   n    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  awards   <span style="color: #9E9E9E;">│</span> 22.9  77.1  144  57.1  42.9  14  48.0  52.0  25  .075 </span></span>
+<span><span class="co">#&gt;  sch.wide <span style="color: #9E9E9E;">│</span>  8.3  91.7  144  21.4  78.6  14  32.0  68.0  25  .075 </span></span>
+<span><span class="co">#&gt;  comp.imp <span style="color: #9E9E9E;">│</span> 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 </span></span>
+<span><span class="co">#&gt;  both     <span style="color: #9E9E9E;">│</span> 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The base of a row is the schools that answered the item,
@@ -382,12 +394,14 @@ estimated as usual:</p>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by sch.wide</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max    95% CI LL  95% CI UL   n   p </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> No        –       –    398.00  778.00      –          –       25  – </span></span>
-<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Yes    678.42  121.28  421.00  893.00   655.85     700.99    126    </span></span>
+<span><span class="co">#&gt;                                                        95% CI             </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                                   ──────────────         </span></span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max      LL      UL     n   p </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> No        –       –    398.00  778.00     –       –     25  – </span></span>
+<span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Yes    678.42  121.28  421.00  893.00  655.85  700.99  126    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22–124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The values <code>"adjust"</code>, <code>"average"</code>,
 <code>"remove"</code> and <code>"certainty"</code> of that option let
 survey estimate these cells, each by its own convention
@@ -407,9 +421,11 @@ standard errors are not, and should not be:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">rclus1</span>, select <span class="op">=</span> <span class="va">api00</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M       SD     Min     Max    95% CI LL  95% CI UL   n  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   587.70     700.64    183 </span></span>
+<span><span class="co">#&gt;                                                             95% CI              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                                      ──────────────────        </span></span></span>
+<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>    M         SD       Min       Max        LL        UL       n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  api00      <span style="color: #9E9E9E;">│</span>  644.17    105.75    411.00    905.00    587.70    700.64    183  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
@@ -1149,12 +1165,11 @@ M
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> N = 200 (weighted 6194). Design: stratified (stype), with
-finite population correction; degrees of freedom vary by group (49 to
-99). Std. errors: Design-based (Taylor linearization). Confidence
-intervals and tests use the design degrees of freedom. P-values:
-design-based Wald test. The group comparison uses 195 degrees of freedom
-(observed groups only). CI = confidence interval; LL = lower limit; UL =
-upper limit.
+finite population correction; degrees of freedom vary by group (49–99).
+Std. errors: Design-based (Taylor linearization). Confidence intervals
+and tests use the design degrees of freedom. P-values: design-based Wald
+test. The group comparison uses 195 degrees of freedom (observed groups
+only). CI = confidence interval; LL = lower limit; UL = upper limit.
 </div>
 </div>
 </div>

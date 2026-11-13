@@ -5,12 +5,13 @@ the table
 [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
 displays, with its numbers: exactly what `output = "data.frame"`
 returns. One row per item, with the columns `variable` (the item's
-column), `label` (the label displayed), then the printed columns under
-their names (one per level shown, `"(Missing)"`, the summary column of
-`top`, `"n"`, each prefixed with its group under `by`, then `"p"`). The
-`"note"` attribute is kept. `as_tibble()` returns the same table as a
-tibble. The original `x` is unaffected, and `print(x)` continues to
-render the formatted table.
+column), `label` (the label displayed), then one column per displayed
+column (one per level shown, `"(Missing)"`, the summary column of `top`,
+`"n"`, then `"p"`). Under `by` each name joins the group printed above
+the column to the header printed under it (`"Female n"`). The `"note"`
+attribute is kept. `as_tibble()` returns the same table as a tibble. The
+original `x` is unaffected, and `print(x)` continues to render the
+formatted table.
 
 ## Usage
 

@@ -130,7 +130,82 @@
   print the F-change with `digits` and the Deviance row and its change
   with `ic_digits`, as the console does.
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  show a `show_columns` vector in the order it is written:
+  `c("med", "q1", "q3", "m", "sd", "n")` puts the median first. A token
+  written twice counts once instead of being an error. An interval
+  written before its statistic (`"ci"` before `"m"`, `"med_ci"` before
+  `"med"` or `"med_iqr"`) is an error. The per-variable list form keeps
+  the canonical order.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  leave the rows of zero weight out of the sample size of the note, as
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html) does. So do the `n`
+  column of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and the `nobs` of its `glance()`. Weighted statistics do not change.
+
+- Every table with `by` refuses a level of `by` that is the empty
+  string.
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  showed 0 for that group, and the survey tables failed.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a `glmmTMB` beta-binomial mixed model no longer reports the Nakagawa
+  R2. The residual variance it relied on for that family goes to 0 as
+  the overdispersion vanishes, so the R2 went to 1 instead of joining
+  that of the binomial model.
+
 ### New features
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  and
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  print the groups of `by` in the console as the rich outputs do: the
+  label of each group sits over its columns, headed `n`, `%`, instead of
+  `Female n`, `Female %`. A table split into panels breaks between
+  groups. The column names of
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  and the rendered outputs do not change.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `ame_type`. `"slope"` (default, unchanged) reports the average
+  slope dY/dX of a continuous predictor, `"unit"` the average change in
+  the prediction for a one-unit increase from the observed value, `"sd"`
+  the same for an increase of one standard deviation. Factors, logicals
+  and 0/1 predictors stay contrasts with their reference level. The note
+  names the quantity, under the default too.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `exponentiate = TRUE`: the note says what a displayed intercept
+  estimates, since it is not a ratio: the baseline odds, risk, rate or
+  mean, or a quantile of the survival time for
+  [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html).
+  Zero-inflation and hurdle blocks on a logit link name theirs.
+
+- [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  and
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  gain [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `glance()` methods.
+
+- [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  gives each mean column the header printed over the levels, in
+  `col_meta$<col>$spanner_label`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gains `partial_f`, the Type II partial F test of each term, for
@@ -843,6 +918,52 @@
   model “Cox proportional hazards regression”, as the other tables do.
 
 - The AME column needs marginaleffects 0.29.0 or later.
+
+- The console of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and of a one-way
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  prints “95% CI” over the bounds “LL” and “UL”, as the rich outputs do.
+  Column names do not change.
+
+- [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  and
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
+  keep the statistic under the group when `top` and `show_n = FALSE`
+  leave one column per group, in the console and in every rich output.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the AME of a `glmmTMB` binomial or beta-binomial model with a
+  [`cbind()`](https://rdrr.io/r/base/cbind.html) response is weighted by
+  the trials whatever the glmmTMB version. Before glmmTMB 1.1.15 it was
+  unweighted.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gives every reason when it refuses the AME of fixest fits: a lean
+  `feols()` with fixed effects beside a GLM with fixed effects names
+  both, and a lean GLM with fixed effects is no longer told to
+  re-estimate with `lean = FALSE`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  no longer prints the line “Random effect variances not available” in
+  the console when it computes the R2 of a singular mixed model.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  explains why the percentage of the `(Missing)` row of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  is empty under `percent_base = "valid"`, and points to its count.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
+  the range of design degrees of freedom in the note is written
+  “(7–14)”.
+
+- A group label with wide characters or decomposed accents no longer
+  shifts the labels that follow it in the console of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 
 ## spicy 0.14.1
 

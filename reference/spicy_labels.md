@@ -154,17 +154,13 @@ old <- options(spicy.labels = list(row_missing_level = "(No answer)"))
 table_categorical(sochealth, select = sex, by = smoking)
 #> Categorical table by smoking
 #> 
-#>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
-#> ──────────┼─────────────────────────────────────────────────────────────────
-#>  sex      │                                                                 
-#>    Female │ 475   51.3   131   52.6        14            56.0         620   
-#>    Male   │ 451   48.7   118   47.4        11            44.0         580   
-#> 
-#>  Variable │ Total %   p     φ  
-#> ──────────┼────────────────────
-#>  sex      │          .713  .01 
-#>    Female │  51.7              
-#>    Male   │  48.3              
+#>                No         Yes     (No answer)    Total              
+#>             ─────────  ─────────  ───────────  ─────────            
+#>  Variable │  n    %     n    %     n      %     n    %     p     φ  
+#> ──────────┼─────────────────────────────────────────────────────────
+#>  sex      │                                               .713  .01 
+#>    Female │ 475  51.3  131  52.6   14   56.0   620  51.7            
+#>    Male   │ 451  48.7  118  47.4   11   44.0   580  48.3            
 #> 
 #> Note. N = 1200: No (n = 926), Yes (n = 249), (No answer) (n = 25). Percentages are column percentages. P-value: Pearson chi-squared test.
 options(old)

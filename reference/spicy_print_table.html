@@ -119,6 +119,7 @@ arguments can change without notice.</p>
 <span>  qualify_companions <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  blank_row_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  whole_spanners <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -252,6 +253,16 @@ whose rows has a data cell there. An alternative to
 <code>fit_stats_start</code>, not to be combined with it. Defaults to <code>NULL</code>.</p></dd>
 
 
+<dt id="arg-whole-spanners">whole_spanners<a class="anchor" aria-label="anchor" href="#arg-whole-spanners"></a></dt>
+<dd><p>Logical. When <code>TRUE</code>, each group of <code>spanners</code>
+is laid out as a unit: its columns widen until its label fits over
+them, and a split into panels keeps them together, unless the group
+alone is wider than the console. Used by the descriptive tables,
+whose spanners are the groups of <code>by</code>. When <code>FALSE</code> (the default), a
+label wider than its columns is truncated and a split may fall inside
+a group.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to <code><a href="build_ascii_table.html">build_ascii_table()</a></code>.</p></dd>
 
@@ -275,7 +286,7 @@ ANSI color (<code><a href="http://r-lib.github.io/crayon/reference/has_color.htm
 otherwise.</p>
 <p>The layout arguments <code>spanners</code>, <code>display_labels</code>,
 <code>fit_stats_start</code>, <code>total_row_idx</code>, <code>group_sep_rows</code>,
-<code>body_spanners</code> and <code>blank_row_groups</code> are
+<code>body_spanners</code>, <code>blank_row_groups</code> and <code>whole_spanners</code> are
 plumbing consumed by spicy's own print methods; they are
 documented for completeness and are rarely useful when calling
 this function directly.</p>

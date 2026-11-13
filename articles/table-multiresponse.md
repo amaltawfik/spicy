@@ -74,23 +74,16 @@ nrow(stacked)
 table_categorical(stacked, select = source, by = sex)
 #> Categorical table by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  source            │                                                       .053 
-#>    info_doctor     │   377       34.9     344     37.3     721     36.0         
-#>    info_pharmacist │   137       12.7     119     12.9     256     12.8         
-#>    info_internet   │   268       24.8     255     27.7     523     26.1         
-#>    info_family     │   219       20.3     141     15.3     360     18.0         
-#>    info_media      │    78        7.2      63      6.8     141      7.0         
-#> 
-#>  Variable          │  V  
-#> ───────────────────┼─────
-#>  source            │ .07 
-#>    info_doctor     │     
-#>    info_pharmacist │     
-#>    info_internet   │     
-#>    info_family     │     
-#>    info_media      │     
+#>                       Female      Male       Total              
+#>                      ─────────  ─────────  ─────────            
+#>  Variable          │  n    %     n    %     n    %     p     V  
+#> ───────────────────┼────────────────────────────────────────────
+#>  source            │                                  .053  .07 
+#>    info_doctor     │ 377  34.9  344  37.3  721  36.0            
+#>    info_pharmacist │ 137  12.7  119  12.9  256  12.8            
+#>    info_internet   │ 268  24.8  255  27.7  523  26.1            
+#>    info_family     │ 219  20.3  141  15.3  360  18.0            
+#>    info_media      │  78   7.2   63   6.8  141   7.0            
 #> 
 #> Note. N = 2001: Female (n = 1079), Male (n = 922). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V.
 ```
@@ -141,16 +134,18 @@ tbl <- table_multiresponse(
 tbl
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164                   
+#>                          Female          Male           Total               
+#>                       ─────────────  ─────────────  ──────────────          
+#>  Variable           │   n      %       n      %       n       %        p    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9    1.000  
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0    1.000  
+#>  info_internet      │  268    44.7    255    45.1     523    44.9    1.000  
+#>  info_family        │  219    36.6    141    25.0     360    30.9    <.001  
+#>  info_media         │   78    13.0     63    11.2     141    12.1    1.000  
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8     –     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164                   
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
@@ -456,27 +451,18 @@ table_multiresponse(
 )
 #> Multiple responses by age_group
 #> 
-#>  Variable         │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
-#> ──────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor      │   27      57.4      36      52.2      33      67.3   
-#>  info_pharmacist  │    8      17.0      17      24.6      12      24.5   
-#>  info_internet    │   35      74.5      39      56.5      19      38.8   
-#>  info_family      │   17      36.2      21      30.4      15      30.6   
-#>  info_media       │    3       6.4       6       8.7       4       8.2   
-#>  (No item chosen) │    2       4.3       5       7.2       0       0.0   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   47                69                49             
-#> 
-#>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
-#> ──────────────────┼───────────────────────────────────────────
-#>  info_doctor      │   22      71.0      118     60.2     .624 
-#>  info_pharmacist  │    9      29.0       46     23.5    1.000 
-#>  info_internet    │    3       9.7       96     49.0    <.001 
-#>  info_family      │   10      32.3       63     32.1    1.000 
-#>  info_media       │    7      22.6       20     10.2     .591 
-#>  (No item chosen) │    3       9.7       10      5.1     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   31                196                   
+#>                      25-34     35-49     50-64     65-75      Total          
+#>                     ────────  ────────  ────────  ────────  ─────────        
+#>  Variable         │ n    %    n    %    n    %    n    %     n    %      p   
+#> ──────────────────┼──────────────────────────────────────────────────────────
+#>  info_doctor      │ 27  57.4  36  52.2  33  67.3  22  71.0  118  60.2   .624 
+#>  info_pharmacist  │  8  17.0  17  24.6  12  24.5   9  29.0   46  23.5  1.000 
+#>  info_internet    │ 35  74.5  39  56.5  19  38.8   3   9.7   96  49.0  <.001 
+#>  info_family      │ 17  36.2  21  30.4  15  30.6  10  32.3   63  32.1  1.000 
+#>  info_media       │  3   6.4   6   8.7   4   8.2   7  22.6   20  10.2   .591 
+#>  (No item chosen) │  2   4.3   5   7.2   0   0.0   3   9.7   10   5.1   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base             │ 47        69        49        31        196              
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 5 with no answer to the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
 ```
@@ -636,17 +622,19 @@ with_empty <- transform(
 table_multiresponse(with_empty, select = starts_with("info_"), by = sex)
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
-#>  info_other       │     0        0.0       0      0.0       0      0.0     –    
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164                   
+#>                          Female          Male           Total               
+#>                       ─────────────  ─────────────  ──────────────          
+#>  Variable           │   n      %       n      %       n       %        p    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9    1.000  
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0    1.000  
+#>  info_internet      │  268    44.7    255    45.1     523    44.9    1.000  
+#>  info_family        │  219    36.6    141    25.0     360    30.9    <.001  
+#>  info_media         │   78    13.0     63    11.2     141    12.1    1.000  
+#>  info_other         │    0     0.0      0     0.0       0     0.0     –     
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8     –     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164                   
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
@@ -680,16 +668,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total % 
-#> ──────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor      │    21        52       19      49      40       51    
-#>  info_pharmacist  │    11        28        8      21      19       24    
-#>  info_internet    │    19        48       25      64      44       56    
-#>  info_family      │    11        28        5      13      16       20    
-#>  info_media       │     5        12        5      13      10       13    
-#>  (No item chosen) │     3         8        4      10       7        9    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │    40                 39              79             
+#>                         Female       Male       Total    
+#>                       ──────────  ──────────  ────────── 
+#>  Variable           │  n     %     n     %     n     %   
+#> ────────────────────┼────────────────────────────────────
+#>  info_doctor        │  21    52    19    49    40    51  
+#>  info_pharmacist    │  11    28     8    21    19    24  
+#>  info_internet      │  19    48    25    64    44    56  
+#>  info_family        │  11    28     5    13    16    20  
+#>  info_media         │   5    12     5    13    10    13  
+#>  (No item chosen)   │   3     8     4    10     7     9  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  40          39          79        
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 1 with no answer to the question).
 ```
@@ -941,16 +931,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.00  
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.00  
-#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.00  
-#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media       │    78       13.0      63     11.2     141     12.1    1.00  
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164                   
+#>                          Female          Male           Total               
+#>                       ─────────────  ─────────────  ──────────────          
+#>  Variable           │   n      %       n      %       n       %        p    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9    1.00   
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0    1.00   
+#>  info_internet      │  268    44.7    255    45.1     523    44.9    1.00   
+#>  info_family        │  219    36.6    141    25.0     360    30.9    <.001  
+#>  info_media         │   78    13.0     63    11.2     141    12.1    1.00   
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8     –     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164                   
 #> 
 #> Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
@@ -1005,7 +997,7 @@ table_multiresponse(
 | Base | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_gdmnk40kner5rse1cfgo .table
+Multiple responses by Sex {#tinytable_d7td463e3b6x5jbmsjq6 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

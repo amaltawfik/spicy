@@ -10,8 +10,9 @@ with its numbers: exactly what output = &quot;data.frame&quot; returns. One
 row per printed row, the key columns variable (the column name),
 label (the label displayed for it) and, with by, group and
 .row_role (&quot;group&quot;, or &quot;missing&quot; for the group of missing by
-values), then the printed columns under their names (&quot;M&quot;, &quot;SD&quot;,
-&quot;95% CI LL&quot;, ..., &quot;n&quot;, &quot;p&quot;). A cell that prints several
+values), then one column per displayed column (&quot;M&quot;, &quot;SD&quot;,
+&quot;95% CI LL&quot; and &quot;95% CI UL&quot;, the bounds printed under 95% CI,
+..., &quot;n&quot;, &quot;p&quot;). A cell that prints several
 numbers keeps the first in its column and the others beside it under
 their names in the long output: df and df.residual after the test
 statistic &quot;Test&quot;, es_ci_lower and es_ci_upper after the effect
@@ -22,8 +23,9 @@ with its numbers: exactly what output = &quot;data.frame&quot; returns. One
 row per printed row, the key columns variable (the column name),
 label (the label displayed for it) and, with by, group and
 .row_role (&quot;group&quot;, or &quot;missing&quot; for the group of missing by
-values), then the printed columns under their names (&quot;M&quot;, &quot;SD&quot;,
-&quot;95% CI LL&quot;, ..., &quot;n&quot;, &quot;p&quot;). A cell that prints several
+values), then one column per displayed column (&quot;M&quot;, &quot;SD&quot;,
+&quot;95% CI LL&quot; and &quot;95% CI UL&quot;, the bounds printed under 95% CI,
+..., &quot;n&quot;, &quot;p&quot;). A cell that prints several
 numbers keeps the first in its column and the others beside it under
 their names in the long output: df and df.residual after the test
 statistic &quot;Test&quot;, es_ci_lower and es_ci_upper after the effect
@@ -102,8 +104,9 @@ with its numbers: exactly what <code>output = "data.frame"</code> returns. One
 row per printed row, the key columns <code>variable</code> (the column name),
 <code>label</code> (the label displayed for it) and, with <code>by</code>, <code>group</code> and
 <code>.row_role</code> (<code>"group"</code>, or <code>"missing"</code> for the group of missing <code>by</code>
-values), then the printed columns under their names (<code>"M"</code>, <code>"SD"</code>,
-<code>"95% CI LL"</code>, ..., <code>"n"</code>, <code>"p"</code>). A cell that prints several
+values), then one column per displayed column (<code>"M"</code>, <code>"SD"</code>,
+<code>"95% CI LL"</code> and <code>"95% CI UL"</code>, the bounds printed under <code>95% CI</code>,
+..., <code>"n"</code>, <code>"p"</code>). A cell that prints several
 numbers keeps the first in its column and the others beside it under
 their names in the long output: <code>df</code> and <code>df.residual</code> after the test
 statistic <code>"Test"</code>, <code>es_ci_lower</code> and <code>es_ci_upper</code> after the effect

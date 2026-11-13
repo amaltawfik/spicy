@@ -386,7 +386,7 @@ table_regression(
 #>  R²              │    0.02                                           
 #>  Adj. R²         │    0.02                                           
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.
+#> Note. Linear regression. Std. errors: classical (OLS). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval.
 ```
 
 Reading conventions:
@@ -555,7 +555,7 @@ table_stack(
 #>  R² (Nagelkerke) │    0.00                              
 #>  AIC             │ 1421.8                               
 #> 
-#> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The notes of the panels are merged as the note of the same models side
@@ -896,7 +896,7 @@ table_regression(
 #>  R²              │    0.02                                            
 #>  Adj. R²         │    0.02                                            
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. CI = confidence interval; AME = average marginal effect.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -1234,7 +1234,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  R² (Nagelkerke)          │    0.03                            
 #>  AIC                      │ 1200.9                             
 #> 
-#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Read exponentiated rows with the factor-change template (Long and Freese
@@ -1438,7 +1438,7 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>  R² (Nagelkerke)          │    0.03                                      
 #>  AIC                      │ 1200.9                                       
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Point estimate and inference are delegated to

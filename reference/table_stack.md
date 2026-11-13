@@ -346,7 +346,7 @@ table_stack(
 #>  R² (Nagelkerke) │    0.00                              
 #>  AIC             │ 1457.7                               
 #> 
-#> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 
 # One panel per model.
 table_regression(list(BMI = fit_bmi, Dentist = fit_dentist),

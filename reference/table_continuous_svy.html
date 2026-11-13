@@ -494,7 +494,7 @@ display frame and the typed view are attached.</p></li>
 default object returns: one row per printed row, the key columns
 <code>variable</code>, <code>label</code> and, with <code>by</code>, <code>group</code> and <code>.row_role</code>
 (<code>"group"</code>, or <code>"missing"</code> for the group of missing <code>by</code> values),
-then the printed columns under their names (<code>"M"</code>, <code>"SD"</code>, <code>"SE"</code>,
+then one column per displayed column (<code>"M"</code>, <code>"SD"</code>, <code>"SE"</code>,
 <code>"95% CI LL"</code>, ..., <code>"n"</code>, <code>"p"</code>), as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></li>
 <li><p><code>"long"</code>: one row per <code>(variable x group)</code> (per variable
 without <code>by</code>) with every statistic the table computes, whatever it
@@ -554,7 +554,11 @@ additions and one removal:</p><ul><li><p><code>"se"</code> – the design-based 
 <li><p><code>"med_ci"</code> is refused. The exact interval of the sibling inverts a
 binomial sign test on independent observations, which a clustered
 or stratified sample is not.</p></li>
-</ul></div>
+</ul><p>The columns follow the order the tokens are written in, with the
+rules of the sibling: a repeated token counts once, and <code>"ci"</code> comes
+after <code>"m"</code>. Under <code>deff = TRUE</code>, a <code>"deff"</code> left unwritten comes
+last.</p>
+    </div>
     <div class="section level2">
     <h2 id="quantiles">Quantiles<a class="anchor" aria-label="anchor" href="#quantiles"></a></h2>
     <p><code>qrule = "math"</code> is the default and estimates <code>inf{x : F(x) &gt;= p}</code>,
@@ -660,28 +664,26 @@ error.</p>
 <span class="r-in"><span><span class="fu">table_continuous_svy</span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">api00</span>, <span class="va">api99</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span>   M       SD     Min     Max    95% CI LL  95% CI UL   n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   593.68     694.66    183 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                             95% CI              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                                      ──────────────────        </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>    M         SD       Min       Max        LL        UL       n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  api00      <span style="color: #9E9E9E;">│</span>  644.17    105.75    411.00    905.00    593.68    694.66    183  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  api99      <span style="color: #9E9E9E;">│</span>  606.98    112.85    365.00    890.00    555.02    658.94    183  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_continuous_svy</span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, by <span class="op">=</span> <span class="va">stype</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by stype</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max    95% CI LL  95% CI UL   n  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        95% CI                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                                   ──────────────            </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Group    M       SD     Min     Max      LL      UL     n    p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  api00    <span style="color: #9E9E9E;">│</span> E      648.87  106.16  436.00  905.00   600.91     696.83    144 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> H      618.57   96.74  443.00  724.00   528.67     708.48     14 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> M      631.44  109.06  411.00  847.00   561.87     701.01     25 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  api00    <span style="color: #9E9E9E;">│</span> E      648.87  106.16  436.00  905.00  600.91  696.83  144  .314 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> H      618.57   96.74  443.00  724.00  528.67  708.48   14       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> M      631.44  109.06  411.00  847.00  561.87  701.01   25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Group   p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  api00    <span style="color: #9E9E9E;">│</span> E      .314 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> H           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           <span style="color: #9E9E9E;">│</span> M           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_continuous_svy</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">dclus1</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="va">api00</span>,</span></span>
@@ -690,9 +692,11 @@ error.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>    M        SE      95% CI LL    95% CI UL     n     DEff  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  api00      <span style="color: #9E9E9E;">│</span>  644.17    23.54     593.68       694.66      183    9.35  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                        95% CI                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                 ──────────────────                </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>    M        SE        LL        UL      DEff     n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼──────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  api00      <span style="color: #9E9E9E;">│</span>  644.17    23.54    593.68    694.66    9.35    183  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span>
 </code></pre></div>

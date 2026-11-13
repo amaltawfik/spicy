@@ -400,12 +400,14 @@ Depends on `output`:
   of each variable, which carries its *p*-value, then its levels), the
   key columns `variable` (the column name), `label` (the label
   displayed), `level` and `.row_role` (`"factor_header"`, `"level"`, or
-  `"missing"` on the row of missing values the table adds), then the
-  printed columns in their order: per block of `by` (and the `Total`
-  margin) `<group> n`, `<group> %`, with `proportion_ci` the interval
-  bounds `<group> 95% CI LL` and `<group> 95% CI UL` (the level of
-  `ci_level`, as printed), with `deff` `<group> DEff`, and last `p`.
-  Without `by`, the columns of the one block are `n`, `%`, ...
+  `"missing"` on the row of missing values the table adds), then one
+  column per displayed column, in their order, the name of a column of a
+  block joining the block printed above it to the header printed under
+  it: per block of `by` (and the `Total` margin) `<group> n`,
+  `<group> %`, with `proportion_ci` the interval bounds
+  `<group> 95% CI LL` and `<group> 95% CI UL` (the level of `ci_level`,
+  as printed), with `deff` `<group> DEff`, and last `p`. Without `by`,
+  the columns of the one block are `n`, `%`, ...
 
 - `"long"`: one row per variable, level and group, in the order of the
   table, with `variable`, `label`, `level`, `.row_role` (the role of
@@ -610,14 +612,16 @@ table_categorical_svy(dclus1, select = c(stype, awards))
 table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #> Categorical table by sch.wide
 #> 
-#>  Variable   │  No n    No %    Yes n    Yes %    Total n    Total %     p    
-#> ────────────┼────────────────────────────────────────────────────────────────
-#>  stype      │                                                          .022  
-#>    E        │   12     52.2     132     82.5       144       78.7            
-#>    H        │    3     13.0      11      6.9        14        7.7            
-#>    M        │    8     34.8      17     10.6        25       13.7            
+#>                    No            Yes           Total             
+#>               ────────────  ─────────────  ─────────────         
+#>  Variable   │  n      %       n      %       n      %       p    
+#> ────────────┼────────────────────────────────────────────────────
+#>  stype      │                                              .022  
+#>    E        │  12    52.2    132    82.5    144    78.7          
+#>    H        │   3    13.0     11     6.9     14     7.7          
+#>    M        │   8    34.8     17    10.6     25    13.7          
 #> 
-#> Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 table_categorical_svy(
   dclus1,
   select = stype,
@@ -626,12 +630,14 @@ table_categorical_svy(
 )
 #> Categorical table
 #> 
-#>  Variable   │   n      %      95% CI LL    95% CI UL    DEff  
-#> ────────────┼─────────────────────────────────────────────────
-#>  stype      │                                                 
-#>    E        │  144    78.7      67.1         87.0       2.40  
-#>    H        │   14     7.7       3.5         15.8       1.91  
-#>    M        │   25    13.7       8.4         21.3       1.40  
+#>                                  95% CI             
+#>                              ──────────────         
+#>  Variable   │   n      %       LL      UL     DEff  
+#> ────────────┼───────────────────────────────────────
+#>  stype      │                                       
+#>    E        │  144    78.7    67.1    87.0    2.40  
+#>    H        │   14     7.7     3.5    15.8    1.91  
+#>    M        │   25    13.7     8.4    21.3    1.40  
 #> 
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

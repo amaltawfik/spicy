@@ -67,10 +67,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable    │   M     SD     Min    Max   95% CI LL  95% CI UL   n   
-#> ─────────────┼────────────────────────────────────────────────────────
-#>  BMI (kg/m2) │ 25.93   3.72  16.00  38.90    25.72      26.14    1188 
-#>  Age (years) │ 49.26  14.70  25.00  75.00    48.43      50.10    1200 
+#>                                                           95% CI              
+#>                                                      ────────────────         
+#>  Variable      │    M       SD       Min      Max      LL       UL       n    
+#> ───────────────┼──────────────────────────────────────────────────────────────
+#>  BMI (kg/m2)   │  25.93     3.72    16.00    38.90    25.72    26.14    1188  
+#>  Age (years)   │  49.26    14.70    25.00    75.00    48.43    50.10    1200  
 #> 
 #> Note. N = 1200. Missing values removed: BMI (kg/m2) (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 

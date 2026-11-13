@@ -430,12 +430,12 @@ visibly, so a bare call prints the ASCII table.</p></li>
 <li><p><code>"data.frame"</code>: the displayed table with its numbers, what
 <a href="as.data.frame.spicy_battery_table.html">as.data.frame()</a> of the
 default object returns: one row per item, with columns <code>variable</code>
-(the item's column), <code>label</code> (the label the row displays), then the
-printed columns: one percentage per level shown, <code>(Missing)</code> under
-<code>drop_na = FALSE</code>, the summary column of <code>top</code> (named by its
-header, <code>"Strongly agree + Agree"</code>) and <code>n</code>, each prefixed with the
-group under <code>by</code> (<code>"Female Agree"</code>, <code>"Female n"</code>), and <code>p</code> with
-<code>p_value</code>.</p></li>
+(the item's column), <code>label</code> (the label the row displays), then one
+column per displayed column: one percentage per level shown,
+<code>(Missing)</code> under <code>drop_na = FALSE</code>, the summary column of <code>top</code>
+(named by its header, <code>"Strongly agree + Agree"</code>) and <code>n</code>, each
+prefixed under <code>by</code> with the group printed above it
+(<code>"Female Agree"</code>, <code>"Female n"</code>), and <code>p</code> with <code>p_value</code>.</p></li>
 <li><p><code>"long"</code>: one row per item, group and level, with columns
 <code>variable</code>, <code>label</code>, <code>group</code> (with <code>by</code>), <code>level</code> (the level, or the
 label of the column of missing answers), <code>.row_role</code> (<code>"level"</code>, or
@@ -608,19 +608,23 @@ article <a href="https://amaltawfik.github.io/spicy/articles/table-battery.html"
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Item battery by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Female Very satisfied + Satisfied  Female n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>               52.9                   616    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>               49.1                   615    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>               59.8                   615    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>               50.9                   615    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                       Female              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                          ─────────────────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>            52.9             616 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>            49.1             615 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>            59.8             615 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>            50.9             615 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Male Very satisfied + Satisfied  Male n   p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>              56.1                 576    .798 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>              50.4                 577    .052 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>              59.4                 577    .798 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>              50.1                 577    .397 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                        Male                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                          ───────────────────────────────       </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>            56.1             576  .798 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>            50.4             577  .052 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>            59.4             577  .798 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>            50.1             577  .397 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).</span></span>
 <span class="r-in"><span></span></span>

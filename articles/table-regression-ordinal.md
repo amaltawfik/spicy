@@ -263,7 +263,7 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 How to read it, with the `smoking = Yes` row:
@@ -342,7 +342,7 @@ table_regression(fit, show_columns = "ame")
 #>  R² (Nagelkerke)    │     0.00                                    
 #>  AIC                │  2761.2                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 Marginal effects are the response-scale (probability) output of
@@ -398,7 +398,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 The footer switches to name the estimator and the clustering variable.
@@ -507,7 +507,7 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 ### Testing proportional odds
@@ -799,7 +799,7 @@ table_regression(
 #>    Fair | Good      │                                     
 #>    Good | Very good │                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.
 ```
 
 ## Output formats
@@ -837,8 +837,9 @@ pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt
 [TABLE]
 
 *Note.* Cumulative logit regression (proportional odds). Std. errors:
-Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME =
-average marginal effect on a response-category probability; AIC = Akaike
+Wald asymptotic (z). AME of a continuous predictor: average slope
+(dY/dX). Thresholds: latent-scale category cut-points. AME = average
+marginal effect on a response-category probability; AIC = Akaike
 information criterion.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,

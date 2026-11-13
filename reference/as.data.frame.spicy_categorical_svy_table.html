@@ -8,18 +8,24 @@
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_categorical_svy_table to a data frame or tibble — as.data.frame.spicy_categorical_svy_table"><meta name="description" content="as.data.frame() returns the table table_categorical_svy()
 displays, with its numbers: exactly what output = &quot;data.frame&quot;
 returns. One row per printed row – the header row of each variable,
-which carries its p-value, then one row per level – and the printed
-columns under their names (&quot;Female n&quot;, &quot;Female %&quot;, the interval
-bounds &quot;Female 95% CI LL&quot; and &quot;Female 95% CI UL&quot;, &quot;Female DEff&quot;, ..., &quot;p&quot;), plus the key columns variable, label,
-level and .row_role (&quot;factor_header&quot;, &quot;level&quot;, or &quot;missing&quot;).
+which carries its p-value, then one row per level – and one column
+per displayed column (&quot;Female n&quot;, &quot;Female %&quot;, the interval bounds
+&quot;Female 95% CI LL&quot; and &quot;Female 95% CI UL&quot;, &quot;Female DEff&quot;, ...,
+&quot;p&quot;), the name of a column of a domain joining the domain printed
+above it to the header printed under it, plus the key columns
+variable, label, level and .row_role (&quot;factor_header&quot;,
+&quot;level&quot;, or &quot;missing&quot;).
 The note, as printed, is kept in attr(, &quot;note&quot;). as_tibble()
 returns the same table as a tibble."><meta property="og:description" content="as.data.frame() returns the table table_categorical_svy()
 displays, with its numbers: exactly what output = &quot;data.frame&quot;
 returns. One row per printed row – the header row of each variable,
-which carries its p-value, then one row per level – and the printed
-columns under their names (&quot;Female n&quot;, &quot;Female %&quot;, the interval
-bounds &quot;Female 95% CI LL&quot; and &quot;Female 95% CI UL&quot;, &quot;Female DEff&quot;, ..., &quot;p&quot;), plus the key columns variable, label,
-level and .row_role (&quot;factor_header&quot;, &quot;level&quot;, or &quot;missing&quot;).
+which carries its p-value, then one row per level – and one column
+per displayed column (&quot;Female n&quot;, &quot;Female %&quot;, the interval bounds
+&quot;Female 95% CI LL&quot; and &quot;Female 95% CI UL&quot;, &quot;Female DEff&quot;, ...,
+&quot;p&quot;), the name of a column of a domain joining the domain printed
+above it to the header printed under it, plus the key columns
+variable, label, level and .row_role (&quot;factor_header&quot;,
+&quot;level&quot;, or &quot;missing&quot;).
 The note, as printed, is kept in attr(, &quot;note&quot;). as_tibble()
 returns the same table as a tibble."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -92,10 +98,13 @@ returns the same table as a tibble."><meta property="og:image" content="https://
     <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns the table <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>
 displays, with its numbers: exactly what <code>output = "data.frame"</code>
 returns. One row per printed row – the header row of each variable,
-which carries its <em>p</em>-value, then one row per level – and the printed
-columns under their names (<code>"Female n"</code>, <code>"Female %"</code>, the interval
-bounds <code>"Female 95% CI LL"</code> and <code>"Female 95% CI UL"</code>, <code>"Female DEff"</code>, ..., <code>"p"</code>), plus the key columns <code>variable</code>, <code>label</code>,
-<code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>, <code>"level"</code>, or <code>"missing"</code>).
+which carries its <em>p</em>-value, then one row per level – and one column
+per displayed column (<code>"Female n"</code>, <code>"Female %"</code>, the interval bounds
+<code>"Female 95% CI LL"</code> and <code>"Female 95% CI UL"</code>, <code>"Female DEff"</code>, ...,
+<code>"p"</code>), the name of a column of a domain joining the domain printed
+above it to the header printed under it, plus the key columns
+<code>variable</code>, <code>label</code>, <code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>,
+<code>"level"</code>, or <code>"missing"</code>).
 The note, as printed, is kept in <code>attr(, "note")</code>. <code>as_tibble()</code>
 returns the same table as a tibble.</p>
     </div>

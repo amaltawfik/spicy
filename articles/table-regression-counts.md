@@ -90,7 +90,7 @@ table_regression(fit_pois, exponentiate = TRUE)
 #>  R² (Nagelkerke) │    0.19                            
 #>  AIC             │ 3312.3                             
 #> 
-#> Note. Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Each IRR multiplies the expected article count, holding the other
@@ -158,7 +158,7 @@ table_regression(fit_nb, exponentiate = TRUE,
 #>  α (= 1/θ)       │    0.44                            
 #>  AIC             │ 3134.1                             
 #> 
-#> Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Negative-binomial regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The dispersion estimate sits in the table itself: the opt-in
@@ -258,7 +258,7 @@ table_regression(fit_zip, exponentiate = TRUE)
 #>  n               │  915                               
 #>  AIC             │ 3225.5                             
 #> 
-#> Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ``` r
@@ -287,7 +287,7 @@ table_regression(fit_hur, exponentiate = TRUE)
 #>  n                       │  915                               
 #>  AIC                     │ 3233.8                             
 #> 
-#> Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Zero hurdle, Pr(y > 0) component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Poisson hurdle regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). Zero hurdle, Pr(y > 0) component: log-odds of a nonzero count. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Compare the `ment` row in the two zero blocks — the same predictor, the
@@ -382,7 +382,7 @@ table_regression(
 #>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
-#> Note. Poisson: Poisson regression; ZIP: zero-inflated Poisson regression; NB: negative-binomial regression; ZINB: zero-inflated negative-binomial regression. Coefficients exponentiated and displayed as IRR. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; AIC = Akaike information criterion.
+#> Note. Poisson: Poisson regression; ZIP: zero-inflated Poisson regression; NB: negative-binomial regression; ZINB: zero-inflated negative-binomial regression. Coefficients exponentiated and displayed as IRR. The (Intercept) row estimates the baseline rate. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; AIC = Akaike information criterion.
 ```
 
 Read the AIC row across. The ZIP’s entire inflation component buys less
@@ -439,7 +439,7 @@ table_regression(fit_zip, show_columns = c("b", "ame", "p"))
 #>  n               │  915                  
 #>  AIC             │ 3225.5                
 #> 
-#> Note. Zero-inflated Poisson regression. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Zero-inflation component: log-odds of a structural (excess) zero. AME = average marginal effect; AIC = Akaike information criterion.
 ```
 
 Averaged over the sample’s covariate values, women are expected to
@@ -579,7 +579,7 @@ table_regression(fit_mix, exponentiate = TRUE)
 #>  AIC                  │ 1741.4                             
 #>  BIC                  │ 1768.2                             
 #> 
-#> Note. Zero-inflated negative-binomial mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Zero-inflated negative-binomial mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated negative-binomial regression, χ̄²(1) = 5.37, p = .010. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Among streams not in the structural-zero state, unmined ones host
@@ -753,11 +753,12 @@ pkgdown_dark_gt(table_regression(fit_zip, exponentiate = TRUE, output = "gt"))
 
 *Note.* Zero-inflated Poisson regression. Coefficients exponentiated and
 displayed as IRR; SE on the IRR scale (delta method); CI bounds
-exponentiated (asymmetric). Std. errors: Wald asymptotic (z).
-Zero-inflation component: log-odds of a structural (excess) zero.
-Coefficients exponentiated and displayed as odds ratios. IRR = incidence
-rate ratio; CI = confidence interval; AIC = Akaike information
-criterion.
+exponentiated (asymmetric). The (Intercept) row estimates the baseline
+rate. Std. errors: Wald asymptotic (z). Zero-inflation component:
+log-odds of a structural (excess) zero. Coefficients exponentiated and
+displayed as odds ratios. The (Intercept) row estimates the baseline
+odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike
+information criterion.
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
 terms are keyed by their block (`Zero-inflation::(Intercept)`), so the

@@ -354,50 +354,37 @@ tables for categorical variables:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        179               69.6                415        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         78               30.4                112        </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>          4                                    12        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        177               67.8                310        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>         84               32.2                229        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                         </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>        113               43.3                174        </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>        148               56.7                365        </span></span>
+<span><span class="co">#&gt;                      Lower secondary  Upper secondary  Tertiary     Total   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                     ───────────────  ───────────────  ─────────  ───────── </span></span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n        %       n        %      n    %     n    %   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                        </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  179     69.6     415     78.7    332  84.9  926  78.8 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   78     30.4     112     21.3     59  15.1  249  21.2 </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>    4               12               9         25       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                        </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  177     67.8     310     57.5    163  40.8  650  54.2 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>   84     32.2     229     42.5    237  59.2  550  45.8 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                        </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  113     43.3     174     32.3     67  16.8  354  29.5 </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  148     56.7     365     67.7    333  83.2  846  70.5 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       78.7            332         84.9       926   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       21.3             59         15.1       249   </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                         9                     25   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       57.5            163         40.8       650   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       42.5            237         59.2       550   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>       32.3             67         16.8       354   </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Total %    p     V  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────</span></span></span>
-<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span>          &lt;.001  .14 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  78.8               </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  21.2               </span></span>
-<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>                     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span>          &lt;.001  .21 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.2               </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.8               </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001  .22 </span></span>
-<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5               </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5               </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────</span></span></span>
+<span><span class="co">#&gt;  smoking           <span style="color: #9E9E9E;">│</span> &lt;.001  .14 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    (Missing)       <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity <span style="color: #9E9E9E;">│</span> &lt;.001  .21 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span> &lt;.001  .22 </span></span>
+<span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
@@ -412,25 +399,27 @@ Welch test by default):</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by education</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group              M     SD    Min    Max   95% CI LL </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  28.09  3.47  18.20  38.90    27.66   </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary  26.02  3.43  16.00  37.10    25.73   </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary         24.39  3.52  16.00  33.00    24.04   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span> Lower secondary   2.71  1.20   1.00   5.00     2.57   </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary   3.53  1.19   1.00   5.00     3.43   </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary          4.11  1.04   1.00   5.00     4.01   </span></span>
+<span><span class="co">#&gt;                                                                   95% CI    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                                               ──────────── </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group              M     SD    Min    Max    LL     UL   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  28.09  3.47  18.20  38.90  27.66  28.51 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary  26.02  3.43  16.00  37.10  25.73  26.31 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary         24.39  3.52  16.00  33.00  24.04  24.74 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span> Lower secondary   2.71  1.20   1.00   5.00   2.57   2.86 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary   3.53  1.19   1.00   5.00   3.43   3.63 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary          4.11  1.04   1.00   5.00   4.01   4.21 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group            95% CI UL   n     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary    28.51    260  &lt;.001 </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary    26.31    534        </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary           24.74    394        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span> Lower secondary     2.86    259  &lt;.001 </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary     3.63    534        </span></span>
-<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary            4.21    399        </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Group             n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  260  &lt;.001 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary  534        </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary         394        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span> Lower secondary  259  &lt;.001 </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary  534        </span></span>
+<span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary         399        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers the same reporting
@@ -446,12 +435,12 @@ covariate adjustment:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                          M                                                      </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ─────────────                                                </span></span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89    2.12       5.65     &lt;.001  0.02  1200 </span></span>
-<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 </span></span>
+<span><span class="co">#&gt;                          M                95% CI                      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                   ─────────────        ──────────                    </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female  Male    Δ     LL    UL     p     R²    n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 67.16   71.05  3.89  2.12  5.65  &lt;.001  0.02  1200 </span></span>
+<span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.69   26.20  0.51  0.09  0.93   .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>By default every <code>table_*</code> helper formats to APA
@@ -520,16 +509,18 @@ table:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9   </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0   </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9   </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9   </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1   </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   599                565             1164            </span></span>
+<span><span class="co">#&gt;                          Female          Male           Total      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────  ─────────────  ────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   n      %       n      %       n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor        <span style="color: #9E9E9E;">│</span>  377    62.9    344    60.9     721    61.9  </span></span>
+<span><span class="co">#&gt;  info_pharmacist    <span style="color: #9E9E9E;">│</span>  137    22.9    119    21.1     256    22.0  </span></span>
+<span><span class="co">#&gt;  info_internet      <span style="color: #9E9E9E;">│</span>  268    44.7    255    45.1     523    44.9  </span></span>
+<span><span class="co">#&gt;  info_family        <span style="color: #9E9E9E;">│</span>  219    36.6    141    25.0     360    30.9  </span></span>
+<span><span class="co">#&gt;  info_media         <span style="color: #9E9E9E;">│</span>   78    13.0     63    11.2     141    12.1  </span></span>
+<span><span class="co">#&gt;  (No item chosen)   <span style="color: #9E9E9E;">│</span>   31     5.2     36     6.4      67     5.8  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base               <span style="color: #9E9E9E;">│</span>  599            565            1164          </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).</span></span></span></code></pre></div>
 </div>

@@ -29,11 +29,13 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable        │   M     SD     Min    Max    95% CI LL  95% CI UL   n   
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
-#>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
-#>  life_sat_health │  3.55   1.25   1.00    5.00     3.48       3.62    1192 
+#>                                                    95% CI          
+#>                                                 ────────────       
+#>  Variable        │   M     SD     Min    Max     LL     UL     n   
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  bmi             │ 25.93   3.72  16.00   38.90  25.72  26.14  1188 
+#>  wellbeing_score │ 69.04  15.62  18.70  100.00  68.16  69.93  1200 
+#>  life_sat_health │  3.55   1.25   1.00    5.00   3.48   3.62  1192 
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -48,31 +50,33 @@ dropped silently; set `verbose = TRUE` to list them in a message:
 table_continuous(sochealth)
 #> Descriptive statistics
 #> 
-#>  Variable               │    M       SD       Min      Max    95% CI LL 
-#> ────────────────────────┼───────────────────────────────────────────────
-#>  age                    │   49.26    14.70    25.00    75.00     48.43  
-#>  income                 │ 3833.00  1394.58  1000.00  7388.00   3754.01  
-#>  wellbeing_score        │   69.04    15.62    18.70   100.00     68.16  
-#>  bmi                    │   25.93     3.72    16.00    38.90     25.72  
-#>  political_position     │    5.48     2.03     0.00    10.00      5.36  
-#>  life_sat_health        │    3.55     1.25     1.00     5.00      3.48  
-#>  life_sat_work          │    3.38     1.18     1.00     5.00      3.31  
-#>  life_sat_relationships │    3.72     1.10     1.00     5.00      3.66  
-#>  life_sat_standard      │    3.40     1.16     1.00     5.00      3.33  
-#>  weight                 │    1.00     0.41     0.29     3.45      0.97  
+#>                                                                    95% CI      
+#>                                                               ──────────────── 
+#>  Variable               │    M       SD       Min      Max      LL       UL    
+#> ────────────────────────┼──────────────────────────────────────────────────────
+#>  age                    │   49.26    14.70    25.00    75.00    48.43    50.10 
+#>  income                 │ 3833.00  1394.58  1000.00  7388.00  3754.01  3911.98 
+#>  wellbeing_score        │   69.04    15.62    18.70   100.00    68.16    69.93 
+#>  bmi                    │   25.93     3.72    16.00    38.90    25.72    26.14 
+#>  political_position     │    5.48     2.03     0.00    10.00     5.36     5.60 
+#>  life_sat_health        │    3.55     1.25     1.00     5.00     3.48     3.62 
+#>  life_sat_work          │    3.38     1.18     1.00     5.00     3.31     3.45 
+#>  life_sat_relationships │    3.72     1.10     1.00     5.00     3.66     3.79 
+#>  life_sat_standard      │    3.40     1.16     1.00     5.00     3.33     3.46 
+#>  weight                 │    1.00     0.41     0.29     3.45     0.97     1.02 
 #> 
-#>  Variable               │ 95% CI UL   n   
-#> ────────────────────────┼─────────────────
-#>  age                    │    50.10   1200 
-#>  income                 │  3911.98   1200 
-#>  wellbeing_score        │    69.93   1200 
-#>  bmi                    │    26.14   1188 
-#>  political_position     │     5.60   1185 
-#>  life_sat_health        │     3.62   1192 
-#>  life_sat_work          │     3.45   1192 
-#>  life_sat_relationships │     3.79   1192 
-#>  life_sat_standard      │     3.46   1192 
-#>  weight                 │     1.02   1200 
+#>  Variable               │  n   
+#> ────────────────────────┼──────
+#>  age                    │ 1200 
+#>  income                 │ 1200 
+#>  wellbeing_score        │ 1200 
+#>  bmi                    │ 1188 
+#>  political_position     │ 1185 
+#>  life_sat_health        │ 1192 
+#>  life_sat_work          │ 1192 
+#>  life_sat_relationships │ 1192 
+#>  life_sat_standard      │ 1192 
+#>  weight                 │ 1200 
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -91,33 +95,35 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
-#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
-#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary   2.71   1.20   1.00    5.00     2.57   
-#>                  │ Upper secondary   3.53   1.19   1.00    5.00     3.43   
-#>                  │ Tertiary          4.11   1.04   1.00    5.00     4.01   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10  25.73  26.31 
+#>                  │ Tertiary         24.39   3.52  16.00   33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary   2.71   1.20   1.00    5.00   2.57   2.86 
+#>                  │ Upper secondary   3.53   1.19   1.00    5.00   3.43   3.63 
+#>                  │ Tertiary          4.11   1.04   1.00    5.00   4.01   4.21 
 #> 
-#>  Variable        │ Group            95% CI UL   n     p   
-#> ─────────────────┼────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  <.001 
-#>                  │ Upper secondary    26.31    534        
-#>                  │ Tertiary           24.74    394        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary    59.10    261  <.001 
-#>                  │ Upper secondary    70.12    539        
-#>                  │ Tertiary           78.15    400        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary     2.86    259  <.001 
-#>                  │ Upper secondary     3.63    534        
-#>                  │ Tertiary            4.21    399        
+#>  Variable        │ Group             n     p   
+#> ─────────────────┼─────────────────────────────
+#>  bmi             │ Lower secondary  260  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  261  <.001 
+#>                  │ Upper secondary  539        
+#>                  │ Tertiary         400        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary  259  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         399        
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -179,47 +185,49 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
-#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
-#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary   2.71   1.20   1.00    5.00     2.57   
-#>                  │ Upper secondary   3.53   1.19   1.00    5.00     3.43   
-#>                  │ Tertiary          4.11   1.04   1.00    5.00     4.01   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10  25.73  26.31 
+#>                  │ Tertiary         24.39   3.52  16.00   33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary   2.71   1.20   1.00    5.00   2.57   2.86 
+#>                  │ Upper secondary   3.53   1.19   1.00    5.00   3.43   3.63 
+#>                  │ Tertiary          4.11   1.04   1.00    5.00   4.01   4.21 
 #> 
-#>  Variable        │ Group            95% CI UL   n           Test          
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  F(2, 654.48) = 87.96  
-#>                  │ Upper secondary    26.31    534                        
-#>                  │ Tertiary           24.74    394                        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary    59.10    261  F(2, 638.59) = 144.35 
-#>                  │ Upper secondary    70.12    539                        
-#>                  │ Tertiary           78.15    400                        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary     2.86    259  F(2, 652.08) = 118.74 
-#>                  │ Upper secondary     3.63    534                        
-#>                  │ Tertiary            4.21    399                        
+#>  Variable        │ Group             n           Test             p   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  260  F(2, 654.48) = 87.96   <.001 
+#>                  │ Upper secondary  534                               
+#>                  │ Tertiary         394                               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  261  F(2, 638.59) = 144.35  <.001 
+#>                  │ Upper secondary  539                               
+#>                  │ Tertiary         400                               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary  259  F(2, 652.08) = 118.74  <.001 
+#>                  │ Upper secondary  534                               
+#>                  │ Tertiary         399                               
 #> 
-#>  Variable        │ Group              p         ES [95% CI]       
-#> ─────────────────┼────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  <.001  η² = 0.13 [0.10, 0.17] 
-#>                  │ Upper secondary                                
-#>                  │ Tertiary                                       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  <.001  η² = 0.21 [0.17, 0.25] 
-#>                  │ Upper secondary                                
-#>                  │ Tertiary                                       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary  <.001  η² = 0.16 [0.13, 0.20] 
-#>                  │ Upper secondary                                
-#>                  │ Tertiary                                       
+#>  Variable        │ Group                 ES [95% CI]       
+#> ─────────────────┼─────────────────────────────────────────
+#>  bmi             │ Lower secondary  η² = 0.13 [0.10, 0.17] 
+#>                  │ Upper secondary                         
+#>                  │ Tertiary                                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  η² = 0.21 [0.17, 0.25] 
+#>                  │ Upper secondary                         
+#>                  │ Tertiary                                
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary  η² = 0.16 [0.13, 0.20] 
+#>                  │ Upper secondary                         
+#>                  │ Tertiary                                
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
@@ -239,35 +247,27 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
-#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
-#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10  25.73  26.31 
+#>                  │ Tertiary         24.39   3.52  16.00   33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
 #> 
-#>  Variable        │ Group            95% CI UL   n       Test         p   
+#>  Variable        │ Group             n       Test         p       ES     
 #> ─────────────────┼───────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  H(2) = 144.63  <.001 
-#>                  │ Upper secondary    26.31    534                       
-#>                  │ Tertiary           24.74    394                       
+#>  bmi             │ Lower secondary  260  H(2) = 144.63  <.001  ε² = 0.12 
+#>                  │ Upper secondary  534                                  
+#>                  │ Tertiary         394                                  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary    59.10    261  H(2) = 233.53  <.001 
-#>                  │ Upper secondary    70.12    539                       
-#>                  │ Tertiary           78.15    400                       
-#> 
-#>  Variable        │ Group               ES     
-#> ─────────────────┼────────────────────────────
-#>  bmi             │ Lower secondary  ε² = 0.12 
-#>                  │ Upper secondary            
-#>                  │ Tertiary                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  ε² = 0.19 
-#>                  │ Upper secondary            
-#>                  │ Tertiary                   
+#>  wellbeing_score │ Lower secondary  261  H(2) = 233.53  <.001  ε² = 0.19 
+#>                  │ Upper secondary  539                                  
+#>                  │ Tertiary         400                                  
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Kruskal-Wallis test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
@@ -289,15 +289,17 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
-#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
+#>                                                            95% CI         
+#>                                                         ────────────      
+#>  Variable        │ Group     M     SD     Min    Max     LL     UL     n  
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00  65.99  68.33  620 
+#>                  │ Male    71.05  16.23  18.70  100.00  69.73  72.37  580 
 #> 
-#>  Variable        │ Group    n     p          ES [95% CI]        
-#> ─────────────────┼──────────────────────────────────────────────
-#>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
-#>                  │ Male    580                                  
+#>  Variable        │ Group     p          ES [95% CI]        
+#> ─────────────────┼─────────────────────────────────────────
+#>  wellbeing_score │ Female  <.001  g = -0.25 [-0.36, -0.14] 
+#>                  │ Male                                    
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
@@ -369,27 +371,29 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  age             │ Female  49.38  14.91  25.00   75.00    48.20      50.55   
-#>                  │ Male    49.14  14.50  25.00   75.00    47.96      50.32   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  bmi             │ Female  25.69   3.78  16.00   38.90    25.39      25.98   
-#>                  │ Male    26.20   3.64  16.00   37.70    25.90      26.50   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
-#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
+#>                                                            95% CI         
+#>                                                         ────────────      
+#>  Variable        │ Group     M     SD     Min    Max     LL     UL     n  
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  age             │ Female  49.38  14.91  25.00   75.00  48.20  50.55  620 
+#>                  │ Male    49.14  14.50  25.00   75.00  47.96  50.32  580 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi             │ Female  25.69   3.78  16.00   38.90  25.39  25.98  616 
+#>                  │ Male    26.20   3.64  16.00   37.70  25.90  26.50  572 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00  65.99  68.33  620 
+#>                  │ Male    71.05  16.23  18.70  100.00  69.73  72.37  580 
 #> 
-#>  Variable        │ Group    n    SMD  
-#> ─────────────────┼────────────────────
-#>  age             │ Female  620   0.02 
-#>                  │ Male    580        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  bmi             │ Female  616  -0.14 
-#>                  │ Male    572        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Female  620  -0.25 
-#>                  │ Male    580        
+#>  Variable        │ Group    SMD  
+#> ─────────────────┼───────────────
+#>  age             │ Female   0.02 
+#>                  │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi             │ Female  -0.14 
+#>                  │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  -0.25 
+#>                  │ Male          
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
@@ -425,10 +429,12 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable │ Group     M     SD    Min    Max   95% CI LL  95% CI UL  n   p   
-#> ──────────┼──────────────────────────────────────────────────────────────────
-#>  bmi      │ Female  25.03  3.74  19.50  29.10    21.57      28.49    7  .072 
-#>           │ Male    30.20  3.03  27.80  33.60    22.68      37.72    3       
+#>                                                   95% CI             
+#>                                                ────────────          
+#>  Variable │ Group     M     SD    Min    Max    LL     UL    n   p   
+#> ──────────┼──────────────────────────────────────────────────────────
+#>  bmi      │ Female  25.03  3.74  19.50  29.10  21.57  28.49  7  .072 
+#>           │ Male    30.20  3.03  27.80  33.60  22.68  37.72  3       
 #> 
 #>  Variable │ Group       ES         SMD   
 #> ──────────┼──────────────────────────────
@@ -468,33 +474,21 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable               │ Group    M     SD   Min   Max   95% CI LL  95% CI UL 
-#> ────────────────────────┼──────────────────────────────────────────────────────
-#>  life_sat_health        │ Female  3.51  1.25  1.00  5.00    3.41       3.61    
-#>                         │ Male    3.59  1.25  1.00  5.00    3.49       3.69    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_work          │ Female  3.32  1.17  1.00  5.00    3.23       3.41    
-#>                         │ Male    3.44  1.20  1.00  5.00    3.34       3.54    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_relationships │ Female  3.71  1.09  1.00  5.00    3.62       3.79    
-#>                         │ Male    3.74  1.10  1.00  5.00    3.65       3.83    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_standard      │ Female  3.37  1.16  1.00  5.00    3.28       3.46    
-#>                         │ Male    3.42  1.17  1.00  5.00    3.33       3.52    
-#> 
-#>  Variable               │ Group    n    p   
-#> ────────────────────────┼───────────────────
-#>  life_sat_health        │ Female  616  .267 
-#>                         │ Male    576       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_work          │ Female  615  .073 
-#>                         │ Male    577       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_relationships │ Female  615  .570 
-#>                         │ Male    577       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_standard      │ Female  615  .453 
-#>                         │ Male    577       
+#>                                                             95% CI              
+#>                                                           ──────────            
+#>  Variable               │ Group    M     SD   Min   Max    LL    UL    n    p   
+#> ────────────────────────┼───────────────────────────────────────────────────────
+#>  life_sat_health        │ Female  3.51  1.25  1.00  5.00  3.41  3.61  616  .267 
+#>                         │ Male    3.59  1.25  1.00  5.00  3.49  3.69  576       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_work          │ Female  3.32  1.17  1.00  5.00  3.23  3.41  615  .073 
+#>                         │ Male    3.44  1.20  1.00  5.00  3.34  3.54  577       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_relationships │ Female  3.71  1.09  1.00  5.00  3.62  3.79  615  .570 
+#>                         │ Male    3.74  1.10  1.00  5.00  3.65  3.83  577       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_standard      │ Female  3.37  1.16  1.00  5.00  3.28  3.46  615  .453 
+#>                         │ Male    3.42  1.17  1.00  5.00  3.33  3.52  577       
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -551,27 +545,29 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  bmi             │ Female  25.69   3.78  16.00   38.90    25.39      25.98   
-#>                  │ Male    26.20   3.64  16.00   37.70    25.90      26.50   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
-#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Female   3.51   1.25   1.00    5.00     3.41       3.61   
-#>                  │ Male     3.59   1.25   1.00    5.00     3.49       3.69   
+#>                                                            95% CI         
+#>                                                         ────────────      
+#>  Variable        │ Group     M     SD     Min    Max     LL     UL     n  
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  bmi             │ Female  25.69   3.78  16.00   38.90  25.39  25.98  616 
+#>                  │ Male    26.20   3.64  16.00   37.70  25.90  26.50  572 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00  65.99  68.33  620 
+#>                  │ Male    71.05  16.23  18.70  100.00  69.73  72.37  580 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Female   3.51   1.25   1.00    5.00   3.41   3.61  616 
+#>                  │ Male     3.59   1.25   1.00    5.00   3.49   3.69  576 
 #> 
-#>  Variable        │ Group    n     p   
-#> ─────────────────┼────────────────────
-#>  bmi             │ Female  616   .018 
-#>                  │ Male    572        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Female  620  <.001 
-#>                  │ Male    580        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Female  616   .267 
-#>                  │ Male    576        
+#>  Variable        │ Group     p   
+#> ─────────────────┼───────────────
+#>  bmi             │ Female   .018 
+#>                  │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  <.001 
+#>                  │ Male          
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Female   .267 
+#>                  │ Male          
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -590,10 +586,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable        │   M     SD    Min    Max   95% CI LL  95% CI UL   n   
-#> ─────────────────┼───────────────────────────────────────────────────────
-#>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
-#>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
+#>                                                  95% CI          
+#>                                               ────────────       
+#>  Variable        │   M     SD    Min    Max    LL     UL     n   
+#> ─────────────────┼───────────────────────────────────────────────
+#>  bmi             │ 25.93  3.72  16.00  38.90  25.72  26.14  1188 
+#>  life_sat_health │  3.55  1.25   1.00   5.00   3.48   3.62  1192 
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -611,19 +609,14 @@ table_continuous(
 )
 #> Descriptive statistics by income_group
 #> 
-#>  Variable │ Group           M     SD    Min    Max   95% CI LL  95% CI UL   n  
-#> ──────────┼────────────────────────────────────────────────────────────────────
-#>  bmi      │ Low           26.58  3.94  16.00  38.90    26.08      27.07    246 
-#>           │ Lower middle  26.19  3.47  16.00  37.30    25.84      26.53    385 
-#>           │ Upper middle  25.66  3.89  16.00  37.70    25.24      26.09    325 
-#>           │ High          25.15  3.43  16.00  35.00    24.68      25.61    214 
-#> 
-#>  Variable │ Group           p   
-#> ──────────┼─────────────────────
-#>  bmi      │ Low           <.001 
-#>           │ Lower middle        
-#>           │ Upper middle        
-#>           │ High                
+#>                                                         95% CI                
+#>                                                      ────────────             
+#>  Variable │ Group           M     SD    Min    Max    LL     UL     n     p   
+#> ──────────┼───────────────────────────────────────────────────────────────────
+#>  bmi      │ Low           26.58  3.94  16.00  38.90  26.08  27.07  246  <.001 
+#>           │ Lower middle  26.19  3.47  16.00  37.30  25.84  26.53  385        
+#>           │ Upper middle  25.66  3.89  16.00  37.70  25.24  26.09  325        
+#>           │ High          25.15  3.43  16.00  35.00  24.68  25.61  214        
 #> 
 #> Note. N = 1182: Low (n = 247), Lower middle (n = 388), Upper middle (n = 328), High (n = 219). Missing values removed: bmi (12), income_group (18). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -643,21 +636,15 @@ table_continuous(
 )
 #> Descriptive statistics by income_group
 #> 
-#>  Variable │ Group           M     SD    Min    Max   95% CI LL  95% CI UL   n  
-#> ──────────┼────────────────────────────────────────────────────────────────────
-#>  bmi      │ Low           26.58  3.94  16.00  38.90    26.08      27.07    246 
-#>           │ Lower middle  26.19  3.47  16.00  37.30    25.84      26.53    385 
-#>           │ Upper middle  25.66  3.89  16.00  37.70    25.24      26.09    325 
-#>           │ High          25.15  3.43  16.00  35.00    24.68      25.61    214 
-#>           │ (Missing)     25.83  4.08  18.50  31.80    23.80      27.86     18 
-#> 
-#>  Variable │ Group           p   
-#> ──────────┼─────────────────────
-#>  bmi      │ Low           <.001 
-#>           │ Lower middle        
-#>           │ Upper middle        
-#>           │ High                
-#>           │ (Missing)           
+#>                                                         95% CI                
+#>                                                      ────────────             
+#>  Variable │ Group           M     SD    Min    Max    LL     UL     n     p   
+#> ──────────┼───────────────────────────────────────────────────────────────────
+#>  bmi      │ Low           26.58  3.94  16.00  38.90  26.08  27.07  246  <.001 
+#>           │ Lower middle  26.19  3.47  16.00  37.30  25.84  26.53  385        
+#>           │ Upper middle  25.66  3.89  16.00  37.70  25.24  26.09  325        
+#>           │ High          25.15  3.43  16.00  35.00  24.68  25.61  214        
+#>           │ (Missing)     25.83  4.08  18.50  31.80  23.80  27.86   18        
 #> 
 #> Note. N = 1200: Low (n = 247), Lower middle (n = 388), Upper middle (n = 328), High (n = 219), (Missing) (n = 18). Missing values removed: bmi (12). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -678,10 +665,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable        │   M     SD     Min    Max    95% CI LL  95% CI UL   n   
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ 25.72   3.69  16.00   38.90    25.51      25.94    1188 
-#>  wellbeing_score │ 68.78  15.54  18.70  100.00    67.90      69.66    1200 
+#>                                                    95% CI          
+#>                                                 ────────────       
+#>  Variable        │   M     SD     Min    Max     LL     UL     n   
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  bmi             │ 25.72   3.69  16.00   38.90  25.51  25.94  1188 
+#>  wellbeing_score │ 68.78  15.54  18.70  100.00  67.90  69.66  1200 
 #> 
 #> Note. N = 1200 (unweighted). Statistics weighted by weight. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -740,21 +729,15 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable │ Group     M     SD     Min    Max   95% CI LL  95% CI UL   n  
-#> ──────────┼───────────────────────────────────────────────────────────────
-#>  age      │ Female  45.14  14.48  25.00  75.00    44.03      46.25    620 
-#>           │ Male    44.86  13.96  25.00  75.00    43.68      46.03    580 
-#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  bmi      │ Female  25.51   3.75  16.00  38.90    25.22      25.80    616 
-#>           │ Male    25.98   3.61  16.00  37.70    25.67      26.29    572 
-#> 
-#>  Variable │ Group    SMD  
-#> ──────────┼───────────────
-#>  age      │ Female   0.02 
-#>           │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  bmi      │ Female  -0.13 
-#>           │ Male          
+#>                                                    95% CI                
+#>                                                 ────────────             
+#>  Variable │ Group     M     SD     Min    Max    LL     UL     n    SMD  
+#> ──────────┼──────────────────────────────────────────────────────────────
+#>  age      │ Female  45.14  14.48  25.00  75.00  44.03  46.25  620   0.02 
+#>           │ Male    44.86  13.96  25.00  75.00  43.68  46.03  580        
+#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi      │ Female  25.51   3.75  16.00  38.90  25.22  25.80  616  -0.13 
+#>           │ Male    25.98   3.61  16.00  37.70  25.67  26.29  572        
 #> 
 #> Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580). Statistics weighted by weight. Missing values removed: bmi (12). SMD direction: Female − Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
@@ -790,21 +773,23 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable                 │ Group     M     SD     Min    Max    95% CI LL 
-#> ──────────────────────────┼────────────────────────────────────────────────
-#>  Well-being score (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
-#>                           │ Male    71.05  16.23  18.70  100.00    69.73   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health          │ Female   3.51   1.25   1.00    5.00     3.41   
-#>                           │ Male     3.59   1.25   1.00    5.00     3.49   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable                 │ Group     M     SD     Min    Max     LL     UL   
+#> ──────────────────────────┼───────────────────────────────────────────────────
+#>  Well-being score (0-100) │ Female  67.16  14.80  19.60  100.00  65.99  68.33 
+#>                           │ Male    71.05  16.23  18.70  100.00  69.73  72.37 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health          │ Female   3.51   1.25   1.00    5.00   3.41   3.61 
+#>                           │ Male     3.59   1.25   1.00    5.00   3.49   3.69 
 #> 
-#>  Variable                 │ Group   95% CI UL   n     p   
-#> ──────────────────────────┼───────────────────────────────
-#>  Well-being score (0-100) │ Female    68.33    620  <.001 
-#>                           │ Male      72.37    580        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health          │ Female     3.61    616   .267 
-#>                           │ Male       3.69    576        
+#>  Variable                 │ Group    n     p   
+#> ──────────────────────────┼────────────────────
+#>  Well-being score (0-100) │ Female  620  <.001 
+#>                           │ Male    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health          │ Female  616   .267 
+#>                           │ Male    576        
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -831,13 +816,15 @@ table_continuous(
 #>  Satisfaction with health (1-5) │ Female   3.51   1.25   1.00    5.00 
 #>                                 │ Male     3.59   1.25   1.00    5.00 
 #> 
-#>  Variable                       │ Group   95% CI LL  95% CI UL   n     p   
-#> ────────────────────────────────┼──────────────────────────────────────────
-#>  Well-being score (0-100)       │ Female    65.99      68.33    620  <.001 
-#>                                 │ Male      69.73      72.37    580        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
-#>                                 │ Male       3.49       3.69    576        
+#>                                              95% CI                
+#>                                           ────────────             
+#>  Variable                       │ Group    LL     UL     n     p   
+#> ────────────────────────────────┼──────────────────────────────────
+#>  Well-being score (0-100)       │ Female  65.99  68.33  620  <.001 
+#>                                 │ Male    69.73  72.37  580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with health (1-5) │ Female   3.41   3.61  616   .267 
+#>                                 │ Male     3.49   3.69  576        
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Satisfaction with health (1-5) (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -1007,7 +994,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_7yqh797gyjpv32fqlpei
+Descriptive statistics by education {#tinytable_qkb86nq30ujzb2t55kjj
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

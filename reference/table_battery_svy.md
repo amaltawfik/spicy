@@ -461,12 +461,14 @@ table_battery_svy(
 )
 #> Item battery by stype
 #> 
-#>  Variable │ E No  E Yes  E n  H No  H Yes  H n  M No  M Yes  M n    p   
-#> ──────────┼─────────────────────────────────────────────────────────────
-#>  awards   │ 27.0  73.0   100  68.0  32.0   50   52.0  48.0   50   <.001 
-#>  sch.wide │  9.0  91.0   100  48.0  52.0   50   30.0  70.0   50   <.001 
-#>  comp.imp │ 25.0  75.0   100  66.0  34.0   50   52.0  48.0   50   <.001 
-#>  both     │ 27.0  73.0   100  68.0  32.0   50   52.0  48.0   50   <.001 
+#>                    E               H               M               
+#>             ───────────────  ──────────────  ──────────────        
+#>  Variable │  No   Yes    n    No   Yes   n    No   Yes   n     p   
+#> ──────────┼────────────────────────────────────────────────────────
+#>  awards   │ 27.0  73.0  100  68.0  32.0  50  52.0  48.0  50  <.001 
+#>  sch.wide │  9.0  91.0  100  48.0  52.0  50  30.0  70.0  50  <.001 
+#>  comp.imp │ 25.0  75.0  100  66.0  34.0  50  52.0  48.0  50  <.001 
+#>  both     │ 27.0  73.0  100  68.0  32.0  50  52.0  48.0  50  <.001 
 #> 
 #> Note. Design: stratified (stype), with finite population correction; 197 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.
 

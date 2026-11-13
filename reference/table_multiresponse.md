@@ -427,12 +427,13 @@ Depends on `output`:
   for "(No answer to the question)", `"fit_stat"` for the base, the
   roles of
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
-  then the printed columns: the count and the percentage of each group
-  of `by` and of the `Total` margin (`<group> n` and `<group> %`, or
-  `<group> % of cases` and `<group> % of responses` under
-  `percent = "both"`; `n` and `%` without `by`), `Test` (the chi-squared
-  of the item, with `df` beside it) under `statistic = TRUE`, and `p`
-  with `p_value`.
+  then one column per displayed column, the name of a column of a group
+  joining the group printed above it to the header printed under it: the
+  count and the percentage of each group of `by` and of the `Total`
+  margin (`<group> n` and `<group> %`, or `<group> % of cases` and
+  `<group> % of responses` under `percent = "both"`; `n` and `%` without
+  `by`), `Test` (the chi-squared of the item, with `df` beside it) under
+  `statistic = TRUE`, and `p` with `p_value`.
 
 - `"long"`: one row per item and group, then one per row of `none_row`
   and group, with columns `variable` (the item's column, `"none"` or
@@ -721,27 +722,29 @@ table_multiresponse(
 )
 #> Multiple responses by age_group
 #> 
-#>  Variable         │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
-#> ──────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor      │   113     48.5      208     55.6      215     67.8   
-#>  info_pharmacist  │    53     22.7       74     19.8       69     21.8   
-#>  info_internet    │   156     67.0      200     53.5      109     34.4   
-#>  info_family      │    72     30.9      119     31.8       99     31.2   
-#>  info_media       │     9      3.9       36      9.6       41     12.9   
-#>  (No item chosen) │    12      5.2       22      5.9       22      6.9   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   233               374               317            
+#>                       25-34      35-49      50-64      65-75      Total    
+#>                     ─────────  ─────────  ─────────  ─────────  ────────── 
+#>  Variable         │  n    %     n    %     n    %     n    %     n     %   
+#> ──────────────────┼────────────────────────────────────────────────────────
+#>  info_doctor      │ 113  48.5  208  55.6  215  67.8  185  77.1   721  61.9 
+#>  info_pharmacist  │  53  22.7   74  19.8   69  21.8   60  25.0   256  22.0 
+#>  info_internet    │ 156  67.0  200  53.5  109  34.4   58  24.2   523  44.9 
+#>  info_family      │  72  30.9  119  31.8   99  31.2   70  29.2   360  30.9 
+#>  info_media       │   9   3.9   36   9.6   41  12.9   55  22.9   141  12.1 
+#>  (No item chosen) │  12   5.2   22   5.9   22   6.9   11   4.6    67   5.8 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base             │ 233        374        317        240        1164       
 #> 
-#>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
-#> ──────────────────┼───────────────────────────────────────────
-#>  info_doctor      │   185     77.1      721     61.9    <.001 
-#>  info_pharmacist  │    60     25.0      256     22.0     .982 
-#>  info_internet    │    58     24.2      523     44.9    <.001 
-#>  info_family      │    70     29.2      360     30.9     .982 
-#>  info_media       │    55     22.9      141     12.1    <.001 
-#>  (No item chosen) │    11      4.6       67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   240              1164                   
+#>  Variable         │   p   
+#> ──────────────────┼───────
+#>  info_doctor      │ <.001 
+#>  info_pharmacist  │  .982 
+#>  info_internet    │ <.001 
+#>  info_family      │  .982 
+#>  info_media       │ <.001 
+#>  (No item chosen) │  –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
+#>  Base             │       
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 
@@ -757,35 +760,41 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female % of cases  Female % of responses  Male n 
-#> ─────────────────┼────────────────────────────────────────────────────────────
-#>  info_doctor     │   377           66.4                 34.9            344   
-#>  info_pharmacist │   137           24.1                 12.7            119   
-#>  info_internet   │   268           47.2                 24.8            255   
-#>  info_family     │   219           38.6                 20.3            141   
-#>  info_media      │    78           13.7                  7.2             63   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base            │   568                                                529   
+#>                                Female              
+#>                    ─────────────────────────────── 
+#>  Variable        │  n   % of cases  % of responses 
+#> ─────────────────┼─────────────────────────────────
+#>  info_doctor     │ 377     66.4          34.9      
+#>  info_pharmacist │ 137     24.1          12.7      
+#>  info_internet   │ 268     47.2          24.8      
+#>  info_family     │ 219     38.6          20.3      
+#>  info_media      │  78     13.7           7.2      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base            │ 568                             
 #> 
-#>  Variable        │ Male % of cases  Male % of responses  Total n 
-#> ─────────────────┼───────────────────────────────────────────────
-#>  info_doctor     │      65.0               37.3            721   
-#>  info_pharmacist │      22.5               12.9            256   
-#>  info_internet   │      48.2               27.7            523   
-#>  info_family     │      26.7               15.3            360   
-#>  info_media      │      11.9                6.8            141   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base            │                                        1097   
+#>                                 Male               
+#>                    ─────────────────────────────── 
+#>  Variable        │  n   % of cases  % of responses 
+#> ─────────────────┼─────────────────────────────────
+#>  info_doctor     │ 344     65.0          37.3      
+#>  info_pharmacist │ 119     22.5          12.9      
+#>  info_internet   │ 255     48.2          27.7      
+#>  info_family     │ 141     26.7          15.3      
+#>  info_media      │  63     11.9           6.8      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base            │ 529                             
 #> 
-#>  Variable        │ Total % of cases  Total % of responses 
-#> ─────────────────┼────────────────────────────────────────
-#>  info_doctor     │       65.7                36.0         
-#>  info_pharmacist │       23.3                12.8         
-#>  info_internet   │       47.7                26.1         
-#>  info_family     │       32.8                18.0         
-#>  info_media      │       12.9                 7.0         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base            │                                        
+#>                                 Total               
+#>                    ──────────────────────────────── 
+#>  Variable        │  n    % of cases  % of responses 
+#> ─────────────────┼──────────────────────────────────
+#>  info_doctor     │  721     65.7          36.0      
+#>  info_pharmacist │  256     23.3          12.8      
+#>  info_internet   │  523     47.7          26.1      
+#>  info_family     │  360     32.8          18.0      
+#>  info_media      │  141     12.9           7.0      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base            │ 1097                             
 #> 
 #> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with at least one item chosen (excluded: 36 with no answer to the question and 67 with no item chosen).
 
@@ -821,16 +830,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ──────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164                   
+#>                          Female          Male           Total               
+#>                       ─────────────  ─────────────  ──────────────          
+#>  Variable           │   n      %       n      %       n       %        p    
+#> ────────────────────┼───────────────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9    1.000  
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0    1.000  
+#>  info_internet      │  268    44.7    255    45.1     523    44.9    1.000  
+#>  info_family        │  219    36.6    141    25.0     360    30.9    <.001  
+#>  info_media         │   78    13.0     63    11.2     141    12.1    1.000  
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8     –     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164                   
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 

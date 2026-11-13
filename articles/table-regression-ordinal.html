@@ -370,7 +370,7 @@ categories in columns (Long &amp; Freese 2014; Williams 2012).</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>How to read it, with the <code>smoking = Yes</code> row:</p>
 <ul>
 <li>The four <code>AME ...</code> columns are the average change in the
@@ -444,7 +444,7 @@ quantities.</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span>  2761.2                                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Marginal effects are the response-scale (probability) output of <a href="https://marginaleffects.com" class="external-link"><code>marginaleffects::avg_slopes()</code></a>.
 For a single-outcome model (binary <code>glm</code>, <code>lm</code>,
 mixed) the AME stays a single column — the per-category matrix appears
@@ -496,7 +496,7 @@ three accepted forms are detailed in the main article’s
 <span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The footer switches to name the estimator and the clustering
 variable. The clustering is applied <em>consistently</em>: the
 <code>Thresholds</code> rows and the AME columns are reweighted from the
@@ -610,7 +610,7 @@ proportional odds.</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="testing-proportional-odds">Testing proportional odds<a class="anchor" aria-label="anchor" href="#testing-proportional-odds"></a>
 </h3>
@@ -898,7 +898,7 @@ supplied as a list:</p>
 <span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -1460,9 +1460,10 @@ AIC
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Cumulative logit regression (proportional odds). Std.
-errors: Wald asymptotic (z). Thresholds: latent-scale category
-cut-points. AME = average marginal effect on a response-category
-probability; AIC = Akaike information criterion.
+errors: Wald asymptotic (z). AME of a continuous predictor: average
+slope (dY/dX). Thresholds: latent-scale category cut-points. AME =
+average marginal effect on a response-category probability; AIC = Akaike
+information criterion.
 </div>
 </div>
 </div>

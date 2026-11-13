@@ -8,16 +8,18 @@
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_battery_table to a plain data frame or tibble — as.data.frame.spicy_battery_table"><meta name="description" content="as.data.frame() returns the table table_battery() displays, with
 its numbers: exactly what output = &quot;data.frame&quot; returns. One row per
 item, with the columns variable (the item's column), label (the label
-displayed), then the printed columns under their names (one per level
-shown, &quot;(Missing)&quot;, the summary column of top, &quot;n&quot;, each prefixed
-with its group under by, then &quot;p&quot;). The &quot;note&quot; attribute is kept.
+displayed), then one column per displayed column (one per level shown,
+&quot;(Missing)&quot;, the summary column of top, &quot;n&quot;, then &quot;p&quot;). Under
+by each name joins the group printed above the column to the header
+printed under it (&quot;Female n&quot;). The &quot;note&quot; attribute is kept.
 as_tibble() returns the same table as a tibble. The original x is
 unaffected, and print(x) continues to render the formatted table."><meta property="og:description" content="as.data.frame() returns the table table_battery() displays, with
 its numbers: exactly what output = &quot;data.frame&quot; returns. One row per
 item, with the columns variable (the item's column), label (the label
-displayed), then the printed columns under their names (one per level
-shown, &quot;(Missing)&quot;, the summary column of top, &quot;n&quot;, each prefixed
-with its group under by, then &quot;p&quot;). The &quot;note&quot; attribute is kept.
+displayed), then one column per displayed column (one per level shown,
+&quot;(Missing)&quot;, the summary column of top, &quot;n&quot;, then &quot;p&quot;). Under
+by each name joins the group printed above the column to the header
+printed under it (&quot;Female n&quot;). The &quot;note&quot; attribute is kept.
 as_tibble() returns the same table as a tibble. The original x is
 unaffected, and print(x) continues to render the formatted table."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -90,9 +92,10 @@ unaffected, and print(x) continues to render the formatted table."><meta propert
     <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns the table <code><a href="table_battery.html">table_battery()</a></code> displays, with
 its numbers: exactly what <code>output = "data.frame"</code> returns. One row per
 item, with the columns <code>variable</code> (the item's column), <code>label</code> (the label
-displayed), then the printed columns under their names (one per level
-shown, <code>"(Missing)"</code>, the summary column of <code>top</code>, <code>"n"</code>, each prefixed
-with its group under <code>by</code>, then <code>"p"</code>). The <code>"note"</code> attribute is kept.
+displayed), then one column per displayed column (one per level shown,
+<code>"(Missing)"</code>, the summary column of <code>top</code>, <code>"n"</code>, then <code>"p"</code>). Under
+<code>by</code> each name joins the group printed above the column to the header
+printed under it (<code>"Female n"</code>). The <code>"note"</code> attribute is kept.
 <code>as_tibble()</code> returns the same table as a tibble. The original <code>x</code> is
 unaffected, and <code>print(x)</code> continues to render the formatted table.</p>
     </div>

@@ -768,11 +768,12 @@ Depends on `output`:
   [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.md)
   of the default object returns: one row per outcome, the key columns
   `variable` (the column name of the outcome) and `label` (the label
-  displayed), then the printed columns under their names – the means
-  (categorical `by`) or the slope (numeric `by`), the contrast and its
-  interval bounds, the test statistic, `p`, the fit statistic, the
-  effect size (with `es_ci_lower` / `es_ci_upper` beside it when
-  `effect_size_ci = TRUE`), `n`, and `Weighted n`.
+  displayed), then one column per displayed column – the means
+  (`"M (Female)"`, joining the symbol printed above the levels to the
+  level printed under it; categorical `by`) or the slope (numeric `by`),
+  the contrast and its interval bounds, the test statistic, `p`, the fit
+  statistic, the effect size (with `es_ci_lower` / `es_ci_upper` beside
+  it when `effect_size_ci = TRUE`), `n`, and `Weighted n`.
 
 - `"long"`: one block per outcome, one row per level of `by` (one row,
   `estimate_type` `"slope"` and `level` `NA`, with a numeric `by`), with
@@ -1020,8 +1021,10 @@ propensity-score balance assessment under the Austin and Stuart (2015)
 convention (see e.g. `cobalt::bal.tab()`).
 
 The `n` column always reports the unweighted analytic sample size for
-each outcome. When `show_weighted_n = TRUE`, an additional `Weighted n`
-column reports the sum of case weights in the same analytic sample.
+each outcome, the rows of the fit: a row of zero weight is not one, as
+[`stats::nobs()`](https://rdrr.io/r/stats/nobs.html) counts it. When
+`show_weighted_n = TRUE`, an additional `Weighted n` column reports the
+sum of case weights in the same analytic sample.
 
 ## Display conventions
 
@@ -1047,8 +1050,8 @@ The note opens with the sample size, as in
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
 "N = 159." for a numeric `by`, "N = 159: Women (n = 80), Men (n = 79)."
 for a categorical one, the rows with a `by` value, a row with a missing
-weight left out, rows rather than weights under `weights` ("N = 60
-(unweighted)."), the complete cases of each model in its n column.
+or zero weight left out, rows rather than weights under `weights` ("N =
+60 (unweighted)."), the complete cases of each model in its n column.
 
 When `covariates` is non-empty, the note then names the covariates and
 the chosen estimand, e.g. `Adjusted for age, education (proportional).`
@@ -1273,12 +1276,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.16   71.05  3.89    2.13       5.64     <.001  0.02  1200 
-#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 
+#>                          M                95% CI                      
+#>                    ─────────────        ──────────                    
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    n   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89  2.13  5.64  <.001  0.02  1200 
+#>  bmi             │ 25.69   26.20  0.51  0.09  0.93   .018  0.00  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1293,17 +1296,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    d   
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.16   71.05  3.89    2.13       5.64     <.001  0.02  0.25 
-#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  0.14 
-#> 
-#>  Variable        │  n   
-#> ─────────────────┼──────
-#>  wellbeing_score │ 1200 
-#>  bmi             │ 1188 
+#>                          M                95% CI                            
+#>                    ─────────────        ──────────                          
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    d     n   
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89  2.13  5.64  <.001  0.02  0.25  1200 
+#>  bmi             │ 25.69   26.20  0.51  0.09  0.93   .018  0.00  0.14  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1319,17 +1317,17 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL   t      p     R²  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.01   70.88  3.87    2.11       5.62     4.33  <.001  0.02 
-#>  bmi             │ 25.51   25.98  0.47    0.05       0.89     2.18   .030  0.00 
+#>                          M                95% CI                            
+#>                    ─────────────        ──────────                          
+#>  Variable        │ Female  Male    Δ     LL    UL    t      p     R²    g   
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.01   70.88  3.87  2.11  5.62  4.33  <.001  0.02  0.25 
+#>  bmi             │ 25.51   25.98  0.47  0.05  0.89  2.18   .030  0.00  0.13 
 #> 
-#>  Variable        │  g     n    Weighted n 
-#> ─────────────────┼────────────────────────
-#>  wellbeing_score │ 0.25  1200   1196.47   
-#>  bmi             │ 0.13  1188   1183.32   
+#>  Variable        │  n    Weighted n 
+#> ─────────────────┼──────────────────
+#>  wellbeing_score │ 1200   1196.47   
+#>  bmi             │ 1188   1183.32   
 #> 
 #> Note. N = 1200 (unweighted): Female (n = 620), Male (n = 580). Statistics weighted by weight. Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1343,12 +1341,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                
-#>                    ─────────────                                          
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²  
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.16   71.05  3.89    2.13       5.64     <.001  0.02 
-#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00 
+#>                          M                95% CI                
+#>                    ─────────────        ──────────              
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²  
+#> ─────────────────┼──────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89  2.13  5.64  <.001  0.02 
+#>  bmi             │ 25.69   26.20  0.51  0.09  0.93   .018  0.00 
 #> 
 #>  Variable        │    g [95% CI]       n   
 #> ─────────────────┼─────────────────────────
@@ -1366,17 +1364,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    f²  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.16   71.05  3.89    2.13       5.64     <.001  0.02  0.02 
-#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  0.00 
-#> 
-#>  Variable        │  n   
-#> ─────────────────┼──────
-#>  wellbeing_score │ 1200 
-#>  bmi             │ 1188 
+#>                          M                95% CI                            
+#>                    ─────────────        ──────────                          
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    f²    n   
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89  2.13  5.64  <.001  0.02  0.02  1200 
+#>  bmi             │ 25.69   26.20  0.51  0.09  0.93   .018  0.00  0.00  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 
@@ -1440,11 +1433,11 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>   model.frame.iv_robust estimatr
 #> Continuous outcomes by group
 #> 
-#>                 M                                                  
-#>             ──────────                                             
-#>  Variable │  1     2     Δ    95% CI LL  95% CI UL   p     R²   n  
-#> ──────────┼────────────────────────────────────────────────────────
-#>  extra    │ 0.75  2.33  1.58    0.70       2.46     .003  0.16  20 
+#>                     M                     95% CI                           
+#>               ──────────────          ──────────────                       
+#>  Variable   │   1       2       Δ       LL      UL      p       R²     n   
+#> ────────────┼──────────────────────────────────────────────────────────────
+#>  extra      │  0.75    2.33    1.58    0.70    2.46    .003    0.16    20  
 #> 
 #> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1462,12 +1455,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.27   70.93  3.65    2.08       5.23     <.001  0.22  1200 
-#>  bmi             │ 25.65   26.23  0.58    0.19       0.97      .004  0.16  1188 
+#>                          M                95% CI                      
+#>                    ─────────────        ──────────                    
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    n   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.27   70.93  3.65  2.08  5.23  <.001  0.22  1200 
+#>  bmi             │ 25.65   26.23  0.58  0.19  0.97   .004  0.16  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (proportional). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1483,12 +1476,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 65.90   69.56  3.65    2.08       5.23     <.001  0.22  1200 
-#>  bmi             │ 25.89   26.46  0.58    0.19       0.97      .004  0.16  1188 
+#>                          M                95% CI                      
+#>                    ─────────────        ──────────                    
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    n   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │ 65.90   69.56  3.65  2.08  5.23  <.001  0.22  1200 
+#>  bmi             │ 25.89   26.46  0.58  0.19  0.97   .004  0.16  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Adjusted for age, education (balanced). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1505,12 +1498,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                
-#>                    ─────────────                                          
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²  
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.27   70.93  3.65    2.09       5.22     <.001  0.22 
-#>  bmi             │ 25.65   26.23  0.58    0.19       0.97      .004  0.16 
+#>                          M                95% CI                
+#>                    ─────────────        ──────────              
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²  
+#> ─────────────────┼──────────────────────────────────────────────
+#>  wellbeing_score │ 67.27   70.93  3.65  2.09  5.22  <.001  0.22 
+#>  bmi             │ 25.65   26.23  0.58  0.19  0.97   .004  0.16 
 #> 
 #>  Variable        │    f² [95% CI]      n   
 #> ─────────────────┼─────────────────────────
@@ -1534,17 +1527,17 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                                   M                                          
-#>                             ─────────────                                    
-#>  Variable                 │ Female  Male    Δ    95% CI LL  95% CI UL    p   
-#> ──────────────────────────┼──────────────────────────────────────────────────
-#>  WHO-5 wellbeing (0-100)  │ 67.16   71.05  3.89    2.13       5.64     <.001 
-#>  Body-mass index (kg/m^2) │ 25.69   26.20  0.51    0.09       0.93      .018 
+#>                                   M                95% CI                   
+#>                             ─────────────        ──────────                 
+#>  Variable                 │ Female  Male    Δ     LL    UL     p    Adj. R² 
+#> ──────────────────────────┼─────────────────────────────────────────────────
+#>  WHO-5 wellbeing (0-100)  │ 67.16   71.05  3.89  2.13  5.64  <.001   0.01   
+#>  Body-mass index (kg/m^2) │ 25.69   26.20  0.51  0.09  0.93   .018   0.00   
 #> 
-#>  Variable                 │ Adj. R²   n   
-#> ──────────────────────────┼───────────────
-#>  WHO-5 wellbeing (0-100)  │  0.01    1200 
-#>  Body-mass index (kg/m^2) │  0.00    1188 
+#>  Variable                 │  n   
+#> ──────────────────────────┼──────
+#>  WHO-5 wellbeing (0-100)  │ 1200 
+#>  Body-mass index (kg/m^2) │ 1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Body-mass index (kg/m^2) (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1557,17 +1550,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                 
-#>                    ─────────────                                           
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p      R²  
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67,16   71,05  3,89    2,13       5,64     <0,001  0,02 
-#>  bmi             │ 25,69   26,20  0,51    0,09       0,93      0,018  0,00 
-#> 
-#>  Variable        │  n   
-#> ─────────────────┼──────
-#>  wellbeing_score │ 1200 
-#>  bmi             │ 1188 
+#>                          M                95% CI                       
+#>                    ─────────────        ──────────                     
+#>  Variable        │ Female  Male    Δ     LL    UL     p      R²    n   
+#> ─────────────────┼─────────────────────────────────────────────────────
+#>  wellbeing_score │ 67,16   71,05  3,89  2,13  5,64  <0,001  0,02  1200 
+#>  bmi             │ 25,69   26,20  0,51  0,09  0,93   0,018  0,00  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1580,21 +1568,14 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                                M                                               
-#>                           ────────────                                         
-#>  Variable               │ Female  Male   Δ    95% CI LL  95% CI UL   p     R²  
-#> ────────────────────────┼──────────────────────────────────────────────────────
-#>  life_sat_health        │  3.51   3.59  0.08    -0.06      0.22     .267  0.00 
-#>  life_sat_work          │  3.32   3.44  0.12    -0.01      0.26     .073  0.00 
-#>  life_sat_relationships │  3.71   3.74  0.04    -0.09      0.16     .570  0.00 
-#>  life_sat_standard      │  3.37   3.42  0.05    -0.08      0.18     .453  0.00 
-#> 
-#>  Variable               │  n   
-#> ────────────────────────┼──────
-#>  life_sat_health        │ 1192 
-#>  life_sat_work          │ 1192 
-#>  life_sat_relationships │ 1192 
-#>  life_sat_standard      │ 1192 
+#>                                M                95% CI                      
+#>                           ────────────        ───────────                   
+#>  Variable               │ Female  Male   Δ     LL     UL    p     R²    n   
+#> ────────────────────────┼───────────────────────────────────────────────────
+#>  life_sat_health        │  3.51   3.59  0.08  -0.06  0.22  .267  0.00  1192 
+#>  life_sat_work          │  3.32   3.44  0.12  -0.01  0.26  .073  0.00  1192 
+#>  life_sat_relationships │  3.71   3.74  0.04  -0.09  0.16  .570  0.00  1192 
+#>  life_sat_standard      │  3.37   3.42  0.05  -0.08  0.18  .453  0.00  1192 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). P-values: t-test from the linear model. Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 

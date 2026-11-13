@@ -437,9 +437,10 @@ Depends on `output`:
   columns `variable` (the outcome on the `Overall` row, the grouping
   variable elsewhere), `label`, `level` and `.row_role` (`"summary"` for
   the `Overall` row, `"factor_header"`, `"level"`, or `"missing"`), then
-  the printed columns under their names (`"M"`, `"SD"`, ..., `"n"`,
-  `"p"`), a cell that prints several numbers keeping the others beside
-  it as in
+  one column per displayed column (`"M"`, `"SD"`, ..., `"n"`, `"p"`,
+  named as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)),
+  a cell that prints several numbers keeping the others beside it as in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 
 - `"long"`: the compute frame, one row per printed row with every
@@ -477,10 +478,12 @@ several outcomes and one grouping, the sibling is the table you want.
 
 `show_columns` takes the same tokens as
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-with the same meanings; see the *Choosing the statistics* section of
+with the same meanings, and shows them in the order they are written;
+see the *Choosing the statistics* section of
 [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-for the vocabulary. Only the character-vector form is accepted here:
-there is one outcome, so a per-variable list would name nothing.
+for the vocabulary and the place of an interval. Only the
+character-vector form is accepted here: there is one outcome, so a
+per-variable list would name nothing.
 
 ## Weights
 
@@ -578,14 +581,14 @@ read.
 
 One note sits under the table. It opens with the sample size, as in
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-"N = 159.": the rows of the data, a row with a missing weight left out,
-rows rather than weights under `weights` ("N = 60 (unweighted)."), the
-outcome's complete cases in the n of the `Overall` row. It then states
-what left the analytic sample, which group comparison ran in each block,
-what the displayed columns mean, and how the blocks and the `Overall`
-row are to be read. The rendering engines carry the same sentence as a
-table note. On the `"tinytable"` route it is set one size down;
-`options(spicy.note_style)` governs that (see
+"N = 159.": the rows of the data, a row with a missing or zero weight
+left out, rows rather than weights under `weights` ("N = 60
+(unweighted)."), the outcome's complete cases in the n of the `Overall`
+row. It then states what left the analytic sample, which group
+comparison ran in each block, what the displayed columns mean, and how
+the blocks and the `Overall` row are to be read. The rendering engines
+carry the same sentence as a table note. On the `"tinytable"` route it
+is set one size down; `options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 ## Multiple-comparison adjustment
@@ -629,180 +632,105 @@ for categorical outcomes.
 table_outcome(sochealth, bmi, select = c(sex, smoking))
 #> Descriptive statistics of bmi
 #> 
-#>  Variable    │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ─────────────┼─────────────────────────────────────────────────────────────
-#>  Overall     │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  sex         │                                                        .018 
-#>    Female    │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
-#>    Male      │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  smoking     │                                                        .903 
-#>    No        │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
-#>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
+#>                                              95% CI                
+#>                                           ────────────             
+#>  Variable    │   M     SD    Min    Max    LL     UL     n     p   
+#> ─────────────┼─────────────────────────────────────────────────────
+#>  Overall     │ 25.93  3.72  16.00  38.90  25.72  26.14  1188       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex         │                                                .018 
+#>    Female    │ 25.69  3.78  16.00  38.90  25.39  25.98   616       
+#>    Male      │ 26.20  3.64  16.00  37.70  25.90  26.50   572       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking     │                                                .903 
+#>    No        │ 25.96  3.76  16.00  38.90  25.72  26.21   915       
+#>    Yes       │ 25.93  3.58  16.80  35.30  25.48  26.38   248       
+#>    (Missing) │ 24.74  3.63  17.60  32.50  23.24  26.23    25       
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of wellbeing_score
 #> 
-#>  Variable            │   M     SD     Min    Max    95% CI LL  95% CI UL   n   
-#> ─────────────────────┼─────────────────────────────────────────────────────────
-#>  Overall             │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  sex                 │                                                         
-#>    Female            │ 67.16  14.80  19.60  100.00    65.99      68.33     620 
-#>    Male              │ 71.05  16.23  18.70  100.00    69.73      72.37     580 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  age_group           │                                                         
-#>    25-34             │ 67.55  15.36  24.60  100.00    65.60      69.49     242 
-#>    35-49             │ 69.48  15.36  19.60  100.00    67.94      71.03     383 
-#>    50-64             │ 69.06  15.94  18.70  100.00    67.33      70.80     327 
-#>    65-75             │ 69.78  15.84  26.60  100.00    67.80      71.76     248 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  education           │                                                         
-#>    Lower secondary   │ 57.22  15.44  18.70   97.90    55.33      59.10     261 
-#>    Upper secondary   │ 68.97  13.62  26.70  100.00    67.82      70.12     539 
-#>    Tertiary          │ 76.85  13.23  40.40  100.00    75.55      78.15     400 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  social_class        │                                                         
-#>    Lower             │ 64.26  14.61  21.10  100.00    61.85      66.66     144 
-#>    Working           │ 65.24  15.39  19.60  100.00    63.43      67.06     278 
-#>    Lower middle      │ 69.17  16.58  23.70  100.00    67.37      70.98     326 
-#>    Middle            │ 72.82  14.13  32.10  100.00    71.23      74.41     306 
-#>    Upper middle      │ 72.78  14.95  18.70  100.00    70.33      75.22     146 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  region              │                                                         
-#>    Central           │ 68.59  15.64  23.70  100.00    66.62      70.56     245 
-#>    East              │ 69.69  16.00  30.40  100.00    67.07      72.32     145 
-#>    North             │ 69.70  16.04  21.10  100.00    67.48      71.92     203 
-#>    Other             │ 70.50  15.07  19.60  100.00    68.39      72.62     198 
-#>    South             │ 67.57  15.70  18.70  100.00    65.38      69.75     201 
-#>    West              │ 68.51  15.36  29.00  100.00    66.41      70.61     208 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  employment_status   │                                                         
-#>    Employed          │ 69.42  15.07  19.60  100.00    68.35      70.49     762 
-#>    Student           │ 70.42  16.16  18.70  100.00    67.75      73.09     143 
-#>    Unemployed        │ 65.78  17.17  23.20  100.00    63.21      68.35     174 
-#>    Inactive          │ 69.72  15.64  21.10  100.00    66.90      72.54     121 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  income_group        │                                                         
-#>    Low               │ 67.66  15.78  21.10  100.00    65.68      69.64     247 
-#>    Lower middle      │ 68.78  15.21  23.70  100.00    67.26      70.29     388 
-#>    Upper middle      │ 69.18  16.16  19.60  100.00    67.42      70.93     328 
-#>    High              │ 70.95  15.51  18.70  100.00    68.89      73.02     219 
-#>    (Missing)         │ 67.94  12.41  41.00   93.20    61.77      74.11      18 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  smoking             │                                                         
-#>    No                │ 69.36  15.62  18.70  100.00    68.36      70.37     926 
-#>    Yes               │ 67.65  15.66  21.10  100.00    65.69      69.60     249 
-#>    (Missing)         │ 70.99  15.05  42.00  100.00    64.77      77.20      25 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity   │                                                         
-#>    No                │ 67.71  15.92  18.70  100.00    66.48      68.94     650 
-#>    Yes               │ 70.61  15.13  21.10  100.00    69.35      71.88     550 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m         │                                                         
-#>    No                │ 66.15  14.79  19.60  100.00    64.61      67.70     354 
-#>    Yes               │ 70.25  15.81  18.70  100.00    69.18      71.32     846 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  self_rated_health   │                                                         
-#>    Poor              │ 43.60  11.15  19.60   70.70    40.74      46.45      61 
-#>    Fair              │ 58.54  13.49  18.70   94.30    56.92      60.17     266 
-#>    Good              │ 71.58  12.58  26.60  100.00    70.53      72.62     558 
-#>    Very good         │ 78.67  12.54  44.20  100.00    77.24      80.11     295 
-#>    (Missing)         │ 73.42  11.32  56.30  100.00    68.13      78.72      20 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  bmi_category        │                                                         
-#>    Normal weight     │ 70.47  15.36  18.70  100.00    69.07      71.87     465 
-#>    Overweight        │ 68.78  15.65  19.60  100.00    67.49      70.06     569 
-#>    Obesity           │ 65.43  15.84  29.00  100.00    62.91      67.95     154 
-#>    (Missing)         │ 72.61  14.84  50.70   97.60    63.18      82.04      12 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  institutional_trust │                                                         
-#>    Very low          │ 69.84  15.35  23.20  100.00    68.26      71.42     366 
-#>    Low               │ 69.35  15.40  24.60  100.00    67.95      70.74     472 
-#>    High              │ 67.92  16.17  19.60  100.00    65.83      70.00     234 
-#>    Very high         │ 67.69  16.15  18.70  100.00    64.87      70.51     128 
-#> 
-#>  Variable            │   p   
-#> ─────────────────────┼───────
-#>  Overall             │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  sex                 │ <.001 
-#>    Female            │       
-#>    Male              │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  age_group           │  .372 
-#>    25-34             │       
-#>    35-49             │       
-#>    50-64             │       
-#>    65-75             │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  education           │ <.001 
-#>    Lower secondary   │       
-#>    Upper secondary   │       
-#>    Tertiary          │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  social_class        │ <.001 
-#>    Lower             │       
-#>    Working           │       
-#>    Lower middle      │       
-#>    Middle            │       
-#>    Upper middle      │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  region              │  .461 
-#>    Central           │       
-#>    East              │       
-#>    North             │       
-#>    Other             │       
-#>    South             │       
-#>    West              │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  employment_status   │  .049 
-#>    Employed          │       
-#>    Student           │       
-#>    Unemployed        │       
-#>    Inactive          │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  income_group        │  .149 
-#>    Low               │       
-#>    Lower middle      │       
-#>    Upper middle      │       
-#>    High              │       
-#>    (Missing)         │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  smoking             │  .125 
-#>    No                │       
-#>    Yes               │       
-#>    (Missing)         │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  physical_activity   │  .001 
-#>    No                │       
-#>    Yes               │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  dentist_12m         │ <.001 
-#>    No                │       
-#>    Yes               │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  self_rated_health   │ <.001 
-#>    Poor              │       
-#>    Fair              │       
-#>    Good              │       
-#>    Very good         │       
-#>    (Missing)         │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  bmi_category        │  .002 
-#>    Normal weight     │       
-#>    Overweight        │       
-#>    Obesity           │       
-#>    (Missing)         │       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌
-#>  institutional_trust │  .366 
-#>    Very low          │       
-#>    Low               │       
-#>    High              │       
-#>    Very high         │       
+#>                                                        95% CI                 
+#>                                                     ────────────              
+#>  Variable            │   M     SD     Min    Max     LL     UL     n      p   
+#> ─────────────────────┼────────────────────────────────────────────────────────
+#>  Overall             │ 69.04  15.62  18.70  100.00  68.16  69.93  1200        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex                 │                                                  <.001 
+#>    Female            │ 67.16  14.80  19.60  100.00  65.99  68.33   620        
+#>    Male              │ 71.05  16.23  18.70  100.00  69.73  72.37   580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  age_group           │                                                   .372 
+#>    25-34             │ 67.55  15.36  24.60  100.00  65.60  69.49   242        
+#>    35-49             │ 69.48  15.36  19.60  100.00  67.94  71.03   383        
+#>    50-64             │ 69.06  15.94  18.70  100.00  67.33  70.80   327        
+#>    65-75             │ 69.78  15.84  26.60  100.00  67.80  71.76   248        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education           │                                                  <.001 
+#>    Lower secondary   │ 57.22  15.44  18.70   97.90  55.33  59.10   261        
+#>    Upper secondary   │ 68.97  13.62  26.70  100.00  67.82  70.12   539        
+#>    Tertiary          │ 76.85  13.23  40.40  100.00  75.55  78.15   400        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  social_class        │                                                  <.001 
+#>    Lower             │ 64.26  14.61  21.10  100.00  61.85  66.66   144        
+#>    Working           │ 65.24  15.39  19.60  100.00  63.43  67.06   278        
+#>    Lower middle      │ 69.17  16.58  23.70  100.00  67.37  70.98   326        
+#>    Middle            │ 72.82  14.13  32.10  100.00  71.23  74.41   306        
+#>    Upper middle      │ 72.78  14.95  18.70  100.00  70.33  75.22   146        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  region              │                                                   .461 
+#>    Central           │ 68.59  15.64  23.70  100.00  66.62  70.56   245        
+#>    East              │ 69.69  16.00  30.40  100.00  67.07  72.32   145        
+#>    North             │ 69.70  16.04  21.10  100.00  67.48  71.92   203        
+#>    Other             │ 70.50  15.07  19.60  100.00  68.39  72.62   198        
+#>    South             │ 67.57  15.70  18.70  100.00  65.38  69.75   201        
+#>    West              │ 68.51  15.36  29.00  100.00  66.41  70.61   208        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  employment_status   │                                                   .049 
+#>    Employed          │ 69.42  15.07  19.60  100.00  68.35  70.49   762        
+#>    Student           │ 70.42  16.16  18.70  100.00  67.75  73.09   143        
+#>    Unemployed        │ 65.78  17.17  23.20  100.00  63.21  68.35   174        
+#>    Inactive          │ 69.72  15.64  21.10  100.00  66.90  72.54   121        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  income_group        │                                                   .149 
+#>    Low               │ 67.66  15.78  21.10  100.00  65.68  69.64   247        
+#>    Lower middle      │ 68.78  15.21  23.70  100.00  67.26  70.29   388        
+#>    Upper middle      │ 69.18  16.16  19.60  100.00  67.42  70.93   328        
+#>    High              │ 70.95  15.51  18.70  100.00  68.89  73.02   219        
+#>    (Missing)         │ 67.94  12.41  41.00   93.20  61.77  74.11    18        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking             │                                                   .125 
+#>    No                │ 69.36  15.62  18.70  100.00  68.36  70.37   926        
+#>    Yes               │ 67.65  15.66  21.10  100.00  65.69  69.60   249        
+#>    (Missing)         │ 70.99  15.05  42.00  100.00  64.77  77.20    25        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity   │                                                   .001 
+#>    No                │ 67.71  15.92  18.70  100.00  66.48  68.94   650        
+#>    Yes               │ 70.61  15.13  21.10  100.00  69.35  71.88   550        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m         │                                                  <.001 
+#>    No                │ 66.15  14.79  19.60  100.00  64.61  67.70   354        
+#>    Yes               │ 70.25  15.81  18.70  100.00  69.18  71.32   846        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health   │                                                  <.001 
+#>    Poor              │ 43.60  11.15  19.60   70.70  40.74  46.45    61        
+#>    Fair              │ 58.54  13.49  18.70   94.30  56.92  60.17   266        
+#>    Good              │ 71.58  12.58  26.60  100.00  70.53  72.62   558        
+#>    Very good         │ 78.67  12.54  44.20  100.00  77.24  80.11   295        
+#>    (Missing)         │ 73.42  11.32  56.30  100.00  68.13  78.72    20        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi_category        │                                                   .002 
+#>    Normal weight     │ 70.47  15.36  18.70  100.00  69.07  71.87   465        
+#>    Overweight        │ 68.78  15.65  19.60  100.00  67.49  70.06   569        
+#>    Obesity           │ 65.43  15.84  29.00  100.00  62.91  67.95   154        
+#>    (Missing)         │ 72.61  14.84  50.70   97.60  63.18  82.04    12        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  institutional_trust │                                                   .366 
+#>    Very low          │ 69.84  15.35  23.20  100.00  68.26  71.42   366        
+#>    Low               │ 69.35  15.40  24.60  100.00  67.95  70.74   472        
+#>    High              │ 67.92  16.17  19.60  100.00  65.83  70.00   234        
+#>    Very high         │ 67.69  16.15  18.70  100.00  64.87  70.51   128        
 #> 
 #> Note. N = 1200. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```

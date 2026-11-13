@@ -40,18 +40,20 @@ adds a block, and nothing else in the call changes.
 table_outcome(sochealth, outcome = bmi, select = c(sex, smoking))
 #> Descriptive statistics of bmi
 #> 
-#>  Variable    │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ─────────────┼─────────────────────────────────────────────────────────────
-#>  Overall     │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  sex         │                                                        .018 
-#>    Female    │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
-#>    Male      │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  smoking     │                                                        .903 
-#>    No        │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
-#>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
+#>                                              95% CI                
+#>                                           ────────────             
+#>  Variable    │   M     SD    Min    Max    LL     UL     n     p   
+#> ─────────────┼─────────────────────────────────────────────────────
+#>  Overall     │ 25.93  3.72  16.00  38.90  25.72  26.14  1188       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex         │                                                .018 
+#>    Female    │ 25.69  3.78  16.00  38.90  25.39  25.98   616       
+#>    Male      │ 26.20  3.64  16.00  37.70  25.90  26.50   572       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking     │                                                .903 
+#>    No        │ 25.96  3.76  16.00  38.90  25.72  26.21   915       
+#>    Yes       │ 25.93  3.58  16.80  35.30  25.48  26.38   248       
+#>    (Missing) │ 24.74  3.63  17.60  32.50  23.24  26.23    25       
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -107,13 +109,15 @@ note reports the loss per variable:
 table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
 #> Descriptive statistics of bmi
 #> 
-#>  Variable │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ──────────┼─────────────────────────────────────────────────────────────
-#>  Overall  │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  smoking  │                                                        .903 
-#>    No     │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes    │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
+#>                                           95% CI                
+#>                                        ────────────             
+#>  Variable │   M     SD    Min    Max    LL     UL     n     p   
+#> ──────────┼─────────────────────────────────────────────────────
+#>  Overall  │ 25.93  3.72  16.00  38.90  25.72  26.14  1188       
+#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking  │                                                .903 
+#>    No     │ 25.96  3.76  16.00  38.90  25.72  26.21   915       
+#>    Yes    │ 25.93  3.58  16.80  35.30  25.48  26.38   248       
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12), smoking (25). P-value: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -196,21 +200,23 @@ table_outcome(
 )
 #> Descriptive statistics of bmi
 #> 
-#>  Variable  │   M     SD    Min    Max   95% CI LL  95% CI UL   n   
-#> ───────────┼───────────────────────────────────────────────────────
-#>  Overall   │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
-#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  sex       │                                                       
-#>    Female  │ 25.69  3.78  16.00  38.90    25.39      25.98     616 
-#>    Male    │ 26.20  3.64  16.00  37.70    25.90      26.50     572 
-#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  region    │                                                       
-#>    Central │ 25.76  3.85  16.00  37.30    25.28      26.25     241 
-#>    East    │ 25.96  3.98  16.00  37.70    25.30      26.61     144 
-#>    North   │ 26.13  3.42  19.00  36.60    25.66      26.61     201 
-#>    Other   │ 26.11  3.85  17.30  38.90    25.57      26.65     196 
-#>    South   │ 25.71  3.58  16.00  35.30    25.21      26.21     198 
-#>    West    │ 25.96  3.69  16.00  34.00    25.45      26.46     208 
+#>                                            95% CI          
+#>                                         ────────────       
+#>  Variable  │   M     SD    Min    Max    LL     UL     n   
+#> ───────────┼───────────────────────────────────────────────
+#>  Overall   │ 25.93  3.72  16.00  38.90  25.72  26.14  1188 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex       │                                               
+#>    Female  │ 25.69  3.78  16.00  38.90  25.39  25.98   616 
+#>    Male    │ 26.20  3.64  16.00  37.70  25.90  26.50   572 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  region    │                                               
+#>    Central │ 25.76  3.85  16.00  37.30  25.28  26.25   241 
+#>    East    │ 25.96  3.98  16.00  37.70  25.30  26.61   144 
+#>    North   │ 26.13  3.42  19.00  36.60  25.66  26.61   201 
+#>    Other   │ 26.11  3.85  17.30  38.90  25.57  26.65   196 
+#>    South   │ 25.71  3.58  16.00  35.30  25.21  26.21   198 
+#>    West    │ 25.96  3.69  16.00  34.00  25.45  26.46   208 
 #> 
 #>  Variable  │         Test           p       ES     
 #> ───────────┼───────────────────────────────────────
@@ -268,20 +274,22 @@ thin <- data.frame(
 table_outcome(thin, score, select = c(arm, site, wave))
 #> Descriptive statistics of score
 #> 
-#>  Variable        │   M     SD    Min    Max   95% CI LL  95% CI UL  n    p   
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  Overall         │  8.50  3.59   4.00  14.00    5.50       11.50    8        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  arm             │                                                      .004 
-#>    A             │  5.50  1.29   4.00   7.00    3.45        7.55    4        
-#>    B             │ 11.50  2.08   9.00  14.00    8.19       14.81    4        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  site            │                                                      –    
-#>    only one site │  8.50  3.59   4.00  14.00    5.50       11.50    8        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wave            │                                                      –    
-#>    first         │  7.71  3.04   4.00  12.00    4.90       10.53    7        
-#>    last          │ 14.00   –    14.00  14.00     –           –      1        
+#>                                                 95% CI              
+#>                                               ───────────           
+#>  Variable        │   M     SD    Min    Max    LL    UL    n    p   
+#> ─────────────────┼──────────────────────────────────────────────────
+#>  Overall         │  8.50  3.59   4.00  14.00  5.50  11.50  8        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  arm             │                                             .004 
+#>    A             │  5.50  1.29   4.00   7.00  3.45   7.55  4        
+#>    B             │ 11.50  2.08   9.00  14.00  8.19  14.81  4        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  site            │                                             –    
+#>    only one site │  8.50  3.59   4.00  14.00  5.50  11.50  8        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wave            │                                             –    
+#>    first         │  7.71  3.04   4.00  12.00  4.90  10.53  7        
+#>    last          │ 14.00   –    14.00  14.00   –      –    1        
 #> 
 #> Note. N = 8. P-value: Welch t-test. Each block compares score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -702,7 +710,7 @@ table_outcome(
 | *Note.* N = 1200. P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_h2acuf551huw8dhjit1o .table .tinytable
+{#tinytable_sjqpsp4i20obrkqauolm .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -217,47 +217,32 @@ for the family of the items by Holm’s method, as in
 table_battery(sat, select = starts_with("life_sat_"), by = sex)
 #> Item battery by sex
 #> 
-#>  Variable               │ Female Very dissatisfied  Female Dissatisfied 
+#>                                                 Female                        
+#>                           ─────────────────────────────────────────────────── 
+#>  Variable               │ Very dissatisfied  Dissatisfied  Neutral  Satisfied 
+#> ────────────────────────┼─────────────────────────────────────────────────────
+#>  life_sat_health        │        7.6             14.4       25.0      25.2    
+#>  life_sat_work          │        8.1             16.9       25.9      33.2    
+#>  life_sat_relationships │        3.6             10.2       26.3      31.5    
+#>  life_sat_standard      │        6.2             18.9       24.1      33.3    
+#> 
+#>                                 Female                      Male               
+#>                           ───────────────────  ─────────────────────────────── 
+#>  Variable               │ Very satisfied   n   Very dissatisfied  Dissatisfied 
+#> ────────────────────────┼──────────────────────────────────────────────────────
+#>  life_sat_health        │      27.8       616         7.1             13.9     
+#>  life_sat_work          │      15.9       615         6.9             15.6     
+#>  life_sat_relationships │      28.3       615         2.6             11.6     
+#>  life_sat_standard      │      17.6       615         6.6             15.3     
+#> 
+#>                                            Male                         
+#>                           ───────────────────────────────────────       
+#>  Variable               │ Neutral  Satisfied  Very satisfied   n    p   
 #> ────────────────────────┼───────────────────────────────────────────────
-#>  life_sat_health        │           7.6                    14.4         
-#>  life_sat_work          │           8.1                    16.9         
-#>  life_sat_relationships │           3.6                    10.2         
-#>  life_sat_standard      │           6.2                    18.9         
-#> 
-#>  Variable               │ Female Neutral  Female Satisfied 
-#> ────────────────────────┼──────────────────────────────────
-#>  life_sat_health        │      25.0             25.2       
-#>  life_sat_work          │      25.9             33.2       
-#>  life_sat_relationships │      26.3             31.5       
-#>  life_sat_standard      │      24.1             33.3       
-#> 
-#>  Variable               │ Female Very satisfied  Female n 
-#> ────────────────────────┼─────────────────────────────────
-#>  life_sat_health        │         27.8             616    
-#>  life_sat_work          │         15.9             615    
-#>  life_sat_relationships │         28.3             615    
-#>  life_sat_standard      │         17.6             615    
-#> 
-#>  Variable               │ Male Very dissatisfied  Male Dissatisfied 
-#> ────────────────────────┼───────────────────────────────────────────
-#>  life_sat_health        │          7.1                  13.9        
-#>  life_sat_work          │          6.9                  15.6        
-#>  life_sat_relationships │          2.6                  11.6        
-#>  life_sat_standard      │          6.6                  15.3        
-#> 
-#>  Variable               │ Male Neutral  Male Satisfied  Male Very satisfied 
-#> ────────────────────────┼───────────────────────────────────────────────────
-#>  life_sat_health        │     22.9           25.0              31.1         
-#>  life_sat_work          │     27.0           27.2              23.2         
-#>  life_sat_relationships │     26.3           27.7              31.7         
-#>  life_sat_standard      │     28.1           29.5              20.6         
-#> 
-#>  Variable               │ Male n   p   
-#> ────────────────────────┼──────────────
-#>  life_sat_health        │  576    .798 
-#>  life_sat_work          │  577    .052 
-#>  life_sat_relationships │  577    .798 
-#>  life_sat_standard      │  577    .397 
+#>  life_sat_health        │  22.9      25.0          31.1       576  .798 
+#>  life_sat_work          │  27.0      27.2          23.2       577  .052 
+#>  life_sat_relationships │  26.3      27.7          31.7       577  .798 
+#>  life_sat_standard      │  28.1      29.5          20.6       577  .397 
 #> 
 #> Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).
 ```
@@ -277,61 +262,48 @@ table_battery(
 )
 #> Item battery by Age group
 #> 
-#>  Variable                                   │ 25-34 Very satisfied + Satisfied 
-#> ────────────────────────────────────────────┼──────────────────────────────────
-#>  Satisfaction with health (1-5)             │               54.1               
-#>  Satisfaction with work (1-5)               │               47.3               
-#>  Satisfaction with relationships (1-5)      │               64.2               
-#>  Satisfaction with standard of living (1-5) │               50.4               
+#>                                                            25-34              
+#>                                               ─────────────────────────────── 
+#>  Variable                                   │ Very satisfied + Satisfied   n  
+#> ────────────────────────────────────────────┼─────────────────────────────────
+#>  Satisfaction with health (1-5)             │            54.1             242 
+#>  Satisfaction with work (1-5)               │            47.3             241 
+#>  Satisfaction with relationships (1-5)      │            64.2             240 
+#>  Satisfaction with standard of living (1-5) │            50.4             242 
 #> 
-#>  Variable                                   │ 25-34 n 
-#> ────────────────────────────────────────────┼─────────
-#>  Satisfaction with health (1-5)             │   242   
-#>  Satisfaction with work (1-5)               │   241   
-#>  Satisfaction with relationships (1-5)      │   240   
-#>  Satisfaction with standard of living (1-5) │   242   
+#>                                                            35-49              
+#>                                               ─────────────────────────────── 
+#>  Variable                                   │ Very satisfied + Satisfied   n  
+#> ────────────────────────────────────────────┼─────────────────────────────────
+#>  Satisfaction with health (1-5)             │            52.9             382 
+#>  Satisfaction with work (1-5)               │            49.7             380 
+#>  Satisfaction with relationships (1-5)      │            57.6             380 
+#>  Satisfaction with standard of living (1-5) │            51.2             379 
 #> 
-#>  Variable                                   │ 35-49 Very satisfied + Satisfied 
-#> ────────────────────────────────────────────┼──────────────────────────────────
-#>  Satisfaction with health (1-5)             │               52.9               
-#>  Satisfaction with work (1-5)               │               49.7               
-#>  Satisfaction with relationships (1-5)      │               57.6               
-#>  Satisfaction with standard of living (1-5) │               51.2               
+#>                                                            50-64              
+#>                                               ─────────────────────────────── 
+#>  Variable                                   │ Very satisfied + Satisfied   n  
+#> ────────────────────────────────────────────┼─────────────────────────────────
+#>  Satisfaction with health (1-5)             │            55.3             322 
+#>  Satisfaction with work (1-5)               │            52.8             326 
+#>  Satisfaction with relationships (1-5)      │            56.3             327 
+#>  Satisfaction with standard of living (1-5) │            51.4             325 
 #> 
-#>  Variable                                   │ 35-49 n 
-#> ────────────────────────────────────────────┼─────────
-#>  Satisfaction with health (1-5)             │   382   
-#>  Satisfaction with work (1-5)               │   380   
-#>  Satisfaction with relationships (1-5)      │   380   
-#>  Satisfaction with standard of living (1-5) │   379   
+#>                                                            65-75              
+#>                                               ─────────────────────────────── 
+#>  Variable                                   │ Very satisfied + Satisfied   n  
+#> ────────────────────────────────────────────┼─────────────────────────────────
+#>  Satisfaction with health (1-5)             │            56.1             246 
+#>  Satisfaction with work (1-5)               │            48.2             245 
+#>  Satisfaction with relationships (1-5)      │            62.9             245 
+#>  Satisfaction with standard of living (1-5) │            48.4             246 
 #> 
-#>  Variable                                   │ 50-64 Very satisfied + Satisfied 
-#> ────────────────────────────────────────────┼──────────────────────────────────
-#>  Satisfaction with health (1-5)             │               55.3               
-#>  Satisfaction with work (1-5)               │               52.8               
-#>  Satisfaction with relationships (1-5)      │               56.3               
-#>  Satisfaction with standard of living (1-5) │               51.4               
-#> 
-#>  Variable                                   │ 50-64 n 
-#> ────────────────────────────────────────────┼─────────
-#>  Satisfaction with health (1-5)             │   322   
-#>  Satisfaction with work (1-5)               │   326   
-#>  Satisfaction with relationships (1-5)      │   327   
-#>  Satisfaction with standard of living (1-5) │   325   
-#> 
-#>  Variable                                   │ 65-75 Very satisfied + Satisfied 
-#> ────────────────────────────────────────────┼──────────────────────────────────
-#>  Satisfaction with health (1-5)             │               56.1               
-#>  Satisfaction with work (1-5)               │               48.2               
-#>  Satisfaction with relationships (1-5)      │               62.9               
-#>  Satisfaction with standard of living (1-5) │               48.4               
-#> 
-#>  Variable                                   │ 65-75 n    p   
-#> ────────────────────────────────────────────┼────────────────
-#>  Satisfaction with health (1-5)             │   246     .966 
-#>  Satisfaction with work (1-5)               │   245    1.000 
-#>  Satisfaction with relationships (1-5)      │   245     .513 
-#>  Satisfaction with standard of living (1-5) │   246    1.000 
+#>  Variable                                   │   p   
+#> ────────────────────────────────────────────┼───────
+#>  Satisfaction with health (1-5)             │  .966 
+#>  Satisfaction with work (1-5)               │ 1.000 
+#>  Satisfaction with relationships (1-5)      │  .513 
+#>  Satisfaction with standard of living (1-5) │ 1.000 
 #> 
 #> Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).
 ```

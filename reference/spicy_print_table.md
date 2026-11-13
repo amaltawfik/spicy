@@ -34,6 +34,7 @@ spicy_print_table(
   qualify_companions = FALSE,
   body_spanners = NULL,
   blank_row_groups = NULL,
+  whole_spanners = FALSE,
   ...
 )
 ```
@@ -169,6 +170,15 @@ spicy_print_table(
   alternative to `fit_stats_start`, not to be combined with it. Defaults
   to `NULL`.
 
+- whole_spanners:
+
+  Logical. When `TRUE`, each group of `spanners` is laid out as a unit:
+  its columns widen until its label fits over them, and a split into
+  panels keeps them together, unless the group alone is wider than the
+  console. Used by the descriptive tables, whose spanners are the groups
+  of `by`. When `FALSE` (the default), a label wider than its columns is
+  truncated and a split may fall inside a group.
+
 - ...:
 
   Additional arguments passed to
@@ -198,8 +208,8 @@ separators are drawn when the terminal supports ANSI color
 and fall back to monochrome otherwise.
 
 The layout arguments `spanners`, `display_labels`, `fit_stats_start`,
-`total_row_idx`, `group_sep_rows`, `body_spanners` and
-`blank_row_groups` are plumbing consumed by spicy's own print methods;
+`total_row_idx`, `group_sep_rows`, `body_spanners`, `blank_row_groups`
+and `whole_spanners` are plumbing consumed by spicy's own print methods;
 they are documented for completeness and are rarely useful when calling
 this function directly.
 

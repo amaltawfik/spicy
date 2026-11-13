@@ -486,7 +486,9 @@ column, <code>"none"</code>, <code>"no_data"</code>, or <code>"nobs"</code> on t
 <code>label</code> (the label the row displays), <code>.row_role</code> (what the row
 is: <code>"summary"</code> for an item, <code>"none"</code> for "(No item chosen)",
 <code>"missing"</code> for "(No answer to the question)", <code>"fit_stat"</code> for the
-base, the roles of <code><a href="as_structured.html">as_structured()</a></code>), then the printed columns:
+base, the roles of <code><a href="as_structured.html">as_structured()</a></code>), then one column per
+displayed column, the name of a column of a group joining the group
+printed above it to the header printed under it:
 the count and the percentage of each group of <code>by</code> and of the
 <code>Total</code> margin (<code>&lt;group&gt; n</code> and <code>&lt;group&gt; %</code>, or
 <code>&lt;group&gt; % of cases</code> and <code>&lt;group&gt; % of responses</code> under
@@ -750,27 +752,29 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by age_group</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   113     48.5      208     55.6      215     67.8   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>    53     22.7       74     19.8       69     21.8   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>   156     67.0      200     53.5      109     34.4   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>    72     30.9      119     31.8       99     31.2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>     9      3.9       36      9.6       41     12.9   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    12      5.2       22      5.9       22      6.9   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span>   233               374               317            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       25-34      35-49      50-64      65-75      Total    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                    ─────────  ─────────  ─────────  ─────────  ────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span>  n    %     n    %     n    %     n    %     n     %   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span> 113  48.5  208  55.6  215  67.8  185  77.1   721  61.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>  53  22.7   74  19.8   69  21.8   60  25.0   256  22.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span> 156  67.0  200  53.5  109  34.4   58  24.2   523  44.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>  72  30.9  119  31.8   99  31.2   70  29.2   360  30.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>   9   3.9   36   9.6   41  12.9   55  22.9   141  12.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>  12   5.2   22   5.9   22   6.9   11   4.6    67   5.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span> 233        374        317        240        1164       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼───────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   185     77.1      721     61.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>    60     25.0      256     22.0     .982 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>    58     24.2      523     44.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>    70     29.2      360     30.9     .982 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>    55     22.9      141     12.1    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    11      4.6       67      5.8     –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span>   p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼───────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>  .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>  .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>  –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
 <span class="r-in"><span></span></span>
@@ -786,35 +790,41 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female % of cases  Female % of responses  Male n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   377           66.4                 34.9            344   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>   137           24.1                 12.7            119   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   268           47.2                 24.8            255   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>   219           38.6                 20.3            141   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    78           13.7                  7.2             63   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span>   568                                                529   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                Female              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n   % of cases  % of responses </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span> 377     66.4          34.9      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span> 137     24.1          12.7      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span> 268     47.2          24.8      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span> 219     38.6          20.3      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>  78     13.7           7.2      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span> 568                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Male % of cases  Male % of responses  Total n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>      65.0               37.3            721   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>      22.5               12.9            256   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>      48.2               27.7            523   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>      26.7               15.3            360   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>      11.9                6.8            141   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span>                                        1097   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 Male               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ─────────────────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n   % of cases  % of responses </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span> 344     65.0          37.3      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span> 119     22.5          12.9      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span> 255     48.2          27.7      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span> 141     26.7          15.3      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>  63     11.9           6.8      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span> 529                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Total % of cases  Total % of responses </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>       65.7                36.0         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>       23.3                12.8         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>       47.7                26.1         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>       32.8                18.0         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>       12.9                 7.0         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span>                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 Total               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                   ──────────────────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>  n    % of cases  % of responses </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>  721     65.7          36.0      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>  256     23.3          12.8      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>  523     47.7          26.1      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>  360     32.8          18.0      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>  141     12.9           7.0      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base            <span style="color: #9E9E9E;">│</span> 1097                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with at least one item chosen (excluded: 36 with no answer to the question and 67 with no item chosen).</span></span>
 <span class="r-in"><span></span></span>
@@ -850,16 +860,18 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8     –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Base             <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          Female          Male           Total               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                      ─────────────  ─────────────  ──────────────          </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable           <span style="color: #9E9E9E;">│</span>   n      %       n      %       n       %        p    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor        <span style="color: #9E9E9E;">│</span>  377    62.9    344    60.9     721    61.9    1.000  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist    <span style="color: #9E9E9E;">│</span>  137    22.9    119    21.1     256    22.0    1.000  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet      <span style="color: #9E9E9E;">│</span>  268    44.7    255    45.1     523    44.9    1.000  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family        <span style="color: #9E9E9E;">│</span>  219    36.6    141    25.0     360    30.9    &lt;.001  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media         <span style="color: #9E9E9E;">│</span>   78    13.0     63    11.2     141    12.1    1.000  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen)   <span style="color: #9E9E9E;">│</span>   31     5.2     36     6.4      67     5.8     –     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Base               <span style="color: #9E9E9E;">│</span>  599            565            1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
 <span class="r-in"><span></span></span>

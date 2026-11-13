@@ -11,9 +11,11 @@ per printed row – the items, the rows of none_row, then the base –
 with the key columns variable (the item's column, or the token of a
 row the table adds: &quot;none&quot;, &quot;no_data&quot;, &quot;nobs&quot; for the base),
 label (the label displayed) and .row_role (&quot;summary&quot; for an item,
-&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then the printed
-columns under their names (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; %&quot;, ...,
-&quot;Test&quot; with df beside it under statistic = TRUE, &quot;p&quot;). The
+&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then one column
+per displayed column (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; %&quot;, ..., &quot;Test&quot; with
+df beside it under statistic = TRUE, &quot;p&quot;), the name of a column
+of a group joining the group printed above it to the header printed
+under it. The
 &quot;note&quot; and &quot;global_test&quot; attributes are kept. as_tibble()
 returns the same table as a tibble. The original x is unaffected,
 and print(x) continues to render the formatted table."><meta property="og:description" content="as.data.frame() returns the table table_multiresponse() displays,
@@ -22,9 +24,11 @@ per printed row – the items, the rows of none_row, then the base –
 with the key columns variable (the item's column, or the token of a
 row the table adds: &quot;none&quot;, &quot;no_data&quot;, &quot;nobs&quot; for the base),
 label (the label displayed) and .row_role (&quot;summary&quot; for an item,
-&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then the printed
-columns under their names (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; %&quot;, ...,
-&quot;Test&quot; with df beside it under statistic = TRUE, &quot;p&quot;). The
+&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then one column
+per displayed column (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; %&quot;, ..., &quot;Test&quot; with
+df beside it under statistic = TRUE, &quot;p&quot;), the name of a column
+of a group joining the group printed above it to the header printed
+under it. The
 &quot;note&quot; and &quot;global_test&quot; attributes are kept. as_tibble()
 returns the same table as a tibble. The original x is unaffected,
 and print(x) continues to render the formatted table."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
@@ -101,9 +105,11 @@ per printed row – the items, the rows of <code>none_row</code>, then the base 
 with the key columns <code>variable</code> (the item's column, or the token of a
 row the table adds: <code>"none"</code>, <code>"no_data"</code>, <code>"nobs"</code> for the base),
 <code>label</code> (the label displayed) and <code>.row_role</code> (<code>"summary"</code> for an item,
-<code>"none"</code>, <code>"missing"</code>, or <code>"fit_stat"</code> for the base), then the printed
-columns under their names (<code>"&lt;group&gt; n"</code>, <code>"&lt;group&gt; %"</code>, ...,
-<code>"Test"</code> with <code>df</code> beside it under <code>statistic = TRUE</code>, <code>"p"</code>). The
+<code>"none"</code>, <code>"missing"</code>, or <code>"fit_stat"</code> for the base), then one column
+per displayed column (<code>"&lt;group&gt; n"</code>, <code>"&lt;group&gt; %"</code>, ..., <code>"Test"</code> with
+<code>df</code> beside it under <code>statistic = TRUE</code>, <code>"p"</code>), the name of a column
+of a group joining the group printed above it to the header printed
+under it. The
 <code>"note"</code> and <code>"global_test"</code> attributes are kept. <code>as_tibble()</code>
 returns the same table as a tibble. The original <code>x</code> is unaffected,
 and <code>print(x)</code> continues to render the formatted table.</p>

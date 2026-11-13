@@ -130,6 +130,7 @@ methods of every table class, `spicy_categorical_table`,
 `spicy_categorical_svy_table`, `spicy_continuous_table`,
 `spicy_continuous_svy_table`, `spicy_continuous_lm_table`,
 `spicy_outcome_table`, `spicy_multiresponse_table`,
+`spicy_battery_table`, `spicy_battery_svy_table`,
 `spicy_regression_table` and `spicy_stack_table`, and the
 `output = "long"` frame of every table function, speak one vocabulary:
 broom's name wherever broom defines one, and one snake_case name per
@@ -169,9 +170,11 @@ the single outcome of
 ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
 and
-[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)):
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)):
 their `tidy()` carries it with or without `by`, `NA` without.
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
 has no `group`: its groupings are the `level` of each block. Nor has
@@ -198,8 +201,10 @@ requested (`NA` then), and that of
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 and
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-the effect-size columns; the survey tables and
+the effect-size columns; the survey tables,
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+and
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
 compute neither. `glance()` has a fixed set of columns.
 `p_value = FALSE` removes from the long output the test columns that
 neither the statistic nor an effect size needs; `glance()` keeps them,
@@ -224,8 +229,10 @@ when there is one).
 the table as it is displayed, one row per printed row, with numbers: the
 key columns `variable`, `label` (and the `level` or `group` of the row,
 and `.row_role`, the role of the printed row, where the table adds
-rows), then the printed columns under their names. The two are identical
-for every class. A stacked table
+rows), then the displayed statistics under their keys, which join the
+header of a spanner (a group of `by`, the coverage of an interval) to
+the header printed under it: `"Female n"`, `"95% CI LL"`. The two are
+identical for every class. A stacked table
 ([`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md))
 is the exception to one row per printed row: its data frame binds the
 data frames of its panels by rows, under a leading `panel` column,

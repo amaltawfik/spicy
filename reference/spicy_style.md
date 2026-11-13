@@ -624,10 +624,12 @@ old <- options(spicy.style = "apa")
 table_continuous(mtcars, c(mpg, wt))
 #> Descriptive statistics
 #> 
-#>  Variable   │    M       SD      Min      Max     95% CI LL    95% CI UL    n   
-#> ────────────┼───────────────────────────────────────────────────────────────────
-#>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
-#>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
+#>                                                       95% CI            
+#>                                                  ────────────────       
+#>  Variable   │    M       SD      Min      Max      LL       UL      n   
+#> ────────────┼───────────────────────────────────────────────────────────
+#>  mpg        │  20.09    6.03    10.40    33.90    17.92    22.26    32  
+#>  wt         │   3.22    0.98     1.51     5.42     2.86     3.57    32  
 #> 
 #> Note. N = 32. CI = confidence interval; LL = lower limit; UL = upper limit.
 options(old)
@@ -637,10 +639,12 @@ table_continuous(mtcars, c(mpg, wt),
                  style = spicy_style(abbreviations = "all"))
 #> Descriptive statistics
 #> 
-#>  Variable   │    M       SD      Min      Max     95% CI LL    95% CI UL    n   
-#> ────────────┼───────────────────────────────────────────────────────────────────
-#>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
-#>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
+#>                                                       95% CI            
+#>                                                  ────────────────       
+#>  Variable   │    M       SD      Min      Max      LL       UL      n   
+#> ────────────┼───────────────────────────────────────────────────────────
+#>  mpg        │  20.09    6.03    10.40    33.90    17.92    22.26    32  
+#>  wt         │   3.22    0.98     1.51     5.42     2.86     3.57    32  
 #> 
 #> Note. N = 32. M = mean; SD = standard deviation; Min = minimum; Max = maximum; CI = confidence interval; LL = lower limit; UL = upper limit.
 

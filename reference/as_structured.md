@@ -192,9 +192,11 @@ association measure.
   – one `"summary"` row per outcome. Tokens: `"emmean"` (a marginal
   mean; the column says which level in `col_meta$<col>$level`, also its
   `display_label`: the table heads each mean by its level under the mean
-  symbol), `"delta"` (the contrast), `"b"` (a numeric predictor's
-  slope), `"ci"`, `"statistic"`, `"p"`, `"r2"`, `"es"`, `"n"`,
-  `"weighted_n"`.
+  symbol, which the column carries in `col_meta$<col>$spanner_label`,
+  `""` when it is emptied; `spanners` stays empty, the symbol heading a
+  statistic and not a group of `by`), `"delta"` (the contrast), `"b"` (a
+  numeric predictor's slope), `"ci"`, `"statistic"`, `"p"`, `"r2"`,
+  `"es"`, `"n"`, `"weighted_n"`.
 
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   – one `"summary"` row per item, then the rows of `none_row`: a

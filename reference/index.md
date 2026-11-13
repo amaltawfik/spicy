@@ -289,6 +289,14 @@ Documented here for direct invocation with custom arguments (e.g.,
 
   Convert a `spicy_stack_table` to a data frame
 
+- [`tidy(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_battery_table.md)
+  [`glance(`*`<spicy_battery_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_battery_table.md)
+  [`tidy(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_battery_table.md)
+  [`glance(`*`<spicy_battery_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_battery_table.md)
+  :
+
+  Tidying methods for a `spicy_battery_table`
+
 - [`tidy(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
   [`glance(`*`<spicy_categorical_svy_table>`*`)`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
   :

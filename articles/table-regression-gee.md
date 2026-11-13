@@ -387,7 +387,7 @@ table_regression(
 #>  N (subject)      │      111                             
 #>  Max cluster size │        4                             
 #> 
-#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.
+#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.
 ```
 
 This odds ratio is marginal: it compares the odds of a positive outcome
@@ -422,7 +422,7 @@ table_regression(
 #>  N (subject)      │ 111                                 
 #>  Max cluster size │   4                                 
 #> 
-#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect; CI = confidence interval.
+#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval.
 ```
 
 The AME column reads on the probability scale: 0.24 for the treatment
@@ -497,8 +497,9 @@ Population-averaged logistic regression (GEE): outcome {.table
 
 *Note.* Population-averaged logistic regression (GEE). GEE working
 correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and
-displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich
-(GEE), clusters by subject. CI = confidence interval.
+displayed as OR; CI bounds exponentiated. The (Intercept) row estimates
+the baseline odds. Std. errors: Robust sandwich (GEE), clusters by
+subject. CI = confidence interval.
 
 ## References
 

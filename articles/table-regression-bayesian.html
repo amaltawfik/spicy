@@ -435,7 +435,7 @@ reconstruct one as B ± 2 SE:</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                        </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.</span></span></span></code></pre></div>
 <p>Reading the <code>Tertiary</code> row with the factor-change
 template: holding sex and age constant, the odds of smoking for a
 tertiary-educated respondent are 0.40 times the odds for one with lower
@@ -472,7 +472,7 @@ request):</p>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                           </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>    0.02                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). AME = average marginal effect; CrI = credible interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CrI = credible interval.</span></span></span></code></pre></div>
 <p>Reading the <code>Tertiary</code> row: averaged over the sample,
 tertiary education shifts the probability of smoking by −0.15 — 15
 percentage points lower — and, given model, priors, and data, that shift
@@ -1180,9 +1180,9 @@ R² (Bayes)
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Bayesian logistic regression. Coefficients exponentiated
 and displayed as OR; SE on the OR scale (posterior MAD SD of the
-exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors:
-posterior MAD SD (scaled median absolute deviation). CrI = credible
-interval.
+exponentiated draws); CI bounds exponentiated (asymmetric). The
+(Intercept) row estimates the baseline odds. Std. errors: posterior MAD
+SD (scaled median absolute deviation). CrI = credible interval.
 </div>
 </div>
 </div>

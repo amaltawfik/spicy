@@ -174,23 +174,16 @@ choice, and tabulates it like any categorical variable:</p>
 <span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">stacked</span>, select <span class="op">=</span> <span class="va">source</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  source            <span style="color: #9E9E9E;">│</span>                                                       .053 </span></span>
-<span><span class="co">#&gt;    info_doctor     <span style="color: #9E9E9E;">│</span>   377       34.9     344     37.3     721     36.0         </span></span>
-<span><span class="co">#&gt;    info_pharmacist <span style="color: #9E9E9E;">│</span>   137       12.7     119     12.9     256     12.8         </span></span>
-<span><span class="co">#&gt;    info_internet   <span style="color: #9E9E9E;">│</span>   268       24.8     255     27.7     523     26.1         </span></span>
-<span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span>   219       20.3     141     15.3     360     18.0         </span></span>
-<span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>    78        7.2      63      6.8     141      7.0         </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  V  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────</span></span></span>
-<span><span class="co">#&gt;  source            <span style="color: #9E9E9E;">│</span> .07 </span></span>
-<span><span class="co">#&gt;    info_doctor     <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    info_pharmacist <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    info_internet   <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span>     </span></span>
-<span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>     </span></span>
+<span><span class="co">#&gt;                       Female      Male       Total              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                     ─────────  ─────────  ─────────            </span></span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>  n    %     n    %     n    %     p     V  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  source            <span style="color: #9E9E9E;">│</span>                                  .053  .07 </span></span>
+<span><span class="co">#&gt;    info_doctor     <span style="color: #9E9E9E;">│</span> 377  34.9  344  37.3  721  36.0            </span></span>
+<span><span class="co">#&gt;    info_pharmacist <span style="color: #9E9E9E;">│</span> 137  12.7  119  12.9  256  12.8            </span></span>
+<span><span class="co">#&gt;    info_internet   <span style="color: #9E9E9E;">│</span> 268  24.8  255  27.7  523  26.1            </span></span>
+<span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span> 219  20.3  141  15.3  360  18.0            </span></span>
+<span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>  78   7.2   63   6.8  141   7.0            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 2001: Female (n = 1079), Male (n = 922). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V.</span></span></span></code></pre></div>
 <p>That table misreads the question in three ways.</p>
@@ -236,16 +229,18 @@ of respondents who chose them differs by almost twelve, 36.6% against
 <span><span class="va">tbl</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8     –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
+<span><span class="co">#&gt;                          Female          Male           Total               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────  ─────────────  ──────────────          </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   n      %       n      %       n       %        p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor        <span style="color: #9E9E9E;">│</span>  377    62.9    344    60.9     721    61.9    1.000  </span></span>
+<span><span class="co">#&gt;  info_pharmacist    <span style="color: #9E9E9E;">│</span>  137    22.9    119    21.1     256    22.0    1.000  </span></span>
+<span><span class="co">#&gt;  info_internet      <span style="color: #9E9E9E;">│</span>  268    44.7    255    45.1     523    44.9    1.000  </span></span>
+<span><span class="co">#&gt;  info_family        <span style="color: #9E9E9E;">│</span>  219    36.6    141    25.0     360    30.9    &lt;.001  </span></span>
+<span><span class="co">#&gt;  info_media         <span style="color: #9E9E9E;">│</span>   78    13.0     63    11.2     141    12.1    1.000  </span></span>
+<span><span class="co">#&gt;  (No item chosen)   <span style="color: #9E9E9E;">│</span>   31     5.2     36     6.4      67     5.8     –     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base               <span style="color: #9E9E9E;">│</span>  599            565            1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Each percentage is now a share of the respondents of its group, and
@@ -534,27 +529,18 @@ and the media item has an expected count of 3.2 among them:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by age_group</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   27      57.4      36      52.2      33      67.3   </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>    8      17.0      17      24.6      12      24.5   </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>   35      74.5      39      56.5      19      38.8   </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   17      36.2      21      30.4      15      30.6   </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    3       6.4       6       8.7       4       8.2   </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    2       4.3       5       7.2       0       0.0   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   47                69                49             </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼───────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   22      71.0      118     60.2     .624 </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>    9      29.0       46     23.5    1.000 </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>    3       9.7       96     49.0    &lt;.001 </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   10      32.3       63     32.1    1.000 </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    7      22.6       20     10.2     .591 </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    3       9.7       10      5.1     –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   31                196                   </span></span>
+<span><span class="co">#&gt;                      25-34     35-49     50-64     65-75      Total          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                    ────────  ────────  ────────  ────────  ─────────        </span></span></span>
+<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> n    %    n    %    n    %    n    %     n    %      p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span> 27  57.4  36  52.2  33  67.3  22  71.0  118  60.2   .624 </span></span>
+<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>  8  17.0  17  24.6  12  24.5   9  29.0   46  23.5  1.000 </span></span>
+<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span> 35  74.5  39  56.5  19  38.8   3   9.7   96  49.0  &lt;.001 </span></span>
+<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span> 17  36.2  21  30.4  15  30.6  10  32.3   63  32.1  1.000 </span></span>
+<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>  3   6.4   6   8.7   4   8.2   7  22.6   20  10.2   .591 </span></span>
+<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>  2   4.3   5   7.2   0   0.0   3   9.7   10   5.1   –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span> 47        69        49        31        196              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 5 with no answer to the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p &lt; .001.</span></span></span></code></pre></div>
 <p>The note names both tests: the Pearson chi-squared for four items,
@@ -699,17 +685,19 @@ question:</p>
 <span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">with_empty</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span></span>
-<span><span class="co">#&gt;  info_other       <span style="color: #9E9E9E;">│</span>     0        0.0       0      0.0       0      0.0     –    </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8     –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
+<span><span class="co">#&gt;                          Female          Male           Total               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────  ─────────────  ──────────────          </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   n      %       n      %       n       %        p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor        <span style="color: #9E9E9E;">│</span>  377    62.9    344    60.9     721    61.9    1.000  </span></span>
+<span><span class="co">#&gt;  info_pharmacist    <span style="color: #9E9E9E;">│</span>  137    22.9    119    21.1     256    22.0    1.000  </span></span>
+<span><span class="co">#&gt;  info_internet      <span style="color: #9E9E9E;">│</span>  268    44.7    255    45.1     523    44.9    1.000  </span></span>
+<span><span class="co">#&gt;  info_family        <span style="color: #9E9E9E;">│</span>  219    36.6    141    25.0     360    30.9    &lt;.001  </span></span>
+<span><span class="co">#&gt;  info_media         <span style="color: #9E9E9E;">│</span>   78    13.0     63    11.2     141    12.1    1.000  </span></span>
+<span><span class="co">#&gt;  info_other         <span style="color: #9E9E9E;">│</span>    0     0.0      0     0.0       0     0.0     –     </span></span>
+<span><span class="co">#&gt;  (No item chosen)   <span style="color: #9E9E9E;">│</span>   31     5.2     36     6.4      67     5.8     –     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base               <span style="color: #9E9E9E;">│</span>  599            565            1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Its row shows a true zero and its <code>p</code> cell a dash, which
@@ -741,16 +729,18 @@ the global test from every output, the data frames included. The first
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total % </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>    21        52       19      49      40       51    </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>    11        28        8      21      19       24    </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>    19        48       25      64      44       56    </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>    11        28        5      13      16       20    </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>     5        12        5      13      10       13    </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>     3         8        4      10       7        9    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>    40                 39              79             </span></span>
+<span><span class="co">#&gt;                         Female       Male       Total    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ──────────  ──────────  ────────── </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>  n     %     n     %     n     %   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor        <span style="color: #9E9E9E;">│</span>  21    52    19    49    40    51  </span></span>
+<span><span class="co">#&gt;  info_pharmacist    <span style="color: #9E9E9E;">│</span>  11    28     8    21    19    24  </span></span>
+<span><span class="co">#&gt;  info_internet      <span style="color: #9E9E9E;">│</span>  19    48    25    64    44    56  </span></span>
+<span><span class="co">#&gt;  info_family        <span style="color: #9E9E9E;">│</span>  11    28     5    13    16    20  </span></span>
+<span><span class="co">#&gt;  info_media         <span style="color: #9E9E9E;">│</span>   5    12     5    13    10    13  </span></span>
+<span><span class="co">#&gt;  (No item chosen)   <span style="color: #9E9E9E;">│</span>   3     8     4    10     7     9  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base               <span style="color: #9E9E9E;">│</span>  40          39          79        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 1 with no answer to the question).</span></span></span></code></pre></div>
 <p><code>statistic</code> stays independent of <code>p_value</code>, so
@@ -990,16 +980,18 @@ decimals, and three below .01:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.00  </span></span>
-<span><span class="co">#&gt;  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.00  </span></span>
-<span><span class="co">#&gt;  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.00  </span></span>
-<span><span class="co">#&gt;  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
-<span><span class="co">#&gt;  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.00  </span></span>
-<span><span class="co">#&gt;  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8     –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Base             <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
+<span><span class="co">#&gt;                          Female          Male           Total               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                      ─────────────  ─────────────  ──────────────          </span></span></span>
+<span><span class="co">#&gt;  Variable           <span style="color: #9E9E9E;">│</span>   n      %       n      %       n       %        p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor        <span style="color: #9E9E9E;">│</span>  377    62.9    344    60.9     721    61.9    1.00   </span></span>
+<span><span class="co">#&gt;  info_pharmacist    <span style="color: #9E9E9E;">│</span>  137    22.9    119    21.1     256    22.0    1.00   </span></span>
+<span><span class="co">#&gt;  info_internet      <span style="color: #9E9E9E;">│</span>  268    44.7    255    45.1     523    44.9    1.00   </span></span>
+<span><span class="co">#&gt;  info_family        <span style="color: #9E9E9E;">│</span>  219    36.6    141    25.0     360    30.9    &lt;.001  </span></span>
+<span><span class="co">#&gt;  info_media         <span style="color: #9E9E9E;">│</span>   78    13.0     63    11.2     141    12.1    1.00   </span></span>
+<span><span class="co">#&gt;  (No item chosen)   <span style="color: #9E9E9E;">│</span>   31     5.2     36     6.4      67     5.8     –     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Base               <span style="color: #9E9E9E;">│</span>  599            565            1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). Item p-values: Pearson chi-squared test of each item by group. Adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 </div>
@@ -1493,42 +1485,42 @@ multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_gdmnk40kner5rse1cfgo = TinyTable.createTableFunctions("tinytable_gdmnk40kner5rse1cfgo");
+      const tableFns_d7td463e3b6x5jbmsjq6 = TinyTable.createTableFunctions("tinytable_d7td463e3b6x5jbmsjq6");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_xwjqnzahcj3gjfqdk2ml',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_4edfd51xknx3enrdbop6',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 }, { i: '0', j: 10 }, { i: '7', j: 10 } ], css_id: 'tinytable_css_h2acuf551huw8dhjit1o',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_zeehbgpgi4brtqdq7kvr',}, 
-          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_2csvnqkti3fw4a408kfq',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_i7ys1z0l0k4cean192hy',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_441nwfxal4nh0wpcxgvs',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_x0m5crgoinr25lw4yop8',}, 
+          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_ihhngx8vnhlmwh43v1qt',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_dv1qrhr263vfq7mtjzag',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 }, { i: '0', j: 10 }, { i: '7', j: 10 } ], css_id: 'tinytable_css_sjqpsp4i20obrkqauolm',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_1lkgzpjw6p92lv150jpp',}, 
+          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_lf7ghsxrmpouc97d085b',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_87yb9zx3de8wokxixukw',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_exfhw4cp0t1nqmg6g4h5',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_57qilqjro5v822hyym2h',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_gdmnk40kner5rse1cfgo.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_d7td463e3b6x5jbmsjq6.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_xwjqnzahcj3gjfqdk2ml, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_xwjqnzahcj3gjfqdk2ml {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_4edfd51xknx3enrdbop6, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_4edfd51xknx3enrdbop6 { text-align: center }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_h2acuf551huw8dhjit1o, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_h2acuf551huw8dhjit1o {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_zeehbgpgi4brtqdq7kvr, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_zeehbgpgi4brtqdq7kvr {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_2csvnqkti3fw4a408kfq, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_2csvnqkti3fw4a408kfq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_i7ys1z0l0k4cean192hy, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_i7ys1z0l0k4cean192hy { text-align: left }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_441nwfxal4nh0wpcxgvs, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_441nwfxal4nh0wpcxgvs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_gdmnk40kner5rse1cfgo td.tinytable_css_x0m5crgoinr25lw4yop8, #tinytable_gdmnk40kner5rse1cfgo th.tinytable_css_x0m5crgoinr25lw4yop8 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_ihhngx8vnhlmwh43v1qt, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_ihhngx8vnhlmwh43v1qt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_dv1qrhr263vfq7mtjzag, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_dv1qrhr263vfq7mtjzag { text-align: center }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_sjqpsp4i20obrkqauolm, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_sjqpsp4i20obrkqauolm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_1lkgzpjw6p92lv150jpp, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_1lkgzpjw6p92lv150jpp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_lf7ghsxrmpouc97d085b, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_lf7ghsxrmpouc97d085b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_87yb9zx3de8wokxixukw, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_87yb9zx3de8wokxixukw { text-align: left }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_exfhw4cp0t1nqmg6g4h5, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_exfhw4cp0t1nqmg6g4h5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_d7td463e3b6x5jbmsjq6 td.tinytable_css_57qilqjro5v822hyym2h, #tinytable_d7td463e3b6x5jbmsjq6 th.tinytable_css_57qilqjro5v822hyym2h {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_gdmnk40kner5rse1cfgo" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_d7td463e3b6x5jbmsjq6" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Multiple responses by Sex</caption>
         <thead>
 <tr>

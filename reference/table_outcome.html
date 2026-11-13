@@ -495,9 +495,9 @@ object returns: one row per printed row, the key columns
 <code>variable</code> (the outcome on the <code>Overall</code> row, the grouping variable
 elsewhere), <code>label</code>, <code>level</code> and <code>.row_role</code> (<code>"summary"</code> for the
 <code>Overall</code> row, <code>"factor_header"</code>, <code>"level"</code>, or <code>"missing"</code>), then
-the printed columns under their names (<code>"M"</code>, <code>"SD"</code>, ..., <code>"n"</code>,
-<code>"p"</code>), a cell that prints several numbers keeping the others
-beside it as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></li>
+one column per displayed column (<code>"M"</code>, <code>"SD"</code>, ..., <code>"n"</code>, <code>"p"</code>,
+named as in <code><a href="table_continuous.html">table_continuous()</a></code>), a cell that prints several
+numbers keeping the others beside it as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></li>
 <li><p><code>"long"</code>: the compute frame, one row per printed row with every
 statistic the table computes, whatever it displays: <code>variable</code>,
 <code>label</code>, <code>level</code>, <code>.row_role</code>, <code>mean</code>, <code>sd</code>, <code>min</code>, <code>max</code>,
@@ -529,8 +529,9 @@ the sibling is the table you want.</p>
     <div class="section level2">
     <h2 id="choosing-the-statistics">Choosing the statistics<a class="anchor" aria-label="anchor" href="#choosing-the-statistics"></a></h2>
     <p><code>show_columns</code> takes the same tokens as <code><a href="table_continuous.html">table_continuous()</a></code>, with
-the same meanings; see the <em>Choosing the statistics</em> section of
-<code><a href="table_continuous.html">?table_continuous</a></code> for the vocabulary. Only the character-vector
+the same meanings, and shows them in the order they are written; see
+the <em>Choosing the statistics</em> section of <code><a href="table_continuous.html">?table_continuous</a></code> for the
+vocabulary and the place of an interval. Only the character-vector
 form is accepted here: there is one outcome, so a per-variable list
 would name nothing.</p>
     </div>
@@ -617,9 +618,9 @@ and as the rows of a labelled variable of <code><a href="table_categorical.html"
     <h2 id="the-table-note">The table note<a class="anchor" aria-label="anchor" href="#the-table-note"></a></h2>
     <p>One note sits under the table. It opens with the sample size, as in
 <code><a href="table_categorical.html">table_categorical()</a></code>, "N = 159.": the rows of the data, a row with a
-missing weight left out, rows rather than weights under <code>weights</code>
-("N = 60 (unweighted)."), the outcome's complete cases in the n of the
-<code>Overall</code> row. It then states what left the analytic
+missing or zero weight left out, rows rather than weights under
+<code>weights</code> ("N = 60 (unweighted)."), the outcome's complete cases in the
+n of the <code>Overall</code> row. It then states what left the analytic
 sample, which group comparison ran in each block, what the displayed
 columns mean, and how the blocks and the <code>Overall</code> row are to be
 read. The rendering engines carry the same sentence as a table note.
@@ -660,180 +661,105 @@ error.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable    <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Overall     <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex         <span style="color: #9E9E9E;">│</span>                                                        .018 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female    <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male      <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking     <span style="color: #9E9E9E;">│</span>                                                        .903 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No        <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                              95% CI                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                          ────────────             </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable    <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max    LL     UL     n     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Overall     <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90  25.72  26.14  1188       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex         <span style="color: #9E9E9E;">│</span>                                                .018 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female    <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90  25.39  25.98   616       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male      <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70  25.90  26.50   572       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking     <span style="color: #9E9E9E;">│</span>                                                .903 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No        <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90  25.72  26.21   915       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30  25.48  26.38   248       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50  23.24  26.23    25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable            <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL  95% CI UL   n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────┼─────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Overall             <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16      69.93    1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex                 <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female            <span style="color: #9E9E9E;">│</span> 67.16  14.80  19.60  100.00    65.99      68.33     620 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male              <span style="color: #9E9E9E;">│</span> 71.05  16.23  18.70  100.00    69.73      72.37     580 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age_group           <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    25-34             <span style="color: #9E9E9E;">│</span> 67.55  15.36  24.60  100.00    65.60      69.49     242 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    35-49             <span style="color: #9E9E9E;">│</span> 69.48  15.36  19.60  100.00    67.94      71.03     383 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    50-64             <span style="color: #9E9E9E;">│</span> 69.06  15.94  18.70  100.00    67.33      70.80     327 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    65-75             <span style="color: #9E9E9E;">│</span> 69.78  15.84  26.60  100.00    67.80      71.76     248 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education           <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary   <span style="color: #9E9E9E;">│</span> 57.22  15.44  18.70   97.90    55.33      59.10     261 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary   <span style="color: #9E9E9E;">│</span> 68.97  13.62  26.70  100.00    67.82      70.12     539 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary          <span style="color: #9E9E9E;">│</span> 76.85  13.23  40.40  100.00    75.55      78.15     400 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  social_class        <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower             <span style="color: #9E9E9E;">│</span> 64.26  14.61  21.10  100.00    61.85      66.66     144 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Working           <span style="color: #9E9E9E;">│</span> 65.24  15.39  19.60  100.00    63.43      67.06     278 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span> 69.17  16.58  23.70  100.00    67.37      70.98     326 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Middle            <span style="color: #9E9E9E;">│</span> 72.82  14.13  32.10  100.00    71.23      74.41     306 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span> 72.78  14.95  18.70  100.00    70.33      75.22     146 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  region              <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Central           <span style="color: #9E9E9E;">│</span> 68.59  15.64  23.70  100.00    66.62      70.56     245 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    East              <span style="color: #9E9E9E;">│</span> 69.69  16.00  30.40  100.00    67.07      72.32     145 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    North             <span style="color: #9E9E9E;">│</span> 69.70  16.04  21.10  100.00    67.48      71.92     203 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Other             <span style="color: #9E9E9E;">│</span> 70.50  15.07  19.60  100.00    68.39      72.62     198 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    South             <span style="color: #9E9E9E;">│</span> 67.57  15.70  18.70  100.00    65.38      69.75     201 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    West              <span style="color: #9E9E9E;">│</span> 68.51  15.36  29.00  100.00    66.41      70.61     208 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  employment_status   <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Employed          <span style="color: #9E9E9E;">│</span> 69.42  15.07  19.60  100.00    68.35      70.49     762 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Student           <span style="color: #9E9E9E;">│</span> 70.42  16.16  18.70  100.00    67.75      73.09     143 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Unemployed        <span style="color: #9E9E9E;">│</span> 65.78  17.17  23.20  100.00    63.21      68.35     174 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Inactive          <span style="color: #9E9E9E;">│</span> 69.72  15.64  21.10  100.00    66.90      72.54     121 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  income_group        <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span> 67.66  15.78  21.10  100.00    65.68      69.64     247 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span> 68.78  15.21  23.70  100.00    67.26      70.29     388 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span> 69.18  16.16  19.60  100.00    67.42      70.93     328 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span> 70.95  15.51  18.70  100.00    68.89      73.02     219 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 67.94  12.41  41.00   93.20    61.77      74.11      18 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking             <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 69.36  15.62  18.70  100.00    68.36      70.37     926 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 67.65  15.66  21.10  100.00    65.69      69.60     249 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 70.99  15.05  42.00  100.00    64.77      77.20      25 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity   <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 67.71  15.92  18.70  100.00    66.48      68.94     650 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 70.61  15.13  21.10  100.00    69.35      71.88     550 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m         <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 66.15  14.79  19.60  100.00    64.61      67.70     354 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 70.25  15.81  18.70  100.00    69.18      71.32     846 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  self_rated_health   <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Poor              <span style="color: #9E9E9E;">│</span> 43.60  11.15  19.60   70.70    40.74      46.45      61 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Fair              <span style="color: #9E9E9E;">│</span> 58.54  13.49  18.70   94.30    56.92      60.17     266 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Good              <span style="color: #9E9E9E;">│</span> 71.58  12.58  26.60  100.00    70.53      72.62     558 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very good         <span style="color: #9E9E9E;">│</span> 78.67  12.54  44.20  100.00    77.24      80.11     295 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 73.42  11.32  56.30  100.00    68.13      78.72      20 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi_category        <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Normal weight     <span style="color: #9E9E9E;">│</span> 70.47  15.36  18.70  100.00    69.07      71.87     465 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Overweight        <span style="color: #9E9E9E;">│</span> 68.78  15.65  19.60  100.00    67.49      70.06     569 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Obesity           <span style="color: #9E9E9E;">│</span> 65.43  15.84  29.00  100.00    62.91      67.95     154 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 72.61  14.84  50.70   97.60    63.18      82.04      12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  institutional_trust <span style="color: #9E9E9E;">│</span>                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very low          <span style="color: #9E9E9E;">│</span> 69.84  15.35  23.20  100.00    68.26      71.42     366 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span> 69.35  15.40  24.60  100.00    67.95      70.74     472 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span> 67.92  16.17  19.60  100.00    65.83      70.00     234 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span> 67.69  16.15  18.70  100.00    64.87      70.51     128 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable            <span style="color: #9E9E9E;">│</span>   p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────┼───────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Overall             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  sex                 <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Female            <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Male              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  age_group           <span style="color: #9E9E9E;">│</span>  .372 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    25-34             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    35-49             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    50-64             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    65-75             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  education           <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary   <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary   <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary          <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  social_class        <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Working           <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Middle            <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  region              <span style="color: #9E9E9E;">│</span>  .461 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Central           <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    East              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    North             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Other             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    South             <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    West              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  employment_status   <span style="color: #9E9E9E;">│</span>  .049 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Employed          <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Student           <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Unemployed        <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Inactive          <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  income_group        <span style="color: #9E9E9E;">│</span>  .149 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking             <span style="color: #9E9E9E;">│</span>  .125 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity   <span style="color: #9E9E9E;">│</span>  .001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m         <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  self_rated_health   <span style="color: #9E9E9E;">│</span> &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Poor              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Fair              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Good              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very good         <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi_category        <span style="color: #9E9E9E;">│</span>  .002 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Normal weight     <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Overweight        <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Obesity           <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  institutional_trust <span style="color: #9E9E9E;">│</span>  .366 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very low          <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        95% CI                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                                    ────────────              </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable            <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max     LL     UL     n      p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Overall             <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00  68.16  69.93  1200        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex                 <span style="color: #9E9E9E;">│</span>                                                  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Female            <span style="color: #9E9E9E;">│</span> 67.16  14.80  19.60  100.00  65.99  68.33   620        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Male              <span style="color: #9E9E9E;">│</span> 71.05  16.23  18.70  100.00  69.73  72.37   580        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  age_group           <span style="color: #9E9E9E;">│</span>                                                   .372 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    25-34             <span style="color: #9E9E9E;">│</span> 67.55  15.36  24.60  100.00  65.60  69.49   242        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    35-49             <span style="color: #9E9E9E;">│</span> 69.48  15.36  19.60  100.00  67.94  71.03   383        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    50-64             <span style="color: #9E9E9E;">│</span> 69.06  15.94  18.70  100.00  67.33  70.80   327        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    65-75             <span style="color: #9E9E9E;">│</span> 69.78  15.84  26.60  100.00  67.80  71.76   248        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  education           <span style="color: #9E9E9E;">│</span>                                                  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower secondary   <span style="color: #9E9E9E;">│</span> 57.22  15.44  18.70   97.90  55.33  59.10   261        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary   <span style="color: #9E9E9E;">│</span> 68.97  13.62  26.70  100.00  67.82  70.12   539        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary          <span style="color: #9E9E9E;">│</span> 76.85  13.23  40.40  100.00  75.55  78.15   400        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  social_class        <span style="color: #9E9E9E;">│</span>                                                  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower             <span style="color: #9E9E9E;">│</span> 64.26  14.61  21.10  100.00  61.85  66.66   144        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Working           <span style="color: #9E9E9E;">│</span> 65.24  15.39  19.60  100.00  63.43  67.06   278        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span> 69.17  16.58  23.70  100.00  67.37  70.98   326        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Middle            <span style="color: #9E9E9E;">│</span> 72.82  14.13  32.10  100.00  71.23  74.41   306        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span> 72.78  14.95  18.70  100.00  70.33  75.22   146        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  region              <span style="color: #9E9E9E;">│</span>                                                   .461 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Central           <span style="color: #9E9E9E;">│</span> 68.59  15.64  23.70  100.00  66.62  70.56   245        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    East              <span style="color: #9E9E9E;">│</span> 69.69  16.00  30.40  100.00  67.07  72.32   145        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    North             <span style="color: #9E9E9E;">│</span> 69.70  16.04  21.10  100.00  67.48  71.92   203        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Other             <span style="color: #9E9E9E;">│</span> 70.50  15.07  19.60  100.00  68.39  72.62   198        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    South             <span style="color: #9E9E9E;">│</span> 67.57  15.70  18.70  100.00  65.38  69.75   201        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    West              <span style="color: #9E9E9E;">│</span> 68.51  15.36  29.00  100.00  66.41  70.61   208        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  employment_status   <span style="color: #9E9E9E;">│</span>                                                   .049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Employed          <span style="color: #9E9E9E;">│</span> 69.42  15.07  19.60  100.00  68.35  70.49   762        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Student           <span style="color: #9E9E9E;">│</span> 70.42  16.16  18.70  100.00  67.75  73.09   143        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Unemployed        <span style="color: #9E9E9E;">│</span> 65.78  17.17  23.20  100.00  63.21  68.35   174        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Inactive          <span style="color: #9E9E9E;">│</span> 69.72  15.64  21.10  100.00  66.90  72.54   121        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  income_group        <span style="color: #9E9E9E;">│</span>                                                   .149 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span> 67.66  15.78  21.10  100.00  65.68  69.64   247        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Lower middle      <span style="color: #9E9E9E;">│</span> 68.78  15.21  23.70  100.00  67.26  70.29   388        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Upper middle      <span style="color: #9E9E9E;">│</span> 69.18  16.16  19.60  100.00  67.42  70.93   328        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span> 70.95  15.51  18.70  100.00  68.89  73.02   219        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 67.94  12.41  41.00   93.20  61.77  74.11    18        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking             <span style="color: #9E9E9E;">│</span>                                                   .125 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 69.36  15.62  18.70  100.00  68.36  70.37   926        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 67.65  15.66  21.10  100.00  65.69  69.60   249        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 70.99  15.05  42.00  100.00  64.77  77.20    25        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity   <span style="color: #9E9E9E;">│</span>                                                   .001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 67.71  15.92  18.70  100.00  66.48  68.94   650        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 70.61  15.13  21.10  100.00  69.35  71.88   550        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m         <span style="color: #9E9E9E;">│</span>                                                  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    No                <span style="color: #9E9E9E;">│</span> 66.15  14.79  19.60  100.00  64.61  67.70   354        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Yes               <span style="color: #9E9E9E;">│</span> 70.25  15.81  18.70  100.00  69.18  71.32   846        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  self_rated_health   <span style="color: #9E9E9E;">│</span>                                                  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Poor              <span style="color: #9E9E9E;">│</span> 43.60  11.15  19.60   70.70  40.74  46.45    61        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Fair              <span style="color: #9E9E9E;">│</span> 58.54  13.49  18.70   94.30  56.92  60.17   266        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Good              <span style="color: #9E9E9E;">│</span> 71.58  12.58  26.60  100.00  70.53  72.62   558        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Very good         <span style="color: #9E9E9E;">│</span> 78.67  12.54  44.20  100.00  77.24  80.11   295        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 73.42  11.32  56.30  100.00  68.13  78.72    20        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi_category        <span style="color: #9E9E9E;">│</span>                                                   .002 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Normal weight     <span style="color: #9E9E9E;">│</span> 70.47  15.36  18.70  100.00  69.07  71.87   465        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Overweight        <span style="color: #9E9E9E;">│</span> 68.78  15.65  19.60  100.00  67.49  70.06   569        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Obesity           <span style="color: #9E9E9E;">│</span> 65.43  15.84  29.00  100.00  62.91  67.95   154        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)         <span style="color: #9E9E9E;">│</span> 72.61  14.84  50.70   97.60  63.18  82.04    12        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  institutional_trust <span style="color: #9E9E9E;">│</span>                                                   .366 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Very low          <span style="color: #9E9E9E;">│</span> 69.84  15.35  23.20  100.00  68.26  71.42   366        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Low               <span style="color: #9E9E9E;">│</span> 69.35  15.40  24.60  100.00  67.95  70.74   472        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span> 67.92  16.17  19.60  100.00  65.83  70.00   234        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span> 67.69  16.15  18.70  100.00  64.87  70.51   128        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 1200. P-values: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 </code></pre></div>

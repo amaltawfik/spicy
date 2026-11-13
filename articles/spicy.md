@@ -288,50 +288,37 @@ table_categorical(
 )
 #> Categorical table by education
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │                                                         
-#>    No              │        179               69.6                415        
-#>    Yes             │         78               30.4                112        
-#>    (Missing)       │          4                                    12        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                         
-#>    No              │        177               67.8                310        
-#>    Yes             │         84               32.2                229        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │                                                         
-#>    No              │        113               43.3                174        
-#>    Yes             │        148               56.7                365        
+#>                      Lower secondary  Upper secondary  Tertiary     Total   
+#>                      ───────────────  ───────────────  ─────────  ───────── 
+#>  Variable          │   n        %       n        %      n    %     n    %   
+#> ───────────────────┼────────────────────────────────────────────────────────
+#>  smoking           │                                                        
+#>    No              │  179     69.6     415     78.7    332  84.9  926  78.8 
+#>    Yes             │   78     30.4     112     21.3     59  15.1  249  21.2 
+#>    (Missing)       │    4               12               9         25       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                        
+#>    No              │  177     67.8     310     57.5    163  40.8  650  54.2 
+#>    Yes             │   84     32.2     229     42.5    237  59.2  550  45.8 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                        
+#>    No              │  113     43.3     174     32.3     67  16.8  354  29.5 
+#>    Yes             │  148     56.7     365     67.7    333  83.2  846  70.5 
 #> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │                                                    
-#>    No              │       78.7            332         84.9       926   
-#>    Yes             │       21.3             59         15.1       249   
-#>    (Missing)       │                         9                     25   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │                                                    
-#>    No              │       57.5            163         40.8       650   
-#>    Yes             │       42.5            237         59.2       550   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │                                                    
-#>    No              │       32.3             67         16.8       354   
-#>    Yes             │       67.7            333         83.2       846   
-#> 
-#>  Variable          │ Total %    p     V  
-#> ───────────────────┼─────────────────────
-#>  smoking           │          <.001  .14 
-#>    No              │  78.8               
-#>    Yes             │  21.2               
-#>    (Missing)       │                     
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  physical_activity │          <.001  .21 
-#>    No              │  54.2               
-#>    Yes             │  45.8               
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  dentist_12m       │          <.001  .22 
-#>    No              │  29.5               
-#>    Yes             │  70.5               
+#>  Variable          │   p     V  
+#> ───────────────────┼────────────
+#>  smoking           │ <.001  .14 
+#>    No              │            
+#>    Yes             │            
+#>    (Missing)       │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │ <.001  .21 
+#>    No              │            
+#>    Yes             │            
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │ <.001  .22 
+#>    No              │            
+#>    Yes             │            
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V.
 ```
@@ -350,25 +337,27 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD    Min    Max   95% CI LL 
-#> ─────────────────┼───────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09  3.47  18.20  38.90    27.66   
-#>                  │ Upper secondary  26.02  3.43  16.00  37.10    25.73   
-#>                  │ Tertiary         24.39  3.52  16.00  33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary   2.71  1.20   1.00   5.00     2.57   
-#>                  │ Upper secondary   3.53  1.19   1.00   5.00     3.43   
-#>                  │ Tertiary          4.11  1.04   1.00   5.00     4.01   
+#>                                                                   95% CI    
+#>                                                                ──────────── 
+#>  Variable        │ Group              M     SD    Min    Max    LL     UL   
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09  3.47  18.20  38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02  3.43  16.00  37.10  25.73  26.31 
+#>                  │ Tertiary         24.39  3.52  16.00  33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary   2.71  1.20   1.00   5.00   2.57   2.86 
+#>                  │ Upper secondary   3.53  1.19   1.00   5.00   3.43   3.63 
+#>                  │ Tertiary          4.11  1.04   1.00   5.00   4.01   4.21 
 #> 
-#>  Variable        │ Group            95% CI UL   n     p   
-#> ─────────────────┼────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  <.001 
-#>                  │ Upper secondary    26.31    534        
-#>                  │ Tertiary           24.74    394        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary     2.86    259  <.001 
-#>                  │ Upper secondary     3.63    534        
-#>                  │ Tertiary            4.21    399        
+#>  Variable        │ Group             n     p   
+#> ─────────────────┼─────────────────────────────
+#>  bmi             │ Lower secondary  260  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary  259  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         399        
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -388,12 +377,12 @@ table_continuous_lm(
 )
 #> Continuous outcomes by sex
 #> 
-#>                          M                                                      
-#>                    ─────────────                                                
-#>  Variable        │ Female  Male    Δ    95% CI LL  95% CI UL    p     R²    n   
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  wellbeing_score │ 67.16   71.05  3.89    2.12       5.65     <.001  0.02  1200 
-#>  bmi             │ 25.69   26.20  0.51    0.09       0.93      .018  0.00  1188 
+#>                          M                95% CI                      
+#>                    ─────────────        ──────────                    
+#>  Variable        │ Female  Male    Δ     LL    UL     p     R²    n   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │ 67.16   71.05  3.89  2.12  5.65  <.001  0.02  1200 
+#>  bmi             │ 25.69   26.20  0.51  0.09  0.93   .018  0.00  1188 
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -473,16 +462,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total % 
-#> ──────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor      │   377       62.9     344     60.9     721     61.9   
-#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0   
-#>  info_internet    │   268       44.7     255     45.1     523     44.9   
-#>  info_family      │   219       36.6     141     25.0     360     30.9   
-#>  info_media       │    78       13.0      63     11.2     141     12.1   
-#>  (No item chosen) │    31        5.2      36      6.4      67      5.8   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Base             │   599                565             1164            
+#>                          Female          Male           Total      
+#>                       ─────────────  ─────────────  ────────────── 
+#>  Variable           │   n      %       n      %       n       %    
+#> ────────────────────┼──────────────────────────────────────────────
+#>  info_doctor        │  377    62.9    344    60.9     721    61.9  
+#>  info_pharmacist    │  137    22.9    119    21.1     256    22.0  
+#>  info_internet      │  268    44.7    255    45.1     523    44.9  
+#>  info_family        │  219    36.6    141    25.0     360    30.9  
+#>  info_media         │   78    13.0     63    11.2     141    12.1  
+#>  (No item chosen)   │   31     5.2     36     6.4      67     5.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Base               │  599            565            1164          
 #> 
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question).
 ```

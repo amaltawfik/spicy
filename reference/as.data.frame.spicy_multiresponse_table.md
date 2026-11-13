@@ -9,11 +9,12 @@ then the base – with the key columns `variable` (the item's column, or
 the token of a row the table adds: `"none"`, `"no_data"`, `"nobs"` for
 the base), `label` (the label displayed) and `.row_role` (`"summary"`
 for an item, `"none"`, `"missing"`, or `"fit_stat"` for the base), then
-the printed columns under their names (`"<group> n"`, `"<group> %"`,
-..., `"Test"` with `df` beside it under `statistic = TRUE`, `"p"`). The
-`"note"` and `"global_test"` attributes are kept. `as_tibble()` returns
-the same table as a tibble. The original `x` is unaffected, and
-`print(x)` continues to render the formatted table.
+one column per displayed column (`"<group> n"`, `"<group> %"`, ...,
+`"Test"` with `df` beside it under `statistic = TRUE`, `"p"`), the name
+of a column of a group joining the group printed above it to the header
+printed under it. The `"note"` and `"global_test"` attributes are kept.
+`as_tibble()` returns the same table as a tibble. The original `x` is
+unaffected, and `print(x)` continues to render the formatted table.
 
 ## Usage
 

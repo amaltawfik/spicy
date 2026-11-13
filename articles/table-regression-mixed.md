@@ -819,7 +819,10 @@ cross-validated against
 to 10⁻¹⁰, and delegates the remaining families — multi-trial binomial,
 negative binomial, beta, zero-inflation — to `performance`, a Suggests
 dependency: absent, the R² rows render as NA and the rest of the table
-is unaffected.)
+is unaffected. A beta-binomial fit gets no R² rows: the distribution
+variance `performance` uses for that family is not validated, and its
+conditional R² tends to 1 as the overdispersion vanishes, instead of
+joining the binomial’s.)
 
 **The ICC row is an interpretation, not a test.** For the intercept-only
 model it comes straight from the two σ rows above it: ICC = σ²(Subject)
@@ -1030,7 +1033,7 @@ table_regression(gfit, exponentiate = TRUE)
 #>  AIC                  │ 194.1                             
 #>  BIC                  │ 204.2                             
 #> 
-#> Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The random-effect row is now on the **log-odds scale** (the linear
@@ -1110,7 +1113,7 @@ table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 #>  AIC               │ 562.4                             
 #>  BIC               │ 583.5                             
 #> 
-#> Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Factor predictors are handled level-by-level: AME rows align under the
@@ -1174,7 +1177,7 @@ table_regression(zfit, exponentiate = TRUE)
 #>  AIC                  │ 1908.5                             
 #>  BIC                  │ 1930.8                             
 #> 
-#> Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Note the per-block exponentiation: the count coefficients become
@@ -1288,7 +1291,7 @@ table_regression(
 #>  BIC                     │    –                          464.1                        
 #>  Max cluster size        │   4                              –                         
 #> 
-#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The active-treatment odds ratio is the same effect asked two ways: the

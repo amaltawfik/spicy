@@ -169,7 +169,8 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 <code>spicy_categorical_table</code>, <code>spicy_categorical_svy_table</code>,
 <code>spicy_continuous_table</code>, <code>spicy_continuous_svy_table</code>,
 <code>spicy_continuous_lm_table</code>, <code>spicy_outcome_table</code>,
-<code>spicy_multiresponse_table</code>, <code>spicy_regression_table</code> and
+<code>spicy_multiresponse_table</code>, <code>spicy_battery_table</code>,
+<code>spicy_battery_svy_table</code>, <code>spicy_regression_table</code> and
 <code>spicy_stack_table</code>, and the <code>output = "long"</code> frame of every table
 function, speak one vocabulary: broom's name wherever broom defines
 one, and one snake_case name per concept otherwise, the same in every
@@ -182,8 +183,9 @@ its displayed label. <code>outcome</code> names the response of a regression
 model and the single outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. <code>group</code> is a key of
 the tables that take a <code>by</code> (<code><a href="table_categorical.html">table_categorical()</a></code>,
 <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
-<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>): their <code>tidy()</code>
-carries it with or without <code>by</code>, <code>NA</code> without. <code><a href="table_outcome.html">table_outcome()</a></code> has
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, <code><a href="table_battery.html">table_battery()</a></code>
+and <code><a href="table_battery_svy.html">table_battery_svy()</a></code>): their <code>tidy()</code> carries it with or without
+<code>by</code>, <code>NA</code> without. <code><a href="table_outcome.html">table_outcome()</a></code> has
 no <code>group</code>: its groupings are the <code>level</code> of each block. Nor has
 <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, whose <code>by</code> sets the columns of the table: its
 levels are the <code>level</code> of the long output and the <code>term</code> of the
@@ -202,8 +204,9 @@ label, which follows the display language. With <code>by</code>, the long
 output of <code><a href="table_categorical.html">table_categorical()</a></code> and <code><a href="table_continuous.html">table_continuous()</a></code> carries the
 effect-size and SMD columns whether or not they were requested (<code>NA</code>
 then), and that of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="table_outcome.html">table_outcome()</a></code> the
-effect-size columns; the survey tables and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>
-compute neither. <code>glance()</code> has a fixed set of columns.
+effect-size columns; the survey tables, <code><a href="table_multiresponse.html">table_multiresponse()</a></code> and
+<code><a href="table_battery.html">table_battery()</a></code> compute neither. <code>glance()</code> has a fixed set of
+columns.
 <code>p_value = FALSE</code> removes from the long output the test columns that
 neither the statistic nor an effect size needs; <code>glance()</code> keeps them,
 <code>NA</code>, as does the <code>tidy()</code> of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>.
@@ -220,8 +223,10 @@ title gives it (its label in <code>note_labels</code>, when there is one).</p>
 is displayed, one row per printed row, with numbers: the key columns
 <code>variable</code>, <code>label</code> (and the <code>level</code> or <code>group</code> of the row, and
 <code>.row_role</code>, the role of the printed row, where the table adds rows),
-then the printed columns under their names. The two are identical for
-every class. A stacked table (<code><a href="table_stack.html">table_stack()</a></code>) is the exception to one
+then the displayed statistics under their keys, which join the header
+of a spanner (a group of <code>by</code>, the coverage of an interval) to the
+header printed under it: <code>"Female n"</code>, <code>"95% CI LL"</code>. The two are
+identical for every class. A stacked table (<code><a href="table_stack.html">table_stack()</a></code>) is the exception to one
 row per printed row: its data frame binds the data frames of its
 panels by rows, under a leading <code>panel</code> column, without the rows that
 open the panels or repeat their headers. <code>output = "excel"</code> and

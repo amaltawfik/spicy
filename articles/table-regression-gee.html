@@ -484,7 +484,7 @@ group – computed on the estimation sample:</p>
 <span><span class="co">#&gt;  N (subject)      <span style="color: #9E9E9E;">│</span>      111                             </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>        4                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.</span></span></span></code></pre></div>
 <p>This odds ratio is marginal: it compares the odds of a positive
 outcome between the treated and untreated <em>populations</em>. The
 subject-specific odds ratio from the matching mixed model is larger –
@@ -513,7 +513,7 @@ sandwich covariance automatically:</p>
 <span><span class="co">#&gt;  N (subject)      <span style="color: #9E9E9E;">│</span> 111                                 </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>   4                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
 <p>The AME column reads on the probability scale: 0.24 for the treatment
 row means a 24-percentage-point higher population-averaged probability
 of a positive outcome in the treated population than under placebo.</p>
@@ -934,8 +934,9 @@ outcome</span>
 <div class="spicy-ft-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: Calibri, 'Calibri', Arial, sans-serif; font-size: 0.875rem; line-height: 1.25; text-align: left;">
 <em>Note.</em> Population-averaged logistic regression (GEE). GEE
 working correlation: exchangeable (alpha = 0.35). Coefficients
-exponentiated and displayed as OR; CI bounds exponentiated. Std. errors:
-Robust sandwich (GEE), clusters by subject. CI = confidence interval.
+exponentiated and displayed as OR; CI bounds exponentiated. The
+(Intercept) row estimates the baseline odds. Std. errors: Robust
+sandwich (GEE), clusters by subject. CI = confidence interval.
 </div>
 </div>
 </div>

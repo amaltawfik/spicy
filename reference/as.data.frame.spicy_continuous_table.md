@@ -7,14 +7,15 @@ displays, with its numbers: exactly what `output = "data.frame"`
 returns. One row per printed row, the key columns `variable` (the column
 name), `label` (the label displayed for it) and, with `by`, `group` and
 `.row_role` (`"group"`, or `"missing"` for the group of missing `by`
-values), then the printed columns under their names (`"M"`, `"SD"`,
-`"95% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several numbers
-keeps the first in its column and the others beside it under their names
-in the long output: `df` and `df.residual` after the test statistic
-`"Test"`, `es_ci_lower` and `es_ci_upper` after the effect size `"ES"`
-when its interval is printed, `q1` and `q3` after `"Mdn [Q1, Q3]"`. The
-note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns the
-same table as a tibble.
+values), then one column per displayed column (`"M"`, `"SD"`,
+`"95% CI LL"` and `"95% CI UL"`, the bounds printed under `95% CI`, ...,
+`"n"`, `"p"`). A cell that prints several numbers keeps the first in its
+column and the others beside it under their names in the long output:
+`df` and `df.residual` after the test statistic `"Test"`, `es_ci_lower`
+and `es_ci_upper` after the effect size `"ES"` when its interval is
+printed, `q1` and `q3` after `"Mdn [Q1, Q3]"`. The note, as printed, is
+kept in `attr(, "note")`. `as_tibble()` returns the same table as a
+tibble.
 
 ## Usage
 

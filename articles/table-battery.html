@@ -312,47 +312,32 @@ by Holm’s method, as in <code><a href="../reference/table_multiresponse.html">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Female Very dissatisfied  Female Dissatisfied </span></span>
+<span><span class="co">#&gt;                                                 Female                        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                          ─────────────────────────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Very dissatisfied  Dissatisfied  Neutral  Satisfied </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>        7.6             14.4       25.0      25.2    </span></span>
+<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>        8.1             16.9       25.9      33.2    </span></span>
+<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>        3.6             10.2       26.3      31.5    </span></span>
+<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>        6.2             18.9       24.1      33.3    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                 Female                      Male               </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                          ───────────────────  ─────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Very satisfied   n   Very dissatisfied  Dissatisfied </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>      27.8       616         7.1             13.9     </span></span>
+<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>      15.9       615         6.9             15.6     </span></span>
+<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>      28.3       615         2.6             11.6     </span></span>
+<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>      17.6       615         6.6             15.3     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                            Male                         </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                          ───────────────────────────────────────       </span></span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Neutral  Satisfied  Very satisfied   n    p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>           7.6                    14.4         </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>           8.1                    16.9         </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>           3.6                    10.2         </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>           6.2                    18.9         </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Female Neutral  Female Satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>      25.0             25.2       </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>      25.9             33.2       </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>      26.3             31.5       </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>      24.1             33.3       </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Female Very satisfied  Female n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>         27.8             616    </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>         15.9             615    </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>         28.3             615    </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>         17.6             615    </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Male Very dissatisfied  Male Dissatisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>          7.1                  13.9        </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>          6.9                  15.6        </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>          2.6                  11.6        </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>          6.6                  15.3        </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Male Neutral  Male Satisfied  Male Very satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼───────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>     22.9           25.0              31.1         </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>     27.0           27.2              23.2         </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>     26.3           27.7              31.7         </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>     28.1           29.5              20.6         </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Male n   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────</span></span></span>
-<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>  576    .798 </span></span>
-<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>  577    .052 </span></span>
-<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>  577    .798 </span></span>
-<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>  577    .397 </span></span>
+<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>  22.9      25.0          31.1       576  .798 </span></span>
+<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>  27.0      27.2          23.2       577  .052 </span></span>
+<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>  26.3      27.7          31.7       577  .798 </span></span>
+<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>  28.1      29.5          20.6       577  .397 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).</span></span></span></code></pre></div>
 <p>A wide table is printed in panels that fit the console, the item
@@ -369,61 +354,48 @@ groups:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery by Age group</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 25-34 Very satisfied + Satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>               54.1               </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>               47.3               </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>               64.2               </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>               50.4               </span></span>
+<span><span class="co">#&gt;                                                            25-34              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                              ─────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>            54.1             242 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>            47.3             241 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>            64.2             240 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>            50.4             242 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 25-34 n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   242   </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   241   </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   240   </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   242   </span></span>
+<span><span class="co">#&gt;                                                            35-49              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                              ─────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>            52.9             382 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>            49.7             380 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>            57.6             380 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>            51.2             379 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 35-49 Very satisfied + Satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>               52.9               </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>               49.7               </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>               57.6               </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>               51.2               </span></span>
+<span><span class="co">#&gt;                                                            50-64              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                              ─────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>            55.3             322 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>            52.8             326 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>            56.3             327 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>            51.4             325 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 35-49 n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   382   </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   380   </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   380   </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   379   </span></span>
+<span><span class="co">#&gt;                                                            65-75              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                              ─────────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> Very satisfied + Satisfied   n  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>            56.1             246 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>            48.2             245 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>            62.9             245 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>            48.4             246 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 50-64 Very satisfied + Satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>               55.3               </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>               52.8               </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>               56.3               </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>               51.4               </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 50-64 n </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   322   </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   326   </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   327   </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   325   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 65-75 Very satisfied + Satisfied </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>               56.1               </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>               48.2               </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>               62.9               </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>               48.4               </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span> 65-75 n    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼────────────────</span></span></span>
-<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   246     .966 </span></span>
-<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   245    1.000 </span></span>
-<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   245     .513 </span></span>
-<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   246    1.000 </span></span>
+<span><span class="co">#&gt;  Variable                                   <span style="color: #9E9E9E;">│</span>   p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────</span></span></span>
+<span><span class="co">#&gt;  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>  .966 </span></span>
+<span><span class="co">#&gt;  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> 1.000 </span></span>
+<span><span class="co">#&gt;  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>  .513 </span></span>
+<span><span class="co">#&gt;  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> 1.000 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).</span></span></span></code></pre></div>
 <p><code>p_adjust = "none"</code> reports the raw p-values, and

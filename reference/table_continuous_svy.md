@@ -451,8 +451,8 @@ Depends on `output`:
   of the default object returns: one row per printed row, the key
   columns `variable`, `label` and, with `by`, `group` and `.row_role`
   (`"group"`, or `"missing"` for the group of missing `by` values), then
-  the printed columns under their names (`"M"`, `"SD"`, `"SE"`,
-  `"95% CI LL"`, ..., `"n"`, `"p"`), as in
+  one column per displayed column (`"M"`, `"SD"`, `"SE"`, `"95% CI LL"`,
+  ..., `"n"`, `"p"`), as in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 
 - `"long"`: one row per `(variable x group)` (per variable without `by`)
@@ -527,6 +527,10 @@ with two additions and one removal:
 - `"med_ci"` is refused. The exact interval of the sibling inverts a
   binomial sign test on independent observations, which a clustered or
   stratified sample is not.
+
+The columns follow the order the tokens are written in, with the rules
+of the sibling: a repeated token counts once, and `"ci"` comes after
+`"m"`. Under `deff = TRUE`, a `"deff"` left unwritten comes last.
 
 ## Quantiles
 
@@ -656,28 +660,26 @@ dclus1 <- survey::svydesign(
 table_continuous_svy(dclus1, select = c(api00, api99))
 #> Descriptive statistics
 #> 
-#>  Variable │   M       SD     Min     Max    95% CI LL  95% CI UL   n  
-#> ──────────┼───────────────────────────────────────────────────────────
-#>  api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
-#>  api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
+#>                                                             95% CI              
+#>                                                       ──────────────────        
+#>  Variable   │    M         SD       Min       Max        LL        UL       n   
+#> ────────────┼───────────────────────────────────────────────────────────────────
+#>  api00      │  644.17    105.75    411.00    905.00    593.68    694.66    183  
+#>  api99      │  606.98    112.85    365.00    890.00    555.02    658.94    183  
 #> 
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(dclus1, select = api00, by = stype)
 #> Descriptive statistics by stype
 #> 
-#>  Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n  
+#>                                                        95% CI                
+#>                                                    ──────────────            
+#>  Variable │ Group    M       SD     Min     Max      LL      UL     n    p   
 #> ──────────┼──────────────────────────────────────────────────────────────────
-#>  api00    │ E      648.87  106.16  436.00  905.00   600.91     696.83    144 
-#>           │ H      618.57   96.74  443.00  724.00   528.67     708.48     14 
-#>           │ M      631.44  109.06  411.00  847.00   561.87     701.01     25 
+#>  api00    │ E      648.87  106.16  436.00  905.00  600.91  696.83  144  .314 
+#>           │ H      618.57   96.74  443.00  724.00  528.67  708.48   14       
+#>           │ M      631.44  109.06  411.00  847.00  561.87  701.01   25       
 #> 
-#>  Variable │ Group   p   
-#> ──────────┼─────────────
-#>  api00    │ E      .314 
-#>           │ H           
-#>           │ M           
-#> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(
   dclus1,
   select = api00,
@@ -686,9 +688,11 @@ table_continuous_svy(
 )
 #> Descriptive statistics
 #> 
-#>  Variable   │    M        SE      95% CI LL    95% CI UL     n     DEff  
-#> ────────────┼────────────────────────────────────────────────────────────
-#>  api00      │  644.17    23.54     593.68       694.66      183    9.35  
+#>                                        95% CI                      
+#>                                  ──────────────────                
+#>  Variable   │    M        SE        LL        UL      DEff     n   
+#> ────────────┼──────────────────────────────────────────────────────
+#>  api00      │  644.17    23.54    593.68    694.66    9.35    183  
 #> 
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

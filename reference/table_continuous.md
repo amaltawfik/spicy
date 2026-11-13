@@ -578,14 +578,15 @@ Depends on `output`:
   of the default object returns: one row per printed row, the key
   columns `variable` (the column name), `label` (the label displayed for
   it) and, with `by`, `group` and `.row_role` (`"group"`, or `"missing"`
-  for the group of missing `by` values), then the printed columns under
-  their names (`"M"`, `"SD"`, `"Min"`, `"Max"`, `"95% CI LL"`,
-  `"95% CI UL"`, `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the columns
-  `show_columns` asks for). A cell that prints several numbers keeps the
-  first in its column and the others beside it under their names in the
-  long output: `df` and `df.residual` after `"Test"`, `es_ci_lower` and
-  `es_ci_upper` after `"ES"` when its interval is printed, `q1` and `q3`
-  after `"Mdn [Q1, Q3]"`.
+  for the group of missing `by` values), then one column per displayed
+  column, in the order of the table (`"M"`, `"SD"`, `"Min"`, `"Max"`,
+  `"95% CI LL"` and `"95% CI UL"`, the bounds printed under `95% CI`,
+  `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the columns `show_columns`
+  asks for). A cell that prints several numbers keeps the first in its
+  column and the others beside it under their names in the long output:
+  `df` and `df.residual` after `"Test"`, `es_ci_lower` and `es_ci_upper`
+  after `"ES"` when its interval is printed, `q1` and `q3` after
+  `"Mdn [Q1, Q3]"`.
 
 - `"long"`: a plain `data.frame` with one row per `(variable x group)`
   and columns `variable`, `label`, `group` and `.group_role` (the role
@@ -640,7 +641,8 @@ The note opens with the sample size, as in
 rows the table describes and those of each group (the group of missing
 `by` values included), a row missing `by` under `drop_na = TRUE` or a
 weight left out, rows rather than weights under `weights` ("N = 60
-(unweighted)."), the complete cases of each variable in its n column.
+(unweighted)."), a row of zero weight left out as it is left out of
+every statistic, the complete cases of each variable in its n column.
 
 The missing-value disclosure (values excluded from the summaries, and
 rows removed for a missing `by` value under `drop_na = TRUE`) travels
@@ -694,8 +696,16 @@ defines the abbreviations these headers show, as the style in force asks
 Quartiles use
 [`stats::quantile()`](https://rdrr.io/r/stats/quantile.html)'s default
 type 7. `"iqr"` is the width (one number, the rank mirror of `SD`);
-`"med_iqr"` shows the interval with its bounds. Columns appear in the
-canonical order of the table above, whatever order they were written in.
+`"med_iqr"` shows the interval with its bounds.
+
+A character vector is displayed in the order it is written, so
+`c("med", "q1", "q3", "m", "sd", "n")` puts the median first. A token
+written twice counts once, where it first appears. An interval comes
+after the statistic it bounds, `"ci"` after `"m"` and `"med_ci"` after
+`"med"` or `"med_iqr"`: written before it, it is an error. The
+per-variable list form below has no written order common to all the
+variables, so its columns follow the order of the table above, which is
+also the order of the default display.
 
 ## Weights
 
@@ -1023,10 +1033,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable        │   M     SD     Min    Max    95% CI LL  95% CI UL   n   
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
-#>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
+#>                                                    95% CI          
+#>                                                 ────────────       
+#>  Variable        │   M     SD     Min    Max     LL     UL     n   
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  bmi             │ 25.93   3.72  16.00   38.90  25.72  26.14  1188 
+#>  wellbeing_score │ 69.04  15.62  18.70  100.00  68.16  69.93  1200 
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1038,25 +1050,27 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
-#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
-#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10  25.73  26.31 
+#>                  │ Tertiary         24.39   3.52  16.00   33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
 #> 
-#>  Variable        │ Group            95% CI UL   n     p   
-#> ─────────────────┼────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  <.001 
-#>                  │ Upper secondary    26.31    534        
-#>                  │ Tertiary           24.74    394        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary    59.10    261  <.001 
-#>                  │ Upper secondary    70.12    539        
-#>                  │ Tertiary           78.15    400        
+#>  Variable        │ Group             n     p   
+#> ─────────────────┼─────────────────────────────
+#>  bmi             │ Lower secondary  260  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  261  <.001 
+#>                  │ Upper secondary  539        
+#>                  │ Tertiary         400        
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1069,35 +1083,27 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
-#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
-#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10  25.73  26.31 
+#>                  │ Tertiary         24.39   3.52  16.00   33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
 #> 
-#>  Variable        │ Group            95% CI UL   n           Test          
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  F(2, 654.48) = 87.96  
-#>                  │ Upper secondary    26.31    534                        
-#>                  │ Tertiary           24.74    394                        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary    59.10    261  F(2, 638.59) = 144.35 
-#>                  │ Upper secondary    70.12    539                        
-#>                  │ Tertiary           78.15    400                        
-#> 
-#>  Variable        │ Group              p   
-#> ─────────────────┼────────────────────────
-#>  bmi             │ Lower secondary  <.001 
-#>                  │ Upper secondary        
-#>                  │ Tertiary               
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wellbeing_score │ Lower secondary  <.001 
-#>                  │ Upper secondary        
-#>                  │ Tertiary               
+#>  Variable        │ Group             n           Test             p   
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  260  F(2, 654.48) = 87.96   <.001 
+#>                  │ Upper secondary  534                               
+#>                  │ Tertiary         394                               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  261  F(2, 638.59) = 144.35  <.001 
+#>                  │ Upper secondary  539                               
+#>                  │ Tertiary         400                               
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1126,9 +1132,11 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable   │   Mdn     IQR     Mdn 95% CI LL    Mdn 95% CI UL     n    
-#> ────────────┼───────────────────────────────────────────────────────────
-#>  bmi        │  25.90    5.20        25.70            26.20        1188  
+#>                                   Mdn 95% CI            
+#>                                ────────────────         
+#>  Variable   │   Mdn     IQR      LL       UL       n    
+#> ────────────┼───────────────────────────────────────────
+#>  bmi        │  25.90    5.20    25.70    26.20    1188  
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 − Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1173,15 +1181,17 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
-#> ─────────────────┼───────────────────────────────────────────────────────────
-#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
-#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
+#>                                                            95% CI         
+#>                                                         ────────────      
+#>  Variable        │ Group     M     SD     Min    Max     LL     UL     n  
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00  65.99  68.33  620 
+#>                  │ Male    71.05  16.23  18.70  100.00  69.73  72.37  580 
 #> 
-#>  Variable        │ Group    n     p          ES [95% CI]        
-#> ─────────────────┼──────────────────────────────────────────────
-#>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
-#>                  │ Male    580                                  
+#>  Variable        │ Group     p          ES [95% CI]        
+#> ─────────────────┼─────────────────────────────────────────
+#>  wellbeing_score │ Female  <.001  g = -0.25 [-0.36, -0.14] 
+#>                  │ Male                                    
 #> 
 #> Note. N = 1200: Female (n = 620), Male (n = 580). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
@@ -1196,23 +1206,19 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
-#> ─────────────────┼─────────────────────────────────────────────────────────
-#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
-#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
-#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
+#>                                                                     95% CI    
+#>                                                                  ──────────── 
+#>  Variable        │ Group              M     SD     Min    Max     LL     UL   
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90  55.33  59.10 
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00  67.82  70.12 
+#>                  │ Tertiary         76.85  13.23  40.40  100.00  75.55  78.15 
 #> 
-#>  Variable        │ Group            95% CI UL   n     p   
-#> ─────────────────┼────────────────────────────────────────
-#>  wellbeing_score │ Lower secondary    59.10    261  <.001 
-#>                  │ Upper secondary    70.12    539        
-#>                  │ Tertiary           78.15    400        
-#> 
-#>  Variable        │ Group                   ES [95% CI]        
-#> ─────────────────┼────────────────────────────────────────────
-#>  wellbeing_score │ Lower secondary  η² = 0.208 [0.169, 0.246] 
-#>                  │ Upper secondary                            
-#>                  │ Tertiary                                   
+#>  Variable        │ Group             n     p           ES [95% CI]        
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  wellbeing_score │ Lower secondary  261  <.001  η² = 0.208 [0.169, 0.246] 
+#>                  │ Upper secondary  539                                   
+#>                  │ Tertiary         400                                   
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). P-value: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
@@ -1226,12 +1232,14 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable               │  M     SD   Min   Max   95% CI LL  95% CI UL   n   
-#> ────────────────────────┼────────────────────────────────────────────────────
-#>  life_sat_health        │ 3.55  1.25  1.00  5.00    3.48       3.62     1192 
-#>  life_sat_work          │ 3.38  1.18  1.00  5.00    3.31       3.45     1192 
-#>  life_sat_relationships │ 3.72  1.10  1.00  5.00    3.66       3.79     1192 
-#>  life_sat_standard      │ 3.40  1.16  1.00  5.00    3.33       3.46     1192 
+#>                                                     95% CI         
+#>                                                   ──────────       
+#>  Variable               │  M     SD   Min   Max    LL    UL    n   
+#> ────────────────────────┼──────────────────────────────────────────
+#>  life_sat_health        │ 3.55  1.25  1.00  5.00  3.48  3.62  1192 
+#>  life_sat_work          │ 3.38  1.18  1.00  5.00  3.31  3.45  1192 
+#>  life_sat_relationships │ 3.72  1.10  1.00  5.00  3.66  3.79  1192 
+#>  life_sat_standard      │ 3.40  1.16  1.00  5.00  3.33  3.46  1192 
 #> 
 #> Note. N = 1200. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -1246,15 +1254,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                 │   M     SD    Min    Max   95% CI LL  95% CI UL 
-#> ──────────────────────────┼─────────────────────────────────────────────────
-#>  Body mass index          │ 25.93  3.72  16.00  38.90    25.72      26.14   
-#>  Satisfaction with health │  3.55  1.25   1.00   5.00     3.48       3.62   
-#> 
-#>  Variable                 │  n   
-#> ──────────────────────────┼──────
-#>  Body mass index          │ 1188 
-#>  Satisfaction with health │ 1192 
+#>                                                           95% CI          
+#>                                                        ────────────       
+#>  Variable                 │   M     SD    Min    Max    LL     UL     n   
+#> ──────────────────────────┼───────────────────────────────────────────────
+#>  Body mass index          │ 25.93  3.72  16.00  38.90  25.72  26.14  1188 
+#>  Satisfaction with health │  3.55  1.25   1.00   5.00   3.48   3.62  1192 
 #> 
 #> Note. N = 1200. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 

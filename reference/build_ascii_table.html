@@ -105,6 +105,7 @@ per-column alignment.</p>
 <span>  total_row_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  whole_spanners <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -223,6 +224,12 @@ list like <code>spanners</code>). The row is drawn as the spanner row is: each
 label centered over its columns, a thin rule under them. Its cells
 should be blank. Used by <code><a href="print.spicy_stack_table.html">print.spicy_stack_table()</a></code> for the column
 groups of a panel's own header. Defaults to <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-whole-spanners">whole_spanners<a class="anchor" aria-label="anchor" href="#arg-whole-spanners"></a></dt>
+<dd><p>Logical. When <code>TRUE</code>, the columns of each
+spanner widen until its label fits over them, instead of the label
+being truncated. Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

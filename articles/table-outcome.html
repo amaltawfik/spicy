@@ -152,18 +152,20 @@ changes.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, outcome <span class="op">=</span> <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall     <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  sex         <span style="color: #9E9E9E;">│</span>                                                        .018 </span></span>
-<span><span class="co">#&gt;    Female    <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616       </span></span>
-<span><span class="co">#&gt;    Male      <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
-<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
-<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
+<span><span class="co">#&gt;                                              95% CI                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                          ────────────             </span></span></span>
+<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max    LL     UL     n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall     <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90  25.72  26.14  1188       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex         <span style="color: #9E9E9E;">│</span>                                                .018 </span></span>
+<span><span class="co">#&gt;    Female    <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90  25.39  25.98   616       </span></span>
+<span><span class="co">#&gt;    Male      <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70  25.90  26.50   572       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                .903 </span></span>
+<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90  25.72  26.21   915       </span></span>
+<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30  25.48  26.38   248       </span></span>
+<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50  23.24  26.23    25       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>Four things to notice, because each is a decision:</p>
@@ -217,13 +219,15 @@ denominator, and the note reports the loss per variable:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">smoking</span>, drop_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall  <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  smoking  <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
-<span><span class="co">#&gt;    No     <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
-<span><span class="co">#&gt;    Yes    <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
+<span><span class="co">#&gt;                                           95% CI                </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                       ────────────             </span></span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max    LL     UL     n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall  <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90  25.72  26.14  1188       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  smoking  <span style="color: #9E9E9E;">│</span>                                                .903 </span></span>
+<span><span class="co">#&gt;    No     <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90  25.72  26.21   915       </span></span>
+<span><span class="co">#&gt;    Yes    <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30  25.48  26.38   248       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 1200. Missing values removed: bmi (12), smoking (25). P-value: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <div class="section level3">
@@ -303,21 +307,23 @@ as many words.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼───────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall   <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  sex       <span style="color: #9E9E9E;">│</span>                                                       </span></span>
-<span><span class="co">#&gt;    Female  <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616 </span></span>
-<span><span class="co">#&gt;    Male    <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  region    <span style="color: #9E9E9E;">│</span>                                                       </span></span>
-<span><span class="co">#&gt;    Central <span style="color: #9E9E9E;">│</span> 25.76  3.85  16.00  37.30    25.28      26.25     241 </span></span>
-<span><span class="co">#&gt;    East    <span style="color: #9E9E9E;">│</span> 25.96  3.98  16.00  37.70    25.30      26.61     144 </span></span>
-<span><span class="co">#&gt;    North   <span style="color: #9E9E9E;">│</span> 26.13  3.42  19.00  36.60    25.66      26.61     201 </span></span>
-<span><span class="co">#&gt;    Other   <span style="color: #9E9E9E;">│</span> 26.11  3.85  17.30  38.90    25.57      26.65     196 </span></span>
-<span><span class="co">#&gt;    South   <span style="color: #9E9E9E;">│</span> 25.71  3.58  16.00  35.30    25.21      26.21     198 </span></span>
-<span><span class="co">#&gt;    West    <span style="color: #9E9E9E;">│</span> 25.96  3.69  16.00  34.00    25.45      26.46     208 </span></span>
+<span><span class="co">#&gt;                                            95% CI          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                        ────────────       </span></span></span>
+<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max    LL     UL     n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼───────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall   <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90  25.72  26.14  1188 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex       <span style="color: #9E9E9E;">│</span>                                               </span></span>
+<span><span class="co">#&gt;    Female  <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90  25.39  25.98   616 </span></span>
+<span><span class="co">#&gt;    Male    <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70  25.90  26.50   572 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  region    <span style="color: #9E9E9E;">│</span>                                               </span></span>
+<span><span class="co">#&gt;    Central <span style="color: #9E9E9E;">│</span> 25.76  3.85  16.00  37.30  25.28  26.25   241 </span></span>
+<span><span class="co">#&gt;    East    <span style="color: #9E9E9E;">│</span> 25.96  3.98  16.00  37.70  25.30  26.61   144 </span></span>
+<span><span class="co">#&gt;    North   <span style="color: #9E9E9E;">│</span> 26.13  3.42  19.00  36.60  25.66  26.61   201 </span></span>
+<span><span class="co">#&gt;    Other   <span style="color: #9E9E9E;">│</span> 26.11  3.85  17.30  38.90  25.57  26.65   196 </span></span>
+<span><span class="co">#&gt;    South   <span style="color: #9E9E9E;">│</span> 25.71  3.58  16.00  35.30  25.21  26.21   198 </span></span>
+<span><span class="co">#&gt;    West    <span style="color: #9E9E9E;">│</span> 25.96  3.69  16.00  34.00  25.45  26.46   208 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>         Test           p       ES     </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼───────────────────────────────────────</span></span></span>
@@ -367,20 +373,22 @@ untouched.</p>
 <span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">thin</span>, <span class="va">score</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">arm</span>, <span class="va">site</span>, <span class="va">wave</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL  n    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall         <span style="color: #9E9E9E;">│</span>  8.50  3.59   4.00  14.00    5.50       11.50    8        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  arm             <span style="color: #9E9E9E;">│</span>                                                      .004 </span></span>
-<span><span class="co">#&gt;    A             <span style="color: #9E9E9E;">│</span>  5.50  1.29   4.00   7.00    3.45        7.55    4        </span></span>
-<span><span class="co">#&gt;    B             <span style="color: #9E9E9E;">│</span> 11.50  2.08   9.00  14.00    8.19       14.81    4        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  site            <span style="color: #9E9E9E;">│</span>                                                      –    </span></span>
-<span><span class="co">#&gt;    only one site <span style="color: #9E9E9E;">│</span>  8.50  3.59   4.00  14.00    5.50       11.50    8        </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  wave            <span style="color: #9E9E9E;">│</span>                                                      –    </span></span>
-<span><span class="co">#&gt;    first         <span style="color: #9E9E9E;">│</span>  7.71  3.04   4.00  12.00    4.90       10.53    7        </span></span>
-<span><span class="co">#&gt;    last          <span style="color: #9E9E9E;">│</span> 14.00   –    14.00  14.00     –           –      1        </span></span>
+<span><span class="co">#&gt;                                                 95% CI              </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                                              ───────────           </span></span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max    LL    UL    n    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall         <span style="color: #9E9E9E;">│</span>  8.50  3.59   4.00  14.00  5.50  11.50  8        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  arm             <span style="color: #9E9E9E;">│</span>                                             .004 </span></span>
+<span><span class="co">#&gt;    A             <span style="color: #9E9E9E;">│</span>  5.50  1.29   4.00   7.00  3.45   7.55  4        </span></span>
+<span><span class="co">#&gt;    B             <span style="color: #9E9E9E;">│</span> 11.50  2.08   9.00  14.00  8.19  14.81  4        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  site            <span style="color: #9E9E9E;">│</span>                                             –    </span></span>
+<span><span class="co">#&gt;    only one site <span style="color: #9E9E9E;">│</span>  8.50  3.59   4.00  14.00  5.50  11.50  8        </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  wave            <span style="color: #9E9E9E;">│</span>                                             –    </span></span>
+<span><span class="co">#&gt;    first         <span style="color: #9E9E9E;">│</span>  7.71  3.04   4.00  12.00  4.90  10.53  7        </span></span>
+<span><span class="co">#&gt;    last          <span style="color: #9E9E9E;">│</span> 14.00   –    14.00  14.00   –      –    1        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 8. P-value: Welch t-test. Each block compares score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
@@ -1284,46 +1292,46 @@ interval; LL = lower limit; UL = upper limit; ES = effect size.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_h2acuf551huw8dhjit1o = TinyTable.createTableFunctions("tinytable_h2acuf551huw8dhjit1o");
+      const tableFns_sjqpsp4i20obrkqauolm = TinyTable.createTableFunctions("tinytable_sjqpsp4i20obrkqauolm");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_qf405a48v24fqucsrtv1',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_zsgplfdsk2vlyr7fr8gk',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_jp8vh99pkqvp4lvxf8q3',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_44ancuq7n3ik0faq9laq',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_jljuqzc8k944hgvsnbtx',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_ei43f4ptpm63vegrgaw7',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_ivll5mva7yadn7lv60m3',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_7fqcc5m3z2vjyvp8cfru',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_xwjqnzahcj3gjfqdk2ml',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_4edfd51xknx3enrdbop6',}, 
+          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_peaii9tmdquur4hb1i9m',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_e94k8jw3pxa5g3d0t11z',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_eb9y6cx9u4x6uvssaf5m',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_ma6arbgd18chotao17w8',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_fkxpmxxj2fmjyt12302g',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_4mvo9vyqy5prcev28fu2',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_9658970rcki9fpfjmdwu',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_j7b83sd251kkkgw38688',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_ihhngx8vnhlmwh43v1qt',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_dv1qrhr263vfq7mtjzag',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_h2acuf551huw8dhjit1o.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_sjqpsp4i20obrkqauolm.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_qf405a48v24fqucsrtv1, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_qf405a48v24fqucsrtv1 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_zsgplfdsk2vlyr7fr8gk, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_zsgplfdsk2vlyr7fr8gk { text-align: center }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_jp8vh99pkqvp4lvxf8q3, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_jp8vh99pkqvp4lvxf8q3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_44ancuq7n3ik0faq9laq, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_44ancuq7n3ik0faq9laq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_jljuqzc8k944hgvsnbtx, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_jljuqzc8k944hgvsnbtx {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_ei43f4ptpm63vegrgaw7, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_ei43f4ptpm63vegrgaw7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_ivll5mva7yadn7lv60m3, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_ivll5mva7yadn7lv60m3 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_7fqcc5m3z2vjyvp8cfru, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_7fqcc5m3z2vjyvp8cfru { text-align: left }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_xwjqnzahcj3gjfqdk2ml, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_xwjqnzahcj3gjfqdk2ml {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_h2acuf551huw8dhjit1o td.tinytable_css_4edfd51xknx3enrdbop6, #tinytable_h2acuf551huw8dhjit1o th.tinytable_css_4edfd51xknx3enrdbop6 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_peaii9tmdquur4hb1i9m, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_peaii9tmdquur4hb1i9m {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_e94k8jw3pxa5g3d0t11z, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_e94k8jw3pxa5g3d0t11z { text-align: center }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_eb9y6cx9u4x6uvssaf5m, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_eb9y6cx9u4x6uvssaf5m {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_ma6arbgd18chotao17w8, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_ma6arbgd18chotao17w8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_fkxpmxxj2fmjyt12302g, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_fkxpmxxj2fmjyt12302g {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_4mvo9vyqy5prcev28fu2, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_4mvo9vyqy5prcev28fu2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_9658970rcki9fpfjmdwu, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_9658970rcki9fpfjmdwu { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_j7b83sd251kkkgw38688, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_j7b83sd251kkkgw38688 { text-align: left }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_ihhngx8vnhlmwh43v1qt, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_ihhngx8vnhlmwh43v1qt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_sjqpsp4i20obrkqauolm td.tinytable_css_dv1qrhr263vfq7mtjzag, #tinytable_sjqpsp4i20obrkqauolm th.tinytable_css_dv1qrhr263vfq7mtjzag {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_h2acuf551huw8dhjit1o" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_sjqpsp4i20obrkqauolm" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics of wellbeing_score</caption>
         <thead><tr>
 <th scope="col" data-row="0" data-col="1">Variable</th>

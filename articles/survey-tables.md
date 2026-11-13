@@ -44,10 +44,12 @@ rclus1 <- as.svrepdesign(dclus1)
 table_continuous_svy(dclus1, select = c(api00, api99))
 #> Descriptive statistics
 #> 
-#>  Variable │   M       SD     Min     Max    95% CI LL  95% CI UL   n  
-#> ──────────┼───────────────────────────────────────────────────────────
-#>  api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
-#>  api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
+#>                                                             95% CI              
+#>                                                       ──────────────────        
+#>  Variable   │    M         SD       Min       Max        LL        UL       n   
+#> ────────────┼───────────────────────────────────────────────────────────────────
+#>  api00      │  644.17    105.75    411.00    905.00    593.68    694.66    183  
+#>  api99      │  606.98    112.85    365.00    890.00    555.02    658.94    183  
 #> 
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -102,15 +104,17 @@ table_continuous_svy(
 )
 #> Descriptive statistics
 #> 
-#>  Variable │   M      SE         Mdn [Q1, Q3]        95% CI LL  95% CI UL   n  
-#> ──────────┼───────────────────────────────────────────────────────────────────
-#>  api00    │ 644.17  23.54  652.00 [552.00, 719.00]   593.68     694.66    183 
+#>                                95% CI                                   
+#>                            ──────────────                               
+#>  Variable │   M      SE      LL      UL         Mdn [Q1, Q3]         n  
+#> ──────────┼─────────────────────────────────────────────────────────────
+#>  api00    │ 644.17  23.54  593.68  694.66  652.00 [552.00, 719.00]  183 
 #> 
 #>  Variable │ Weighted n  DEff 
 #> ──────────┼──────────────────
 #>  api00    │  6194.00    9.35 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; Q1 = first quartile; Q3 = third quartile; DEff = design effect.
 ```
 
 The design effect of 9.35 is the point of the whole exercise: the
@@ -139,11 +143,13 @@ span:
 table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 #> Descriptive statistics by stype
 #> 
-#>  Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n  
-#> ──────────┼──────────────────────────────────────────────────────────────────
-#>  api00    │ E      648.87  106.16  436.00  905.00   600.91     696.83    144 
-#>           │ H      618.57   96.74  443.00  724.00   528.67     708.48     14 
-#>           │ M      631.44  109.06  411.00  847.00   561.87     701.01     25 
+#>                                                        95% CI          
+#>                                                    ──────────────      
+#>  Variable │ Group    M       SD     Min     Max      LL      UL     n  
+#> ──────────┼────────────────────────────────────────────────────────────
+#>  api00    │ E      648.87  106.16  436.00  905.00  600.91  696.83  144 
+#>           │ H      618.57   96.74  443.00  724.00  528.67  708.48   14 
+#>           │ M      631.44  109.06  411.00  847.00  561.87  701.01   25 
 #> 
 #>  Variable │ Group       Test         p   
 #> ──────────┼──────────────────────────────
@@ -151,7 +157,7 @@ table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 #>           │ H                            
 #>           │ M                            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The comparison is one design-based test on the whole design, not a set
@@ -211,12 +217,14 @@ table_categorical_svy(
 )
 #> Categorical table
 #> 
-#>  Variable   │   n      %      95% CI LL    95% CI UL    DEff  
-#> ────────────┼─────────────────────────────────────────────────
-#>  stype      │                                                 
-#>    E        │  144    78.7      67.1         87.0       2.40  
-#>    H        │   14     7.7       3.5         15.8       1.91  
-#>    M        │   25    13.7       8.4         21.3       1.40  
+#>                                  95% CI             
+#>                              ──────────────         
+#>  Variable   │   n      %       LL      UL     DEff  
+#> ────────────┼───────────────────────────────────────
+#>  stype      │                                       
+#>    E        │  144    78.7    67.1    87.0    2.40  
+#>    H        │   14     7.7     3.5    15.8    1.91  
+#>    M        │   25    13.7     8.4    21.3    1.40  
 #> 
 #> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```
@@ -236,14 +244,16 @@ is a property of the interval and not of the proportion.
 table_categorical_svy(dclus1, select = stype, by = sch.wide)
 #> Categorical table by sch.wide
 #> 
-#>  Variable   │  No n    No %    Yes n    Yes %    Total n    Total %     p    
-#> ────────────┼────────────────────────────────────────────────────────────────
-#>  stype      │                                                          .022  
-#>    E        │   12     52.2     132     82.5       144       78.7            
-#>    H        │    3     13.0      11      6.9        14        7.7            
-#>    M        │    8     34.8      17     10.6        25       13.7            
+#>                    No            Yes           Total             
+#>               ────────────  ─────────────  ─────────────         
+#>  Variable   │  n      %       n      %       n      %       p    
+#> ────────────┼────────────────────────────────────────────────────
+#>  stype      │                                              .022  
+#>    E        │  12    52.2    132    82.5    144    78.7          
+#>    H        │   3    13.0     11     6.9     14     7.7          
+#>    M        │   8    34.8     17    10.6     25    13.7          
 #> 
-#> Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
+#> Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 ```
 
 The `p` is [`svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html):
@@ -280,12 +290,14 @@ table_battery_svy(
 )
 #> Item battery by stype
 #> 
-#>  Variable │ E No  E Yes  E n  H No  H Yes  H n  M No  M Yes  M n   p   
-#> ──────────┼────────────────────────────────────────────────────────────
-#>  awards   │ 22.9  77.1   144  57.1  42.9   14   48.0  52.0   25   .075 
-#>  sch.wide │  8.3  91.7   144  21.4  78.6   14   32.0  68.0   25   .075 
-#>  comp.imp │ 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 
-#>  both     │ 22.2  77.8   144  50.0  50.0   14   44.0  56.0   25   .123 
+#>                    E               H               M              
+#>             ───────────────  ──────────────  ──────────────       
+#>  Variable │  No   Yes    n    No   Yes   n    No   Yes   n    p   
+#> ──────────┼───────────────────────────────────────────────────────
+#>  awards   │ 22.9  77.1  144  57.1  42.9  14  48.0  52.0  25  .075 
+#>  sch.wide │  8.3  91.7  144  21.4  78.6  14  32.0  68.0  25  .075 
+#>  comp.imp │ 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 
+#>  both     │ 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 
 #> 
 #> Note. Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.
 ```
@@ -321,12 +333,14 @@ table_continuous_svy(lonely, select = api00, by = sch.wide)
 #> ℹ A stratum has a single primary sampling unit, which stops survey under its default `options(survey.lonely.psu = "fail")`: "adjust", "average", "remove" or "certainty" estimate these cells (see `?survey::surveyoptions`).
 #> Descriptive statistics by sch.wide
 #> 
-#>  Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n   p 
-#> ──────────┼─────────────────────────────────────────────────────────────────────
-#>  api00    │ No        –       –    398.00  778.00      –          –       25  – 
-#>           │ Yes    678.42  121.28  421.00  893.00   655.85     700.99    126    
+#>                                                        95% CI             
+#>                                                    ──────────────         
+#>  Variable │ Group    M       SD     Min     Max      LL      UL     n   p 
+#> ──────────┼───────────────────────────────────────────────────────────────
+#>  api00    │ No        –       –    398.00  778.00     –       –     25  – 
+#>           │ Yes    678.42  121.28  421.00  893.00  655.85  700.99  126    
 #> 
-#> Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22–124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The values `"adjust"`, `"average"`, `"remove"` and `"certainty"` of that
@@ -348,9 +362,11 @@ standard errors are not, and should not be:
 table_continuous_svy(rclus1, select = api00)
 #> Descriptive statistics
 #> 
-#>  Variable │   M       SD     Min     Max    95% CI LL  95% CI UL   n  
-#> ──────────┼───────────────────────────────────────────────────────────
-#>  api00    │ 644.17  105.75  411.00  905.00   587.70     700.64    183 
+#>                                                             95% CI              
+#>                                                       ──────────────────        
+#>  Variable   │    M         SD       Min       Max        LL        UL       n   
+#> ────────────┼───────────────────────────────────────────────────────────────────
+#>  api00      │  644.17    105.75    411.00    905.00    587.70    700.64    183  
 #> 
 #> Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -711,7 +727,7 @@ table_continuous_svy(
 [TABLE]
 
 *Note.* N = 200 (weighted 6194). Design: stratified (stype), with finite
-population correction; degrees of freedom vary by group (49 to 99). Std.
+population correction; degrees of freedom vary by group (49–99). Std.
 errors: Design-based (Taylor linearization). Confidence intervals and
 tests use the design degrees of freedom. P-values: design-based Wald
 test. The group comparison uses 195 degrees of freedom (observed groups

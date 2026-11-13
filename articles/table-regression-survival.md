@@ -486,7 +486,7 @@ table_regression(sr, exponentiate = TRUE)
 #>  n             │  226                                      
 #>  AIC           │ 2261.7                                    
 #> 
-#> Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline 63.2nd percentile of survival time. Std. errors: Wald asymptotic (z). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The intercept is back — a parametric model must anchor the time scale,

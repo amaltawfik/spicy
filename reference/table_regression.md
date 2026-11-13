@@ -24,6 +24,7 @@ table_regression(
   at_time = NULL,
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
+  ame_type = c("slope", "unit", "sd"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -279,8 +280,40 @@ table_regression(
   follows the Stata convention (`[R] logistic`, Methods and formulas:
   `se(OR) = OR × se(b)`) and the log-scale CI endpoints carry the
   uncertainty more faithfully than this SE. The footer states the SE
-  scale and the CI asymmetry whenever an SE column is displayed. Default
-  `FALSE`.
+  scale and the CI asymmetry whenever an SE column is displayed. It also
+  names what a displayed intercept estimates once exponentiated, which
+  is no ratio: the baseline odds (logit), risk (binomial log), rate
+  (count families, log) or mean (other log-link families) at the
+  reference profile. Default `FALSE`.
+
+- ame_type:
+
+  The quantity the AME columns report for a continuous predictor.
+  `"slope"` (default): the average slope dY/dX, the derivative of the
+  prediction averaged over the observations (Stata's `margins, dydx()`).
+  `"unit"`: the average change in the prediction when the predictor
+  rises by one unit from each observation's own value. `"sd"`: the same
+  for a rise of one standard deviation, the unweighted standard
+  deviation of the predictor in the estimation sample, again from each
+  observation's own value (not the change from the mean minus half a
+  standard deviation to the mean plus half that the `"sd"` shortcut of
+  [`marginaleffects::avg_comparisons()`](https://rdrr.io/pkg/marginaleffects/man/comparisons.html)
+  computes). The step is taken on the variable as it is in the data,
+  before any transformation the formula applies (`log(x)`,
+  `poly(x, 2)`). The three agree when the prediction is linear in the
+  predictor (an `lm` without transformed terms: `"unit"` equals the
+  slope, `"sd"` the slope times the standard deviation). Under a
+  non-identity link they differ, the more so as the coefficient grows:
+  with a log link and no interaction, the slope is `b * mean(mu)` and
+  the change for one unit `(exp(b) - 1) * mean(mu)`. `"unit"` is the
+  quantity the sentence "one more unit of X goes with ... more of Y"
+  describes; the slope only approximates it. Categorical, logical and
+  0/1 predictors are contrasts with their reference level under every
+  value. Weighted fits average with the same weights under every value,
+  per-category models (ordinal, multinomial) report the quantity for
+  each category probability, and Bayesian fits summarize its draws. The
+  table note names the quantity. Ignored, with a warning, when no AME
+  column is shown.
 
 - p_adjust:
 
@@ -2276,7 +2309,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.
+#> Note. Linear regression. Std. errors: classical (OLS). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval.
 # }
 
 # \donttest{
@@ -2313,7 +2346,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>    No (ref.)     │       –           –    
 #>    Yes           │ [-3.89, 0.45]     .121 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval; AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect.
 # }
 
 # ---- Cluster-robust variance -------------------------------------

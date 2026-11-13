@@ -365,11 +365,11 @@ Depends on `output`:
   [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_battery_table.md)
   of the default object returns: one row per item, with columns
   `variable` (the item's column), `label` (the label the row displays),
-  then the printed columns: one percentage per level shown, `(Missing)`
-  under `drop_na = FALSE`, the summary column of `top` (named by its
-  header, `"Strongly agree + Agree"`) and `n`, each prefixed with the
-  group under `by` (`"Female Agree"`, `"Female n"`), and `p` with
-  `p_value`.
+  then one column per displayed column: one percentage per level shown,
+  `(Missing)` under `drop_na = FALSE`, the summary column of `top`
+  (named by its header, `"Strongly agree + Agree"`) and `n`, each
+  prefixed under `by` with the group printed above it (`"Female Agree"`,
+  `"Female n"`), and `p` with `p_value`.
 
 - `"long"`: one row per item, group and level, with columns `variable`,
   `label`, `group` (with `by`), `level` (the level, or the label of the
@@ -565,19 +565,23 @@ table_battery(
 )
 #> Item battery by sex
 #> 
-#>  Variable               │ Female Very satisfied + Satisfied  Female n 
-#> ────────────────────────┼─────────────────────────────────────────────
-#>  life_sat_health        │               52.9                   616    
-#>  life_sat_work          │               49.1                   615    
-#>  life_sat_relationships │               59.8                   615    
-#>  life_sat_standard      │               50.9                   615    
+#>                                       Female              
+#>                           ─────────────────────────────── 
+#>  Variable               │ Very satisfied + Satisfied   n  
+#> ────────────────────────┼─────────────────────────────────
+#>  life_sat_health        │            52.9             616 
+#>  life_sat_work          │            49.1             615 
+#>  life_sat_relationships │            59.8             615 
+#>  life_sat_standard      │            50.9             615 
 #> 
-#>  Variable               │ Male Very satisfied + Satisfied  Male n   p   
-#> ────────────────────────┼───────────────────────────────────────────────
-#>  life_sat_health        │              56.1                 576    .798 
-#>  life_sat_work          │              50.4                 577    .052 
-#>  life_sat_relationships │              59.4                 577    .798 
-#>  life_sat_standard      │              50.1                 577    .397 
+#>                                        Male                     
+#>                           ───────────────────────────────       
+#>  Variable               │ Very satisfied + Satisfied   n    p   
+#> ────────────────────────┼───────────────────────────────────────
+#>  life_sat_health        │            56.1             576  .798 
+#>  life_sat_work          │            50.4             577  .052 
+#>  life_sat_relationships │            59.4             577  .798 
+#>  life_sat_standard      │            50.1             577  .397 
 #> 
 #> Note. Percentages are row percentages. Base: respondents who answered the item. Item p-values: Pearson chi-squared test of each item by group. Adjusted for 4 tests (Holm method).
 

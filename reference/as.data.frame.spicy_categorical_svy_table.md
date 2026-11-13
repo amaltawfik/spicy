@@ -5,13 +5,14 @@ the table
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
 displays, with its numbers: exactly what `output = "data.frame"`
 returns. One row per printed row – the header row of each variable,
-which carries its *p*-value, then one row per level – and the printed
-columns under their names (`"Female n"`, `"Female %"`, the interval
-bounds `"Female 95% CI LL"` and `"Female 95% CI UL"`, `"Female DEff"`,
-..., `"p"`), plus the key columns `variable`, `label`, `level` and
-`.row_role` (`"factor_header"`, `"level"`, or `"missing"`). The note, as
-printed, is kept in `attr(, "note")`. `as_tibble()` returns the same
-table as a tibble.
+which carries its *p*-value, then one row per level – and one column per
+displayed column (`"Female n"`, `"Female %"`, the interval bounds
+`"Female 95% CI LL"` and `"Female 95% CI UL"`, `"Female DEff"`, ...,
+`"p"`), the name of a column of a domain joining the domain printed
+above it to the header printed under it, plus the key columns
+`variable`, `label`, `level` and `.row_role` (`"factor_header"`,
+`"level"`, or `"missing"`). The note, as printed, is kept in
+`attr(, "note")`. `as_tibble()` returns the same table as a tibble.
 
 ## Usage
 

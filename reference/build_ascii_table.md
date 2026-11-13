@@ -23,6 +23,7 @@ build_ascii_table(
   total_row_idx = NULL,
   display_labels = NULL,
   body_spanners = NULL,
+  whole_spanners = FALSE,
   ...
 )
 ```
@@ -141,6 +142,12 @@ build_ascii_table(
   columns, a thin rule under them. Its cells should be blank. Used by
   [`print.spicy_stack_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_stack_table.md)
   for the column groups of a panel's own header. Defaults to `NULL`.
+
+- whole_spanners:
+
+  Logical. When `TRUE`, the columns of each spanner widen until its
+  label fits over them, instead of the label being truncated. Defaults
+  to `FALSE`.
 
 - ...:
 

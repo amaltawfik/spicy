@@ -599,6 +599,9 @@ slm$col_meta[["M (Male)"]]
 #> $level
 #> [1] "Male"
 #> 
+#> $spanner_label
+#> [1] "M"
+#> 
 #> $display_label
 #> [1] "Male"
 ```

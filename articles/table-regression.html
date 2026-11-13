@@ -494,7 +494,7 @@ shortcut <code>"all_ame"</code> expands to the full set.</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
 <p>Reading conventions:</p>
 <ul>
 <li>
@@ -654,7 +654,7 @@ with its own header, here the odds ratios of a logistic model:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke) <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC             <span style="color: #9E9E9E;">│</span> 1421.8                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The notes of the panels are merged as the note of the same models
 side by side: one sentence gives the type of each model, one its
 standard errors, and a sentence that holds for one panel only opens with
@@ -994,7 +994,7 @@ dynamic column choice).</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. CI = confidence interval; AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect.</span></span></span></code></pre></div>
 <p><code>CR2</code> (the Bell-McCaffrey adjustment) is the recommended
 default under few clusters (Pustejovsky and Tipton 2018; Imbens and
 Kolesár 2016). Coefficient inference uses
@@ -1325,7 +1325,7 @@ kept; Long &amp; Freese 2014 §3.2.2.):</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                            </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read exponentiated rows with the factor-change template (Long and
 Freese 2014 §6.1.1): for <code>Tertiary</code>, OR = 0.40, 95% CI [0.27,
 0.59] — holding sex and age constant, the odds of smoking for a
@@ -1523,7 +1523,7 @@ communicating logistic effects (Mood 2010; Long and Freese 2014
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                                      </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Point estimate and inference are delegated to
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>. Under cluster-robust
 variance, the Satterthwaite-df handling described in the <em>Robust

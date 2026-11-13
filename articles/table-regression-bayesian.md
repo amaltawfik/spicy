@@ -339,7 +339,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  n                        │ 1175                        
 #>  R² (Bayes)               │    0.02                     
 #> 
-#> Note. Bayesian logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
+#> Note. Bayesian logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (posterior MAD SD of the exponentiated draws); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: posterior MAD SD (scaled median absolute deviation). CrI = credible interval.
 ```
 
 Reading the `Tertiary` row with the factor-change template: holding sex
@@ -379,7 +379,7 @@ table_regression(fit, show_columns = c("b", "ame", "ame_ci"))
 #>  n                        │ 1175                           
 #>  R² (Bayes)               │    0.02                        
 #> 
-#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). AME = average marginal effect; CrI = credible interval.
+#> Note. Bayesian logistic regression. Std. errors: posterior MAD SD (scaled median absolute deviation). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CrI = credible interval.
 ```
 
 Reading the `Tertiary` row: averaged over the sample, tertiary education
@@ -720,9 +720,9 @@ pkgdown_dark_gt(table_regression(fit, exponentiate = TRUE, output = "gt"))
 
 *Note.* Bayesian logistic regression. Coefficients exponentiated and
 displayed as OR; SE on the OR scale (posterior MAD SD of the
-exponentiated draws); CI bounds exponentiated (asymmetric). Std. errors:
-posterior MAD SD (scaled median absolute deviation). CrI = credible
-interval.
+exponentiated draws); CI bounds exponentiated (asymmetric). The
+(Intercept) row estimates the baseline odds. Std. errors: posterior MAD
+SD (scaled median absolute deviation). CrI = credible interval.
 
 ## See also
 
