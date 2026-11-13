@@ -269,9 +269,9 @@ inline after the measure, e.g. `.14 [.08, .19]`, under a header that
 states its level, `V [95% CI]` (demonstrated in the final
 section). In the default console table and in the `"data.frame"`,
 `"excel"` and `"clipboard"` outputs, separate columns named
-`95% CI LL` and `95% CI UL` are added, as the other tables name
-their interval columns; in the long format (`"long"`) the bounds
-fill `es_ci_lower` / `es_ci_upper`:
+`95% CI LL` and `95% CI UL` are added, the names the other tables give
+their interval columns in a data frame; in the long format (`"long"`)
+the bounds fill `es_ci_lower` / `es_ci_upper`:
 
 ```{r ci-data}
 table_categorical(
@@ -437,7 +437,10 @@ that category under the same label, and a level of `by` named "Total"
 beside the margin. The table then stops with an error that gives the
 two ways out: rename the level, or give the category another label with
 `options(spicy.labels = list(row_missing_level = "(Not stated)"))` (the
-margin's key is `header_margin_total`).
+margin's key is `header_margin_total`). A level of `by` that is the
+empty string, which `read.csv()` makes of an empty text field, is an
+error too: a group is named in the header and in the note. Recode it
+to `NA`, or to a label.
 
 ## Filtering and reordering levels
 
