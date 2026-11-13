@@ -121,6 +121,22 @@
   recoded 1 - y, and that of a beta-binomial model went to 1 as the
   overdispersion vanished instead of joining that of the binomial model.
 
+* `glance()` of `table_categorical()` counts rows in `nobs` under
+  `weights`, a row of zero weight left out; it gave the rounded sum of
+  the weights. That weighted count is the new column `weighted_nobs`,
+  which the `glance()` of `table_continuous()` and `table_outcome()`
+  gains too. In `table_categorical_svy()`, `weighted_nobs` sums the
+  weights of each variable's own rows, no longer those of the design.
+
+* `table_categorical_svy()`, `table_continuous_svy()`: the sample size
+  of the note leaves out the rows of zero weight, among them the rows
+  `subset()` keeps on a calibrated or post-stratified design, as the `n`
+  columns and `survey::unwtd.count()` do. Estimates do not change.
+
+* `cross_tab()` refuses a level of `y` or of `by` that is the empty
+  string. The column was headed `V1`, and the rows of such a `by` group
+  were dropped without a word.
+
 ## New features
 
 * `table_categorical()`, `table_categorical_svy()`,
@@ -737,6 +753,11 @@
 * A group label with wide characters or decomposed accents no longer
   shifts the labels that follow it in the console of
   `table_regression()`.
+
+* `table_categorical(assoc_ci = TRUE)` prints the interval of the
+  association measure in the measure's cell, `.52 [.21, .74]` under
+  `V [95% CI]`, as the rendered tables do. The data frame, Excel and the
+  clipboard keep the bounds in columns of their own.
 
 # spicy 0.14.1
 
