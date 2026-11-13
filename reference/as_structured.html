@@ -192,11 +192,17 @@ name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label). A column whose cells cannot be
 reconstructed from one number – the <code>"events/N"</code> counts of
 <code>show_columns = "n_events"</code>, a change test with its degrees of
-freedom (<code>"12.38 (1, 29)"</code>, the statistic in <code>body</code>) – also
+freedom (<code>"12.38 (1, 29)"</code>, the statistic in <code>body</code>), a partial
+chi-square or partial F with its degrees of freedom (<code>"4.52 (2)"</code>,
+<code>"18.08 (1, 28)"</code>, the statistic in its column and the df in the
+columns <code>"&lt;column&gt;: df"</code> and <code>"&lt;column&gt;: residual df"</code>, which the
+rich outputs do not print) – also
 carries <code>display_cells</code>, a
 character vector as long as <code>body</code> holding the display string
 of each cell (<code>NA</code> where the number formats normally). A
-renderer must prefer it over the numeric value.</p></li>
+renderer must prefer it over the numeric value. The df columns of
+a term-level test carry <code>is_df = TRUE</code> in <code>col_meta</code>, so a renderer
+that prints <code>display_cells</code> can leave them out.</p></li>
 <li><p><code>stars</code> – <code>NULL</code> unless <code>stars</code> was requested, otherwise a list
 with <code>thresholds</code> (symbol to p cutoff) and <code>markers</code> (per-cell
 marker strings, keyed by column name, <code>""</code> where a cell takes

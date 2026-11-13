@@ -126,9 +126,15 @@ This is the right entry point for users who want to:
   / label). A column whose cells cannot be reconstructed from one number
   – the `"events/N"` counts of `show_columns = "n_events"`, a change
   test with its degrees of freedom (`"12.38 (1, 29)"`, the statistic in
-  `body`) – also carries `display_cells`, a character vector as long as
-  `body` holding the display string of each cell (`NA` where the number
-  formats normally). A renderer must prefer it over the numeric value.
+  `body`), a partial chi-square or partial F with its degrees of freedom
+  (`"4.52 (2)"`, `"18.08 (1, 28)"`, the statistic in its column and the
+  df in the columns `"<column>: df"` and `"<column>: residual df"`,
+  which the rich outputs do not print) – also carries `display_cells`, a
+  character vector as long as `body` holding the display string of each
+  cell (`NA` where the number formats normally). A renderer must prefer
+  it over the numeric value. The df columns of a term-level test carry
+  `is_df = TRUE` in `col_meta`, so a renderer that prints
+  `display_cells` can leave them out.
 
 - `stars` – `NULL` unless `stars` was requested, otherwise a list with
   `thresholds` (symbol to p cutoff) and `markers` (per-cell marker

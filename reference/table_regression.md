@@ -753,7 +753,8 @@ table_regression(
 - effect_size_digits:
 
   Decimals for per-coefficient effect sizes (`partial_f2`,
-  `partial_eta2`, `partial_omega2`). Default `2L`.
+  `partial_eta2`, `partial_omega2`) and the term-level tests
+  (`partial_chi2`, `partial_f`). Default `2L`.
 
 - fit_digits:
 
@@ -1100,7 +1101,17 @@ Each token = one displayed column.
   (k-1 df) from numeric terms (1 df), and the partial F as `F (q, df)`
   with both of its degrees of freedom, `3.45 (2, 28)`, as Stata and SAS
   report them: each cell carries the residual df of its own model, and
-  the note defines the statistic only.
+  the note defines the statistic only. The console and the rich outputs
+  (tinytable, gt, flextable, Word, the clipboard) print the test in one
+  column under the statistic's header, and Excel writes the statistic as
+  a number with its df in the number format (`0.00" (2, 28)"`).
+  `output = "data.frame"` and
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  keep the statistic and its df as numbers, in the statistic's column,
+  then `"<column>: df"` and, for the F, `"<column>: residual df"`.
+  `tidy()` has them in `df` and `df.residual`, and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites the statistic alone.
 
 - Variance explained per fit – `lm` only: `"r2"`, `"adj_r2"`. Like
   `"n"`, these are *per-fit* columns: they are populated by
@@ -1317,7 +1328,8 @@ restore it explicitly when needed).
   and the residual df of the larger model (the denominator df for the
   Wald F of a robust `vcov`), `9.12 (1)` for a chi-square. A df that is
   not a whole number (the HTZ denominator under `"CR2"`, the df of a
-  smooth term) prints with one decimal, `174.77 (2, 0.8)`.
+  smooth term) prints with one decimal, `174.77 (2, 0.8)`. The rich
+  outputs print the same cell,
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites the statistic alone, `output = "data.frame"` keeps it as a
   number, and Excel writes the number with the df in its number format.
