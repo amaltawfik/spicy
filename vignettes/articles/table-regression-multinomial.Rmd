@@ -192,10 +192,10 @@ table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 ```
 
 Each predictor cell is an **odds ratio against the reference outcome**
-(the exponentiated intercepts are baseline *odds* — each category's
-odds versus `Employed` at the reference levels and age 0 — not
-ratios): compared with lower-secondary graduates of the same age and
-sex, tertiary graduates' odds of being unemployed rather than employed
+(the exponentiated intercepts are baseline *odds*, as the note says —
+each category's odds versus `Employed` at the reference levels and
+age 0 — not ratios): compared with lower-secondary graduates of the
+same age and sex, tertiary graduates' odds of being unemployed rather than employed
 are 0.29 times as large — a 71% reduction in those odds, the education
 gradient the table is really about. Formally it is the odds ratio of the *conditional*
 distribution restricted to the two categories in the comparison
