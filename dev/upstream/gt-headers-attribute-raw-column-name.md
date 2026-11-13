@@ -3,7 +3,10 @@
 - **Cible** : gt 1.4.0 (CRAN) ; master 76f9ba1a (1.4.0.9000), fichier identique
 - **Canal** : GitHub rstudio/gt, issue à ouvrir
 - **Envoyé** : non envoyé ; mis de côté le 2026-11-12
-- **Statut** : dossier prêt. Remesuré le 2026-11-12 sur gt 1.4.0 : la 1.4.0
+- **Statut** : dossier prêt, correctif appliqué et testé le 2026-11-13 sur
+  une copie du source (5 lignes, 1 fichier ; tests de gt : 4 instantanés à
+  mettre à jour, aucune régression ; tableaux à noms ordinaires identiques
+  octet pour octet). Remesuré le 2026-11-12 sur gt 1.4.0 : la 1.4.0
   (#2085, #2173) aligne `headers=` sur l'id pour les espaces ; une guillemet
   ou une référence de caractère dans le nom casse encore la correspondance
   (la guillemet tronque l'attribut). Chaque bloc de code a tourné tel quel
@@ -105,3 +108,56 @@ cat(grep("summary_stub", unlist(regmatches(html3, gregexpr("<t[hd] [^>]*>", html
 ```
 
 `summary_stub_plain-group_1` matches no id, and the id itself contains a space. This is the space case of #2085 left over in the summary rows: #2173 hyphenated the `headers` side, summary cells included, but not this id. #2184 (open) covers the group heading id built from the label.
+
+The same mismatch shows when the group name starts with a digit, because `valid_html_id()` prefixes `a` on the `headers` side only. The committed snapshot of `test-summary_rows.R` for the group `1960s` has `<th id="summary_stub_1960s_1">` next to `headers="a1960s summary_stub_a1960s_1 population"`.
+
+## Proposed fix
+
+Escape the pasted values with `htmltools::htmlEscape(x, attribute = TRUE)`, as the summary block already does for `colspan` and `style` (L2352, L2369), and build the summary stub id with `valid_html_id()`. Applied on 76f9ba1a:
+
+```diff
+diff --git a/R/utils_render_html.R b/R/utils_render_html.R
+index 6192c4c7f..e551c1cdd 100644
+--- a/R/utils_render_html.R
++++ b/R/utils_render_html.R
+@@ -1893,7 +1893,7 @@ render_row_data <- function(
+   base_attributes <- ifelse(
+     has_stub_class,
+     paste0("id=\"", row_id_i, "\" ", "scope=\"", scope, "\" "),
+-    paste0("headers=\"", header, "\" ")
++    paste0("headers=\"", htmltools::htmlEscape(header, attribute = TRUE), "\" ")
+   )
+ 
+   row_span_attributes <- character(n)
+@@ -2293,7 +2293,7 @@ summary_rows_for_group_h <- function(
+               alignment_classes,
+               extra_classes,
+               row_styles,
+-              valid_html_id(names(summary_df)),
++              htmltools::htmlEscape(valid_html_id(names(summary_df)), attribute = TRUE),
+               FUN = function(x, col_span, alignment_class, extra_class, cell_style, col_name) {
+                 extra_class <- c(extra_class, summary_row_class)
+ 
+@@ -2321,7 +2321,7 @@ summary_rows_for_group_h <- function(
+                       if (summary_row_type == "grand") {
+                         paste0("grand_summary_stub_", j, "\" ")
+                       } else {
+-                        paste0("summary_stub_", group_id, "_", j, "\" ")
++                        paste0("summary_stub_", htmltools::htmlEscape(valid_html_id(group_id), attribute = TRUE), "_", j, "\" ")
+                       },
+                       "scope=\"row\""
+                     )
+@@ -2337,8 +2337,8 @@ summary_rows_for_group_h <- function(
+                         )
+                       } else {
+                         paste0(
+-                          valid_html_id(group_id), " summary_stub_",
+-                          valid_html_id(group_id), "_", j, " ", col_name, "\""
++                          htmltools::htmlEscape(valid_html_id(group_id), attribute = TRUE), " summary_stub_",
++                          htmltools::htmlEscape(valid_html_id(group_id), attribute = TRUE), "_", j, " ", col_name, "\""
+                         )
+                       }
+                     )
+```
+
+With this, the three reproducers give `headers="M-(Q&quot;x)"`, `headers="Q&amp;amp;A"` and `<th id="summary_stub_plain-group_1">`, and every parsed `headers` token matches an id. Tables with ordinary names render byte for byte the same; the only change outside the cases above is the summary stub id of a group whose name has a space or starts with a digit. The 21 test files that touch this code pass (2,587 expectations) except four HTML snapshots holding the old values: `test-summary_rows.R:1877` (`summary_stub_1960s_1`), `test-summary_rows.R:1961` (`summary_stub_Aston Martin_1`) and `test-multicolumn_stub.R:370` and `:406` (`headers="American-&-German ..."`, which parses the same as the escaped form). I can send it as a PR with the snapshot updates.
