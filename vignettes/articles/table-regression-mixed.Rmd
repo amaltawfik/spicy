@@ -546,12 +546,14 @@ from: spicy computes the pair natively from the closed-form
 decomposition for Gaussian, single-trial binomial — logit, probit,
 cloglog — and Poisson log fits, cross-validated against
 `performance::r2_nakagawa()` to 10⁻¹⁰, and delegates the remaining
-families — multi-trial binomial, negative binomial, beta,
+families — multi-trial binomial, negative binomial, Gamma,
 zero-inflation — to `performance`, a Suggests dependency: absent, the
-R² rows render as NA and the rest of the table is unaffected. A
-beta-binomial fit gets no R² rows: the distribution variance
-`performance` uses for that family is not validated, and its
-conditional R² tends to 1 as the overdispersion vanishes, instead of
+R² rows render as NA and the rest of the table is unaffected. A beta,
+ordered beta or beta-binomial fit gets no R² rows. The distribution
+variance `performance` uses for these families is the approximation of
+a log link, applied to their logit link: the R² of a beta fit changes
+when the outcome y is recoded 1 − y, and the conditional R² of a
+beta-binomial fit tends to 1 as the overdispersion vanishes, instead of
 joining the binomial's.)
 
 **The ICC row is an interpretation, not a test.** For the

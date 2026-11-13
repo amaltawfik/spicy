@@ -351,6 +351,74 @@ test_that("a beta-binomial glmmTMB fit gets no R^2, the binomial keeps its own",
   expect_true(all(endsWith(trimws(two), "–")))
 })
 
+test_that("beta and ordered beta glmmTMB fits get no R^2", {
+  skip_if_not_installed("glmmTMB")
+  set.seed(3)
+  d <- data.frame(g = factor(rep(1:20, each = 10)), x = stats::rnorm(200))
+  p <- stats::plogis(0.3 + 0.4 * d$x + stats::rnorm(20, sd = 0.3)[d$g])
+  d$y <- stats::rbeta(200, p * 6, (1 - p) * 6)
+  d$o <- d$y
+  d$o[seq(1, 200, by = 13)] <- 0
+  d$o[seq(7, 200, by = 13)] <- 1
+  fits <- list(
+    beta = glmmTMB::glmmTMB(
+      y ~ x + (1 | g),
+      data = d,
+      family = glmmTMB::beta_family()
+    ),
+    ordbeta = glmmTMB::glmmTMB(
+      o ~ x + (1 | g),
+      data = d,
+      family = glmmTMB::ordbeta()
+    )
+  )
+  for (fit in fits) {
+    expect_identical(
+      spicy:::.nakagawa_r2(fit),
+      list(marginal = NA_real_, conditional = NA_real_)
+    )
+    fs <- as_regression_frame(fit)$info$fit_stats
+    expect_true(is.na(fs$r2_marginal) && is.na(fs$r2_conditional))
+    out <- utils::capture.output(print(table_regression(fit)))
+    expect_length(grep("R² (", out, fixed = TRUE), 0L)
+  }
+})
+
+test_that("the other glmmTMB families keep the R^2 of performance", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("performance")
+  set.seed(7)
+  d <- data.frame(g = factor(rep(1:25, each = 12)), x = stats::rnorm(300))
+  eta <- 0.2 + 0.5 * d$x + stats::rnorm(25, sd = 0.6)[d$g]
+  d$yc <- eta + stats::rnorm(300)
+  d$yb <- stats::rbinom(300, 1, stats::plogis(eta))
+  d$yp <- stats::rpois(300, exp(eta))
+  d$yn <- stats::rnbinom(300, mu = exp(eta), size = 2)
+  d$yg <- stats::rgamma(300, shape = 3, rate = 3 / exp(eta))
+  fits <- list(
+    glmmTMB::glmmTMB(yc ~ x + (1 | g), data = d),
+    glmmTMB::glmmTMB(yb ~ x + (1 | g), data = d, family = binomial),
+    glmmTMB::glmmTMB(yp ~ x + (1 | g), data = d, family = poisson),
+    glmmTMB::glmmTMB(yn ~ x + (1 | g), data = d, family = glmmTMB::nbinom2),
+    glmmTMB::glmmTMB(yg ~ x + (1 | g), data = d, family = Gamma("log"))
+  )
+  for (fit in fits) {
+    oracle <- performance::r2_nakagawa(fit, verbose = FALSE)
+    out <- spicy:::.nakagawa_r2(fit)
+    expect_true(is.finite(out$marginal) && is.finite(out$conditional))
+    expect_equal(
+      out$marginal,
+      as.numeric(oracle$R2_marginal),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      out$conditional,
+      as.numeric(oracle$R2_conditional),
+      tolerance = 1e-10
+    )
+  }
+})
+
 test_that("the performance fallback prints nothing on a singular fit", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("performance")

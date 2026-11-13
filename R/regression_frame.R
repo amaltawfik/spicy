@@ -1629,18 +1629,24 @@ validate_regression_frame <- function(frame) {
 # every (engine x family) combination spicy supports, in
 # tests/testthat/test-nakagawa_r2.R.
 .nakagawa_r2 <- function(fit) {
-  # No R^2 for a beta-binomial fit. The fallback below would take
-  # insight's distribution variance for that family,
-  # log1p((1 - mu) / (mu * (1 + phi))): the lognormal approximation of a
-  # log link, applied to a logit link and without the trials. It tends
-  # to 0 as phi grows, so the conditional R^2 tends to 1 instead of
-  # joining the binomial's (measured 2026-11-13, insight 1.7.0,
-  # performance 0.19.0: 1.000 against 0.627 on a fit at the boundary,
-  # above the binomial in 25 of 27 simulated data sets), and insight's
-  # help lists the family as not yet validated. The rows stay empty, as
-  # for an ordinal family.
+  # No R^2 for the glmmTMB beta, ordered beta and beta-binomial
+  # families. The fallback below would take insight's distribution
+  # variance for them, log1p((1 - mu) / (mu * (1 + phi))): the lognormal
+  # approximation of a log link, applied to a logit link (and, for the
+  # beta-binomial, without the trials). Measured 2026-11-13, insight
+  # 1.7.0, performance 0.19.0, ADR
+  # dev/decisions/2026-11-13-nakagawa-r2-beta-families.md:
+  #   * beta and ordered beta: the R^2 changes when y is recoded 1 - y,
+  #     a refit with the same variance components (conditional R^2
+  #     0.730 against 0.987 for the beta, 0.766 against 0.987 for the
+  #     ordered beta, at phi = 10, means over five simulated data sets);
+  #   * beta-binomial: the conditional R^2 tends to 1 as phi grows
+  #     instead of joining the binomial's (1.000 against 0.627 on a fit
+  #     at the boundary, above the binomial in 25 of 27 simulated data
+  #     sets), and insight's help lists the family as not yet validated.
+  # The rows stay empty, as for an ordinal family.
   fam <- tryCatch(stats::family(fit)$family, error = function(e) NULL)
-  if (identical(fam, "betabinomial")) {
+  if (isTRUE(fam %in% c("beta", "ordbeta", "betabinomial"))) {
     return(.nakagawa_na())
   }
   # Self-implementation: Gaussian + Bernoulli (binomial 1-trial) +
@@ -1654,7 +1660,7 @@ validate_regression_frame <- function(frame) {
     if (is.finite(out$marginal) && is.finite(out$conditional)) return(out)
   }
   # Fallback for cases we don't (yet) implement natively: binomial
-  # with multiple trials (cbind), negative binomial / beta /
+  # with multiple trials (cbind), negative binomial / Gamma /
   # Tweedie families, zero-inflation, dispersion components.
   # These require the delta / trigamma / lognormal approximation
   # families cataloged in Nakagawa et al. 2017 sec. 3 + the

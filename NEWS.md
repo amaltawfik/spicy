@@ -114,10 +114,12 @@
   string. `table_categorical()` showed 0 for that group, and the survey
   tables failed.
 
-* `table_regression()`: a `glmmTMB` beta-binomial mixed model no longer
-  reports the Nakagawa R2. The residual variance it relied on for that
-  family goes to 0 as the overdispersion vanishes, so the R2 went to 1
-  instead of joining that of the binomial model.
+* `table_regression()`: a `glmmTMB` beta, ordered beta or beta-binomial
+  mixed model no longer reports the Nakagawa R2. The residual variance
+  it relied on for these families is that of a log link, not of their
+  logit link. The R2 of a beta model changed when the outcome was
+  recoded 1 - y, and that of a beta-binomial model went to 1 as the
+  overdispersion vanished instead of joining that of the binomial model.
 
 ## New features
 
