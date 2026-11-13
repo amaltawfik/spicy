@@ -45,12 +45,14 @@ sqrt(diag(vcovHC(fit, type = "HC3"))) / sqrt(diag(vcovHC(refit, type = "HC3")))
 #>   longer object length is not a multiple of shorter object length
 ```
 
-n = 32, of which 29 rows have a nonzero weight. The same holds for
-glm(am ~ wt, family = binomial, weights = w).
+n = 32, of which 29 rows have a nonzero weight.
+glm(am ~ wt, family = binomial, weights = w) on the same data gives the same
+four lengths and the same HC0 ratio.
 
 ## What happens
 
-1. HC0 and HC1. bread.lm() scales by sum(summary(fit)$df[1:2]) = 29
+1. HC0 and HC1. bread.lm() and bread.glm() scale by
+   sum(summary(fit)$df[1:2]) = 29
    (bread(fit) = 29 * solve(X'WX)), while sandwich() divides by
    NROW(estfun(fit)) = 32 and meatHC(fit, "HC0") is crossprod(estfun(fit)) / 32.
    So vcovHC(fit, "HC0") = (29/32)^2 * V, where V is both vcovHC(refit, "HC0")
@@ -75,9 +77,9 @@ glm(am ~ wt, family = binomial, weights = w).
 ## Documentation
 
 ?vcovHC, ?sandwich, ?meat, ?bread and ?estfun have no sentence containing
-"zero" or "weight". ?lm.influence states that cases with weights == 0 are
-dropped; ?lm.summaries states that zero weight cases are never omitted from
-residuals(). The two conventions meet in meatHC().
+"zero" or "weight". ?lm.influence says "Note that cases with weights == 0 are
+dropped"; ?lm.summaries says of the residuals "In all these, zero weight cases
+are never omitted". The two conventions meet in meatHC().
 
 ## Numbers
 
@@ -91,3 +93,7 @@ glm (Intercept) 4.918682 / 5.699328, wt 1.543135 / 1.771190
 
 The attached repro.R (base R and sandwich only) prints every type for both
 models, with the hand-computed HC0; repro.log is its output.
+
+This report was prepared with the help of an AI assistant. The source
+statements were checked in the installed sandwich 3.1-3, and the numbers come
+from running the code above and the attached script on my machine.
