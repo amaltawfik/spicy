@@ -3,6 +3,8 @@
 *Constaté sur spicy 0.12.0.9000 et tinytable 0.17.0, en composant le rapport
 HESAV Healthy Campus.*
 
+**Statut** (mis à jour le 2026-11-13) : corrigé le 2026-08-13 dans 3c353c3d (`.spicy_tt_bare()` ne retire que les réglages d'apparence), publié dans la 0.13.0.
+
 ## Symptôme
 
 Les options Typst de tinytable n'ont aucun effet sur les tableaux produits par

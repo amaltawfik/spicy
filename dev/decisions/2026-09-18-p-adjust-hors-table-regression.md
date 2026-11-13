@@ -1,6 +1,7 @@
 # ADR 2026-09-18 — Argument `p_adjust` pour les fonctions `table_*` autres que `table_regression()`
 
 **Statut** : proposé (2026-09-18). À réfléchir, puis à arbitrer avant toute implémentation.
+Mise à jour 2026-11-13 : implémenté le 2026-10-10 (e005b46f) dans `table_categorical()`, `table_continuous()`, `table_outcome()` et leurs jumelles svy, publié dans la 0.14.0.
 
 ## Contexte
 

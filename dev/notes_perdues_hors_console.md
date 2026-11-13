@@ -1,4 +1,6 @@
-# Correctif à faire : les notes de tableau n'atteignent que la console
+# Corrigé : les notes de tableau n'atteignaient que la console
+
+**Statut** (mis à jour le 2026-11-13) : corrigé le 2026-08-13 dans 3c353c3d, publié dans la 0.13.0. Titre d'origine : « Correctif à faire : les notes de tableau n'atteignent que la console ».
 
 *Diagnostic posé sur spicy 0.12.0.9000 et tinytable 0.17.0, en composant le
 rapport HESAV Healthy Campus. Toutes les lignes citées ont été lues, tous les

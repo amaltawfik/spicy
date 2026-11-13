@@ -10,6 +10,8 @@ modèles lmerModLmerTest, glmerMod avec effets croisés, clmm).
    mis en forme à part, utilise U+2212 : l'incohérence se voit entre prose et
    tableaux. Proposition : option de style (`spicy_style(minus = "\u2212")`)
    ou conversion par défaut en sortie flextable, gt, tinytable et Word.
+   *Statut (2026-11-13) :* livré le 2026-11-02 (e36e19c4) : `spicy_style(minus_sign)`
+   couvre aussi Word (flextable), gt et tinytable HTML, cellules et note.
 
 2. **Note native qui cite une option interne.** Pour un glmer à 16 314
    réponses, la note dit : « Random-effect variance components: SE and CI not
@@ -17,6 +19,8 @@ modèles lmerModLmerTest, glmerMod avec effets croisés, clmm).
    n'a pas sa place dans une note destinée à un lecteur de revue. Proposition :
    « SE and CI of the variance components not computed for n > 10 000 (see
    `?table_regression`) », le nom d'option restant dans la documentation.
+   *Statut (2026-11-13) :* livré le 2026-11-02 (e36e19c4) : la note donne le
+   seuil, plus le nom de l'option.
 
 3. **En-tête « 95% CI » au-dessus de deux colonnes LL / UL** dans LibreOffice :
    le libellé fusionné se cale au-dessus de LL seul et « p » se retrouve au
@@ -33,11 +37,15 @@ modèles lmerModLmerTest, glmerMod avec effets croisés, clmm).
    familles descriptives gardent le `fixed` par défaut de flextable.
    *Décision (2026-11-02) :* `table_regression()` passe en `layout = "fixed"`,
    comme les autres familles ; test et NEWS.
+   *Statut (2026-11-13) :* livré le 2026-11-02 (e36e19c4).
 
 4. **Étiquettes des modalités de référence** : `T0 (2018) (ref.)` empile deux
    parenthèses quand le niveau porte déjà une parenthèse. Proposition :
    `T0 (2018), ref.` ou `reference_style = "annotation"` par défaut quand le
    libellé contient une parenthèse.
+   *Statut (2026-11-13) :* livré le 2026-11-02 (e36e19c4) : un `reference_label`
+   qui commence par une ponctuation se colle au niveau (`", ref."` donne
+   `T0 (2018), ref.`). Le défaut ne change pas.
 
 Fichiers témoins : `C:/Users/at/Documents/Projets/ncs-infirmieres-scolaires/reports/article-draft.qmd`
 (Supplementary Tables S5 à S9) et `rapport.qmd`.

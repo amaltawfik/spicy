@@ -2,6 +2,8 @@
 
 *Constaté sur 0.12.0.9000, en composant le rapport HESAV Healthy Campus.*
 
+**Statut** (mis à jour le 2026-11-13) : corrigé le 2026-08-13 dans 3c353c3d (tri par rang dans chaque variable), publié dans la 0.13.0.
+
 ## Symptôme
 
 Quand plusieurs variables sont décrites dans le même tableau, la ligne
