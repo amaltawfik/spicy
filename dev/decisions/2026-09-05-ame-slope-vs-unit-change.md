@@ -116,6 +116,60 @@ l'interaction, `log(x)`, `poly(x, 2)`, un prédicteur de comptage, une
 variable présente seulement dans l'offset, glmer, glmmTMB (CR1 compris),
 multinom, polr avec offset, lrm ordinal et stan_glm.
 
+## Sources lues le 2026-11-13
+
+Citations relevées dans les PDF de la bibliothèque d'Amal
+(`switchdrive/bibliotheque/`), clés de `master.bib` entre parenthèses.
+
+- Long et Freese (2014, `long2014regression`), p. 168 : « The standard
+  deviation change, labeled +SD, is the change in the prediction as a
+  variable changes one standard deviation from its observed value. » Et
+  plus bas : « By default, changes of 1 and 1 standard deviation are
+  uncentered. The centered option requests changes that are centered; a
+  centered unit change is the change from x − (1/2) to x + (1/2) rather
+  than from x to x + 1. » P. 494 : la variation non centrée va de x_ik à
+  x_ik + δ, la variation centrée de x_ik − δ/2 à x_ik + δ/2.
+- Mize, Doan et Long (2019, `mize2019general`), pagination de la version
+  en ligne (1–38), p. 6 : « for a continuous focal variable we can
+  compute the effect when xk increases by d from its observed value xik
+  […] One or a standard deviation are common values of d ». Même page :
+  « The average discrete change (ADC) for xk is the average of the
+  discrete changes for each observation ».
+- Gelman et Pardoe (2007, `gelman2007average`), p. 27 : critique de
+  l'évaluation des effets à une valeur centrale (« for example, the mean
+  plus or minus one standard deviation »). P. 32, légende de la figure 2 :
+  « we wish to consider changes in u in the region of support of this
+  distribution ».
+- marginaleffects 1.0.0, `?comparisons` (vérifié dans l'aide installée) :
+  « "sd": Contrast across one standard deviation around the regressor
+  mean. » Le source, `get_comparisons_data_numeric()`, place chaque
+  observation à `m - s/2` puis à `m + s/2`, les mêmes deux valeurs pour
+  toutes les lignes, avec `m` et `s` la moyenne et l'écart-type de la
+  variable dans `modeldata`, les données que marginaleffects tire du
+  modèle.
+
+Conclusion. Le pas non centré depuis la valeur observée est retenu.
+C'est le défaut de Long et Freese et la variation discrète moyenne de
+Mize, Doan et Long. L'écart-type non pondéré de l'échantillon
+d'estimation est un choix du package, qu'aucune de ces sources ne fixe.
+Le mode centré n'est pas offert tant que personne ne le demande. Pour
+les observations les plus hautes, le pas porte la variable au-delà des
+valeurs observées, hors de la région de support dont parlent Gelman et
+Pardoe : la prédiction y est une extrapolation du modèle, ce que l'aide
+de `ame_type` dit depuis le 2026-11-13.
+
+Vérification du 2026-11-13 (marginaleffects 1.0.0), sur un logit et un
+Gamma à lien log (n = 400, cinq lignes écartées par le modèle à cause
+d'une autre variable) : l'AME `"sd"` de spicy égale
+`avg_comparisons(fit, variables = list(x = s))`, `s` l'écart-type de `x`
+sur les lignes du modèle, à 0 près pour l'estimation et l'erreur
+standard (logit 0,146795, Gamma 1,822166). Il diffère avec l'écart-type
+de toutes les lignes (0,159699 et 2,094153), sous l'option
+`marginaleffects_contrast_direction = "center"` (0,176913 et 1,463401) et
+avec le raccourci `"sd"` (0,193250 et 1,333618). L'égalité tient pour un
+ajustement non pondéré, sous le contraste avant par défaut de
+marginaleffects. Un test la fixe dans `tests/testthat/test-regression_ame.R`.
+
 ## Conséquences
 
 - Nouvel argument documenté, trois chaînes de note en anglais et en
