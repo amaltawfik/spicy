@@ -508,16 +508,23 @@ table_battery <- function(
   nb <- length(blocks)
   n_items <- length(select_names)
   n_levels <- length(shown)
-  # The rows each block holds, unweighted: a group with rows and no answer
-  # to an item has no data for it, a declared group without rows nothing.
-  block_rows <- vapply(seq_len(nb), function(b) sum(gi %in% b), numeric(1))
+  # The rows the table keeps: rows, never weights, a row of zero weight left
+  # out, as in the N of the family. It is in no count, so a group whose rows
+  # all weigh zero holds none: a declared group without rows, not a group
+  # with rows and no answer.
+  rows_in <- .weighted_rows_in(weights_vec, n_rows) & !is.na(gi)
+  # The rows each block holds: a group with rows and no answer to an item
+  # has no data for it, a declared group without rows nothing.
+  block_rows <- vapply(
+    seq_len(nb),
+    function(b) sum(rows_in & gi %in% b),
+    numeric(1)
+  )
 
   # ---- counts: one matrix per item, blocks by levels ------------------------
   counts <- array(0, dim = c(nb, n_items, n_levels))
   miss <- matrix(0, nb, n_items)
-  # The rows of each item's base, for the `nobs` of glance(): rows, never
-  # weights, a row of zero weight left out, as in the N of the family.
-  rows_in <- .weighted_rows_in(weights_vec, n_rows) & !is.na(gi)
+  # The rows of each item's base, for the `nobs` of glance().
   base_rows <- integer(n_items)
   for (j in seq_len(n_items)) {
     answers <- items$answers[[j]]

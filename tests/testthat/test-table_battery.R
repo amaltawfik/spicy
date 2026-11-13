@@ -132,6 +132,60 @@ test_that("weights give the percentages of xtabs()", {
   expect_match(attr(df, "note"), "Statistics weighted by weight.", fixed = TRUE)
 })
 
+test_that("a group whose rows all weigh zero holds no row", {
+  skip_on_cran()
+  # A row of zero weight is in no count, so such a group is a declared
+  # group without rows: it said "No data for q1 in C." and, beside one
+  # other group, kept a column of p-values with nothing to compare.
+  d <- data.frame(
+    g = factor(rep(c("A", "B", "C"), each = 4L)),
+    q1 = factor(c(
+      "yes",
+      "no",
+      "yes",
+      "no",
+      "yes",
+      "yes",
+      "no",
+      "no",
+      "yes",
+      "no",
+      "yes",
+      "yes"
+    )),
+    w = c(1, 2, 1, 2, 2, 1, 1, 2, 0, 0, 0, 0)
+  )
+  kept <- d[d$w > 0, ]
+  expect_identical(
+    table_battery(d, q1, by = g, weights = w, output = "data.frame"),
+    table_battery(kept, q1, by = g, weights = w, output = "data.frame")
+  )
+  two <- d[d$g != "A", ]
+  expect_warning(
+    df <- table_battery(
+      two,
+      q1,
+      by = g,
+      weights = w,
+      p_value = TRUE,
+      output = "data.frame"
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_false("p" %in% names(df))
+  expect_identical(
+    df,
+    suppressWarnings(table_battery(
+      two[two$w > 0, ],
+      q1,
+      by = g,
+      weights = w,
+      p_value = TRUE,
+      output = "data.frame"
+    ))
+  )
+})
+
 test_that("by: the percentages of each group, a chi-squared per item, Holm by hand", {
   d <- .bat_sat()
   df <- .bat_tbl(by = sex, output = "data.frame")
