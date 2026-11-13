@@ -526,10 +526,10 @@ describes the models. Arguments that act on coefficients only, such
 as `exponentiate` or `keep`, are ignored with a warning. Without
 `nested = TRUE`, a table that compares an information criterion
 across models fitted to different samples or outcomes warns that
-the difference is not interpretable. `broom::glance()` returns the
-model-level statistics as one row per model (here `nobs`,
-`r.squared`, `adj.r.squared`, `AIC`, `BIC`), without the change
-rows, which compare two models.
+the difference is not interpretable. `broom::glance()` returns one
+row per model with its model-level statistics, `nobs`, `r.squared`,
+`adj.r.squared`, `AIC` and `BIC` among them. The change rows compare
+two models, so they are in the table only.
 
 ## Robust variance
 
