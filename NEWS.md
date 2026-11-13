@@ -224,6 +224,14 @@
   `glance()` and `output = "long"` return the rows of the models side
   by side, with a leading `panel` column.
 
+* `table_regression()` gains `show_columns = "none"`: the fit statistics
+  of the models alone, one column per model, in the order of
+  `show_fit_stats`, with the change rows of `nested = TRUE`. The
+  arguments that act on coefficients only are ignored with a warning.
+  Another warning flags an information criterion compared across models
+  fitted to different samples or outcomes. `table_regression_uv()`
+  refuses the token.
+
 * `table_regression()`: glmmTMB models take `vcov = "CR1"`, glmmTMB's
   cluster sandwich scaled by G/(G - 1) for G clusters, as for the other
   likelihood classes. It covers the coefficients, the zero-inflation

@@ -504,6 +504,33 @@ care when many predictors enter at once.
 table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 ```
 
+### Comparing models by their fit statistics
+
+`show_columns = "none"` keeps the fit statistics and drops every
+coefficient. Each model has one column, and the rows follow
+`show_fit_stats`. With `nested = TRUE` the change rows come last,
+so the table reads as the summary of the hierarchy.
+
+```{r nested-fit-only}
+table_regression(
+  list(m1, m2, m3),
+  show_columns = "none",
+  nested = TRUE,
+  show_fit_stats = c("nobs", "r2", "adj_r2", "aic", "bic",
+                     "r2_change", "f_change", "p_change")
+)
+```
+
+The title still names the outcome, and the note keeps what
+describes the models. Arguments that act on coefficients only, such
+as `exponentiate` or `keep`, are ignored with a warning. Without
+`nested = TRUE`, a table that compares an information criterion
+across models fitted to different samples or outcomes warns that
+the difference is not interpretable. `broom::glance()` returns the
+model-level statistics as one row per model (here `nobs`,
+`r.squared`, `adj.r.squared`, `AIC`, `BIC`), without the change
+rows, which compare two models.
+
 ## Robust variance
 
 The default `vcov = "classical"` reports the OLS standard error,
