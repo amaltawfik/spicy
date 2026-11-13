@@ -65,12 +65,14 @@ or `"fisher_exact_mc"`, as in the long output of
 `statistic` (the chi-squared, Pearson's or the N-1, `NA` for an exact
 test), `df`, `p.value`, `es_type` (the key of the measure the variable
 carries: `"phi"`, `"cramer_v"`, ...), `es_value`, `es_ci_lower`,
-`es_ci_upper`, `smd_type`, `smd_value`, and `nobs` (the observations of
-the variable, the margin and the Total row not counted twice). Without
-`by`, only `variable`, `label` and `nobs` are populated; the other
-columns are `NA`. The interval bounds are `NA` unless the table was
-built with `assoc_ci = TRUE`, and the SMD columns unless it was built
-with `smd = TRUE`.
+`es_ci_upper`, `smd_type`, `smd_value`, `nobs` (the observations of the
+variable, the margin and the Total row not counted twice: rows, never
+weights, a row of zero weight left out) and `weighted_nobs` (their
+weighted count, `NA` without `weights`). Without `by`, only `variable`,
+`label`, `nobs` and `weighted_nobs` are populated; the other columns are
+`NA`. The interval bounds are `NA` unless the table was built with
+`assoc_ci = TRUE`, and the SMD columns unless it was built with
+`smd = TRUE`.
 
 ## See also
 

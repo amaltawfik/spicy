@@ -488,9 +488,10 @@ between 0 and 1.</p>
 an estimated population size. <code>%</code> is the estimated percentage
 <em>within</em> its column: without <code>by</code> it is the distribution of the
 variable in the population, with <code>by</code> the distribution inside that
-domain. The table note gives the sample size and the estimated
-population together, because neither alone tells the reader what
-they are looking at.</p>
+domain. The table note gives the sample size (the rows of non-zero
+weight, which the <code>n</code> columns count, as <code><a href="https://rdrr.io/pkg/survey/man/svyby.html" class="external-link">survey::unwtd.count()</a></code> does)
+and the estimated population together, because neither alone tells
+the reader what they are looking at.</p>
 <p><code>proportion_ci = TRUE</code> adds the interval of each percentage.
 <code>ci_method</code> chooses among the seven <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">survey::svyciprop()</a></code> offers;
 the default <code>"logit"</code> is bounded inside 0 to 100, which the Wald

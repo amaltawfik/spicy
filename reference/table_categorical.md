@@ -435,14 +435,13 @@ table_categorical(
 
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  If `TRUE`, includes the 95\\ and in the `"data.frame"`, `"excel"` and
-  `"clipboard"` outputs, two extra columns headed `95% CI LL` /
-  `95% CI UL` are added, the level stated as the other tables state it;
-  in the long output (`"long"`) the bounds fill `es_ci_lower` /
-  `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
-  `"flextable"`, `"word"`), the CI is shown inline (e.g.,
+  If `TRUE`, includes the 95\\ and in rendered formats (`"gt"`,
+  `"tinytable"`, `"flextable"`, `"word"`), the CI is shown inline (e.g.,
   `.14 [.08, .19]`) under a header that states its level (`V [95% CI]`).
-  Defaults to `FALSE`.
+  In the `"data.frame"`, `"excel"` and `"clipboard"` outputs, two extra
+  columns headed `95% CI LL` / `95% CI UL` are added, the level stated
+  as the other tables state it; in the long output (`"long"`) the bounds
+  fill `es_ci_lower` / `es_ci_upper`. Defaults to `FALSE`.
 
 - smd:
 
@@ -1240,12 +1239,12 @@ table_categorical(
 #>    Yes       │   78     30.4     112     21.3     59  15.1  249  21.2        
 #>    (Missing) │    4               12               9         25              
 #> 
-#>  Variable    │  V   95% CI LL  95% CI UL 
-#> ─────────────┼───────────────────────────
-#>  smoking     │ .14     .08        .19    
-#>    No        │                           
-#>    Yes       │                           
-#>    (Missing) │                           
+#>  Variable    │   V [95% CI]   
+#> ─────────────┼────────────────
+#>  smoking     │ .14 [.08, .19] 
+#>    No        │                
+#>    Yes       │                
+#>    (Missing) │                
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V; CI = confidence interval; LL = lower limit; UL = upper limit.
 

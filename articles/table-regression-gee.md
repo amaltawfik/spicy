@@ -395,7 +395,10 @@ between the treated and untreated *populations*. The subject-specific
 odds ratio from the matching mixed model is larger – the attenuation of
 the first section – and the [mixed-effects
 article](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
-shows the two side by side.
+shows the two side by side. The `(Intercept)` row is not an odds ratio:
+the note names it the baseline odds, here those of a placebo patient
+with every numeric predictor at zero, age 0 included, a profile outside
+the trial (ages 11 to 68), so it anchors the model and is not read.
 
 Average marginal effects translate the odds ratio onto the probability
 scale, and for a GEE fit their uncertainty inherits the sandwich

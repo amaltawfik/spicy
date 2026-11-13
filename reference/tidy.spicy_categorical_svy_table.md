@@ -49,7 +49,8 @@ not appear; their p-value is what `glance()` is for.
 `glance()` returns one row per variable: `variable`, `label`,
 `n_levels`, `test_type` (the `svychisq()` statistic of the test,
 `chisq_statistic`; `NA` where no test ran), `p.value`, `degf` (the
-design's own), `nobs`, `weighted_nobs`.
+design's own), `nobs` (the observed rows of the variable, a row of zero
+weight left out), `weighted_nobs` (the sum of their sampling weights).
 
 `n_levels` counts the levels the TABLE displays, so a `(Missing)`
 display level counts; the test behind `p.value` runs on the complete

@@ -267,9 +267,11 @@ mandatory**: an RMST without its `tau` is not an estimand, so
 refuses to guess — pass a clinically meaningful time, or
 `tau = "minmax"` for the largest window every compared group can support
 (the value used is disclosed in the table note). Second, the contrast is
-level against reference for factor predictors and a +1-unit shift for
-continuous predictors, mirroring the AME convention for other model
-families — so the columns read the same way across your tables.
+level against reference for factor predictors and, for a continuous
+predictor, a shift of every subject from its own value to that value
+plus one unit: the quantity the AME columns of the other model families
+report under `ame_type = "unit"`, so the columns read the same way
+across your tables.
 
 A third decision is inherited rather than made, and it is worth stating
 because it is otherwise invisible. A Cox model has to decide what to do
@@ -491,8 +493,9 @@ table_regression(sr, exponentiate = TRUE)
 
 The intercept is back — a parametric model must anchor the time scale,
 and exp(intercept) ≈ 801 days is that anchor (the extrapolated
-characteristic time at the reference levels and age 0), not a ratio
-despite the column header.
+characteristic time at the reference levels and age 0, by which 63.2% of
+such patients would have died: the “63.2nd percentile of survival time”
+the note names), not a ratio despite the column header.
 
 Set the TR next to the Cox HR and the numbers *look* contradictory:
 women have TR 1.50 but HR 0.57. They are the same finding on opposite

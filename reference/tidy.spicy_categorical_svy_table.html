@@ -123,7 +123,8 @@ p-value is what <code>glance()</code> is for.</p>
 <p><code>glance()</code> returns one row per variable: <code>variable</code>, <code>label</code>,
 <code>n_levels</code>, <code>test_type</code> (the <code>svychisq()</code> statistic of the test,
 <code>chisq_statistic</code>; <code>NA</code> where no test ran), <code>p.value</code>, <code>degf</code> (the
-design's own), <code>nobs</code>, <code>weighted_nobs</code>.</p>
+design's own), <code>nobs</code> (the observed rows of the variable, a row of zero
+weight left out), <code>weighted_nobs</code> (the sum of their sampling weights).</p>
 <p><code>n_levels</code> counts the levels the TABLE displays, so a <code>(Missing)</code>
 display level counts; the test behind <code>p.value</code> runs on the complete
 cases and the observed levels only, as it does in

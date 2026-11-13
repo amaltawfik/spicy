@@ -682,8 +682,12 @@ table_regression(
 ```
 
 Average marginal effects (`ame`) are useful next to the odds ratio
-because they report a probability-scale change for each predictor — the
-quantity most reviewers want to interpret directly. Note the two `p`
+because they report each predictor’s effect on the probability scale —
+the quantity most reviewers want to interpret directly. For a factor it
+is a difference in probability; for a continuous predictor such as `age`
+it is the average slope, as the note says, and `ame_type = "unit"`
+reports the change for one more year instead. The `(Intercept)` row is
+not an odds ratio: the note names it the baseline odds. Note the two `p`
 columns: the first tests the coefficient (the log odds ratio), `ame_p`
 tests the average marginal effect itself. The two can differ under
 non-linear links or interactions, which is why
@@ -1014,7 +1018,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_0ft0yt4eylj4qljhk2l9 .table
+Categorical table by education {#tinytable_hlw81kwec4eioglhin8t .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

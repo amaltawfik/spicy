@@ -817,12 +817,14 @@ binomial — logit, probit, cloglog — and Poisson log fits,
 cross-validated against
 [`performance::r2_nakagawa()`](https://easystats.github.io/performance/reference/r2_nakagawa.html)
 to 10⁻¹⁰, and delegates the remaining families — multi-trial binomial,
-negative binomial, beta, zero-inflation — to `performance`, a Suggests
+negative binomial, Gamma, zero-inflation — to `performance`, a Suggests
 dependency: absent, the R² rows render as NA and the rest of the table
-is unaffected. A beta-binomial fit gets no R² rows: the distribution
-variance `performance` uses for that family is not validated, and its
-conditional R² tends to 1 as the overdispersion vanishes, instead of
-joining the binomial’s.)
+is unaffected. A beta, ordered beta or beta-binomial fit gets no R²
+rows. The distribution variance `performance` uses for these families is
+the approximation of a log link, applied to their logit link: the R² of
+a beta fit changes when the outcome y is recoded 1 − y, and the
+conditional R² of a beta-binomial fit tends to 1 as the overdispersion
+vanishes, instead of joining the binomial’s.)
 
 **The ICC row is an interpretation, not a test.** For the intercept-only
 model it comes straight from the two σ rows above it: ICC = σ²(Subject)
@@ -1042,7 +1044,10 @@ above the average carries about e^0.64 ≈ 1.9 times the baseline *odds*
 of infection, so between-herd variation in susceptibility is far from
 negligible. Incidence falls across the trial — relative to period 1, the
 odds of new infection are 0.37 (period 2), 0.32 (period 3), and 0.21
-(period 4). The footer’s chi-bar-squared test (14.01 on 1 df, p \< .001)
+(period 4). The `(Intercept)` row, the baseline odds of the note, is
+conditional like every row above it: the odds of infection in period 1,
+0.25, for a herd whose random effect is zero, not the average odds over
+herds. The footer’s chi-bar-squared test (14.01 on 1 df, p \< .001)
 confirms the herd effect, and the Nakagawa R² pair carries over
 unchanged.
 

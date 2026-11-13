@@ -160,13 +160,19 @@ How to read the columns:
   [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html) and `flexsurvreg`
   support neither AME nor the estimand columns). `yes (draws)` means the
   effect is computed per posterior draw and summarized as a posterior
-  median with MAD SD and credible interval.
+  median with MAD SD and credible interval. Under every entry, the AME
+  of a continuous predictor is the average slope by default;
+  `ame_type = "unit"` or `"sd"` reports the average change for one unit
+  or one standard deviation instead.
 - **Exponentiate** – the labeled ratio `exponentiate = TRUE` produces.
   The label follows the link: OR under logit, IRR for count log-links,
   RR for the binomial log link, MR (mean ratio) for Gamma log links, HR
   for proportional hazards, TR (time ratio) for accelerated-failure-time
   models. Identity-link fits warn and stay untouched; links whose
-  exponential is not a ratio (probit, cauchit, inverse) are refused.
+  exponential is not a ratio (probit, cauchit, inverse) are refused. An
+  exponentiated intercept is not a ratio either, and the note says what
+  it estimates: the baseline odds, risk, rate or mean, or a quantile of
+  the survival time for an AFT model.
 - **Blocks** – labeled subordinate row blocks rendered inside the same
   table (random effects, thresholds, zero components, per-outcome
   segments), each explained by a footer line.

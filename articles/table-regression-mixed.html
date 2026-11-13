@@ -891,13 +891,15 @@ spicy computes the pair natively from the closed-form decomposition for
 Gaussian, single-trial binomial — logit, probit, cloglog — and Poisson
 log fits, cross-validated against
 <code><a href="https://easystats.github.io/performance/reference/r2_nakagawa.html" class="external-link">performance::r2_nakagawa()</a></code> to 10⁻¹⁰, and delegates the
-remaining families — multi-trial binomial, negative binomial, beta,
+remaining families — multi-trial binomial, negative binomial, Gamma,
 zero-inflation — to <code>performance</code>, a Suggests dependency:
 absent, the R² rows render as NA and the rest of the table is
-unaffected. A beta-binomial fit gets no R² rows: the distribution
-variance <code>performance</code> uses for that family is not validated,
-and its conditional R² tends to 1 as the overdispersion vanishes,
-instead of joining the binomial’s.)</p>
+unaffected. A beta, ordered beta or beta-binomial fit gets no R² rows.
+The distribution variance <code>performance</code> uses for these
+families is the approximation of a log link, applied to their logit
+link: the R² of a beta fit changes when the outcome y is recoded 1 − y,
+and the conditional R² of a beta-binomial fit tends to 1 as the
+overdispersion vanishes, instead of joining the binomial’s.)</p>
 <p><strong>The ICC row is an interpretation, not a test.</strong> For
 the intercept-only model it comes straight from the two σ rows above it:
 ICC = σ²(Subject) / (σ²(Subject) + σ²(Residual)) = 37.12² / (37.12² +
@@ -1107,9 +1109,12 @@ herd one SD above the average carries about e^0.64 ≈ 1.9 times the
 baseline <em>odds</em> of infection, so between-herd variation in
 susceptibility is far from negligible. Incidence falls across the trial
 — relative to period 1, the odds of new infection are 0.37 (period 2),
-0.32 (period 3), and 0.21 (period 4). The footer’s chi-bar-squared test
-(14.01 on 1 df, p &lt; .001) confirms the herd effect, and the Nakagawa
-R² pair carries over unchanged.</p>
+0.32 (period 3), and 0.21 (period 4). The <code>(Intercept)</code> row,
+the baseline odds of the note, is conditional like every row above it:
+the odds of infection in period 1, 0.25, for a herd whose random effect
+is zero, not the average odds over herds. The footer’s chi-bar-squared
+test (14.01 on 1 df, p &lt; .001) confirms the herd effect, and the
+Nakagawa R² pair carries over unchanged.</p>
 <p>No ICC row appears. The latent-scale formula σ² / (σ² + π²/3)
 describes a <em>single</em> Bernoulli trial, and it would still return a
 number here (0.11). But an aggregated <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> count is not

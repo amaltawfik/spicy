@@ -453,8 +453,8 @@ effect — the change in the linear predictor <code>Xβ</code> for a
 one-unit change in <code>x</code>, holding the other predictors
 constant. The <strong>average marginal effect (AME)</strong> is the
 <em>observable</em> effect on the response. For a numeric predictor it
-is the average partial derivative <code>dE[Y|X] / dx</code> over the
-sample; for a factor level it is the average <strong>discrete
+is, by default, the average partial derivative <code>dE[Y|X] / dx</code>
+over the sample; for a factor level it is the average <strong>discrete
 change</strong> — the difference in predicted response between that
 level and the reference, averaged over the sample (Long and Freese 2014
 §6.2 distinguish the two). For a purely linear-additive
@@ -507,20 +507,28 @@ attribution of each p-value unambiguous — the B-block
 <li>For non-linear models the AME is reported on the <strong>response
 scale</strong>, not the link scale. The <em>Generalized linear
 models</em> section below works out a logistic-regression example.</li>
+<li>The note names what the AME of a continuous predictor measures: here
+the average slope (dY/dX), the default. In an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> without
+transformed terms it is also the change for one more unit of the
+predictor. Under a non-identity link the two differ, and
+<code>ame_type</code> chooses between them (<em>Slope or discrete
+change</em>, below).</li>
 </ul>
-<p>Inference is delegated to <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>
-and respects the chosen variance estimator. Under cluster-robust
-variance (covered in <em>Robust variance</em>), the AME inference shares
-the coefficient’s t-distribution and Satterthwaite-corrected degrees of
-freedom via <code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so
-<code>B</code> and AME are reported on the same inferential footing in
-the same table. <code>marginaleffects</code> is a Suggests dependency
-with two distinct failure modes: requesting AME columns <em>without the
-package installed</em> is a hard, classed error
-(<code>spicy_missing_pkg</code>, with the install hint), while a
-<em>computation</em> failure inside <code>avg_slopes()</code> on an
-installed system warns (<code>spicy_fallback</code>) and dashes the AME
-cells, leaving the rest of the table intact.</p>
+<p>Inference is delegated to <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>,
+or to <code>avg_comparisons()</code> for the changes
+<code>ame_type</code> asks for, and respects the chosen variance
+estimator. Under cluster-robust variance (covered in <em>Robust
+variance</em>), the AME inference shares the coefficient’s
+t-distribution and Satterthwaite-corrected degrees of freedom via
+<code><a href="http://jepusto.github.io/clubSandwich/reference/linear_contrast.html" class="external-link">clubSandwich::linear_contrast()</a></code>, so <code>B</code> and AME
+are reported on the same inferential footing in the same table.
+<code>marginaleffects</code> is a Suggests dependency with two distinct
+failure modes: requesting AME columns <em>without the package
+installed</em> is a hard, classed error (<code>spicy_missing_pkg</code>,
+with the install hint), while a <em>computation</em> failure inside
+<code>marginaleffects</code> on an installed system warns
+(<code>spicy_fallback</code>) and dashes the AME cells, leaving the rest
+of the table intact.</p>
 </div>
 <div class="section level2">
 <h2 id="multiple-models-side-by-side">Multiple models side by side<a class="anchor" aria-label="anchor" href="#multiple-models-side-by-side"></a>
@@ -1337,6 +1345,13 @@ probabilities: with a smoking prevalence around 21% it sits farther from
 probability of smoking” overstates the effect. The <em>Average marginal
 effects</em> section below reports the probability-scale counterpart for
 the same contrast (−0.15, that is, 15 percentage points).</p>
+<p>The <code>(Intercept)</code> row is not a ratio, and the note says
+what it is: the baseline odds, the odds of smoking when every factor
+sits at its reference level and every numeric predictor at zero. Here
+that is a woman with lower secondary education aged 0, younger than
+anyone in the sample (25 to 75), so the 0.33 anchors the model and
+describes no respondent. Centering <code>age</code> on its mean would
+make it the odds of such a woman at the mean age.</p>
 </div>
 <div class="section level3">
 <h3 id="event-counts-per-level">Event counts per level<a class="anchor" aria-label="anchor" href="#event-counts-per-level"></a>
@@ -1489,9 +1504,9 @@ binomial families; non-binomial returns NA with a
 <div class="section level3">
 <h3 id="average-marginal-effects-probability-units-not-log-odds">Average marginal effects: probability units, not log-odds<a class="anchor" aria-label="anchor" href="#average-marginal-effects-probability-units-not-log-odds"></a>
 </h3>
-<p>For <code>glm</code>, AME is averaged over the observed sample — the
-partial derivative for numeric predictors, the discrete change for
-factor levels — <strong>on the response scale, not the link
+<p>For <code>glm</code>, AME is averaged over the observed sample — by
+default the partial derivative for numeric predictors, the discrete
+change for factor levels — <strong>on the response scale, not the link
 scale</strong>. For logistic regression this means the displayed AME is
 in <strong>probability units, not log-odds</strong>: an AME of
 <code>-0.15</code> for <code>education = Tertiary</code> reads “on
@@ -1525,9 +1540,113 @@ communicating logistic effects (Mood 2010; Long and Freese 2014
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Point estimate and inference are delegated to
-<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>. Under cluster-robust
-variance, the Satterthwaite-df handling described in the <em>Robust
-variance</em> section applies to <code>glm</code> AME as well.</p>
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>, or to
+<code>avg_comparisons()</code> under the <code>ame_type</code> of the
+next section. Under cluster-robust variance, the Satterthwaite-df
+handling described in the <em>Robust variance</em> section applies to
+<code>glm</code> AME as well.</p>
+</div>
+<div class="section level3">
+<h3 id="slope-or-discrete-change-ame_type">Slope or discrete change: <code>ame_type</code><a class="anchor" aria-label="anchor" href="#slope-or-discrete-change-ame_type"></a>
+</h3>
+<p>For a continuous predictor, <code>ame_type</code> sets what the AME
+columns report:</p>
+<ul>
+<li>
+<code>"slope"</code>, the default: the average slope dY/dX, the
+derivative of the prediction at each observation’s own value, averaged
+over the sample;</li>
+<li>
+<code>"unit"</code>: the average change in the prediction when the
+predictor rises by one unit from each observation’s own value, from x to
+x + 1;</li>
+<li>
+<code>"sd"</code>: the same change for a rise of one standard
+deviation, from x to x + SD, with SD the unweighted standard deviation
+of the predictor in the estimation sample.</li>
+</ul>
+<p>Factors, logical and 0/1 predictors stay contrasts with their
+reference level under all three, and the note names the quantity of the
+continuous rows. In a linear model without transformed terms the change
+for one unit is the slope, and the change for one SD is the slope times
+the SD. Under a non-identity link the prediction curves between x and x
++ 1. The slope then approximates the change for one unit only as far as
+the curve is straight over that step, and the gap grows as it bends
+(Long and Freese 2014, §6.2, p. 241).</p>
+<p>The probability of rating one’s health good or very good, modeled on
+monthly household income in thousands of francs, shows the gap. Each
+call below asks for one quantity, and <code><a href="../reference/table_stack.html">table_stack()</a></code> sets
+the three one under the other:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sh</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    good_health <span class="op">=</span> <span class="va">self_rated_health</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Good"</span>, <span class="st">"Very good"</span><span class="op">)</span>,</span>
+<span>    income_k <span class="op">=</span> <span class="va">income</span> <span class="op">/</span> <span class="fl">1000</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">fit_inc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">good_health</span> <span class="op">~</span> <span class="va">income_k</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
+<span>               family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
+<span><span class="va">ame_income</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">type</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_inc</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ame"</span>, <span class="st">"ame_ci"</span><span class="op">)</span>,</span>
+<span>                   ame_type <span class="op">=</span> <span class="va">type</span>, keep <span class="op">=</span> <span class="st">"income_k"</span>,</span>
+<span>                   show_intercept <span class="op">=</span> <span class="cn">FALSE</span>, show_fit_stats <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                   digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="../reference/table_stack.html">table_stack</a></span><span class="op">(</span></span>
+<span>  Slope <span class="op">=</span> <span class="fu">ame_income</span><span class="op">(</span><span class="st">"slope"</span><span class="op">)</span>,</span>
+<span>  Unit <span class="op">=</span> <span class="fu">ame_income</span><span class="op">(</span><span class="st">"unit"</span><span class="op">)</span>,</span>
+<span>  SD <span class="op">=</span> <span class="fu">ame_income</span><span class="op">(</span><span class="st">"sd"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: good_health</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>  AME       95% CI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  Slope:   <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  income_k <span style="color: #9E9E9E;">│</span> 0.080  [0.062, 0.097] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Unit:    <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  income_k <span style="color: #9E9E9E;">│</span> 0.073  [0.058, 0.088] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  SD:      <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  income_k <span style="color: #9E9E9E;">│</span> 0.098  [0.079, 0.118] </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information). Slope: AME of a continuous predictor: average slope (dY/dX). Unit: AME of a continuous predictor: average change in the prediction for a one-unit increase. SD: AME of a continuous predictor: average change in the prediction for a one-standard-deviation increase. AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
+<p>The slope says the probability rises at a rate of 0.080 per thousand
+francs. One more thousand francs a month raises it by 0.073 on average:
+71% of the respondents already rate their health good or very good, the
+logistic curve flattens as the probability approaches 1, and the step
+gains less than the tangent at its start promises. A sentence such as
+“one more thousand francs a month goes with a probability 7.3 points
+higher” describes <code>"unit"</code>, not the slope. A rise of one
+standard deviation, 1,395 francs, raises the probability by 0.098, less
+than the 0.111 that the slope times the SD would give. Report
+<code>"unit"</code> when the text speaks of one more unit,
+<code>"sd"</code> when the natural unit is too small or too large to
+read (Long and Freese 2014, p. 494), and the slope where the field reads
+marginal changes, as economics does (p. 241).</p>
+<p>A discrete change predicts at values the data may not hold. Incomes
+in the sample run from 1,000 to 7,388 francs, and the step carries some
+respondents past the highest of them:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; unit   sd </span></span>
+<span><span class="co">#&gt;   41   84</span></span></code></pre></div>
+<p>For these 41 respondents, 84 under <code>"sd"</code>, the changed
+income lies beyond every income observed, and their part of the average
+is an extrapolation of the logistic curve. Gelman and Pardoe (2007,
+p. 32) keep predictive comparisons within the support of the data for
+that reason. The share is small here. On a bounded scale it need not be:
+on a rating from 1 to 5, everyone at 5 is moved to an impossible 6. The
+slope, a derivative at the observed value, does not leave the data.</p>
+<p>The <code>"sd"</code> step starts from each observation’s own value:
+the uncentered change of Long and Freese (2014, p. 168), and the
+discrete change of Mize, Doan, and Long (2019, §3.2), for whom “one or a
+standard deviation are common values” of the step. It is not the
+<code>"sd"</code> shortcut of
+<code><a href="https://rdrr.io/pkg/marginaleffects/man/comparisons.html" class="external-link">marginaleffects::avg_comparisons()</a></code>, which moves every
+observation from the mean minus half a standard deviation to the mean
+plus half, whatever its own value: 0.114 on this model, against
+0.098.</p>
 </div>
 <div class="section level3">
 <h3 id="profile-likelihood-cis-ci_method-profile">Profile-likelihood CIs: <code>ci_method = "profile"</code><a class="anchor" aria-label="anchor" href="#profile-likelihood-cis-ci_method-profile"></a>
@@ -1543,7 +1662,7 @@ than the quadratic Wald approximation, and the preferred choice under
 sparse data or near-boundary estimates (Venables &amp; Ripley
 <em>MASS</em> §7.2). The estimate, SE, statistic, and p-value all remain
 Wald; <code>"profile"</code> only refines the CI bounds:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1588,7 +1707,7 @@ variance-explained change tokens (<code>r2_change</code>,
 <code>show_fit_stats</code> raises a <code>spicy_invalid_input</code>
 error that points to the pseudo-R² family and to <code>lrt_change</code>
 + <code>p_change</code> instead:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span>,                   data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,             data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
@@ -1669,7 +1788,7 @@ columns. The number of groups — one
 <code>N (Subject)</code> — and the Nakagawa marginal / conditional R²
 (Nakagawa &amp; Schielzeth 2013) join the fit-statistic rows, so they
 align per model in a comparison table:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -1738,9 +1857,10 @@ correction applied. The footer names the fixed-effect inference method
 per engine — Satterthwaite t when <code>lmerTest</code> is loaded,
 Wald-z for <code>glmer</code> / <code>glmmTMB</code> and plain
 <code>lmer</code>, containment-df t for <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>. The AME
-tokens of <code>show_columns</code> (see <em>Average marginal
-effects</em> above) work identically for mixed-effects fits — always on
-the response scale, with Wald-z inference.</p>
+tokens of <code>show_columns</code> and <code>ame_type</code> (see
+<em>Average marginal effects</em> above) work identically for
+mixed-effects fits — always on the response scale, with Wald-z
+inference.</p>
 <p><code>nested = TRUE</code> works on mixed-effects fits with the
 change tokens listed in <em>Hierarchical / nested regression</em>; note
 that its plain-χ² reference is appropriate for steps that add fixed
@@ -1765,7 +1885,7 @@ front), a long broom-style data.frame (<code>output = "long"</code>), or
 as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>excel</code>, <code>word</code>, or
 <code>clipboard</code>:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
@@ -1782,7 +1902,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span><span class="co">#&gt;  $ 95% CI UL: num  68.451 0.107 NA NA 5.632 ...</span></span>
 <span><span class="co">#&gt;  $ p        : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
 <span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval."</span></span></code></pre></div>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
@@ -1798,7 +1918,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> M1       sexMale     B               3.86      0.905   2.22<span style="color: #949494;">e</span><span style="color: #BB0000;">-  5</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> M1       smokingNo   B              <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>   <span style="color: #949494;"> </span>    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> M1       smokingYes  B              -<span style="color: #BB0000;">1.72</span>      1.11    1.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-  1</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
@@ -2238,7 +2358,7 @@ names (<code>estimate</code>, <code>std.error</code>,
 <code>(model_id, outcome)</code> with model-level statistics;
 <code>df.residual</code> is preserved as a numeric so cluster-robust
 Satterthwaite df flows through verbatim:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span></span>
@@ -2361,6 +2481,9 @@ Regression</em> (3rd ed.). Sage.</p>
 <p>Gelman, A. (2008). Scaling regression inputs by dividing by two
 standard deviations. <em>Statistics in Medicine</em>, 27(15),
 2865–2873.</p>
+<p>Gelman, A., and Pardoe, I. (2007). Average predictive comparisons for
+models with nonlinearity, interactions, and variance components.
+<em>Sociological Methodology</em>, 37(1), 23–51.</p>
 <p>Gelman, A., Hill, J., and Yajima, M. (2012). Why we (usually) don’t
 have to worry about multiple comparisons. <em>Journal of Research on
 Educational Effectiveness</em>, 5(2), 189–211.</p>
@@ -2388,6 +2511,9 @@ logistic regression coefficients. <em>The American Statistician</em>,
 58(3), 218–223.</p>
 <p>Menard, S. (2011). Standards for standardized logistic regression
 coefficients. <em>Social Forces</em>, 89(4), 1409–1428.</p>
+<p>Mize, T. D., Doan, L., and Long, J. S. (2019). A general framework
+for comparing predictions and marginal effects across models.
+<em>Sociological Methodology</em>, 49(1), 152–189.</p>
 <p>Mood, C. (2010). Logistic regression: Why we cannot do what we think
 we can do, and what we can do about it. <em>European Sociological
 Review</em>, 26(1), 67–82.</p>

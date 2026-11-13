@@ -415,13 +415,54 @@ head(long)
 #> 6  7.118056 chi_squared  1.828005  4 0.7982935     0.767355
 ```
 
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
+returns the rows of `output = "long"` with the percentage as a
+proportion of the item’s base, and
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+one row per item, with its test and its base `nobs`, summed over the
+groups:
+
+``` r
+
+tbl <- table_battery(sat, select = starts_with("life_sat_"), by = sex)
+broom::tidy(tbl)
+#> # A tibble: 40 × 12
+#>    variable     label level .row_role group     n proportion test_type statistic
+#>    <chr>        <chr> <chr> <chr>     <chr> <int>      <dbl> <chr>         <dbl>
+#>  1 life_sat_he… life… Very… level     Fema…    47     0.0763 chi_squa…      1.83
+#>  2 life_sat_he… life… Diss… level     Fema…    89     0.144  chi_squa…      1.83
+#>  3 life_sat_he… life… Neut… level     Fema…   154     0.25   chi_squa…      1.83
+#>  4 life_sat_he… life… Sati… level     Fema…   155     0.252  chi_squa…      1.83
+#>  5 life_sat_he… life… Very… level     Fema…   171     0.278  chi_squa…      1.83
+#>  6 life_sat_he… life… Very… level     Male     41     0.0712 chi_squa…      1.83
+#>  7 life_sat_he… life… Diss… level     Male     80     0.139  chi_squa…      1.83
+#>  8 life_sat_he… life… Neut… level     Male    132     0.229  chi_squa…      1.83
+#>  9 life_sat_he… life… Sati… level     Male    144     0.25   chi_squa…      1.83
+#> 10 life_sat_he… life… Very… level     Male    179     0.311  chi_squa…      1.83
+#> # ℹ 30 more rows
+#> # ℹ 3 more variables: df <int>, p.value <dbl>, p_unadjusted <dbl>
+broom::glance(tbl)
+#> # A tibble: 4 × 9
+#>   variable            label test_type statistic    df p.value p_unadjusted  nobs
+#>   <chr>               <chr> <chr>         <dbl> <int>   <dbl>        <dbl> <int>
+#> 1 life_sat_health     life… chi_squa…      1.83     4  0.798        0.767   1192
+#> 2 life_sat_work       life… chi_squa…     12.7      4  0.0523       0.0131  1192
+#> 3 life_sat_relations… life… chi_squa…      4.05     4  0.798        0.399   1192
+#> 4 life_sat_standard   life… chi_squa…      7.07     4  0.397        0.132   1192
+#> # ℹ 1 more variable: weighted_nobs <dbl>
+```
+
+The summary column of `top` has no row of its own in `tidy()`: its
+proportion is the sum of those of the levels it names. Both column sets
+are fixed: a test the table did not run is present and `NA`. Index by
+name, never by position.
+
 [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
 cites a cell in running text: the item, then the level of the scale, and
 the group with `model`:
 
 ``` r
 
-tbl <- table_battery(sat, select = starts_with("life_sat_"), by = sex)
 inline(tbl, life_sat_work, "Very satisfied", "pct", model = "Female")
 #> [1] "15.9"
 ```

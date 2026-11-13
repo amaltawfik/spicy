@@ -142,7 +142,9 @@ takes, with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
 `"n"`, `"weighted_n"`. See the *Choosing the statistics* section of
 [`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-for the vocabulary itself; nothing about it changes here.
+for the vocabulary itself; nothing about it changes here. The columns
+follow the order the tokens are written in, an interval after the
+statistic it bounds.
 
 ``` r
 
@@ -570,13 +572,13 @@ broom::tidy(tbl)
 #> # ℹ 8 more variables: n <int>, weighted_n <dbl>, median <dbl>, q1 <dbl>,
 #> #   q3 <dbl>, min <dbl>, max <dbl>, sd <dbl>
 broom::glance(tbl)
-#> # A tibble: 2 × 14
+#> # A tibble: 2 × 15
 #>   outcome variable label  n_levels test_type statistic    df df.residual p.value
 #>   <chr>   <chr>    <chr>     <int> <chr>         <dbl> <dbl>       <dbl>   <dbl>
 #> 1 bmi     sex      sex           2 welch_t      -2.38  1184.          NA  0.0176
 #> 2 bmi     smoking  smoki…        3 welch_t       0.122  407.          NA  0.903 
-#> # ℹ 5 more variables: es_type <chr>, es_value <dbl>, es_ci_lower <dbl>,
-#> #   es_ci_upper <dbl>, nobs <int>
+#> # ℹ 6 more variables: es_type <chr>, es_value <dbl>, es_ci_lower <dbl>,
+#> #   es_ci_upper <dbl>, nobs <int>, weighted_nobs <dbl>
 ```
 
 Two identity columns rather than one: `outcome` is constant down the
@@ -710,7 +712,7 @@ table_outcome(
 | *Note.* N = 1200. P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_sjqpsp4i20obrkqauolm .table .tinytable
+{#tinytable_epiy554eeums1pn32lj0 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

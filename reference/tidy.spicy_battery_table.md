@@ -64,9 +64,14 @@ whose long output does not carry them), `p.value` (adjusted under
 of its own: its proportion is the sum of those of the levels it names.
 
 `glance()` returns one row per item: `variable`, `label`, `test_type`,
-`statistic`, `df`, `p.value`, `p_unadjusted` and `nobs`, the base of the
-item summed over the groups (a weighted count under `weights`, as the
-`n` column of the table).
+`statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, the rows of the
+item's base summed over the groups (rows, never weights, a row of zero
+weight left out), and `weighted_nobs`, their weighted count (the sum of
+the `n` columns under the `weights` of
+[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
+the sum of the sampling weights in
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
+`NA` otherwise).
 
 Both column sets are fixed: a test the table did not run is present and
 `NA`. Index by name rather than by position.

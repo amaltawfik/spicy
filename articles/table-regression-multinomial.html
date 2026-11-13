@@ -321,14 +321,14 @@ the ratio scale:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Reference outcome: Employed. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Each predictor cell is an <strong>odds ratio against the reference
 outcome</strong> (the exponentiated intercepts are baseline
-<em>odds</em> — each category’s odds versus <code>Employed</code> at the
-reference levels and age 0 — not ratios): compared with lower-secondary
-graduates of the same age and sex, tertiary graduates’ odds of being
-unemployed rather than employed are 0.29 times as large — a 71%
-reduction in those odds, the education gradient the table is really
-about. Formally it is the odds ratio of the <em>conditional</em>
-distribution restricted to the two categories in the comparison (Agresti
-2013).</p>
+<em>odds</em>, as the note says — each category’s odds versus
+<code>Employed</code> at the reference levels and age 0 — not ratios):
+compared with lower-secondary graduates of the same age and sex,
+tertiary graduates’ odds of being unemployed rather than employed are
+0.29 times as large — a 71% reduction in those odds, the education
+gradient the table is really about. Formally it is the odds ratio of the
+<em>conditional</em> distribution restricted to the two categories in
+the comparison (Agresti 2013).</p>
 <p>One terminology note, because readers will meet it: Stata’s
 <code>mlogit, rrr</code> labels these same numbers <strong>relative-risk
 ratios</strong> — <span class="math inline">\(e^\beta\)</span> is also

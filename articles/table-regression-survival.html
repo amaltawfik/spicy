@@ -369,9 +369,11 @@ estimand, so <code><a href="../reference/table_regression.html">table_regression
 clinically meaningful time, or <code>tau = "minmax"</code> for the
 largest window every compared group can support (the value used is
 disclosed in the table note). Second, the contrast is level against
-reference for factor predictors and a +1-unit shift for continuous
-predictors, mirroring the AME convention for other model families — so
-the columns read the same way across your tables.</p>
+reference for factor predictors and, for a continuous predictor, a shift
+of every subject from its own value to that value plus one unit: the
+quantity the AME columns of the other model families report under
+<code>ame_type = "unit"</code>, so the columns read the same way across
+your tables.</p>
 <p>A third decision is inherited rather than made, and it is worth
 stating because it is otherwise invisible. A Cox model has to decide
 what to do when several events land on the same time, and
@@ -579,8 +581,9 @@ ratios</strong> (TR):</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline 63.2nd percentile of survival time. Std. errors: Wald asymptotic (z). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The intercept is back — a parametric model must anchor the time
 scale, and exp(intercept) ≈ 801 days is that anchor (the extrapolated
-characteristic time at the reference levels and age 0), not a ratio
-despite the column header.</p>
+characteristic time at the reference levels and age 0, by which 63.2% of
+such patients would have died: the “63.2nd percentile of survival time”
+the note names), not a ratio despite the column header.</p>
 <p>Set the TR next to the Cox HR and the numbers <em>look</em>
 contradictory: women have TR 1.50 but HR 0.57. They are the same finding
 on opposite scales — a protective effect <strong>multiplies survival

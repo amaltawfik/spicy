@@ -342,13 +342,14 @@ Methodology notes:
 The `B` coefficient is the model’s *structural* effect — the change in
 the linear predictor `Xβ` for a one-unit change in `x`, holding the
 other predictors constant. The **average marginal effect (AME)** is the
-*observable* effect on the response. For a numeric predictor it is the
-average partial derivative `dE[Y|X] / dx` over the sample; for a factor
-level it is the average **discrete change** — the difference in
-predicted response between that level and the reference, averaged over
-the sample (Long and Freese 2014 §6.2 distinguish the two). For a purely
-linear-additive [`lm()`](https://rdrr.io/r/stats/lm.html) both coincide
-with `B`. For models with interactions or transformed terms, and for any
+*observable* effect on the response. For a numeric predictor it is, by
+default, the average partial derivative `dE[Y|X] / dx` over the sample;
+for a factor level it is the average **discrete change** — the
+difference in predicted response between that level and the reference,
+averaged over the sample (Long and Freese 2014 §6.2 distinguish the
+two). For a purely linear-additive
+[`lm()`](https://rdrr.io/r/stats/lm.html) both coincide with `B`. For
+models with interactions or transformed terms, and for any
 [`glm()`](https://rdrr.io/r/stats/glm.html) with a non-identity link,
 the AME is the quantity the substantive reader actually needs. The
 *average* in the name is load-bearing: the effect is computed for every
@@ -399,11 +400,18 @@ Reading conventions:
 - For non-linear models the AME is reported on the **response scale**,
   not the link scale. The *Generalized linear models* section below
   works out a logistic-regression example.
+- The note names what the AME of a continuous predictor measures: here
+  the average slope (dY/dX), the default. In an
+  [`lm()`](https://rdrr.io/r/stats/lm.html) without transformed terms it
+  is also the change for one more unit of the predictor. Under a
+  non-identity link the two differ, and `ame_type` chooses between them
+  (*Slope or discrete change*, below).
 
 Inference is delegated to
-[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html)
-and respects the chosen variance estimator. Under cluster-robust
-variance (covered in *Robust variance*), the AME inference shares the
+[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html),
+or to `avg_comparisons()` for the changes `ame_type` asks for, and
+respects the chosen variance estimator. Under cluster-robust variance
+(covered in *Robust variance*), the AME inference shares the
 coefficient’s t-distribution and Satterthwaite-corrected degrees of
 freedom via
 [`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
@@ -411,7 +419,7 @@ so `B` and AME are reported on the same inferential footing in the same
 table. `marginaleffects` is a Suggests dependency with two distinct
 failure modes: requesting AME columns *without the package installed* is
 a hard, classed error (`spicy_missing_pkg`, with the install hint),
-while a *computation* failure inside `avg_slopes()` on an installed
+while a *computation* failure inside `marginaleffects` on an installed
 system warns (`spicy_fallback`) and dashes the AME cells, leaving the
 rest of the table intact.
 
@@ -1249,6 +1257,14 @@ smoking” overstates the effect. The *Average marginal effects* section
 below reports the probability-scale counterpart for the same contrast
 (−0.15, that is, 15 percentage points).
 
+The `(Intercept)` row is not a ratio, and the note says what it is: the
+baseline odds, the odds of smoking when every factor sits at its
+reference level and every numeric predictor at zero. Here that is a
+woman with lower secondary education aged 0, younger than anyone in the
+sample (25 to 75), so the 0.33 anchors the model and describes no
+respondent. Centering `age` on its mean would make it the odds of such a
+woman at the mean age.
+
 ### Event counts per level
 
 Clinical and epidemiological tables conventionally carry the raw
@@ -1404,17 +1420,17 @@ table_regression(fit, standardized = "pseudo")
 
 ### Average marginal effects: probability units, not log-odds
 
-For `glm`, AME is averaged over the observed sample — the partial
-derivative for numeric predictors, the discrete change for factor levels
-— **on the response scale, not the link scale**. For logistic regression
-this means the displayed AME is in **probability units, not log-odds**:
-an AME of `-0.15` for `education = Tertiary` reads “on average, holding
-sex and age constant, a respondent with tertiary education is 15
-percentage points less likely to be a current smoker than one with lower
-secondary education”. This is almost always the quantity a substantive
-reader wants from a logistic regression, and it is the reason AME is
-increasingly recommended over odds ratios for communicating logistic
-effects (Mood 2010; Long and Freese 2014 §6.2.3).
+For `glm`, AME is averaged over the observed sample — by default the
+partial derivative for numeric predictors, the discrete change for
+factor levels — **on the response scale, not the link scale**. For
+logistic regression this means the displayed AME is in **probability
+units, not log-odds**: an AME of `-0.15` for `education = Tertiary`
+reads “on average, holding sex and age constant, a respondent with
+tertiary education is 15 percentage points less likely to be a current
+smoker than one with lower secondary education”. This is almost always
+the quantity a substantive reader wants from a logistic regression, and
+it is the reason AME is increasingly recommended over odds ratios for
+communicating logistic effects (Mood 2010; Long and Freese 2014 §6.2.3).
 
 ``` r
 
@@ -1442,9 +1458,115 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 ```
 
 Point estimate and inference are delegated to
-[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html).
+[`marginaleffects::avg_slopes()`](https://rdrr.io/pkg/marginaleffects/man/slopes.html),
+or to `avg_comparisons()` under the `ame_type` of the next section.
 Under cluster-robust variance, the Satterthwaite-df handling described
 in the *Robust variance* section applies to `glm` AME as well.
+
+### Slope or discrete change: `ame_type`
+
+For a continuous predictor, `ame_type` sets what the AME columns report:
+
+- `"slope"`, the default: the average slope dY/dX, the derivative of the
+  prediction at each observation’s own value, averaged over the sample;
+- `"unit"`: the average change in the prediction when the predictor
+  rises by one unit from each observation’s own value, from x to x + 1;
+- `"sd"`: the same change for a rise of one standard deviation, from x
+  to x + SD, with SD the unweighted standard deviation of the predictor
+  in the estimation sample.
+
+Factors, logical and 0/1 predictors stay contrasts with their reference
+level under all three, and the note names the quantity of the continuous
+rows. In a linear model without transformed terms the change for one
+unit is the slope, and the change for one SD is the slope times the SD.
+Under a non-identity link the prediction curves between x and x + 1. The
+slope then approximates the change for one unit only as far as the curve
+is straight over that step, and the gap grows as it bends (Long and
+Freese 2014, §6.2, p. 241).
+
+The probability of rating one’s health good or very good, modeled on
+monthly household income in thousands of francs, shows the gap. Each
+call below asks for one quantity, and
+[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+sets the three one under the other:
+
+``` r
+
+sh <- sh |>
+  dplyr::mutate(
+    good_health = self_rated_health %in% c("Good", "Very good"),
+    income_k = income / 1000
+  )
+fit_inc <- glm(good_health ~ income_k + age + sex, data = sh,
+               family = binomial)
+ame_income <- function(type) {
+  table_regression(fit_inc, show_columns = c("ame", "ame_ci"),
+                   ame_type = type, keep = "income_k",
+                   show_intercept = FALSE, show_fit_stats = FALSE,
+                   digits = 3)
+}
+table_stack(
+  Slope = ame_income("slope"),
+  Unit = ame_income("unit"),
+  SD = ame_income("sd")
+)
+#> Logistic regression: good_health
+#> 
+#>  Variable │  AME       95% CI     
+#> ──────────┼───────────────────────
+#>  Slope:   │                       
+#>  income_k │ 0.080  [0.062, 0.097] 
+#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Unit:    │                       
+#>  income_k │ 0.073  [0.058, 0.088] 
+#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  SD:      │                       
+#>  income_k │ 0.098  [0.079, 0.118] 
+#> 
+#> Note. Logistic regression models. Std. errors: classical (Fisher information). Slope: AME of a continuous predictor: average slope (dY/dX). Unit: AME of a continuous predictor: average change in the prediction for a one-unit increase. SD: AME of a continuous predictor: average change in the prediction for a one-standard-deviation increase. AME = average marginal effect; CI = confidence interval.
+```
+
+The slope says the probability rises at a rate of 0.080 per thousand
+francs. One more thousand francs a month raises it by 0.073 on average:
+71% of the respondents already rate their health good or very good, the
+logistic curve flattens as the probability approaches 1, and the step
+gains less than the tangent at its start promises. A sentence such as
+“one more thousand francs a month goes with a probability 7.3 points
+higher” describes `"unit"`, not the slope. A rise of one standard
+deviation, 1,395 francs, raises the probability by 0.098, less than the
+0.111 that the slope times the SD would give. Report `"unit"` when the
+text speaks of one more unit, `"sd"` when the natural unit is too small
+or too large to read (Long and Freese 2014, p. 494), and the slope where
+the field reads marginal changes, as economics does (p. 241).
+
+A discrete change predicts at values the data may not hold. Incomes in
+the sample run from 1,000 to 7,388 francs, and the step carries some
+respondents past the highest of them:
+
+``` r
+
+c(unit = sum(sh$income_k + 1 > max(sh$income_k)),
+  sd = sum(sh$income_k + sd(sh$income_k) > max(sh$income_k)))
+#> unit   sd 
+#>   41   84
+```
+
+For these 41 respondents, 84 under `"sd"`, the changed income lies
+beyond every income observed, and their part of the average is an
+extrapolation of the logistic curve. Gelman and Pardoe (2007, p. 32)
+keep predictive comparisons within the support of the data for that
+reason. The share is small here. On a bounded scale it need not be: on a
+rating from 1 to 5, everyone at 5 is moved to an impossible 6. The
+slope, a derivative at the observed value, does not leave the data.
+
+The `"sd"` step starts from each observation’s own value: the uncentered
+change of Long and Freese (2014, p. 168), and the discrete change of
+Mize, Doan, and Long (2019, §3.2), for whom “one or a standard deviation
+are common values” of the step. It is not the `"sd"` shortcut of
+[`marginaleffects::avg_comparisons()`](https://rdrr.io/pkg/marginaleffects/man/comparisons.html),
+which moves every observation from the mean minus half a standard
+deviation to the mean plus half, whatever its own value: 0.114 on this
+model, against 0.098.
 
 ### Profile-likelihood CIs: `ci_method = "profile"`
 
@@ -1657,9 +1779,9 @@ fixed-effect inference method per engine — Satterthwaite t when
 `lmerTest` is loaded, Wald-z for `glmer` / `glmmTMB` and plain `lmer`,
 containment-df t for
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html). The AME tokens of
-`show_columns` (see *Average marginal effects* above) work identically
-for mixed-effects fits — always on the response scale, with Wald-z
-inference.
+`show_columns` and `ame_type` (see *Average marginal effects* above)
+work identically for mixed-effects fits — always on the response scale,
+with Wald-z inference.
 
 `nested = TRUE` works on mixed-effects fits with the change tokens
 listed in *Hierarchical / nested regression*; note that its plain-χ²
@@ -1873,6 +1995,10 @@ Fox, J., and Weisberg, S. (2019). *An R Companion to Applied Regression*
 Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 deviations. *Statistics in Medicine*, 27(15), 2865–2873.
 
+Gelman, A., and Pardoe, I. (2007). Average predictive comparisons for
+models with nonlinearity, interactions, and variance components.
+*Sociological Methodology*, 37(1), 23–51.
+
 Gelman, A., Hill, J., and Yajima, M. (2012). Why we (usually) don’t have
 to worry about multiple comparisons. *Journal of Research on Educational
 Effectiveness*, 5(2), 189–211.
@@ -1907,6 +2033,10 @@ regression coefficients. *The American Statistician*, 58(3), 218–223.
 
 Menard, S. (2011). Standards for standardized logistic regression
 coefficients. *Social Forces*, 89(4), 1409–1428.
+
+Mize, T. D., Doan, L., and Long, J. S. (2019). A general framework for
+comparing predictions and marginal effects across models. *Sociological
+Methodology*, 49(1), 152–189.
 
 Mood, C. (2010). Logistic regression: Why we cannot do what we think we
 can do, and what we can do about it. *European Sociological Review*,

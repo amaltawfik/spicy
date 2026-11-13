@@ -205,7 +205,10 @@ predictors constant: the expected count for women is about 20% lower
 than for otherwise-similar men (IRR 0.80), and each additional mentor
 publication raises a student’s expected count by 2.6% (IRR 1.03 as
 displayed; exp(0.0258) = 1.026). Inference is Wald-z on the link scale;
-the footer records the SE and CI conventions.</p>
+the footer records the SE and CI conventions. The
+<code>(Intercept)</code> row is not a ratio: as the note says, it is the
+baseline rate, the expected count of a single man without young children
+whose mentor published nothing, 1.41 articles.</p>
 <p>One remark for rate data: the observation window here is a fixed
 three years for everyone, so no exposure adjustment is needed. With
 unequal exposure — person-years, plot area, time at risk — add
@@ -520,12 +523,73 @@ publish 0.36 fewer articles over the three years than comparable men
 (AME −0.36) — one number combining both components; the zero-component
 rows carry no AME of their own because the combined effect already
 includes them.</p>
+<div class="section level3">
+<h3 id="the-slope-or-the-change-for-one-more-child">The slope or the change for one more child<a class="anchor" aria-label="anchor" href="#the-slope-or-the-change-for-one-more-child"></a>
+</h3>
+<p><code>kid5</code> and <code>ment</code> are numeric, so their AME is
+by default the average slope, as the note says. A count model is curved
+in its predictors, and <code>ame_type</code> asks instead for the
+average change in the expected count when a predictor rises by one unit,
+or by one standard deviation, from each student’s own value (the
+<em>Slope or discrete change</em> section of <a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> sets out the three quantities). The Poisson baseline
+shows them side by side:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ame_pois</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">type</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_pois</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ame"</span>, <span class="st">"ame_ci"</span><span class="op">)</span>,</span>
+<span>                   ame_type <span class="op">=</span> <span class="va">type</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"kid5"</span>, <span class="st">"ment"</span><span class="op">)</span>,</span>
+<span>                   show_intercept <span class="op">=</span> <span class="cn">FALSE</span>, show_fit_stats <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="../reference/table_stack.html">table_stack</a></span><span class="op">(</span></span>
+<span>  Slope <span class="op">=</span> <span class="fu">ame_pois</span><span class="op">(</span><span class="st">"slope"</span><span class="op">)</span>,</span>
+<span>  Unit <span class="op">=</span> <span class="fu">ame_pois</span><span class="op">(</span><span class="st">"unit"</span><span class="op">)</span>,</span>
+<span>  SD <span class="op">=</span> <span class="fu">ame_pois</span><span class="op">(</span><span class="st">"sd"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Poisson regression: art</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>  AME       95% CI     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────</span></span></span>
+<span><span class="co">#&gt;  Slope:   <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  kid5     <span style="color: #9E9E9E;">│</span> -0.31  [-0.45, -0.18] </span></span>
+<span><span class="co">#&gt;  ment     <span style="color: #9E9E9E;">│</span>  0.04  [ 0.04,  0.05] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Unit:    <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  kid5     <span style="color: #9E9E9E;">│</span> -0.29  [-0.40, -0.17] </span></span>
+<span><span class="co">#&gt;  ment     <span style="color: #9E9E9E;">│</span>  0.04  [ 0.04,  0.05] </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  SD:      <span style="color: #9E9E9E;">│</span>                       </span></span>
+<span><span class="co">#&gt;  kid5     <span style="color: #9E9E9E;">│</span> -0.22  [-0.31, -0.13] </span></span>
+<span><span class="co">#&gt;  ment     <span style="color: #9E9E9E;">│</span>  0.47  [ 0.39,  0.55] </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Poisson regression models. Std. errors: classical (Fisher information). Slope: AME of a continuous predictor: average slope (dY/dX). Unit: AME of a continuous predictor: average change in the prediction for a one-unit increase. SD: AME of a continuous predictor: average change in the prediction for a one-standard-deviation increase. AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
+<p>In a Poisson model without interactions the three have closed forms.
+For a predictor with coefficient b, the slope is b times the mean
+expected count and the change for one more unit is (e^b − 1) times it;
+with an intercept in the model, the mean expected count is the mean
+count, 1.69 articles. For <code>kid5</code>, b = −0.185 (the IRR of
+0.83) gives a slope of −0.31 and a change of −0.29: one more child under
+six lowers the expected count by 0.29 articles, and the slope overstates
+the drop because the exponential curve flattens as the count falls. Long
+and Freese (2014, p. 495) take this change of one child as the most
+reasonable effect of the number of young children; on the same data,
+with doctoral prestige added to the model, they report −0.286 for it,
+−0.223 for a standard deviation and −0.313 for the slope, the values
+<code><a href="../reference/table_regression.html">table_regression()</a></code> gives for that model. For the mentor’s
+articles a unit is small against a range of 0 to 77, so slope and unit
+agree (0.04), and the change for one standard deviation, 9.5 articles,
+gives the better sense of the effect (p. 496): 0.47 more articles.</p>
+<p>The change for one more child moves the 16 students who have three,
+the most in the data, to four, a value no student has. Their part of the
+average is an extrapolation of the model, outside the support of the
+data within which Gelman and Pardoe (2007, p. 32) keep such
+comparisons.</p>
 <p>For the remaining standard interpretive devices — predicted counts,
 or the probability of specific counts such as Pr(Y = 0), at
 substantively chosen covariate values — go back to the fitted model:
 <code>predict(fit_zip, newdata = ..., type = "prob")</code>, or
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/predictions.html" class="external-link">marginaleffects::predictions()</a></code> with
 <code>datagrid()</code>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="cluster-robust-variance">Cluster-robust variance<a class="anchor" aria-label="anchor" href="#cluster-robust-variance"></a>
@@ -537,7 +601,7 @@ matrix, so the count and zero rows shift together. It is the one cluster
 estimator <code>vcovCL()</code> computes here, the CR0 sandwich scaled
 by G/(G − 1) for G clusters, so <code>"CR0"</code>, <code>"CR2"</code>
 and <code>"CR3"</code> are refused:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bioChemists</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, vcov <span class="op">=</span> <span class="st">"CR1"</span>, cluster <span class="op">=</span> <span class="va">bioChemists</span><span class="op">$</span><span class="va">lab</span>,</span>
@@ -570,7 +634,7 @@ movement in marriage (p = .041 → .147) comes from the sandwich estimator
 no longer trusting the ZIP’s model-based variance. An
 <em>unclustered</em> sandwich already moves that p-value most of the
 way, to .11:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu">sandwich</span><span class="fu">::</span><span class="fu"><a href="https://zeileis.codeberg.page/sandwich/reference/sandwich.html" class="external-link">sandwich</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">[</span><span class="st">"count_marMarried"</span><span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">V</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"count_marMarried"</span><span class="op">]</span></span>
 <span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span>
@@ -614,7 +678,7 @@ are refused: the sandwich has one score per cluster, and
 <code>clubSandwich</code> has no working <code>glmmTMB</code> backend.
 The same convention is documented in the companion <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a> article:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">fit_mix</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
 <span>  <span class="va">count</span> <span class="op">~</span> <span class="va">mined</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>,</span>
@@ -656,7 +720,7 @@ count rate times the probability of <em>not</em> being a structural
 zero, so the two pieces multiply — and because the count model is
 log-linear and the zero model has no random effect, the site intercept
 cancels and the ratio holds at any given site:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fe</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/fixed.effects.html" class="external-link">fixef</a></span><span class="op">(</span><span class="va">fit_mix</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">fe</span><span class="op">$</span><span class="va">cond</span><span class="op">[</span><span class="st">"minedno"</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span>         <span class="co"># count-rate ratio (IRR 4.34)</span></span>
 <span>  <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">fe</span><span class="op">$</span><span class="va">zi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span>             <span class="co"># P(not structural zero), unmined</span></span>
@@ -678,7 +742,7 @@ canonical case (Santos Silva &amp; Tenreyro 2006).
 absorbed structure as a default-on <strong>Fixed effects:</strong> block
 — one Yes/No row per factor — with fixest’s McFadden pseudo-R² among the
 fit statistics:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"trade"</span>, package <span class="op">=</span> <span class="st">"fixest"</span><span class="op">)</span></span>
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va">trade</span><span class="op">[</span><span class="va">trade</span><span class="op">$</span><span class="va">Year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fl">2015</span><span class="op">:</span><span class="fl">2016</span>, <span class="op">]</span></span>
 <span><span class="va">fp</span> <span class="op">&lt;-</span> <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fepois</a></span><span class="op">(</span><span class="va">Euros</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">dist_km</span><span class="op">)</span> <span class="op">|</span> <span class="va">Origin</span> <span class="op">+</span> <span class="va">Destination</span>,</span>
@@ -716,7 +780,7 @@ variance the fit itself carries (<code>HC*</code>/<code>CR*</code>
 requests are refused for <code>fixest</code> with a clear error), so ask
 <code>fixest</code> for the robust variance at fit time and the table,
 footer included, follows:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fp_cl</span> <span class="op">&lt;-</span> <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fepois</a></span><span class="op">(</span><span class="va">Euros</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">dist_km</span><span class="op">)</span> <span class="op">|</span> <span class="va">Origin</span> <span class="op">+</span> <span class="va">Destination</span>,</span>
 <span>                        data <span class="op">=</span> <span class="va">tr</span>, vcov <span class="op">=</span> <span class="op">~</span><span class="va">Origin</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fp_cl</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -762,7 +826,7 @@ layout for the negative binomial.</p>
 statistics below — carries to a raw data frame, a long broom-style
 tibble, and the rich <code>gt</code>, <code>flextable</code>,
 <code>tinytable</code>, Excel, or Word targets:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, output <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          variable          label       level     .row_role             B</span></span>
 <span><span class="co">#&gt; 1     (Intercept)    (Intercept)        &lt;NA&gt;          coef    0.60947554</span></span>
@@ -794,7 +858,7 @@ tibble, and the rich <code>gt</code>, <code>flextable</code>,
 <span><span class="co">#&gt; 12 0.040228751 -0.208919436 -0.05122563 1.223593e-03</span></span>
 <span><span class="co">#&gt; 13          NA           NA          NA           NA</span></span>
 <span><span class="co">#&gt; 14          NA           NA          NA           NA</span></span></code></pre></div>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div id="pnuyfvhuxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <p><style>#pnuyfvhuxc table { font-family: system-ui, ‘Segoe UI’,
@@ -1286,7 +1350,7 @@ interval; AIC = Akaike information criterion.
 zero-component terms are keyed by their block
 (<code>Zero-inflation::(Intercept)</code>), so the two parts separate
 cleanly:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">td</span> <span class="op">&lt;-</span> <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_zip</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">td</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate_type"</span>, <span class="st">"estimate"</span>, <span class="st">"p.value"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
@@ -1311,6 +1375,9 @@ zero-inflated generalized linear mixed modeling. <em>The R Journal</em>,
 9(2), 378–400.</li>
 <li>Cameron, A. C., &amp; Trivedi, P. K. (2013). <em>Regression Analysis
 of Count Data</em> (2nd ed.). Cambridge University Press.</li>
+<li>Gelman, A., &amp; Pardoe, I. (2007). Average predictive comparisons
+for models with nonlinearity, interactions, and variance components.
+<em>Sociological Methodology</em>, 37(1), 23–51.</li>
 <li>Lambert, D. (1992). Zero-inflated Poisson regression, with an
 application to defects in manufacturing. <em>Technometrics</em>, 34(1),
 1–14.</li>
@@ -1318,6 +1385,9 @@ application to defects in manufacturing. <em>Technometrics</em>, 34(1),
 <em>Social Forces</em>, 68(4), 1297–1316.</li>
 <li>Long, J. S. (1997). <em>Regression Models for Categorical and
 Limited Dependent Variables</em>. Sage.</li>
+<li>Long, J. S., &amp; Freese, J. (2014). <em>Regression Models for
+Categorical Dependent Variables Using Stata</em> (3rd ed.). Stata
+Press.</li>
 <li>Mullahy, J. (1986). Specification and testing of some modified count
 data models. <em>Journal of Econometrics</em>, 33(3), 341–365.</li>
 <li>Price, S. J., Muncy, B. L., Bonner, S. J., Drayer, A. N., &amp;

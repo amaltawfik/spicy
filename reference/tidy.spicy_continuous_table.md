@@ -55,12 +55,13 @@ the design ones (`df`, `deff`) aside.
 comparison (when `by` is used), the requested effect size and the
 balance diagnostic. Columns: `variable`, `label`, `test_type`,
 `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
-`es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs`. Without
-`by`, only `variable`, `label`, and `nobs` are populated; the other
-columns are `NA`. The schema is fixed: `smd_type` / `smd_value` are
-present whether or not `smd = TRUE`, like every other comparison column
-here, and are `NA` when the table carries no standardized mean
-difference, as in
+`es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs` (the rows
+described, a row of zero weight left out), `weighted_nobs` (the sum of
+their weights, `NA` without `weights`). Without `by`, only `variable`,
+`label`, `nobs` and `weighted_nobs` are populated; the other columns are
+`NA`. The schema is fixed: `smd_type` / `smd_value` are present whether
+or not `smd = TRUE`, like every other comparison column here, and are
+`NA` when the table carries no standardized mean difference, as in
 [`glance.spicy_categorical_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md).
 Index this frame by NAME rather than by position.
 

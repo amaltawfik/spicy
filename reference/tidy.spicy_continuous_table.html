@@ -132,9 +132,11 @@ the columns of <code><a href="tidy.spicy_continuous_svy_table.html">tidy.spicy_c
 comparison (when <code>by</code> is used), the requested effect size and the
 balance diagnostic. Columns: <code>variable</code>, <code>label</code>, <code>test_type</code>,
 <code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>,
-<code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>nobs</code>.
-Without <code>by</code>, only <code>variable</code>, <code>label</code>, and <code>nobs</code> are populated;
-the other columns are <code>NA</code>. The schema is fixed: <code>smd_type</code> /
+<code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>nobs</code> (the
+rows described, a row of zero weight left out), <code>weighted_nobs</code> (the
+sum of their weights, <code>NA</code> without <code>weights</code>).
+Without <code>by</code>, only <code>variable</code>, <code>label</code>, <code>nobs</code> and <code>weighted_nobs</code> are
+populated; the other columns are <code>NA</code>. The schema is fixed: <code>smd_type</code> /
 <code>smd_value</code> are present whether or not <code>smd = TRUE</code>, like every
 other comparison column here, and are <code>NA</code> when the table carries
 no standardized mean difference, as in

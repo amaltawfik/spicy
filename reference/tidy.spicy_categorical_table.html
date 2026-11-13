@@ -141,12 +141,14 @@ the standardized mean difference: <code>variable</code>, <code>label</code>, <co
 <code><a href="table_categorical.html">table_categorical()</a></code>), <code>statistic</code> (the chi-squared, Pearson's or the
 N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>, <code>es_type</code> (the key of
 the measure the variable carries: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
-<code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, and
+<code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>,
 <code>nobs</code> (the observations of the variable, the margin and the Total
-row not counted twice). Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>nobs</code> are
-populated; the other columns are <code>NA</code>. The interval bounds are <code>NA</code>
-unless the table was built with <code>assoc_ci = TRUE</code>, and the SMD columns
-unless it was built with <code>smd = TRUE</code>.</p>
+row not counted twice: rows, never weights, a row of zero weight left
+out) and <code>weighted_nobs</code> (their weighted count, <code>NA</code> without
+<code>weights</code>). Without <code>by</code>, only <code>variable</code>, <code>label</code>, <code>nobs</code> and
+<code>weighted_nobs</code> are populated; the other columns are <code>NA</code>. The interval
+bounds are <code>NA</code> unless the table was built with <code>assoc_ci = TRUE</code>, and
+the SMD columns unless it was built with <code>smd = TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

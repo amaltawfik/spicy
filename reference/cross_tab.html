@@ -134,7 +134,10 @@ vector-based interface.</p></dd>
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
 <dd><p>Column variable (unquoted). Required; the <code>NULL</code> default
 in the signature is a placeholder and triggers an error if left
-unset (use <code><a href="freq.html">freq()</a></code> for one-way tables).</p></dd>
+unset (use <code><a href="freq.html">freq()</a></code> for one-way tables). A level that is the empty
+string heads no column and is refused: recode it to <code>NA</code> or to a
+label. A level of <code>x</code> that is the empty string is a row like any
+other.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -143,7 +146,8 @@ or a combination of multiple variables (e.g. <code>interaction(vs, am)</code>).
 A row with a missing <code>by</code> belongs to no group and leaves every table,
 where a missing <code>x</code> or <code>y</code> leaves only its own; each note lists <code>by</code>
 with that count after <code>x</code> and <code>y</code> ("Missing values removed: x (2),
-region (3).").</p></dd>
+region (3)."). A level that is the empty string names no table
+and is refused.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>

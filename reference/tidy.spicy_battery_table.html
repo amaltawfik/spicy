@@ -129,9 +129,11 @@ design in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>)
 column of <code>top</code> has no row of its own: its proportion is the sum of
 those of the levels it names.</p>
 <p><code>glance()</code> returns one row per item: <code>variable</code>, <code>label</code>, <code>test_type</code>,
-<code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>p_unadjusted</code> and <code>nobs</code>, the base of
-the item summed over the groups (a weighted count under <code>weights</code>, as
-the <code>n</code> column of the table).</p>
+<code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>p_unadjusted</code>, <code>nobs</code>, the rows of the
+item's base summed over the groups (rows, never weights, a row of zero
+weight left out), and <code>weighted_nobs</code>, their weighted count (the sum of
+the <code>n</code> columns under the <code>weights</code> of <code><a href="table_battery.html">table_battery()</a></code>, the sum of the
+sampling weights in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>, <code>NA</code> otherwise).</p>
 <p>Both column sets are fixed: a test the table did not run is present and
 <code>NA</code>. Index by name rather than by position.</p>
     </div>

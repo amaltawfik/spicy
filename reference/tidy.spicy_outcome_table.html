@@ -124,7 +124,9 @@ frame. The schema reads without knowing which function produced it.</p>
 block's own comparison. Columns: <code>outcome</code>, <code>variable</code>, <code>label</code>,
 <code>n_levels</code>, <code>test_type</code>, <code>statistic</code>, <code>df</code>, <code>df.residual</code>,
 <code>p.value</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>,
-<code>nobs</code>. Index by NAME rather than by position.</p>
+<code>nobs</code> (the rows of the block's levels, a row of zero weight left
+out), <code>weighted_nobs</code> (the sum of their weights, <code>NA</code> without
+<code>weights</code>). Index by NAME rather than by position.</p>
 <p><code>n_levels</code> counts the levels the TABLE displays, so a missing-value
 display level counts; the comparison behind <code>test_type</code> runs on the
 observed levels only, as it does everywhere in the family.</p>

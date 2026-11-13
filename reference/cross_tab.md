@@ -53,7 +53,9 @@ cross_tab(
   Column variable (unquoted). Required; the `NULL` default in the
   signature is a placeholder and triggers an error if left unset (use
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) for
-  one-way tables).
+  one-way tables). A level that is the empty string heads no column and
+  is refused: recode it to `NA` or to a label. A level of `x` that is
+  the empty string is a row like any other.
 
 - by:
 
@@ -62,7 +64,8 @@ cross_tab(
   row with a missing `by` belongs to no group and leaves every table,
   where a missing `x` or `y` leaves only its own; each note lists `by`
   with that count after `x` and `y` ("Missing values removed: x (2),
-  region (3).").
+  region (3)."). A level that is the empty string names no table and is
+  refused.
 
 - weights:
 

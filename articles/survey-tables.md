@@ -92,7 +92,8 @@ the reader to find out.
 `show_columns` takes the tokens of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 plus `"se"` (the design-based standard error) and `"deff"` (the design
-effect), and minus `"med_ci"`:
+effect), and minus `"med_ci"`. As there, the columns follow the order
+the tokens are written in:
 
 ``` r
 

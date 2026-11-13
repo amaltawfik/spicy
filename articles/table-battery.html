@@ -491,11 +491,45 @@ level, with the test of each item:</p>
 <span><span class="co">#&gt; 4 25.162338 chi_squared  1.828005  4 0.7982935     0.767355</span></span>
 <span><span class="co">#&gt; 5 27.759740 chi_squared  1.828005  4 0.7982935     0.767355</span></span>
 <span><span class="co">#&gt; 6  7.118056 chi_squared  1.828005  4 0.7982935     0.767355</span></span></code></pre></div>
-<p><code><a href="../reference/inline.html">inline()</a></code> cites a cell in running text: the item, then
-the level of the scale, and the group with <code>model</code>:</p>
+<p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the rows of
+<code>output = "long"</code> with the percentage as a proportion of the
+item’s base, and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> one row per item, with its
+test and its base <code>nobs</code>, summed over the groups:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">life_sat_work</span>, <span class="st">"Very satisfied"</span>, <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 40 × 12</span></span></span>
+<span><span class="co">#&gt;    variable     label level .row_role group     n proportion test_type statistic</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> life_sat_he… life… Very… level     Fema…    47     0.076<span style="text-decoration: underline;">3</span> chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> life_sat_he… life… Diss… level     Fema…    89     0.144  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> life_sat_he… life… Neut… level     Fema…   154     0.25   chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> life_sat_he… life… Sati… level     Fema…   155     0.252  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> life_sat_he… life… Very… level     Fema…   171     0.278  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> life_sat_he… life… Very… level     Male     41     0.071<span style="text-decoration: underline;">2</span> chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> life_sat_he… life… Diss… level     Male     80     0.139  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> life_sat_he… life… Neut… level     Male    132     0.229  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> life_sat_he… life… Sati… level     Male    144     0.25   chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> life_sat_he… life… Very… level     Male    179     0.311  chi_squa…      1.83</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 30 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: df &lt;int&gt;, p.value &lt;dbl&gt;, p_unadjusted &lt;dbl&gt;</span></span></span>
+<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 9</span></span></span>
+<span><span class="co">#&gt;   variable            label test_type statistic    df p.value p_unadjusted  nobs</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> life_sat_health     life… chi_squa…      1.83     4  0.798        0.767   <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> life_sat_work       life… chi_squa…     12.7      4  0.052<span style="text-decoration: underline;">3</span>       0.013<span style="text-decoration: underline;">1</span>  <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> life_sat_relations… life… chi_squa…      4.05     4  0.798        0.399   <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> life_sat_standard   life… chi_squa…      7.07     4  0.397        0.132   <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: weighted_nobs &lt;dbl&gt;</span></span></span></code></pre></div>
+<p>The summary column of <code>top</code> has no row of its own in
+<code>tidy()</code>: its proportion is the sum of those of the levels it
+names. Both column sets are fixed: a test the table did not run is
+present and <code>NA</code>. Index by name, never by position.</p>
+<p><code><a href="../reference/inline.html">inline()</a></code> cites a cell in running text: the item, then
+the level of the scale, and the group with <code>model</code>:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">life_sat_work</span>, <span class="st">"Very satisfied"</span>, <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "15.9"</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -503,7 +537,7 @@ the level of the scale, and the group with <code>model</code>:</p>
 </h2>
 <p>The same table renders through six further engines, the console being
 the reference.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span>
@@ -524,7 +558,7 @@ the reference.</p>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>    <span class="va">sat</span>,</span>

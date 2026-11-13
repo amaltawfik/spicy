@@ -434,8 +434,9 @@ the measure, e.g. `.14 [.08, .19]`, under a header that states its
 level, `V [95% CI]` (demonstrated in the final section). In the default
 console table and in the `"data.frame"`, `"excel"` and `"clipboard"`
 outputs, separate columns named `95% CI LL` and `95% CI UL` are added,
-as the other tables name their interval columns; in the long format
-(`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`:
+the names the other tables give their interval columns in a data frame;
+in the long format (`"long"`) the bounds fill `es_ci_lower` /
+`es_ci_upper`:
 
 ``` r
 
@@ -734,7 +735,11 @@ that category under the same label, and a level of `by` named “Total”
 beside the margin. The table then stops with an error that gives the two
 ways out: rename the level, or give the category another label with
 `options(spicy.labels = list(row_missing_level = "(Not stated)"))` (the
-margin’s key is `header_margin_total`).
+margin’s key is `header_margin_total`). A level of `by` that is the
+empty string, which
+[`read.csv()`](https://rdrr.io/r/utils/read.table.html) makes of an
+empty text field, is an error too: a group is named in the header and in
+the note. Recode it to `NA`, or to a label.
 
 ## Filtering and reordering levels
 
@@ -921,13 +926,13 @@ broom::tidy(out)
 # (test_type, statistic, df, p.value, es_type, es_value,
 # es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
-#> # A tibble: 2 × 13
+#> # A tibble: 2 × 14
 #>   variable  label test_type statistic    df p.value es_type es_value es_ci_lower
 #>   <chr>     <chr> <chr>         <dbl> <int>   <dbl> <chr>      <dbl>       <dbl>
 #> 1 smoking   smok… chi_squa…    0.136      1   0.713 phi      0.0107           NA
 #> 2 physical… phys… chi_squa…    0.0452     1   0.832 phi      0.00614          NA
-#> # ℹ 4 more variables: es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>,
-#> #   nobs <int>
+#> # ℹ 5 more variables: es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>,
+#> #   nobs <int>, weighted_nobs <dbl>
 ```
 
 ## Multiple-response items
@@ -1000,7 +1005,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_hseqlooe4ozm1mkkyran .table
+Categorical table by sex {#tinytable_012fhkydv8fajd5k98d3 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

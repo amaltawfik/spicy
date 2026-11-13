@@ -52,8 +52,10 @@ schema reads without knowing which function produced it.
 `glance()` returns one row per grouping – one BLOCK – with that block's
 own comparison. Columns: `outcome`, `variable`, `label`, `n_levels`,
 `test_type`, `statistic`, `df`, `df.residual`, `p.value`, `es_type`,
-`es_value`, `es_ci_lower`, `es_ci_upper`, `nobs`. Index by NAME rather
-than by position.
+`es_value`, `es_ci_lower`, `es_ci_upper`, `nobs` (the rows of the
+block's levels, a row of zero weight left out), `weighted_nobs` (the sum
+of their weights, `NA` without `weights`). Index by NAME rather than by
+position.
 
 `n_levels` counts the levels the TABLE displays, so a missing-value
 display level counts; the comparison behind `test_type` runs on the

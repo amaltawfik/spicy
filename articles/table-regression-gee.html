@@ -489,7 +489,10 @@ group – computed on the estimation sample:</p>
 outcome between the treated and untreated <em>populations</em>. The
 subject-specific odds ratio from the matching mixed model is larger –
 the attenuation of the first section – and the <a href="table-regression-mixed.html">mixed-effects article</a> shows the
-two side by side.</p>
+two side by side. The <code>(Intercept)</code> row is not an odds ratio:
+the note names it the baseline odds, here those of a placebo patient
+with every numeric predictor at zero, age 0 included, a profile outside
+the trial (ages 11 to 68), so it anchors the model and is not read.</p>
 <p>Average marginal effects translate the odds ratio onto the
 probability scale, and for a GEE fit their uncertainty inherits the
 sandwich covariance automatically:</p>

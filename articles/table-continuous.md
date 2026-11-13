@@ -829,6 +829,49 @@ table_continuous(
 #> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: Satisfaction with health (1-5) (8). P-values: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
+## Choosing the statistics
+
+`show_columns` chooses the statistics by token: `"m"` (mean), `"sd"`,
+`"med"` (median), `"iqr"`, `"med_iqr"` (the median with its quartiles in
+one cell), `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"` (the confidence
+interval of the mean), `"med_ci"` (the exact interval of the median),
+`"n"` and, under `weights`, `"weighted_n"`. The columns follow the order
+the tokens are written in, so a table that leads with the median writes
+it first:
+
+``` r
+
+table_continuous(
+  sochealth,
+  select = c(bmi, wellbeing_score),
+  by = sex,
+  show_columns = c("med", "q1", "q3", "m", "sd", "n")
+)
+#> Descriptive statistics by sex
+#> 
+#>  Variable        │ Group    Mdn    Q1     Q3      M     SD     n     p   
+#> ─────────────────┼───────────────────────────────────────────────────────
+#>  bmi             │ Female  25.70  23.10  28.60  25.69   3.78  616   .018 
+#>                  │ Male    26.10  23.87  28.63  26.20   3.64  572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  68.20  57.30  77.53  67.16  14.80  620  <.001 
+#>                  │ Male    72.30  61.27  81.58  71.05  16.23  580        
+#> 
+#> Note. N = 1200: Female (n = 620), Male (n = 580). Missing values removed: bmi (12). P-values: Welch t-test. Q1 = first quartile; Q3 = third quartile.
+```
+
+An interval comes after the statistic it bounds, `"ci"` after `"m"` and
+`"med_ci"` after `"med"` or `"med_iqr"`: written before it, it is an
+error. A token written twice counts once. A named list gives each
+variable its own tokens, `.default` covering the variables it does not
+name; the variables then share no written order, and the columns follow
+the order of the vocabulary above, from the mean to the counts. The
+table tests what it shows: a variable displayed by its median without
+its mean takes the rank-based test. The *Choosing the statistics*
+section of
+[`?table_continuous`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+gives the full vocabulary.
+
 ## Display options
 
 The printed ASCII table and every rendered output share the same
@@ -908,13 +951,13 @@ broom::tidy(out)
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
 # es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
-#> # A tibble: 2 × 14
+#> # A tibble: 2 × 15
 #>   variable  label test_type statistic    df df.residual p.value es_type es_value
 #>   <chr>     <chr> <chr>         <dbl> <dbl>       <dbl>   <dbl> <chr>      <dbl>
 #> 1 bmi       bmi   welch_t       -2.38 1184.          NA 1.76e-2 NA            NA
 #> 2 wellbein… well… welch_t       -4.33 1169.          NA 1.65e-5 NA            NA
-#> # ℹ 5 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, smd_type <chr>,
-#> #   smd_value <dbl>, nobs <int>
+#> # ℹ 6 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, smd_type <chr>,
+#> #   smd_value <dbl>, nobs <int>, weighted_nobs <dbl>
 
 # Or the displayed table as a plain data.frame
 head(as.data.frame(out))
@@ -994,7 +1037,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_qkb86nq30ujzb2t55kjj
+Descriptive statistics by education {#tinytable_ntap5kayj3z2xtqf091a
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

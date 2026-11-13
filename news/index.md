@@ -158,10 +158,38 @@
   showed 0 for that group, and the survey tables failed.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a `glmmTMB` beta-binomial mixed model no longer reports the Nakagawa
-  R2. The residual variance it relied on for that family goes to 0 as
-  the overdispersion vanishes, so the R2 went to 1 instead of joining
-  that of the binomial model.
+  a `glmmTMB` beta, ordered beta or beta-binomial mixed model no longer
+  reports the Nakagawa R2. The residual variance it relied on for these
+  families is that of a log link, not of their logit link. The R2 of a
+  beta model changed when the outcome was recoded 1 - y, and that of a
+  beta-binomial model went to 1 as the overdispersion vanished instead
+  of joining that of the binomial model.
+
+- `glance()` of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  counts rows in `nobs` under `weights`, a row of zero weight left out;
+  it gave the rounded sum of the weights. That weighted count is the new
+  column `weighted_nobs`, which the `glance()` of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  gains too. In
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  `weighted_nobs` sums the weights of each variable’s own rows, no
+  longer those of the design.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
+  the sample size of the note leaves out the rows of zero weight, among
+  them the rows [`subset()`](https://rdrr.io/r/base/subset.html) keeps
+  on a calibrated or post-stratified design, as the `n` columns and
+  [`survey::unwtd.count()`](https://rdrr.io/pkg/survey/man/svyby.html)
+  do. Estimates do not change.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  refuses a level of `y` or of `by` that is the empty string. The column
+  was headed `V1`, and the rows of such a `by` group were dropped
+  without a word.
 
 ### New features
 
@@ -174,8 +202,8 @@
   print the groups of `by` in the console as the rich outputs do: the
   label of each group sits over its columns, headed `n`, `%`, instead of
   `Female n`, `Female %`. A table split into panels breaks between
-  groups. The column names of
-  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+  groups, unless one group is wider than the console. The column names
+  of [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   and the rendered outputs do not change.
@@ -193,7 +221,8 @@
   estimates, since it is not a ratio: the baseline odds, risk, rate or
   mean, or a quantile of the survival time for
   [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html).
-  Zero-inflation and hurdle blocks on a logit link name theirs.
+  Zero-inflation and hurdle blocks on a logit link name theirs. The
+  sentence names the row by the label `labels` gives it.
 
 - [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   and
@@ -964,6 +993,11 @@
 - A group label with wide characters or decomposed accents no longer
   shifts the labels that follow it in the console of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
+- `table_categorical(assoc_ci = TRUE)` prints the interval of the
+  association measure in the measure’s cell, `.52 [.21, .74]` under
+  `V [95% CI]`, as the rendered tables do. The data frame, Excel and the
+  clipboard keep the bounds in columns of their own.
 
 ## spicy 0.14.1
 
