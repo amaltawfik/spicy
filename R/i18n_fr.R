@@ -402,7 +402,7 @@
   note_exp_with_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s).%s",
   note_exp_no_se_single_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s.%s",
   note_exp_no_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille).%s",
-  note_exp_intercept = "La ligne (Intercept) estime %s.",
+  note_exp_intercept = "La ligne %s estime %s.",
   note_exp_intercept_odds = "la cote de base",
   note_exp_intercept_rate = "le taux de base",
   note_exp_intercept_risk = "le risque de base",

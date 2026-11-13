@@ -4061,7 +4061,9 @@ table_regression <- function(
     model_labels = named_model_labels,
     note_add = note_add,
     parts = TRUE,
-    show_intercept = show_intercept
+    show_intercept = show_intercept,
+    # The label the intercept row shows, which the note names.
+    intercept_label = resolve_label("(Intercept)", var_labs$terms)
   )
   footer_main <- .compose_note_parts(footer_parts)
 

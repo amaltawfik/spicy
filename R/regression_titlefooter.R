@@ -327,7 +327,8 @@ build_regression_footer_from_frames <- function(
   model_labels = NULL,
   note_add = NULL,
   parts = FALSE,
-  show_intercept = TRUE
+  show_intercept = TRUE,
+  intercept_label = "(Intercept)"
 ) {
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
@@ -403,7 +404,8 @@ build_regression_footer_from_frames <- function(
       build_exp_intercept_footer_block_from_frames(
         frames,
         show_columns,
-        show_intercept
+        show_intercept,
+        intercept_label
       ),
       build_singular_footer_block_from_frames(frames),
       build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
@@ -2291,6 +2293,8 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
         gl <- paste0(gl, " ", spicy_str("note_component_exp_or"))
         # A block is exponentiated only under a logit link: its
         # intercept is the baseline odds of the event its gloss names.
+        # Its row keeps the label "(Intercept)", which `labels` does not
+        # reach.
         has_int <- any(
           cf$is_component %in%
             TRUE &
@@ -2304,6 +2308,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
             " ",
             spicy_fmt(
               "note_exp_intercept",
+              "(Intercept)",
               spicy_str("note_exp_intercept_odds")
             )
           )
@@ -3124,11 +3129,15 @@ build_exponentiate_footer_block_from_frames <- function(
 # from the family and the link `spicy_glm_exp_header()` reads too. One
 # estimand for every model that shows an intercept: no model named.
 # Otherwise each estimand with its models, as the other per-model notes
-# name them. ADR dev/decisions/2026-09-05-exp-intercept-under-ratio-header.md.
+# name them. The row is named by the label it shows, `intercept_label`
+# (what `labels` gives "(Intercept)"), or "(Intercept)" when that label
+# is blank; one sentence per label when the models show two.
+# ADR dev/decisions/2026-09-05-exp-intercept-under-ratio-header.md.
 build_exp_intercept_footer_block_from_frames <- function(
   frames,
   show_columns = character(0),
-  show_intercept = TRUE
+  show_intercept = TRUE,
+  intercept_label = "(Intercept)"
 ) {
   if (
     !is.list(frames) ||
@@ -3137,55 +3146,80 @@ build_exp_intercept_footer_block_from_frames <- function(
   ) {
     return(NULL)
   }
-  shown <- vapply(frames, .frame_shows_intercept, logical(1), show_intercept)
+  if (!nzchar(trimws(intercept_label))) {
+    intercept_label <- "(Intercept)"
+  }
+  row <- vapply(
+    frames,
+    .frame_intercept_label,
+    character(1),
+    show_intercept,
+    intercept_label
+  )
   key <- vapply(
     seq_along(frames),
     function(i) {
-      if (!shown[i] || !isTRUE(frames[[i]]$info$extras$exp_applied)) {
+      if (is.na(row[i]) || !isTRUE(frames[[i]]$info$extras$exp_applied)) {
         return(NA_character_)
       }
       .exp_intercept_key(frames[[i]]$info)
     },
     character(1)
   )
-  keys <- unique(key[!is.na(key)])
-  if (length(keys) == 0L) {
+  labs <- unique(row[!is.na(key)])
+  if (length(labs) == 0L) {
     return(NULL)
   }
-  if (length(keys) == 1L && !anyNA(key[shown])) {
-    return(spicy_fmt("note_exp_intercept", spicy_str(keys)))
-  }
-  items <- vapply(
-    keys,
-    function(k) {
-      refs <- vapply(
-        which(key %in% k),
-        function(i) .model_ref(frames, i),
+  vapply(
+    labs,
+    function(lab) {
+      on <- row %in% lab
+      keys <- unique(key[on & !is.na(key)])
+      if (length(keys) == 1L && !anyNA(key[on])) {
+        return(spicy_fmt("note_exp_intercept", lab, spicy_str(keys)))
+      }
+      items <- vapply(
+        keys,
+        function(k) {
+          refs <- vapply(
+            which(on & key %in% k),
+            function(i) .model_ref(frames, i),
+            character(1)
+          )
+          spicy_fmt(
+            "note_exp_intercept_models",
+            spicy_str(k),
+            paste(refs, collapse = ", ")
+          )
+        },
         character(1)
       )
       spicy_fmt(
-        "note_exp_intercept_models",
-        spicy_str(k),
-        paste(refs, collapse = ", ")
+        "note_exp_intercept",
+        lab,
+        paste(items, collapse = spicy_str("note_estimand_sep"))
       )
     },
-    character(1)
-  )
-  spicy_fmt(
-    "note_exp_intercept",
-    paste(items, collapse = spicy_str("note_estimand_sep"))
+    character(1),
+    USE.NAMES = FALSE
   )
 }
 
-# Whether the table shows an intercept row of the model of `f`: its
-# tagged intercept (`is_intercept`, else the "(Intercept)" term) under
-# `show_intercept = TRUE`, or an intercept `show_intercept` does not
-# govern (the alternative-specific constants of mlogit). The intercepts
-# of the component blocks are named in the gloss of their block.
-.frame_shows_intercept <- function(f, show_intercept = TRUE) {
+# The label of the intercept row the table shows for the model of `f`,
+# NA when it shows none: its tagged intercept (`is_intercept`, else the
+# "(Intercept)" term) under `show_intercept = TRUE`, which takes
+# `intercept_label`, or an intercept `show_intercept` does not govern
+# (the alternative-specific constants of mlogit), which `labels` does
+# not reach and keeps "(Intercept)". The intercepts of the component
+# blocks are named in the gloss of their block.
+.frame_intercept_label <- function(
+  f,
+  show_intercept = TRUE,
+  intercept_label = "(Intercept)"
+) {
   cf <- f$coefs
   if (is.null(cf) || nrow(cf) == 0L) {
-    return(FALSE)
+    return(NA_character_)
   }
   b <- cf$estimate_type == "B" &
     !((cf$is_component %||% FALSE) %in% TRUE) &
@@ -3196,11 +3230,13 @@ build_exp_intercept_footer_block_from_frames <- function(
   } else {
     cf$term == "(Intercept)"
   }
-  any(
-    b &
-      ((tagged & isTRUE(show_intercept)) |
-        (!tagged & cf$label %in% "(Intercept)"))
-  )
+  if (isTRUE(show_intercept) && any(b & tagged)) {
+    intercept_label
+  } else if (any(b & !tagged & cf$label %in% "(Intercept)")) {
+    "(Intercept)"
+  } else {
+    NA_character_
+  }
 }
 
 # The registry key of the estimand of an exponentiated intercept, by

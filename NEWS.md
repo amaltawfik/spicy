@@ -737,6 +737,10 @@
   shifts the labels that follow it in the console of
   `table_regression()`.
 
+* `table_regression()`: the note sentence on an exponentiated intercept
+  names the row by the label it shows, the one `labels` gives to
+  `"(Intercept)"`, instead of "(Intercept)".
+
 # spicy 0.14.1
 
 * Three tests compare their floating-point results with a tolerance, so

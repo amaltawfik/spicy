@@ -883,8 +883,23 @@ table_stack <- function(
   types_own <- unlist(kind("type"), use.names = FALSE)
   exp_scope <- spicy_str("note_exp_scope_all")
   # "The (Intercept) row estimates ...", the sentence of an exponentiated
-  # intercept, up to its hole.
-  exp_intercept <- sub("%s.*$", "", spicy_str("note_exp_intercept"))
+  # intercept, its holes (the label of the row, the estimands) any text.
+  exp_intercept <- paste0(
+    "^",
+    paste(
+      .escape_regex(gsub(
+        "%%",
+        "%",
+        strsplit(
+          spicy_str("note_exp_intercept"),
+          .SPICY_FORMAT_SPEC_RX,
+          perl = TRUE
+        )[[1L]],
+        fixed = TRUE
+      )),
+      collapse = ".*"
+    )
+  )
   built <- .compose_note(
     what = c(
       type_txt,
@@ -894,7 +909,7 @@ table_stack <- function(
           x %in%
             types_own ||
             startsWith(x, exp_scope) ||
-            startsWith(x, exp_intercept)
+            grepl(exp_intercept, x)
         }
       )
     ),

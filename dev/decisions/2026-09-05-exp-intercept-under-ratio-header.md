@@ -57,6 +57,14 @@ baseline odds. », essayée d'abord, donnait « Dentist: (Intercept):
 baseline odds. » dans une pile de `table_stack()`, qui préfixe chaque
 phrase du nom de son panneau.
 
+Ajout du 2026-11-13 : la note reprend le libellé que la ligne affiche.
+`labels = c("(Intercept)" = "Constant")` donne « The Constant row
+estimates the baseline odds. ». Un libellé vide laisse « (Intercept) ».
+Les lignes que `labels` n'atteint pas gardent « (Intercept) » : la
+constante d'un bloc de zéro-inflation et les constantes propres aux
+alternatives de mlogit. Deux libellés dans un même tableau donnent une
+phrase chacun.
+
 1. L'estimand se lit sur la famille et le lien du cadre
    (`info$family`), la donnée dont `spicy_glm_exp_header()` tire
    l'en-tête :
