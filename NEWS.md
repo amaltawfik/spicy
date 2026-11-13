@@ -128,7 +128,8 @@
   print the groups of `by` in the console as the rich outputs do: the
   label of each group sits over its columns, headed `n`, `%`, instead
   of `Female n`, `Female %`. A table split into panels breaks between
-  groups. The column names of `as.data.frame()`, `tidy()`,
+  groups, unless one group is wider than the console. The column names
+  of `as.data.frame()`, `tidy()`,
   `as_structured()` and the rendered outputs do not change.
 
 * `table_regression()` gains `ame_type`. `"slope"` (default, unchanged)
@@ -143,7 +144,7 @@
   displayed intercept estimates, since it is not a ratio: the baseline
   odds, risk, rate or mean, or a quantile of the survival time for
   `survreg()`. Zero-inflation and hurdle blocks on a logit link name
-  theirs.
+  theirs. The sentence names the row by the label `labels` gives it.
 
 * `table_battery()` and `table_battery_svy()` gain `tidy()` and
   `glance()` methods.
@@ -736,10 +737,6 @@
 * A group label with wide characters or decomposed accents no longer
   shifts the labels that follow it in the console of
   `table_regression()`.
-
-* `table_regression()`: the note sentence on an exponentiated intercept
-  names the row by the label it shows, the one `labels` gives to
-  `"(Intercept)"`, instead of "(Intercept)".
 
 # spicy 0.14.1
 
