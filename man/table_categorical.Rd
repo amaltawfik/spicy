@@ -522,14 +522,16 @@ measure, then one row per level. The key columns are \code{variable}
 see \code{labels}), \code{level} and \code{.row_role} (\code{"factor_header"},
 \code{"level"}, \code{"missing"} for the row of missing values the table
 adds, or \code{"total"} for the Total row of \code{total_row = TRUE}), then
-the printed columns: one pair \verb{<group> n} /
-\verb{<group> \%} per group level (plus \code{Total} when
-\code{include_total = TRUE}), \code{p} (absent with \code{p_value = FALSE}), the
+one column per displayed column, the name of a column of a group
+joining the group printed above it to the header printed under
+it: one pair \verb{<group> n} / \verb{<group> \%} per group level (plus
+\code{Total} when \code{include_total = TRUE}), \code{p} (absent with
+\code{p_value = FALSE}), the
 association measure (named by its header: the symbol of the
 measure, \code{V}, its name for a measure without one, or \verb{Effect size}
 when the row variables do not share one), its bounds \verb{95\% CI LL} /
 \verb{95\% CI UL} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
-When \code{by = NULL}, the printed columns are \code{n} and \verb{\%}.
+When \code{by = NULL}, these columns are \code{n} and \verb{\%}.
 \item \code{"long"}: a long \code{data.frame}, one row per variable, level and
 group, with columns \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
 role of \code{level}: \code{"level"}, \code{"missing"} for the row of missing

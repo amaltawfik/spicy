@@ -447,10 +447,11 @@ the table). The object can be re-coerced via
 default object returns: one row per printed row, the key columns
 \code{variable} (the column name), \code{label} (the label displayed for
 it) and, with \code{by}, \code{group} and \code{.row_role} (\code{"group"}, or
-\code{"missing"} for the group of missing \code{by} values), then the
-printed columns under their names (\code{"M"}, \code{"SD"}, \code{"Min"},
-\code{"Max"}, \code{"95\% CI LL"}, \code{"95\% CI UL"}, \code{"n"}, \code{"Test"}, \code{"p"},
-\code{"ES"}, \code{"SMD"}, the columns \code{show_columns} asks for). A cell that
+\code{"missing"} for the group of missing \code{by} values), then one column
+per displayed column, in the order of the table (\code{"M"}, \code{"SD"},
+\code{"Min"}, \code{"Max"}, \code{"95\% CI LL"} and \code{"95\% CI UL"}, the bounds
+printed under \verb{95\% CI}, \code{"n"}, \code{"Test"}, \code{"p"}, \code{"ES"}, \code{"SMD"}, the
+columns \code{show_columns} asks for). A cell that
 prints several numbers keeps the first in its column and the
 others beside it under their names in the long output: \code{df} and
 \code{df.residual} after \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper}

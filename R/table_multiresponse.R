@@ -234,7 +234,9 @@
 #'     `label` (the label the row displays), `.row_role` (what the row
 #'     is: `"summary"` for an item, `"none"` for "(No item chosen)",
 #'     `"missing"` for "(No answer to the question)", `"fit_stat"` for the
-#'     base, the roles of [as_structured()]), then the printed columns:
+#'     base, the roles of [as_structured()]), then one column per
+#'     displayed column, the name of a column of a group joining the group
+#'     printed above it to the header printed under it:
 #'     the count and the percentage of each group of `by` and of the
 #'     `Total` margin (`<group> n` and `<group> %`, or
 #'     `<group> % of cases` and `<group> % of responses` under

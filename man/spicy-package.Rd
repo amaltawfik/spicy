@@ -168,8 +168,10 @@ title gives it (its label in \code{note_labels}, when there is one).
 is displayed, one row per printed row, with numbers: the key columns
 \code{variable}, \code{label} (and the \code{level} or \code{group} of the row, and
 \code{.row_role}, the role of the printed row, where the table adds rows),
-then the printed columns under their names. The two are identical for
-every class. A stacked table (\code{\link[=table_stack]{table_stack()}}) is the exception to one
+then the displayed statistics under their keys, which join the header
+of a spanner (a group of \code{by}, the coverage of an interval) to the
+header printed under it: \code{"Female n"}, \code{"95\% CI LL"}. The two are
+identical for every class. A stacked table (\code{\link[=table_stack]{table_stack()}}) is the exception to one
 row per printed row: its data frame binds the data frames of its
 panels by rows, under a leading \code{panel} column, without the rows that
 open the panels or repeat their headers. \code{output = "excel"} and

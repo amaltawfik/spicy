@@ -27,8 +27,10 @@ A plain \code{data.frame} (or \code{tbl_df}), identical to the
 with its numbers: exactly what \code{output = "data.frame"} returns. One
 row per printed row -- the header row of each variable, which
 carries its \emph{p}-value and its association measure, then one row per
-level -- and the printed columns under their names (\code{"Female n"},
-\code{"Female \%"}, ..., \code{"p"}, the measure), plus the key columns
+level -- and one column per displayed column (\code{"Female n"},
+\code{"Female \%"}, ..., \code{"p"}, the measure), the name of a column of a group
+joining the group printed above it to the header printed under it, plus
+the key columns
 \code{variable} (the column name), \code{label} (the label displayed for it),
 \code{level}, and \code{.row_role} (\code{"factor_header"}, \code{"level"}, \code{"missing"}
 for the row of missing values the table adds, or \code{"total"} for the

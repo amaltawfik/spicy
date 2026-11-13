@@ -320,7 +320,9 @@ column, \code{"none"}, \code{"no_data"}, or \code{"nobs"} on the base row),
 \code{label} (the label the row displays), \code{.row_role} (what the row
 is: \code{"summary"} for an item, \code{"none"} for "(No item chosen)",
 \code{"missing"} for "(No answer to the question)", \code{"fit_stat"} for the
-base, the roles of \code{\link[=as_structured]{as_structured()}}), then the printed columns:
+base, the roles of \code{\link[=as_structured]{as_structured()}}), then one column per
+displayed column, the name of a column of a group joining the group
+printed above it to the header printed under it:
 the count and the percentage of each group of \code{by} and of the
 \code{Total} margin (\verb{<group> n} and \verb{<group> \%}, or
 \verb{<group> \% of cases} and \verb{<group> \% of responses} under

@@ -773,7 +773,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #'     default object returns: one row per printed row, the key columns
 #'     `variable`, `label` and, with `by`, `group` and `.row_role`
 #'     (`"group"`, or `"missing"` for the group of missing `by` values),
-#'     then the printed columns under their names (`"M"`, `"SD"`, `"SE"`,
+#'     then one column per displayed column (`"M"`, `"SD"`, `"SE"`,
 #'     `"95% CI LL"`, ..., `"n"`, `"p"`), as in [table_continuous()].
 #'   \item `"long"`: one row per `(variable x group)` (per variable
 #'     without `by`) with every statistic the table computes, whatever it

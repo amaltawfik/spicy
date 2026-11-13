@@ -491,8 +491,10 @@
 #'     [as.data.frame()][as.data.frame.spicy_continuous_lm_table] of the
 #'     default object returns: one row per outcome, the key columns
 #'     `variable` (the column name of the outcome) and `label` (the label
-#'     displayed), then the printed columns under their names -- the
-#'     means (categorical `by`) or the slope (numeric `by`), the contrast
+#'     displayed), then one column per displayed column -- the means
+#'     (`"M (Female)"`, joining the symbol printed above the levels to the
+#'     level printed under it; categorical `by`) or the slope (numeric
+#'     `by`), the contrast
 #'     and its interval bounds, the test statistic, `p`, the fit
 #'     statistic, the effect size (with `es_ci_lower` / `es_ci_upper`
 #'     beside it when `effect_size_ci = TRUE`), `n`, and `Weighted n`.

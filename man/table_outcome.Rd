@@ -338,9 +338,9 @@ object returns: one row per printed row, the key columns
 \code{variable} (the outcome on the \code{Overall} row, the grouping variable
 elsewhere), \code{label}, \code{level} and \code{.row_role} (\code{"summary"} for the
 \code{Overall} row, \code{"factor_header"}, \code{"level"}, or \code{"missing"}), then
-the printed columns under their names (\code{"M"}, \code{"SD"}, ..., \code{"n"},
-\code{"p"}), a cell that prints several numbers keeping the others
-beside it as in \code{\link[=table_continuous]{table_continuous()}}.
+one column per displayed column (\code{"M"}, \code{"SD"}, ..., \code{"n"}, \code{"p"},
+named as in \code{\link[=table_continuous]{table_continuous()}}), a cell that prints several
+numbers keeping the others beside it as in \code{\link[=table_continuous]{table_continuous()}}.
 \item \code{"long"}: the compute frame, one row per printed row with every
 statistic the table computes, whatever it displays: \code{variable},
 \code{label}, \code{level}, \code{.row_role}, \code{mean}, \code{sd}, \code{min}, \code{max},

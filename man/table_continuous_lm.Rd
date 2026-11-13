@@ -605,8 +605,10 @@ display the table).
 \link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame()} of the
 default object returns: one row per outcome, the key columns
 \code{variable} (the column name of the outcome) and \code{label} (the label
-displayed), then the printed columns under their names -- the
-means (categorical \code{by}) or the slope (numeric \code{by}), the contrast
+displayed), then one column per displayed column -- the means
+(\code{"M (Female)"}, joining the symbol printed above the levels to the
+level printed under it; categorical \code{by}) or the slope (numeric
+\code{by}), the contrast
 and its interval bounds, the test statistic, \code{p}, the fit
 statistic, the effect size (with \code{es_ci_lower} / \code{es_ci_upper}
 beside it when \code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.

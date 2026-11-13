@@ -355,10 +355,11 @@
 #'     default object returns: one row per printed row, the key columns
 #'     `variable` (the column name), `label` (the label displayed for
 #'     it) and, with `by`, `group` and `.row_role` (`"group"`, or
-#'     `"missing"` for the group of missing `by` values), then the
-#'     printed columns under their names (`"M"`, `"SD"`, `"Min"`,
-#'     `"Max"`, `"95% CI LL"`, `"95% CI UL"`, `"n"`, `"Test"`, `"p"`,
-#'     `"ES"`, `"SMD"`, the columns `show_columns` asks for). A cell that
+#'     `"missing"` for the group of missing `by` values), then one column
+#'     per displayed column, in the order of the table (`"M"`, `"SD"`,
+#'     `"Min"`, `"Max"`, `"95% CI LL"` and `"95% CI UL"`, the bounds
+#'     printed under `95% CI`, `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the
+#'     columns `show_columns` asks for). A cell that
 #'     prints several numbers keeps the first in its column and the
 #'     others beside it under their names in the long output: `df` and
 #'     `df.residual` after `"Test"`, `es_ci_lower` and `es_ci_upper`

@@ -290,7 +290,9 @@ each variable, which carries its \emph{p}-value, then its levels), the
 key columns \code{variable} (the column name), \code{label} (the label
 displayed), \code{level} and \code{.row_role} (\code{"factor_header"}, \code{"level"},
 or \code{"missing"} on the row of missing values the table adds), then
-the printed columns in their order: per block of \code{by} (and the
+one column per displayed column, in their order, the name of a
+column of a block joining the block printed above it to the header
+printed under it: per block of \code{by} (and the
 \code{Total} margin) \verb{<group> n}, \verb{<group> \%}, with \code{proportion_ci} the
 interval bounds \verb{<group> 95\% CI LL} and \verb{<group> 95\% CI UL} (the
 level of \code{ci_level}, as printed), with \code{deff} \verb{<group> DEff}, and

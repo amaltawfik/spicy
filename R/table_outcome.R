@@ -769,9 +769,9 @@ abort_outcome_by_renamed <- function() {
 #'     `variable` (the outcome on the `Overall` row, the grouping variable
 #'     elsewhere), `label`, `level` and `.row_role` (`"summary"` for the
 #'     `Overall` row, `"factor_header"`, `"level"`, or `"missing"`), then
-#'     the printed columns under their names (`"M"`, `"SD"`, ..., `"n"`,
-#'     `"p"`), a cell that prints several numbers keeping the others
-#'     beside it as in [table_continuous()].
+#'     one column per displayed column (`"M"`, `"SD"`, ..., `"n"`, `"p"`,
+#'     named as in [table_continuous()]), a cell that prints several
+#'     numbers keeping the others beside it as in [table_continuous()].
 #'   \item `"long"`: the compute frame, one row per printed row with every
 #'     statistic the table computes, whatever it displays: `variable`,
 #'     `label`, `level`, `.row_role`, `mean`, `sd`, `min`, `max`,

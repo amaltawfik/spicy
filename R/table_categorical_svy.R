@@ -609,7 +609,9 @@
 #'     key columns `variable` (the column name), `label` (the label
 #'     displayed), `level` and `.row_role` (`"factor_header"`, `"level"`,
 #'     or `"missing"` on the row of missing values the table adds), then
-#'     the printed columns in their order: per block of `by` (and the
+#'     one column per displayed column, in their order, the name of a
+#'     column of a block joining the block printed above it to the header
+#'     printed under it: per block of `by` (and the
 #'     `Total` margin) `<group> n`, `<group> %`, with `proportion_ci` the
 #'     interval bounds `<group> 95% CI LL` and `<group> 95% CI UL` (the
 #'     level of `ci_level`, as printed), with `deff` `<group> DEff`, and

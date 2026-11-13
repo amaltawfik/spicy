@@ -270,12 +270,12 @@ visibly, so a bare call prints the ASCII table.
 \item \code{"data.frame"}: the displayed table with its numbers, what
 \link[=as.data.frame.spicy_battery_table]{as.data.frame()} of the
 default object returns: one row per item, with columns \code{variable}
-(the item's column), \code{label} (the label the row displays), then the
-printed columns: one percentage per level shown, \code{(Missing)} under
-\code{drop_na = FALSE}, the summary column of \code{top} (named by its
-header, \code{"Strongly agree + Agree"}) and \code{n}, each prefixed with the
-group under \code{by} (\code{"Female Agree"}, \code{"Female n"}), and \code{p} with
-\code{p_value}.
+(the item's column), \code{label} (the label the row displays), then one
+column per displayed column: one percentage per level shown,
+\code{(Missing)} under \code{drop_na = FALSE}, the summary column of \code{top}
+(named by its header, \code{"Strongly agree + Agree"}) and \code{n}, each
+prefixed under \code{by} with the group printed above it
+(\code{"Female Agree"}, \code{"Female n"}), and \code{p} with \code{p_value}.
 \item \code{"long"}: one row per item, group and level, with columns
 \code{variable}, \code{label}, \code{group} (with \code{by}), \code{level} (the level, or the
 label of the column of missing answers), \code{.row_role} (\code{"level"}, or

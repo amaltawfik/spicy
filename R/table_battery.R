@@ -159,12 +159,12 @@
 #'   \item `"data.frame"`: the displayed table with its numbers, what
 #'     [as.data.frame()][as.data.frame.spicy_battery_table] of the
 #'     default object returns: one row per item, with columns `variable`
-#'     (the item's column), `label` (the label the row displays), then the
-#'     printed columns: one percentage per level shown, `(Missing)` under
-#'     `drop_na = FALSE`, the summary column of `top` (named by its
-#'     header, `"Strongly agree + Agree"`) and `n`, each prefixed with the
-#'     group under `by` (`"Female Agree"`, `"Female n"`), and `p` with
-#'     `p_value`.
+#'     (the item's column), `label` (the label the row displays), then one
+#'     column per displayed column: one percentage per level shown,
+#'     `(Missing)` under `drop_na = FALSE`, the summary column of `top`
+#'     (named by its header, `"Strongly agree + Agree"`) and `n`, each
+#'     prefixed under `by` with the group printed above it
+#'     (`"Female Agree"`, `"Female n"`), and `p` with `p_value`.
 #'   \item `"long"`: one row per item, group and level, with columns
 #'     `variable`, `label`, `group` (with `by`), `level` (the level, or the
 #'     label of the column of missing answers), `.row_role` (`"level"`, or

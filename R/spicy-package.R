@@ -160,8 +160,10 @@
 #' is displayed, one row per printed row, with numbers: the key columns
 #' `variable`, `label` (and the `level` or `group` of the row, and
 #' `.row_role`, the role of the printed row, where the table adds rows),
-#' then the printed columns under their names. The two are identical for
-#' every class. A stacked table ([table_stack()]) is the exception to one
+#' then the displayed statistics under their keys, which join the header
+#' of a spanner (a group of `by`, the coverage of an interval) to the
+#' header printed under it: `"Female n"`, `"95% CI LL"`. The two are
+#' identical for every class. A stacked table ([table_stack()]) is the exception to one
 #' row per printed row: its data frame binds the data frames of its
 #' panels by rows, under a leading `panel` column, without the rows that
 #' open the panels or repeat their headers. `output = "excel"` and

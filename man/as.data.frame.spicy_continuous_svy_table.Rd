@@ -24,8 +24,8 @@ identical to the \code{output = "data.frame"} of the same call.
 \code{as.data.frame()} returns the table \code{\link[=table_continuous_svy]{table_continuous_svy()}} displays,
 with its numbers: exactly what \code{output = "data.frame"} returns, the
 shape of \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} (the key columns
-\code{variable}, \code{label} and, with \code{by}, \code{group} and \code{.row_role}, then the
-printed columns under their names). The note, as printed, is kept in
+\code{variable}, \code{label} and, with \code{by}, \code{group} and \code{.row_role}, then one
+column per displayed column). The note, as printed, is kept in
 \code{attr(, "note")}. \code{as_tibble()} returns the same table as a tibble.
 }
 \seealso{

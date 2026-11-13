@@ -50,8 +50,8 @@ unclass_spicy_continuous_svy_table <- function(x) {
 #' `as.data.frame()` returns the table [table_continuous_svy()] displays,
 #' with its numbers: exactly what `output = "data.frame"` returns, the
 #' shape of [as.data.frame.spicy_continuous_table()] (the key columns
-#' `variable`, `label` and, with `by`, `group` and `.row_role`, then the
-#' printed columns under their names). The note, as printed, is kept in
+#' `variable`, `label` and, with `by`, `group` and `.row_role`, then one
+#' column per displayed column). The note, as printed, is kept in
 #' `attr(, "note")`. `as_tibble()` returns the same table as a tibble.
 #'
 #' @param x A `spicy_continuous_svy_table` returned by

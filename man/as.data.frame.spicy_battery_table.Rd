@@ -33,9 +33,10 @@ A plain \code{data.frame} (or \code{tbl_df}), identical to the
 \code{as.data.frame()} returns the table \code{\link[=table_battery]{table_battery()}} displays, with
 its numbers: exactly what \code{output = "data.frame"} returns. One row per
 item, with the columns \code{variable} (the item's column), \code{label} (the label
-displayed), then the printed columns under their names (one per level
-shown, \code{"(Missing)"}, the summary column of \code{top}, \code{"n"}, each prefixed
-with its group under \code{by}, then \code{"p"}). The \code{"note"} attribute is kept.
+displayed), then one column per displayed column (one per level shown,
+\code{"(Missing)"}, the summary column of \code{top}, \code{"n"}, then \code{"p"}). Under
+\code{by} each name joins the group printed above the column to the header
+printed under it (\code{"Female n"}). The \code{"note"} attribute is kept.
 \code{as_tibble()} returns the same table as a tibble. The original \code{x} is
 unaffected, and \code{print(x)} continues to render the formatted table.
 }

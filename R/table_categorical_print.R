@@ -387,8 +387,10 @@ print.spicy_categorical_table <- function(x, ...) {
 #' with its numbers: exactly what `output = "data.frame"` returns. One
 #' row per printed row -- the header row of each variable, which
 #' carries its *p*-value and its association measure, then one row per
-#' level -- and the printed columns under their names (`"Female n"`,
-#' `"Female %"`, ..., `"p"`, the measure), plus the key columns
+#' level -- and one column per displayed column (`"Female n"`,
+#' `"Female %"`, ..., `"p"`, the measure), the name of a column of a group
+#' joining the group printed above it to the header printed under it, plus
+#' the key columns
 #' `variable` (the column name), `label` (the label displayed for it),
 #' `level`, and `.row_role` (`"factor_header"`, `"level"`, `"missing"`
 #' for the row of missing values the table adds, or `"total"` for the

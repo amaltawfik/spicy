@@ -1507,14 +1507,16 @@
 #'     see `labels`), `level` and `.row_role` (`"factor_header"`,
 #'     `"level"`, `"missing"` for the row of missing values the table
 #'     adds, or `"total"` for the Total row of `total_row = TRUE`), then
-#'     the printed columns: one pair `<group> n` /
-#'     `<group> %` per group level (plus `Total` when
-#'     `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
+#'     one column per displayed column, the name of a column of a group
+#'     joining the group printed above it to the header printed under
+#'     it: one pair `<group> n` / `<group> %` per group level (plus
+#'     `Total` when `include_total = TRUE`), `p` (absent with
+#'     `p_value = FALSE`), the
 #'     association measure (named by its header: the symbol of the
 #'     measure, `V`, its name for a measure without one, or `Effect size`
 #'     when the row variables do not share one), its bounds `95% CI LL` /
 #'     `95% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
-#'     When `by = NULL`, the printed columns are `n` and `%`.
+#'     When `by = NULL`, these columns are `n` and `%`.
 #'   \item `"long"`: a long `data.frame`, one row per variable, level and
 #'     group, with columns `variable`, `label`, `level`, `.row_role` (the
 #'     role of `level`: `"level"`, `"missing"` for the row of missing
