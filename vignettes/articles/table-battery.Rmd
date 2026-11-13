@@ -208,11 +208,26 @@ long <- table_battery(
 head(long)
 ```
 
+`broom::tidy()` returns the rows of `output = "long"` with the
+percentage as a proportion of the item's base, and `broom::glance()`
+one row per item, with its test and its base `nobs`, summed over the
+groups:
+
+```{r broom}
+tbl <- table_battery(sat, select = starts_with("life_sat_"), by = sex)
+broom::tidy(tbl)
+broom::glance(tbl)
+```
+
+The summary column of `top` has no row of its own in `tidy()`: its
+proportion is the sum of those of the levels it names. Both column
+sets are fixed: a test the table did not run is present and `NA`.
+Index by name, never by position.
+
 `inline()` cites a cell in running text: the item, then the level of the
 scale, and the group with `model`:
 
 ```{r inline}
-tbl <- table_battery(sat, select = starts_with("life_sat_"), by = sex)
 inline(tbl, life_sat_work, "Very satisfied", "pct", model = "Female")
 ```
 
