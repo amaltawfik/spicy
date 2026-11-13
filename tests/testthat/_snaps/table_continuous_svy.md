@@ -5,10 +5,12 @@
     Output
       Descriptive statistics
       
-       Variable │   M       SD     Min     Max    95% CI LL  95% CI UL   n  
-      ──────────┼───────────────────────────────────────────────────────────
-       api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
-       api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
+                                                                  95% CI              
+                                                            ──────────────────        
+       Variable   │    M         SD       Min       Max        LL        UL       n   
+      ────────────┼───────────────────────────────────────────────────────────────────
+       api00      │  644.17    105.75    411.00    905.00    593.68    694.66    183  
+       api99      │  606.98    112.85    365.00    890.00    555.02    658.94    183  
       
       Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -19,11 +21,13 @@
     Output
       Descriptive statistics by stype
       
-       Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n  
-      ──────────┼──────────────────────────────────────────────────────────────────
-       api00    │ E      648.87  106.16  436.00  905.00   600.91     696.83    144 
-                │ H      618.57   96.74  443.00  724.00   528.67     708.48     14 
-                │ M      631.44  109.06  411.00  847.00   561.87     701.01     25 
+                                                             95% CI          
+                                                         ──────────────      
+       Variable │ Group    M       SD     Min     Max      LL      UL     n  
+      ──────────┼────────────────────────────────────────────────────────────
+       api00    │ E      648.87  106.16  436.00  905.00  600.91  696.83  144 
+                │ H      618.57   96.74  443.00  724.00  528.67  708.48   14 
+                │ M      631.44  109.06  411.00  847.00  561.87  701.01   25 
       
        Variable │ Group       Test         p   
       ──────────┼──────────────────────────────
@@ -60,10 +64,12 @@
     Output
       Descriptive statistics by sch.wide
       
-       Variable │ Group    M       SD     Min     Max    95% CI LL  95% CI UL   n   p 
-      ──────────┼─────────────────────────────────────────────────────────────────────
-       api00    │ No        –       –    398.00  778.00      –          –       25  – 
-                │ Yes    678.42  121.28  421.00  893.00   655.85     700.99    126    
+                                                             95% CI             
+                                                         ──────────────         
+       Variable │ Group    M       SD     Min     Max      LL      UL     n   p 
+      ──────────┼───────────────────────────────────────────────────────────────
+       api00    │ No        –       –    398.00  778.00     –       –     25  – 
+                │ Yes    678.42  121.28  421.00  893.00  655.85  700.99  126    
       
       Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22 to 124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 

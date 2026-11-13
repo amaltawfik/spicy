@@ -84,12 +84,19 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   header_labels <- .lm_labels(names(display_df), labels)
   # The marginal means are headed by their levels under the mean's
   # spanner, as in every engine (none when the glyph is emptied through
-  # `options(spicy.labels)`). The interval keeps its flat headers
-  # ("95% CI LL"), as in the console of every descriptive table.
+  # `options(spicy.labels)`). The interval bounds sit under their
+  # coverage ("95% CI" over "LL" and "UL"), as in every engine and in the
+  # console of the other descriptive tables.
   mean_label <- .lm_labels(.LM_KEY_MEAN, labels)
   mean_j <- which(names(display_df) %in% .lm_spec_mean_keys(spec))
   spanners <- if (length(mean_j) > 0L && nzchar(mean_label)) {
     stats::setNames(list(mean_j), mean_label)
+  }
+  ci_spec <- Filter(function(e) identical(e$token, "ci"), spec)
+  ci_j <- match(.lm_spec_keys(ci_spec), names(display_df))
+  if (length(ci_j) == 2L && !anyNA(ci_j)) {
+    header_labels[ci_j] <- vapply(ci_spec, `[[`, "", "short_label")
+    spanners[[ci_spec[[1L]]$ci_label]] <- ci_j
   }
 
   align_left <- 1L

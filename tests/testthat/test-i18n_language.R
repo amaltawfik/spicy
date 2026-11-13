@@ -559,10 +559,12 @@ test_that("a descriptive interval names its bounds in the language", {
   withr::local_options(spicy.language = "fr", width = 160)
   fr <- table_continuous(sochealth, select = bmi, by = sex, ci = TRUE)
   expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
-  out <- paste(capture.output(print(fr)), collapse = "\n")
-  expect_true(grepl("IC \u00E0 95\u00A0% LI", out, fixed = TRUE))
-  expect_true(grepl("IC \u00E0 95\u00A0% LS", out, fixed = TRUE))
-  expect_false(grepl("95% CI", out, fixed = TRUE))
+  # The console puts the coverage over the bounds, as the rich engines do.
+  out <- capture.output(print(fr))
+  at <- grep("Variable", out, fixed = TRUE)[[1L]]
+  expect_match(out[[at - 2L]], "IC \u00E0 95\u00A0%", fixed = TRUE)
+  expect_match(out[[at]], " LI +LS ")
+  expect_false(any(grepl("95% CI", out, fixed = TRUE)))
 })
 
 test_that("the association interval of a categorical table is labeled in the language", {

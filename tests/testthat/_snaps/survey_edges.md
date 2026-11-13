@@ -2,9 +2,11 @@
 
     Descriptive statistics
     
-     Variable │   M       SD     Min     Max    95% CI LL  95% CI UL   n  
-    ──────────┼───────────────────────────────────────────────────────────
-     api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
+                                                                95% CI              
+                                                          ──────────────────        
+     Variable   │    M         SD       Min       Max        LL        UL       n   
+    ────────────┼───────────────────────────────────────────────────────────────────
+     api00      │  644.17    105.75    411.00    905.00    593.68    694.66    183  
     
     Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -25,9 +27,11 @@
 
     Descriptive statistics
     
-     Variable │      M      SD     Min     Max  95% CI LL  95% CI UL    n 
-    ──────────┼───────────────────────────────────────────────────────────
-     api00    │ 644.17  105.75  411.00  905.00     593.68     694.66  183 
+                                                                95% CI              
+                                                          ──────────────────        
+     Variable   │        M        SD       Min       Max        LL        UL      n 
+    ────────────┼───────────────────────────────────────────────────────────────────
+     api00      │   644.17    105.75    411.00    905.00    593.68    694.66    183 
     
     Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 

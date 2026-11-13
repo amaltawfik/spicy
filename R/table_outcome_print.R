@@ -57,6 +57,15 @@ print.spicy_outcome_table <- function(x, ...) {
     decimal_mark,
     es_ci = isTRUE(attr(x, "show_effect_size_ci"))
   )
+  # The interval bounds under their coverage, as in the rich engines.
+  hdr <- .continuous_console_header(
+    display_df,
+    header_labels,
+    ci_level,
+    decimal_mark,
+    es_ci = isTRUE(attr(x, "show_effect_size_ci"))
+  )
+  header_labels <- hdr$labels
 
   padding <- 2L
   col_widths <- vapply(
@@ -73,7 +82,10 @@ print.spicy_outcome_table <- function(x, ...) {
     numeric(1)
   )
   console_w <- getOption("width", 80L)
-  if (sum(col_widths + padding + 2L) + 1L > console_w) {
+  total_width <- sum(
+    ascii_spanner_widths(col_widths + padding, hdr$spanners, 1L) + 2L
+  )
+  if (total_width + 1L > console_w) {
     padding <- 0L
   }
 
@@ -92,7 +104,9 @@ print.spicy_outcome_table <- function(x, ...) {
     # printer looks for the word "Total" in the rows and rules off a level
     # "Total score".
     total_row_idx = integer(0),
-    display_labels = header_labels
+    display_labels = header_labels,
+    spanners = hdr$spanners,
+    whole_spanners = TRUE
   )
 
   invisible(x)

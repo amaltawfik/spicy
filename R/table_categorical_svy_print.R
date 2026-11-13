@@ -27,18 +27,17 @@ print.spicy_categorical_svy_table <- function(x, ...) {
   layout <- .cat_svy_header_layout(x)
   header_labels <- layout$labels(names(display_df))
   header_labels[[1L]] <- spicy_str("header_variable")
-  # Under `by`, each domain heads its own columns, as in the rich engines.
-  # A one-way table keeps its interval bounds under their full headers, as
-  # the other descriptive tables print them.
-  spanners <- NULL
-  if (!all(is.na(attr(x, "blocks", exact = TRUE)))) {
-    hdr <- ascii_group_header(
-      header_labels,
-      layout$spanners(names(display_df))
-    )
-    header_labels <- hdr$labels
-    spanners <- hdr$spanners
-  }
+  # Under `by`, each domain heads its own columns, as in the rich engines;
+  # the bounds of an interval keep their coverage under the domain ("95%
+  # CI LL"), the console having one row of spanners. A one-way table puts
+  # its interval bounds under their coverage ("95% CI" over "LL" and
+  # "UL"), as the rich engines and the other descriptive tables do.
+  hdr <- ascii_group_header(
+    header_labels,
+    layout$spanners(names(display_df))
+  )
+  header_labels <- hdr$labels
+  spanners <- hdr$spanners
 
   align_left <- 1L
   numeric_j <- setdiff(seq_along(display_df), align_left)

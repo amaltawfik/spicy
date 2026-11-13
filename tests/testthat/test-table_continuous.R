@@ -230,17 +230,18 @@ test_that("the undefined glyph sets the width of the column it lands in", {
   }
   expect_identical(
     vapply(c(200L, 80L, 60L), line_width, integer(1)),
-    c(93L, 73L, 56L)
+    c(84L, 64L, 58L)
   )
 
   # And the mechanism, independent of the absolute layout: with a
   # two-character placeholder the same table is one character wider for
   # each column whose width the placeholder sets on the widest panel: the
-  # SD, and the p of x, whose comparison cannot run (B has one
-  # observation). At 60 characters the console prints p on a second,
-  # narrower panel. This is what says the glyph is load-bearing for the
-  # width, rather than pinning three numbers that an unrelated layout
-  # change may legitimately move.
+  # SD, the upper bound of the interval (headed "UL" under its "95% CI"
+  # spanner, narrower than its numbers), and the p of x, whose comparison
+  # cannot run (B has one observation). At 60 characters the console
+  # prints p on a second, narrower panel. This is what says the glyph is
+  # load-bearing for the width, rather than pinning three numbers that an
+  # unrelated layout change may legitimately move.
   orig <- spicy_str
   local_mocked_bindings(
     spicy_str = function(key, ...) {
@@ -249,7 +250,7 @@ test_that("the undefined glyph sets the width of the column it lands in", {
   )
   expect_identical(
     vapply(c(200L, 80L, 60L), line_width, integer(1)),
-    c(95L, 75L, 57L)
+    c(87L, 67L, 60L)
   )
 })
 
@@ -1500,7 +1501,7 @@ test_that("the console prints the registry header, not the column key", {
   out <- table_continuous(iris, select = Sepal.Length)
   txt <- capture.output(print(out))
   expect_true(any(grepl("<Variable>", txt, fixed = TRUE)))
-  expect_true(any(grepl("<95% CI LL>", txt, fixed = TRUE)))
+  expect_true(any(grepl("<M>", txt, fixed = TRUE)))
   # The frozen key is gone from the header row it used to occupy.
   expect_false(any(grepl(" Variable ", txt, fixed = TRUE)))
 })
@@ -1542,7 +1543,9 @@ test_that("a missing variable label falls back to the column name", {
   txt <- capture.output(print(out))
 
   expect_false(any(grepl("NA", txt, fixed = TRUE)))
-  grid <- txt[grepl("│", txt, fixed = TRUE) | grepl("─", txt, fixed = TRUE)]
+  # The rows of the grid: the rule under the "95% CI" spanner crosses no
+  # column and is not one of them.
+  grid <- txt[grepl("│", txt, fixed = TRUE) | grepl("┼", txt, fixed = TRUE)]
   expect_length(grid, 4L) # header, rule, two body rows
   expect_match(grid[3L], "^ x ")
   expect_match(grid[4L], "^ y ")
@@ -5885,8 +5888,10 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
     show_columns = c("m", "ci", "med", "med_ci")
   ))
   out <- paste(capture.output(print(tc)), collapse = "\n")
-  # The console header and the med-CI gloss carry the comma.
-  expect_match(out, "97,5% CI LL", fixed = TRUE)
+  # The console header (the spanners over the bounds) and the med-CI gloss
+  # carry the comma.
+  expect_match(out, "97,5% CI ", fixed = TRUE)
+  expect_match(out, "Mdn 97,5% CI ", fixed = TRUE)
   expect_match(out, "coverage at least 97,5%", fixed = TRUE)
   expect_false(grepl("97.5%", out, fixed = TRUE))
   # The label layer the engines and inline() read carries it too ...

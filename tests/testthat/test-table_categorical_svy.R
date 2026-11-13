@@ -2983,12 +2983,16 @@ test_that("the console heads the domains of `by` above their columns", {
   expect_true(all(
     c("No n", "No %", "No 95% CI LL", "No DEff") %in% names(as.data.frame(x))
   ))
-  # A one-way table keeps the full headers of its interval bounds.
+  # A one-way table puts its interval bounds under their coverage, as the
+  # rich engines do.
   one <- table_categorical_svy(d, select = stype, proportion_ci = TRUE)
   out <- withr::with_options(list(width = 200), capture.output(print(one)))
   at <- grep("^ Variable ", out)
-  expect_match(out[[at]], "95% CI LL +95% CI UL")
-  expect_false(grepl("\u2500", out[[at - 1L]]))
+  expect_match(out[[at - 2L]], "^ +95% CI +$")
+  expect_match(out[[at]], "\u2502 +n +% +LL +UL +$")
+  expect_true(all(
+    c("95% CI LL", "95% CI UL") %in% names(as.data.frame(one))
+  ))
   # A narrow console keeps each domain whole.
   narrow <- withr::with_options(list(width = 60), capture.output(print(x)))
   at <- grep("^ Variable ", narrow)

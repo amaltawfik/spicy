@@ -129,6 +129,14 @@ print.spicy_continuous_table <- function(x, ...) {
     decimal_mark,
     es_ci = isTRUE(attr(x, "show_effect_size_ci"))
   )
+  hdr <- .continuous_console_header(
+    display_df,
+    header_labels,
+    ci_level,
+    decimal_mark,
+    es_ci = isTRUE(attr(x, "show_effect_size_ci"))
+  )
+  header_labels <- hdr$labels
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.
@@ -157,7 +165,10 @@ print.spicy_continuous_table <- function(x, ...) {
     numeric(1)
   )
   console_w <- getOption("width", 80L)
-  normal_width <- sum(col_widths + padding + 2L) + 1L
+  normal_width <- sum(
+    ascii_spanner_widths(col_widths + padding, hdr$spanners, 1L) + 2L
+  ) +
+    1L
   if (normal_width > console_w) {
     padding <- 0L
   }
@@ -178,10 +189,36 @@ print.spicy_continuous_table <- function(x, ...) {
     # No total row: without an index the printer looks for the word
     # "Total" in the rows and rules off a variable labeled "Total score".
     total_row_idx = integer(0),
-    display_labels = header_labels
+    display_labels = header_labels,
+    spanners = hdr$spanners,
+    whole_spanners = TRUE
   )
 
   invisible(x)
+}
+
+# Internal: the console header of the continuous family, its interval
+# bounds under their coverage ("95% CI" over "LL" and "UL"), as the rich
+# engines head them (`desc_spanner_groups()` on the keys the engines
+# read). The frozen keys of the frame are untouched: only the printed
+# header moves. Shared by table_continuous(), its survey twin and
+# table_outcome().
+.continuous_console_header <- function(
+  display_df,
+  labels,
+  ci_level,
+  decimal_mark,
+  es_ci = FALSE
+) {
+  ascii_group_header(
+    labels,
+    desc_spanner_groups(
+      names(rename_ci_cols(display_df, ci_level)),
+      ci_level,
+      decimal_mark,
+      es_ci
+    )
+  )
 }
 
 # ---- Table title ----------------------------------------------------------

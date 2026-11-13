@@ -233,10 +233,12 @@
     Output
       Descriptive statistics by sex
       
-       Variable │ Group    M     SD    Min    Max   95% CI LL  95% CI UL  n   p   
-      ──────────┼─────────────────────────────────────────────────────────────────
-       age      │ F      25.60  4.83  20.00  31.00    19.61      31.59    5  .001 
-                │ M      41.60  5.41  35.00  50.00    34.88      48.32    5       
+                                                       95% CI             
+                                                    ────────────          
+       Variable │ Group    M     SD    Min    Max    LL     UL    n   p   
+      ──────────┼─────────────────────────────────────────────────────────
+       age      │ F      25.60  4.83  20.00  31.00  19.61  31.59  5  .001 
+                │ M      41.60  5.41  35.00  50.00  34.88  48.32  5       
       
       Note. N = 10: F (n = 5), M (n = 5). P-value: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -269,11 +271,11 @@
     Output
       Continuous outcomes by sex
       
-                       M                                                   
-                  ────────────                                             
-       Variable │   F      M     Δ    95% CI LL  95% CI UL   p     R²   n  
-      ──────────┼──────────────────────────────────────────────────────────
-       score    │ 70.66  75.26  4.60    -0.85      10.06    .092  0.19  16 
+                           M                       95% CI                            
+                    ────────────────          ────────────────                       
+       Variable   │    F        M       Δ       LL       UL       p       R²     n   
+      ────────────┼──────────────────────────────────────────────────────────────────
+       score      │  70.66    75.26    4.60    -0.85    10.06    .092    0.19    16  
       
       Note. N = 16: F (n = 8), M (n = 8). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -285,11 +287,11 @@
     Output
       Continuous outcomes by sex
       
-                       M                                                   
-                  ────────────                                             
-       Variable │   F      M     Δ    95% CI LL  95% CI UL   p     R²   n  
-      ──────────┼──────────────────────────────────────────────────────────
-       score    │ 70.38  75.59  5.22    -7.00      17.44    .373  0.20  16 
+                           M                       95% CI                            
+                    ────────────────          ────────────────                       
+       Variable   │    F        M       Δ       LL       UL       p       R²     n   
+      ────────────┼──────────────────────────────────────────────────────────────────
+       score      │  70.38    75.59    5.22    -7.00    17.44    .373    0.20    16  
       
       Note. N = 16: F (n = 8), M (n = 8). Adjusted for age (proportional). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 
@@ -301,11 +303,11 @@
     Output
       Continuous outcomes by sex
       
-                       M                                                    
-                  ────────────                                              
-       Variable │   F      M      Δ    95% CI LL  95% CI UL   p     R²   n  
-      ──────────┼───────────────────────────────────────────────────────────
-       score    │ 66.70  76.99  10.29    -2.79      23.37    .112  0.33  16 
+                           M                        95% CI                            
+                    ────────────────           ────────────────                       
+       Variable   │    F        M        Δ       LL       UL       p       R²     n   
+      ────────────┼───────────────────────────────────────────────────────────────────
+       score      │  66.70    76.99    10.29    -2.79    23.37    .112    0.33    16  
       
       Note. N = 16: F (n = 8), M (n = 8). Adjusted for age, race (balanced). P-value: t-test from the linear model. Δ = M − F. CI = confidence interval; LL = lower limit; UL = upper limit.
 

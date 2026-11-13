@@ -1202,21 +1202,21 @@ test_that("a categorical by decks its headers in the console, Typst, Word and th
   d <- .lm_decked_data()
   tbl <- table_continuous_lm(d, select = c(y, z), by = g)
 
-  # Console: the spanner row, M over the two groups and its rule under
-  # them, then the header row: each mean headed by its group, the
-  # difference by its glyph, the interval as every console prints it.
+  # Console: the spanner row, M over the two groups and 95% CI over the
+  # bounds, a rule under each, then the header row: each mean headed by
+  # its group, the difference by its glyph, the bounds by their role.
   txt <- withr::with_options(list(width = 200L), capture.output(print(tbl)))
   at <- grep("Variable", txt, fixed = TRUE)
-  expect_identical(trimws(txt[[at - 2L]]), "M")
-  expect_match(txt[[at - 1L]], "^ +\u2500+ *$")
+  expect_match(txt[[at - 2L]], "^ +M +95% CI +$")
+  expect_match(txt[[at - 1L]], "^ +\u2500+ +\u2500+ *$")
   expect_identical(
     .lm_console_heads(txt[[at]]),
     c(
       "Never smoker",
       "Current smoker",
       "\u0394",
-      "95% CI LL",
-      "95% CI UL",
+      "LL",
+      "UL",
       "p",
       "R\u00b2",
       "n"
@@ -1347,18 +1347,20 @@ test_that("the note gives the order of the difference after the test, in English
   ))
 })
 
-test_that("a numeric by keeps one header row and states no subtraction", {
+test_that("a numeric by has no mean spanner and states no subtraction", {
   skip_on_cran()
   set.seed(3)
   d <- data.frame(x = stats::rnorm(30L), y = stats::rnorm(30L))
   tbl <- table_continuous_lm(d, select = y, by = x)
   txt <- capture.output(print(tbl))
   at <- grep("Variable", txt, fixed = TRUE)
-  # The title, a blank line, the header: no spanner row above it.
-  expect_identical(at, 3L)
+  # The title, a blank line, the interval's spanner and its rule, the
+  # header: no mean spanner, the slope having no levels.
+  expect_identical(at, 5L)
+  expect_match(txt[[at - 2L]], "^ +95% CI +$")
   expect_identical(
     .lm_console_heads(txt[[at]]),
-    c("B", "95% CI LL", "95% CI UL", "p", "R\u00b2", "n")
+    c("B", "LL", "UL", "p", "R\u00b2", "n")
   )
   expect_no_match(attr(tbl, "note"), "\u0394", fixed = TRUE)
   # No glyph to leave out of the definitions: a slope keeps them all, the
@@ -1443,9 +1445,11 @@ test_that("a mean glyph emptied through spicy.labels sets no spanner", {
   withr::local_options(spicy.labels = list(header_mean = ""), width = 200L)
   d <- .lm_decked_data()
   txt <- capture.output(print(table_continuous_lm(d, select = y, by = g)))
-  # The title, a blank line, the header: the groups head their means.
+  # The groups head their means, with no spanner over them: the spanner
+  # row holds the interval's coverage alone.
   at <- grep("Variable", txt, fixed = TRUE)
-  expect_identical(at, 3L)
+  expect_identical(at, 5L)
+  expect_match(txt[[at - 2L]], "^ +95% CI +$")
   expect_identical(
     .lm_console_heads(txt[[at]])[1:3],
     c("Never smoker", "Current smoker", "\u0394")
@@ -6540,7 +6544,8 @@ test_that("the lm coverage percentage follows decimal_mark (decision 27)", {
     decimal_mark = ","
   )
   out <- paste(capture.output(print(tl)), collapse = "\n")
-  expect_match(out, "97,5% CI LL", fixed = TRUE)
+  # The coverage heads the bounds in the console, with the comma.
+  expect_match(out, "97,5% CI ", fixed = TRUE)
   expect_false(grepl("97.5%", out, fixed = TRUE))
   s <- as_structured(tl)
   # Labels carry the comma; the frozen keys keep the period.

@@ -417,10 +417,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable        │   M     SD    Min    Max   95% CI LL  95% CI UL   n   
-#> ─────────────────┼───────────────────────────────────────────────────────
-#>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
-#>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
+#>                                                  95% CI          
+#>                                               ────────────       
+#>  Variable        │   M     SD    Min    Max    LL     UL     n   
+#> ─────────────────┼───────────────────────────────────────────────
+#>  bmi             │ 25.93  3.72  16.00  38.90  25.72  26.14  1188 
+#>  life_sat_health │  3.55  1.25   1.00   5.00   3.48   3.62  1192 
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -433,25 +435,27 @@ table_continuous(
 )
 #> Descriptive statistics by education
 #> 
-#>  Variable        │ Group              M     SD    Min    Max   95% CI LL 
-#> ─────────────────┼───────────────────────────────────────────────────────
-#>  bmi             │ Lower secondary  28.09  3.47  18.20  38.90    27.66   
-#>                  │ Upper secondary  26.02  3.43  16.00  37.10    25.73   
-#>                  │ Tertiary         24.39  3.52  16.00  33.00    24.04   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary   2.71  1.20   1.00   5.00     2.57   
-#>                  │ Upper secondary   3.53  1.19   1.00   5.00     3.43   
-#>                  │ Tertiary          4.11  1.04   1.00   5.00     4.01   
+#>                                                                   95% CI    
+#>                                                                ──────────── 
+#>  Variable        │ Group              M     SD    Min    Max    LL     UL   
+#> ─────────────────┼──────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09  3.47  18.20  38.90  27.66  28.51 
+#>                  │ Upper secondary  26.02  3.43  16.00  37.10  25.73  26.31 
+#>                  │ Tertiary         24.39  3.52  16.00  33.00  24.04  24.74 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary   2.71  1.20   1.00   5.00   2.57   2.86 
+#>                  │ Upper secondary   3.53  1.19   1.00   5.00   3.43   3.63 
+#>                  │ Tertiary          4.11  1.04   1.00   5.00   4.01   4.21 
 #> 
-#>  Variable        │ Group            95% CI UL   n     p   
-#> ─────────────────┼────────────────────────────────────────
-#>  bmi             │ Lower secondary    28.51    260  <.001 
-#>                  │ Upper secondary    26.31    534        
-#>                  │ Tertiary           24.74    394        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  life_sat_health │ Lower secondary     2.86    259  <.001 
-#>                  │ Upper secondary     3.63    534        
-#>                  │ Tertiary            4.21    399        
+#>  Variable        │ Group             n     p   
+#> ─────────────────┼─────────────────────────────
+#>  bmi             │ Lower secondary  260  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary  259  <.001 
+#>                  │ Upper secondary  534        
+#>                  │ Tertiary         399        
 #> 
 #> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -553,18 +557,20 @@ table_outcome(
 )
 #> Descriptive statistics of bmi
 #> 
-#>  Variable    │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ─────────────┼─────────────────────────────────────────────────────────────
-#>  Overall     │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  sex         │                                                        .018 
-#>    Female    │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
-#>    Male      │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  smoking     │                                                        .903 
-#>    No        │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
-#>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
+#>                                              95% CI                
+#>                                           ────────────             
+#>  Variable    │   M     SD    Min    Max    LL     UL     n     p   
+#> ─────────────┼─────────────────────────────────────────────────────
+#>  Overall     │ 25.93  3.72  16.00  38.90  25.72  26.14  1188       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex         │                                                .018 
+#>    Female    │ 25.69  3.78  16.00  38.90  25.39  25.98   616       
+#>    Male      │ 26.20  3.64  16.00  37.70  25.90  26.50   572       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking     │                                                .903 
+#>    No        │ 25.96  3.76  16.00  38.90  25.72  26.21   915       
+#>    Yes       │ 25.93  3.58  16.80  35.30  25.48  26.38   248       
+#>    (Missing) │ 24.74  3.63  17.60  32.50  23.24  26.23    25       
 #> 
 #> Note. N = 1200. Missing values removed: bmi (12). P-values: Welch t-test. Each block compares bmi across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
@@ -724,14 +730,14 @@ current CRAN release):
 
 Tawfik A (2026). *spicy: Publication-Ready Tables for Descriptive
 Statistics and Regression Models*. <doi:10.32614/CRAN.package.spicy>
-<https://doi.org/10.32614/CRAN.package.spicy>. R package version 0.14.0,
+<https://doi.org/10.32614/CRAN.package.spicy>. R package version 0.14.1,
 <https://CRAN.R-project.org/package=spicy>.
 
     @Manual{,
       title = {spicy: Publication-Ready Tables for Descriptive Statistics and Regression Models},
       author = {Amal Tawfik},
       year = {2026},
-      note = {R package version 0.14.0},
+      note = {R package version 0.14.1},
       url = {https://CRAN.R-project.org/package=spicy},
       doi = {10.32614/CRAN.package.spicy},
     }
