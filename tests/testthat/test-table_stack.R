@@ -1079,6 +1079,64 @@ test_that("a panel's column groups are drawn and ruled as in its table", {
   }
 })
 
+test_that("a panel's column groups keep their place with wide or combining names", {
+  skip_on_cran()
+  # The console places a group label by console column, in the header and
+  # in a panel's own header row alike: a wide character (CJK) or a
+  # decomposed accent in a model or a panel name moves no label. Names of
+  # the same display width as the reference start where its names start.
+  d <- sochealth
+  f1 <- lm(bmi ~ age + sex, data = d)
+  f2 <- lm(bmi ~ age, data = d)
+  g1 <- glm(dentist_12m ~ age + sex, data = d, family = binomial)
+  g2 <- glm(dentist_12m ~ age, data = d, family = binomial)
+  col_of <- function(line, lbl) {
+    nchar(
+      substr(line, 1L, regexpr(lbl, line, fixed = TRUE) - 1L),
+      type = "width"
+    )
+  }
+  layout_of <- function(m1, m2, p1, p2) {
+    st <- do.call(
+      table_stack,
+      stats::setNames(
+        list(
+          table_regression(stats::setNames(list(f1, f2), c(m1, m2))),
+          table_regression(
+            stats::setNames(list(g1, g2), c(m1, m2)),
+            exponentiate = TRUE
+          )
+        ),
+        c(p1, p2)
+      )
+    )
+    out <- capture.output(print(st))
+    at <- which(grepl(m1, out, fixed = TRUE))
+    expect_length(at, 2L)
+    c(
+      vapply(out[at], col_of, 1L, lbl = m1, USE.NAMES = FALSE),
+      vapply(out[at], col_of, 1L, lbl = m2, USE.NAMES = FALSE),
+      nchar(out[at], type = "width"),
+      nchar(out[at + 1L], type = "width")
+    )
+  }
+  withr::local_options(width = 200)
+  ref <- layout_of("ModelA", "ModelB", "BMI", "Dentist")
+  expect_identical(
+    layout_of(
+      "\u6a21\u578b\u7532",
+      "\u6a21\u578b\u4e59",
+      "\u4f53\u91cd",
+      "\u7259\u79d1"
+    ),
+    ref
+  )
+  expect_identical(
+    layout_of("Mode\u0300lA", "Mode\u0300lB", "BMI\u0301", "De\u0301ntist"),
+    ref
+  )
+})
+
 test_that("an interval label in a panel's header is ruled over its bounds", {
   skip_on_cran()
   models <- list(BMI = .st_lm(), Dentist = .st_glm())
