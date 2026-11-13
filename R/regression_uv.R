@@ -258,6 +258,25 @@ table_regression_uv <- function(
   .check_note_labels_arg(note_labels)
   validate_logical_scalar(multivariable, "multivariable")
   validate_logical_scalar(complete_cases, "complete_cases")
+  # The table of fit statistics alone puts one model in each column; a
+  # screen fits one model per predictor and reports its fit on the rows
+  # of that predictor.
+  if (is.character(show_columns) && "none" %in% show_columns) {
+    spicy_abort(
+      c(
+        "`show_columns = \"none\"` is not available for `table_regression_uv()`.",
+        "i" = paste0(
+          "Each univariable model reports its sample size on the rows of its ",
+          "predictor (`\"n\"`), and a linear one its R-squared (`\"r2\"`)."
+        ),
+        "i" = paste0(
+          "To compare fitted models by their fit statistics alone, use ",
+          "`table_regression(models, show_columns = \"none\")`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   if (identical(method, "coxph") && family_supplied) {
     spicy_abort(
       c(

@@ -80,7 +80,8 @@ render_regression_table <- function(
   outcome_labels = NULL,
   title = NULL,
   note = NULL,
-  re_columns = c("est", "se", "ci")
+  re_columns = c("est", "se", "ci"),
+  fit_only = FALSE
 ) {
   align <- match.arg(align)
   reference_style <- match.arg(reference_style)
@@ -90,8 +91,11 @@ render_regression_table <- function(
   # branches on a TRUE/FALSE "is this grouped?" check.
   group_factor_levels <- identical(factor_layout, "grouped")
 
+  # `fit_only` (`show_columns = "none"`): no coefficient row and one
+  # column per model, headed by the model's label, holding its fit
+  # statistics. `aligned` then carries no coefficient row at all.
   coefs <- aligned$coefs_aligned
-  if (is.null(coefs) || nrow(coefs) == 0L) {
+  if (!fit_only && (is.null(coefs) || nrow(coefs) == 0L)) {
     return(empty_render_table())
   }
 
@@ -163,12 +167,14 @@ render_regression_table <- function(
   # default where the registry names a model: the spanner and the notes
   # follow the language, a column name stays what user code indexes.
   if (is.null(model_labels)) {
-    model_labels <- if (n_models == 1L) {
+    # A fit-only table heads its one column with the model even when it
+    # is alone: there is no coefficient header to stand in for it.
+    model_labels <- if (n_models == 1L && !fit_only) {
       ""
     } else {
       spicy_fmt("label_model_name", seq_len(n_models))
     }
-    model_keys <- if (n_models == 1L) {
+    model_keys <- if (n_models == 1L && !fit_only) {
       ""
     } else {
       .spicy_fmt_en("label_model_name", seq_len(n_models))
@@ -245,21 +251,25 @@ render_regression_table <- function(
     logical(1)
   )]
 
-  col_spec <- build_column_spec(
-    show_columns,
-    model_ids,
-    label_map,
-    key_map = setNames(model_keys, model_ids),
-    ci_level = ci_level,
-    ci_label_key = ci_label_key,
-    model_exp_headers = aligned$exp_headers_auto,
-    model_stat_headers = aligned$stat_headers_auto,
-    ame_categories = ame_cats_by_model,
-    models_with_n = models_with_n,
-    models_with_r2 = models_with_r2,
-    estimand_horizons = aligned$estimand_horizons,
-    decimal_mark = decimal_mark
-  )
+  col_spec <- if (fit_only) {
+    .reg_fit_only_col_spec(model_ids, label_map, model_keys)
+  } else {
+    build_column_spec(
+      show_columns,
+      model_ids,
+      label_map,
+      key_map = setNames(model_keys, model_ids),
+      ci_level = ci_level,
+      ci_label_key = ci_label_key,
+      model_exp_headers = aligned$exp_headers_auto,
+      model_stat_headers = aligned$stat_headers_auto,
+      ame_categories = ame_cats_by_model,
+      models_with_n = models_with_n,
+      models_with_r2 = models_with_r2,
+      estimand_horizons = aligned$estimand_horizons,
+      decimal_mark = decimal_mark
+    )
+  }
 
   # One render row per unique term (in canonical order).
   term_meta <- unique(coefs[, c(
@@ -381,7 +391,19 @@ render_regression_table <- function(
     rows[[length(rows) + 1L]] <- new_row
   }
 
-  body <- do.call(rbind, rows)
+  body <- if (length(rows)) {
+    do.call(rbind, rows)
+  } else {
+    # A fit-only table: the header of the columns, then its fit
+    # statistics alone.
+    as.data.frame(
+      stats::setNames(
+        rep(list(character(0)), length(col_spec) + 1L),
+        c(.REG_KEY_VARIABLE, vapply(col_spec, `[[`, character(1), "col_name"))
+      ),
+      check.names = FALSE
+    )
+  }
 
   # Prepend outcome row when applicable (Q11b \u2013 multi-DV display).
   # The row prints the explicit `outcome_labels` only.
@@ -429,7 +451,11 @@ render_regression_table <- function(
       blank_models = aligned$blank_fit_stats_models
     )
     if (length(fit_rows) > 0L) {
-      group_sep <- nrow(body) + 1L
+      # No rule above the fit statistics of a fit-only table, unless the
+      # Outcome row of `outcome_labels` is: nothing else is above them.
+      if (!fit_only || nrow(body) > 0L) {
+        group_sep <- nrow(body) + 1L
+      }
       body <- rbind(body, do.call(rbind, fit_rows))
     }
   }
@@ -458,7 +484,10 @@ render_regression_table <- function(
   attr(body, "section_sep_rows") <- thr_sep
   attr(body, "align") <- align
   attr(body, "decimal_mark") <- decimal_mark
-  attr(body, "spanners") <- build_model_spanners(body, col_spec, label_map)
+  # A fit-only table heads each column with its model: no group to span.
+  attr(body, "spanners") <- if (!fit_only) {
+    build_model_spanners(body, col_spec, label_map)
+  }
 
   # ---- Structured (typed) view -------------------------------------------
   # Engines (Excel, gt, tinytable, flextable, clipboard) consume this
@@ -492,10 +521,40 @@ render_regression_table <- function(
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels,
     stars_map = stars_map,
-    re_columns = re_columns
+    re_columns = re_columns,
+    fit_only = fit_only
   )
 
   body
+}
+
+# The columns of a fit-only table (`show_columns = "none"`): one per
+# model, token "value", headed by the model's label. The name is the
+# label the column names carry (`model_keys`, English defaults), which a
+# model or an outcome named like a key column of the typed body or of
+# `as.data.frame()` ("level", "label", ...) would overwrite: it then
+# takes the `.2` suffix of `make_unique_col_name()`, its header unchanged.
+.reg_fit_only_col_spec <- function(model_ids, label_map, model_keys) {
+  keys <- c(
+    .REG_KEY_VARIABLE,
+    .STRUCT_META_COLS,
+    "variable",
+    "label",
+    "level"
+  )
+  out <- lapply(keys, function(k) list(col_name = k))
+  for (i in seq_along(model_ids)) {
+    out[[length(out) + 1L]] <- list(
+      col_name = make_unique_col_name(out, model_keys[[i]]),
+      display_label = label_map[[model_ids[[i]]]],
+      token = "value",
+      model_id = model_ids[[i]],
+      estimate_type = NA_character_,
+      fields = character(0),
+      outcome_level = NA_character_
+    )
+  }
+  out[-seq_along(keys)]
 }
 
 

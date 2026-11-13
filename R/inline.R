@@ -326,6 +326,8 @@ inline <- function(
   }
   rows <- which(id %in% ids)
   if (length(rows) == 0L) {
+    fit_only <- length(s$col_meta) > 0L &&
+      all(vapply(s$col_meta, function(m) identical(m$token, "value"), TRUE))
     spicy_abort(
       c(
         sprintf("No variable %s in this table.", .quote_val(var_chr)),
@@ -336,7 +338,13 @@ inline <- function(
             collapse = ", "
           ),
           "."
-        )
+        ),
+        "i" = if (fit_only) {
+          paste0(
+            "The table shows fit statistics only (`show_columns = ",
+            "\"none\"`): cite a coefficient from a table that shows it."
+          )
+        }
       ),
       class = "spicy_invalid_input",
       call = call
@@ -802,10 +810,21 @@ inline <- function(
 .inline_column_groups <- function(s) {
   lv <- vapply(
     setdiff(names(s$col_meta), .REG_KEY_VARIABLE),
-    function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+    function(nm) .inline_col_group(s$col_meta[[nm]]),
     character(1)
   )
   unique(stats::na.omit(lv))
+}
+
+# The group a column belongs to, NA for none: the level it reports in a
+# descriptive table, or the model whose fit statistics it holds in a
+# regression table of `show_columns = "none"` (token "value"), whose
+# models head columns rather than spanners.
+.inline_col_group <- function(meta) {
+  if (identical(meta$token, "value")) {
+    return(meta$display_label %||% NA_character_)
+  }
+  meta$level %||% NA_character_
 }
 
 # The rows of `rows` that are groups of `by`, the missing group included
@@ -1184,7 +1203,7 @@ inline <- function(
     }
     lv <- vapply(
       all_cols,
-      function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+      function(nm) .inline_col_group(s$col_meta[[nm]]),
       character(1)
     )
     return(all_cols[is.na(lv) | lv == pick])
@@ -1283,7 +1302,9 @@ inline <- function(
       call = call
     )
   }
-  for (cand in c("b", "delta", "m", "med", "med_iqr", "n")) {
+  # "value": the one column of each model in a regression table of fit
+  # statistics alone (`show_columns = "none"`).
+  for (cand in c("b", "delta", "m", "med", "med_iqr", "n", "value")) {
     if (cand %in% tokens) {
       return(cand)
     }
@@ -1502,7 +1523,7 @@ inline <- function(
     # those of a spanner are the spanners' (a multi-model or a by table).
     groups <- unique(stats::na.omit(vapply(
       hits,
-      function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+      function(nm) .inline_col_group(s$col_meta[[nm]]),
       character(1)
     )))
     choices <- if (length(groups) > 1L) groups else names(s$spanners)

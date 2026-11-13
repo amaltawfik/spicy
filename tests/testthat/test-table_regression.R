@@ -3302,3 +3302,558 @@ test_that("the ignored intercept_position warning cites no internal tag", {
   )
   expect_no_match(conditionMessage(w), "(Q2)", fixed = TRUE)
 })
+
+
+# ---- show_columns = "none": the fit statistics alone ---------------------
+
+.fo_glms <- function() {
+  d <- stats::na.omit(
+    sochealth[c("dentist_12m", "age", "sex", "smoking", "education")]
+  )
+  list(
+    m1 = stats::glm(dentist_12m ~ age, data = d, family = stats::binomial()),
+    m2 = stats::glm(
+      dentist_12m ~ age + sex + smoking,
+      data = d,
+      family = stats::binomial()
+    ),
+    m3 = stats::glm(
+      dentist_12m ~ age + sex + smoking + education,
+      data = d,
+      family = stats::binomial()
+    )
+  )
+}
+
+.fo_lms <- function() {
+  d <- stats::na.omit(
+    sochealth[c("wellbeing_score", "age", "sex", "smoking", "bmi")]
+  )
+  list(
+    m1 = stats::lm(wellbeing_score ~ age + sex, data = d),
+    m2 = stats::lm(wellbeing_score ~ age + sex + smoking, data = d),
+    m3 = stats::lm(wellbeing_score ~ age + sex + smoking + bmi, data = d)
+  )
+}
+
+.FO_GLM_STATS <- c(
+  "nobs",
+  "pseudo_r2_tjur",
+  "aic",
+  "bic",
+  "lrt_change",
+  "p_change"
+)
+
+test_that("show_columns = \"none\" prints the fit statistics alone", {
+  skip_on_cran()
+  m <- .fo_glms()
+  x <- table_regression(
+    unname(m),
+    show_columns = "none",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS
+  )
+  expect_snapshot(print(x))
+  expect_snapshot(print(table_regression(m$m1, show_columns = "none")))
+  withr::local_options(spicy.language = "fr")
+  expect_snapshot(print(table_regression(
+    unname(m),
+    show_columns = "none",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS
+  )))
+})
+
+test_that("show_columns = \"none\": glm values match AIC(), BIC(), nobs() and anova()", {
+  skip_on_cran()
+  m <- unname(.fo_glms())
+  df <- as.data.frame(table_regression(
+    m,
+    show_columns = "none",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS
+  ))
+  expect_identical(df$variable, .FO_GLM_STATS)
+  expect_identical(unique(df$.row_role), "fit_stat")
+  expect_identical(
+    names(df),
+    c("variable", "label", "level", ".row_role", paste("Model", 1:3))
+  )
+  row <- function(tk) unlist(df[df$variable == tk, paste("Model", 1:3)])
+  expect_equal(unname(row("nobs")), vapply(m, stats::nobs, numeric(1)))
+  expect_equal(unname(row("aic")), vapply(m, stats::AIC, numeric(1)))
+  expect_equal(unname(row("bic")), vapply(m, stats::BIC, numeric(1)))
+  # Tjur's D: the mean fitted probability of the events minus that of
+  # the non-events.
+  tjur <- function(f) {
+    mean(stats::fitted(f)[f$y == 1]) - mean(stats::fitted(f)[f$y == 0])
+  }
+  expect_equal(unname(row("pseudo_r2_tjur")), vapply(m, tjur, numeric(1)))
+  a <- stats::anova(m[[1]], m[[2]], m[[3]], test = "LRT")
+  expect_equal(unname(row("lrt_change")), c(NA, a$Deviance[2:3]))
+  expect_equal(unname(row("p_change")), c(NA, a$`Pr(>Chi)`[2:3]))
+  expect_equal(a$Df[2:3], c(2, 2))
+})
+
+test_that("show_columns = \"none\": lm F-change and R-squared match anova()", {
+  skip_on_cran()
+  m <- unname(.fo_lms())
+  x <- table_regression(m, show_columns = "none", nested = TRUE)
+  df <- as.data.frame(x)
+  expect_identical(
+    df$variable,
+    c("nobs", "r2", "adj_r2", "r2_change", "f_change", "p_change")
+  )
+  row <- function(tk) unname(unlist(df[df$variable == tk, -(1:4)]))
+  r2 <- vapply(m, function(f) summary(f)$r.squared, numeric(1))
+  expect_equal(row("r2"), r2)
+  expect_equal(
+    row("adj_r2"),
+    vapply(m, function(f) summary(f)$adj.r.squared, numeric(1))
+  )
+  expect_equal(row("r2_change"), c(NA, diff(r2)))
+  # Each step is tested against the model before it, on the residual of
+  # the larger one: the pairwise anova(), which the change in R-squared
+  # gives too. anova() of the three models at once divides every step by
+  # the residual of the largest, a different test.
+  a12 <- stats::anova(m[[1]], m[[2]])
+  a23 <- stats::anova(m[[2]], m[[3]])
+  expect_equal(row("f_change"), c(NA, a12$F[2], a23$F[2]))
+  expect_equal(row("p_change"), c(NA, a12$`Pr(>F)`[2], a23$`Pr(>F)`[2]))
+  df2 <- vapply(m, stats::df.residual, numeric(1))
+  f_r2 <- diff(r2) / ((1 - r2[-1]) / df2[-1])
+  expect_equal(row("f_change"), c(NA, f_r2))
+  # The cell prints the test with its df, as the full table does.
+  expect_identical(
+    trimws(x$`Model 3`[x$Variable == "F-change"]),
+    sprintf("%.2f (1, %d)", a23$F[2], as.integer(a23$Res.Df[2]))
+  )
+  # The same rows as the fit-statistic block of the full table.
+  full <- as.data.frame(table_regression(m, show_columns = "b", nested = TRUE))
+  full <- full[full$.row_role == "fit_stat", ]
+  expect_equal(
+    unname(as.matrix(df[, -(1:4)])),
+    unname(as.matrix(full[, -(1:4)]))
+  )
+})
+
+test_that("show_columns = \"none\": machine outputs", {
+  skip_on_cran()
+  m <- unname(.fo_glms())
+  args <- list(m, show_columns = "none", nested = TRUE)
+  x <- do.call(table_regression, args)
+  full <- table_regression(m, nested = TRUE)
+  # tidy(): no row, with the columns of the full table's.
+  td <- broom::tidy(x)
+  expect_identical(nrow(td), 0L)
+  expect_identical(names(td), names(broom::tidy(full)))
+  # glance(): one row per model, as for the full table.
+  expect_identical(broom::glance(x), broom::glance(full))
+  long <- do.call(table_regression, c(args, output = "long"))
+  expect_identical(nrow(long), 0L)
+  expect_identical(
+    names(long),
+    names(table_regression(m, nested = TRUE, output = "long"))
+  )
+  expect_identical(attr(x, "outcome"), rep("dentist_12m", 3L))
+  s <- as_structured(x)
+  expect_null(s$spanners)
+  expect_identical(
+    unique(vapply(s$col_meta, `[[`, "", "token")),
+    "value"
+  )
+  expect_identical(
+    unname(vapply(s$col_meta, `[[`, "", "model_id")),
+    c("M1", "M2", "M3")
+  )
+  expect_identical(
+    do.call(table_regression, c(args, output = "data.frame")),
+    as.data.frame(x)
+  )
+})
+
+test_that("show_columns = \"none\": inline() cites a statistic of a model", {
+  skip_on_cran()
+  m <- unname(.fo_glms())
+  x <- table_regression(
+    m,
+    show_columns = "none",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS
+  )
+  expect_identical(
+    inline(x, "aic", model = 2),
+    sprintf("%.1f", stats::AIC(m[[2]]))
+  )
+  expect_identical(
+    inline(x, "aic", model = "Model 3"),
+    inline(x, "aic", model = 3)
+  )
+  expect_identical(inline(x, "p_change", model = 3), "<.001")
+  expect_error(inline(x, "aic"), class = "spicy_invalid_input")
+  e <- expect_error(inline(x, age), class = "spicy_invalid_input")
+  expect_match(conditionMessage(e), "show_columns = \"none\"", fixed = TRUE)
+  one <- table_regression(m[[1]], show_columns = "none")
+  expect_identical(inline(one, "nobs"), "1175")
+})
+
+test_that("show_columns = \"none\": the rich outputs hold the console's cells", {
+  skip_on_cran()
+  m <- unname(.fo_glms())
+  build <- function(o) {
+    table_regression(
+      m,
+      show_columns = "none",
+      nested = TRUE,
+      show_fit_stats = .FO_GLM_STATS,
+      output = o
+    )
+  }
+  console <- trimws(as.matrix(structure(
+    build("default"),
+    class = "data.frame"
+  )))
+  dimnames(console) <- NULL
+  norm <- function(df) {
+    out <- as.matrix(df)
+    out[] <- trimws(gsub("\u2007", " ", gsub("\u2212", "-", out)))
+    dimnames(out) <- NULL
+    out
+  }
+  skip_if_not_installed("flextable")
+  ft <- build("flextable")
+  expect_identical(
+    unname(unlist(ft$header$dataset[1L, ])),
+    c("Variable", paste("Model", 1:3))
+  )
+  expect_identical(nrow(ft$header$dataset), 1L)
+  expect_identical(norm(ft$body$dataset), console)
+  skip_if_not_installed("tinytable")
+  expect_identical(norm(build("tinytable")@data), console)
+  skip_if_not_installed("gt")
+  g <- build("gt")
+  expect_identical(norm(g[["_data"]]), console)
+  # Each model heads its own column: no model spanner over the columns.
+  expect_false(any(grepl("^model_span_", g[["_spanners"]]$spanner_id)))
+  expect_match(
+    clipboard_payload(build("default"), "\t"),
+    "Variable\tModel 1\tModel 2\tModel 3",
+    fixed = TRUE
+  )
+})
+
+test_that("show_columns = \"none\": Excel writes the numbers and formats of the full table", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  m <- unname(.fo_glms())
+  fmt_of <- function(path) {
+    wb <- openxlsx2::wb_load(path)
+    cc <- wb$worksheets[[1L]]$sheet_data$cc
+    xfs <- wb$styles_mgr$styles$cellXfs
+    fmts <- wb$styles_mgr$styles$numFmts
+    code <- function(s) {
+      if (!nzchar(s)) {
+        return(NA_character_)
+      }
+      id <- sub('.*numFmtId="([0-9]+)".*', "\\1", xfs[[as.integer(s) + 1L]])
+      hit <- grep(paste0('numFmtId="', id, '"'), fmts, value = TRUE)
+      if (length(hit)) sub('.*formatCode="([^"]*)".*', "\\1", hit[1L]) else id
+    }
+    df <- openxlsx2::wb_to_df(wb, col_names = FALSE)
+    stub <- df[[1L]]
+    rows <- which(
+      stub %in% c("n", "R² (Tjur)", "AIC", "BIC", "Δχ²", "p (change)")
+    )
+    out <- lapply(rows, function(r) {
+      refs <- paste0(c("B", "C", "D"), r)
+      vapply(refs, function(ref) code(cc$c_s[cc$r == ref][1L]), "")
+    })
+    list(
+      labels = stub[rows],
+      formats = do.call(rbind, out),
+      values = df[rows, 2:4]
+    )
+  }
+  p_none <- withr::local_tempfile(fileext = ".xlsx")
+  p_full <- withr::local_tempfile(fileext = ".xlsx")
+  table_regression(
+    m,
+    show_columns = "none",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS,
+    output = "excel",
+    excel_path = p_none
+  )
+  table_regression(
+    m,
+    show_columns = "b",
+    nested = TRUE,
+    show_fit_stats = .FO_GLM_STATS,
+    output = "excel",
+    excel_path = p_full
+  )
+  a <- fmt_of(p_none)
+  b <- fmt_of(p_full)
+  expect_length(a$labels, 6L)
+  expect_identical(a$labels, b$labels)
+  expect_identical(unname(a$formats), unname(b$formats))
+  expect_identical(unname(as.matrix(a$values)), unname(as.matrix(b$values)))
+  expect_equal(
+    as.numeric(unlist(a$values[a$labels == "AIC", ])),
+    vapply(m, stats::AIC, numeric(1))
+  )
+})
+
+test_that("show_columns = \"none\": headers, labels and the Outcome row", {
+  skip_on_cran()
+  m <- .fo_lms()
+  x <- table_regression(
+    list(Baseline = m$m1, Smoking = m$m2, BMI = m$m3),
+    show_columns = "none"
+  )
+  expect_identical(names(x), c("Variable", "Baseline", "Smoking", "BMI"))
+  # A model label longer than its numbers is printed whole, at any width.
+  long <- table_regression(
+    list("Baseline model with age and sex" = m$m1, "Adjusted" = m$m2),
+    show_columns = "none"
+  )
+  for (w in c(40L, 80L)) {
+    out <- withr::with_options(list(width = w), capture.output(print(long)))
+    expect_true(any(grepl(
+      "Baseline model with age and sex",
+      out,
+      fixed = TRUE
+    )))
+    expect_false(any(grepl("…", out, fixed = TRUE)))
+  }
+  # Different outcomes head the columns, or fill the Outcome row when the
+  # columns carry labels, which `outcome_labels = FALSE` removes.
+  d <- stats::na.omit(sochealth[c("bmi", "wellbeing_score", "age")])
+  a <- stats::lm(bmi ~ age, data = d)
+  b <- stats::lm(wellbeing_score ~ age, data = d)
+  expect_identical(
+    names(table_regression(list(a, b), show_columns = "none")),
+    c("Variable", "bmi", "wellbeing_score")
+  )
+  labeled <- table_regression(list(A = a, B = b), show_columns = "none")
+  st <- as_structured(labeled)
+  expect_identical(st$body$.row_role[1L], "outcome")
+  expect_identical(
+    unname(st$outcome_labels_by_col),
+    c("bmi", "wellbeing_score")
+  )
+  expect_false(
+    "outcome" %in%
+      as_structured(table_regression(
+        list(A = a, B = b),
+        show_columns = "none",
+        outcome_labels = FALSE
+      ))$body$.row_role
+  )
+  # A label named like a key column keeps its header; its column name
+  # takes a suffix.
+  k <- table_regression(list(level = a, label = a), show_columns = "none")
+  expect_identical(names(as.data.frame(k))[5:6], c("level.2", "label.2"))
+  expect_identical(
+    unname(vapply(as_structured(k)$col_meta, `[[`, "", "display_label")),
+    c("level", "label")
+  )
+})
+
+test_that("show_columns = \"none\" refuses what it cannot show", {
+  skip_on_cran()
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  e <- expect_error(
+    table_regression(fit, show_columns = character(0)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(e), "show_columns = \"none\"", fixed = TRUE)
+  e <- expect_error(
+    table_regression(fit, show_columns = FALSE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(e), "show_columns = \"none\"", fixed = TRUE)
+  e <- expect_error(
+    table_regression(fit, show_columns = c("none", "b")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(e), "\"b\"", fixed = TRUE)
+  expect_error(
+    table_regression(fit, show_columns = "none", show_fit_stats = FALSE),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, show_columns = "none", show_fit_stats = character(0)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(list(fit, fit), show_columns = "none", layout = "stacked"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, show_columns = "none", show_fit_stats = "n_events"),
+    class = "spicy_empty_table"
+  )
+  expect_error(
+    table_regression_uv(
+      mtcars,
+      mpg,
+      c(wt, hp),
+      show_columns = "none"
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("show_columns = \"none\" warns once about the arguments it ignores", {
+  skip_on_cran()
+  m <- unname(.fo_lms())
+  w <- expect_warning(
+    x <- table_regression(
+      m,
+      show_columns = "none",
+      exponentiate = TRUE,
+      keep = "age",
+      ci_level = 0.9,
+      stars = TRUE,
+      vcov = "HC3",
+      digits = 3L
+    ),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(
+    conditionMessage(w),
+    "`vcov`, `ci_level`, `exponentiate`, `keep`, `stars` are ignored",
+    fixed = TRUE
+  )
+  # Nothing of them reaches the note: no estimator, no stars legend.
+  expect_no_match(attr(x, "note"), "Std. errors", fixed = TRUE)
+  expect_no_match(attr(x, "note"), "*", fixed = TRUE)
+  # Typed at their defaults, or reaching a statistic, they are not ignored.
+  expect_no_warning(table_regression(
+    m,
+    show_columns = "none",
+    exponentiate = FALSE,
+    ci_level = 0.95,
+    digits = 3L,
+    fit_digits = 3L
+  ))
+  expect_no_warning(
+    h <- table_regression(m, show_columns = "none", nested = TRUE, vcov = "HC3")
+  )
+  expect_true("wald_f_change" %in% as.data.frame(h)$variable)
+  expect_match(attr(h, "note"), "HC3", fixed = TRUE)
+})
+
+test_that("show_columns = \"none\" warns when a criterion compares unlike fits", {
+  skip_on_cran()
+  d <- sochealth
+  a <- stats::glm(dentist_12m ~ age, data = d, family = stats::binomial())
+  b <- stats::glm(
+    dentist_12m ~ age + smoking,
+    data = d,
+    family = stats::binomial()
+  )
+  expect_lt(stats::nobs(b), stats::nobs(a))
+  w <- expect_warning(
+    table_regression(list(a, b), show_columns = "none"),
+    class = "spicy_caveat"
+  )
+  expect_match(conditionMessage(w), "n = 1,200, 1,175", fixed = TRUE)
+  # No criterion shown, no warning; the full table does not warn.
+  expect_no_warning(table_regression(
+    list(a, b),
+    show_columns = "none",
+    show_fit_stats = c("nobs", "pseudo_r2_tjur")
+  ))
+  expect_no_warning(table_regression(list(a, b)))
+  l1 <- stats::lm(bmi ~ age, data = d)
+  l2 <- stats::lm(wellbeing_score ~ age, data = d)
+  w <- expect_warning(
+    table_regression(
+      list(l1, l2),
+      show_columns = "none",
+      show_fit_stats = c("nobs", "bic")
+    ),
+    class = "spicy_caveat"
+  )
+  expect_match(
+    conditionMessage(w),
+    "different outcomes (bmi, wellbeing_score)",
+    fixed = TRUE
+  )
+})
+
+test_that("show_columns = \"none\" across model classes", {
+  skip_on_cran()
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("survey")
+  d <- stats::na.omit(sochealth[c(
+    "bmi",
+    "age",
+    "sex",
+    "region",
+    "education",
+    "dentist_12m",
+    "weight"
+  )])
+  l <- stats::lm(bmi ~ age + sex, data = d)
+  mx <- suppressMessages(lme4::lmer(bmi ~ age + sex + (1 | region), data = d))
+  x <- suppressMessages(suppressWarnings(table_regression(
+    list(l, mx),
+    show_columns = "none"
+  )))
+  df <- as.data.frame(x)
+  # A statistic the class does not define prints the dash of the full
+  # table, and is NA in the data frame.
+  expect_identical(trimws(x$`Model 2`[x$Variable == "R²"]), "–")
+  expect_identical(trimws(x$`Model 1`[x$Variable == "ICC"]), "–")
+  expect_equal(df$`Model 1`[df$variable == "aic"], stats::AIC(l))
+  expect_equal(df$`Model 2`[df$variable == "aic"], stats::AIC(mx))
+  expect_true(is.na(df$`Model 2`[df$variable == "r2"]))
+  p0 <- MASS::polr(education ~ 1, data = d, Hess = TRUE)
+  p1 <- MASS::polr(education ~ age, data = d, Hess = TRUE)
+  op <- as.data.frame(table_regression(
+    list(p0, p1),
+    show_columns = "none",
+    nested = TRUE
+  ))
+  expect_equal(
+    op$`Model 2`[op$variable == "lrt_change"],
+    2 * (stats::logLik(p1)[[1]] - stats::logLik(p0)[[1]])
+  )
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung
+  )
+  ocx <- as.data.frame(table_regression(cx, show_columns = "none"))
+  expect_identical(ocx$variable, c("nobs", "n_events", "aic"))
+  # n is the sample (`cx$n`); stats::nobs() of a coxph counts the events.
+  expect_equal(ocx$`Model 1`, c(cx$n, cx$nevent, stats::AIC(cx)))
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  sv <- survey::svyglm(
+    dentist_12m ~ age,
+    design = des,
+    family = stats::quasibinomial()
+  )
+  osv <- as.data.frame(table_regression(sv, show_columns = "none"))
+  expect_identical(osv$variable[1:2], c("nobs", "weighted_nobs"))
+  expect_equal(osv$`Model 1`[1:2], c(nrow(d), sum(d$weight)))
+})
+
+test_that("show_columns = \"none\" tables stack", {
+  skip_on_cran()
+  m <- unname(.fo_lms())
+  x <- table_regression(m, show_columns = "none", nested = TRUE)
+  s <- table_stack(First = x, Second = x)
+  df <- as.data.frame(s)
+  expect_identical(unique(df$panel), c("First", "Second"))
+  expect_identical(
+    df[df$panel == "Second", -1L],
+    as.data.frame(x),
+    ignore_attr = TRUE
+  )
+})

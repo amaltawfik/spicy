@@ -1062,6 +1062,36 @@ test_that("per-category AME columns carry each category's own cell", {
 })
 
 
+# ---- the fit statistics alone (`show_columns = "none"`) --------------------
+
+test_that("a table of fit statistics alone reaches every engine as printed", {
+  d <- .ep_data()
+  m0 <- stats::glm(dentist_12m ~ age, data = d, family = stats::binomial())
+  m1 <- .ep_glm()
+  build <- function(o) {
+    table_regression(
+      list(m0, m1),
+      show_columns = "none",
+      nested = TRUE,
+      show_fit_stats = c(
+        "nobs",
+        "pseudo_r2_tjur",
+        "aic",
+        "bic",
+        "lrt_change",
+        "p_change"
+      ),
+      output = o
+    )
+  }
+  console <- .ep_expect_all_engines(build)
+  expect_identical(
+    console[[1L]],
+    c("n", "R\u00B2 (Tjur)", "AIC", "BIC", "\u0394\u03C7\u00B2", "p (change)")
+  )
+  expect_identical(console[["Model 1"]][5:6], c("\u2013", "\u2013"))
+})
+
 # ---- generalized undefined: NA with the term present ----------------------
 
 test_that("an aliased coefficient shows the console's en-dash in every engine", {

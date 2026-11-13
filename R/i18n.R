@@ -492,6 +492,9 @@
   note_re_se_skipped = "SE and CI of the random-effect variance components not computed for n above %s.",
   # A mixed fit on the boundary of its parameter space.
   note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11); the Wald SE and CI of the variance components are omitted.",
+  # The same fact in a table of fit statistics, which shows no variance
+  # component (`show_columns = "none"`).
+  note_singular_mixed_fit = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11).",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
   # refits by ML before it compares, so the change rows and the per-model
   # criteria rows are two different criteria. No hole: the sentence names

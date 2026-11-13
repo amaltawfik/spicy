@@ -69,3 +69,56 @@
       Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
       *** p < .001, ** p < .01, * p < .05.
 
+# show_columns = "none" prints the fit statistics alone
+
+    Code
+      print(x)
+    Output
+      Hierarchical logistic regression: dentist_12m
+      
+       Variable   │ Model 1    Model 2      Model 3   
+      ────────────┼───────────────────────────────────
+       n          │ 1175     1175         1175        
+       R² (Tjur)  │    0.00     0.00         0.05     
+       AIC        │ 1417.9   1421.8       1370.6      
+       BIC        │ 1428.0   1442.1       1401.0      
+       Δχ²        │     –       0.09 (2)    55.18 (2) 
+       p (change) │     –        .957        <.001    
+      
+      Note. Logistic regression models. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+
+---
+
+    Code
+      print(table_regression(m$m1, show_columns = "none"))
+    Output
+      Logistic regression: dentist_12m
+      
+       Variable        │ Model 1 
+      ─────────────────┼─────────
+       n               │ 1175    
+       R² (McFadden)   │    0.00 
+       R² (Nagelkerke) │    0.00 
+       AIC             │ 1417.9  
+      
+      Note. Logistic regression. AIC = Akaike information criterion.
+
+---
+
+    Code
+      print(table_regression(unname(m), show_columns = "none", nested = TRUE,
+      show_fit_stats = .FO_GLM_STATS))
+    Output
+      Régression logistique — modèles emboîtés : dentist_12m
+      
+       Variable      │ Modèle 1   Modèle 2     Modèle 3   
+      ───────────────┼────────────────────────────────────
+       n             │  1175     1175         1175        
+       R² (Tjur)     │     0,00     0,00         0,05     
+       AIC           │  1417,9   1421,8       1370,6      
+       BIC           │  1428,0   1442,1       1401,0      
+       Δχ²           │      –       0,09 (2)    55,18 (2) 
+       p (variation) │      –       0,957       <0,001    
+      
+      Note. Modèles de régression logistique. AIC = critère d'information d'Akaike ; BIC = critère d'information bayésien.
+

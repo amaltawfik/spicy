@@ -97,6 +97,12 @@ dispatch_regression_output <- function(
         character(0)
       }
       o <- o[!is.na(o)]
+      # A model without a coefficient row (a fit-only table, every row
+      # selected away) names its outcome in its fit statistics.
+      fs <- aligned$fit_stats_aligned
+      if (length(o) == 0L && !is.null(fs) && "outcome" %in% names(fs)) {
+        o <- fs$outcome[fs$model_id == m & !is.na(fs$outcome)]
+      }
       if (length(o) > 0L) o[1L] else NA_character_
     },
     character(1),

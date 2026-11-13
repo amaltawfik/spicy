@@ -383,7 +383,8 @@ build_structured_body <- function(
   model_outcome_labels = NULL,
   ci_label = spicy_str("header_ci_label_confidence"),
   stars_map = NULL,
-  re_columns = c("est", "se", "ci")
+  re_columns = c("est", "se", "ci"),
+  fit_only = FALSE
 ) {
   group_factor_levels <- identical(factor_layout, "grouped")
   coefs <- aligned$coefs_aligned
@@ -888,7 +889,10 @@ build_structured_body <- function(
   # The char body's spanners map "label -> integer body col indices
   # (excluding Variable)". For the structured body we map the same
   # labels to structured col indices.
-  spanners <- .build_structured_spanners(struct_col_names, expanded, label_map)
+  # A fit-only table heads each column with its model: no spanner.
+  spanners <- if (!fit_only) {
+    .build_structured_spanners(struct_col_names, expanded, label_map)
+  }
 
   # ---- CI pairs ---------------------------------------------------------
   ci_pairs <- list()

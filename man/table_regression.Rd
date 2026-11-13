@@ -326,7 +326,8 @@ layout: \code{"all_b"} (single model) or \code{"all_b_compact"}
 layout, which has the same width pressure -- restore CIs with
 atomic tokens, e.g. \code{c("b", "se", "ci", "p")}). The \code{"p"}
 token is always the B / beta p-value; for the AME-specific
-p-value use \code{"ame_p"}.}
+p-value use \code{"ame_p"}. \code{"none"} shows the fit statistics alone,
+one column per model (see \emph{Fit statistics alone} in the details).}
 
 \item{keep}{Character vector of regexes. Only coefficient rows
 whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
@@ -1113,6 +1114,33 @@ order of the displayed columns. If \code{standardized != "none"} and
 \code{"all_b"} for a single model (APA-7 Section 6.46 publication layout),
 \code{"all_b_compact"} for two or more models (CI dropped to fit the
 side-by-side layout; restore it explicitly when needed).
+
+\strong{Fit statistics alone} (\code{show_columns = "none"}): no coefficient
+row or column. Each model has one column, headed by its label (the
+outcome, "Model 1", a name of the list or \code{model_labels}, as for the
+column groups of the full table; "Model 1" for a single model), and
+the rows are the fit statistics of \code{show_fit_stats}, in its order,
+the change rows of \code{nested = TRUE} included. The title is the one of
+the full table; the note keeps what describes the models and their
+fit, and leaves out what describes coefficients. Models with
+different outcomes get an Outcome row when the column headers do not
+name them (\code{outcome_labels = FALSE} removes it). \code{"none"} goes alone, and
+\code{show_fit_stats = FALSE} is refused with it, as is \code{layout = "stacked"}; an empty \code{show_columns} (\code{character(0)}, \code{FALSE}) is an
+error that points to \code{"none"}. The arguments that act on coefficients
+only are ignored, with one \code{spicy_ignored_arg} warning naming those
+set to other than their default: \code{ci_level}, \code{ci_method}, \code{tau},
+\code{at_time}, \code{standardized}, \code{exponentiate}, \code{ame_type}, \code{p_adjust},
+\code{keep}, \code{drop}, \code{show_intercept}, \code{show_thresholds},
+\code{show_components}, \code{intercept_position}, \code{factor_layout},
+\code{reference_style}, \code{reference_label}, \code{fit_stats_layout}, \code{show_re},
+\code{re_scale}, \code{re_columns}, \code{re_test}, \code{re_ci}, \code{stars},
+\code{effect_size_digits}, and \code{vcov}, \code{cluster} and \code{boot_n} unless
+\code{nested = TRUE} (where a robust \code{vcov} gives the Wald change rows).
+An information criterion (AIC, BIC, deviance, ...) shown for models
+fitted to different numbers of observations or to different outcomes
+raises a \code{spicy_caveat} warning: its differences compare nothing.
+\code{tidy()} returns no row, \code{glance()} one row per model, and
+\code{inline()} cites a statistic of a model: \code{inline(tbl, "aic", model = 2)}. \code{\link[=table_regression_uv]{table_regression_uv()}} refuses the token.
 }
 
 \subsection{\code{show_fit_stats} -- model-level rows below the coefficients}{
@@ -2069,6 +2097,13 @@ m2 <- lm(wellbeing_score ~ age + sex,            data = sochealth_cc)
 m3 <- lm(wellbeing_score ~ age + sex + smoking,  data = sochealth_cc)
 table_regression(
   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
+  nested = TRUE
+)
+
+# The same comparison by its fit statistics alone.
+table_regression(
+  list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
+  show_columns = "none",
   nested = TRUE
 )
 }

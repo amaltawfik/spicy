@@ -328,8 +328,16 @@ build_regression_footer_from_frames <- function(
   note_add = NULL,
   parts = FALSE,
   show_intercept = TRUE,
-  intercept_label = "(Intercept)"
+  intercept_label = "(Intercept)",
+  fit_only = FALSE
 ) {
+  # `fit_only` (`show_columns = "none"`): the table shows fit statistics
+  # alone, so the note keeps what describes the models and their fit and
+  # leaves out what glosses coefficients (cut-points, reference
+  # categories, intervals, random-effects rows, the definitions of the
+  # columns). The standard errors are named only for the Wald change
+  # tests, the one fit statistic they reach.
+  coef_note <- !fit_only
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
   # Model 2" -- names that appear nowhere in what the reader sees. The
@@ -399,18 +407,22 @@ build_regression_footer_from_frames <- function(
         frames,
         decimal_mark = decimal_mark
       ),
-      if (!thresholds_as_rows) thresholds,
-      build_exponentiate_footer_block_from_frames(frames, show_columns),
+      if (coef_note && !thresholds_as_rows) thresholds,
+      if (coef_note) {
+        build_exponentiate_footer_block_from_frames(frames, show_columns)
+      },
       build_exp_intercept_footer_block_from_frames(
         frames,
         show_columns,
         show_intercept,
         intercept_label
       ),
-      build_singular_footer_block_from_frames(frames),
+      build_singular_footer_block_from_frames(frames, fit_only = fit_only),
       build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
-      build_reference_outcome_footer_block_from_frames(frames),
-      build_reference_alternative_footer_block_from_frames(frames),
+      if (coef_note) build_reference_outcome_footer_block_from_frames(frames),
+      if (coef_note) {
+        build_reference_alternative_footer_block_from_frames(frames)
+      },
       build_convergence_footer_block_from_frames(
         frames,
         decimal_mark = decimal_mark
@@ -426,14 +438,18 @@ build_regression_footer_from_frames <- function(
     ),
     # (c) The inference: the standard errors, the intervals, the tests,
     # the adjustment, the predictive accuracy.
-    vcov = .footer_paragraph(build_vcov_footer_block_from_frames(frames)),
+    vcov = .footer_paragraph(
+      if (coef_note || any(.NESTED_WALD_CHANGE_TOKENS %in% show_fit_stats)) {
+        build_vcov_footer_block_from_frames(frames)
+      }
+    ),
     inference = .footer_paragraph(
       build_ci_method_footer_block_from_frames(
         frames,
         show_columns,
         decimal_mark = decimal_mark
       ),
-      build_mixed_inference_footer_block_from_frames(frames),
+      if (coef_note) build_mixed_inference_footer_block_from_frames(frames),
       build_nested_ml_refit_footer_block_from_frames(
         frames,
         nested,
@@ -449,26 +465,31 @@ build_regression_footer_from_frames <- function(
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
       build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
-      build_re_se_skipped_footer_block_from_frames(frames),
-      build_re_profile_footer_block_from_frames(frames),
+      if (coef_note) build_re_se_skipped_footer_block_from_frames(frames),
+      if (coef_note) build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_nested_footer_block(nested)
     ),
     # (d) The definitions: the glosses of the estimand columns and of the
     # subordinate blocks, the scope of a standardized coefficient, the
     # labels of polynomial trends.
-    definitions = .footer_paragraph(
-      build_ame_quantity_footer_block_from_frames(frames, show_columns),
-      build_survival_estimand_footer_block_from_frames(frames),
-      if (thresholds_as_rows) thresholds,
-      build_scale_effects_footer_block_from_frames(frames),
-      build_component_blocks_footer_block_from_frames(frames),
-      build_standardized_caveat_footer_block_from_frames(frames, standardized),
-      build_polynomial_contrasts_footer_block_from_frames(
-        frames_display,
-        displayed_parent_vars = displayed_parent_vars
+    definitions = if (coef_note) {
+      .footer_paragraph(
+        build_ame_quantity_footer_block_from_frames(frames, show_columns),
+        build_survival_estimand_footer_block_from_frames(frames),
+        if (thresholds_as_rows) thresholds,
+        build_scale_effects_footer_block_from_frames(frames),
+        build_component_blocks_footer_block_from_frames(frames),
+        build_standardized_caveat_footer_block_from_frames(
+          frames,
+          standardized
+        ),
+        build_polynomial_contrasts_footer_block_from_frames(
+          frames_display,
+          displayed_parent_vars = displayed_parent_vars
+        )
       )
-    ),
+    },
     # The abbreviations of the headers and of the stub, where the rule in
     # force puts them.
     abbreviation_items = build_abbreviations_footer_block_from_frames(
@@ -2694,7 +2715,7 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
 }
 
 
-build_singular_footer_block_from_frames <- function(frames) {
+build_singular_footer_block_from_frames <- function(frames, fit_only = FALSE) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
@@ -2710,8 +2731,18 @@ build_singular_footer_block_from_frames <- function(frames) {
   }
   affected <- which(flags)
   is_mixed <- vapply(frames[affected], .is_mixed_frame, logical(1))
+  # A fit-only table keeps the fact about the random part, which its ICC
+  # and conditional R-squared rows rest on, and leaves the rank-deficient
+  # design, a fact about coefficients it does not show.
+  if (fit_only) {
+    affected <- affected[is_mixed]
+    is_mixed <- is_mixed[is_mixed]
+    if (length(affected) == 0L) {
+      return(NULL)
+    }
+  }
   if (length(frames) == 1L) {
-    return(.singular_msg_for_frame(frames[[affected]], is_mixed[1L]))
+    return(.singular_msg_for_frame(frames[[affected]], is_mixed[1L], fit_only))
   }
   per <- vapply(
     seq_along(affected),
@@ -2719,7 +2750,7 @@ build_singular_footer_block_from_frames <- function(frames) {
       .model_line(
         frames,
         affected[k],
-        .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k])
+        .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k], fit_only)
       )
     },
     character(1)
@@ -2735,7 +2766,7 @@ build_singular_footer_block_from_frames <- function(frames) {
 #     suppressed in `.merMod_attach_wald_se_ci()` to avoid
 #     reporting unreliable values; the footer now tells the
 #     reader why.
-.singular_msg_for_frame <- function(frame, is_mixed) {
+.singular_msg_for_frame <- function(frame, is_mixed, fit_only = FALSE) {
   if (isTRUE(is_mixed)) {
     # Table notes state facts about what is shown; the actionable advice
     # ("consider simplifying the random structure") is for the ANALYST
@@ -2747,7 +2778,10 @@ build_singular_footer_block_from_frames <- function(frames) {
     # only under lme4 (glmmTMB and nlme optimize a log scale and land
     # near it), and a random-effect correlation pinned at +/-1 is a
     # boundary estimate with no zero variance at all.
-    return(spicy_str("note_singular_mixed"))
+    # A fit-only table shows no variance component: the fact alone.
+    return(spicy_str(
+      if (fit_only) "note_singular_mixed_fit" else "note_singular_mixed"
+    ))
   }
   # The note names the glyph the cells carry, so it takes it as an
   # argument rather than re-typing it.

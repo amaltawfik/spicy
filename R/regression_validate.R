@@ -1344,6 +1344,49 @@ validate_vcov_cluster_lists <- function(
 
 # ---- Phase C \u2013 vocabulary token validation --------------------------------
 
+# `show_columns = "none"`: the fit statistics alone, one column per model
+# and no coefficient. TRUE for that token, FALSE for any other request,
+# which validate_show_columns() then checks. "none" goes alone. An empty
+# request (`character(0)`, `FALSE`) stays an error: an empty vector
+# reaches a script by accident, so the table meant is asked for by name.
+.reg_show_columns_none <- function(show_columns, call = rlang::caller_env()) {
+  empty <- is.character(show_columns) && length(show_columns) == 0L
+  if (empty || isFALSE(show_columns)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`show_columns` cannot be %s.",
+          if (empty) "empty" else "`FALSE`"
+        ),
+        "i" = "For the fit statistics alone, use `show_columns = \"none\"`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (!is.character(show_columns) || !"none" %in% show_columns) {
+    return(FALSE)
+  }
+  others <- setdiff(show_columns, "none")
+  if (length(show_columns) > 1L) {
+    spicy_abort(
+      c(
+        "`show_columns = \"none\"` cannot be combined with other tokens.",
+        "x" = if (length(others)) {
+          sprintf(
+            "Also requested: %s.",
+            paste(.quote_val(others), collapse = ", ")
+          )
+        },
+        "i" = "Use `\"none\"` alone for the fit statistics without coefficients."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  TRUE
+}
+
 # Step 9: show_columns (+ Step 12: beta requires standardized != "none")
 #
 # `show_columns` accepts both atomic tokens ("b", "se", "ci", "p", ...)

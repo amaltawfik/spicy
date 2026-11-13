@@ -143,6 +143,35 @@
 #' `"all_b_compact"` for two or more models (CI dropped to fit the
 #' side-by-side layout; restore it explicitly when needed).
 #'
+#' **Fit statistics alone** (`show_columns = "none"`): no coefficient
+#' row or column. Each model has one column, headed by its label (the
+#' outcome, "Model 1", a name of the list or `model_labels`, as for the
+#' column groups of the full table; "Model 1" for a single model), and
+#' the rows are the fit statistics of `show_fit_stats`, in its order,
+#' the change rows of `nested = TRUE` included. The title is the one of
+#' the full table; the note keeps what describes the models and their
+#' fit, and leaves out what describes coefficients. Models with
+#' different outcomes get an Outcome row when the column headers do not
+#' name them (`outcome_labels = FALSE` removes it). `"none"` goes alone, and
+#' `show_fit_stats = FALSE` is refused with it, as is `layout =
+#' "stacked"`; an empty `show_columns` (`character(0)`, `FALSE`) is an
+#' error that points to `"none"`. The arguments that act on coefficients
+#' only are ignored, with one `spicy_ignored_arg` warning naming those
+#' set to other than their default: `ci_level`, `ci_method`, `tau`,
+#' `at_time`, `standardized`, `exponentiate`, `ame_type`, `p_adjust`,
+#' `keep`, `drop`, `show_intercept`, `show_thresholds`,
+#' `show_components`, `intercept_position`, `factor_layout`,
+#' `reference_style`, `reference_label`, `fit_stats_layout`, `show_re`,
+#' `re_scale`, `re_columns`, `re_test`, `re_ci`, `stars`,
+#' `effect_size_digits`, and `vcov`, `cluster` and `boot_n` unless
+#' `nested = TRUE` (where a robust `vcov` gives the Wald change rows).
+#' An information criterion (AIC, BIC, deviance, ...) shown for models
+#' fitted to different numbers of observations or to different outcomes
+#' raises a `spicy_caveat` warning: its differences compare nothing.
+#' `tidy()` returns no row, `glance()` one row per model, and
+#' `inline()` cites a statistic of a model: `inline(tbl, "aic", model =
+#' 2)`. [table_regression_uv()] refuses the token.
+#'
 #' ## `show_fit_stats` -- model-level rows below the coefficients
 #'
 #' \itemize{
@@ -1262,7 +1291,8 @@
 #'   layout, which has the same width pressure -- restore CIs with
 #'   atomic tokens, e.g. `c("b", "se", "ci", "p")`). The `"p"`
 #'   token is always the B / beta p-value; for the AME-specific
-#'   p-value use `"ame_p"`.
+#'   p-value use `"ame_p"`. `"none"` shows the fit statistics alone,
+#'   one column per model (see *Fit statistics alone* in the details).
 #' @param keep Character vector of regexes. Only coefficient rows
 #'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
 #'   `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the
@@ -1953,6 +1983,13 @@
 #'   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
 #'   nested = TRUE
 #' )
+#'
+#' # The same comparison by its fit statistics alone.
+#' table_regression(
+#'   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
+#'   show_columns = "none",
+#'   nested = TRUE
+#' )
 #' }
 #'
 #' \donttest{
@@ -2240,6 +2277,19 @@ table_regression <- function(
     .with_public_call(.refuse_out_of_scope_model(m), public_call)
   }
 
+  # `show_columns = "none"`: the fit statistics alone, the models in
+  # columns. The arguments that reach only the coefficients are said to
+  # be ignored, and set back to their defaults so that nothing of them
+  # reaches the table, its note or the cost of the call.
+  fit_only <- .reg_show_columns_none(show_columns)
+  if (fit_only) {
+    .reg_fit_only_check(layout, show_fit_stats)
+    for (a in .reg_fit_only_ignored(environment(), names(match.call()))) {
+      assign(a, .reg_formal_default(a), envir = environment())
+    }
+    show_columns <- character(0)
+  }
+
   # `layout = "stacked"`: one panel per model, each built by a call of
   # this function on that model alone, then stacked
   # (R/regression_stacked.R). Taken before any argument is resolved per
@@ -2277,7 +2327,8 @@ table_regression <- function(
   # `model_labels` fail-fast: in this layout the column groups are
   # outcome categories, not models, and their spanners are relabeled
   # via `outcome_labels`. See R/regression_multinom_layout.R.
-  mn_columns_active <- .multinom_columns_active(models, nested)
+  # A fit-only table has one column per model, the multinomial one too.
+  mn_columns_active <- !fit_only && .multinom_columns_active(models, nested)
   if (mn_columns_active && !is.null(model_labels)) {
     spicy_abort(
       c(
@@ -2339,7 +2390,9 @@ table_regression <- function(
 
   # Phase C -- vocabulary tokens (steps 9-12). validate_show_columns
   # also rejects "beta" combined with `standardized = "none"` (Q3).
-  validate_show_columns(show_columns, standardized)
+  if (!fit_only) {
+    validate_show_columns(show_columns, standardized)
+  }
   validate_show_fit_stats(show_fit_stats)
   # Survival estimand horizons: the horizon defines the estimand, so
   # it is explicit and mandatory -- and refused when unused.
@@ -3069,8 +3122,9 @@ table_regression <- function(
   }
   # `boot_n` reaches the bootstrap variance and the survival estimands
   # (g-computation, bootstrapped whatever `vcov`); typed in a call that
-  # runs neither, it reaches nothing.
-  if (!missing(boot_n)) {
+  # runs neither, it reaches nothing. A fit-only table without `nested`
+  # has said so already, with the other arguments it ignores.
+  if (!missing(boot_n) && !(fit_only && !isTRUE(nested))) {
     vcov_all <- if (is.list(vcov)) vcov else list(vcov)
     runs_boot <- any(vapply(vcov_all, identical, logical(1), "bootstrap")) ||
       any(
@@ -3473,10 +3527,11 @@ table_regression <- function(
   # beside them -- and `show_thresholds = FALSE` removes them. Left alone
   # (the default), the same fit renders its Thresholds block and its fit
   # statistics normally. The other route, rows selected away by `keep`,
-  # `drop` or `show_intercept`, is refused after the selection.
+  # `drop` or `show_intercept`, is refused after the selection. A
+  # fit-only table shows no row of coefficients and is not concerned.
   empty_frames <- vapply(
     frames,
-    function(fr) nrow(fr$coefs) == 0L,
+    function(fr) nrow(fr$coefs) == 0L && !fit_only,
     logical(1)
   )
   if (any(empty_frames)) {
@@ -3591,7 +3646,7 @@ table_regression <- function(
   re_se_skipped <- vapply(
     frames,
     function(fr) {
-      !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_)
+      !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_) && !fit_only
     },
     logical(1)
   )
@@ -3838,6 +3893,9 @@ table_regression <- function(
     )
     show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
   }
+  if (fit_only) {
+    .reg_warn_ic_not_comparable(models, frames, show_fit_stats)
+  }
 
   # ---- Variable labels (decision 54) -------------------------------------
   # One resolution of `labels` for the whole table: the display of each
@@ -3939,8 +3997,12 @@ table_regression <- function(
   # FALSE`) leaves no coefficient row of any model has nothing to show:
   # the renderer would return a bare header without fit statistics, note
   # or typed view. Several models where only some lose all their rows
-  # still make a table, each keeping its fit statistics.
-  if (NROW(aligned$coefs_aligned) == 0L) {
+  # still make a table, each keeping its fit statistics. A fit-only
+  # table drops them all: its long output, `tidy()`, has no row, with
+  # the columns of the others.
+  if (fit_only) {
+    aligned$coefs_aligned <- aligned$coefs_aligned[0L, , drop = FALSE]
+  } else if (NROW(aligned$coefs_aligned) == 0L) {
     .reg_abort_no_rows(
       models,
       keep,
@@ -4085,7 +4147,8 @@ table_regression <- function(
     parts = TRUE,
     show_intercept = show_intercept,
     # The label the intercept row shows, which the note names.
-    intercept_label = resolve_label("(Intercept)", var_labs$terms)
+    intercept_label = resolve_label("(Intercept)", var_labs$terms),
+    fit_only = fit_only
   )
   footer_main <- .compose_note_parts(footer_parts)
 
@@ -4139,6 +4202,25 @@ table_regression <- function(
     probability = build_stars_footer_block(stars, decimal_mark)
   )
 
+  # A fit-only table of models with different outcomes names them in its
+  # Outcome row when neither its title (which names a shared outcome)
+  # nor its column headers (the outcomes, when they are all distinct and
+  # the models unlabeled) do: it has no other place for them.
+  # `outcome_labels = FALSE` keeps the row out.
+  if (fit_only && is.null(outcome_labels) && n_models >= 2L) {
+    dvs <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
+    if (
+      length(unique(dvs)) > 1L &&
+        (!is.null(named_model_labels) || anyDuplicated(dvs) > 0L)
+    ) {
+      outcome_labels <- vapply(
+        frames,
+        function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
+        ""
+      )
+    }
+  }
+
   # ---- Render (Layer 3) --------------------------------------------------
   # Q1: model_labels precedence is explicit > names(list) > default.
   # Partial-name auto-fill: `list("Step 1" = m1, m2)` becomes
@@ -4181,8 +4263,22 @@ table_regression <- function(
     outcome_labels = outcome_labels,
     title = title,
     note = full_footer_str,
-    re_columns = re_columns_val
+    re_columns = re_columns_val,
+    fit_only = fit_only
   )
+  # A fit-only table whose statistics no model carries has no row.
+  if (
+    fit_only &&
+      !any(attr(rendered, "structured")$body$.row_role %in% "fit_stat")
+  ) {
+    spicy_abort(
+      c(
+        "None of the requested fit statistics is available for these models.",
+        "i" = "Choose others with `show_fit_stats`; see ?table_regression_models."
+      ),
+      class = "spicy_empty_table"
+    )
+  }
   # Stash the print-time padding as an attribute so the print
   # method can honor the call-site choice (and tooling like
   # `as.data.frame()` / broom continues to see the raw rendered
@@ -4489,5 +4585,191 @@ table_regression <- function(
       class = "spicy_ignored_arg"
     )
   }
+  invisible(NULL)
+}
+
+# ---- show_columns = "none" -------------------------------------------------
+
+# The arguments that act on the coefficient rows or columns only: a
+# fit-only table reaches none of them. `vcov`, `cluster` and `boot_n`
+# join them without `nested = TRUE`, whose change tests under a robust
+# or resampling variance (the "Wald" rows) are the one place they reach a
+# fit statistic.
+.REG_FIT_ONLY_IGNORED <- c(
+  "ci_level",
+  "ci_method",
+  "tau",
+  "at_time",
+  "standardized",
+  "exponentiate",
+  "ame_type",
+  "p_adjust",
+  "keep",
+  "drop",
+  "show_intercept",
+  "show_thresholds",
+  "show_components",
+  "intercept_position",
+  "factor_layout",
+  "reference_style",
+  "reference_label",
+  "fit_stats_layout",
+  "show_re",
+  "re_scale",
+  "re_columns",
+  "re_test",
+  "re_ci",
+  "stars",
+  "effect_size_digits"
+)
+.REG_FIT_ONLY_VCOV <- c("vcov", "cluster", "boot_n")
+
+# The default of a formal of table_regression(): the first choice of an
+# enumerated one, which `spicy_match_arg()` resolves it to.
+.reg_formal_default <- function(arg) {
+  def <- eval(formals(table_regression)[[arg]], baseenv())
+  if (is.character(def) && length(def) > 1L && arg != "re_columns") {
+    def[[1L]]
+  } else {
+    def
+  }
+}
+
+# A fit-only table is laid out with the models in its columns and needs
+# fit statistics to show.
+.reg_fit_only_check <- function(
+  layout,
+  show_fit_stats,
+  call = rlang::caller_env()
+) {
+  if (identical(layout, "stacked")) {
+    spicy_abort(
+      c(
+        "`show_columns = \"none\"` does not combine with `layout = \"stacked\"`.",
+        "i" = "Its models are its columns: drop `layout = \"stacked\"`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (
+    isFALSE(show_fit_stats) ||
+      (is.character(show_fit_stats) && length(show_fit_stats) == 0L)
+  ) {
+    spicy_abort(
+      c(
+        paste0(
+          "`show_columns = \"none\"` shows the fit statistics alone, and ",
+          "`show_fit_stats` removes them."
+        ),
+        "i" = "Leave `show_fit_stats` at its default, or name the statistics to show."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
+# The arguments a fit-only table ignores that the call typed with a value
+# other than their default (`env`, the frame of table_regression();
+# `typed`, the names of its call), in the order of the formals. One
+# `spicy_ignored_arg` warning names them all; the caller sets them back
+# to their defaults.
+.reg_fit_only_ignored <- function(env, typed) {
+  nested <- isTRUE(get("nested", envir = env))
+  args <- c(.REG_FIT_ONLY_IGNORED, if (!nested) .REG_FIT_ONLY_VCOV)
+  args <- intersect(names(formals(table_regression)), intersect(args, typed))
+  differs <- vapply(
+    args,
+    function(a) {
+      val <- get(a, envir = env)
+      def <- .reg_formal_default(a)
+      if (is.numeric(val) && is.numeric(def) && length(val) == length(def)) {
+        return(!isTRUE(all.equal(val, def, check.attributes = FALSE)))
+      }
+      !identical(val, def)
+    },
+    logical(1)
+  )
+  args <- args[differs]
+  if (length(args) == 0L) {
+    return(character(0))
+  }
+  spicy_warn(
+    c(
+      sprintf(
+        "`show_columns = \"none\"` shows no coefficient: %s %s ignored.",
+        paste0("`", args, "`", collapse = ", "),
+        if (length(args) > 1L) "are" else "is"
+      ),
+      "i" = if (any(args %in% .REG_FIT_ONLY_VCOV)) {
+        paste0(
+          "`vcov`, `cluster` and `boot_n` reach a fit statistic only through ",
+          "the change tests of `nested = TRUE`."
+        )
+      }
+    ),
+    class = "spicy_ignored_arg"
+  )
+  args
+}
+
+# Information criteria compared across models fitted to different
+# numbers of observations, or to different outcomes, compare nothing: a
+# likelihood is a sum over the observations of one outcome. `nested =
+# TRUE` refuses both; a fit-only table without it says so.
+.REG_IC_TOKENS <- c(
+  "aic",
+  "aicc",
+  "bic",
+  "deviance",
+  "elpd_loo",
+  "looic",
+  "waic",
+  "qic",
+  "qicu"
+)
+
+.reg_warn_ic_not_comparable <- function(models, frames, show_fit_stats) {
+  ic <- intersect(show_fit_stats, .REG_IC_TOKENS)
+  if (length(models) < 2L || length(ic) == 0L) {
+    return(invisible(NULL))
+  }
+  n <- vapply(models, .spicy_nobs, numeric(1))
+  dv <- vapply(
+    frames,
+    function(f) f$info$dv %||% NA_character_,
+    character(1)
+  )
+  differ <- c(
+    if (length(unique(n)) > 1L) {
+      sprintf(
+        "different numbers of observations (n = %s)",
+        paste(format(n, big.mark = ",", trim = TRUE), collapse = ", ")
+      )
+    },
+    if (length(unique(dv)) > 1L) {
+      sprintf("different outcomes (%s)", paste(unique(dv), collapse = ", "))
+    }
+  )
+  if (length(differ) == 0L) {
+    return(invisible(NULL))
+  }
+  spicy_warn(
+    c(
+      sprintf(
+        "%s compared across models fitted to %s.",
+        paste(vapply(ic, fit_stat_label, character(1)), collapse = ", "),
+        paste(differ, collapse = " and to ")
+      ),
+      "i" = paste0(
+        "An information criterion compares fits of one outcome on the same ",
+        "observations: across these models, its differences are not ",
+        "interpretable."
+      )
+    ),
+    class = "spicy_caveat"
+  )
   invisible(NULL)
 }
