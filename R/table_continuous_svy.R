@@ -582,6 +582,11 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   binomial sign test on independent observations, which a clustered
 #'   or stratified sample is not.
 #'
+#' The columns follow the order the tokens are written in, with the
+#' rules of the sibling: a repeated token counts once, and `"ci"` comes
+#' after `"m"`. Under `deff = TRUE`, a `"deff"` left unwritten comes
+#' last.
+#'
 #' # Quantiles
 #'
 #' `qrule = "math"` is the default and estimates `inf{x : F(x) >= p}`,
@@ -1641,13 +1646,15 @@ table_continuous_svy <- function(
     if (is.character(show_columns) && "med_ci" %in% show_columns) {
       .abort_svy_med_ci()
     }
+    # Written order, as in the sibling: a repeated token counts once.
+    tokens <- unique(show_columns)
     validate_token_vector(
-      show_columns,
+      tokens,
       .continuous_svy_column_tokens,
       arg = "show_columns",
       call = call
     )
-    tokens <- order_continuous_svy_tokens(show_columns)
+    .check_continuous_interval_order(tokens, call = call)
   }
   if ("ci" %in% tokens && !("m" %in% tokens)) {
     spicy_warn(
@@ -1669,8 +1676,10 @@ table_continuous_svy <- function(
       call = call
     )
   }
+  # `deff = TRUE` without the token: the column goes last, its place in
+  # the canonical order.
   if (deff_on && !("deff" %in% tokens)) {
-    tokens <- order_continuous_svy_tokens(c(tokens, "deff"))
+    tokens <- c(tokens, "deff")
   }
   if (length(tokens) == 0L) {
     spicy_abort(

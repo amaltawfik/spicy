@@ -462,8 +462,16 @@
 #'
 #' Quartiles use [stats::quantile()]'s default type 7. `"iqr"` is the
 #' width (one number, the rank mirror of `SD`); `"med_iqr"` shows the
-#' interval with its bounds. Columns appear in the canonical order of
-#' the table above, whatever order they were written in.
+#' interval with its bounds.
+#'
+#' A character vector is displayed in the order it is written, so
+#' `c("med", "q1", "q3", "m", "sd", "n")` puts the median first. A token
+#' written twice counts once, where it first appears. An interval comes
+#' after the statistic it bounds, `"ci"` after `"m"` and `"med_ci"`
+#' after `"med"` or `"med_iqr"`: written before it, it is an error. The
+#' per-variable list form below has no written order common to all the
+#' variables, so its columns follow the order of the table above, which
+#' is also the order of the default display.
 #'
 #' # Weights
 #'
@@ -2147,9 +2155,10 @@ table_continuous <- function(
 # ---- show_columns vocabulary ----------------------------------------------
 
 # Display tokens for `table_continuous(show_columns = )`, listed in
-# CANONICAL DISPLAY ORDER: the table shows the requested tokens in this
-# order whatever order the user wrote them in. `ci` and `med_ci` each
-# expand to a pair of bound columns (LL / UL).
+# CANONICAL DISPLAY ORDER: the order of the default display and of the
+# per-variable list form. A `show_columns` vector is shown in the order
+# it is written (ADR 2026-08-25). `ci` and `med_ci` each expand to a
+# pair of bound columns (LL / UL).
 .continuous_column_tokens <- c(
   "m",
   "sd",
@@ -2177,6 +2186,40 @@ table_continuous <- function(
 # unknown entries (validation happens upstream).
 order_continuous_tokens <- function(tokens) {
   .continuous_column_tokens[.continuous_column_tokens %in% tokens]
+}
+
+# Internal: a written `show_columns` vector is rendered in its order, so
+# an interval written before the statistic it bounds would print its
+# bounds ahead of it. Refused, never reordered: `ci` comes after `m`,
+# `med_ci` after `med` or `med_iqr`. An interval whose statistic is
+# absent is the resolver's business (dropped with a warning).
+.check_continuous_interval_order <- function(tokens, call) {
+  before <- function(interval, stat) {
+    i <- match(interval, tokens)
+    s <- match(stat, tokens)
+    !is.na(i) && any(!is.na(s)) && i < min(s, na.rm = TRUE)
+  }
+  bad <- c(
+    ci = before("ci", "m"),
+    med_ci = before("med_ci", c("med", "med_iqr"))
+  )
+  bad <- names(bad)[bad]
+  if (length(bad) == 0L) {
+    return(invisible(NULL))
+  }
+  bounds <- c(ci = "\"m\"", med_ci = "\"med\" or \"med_iqr\"")
+  spicy_abort(
+    c(
+      sprintf(
+        "`show_columns` writes \"%s\" before %s, the statistic it bounds.",
+        bad[[1L]],
+        bounds[[bad[[1L]]]]
+      ),
+      "i" = "The columns follow the order of `show_columns`: write each interval after its statistic, e.g. `c(\"m\", \"ci\", \"sd\")`."
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
 }
 
 
@@ -2534,7 +2577,7 @@ resolve_continuous_show_columns <- function(
     .warn_unknown_names("show_columns", nms, c(variables, ".default"))
     for (nm in nms) {
       validate_token_vector(
-        show_columns[[nm]],
+        unique(show_columns[[nm]]),
         .continuous_column_tokens,
         arg = sprintf("show_columns[[\"%s\"]]", nm),
         call = call
@@ -2552,13 +2595,16 @@ resolve_continuous_show_columns <- function(
       variables
     )
   } else {
+    # A vector is an order: the columns follow it, a repeated token
+    # counting once, where it first appears.
+    global <- unique(show_columns)
     validate_token_vector(
-      show_columns,
+      global,
       .continuous_column_tokens,
       arg = "show_columns",
       call = call
     )
-    global <- order_continuous_tokens(show_columns)
+    .check_continuous_interval_order(global, call = call)
     per_var <- stats::setNames(
       rep(list(global), length(variables)),
       variables
@@ -2601,7 +2647,12 @@ resolve_continuous_show_columns <- function(
     )
   }
 
-  union_tokens <- order_continuous_tokens(unique(unlist(per_var)))
+  # The list form names different token sets per variable, with no
+  # written order common to all: its union keeps the canonical order.
+  union_tokens <- unique(unlist(per_var))
+  if (is.list(show_columns)) {
+    union_tokens <- order_continuous_tokens(union_tokens)
+  }
   if (length(union_tokens) == 0L) {
     spicy_abort(
       "`show_columns` leaves no statistic to display.",

@@ -940,6 +940,29 @@ test_that("refusals are classed and name the cause", {
   expect_s3_class(err, "spicy_invalid_input")
 })
 
+test_that("show_columns is shown in the order it is written", {
+  skip_on_cran()
+  d <- sochealth
+  x <- table_outcome(
+    d,
+    bmi,
+    select = sex,
+    show_columns = c("med", "m", "ci", "n", "med")
+  )
+  expect_identical(attr(x, "show_columns"), c("med", "m", "ci", "n"))
+  expect_identical(
+    setdiff(
+      names(as.data.frame(x)),
+      c("variable", "label", "level", ".row_role", "p")
+    ),
+    c("Mdn", "M", "95% CI LL", "95% CI UL", "n")
+  )
+  expect_error(
+    table_outcome(d, bmi, select = sex, show_columns = c("ci", "m")),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("the renamed `by` errors with the migration hint", {
   # Decision 39. `by` was the third formal until 0.13.0; it now names
   # nothing, and it comes back in a later release as the COMPARED

@@ -579,8 +579,16 @@ style in force asks (see \code{abbreviations} in \code{\link[=spicy_style]{spicy
 
 Quartiles use \code{\link[stats:quantile]{stats::quantile()}}'s default type 7. \code{"iqr"} is the
 width (one number, the rank mirror of \code{SD}); \code{"med_iqr"} shows the
-interval with its bounds. Columns appear in the canonical order of
-the table above, whatever order they were written in.
+interval with its bounds.
+
+A character vector is displayed in the order it is written, so
+\code{c("med", "q1", "q3", "m", "sd", "n")} puts the median first. A token
+written twice counts once, where it first appears. An interval comes
+after the statistic it bounds, \code{"ci"} after \code{"m"} and \code{"med_ci"}
+after \code{"med"} or \code{"med_iqr"}: written before it, it is an error. The
+per-variable list form below has no written order common to all the
+variables, so its columns follow the order of the table above, which
+is also the order of the default display.
 }
 
 \section{Weights}{

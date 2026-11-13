@@ -1225,6 +1225,37 @@ test_that("the ignored-argument warnings fire where they should", {
   )
 })
 
+test_that("show_columns is shown in the order it is written, deff last", {
+  skip_on_cran()
+  d <- .svyc_design("clus1")
+  x <- table_continuous_svy(
+    d,
+    select = api00,
+    show_columns = c("med", "se", "m", "se", "ci", "n"),
+    deff = TRUE
+  )
+  expect_identical(
+    attr(x, "show_columns"),
+    c("med", "se", "m", "ci", "n", "deff")
+  )
+  expect_identical(
+    names(as_structured(x)$col_meta),
+    c("Mdn", "SE", "M", "95% CI LL", "95% CI UL", "n", "DEff")
+  )
+  # Written, `deff` keeps its place.
+  y <- table_continuous_svy(
+    d,
+    select = api00,
+    show_columns = c("deff", "m"),
+    deff = TRUE
+  )
+  expect_identical(attr(y, "show_columns"), c("deff", "m"))
+  expect_error(
+    table_continuous_svy(d, select = api00, show_columns = c("ci", "m")),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("`regex` and `exclude` select the way the sibling does", {
   skip_on_cran()
   d <- .svyc_design("clus1")

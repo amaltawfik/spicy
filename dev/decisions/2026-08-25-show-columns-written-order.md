@@ -1,8 +1,17 @@
 # ADR 2026-08-25 — `show_columns` : honorer l'ordre d'écriture des jetons ?
 
-**Statut** : proposé (constat du 2026-08-25, promu en ADR le 2026-09-06). À arbitrer avant implémentation.
+**Statut** : accepté (décidé le 2026-11-13). Constat du 2026-08-25, promu en ADR le 2026-09-06.
 
 Comportement documenté, donc choix de design et non bug : la doc publiée dit que les colonnes suivent l'ordre canonique quel que soit l'ordre écrit. Le besoin, les options et l'impact sont ci-dessous, tels que consignés depuis le projet HESAV Healthy Campus.
+
+## Décision (2026-11-13)
+
+- Un vecteur `show_columns` est rendu dans l'ordre où il est écrit. Un jeton répété compte une fois, à sa première place (il était refusé jusque-là).
+- La forme liste par variable garde l'ordre canonique, qui reste aussi celui de l'affichage par défaut.
+- Un intervalle vient après la statistique qu'il borne : `ci` après `m`, `med_ci` après `med` ou `med_iqr`. Écrit avant, c'est une erreur classée `spicy_invalid_input`, jamais un réordonnancement silencieux. Un intervalle sans sa statistique reste écarté avec un avertissement, comme avant.
+- La consigne disait « `ci` suit `m` immédiatement ». La règle retenue est « après » : prise au pied de la lettre, elle aurait refusé l'ordre de l'affichage par défaut (`M SD Min Max CI n`), la disposition APA `c("m", "sd", "ci")` et l'exemple de `?table_continuous_svy` (`c("m", "se", "ci", "deff", "n")`). Passer à « immédiatement » tient en une ligne de `.check_continuous_interval_order()`.
+- Même règle dans `table_continuous_svy()` (où `deff = TRUE` sans le jeton place la colonne en dernier) et `table_outcome()`. `table_continuous_lm()` n'a pas de `show_columns`. Les jetons `se` et `deff` ne sont pas des intervalles et se placent librement.
+- Tous les moteurs lisent l'ordre des jetons (console, tinytable, gt, flextable, Word, Excel, `as.data.frame()`, `as_structured()`). `tidy()` et la sortie longue ont un schéma fixe, indépendant de `show_columns`.
 
 ---
 

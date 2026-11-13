@@ -543,8 +543,9 @@ abort_outcome_by_renamed <- function() {
 #' # Choosing the statistics
 #'
 #' `show_columns` takes the same tokens as [table_continuous()], with
-#' the same meanings; see the *Choosing the statistics* section of
-#' `?table_continuous` for the vocabulary. Only the character-vector
+#' the same meanings, and shows them in the order they are written; see
+#' the *Choosing the statistics* section of `?table_continuous` for the
+#' vocabulary and the place of an interval. Only the character-vector
 #' form is accepted here: there is one outcome, so a per-variable list
 #' would name nothing.
 #'

@@ -5350,10 +5350,6 @@ test_that("unknown show_columns tokens error with the valid list", {
     class = "spicy_invalid_input"
   )
   expect_error(
-    table_continuous(sleep, select = extra, show_columns = c("m", "m")),
-    class = "spicy_invalid_input"
-  )
-  expect_error(
     table_continuous(sleep, select = extra, show_columns = character(0)),
     class = "spicy_invalid_input"
   )
@@ -5365,6 +5361,103 @@ test_that("unknown show_columns tokens error with the valid list", {
     ),
     class = "spicy_invalid_input"
   )
+})
+
+test_that("a show_columns vector is shown in the order it is written", {
+  skip_on_cran()
+  stats_of <- function(x) {
+    setdiff(names(as.data.frame(x)), c("variable", "label"))
+  }
+  x <- table_continuous(
+    sleep,
+    select = extra,
+    show_columns = c("med", "q1", "q3", "m", "sd", "n")
+  )
+  expect_identical(
+    attr(x, "show_columns"),
+    c("med", "q1", "q3", "m", "sd", "n")
+  )
+  expect_identical(stats_of(x), c("Mdn", "Q1", "Q3", "M", "SD", "n"))
+  # A repeated token counts once, where it first appears.
+  y <- table_continuous(
+    sleep,
+    select = extra,
+    show_columns = c("med", "m", "med", "n", "m")
+  )
+  expect_identical(stats_of(y), c("Mdn", "M", "n"))
+  # An interval after its statistic, wherever it is written.
+  z <- table_continuous(
+    sleep,
+    select = extra,
+    show_columns = c("m", "sd", "ci", "med", "n", "med_ci")
+  )
+  expect_identical(
+    stats_of(z),
+    c(
+      "M",
+      "SD",
+      "95% CI LL",
+      "95% CI UL",
+      "Mdn",
+      "n",
+      "Mdn 95% CI LL",
+      "Mdn 95% CI UL"
+    )
+  )
+  # The per-variable list form keeps the canonical order.
+  w <- table_continuous(
+    sleep,
+    select = extra,
+    show_columns = list(extra = c("med", "n", "m", "m"))
+  )
+  expect_identical(stats_of(w), c("M", "Mdn", "n"))
+})
+
+test_that("an interval written before its statistic is an error", {
+  skip_on_cran()
+  for (sc in list(
+    c("ci", "m"),
+    c("sd", "ci", "n", "m"),
+    c("med_ci", "med"),
+    c("med_ci", "med_iqr", "n")
+  )) {
+    expect_error(
+      table_continuous(sleep, select = extra, show_columns = sc),
+      class = "spicy_invalid_input"
+    )
+  }
+  # Without its statistic the interval is dropped with a warning, as before.
+  expect_warning(
+    table_continuous(sleep, select = extra, show_columns = c("ci", "sd")),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("every engine follows the written order of show_columns", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("gt")
+  sc <- c("med", "m", "ci", "sd", "n")
+  keys <- c("Mdn", "M", "95% CI LL", "95% CI UL", "SD", "n")
+  short <- c("Mdn", "M", "LL", "UL", "SD", "n")
+  x <- table_continuous(sleep, select = extra, by = group, show_columns = sc)
+  expect_identical(names(as_structured(x)$col_meta)[1:6], keys)
+  ft <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    show_columns = sc,
+    output = "flextable"
+  )
+  expect_identical(ft$col_keys[3:8], short)
+  gt_tbl <- table_continuous(
+    sleep,
+    select = extra,
+    by = group,
+    show_columns = sc,
+    output = "gt"
+  )
+  expect_identical(names(gt_tbl[["_data"]])[3:8], short)
 })
 
 test_that("a variable shown as a median is tested as one, per variable", {

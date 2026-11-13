@@ -411,6 +411,11 @@ additions and one removal:
 binomial sign test on independent observations, which a clustered
 or stratified sample is not.
 }
+
+The columns follow the order the tokens are written in, with the
+rules of the sibling: a repeated token counts once, and \code{"ci"} comes
+after \code{"m"}. Under \code{deff = TRUE}, a \code{"deff"} left unwritten comes
+last.
 }
 
 \section{Quantiles}{
