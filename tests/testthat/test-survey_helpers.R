@@ -333,6 +333,40 @@ test_that("`.design_meta()` reads a replicate design", {
   expect_equal(m$sum_weights, 6194.0003242492676, tolerance = 1e-12)
 })
 
+test_that("`.design_meta()` counts the rows of non-zero weight, as survey does", {
+  skip_if_not_installed("survey", "4.5")
+  data(api, package = "survey", envir = environment())
+  # survey's convention (`unwtd.count()`, `degf()`): a row at weight zero is
+  # out of the sample. `n_rows` keeps every row for the scheme.
+  d <- apistrat
+  d$pw[c(1L, 2L, 150L)] <- 0
+  zero <- survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = d,
+    fpc = ~fpc
+  )
+  m <- .design_meta(zero)
+  expect_identical(m$n_obs, 197L)
+  expect_identical(m$n_rows, 200L)
+  expect_identical(
+    m$n_obs,
+    as.integer(survey::unwtd.count(~api00, zero)[[1L]])
+  )
+  # The rows of zero weight invent no stage of clusters.
+  expect_identical(
+    .design_scheme_parts(m),
+    .design_scheme_parts(.design_meta(.svy_fixture("strat")))
+  )
+  expect_identical(.design_meta(survey::as.svrepdesign(zero))$n_obs, 197L)
+  # `subset()` keeps the rows of a calibrated design at weight zero.
+  cal <- subset(.svy_fixture("cal"), stype != "H")
+  m <- .design_meta(cal)
+  expect_identical(m$n_rows, 183L)
+  expect_identical(m$n_obs, 169L)
+})
+
 # ---- the design's own columns ---------------------------------------------
 
 .svy_columns_data <- function() {

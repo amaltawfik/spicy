@@ -372,9 +372,10 @@
 #' an estimated population size. `%` is the estimated percentage
 #' *within* its column: without `by` it is the distribution of the
 #' variable in the population, with `by` the distribution inside that
-#' domain. The table note gives the sample size and the estimated
-#' population together, because neither alone tells the reader what
-#' they are looking at.
+#' domain. The table note gives the sample size (the rows of non-zero
+#' weight, which the `n` columns count, as `survey::unwtd.count()` does)
+#' and the estimated population together, because neither alone tells
+#' the reader what they are looking at.
 #'
 #' `proportion_ci = TRUE` adds the interval of each percentage.
 #' `ci_method` chooses among the seven `survey::svyciprop()` offers;

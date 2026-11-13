@@ -706,6 +706,47 @@ test_that("the sample-size sentence counts the analytic sample", {
   )
 })
 
+test_that("the N of the note leaves out the rows of zero weight, as n does", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  skip_if_not_installed("broom")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$pw[c(1L, 2L, 50L)] <- 0
+  zero <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  cal <- subset(
+    survey::calibrate(
+      survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc),
+      ~stype,
+      c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+    ),
+    stype != "H"
+  )
+  for (des in list(zero, survey::as.svrepdesign(zero), cal)) {
+    n <- as.integer(survey::unwtd.count(~api00, des)[[1L]])
+    expect_lt(n, nrow(des))
+    # No test: stats warns that a zero weight takes no part in the
+    # dispersion of the model behind it, which is not the point here.
+    tbl <- table_continuous_svy(
+      des,
+      select = api00,
+      by = awards,
+      p_value = FALSE
+    )
+    expect_identical(as.integer(sum(as.data.frame(tbl)$n)), n)
+    expect_true(startsWith(
+      attr(tbl, "note"),
+      sprintf("Note. N = %d (weighted ", n)
+    ))
+    # The mean stays survey's.
+    expect_equal(
+      broom::tidy(table_continuous_svy(des, select = api00))$estimate,
+      unname(stats::coef(survey::svymean(~api00, des))),
+      tolerance = 1e-12
+    )
+  }
+})
+
 test_that("rows with a missing `by` leave the table and the note says so", {
   skip_on_cran()
   skip_if_not_installed("survey")

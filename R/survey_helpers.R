@@ -851,7 +851,15 @@
 #   dclus1  strata FALSE             1 stage  15 PSU fpc  degf  14 n 183
 #   dclus2  strata FALSE             2 stages 40 PSU fpc  degf  39 n 126
 #   rclus1  JK1, 15 replicates, mse FALSE                degf  14
+#
+# `n_obs` counts the rows of non-zero weight, the observations of the
+# table: survey's own convention (`unwtd.count()`, `degf()`), under which
+# a row at weight zero -- one `subset()` keeps on a calibrated, post-
+# stratified or pps design -- is out of the sample. `n_rows` counts every
+# row of the design, for the scheme (`.design_scheme_parts()`).
 .design_meta <- function(design) {
+  w <- .design_weights(design)
+  n_obs <- sum(!is.na(w) & w != 0)
   if (inherits(design, "svyrep.design")) {
     return(list(
       kind = "replicate",
@@ -859,8 +867,9 @@
       n_rep = ncol(as.matrix(design$repweights)),
       mse = isTRUE(design$mse),
       degf = .design_degf(design),
-      n_obs = nrow(design),
-      sum_weights = sum(.design_weights(design))
+      n_obs = n_obs,
+      n_rows = nrow(design),
+      sum_weights = sum(w)
     ))
   }
   has_strata <- isTRUE(design$has.strata)
@@ -880,8 +889,9 @@
     calibrated = !is.null(design$postStrata),
     pps = !isFALSE(design$pps),
     degf = .design_degf(design),
-    n_obs = nrow(design),
-    sum_weights = sum(.design_weights(design))
+    n_obs = n_obs,
+    n_rows = nrow(design),
+    sum_weights = sum(w)
   )
 }
 
@@ -1025,7 +1035,7 @@
   # One PSU per row is a design with no clustering at all: naming a
   # cluster variable there would invent a stage the user did not
   # declare.
-  clustered <- meta$n_psu < meta$n_obs
+  clustered <- meta$n_psu < meta$n_rows
   if (clustered) {
     parts <- c(parts, spicy_fmt("note_design_cluster", meta$psu_name))
   }

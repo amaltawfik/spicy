@@ -666,6 +666,14 @@ test_that("negative calibration weights keep the percentages and withhold the te
   expect_false(grepl("variance", note, fixed = TRUE))
   expect_match(note, "The group comparison is not reported", fixed = TRUE)
   expect_false(grepl("Item p-values", note, fixed = TRUE))
+  # On a subset, the rows `subset()` keeps at weight zero are not counted.
+  sub <- subset(neg, stype != "H")
+  expect_identical(sum(stats::weights(sub) != 0), 169L)
+  note <- suppressWarnings(attr(
+    table_battery_svy(sub, tidyselect::all_of(.BSVY_ITEMS), by = stype),
+    "note"
+  ))
+  expect_match(note, "gave 28 of 169 rows a negative weight", fixed = TRUE)
 })
 
 test_that("a calibrated subset counts the rows it kept, not those at weight zero", {

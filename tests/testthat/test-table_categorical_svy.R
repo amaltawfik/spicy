@@ -265,6 +265,50 @@ test_that("a calibrated domain counts only the rows it kept", {
   expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183)
 })
 
+test_that("the N of the note counts the rows the n columns count", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  # survey's rule (`unwtd.count()`, `degf()`): a row of zero weight is out
+  # of the sample. The N of the note said `nrow(design)`, which counted the
+  # zero weights of the data and the rows `subset()` keeps at weight zero.
+  data(api, package = "survey", envir = environment())
+  a <- apiclus1
+  a$pw0 <- a$pw
+  a$pw0[c(1L, 2L, 50L)] <- 0
+  clus <- survey::svydesign(id = ~dnum, weights = ~pw, data = a, fpc = ~fpc)
+  zero <- survey::svydesign(id = ~dnum, weights = ~pw0, data = a, fpc = ~fpc)
+  pop <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+  totals <- c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+  designs <- list(
+    zero = zero,
+    replicate = survey::as.svrepdesign(zero),
+    post_stratified = subset(
+      survey::postStratify(clus, ~stype, pop),
+      stype != "H"
+    ),
+    calibrated = subset(survey::calibrate(clus, ~stype, totals), stype != "H")
+  )
+  for (nm in names(designs)) {
+    des <- designs[[nm]]
+    n <- as.integer(survey::unwtd.count(~api00, des)[[1L]])
+    expect_lt(n, nrow(des))
+    tbl <- table_categorical_svy(des, sch.wide, by = awards)
+    df <- as.data.frame(tbl)
+    expect_identical(as.integer(sum(df[["Total n"]], na.rm = TRUE)), n)
+    expect_true(
+      startsWith(attr(tbl, "note"), sprintf("Note. N = %d (weighted ", n)),
+      info = nm
+    )
+    # The percentages stay survey's.
+    expect_equal(
+      df[["Total %"]][df$level %in% "Yes"],
+      100 * unname(stats::coef(survey::svymean(~sch.wide, des))[[2L]]),
+      tolerance = 1e-12,
+      info = nm
+    )
+  }
+})
+
 test_that("a negative calibration weight is counted, not dropped", {
   skip_on_cran()
   # The categorical half of the same predicate: under `> 0` the counts
