@@ -136,11 +136,12 @@ unclass_spicy_categorical_svy_table <- function(x) {
     key = "level",
     note = attr(x, "note", exact = TRUE)
   )
-  # The bounds of a proportion are printed columns: named as the console
-  # heads them ("Female 95% CI LL"), in the convention of the interval
-  # columns of the family -- the level in the name, the period whatever
-  # `decimal_mark`, English in every language. The compute frame and the
-  # typed view keep their keys ("Female % CI lower").
+  # The bounds of a proportion are printed columns: named by their group
+  # and their console header ("Female 95% CI LL"), in the convention of
+  # the interval columns of the family -- the level in the name, the
+  # period whatever `decimal_mark`, English in every language. The
+  # compute frame and the typed view keep their keys ("Female % CI
+  # lower").
   ci_pct <- .continuous_ci_pct(attr(x, "ci_level", exact = TRUE) %||% 0.95)
   for (b in attr(x, "blocks", exact = TRUE)) {
     keys <- c(.cat_key_prop_ci_ll(b), .cat_key_prop_ci_ul(b))

@@ -167,9 +167,8 @@
     function(e) .cat_svy_base_label(e$base, ci_level, decimal_mark),
     character(1)
   )
-  # Full headers, for the console and for a column that spans itself:
-  # the block name qualifies the statistic, the same template the
-  # sibling family uses.
+  # Full headers, for a column that spans itself: the block name
+  # qualifies the statistic, the same template the sibling family uses.
   full_labels <- vapply(
     seq_along(cols),
     function(i) {

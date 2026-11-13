@@ -1692,8 +1692,8 @@ table_multiresponse <- function(
 # The value columns, in display order. One entry per column: its frozen
 # `key`, its `token`, its `block` (the group, `NA` outside one) and the
 # group's header, and two headers -- `sub`, printed under the group's
-# spanner, and `full`, the header of a column with no spanner over it
-# (the console qualifies it with its group, "Female n").
+# spanner, and `full`, the header qualified with its group ("Female n"),
+# which the typed view records as the column's display label.
 .mr_columns <- function(blocks, margin_key, percent, show_statistic, show_p) {
   pct <- switch(
     percent,
