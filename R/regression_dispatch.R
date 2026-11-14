@@ -2525,6 +2525,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           character(1)
         )
         # One call per run of consecutive rows that share a format.
+        applied_fmt <- cell_fmt
         runs <- rle(cell_fmt)
         ends <- cumsum(runs$lengths)
         for (r in which(!is.na(runs$values))) {
@@ -2542,6 +2543,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       } else {
         # Default per-column numfmt
         default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
+        applied_fmt <- rep(default_fmt, nrow(body))
         wb <- openxlsx2::wb_add_numfmt(
           wb,
           sheet = excel_sheet,
@@ -2559,6 +2561,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
               suffix = ov$suffix
             )
             excel_row <- body_first_row + ov$row - 1L
+            applied_fmt[ov$row] <- ov_fmt
             wb <- openxlsx2::wb_add_numfmt(
               wb,
               sheet = excel_sheet,
@@ -2673,7 +2676,9 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
         cell_spec,
         c(body_first_row, j),
         format_spec$decimal_mark,
-        text_too = TRUE
+        text_too = TRUE,
+        old = col_vals,
+        old_fmt = applied_fmt
       )
       # A blank display leaves the cell as written above (an NA numeric
       # is already an empty cell).

@@ -95,7 +95,8 @@
   } else {
     x <- blank_to_na(x)
   }
-  openxlsx2::wb_add_data(wb, x = x, na.strings = NULL, ...)
+  # In place: `wb_add_data()` copies the whole workbook at every call.
+  wb$add_data(x = x, na = NULL, ...)
 }
 
 # Column-wise text of a data.frame plus its header row(s), in the
@@ -213,11 +214,32 @@
   list(text = text)
 }
 
-# Write the cells of a column that `.xl_cell()` makes numbers, in runs of
-# one format, from row `at[1]` of column `at[2]`; with `text_too`, its
-# text cells as well. `value` holds the typed values (NA where none),
-# `spec` one format or one per row.
-.xl_col <- function(wb, text, value, spec, at, mark = ".", text_too = FALSE) {
+# Write the cells of a column that `.xl_cell()` makes numbers, from row
+# `at[1]` of column `at[2]`; with `text_too`, its text cells as well.
+# `value` holds the typed values (NA where none), `spec` one format or one
+# per row. `old` is what the column of the sheet holds (by default
+# `text`, written before) and `old_fmt` the formats its cells carry: a
+# cell whose number and format are already right is left alone.
+#
+# Written in blocks, through the in-place methods of the workbook: each
+# `wb_add_*()` call copies the whole workbook, which made a sheet of a
+# few hundred cells take seconds. A block of values runs through the
+# empty cells between two numbers (an NA written with `na = NULL` leaves
+# an empty cell empty) and stops at a text cell; a format goes on all its
+# cells of the column at once, or, given an environment `formats`, is
+# kept there for one call per format over the whole body.
+.xl_col <- function(
+  wb,
+  text,
+  value,
+  spec,
+  at,
+  mark = ".",
+  text_too = FALSE,
+  old = text,
+  old_fmt = NULL,
+  formats = NULL
+) {
   n <- length(text)
   value <- rep_len(as.numeric(value %||% NA_real_), n)
   if (is.null(spec) || !is.null(spec$decimals)) {
@@ -227,14 +249,30 @@
     .xl_cell(text[[i]], value[[i]], spec[[i]], mark)
   })
   fmt <- vapply(cells, function(x) x$numfmt %||% NA_character_, "")
-  runs <- rle(fmt)
-  end <- cumsum(runs$lengths)
-  for (r in which(!is.na(runs$values))) {
-    rows <- seq.int(end[[r]] - runs$lengths[[r]] + 1L, end[[r]])
+  x <- vapply(cells, function(x) x$value %||% NA_real_, numeric(1))
+  num <- !is.na(fmt)
+  empty <- is.na(old) | (is.character(old) & !nzchar(old))
+  same <- num & is.numeric(old) & !empty & x == old
+  put <- num & !same
+  # Rows a block may cover: the numbers, and the empty cells left empty.
+  open <- num | (empty & vapply(cells, is.null, NA))
+  block <- cumsum(!open)
+  for (b in unique(block[put])) {
+    rows <- which(block == b & open)
+    rows <- seq.int(min(rows[put[rows]]), max(rows[put[rows]]))
     dims <- openxlsx2::wb_dims(rows = at[[1L]] + rows - 1L, cols = at[[2L]])
-    x <- vapply(cells[rows], `[[`, numeric(1), "value")
-    wb <- openxlsx2::wb_add_data(wb, x = x, dims = dims)
-    wb <- openxlsx2::wb_add_numfmt(wb, dims = dims, numfmt = fmt[[rows[[1L]]]])
+    wb$add_data(x = x[rows], dims = dims, na = NULL)
+  }
+  old_fmt <- rep_len(old_fmt %||% NA_character_, n)
+  set <- num & (is.na(old_fmt) | fmt != old_fmt)
+  for (code in unique(fmt[set])) {
+    rows <- which(set & fmt == code)
+    dims <- openxlsx2::wb_dims(rows = at[[1L]] + rows - 1L, cols = at[[2L]])
+    if (is.environment(formats)) {
+      formats[[code]] <- c(formats[[code]], dims)
+    } else {
+      wb$add_numfmt(dims = dims, numfmt = code)
+    }
   }
   is_text <- !vapply(cells, function(x) is.null(x$text), NA)
   for (i in which(text_too & is_text)) {
@@ -247,8 +285,19 @@
 # The number cells of a descriptive body already in the sheet as text,
 # from row `row`: each column after the `stub` ones, its typed values and
 # format from the structured view (`keys` the frozen keys of `text_df`).
-.xl_body <- function(wb, text_df, keys, structured, row, stub, mark = ".") {
+# `old_df`, when given, is what the sheet holds instead of `text_df`.
+.xl_body <- function(
+  wb,
+  text_df,
+  keys,
+  structured,
+  row,
+  stub,
+  mark = ".",
+  old_df = text_df
+) {
   body <- structured$body
+  formats <- new.env(parent = emptyenv())
   for (j in setdiff(seq_along(text_df), seq_len(stub))) {
     meta <- structured$col_meta[[keys[[j]]]]
     value <- if (NROW(body) == nrow(text_df)) body[[keys[[j]]]]
@@ -258,7 +307,13 @@
     if (!is.numeric(value)) {
       value <- NULL
     }
-    wb <- .xl_col(wb, as.character(text_df[[j]]), value, spec, c(row, j), mark)
+    text <- as.character(text_df[[j]])
+    old <- old_df[[j]]
+    at <- c(row, j)
+    wb <- .xl_col(wb, text, value, spec, at, mark, old = old, formats = formats)
+  }
+  for (code in names(formats)) {
+    wb$add_numfmt(dims = paste(formats[[code]], collapse = ","), numfmt = code)
   }
   wb
 }

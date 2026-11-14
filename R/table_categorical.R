@@ -3786,7 +3786,8 @@ table_categorical <- function(
         structured,
         first_body_row,
         1L,
-        decimal_mark
+        decimal_mark,
+        old_df = body_xl
       )
       # Disclosure note (what left the table) two rows below the body,
       # one worksheet row per line -- the placement the regression
@@ -6178,7 +6179,8 @@ table_categorical <- function(
       structured,
       first_body_row,
       1L,
-      decimal_mark
+      decimal_mark,
+      old_df = body_xl
     )
     # The note below the table -- the same text, in the same order, as
     # the console footer, with the definitions of the bound columns.

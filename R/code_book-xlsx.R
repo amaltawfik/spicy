@@ -84,7 +84,7 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
     # cells the formats below reach.
     for (j in fixed) {
       text <- replace(shown[[j]], !formatted, NA)
-      wb <- .xl_col(wb, text, df[[j]], spec, c(2L, j))
+      wb <- .xl_col(wb, text, df[[j]], spec, c(2L, j), old = df[[j]])
     }
     wb <- openxlsx2::wb_add_fill(
       wb,

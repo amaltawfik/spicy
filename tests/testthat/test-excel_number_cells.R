@@ -239,3 +239,52 @@ test_that("the regression sheets write each one-number cell as a number", {
     }
   }
 })
+
+# Each wb_add_*() call of openxlsx2 copies the whole workbook: a sheet
+# written with one such call per cell or per run of cells took seconds.
+# The calls that remain are per column or per sheet, never per row, so a
+# longer table makes no more of them.
+test_that("the Excel export does not copy the workbook per row", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  calls <- 0L
+  real_data <- openxlsx2::wb_add_data
+  real_fmt <- openxlsx2::wb_add_numfmt
+  local_mocked_bindings(
+    wb_add_data = function(...) {
+      calls <<- calls + 1L
+      real_data(...)
+    },
+    wb_add_numfmt = function(...) {
+      calls <<- calls + 1L
+      real_fmt(...)
+    },
+    .package = "openxlsx2"
+  )
+  count <- function(f) {
+    calls <<- 0L
+    path <- tempfile(fileext = ".xlsx")
+    on.exit(unlink(path), add = TRUE)
+    suppressWarnings(f(output = "excel", excel_path = path))
+    calls
+  }
+  d <- as.data.frame(sochealth)
+  expect_identical(
+    count(function(...) table_continuous(d, c(bmi, age), by = sex, ...)),
+    count(function(...) {
+      table_continuous(d, c(bmi, age, wellbeing_score, income), by = sex, ...)
+    })
+  )
+  expect_identical(
+    count(function(...) table_categorical(d, c(smoking, dentist_12m), by = sex, ...)),
+    count(function(...) {
+      table_categorical(d, c(smoking, education, region), by = sex, ...)
+    })
+  )
+  expect_identical(
+    count(function(...) table_regression(lm(bmi ~ age + sex, data = d), ...)),
+    count(function(...) {
+      table_regression(lm(bmi ~ age + sex + education + region, data = d), ...)
+    })
+  )
+})
