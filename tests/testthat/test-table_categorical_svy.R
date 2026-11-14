@@ -1689,11 +1689,13 @@ test_that("broom tidy() and glance() read a design categorical table", {
   expect_identical(gl$test_type, "F")
   expect_identical(gl$nobs, 183)
   expect_equal(gl$weighted_nobs, sum(stats::weights(d)), tolerance = 1e-12)
-  # A table that lost the weighted count of its variables falls back on
-  # the design's.
+  # A table that lost the counts of its variables reads its observed
+  # counts, and falls back on the design's weighted count.
   old <- tbl
-  attr(old, "weighted_nobs") <- NULL
+  attr(old, "glance_counts") <- NULL
+  expect_identical(broom::glance(old)$nobs, gl$nobs)
   expect_identical(broom::glance(old)$weighted_nobs, gl$weighted_nobs)
+  expect_true(is.na(broom::glance(old)$weighted_nobs_valid))
 
   # One-way: one block, and it is not a margin of anything.
   one_way <- table_categorical_svy(d, select = stype)
@@ -3410,6 +3412,79 @@ test_that("glance() counts the rows with an observed value apart", {
   expect_identical(
     names(g)[grepl("nobs", names(g))],
     c("nobs", "nobs_valid", "weighted_nobs", "weighted_nobs_valid")
+  )
+})
+
+test_that("glance() counts are the bases of the estimates, whatever `levels_keep`", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  skip_if_not_installed("broom")
+  dat <- .svycat_pb_data()
+  dat$pw[1:4] <- 0
+  des <- survey::svydesign(id = ~1, strata = ~stype, weights = ~pw, data = dat)
+  w <- stats::weights(des)
+  obs <- !is.na(dat$awards)
+  tab <- function(by, ...) {
+    if (by) {
+      table_categorical_svy(des, awards, by = sch.wide, ...)
+    } else {
+      table_categorical_svy(des, awards, ...)
+    }
+  }
+  for (keep in list(NULL, "Yes", "(Missing)", c("Yes", "(Missing)"))) {
+    for (dn in c(FALSE, TRUE)) {
+      # The row of missing values is no level under `drop_na = TRUE`.
+      if (dn && "(Missing)" %in% keep) {
+        next
+      }
+      for (pb in c("valid", "total")) {
+        for (by in c(FALSE, TRUE)) {
+          info <- paste(c(keep, dn, pb, by), collapse = " ")
+          tbl <- suppressWarnings(tab(
+            by,
+            drop_na = dn,
+            percent_base = pb,
+            levels_keep = keep
+          ))
+          g <- broom::glance(tbl)
+          rows <- w != 0 & (!dn | (obs & (!by | !is.na(dat$sch.wide))))
+          expect_equal(g$nobs, sum(rows), info = info)
+          expect_equal(g$nobs_valid, sum(rows & obs), info = info)
+          expect_equal(g$weighted_nobs, sum(w[rows]), tolerance = 1e-12)
+          expect_equal(g$weighted_nobs_valid, sum(w[rows & obs]))
+          # Each row shown: its estimated total over the base is its
+          # estimated proportion, on the margin under `by`; the row of
+          # missing values has one under "total" only.
+          td <- broom::tidy(tbl)
+          role <- if (pb == "total") c("level", "missing") else "level"
+          td <- td[td$.row_role %in% role & (!by | td$total), ]
+          tot <- c(
+            stats::coef(survey::svytotal(
+              ~awards,
+              subset(des, rows),
+              na.rm = TRUE
+            )),
+            `awards(Missing)` = sum(w[rows & !obs])
+          )
+          base <- if (pb == "valid") g$weighted_nobs_valid else g$weighted_nobs
+          expect_equal(
+            td$proportion,
+            unname(tot[paste0("awards", td$level)])[seq_len(nrow(td))] / base,
+            tolerance = 1e-10,
+            info = info
+          )
+        }
+      }
+    }
+  }
+  # survey's own proportion on the observed values, under "valid".
+  td <- broom::tidy(table_categorical_svy(des, awards, levels_keep = "Yes"))
+  expect_equal(
+    td$proportion[td$level == "Yes"],
+    unname(stats::coef(survey::svymean(~awards, des, na.rm = TRUE))[[
+      "awardsYes"
+    ]]),
+    tolerance = 1e-10
   )
 })
 

@@ -550,13 +550,21 @@
   list(shown = shown, hidden = setdiff(empty, shown))
 }
 
-# The rows the displayed cells of one variable count, for the `nobs` of
-# glance() under `weights`: those of a level the table shows (`lv_use`, the
-# row of missing values included) whose weight is neither missing nor zero,
-# the rule of the N of the note (`.weighted_rows_in()`). Without the row of
-# missing values in `lv_use`, the rows of `nobs_valid`.
-.cat_nobs_rows <- function(x, w, lv_use) {
-  sum(.weighted_rows_in(w, length(x)) & as.character(x) %in% lv_use)
+# The counts glance() reports for one variable, whatever `levels_keep`
+# shows: its rows in the table (`nobs`, the base of the percentages under
+# `percent_base = "total"`) and those with an observed value (`nobs_valid`,
+# the base under "valid"), a row whose weight is missing or zero left out,
+# the rule of the N of the note (`.weighted_rows_in()`). `missing` is the
+# label of the row of missing values, NULL without one; `den` the two
+# weighted denominators of the percentages, NULL without `weights`.
+.cat_glance_counts <- function(x, w, missing, den) {
+  rows <- .weighted_rows_in(w, length(x)) & !is.na(x)
+  c(
+    nobs = sum(rows),
+    nobs_valid = sum(rows & !as.character(x) %in% missing),
+    weighted_nobs = if (is.null(den)) NA_real_ else den[[1L]],
+    weighted_nobs_valid = if (is.null(den)) NA_real_ else den[[2L]]
+  )
 }
 
 # Resolve the user-supplied `assoc_measure` into a named character vector
@@ -2850,8 +2858,7 @@ table_categorical <- function(
     rows <- list()
     rr <- 1L
     all_level_order <- character(0)
-    nobs_rows <- integer(0)
-    nobs_valid_rows <- integer(0)
+    glance_counts <- list()
 
     for (i in seq_along(select_names)) {
       x_raw <- data[[select_names[i]]]
@@ -3001,11 +3008,17 @@ table_categorical <- function(
         .cat_total_row_guard(lv_use, select_names[i], total_label)
       }
       all_level_order <- c(all_level_order, lv_use)
-      nobs_rows[[select_names[i]]] <- .cat_nobs_rows(x, w, lv_use)
-      nobs_valid_rows[[select_names[i]]] <- .cat_nobs_rows(
+      # The bases of the percentages above, every level counted.
+      miss_lv <- if (x_has_na) missing_label
+      n_den <- suppressWarnings(as.numeric(ft$n))
+      in_den <- !is.na(vals)
+      glance_counts[[select_names[i]]] <- .cat_glance_counts(
         x,
         w,
-        setdiff(lv_use, if (x_has_na) missing_label)
+        miss_lv,
+        if (!is.null(w)) {
+          c(sum(n_den[in_den]), sum(n_den[in_den & !vals %in% miss_lv]))
+        }
       )
       if (valid_base) {
         blank_pct_vars <- c(blank_pct_vars, select_names[i])
@@ -3264,11 +3277,8 @@ table_categorical <- function(
       attr(out, "percent_base") <- percent_base
       # The long frame of `output = "long"`, for tidy() and glance().
       attr(out, "long_data") <- with_keys(with_label(long_raw))
-      # Under `weights`, the rows each variable counts, for glance().
-      if (!is.null(weights_vec)) {
-        attr(out, "nobs") <- nobs_rows
-        attr(out, "nobs_valid") <- nobs_valid_rows
-      }
+      # The counts of each variable, for glance().
+      attr(out, "glance_counts") <- do.call(rbind, glance_counts)
       attr(out, "structured") <- structured
       # See `.style_stamp()`: the style levers with no argument have to
       # outlive this call, because `inline()` re-formats the typed body
@@ -3934,8 +3944,7 @@ table_categorical <- function(
   rr <- 1L
   measure_col <- NULL
   all_level_order <- character(0)
-  nobs_rows <- integer(0)
-  nobs_valid_rows <- integer(0)
+  glance_counts <- list()
   # The test key of each variable shown (NA where none ran), and whether
   # Yates' correction reached it; read by the note after the loop.
   test_types <- character(0)
@@ -4402,12 +4411,6 @@ table_categorical <- function(
       .cat_total_row_guard(lv_use, select_names[i], total_label)
     }
     all_level_order <- c(all_level_order, lv_use)
-    nobs_rows[[select_names[i]]] <- .cat_nobs_rows(x, w, lv_use)
-    nobs_valid_rows[[select_names[i]]] <- .cat_nobs_rows(
-      x,
-      w,
-      setdiff(lv_use, if (x_has_na) missing_label)
-    )
     # For the note: the test of each variable the table shows, and
     # whether Yates' correction reached it (cross_tab() applies it to a
     # tested 2 x 2 table only).
@@ -4444,6 +4447,15 @@ table_categorical <- function(
     obs_count <- function(gr) {
       col_count(gr, margin_rows_n) - col_count(gr, miss_at)
     }
+    # The bases of the margin, every level counted, for glance().
+    glance_counts[[select_names[i]]] <- .cat_glance_counts(
+      x,
+      w,
+      if (x_has_na) missing_label,
+      if (!is.null(w)) {
+        c(col_count(margin_key, margin_rows_n), obs_count(margin_key))
+      }
+    )
     if (valid_base && identical(percent, "column")) {
       blank_pct_vars <- c(blank_pct_vars, select_names[i])
     }
@@ -5237,11 +5249,8 @@ table_categorical <- function(
       long_data$.smd_type <- smd_type_rows
     }
     attr(out, "long_data") <- long_data
-    # Under `weights`, the rows each variable counts, for glance().
-    if (!is.null(weights_vec)) {
-      attr(out, "nobs") <- nobs_rows
-      attr(out, "nobs_valid") <- nobs_valid_rows
-    }
+    # The counts of each variable, for glance().
+    attr(out, "glance_counts") <- do.call(rbind, glance_counts)
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "abbrev_note") <- abbrev_note
     attr(out, "structured") <- structured

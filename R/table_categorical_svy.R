@@ -1049,8 +1049,7 @@ table_categorical_svy <- function(
   real_groups <- setdiff(group_keys, missing_group_label)
   w_design <- .design_weights(design)
   in_sample <- !is.na(w_design) & w_design != 0
-  weighted_nobs <- numeric(0)
-  weighted_nobs_valid <- numeric(0)
+  glance_counts <- list()
   no_data_groups <- list()
   no_data_vars <- character(0)
   # survey's errors, each raised once after the table is built, and
@@ -1162,13 +1161,18 @@ table_categorical_svy <- function(
     values <- rep(NA_character_, length(x_f))
     values[!nd_rows] <- lv$values
     design$variables[[nm]] <- factor(values, levels = levels_all)
-    # The weighted count of the rows the variable's displayed cells count,
-    # for the `weighted_nobs` of glance(), and without the `(Missing)` row,
-    # for its `weighted_nobs_valid`.
-    weighted_nobs[[nm]] <- sum(w_design[in_sample & values %in% levels_i])
-    weighted_nobs_valid[[nm]] <- sum(w_design[
-      in_sample & values %in% setdiff(levels_i, lv$missing_label)
-    ])
+    # The counts of the variable for glance(), every level counted whatever
+    # `levels_keep` shows: its rows in the sample and the sum of their
+    # weights, the bases under `percent_base = "total"`, and those with an
+    # observed value, the bases under "valid".
+    rows_i <- in_sample & !is.na(values)
+    valid_i <- rows_i & !values %in% lv$missing_label
+    glance_counts[[nm]] <- c(
+      nobs = sum(rows_i),
+      nobs_valid = sum(valid_i),
+      weighted_nobs = sum(w_design[rows_i]),
+      weighted_nobs_valid = sum(w_design[valid_i])
+    )
     for (b in blocks) {
       if (b %in% nd_i) {
         next
@@ -1404,8 +1408,7 @@ table_categorical_svy <- function(
   attr(result, "title") <- .categorical_svy_title(by_note)
   attr(result, "note") <- table_note
   attr(result, "design_meta") <- meta
-  attr(result, "weighted_nobs") <- weighted_nobs
-  attr(result, "weighted_nobs_valid") <- weighted_nobs_valid
+  attr(result, "glance_counts") <- do.call(rbind, glance_counts)
   attr(result, "chisq_statistic") <- chisq_statistic
   class(result) <- c("spicy_categorical_svy_table", "spicy_table", "data.frame")
 

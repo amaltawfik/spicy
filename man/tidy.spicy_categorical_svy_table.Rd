@@ -40,16 +40,19 @@ p-value is what \code{glance()} is for.
 \code{glance()} returns one row per variable: \code{variable}, \code{label},
 \code{n_levels}, \code{test_type} (the \code{svychisq()} statistic of the test,
 \code{chisq_statistic}; \code{NA} where no test ran), \code{p.value}, \code{degf} (the
-design's own), \code{nobs} (the observed rows of the variable, a row of zero
-weight left out), \code{nobs_valid} (those of them with an observed value),
-\code{weighted_nobs} (the sum of the sampling weights of the rows of \code{nobs})
-and \code{weighted_nobs_valid} (that of the rows of \code{nobs_valid}).
-
-Under \code{drop_na = FALSE}, \code{nobs} and \code{weighted_nobs} count the rows of
-the \code{(Missing)} row, whatever \code{percent_base}. \code{nobs_valid} and
-\code{weighted_nobs_valid} leave them out: they count the base of the
-percentages under \code{percent_base = "valid"} unless \code{levels_keep} hides a
-level. Under \code{drop_na = TRUE}, they equal \code{nobs} and \code{weighted_nobs}.
+design's own), \code{nobs}, \code{nobs_valid}, \code{weighted_nobs} and
+\code{weighted_nobs_valid}. The four counts leave out the rows of zero
+weight, and \code{levels_keep} changes none of them:
+\itemize{
+\item \code{nobs} counts the rows of the variable in the table, unweighted, the
+base of the estimates under \code{percent_base = "total"}: every row under
+\code{drop_na = FALSE}, those of the \code{(Missing)} row included, and the
+observed values under \code{drop_na = TRUE};
+\item \code{nobs_valid} counts the rows with an observed value, the base under
+\code{percent_base = "valid"}; it is \code{nobs} under \code{drop_na = TRUE};
+\item \code{weighted_nobs} and \code{weighted_nobs_valid} are the sums of the
+sampling weights of the same rows.
+}
 
 \code{n_levels} counts the levels the TABLE displays, so a \code{(Missing)}
 display level counts; the test behind \code{p.value} runs on the complete

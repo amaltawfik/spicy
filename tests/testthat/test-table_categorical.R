@@ -7817,10 +7817,15 @@ test_that("glance() counts rows under weights, and sums their weights apart", {
     # The rows of the unweighted table of the rows of positive weight.
     gu <- broom::glance(q(do.call(table_categorical, c(list(kept), args))))
     expect_identical(gw$nobs, gu$nobs)
-    # Their weighted count, the sum of the weighted counts of the cells.
+    # Their weighted count, the sum of the weighted counts of the cells,
+    # those `levels_keep` hides included.
     lw <- q(do.call(
       table_categorical,
-      c(list(d), args, list(weights = quote(w), output = "long"))
+      c(
+        list(d),
+        args[names(args) != "levels_keep"],
+        list(weights = quote(w), output = "long")
+      )
     ))
     if (!is.null(lw$total)) {
       lw <- lw[!lw$total, ]
@@ -7860,16 +7865,13 @@ test_that("glance() counts the rows with an observed value in `nobs_valid`", {
   g <- broom::glance(q(table_categorical(kept, x, by = g_na, drop_na = TRUE)))
   expect_identical(g$nobs, sum(obs & !is.na(kept$g_na)))
   expect_identical(g$nobs_valid, g$nobs)
-  # The levels `levels_keep` shows, the `(Missing)` row out.
+  # `levels_keep` changes what the table shows, not what it counts.
   g <- broom::glance(table_categorical(
     kept,
     x,
     levels_keep = c("yes", "(Missing)")
   ))
-  expect_identical(
-    c(g$nobs, g$nobs_valid),
-    c(sum(kept$x %in% "yes" | !obs), sum(kept$x %in% "yes"))
-  )
+  expect_identical(c(g$nobs, g$nobs_valid), c(nrow(kept), sum(obs)))
   # Under `weights`, rows of positive weight, and their weights.
   g <- broom::glance(q(table_categorical(d, c(x, y), by = g_na, weights = w)))
   expect_identical(g$nobs_valid, c(sum(obs), nrow(kept)))
@@ -7878,6 +7880,84 @@ test_that("glance() counts the rows with an observed value in `nobs_valid`", {
   expect_identical(
     names(g)[grepl("nobs", names(g))],
     c("nobs", "nobs_valid", "weighted_nobs", "weighted_nobs_valid")
+  )
+})
+
+test_that("glance() counts are the bases of the percentages, whatever `levels_keep`", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  d <- .ss_data()
+  d$w[c(1L, 2L, 30L)] <- 0
+  d$w[5L] <- NA
+  kept <- d[!is.na(d$w) & d$w > 0, ]
+  obs <- !is.na(kept$x)
+  q <- function(e) suppressWarnings(e)
+  for (keep in list(NULL, "yes", "(Missing)", c("yes", "(Missing)"))) {
+    for (dn in c(FALSE, TRUE)) {
+      # Without missing values shown, `"(Missing)"` alone keeps no level.
+      if (dn && identical(keep, "(Missing)")) {
+        next
+      }
+      for (pb in c("valid", "total")) {
+        for (by in c(FALSE, TRUE)) {
+          for (wt in c(FALSE, TRUE)) {
+            args <- list(
+              if (wt) d else kept,
+              quote(x),
+              percent_base = pb,
+              drop_na = dn,
+              levels_keep = keep
+            )
+            if (by) {
+              args$by <- quote(g_na)
+            }
+            if (wt) {
+              args$weights <- quote(w)
+            }
+            info <- paste(c(keep, dn, pb, by, wt), collapse = " ")
+            tbl <- q(do.call(table_categorical, args))
+            g <- broom::glance(tbl)
+            # Direct counts: the rows the table holds, those observed.
+            rows <- if (dn) {
+              obs & (!by | !is.na(kept$g_na))
+            } else {
+              rep(TRUE, nrow(kept))
+            }
+            expect_identical(g$nobs, sum(rows), info = info)
+            expect_identical(g$nobs_valid, sum(rows & obs), info = info)
+            if (wt) {
+              expect_equal(g$weighted_nobs, sum(kept$w[rows]), info = info)
+              expect_equal(
+                g$weighted_nobs_valid,
+                sum(kept$w[rows & obs]),
+                info = info
+              )
+            }
+            # Each level shown: its count over the base is its proportion,
+            # in the unit of the count (weighted under `weights`), on the
+            # margin under `by`.
+            td <- broom::tidy(tbl)
+            td <- td[!td$.row_role %in% "missing" | pb == "total", ]
+            if (by) {
+              td <- td[td$total, ]
+            }
+            base <- if (wt) {
+              if (pb == "valid") g$weighted_nobs_valid else g$weighted_nobs
+            } else {
+              if (pb == "valid") g$nobs_valid else g$nobs
+            }
+            expect_equal(td$n / base, td$proportion, info = info)
+          }
+        }
+      }
+    }
+  }
+  # An object without its counts reads the levels its long frame shows.
+  tbl <- table_categorical(kept, x)
+  attr(tbl, "glance_counts") <- NULL
+  expect_identical(
+    c(broom::glance(tbl)$nobs, broom::glance(tbl)$nobs_valid),
+    c(nrow(kept), sum(obs))
   )
 })
 

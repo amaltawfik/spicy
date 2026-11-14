@@ -137,7 +137,9 @@
   weights of each variable's own rows, no longer those of the design.
   Both tables gain `nobs_valid` and `weighted_nobs_valid`, the rows with
   an observed value and their weights: the `(Missing)` row that `nobs`
-  and `weighted_nobs` count is left out.
+  and `weighted_nobs` count is left out. `levels_keep` no longer changes
+  these counts: they are the bases of the percentages, where `nobs`
+  counted only the levels shown.
 
 * `table_categorical_svy()`, `table_continuous_svy()`: the sample size
   of the note leaves out the rows of zero weight, among them the rows

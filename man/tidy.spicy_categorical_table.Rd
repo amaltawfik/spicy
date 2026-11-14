@@ -53,18 +53,25 @@ the standardized mean difference: \code{variable}, \code{label}, \code{test_type
 N-1, \code{NA} for an exact test), \code{df}, \code{p.value}, \code{es_type} (the key of
 the measure the variable carries: \code{"phi"}, \code{"cramer_v"}, ...),
 \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value},
-\code{nobs} (the observations of the variable, the margin and the Total
-row not counted twice: rows, never weights, a row of zero weight left
-out), \code{nobs_valid} (those of them with an observed value),
-\code{weighted_nobs} (their weighted count, \code{NA} without \code{weights}) and
-\code{weighted_nobs_valid} (the weighted count of the rows of
-\code{nobs_valid}). Under \code{drop_na = FALSE}, \code{nobs} and \code{weighted_nobs}
-count the rows of the \code{(Missing)} row, whatever \code{percent_base};
-\code{nobs_valid} leaves them out, and counts the base of the percentages
-under \code{percent_base = "valid"} unless \code{levels_keep} hides a level.
-Under \code{drop_na = TRUE}, \code{nobs_valid} is \code{nobs}. Without \code{by}, only
-\code{variable}, \code{label} and the four counts are populated; the other
-columns are \code{NA}. The interval
+\code{nobs}, \code{nobs_valid}, \code{weighted_nobs} and \code{weighted_nobs_valid}. The
+four counts are rows, never weights, a row of zero or missing weight
+left out, with the margin and the Total row not counted twice, and
+\code{levels_keep} changes none of them:
+\itemize{
+\item \code{nobs} counts the rows of the variable in the table, the base of the
+percentages under \code{percent_base = "total"}: every row under
+\code{drop_na = FALSE}, those of the \code{(Missing)} row included, and the
+observed values under \code{drop_na = TRUE};
+\item \code{nobs_valid} counts the rows with an observed value, the base of the
+percentages under \code{percent_base = "valid"}; it is \code{nobs} under
+\code{drop_na = TRUE};
+\item \code{weighted_nobs} and \code{weighted_nobs_valid} are the weighted counts of
+the same rows, the denominators of the weighted percentages, \code{NA}
+without \code{weights}.
+}
+
+Without \code{by}, only \code{variable}, \code{label} and the four counts are
+populated; the other columns are \code{NA}. The interval
 bounds are \code{NA} unless the table was built with \code{assoc_ci = TRUE}, and
 the SMD columns unless it was built with \code{smd = TRUE}.
 }

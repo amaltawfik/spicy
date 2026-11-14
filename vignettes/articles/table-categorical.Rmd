@@ -544,9 +544,13 @@ broom::tidy(out)
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
 # (test_type, statistic, df, p.value, es_type, es_value,
-# es_ci_lower / es_ci_upper, smd_type, smd_value), and its counts: nobs
-# counts the (Missing) row, nobs_valid does not.
+# es_ci_lower / es_ci_upper, smd_type, smd_value), and its counts.
 broom::glance(out)
+
+# The counts are the bases of the percentages: nobs counts the 25
+# missing answers of smoking, its (Missing) row, and nobs_valid leaves
+# them out.
+broom::glance(out)[c("variable", "nobs", "nobs_valid")]
 ```
 
 ## Multiple-response items
