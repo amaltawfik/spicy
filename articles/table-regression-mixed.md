@@ -1435,8 +1435,8 @@ pkgdown_dark_gt(table_regression(fit, output = "gt"))
 *Note.* Linear mixed-effects regression. Std. errors: Wald
 (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR
 test vs linear regression, χ̄²(3) = 150.04, p \< .001. CI = confidence
-interval; AIC = Akaike information criterion; BIC = Bayesian information
-criterion.
+interval; LL = lower limit; UL = upper limit; AIC = Akaike information
+criterion; BIC = Bayesian information criterion.
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the
 variance-component rows are marked `estimate_type = "vc"` and their

@@ -1906,7 +1906,7 @@ pkgdown_dark_gt(
 [TABLE]
 
 *Note.* Linear regression. Std. errors: classical (OLS). CI = confidence
-interval.
+interval; LL = lower limit; UL = upper limit.
 
 ## broom integration
 

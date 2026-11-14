@@ -133,6 +133,13 @@
   an F-change `12.38 (1, 29)`. `output = "data.frame"` keeps the
   statistic alone.
 
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  gains `percent_base` and, like
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  estimates its percentages on the observed values by default: the
+  `(Missing)` row shows its count and no percentage, interval or design
+  effect. `percent_base = "total"` gives back the previous percentages.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   and
@@ -207,10 +214,12 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the default R-squared rows follow the family of the model. A logit on
-  a binary outcome shows Tjur’s R-squared, then McFadden’s. Probit and
-  cloglog models, grouped binomial responses, Poisson, negative
-  binomial, [`polr()`](https://rdrr.io/pkg/MASS/man/polr.html), `clm()`,
-  [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) and
+  a binary outcome, [`glm()`](https://rdrr.io/r/stats/glm.html) or
+  [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html), shows Tjur’s
+  R-squared, then McFadden’s. Probit and cloglog models, grouped
+  binomial responses, Poisson, negative binomial,
+  [`polr()`](https://rdrr.io/pkg/MASS/man/polr.html), `clm()`,
+  [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) and ordinal
   [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) models show
   McFadden’s alone. Nagelkerke’s R-squared leaves the defaults;
   `show_fit_stats = "pseudo_r2_nagelkerke"` still shows it.
@@ -227,6 +236,14 @@
   binomial, [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html)
   and binary [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html)
   models.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  McFadden’s and Nagelkerke’s R-squared of a
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit
+  compare it with an intercept-only model that estimates its own theta,
+  the null model of the likelihood-ratio test. They used the theta of
+  the fitted model, which gave higher values. The deviance R-squared
+  keeps that theta.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the gaussian, Gamma, inverse Gaussian and Tweedie families of
@@ -811,8 +828,47 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   with a formula `cluster` (`cluster = ~id`) uses the rows the fit kept
-  after `subset` and the removal of missing values. A fit with `subset`
-  failed on the length of the cluster.
+  after `subset` and the removal of missing values. A fit with `subset`,
+  and a [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) fit
+  that had dropped rows with missing values, failed on the length of the
+  cluster.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  models with different outcomes whose column headers do not name them
+  (models named in the list or by `model_labels`, or an outcome that
+  several of them share) get an “Outcome” row, as in the table of fit
+  statistics alone. The outcomes appeared nowhere.
+  `outcome_labels = FALSE` removes the row.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  in French: a table of models of several families words its title and
+  the sentence that names the type of each model in French (“Modèle 1 :
+  régression linéaire ; Modèle 2 : régression logistique.”), as the rest
+  of its note. Both were in English. A type without a French name keeps
+  them in English.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a multinomial model beside other models, and a Heckman selection
+  model, name each row under the header of a term by its outcome
+  category (or equation) alone: “Upper secondary” under “age:”, where
+  the row read “Upper secondary: age”. A factor level keeps its category
+  (“Upper secondary: Male”).
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` keep the prefixed terms.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md):
+  the note of the outputs that print the bounds of an interval in
+  columns headed “LL” and “UL” (tinytable, gt, flextable, Word, Excel
+  and the clipboard) defines them. The console, which prints the
+  interval in one cell, and the data frames keep their note.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the AIC and the effective number of parameters of a
+  [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) fit
+  outside the gaussian family when the survey package is not attached.
+  Both rows were missing.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
@@ -853,6 +909,15 @@
   change of AICc. It shows the AICc, and the change of AICc counts the
   parameters the AIC counts (it counted one too many for a
   [`glm()`](https://rdrr.io/r/stats/glm.html) without a dispersion).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `nested = TRUE` compares Cox models by their observations and by
+  their events, and its refusal says which count differs. A
+  [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model beside
+  its [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) twin on the
+  same rows was refused, and two models that differed by their censored
+  rows only reached [`anova()`](https://rdrr.io/r/stats/anova.html),
+  which refused them in its own words.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `labels` keyed by the term of an interaction (`"age:wc"`) labels its
@@ -1017,6 +1082,11 @@
   does (“inverse-Gaussian” instead of “Inverse.gaussian”) and a Cox
   model “Cox proportional hazards regression”, as the other tables do.
 
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  accepts `show_fit_stats = "pseudo_r2_tjur"` on a logistic screen with
+  `multivariable = FALSE`, which it refused, and no longer warns about
+  object lengths when the multivariable model is shown.
+
 - The AME column needs marginaleffects 0.29.0 or later.
 
 - The console of
@@ -1060,6 +1130,13 @@
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
   the range of design degrees of freedom in the note is written
   “(7–14)”.
+
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
+  the group test of a subset of a calibrated or post-stratified design
+  no longer passes on the warning of
+  [`summary.glm()`](https://rdrr.io/r/stats/summary.glm.html) that
+  observations of zero weight were left out of the dispersion. The test
+  does not use that dispersion.
 
 - A group label with wide characters or decomposed accents no longer
   shifts the labels that follow it in the console of

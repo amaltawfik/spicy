@@ -824,8 +824,8 @@ exponentiated (asymmetric). The (Intercept) row estimates the baseline
 rate. Std. errors: Wald asymptotic (z). Zero-inflation component:
 log-odds of a structural (excess) zero. Coefficients exponentiated and
 displayed as odds ratios. The (Intercept) row estimates the baseline
-odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike
-information criterion.
+odds. IRR = incidence rate ratio; CI = confidence interval; LL = lower
+limit; UL = upper limit; AIC = Akaike information criterion.
 
 In [`broom::tidy()`](https://broom.tidymodels.org) the zero-component
 terms are keyed by their block (`Zero-inflation::(Intercept)`), so the

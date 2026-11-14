@@ -614,9 +614,10 @@ token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><co
 and an IV <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code> neither R-squared nor AIC – the
 2SLS R-squared is not the classical one. Asked for, it is
 the R-squared of <code>ivreg()</code>, on the structural residuals.</p></li>
-<li><p>a logit on a binary outcome: <code>c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")</code>.</p></li>
+<li><p>a logit on a binary outcome (<code>glm</code> or binary <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code>):
+<code>c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")</code>.</p></li>
 <li><p>the other binomial, Poisson and negative binomial <code>glm</code>
-fits, <code>polr</code>, <code>clm</code>, <code>multinom</code>, <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code>: <code>c("nobs", "pseudo_r2_mcfadden", "aic")</code>.</p></li>
+fits, <code>polr</code>, <code>clm</code>, <code>multinom</code>, ordinal <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code>: <code>c("nobs", "pseudo_r2_mcfadden", "aic")</code>.</p></li>
 <li><p>gaussian, Gamma, inverse Gaussian and Tweedie <code>glm</code> fits:
 <code>c("nobs", "r2_deviance", "aic")</code>.</p></li>
 <li><p>mixed <code>lm</code> + <code>glm</code>: the union of the two (the
@@ -805,13 +806,17 @@ categories, relabeled via <code>outcome_labels</code>.</p></dd>
 
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
-<dd><p>Optional <strong>Outcome body row</strong> override.
-<code>NULL</code> (default) hides the row entirely – under the
-multi-model spanner the DV is already visible above the data.
-A character vector of length <code>length(models)</code> forces an
-explicit Outcome row with those values (the spanner stays as
-<code>"Model 1, ..."</code> unless <code>model_labels</code> is also supplied).
-<code>FALSE</code> also suppresses the row. <strong>Single multinomial model</strong>
+<dd><p>The <strong>Outcome body row</strong>, which names the
+outcome of each model under the column headers. <code>NULL</code> (default)
+shows it when the models do not all have the same outcome and the
+column headers do not name them: models named in the list or by
+<code>model_labels</code>, or an outcome that several of the models share.
+Otherwise the title (one outcome) or the column headers (the
+outcomes of unnamed models, all different) name them, and the row
+is left out. A character vector of length <code>length(models)</code> forces
+the row with those values (the spanner stays as <code>"Model 1, ..."</code>
+unless <code>model_labels</code> is also supplied). <code>FALSE</code> removes the row.
+<strong>Single multinomial model</strong>
 (outcome-as-columns layout): repurposed as the category
 spanner override – a character vector with one label per
 non-reference outcome category (unique, in model order), e.g.
@@ -1497,14 +1502,22 @@ deviance from that of the intercept-only model (Cameron &amp; Windmeijer
 decrease when a predictor is added. For a gaussian <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> with the
 identity link it is the \(R^2\) of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>.</p></li>
 </ul><p>The intercept-only model keeps the offset and the weights of the
-fitted model. By default each model shows the rows of its family:</p>
-<ul><li><p>A logit on a binary outcome (0/1, a factor or a logical):
-Tjur's \(R^2\), then McFadden's. Tjur's reads on the scale
-of the predicted probabilities; McFadden's cannot decrease when a
-predictor is added.</p></li>
+fitted model. For a <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fit it re-estimates theta in
+McFadden's and Nagelkerke's \(R^2\), as Stata's <code>nbreg</code> does,
+and keeps the theta of the fitted model in the deviance
+\(R^2\) (Cameron &amp; Windmeijer 1997). By default each model
+shows the rows of its family:</p>
+<ul><li><p>A logit on a binary outcome (0/1, a factor or a logical), a
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> or a binary <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>: Tjur's \(R^2\), then
+McFadden's. Tjur's reads on the scale of the predicted
+probabilities; McFadden's cannot decrease when a predictor is
+added. An <code>lrm</code> fitted without <code>y = TRUE</code> reads its outcome from
+the data, as a <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> does; when the data are gone, its Tjur's
+cell is a dash and the row leaves its default.</p></li>
 <li><p>The other binomial models (probit, cloglog, a grouped
 response), Poisson and negative binomial models, <code>polr()</code>,
-<code>clm()</code>, <code>multinom()</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>: McFadden's \(R^2\),
+<code>clm()</code>, <code>multinom()</code> and an ordinal <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>: McFadden's
+\(R^2\),
 which depends less than Cox and Snell's or Nagelkerke's on the
 proportion of events (Menard 2000) and is the Pseudo R2 of Stata's
 estimation output (Long &amp; Freese 2014, p. 126).</p></li>
@@ -1559,6 +1572,10 @@ and the redundant Outcome body row is suppressed. The outcome
 is named as in the title: its name (from <code>formula(fit)[[2]]</code>),
 or its <code>label</code> attribute under <code>labels = TRUE</code>. If DVs match,
 the labels default to <code>"Model 1, 2, ..."</code>.</p></li>
+<li><p>Models with different outcomes that the spanner labels do not
+name (named models, or an outcome that several models share) get
+an Outcome body row under the headers; <code>outcome_labels = FALSE</code>
+removes it.</p></li>
 <li><p><code>model_labels = c("A", "B")</code> overrides everything.</p></li>
 </ul><p>A default label is worded in the language of the table
 (<code>options(spicy.language)</code>), over the columns and in the notes that

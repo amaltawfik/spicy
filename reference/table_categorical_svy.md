@@ -38,6 +38,7 @@ table_categorical_svy(
   df = NULL,
   p_value = NULL,
   p_adjust = "none",
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -185,9 +186,10 @@ table_categorical_svy(
   rule of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
   `FALSE` (the default) shows them as a `(Missing)` level, and a level
-  displayed with that label beside them is an error, as there. Shown or
-  dropped, they never enter the test: the p-value is computed on the
-  complete cases either way, which is the convention
+  displayed with that label beside them is an error, as there. Under the
+  default `percent_base = "valid"`, that row shows their count and no
+  percentage. Shown or dropped, they never enter the test: the p-value
+  is computed on the complete cases either way, which is the convention
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   applies. Dropped, they are counted in the note, `by` last: a missing
   `by` takes the observation out of every variable of the table, a
@@ -259,6 +261,26 @@ table_categorical_svy(
   delegated to
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). Needs
   `by` and the p-value column. See *Multiple-comparison adjustment*.
+
+- percent_base:
+
+  The base of the percentages of a variable whose missing values the
+  `(Missing)` row shows (`drop_na = FALSE`), as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  `"valid"` (the default) estimates them on the domain of the observed
+  values of the variable, as `survey::svymean(na.rm = TRUE)` does: the
+  levels sum to 100, and the `(Missing)` row shows its count and no
+  percentage, interval or design effect (blank cells, `NA` in the data
+  frames and in
+  [tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)).
+  The intervals keep the degrees of freedom of their block, as under
+  `drop_na = TRUE`. `"total"` estimates them on every row, the
+  `(Missing)` row included, as this function did up to 0.14.1. Under
+  `by`, the base is the observed values of each domain, the `Total`
+  block and the column of missing `by` values included. The test runs on
+  the complete cases whatever the base. Without missing values to show
+  (`drop_na = TRUE`, or a variable with none) the two bases give the
+  same percentages. Unique abbreviations are accepted (`"v"`, `"t"`).
 
 - percent_digits:
 
@@ -429,8 +451,10 @@ Depends on `output`:
   invisibly.
 
 The default object and the two data frames carry the whole note as
-printed, its lead-in included, in `attr(x, "note")`. The default object
-also keeps the title the console prints, in `attr(x, "title")`.
+printed, its lead-in included, in `attr(x, "note")`, and the base of
+their percentages in `attr(x, "percent_base")`, `"valid"` or `"total"`
+(see `percent_base`). The default object also keeps the title the
+console prints, in `attr(x, "title")`.
 [tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
 reports the proportions between 0 and 1.
 
@@ -439,9 +463,10 @@ reports the proportions between 0 and 1.
 `n` is the *observed* count – the number of rows in the sample, not an
 estimated population size. `%` is the estimated percentage *within* its
 column: without `by` it is the distribution of the variable in the
-population, with `by` the distribution inside that domain. The table
-note gives the sample size (the rows of non-zero weight, which the `n`
-columns count, as
+population, with `by` the distribution inside that domain, on the
+observed values of the variable unless `percent_base = "total"`. The
+table note gives the sample size (the rows of non-zero weight, which the
+`n` columns count, as
 [`survey::unwtd.count()`](https://rdrr.io/pkg/survey/man/svyby.html)
 does) and the estimated population together, because neither alone tells
 the reader what they are looking at.

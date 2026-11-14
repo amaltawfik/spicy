@@ -541,11 +541,12 @@ table_regression(
     one. Asked for, it is the R-squared of `ivreg()`, on the structural
     residuals.
 
-  - a logit on a binary outcome:
+  - a logit on a binary outcome (`glm` or binary
+    [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html)):
     `c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")`.
 
   - the other binomial, Poisson and negative binomial `glm` fits,
-    `polr`, `clm`, `multinom`,
+    `polr`, `clm`, `multinom`, ordinal
     [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html):
     `c("nobs", "pseudo_r2_mcfadden", "aic")`.
 
@@ -751,12 +752,16 @@ table_regression(
 
 - outcome_labels:
 
-  Optional **Outcome body row** override. `NULL` (default) hides the row
-  entirely – under the multi-model spanner the DV is already visible
-  above the data. A character vector of length `length(models)` forces
-  an explicit Outcome row with those values (the spanner stays as
-  `"Model 1, ..."` unless `model_labels` is also supplied). `FALSE` also
-  suppresses the row. **Single multinomial model** (outcome-as-columns
+  The **Outcome body row**, which names the outcome of each model under
+  the column headers. `NULL` (default) shows it when the models do not
+  all have the same outcome and the column headers do not name them:
+  models named in the list or by `model_labels`, or an outcome that
+  several of the models share. Otherwise the title (one outcome) or the
+  column headers (the outcomes of unnamed models, all different) name
+  them, and the row is left out. A character vector of length
+  `length(models)` forces the row with those values (the spanner stays
+  as `"Model 1, ..."` unless `model_labels` is also supplied). `FALSE`
+  removes the row. **Single multinomial model** (outcome-as-columns
   layout): repurposed as the category spanner override – a character
   vector with one label per non-reference outcome category (unique, in
   model order), e.g. `c("Student vs Employed", ...)`; the reference
@@ -1467,18 +1472,28 @@ to another (Hemmert et al. 2018).
   is the \\R^2\\ of [`lm()`](https://rdrr.io/r/stats/lm.html).
 
 The intercept-only model keeps the offset and the weights of the fitted
-model. By default each model shows the rows of its family:
+model. For a
+[`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit it
+re-estimates theta in McFadden's and Nagelkerke's \\R^2\\, as Stata's
+`nbreg` does, and keeps the theta of the fitted model in the deviance
+\\R^2\\ (Cameron & Windmeijer 1997). By default each model shows the
+rows of its family:
 
-- A logit on a binary outcome (0/1, a factor or a logical): Tjur's
-  \\R^2\\, then McFadden's. Tjur's reads on the scale of the predicted
+- A logit on a binary outcome (0/1, a factor or a logical), a
+  [`glm()`](https://rdrr.io/r/stats/glm.html) or a binary
+  [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html): Tjur's \\R^2\\,
+  then McFadden's. Tjur's reads on the scale of the predicted
   probabilities; McFadden's cannot decrease when a predictor is added.
+  An `lrm` fitted without `y = TRUE` reads its outcome from the data, as
+  a [`glm()`](https://rdrr.io/r/stats/glm.html) does; when the data are
+  gone, its Tjur's cell is a dash and the row leaves its default.
 
 - The other binomial models (probit, cloglog, a grouped response),
   Poisson and negative binomial models, `polr()`, `clm()`, `multinom()`
-  and [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html): McFadden's
-  \\R^2\\, which depends less than Cox and Snell's or Nagelkerke's on
-  the proportion of events (Menard 2000) and is the Pseudo R2 of Stata's
-  estimation output (Long & Freese 2014, p. 126).
+  and an ordinal [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html):
+  McFadden's \\R^2\\, which depends less than Cox and Snell's or
+  Nagelkerke's on the proportion of events (Menard 2000) and is the
+  Pseudo R2 of Stata's estimation output (Long & Freese 2014, p. 126).
 
 - The continuous families of [`glm()`](https://rdrr.io/r/stats/glm.html)
   (gaussian, Gamma, inverse Gaussian, Tweedie): the deviance \\R^2\\.
@@ -1537,6 +1552,10 @@ model's sub-columns:
   its name (from `formula(fit)[[2]]`), or its `label` attribute under
   `labels = TRUE`. If DVs match, the labels default to
   `"Model 1, 2, ..."`.
+
+- Models with different outcomes that the spanner labels do not name
+  (named models, or an outcome that several models share) get an Outcome
+  body row under the headers; `outcome_labels = FALSE` removes it.
 
 - `model_labels = c("A", "B")` overrides everything.
 

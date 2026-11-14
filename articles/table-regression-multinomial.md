@@ -500,13 +500,13 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #>  Variable                             │    B       p         B         p   
 #> ──────────────────────────────────────┼────────────────────────────────────
 #>  (Intercept):                         │                                    
-#>    Student: (Intercept)               │   -1.27   .002    -1.43      <.001 
-#>    Unemployed: (Intercept)            │   -0.16   .663    -0.72       .030 
-#>    Inactive: (Intercept)              │   -1.71  <.001    -1.75      <.001 
+#>    Student                            │   -1.27   .002    -1.43      <.001 
+#>    Unemployed                         │   -0.16   .663    -0.72       .030 
+#>    Inactive                           │   -1.71  <.001    -1.75      <.001 
 #>  age:                                 │                                    
-#>    Student: age                       │   -0.01   .090    -0.01       .097 
-#>    Unemployed: age                    │   -0.00   .581    -0.00       .562 
-#>    Inactive: age                      │    0.00   .697     0.00       .719 
+#>    Student                            │   -0.01   .090    -0.01       .097 
+#>    Unemployed                         │   -0.00   .581    -0.00       .562 
+#>    Inactive                           │    0.00   .697     0.00       .719 
 #>  sex:                                 │                                    
 #>    Student: Female (ref.)             │     –     –         –         –    
 #>    Unemployed: Female (ref.)          │     –     –         –         –    
@@ -515,9 +515,9 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #>    Unemployed: Male                   │    0.24   .160     0.23       .172 
 #>    Inactive: Male                     │    0.15   .444     0.14       .464 
 #>  educ_score:                          │                                    
-#>    Student: educ_score                │    0.03   .843                     
-#>    Unemployed: educ_score             │   -0.64  <.001                     
-#>    Inactive: educ_score               │   -0.16   .239                     
+#>    Student                            │    0.03   .843                     
+#>    Unemployed                         │   -0.64  <.001                     
+#>    Inactive                           │   -0.16   .239                     
 #>  education:                           │                                    
 #>    Student: Lower secondary (ref.)    │                     –         –    
 #>    Unemployed: Lower secondary (ref.) │                     –         –    
@@ -654,9 +654,9 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #>  Variable                             │   OR       p      OR       p   
 #> ──────────────────────────────────────┼────────────────────────────────
 #>  (Intercept):                         │                                
-#>    Student: (Intercept)               │    0.15  <.001     0.24  <.001 
-#>    Unemployed: (Intercept)            │    0.46  <.001     0.49   .030 
-#>    Inactive: (Intercept)              │    0.21  <.001     0.17  <.001 
+#>    Student                            │    0.15  <.001     0.24  <.001 
+#>    Unemployed                         │    0.46  <.001     0.49   .030 
+#>    Inactive                           │    0.21  <.001     0.17  <.001 
 #>  education:                           │                                
 #>    Student: Lower secondary (ref.)    │     –     –         –     –    
 #>    Unemployed: Lower secondary (ref.) │     –     –         –     –    
@@ -668,9 +668,9 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #>    Unemployed: Tertiary               │    0.29  <.001     0.29  <.001 
 #>    Inactive: Tertiary                 │    0.71   .196     0.71   .186 
 #>  age:                                 │                                
-#>    Student: age                       │                    0.99   .097 
-#>    Unemployed: age                    │                    1.00   .562 
-#>    Inactive: age                      │                    1.00   .719 
+#>    Student                            │                    0.99   .097 
+#>    Unemployed                         │                    1.00   .562 
+#>    Inactive                           │                    1.00   .719 
 #>  sex:                                 │                                
 #>    Student: Female (ref.)             │                     –     –    
 #>    Unemployed: Female (ref.)          │                     –     –    

@@ -502,7 +502,7 @@ Population-averaged logistic regression (GEE): outcome {.table
 correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and
 displayed as OR; CI bounds exponentiated. The (Intercept) row estimates
 the baseline odds. Std. errors: Robust sandwich (GEE), clusters by
-subject. CI = confidence interval.
+subject. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ## References
 
