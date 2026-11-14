@@ -284,6 +284,21 @@ order_continuous_svy_tokens <- function(tokens) {
   })
 }
 
+# One warning is not survey's to say to the reader. On a subset of a
+# calibrated design, the rows outside the domain stay at weight zero, and
+# the glm that `svyttest()` and `svyglm()` fit for the group test makes
+# summary.glm() warn that they are left out of its dispersion, which the
+# design-based test does not use. Muffled, in R's words and in English.
+.svy_quiet_zero_weight_dispersion <- function(expr) {
+  msg <- "observations with zero weight not used for calculating dispersion"
+  msgs <- unique(c(msg, gettext(msg, domain = "R-stats")))
+  withCallingHandlers(expr, warning = function(w) {
+    if (conditionMessage(w) %in% msgs) {
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
 # The display tokens each delegation of `.svy_var_stats()` serves. The
 # statistics are all computed whatever the table shows (`output = "long"`
 # returns them all), so a call can stop on a statistic no cell displays:
@@ -450,7 +465,7 @@ order_continuous_svy_tokens <- function(tokens) {
         )
       }
     } else if (k == 2L) {
-      tt <- survey::svyttest(form, sub)
+      tt <- .svy_quiet_zero_weight_dispersion(survey::svyttest(form, sub))
       .svy_test_row(
         "design_t",
         as.numeric(tt$statistic),
@@ -459,7 +474,9 @@ order_continuous_svy_tokens <- function(tokens) {
         as.numeric(tt$p.value)
       )
     } else {
-      fit <- survey::svyglm(form, design = sub)
+      fit <- .svy_quiet_zero_weight_dispersion(
+        survey::svyglm(form, design = sub)
+      )
       rt <- survey::regTermTest(
         fit,
         stats::as.formula(paste0("~`", group_var, "`"))

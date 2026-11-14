@@ -816,6 +816,11 @@
 * `table_categorical_svy()`, `table_continuous_svy()`: the range of
   design degrees of freedom in the note is written "(7–14)".
 
+* `table_continuous_svy()`: the group test of a subset of a calibrated
+  or post-stratified design no longer passes on the warning of
+  `summary.glm()` that observations of zero weight were left out of the
+  dispersion. The test does not use that dispersion.
+
 * A group label with wide characters or decomposed accents no longer
   shifts the labels that follow it in the console of
   `table_regression()`.

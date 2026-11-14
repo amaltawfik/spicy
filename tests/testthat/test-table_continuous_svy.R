@@ -439,6 +439,31 @@ test_that("a calibrated domain counts only the rows it kept", {
   )
 })
 
+test_that("the group test of a calibrated subset does not relay summary.glm()", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  ps <- survey::postStratify(
+    survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc),
+    ~stype,
+    data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+  )
+  # The rows outside the subset stay, at weight zero.
+  sub <- subset(ps, api00 > 600)
+  expect_gt(sum(.design_weights(sub) == 0), 0L)
+  expect_no_warning(
+    out <- table_continuous_svy(
+      sub,
+      select = api00,
+      by = sch.wide,
+      output = "long"
+    )
+  )
+  oracle <- suppressWarnings(survey::svyttest(api00 ~ sch.wide, sub))
+  expect_equal(out$p.value[[1]], unname(oracle$p.value))
+  expect_no_warning(table_continuous_svy(sub, select = api00, by = stype))
+})
+
 test_that("a negative calibration weight is an observation, not a hole", {
   skip_on_cran()
   # `survey:::svyvar()` counts `weights(design, "sampling") != 0`, and
