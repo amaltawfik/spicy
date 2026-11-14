@@ -664,7 +664,8 @@
   its outcome category (or equation) alone: "Upper secondary" under
   "age:", where the row read "Upper secondary: age". A factor level
   keeps its category ("Upper secondary: Male"). `tidy()` and
-  `output = "long"` keep the prefixed terms.
+  `output = "long"` keep the prefixed terms. `as.data.frame()` gives
+  the category in `level`, and `inline()` reaches these rows by it.
 
 * `table_regression()` and `table_stack()`: the note of the outputs that
   print the bounds of an interval in columns headed "LL" and "UL"
