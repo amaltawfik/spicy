@@ -1225,6 +1225,9 @@
   # every respondent but those, so it cannot say "all respondents".
   note_battery_population_all_but_left_out = "all respondents but those whose answer is left out, including those who did not answer the item",
   note_battery_levels_excluded = "Answers left out of the percentages and the base: %s.",
+  # `percent_base = "valid"` under `drop_na = FALSE`: the column of missing
+  # answers, labelled by `row_missing_level`, is a count outside the base.
+  note_battery_missing_count = "The %s column counts the respondents who did not answer the item.",
   excel_sheet_battery = "Item battery",
   # `table_battery_svy()`: the design-based test labels are long, so the
   # item sentence puts the label last; and a battery shows percentages,

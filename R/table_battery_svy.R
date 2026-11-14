@@ -7,7 +7,9 @@
 #   %   survey::svymean() of the item on its domain, the design cut by
 #       `[` so that it keeps its strata, clusters and fpc: within the
 #       group, the rows of non-zero weight whose answer is a level shown
-#       (and the missing answers too under `drop_na = FALSE`).
+#       (and the missing answers too under `drop_na = FALSE` and
+#       `percent_base = "total"`; under `"valid"` their column is the
+#       observed count of the missing answers).
 #   n   the OBSERVED count of that domain, as the `n` of
 #       `table_categorical_svy()`: the respondents, not the population.
 #   p   survey::svychisq() of the item by the group, on the answers on
@@ -46,9 +48,20 @@
 #' @param drop_na Logical. If `TRUE` (the default), the missing answers to
 #'   an item leave its domain: its percentages are estimated on its valid
 #'   answers, and its `n` counts them. If `FALSE`, a last column of
-#'   missing answers (`"(Missing)"`) follows the levels, and the domain of
-#'   each item takes every row of non-zero weight, its missing answers
-#'   included.
+#'   missing answers (`"(Missing)"`) follows the levels, and
+#'   `percent_base` says what it holds: their observed count beside the
+#'   same estimates (`"valid"`, the default), or their estimated
+#'   percentage (`"total"`).
+#' @param percent_base The base of the percentages of an item whose
+#'   missing answers the `(Missing)` column shows (`drop_na = FALSE`), as
+#'   in [table_battery()]. `"valid"` (the default): the domain of the
+#'   respondents who answered the item, as `survey::svymean(na.rm = TRUE)`
+#'   estimates it, the estimates of `drop_na = TRUE`; `n` is their observed
+#'   count, and the `(Missing)` column the observed count of the missing
+#'   answers, so that the two add up to every respondent. `"total"`: the
+#'   domain of every row of non-zero weight, the missing answers included,
+#'   and the `(Missing)` column is their estimated percentage. Under
+#'   `drop_na = TRUE` the two bases give the same table.
 #' @param show_n Logical. If `TRUE` (the default), each row (each group
 #'   block under `by`) ends with `n`, the observed (unweighted) count of
 #'   the respondents its percentages are estimated on.
@@ -83,8 +96,8 @@
 #' domain: within the group under `by`, the rows of non-zero weight whose
 #' answer is a level shown. The domain is cut from the design with `[`,
 #' which keeps its strata, clusters and finite population corrections.
-#' Under `drop_na = FALSE`, the missing answers are a level of their own
-#' and stay in the domain. An answer that `levels` leaves out is outside
+#' Under `drop_na = FALSE` and `percent_base = "total"`, the missing
+#' answers are a level of their own and stay in the domain. An answer that `levels` leaves out is outside
 #' the domain either way. An item that offers one level is 100% by
 #' arithmetic: survey does not estimate a variable with one level.
 #'
@@ -132,7 +145,8 @@
 #'     subclass), printed when the call is bare.
 #'   \item `"data.frame"`: the displayed table with its numbers, the
 #'     shape of [table_battery()]: `variable`, `label`, one percentage per
-#'     level shown, `(Missing)` under `drop_na = FALSE`, the summary
+#'     level shown, `(Missing)` under `drop_na = FALSE` (a count or a
+#'     percentage, see `percent_base`), the summary
 #'     column of `top`, `n`, each prefixed with the group under `by`, and
 #'     `p`.
 #'   \item `"long"`: one row per item, group and level, with `variable`,
@@ -192,6 +206,7 @@ table_battery_svy <- function(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -257,6 +272,7 @@ table_battery_svy <- function(
   .check_note_labels_arg(note_labels)
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
+  percent_base <- spicy_match_arg(percent_base)
   excel_sheet <- cfg$excel_sheet
   p_adjust_explicit <- !missing(p_adjust)
   .bat_check_scalars(
@@ -354,6 +370,10 @@ table_battery_svy <- function(
     .bat_check_top(top_arg, shown, has_group)
   }
   missing_label <- spicy_str("row_missing_level")
+  # Under `percent_base = "valid"`, the missing answers stay out of the
+  # domain, as under `drop_na = TRUE`, and their column counts them.
+  count_missing <- !drop_na && identical(percent_base, "valid")
+  in_domain_na <- !drop_na && !count_missing
   sort_spec <- .bat_sort_spec(sort, shown, !is.null(top_arg))
 
   # ---- the groups -------------------------------------------------------------
@@ -425,13 +445,14 @@ table_battery_svy <- function(
     drop_na,
     show_n,
     show_p,
-    missing_label
+    missing_label,
+    count_missing = count_missing
   ))
 
   # ---- the estimates, item by item, block by block ----------------------------
   # The design variable of an item is a factor of the levels shown (and of
-  # the missing answers under `drop_na = FALSE`), NA outside its domain.
-  est_levels <- c(shown, if (!drop_na) missing_label)
+  # the missing answers under `in_domain_na`), NA outside its domain.
+  est_levels <- c(shown, if (in_domain_na) missing_label)
   counts <- array(0, dim = c(nb, n_items, n_levels))
   pct <- array(NA_real_, dim = c(nb, n_items, n_levels))
   miss <- matrix(0, nb, n_items)
@@ -452,7 +473,7 @@ table_battery_svy <- function(
     nm <- select_names[[j]]
     a <- answers[[j]]
     vals <- ifelse(a %in% shown, a, NA_character_)
-    if (!drop_na) {
+    if (in_domain_na) {
       vals[in_sample & is.na(a)] <- missing_label
     }
     design$variables[[nm]] <- factor(vals, levels = est_levels)
@@ -477,13 +498,16 @@ table_battery_svy <- function(
       list(n = st$n, pct = 100 * st$pct)
     }
     for (b in seq_len(nb)) {
+      if (count_missing) {
+        miss[b, j] <- sum(gi %in% b & is.na(a))
+      }
       st <- estimate(gi %in% b & !is.na(vals))
       if (is.null(st)) {
         next
       }
       counts[b, j, ] <- st$n[seq_len(n_levels)]
       pct[b, j, ] <- st$pct[seq_len(n_levels)]
-      if (!drop_na) {
+      if (in_domain_na) {
         miss[b, j] <- st$n[[n_levels + 1L]]
         pct_miss[b, j] <- st$pct[[n_levels + 1L]]
       }
@@ -524,7 +548,7 @@ table_battery_svy <- function(
   }
   valid <- apply(counts, c(1L, 2L), sum)
   dim(valid) <- c(nb, n_items)
-  base <- if (drop_na) valid else valid + miss
+  base <- if (drop_na || count_missing) valid else valid + miss
   top_idx <- match(top_arg, shown)
   pct_top <- if (length(top_idx)) {
     m <- apply(pct[,, top_idx, drop = FALSE], c(1L, 2L), sum)
@@ -578,7 +602,8 @@ table_battery_svy <- function(
   title_txt <- if (isFALSE(title)) NULL else title %||% .bat_title(by_note)
   note_txt <- .table_note(
     .bat_note(
-      drop_na = drop_na,
+      drop_na = drop_na || count_missing,
+      missing_count = count_missing && !(has_group && length(top_arg)),
       left_out = left_out,
       weights_name = NULL,
       n_na_weights = 0L,
@@ -621,9 +646,10 @@ table_battery_svy <- function(
     answers,
     function(a) {
       rows <- !is.na(gi) & (a %in% shown | (!drop_na & is.na(a)))
-      c(sum(rows), sum(w[rows]))
+      valid_rows <- !is.na(gi) & a %in% shown
+      c(sum(rows), sum(valid_rows), sum(w[rows]), sum(w[valid_rows]))
     },
-    numeric(2)
+    numeric(4)
   )
 
   .bat_render(
@@ -661,7 +687,13 @@ table_battery_svy <- function(
     word_path = word_path,
     by_name = by_name,
     by_note = by_note,
-    nobs = data.frame(nobs = sizes[1L, ], weighted_nobs = sizes[2L, ]),
+    nobs = data.frame(
+      nobs = sizes[1L, ],
+      nobs_valid = sizes[2L, ],
+      weighted_nobs = sizes[3L, ],
+      weighted_nobs_valid = sizes[4L, ]
+    ),
+    percent_base = percent_base,
     class = "spicy_battery_svy_table"
   )
 }

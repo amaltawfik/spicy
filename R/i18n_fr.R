@@ -527,6 +527,7 @@
   note_battery_population_all = "toutes les personnes, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
   note_battery_population_all_but_left_out = "toutes les personnes sauf celles dont la r\u00E9ponse est \u00E9cart\u00E9e, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
   note_battery_levels_excluded = "R\u00E9ponses \u00E9cart\u00E9es des pourcentages et de la base\u00A0: %s.",
+  note_battery_missing_count = "La colonne %s compte les personnes qui n'ont pas r\u00E9pondu \u00E0 l'item.",
   excel_sheet_battery = "Batterie d'items",
   note_battery_svy_items_p = "Valeurs p des items, chaque item selon le groupe\u00A0: %s.",
   note_battery_svy_items_p_one = "Valeur p de l'item, selon le groupe\u00A0: %s.",

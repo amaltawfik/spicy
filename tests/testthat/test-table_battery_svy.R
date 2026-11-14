@@ -495,7 +495,7 @@ test_that("the pooled percentages that sort under by leave out a missing group",
   expect_match(attr(df, "note"), "Missing values removed: g (1).", fixed = TRUE)
 })
 
-test_that("drop_na = FALSE takes the missing answers into the domain", {
+test_that("percent_base = \"total\" takes the missing answers into the domain", {
   skip_on_cran()
   d <- .bsvy_built()
   des <- .bsvy_built_design(d)
@@ -504,6 +504,7 @@ test_that("drop_na = FALSE takes the missing answers into the domain", {
     c(q1, q2),
     by = g,
     drop_na = FALSE,
+    percent_base = "total",
     output = "data.frame"
   )
   # Group B, q1: Agree 1, Disagree 5, DK 2 and a missing answer of weight 4,
@@ -526,12 +527,109 @@ test_that("drop_na = FALSE takes the missing answers into the domain", {
     df$p,
     table_battery_svy(des, c(q1, q2), by = g, output = "data.frame")$p
   )
-  long <- table_battery_svy(des, c(q1, q2), drop_na = FALSE, output = "long")
+  long <- table_battery_svy(
+    des,
+    c(q1, q2),
+    drop_na = FALSE,
+    percent_base = "total",
+    output = "long"
+  )
   miss <- long[long$.row_role == "missing", ]
   expect_identical(miss$level, c("(Missing)", "(Missing)"))
   # q2 without `by`: two missing answers, weights 3 and 2, out of 24.
   expect_equal(miss$pct[[2L]], 100 * 5 / 24)
   expect_identical(miss$n, c(1, 2))
+})
+
+test_that("percent_base = \"valid\": svymean() on the answers, the missing ones counted", {
+  skip_on_cran()
+  d <- .bsvy_built()
+  des <- .bsvy_built_design(d)
+  lv <- c("Agree", "Neutral", "Disagree", "DK")
+  valid <- table_battery_svy(
+    des,
+    c(q1, q2),
+    by = g,
+    drop_na = FALSE,
+    output = "data.frame"
+  )
+  dropped <- table_battery_svy(des, c(q1, q2), by = g, output = "data.frame")
+  cols <- paste(rep(c("A", "B"), each = 5L), c(lv, "n"))
+  expect_equal(valid[cols], dropped[cols])
+  # svymean(na.rm = TRUE) on the domain, the structure of the design kept.
+  for (it in c("q1", "q2")) {
+    expect_equal(
+      unlist(valid[valid$variable == it, paste("B", lv)], use.names = FALSE),
+      .bsvy_svymean(des, it, d$g %in% "B", lv),
+      tolerance = 1e-10
+    )
+  }
+  # The observed count of the missing answers, in the unit of `n`: they add
+  # up to the respondents of the group.
+  expect_identical(valid[["A (Missing)"]], c(0, 0))
+  expect_identical(valid[["B (Missing)"]], c(1, 1))
+  expect_identical(valid[["B (Missing)"]] + valid[["B n"]], c(5, 5))
+  long <- table_battery_svy(des, c(q1, q2), drop_na = FALSE, output = "long")
+  miss <- long[long$.row_role == "missing", ]
+  expect_identical(miss$n, c(1, 2))
+  expect_true(all(is.na(miss$pct)))
+  expect_identical(attr(long, "percent_base"), "valid")
+  # The sort reads the percentages of the answers, pooled over the groups.
+  pooled <- vapply(
+    c("q1", "q2"),
+    function(it) .bsvy_svymean(des, it, !is.na(d$g), "Agree"),
+    1
+  )
+  sorted <- table_battery_svy(
+    des,
+    c(q1, q2),
+    by = g,
+    drop_na = FALSE,
+    sort = "Agree-"
+  )
+  expect_identical(sorted$Variable, names(sort(pooled, decreasing = TRUE)))
+  expect_match(
+    attr(valid, "note"),
+    "Base: respondents who answered the item. The (Missing) column counts the respondents who did not answer the item.",
+    fixed = TRUE
+  )
+  skip_if_not_installed("broom")
+  gl <- broom::glance(table_battery_svy(des, c(q1, q2), drop_na = FALSE))
+  rows <- d$w != 0
+  expect_identical(gl$nobs, c(10L, 10L))
+  expect_identical(gl$nobs_valid, c(9L, 8L))
+  expect_equal(gl$weighted_nobs, rep(sum(d$w), 2L))
+  expect_equal(
+    gl$weighted_nobs_valid,
+    c(sum(d$w[!is.na(d$q1)]), sum(d$w[!is.na(d$q2)]))
+  )
+})
+
+test_that("percent_base = \"valid\" on a stratified design: svymean(na.rm = TRUE)", {
+  skip_on_cran()
+  des <- .bsvy_api("strat")
+  dat <- des$variables
+  dat$awards[seq(3L, 200L, by = 9L)] <- NA
+  des <- survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  df <- table_battery_svy(
+    des,
+    c(awards, sch.wide),
+    drop_na = FALSE,
+    output = "data.frame"
+  )
+  expect_equal(
+    unlist(df[1L, c("No", "Yes")], use.names = FALSE),
+    100 * unname(stats::coef(survey::svymean(~awards, des, na.rm = TRUE))),
+    tolerance = 1e-10
+  )
+  expect_identical(df[["(Missing)"]], c(sum(is.na(dat$awards)), 0))
+  expect_identical(df[["(Missing)"]] + df$n, c(200, 200))
 })
 
 test_that("a level named like the column of missing answers is refused", {

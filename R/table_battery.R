@@ -98,8 +98,20 @@
 #' @param drop_na Logical. If `TRUE` (the default), the missing answers to
 #'   an item leave its base: its percentages are on its valid answers, and
 #'   its `n` counts them. If `FALSE`, a last column of missing answers
-#'   (`"(Missing)"`) follows the levels, and the base of each item is
-#'   every row, its missing answers included.
+#'   (`"(Missing)"`) follows the levels, and `percent_base` says what it
+#'   holds: their count beside the same percentages (`"valid"`, the
+#'   default), or their percentage of every row (`"total"`).
+#' @param percent_base The base of the percentages of an item whose
+#'   missing answers the `(Missing)` column shows (`drop_na = FALSE`), as
+#'   in [table_categorical()]. `"valid"` (the default): the respondents who
+#'   answered the item, the percentages of `drop_na = TRUE`; `n` is that
+#'   base, and the `(Missing)` column counts the missing answers in the
+#'   unit of `n`, so that the two add up to every respondent. `"total"`:
+#'   every respondent, the missing answers included, and the `(Missing)`
+#'   column is their percentage. `top` and `sort` read the percentages on
+#'   that base; the tests do not depend on it. Under `drop_na = TRUE` the
+#'   two bases give the same table. Unique abbreviations are accepted
+#'   (`"v"`, `"t"`).
 #' @param show_n Logical. If `TRUE` (the default), each row (each group
 #'   block under `by`) ends with `n`, the base of its percentages.
 #' @param weights Optional frequency weights, as in [table_categorical()]:
@@ -161,7 +173,9 @@
 #'     default object returns: one row per item, with columns `variable`
 #'     (the item's column), `label` (the label the row displays), then one
 #'     column per displayed column: one percentage per level shown,
-#'     `(Missing)` under `drop_na = FALSE`, the summary column of `top`
+#'     `(Missing)` under `drop_na = FALSE` (the count of the missing
+#'     answers under `percent_base = "valid"`, their percentage under
+#'     `"total"`), the summary column of `top`
 #'     (named by its header, `"Strongly agree + Agree"`) and `n`, each
 #'     prefixed under `by` with the group printed above it
 #'     (`"Female Agree"`, `"Female n"`), and `p` with `p_value`.
@@ -169,7 +183,8 @@
 #'     `variable`, `label`, `group` (with `by`), `level` (the level, or the
 #'     label of the column of missing answers), `.row_role` (`"level"`, or
 #'     `"missing"` for the missing answers), `n` (the count, weighted under
-#'     `weights`) and `pct` (its percentage of the base), and, when the
+#'     `weights`) and `pct` (its percentage of the base, `NA` on the
+#'     missing answers under `percent_base = "valid"`), and, when the
 #'     tests ran, `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
 #'     `"fisher_exact"`, `"fisher_midp"`, `"fisher_exact_mc"`),
 #'     `statistic` and `df` (`NA` for an exact test), `p.value`, and
@@ -183,13 +198,16 @@
 #' }
 #'
 #' The default object and the data frames carry the note as printed in
-#' `attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`).
+#' `attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`),
+#' and the base of their percentages in `attr(x, "percent_base")`.
 #' [as_structured()] reads the default object: one `"summary"` row per
 #' item, token `"pct"` for each percentage column (with `scale_level`, the
 #' level it shows, `missing` on the column of missing answers, and `top`
-#' with `top_levels` on the summary column), `"n"` and `"p"`. [inline()] cites
-#' a cell: `inline(x, item, "Agree", "pct")`, with `model = "Female"`
-#' under `by`.
+#' with `top_levels` on the summary column), `"n"` for `n` and for the
+#' column of missing answers when it counts them, and `"p"`. [inline()]
+#' cites a cell: `inline(x, item, "Agree", "pct")`, with `model = "Female"`
+#' under `by`; `inline(x, item, "(Missing)")` gives the count of missing
+#' answers under `percent_base = "valid"`.
 #'
 #' @details
 #' # Items and levels
@@ -221,9 +239,10 @@
 #'
 #' The percentages are row percentages: those of an item sum to 100 over
 #' the levels shown (the column of missing answers included under
-#' `drop_na = FALSE`). Its base, `n`, is its valid answers on the levels
-#' shown, or every row under `drop_na = FALSE`; an answer that `levels`
-#' leaves out is out of the base either way. A percentage carries no more
+#' `drop_na = FALSE` and `percent_base = "total"`). Its base, `n`, is its
+#' valid answers on the levels shown, or every row under `drop_na = FALSE`
+#' and `percent_base = "total"`; an answer that `levels` leaves out is out
+#' of the base either way. A percentage carries no more
 #' digits than its denominator, so a base of fewer than 100 respondents
 #' takes whole percentages: `percent_digits = 0` prints them.
 #'
@@ -342,6 +361,7 @@ table_battery <- function(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -387,6 +407,7 @@ table_battery <- function(
   test <- spicy_match_arg(test)
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
+  percent_base <- spicy_match_arg(percent_base)
   if (is.null(excel_sheet)) {
     excel_sheet <- spicy_str("excel_sheet_battery")
   }
@@ -480,6 +501,9 @@ table_battery <- function(
     .bat_check_top(top_arg, shown, has_group)
   }
   missing_label <- spicy_str("row_missing_level")
+  # Under `percent_base = "valid"`, the column of missing answers counts
+  # them, outside the base of the percentages.
+  count_missing <- !drop_na && identical(percent_base, "valid")
   sort_spec <- .bat_sort_spec(sort, shown, !is.null(top_arg))
 
   # ---- the rows and the groups ----------------------------------------------
@@ -524,13 +548,16 @@ table_battery <- function(
   # ---- counts: one matrix per item, blocks by levels ------------------------
   counts <- array(0, dim = c(nb, n_items, n_levels))
   miss <- matrix(0, nb, n_items)
-  # The rows of each item's base, for the `nobs` of glance().
+  # The rows of each item's base, for the `nobs` of glance(): every row the
+  # table holds, and those with a valid answer (`nobs_valid`).
   base_rows <- integer(n_items)
+  valid_rows <- integer(n_items)
   for (j in seq_len(n_items)) {
     answers <- items$answers[[j]]
     li <- match(answers, shown)
     na_j <- is.na(answers)
     base_rows[[j]] <- sum(rows_in & (!is.na(li) | (!drop_na & na_j)))
+    valid_rows[[j]] <- sum(rows_in & !is.na(li))
     for (b in seq_len(nb)) {
       in_b <- gi %in% b
       counts[b, j, ] <- vapply(
@@ -543,7 +570,8 @@ table_battery <- function(
   }
   valid <- apply(counts, c(1L, 2L), sum)
   dim(valid) <- c(nb, n_items)
-  base <- if (drop_na) valid else valid + miss
+  total <- if (drop_na) valid else valid + miss
+  base <- if (count_missing) valid else total
   # A cell with no base has no percentage: the undefined dash. A level
   # nobody chose, on a base, is 0.
   ratio <- function(num, den) {
@@ -555,7 +583,7 @@ table_battery <- function(
   for (k in seq_len(n_levels)) {
     pct[,, k] <- ratio(counts[,, k], base)
   }
-  pct_miss <- ratio(miss, base)
+  pct_miss <- ratio(miss, if (count_missing) NA_real_ else base)
   top_idx <- match(top_arg, shown)
   pct_top <- if (length(top_idx)) {
     top_counts <- apply(counts[,, top_idx, drop = FALSE], c(1L, 2L), sum)
@@ -642,7 +670,8 @@ table_battery <- function(
   title_txt <- if (isFALSE(title)) NULL else title %||% .bat_title(by_note)
   note_txt <- .table_note(
     .bat_note(
-      drop_na = drop_na,
+      drop_na = drop_na || count_missing,
+      missing_count = count_missing && !(has_group && length(top_arg)),
       left_out = left_out,
       weights_name = if (!is.null(weights_vec)) {
         weights_name %||% spicy_str("note_weights_fallback")
@@ -697,9 +726,17 @@ table_battery <- function(
     word_path = word_path,
     by_name = by_name,
     by_note = by_note,
-    nobs = if (!is.null(weights_vec)) {
-      data.frame(nobs = base_rows, weighted_nobs = colSums(base))
-    },
+    nobs = data.frame(
+      nobs = base_rows,
+      nobs_valid = valid_rows,
+      weighted_nobs = if (is.null(weights_vec)) NA_real_ else colSums(total),
+      weighted_nobs_valid = if (is.null(weights_vec)) {
+        NA_real_
+      } else {
+        colSums(valid)
+      }
+    ),
+    percent_base = percent_base,
     class = "spicy_battery_table"
   )
 }
@@ -752,7 +789,8 @@ table_battery <- function(
   by_name,
   by_note,
   class,
-  nobs = NULL
+  nobs = NULL,
+  percent_base = "total"
 ) {
   cols <- .bat_columns(
     blocks,
@@ -762,14 +800,15 @@ table_battery <- function(
     drop_na,
     show_n,
     show_p,
-    missing_label
+    missing_label,
+    count_missing = !drop_na && identical(percent_base, "valid")
   )
   .bat_check_column_keys(cols)
   value_of <- function(e, b) {
     switch(
       e$kind,
       level = pct[b, ord, match(e$level, shown)],
-      missing = pct_miss[b, ord],
+      missing = if (e$token == "n") miss[b, ord] else pct_miss[b, ord],
       top = pct_top[b, ord],
       n = base[b, ord],
       p = item_df$p
@@ -813,6 +852,7 @@ table_battery <- function(
     missing_label = missing_label,
     item_df = if (tested) item_df
   )
+  attr(long, "percent_base") <- percent_base
   if (identical(output, "long")) {
     attr(long, "note") <- note_txt
     return(long)
@@ -873,6 +913,7 @@ table_battery <- function(
     rownames(nobs) <- items
     attr(out, "nobs") <- nobs[ord, , drop = FALSE]
   }
+  attr(out, "percent_base") <- percent_base
   attr(out, "items") <- items[ord]
   attr(out, "group_var") <- by_name
   attr(out, "group_label") <- by_note
@@ -1338,7 +1379,8 @@ table_battery <- function(
 
 # The columns, block by block: without `by` one block, with `by` one per
 # group. A block holds the levels shown, the column of missing answers
-# under `drop_na = FALSE`, the summary column of `top`, and `n`; with `by`
+# under `drop_na = FALSE` (a count under `count_missing`, a percentage
+# otherwise), the summary column of `top`, and `n`; with `by`
 # and `top`, the summary column and `n` only. Then `p`. Each column
 # carries its frozen key (`<group> <header>` under `by`, the composition
 # of the categorical family), its header (`sub`), the header qualified by
@@ -1352,7 +1394,8 @@ table_battery <- function(
   drop_na,
   show_n,
   show_p,
-  missing_label
+  missing_label,
+  count_missing = FALSE
 ) {
   top_label <- if (length(top_arg)) paste(top_arg, collapse = " + ")
   stats <- list()
@@ -1392,7 +1435,11 @@ table_battery <- function(
   for (b in blocks) {
     for (s in stats) {
       e <- s
-      e$token <- if (identical(s$kind, "n")) "n" else "pct"
+      # The column of missing answers is a count outside the base under
+      # `percent_base = "valid"` (`count_missing`), a percentage otherwise.
+      count_col <- identical(s$kind, "n") ||
+        (count_missing && identical(s$kind, "missing"))
+      e$token <- if (count_col) "n" else "pct"
       e$block <- b
       e$group_label <- b
       if (!is.na(b)) {
@@ -1683,8 +1730,9 @@ table_battery <- function(
 # ---- note ----------------------------------------------------------------------
 
 # The note, in the order of the family (`.compose_note()`):
-#   (a) the direction of the percentages, the base, the levels left out
-#       of it, and the weights;
+#   (a) the direction of the percentages, the base, the column of missing
+#       answers when it is a count (`missing_count`), the levels left out
+#       of the base, and the weights;
 #   (b) the rows removed for a missing weight or a missing `by`, then the
 #       items without data;
 #   (c) the tests of the items, named by their test, the adjustment, and
@@ -1697,6 +1745,7 @@ table_battery <- function(
 .bat_note <- function(
   drop_na,
   left_out,
+  missing_count = FALSE,
   weights_name,
   n_na_weights,
   by_label,
@@ -1725,6 +1774,9 @@ table_battery <- function(
         }
       )
     ),
+    if (missing_count) {
+      spicy_fmt("note_battery_missing_count", spicy_str("row_missing_level"))
+    },
     if (length(left_out)) {
       spicy_fmt("note_battery_levels_excluded", .join_note_vars(left_out))
     },

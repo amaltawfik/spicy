@@ -18,6 +18,7 @@ table_battery_svy(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -93,9 +94,10 @@ and is an error that gives both. Any other value is an error.}
 \item{drop_na}{Logical. If \code{TRUE} (the default), the missing answers to
 an item leave its domain: its percentages are estimated on its valid
 answers, and its \code{n} counts them. If \code{FALSE}, a last column of
-missing answers (\code{"(Missing)"}) follows the levels, and the domain of
-each item takes every row of non-zero weight, its missing answers
-included.}
+missing answers (\code{"(Missing)"}) follows the levels, and
+\code{percent_base} says what it holds: their observed count beside the
+same estimates (\code{"valid"}, the default), or their estimated
+percentage (\code{"total"}).}
 
 \item{show_n}{Logical. If \code{TRUE} (the default), each row (each group
 block under \code{by}) ends with \code{n}, the observed (unweighted) count of
@@ -158,6 +160,17 @@ A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
+
+\item{percent_base}{The base of the percentages of an item whose
+missing answers the \code{(Missing)} column shows (\code{drop_na = FALSE}), as
+in \code{\link[=table_battery]{table_battery()}}. \code{"valid"} (the default): the domain of the
+respondents who answered the item, as \code{survey::svymean(na.rm = TRUE)}
+estimates it, the estimates of \code{drop_na = TRUE}; \code{n} is their observed
+count, and the \code{(Missing)} column the observed count of the missing
+answers, so that the two add up to every respondent. \code{"total"}: the
+domain of every row of non-zero weight, the missing answers included,
+and the \code{(Missing)} column is their estimated percentage. Under
+\code{drop_na = TRUE} the two bases give the same table.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
@@ -243,7 +256,8 @@ Depends on \code{output}, as in \code{\link[=table_battery]{table_battery()}}:
 subclass), printed when the call is bare.
 \item \code{"data.frame"}: the displayed table with its numbers, the
 shape of \code{\link[=table_battery]{table_battery()}}: \code{variable}, \code{label}, one percentage per
-level shown, \code{(Missing)} under \code{drop_na = FALSE}, the summary
+level shown, \code{(Missing)} under \code{drop_na = FALSE} (a count or a
+percentage, see \code{percent_base}), the summary
 column of \code{top}, \code{n}, each prefixed with the group under \code{by}, and
 \code{p}.
 \item \code{"long"}: one row per item, group and level, with \code{variable},
@@ -281,8 +295,8 @@ The percentage of a level is \code{survey::svymean()} of the item on its
 domain: within the group under \code{by}, the rows of non-zero weight whose
 answer is a level shown. The domain is cut from the design with \code{[},
 which keeps its strata, clusters and finite population corrections.
-Under \code{drop_na = FALSE}, the missing answers are a level of their own
-and stay in the domain. An answer that \code{levels} leaves out is outside
+Under \code{drop_na = FALSE} and \code{percent_base = "total"}, the missing
+answers are a level of their own and stay in the domain. An answer that \code{levels} leaves out is outside
 the domain either way. An item that offers one level is 100\% by
 arithmetic: survey does not estimate a variable with one level.
 

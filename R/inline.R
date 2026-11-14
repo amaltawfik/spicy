@@ -263,10 +263,33 @@ inline <- function(
   # `level` picks the column (`.inline_scale_cols()`), and the row is the
   # item's.
   scale_cols <- .inline_scale_cols(s, cols, level, var_chr, column)
+  # The column of missing answers of a battery is a count when the
+  # percentages leave them out (`percent_base = "valid"`). Addressed by
+  # `level`, it answers `n` by default, and a percentage asked of it is
+  # refused with the reason, as for the row of missing values of a
+  # categorical table; otherwise `n` is the base of the item.
+  tok <- vapply(cols, function(nm) s$col_meta[[nm]]$token %||% "", "")
+  miss_n <- tok == "n" &
+    vapply(cols, function(nm) isTRUE(s$col_meta[[nm]]$missing), logical(1))
   if (!is.null(scale_cols)) {
-    cols <- scale_cols
     level <- NULL
-    column <- column %||% "pct"
+    hit <- scale_cols[[1L]]
+    column <- column %||% s$col_meta[[hit]]$token
+    if (hit %in% cols[miss_n]) {
+      if ("pct" %in% .inline_requested_tokens(column)) {
+        spicy_abort(
+          c(
+            "The column of missing answers has no \"pct\" cell in this table.",
+            "i" = "The percentages exclude missing values: this column has a count only (`column = \"n\"`)."
+          ),
+          class = "spicy_invalid_input"
+        )
+      }
+      scale_cols <- setdiff(scale_cols, cols[tok == "n" & !miss_n])
+    }
+    cols <- scale_cols
+  } else {
+    cols <- cols[!miss_n]
   }
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)

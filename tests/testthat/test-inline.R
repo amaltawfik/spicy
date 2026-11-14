@@ -1754,7 +1754,7 @@ test_that("the errors of inline() name inline(), not one of its helpers", {
 }
 
 test_that("a battery cites a level of its scale with `level`, a group with `model`", {
-  tbl <- .il_bat(top = c("4", "5"), drop_na = FALSE)
+  tbl <- .il_bat(top = c("4", "5"), drop_na = FALSE, percent_base = "total")
   shown <- attr(tbl, "display_df")
   oracle <- 100 * mean(sochealth$life_sat_work %in% 3)
   expect_identical(inline(tbl, work, "3", "pct"), sprintf("%.1f", oracle))

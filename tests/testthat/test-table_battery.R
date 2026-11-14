@@ -273,9 +273,9 @@ test_that("top adds up its levels, and with by keeps only itself and n", {
   expect_equal(by_df$p, full$p)
 })
 
-test_that("drop_na = FALSE adds the column of missing answers to the base", {
+test_that("percent_base = \"total\" adds the column of missing answers to the base", {
   d <- .bat_sat()
-  df <- .bat_tbl(drop_na = FALSE, output = "data.frame")
+  df <- .bat_tbl(drop_na = FALSE, percent_base = "total", output = "data.frame")
   expect_identical(names(df), c("variable", "label", .BAT_SL, "(Missing)", "n"))
   for (i in seq_along(.BAT_ITEMS)) {
     x <- d[[.BAT_ITEMS[[i]]]]
@@ -387,7 +387,9 @@ test_that("tidy() and glance() read the long output, with and without by", {
     "p.value",
     "p_unadjusted",
     "nobs",
-    "weighted_nobs"
+    "nobs_valid",
+    "weighted_nobs",
+    "weighted_nobs_valid"
   )
   tbl <- .bat_tbl(by = sex)
   long <- .bat_tbl(by = sex, output = "long")
@@ -406,7 +408,7 @@ test_that("tidy() and glance() read the long output, with and without by", {
   df <- as.data.frame(tbl)
   expect_identical(gl$nobs, as.integer(df[["Female n"]] + df[["Male n"]]))
   # Without `by`: no group, no test; the column sets are fixed.
-  plain <- .bat_tbl(drop_na = FALSE)
+  plain <- .bat_tbl(drop_na = FALSE, percent_base = "total")
   td0 <- broom::tidy(plain)
   expect_identical(names(td0), cols_tidy)
   expect_true(all(is.na(td0$group)) && all(is.na(td0$p.value)))
@@ -496,7 +498,7 @@ test_that("the default note says what the percentages and the base are", {
 
 test_that("the French table translates its title, the missing column and the note", {
   withr::local_options(spicy.language = "fr")
-  tbl <- .bat_tbl(by = sex, drop_na = FALSE)
+  tbl <- .bat_tbl(by = sex, drop_na = FALSE, percent_base = "total")
   expect_identical(attr(tbl, "title"), "Batterie d'items selon sex")
   expect_true("Female (Manquant)" %in% names(attr(tbl, "display_df")))
   expect_match(attr(tbl, "note"), "Pourcentages en ligne.", fixed = TRUE)
@@ -1156,7 +1158,8 @@ test_that("drop_na = FALSE says an item has no data in a group, and the base it 
     .bat_sat(),
     tidyselect::all_of(.BAT_ITEMS),
     levels = .BAT_SL[-3L],
-    drop_na = FALSE
+    drop_na = FALSE,
+    percent_base = "total"
   )
   note <- attr(left, "note")
   expect_match(
@@ -1170,13 +1173,250 @@ test_that("drop_na = FALSE says an item has no data in a group, and the base it 
     .bat_sat(),
     tidyselect::all_of(.BAT_ITEMS),
     levels = .BAT_SL[-3L],
-    drop_na = FALSE
+    drop_na = FALSE,
+    percent_base = "total"
   )
   expect_match(
     attr(fr, "note"),
     "toutes les personnes sauf celles dont la",
     fixed = TRUE
   )
+})
+
+# ---- the base of the percentages (`percent_base`) ---------------------------
+
+# 40 respondents, two items: q1 12 Disagree, 15 Neutral, 10 Agree and 3
+# missing; q2 8, 20, 11 and 1 missing.
+.bat_pb_40 <- function() {
+  lv <- c("Disagree", "Neutral", "Agree")
+  data.frame(
+    q1 = factor(rep(c(lv, NA), c(12, 15, 10, 3)), levels = lv),
+    q2 = factor(rep(c(lv, NA), c(8, 20, 11, 1)), levels = lv)
+  )
+}
+
+test_that("percent_base: the numbers of PSPP on the valid and the total base", {
+  # PSPP 2.0.0 on the same 40 cases: FREQUENCIES (its Valid Percent and
+  # Percent columns) and CTABLES (ROWPCT.VALIDN; ROWPCT.COUNT with
+  # MISSING=INCLUDE on a user-missing code), pinned to one decimal.
+  d <- .bat_pb_40()
+  lv <- c("Disagree", "Neutral", "Agree")
+  valid <- table_battery(d, c(q1, q2), drop_na = FALSE, output = "data.frame")
+  expect_equal(
+    unname(round(as.matrix(valid[lv]), 1)),
+    rbind(c(32.4, 40.5, 27.0), c(20.5, 51.3, 28.2))
+  )
+  expect_identical(valid$n, c(37, 39))
+  expect_identical(valid[["(Missing)"]], c(3, 1))
+  total <- table_battery(
+    d,
+    c(q1, q2),
+    drop_na = FALSE,
+    percent_base = "total",
+    output = "data.frame"
+  )
+  expect_equal(
+    unname(round(as.matrix(total[c(lv, "(Missing)")]), 1)),
+    rbind(c(30.0, 37.5, 25.0, 7.5), c(20.0, 50.0, 27.5, 2.5))
+  )
+  expect_identical(total$n, c(40, 40))
+  dropped <- table_battery(d, c(q1, q2), output = "data.frame")
+  expect_equal(
+    unname(round(as.matrix(dropped[lv]), 1)),
+    rbind(c(32.4, 40.5, 27.0), c(20.5, 51.3, 28.2))
+  )
+  expect_identical(dropped$n, c(37, 39))
+})
+
+test_that("percent_base = \"valid\": the percentages of the answers, the missing ones counted", {
+  d <- .bat_sat()
+  d$life_sat_work[1:30] <- NA
+  valid <- .bat_tbl(drop_na = FALSE, output = "data.frame")
+  dropped <- .bat_tbl(output = "data.frame")
+  expect_identical(
+    names(valid),
+    c("variable", "label", .BAT_SL, "(Missing)", "n")
+  )
+  expect_equal(valid[c(.BAT_SL, "n")], dropped[c(.BAT_SL, "n")])
+  d0 <- .bat_sat()
+  n_miss <- vapply(
+    .BAT_ITEMS,
+    function(v) sum(is.na(d0[[v]])),
+    1,
+    USE.NAMES = FALSE
+  )
+  expect_identical(valid[["(Missing)"]], n_miss)
+  # The missing answers and the base add up to every respondent.
+  expect_identical(
+    valid[["(Missing)"]] + valid$n,
+    rep(as.numeric(nrow(d0)), 4L)
+  )
+  expect_identical(attr(valid, "percent_base"), "valid")
+  # In the unit of `n` under weights: the weights of the missing answers.
+  w <- table_battery(
+    d,
+    tidyselect::all_of(.BAT_ITEMS),
+    drop_na = FALSE,
+    weights = weight,
+    output = "data.frame"
+  )
+  expect_equal(
+    w[["(Missing)"]],
+    vapply(
+      .BAT_ITEMS,
+      function(v) sum(d$weight[is.na(d[[v]])]),
+      1,
+      USE.NAMES = FALSE
+    )
+  )
+  expect_equal(
+    w[["(Missing)"]] + w$n,
+    rep(sum(d$weight), 4L)
+  )
+  # Under `by`, each group counts its own.
+  by_df <- .bat_tbl(by = sex, drop_na = FALSE, output = "data.frame")
+  for (s in c("Female", "Male")) {
+    expect_identical(
+      by_df[[paste(s, "(Missing)")]],
+      vapply(
+        .BAT_ITEMS,
+        function(v) sum(is.na(d0[[v]]) & d0$sex == s),
+        1,
+        USE.NAMES = FALSE
+      )
+    )
+  }
+  # `show_n = FALSE` drops the base, the count of missing answers stays.
+  no_n <- .bat_tbl(drop_na = FALSE, show_n = FALSE, output = "data.frame")
+  expect_identical(names(no_n), c("variable", "label", .BAT_SL, "(Missing)"))
+  expect_identical(no_n[["(Missing)"]], n_miss)
+  # `top` reads the percentages of the answers.
+  top <- c("Very satisfied", "Satisfied")
+  expect_equal(
+    .bat_tbl(drop_na = FALSE, top = top, output = "data.frame")[[
+      "Very satisfied + Satisfied"
+    ]],
+    .bat_tbl(top = top, output = "data.frame")[["Very satisfied + Satisfied"]]
+  )
+  # Under `drop_na = TRUE` the two bases give the same table, in silence.
+  expect_no_warning(t1 <- .bat_tbl(percent_base = "total"))
+  expect_identical(attr(t1, "display_df"), attr(.bat_tbl(), "display_df"))
+  expect_equal(as.data.frame(t1), dropped, ignore_attr = TRUE)
+})
+
+test_that("sort and the edges follow the base of the percentages", {
+  d <- data.frame(
+    a = factor(
+      c(rep("Yes", 6), rep("No", 2), rep(NA, 12)),
+      levels = c("Yes", "No")
+    ),
+    b = factor(c(rep("Yes", 10), rep("No", 10)), levels = c("Yes", "No")),
+    z = factor(rep(NA, 20), levels = c("Yes", "No"))
+  )
+  q <- function(...) suppressWarnings(table_battery(d, c(a, b, z), ...))
+  # On the answers a comes first (75 against 50), on every row b (50
+  # against 30).
+  expect_identical(q(drop_na = FALSE, sort = "Yes-")$Variable, c("a", "b", "z"))
+  expect_identical(
+    q(drop_na = FALSE, sort = "Yes-", percent_base = "total")$Variable,
+    c("b", "a", "z")
+  )
+  x <- q(drop_na = FALSE)
+  shown <- attr(x, "display_df")
+  # An item without missing answers counts none; one without an answer has
+  # no percentage, a count of missing answers and a base of 0.
+  expect_identical(shown[["(Missing)"]], c("12", "0", "20"))
+  expect_identical(shown$Yes[[3L]], spicy_str("cell_undefined"))
+  expect_identical(shown$n, c("8", "20", "0"))
+})
+
+test_that("percent_base = \"valid\": the machine outputs, the note and inline()", {
+  skip_if_not_installed("broom")
+  d <- .bat_pb_40()
+  x <- table_battery(d, c(q1, q2), drop_na = FALSE)
+  # The long reading keeps the count and has no proportion.
+  long <- table_battery(d, c(q1, q2), drop_na = FALSE, output = "long")
+  miss <- long[long$.row_role == "missing", ]
+  expect_identical(miss$n, c(3, 1))
+  expect_true(all(is.na(miss$pct)))
+  expect_identical(attr(long, "percent_base"), "valid")
+  td <- broom::tidy(x)
+  expect_true(all(is.na(td$proportion[td$.row_role == "missing"])))
+  expect_identical(td$n[td$.row_role == "missing"], c(3L, 1L))
+  gl <- broom::glance(x)
+  expect_identical(gl$nobs, c(40L, 40L))
+  expect_identical(gl$nobs_valid, c(37L, 39L))
+  # A count, written without decimals.
+  meta <- as_structured(x)$col_meta[["(Missing)"]]
+  expect_identical(meta$token, "n")
+  expect_identical(meta$precision, 0L)
+  expect_true(meta$missing)
+  expect_identical(attr(x, "display_df")[["(Missing)"]], c("3", "1"))
+  expect_identical(
+    attr(x, "note"),
+    paste(
+      "Note. Percentages are row percentages.",
+      "Base: respondents who answered the item.",
+      "The (Missing) column counts the respondents who did not answer the item."
+    )
+  )
+  # inline(): the count of the missing answers, as the row of missing values
+  # of table_categorical() gives it; `n` without a level is the base.
+  expect_identical(inline(x, q1, "(Missing)"), "3")
+  expect_identical(inline(x, q1, column = "n"), "37")
+  expect_error(
+    inline(x, q1, "(Missing)", "pct"),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(
+    inline(
+      table_battery(d, c(q1, q2), drop_na = FALSE, percent_base = "t"),
+      q1,
+      "(Missing)"
+    ),
+    "7.5"
+  )
+  expect_error(
+    table_battery(d, c(q1, q2), percent_base = "observed"),
+    class = "spicy_invalid_input"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_battery(d, c(q1, q2), drop_na = FALSE), "note"),
+    "Base : personnes ayant répondu à l'item. La colonne (Manquant) compte les personnes qui n'ont pas répondu à l'item.",
+    fixed = TRUE
+  )
+})
+
+test_that("percent_base = \"valid\": the rich outputs write the count as a whole number", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("openxlsx2")
+  d <- .bat_pb_40()
+  tt <- table_battery(d, c(q1, q2), drop_na = FALSE, output = "tinytable")
+  expect_identical(
+    trimws(gsub(.bat_fig, "", tt@data[["(Missing)"]])),
+    c("3", "1")
+  )
+  ft <- table_battery(d, c(q1, q2), drop_na = FALSE, output = "flextable")
+  expect_identical(
+    trimws(gsub(.bat_fig, "", ft$body$dataset[["(Missing)"]])),
+    c("3", "1")
+  )
+  xlsx <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(xlsx), add = TRUE)
+  table_battery(
+    d,
+    c(q1, q2),
+    drop_na = FALSE,
+    output = "excel",
+    excel_path = xlsx
+  )
+  # The sheet writes the cells as the table shows them, the count as `n`.
+  grid <- openxlsx2::wb_to_df(openxlsx2::wb_load(xlsx), col_names = FALSE)
+  at <- which(grid[[1L]] == "q1")
+  expect_identical(unlist(grid[at, 5:6], use.names = FALSE), c("3", "37"))
 })
 
 # ---- the groups of `by` in the console header ------------------------------

@@ -95,14 +95,27 @@ table_battery(
 ```
 
 By default the missing answers leave the base. With `drop_na = FALSE`,
-a column of missing answers follows the levels and the base of each
-item becomes every respondent:
+a column follows the levels with the number of respondents who did not
+answer each item. The percentages keep the respondents who answered as
+their base, and that column plus `n` gives every respondent:
 
 ```{r drop-na}
 table_battery(
   sat,
   select = starts_with("life_sat_"),
   drop_na = FALSE
+)
+```
+
+`percent_base = "total"` makes every respondent the base instead, and
+the column of missing answers becomes their percentage:
+
+```{r percent-base-total}
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  drop_na = FALSE,
+  percent_base = "total"
 )
 ```
 

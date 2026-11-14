@@ -19,6 +19,7 @@ table_battery(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -102,8 +103,9 @@ and is an error that gives both. Any other value is an error.}
 \item{drop_na}{Logical. If \code{TRUE} (the default), the missing answers to
 an item leave its base: its percentages are on its valid answers, and
 its \code{n} counts them. If \code{FALSE}, a last column of missing answers
-(\code{"(Missing)"}) follows the levels, and the base of each item is
-every row, its missing answers included.}
+(\code{"(Missing)"}) follows the levels, and \code{percent_base} says what it
+holds: their count beside the same percentages (\code{"valid"}, the
+default), or their percentage of every row (\code{"total"}).}
 
 \item{show_n}{Logical. If \code{TRUE} (the default), each row (each group
 block under \code{by}) ends with \code{n}, the base of its percentages.}
@@ -181,6 +183,18 @@ A note label
 that another variable of the table shows is an error (class
 \code{spicy_label_collision}): choose another one, or relabel the other
 variable.}
+
+\item{percent_base}{The base of the percentages of an item whose
+missing answers the \code{(Missing)} column shows (\code{drop_na = FALSE}), as
+in \code{\link[=table_categorical]{table_categorical()}}. \code{"valid"} (the default): the respondents who
+answered the item, the percentages of \code{drop_na = TRUE}; \code{n} is that
+base, and the \code{(Missing)} column counts the missing answers in the
+unit of \code{n}, so that the two add up to every respondent. \code{"total"}:
+every respondent, the missing answers included, and the \code{(Missing)}
+column is their percentage. \code{top} and \code{sort} read the percentages on
+that base; the tests do not depend on it. Under \code{drop_na = TRUE} the
+two bases give the same table. Unique abbreviations are accepted
+(\code{"v"}, \code{"t"}).}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
@@ -272,7 +286,9 @@ visibly, so a bare call prints the ASCII table.
 default object returns: one row per item, with columns \code{variable}
 (the item's column), \code{label} (the label the row displays), then one
 column per displayed column: one percentage per level shown,
-\code{(Missing)} under \code{drop_na = FALSE}, the summary column of \code{top}
+\code{(Missing)} under \code{drop_na = FALSE} (the count of the missing
+answers under \code{percent_base = "valid"}, their percentage under
+\code{"total"}), the summary column of \code{top}
 (named by its header, \code{"Strongly agree + Agree"}) and \code{n}, each
 prefixed under \code{by} with the group printed above it
 (\code{"Female Agree"}, \code{"Female n"}), and \code{p} with \code{p_value}.
@@ -280,7 +296,8 @@ prefixed under \code{by} with the group printed above it
 \code{variable}, \code{label}, \code{group} (with \code{by}), \code{level} (the level, or the
 label of the column of missing answers), \code{.row_role} (\code{"level"}, or
 \code{"missing"} for the missing answers), \code{n} (the count, weighted under
-\code{weights}) and \code{pct} (its percentage of the base), and, when the
+\code{weights}) and \code{pct} (its percentage of the base, \code{NA} on the
+missing answers under \code{percent_base = "valid"}), and, when the
 tests ran, \code{test_type} (\code{"chi_squared"}, \code{"n1_chi_squared"},
 \code{"fisher_exact"}, \code{"fisher_midp"}, \code{"fisher_exact_mc"}),
 \code{statistic} and \code{df} (\code{NA} for an exact test), \code{p.value}, and
@@ -294,13 +311,16 @@ invisibly.
 }
 
 The default object and the data frames carry the note as printed in
-\code{attr(x, "note")} (its lead-in included, \code{NULL} under \code{note = FALSE}).
+\code{attr(x, "note")} (its lead-in included, \code{NULL} under \code{note = FALSE}),
+and the base of their percentages in \code{attr(x, "percent_base")}.
 \code{\link[=as_structured]{as_structured()}} reads the default object: one \code{"summary"} row per
 item, token \code{"pct"} for each percentage column (with \code{scale_level}, the
 level it shows, \code{missing} on the column of missing answers, and \code{top}
-with \code{top_levels} on the summary column), \code{"n"} and \code{"p"}. \code{\link[=inline]{inline()}} cites
-a cell: \code{inline(x, item, "Agree", "pct")}, with \code{model = "Female"}
-under \code{by}.
+with \code{top_levels} on the summary column), \code{"n"} for \code{n} and for the
+column of missing answers when it counts them, and \code{"p"}. \code{\link[=inline]{inline()}}
+cites a cell: \code{inline(x, item, "Agree", "pct")}, with \code{model = "Female"}
+under \code{by}; \code{inline(x, item, "(Missing)")} gives the count of missing
+answers under \code{percent_base = "valid"}.
 }
 \description{
 Tabulates a battery of items answered on one common scale, such as a
@@ -350,9 +370,10 @@ base: an item without a valid answer, in the table or in a group.
 
 The percentages are row percentages: those of an item sum to 100 over
 the levels shown (the column of missing answers included under
-\code{drop_na = FALSE}). Its base, \code{n}, is its valid answers on the levels
-shown, or every row under \code{drop_na = FALSE}; an answer that \code{levels}
-leaves out is out of the base either way. A percentage carries no more
+\code{drop_na = FALSE} and \code{percent_base = "total"}). Its base, \code{n}, is its
+valid answers on the levels shown, or every row under \code{drop_na = FALSE}
+and \code{percent_base = "total"}; an answer that \code{levels} leaves out is out
+of the base either way. A percentage carries no more
 digits than its denominator, so a base of fewer than 100 respondents
 takes whole percentages: \code{percent_digits = 0} prints them.
 

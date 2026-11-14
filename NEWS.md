@@ -232,17 +232,19 @@
   percentages and their base `n`. `levels` sets the scale and keeps the
   other answers out of the base, `top` adds a column summing some
   levels, `sort` orders the items (`"top-"`, `"name+"`, `"<level>-"`),
-  and `drop_na = FALSE` adds a column of missing answers. With `by`,
-  each group gets a block of columns and each item a chi-squared or
-  Fisher's exact test, Holm-adjusted by default. `inline()` cites its
-  cells (#13).
+  and `drop_na = FALSE` adds a column of missing answers: their count
+  beside the percentages of the answers by default, their percentage of
+  every respondent under `percent_base = "total"`. With `by`, each group
+  gets a block of columns and each item a chi-squared or Fisher's exact
+  test, Holm-adjusted by default. `inline()` cites its cells (#13).
 
 * New `table_battery_svy()`, the survey-design twin of `table_battery()`:
   the same table from a `survey::svydesign()` or replicate-weights
   design. The percentages are estimated under the design on each item's
-  respondents, `n` is their observed count and, with `by`, each item
-  gets a design-based test (`chisq_statistic`, Rao-Scott by default),
-  Holm-adjusted by default. `table_battery()` points a design to it.
+  respondents (`percent_base` as in `table_battery()`), `n` is their
+  observed count and, with `by`, each item gets a design-based test
+  (`chisq_statistic`, Rao-Scott by default), Holm-adjusted by default.
+  `table_battery()` points a design to it.
   A cell the design cannot estimate shows a dash, with a warning and a
   note sentence, as in `table_categorical_svy()`.
 

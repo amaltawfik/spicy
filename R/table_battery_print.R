@@ -64,6 +64,7 @@ print.spicy_battery_svy_table <- print.spicy_battery_table
   }
   rownames(out) <- NULL
   attr(out, "note") <- attr(x, "note", exact = TRUE)
+  attr(out, "percent_base") <- attr(x, "percent_base", exact = TRUE)
   out
 }
 
@@ -137,7 +138,9 @@ as_tibble.spicy_battery_svy_table <- as_tibble.spicy_battery_table
 #' `by`), `n` (the count: weighted under the `weights` of
 #' [table_battery()], observed in [table_battery_svy()]), `proportion`
 #' (between 0 and 1, the share of the item's base, estimated under the
-#' design in [table_battery_svy()]), and the test of the item:
+#' design in [table_battery_svy()]; `NA` on the missing answers under
+#' `percent_base = "valid"`, which leaves them out of the base), and the
+#' test of the item:
 #' `test_type`, `statistic` and `df` (`NA` for an exact test, and in
 #' [table_battery_svy()], whose long output does not carry them),
 #' `p.value` (adjusted under `p_adjust`) and `p_unadjusted`. The summary
@@ -145,11 +148,17 @@ as_tibble.spicy_battery_svy_table <- as_tibble.spicy_battery_table
 #' those of the levels it names.
 #'
 #' `glance()` returns one row per item: `variable`, `label`, `test_type`,
-#' `statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, the rows of the
-#' item's base summed over the groups (rows, never weights, a row of zero
-#' weight left out), and `weighted_nobs`, their weighted count (the sum of
-#' the `n` columns under the `weights` of [table_battery()], the sum of the
-#' sampling weights in [table_battery_svy()], `NA` otherwise).
+#' `statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, `nobs_valid`,
+#' `weighted_nobs` and `weighted_nobs_valid`. The counts are rows, never
+#' weights, a row of zero weight left out, summed over the groups:
+#' * `nobs` counts the rows of the item in the table, the base under
+#'   `percent_base = "total"`: its answers on the levels shown, and its
+#'   missing answers under `drop_na = FALSE`;
+#' * `nobs_valid` counts its answers on the levels shown, the base under
+#'   `percent_base = "valid"`; it is `nobs` under `drop_na = TRUE`;
+#' * `weighted_nobs` and `weighted_nobs_valid` are the weighted counts of
+#'   the same rows (under the `weights` of [table_battery()], the sum of
+#'   the sampling weights in [table_battery_svy()], `NA` otherwise).
 #'
 #' Both column sets are fixed: a test the table did not run is present and
 #' `NA`. Index by name rather than by position.
@@ -220,19 +229,29 @@ glance.spicy_battery_table <- function(x, ...) {
   long <- .bat_broom_long(x, "glance")
   keys <- unique(long$variable)
   first <- match(keys, long$variable)
-  # Rows and their weighted count: the table records both when its counts
-  # are weighted (`weights`) or its percentages estimated under a design;
-  # otherwise its counts are the rows.
+  # The rows of each item's base and their weighted count, recorded when
+  # the table was built. An object without them reads its counts, which
+  # are rows when they are not weighted.
   sizes <- attr(x, "nobs", exact = TRUE)
-  nobs <- if (is.null(sizes)) {
-    .bat_count(vapply(
-      keys,
-      function(k) sum(long$n[long$variable == k], na.rm = TRUE),
-      numeric(1),
-      USE.NAMES = FALSE
-    ))
-  } else {
-    as.integer(sizes[keys, "nobs"])
+  if (is.null(sizes)) {
+    count_rows <- function(roles) {
+      vapply(
+        keys,
+        function(k) {
+          sum(
+            long$n[long$variable == k & long$.row_role %in% roles],
+            na.rm = TRUE
+          )
+        },
+        numeric(1)
+      )
+    }
+    sizes <- data.frame(
+      nobs = count_rows(c("level", "missing")),
+      nobs_valid = count_rows("level"),
+      weighted_nobs = NA_real_,
+      weighted_nobs_valid = NA_real_
+    )
   }
   .as_broom_tbl(data.frame(
     variable = keys,
@@ -242,12 +261,10 @@ glance.spicy_battery_table <- function(x, ...) {
     df = as.integer(.bat_field(long, "df")[first]),
     p.value = .bat_field(long, "p.value")[first],
     p_unadjusted = .bat_field(long, "p_unadjusted")[first],
-    nobs = nobs,
-    weighted_nobs = if (is.null(sizes)) {
-      rep(NA_real_, length(keys))
-    } else {
-      sizes[keys, "weighted_nobs"]
-    },
+    nobs = as.integer(round(sizes[keys, "nobs"])),
+    nobs_valid = as.integer(round(sizes[keys, "nobs_valid"])),
+    weighted_nobs = sizes[keys, "weighted_nobs"],
+    weighted_nobs_valid = sizes[keys, "weighted_nobs_valid"],
     stringsAsFactors = FALSE
   ))
 }

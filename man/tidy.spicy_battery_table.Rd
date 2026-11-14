@@ -38,7 +38,9 @@ answers of \code{drop_na = FALSE}), \code{group} (the \code{by} level, \code{NA}
 \code{by}), \code{n} (the count: weighted under the \code{weights} of
 \code{\link[=table_battery]{table_battery()}}, observed in \code{\link[=table_battery_svy]{table_battery_svy()}}), \code{proportion}
 (between 0 and 1, the share of the item's base, estimated under the
-design in \code{\link[=table_battery_svy]{table_battery_svy()}}), and the test of the item:
+design in \code{\link[=table_battery_svy]{table_battery_svy()}}; \code{NA} on the missing answers under
+\code{percent_base = "valid"}, which leaves them out of the base), and the
+test of the item:
 \code{test_type}, \code{statistic} and \code{df} (\code{NA} for an exact test, and in
 \code{\link[=table_battery_svy]{table_battery_svy()}}, whose long output does not carry them),
 \code{p.value} (adjusted under \code{p_adjust}) and \code{p_unadjusted}. The summary
@@ -46,11 +48,19 @@ column of \code{top} has no row of its own: its proportion is the sum of
 those of the levels it names.
 
 \code{glance()} returns one row per item: \code{variable}, \code{label}, \code{test_type},
-\code{statistic}, \code{df}, \code{p.value}, \code{p_unadjusted}, \code{nobs}, the rows of the
-item's base summed over the groups (rows, never weights, a row of zero
-weight left out), and \code{weighted_nobs}, their weighted count (the sum of
-the \code{n} columns under the \code{weights} of \code{\link[=table_battery]{table_battery()}}, the sum of the
-sampling weights in \code{\link[=table_battery_svy]{table_battery_svy()}}, \code{NA} otherwise).
+\code{statistic}, \code{df}, \code{p.value}, \code{p_unadjusted}, \code{nobs}, \code{nobs_valid},
+\code{weighted_nobs} and \code{weighted_nobs_valid}. The counts are rows, never
+weights, a row of zero weight left out, summed over the groups:
+\itemize{
+\item \code{nobs} counts the rows of the item in the table, the base under
+\code{percent_base = "total"}: its answers on the levels shown, and its
+missing answers under \code{drop_na = FALSE};
+\item \code{nobs_valid} counts its answers on the levels shown, the base under
+\code{percent_base = "valid"}; it is \code{nobs} under \code{drop_na = TRUE};
+\item \code{weighted_nobs} and \code{weighted_nobs_valid} are the weighted counts of
+the same rows (under the \code{weights} of \code{\link[=table_battery]{table_battery()}}, the sum of
+the sampling weights in \code{\link[=table_battery_svy]{table_battery_svy()}}, \code{NA} otherwise).
+}
 
 Both column sets are fixed: a test the table did not run is present and
 \code{NA}. Index by name rather than by position.
