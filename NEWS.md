@@ -657,6 +657,10 @@
   console prints each outcome across the columns of its model, without
   widening the first of them.
 
+* `table_regression()` with one model shows the "Outcome" row that
+  `outcome_labels = "<label>"` asks for. The label was ignored without a
+  message.
+
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in
   French ("Modèle 1 : régression linéaire ; Modèle 2 : régression

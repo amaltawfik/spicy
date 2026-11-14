@@ -1996,14 +1996,10 @@ build_outcome_row <- function(outcome_labels, model_ids, label_map, col_spec) {
   if (isFALSE(outcome_labels)) {
     return(NULL) # suppress entirely
   }
-  if (n_models <= 1L) {
-    return(NULL) # DV is in title for single model
-  }
-  # Default (NULL) = hide. With the multi-model spanner now showing
-  # the model label (or the DV name, via the smart-default in
-  # render_regression_table), the Outcome body row would just repeat
-  # information already in the header. The row appears only when the
-  # user explicitly passes `outcome_labels = c(...)`.
+  # NULL: no row. table_regression() resolves the default row (models
+  # with different outcomes the headers do not name, the panels of a
+  # stacked table) into labels before the call; a single model shows the
+  # row only for labels given, its outcome being in the title.
   if (is.null(outcome_labels)) {
     return(NULL)
   }

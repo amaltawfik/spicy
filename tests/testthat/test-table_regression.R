@@ -1341,24 +1341,15 @@ test_that("extract_arg_column_name – handles all recognized forms", {
 # Polish round 5 – outcome_labels (Q11b) and reference_style annotation (Q5)
 # ============================================================================
 
-test_that("outcome_labels – single model: row never shown (DV is in title)", {
+test_that("outcome_labels – single model: a row for a label given only", {
   skip_on_cran()
   fit <- lm(mpg ~ wt, data = mt)
   out_null <- table_regression(fit, outcome_labels = NULL)
   out_chr <- table_regression(fit, outcome_labels = "Custom")
   out_F <- table_regression(fit, outcome_labels = FALSE)
-  # Positive control: the row label is real -- a two-model table with
-  # explicit labels carries it -- so these three negatives keep biting
-  # if it is ever renamed.
-  expect_true(
-    "Outcome" %in%
-      table_regression(
-        list(fit, lm(hp ~ wt, data = mt)),
-        outcome_labels = c("A", "B")
-      )$Variable
-  )
+  # The title names the outcome: the default shows no row.
   expect_false("Outcome" %in% out_null$Variable)
-  expect_false("Outcome" %in% out_chr$Variable)
+  expect_true("Outcome" %in% out_chr$Variable)
   expect_false("Outcome" %in% out_F$Variable)
 })
 
@@ -1838,6 +1829,25 @@ test_that("the console prints the Outcome row across the columns of a model", {
   )))
   row <- three[[grep("^ Outcome ", three)]]
   expect_length(gregexpr("bmi", row, fixed = TRUE)[[1L]], 2L)
+})
+
+test_that("outcome_labels gives a single model its Outcome row", {
+  skip_on_cran()
+  withr::local_options(width = 200)
+  m <- lm(bmi ~ age + sex, data = sochealth)
+  x <- table_regression(m, outcome_labels = "Body mass index")
+  s <- as_structured(x)
+  expect_identical(s$body$.row_role[[1L]], "outcome")
+  expect_identical(unname(s$outcome_labels_by_col), "Body mass index")
+  # The console prints it across the columns, which it widens not.
+  shown <- capture.output(print(x))
+  at <- grep("^ Outcome ", shown)
+  expect_length(at, 1L)
+  expect_identical(shown[-at], capture.output(print(table_regression(m))))
+  expect_match(shown[[at]], "Body mass index", fixed = TRUE)
+  expect_false(
+    "Outcome" %in% table_regression(m, outcome_labels = FALSE)$Variable
+  )
 })
 
 

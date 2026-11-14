@@ -1716,9 +1716,9 @@ build_structured_body <- function(
 
 # ---- Outcome row (structured) --------------------------------------------
 
-# Mirrors build_outcome_row() (char body): the Outcome row appears ONLY when
-# the user explicitly passes `outcome_labels = c(...)` and there are >= 2
-# models. The typed body stays numeric: the row is all-NA, and the label
+# Mirrors build_outcome_row() (char body): the Outcome row appears when
+# `outcome_labels` holds labels (given, or resolved by table_regression()).
+# The typed body stays numeric: the row is all-NA, and the label
 # TEXT lives in the returned `labels_by_col` map (keyed by the first non-CI
 # structured column of each model). String-producing layers -- the shared
 # string-body formatter and the Excel writer -- overlay the text, so every
@@ -1739,9 +1739,6 @@ build_structured_body <- function(
   }
   if (!is.character(outcome_labels)) {
     return(NULL) # nocov
-  }
-  if (length(model_ids) <= 1L) {
-    return(NULL)
   }
 
   # First non-CI structured sub-column of each model.

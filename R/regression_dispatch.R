@@ -3597,17 +3597,15 @@ print.spicy_regression_table <- function(x, ...) {
   # The Outcome row names each model across its columns, as a column
   # group does, and widens none of them on its own.
   shown <- x
-  spans <- attr(x, "spanners")
   orow <- if (!is.null(struct)) .struct_outcome_row(struct)
-  if (length(orow) == 1L && length(spans) && nrow(struct$body) == nrow(x)) {
-    first <- vapply(spans, function(s) as.integer(min(s)), integer(1))
-    text <- vapply(first, function(j) trimws(x[[j]][[orow]]), character(1))
-    for (j in first) {
+  bs <- if (length(orow) == 1L && nrow(struct$body) == nrow(x)) {
+    .outcome_row_spanner(x, orow)
+  }
+  if (!is.null(bs)) {
+    for (j in unlist(bs$spans)) {
       shown[[j]][[orow]] <- ""
     }
-    dots$body_spanners <- list(
-      list(row = orow, spans = spans, text = text, rule = FALSE)
-    )
+    dots$body_spanners <- list(bs)
   }
   do.call(
     .print_regression_like,
@@ -3621,6 +3619,25 @@ print.spicy_regression_table <- function(x, ...) {
     )
   )
   invisible(x)
+}
+
+# The Outcome row at `row` of a regression table as the console draws it
+# (`body_spanners` of build_ascii_table()): the label of each model over
+# the columns of the model, all the columns of a table of one model, with
+# no rule under it. NULL when the table has no column group to span.
+.outcome_row_spanner <- function(tbl, row) {
+  spans <- if (length(attr(tbl, "model_ids", exact = TRUE)) == 1L) {
+    list(model = seq_len(ncol(tbl))[-1L])
+  } else {
+    attr(tbl, "spanners", exact = TRUE)
+  }
+  if (!length(spans)) {
+    return(NULL)
+  }
+  spans <- lapply(spans, as.integer)
+  text <- vapply(spans, function(s) trimws(tbl[[min(s)]][[row]]), "")
+  text[is.na(text)] <- ""
+  list(row = row, spans = spans, text = text, rule = FALSE)
 }
 
 # The console of a regression table and of a stacked table
