@@ -32,7 +32,8 @@ columns \code{variable} (the variable of the row: the term of a
 coefficient, the factor of a level, the token of a fit statistic such
 as \code{"nobs"} or \code{"r2"}), \code{label} (the label displayed for that
 variable, or the text of a fit-statistic row), \code{level} (the level of a
-factor row) and \code{.row_role} (\code{"coef"}, \code{"factor_header"}, \code{"level"},
+factor row, or the outcome category of a multinomial row) and
+\code{.row_role} (\code{"coef"}, \code{"factor_header"}, \code{"level"},
 \code{"reference"}, \code{"fit_stat"}, ..., the roles of \code{\link[=as_structured]{as_structured()}}),
 then the printed columns under their names, numeric: the interval of
 a coefficient is split into its two bounds (\code{"95\% CI LL"},

@@ -72,6 +72,21 @@ test_that("a multinomial row beside other models names its category alone", {
   expect_identical(shown[which(shown == "Age (years):") + 1:2], cats)
   # A factor level keeps its category: the levels stay apart.
   expect_true(all(paste0(cats, ": Male") %in% shown))
+  # The data frame gives each row its category, and inline() reaches it,
+  # as it reaches the rows of the logistic model beside it.
+  df <- as.data.frame(out)
+  expect_identical(
+    df$level[df$variable == "age" & df$.row_role == "level"],
+    cats
+  )
+  expect_identical(
+    inline(out, age, "Tertiary", model = 1),
+    sprintf("%.2f", stats::coef(mn)["Tertiary", "age"])
+  )
+  expect_identical(
+    inline(out, age, model = 2),
+    sprintf("%.2f", stats::coef(lg)[["age"]])
+  )
   # The machine outputs keep the prefixed term and the category.
   skip_if_not_installed("broom")
   td <- broom::tidy(out)

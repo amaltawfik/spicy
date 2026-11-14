@@ -28,7 +28,9 @@
 #                                   #   IDENTITY columns (v3):
 #                                   #  .variable chr source variable, or
 #                                   #                the fit-stat token
-#                                   #  .level    chr factor level (NA
+#                                   #  .level    chr factor level, or
+#                                   #                the category of a
+#                                   #                multinomial row (NA
 #                                   #                outside a factor)
 #                                   #  .row_role chr "coef" |
 #                                   #                "factor_header" |
@@ -710,10 +712,17 @@ build_structured_body <- function(
         current_factor <- rt$factor_term
       }
     }
+    # A multinomial row under the header of its term is a level of it:
+    # its outcome category.
+    no_level <- is.na(rt$factor_level) || !nzchar(rt$factor_level)
     push_row(
       new_row,
       variable = if (is.na(rt$factor_term)) rt$term else rt$factor_term,
-      level = rt$factor_level,
+      level = if (no_level && !is.na(rt$outcome_prefix)) {
+        rt$outcome_prefix
+      } else {
+        rt$factor_level
+      },
       role = .struct_term_role(
         rt,
         unique(coefs$estimate_type[coefs$term == rt$term])

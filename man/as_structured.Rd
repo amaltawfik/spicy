@@ -68,7 +68,8 @@ the fit-statistic token (\code{"nobs"}, \code{"r2"}, \code{"fixed_effects"},
 ...) on a fit-statistic row.
 \item \code{body$.level} -- the factor level (or the absorbed factor of a
 fixed-effects block, or the grouping factor of an \code{"N (...)"}
-row); \code{NA} outside a factor.
+row, or the outcome category of a multinomial model's row under the
+header of its term); \code{NA} outside a factor.
 \item \code{body$.row_role} -- what the row \emph{is}: \code{"coef"},
 \code{"factor_header"}, \code{"level"}, \code{"reference"}, \code{"fit_stat"},
 \code{"outcome"}, \code{"vc"} (variance component) in a regression table,
