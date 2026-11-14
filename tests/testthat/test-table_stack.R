@@ -2501,8 +2501,14 @@ test_that("a panel's removed or typed note is what it brings to the stack", {
     "note"
   )
   expect_false(grepl("Linear regression.", note, fixed = TRUE))
-  # Panel A says nothing: B's sentences are B's, and say so.
+  # Panel A says nothing: B's sentences are B's, and say so. Its
+  # estimator is named in the sentence of the standard errors.
   expect_match(note, "B: logistic regression.", fixed = TRUE)
+  expect_match(
+    note,
+    "Std. errors: B: classical (Fisher information).",
+    fixed = TRUE
+  )
   # A panel built with a typed note brings that note.
   note2 <- attr(
     table_stack(A = table_regression(.st_lm(), note = "Typed A."), B = t_glm),
@@ -2710,10 +2716,10 @@ test_that("beside a panel with note = FALSE, the sentences keep their label", {
     attr(ta, "note"),
     "Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval."
   )
-  # B, a logistic model, shares none of A's sentences: each opens with A.
+  # B, a logistic model, shares none of A's sentences: each names A.
   expect_identical(
     attr(table_stack(A = ta, B = tb), "note"),
-    "Note. A: linear regression. A: Std. errors: classical (OLS). CI = confidence interval."
+    "Note. A: linear regression. Std. errors: A: classical (OLS). CI = confidence interval."
   )
   expect_match(
     attr(table_stack(B = tb, A = ta), "note"),

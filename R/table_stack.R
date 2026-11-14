@@ -850,6 +850,27 @@ table_stack <- function(
       vapply(parts[auto], function(p) p$models$vcov, character(1)),
       refs
     )
+  } else if (
+    any(auto) &&
+      all(vapply(parts[auto], function(p) length(p$models$vcov) == 1L, NA))
+  ) {
+    # Another panel brings its own note, or none: the estimator of each
+    # of these panels under its label, in one sentence ("Std. errors: B:
+    # classical (OLS)."), not the sentence of the panel behind its label.
+    vcov_txt <- spicy_fmt(
+      "note_std_errors_single",
+      .join_note_vars(vapply(
+        which(auto),
+        function(i) {
+          spicy_fmt(
+            "note_model_line",
+            panel_labels[[i]],
+            lowercase_first(parts[[i]]$models$vcov)
+          )
+        },
+        character(1)
+      ))
+    )
   }
   # The adjustment of the p-values, its family each model: worded as side
   # by side ("within each model"), each panel's own sentence, that of a
