@@ -489,7 +489,8 @@
 #' with its own header otherwise (an odds ratio beside a coefficient, a
 #' multinomial model with its outcome categories in columns). Models with
 #' different outcomes that the labels of the panels do not name open each
-#' panel on an Outcome row, under its label row (`outcome_labels`). `vcov`
+#' panel on an Outcome row, under its label row (`outcome_labels`), as the
+#' tables built alone do in [table_stack()]. `vcov`
 #' and `cluster` lists give each panel its own estimator. Under
 #' `nested = TRUE`, the change statistics of each
 #' model sit in its own panel, labeled "vs" the model before it. The type
@@ -1733,6 +1734,10 @@
 #'   `FALSE` removes the row. With `layout = "stacked"`, the row opens
 #'   each panel, under the same rule, the labels of the panels taking
 #'   the place of the column headers; a vector gives each panel its label.
+#'   [table_stack()] applies the rule to tables built separately, a table
+#'   built with `FALSE` taking no row. A multinomial model alone has no
+#'   Outcome row, its title naming the outcome; in a stack, its panel
+#'   takes one by this rule, the label once, in its first column.
 #'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per
@@ -3178,6 +3183,7 @@ table_regression <- function(
     # .multinom_columns_spanners() at the explode.
     validate_outcome_labels(outcome_labels, models)
   }
+  outcome_row_off <- isFALSE(outcome_labels)
   validate_predictor_labels(labels)
   # Random-effects display args: validate fail-fast (before the extraction
   # loop), so a bad value errors immediately instead of after the expensive
@@ -4465,6 +4471,11 @@ table_regression <- function(
     function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
     character(1)
   )
+  # A table built with `outcome_labels = FALSE` takes no Outcome row in a
+  # stack (`.stack_outcome_rows()`).
+  if (outcome_row_off) {
+    attr(rendered, "spicy_outcome_row") <- FALSE
+  }
   # What `table_stack()` merges the note of a panel from: the parts the
   # note was composed of, the note the call typed (with its `note_add`),
   # and whether the call removed the note. The name must not open with

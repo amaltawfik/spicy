@@ -258,7 +258,10 @@
   (or its entry in `panel_labels`), under one column header when the
   panels share their columns and with its own header otherwise. The
   notes are merged as for the models side by side, a sentence that
-  holds for some panels only opening with their names. Tables built in
+  holds for some panels only opening with their names. When the panels
+  have different outcomes that their labels do not name, a panel of one
+  outcome opens on an "Outcome" row, as with `layout = "stacked"`; a
+  table built with `outcome_labels = FALSE` takes none. Tables built in
   different languages, with different decimal marks or alignments, or
   under styles that format a cell differently are refused.
 
@@ -667,7 +670,8 @@
   console prints each outcome across the columns of its model, without
   widening the first of them. Under `layout = "stacked"`, the row opens
   each panel whose label does not name the outcome, by the same rule,
-  and `outcome_labels` labels or removes it.
+  and `outcome_labels` labels or removes it; `table_stack()` applies the
+  rule to tables built separately.
 
 * `table_regression()` with one model shows the "Outcome" row that
   `outcome_labels = "<label>"` asks for. The label was ignored without a

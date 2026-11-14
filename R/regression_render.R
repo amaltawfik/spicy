@@ -2033,6 +2033,68 @@ build_outcome_row <- function(outcome_labels, model_ids, label_map, col_spec) {
   as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
 }
 
+# The Outcome row added to a table already built, the row
+# `outcome_labels` gives it at the build: the panels of a stack
+# (`.stack_outcome_rows()`, `layout = "stacked"`). `label` names the
+# outcome of each model; a table of one model laid out by outcome
+# category (multinomial) carries it once, in its first column. Every row
+# moves down one, in the display body and in the typed view alike.
+.reg_add_outcome_row <- function(tbl, label) {
+  col_spec <- attr(tbl, "col_spec", exact = TRUE)
+  ids <- unique(unlist(lapply(col_spec, `[[`, "model_id")))
+  labs <- if (length(attr(tbl, "model_ids", exact = TRUE)) == 1L) {
+    c(label, rep("", length(ids) - 1L))
+  } else {
+    rep(label, length(ids))
+  }
+  out <- rbind(
+    build_outcome_row(labs, ids, NULL, col_spec),
+    structure(tbl, class = "data.frame")
+  )
+  keep <- setdiff(names(attributes(tbl)), c("names", "row.names"))
+  attributes(out)[keep] <- attributes(tbl)[keep]
+  for (a in c("group_sep_rows", "section_sep_rows")) {
+    attr(out, a) <- as.integer(attr(tbl, a, exact = TRUE)) + 1L
+  }
+  st <- attr(tbl, "structured", exact = TRUE)
+  # A table of fit statistics alone rules them off from the row.
+  if (all(st$body$.row_role == "fit_stat")) {
+    attr(out, "group_sep_rows") <- 2L
+  }
+  row <- st$body[1L, , drop = FALSE]
+  row[.struct_value_cols(row)] <- NA_real_
+  row[[.REG_KEY_VARIABLE]] <- spicy_str("row_outcome")
+  row[c(".variable", ".level")] <- NA_character_
+  row$.row_role <- "outcome"
+  row$.indent <- 0L
+  st$body <- rbind(row, st$body)
+  rownames(st$body) <- NULL
+  # The label in the first column of each model that is not a bound.
+  firsts <- character(0)
+  for (nm in .struct_value_cols(st$body)) {
+    m <- st$col_meta[[nm]]
+    if (is.null(m$ci_role) && !m$model_id %in% names(firsts)) {
+      firsts[[m$model_id]] <- nm
+    }
+  }
+  st$outcome_labels_by_col <- stats::setNames(labs, firsts[ids])
+  st$cell_status <- lapply(st$cell_status, function(x) c("", x))
+  if (!is.null(st$stars)) {
+    st$stars$markers <- lapply(st$stars$markers, function(x) c("", x))
+  }
+  st$col_meta <- lapply(st$col_meta, function(m) {
+    for (f in intersect(names(m), c("display_cells", "p_unadjusted"))) {
+      m[[f]] <- c(NA, m[[f]])
+    }
+    for (i in seq_along(m$fit_stat_overrides)) {
+      m$fit_stat_overrides[[i]]$row <- m$fit_stat_overrides[[i]]$row + 1L
+    }
+    m
+  })
+  attr(out, "structured") <- st
+  out
+}
+
 
 # ---- Fit-stats footer rows -----------------------------------------------
 

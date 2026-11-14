@@ -23,6 +23,38 @@
 # validated as a table's own view: a merged column can hold a p-value in
 # one panel and an estimate in another.
 
+# The Outcome row of the panels, by the rule of the models side by side:
+# when the outcomes differ from one panel to another and the labels of
+# the panels do not name them, a panel of one outcome opens on a row
+# that names it. A panel with an Outcome row keeps it; a table built with
+# `outcome_labels = FALSE` takes none.
+.stack_outcome_rows <- function(tables, panel_labels) {
+  outcomes <- lapply(tables, function(t) {
+    unique(attr(t, "outcome", exact = TRUE))
+  })
+  if (
+    length(unique(unlist(outcomes))) < 2L ||
+      identical(unname(panel_labels), unname(.stack_panel_outcomes(tables)))
+  ) {
+    return(tables)
+  }
+  for (k in seq_along(tables)) {
+    t <- tables[[k]]
+    role <- attr(t, "structured", exact = TRUE)$body$.row_role
+    if (
+      length(outcomes[[k]]) == 1L &&
+        !anyNA(outcomes[[k]]) &&
+        !isFALSE(attr(t, "spicy_outcome_row", exact = TRUE)) &&
+        !"outcome" %in% role
+    ) {
+      shown <- attr(t, "spicy_outcome_display", exact = TRUE)
+      lab <- c(shown[!is.na(shown)], outcomes[[k]])[[1L]]
+      tables[[k]] <- .reg_add_outcome_row(t, lab)
+    }
+  }
+  tables
+}
+
 .stack_build <- function(tables, panel_labels, title, note) {
   n <- length(tables)
   # The views the engines lay out: a term-level test is one column, as in

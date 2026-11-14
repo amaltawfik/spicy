@@ -680,6 +680,10 @@ unless \code{model_labels} is also supplied), a single model included.
 \code{FALSE} removes the row. With \code{layout = "stacked"}, the row opens
 each panel, under the same rule, the labels of the panels taking
 the place of the column headers; a vector gives each panel its label.
+\code{\link[=table_stack]{table_stack()}} applies the rule to tables built separately, a table
+built with \code{FALSE} taking no row. A multinomial model alone has no
+Outcome row, its title naming the outcome; in a stack, its panel
+takes one by this rule, the label once, in its first column.
 \strong{Single multinomial model}
 (outcome-as-columns layout): repurposed as the category
 spanner override -- a character vector with one label per
@@ -1475,7 +1479,8 @@ share one column header when they have the same columns, and each opens
 with its own header otherwise (an odds ratio beside a coefficient, a
 multinomial model with its outcome categories in columns). Models with
 different outcomes that the labels of the panels do not name open each
-panel on an Outcome row, under its label row (\code{outcome_labels}). \code{vcov}
+panel on an Outcome row, under its label row (\code{outcome_labels}), as the
+tables built alone do in \code{\link[=table_stack]{table_stack()}}. \code{vcov}
 and \code{cluster} lists give each panel its own estimator. Under
 \code{nested = TRUE}, the change statistics of each
 model sit in its own panel, labeled "vs" the model before it. The type

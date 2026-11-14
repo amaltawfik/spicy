@@ -170,6 +170,13 @@ it describes the model ("Linear regression: bmi"), not the panel. The
 rows of a panel follow, in the order of its table: coefficients, blocks
 (thresholds, random effects, components), fit statistics.
 
+When the panels have different outcomes and their labels do not name
+them (labels given in \code{...}, by \code{panel_labels} or by a title), a panel
+of one outcome opens on an "Outcome" row under its label row, by the
+rule of \code{outcome_labels} in \code{\link[=table_regression]{table_regression()}}. A panel that has its
+own Outcome row keeps it, and a table built with
+\code{outcome_labels = FALSE} takes none.
+
 When every panel has the same column headers, one header heads the
 whole table. Otherwise the header of the first panel heads it and each
 later panel opens with its own header rows, below its label row:

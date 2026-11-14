@@ -49,6 +49,13 @@
 #' rows of a panel follow, in the order of its table: coefficients, blocks
 #' (thresholds, random effects, components), fit statistics.
 #'
+#' When the panels have different outcomes and their labels do not name
+#' them (labels given in `...`, by `panel_labels` or by a title), a panel
+#' of one outcome opens on an "Outcome" row under its label row, by the
+#' rule of `outcome_labels` in [table_regression()]. A panel that has its
+#' own Outcome row keeps it, and a table built with
+#' `outcome_labels = FALSE` takes none.
+#'
 #' When every panel has the same column headers, one header heads the
 #' whole table. Otherwise the header of the first panel heads it and each
 #' later panel opens with its own header rows, below its label row:
@@ -688,6 +695,7 @@ table_stack <- function(
   on.exit(options(old), add = TRUE)
   pushed <- .style_restore(tables[[1L]])
   on.exit(.style_end(pushed), add = TRUE)
+  tables <- .stack_outcome_rows(tables, panel_labels)
   note_txt <- .stack_note(tables, panel_labels, note, note_add, note_extra)
   st <- .stack_build(tables, panel_labels, title, note_txt)
   # The note of the outputs that head the bounds "LL" and "UL"

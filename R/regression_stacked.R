@@ -325,6 +325,11 @@
     }
   }
 
+  # FALSE: no panel opens on an Outcome row, whatever the stack decides
+  # (`.stack_outcome_rows()`).
+  if (isFALSE(outcome_labels)) {
+    panels <- lapply(panels, `attr<-`, "spicy_outcome_row", FALSE)
+  }
   title_txt <- if (isFALSE(stack_title)) {
     NULL
   } else if (is.character(stack_title)) {
