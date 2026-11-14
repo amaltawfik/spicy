@@ -476,7 +476,10 @@ Side by side, models that share few predictors leave a wide and sparse
 table, and the default drops the confidence intervals to save width.
 `layout = "stacked"` sets the models one under the other instead: each
 model gets a panel with the columns it would have on its own, its
-interval included, opened by a row with its label.
+interval included, opened by a row with its label. As side by side,
+models with different outcomes, labeled here by their names in the list,
+get an “Outcome” row under each label (`outcome_labels = FALSE` removes
+it).
 
 ``` r
 
@@ -489,6 +492,7 @@ table_regression(
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
 #>  Wellbeing:      │                                      
+#>  Outcome         │           wellbeing_score            
 #>  (Intercept)     │   65.20  1.66  [61.95, 68.45]  <.001 
 #>  age             │    0.05  0.03  [-0.01,  0.11]   .130 
 #>  sex:            │                                      
@@ -503,6 +507,7 @@ table_regression(
 #>  Adj. R²         │    0.02                              
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  BMI:            │                                      
+#>  Outcome         │                 bmi                  
 #>  (Intercept)     │   23.98  0.40  [23.20, 24.75]  <.001 
 #>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
 #>  sex:            │                                      
@@ -573,6 +578,9 @@ by side: one sentence gives the type of each model, one its standard
 errors, and a sentence that holds for one panel only opens with its
 label. A table without a name takes its label from `panel_labels`, else
 from a title you typed for it, else from its outcome.
+[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+adds no “Outcome” row of its own: a table built with `outcome_labels`
+(`table_regression(m_bmi, outcome_labels = "bmi")`) brings one.
 
 ## Univariable screening
 

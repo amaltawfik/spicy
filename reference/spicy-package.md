@@ -146,7 +146,7 @@ the table below).
 |----|----|
 | Concept | Column |
 | the variable a row describes, its displayed label | `variable`, `label` |
-| the level of a categorical variable, the group of `by` (in the tables that take a `by`) | `level`, `group` |
+| the level of a categorical variable (in a regression table, also the outcome category or the equation of a row under the header of its term), the group of `by` (in the tables that take a `by`) | `level`, `group` |
 | the role of the row's `level` (or item): a level, the row of missing values, ... | `.row_role` (`"level"`, `"missing"`, `"summary"`, ...) |
 | the role of `group`: a group, the column of missing `by` values, the margin | `.group_role` (`"group"`, `"missing"`, `"total"`) |
 | the `Total` margin of the groups | `total` (logical) |
@@ -157,7 +157,7 @@ the table below).
 | the p-value, and the raw one under `p_adjust` | `p.value`, `p_unadjusted` |
 | the effect size: its measure, value and interval | `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper` |
 | the standardized mean difference | `smd_type`, `smd_value` |
-| the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count | `nobs`, `weighted_nobs` |
+| the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count; those with an observed value | `nobs`, `weighted_nobs`; `nobs_valid`, `weighted_nobs_valid` |
 | the weighted count of a group (beside its `n`) | `weighted_n` |
 | the counts of the groups of `by`, of the categories of a variable | `n_groups`, `n_levels` |
 | the fit of a model | `r.squared`, `adj.r.squared` as columns; as a row, its `show_fit_stats` token in `variable` (`r2`, `adj_r2`, `aic`, ...) |

@@ -65,20 +65,29 @@ or `"fisher_exact_mc"`, as in the long output of
 `statistic` (the chi-squared, Pearson's or the N-1, `NA` for an exact
 test), `df`, `p.value`, `es_type` (the key of the measure the variable
 carries: `"phi"`, `"cramer_v"`, ...), `es_value`, `es_ci_lower`,
-`es_ci_upper`, `smd_type`, `smd_value`, `nobs` (the observations of the
-variable, the margin and the Total row not counted twice: rows, never
-weights, a row of zero weight left out), `nobs_valid` (those of them
-with an observed value), `weighted_nobs` (their weighted count, `NA`
-without `weights`) and `weighted_nobs_valid` (the weighted count of the
-rows of `nobs_valid`). Under `drop_na = FALSE`, `nobs` and
-`weighted_nobs` count the rows of the `(Missing)` row, whatever
-`percent_base`; `nobs_valid` leaves them out, and counts the base of the
-percentages under `percent_base = "valid"` unless `levels_keep` hides a
-level. Under `drop_na = TRUE`, `nobs_valid` is `nobs`. Without `by`,
-only `variable`, `label` and the four counts are populated; the other
-columns are `NA`. The interval bounds are `NA` unless the table was
-built with `assoc_ci = TRUE`, and the SMD columns unless it was built
-with `smd = TRUE`.
+`es_ci_upper`, `smd_type`, `smd_value`, `nobs`, `nobs_valid`,
+`weighted_nobs` and `weighted_nobs_valid`. The four counts are rows,
+never weights, a row of zero or missing weight left out, with the margin
+and the Total row not counted twice, and `levels_keep` changes none of
+them:
+
+- `nobs` counts the rows of the variable in the table, the base of the
+  percentages under `percent_base = "total"`: every row under
+  `drop_na = FALSE`, those of the `(Missing)` row included, and the
+  observed values under `drop_na = TRUE`;
+
+- `nobs_valid` counts the rows with an observed value, the base of the
+  percentages under `percent_base = "valid"`; it is `nobs` under
+  `drop_na = TRUE`;
+
+- `weighted_nobs` and `weighted_nobs_valid` are the weighted counts of
+  the same rows, the denominators of the weighted percentages, `NA`
+  without `weights`.
+
+Without `by`, only `variable`, `label` and the four counts are
+populated; the other columns are `NA`. The interval bounds are `NA`
+unless the table was built with `assoc_ci = TRUE`, and the SMD columns
+unless it was built with `smd = TRUE`.
 
 ## See also
 

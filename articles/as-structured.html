@@ -244,7 +244,9 @@ never in positions you would have to track:</p>
 <span><span class="co">#&gt; 11         Adj. R²      adj_r2   &lt;NA&gt;      fit_stat       0</span></span></code></pre></div>
 <p><code>.variable</code> is the source variable (or, on a
 fit-statistics row, the statistic’s token), <code>.level</code> the
-factor level, <code>.row_role</code> one of <code>"coef"</code>,
+factor level (or, under the header of a term, the outcome category of a
+multinomial model or the equation of a Heckman model),
+<code>.row_role</code> one of <code>"coef"</code>,
 <code>"factor_header"</code>, <code>"level"</code>,
 <code>"reference"</code>, <code>"fit_stat"</code>,
 <code>"outcome"</code>, <code>"vc"</code>, and <code>.indent</code> the

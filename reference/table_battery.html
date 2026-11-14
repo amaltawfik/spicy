@@ -132,6 +132,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  p_adjust <span class="op">=</span> <span class="st">"holm"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  percent_base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"total"</span><span class="op">)</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
@@ -228,8 +229,9 @@ and is an error that gives both. Any other value is an error.</p></dd>
 <dd><p>Logical. If <code>TRUE</code> (the default), the missing answers to
 an item leave its base: its percentages are on its valid answers, and
 its <code>n</code> counts them. If <code>FALSE</code>, a last column of missing answers
-(<code>"(Missing)"</code>) follows the levels, and the base of each item is
-every row, its missing answers included.</p></dd>
+(<code>"(Missing)"</code>) follows the levels, and <code>percent_base</code> says what it
+holds: their count beside the same percentages (<code>"valid"</code>, the
+default), or their percentage of every row (<code>"total"</code>).</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
@@ -317,6 +319,20 @@ A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
+
+
+<dt id="arg-percent-base">percent_base<a class="anchor" aria-label="anchor" href="#arg-percent-base"></a></dt>
+<dd><p>The base of the percentages of an item whose
+missing answers the <code>(Missing)</code> column shows (<code>drop_na = FALSE</code>), as
+in <code><a href="table_categorical.html">table_categorical()</a></code>. <code>"valid"</code> (the default): the respondents who
+answered the item, the percentages of <code>drop_na = TRUE</code>; <code>n</code> is that
+base, and the <code>(Missing)</code> column counts the missing answers in the
+unit of <code>n</code>, so that the two add up to every respondent. <code>"total"</code>:
+every respondent, the missing answers included, and the <code>(Missing)</code>
+column is their percentage. <code>top</code> and <code>sort</code> read the percentages on
+that base; the tests do not depend on it. Under <code>drop_na = TRUE</code> the
+two bases give the same table. Unique abbreviations are accepted
+(<code>"v"</code>, <code>"t"</code>).</p></dd>
 
 
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
@@ -432,7 +448,9 @@ visibly, so a bare call prints the ASCII table.</p></li>
 default object returns: one row per item, with columns <code>variable</code>
 (the item's column), <code>label</code> (the label the row displays), then one
 column per displayed column: one percentage per level shown,
-<code>(Missing)</code> under <code>drop_na = FALSE</code>, the summary column of <code>top</code>
+<code>(Missing)</code> under <code>drop_na = FALSE</code> (the count of the missing
+answers under <code>percent_base = "valid"</code>, their percentage under
+<code>"total"</code>), the summary column of <code>top</code>
 (named by its header, <code>"Strongly agree + Agree"</code>) and <code>n</code>, each
 prefixed under <code>by</code> with the group printed above it
 (<code>"Female Agree"</code>, <code>"Female n"</code>), and <code>p</code> with <code>p_value</code>.</p></li>
@@ -440,7 +458,8 @@ prefixed under <code>by</code> with the group printed above it
 <code>variable</code>, <code>label</code>, <code>group</code> (with <code>by</code>), <code>level</code> (the level, or the
 label of the column of missing answers), <code>.row_role</code> (<code>"level"</code>, or
 <code>"missing"</code> for the missing answers), <code>n</code> (the count, weighted under
-<code>weights</code>) and <code>pct</code> (its percentage of the base), and, when the
+<code>weights</code>) and <code>pct</code> (its percentage of the base, <code>NA</code> on the
+missing answers under <code>percent_base = "valid"</code>), and, when the
 tests ran, <code>test_type</code> (<code>"chi_squared"</code>, <code>"n1_chi_squared"</code>,
 <code>"fisher_exact"</code>, <code>"fisher_midp"</code>, <code>"fisher_exact_mc"</code>),
 <code>statistic</code> and <code>df</code> (<code>NA</code> for an exact test), <code>p.value</code>, and
@@ -452,13 +471,16 @@ invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
 </ul><p>The default object and the data frames carry the note as printed in
-<code>attr(x, "note")</code> (its lead-in included, <code>NULL</code> under <code>note = FALSE</code>).
+<code>attr(x, "note")</code> (its lead-in included, <code>NULL</code> under <code>note = FALSE</code>),
+and the base of their percentages in <code>attr(x, "percent_base")</code>.
 <code><a href="as_structured.html">as_structured()</a></code> reads the default object: one <code>"summary"</code> row per
 item, token <code>"pct"</code> for each percentage column (with <code>scale_level</code>, the
 level it shows, <code>missing</code> on the column of missing answers, and <code>top</code>
-with <code>top_levels</code> on the summary column), <code>"n"</code> and <code>"p"</code>. <code><a href="inline.html">inline()</a></code> cites
-a cell: <code>inline(x, item, "Agree", "pct")</code>, with <code>model = "Female"</code>
-under <code>by</code>.</p>
+with <code>top_levels</code> on the summary column), <code>"n"</code> for <code>n</code> and for the
+column of missing answers when it counts them, and <code>"p"</code>. <code><a href="inline.html">inline()</a></code>
+cites a cell: <code>inline(x, item, "Agree", "pct")</code>, with <code>model = "Female"</code>
+under <code>by</code>; <code>inline(x, item, "(Missing)")</code> gives the count of missing
+answers under <code>percent_base = "valid"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="items-and-levels">Items and levels<a class="anchor" aria-label="anchor" href="#items-and-levels"></a></h2>
@@ -485,9 +507,10 @@ the scale that was offered and not chosen. A dash marks a cell with no
 base: an item without a valid answer, in the table or in a group.</p>
 <p>The percentages are row percentages: those of an item sum to 100 over
 the levels shown (the column of missing answers included under
-<code>drop_na = FALSE</code>). Its base, <code>n</code>, is its valid answers on the levels
-shown, or every row under <code>drop_na = FALSE</code>; an answer that <code>levels</code>
-leaves out is out of the base either way. A percentage carries no more
+<code>drop_na = FALSE</code> and <code>percent_base = "total"</code>). Its base, <code>n</code>, is its
+valid answers on the levels shown, or every row under <code>drop_na = FALSE</code>
+and <code>percent_base = "total"</code>; an answer that <code>levels</code> leaves out is out
+of the base either way. A percentage carries no more
 digits than its denominator, so a base of fewer than 100 respondents
 takes whole percentages: <code>percent_digits = 0</code> prints them.</p>
 <p>The table computes no mean or score of the scale: the levels of a
@@ -639,19 +662,19 @@ article <a href="https://amaltawfik.github.io/spicy/articles/table-battery.html"
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Very dissatisfied  Dissatisfied  Satisfied </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>        9.6             18.5        32.7    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>       10.2             21.9        40.8    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>        4.2             14.7        40.0    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>        8.5             22.9        42.1    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>        9.7             18.7        33.0    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>       10.3             22.1        41.2    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>        4.2             14.8        40.3    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>        8.6             23.1        42.5    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span> Very satisfied  (Missing)   n  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>      38.3          0.9     914 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>      26.2          0.9     885 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>      40.3          0.9     886 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>      25.5          0.9     890 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span>      38.6           8      906 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span>      26.5           8      877 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>      40.7           8      878 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>      25.7           8      882 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: all respondents but those whose answer is left out, including those who did not answer the item. Answers left out of the percentages and the base: Neutral.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. The (Missing) column counts the respondents who did not answer the item. Answers left out of the percentages and the base: Neutral.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The integer items as they are: `levels` gives the scale.</span></span></span>
 <span class="r-in"><span><span class="fu">table_battery</span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span></span>

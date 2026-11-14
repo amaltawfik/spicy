@@ -158,12 +158,14 @@ s$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
 ```
 
 `.variable` is the source variable (or, on a fit-statistics row, the
-statistic’s token), `.level` the factor level, `.row_role` one of
-`"coef"`, `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
-`"outcome"`, `"vc"`, and `.indent` the display indent depth. A row is
-addressable by `(.variable, .level)` rather than by its position – and
-because identity is data, not indices, it survives whatever you do to
-the body: subset it, reorder it, stack two tables with
+statistic’s token), `.level` the factor level (or, under the header of a
+term, the outcome category of a multinomial model or the equation of a
+Heckman model), `.row_role` one of `"coef"`, `"factor_header"`,
+`"level"`, `"reference"`, `"fit_stat"`, `"outcome"`, `"vc"`, and
+`.indent` the display indent depth. A row is addressable by
+`(.variable, .level)` rather than by its position – and because identity
+is data, not indices, it survives whatever you do to the body: subset
+it, reorder it, stack two tables with
 [`rbind()`](https://rdrr.io/r/base/cbind.html), and every row still says
 what it is.
 

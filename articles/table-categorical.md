@@ -924,8 +924,7 @@ broom::tidy(out)
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
 # (test_type, statistic, df, p.value, es_type, es_value,
-# es_ci_lower / es_ci_upper, smd_type, smd_value), and its counts: nobs
-# counts the (Missing) row, nobs_valid does not.
+# es_ci_lower / es_ci_upper, smd_type, smd_value), and its counts.
 broom::glance(out)
 #> # A tibble: 2 × 16
 #>   variable  label test_type statistic    df p.value es_type es_value es_ci_lower
@@ -935,6 +934,16 @@ broom::glance(out)
 #> # ℹ 7 more variables: es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>,
 #> #   nobs <int>, nobs_valid <int>, weighted_nobs <dbl>,
 #> #   weighted_nobs_valid <dbl>
+
+# The counts are the bases of the percentages: nobs counts the 25
+# missing answers of smoking, its (Missing) row, and nobs_valid leaves
+# them out.
+broom::glance(out)[c("variable", "nobs", "nobs_valid")]
+#> # A tibble: 2 × 3
+#>   variable           nobs nobs_valid
+#>   <chr>             <int>      <int>
+#> 1 smoking            1200       1175
+#> 2 physical_activity  1200       1200
 ```
 
 ## Multiple-response items
@@ -1007,7 +1016,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_dp1wu3z0mnarbm769hh0 .table
+Categorical table by sex {#tinytable_9esqhb8oh6yu4r6myhmr .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

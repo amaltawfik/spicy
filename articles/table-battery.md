@@ -119,8 +119,9 @@ table_battery(
 ```
 
 By default the missing answers leave the base. With `drop_na = FALSE`, a
-column of missing answers follows the levels and the base of each item
-becomes every respondent:
+column follows the levels with the number of respondents who did not
+answer each item. The percentages keep the respondents who answered as
+their base, and that column plus `n` gives every respondent:
 
 ``` r
 
@@ -128,6 +129,36 @@ table_battery(
   sat,
   select = starts_with("life_sat_"),
   drop_na = FALSE
+)
+#> Item battery
+#> 
+#>  Variable               │ Very dissatisfied  Dissatisfied  Neutral  Satisfied 
+#> ────────────────────────┼─────────────────────────────────────────────────────
+#>  life_sat_health        │        7.4             14.2       24.0      25.1    
+#>  life_sat_work          │        7.6             16.3       26.4      30.3    
+#>  life_sat_relationships │        3.1             10.9       26.3      29.7    
+#>  life_sat_standard      │        6.4             17.1       26.0      31.5    
+#> 
+#>  Variable               │ Very satisfied  (Missing)   n   
+#> ────────────────────────┼─────────────────────────────────
+#>  life_sat_health        │      29.4           8      1192 
+#>  life_sat_work          │      19.5           8      1192 
+#>  life_sat_relationships │      29.9           8      1192 
+#>  life_sat_standard      │      19.0           8      1192 
+#> 
+#> Note. Percentages are row percentages. Base: respondents who answered the item. The (Missing) column counts the respondents who did not answer the item.
+```
+
+`percent_base = "total"` makes every respondent the base instead, and
+the column of missing answers becomes their percentage:
+
+``` r
+
+table_battery(
+  sat,
+  select = starts_with("life_sat_"),
+  drop_na = FALSE,
+  percent_base = "total"
 )
 #> Item battery
 #> 
@@ -442,14 +473,14 @@ broom::tidy(tbl)
 #> # ℹ 30 more rows
 #> # ℹ 3 more variables: df <int>, p.value <dbl>, p_unadjusted <dbl>
 broom::glance(tbl)
-#> # A tibble: 4 × 9
-#>   variable            label test_type statistic    df p.value p_unadjusted  nobs
-#>   <chr>               <chr> <chr>         <dbl> <int>   <dbl>        <dbl> <int>
-#> 1 life_sat_health     life… chi_squa…      1.83     4  0.798        0.767   1192
-#> 2 life_sat_work       life… chi_squa…     12.7      4  0.0523       0.0131  1192
-#> 3 life_sat_relations… life… chi_squa…      4.05     4  0.798        0.399   1192
-#> 4 life_sat_standard   life… chi_squa…      7.07     4  0.397        0.132   1192
-#> # ℹ 1 more variable: weighted_nobs <dbl>
+#> # A tibble: 4 × 11
+#>   variable label test_type statistic    df p.value p_unadjusted  nobs nobs_valid
+#>   <chr>    <chr> <chr>         <dbl> <int>   <dbl>        <dbl> <int>      <int>
+#> 1 life_sa… life… chi_squa…      1.83     4  0.798        0.767   1192       1192
+#> 2 life_sa… life… chi_squa…     12.7      4  0.0523       0.0131  1192       1192
+#> 3 life_sa… life… chi_squa…      4.05     4  0.798        0.399   1192       1192
+#> 4 life_sa… life… chi_squa…      7.07     4  0.397        0.132   1192       1192
+#> # ℹ 2 more variables: weighted_nobs <dbl>, weighted_nobs_valid <dbl>
 ```
 
 The summary column of `top` has no row of its own in `tidy()`: its

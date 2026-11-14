@@ -582,7 +582,10 @@ of different DVs, an “Outcome” row says which model has which
 sparse table, and the default drops the confidence intervals to save
 width. <code>layout = "stacked"</code> sets the models one under the
 other instead: each model gets a panel with the columns it would have on
-its own, its interval included, opened by a row with its label.</p>
+its own, its interval included, opened by a row with its label. As side
+by side, models with different outcomes, labeled here by their names in
+the list, get an “Outcome” row under each label
+(<code>outcome_labels = FALSE</code> removes it).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Wellbeing <span class="op">=</span> <span class="va">m_wellbeing</span>, BMI <span class="op">=</span> <span class="va">m_bmi</span><span class="op">)</span>,</span>
@@ -593,6 +596,7 @@ its own, its interval included, opened by a row with its label.</p>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Wellbeing:      <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;  Outcome         <span style="color: #9E9E9E;">│</span>           wellbeing_score            </span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   65.20  1.66  [61.95, 68.45]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.05  0.03  [-0.01,  0.11]   .130 </span></span>
 <span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
@@ -607,6 +611,7 @@ its own, its interval included, opened by a row with its label.</p>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  BMI:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;  Outcome         <span style="color: #9E9E9E;">│</span>                 bmi                  </span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   23.98  0.40  [23.20, 24.75]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.04  0.01  [ 0.02,  0.05]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
@@ -670,7 +675,10 @@ side by side: one sentence gives the type of each model, one its
 standard errors, and a sentence that holds for one panel only opens with
 its label. A table without a name takes its label from
 <code>panel_labels</code>, else from a title you typed for it, else from
-its outcome.</p>
+its outcome. <code><a href="../reference/table_stack.html">table_stack()</a></code> adds no “Outcome” row of its
+own: a table built with <code>outcome_labels</code>
+(<code>table_regression(m_bmi, outcome_labels = "bmi")</code>) brings
+one.</p>
 </div>
 <div class="section level2">
 <h2 id="univariable-screening">Univariable screening<a class="anchor" aria-label="anchor" href="#univariable-screening"></a>

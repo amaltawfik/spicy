@@ -189,7 +189,8 @@
   longer those of the design. Both tables gain `nobs_valid` and
   `weighted_nobs_valid`, the rows with an observed value and their
   weights: the `(Missing)` row that `nobs` and `weighted_nobs` count is
-  left out.
+  left out. `levels_keep` no longer changes these counts: they are the
+  bases of the percentages, where `nobs` counted only the levels shown.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
@@ -321,7 +322,9 @@
   `n`. `levels` sets the scale and keeps the other answers out of the
   base, `top` adds a column summing some levels, `sort` orders the items
   (`"top-"`, `"name+"`, `"<level>-"`), and `drop_na = FALSE` adds a
-  column of missing answers. With `by`, each group gets a block of
+  column of missing answers: their count beside the percentages of the
+  answers by default, their percentage of every respondent under
+  `percent_base = "total"`. With `by`, each group gets a block of
   columns and each item a chi-squared or Fisher’s exact test,
   Holm-adjusted by default.
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
@@ -335,9 +338,11 @@
   the same table from a
   [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
   or replicate-weights design. The percentages are estimated under the
-  design on each item’s respondents, `n` is their observed count and,
-  with `by`, each item gets a design-based test (`chisq_statistic`,
-  Rao-Scott by default), Holm-adjusted by default.
+  design on each item’s respondents (`percent_base` as in
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)),
+  `n` is their observed count and, with `by`, each item gets a
+  design-based test (`chisq_statistic`, Rao-Scott by default),
+  Holm-adjusted by default.
   [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
   points a design to it. A cell the design cannot estimate shows a dash,
   with a warning and a note sentence, as in
@@ -852,7 +857,14 @@
   statistics alone. The outcomes appeared nowhere.
   `outcome_labels = FALSE` removes the row. The console prints each
   outcome across the columns of its model, without widening the first of
-  them.
+  them. Under `layout = "stacked"`, the row opens each panel whose label
+  does not name the outcome, by the same rule, and `outcome_labels`
+  labels or removes it.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with one model shows the “Outcome” row that
+  `outcome_labels = "<label>"` asks for. The label was ignored without a
+  message.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   in French: a table of models of several families words its title and

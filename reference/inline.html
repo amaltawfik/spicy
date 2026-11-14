@@ -119,7 +119,9 @@ fit-statistic token (<code>"nobs"</code>, <code>"r2"</code>, ...) or label (<cod
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
 <dd><p>For a factor variable, the level, as a string: a
 category shown as a row. <code>"(Missing)"</code> addresses the missing-value
-category by role. A group of <code>by</code> is selected with <code>model</code>.</p></dd>
+category by role. A group of <code>by</code> is selected with <code>model</code>. In a
+regression table, the outcome category of a multinomial row or the
+equation of a Heckman row, under the header of its term.</p></dd>
 
 
 <dt id="arg-column">column<a class="anchor" aria-label="anchor" href="#arg-column"></a></dt>
@@ -202,10 +204,13 @@ once on the row of the first group: <code>inline(tbl, bmi, column = "p")</code>.
 Asked with <code>model</code>, whichever group it names, they are an error (class
 <code>spicy_invalid_input</code>) that gives that call.</p>
 <p><code>level</code> names a category shown as a row: the level of a variable,
-its row of missing values. Until spicy 0.14.0 it also selected the
-groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class <code>spicy_defunct</code>)
-whose message gives the call to use instead.</p>
+its row of missing values. In a regression table, it also names the
+rows under the header of a term: the outcome categories of a
+multinomial model beside other models (<code>inline(tbl, age, "Student", model = "Adjusted")</code>) and the two equations of a Heckman selection
+model (<code>"selection"</code>, <code>"outcome"</code>). Until spicy 0.14.0 it also
+selected the groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
+and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class
+<code>spicy_defunct</code>) whose message gives the call to use instead.</p>
 <p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> has one row per item, addressed by its column
 name, then the rows of <code>none_row</code>, addressed as <code>"none"</code> and
 <code>"no_data"</code>, and the base row, the number of respondents, addressed as

@@ -119,6 +119,7 @@ those of <code><a href="table_battery.html">table_battery()</a></code>.</p>
 <span>  p_adjust <span class="op">=</span> <span class="st">"holm"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  note_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  percent_base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"total"</span><span class="op">)</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
@@ -207,9 +208,10 @@ and is an error that gives both. Any other value is an error.</p></dd>
 <dd><p>Logical. If <code>TRUE</code> (the default), the missing answers to
 an item leave its domain: its percentages are estimated on its valid
 answers, and its <code>n</code> counts them. If <code>FALSE</code>, a last column of
-missing answers (<code>"(Missing)"</code>) follows the levels, and the domain of
-each item takes every row of non-zero weight, its missing answers
-included.</p></dd>
+missing answers (<code>"(Missing)"</code>) follows the levels, and
+<code>percent_base</code> says what it holds: their observed count beside the
+same estimates (<code>"valid"</code>, the default), or their estimated
+percentage (<code>"total"</code>).</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
@@ -280,6 +282,19 @@ A note label
 that another variable of the table shows is an error (class
 <code>spicy_label_collision</code>): choose another one, or relabel the other
 variable.</p></dd>
+
+
+<dt id="arg-percent-base">percent_base<a class="anchor" aria-label="anchor" href="#arg-percent-base"></a></dt>
+<dd><p>The base of the percentages of an item whose
+missing answers the <code>(Missing)</code> column shows (<code>drop_na = FALSE</code>), as
+in <code><a href="table_battery.html">table_battery()</a></code>. <code>"valid"</code> (the default): the domain of the
+respondents who answered the item, as <code>survey::svymean(na.rm = TRUE)</code>
+estimates it, the estimates of <code>drop_na = TRUE</code>; <code>n</code> is their observed
+count, and the <code>(Missing)</code> column the observed count of the missing
+answers, so that the two add up to every respondent. <code>"total"</code>: the
+domain of every row of non-zero weight, the missing answers included,
+and the <code>(Missing)</code> column is their estimated percentage. Under
+<code>drop_na = TRUE</code> the two bases give the same table.</p></dd>
 
 
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
@@ -389,7 +404,8 @@ official document they come from. An unknown name is an error.</p></dd>
 subclass), printed when the call is bare.</p></li>
 <li><p><code>"data.frame"</code>: the displayed table with its numbers, the
 shape of <code><a href="table_battery.html">table_battery()</a></code>: <code>variable</code>, <code>label</code>, one percentage per
-level shown, <code>(Missing)</code> under <code>drop_na = FALSE</code>, the summary
+level shown, <code>(Missing)</code> under <code>drop_na = FALSE</code> (a count or a
+percentage, see <code>percent_base</code>), the summary
 column of <code>top</code>, <code>n</code>, each prefixed with the group under <code>by</code>, and
 <code>p</code>.</p></li>
 <li><p><code>"long"</code>: one row per item, group and level, with <code>variable</code>,
@@ -412,10 +428,11 @@ that of <code><a href="table_battery.html">table_battery()</a></code>: <code>inl
 domain: within the group under <code>by</code>, the rows of non-zero weight whose
 answer is a level shown. The domain is cut from the design with <code>[</code>,
 which keeps its strata, clusters and finite population corrections.
-Under <code>drop_na = FALSE</code>, the missing answers are a level of their own
-and stay in the domain. An answer that <code>levels</code> leaves out is outside
-the domain either way. An item that offers one level is 100% by
-arithmetic: survey does not estimate a variable with one level.</p>
+Under <code>drop_na = FALSE</code> and <code>percent_base = "total"</code>, the missing
+answers are a level of their own and stay in the domain. An answer
+that <code>levels</code> leaves out is outside the domain either way. An item
+that offers one level is 100% by arithmetic: survey does not estimate
+a variable with one level.</p>
 <p>A cell that survey cannot estimate, most often because a stratum holds
 a single primary sampling unit under its default
 <code>options(survey.lonely.psu = "fail")</code>, shows a dash: the function

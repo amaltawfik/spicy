@@ -142,18 +142,21 @@ the standardized mean difference: <code>variable</code>, <code>label</code>, <co
 N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>, <code>es_type</code> (the key of
 the measure the variable carries: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
 <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>,
-<code>nobs</code> (the observations of the variable, the margin and the Total
-row not counted twice: rows, never weights, a row of zero weight left
-out), <code>nobs_valid</code> (those of them with an observed value),
-<code>weighted_nobs</code> (their weighted count, <code>NA</code> without <code>weights</code>) and
-<code>weighted_nobs_valid</code> (the weighted count of the rows of
-<code>nobs_valid</code>). Under <code>drop_na = FALSE</code>, <code>nobs</code> and <code>weighted_nobs</code>
-count the rows of the <code>(Missing)</code> row, whatever <code>percent_base</code>;
-<code>nobs_valid</code> leaves them out, and counts the base of the percentages
-under <code>percent_base = "valid"</code> unless <code>levels_keep</code> hides a level.
-Under <code>drop_na = TRUE</code>, <code>nobs_valid</code> is <code>nobs</code>. Without <code>by</code>, only
-<code>variable</code>, <code>label</code> and the four counts are populated; the other
-columns are <code>NA</code>. The interval
+<code>nobs</code>, <code>nobs_valid</code>, <code>weighted_nobs</code> and <code>weighted_nobs_valid</code>. The
+four counts are rows, never weights, a row of zero or missing weight
+left out, with the margin and the Total row not counted twice, and
+<code>levels_keep</code> changes none of them:</p><ul><li><p><code>nobs</code> counts the rows of the variable in the table, the base of the
+percentages under <code>percent_base = "total"</code>: every row under
+<code>drop_na = FALSE</code>, those of the <code>(Missing)</code> row included, and the
+observed values under <code>drop_na = TRUE</code>;</p></li>
+<li><p><code>nobs_valid</code> counts the rows with an observed value, the base of the
+percentages under <code>percent_base = "valid"</code>; it is <code>nobs</code> under
+<code>drop_na = TRUE</code>;</p></li>
+<li><p><code>weighted_nobs</code> and <code>weighted_nobs_valid</code> are the weighted counts of
+the same rows, the denominators of the weighted percentages, <code>NA</code>
+without <code>weights</code>.</p></li>
+</ul><p>Without <code>by</code>, only <code>variable</code>, <code>label</code> and the four counts are
+populated; the other columns are <code>NA</code>. The interval
 bounds are <code>NA</code> unless the table was built with <code>assoc_ci = TRUE</code>, and
 the SMD columns unless it was built with <code>smd = TRUE</code>.</p>
     </div>

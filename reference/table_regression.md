@@ -760,8 +760,11 @@ table_regression(
   column headers (the outcomes of unnamed models, all different) name
   them, and the row is left out. A character vector of length
   `length(models)` forces the row with those values (the spanner stays
-  as `"Model 1, ..."` unless `model_labels` is also supplied). `FALSE`
-  removes the row. **Single multinomial model** (outcome-as-columns
+  as `"Model 1, ..."` unless `model_labels` is also supplied), a single
+  model included. `FALSE` removes the row. With `layout = "stacked"`,
+  the row opens each panel, under the same rule, the labels of the
+  panels taking the place of the column headers; a vector gives each
+  panel its label. **Single multinomial model** (outcome-as-columns
   layout): repurposed as the category spanner override – a character
   vector with one label per non-reference outcome category (unique, in
   model order), e.g. `c("Student vs Employed", ...)`; the reference
@@ -1587,23 +1590,25 @@ statistics. A row with the label of the model opens each panel:
 all differ, else "Model k". The panels share one column header when they
 have the same columns, and each opens with its own header otherwise (an
 odds ratio beside a coefficient, a multinomial model with its outcome
-categories in columns). `vcov` and `cluster` lists give each panel its
-own estimator; `outcome_labels` does not apply. Under `nested = TRUE`,
-the change statistics of each model sit in its own panel, labeled "vs"
-the model before it. The type of each model, its standard errors and the
-adjustment of its p-values are worded as in the note of the models side
-by side, each panel named by its label; the other sentences each open
-with the labels of the panels they concern. A warning or an error names
-a model as the side-by-side table does. `tidy()`, `glance()` and
-`output = "long"` return the rows of the models side by side, under a
-leading `panel` column, with one exception: under `keep` or `drop`, a
-multinomial model returns the rows its panel shows, selected by its
-terms as in its table alone (`"age"`), where side by side the patterns
-meet terms named with their outcome (`"Student: age"`).
-`output = "data.frame"` binds the data frames of the panels by rows. A
-`keep`, `drop` or `show_intercept = FALSE` that leaves a panel without a
-coefficient row is an error: side by side, such a model keeps its fit
-statistics beside the others.
+categories in columns). Models with different outcomes that the labels
+of the panels do not name open each panel on an Outcome row, under its
+label row (`outcome_labels`). `vcov` and `cluster` lists give each panel
+its own estimator. Under `nested = TRUE`, the change statistics of each
+model sit in its own panel, labeled "vs" the model before it. The type
+of each model, its standard errors and the adjustment of its p-values
+are worded as in the note of the models side by side, each panel named
+by its label; the other sentences each open with the labels of the
+panels they concern. A warning or an error names a model as the
+side-by-side table does. `tidy()`, `glance()` and `output = "long"`
+return the rows of the models side by side, under a leading `panel`
+column, with one exception: under `keep` or `drop`, a multinomial model
+returns the rows its panel shows, selected by its terms as in its table
+alone (`"age"`), where side by side the patterns meet terms named with
+their outcome (`"Student: age"`). `output = "data.frame"` binds the data
+frames of the panels by rows. A `keep`, `drop` or
+`show_intercept = FALSE` that leaves a panel without a coefficient row
+is an error: side by side, such a model keeps its fit statistics beside
+the others.
 
 ## Inference and standard errors
 

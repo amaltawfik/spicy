@@ -55,23 +55,33 @@ observed in
 [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)),
 `proportion` (between 0 and 1, the share of the item's base, estimated
 under the design in
-[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)),
-and the test of the item: `test_type`, `statistic` and `df` (`NA` for an
-exact test, and in
+[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md);
+`NA` on the missing answers under `percent_base = "valid"`, which leaves
+them out of the base), and the test of the item: `test_type`,
+`statistic` and `df` (`NA` for an exact test, and in
 [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
 whose long output does not carry them), `p.value` (adjusted under
 `p_adjust`) and `p_unadjusted`. The summary column of `top` has no row
 of its own: its proportion is the sum of those of the levels it names.
 
 `glance()` returns one row per item: `variable`, `label`, `test_type`,
-`statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, the rows of the
-item's base summed over the groups (rows, never weights, a row of zero
-weight left out), and `weighted_nobs`, their weighted count (the sum of
-the `n` columns under the `weights` of
-[`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
-the sum of the sampling weights in
-[`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
-`NA` otherwise).
+`statistic`, `df`, `p.value`, `p_unadjusted`, `nobs`, `nobs_valid`,
+`weighted_nobs` and `weighted_nobs_valid`. The counts are rows, never
+weights, a row of zero weight left out, summed over the groups:
+
+- `nobs` counts the rows of the item in the table, the base under
+  `percent_base = "total"`: its answers on the levels shown, and its
+  missing answers under `drop_na = FALSE`;
+
+- `nobs_valid` counts its answers on the levels shown, the base under
+  `percent_base = "valid"`; it is `nobs` under `drop_na = TRUE`;
+
+- `weighted_nobs` and `weighted_nobs_valid` are the weighted counts of
+  the same rows (under the `weights` of
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md),
+  the sum of the sampling weights in
+  [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md),
+  `NA` otherwise).
 
 Both column sets are fixed: a test the table did not run is present and
 `NA`. Index by name rather than by position.

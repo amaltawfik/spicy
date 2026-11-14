@@ -356,6 +356,7 @@ table_regression(list(BMI = fit_bmi, Dentist = fit_dentist),
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
 #>  BMI:            │                                      
+#>  Outcome         │                 bmi                  
 #>  (Intercept)     │   23.95  0.39  [23.18, 24.71]  <.001 
 #>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
 #>  sex:            │                                      
@@ -367,6 +368,7 @@ table_regression(list(BMI = fit_bmi, Dentist = fit_dentist),
 #>  Adj. R²         │    0.02                              
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Dentist:        │                                      
+#>  Outcome         │             dentist_12m              
 #>  (Intercept)     │    0.44  0.23  [-0.00,  0.89]   .052 
 #>  age             │    0.01  0.00  [ 0.00,  0.02]   .044 
 #>  sex:            │                                      

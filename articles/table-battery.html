@@ -220,13 +220,41 @@ neutral level is left out:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. Answers left out of the percentages and the base: Neutral.</span></span></span></code></pre></div>
 <p>By default the missing answers leave the base. With
-<code>drop_na = FALSE</code>, a column of missing answers follows the
-levels and the base of each item becomes every respondent:</p>
+<code>drop_na = FALSE</code>, a column follows the levels with the
+number of respondents who did not answer each item. The percentages keep
+the respondents who answered as their base, and that column plus
+<code>n</code> gives every respondent:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Very dissatisfied  Dissatisfied  Neutral  Satisfied </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>        7.4             14.2       24.0      25.1    </span></span>
+<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>        7.6             16.3       26.4      30.3    </span></span>
+<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>        3.1             10.9       26.3      29.7    </span></span>
+<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>        6.4             17.1       26.0      31.5    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Very satisfied  (Missing)   n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼─────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  life_sat_health        <span style="color: #9E9E9E;">│</span>      29.4           8      1192 </span></span>
+<span><span class="co">#&gt;  life_sat_work          <span style="color: #9E9E9E;">│</span>      19.5           8      1192 </span></span>
+<span><span class="co">#&gt;  life_sat_relationships <span style="color: #9E9E9E;">│</span>      29.9           8      1192 </span></span>
+<span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>      19.0           8      1192 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item. The (Missing) column counts the respondents who did not answer the item.</span></span></span></code></pre></div>
+<p><code>percent_base = "total"</code> makes every respondent the base
+instead, and the column of missing answers becomes their percentage:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
+<span>  <span class="va">sat</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
+<span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  percent_base <span class="op">=</span> <span class="st">"total"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -258,7 +286,7 @@ for decreasing order, after <code>top</code> (the summary column),
 <code>"-"</code> alone sorts on the summary column. Whole percentages
 are enough to compare the items, and <code>percent_digits = 0</code>
 prints them:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
@@ -308,7 +336,7 @@ chi-squared test, or Fisher’s exact test when an expected count is below
 5, as in <code><a href="../reference/table_categorical.html">table_categorical()</a></code>. The items of a battery are
 read together, so the p-values are adjusted for the family of the items
 by Holm’s method, as in <code><a href="../reference/table_multiresponse.html">table_multiresponse()</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Item battery by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -344,7 +372,7 @@ by Holm’s method, as in <code><a href="../reference/table_multiresponse.html">
 labels repeated in each. With <code>top</code>, each group keeps only
 the summary column and its base, the usual table for comparing
 groups:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
@@ -408,7 +436,7 @@ chooses another test, as in <code><a href="../reference/table_categorical.html">
 <p><code>weights</code> takes frequency weights, as in
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>. The counts, the percentages, the base
 and the tests are weighted, and the note says so:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
@@ -444,7 +472,7 @@ survey design</em></a>.</p>
 </h2>
 <p><code>output = "data.frame"</code> returns the displayed table with
 its numbers, one row per item:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
@@ -469,7 +497,7 @@ its numbers, one row per item:</p>
 <span><span class="co">#&gt; 4    577 0.39656912</span></span></code></pre></div>
 <p><code>output = "long"</code> returns one row per item, group and
 level, with the test of each item:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">long</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>  <span class="va">sat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>,</span>
@@ -495,7 +523,7 @@ level, with the test of each item:</p>
 <code>output = "long"</code> with the percentage as a proportion of the
 item’s base, and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> one row per item, with its
 test and its base <code>nobs</code>, summed over the groups:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 40 × 12</span></span></span>
@@ -514,21 +542,21 @@ test and its base <code>nobs</code>, summed over the groups:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 30 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: df &lt;int&gt;, p.value &lt;dbl&gt;, p_unadjusted &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 9</span></span></span>
-<span><span class="co">#&gt;   variable            label test_type statistic    df p.value p_unadjusted  nobs</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> life_sat_health     life… chi_squa…      1.83     4  0.798        0.767   <span style="text-decoration: underline;">1</span>192</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> life_sat_work       life… chi_squa…     12.7      4  0.052<span style="text-decoration: underline;">3</span>       0.013<span style="text-decoration: underline;">1</span>  <span style="text-decoration: underline;">1</span>192</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> life_sat_relations… life… chi_squa…      4.05     4  0.798        0.399   <span style="text-decoration: underline;">1</span>192</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> life_sat_standard   life… chi_squa…      7.07     4  0.397        0.132   <span style="text-decoration: underline;">1</span>192</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: weighted_nobs &lt;dbl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 11</span></span></span>
+<span><span class="co">#&gt;   variable label test_type statistic    df p.value p_unadjusted  nobs nobs_valid</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> life_sa… life… chi_squa…      1.83     4  0.798        0.767   <span style="text-decoration: underline;">1</span>192       <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> life_sa… life… chi_squa…     12.7      4  0.052<span style="text-decoration: underline;">3</span>       0.013<span style="text-decoration: underline;">1</span>  <span style="text-decoration: underline;">1</span>192       <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> life_sa… life… chi_squa…      4.05     4  0.798        0.399   <span style="text-decoration: underline;">1</span>192       <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> life_sa… life… chi_squa…      7.07     4  0.397        0.132   <span style="text-decoration: underline;">1</span>192       <span style="text-decoration: underline;">1</span>192</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: weighted_nobs &lt;dbl&gt;, weighted_nobs_valid &lt;dbl&gt;</span></span></span></code></pre></div>
 <p>The summary column of <code>top</code> has no row of its own in
 <code>tidy()</code>: its proportion is the sum of those of the levels it
 names. Both column sets are fixed: a test the table did not run is
 present and <code>NA</code>. Index by name, never by position.</p>
 <p><code><a href="../reference/inline.html">inline()</a></code> cites a cell in running text: the item, then
 the level of the scale, and the group with <code>model</code>:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">life_sat_work</span>, <span class="st">"Very satisfied"</span>, <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "15.9"</span></span></code></pre></div>
 </div>
@@ -537,7 +565,7 @@ the level of the scale, and the group with <code>model</code>:</p>
 </h2>
 <p>The same table renders through six further engines, the console being
 the reference.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span>
@@ -558,7 +586,7 @@ the reference.</p>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
 </h2>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span></span>
 <span>    <span class="va">sat</span>,</span>

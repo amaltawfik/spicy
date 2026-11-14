@@ -122,19 +122,26 @@ answers of <code>drop_na = FALSE</code>), <code>group</code> (the <code>by</code
 <code>by</code>), <code>n</code> (the count: weighted under the <code>weights</code> of
 <code><a href="table_battery.html">table_battery()</a></code>, observed in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>), <code>proportion</code>
 (between 0 and 1, the share of the item's base, estimated under the
-design in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>), and the test of the item:
+design in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>; <code>NA</code> on the missing answers under
+<code>percent_base = "valid"</code>, which leaves them out of the base), and the
+test of the item:
 <code>test_type</code>, <code>statistic</code> and <code>df</code> (<code>NA</code> for an exact test, and in
 <code><a href="table_battery_svy.html">table_battery_svy()</a></code>, whose long output does not carry them),
 <code>p.value</code> (adjusted under <code>p_adjust</code>) and <code>p_unadjusted</code>. The summary
 column of <code>top</code> has no row of its own: its proportion is the sum of
 those of the levels it names.</p>
 <p><code>glance()</code> returns one row per item: <code>variable</code>, <code>label</code>, <code>test_type</code>,
-<code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>p_unadjusted</code>, <code>nobs</code>, the rows of the
-item's base summed over the groups (rows, never weights, a row of zero
-weight left out), and <code>weighted_nobs</code>, their weighted count (the sum of
-the <code>n</code> columns under the <code>weights</code> of <code><a href="table_battery.html">table_battery()</a></code>, the sum of the
-sampling weights in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>, <code>NA</code> otherwise).</p>
-<p>Both column sets are fixed: a test the table did not run is present and
+<code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>p_unadjusted</code>, <code>nobs</code>, <code>nobs_valid</code>,
+<code>weighted_nobs</code> and <code>weighted_nobs_valid</code>. The counts are rows, never
+weights, a row of zero weight left out, summed over the groups:</p><ul><li><p><code>nobs</code> counts the rows of the item in the table, the base under
+<code>percent_base = "total"</code>: its answers on the levels shown, and its
+missing answers under <code>drop_na = FALSE</code>;</p></li>
+<li><p><code>nobs_valid</code> counts its answers on the levels shown, the base under
+<code>percent_base = "valid"</code>; it is <code>nobs</code> under <code>drop_na = TRUE</code>;</p></li>
+<li><p><code>weighted_nobs</code> and <code>weighted_nobs_valid</code> are the weighted counts of
+the same rows (under the <code>weights</code> of <code><a href="table_battery.html">table_battery()</a></code>, the sum of
+the sampling weights in <code><a href="table_battery_svy.html">table_battery_svy()</a></code>, <code>NA</code> otherwise).</p></li>
+</ul><p>Both column sets are fixed: a test the table did not run is present and
 <code>NA</code>. Index by name rather than by position.</p>
     </div>
 

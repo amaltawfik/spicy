@@ -815,7 +815,10 @@ Otherwise the title (one outcome) or the column headers (the
 outcomes of unnamed models, all different) name them, and the row
 is left out. A character vector of length <code>length(models)</code> forces
 the row with those values (the spanner stays as <code>"Model 1, ..."</code>
-unless <code>model_labels</code> is also supplied). <code>FALSE</code> removes the row.
+unless <code>model_labels</code> is also supplied), a single model included.
+<code>FALSE</code> removes the row. With <code>layout = "stacked"</code>, the row opens
+each panel, under the same rule, the labels of the panels taking
+the place of the column headers; a vector gives each panel its label.
 <strong>Single multinomial model</strong>
 (outcome-as-columns layout): repurposed as the category
 spanner override – a character vector with one label per
@@ -1600,9 +1603,11 @@ model opens each panel: <code>model_labels</code>, else the names of <code>model
 else the outcomes when they all differ, else "Model k". The panels
 share one column header when they have the same columns, and each opens
 with its own header otherwise (an odds ratio beside a coefficient, a
-multinomial model with its outcome categories in columns). <code>vcov</code> and
-<code>cluster</code> lists give each panel its own estimator; <code>outcome_labels</code>
-does not apply. Under <code>nested = TRUE</code>, the change statistics of each
+multinomial model with its outcome categories in columns). Models with
+different outcomes that the labels of the panels do not name open each
+panel on an Outcome row, under its label row (<code>outcome_labels</code>). <code>vcov</code>
+and <code>cluster</code> lists give each panel its own estimator. Under
+<code>nested = TRUE</code>, the change statistics of each
 model sit in its own panel, labeled "vs" the model before it. The type
 of each model, its standard errors and the adjustment of its p-values
 are worded as in the note of the models side by side, each panel named

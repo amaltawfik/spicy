@@ -44,7 +44,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 
   For a factor variable, the level, as a string: a category shown as a
   row. `"(Missing)"` addresses the missing-value category by role. A
-  group of `by` is selected with `model`.
+  group of `by` is selected with `model`. In a regression table, the
+  outcome category of a multinomial row or the equation of a Heckman
+  row, under the header of its term.
 
 - column:
 
@@ -148,7 +150,12 @@ names, they are an error (class `spicy_invalid_input`) that gives that
 call.
 
 `level` names a category shown as a row: the level of a variable, its
-row of missing values. Until spicy 0.14.0 it also selected the groups of
+row of missing values. In a regression table, it also names the rows
+under the header of a term: the outcome categories of a multinomial
+model beside other models
+(`inline(tbl, age, "Student", model = "Adjusted")`) and the two
+equations of a Heckman selection model (`"selection"`, `"outcome"`).
+Until spicy 0.14.0 it also selected the groups of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
 and

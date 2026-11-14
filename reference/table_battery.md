@@ -34,6 +34,7 @@ table_battery(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -135,8 +136,9 @@ table_battery(
   Logical. If `TRUE` (the default), the missing answers to an item leave
   its base: its percentages are on its valid answers, and its `n` counts
   them. If `FALSE`, a last column of missing answers (`"(Missing)"`)
-  follows the levels, and the base of each item is every row, its
-  missing answers included.
+  follows the levels, and `percent_base` says what it holds: their count
+  beside the same percentages (`"valid"`, the default), or their
+  percentage of every row (`"total"`).
 
 - show_n:
 
@@ -237,6 +239,20 @@ table_battery(
   A note label that another variable of the table shows is an error
   (class `spicy_label_collision`): choose another one, or relabel the
   other variable.
+
+- percent_base:
+
+  The base of the percentages of an item whose missing answers the
+  `(Missing)` column shows (`drop_na = FALSE`), as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  `"valid"` (the default): the respondents who answered the item, the
+  percentages of `drop_na = TRUE`; `n` is that base, and the `(Missing)`
+  column counts the missing answers in the unit of `n`, so that the two
+  add up to every respondent. `"total"`: every respondent, the missing
+  answers included, and the `(Missing)` column is their percentage.
+  `top` and `sort` read the percentages on that base; the tests do not
+  depend on it. Under `drop_na = TRUE` the two bases give the same
+  table. Unique abbreviations are accepted (`"v"`, `"t"`).
 
 - percent_digits:
 
@@ -366,17 +382,20 @@ Depends on `output`:
   of the default object returns: one row per item, with columns
   `variable` (the item's column), `label` (the label the row displays),
   then one column per displayed column: one percentage per level shown,
-  `(Missing)` under `drop_na = FALSE`, the summary column of `top`
-  (named by its header, `"Strongly agree + Agree"`) and `n`, each
-  prefixed under `by` with the group printed above it (`"Female Agree"`,
-  `"Female n"`), and `p` with `p_value`.
+  `(Missing)` under `drop_na = FALSE` (the count of the missing answers
+  under `percent_base = "valid"`, their percentage under `"total"`), the
+  summary column of `top` (named by its header,
+  `"Strongly agree + Agree"`) and `n`, each prefixed under `by` with the
+  group printed above it (`"Female Agree"`, `"Female n"`), and `p` with
+  `p_value`.
 
 - `"long"`: one row per item, group and level, with columns `variable`,
   `label`, `group` (with `by`), `level` (the level, or the label of the
   column of missing answers), `.row_role` (`"level"`, or `"missing"` for
   the missing answers), `n` (the count, weighted under `weights`) and
-  `pct` (its percentage of the base), and, when the tests ran,
-  `test_type` (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+  `pct` (its percentage of the base, `NA` on the missing answers under
+  `percent_base = "valid"`), and, when the tests ran, `test_type`
+  (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
   `"fisher_midp"`, `"fisher_exact_mc"`), `statistic` and `df` (`NA` for
   an exact test), `p.value`, and `p_unadjusted` under an adjustment. The
   summary column is not part of it: it is the sum of the levels of
@@ -391,15 +410,18 @@ Depends on `output`:
   invisibly.
 
 The default object and the data frames carry the note as printed in
-`attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`).
+`attr(x, "note")` (its lead-in included, `NULL` under `note = FALSE`),
+and the base of their percentages in `attr(x, "percent_base")`.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 reads the default object: one `"summary"` row per item, token `"pct"`
 for each percentage column (with `scale_level`, the level it shows,
 `missing` on the column of missing answers, and `top` with `top_levels`
-on the summary column), `"n"` and `"p"`.
+on the summary column), `"n"` for `n` and for the column of missing
+answers when it counts them, and `"p"`.
 [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
 cites a cell: `inline(x, item, "Agree", "pct")`, with `model = "Female"`
-under `by`.
+under `by`; `inline(x, item, "(Missing)")` gives the count of missing
+answers under `percent_base = "valid"`.
 
 ## Items and levels
 
@@ -435,11 +457,12 @@ base: an item without a valid answer, in the table or in a group.
 
 The percentages are row percentages: those of an item sum to 100 over
 the levels shown (the column of missing answers included under
-`drop_na = FALSE`). Its base, `n`, is its valid answers on the levels
-shown, or every row under `drop_na = FALSE`; an answer that `levels`
-leaves out is out of the base either way. A percentage carries no more
-digits than its denominator, so a base of fewer than 100 respondents
-takes whole percentages: `percent_digits = 0` prints them.
+`drop_na = FALSE` and `percent_base = "total"`). Its base, `n`, is its
+valid answers on the levels shown, or every row under `drop_na = FALSE`
+and `percent_base = "total"`; an answer that `levels` leaves out is out
+of the base either way. A percentage carries no more digits than its
+denominator, so a base of fewer than 100 respondents takes whole
+percentages: `percent_digits = 0` prints them.
 
 The table computes no mean or score of the scale: the levels of a rating
 scale are ordered, not spaced on an interval.
@@ -596,19 +619,19 @@ table_battery(
 #> 
 #>  Variable               │ Very dissatisfied  Dissatisfied  Satisfied 
 #> ────────────────────────┼────────────────────────────────────────────
-#>  life_sat_health        │        9.6             18.5        32.7    
-#>  life_sat_work          │       10.2             21.9        40.8    
-#>  life_sat_relationships │        4.2             14.7        40.0    
-#>  life_sat_standard      │        8.5             22.9        42.1    
+#>  life_sat_health        │        9.7             18.7        33.0    
+#>  life_sat_work          │       10.3             22.1        41.2    
+#>  life_sat_relationships │        4.2             14.8        40.3    
+#>  life_sat_standard      │        8.6             23.1        42.5    
 #> 
 #>  Variable               │ Very satisfied  (Missing)   n  
 #> ────────────────────────┼────────────────────────────────
-#>  life_sat_health        │      38.3          0.9     914 
-#>  life_sat_work          │      26.2          0.9     885 
-#>  life_sat_relationships │      40.3          0.9     886 
-#>  life_sat_standard      │      25.5          0.9     890 
+#>  life_sat_health        │      38.6           8      906 
+#>  life_sat_work          │      26.5           8      877 
+#>  life_sat_relationships │      40.7           8      878 
+#>  life_sat_standard      │      25.7           8      882 
 #> 
-#> Note. Percentages are row percentages. Base: all respondents but those whose answer is left out, including those who did not answer the item. Answers left out of the percentages and the base: Neutral.
+#> Note. Percentages are row percentages. Base: respondents who answered the item. The (Missing) column counts the respondents who did not answer the item. Answers left out of the percentages and the base: Neutral.
 
 # The integer items as they are: `levels` gives the scale.
 table_battery(sochealth, select = starts_with("life_sat_"), levels = 1:5)

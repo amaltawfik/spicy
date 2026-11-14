@@ -37,6 +37,7 @@ table_battery_svy(
   p_adjust = "holm",
   labels = getOption("spicy.var_labels", FALSE),
   note_labels = NULL,
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -136,8 +137,9 @@ table_battery_svy(
   Logical. If `TRUE` (the default), the missing answers to an item leave
   its domain: its percentages are estimated on its valid answers, and
   its `n` counts them. If `FALSE`, a last column of missing answers
-  (`"(Missing)"`) follows the levels, and the domain of each item takes
-  every row of non-zero weight, its missing answers included.
+  (`"(Missing)"`) follows the levels, and `percent_base` says what it
+  holds: their observed count beside the same estimates (`"valid"`, the
+  default), or their estimated percentage (`"total"`).
 
 - show_n:
 
@@ -220,6 +222,20 @@ table_battery_svy(
   A note label that another variable of the table shows is an error
   (class `spicy_label_collision`): choose another one, or relabel the
   other variable.
+
+- percent_base:
+
+  The base of the percentages of an item whose missing answers the
+  `(Missing)` column shows (`drop_na = FALSE`), as in
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md).
+  `"valid"` (the default): the domain of the respondents who answered
+  the item, as `survey::svymean(na.rm = TRUE)` estimates it, the
+  estimates of `drop_na = TRUE`; `n` is their observed count, and the
+  `(Missing)` column the observed count of the missing answers, so that
+  the two add up to every respondent. `"total"`: the domain of every row
+  of non-zero weight, the missing answers included, and the `(Missing)`
+  column is their estimated percentage. Under `drop_na = TRUE` the two
+  bases give the same table.
 
 - percent_digits:
 
@@ -346,8 +362,9 @@ Depends on `output`, as in
 - `"data.frame"`: the displayed table with its numbers, the shape of
   [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md):
   `variable`, `label`, one percentage per level shown, `(Missing)` under
-  `drop_na = FALSE`, the summary column of `top`, `n`, each prefixed
-  with the group under `by`, and `p`.
+  `drop_na = FALSE` (a count or a percentage, see `percent_base`), the
+  summary column of `top`, `n`, each prefixed with the group under `by`,
+  and `p`.
 
 - `"long"`: one row per item, group and level, with `variable`, `label`,
   `group` (with `by`), `level`, `.row_role`, `n` (the observed count)
@@ -377,11 +394,11 @@ The percentage of a level is
 of the item on its domain: within the group under `by`, the rows of
 non-zero weight whose answer is a level shown. The domain is cut from
 the design with `[`, which keeps its strata, clusters and finite
-population corrections. Under `drop_na = FALSE`, the missing answers are
-a level of their own and stay in the domain. An answer that `levels`
-leaves out is outside the domain either way. An item that offers one
-level is 100% by arithmetic: survey does not estimate a variable with
-one level.
+population corrections. Under `drop_na = FALSE` and
+`percent_base = "total"`, the missing answers are a level of their own
+and stay in the domain. An answer that `levels` leaves out is outside
+the domain either way. An item that offers one level is 100% by
+arithmetic: survey does not estimate a variable with one level.
 
 A cell that survey cannot estimate, most often because a stratum holds a
 single primary sampling unit under its default
