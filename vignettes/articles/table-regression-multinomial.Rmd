@@ -147,9 +147,9 @@ row blocks; side by side is the publication convention. Reading it:
 * Inference is **Wald-z** (`df = Inf`), matching `summary()`-based
   practice for ML fits and Stata `mlogit`; `nnet` itself prints no
   p-values.
-* The model-fit block reports **n**, the **McFadden and Nagelkerke
-  pseudo-R²**, and **AIC**, once, under the first group — they belong
-  to the model, not to an equation.
+* The model-fit block reports **n**, **McFadden's pseudo-R²** and
+  **AIC**, once, under the first group: they belong to the model, not
+  to an equation.
 
 Before reading any cell, the whole model must earn its keep: the joint
 likelihood-ratio test against the intercept-only fit — the test Stata

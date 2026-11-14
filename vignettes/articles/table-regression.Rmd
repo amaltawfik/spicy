@@ -736,8 +736,12 @@ Poisson). The confidence interval and the average marginal effects
 use the same distribution. The
 table title becomes family-aware ("Logistic regression", "Poisson
 regression", "Probit regression", …) and the default
-fit-statistics block swaps in `nobs`, `pseudo_r2_mcfadden`,
-`pseudo_r2_nagelkerke`, and `aic` instead of `R²` and `Adj. R²`.
+fit-statistics block swaps in `nobs`, the R² rows of the family and
+`aic` instead of `R²` and `Adj. R²`. A logit on a binary outcome shows
+Tjur's and McFadden's R² (`pseudo_r2_tjur`, `pseudo_r2_mcfadden`), the
+other binomial, Poisson and negative binomial models McFadden's alone,
+and the gaussian, Gamma, inverse Gaussian and Tweedie families the
+deviance R² (`r2_deviance`).
 
 We illustrate with a logistic regression of `smoking` on `sex`,
 `age`, and `education` from `sochealth`, reusing `sh` — the copy
@@ -754,20 +758,21 @@ fit <- glm(smoking ~ sex + age + education, data = sh,
 table_regression(fit)
 ```
 
-Read the fit block with care. McFadden and Nagelkerke R² are
-likelihood-based analogs of R², not proportions of explained
-variance — their values are not comparable to an OLS R², and
-different measures disagree by construction on the same fit
-(here 0.02 for McFadden versus 0.03 for Nagelkerke). Long and
-Freese (2014, §3.3) find these scalar measures of limited
-utility except as a rough index for comparing competing models
-on the same data, and prefer the information criteria — hence
-AIC in the default block. When reporting one, name the specific
-measure, as the row labels here do; a generic "pseudo-R²" is
-ambiguous across software. Tjur's (2009) coefficient of
-discrimination, an alternative on the probability scale for
-binary outcomes, is available as the opt-in token
-`pseudo_r2_tjur` via `show_fit_stats`.
+Read the fit block with care. Neither row is a share of explained
+variance, and neither compares with an OLS R². Tjur's (2009) R² is
+the mean predicted probability of the smokers minus that of the
+non-smokers. McFadden's (1974) is the proportional reduction of the
+log-likelihood from the intercept-only model. Both read 0.02 here.
+Other measures give other numbers on the same fit: Nagelkerke's R²,
+which `show_fit_stats` adds with `"pseudo_r2_nagelkerke"`, is 0.03.
+When reporting one, name it, as the row labels do: a generic
+"pseudo-R²" is ambiguous across software (Long & Freese 2014, p. 126).
+A threshold quoted for one measure does not carry over to another
+(Hemmert et al. 2018). Long and Freese (2014, p. 120) find these
+measures of limited use in their own research, with the exception of
+the information criteria, hence AIC in the default block. The
+reference page, `?table_regression`, gives the measure of each family
+and why.
 
 ### Response-scale display: `exponentiate = TRUE`
 
@@ -1319,6 +1324,11 @@ perspectives on recent causal and statistical inference debates.
 
 Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd
 ed.). Springer. Section 5.4 on multiplicity.
+
+Hemmert, G. A. J., Schons, L. M., Wieseke, J., and
+Schimmelpfennig, H. (2018). Log-likelihood-based pseudo-R² in
+logistic regression: Deriving sample-sensitive benchmarks.
+*Sociological Methods & Research*, 47(3), 507–531.
 
 Hosmer, D. W., Lemeshow, S., and Sturdivant, R. X. (2013).
 *Applied Logistic Regression* (3rd ed.). Wiley.

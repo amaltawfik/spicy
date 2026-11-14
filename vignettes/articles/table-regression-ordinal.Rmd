@@ -128,13 +128,14 @@ Reading the table:
   substance lies in the odds ratios and marginal effects below. Hide
   the block with `show_thresholds = FALSE` to fall back to a compact
   footer line.
-* Below the fit-stats rule, the model-fit block reports **n**, two
-  pseudo-$R^2$ (**McFadden**, the Stata `ologit` default, and
-  **Nagelkerke**, one of the three measures SPSS PLUM prints by
-  default, alongside Cox &amp; Snell and McFadden), and **AIC**. Both compare the
-  fitted log-likelihood to the intercept-only model's, and both round
-  to 0.00 here: these four predictors explain almost none of the
-  variation in self-rated health. This survey model therefore
+* Below the fit-stats rule, the model-fit block reports **n**,
+  **McFadden's pseudo-$R^2$** (the one Stata's `ologit` prints) and
+  **AIC**. McFadden's $R^2$ compares the fitted log-likelihood to the
+  intercept-only model's, and it rounds to 0.00 here: these four
+  predictors explain almost none of the variation in self-rated health.
+  SPSS PLUM prints Cox &amp; Snell's and Nagelkerke's beside it, and
+  `show_fit_stats` can add the latter (`"pseudo_r2_nagelkerke"`). This
+  survey model therefore
   illustrates table mechanics and interpretation *wording*; read the
   exemplary sentences below as templates, not as substantive findings.
   Override the block with `show_fit_stats`
