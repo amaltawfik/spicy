@@ -387,6 +387,17 @@
       }
     }
   }
+  # And the rich engines merge its cells over the same columns, in those
+  # of the typed view (`.reg_outcome_spans()`).
+  outcome_spans <- unlist(
+    lapply(seq_len(n), function(k) {
+      lapply(.reg_outcome_spans(tables[[k]]), function(sp) {
+        sp$row <- panel_rows[[k]][[sp$row]]
+        sp
+      })
+    }),
+    recursive = FALSE
+  )
   align <- attr(tables[[1L]], "align", exact = TRUE) %||% "decimal"
   decimal_mark <- attr(tables[[1L]], "decimal_mark", exact = TRUE) %||% "."
   # Panels with the same columns are decimal-aligned as one column, so the
@@ -474,6 +485,7 @@
   attr(out, "header_spans") <- header_spans
   attr(out, "header_rules") <- header_rules
   attr(out, "body_spanners") <- body_spanners
+  attr(out, "outcome_spans") <- outcome_spans %||% list()
   attr(out, "group_sep_rows") <- group_sep_rows
   attr(out, "section_sep_rows") <- section_sep_rows
   attr(out, "fit_merge_specs") <- fit_merge_specs

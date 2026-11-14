@@ -583,6 +583,20 @@ output_tinytable <- function(rendered) {
   for (hs in attr(rendered, "header_spans") %||% list()) {
     tt <- tinytable::style_tt(tt, i = hs$row, j = hs$cols[[1L]], align = "l")
   }
+  # The Outcome row: each label merged over the columns of its model,
+  # centered, as the console prints it. Not in the markdown grid, whose
+  # writer breaks the borders of a row of two merged cells (tinytable
+  # 0.19.0): there the label stays in the first column of its model.
+  for (sp in .reg_outcome_spans(rendered)) {
+    tt <- tinytable::style_tt(
+      tt,
+      i = sp$row,
+      j = sp$cols[[1L]],
+      colspan = length(sp$cols),
+      align = "c",
+      output = c("html", "latex", "typst")
+    )
+  }
   # Header rows: Variable column left, the rest centered.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
   if (n_cols >= 2L) {
@@ -1973,6 +1987,18 @@ output_flextable <- function(rendered) {
   # a column group) merged over its columns.
   for (hs in attr(rendered, "header_spans") %||% list()) {
     ft <- flextable::merge_at(ft, i = hs$row, j = hs$cols, part = "body")
+  }
+  # The Outcome row: each label merged over the columns of its model,
+  # centered, as the console prints it.
+  for (sp in .reg_outcome_spans(rendered)) {
+    ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols, part = "body")
+    ft <- flextable::align(
+      ft,
+      i = sp$row,
+      j = sp$cols,
+      part = "body",
+      align = "center"
+    )
   }
 
   # Content-driven widths. `autofit()` sizes the columns to their

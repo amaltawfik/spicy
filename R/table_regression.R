@@ -1737,7 +1737,11 @@
 #'   [table_stack()] applies the rule to tables built separately, a table
 #'   built with `FALSE` taking no row. A multinomial model alone has no
 #'   Outcome row, its title naming the outcome; in a stack, its panel
-#'   takes one by this rule, the label once, in its first column.
+#'   takes one by this rule, the label once, across its columns. The
+#'   console, flextable, Word and tinytable (HTML, LaTeX, Typst) print
+#'   each label across the columns of its model; gt, which merges no
+#'   cells of the body, and the markdown grid of tinytable print it in
+#'   the first column of the model.
 #'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per

@@ -1831,6 +1831,67 @@ test_that("the console prints the Outcome row across the columns of a model", {
   expect_length(gregexpr("bmi", row, fixed = TRUE)[[1L]], 2L)
 })
 
+test_that("tinytable and Word merge the Outcome row over each model", {
+  skip_on_cran()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  models <- list(
+    Wellbeing = lm(wellbeing_score ~ age + sex, data = sochealth),
+    BMI = lm(bmi ~ age + sex, data = sochealth)
+  )
+  # Side by side, the columns of each model (B, SE, p); stacked, the
+  # columns of the panel (B, SE, LL, UL, p). The row comes first in the
+  # body of a table, second in a panel, under its label row.
+  for (case in list(
+    list(layout = "columns", rows = c(1L, 1L), cols = c(2L, 5L), n = 3L),
+    list(layout = "stacked", rows = c(2L, 12L), cols = c(2L, 2L), n = 5L)
+  )) {
+    tt <- table_regression(models, layout = case$layout, output = "tinytable")
+    html <- tinytable::save_tt(tt, output = "html")
+    for (k in 1:2) {
+      expect_match(
+        html,
+        sprintf(
+          "spanCell(%d, %d, 1, %d)",
+          case$rows[[k]],
+          case$cols[[k]],
+          case$n
+        ),
+        fixed = TRUE
+      )
+    }
+    typst <- tinytable::save_tt(tt, output = "typst")
+    expect_match(
+      typst,
+      sprintf("table.cell(colspan: %d)[wellbeing\\_score]", case$n),
+      fixed = TRUE
+    )
+    p <- withr::local_tempfile(fileext = ".docx")
+    table_regression(
+      models,
+      layout = case$layout,
+      output = "word",
+      word_path = p
+    )
+    dir <- withr::local_tempdir()
+    utils::unzip(p, files = "word/document.xml", exdir = dir)
+    xml <- paste(
+      readLines(file.path(dir, "word/document.xml"), warn = FALSE),
+      collapse = ""
+    )
+    rows <- regmatches(xml, gregexpr("<w:tr[ >].*?</w:tr>", xml))[[1L]]
+    spans <- regmatches(
+      rows[grepl(">Outcome<", rows, fixed = TRUE)],
+      gregexpr("w:gridSpan w:val=\"[0-9]+\"", rows[grepl(">Outcome<", rows)])
+    )
+    expect_identical(
+      unlist(spans),
+      rep(sprintf("w:gridSpan w:val=\"%d\"", case$n), 2L)
+    )
+  }
+})
+
 test_that("outcome_labels gives a single model its Outcome row", {
   skip_on_cran()
   withr::local_options(width = 200)

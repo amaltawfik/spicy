@@ -715,6 +715,9 @@
   alignment of the flextable, Word, gt and tinytable outputs. The label
   ended with figure spaces (a space before a parenthesis became one),
   and the numbers of its column were padded to its width, off center.
+  flextable, Word and tinytable (HTML, LaTeX, Typst) merge each label
+  over the columns of its model, centered, where it widened the first
+  of them.
 
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in

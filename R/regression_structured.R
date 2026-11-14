@@ -328,6 +328,39 @@
   which(role == "outcome")
 }
 
+# The cells of the Outcome row that the rich engines merge, in the columns
+# of the engine view (`.reg_engine_view()`): for each model, from the
+# column of its label to its last column (every column of a table of one
+# model), as the console spans them. A stacked table carries those of its
+# panels (`outcome_spans`, R/stack_render.R).
+.reg_outcome_spans <- function(rendered) {
+  stacked <- attr(rendered, "outcome_spans", exact = TRUE)
+  if (!is.null(stacked)) {
+    return(stacked)
+  }
+  struct <- .reg_engine_view(attr(rendered, "structured", exact = TRUE))
+  row <- .struct_outcome_row(struct)
+  if (length(row) != 1L) {
+    return(list())
+  }
+  cols <- names(.struct_display_body(struct$body))
+  ranges <- if (length(attr(rendered, "model_ids", exact = TRUE)) == 1L) {
+    list(seq_along(cols)[-1L])
+  } else {
+    struct$spanners
+  }
+  lab <- struct$outcome_labels_by_col
+  at <- match(names(lab)[nzchar(lab)], cols)
+  out <- list()
+  for (r in ranges) {
+    first <- at[at %in% r]
+    if (length(first) && max(r) > first[[1L]]) {
+      out[[length(out) + 1L]] <- list(row = row, cols = first[[1L]]:max(r))
+    }
+  }
+  out
+}
+
 # Per-cell status of column `col_name` (character vector of nrow(body),
 # "" where the cell carries no special semantics).
 .struct_cell_status <- function(struct, col_name) {
