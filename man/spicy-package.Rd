@@ -215,9 +215,9 @@ in scientific notation, a test written with its statistic
 estimate with stars.
 
 The decimal mark belongs to the reader. Under \code{decimal_mark = ","}, or
-a style that sets another mark, the numbers show the separator of the
-machine that opens the sheet, and only the text cells carry the mark
-of the table. The workbook of \code{\link[=code_book]{code_book()}} keeps its numbers as
+a style that sets another mark, the numbers show the decimal separator
+of the reader's Excel, and only the text cells carry the mark of the
+table. The workbook of \code{\link[=code_book]{code_book()}} keeps its numbers as
 numbers in the same way, a value half way between two displays as its
 PDF shows it.
 }

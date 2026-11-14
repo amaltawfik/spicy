@@ -114,8 +114,9 @@
 # One rule for every Excel export. A body cell that shows one number is a
 # number, under a format that shows exactly the console's text; any other
 # cell is the console's text. The decimal mark is the reader's: a number
-# shows the separator of the machine that opens the sheet, and only a
-# text cell keeps the mark the table was asked for.
+# shows the decimal separator of the reader's Excel (Excel's own setting,
+# which can differ from the system's), and only a text cell keeps the
+# mark the table was asked for.
 
 # A number format as the console's text shows it: `d` decimals, the
 # leading zero (dropped below 1 in the APA style), an explicit sign (the

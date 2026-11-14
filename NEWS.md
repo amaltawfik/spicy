@@ -703,9 +703,9 @@
 
 * `table_regression()` and `table_regression_uv()` with
   `output = "excel"` write the numbers as numbers under any
-  `decimal_mark`, a French table and the Lancet style included: Excel
-  shows them with the separator of the reader's machine, and the mark
-  stays in the text cells (`<0,001`). The whole body was text.
+  `decimal_mark`, a French table and the Lancet style included: they
+  show the decimal separator of the reader's Excel, and the mark stays
+  in the text cells (`<0,001`). The whole body was text.
 
 * `table_regression()` keeps the "Outcome" row out of the decimal
   alignment of the flextable, Word, gt and tinytable outputs. The label

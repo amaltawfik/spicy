@@ -211,8 +211,8 @@ convention.}
 \item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
 default) or \code{","} in most styles; the Lancet style of
 \code{\link[=spicy_style]{spicy_style()}} uses the middle dot. In the Excel sheet, a cell of one
-number shows the separator of the reader's machine (\emph{Excel output} in
-\link{spicy-package}).}
+number shows the decimal separator of the reader's Excel (\emph{Excel
+output} in \link{spicy-package}).}
 
 \item{align}{Horizontal alignment of the numeric columns in the console
 and in the rendered outputs: \code{"decimal"} (the default), \code{"center"},

@@ -312,9 +312,8 @@ test_that("decimal_mark = ',' leaves the numbers to the reader's separator", {
   })
   m <- .xl_grid(path)
 
-  # A cell of one number is a number, which Excel shows with the
-  # separator of the machine that opens the sheet; a text cell keeps
-  # the mark asked for.
+  # A cell of one number is a number, which shows the decimal separator
+  # of the reader's Excel; a text cell keeps the mark asked for.
   expect_equal(round(as.numeric(.xl_at(m, 5L, "B")), 2), 65.07)
   expect_equal(round(as.numeric(.xl_at(m, 5L, "C")), 2), 1.63)
   expect_equal(.xl_at(m, 5L, "F"), "<0,001")

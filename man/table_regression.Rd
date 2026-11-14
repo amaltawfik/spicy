@@ -743,8 +743,8 @@ default) or \code{","} in most styles; the Lancet style of
 \code{","} is used, the CI bracket separator switches to \code{"; "}
 automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.
 With \code{output = "excel"}, a cell that shows one number is a number,
-under any mark, which Excel shows with the separator of the reader's
-machine; the mark applies to the text cells (\verb{<,001}). See \emph{Excel
+under any mark, which shows the decimal separator of the reader's
+Excel; the mark applies to the text cells (\verb{<,001}). See \emph{Excel
 output} in \link{spicy-package}.}
 
 \item{align}{Numeric column alignment.

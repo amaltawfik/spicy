@@ -1789,8 +1789,8 @@
 #'   `","` is used, the CI bracket separator switches to `"; "`
 #'   automatically to avoid `"0,18 [0,07, 0,30]"` ambiguity.
 #'   With `output = "excel"`, a cell that shows one number is a number,
-#'   under any mark, which Excel shows with the separator of the reader's
-#'   machine; the mark applies to the text cells (`<,001`). See *Excel
+#'   under any mark, which shows the decimal separator of the reader's
+#'   Excel; the mark applies to the text cells (`<,001`). See *Excel
 #'   output* in [spicy-package].
 #' @param align Numeric column alignment.
 #'   `"decimal"` (default) -- pre-pad cells so decimal marks line
