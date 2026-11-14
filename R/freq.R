@@ -35,8 +35,9 @@
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
 #'   vectors, `data` is ignored with a warning. A survey design is refused
-#'   (class `spicy_wrong_regime`): [table_categorical_svy()] estimates the
-#'   distribution of a variable under the design. A plain list is refused
+#'   (class `spicy_wrong_regime`): [table_categorical_svy()], for the
+#'   designs it takes, estimates the distribution of a variable under the
+#'   design. A plain list is refused
 #'   (class `spicy_invalid_data`): convert it with `as.data.frame()` or
 #'   pass the variable as a vector.
 #' @param x A variable from `data` (unquoted).

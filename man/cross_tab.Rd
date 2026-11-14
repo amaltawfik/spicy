@@ -31,8 +31,9 @@ cross_tab(
 \arguments{
 \item{data}{A data frame. Alternatively, a vector when using the
 vector-based interface. A survey design is refused (class
-\code{spicy_wrong_regime}): \code{\link[=table_categorical_svy]{table_categorical_svy()}} tabulates a variable
-by another under the design. A plain list or a matrix is refused
+\code{spicy_wrong_regime}): \code{\link[=table_categorical_svy]{table_categorical_svy()}}, for the designs it
+takes, tabulates a variable by another under the design. A plain list
+or a matrix is refused
 (class \code{spicy_invalid_data}): convert it with \code{as.data.frame()} or
 pass its variables as vectors.}
 

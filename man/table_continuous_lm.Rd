@@ -515,8 +515,9 @@ padded number pastes as text next to an unpadded number).
 
 The \code{excel} output uses the engine's default alignment in any
 case: cell-string padding does not align decimals under
-proportional fonts, and writing raw numbers with a numeric
-format would require a separate refactor.}
+proportional fonts. Its cells of one number are numbers, under a
+format that shows the console's text (\emph{Excel output} in
+\link{spicy-package}).}
 
 \item{note}{The note under the table. \code{NULL} (the default) builds it:
 the general note, one paragraph opened by the lead-in of the style

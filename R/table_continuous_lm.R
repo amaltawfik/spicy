@@ -431,8 +431,9 @@
 #'
 #'   The `excel` output uses the engine's default alignment in any
 #'   case: cell-string padding does not align decimals under
-#'   proportional fonts, and writing raw numbers with a numeric
-#'   format would require a separate refactor.
+#'   proportional fonts. Its cells of one number are numbers, under a
+#'   format that shows the console's text (*Excel output* in
+#'   [spicy-package]).
 #' @param output Output format. One of:
 #'   - `"default"`: an ASCII table object, printed when the call is bare
 #'   - `"data.frame"`: the displayed table with its numbers, one row per
