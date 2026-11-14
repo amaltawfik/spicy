@@ -1,9 +1,8 @@
 # ADR 2026-09-05 — AME : pente moyenne (avg_slopes) ou variation unitaire (avg_comparisons)
 
 **Statut** : décidé le 2026-11-13 (option 2, avec la note de l'option 1
-sous chaque valeur). Mis en œuvre dans le commit « table_regression():
-ame_type for the AME of a continuous predictor » de la branche
-`lot-regression`.
+sous chaque valeur). Mis en œuvre le même jour par le commit 88bf6d8b,
+« table_regression(): ame_type for the AME of a continuous predictor ».
 
 ## Contexte
 
@@ -108,8 +107,8 @@ Vérification du 2026-11-13 (marginaleffects 1.0.0), GLM Gamma à lien
 log simulé (n = 200, b = 0.6605, mean(μ̂) = 2.1931, SD = 0.9746) : pente
 1.4487 = b × mean(μ̂), variation d'une unité 2.0525 = (exp(b) − 1) ×
 mean(μ̂), variation d'un écart-type 1.9818 = (exp(b × SD) − 1) ×
-mean(μ̂). Le contraste du facteur vaut 0.371
-sous les trois valeurs. Logit (n = 300) : variation d'une unité 0.18785 =
+mean(μ̂). Le contraste du facteur vaut 0.371 sous les trois valeurs.
+Logit (n = 300) : variation d'une unité 0.18785 =
 mean(plogis(η + b) − plogis(η)) = `avg_comparisons()`. Les tests de
 `tests/testthat/test-regression_ame.R` couvrent en plus les poids,
 l'interaction, `log(x)`, `poly(x, 2)`, un prédicteur de comptage, une
@@ -163,10 +162,10 @@ Gamma à lien log (n = 400, cinq lignes écartées par le modèle à cause
 d'une autre variable) : l'AME `"sd"` de spicy égale
 `avg_comparisons(fit, variables = list(x = s))`, `s` l'écart-type de `x`
 sur les lignes du modèle, à 0 près pour l'estimation et l'erreur
-standard (logit 0,146795, Gamma 1,822166). Il diffère avec l'écart-type
-de toutes les lignes (0,159699 et 2,094153), sous l'option
-`marginaleffects_contrast_direction = "center"` (0,176913 et 1,463401) et
-avec le raccourci `"sd"` (0,193250 et 1,333618). L'égalité tient pour un
+standard (logit 0.146795, Gamma 1.822166). Il diffère avec l'écart-type
+de toutes les lignes (0.159699 et 2.094153), sous l'option
+`marginaleffects_contrast_direction = "center"` (0.176913 et 1.463401) et
+avec le raccourci `"sd"` (0.193250 et 1.333618). L'égalité tient pour un
 ajustement non pondéré, sous le contraste avant par défaut de
 marginaleffects. Un test la fixe dans `tests/testthat/test-regression_ame.R`.
 
@@ -182,6 +181,7 @@ marginaleffects. Un test la fixe dans `tests/testthat/test-regression_ame.R`.
 
 ## Pointeurs
 
-- `R/regression_ame.R` : appels `marginaleffects::avg_slopes()` (~l. 483,
-  ~l. 676), commentaire de tête sur l'échelle de réponse.
+- `R/regression_ame.R` : `.spicy_avg_ame()`, qui appelle `avg_slopes()`
+  sous `"slope"` et `avg_comparisons()` sinon, l'état `.ame_state` et le
+  commentaire de tête sur l'échelle de réponse.
 - `R/i18n.R`, `R/i18n_fr.R` : chaînes des notes AME.
