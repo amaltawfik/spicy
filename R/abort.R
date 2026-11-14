@@ -460,52 +460,55 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   count_n = "A row count does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = count_n(design$variables, select = ..., count = ...))`."
 )
 
-# The hint for a two-phase design. The tables whose hint names a `_svy`
-# twin say what the twin's refusal says instead: no twin takes a
-# two-phase design (`.SURVEY_UNSUPPORTED_CLASSES`). The other tables'
-# hints stand: `survey::svyglm()` fits a two-phase design and
-# `table_regression()` tabulates the fit (run 2026-11-14), and
-# `table_multiresponse()` names no call.
+# A message never recommends a call that fails, so the hint follows the
+# design. A table whose hint names a `_svy` twin names it only for a
+# design the twin accepts, the twins' own predicate; for any other it
+# gives the lines of the twin's refusal (`.unsupported_design_lines()`).
+# The other tables' hints stand: `survey::svyglm()` fits a two-phase
+# design and `table_regression()` tabulates the fit (run 2026-11-14),
+# and `table_multiresponse()` names no call.
 #
-# The row-wise summaries' recipe above reads `design$variables`, which a
-# two-phase design does not have: survey's `update()` method evaluates
-# the expression in each of its two tables, so the items are named in
-# it. A srvyr two-phase design takes no call: srvyr's `mutate()` fills
-# only srvyr's copy of the phase-2 data and `update()` only survey's
-# tables. Each recipe was run on its class, and `svymean()` on the
-# result (2026-11-14).
+# The row-wise summaries' recipe above reads `design$variables` and
+# lets `update()` write the score back, so it is given only where the
+# design keeps its data there. A two-phase design of survey has none:
+# its `update()` evaluates the expression in each of its two tables, so
+# the items are named in it. No call is given for a srvyr two-phase
+# design (srvyr's `mutate()` fills only srvyr's copy of the phase-2
+# data, `update()` only survey's tables) nor for a design with no
+# `$variables`: a database-backed design, a multiframe design, an
+# `xdesign`. Each recipe was run on its classes, with `svymean()` on the
+# result, and the generic call on the classes that get none, where it
+# fails (2026-11-14).
 .design_regime_hint <- function(data, fn) {
-  two_phase <- intersect(class(data), c("twophase", "twophase2"))
-  if (length(two_phase) == 0L) {
-    return(.DESIGN_REGIME_HINT[[fn]])
-  }
-  if (grepl("_svy(", .DESIGN_REGIME_HINT[[fn]], fixed = TRUE)) {
-    return(c(
-      sprintf(
-        "The design twins of spicy's tables do not support survey designs of class `%s`.",
-        two_phase[[1L]]
-      ),
-      .SURVEY_SUPPORTED
+  hint <- .DESIGN_REGIME_HINT[[fn]]
+  if (!.is_supported_design(data) && grepl("_svy(", hint, fixed = TRUE)) {
+    return(.unsupported_design_lines(
+      data,
+      "The design twins of spicy's tables do not"
     ))
   }
   if (!fn %in% c("mean_n", "sum_n", "count_n")) {
-    return(.DESIGN_REGIME_HINT[[fn]])
+    return(hint)
   }
   what <- if (fn == "count_n") "count" else "score"
-  if (inherits(data, "tbl_svy")) {
+  two_phase <- inherits(data, c("twophase", "twophase2"))
+  if (two_phase && !inherits(data, "tbl_svy")) {
     return(sprintf(
-      "A row %s does not depend on the design: compute it with `%s()` on the data before building the two-phase design.",
+      "A row %s does not depend on the design, but a two-phase design keeps its data in two tables: name the items, and `update()` computes the %s in each, `design <- update(design, score = %s(data.frame(<item1>, <item2>, ...)%s))`.",
+      what,
+      what,
+      fn,
+      if (fn == "count_n") ", count = ..." else ""
+    ))
+  }
+  if (two_phase || !is.data.frame(data[["variables"]])) {
+    return(sprintf(
+      "A row %s does not depend on the design: compute it with `%s()` on the data before building the design.",
       what,
       fn
     ))
   }
-  sprintf(
-    "A row %s does not depend on the design, but a two-phase design keeps its data in two tables: name the items, and `update()` computes the %s in each, `design <- update(design, score = %s(data.frame(<item1>, <item2>, ...)%s))`.",
-    what,
-    what,
-    fn,
-    if (fn == "count_n") ", count = ..." else ""
-  )
+  hint
 }
 
 

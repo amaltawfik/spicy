@@ -281,8 +281,74 @@ test_that("mean_n() on a srvyr design: the generic call, none if two-phase", {
   )
   expect_match(
     conditionMessage(err),
-    "on the data before building the two-phase design",
+    "compute it with `mean_n()` on the data before building the design.",
     fixed = TRUE
   )
   expect_no_match(conditionMessage(err), "design <-", fixed = TRUE)
+})
+
+test_that("mean_n() gives update() only where the design keeps its data", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  # A without-replacement pps design keeps its data in `$variables`: the
+  # generic call works.
+  design <- survey::svydesign(
+    id = ~dnum,
+    fpc = ~ I(fpc / 6194),
+    data = apiclus1,
+    pps = "brewer"
+  )
+  err <- expect_error(
+    mean_n(design, select = c(api00, api99)),
+    class = "spicy_wrong_regime"
+  )
+  expect_match(
+    conditionMessage(err),
+    "update(design, score = mean_n(design$variables, select = ...))",
+    fixed = TRUE
+  )
+  design <- update(
+    design,
+    score = mean_n(design$variables, select = c(api00, api99))
+  )
+  expect_equal(
+    unname(design$variables$score),
+    unname(mean_n(apiclus1, select = c(api00, api99)))
+  )
+  expect_s3_class(survey::svymean(~score, design), "svystat")
+  # These have no `$variables`, so no call is given. A database-backed
+  # design is simulated (it needs a DBI driver, which spicy does not
+  # use): survey's svydesign() on a database sets `$variables` to NULL.
+  dbi <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1)
+  dbi$variables <- NULL
+  class(dbi) <- c("DBIsvydesign", class(dbi))
+  in_a <- apiclus1$stype != "H"
+  in_b <- apiclus1$stype != "E"
+  no_data <- list(
+    xdesign = survey::xdesign(id = list(~dnum, ~snum), data = apiclus1),
+    multiframe = survey::multiframe(
+      list(
+        survey::svydesign(id = ~1, weights = ~pw, data = apiclus1[in_a, ]),
+        survey::svydesign(id = ~1, weights = ~pw, data = apiclus1[in_b, ])
+      ),
+      list(cbind(1, in_b[in_a]), cbind(in_a[in_b], 1))
+    ),
+    DBIsvydesign = dbi
+  )
+  for (w in names(no_data)) {
+    expect_null(no_data[[w]][["variables"]], info = w)
+    msg <- conditionMessage(expect_error(
+      mean_n(no_data[[w]], select = c(api00, api99)),
+      class = "spicy_wrong_regime",
+      info = w
+    ))
+    expect_match(
+      msg,
+      "compute it with `mean_n()` on the data before building the design.",
+      fixed = TRUE,
+      info = w
+    )
+    expect_no_match(msg, "design <-", fixed = TRUE, info = w)
+  }
 })

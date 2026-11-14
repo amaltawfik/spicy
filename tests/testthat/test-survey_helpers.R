@@ -940,10 +940,11 @@ test_that("every plain builder refuses a design with a route out", {
   )
 })
 
-test_that("a plain table given a two-phase design names no twin", {
-  # Every twin refuses a two-phase design, so a hint naming one sent the
-  # caller to a second error. The plain tables now end on the twin's own
-  # closing lines; on an ordinary design their hint is unchanged.
+test_that("a plain table names its twin only for a design the twin takes", {
+  # A hint naming a twin that refuses the design sent the caller to a
+  # second error. For such a design the plain tables give the lines of
+  # the twin's refusal, from the same builder; on an ordinary or a
+  # replicate design their hint is unchanged.
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   calls <- list(
@@ -957,46 +958,77 @@ test_that("a plain table given a two-phase design names no twin", {
       table_outcome(d, outcome = api00, select = stype)
     }
   )
-  for (method in c("approx", "full")) {
-    two <- survey::twophase(
+  # A database-backed design is simulated: building one needs a DBI
+  # driver (RSQLite), which spicy does not use. survey's svydesign() on
+  # a database prepends this class and sets `$variables` to NULL.
+  dbi <- .svy_fixture("clus1")
+  dbi$variables <- NULL
+  class(dbi) <- c("DBIsvydesign", class(dbi))
+  in_a <- apiclus1$stype != "H"
+  in_b <- apiclus1$stype != "E"
+  refused <- list(
+    twophase = survey::twophase(
       id = list(~1, ~1),
       subset = ~ I(comp.imp == "Yes"),
       data = apiclus1,
-      method = method
-    )
+      method = "approx"
+    ),
+    twophase2 = .svy_fixture("twophase"),
+    pps = .svy_fixture("pps"),
+    xdesign = survey::xdesign(id = list(~dnum, ~snum), data = apiclus1),
+    multiframe = survey::multiframe(
+      list(
+        survey::svydesign(id = ~1, weights = ~pw, data = apiclus1[in_a, ]),
+        survey::svydesign(id = ~1, weights = ~pw, data = apiclus1[in_b, ])
+      ),
+      list(cbind(1, in_b[in_a]), cbind(in_a[in_b], 1))
+    ),
+    DBIsvydesign = dbi
+  )
+  for (w in names(refused)) {
+    des <- refused[[w]]
     twin <- conditionMessage(expect_error(
-      table_categorical_svy(two, select = stype),
-      class = "spicy_unsupported"
+      table_categorical_svy(des, select = stype),
+      class = "spicy_unsupported",
+      info = w
     ))
-    closing <- sub("^[^\n]*\n", "", twin)
+    lines <- sub("^`table_categorical_svy\\(\\)` does not ", "", twin)
+    expect_match(
+      lines,
+      if (w == "pps") {
+        "^support a without-replacement pps design"
+      } else {
+        sprintf("^support survey designs of class `%s`", w)
+      },
+      info = w
+    )
     for (fn in names(calls)) {
       msg <- conditionMessage(expect_error(
-        calls[[fn]](two),
-        class = "spicy_wrong_regime"
+        calls[[fn]](des),
+        class = "spicy_wrong_regime",
+        info = paste(w, fn)
       ))
-      expect_no_match(msg, "_svy(", fixed = TRUE, info = fn)
+      expect_no_match(msg, "_svy(", fixed = TRUE, info = paste(w, fn))
       if (fn != "table_multiresponse") {
-        expect_match(msg, closing, fixed = TRUE, info = fn)
         expect_match(
           msg,
-          sprintf(
-            "do not support survey designs of class `%s`",
-            class(two)[1L]
-          ),
+          paste0("The design twins of spicy's tables do not ", lines),
           fixed = TRUE,
-          info = fn
+          info = paste(w, fn)
         )
       }
     }
   }
-  d <- .svy_fixture("clus1")
-  for (fn in names(calls)) {
-    msg <- conditionMessage(expect_error(
-      calls[[fn]](d),
-      class = "spicy_wrong_regime"
-    ))
-    expect_match(msg, .DESIGN_REGIME_HINT[[fn]], fixed = TRUE, info = fn)
-    expect_no_match(msg, "Supported:", fixed = TRUE, info = fn)
+  for (w in c("clus1", "rep1")) {
+    d <- .svy_fixture(w)
+    for (fn in names(calls)) {
+      msg <- conditionMessage(expect_error(
+        calls[[fn]](d),
+        class = "spicy_wrong_regime"
+      ))
+      expect_match(msg, .DESIGN_REGIME_HINT[[fn]], fixed = TRUE, info = fn)
+      expect_no_match(msg, "Supported:", fixed = TRUE, info = fn)
+    }
   }
 })
 

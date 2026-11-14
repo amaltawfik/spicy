@@ -131,36 +131,47 @@
 }
 
 # The classed refusal a design outside P1 gets.
-#
-# A pps design carries NO class marker -- `pps = "brewer"` leaves a
-# plain `survey.design2` -- so naming `class(design)[1L]` produced a
-# message that refused the very class the next line said was
-# supported, and left the caller nothing to act on. The pps branch
-# names the SPECIFICATION instead, which is the thing the caller wrote.
 .abort_unsupported_design <- function(design, fn, call = rlang::caller_env()) {
-  what <- if (
-    !inherits(design, "svyrep.design") &&
-      inherits(design, "survey.design2") &&
-      !isFALSE(design$pps)
-  ) {
-    "a without-replacement pps design (`svydesign(pps = )`)"
-  } else {
-    sprintf("survey designs of class `%s`", class(design)[1L])
-  }
   spicy_abort(
-    c(sprintf("`%s()` does not support %s.", fn, what), .SURVEY_SUPPORTED),
+    .unsupported_design_lines(design, sprintf("`%s()` does not", fn)),
     class = "spicy_unsupported",
     call = call
   )
 }
 
-# The closing lines of that refusal, shared with the hint a plain table
-# gives a two-phase design (`.design_regime_hint()`), so that the two
-# messages say the same thing.
-.SURVEY_SUPPORTED <- c(
-  "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
-  "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
-)
+# The lines of that refusal, for a design `.is_supported_design()`
+# refuses. One builder for the twin's refusal and for the hint a plain
+# table gives such a design (`.design_regime_hint()`), so the two cannot
+# say different things; `subject` opens the first line.
+#
+# The design is named by the class that makes it unsupported: a srvyr
+# two-phase design is a `tbl_svy` first, and an ordinary `tbl_svy` is
+# supported. A pps design carries NO class marker -- `pps = "brewer"`
+# leaves a plain `survey.design2` -- so naming `class(design)[1L]`
+# refused the very class the next line said was supported. The pps
+# branch names the SPECIFICATION instead, which is the thing the caller
+# wrote.
+.unsupported_design_lines <- function(design, subject) {
+  marked <- intersect(class(design), .SURVEY_UNSUPPORTED_CLASSES)
+  what <- if (
+    length(marked) == 0L &&
+      !inherits(design, "svyrep.design") &&
+      inherits(design, "survey.design2") &&
+      !isFALSE(design$pps)
+  ) {
+    "a without-replacement pps design (`svydesign(pps = )`)"
+  } else {
+    sprintf(
+      "survey designs of class `%s`",
+      c(marked, class(design))[[1L]]
+    )
+  }
+  c(
+    sprintf("%s support %s.", subject, what),
+    "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
+    "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
+  )
+}
 
 # The refusal a data.frame gets at a `_svy` entry point -- the mirror of
 # the `spicy_wrong_regime` a design gets at the plain entry point.
