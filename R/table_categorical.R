@@ -3777,6 +3777,15 @@ table_categorical <- function(
         )
       }
 
+      wb <- .xl_body(
+        wb,
+        report_wide_char,
+        names(report_wide_char),
+        structured,
+        first_body_row,
+        1L,
+        decimal_mark
+      )
       # Disclosure note (what left the table) two rows below the body,
       # one worksheet row per line -- the placement the regression
       # export uses. Same text the console prints.
@@ -4959,18 +4968,12 @@ table_categorical <- function(
   if (do_smd) {
     report_cols <- c(report_cols, .CAT_KEY_SMD)
   }
-  # How many trailing columns are statistics rather than counts. Every
-  # engine below indexes its last columns from the right (the p column,
-  # the measure, the CI bounds, and now the SMD), so the arithmetic is
-  # done ONCE here instead of being re-derived five times -- an Excel
-  # `text_cols` or a tinytable `stat_j` that forgot the new column would
-  # format the wrong cells, silently.
-  n_stat_cols <- as.integer(p_value) +
-    as.integer(show_assoc) +
-    2L * as.integer(show_assoc && assoc_ci) +
-    as.integer(do_smd)
-  # The same count once the CI bounds have been merged into the measure
-  # cell, which every rendered engine does before laying out.
+  # How many trailing columns are statistics rather than counts, once the
+  # CI bounds have been merged into the measure cell, which every rendered
+  # engine does before laying out. Every engine below indexes its last
+  # columns from the right (the p column, the measure, the SMD), so the
+  # arithmetic is done ONCE here: a tinytable `stat_j` that forgot a
+  # column would format the wrong cells, silently.
   n_stat_cols_merged <- as.integer(p_value) +
     as.integer(show_assoc) +
     as.integer(do_smd)
@@ -6091,24 +6094,6 @@ table_categorical <- function(
         dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 2:nc),
         horizontal = num_horiz
       )
-      # Text columns (p, assoc, CI, SMD) -- force text format. Counted
-      # from the RIGHT, so every optional trailing column has to be in
-      # the count or the sheet formats the wrong cells: `n_stat_cols`
-      # is that count, computed once beside `report_cols`. Possibly
-      # zero (`p_value = FALSE, assoc_measure = "none"`), hence
-      # `seq_len()`: `(nc + 1):nc` would style an empty column past the
-      # table.
-      text_cols <- nc - n_stat_cols + seq_len(n_stat_cols)
-      if (length(text_cols)) {
-        wb <- openxlsx2::wb_add_numfmt(
-          wb,
-          dims = openxlsx2::wb_dims(
-            rows = first_body_row:last_row,
-            cols = text_cols
-          ),
-          numfmt = "@"
-        )
-      }
     }
 
     # APA borders. IMPORTANT: openxlsx2::wb_add_border() defaults
@@ -6182,6 +6167,17 @@ table_categorical <- function(
       )
     }
 
+    # Every one-number cell a number, the p-value, the measure and its
+    # bounds included (`.xl_body()`).
+    wb <- .xl_body(
+      wb,
+      report_wide_char,
+      names(report_wide_char),
+      structured,
+      first_body_row,
+      1L,
+      decimal_mark
+    )
     # The note below the table -- the same text, in the same order, as
     # the console footer, with the definitions of the bound columns.
     wb <- .spicy_xl_add_note(

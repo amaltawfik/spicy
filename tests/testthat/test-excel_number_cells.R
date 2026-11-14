@@ -131,6 +131,11 @@ test_that("the descriptive sheets write each one-number cell as a number", {
     function(...) {
       table_categorical_svy(des, f, by = g, proportion_ci = TRUE, ...)
     },
+    function(...) table_categorical(d, c(f, f2), ...),
+    function(...) {
+      table_categorical(d, c(f, f2), by = g, assoc_ci = TRUE, smd = TRUE, ...)
+    },
+    function(...) table_categorical(d, f, by = g, weights = w, ...),
     function(...) {
       table_multiresponse(d, select = c(m1, m2), by = g, percent = "both", ...)
     }
