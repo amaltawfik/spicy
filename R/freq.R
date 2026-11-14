@@ -36,7 +36,9 @@
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
 #'   vectors, `data` is ignored with a warning. A survey design is refused
 #'   (class `spicy_wrong_regime`): [table_categorical_svy()] estimates the
-#'   distribution of a variable under the design.
+#'   distribution of a variable under the design. A plain list is refused
+#'   (class `spicy_invalid_data`): convert it with `as.data.frame()` or
+#'   pass the variable as a vector.
 #' @param x A variable from `data` (unquoted).
 #' @param weights Optional numeric vector of weights (same length as `x`).
 #'   A logical vector is also accepted and coerced to 1/0

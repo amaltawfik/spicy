@@ -27,7 +27,9 @@ freq(
 specify the target variable \code{x}. If both \code{data} and \code{x} are supplied as
 vectors, \code{data} is ignored with a warning. A survey design is refused
 (class \code{spicy_wrong_regime}): \code{\link[=table_categorical_svy]{table_categorical_svy()}} estimates the
-distribution of a variable under the design.}
+distribution of a variable under the design. A plain list is refused
+(class \code{spicy_invalid_data}): convert it with \code{as.data.frame()} or
+pass the variable as a vector.}
 
 \item{x}{A variable from \code{data} (unquoted).}
 

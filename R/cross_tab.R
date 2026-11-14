@@ -12,7 +12,9 @@
 #' @param data A data frame. Alternatively, a vector when using the
 #'   vector-based interface. A survey design is refused (class
 #'   `spicy_wrong_regime`): [table_categorical_svy()] tabulates a variable
-#'   by another under the design.
+#'   by another under the design. A plain list or a matrix is refused
+#'   (class `spicy_invalid_data`): convert it with `as.data.frame()` or
+#'   pass its variables as vectors.
 #' @param x Row variable (unquoted).
 #' @param y Column variable (unquoted). Required; the `NULL` default
 #'   in the signature is a placeholder and triggers an error if left
