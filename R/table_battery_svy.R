@@ -97,9 +97,10 @@
 #' answer is a level shown. The domain is cut from the design with `[`,
 #' which keeps its strata, clusters and finite population corrections.
 #' Under `drop_na = FALSE` and `percent_base = "total"`, the missing
-#' answers are a level of their own and stay in the domain. An answer that `levels` leaves out is outside
-#' the domain either way. An item that offers one level is 100% by
-#' arithmetic: survey does not estimate a variable with one level.
+#' answers are a level of their own and stay in the domain. An answer
+#' that `levels` leaves out is outside the domain either way. An item
+#' that offers one level is 100% by arithmetic: survey does not estimate
+#' a variable with one level.
 #'
 #' A cell that survey cannot estimate, most often because a stratum holds
 #' a single primary sampling unit under its default
