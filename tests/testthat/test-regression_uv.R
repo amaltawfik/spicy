@@ -1656,3 +1656,28 @@ test_that("a Gamma screen tests each fit as its summary() does", {
     tolerance = 1e-12
   )
 })
+
+test_that("Tjur's R-squared of a univariable glm screen is checked on its fits", {
+  # The gate compared flags of the unfolded fits with flags of the screen
+  # object: a recycling warning on every default call, and a refusal of
+  # an explicit request without the multivariable model.
+  expect_no_warning(
+    out <- table_regression_uv(
+      sochealth,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, sex)
+    )
+  )
+  expect_s3_class(out, "spicy_regression_table")
+  expect_no_error(
+    table_regression_uv(
+      sochealth,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, sex),
+      multivariable = FALSE,
+      show_fit_stats = c("nobs", "pseudo_r2_tjur")
+    )
+  )
+})

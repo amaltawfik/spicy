@@ -2680,9 +2680,9 @@ validate_class_appropriate_tokens <- function(
   # all-mixed, all-Bayesian) keep their more specific refusal wording.
   if ("pseudo_r2_tjur" %in% show_fit_stats) {
     is_binom_glm <- glm_flags &
-      !vapply(models, inherits, logical(1), c("stanreg", "brmsfit")) &
+      !vapply(eff_models, inherits, logical(1), c("stanreg", "brmsfit")) &
       vapply(
-        models,
+        eff_models,
         function(m) {
           fam <- tryCatch(
             stats::family(m)$family,
