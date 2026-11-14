@@ -27,6 +27,22 @@ test_that("freq() requires x when data is a data.frame", {
   )
 })
 
+test_that("freq() refuses a survey design and names the design-based table", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(a = c("x", "y", "x", "y"), w = c(1, 2, 1, 2))
+  design <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (des in list(design, survey::as.svrepdesign(design))) {
+    err <- expect_error(freq(des, a), class = "spicy_wrong_regime")
+    expect_match(
+      conditionMessage(err),
+      "table_categorical_svy(design, select = <x>)",
+      fixed = TRUE
+    )
+    expect_error(freq(des), class = "spicy_wrong_regime")
+  }
+})
+
 
 test_that("freq() handles labelled variables correctly", {
   library(labelled)

@@ -25,7 +25,9 @@ freq(
 \arguments{
 \item{data}{A \code{data.frame}, vector, or factor. If a data frame is provided,
 specify the target variable \code{x}. If both \code{data} and \code{x} are supplied as
-vectors, \code{data} is ignored with a warning.}
+vectors, \code{data} is ignored with a warning. A survey design is refused
+(class \code{spicy_wrong_regime}): \code{\link[=table_categorical_svy]{table_categorical_svy()}} estimates the
+distribution of a variable under the design.}
 
 \item{x}{A variable from \code{data} (unquoted).}
 

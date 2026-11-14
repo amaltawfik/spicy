@@ -377,6 +377,12 @@
   itself is tested. Their standard errors were scaled by the Pearson
   dispersion of the refit, and their p-values could be far too small.
 
+* `cross_tab()` and `freq()` refuse a survey design with an error of
+  class `spicy_wrong_regime` that points to `table_categorical_svy()`,
+  as the other plain tables do. A design used to stop them with an R
+  error about a missing object, and `cross_tab(design, "x", "y")`
+  returned a meaningless one-cell table.
+
 * `cross_tab()` writes the chi-squared statistic of its note with the
   symbol, `χ²(df) = …` (was `Chi-2(df) = …`).
 

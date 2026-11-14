@@ -483,6 +483,27 @@ test_that("cross_tab errors when data is missing", {
   )
 })
 
+test_that("cross_tab refuses a survey design and names the design-based table", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    a = c("x", "y", "x", "y"),
+    b = c("u", "u", "v", "v"),
+    w = c(1, 2, 1, 2)
+  )
+  design <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (des in list(design, survey::as.svrepdesign(design))) {
+    err <- expect_error(cross_tab(des, a, b), class = "spicy_wrong_regime")
+    expect_match(
+      conditionMessage(err),
+      "table_categorical_svy(design, select = <x>, by = <y>)",
+      fixed = TRUE
+    )
+  }
+  # Quoted names on a design used to give a table of one constant cell.
+  expect_error(cross_tab(design, "a", "b"), class = "spicy_wrong_regime")
+})
+
 test_that("cross_tab errors when x is missing for data.frame", {
   expect_error(
     cross_tab(mtcars),

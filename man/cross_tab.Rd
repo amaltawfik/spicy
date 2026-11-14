@@ -30,7 +30,9 @@ cross_tab(
 }
 \arguments{
 \item{data}{A data frame. Alternatively, a vector when using the
-vector-based interface.}
+vector-based interface. A survey design is refused (class
+\code{spicy_wrong_regime}): \code{\link[=table_categorical_svy]{table_categorical_svy()}} tabulates a variable
+by another under the design.}
 
 \item{x}{Row variable (unquoted).}
 

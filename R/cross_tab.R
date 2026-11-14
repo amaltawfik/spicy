@@ -10,7 +10,9 @@
 #' [freq()].
 #'
 #' @param data A data frame. Alternatively, a vector when using the
-#'   vector-based interface.
+#'   vector-based interface. A survey design is refused (class
+#'   `spicy_wrong_regime`): [table_categorical_svy()] tabulates a variable
+#'   by another under the design.
 #' @param x Row variable (unquoted).
 #' @param y Column variable (unquoted). Required; the `NULL` default
 #'   in the signature is a placeholder and triggers an error if left
@@ -229,6 +231,7 @@ cross_tab <- function(
       class = "spicy_invalid_input"
     )
   }
+  .check_not_design(data, "cross_tab", expects = "a data.frame or a vector")
 
   # The language's typographic locale supplies the DEFAULT decimal
   # mark, the same way it does in `freq()`: an argument you type > the

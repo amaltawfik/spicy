@@ -341,25 +341,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # unparameterized (`expect_error(..., "data. must be a data.frame")`
 # pins it as a literal in two test files).
 .check_data_frame <- function(data, fn, call = rlang::caller_env()) {
-  if (.is_survey_design(data)) {
-    # A survey design reaching a plain builder is not a type error, it
-    # is the wrong REGIME: the weights alone cannot reproduce the
-    # design-based standard errors, degrees of freedom and tests, so
-    # the answer is a different function rather than a coercion.
-    spicy_abort(
-      c(
-        sprintf(
-          "`%s()` expects a data.frame; it received a survey design object (`%s`).",
-          fn,
-          class(data)[1L]
-        ),
-        "i" = .DESIGN_REGIME_HINT[[fn]],
-        "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
-      ),
-      class = "spicy_wrong_regime",
-      call = call
-    )
-  }
+  .check_not_design(data, fn, call = call)
   if (!is.data.frame(data)) {
     spicy_abort(
       "`data` must be a data.frame.",
@@ -369,6 +351,37 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   }
   if (nrow(data) == 0L) {
     .abort_no_rows("data", call = call)
+  }
+  invisible(data)
+}
+
+# A survey design reaching a plain builder is not a type error, it is the
+# wrong REGIME: the weights alone cannot reproduce the design-based
+# standard errors, degrees of freedom and tests, so the answer is a
+# different function rather than a coercion. `.check_data_frame()` opens
+# with it; `cross_tab()` and `freq()`, which also take vectors, call it
+# alone (`expects`).
+.check_not_design <- function(
+  data,
+  fn,
+  expects = "a data.frame",
+  call = rlang::caller_env()
+) {
+  if (.is_survey_design(data)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`%s()` expects %s; it received a survey design object (`%s`).",
+          fn,
+          expects,
+          class(data)[1L]
+        ),
+        "i" = .DESIGN_REGIME_HINT[[fn]],
+        "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
+      ),
+      class = "spicy_wrong_regime",
+      call = call
+    )
   }
   invisible(data)
 }
@@ -399,7 +412,9 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time.",
   table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
   table_battery = "Use `table_battery_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
-  table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`."
+  table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`.",
+  cross_tab = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>, by = <y>)`, the distribution of `x` within each level of `y` and survey's test of their independence.",
+  freq = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>)`, the distribution of `x` estimated under the design."
 )
 
 

@@ -34,7 +34,9 @@
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
-#'   vectors, `data` is ignored with a warning.
+#'   vectors, `data` is ignored with a warning. A survey design is refused
+#'   (class `spicy_wrong_regime`): [table_categorical_svy()] estimates the
+#'   distribution of a variable under the design.
 #' @param x A variable from `data` (unquoted).
 #' @param weights Optional numeric vector of weights (same length as `x`).
 #'   A logical vector is also accepted and coerced to 1/0
@@ -340,6 +342,7 @@ freq <- function(
   validate_varlist_logical(rescale, "rescale")
   validate_varlist_logical(user_na, "user_na")
 
+  .check_not_design(data, "freq", expects = "a data.frame or a vector")
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
     spicy_abort(
