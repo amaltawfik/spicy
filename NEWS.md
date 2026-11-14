@@ -621,7 +621,8 @@
 
 * `table_regression()` with a formula `cluster` (`cluster = ~id`) uses
   the rows the fit kept after `subset` and the removal of missing
-  values. A fit with `subset` failed on the length of the cluster.
+  values. A fit with `subset`, and a `coxph()` fit that had dropped
+  rows with missing values, failed on the length of the cluster.
 
 * `table_categorical()` and `table_categorical_svy()` show a declared
   level that `levels_keep` names when it has no observation, with a

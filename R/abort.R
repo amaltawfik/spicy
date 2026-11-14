@@ -647,8 +647,14 @@ cluster_lookup_data <- function(fit, vars) {
     # method (rq, multinom) would return NA here and silently skip the
     # na.action subsetting below -- the cluster vector then keeps the
     # original row count and the length gate rejects the model's own
-    # blessed cluster route (caught for rq by the 2026-07 review).
-    n_fit <- tryCatch(.spicy_nobs(fit), error = function(e) NA_integer_)
+    # blessed cluster route (caught for rq by the 2026-07 review). A
+    # coxph's nobs() counts its events; its cluster has one value per
+    # row of the model data (.expected_cluster_length()).
+    n_fit <- if (inherits(fit, "coxph") && !inherits(fit, "cph")) {
+      .expected_cluster_length(fit)
+    } else {
+      tryCatch(.spicy_nobs(fit), error = function(e) NA_integer_)
+    }
     # Many fits drop rows via NA-handling; sandwich / clubSandwich
     # require the cluster vector to have length nobs(fit). When the
     # original data has more rows, subset using the model frame's

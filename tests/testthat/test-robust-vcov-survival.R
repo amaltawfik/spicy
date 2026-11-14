@@ -161,3 +161,31 @@ test_that("censored coxph: public table_regression accepts a subject-length clus
     class = "spicy_invalid_input"
   )
 })
+
+test_that("coxph: a formula cluster aligns with the rows the fit kept", {
+  skip_if_not_installed("survival")
+  lung3 <- survival::lung
+  lung3$g <- rep(1:20, length.out = nrow(lung3))
+  # ph.ecog has one missing value: the fit keeps 227 of the 228 rows.
+  f <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex + ph.ecog,
+    lung3
+  )
+  expect_identical(f$n, nrow(lung3) - 1L)
+  out <- table_regression(
+    f,
+    vcov = "CR0",
+    cluster = ~g,
+    output = "data.frame"
+  )
+  rf <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex + ph.ecog,
+    lung3,
+    cluster = g
+  )
+  expect_equal(
+    out$SE[out$.row_role == "coef"],
+    sqrt(diag(rf$var)),
+    tolerance = 1e-6
+  )
+})
