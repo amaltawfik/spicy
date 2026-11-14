@@ -134,10 +134,11 @@ test_that("glm: classical-vcov footer label says 'Fisher information'", {
 test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(fit)
-  # Default for glm-only models: nobs, McFadden, Nagelkerke, AIC
+  # Default for a binary logit: nobs, Tjur, McFadden, AIC
   expect_true("n" %in% out$Variable)
+  expect_true("R² (Tjur)" %in% out$Variable)
   expect_true("R² (McFadden)" %in% out$Variable)
-  expect_true("R² (Nagelkerke)" %in% out$Variable)
+  expect_false("R² (Nagelkerke)" %in% out$Variable)
   expect_true("AIC" %in% out$Variable)
   # And NOT plain R² / Adj. R² (those are lm tokens). Positive control:
   # the same two strings ARE the lm footer rows, so this pair of
@@ -163,8 +164,8 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
     sprintf("%.2f", spicy:::compute_pseudo_r2_mcfadden(fit))
   )
   expect_identical(
-    cell("Nagelkerke"),
-    sprintf("%.2f", spicy:::compute_pseudo_r2_nagelkerke(fit))
+    cell("Tjur"),
+    sprintf("%.2f", spicy:::compute_pseudo_r2_tjur(fit))
   )
   expect_identical(cell("AIC"), sprintf("%.1f", AIC(fit)))
 })
@@ -1735,16 +1736,16 @@ test_that("pseudo-R2 on a cbind() fit match the proportion-form oracle", {
     0.1
   )
 
-  # Default user surface: both R2 rows are shown by default on a logit
-  # table and must render identically for the two forms.
+  # Default user surface: the McFadden row of a grouped logit renders
+  # identically for the two forms.
   tab_cb <- table_regression(fit_cb)
   tab_pr <- table_regression(fit_pr)
-  for (row in c("R² (McFadden)", "R² (Nagelkerke)")) {
-    expect_identical(
-      tab_cb[["B"]][tab_cb$Variable == row],
-      tab_pr[["B"]][tab_pr$Variable == row]
-    )
-  }
+  row <- "R² (McFadden)"
+  expect_length(tab_cb[["B"]][tab_cb$Variable == row], 1L)
+  expect_identical(
+    tab_cb[["B"]][tab_cb$Variable == row],
+    tab_pr[["B"]][tab_pr$Variable == row]
+  )
 })
 
 test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {

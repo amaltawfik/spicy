@@ -2458,12 +2458,11 @@ table_regression <- function(
     # predicates that CONCATENATE, so an earlier one removes nothing.
     # Same idiom as is_bayes / is_gee.
     is_design <- vapply(models, .is_design_fit, logical(1))
-    any_glm <- any(
-      vapply(models, inherits, logical(1), "glm") &
-        !is_bayes &
-        !is_gee &
-        !is_design
-    )
+    is_glm_default <- vapply(models, inherits, logical(1), "glm") &
+      !is_bayes &
+      !is_gee &
+      !is_design
+    any_glm <- any(is_glm_default)
     # The OLS bucket: fits whose CLASSICAL R-squared pair is defined.
     # lm_robust belongs in it -- it is a linear regression with a
     # robust variance, and its R-squared is the same statistic as an
@@ -2494,10 +2493,8 @@ table_regression <- function(
       },
       logical(1)
     ))
-    # Ordinal cumulative-link (polr / clm): nobs + the two pseudo-R^2 that
-    # generalize the binary-logit default (McFadden = Stata ologit default,
-    # Nagelkerke = SPSS PLUM) + AIC. summary.polr reports Residual Deviance +
-    # AIC; Stata/SPSS lead with the pseudo-R^2, so those are the headline here.
+    # Ordinal cumulative-link (polr / clm): nobs + McFadden's R^2 (the
+    # pseudo-R^2 of Stata's ologit header) + AIC.
     any_ordinal <- any(vapply(
       models,
       function(f) {
@@ -2509,12 +2506,13 @@ table_regression <- function(
     if (any_lm_only) {
       show_fit_stats <- c(show_fit_stats, "nobs", "r2", "adj_r2")
     }
+    # The R-squared rows of a glm follow its family
+    # (`.glm_default_r2_tokens()`, dev/decisions/2026-11-14-pseudo-r2-defaults.md).
     if (any_glm) {
       show_fit_stats <- c(
         show_fit_stats,
         if (!any_lm_only) "nobs",
-        "pseudo_r2_mcfadden",
-        "pseudo_r2_nagelkerke",
+        .glm_default_r2_tokens(models[is_glm_default]),
         "aic"
       )
     }
@@ -2539,7 +2537,6 @@ table_regression <- function(
         show_fit_stats,
         if (!any_lm_only && !any_glm && !any_mixed) "nobs",
         "pseudo_r2_mcfadden",
-        "pseudo_r2_nagelkerke",
         "aic"
       )
     }
@@ -2571,7 +2568,7 @@ table_regression <- function(
         "r2_bayes"
       )
     }
-    # multinom: same pseudo-R2 pair as the other categorical families
+    # multinom: McFadden's R^2, as the other categorical families
     # (dev/fit_stats_by_class.md). Its null model is intercept-only, whose
     # log-likelihood has the ordinal path's closed form.
     any_multinom <- any(vapply(
@@ -2586,7 +2583,6 @@ table_regression <- function(
         show_fit_stats,
         if (!any_lm_only && !any_glm && !any_mixed && !any_ordinal) "nobs",
         "pseudo_r2_mcfadden",
-        "pseudo_r2_nagelkerke",
         "aic"
       )
     }

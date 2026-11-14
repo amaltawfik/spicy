@@ -813,7 +813,11 @@ test_that("an ordinal lrm carries polr's pseudo-R2 and deviance", {
   expect_equal(fs$pseudo_r2_nagelkerke, nag, tolerance = 1e-6)
   expect_equal(fs$deviance, stats::deviance(pf), tolerance = 1e-6)
   # Beside polr, both columns carry the two R2 (they were dashed).
-  df <- table_regression(list(pf, fit), output = "data.frame")
+  df <- table_regression(
+    list(pf, fit),
+    show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke"),
+    output = "data.frame"
+  )
   r2 <- df[df$variable %in% c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke"), ]
   expect_identical(
     r2$variable,
@@ -850,13 +854,18 @@ test_that("a binary lrm carries the fit statistics of a binomial glm", {
     tolerance = 1e-6
   )
   expect_equal(fs$deviance, stats::deviance(g), tolerance = 1e-6)
-  # The default fit block is the glm twin's: same rows, same values.
+  # The default fit block of an lrm is n, McFadden and AIC; the glm twin
+  # adds Tjur's R2 before McFadden's. The shared rows carry the same values.
   fl <- table_regression(fit, output = "data.frame")
   fg <- table_regression(g, output = "data.frame")
   sl <- fl[fl$.row_role == "fit_stat", ]
   sg <- fg[fg$.row_role == "fit_stat", ]
-  expect_identical(sl$variable, sg$variable)
-  expect_equal(sl$B, sg$B, tolerance = 1e-6)
+  expect_identical(sl$variable, c("nobs", "pseudo_r2_mcfadden", "aic"))
+  expect_identical(
+    sg$variable,
+    c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")
+  )
+  expect_equal(sl$B, sg$B[sg$variable != "pseudo_r2_tjur"], tolerance = 1e-6)
   # With an offset the null model carries it, as glm's null deviance does.
   set.seed(11)
   d$off <- stats::rnorm(nrow(d), 0, 0.5)
@@ -1019,7 +1028,12 @@ test_that("an lrm factor level shares its row with a glm twin and its AME", {
     show_columns = c("b", "ame"),
     output = "data.frame"
   )
-  dg <- table_regression(g, show_columns = c("b", "ame"), output = "data.frame")
+  dg <- table_regression(
+    g,
+    show_columns = c("b", "ame"),
+    show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "aic"),
+    output = "data.frame"
+  )
   expect_identical(
     da[c("variable", "level", ".row_role")],
     dg[c("variable", "level", ".row_role")]
@@ -1328,6 +1342,16 @@ test_that("a Glm carries the pseudo-R2 of its glm twin", {
   r2 <- df[df$variable %in% c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke"), ]
   expect_true(all(is.finite(r2[["Model 2: B"]])))
   expect_equal(r2[["Model 2: B"]], r2[["Model 1: B"]], tolerance = 1e-8)
+  # The binary logit Glm has the Tjur R2 of its glm twin, by default.
+  dt <- table_regression(
+    list(pairs$binomial[[2L]], pairs$binomial[[1L]]),
+    output = "data.frame"
+  )
+  tj <- dt[dt$variable == "pseudo_r2_tjur", ]
+  p <- fitted(pairs$binomial[[2L]])
+  y <- pairs$binomial[[2L]]$y
+  expect_equal(tj[["Model 1: B"]], mean(p[y == 1]) - mean(p[y == 0]))
+  expect_equal(tj[["Model 2: B"]], tj[["Model 1: B"]], tolerance = 1e-8)
 })
 
 test_that("every rms fit reports the log-likelihood, AIC, BIC and N of its base twin", {

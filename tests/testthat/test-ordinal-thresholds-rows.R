@@ -164,7 +164,7 @@ test_that("a section separator is emitted before the Thresholds block", {
 
 # ---- ordinal fit-stats default --------------------------------------------
 
-test_that("polr/clm default fit-stats = n + McFadden + Nagelkerke + AIC", {
+test_that("polr/clm default fit-stats = n + McFadden + AIC", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("ordinal")
   for (fit in list(
@@ -173,10 +173,11 @@ test_that("polr/clm default fit-stats = n + McFadden + Nagelkerke + AIC", {
   )) {
     df <- table_regression(fit)
     v <- trimws(df$Variable)
-    expect_true(any(v == "n"))
-    expect_true(any(grepl("McFadden", v)))
-    expect_true(any(grepl("Nagelkerke", v)))
-    expect_true(any(v == "AIC"))
+    expect_identical(
+      v[(length(v) - 2L):length(v)],
+      c("n", "R² (McFadden)", "AIC")
+    )
+    expect_false(any(grepl("Nagelkerke", v)))
   }
 })
 

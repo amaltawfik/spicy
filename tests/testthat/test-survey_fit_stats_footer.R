@@ -127,9 +127,8 @@ test_that("a plain glm or Cox in the same table keeps its own statistics", {
   plain <- stats::glm(api00 ~ ell, data = d$apistrat)
   out <- .fsf_render(list(fit, plain), show_columns = c("b", "p"))
   # The design fit is excluded from any_glm; the plain glm is not, so its
-  # pseudo-R-squareds are still queued and the design column en-dashes.
+  # R-squared is still queued and the design column en-dashes.
   expect_match(out, "McFadden", fixed = TRUE)
-  expect_match(out, "Nagelkerke", fixed = TRUE)
   # And the two counts lead the block rather than trailing it: the
   # design branch runs last, so a bare append would strand them.
   rows <- .fsf_rows(out)

@@ -104,6 +104,17 @@ test_that("n_events renders as events/N in every engine, reference rows kept", {
     table_regression(fit, show_columns = c("n_events", "b", "p"), output = o)
   }
   console <- .ep_expect_all_engines(build)
+  # The two R2 rows of a binary logit: Tjur's D and McFadden's index.
+  p <- fitted(fit)
+  y <- fit$y
+  ll0 <- sum(stats::dbinom(y, 1, mean(y), log = TRUE))
+  r2 <- sprintf(
+    "%.2f",
+    c(
+      mean(p[y == 1]) - mean(p[y == 0]),
+      1 - as.numeric(logLik(fit)) / ll0
+    )
+  )
   # Console oracle, pinned: the composite on every coefficient row
   # (reference levels included), the model total on the fit-stat row.
   expect_identical(
@@ -119,11 +130,11 @@ test_that("n_events renders as events/N in every engine, reference rows kept", {
       "365/539",
       "333/400",
       "1200",
-      "0.04",
-      "0.07",
-      "1403.6"
+      r2,
+      sprintf("%.1f", AIC(fit))
     )
   )
+  expect_identical(r2, c("0.05", "0.04"))
   # The reference exemption is specific to counts: the estimate and p
   # cells of the same rows still carry the en-dash.
   ref <- which(

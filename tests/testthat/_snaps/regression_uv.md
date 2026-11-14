@@ -16,8 +16,8 @@
          Male          │ 1175  0.95  [0.72, 1.26]   .713     0.95  [0.72, 1.26]   .726 
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        n               │                                  1163                         
+       R² (Tjur)       │                                     0.00                      
        R² (McFadden)   │                                     0.00                      
-       R² (Nagelkerke) │                                     0.00                      
        AIC             │                                  1212.3                       
       
       Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Each univariable model is fit on its own complete cases; N varies by predictor (1163–1175). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.

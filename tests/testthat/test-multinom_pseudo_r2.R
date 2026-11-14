@@ -53,16 +53,19 @@ test_that("the pseudo-R2 rows are class-aware defaults, not silent drops", {
   fit <- nnet::multinom(employment_status ~ age, data = d, trace = FALSE)
   out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
   expect_match(out, "R² (McFadden)", fixed = TRUE)
-  expect_match(out, "R² (Nagelkerke)", fixed = TRUE)
+  expect_false(grepl("Nagelkerke", out, fixed = TRUE))
   # Explicitly requested, the tokens render (they were silently dropped).
   out2 <- paste(
     capture.output(print(
-      table_regression(fit, show_fit_stats = c("nobs", "pseudo_r2_mcfadden"))
+      table_regression(
+        fit,
+        show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke")
+      )
     )),
     collapse = "\n"
   )
   expect_match(out2, "R² (McFadden)", fixed = TRUE)
-  expect_false(grepl("Nagelkerke", out2, fixed = TRUE))
+  expect_match(out2, "R² (Nagelkerke)", fixed = TRUE)
 })
 
 

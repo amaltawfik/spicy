@@ -292,6 +292,59 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 
 # ---- Pseudo-R^2 family ----------------------------------------------------
 
+# The R-squared rows a glm shows by default
+# (dev/decisions/2026-11-14-pseudo-r2-defaults.md): Tjur's then McFadden's
+# for a logit on a binary response, McFadden's alone for the other
+# binomial fits (probit, cloglog, grouped responses), Poisson and negative
+# binomial, and rms::lrm. `models` are the glm-class fits of the table;
+# the result is the union of their rows, in that order. mgcv's gam
+# inherits glm but has its own frame and no pseudo-R^2 row; quasi
+# families have no likelihood.
+.glm_default_r2_tokens <- function(models) {
+  toks <- unlist(lapply(models, .glm_default_r2_kind))
+  intersect(c("pseudo_r2_tjur", "pseudo_r2_mcfadden"), toks)
+}
+
+.glm_default_r2_kind <- function(fit) {
+  if (inherits(fit, "gam")) {
+    return(character(0))
+  }
+  if (inherits(fit, "lrm")) {
+    return("pseudo_r2_mcfadden")
+  }
+  if (inherits(fit, "Glm")) {
+    fit <- .rms_as_glm(fit)
+  }
+  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
+  if (!is.list(fam) || !is.character(fam$family)) {
+    return(character(0))
+  }
+  if (identical(fam$family, "binomial")) {
+    if (identical(fam$link, "logit") && .glm_binary_response(fit)) {
+      return(c("pseudo_r2_tjur", "pseudo_r2_mcfadden"))
+    }
+    return("pseudo_r2_mcfadden")
+  }
+  if (grepl("^quasi", fam$family)) {
+    return(character(0))
+  }
+  "pseudo_r2_mcfadden"
+}
+
+# TRUE when a binomial glm was fitted to one 0/1 (or factor, or logical)
+# outcome per row, FALSE for a grouped response: a cbind(successes,
+# failures) matrix or a proportion.
+.glm_binary_response <- function(fit) {
+  y <- tryCatch(
+    stats::model.response(stats::model.frame(fit)),
+    error = function(e) NULL
+  )
+  if (is.null(y) || is.matrix(y)) {
+    return(FALSE)
+  }
+  is.factor(y) || is.logical(y) || all(y %in% c(0, 1))
+}
+
 # Pseudo-R^2 for glm. Three variants (the most reported in the
 # applied literature) implemented from scratch -- no new package
 # dependency, full control over formulas + edge cases.

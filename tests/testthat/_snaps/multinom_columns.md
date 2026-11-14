@@ -17,7 +17,6 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        n               │ 1200                                                         
        R² (McFadden)   │    0.00                                                      
-       R² (Nagelkerke) │    0.01                                                      
        AIC             │ 2540.1                                                       
       
       Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.

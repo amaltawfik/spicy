@@ -1033,6 +1033,7 @@ as_regression_frame.Glm <- function(
       pseudo_r2 = NULL,
       pseudo_r2_mcfadden = compute_pseudo_r2_mcfadden(fit_glm, ll_null),
       pseudo_r2_nagelkerke = compute_pseudo_r2_nagelkerke(fit_glm, ll_null),
+      pseudo_r2_tjur = compute_pseudo_r2_tjur(fit_glm),
       aic = tryCatch(stats::AIC(fit_glm), error = function(e) NA_real_),
       bic = tryCatch(stats::BIC(fit_glm), error = function(e) NA_real_),
       log_lik = tryCatch(

@@ -94,12 +94,12 @@
     Output
       Logistic regression: dentist_12m
       
-       Variable        │ Model 1 
-      ─────────────────┼─────────
-       n               │ 1175    
-       R² (McFadden)   │    0.00 
-       R² (Nagelkerke) │    0.00 
-       AIC             │ 1417.9  
+       Variable      │ Model 1 
+      ───────────────┼─────────
+       n             │ 1175    
+       R² (Tjur)     │    0.00 
+       R² (McFadden) │    0.00 
+       AIC           │ 1417.9  
       
       Note. Logistic regression. AIC = Akaike information criterion.
 

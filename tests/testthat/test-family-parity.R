@@ -4904,14 +4904,15 @@ test_that("every table function refuses data with no rows, first", {
         show_columns = c("b", "se", "ci", "t", "p", "partial_chi2")
       )),
       # The headers (the z column is a test statistic), then the stub:
-      # n, the two pseudo-R2, each under the label of its row, and the AIC.
+      # n, the two pseudo-R2 of a binary logit, each under the label of
+      # its row, and the AIC.
       list(
         "or",
         "se",
         "ci",
         .abbr("chi2", term = spicy_str("abbrev_chi2_lrt")),
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_tjur")),
         .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_mcfadden")),
-        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_nagelkerke")),
         "aic"
       )
     ),
@@ -4932,8 +4933,8 @@ test_that("every table function refuses data with no rows, first", {
       list(
         "or",
         "ci",
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_tjur")),
         .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_mcfadden")),
-        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_nagelkerke")),
         "aic"
       )
     )
@@ -5241,7 +5242,7 @@ test_that("a pseudo-R2 row is defined as a pseudo coefficient of determination",
       "AIC=Akaike information criterion.",
       "B=unstandardized regression coefficient.",
       "R\u00B2 (McFadden)=pseudo coefficient of determination.",
-      "R\u00B2 (Nagelkerke)=pseudo coefficient of determination."
+      "R\u00B2 (Tjur)=pseudo coefficient of determination."
     )
   ))
   # The R2 of a linear model keeps its definition beside them.
@@ -5254,7 +5255,7 @@ test_that("a pseudo-R2 row is defined as a pseudo coefficient of determination",
   withr::local_options(spicy.language = "fr")
   expect_match(
     note(logit),
-    "R\u00B2 (Nagelkerke)=pseudo-coefficient de d\u00E9termination.",
+    "R\u00B2 (Tjur)=pseudo-coefficient de d\u00E9termination.",
     fixed = TRUE
   )
 })
