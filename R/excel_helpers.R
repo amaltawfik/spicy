@@ -120,7 +120,9 @@
 # A number format as the console's text shows it: `d` decimals, the
 # leading zero (dropped below 1 in the APA style), an explicit sign (the
 # difference of a nested comparison) and a literal suffix (the degrees of
-# freedom of a test). `.excel_numfmt()` writes its code.
+# freedom of a test). `.excel_numfmt()` writes its code. A `neg` format
+# (set by `.xl_cell()`) adds a section for the negative values, whose
+# minus then survives a rounding to zero: "-0.00".
 .xl_spec <- function(d, lead_zero = TRUE, signed = FALSE, suffix = NULL) {
   d <- suppressWarnings(as.integer(d))
   if (length(d) != 1L || is.na(d) || d < 0L) {
@@ -133,7 +135,10 @@
   list(decimals = d, apa = apa, signed = isTRUE(signed), suffix = suffix)
 }
 
-.xl_numfmt <- function(s) .excel_numfmt(s$decimals, s$apa, s$signed, s$suffix)
+.xl_numfmt <- function(s) {
+  f <- .excel_numfmt(s$decimals, s$apa, s$signed, s$suffix)
+  if (isTRUE(s$neg)) paste0(f, ";-", f) else f
+}
 
 # The text Excel shows for `x` under the format `spec`. Excel reads the
 # value at 15 significant digits and rounds it half away from zero, where
@@ -160,7 +165,7 @@
     int <- ""
   }
   out <- if (d > 0L) paste0(int, ".", substring(n, nchar(n) - d + 1L)) else int
-  minus <- x < 0 && (spec$signed || grepl("[1-9]", n))
+  minus <- x < 0 && (spec$signed || isTRUE(spec$neg) || grepl("[1-9]", n))
   pre <- if (minus) {
     "-"
   } else if (spec$signed && x > 0) {
@@ -196,6 +201,7 @@
   }
   d <- max(0L, nchar(m[[4L]]) - 1L)
   read <- .xl_spec(d, nzchar(m[[3L]]), m[[2L]] == "+", suffix)
+  read$neg <- m[[2L]] == "-" && !grepl("[1-9]", core)
   for (v in c(value, as.numeric(core))) {
     for (s in list(spec, read)) {
       if (!is.null(s) && is.finite(v) && identical(.xl_shown(v, s), shown)) {

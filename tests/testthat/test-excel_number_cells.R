@@ -98,7 +98,8 @@
 # Values half way between two displays, built on purpose: a percentage
 # of 1/16 at one decimal (6.25), a weighted count of 36.5, a mean of
 # 2.675 at two decimals. R prints them "6.2", "36", "2.67"; Excel would
-# print the typed value "6.3", "37", "2.68".
+# print the typed value "6.3", "37", "2.68". And a mean of -0.001, which
+# R prints "-0.00" and Excel "0.00" under a format of one section.
 .xl_inv_data <- function() {
   data.frame(
     g = factor(rep(c("A", "B"), each = 16L)),
@@ -107,7 +108,8 @@
     x = rep(c(2.6, 2.75), 16L),
     w = rep(c(3.25, rep(1, 15L)), 2L),
     m1 = rep(c(TRUE, rep(FALSE, 15L)), 2L),
-    m2 = rep(c(TRUE, TRUE, rep(FALSE, 14L)), 2L)
+    m2 = rep(c(TRUE, TRUE, rep(FALSE, 14L)), 2L),
+    z = rep(c(-0.002, 0), 16L)
   )
 }
 
@@ -121,6 +123,7 @@ test_that("the descriptive sheets write each one-number cell as a number", {
   tables <- list(
     function(...) table_continuous(d, x, by = g, statistic = TRUE, ...),
     function(...) table_continuous(d, x, weights = w, ...),
+    function(...) table_continuous(d, z, by = g, ...),
     function(...) table_continuous_svy(des, x, by = g, ...),
     function(...) table_continuous_lm(d, x, by = g, statistic = TRUE, ...),
     function(...) {
@@ -172,6 +175,22 @@ test_that("a value half way between two displays is written as the console shows
       })
   )
   expect_true(2.67 %in% read(function(...) table_continuous(d, x, ...)))
+  # "-0.00": the typed value, under a format with a negative section.
+  path <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(path), add = TRUE)
+  table_continuous(d, z, output = "excel", excel_path = path)
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[1L]]$sheet_data$cc
+  m <- cc[cc$r == "B5", ]
+  expect_equal(as.numeric(m$v), -0.001)
+  xf <- wb$styles_mgr$styles$cellXfs[[as.integer(m$c_s) + 1L]]
+  id <- sub('.*numFmtId="([0-9]+)".*', "\\1", xf)
+  code <- grep(
+    paste0('numFmtId="', id, '"'),
+    wb$styles_mgr$styles$numFmts,
+    value = TRUE
+  )
+  expect_match(code, 'formatCode="0.00;-0.00"', fixed = TRUE)
 })
 
 test_that("the regression sheets write each one-number cell as a number", {

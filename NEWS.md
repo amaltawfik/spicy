@@ -359,7 +359,8 @@
   console shows it. Excel rounds such a value otherwise than R: a
   percentage of 6.25 at one decimal, printed `6.2`, was a number that
   Excel showed as `6.3`. This concerned `table_categorical()`,
-  `table_regression()` and the workbook of `code_book()`.
+  `table_regression()` and the workbook of `code_book()`. A negative
+  value printed `-0.00`, which Excel showed as `0.00`, keeps its minus.
 
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
