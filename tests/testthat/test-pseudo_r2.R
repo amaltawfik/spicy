@@ -616,7 +616,7 @@ test_that("the continuous families default to the deviance R2 and refuse the oth
     show_fit_stats = c("nobs", "pseudo_r2_mcfadden"),
     output = "data.frame"
   )
-  row <- mix[mix$variable == "pseudo_r2_mcfadden", ]
+  row <- mix[mix$variable %in% "pseudo_r2_mcfadden", ]
   expect_true(is.finite(row[["Logit: B"]]))
   expect_true(is.na(row[["Gamma: B"]]))
   # An rms::Glm follows its glm twin.
