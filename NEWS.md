@@ -135,6 +135,9 @@
   which the `glance()` of `table_continuous()` and `table_outcome()`
   gains too. In `table_categorical_svy()`, `weighted_nobs` sums the
   weights of each variable's own rows, no longer those of the design.
+  Both tables gain `nobs_valid` and `weighted_nobs_valid`, the rows with
+  an observed value and their weights: the `(Missing)` row that `nobs`
+  and `weighted_nobs` count is left out.
 
 * `table_categorical_svy()`, `table_continuous_svy()`: the sample size
   of the note leaves out the rows of zero weight, among them the rows

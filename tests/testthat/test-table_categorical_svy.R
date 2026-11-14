@@ -3363,6 +3363,56 @@ test_that("percent_base = \"valid\" at the edges: zero weights, empty and single
   )
 })
 
+test_that("glance() counts the rows with an observed value apart", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  skip_if_not_installed("broom")
+  dat <- .svycat_pb_data()
+  dat$pw[1:4] <- 0
+  des <- survey::svydesign(id = ~1, strata = ~stype, weights = ~pw, data = dat)
+  w <- stats::weights(des)
+  obs <- !is.na(dat$awards)
+  rows <- w != 0
+  # `nobs` and `weighted_nobs` count the `(Missing)` row whatever the base,
+  # `nobs_valid` and `weighted_nobs_valid` the observed values only. Under
+  # `by`, the column of missing `by` values counts in both.
+  tab <- list(
+    function(pb) {
+      table_categorical_svy(des, c(awards, stype), percent_base = pb)
+    },
+    function(pb) {
+      table_categorical_svy(
+        des,
+        c(awards, stype),
+        by = sch.wide,
+        percent_base = pb
+      )
+    }
+  )
+  for (pb in c("valid", "total")) {
+    for (f in tab) {
+      g <- broom::glance(suppressWarnings(f(pb)))
+      expect_equal(g$nobs, rep(sum(rows), 2L))
+      expect_equal(g$nobs_valid, c(sum(rows & obs), sum(rows)))
+      expect_equal(g$weighted_nobs, rep(sum(w), 2L), tolerance = 1e-12)
+      expect_equal(
+        g$weighted_nobs_valid,
+        c(sum(w[obs]), sum(w)),
+        tolerance = 1e-12
+      )
+    }
+  }
+  # Under `drop_na = TRUE`, the counts of `nobs` and `weighted_nobs`.
+  g <- broom::glance(table_categorical_svy(des, awards, drop_na = TRUE))
+  expect_identical(g$nobs_valid, g$nobs)
+  expect_equal(g$nobs, sum(rows & obs))
+  expect_equal(g$weighted_nobs_valid, g$weighted_nobs, tolerance = 1e-12)
+  expect_identical(
+    names(g)[grepl("nobs", names(g))],
+    c("nobs", "nobs_valid", "weighted_nobs", "weighted_nobs_valid")
+  )
+})
+
 # ---- a calibrated design with missing values -------------------------------
 
 test_that("a calibrated design with missing values keeps its percentage CIs", {

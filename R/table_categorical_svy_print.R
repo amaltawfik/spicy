@@ -324,7 +324,15 @@ as_tibble.spicy_categorical_svy_table <- function(x, ...) {
 #' `n_levels`, `test_type` (the `svychisq()` statistic of the test,
 #' `chisq_statistic`; `NA` where no test ran), `p.value`, `degf` (the
 #' design's own), `nobs` (the observed rows of the variable, a row of zero
-#' weight left out), `weighted_nobs` (the sum of their sampling weights).
+#' weight left out), `nobs_valid` (those of them with an observed value),
+#' `weighted_nobs` (the sum of the sampling weights of the rows of `nobs`)
+#' and `weighted_nobs_valid` (that of the rows of `nobs_valid`).
+#'
+#' Under `drop_na = FALSE`, `nobs` and `weighted_nobs` count the rows of
+#' the `(Missing)` row, whatever `percent_base`. `nobs_valid` and
+#' `weighted_nobs_valid` leave them out: they count the base of the
+#' percentages under `percent_base = "valid"` unless `levels_keep` hides a
+#' level. Under `drop_na = TRUE`, they equal `nobs` and `weighted_nobs`.
 #'
 #' `n_levels` counts the levels the TABLE displays, so a `(Missing)`
 #' display level counts; the test behind `p.value` runs on the complete
@@ -391,6 +399,31 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
   } else {
     wide[[.CAT_KEY_P]][headers]
   }
+  # The observed count of a variable's rows, the `(Missing)` row out under
+  # `valid`. A block in which the variable has no data counts nothing: its
+  # NA count is skipped, not propagated.
+  count_rows <- function(valid) {
+    vapply(
+      vars,
+      function(v) {
+        rows <- !headers &
+          wide$variable == v &
+          !(valid & wide$.row_role %in% "missing")
+        sum(
+          unlist(wide[rows, n_keys, drop = FALSE], use.names = FALSE),
+          na.rm = TRUE
+        )
+      },
+      numeric(1),
+      USE.NAMES = FALSE
+    )
+  }
+  weights_of <- function(nm, fallback) {
+    unname(
+      (attr(x, nm, exact = TRUE) %||%
+        stats::setNames(rep(fallback, length(vars)), vars))[vars]
+    )
+  }
   .svy_as_tbl(data.frame(
     variable = vars,
     label = wide$label[headers],
@@ -409,29 +442,17 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
     ),
     p.value = p,
     degf = rep(meta$degf %||% NA_real_, length(vars)),
-    # A block in which the variable has no data counts nothing: its NA
-    # count is skipped, not propagated.
-    nobs = vapply(
-      vars,
-      function(v) {
-        rows <- !headers & wide$variable == v
-        sum(
-          unlist(wide[rows, n_keys, drop = FALSE], use.names = FALSE),
-          na.rm = TRUE
-        )
-      },
-      numeric(1),
-      USE.NAMES = FALSE
+    nobs = count_rows(FALSE),
+    nobs_valid = count_rows(TRUE),
+    # The sum of the sampling weights of those rows: the variable's own,
+    # the `(Missing)` row's included under `drop_na = FALSE`, so that of
+    # the design only when every row is shown. A table that lost them
+    # falls back on the design's, and has no valid count.
+    weighted_nobs = weights_of(
+      "weighted_nobs",
+      meta$sum_weights %||% NA_real_
     ),
-    # The sum of the sampling weights of those rows: the variable's, not the
-    # design's, which a variable with missing values does not fill.
-    weighted_nobs = unname(
-      (attr(x, "weighted_nobs", exact = TRUE) %||%
-        stats::setNames(
-          rep(meta$sum_weights %||% NA_real_, length(vars)),
-          vars
-        ))[vars]
-    ),
+    weighted_nobs_valid = weights_of("weighted_nobs_valid", NA_real_),
     stringsAsFactors = FALSE,
     check.names = FALSE
   ))

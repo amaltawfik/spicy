@@ -3170,7 +3170,9 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
       "smd_type",
       "smd_value",
       "nobs",
-      "weighted_nobs"
+      "nobs_valid",
+      "weighted_nobs",
+      "weighted_nobs_valid"
     )
   )
   expect_equal(nrow(gl), 2L)
@@ -5314,7 +5316,9 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "smd_type",
       "smd_value",
       "nobs",
-      "weighted_nobs"
+      "nobs_valid",
+      "weighted_nobs",
+      "weighted_nobs_valid"
     )
   )
 })
@@ -7831,6 +7835,50 @@ test_that("glance() counts rows under weights, and sums their weights apart", {
   gw <- broom::glance(table_categorical(d, y, weights = w))
   expect_identical(gw$nobs, nrow(kept))
   expect_equal(gw$weighted_nobs, sum(kept$w))
+})
+
+test_that("glance() counts the rows with an observed value in `nobs_valid`", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  d <- .ss_data()
+  d$w[c(1L, 2L, 30L)] <- 0
+  d$w[5L] <- NA
+  kept <- d[!is.na(d$w) & d$w > 0, ]
+  q <- function(e) suppressWarnings(e)
+  obs <- !is.na(kept$x)
+  # `nobs` counts the `(Missing)` row whatever the base, `nobs_valid` not.
+  for (pb in c("valid", "total")) {
+    g <- broom::glance(table_categorical(kept, c(x, y), percent_base = pb))
+    expect_identical(g$nobs, rep(nrow(kept), 2L))
+    expect_identical(g$nobs_valid, c(sum(obs), nrow(kept)))
+    expect_true(all(is.na(g$weighted_nobs_valid)))
+  }
+  # Under `by`, the column of missing `by` values counts, as in `nobs`.
+  g <- broom::glance(q(table_categorical(kept, x, by = g_na)))
+  expect_identical(c(g$nobs, g$nobs_valid), c(nrow(kept), sum(obs)))
+  # Under `drop_na = TRUE`, the rows of `nobs`.
+  g <- broom::glance(q(table_categorical(kept, x, by = g_na, drop_na = TRUE)))
+  expect_identical(g$nobs, sum(obs & !is.na(kept$g_na)))
+  expect_identical(g$nobs_valid, g$nobs)
+  # The levels `levels_keep` shows, the `(Missing)` row out.
+  g <- broom::glance(table_categorical(
+    kept,
+    x,
+    levels_keep = c("yes", "(Missing)")
+  ))
+  expect_identical(
+    c(g$nobs, g$nobs_valid),
+    c(sum(kept$x %in% "yes" | !obs), sum(kept$x %in% "yes"))
+  )
+  # Under `weights`, rows of positive weight, and their weights.
+  g <- broom::glance(q(table_categorical(d, c(x, y), by = g_na, weights = w)))
+  expect_identical(g$nobs_valid, c(sum(obs), nrow(kept)))
+  expect_equal(g$weighted_nobs_valid, c(sum(kept$w[obs]), sum(kept$w)))
+  expect_equal(g$weighted_nobs, rep(sum(kept$w), 2L))
+  expect_identical(
+    names(g)[grepl("nobs", names(g))],
+    c("nobs", "nobs_valid", "weighted_nobs", "weighted_nobs_valid")
+  )
 })
 
 test_that("the sample size goes with the note the table builds", {

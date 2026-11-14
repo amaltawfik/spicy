@@ -496,9 +496,16 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' `es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`,
 #' `nobs` (the observations of the variable, the margin and the Total
 #' row not counted twice: rows, never weights, a row of zero weight left
-#' out) and `weighted_nobs` (their weighted count, `NA` without
-#' `weights`). Without `by`, only `variable`, `label`, `nobs` and
-#' `weighted_nobs` are populated; the other columns are `NA`. The interval
+#' out), `nobs_valid` (those of them with an observed value),
+#' `weighted_nobs` (their weighted count, `NA` without `weights`) and
+#' `weighted_nobs_valid` (the weighted count of the rows of
+#' `nobs_valid`). Under `drop_na = FALSE`, `nobs` and `weighted_nobs`
+#' count the rows of the `(Missing)` row, whatever `percent_base`;
+#' `nobs_valid` leaves them out, and counts the base of the percentages
+#' under `percent_base = "valid"` unless `levels_keep` hides a level.
+#' Under `drop_na = TRUE`, `nobs_valid` is `nobs`. Without `by`, only
+#' `variable`, `label` and the four counts are populated; the other
+#' columns are `NA`. The interval
 #' bounds are `NA` unless the table was built with `assoc_ci = TRUE`, and
 #' the SMD columns unless it was built with `smd = TRUE`.
 #'
@@ -652,20 +659,24 @@ glance.spicy_categorical_table <- function(x, ...) {
   # `total_group` attribute (see tidy() above); excluding those rows
   # before summing avoids double-counting.
   glance_margin <- attr(x, "total_group", exact = TRUE)
-  n_total <- vapply(
-    by_var,
-    function(b) {
-      if ("group" %in% names(b) && !is.null(glance_margin)) {
-        b <- b[b$group != glance_margin, , drop = FALSE]
-      }
-      # The Total row of `total_row = TRUE` repeats the counts above it.
-      if (".row_role" %in% names(b)) {
-        b <- b[!b$.row_role %in% "total", , drop = FALSE]
-      }
-      sum(b$n, na.rm = TRUE)
-    },
-    numeric(1)
-  )
+  # `valid`: the row of missing values out, for `nobs_valid`.
+  count_rows <- function(valid) {
+    vapply(
+      by_var,
+      function(b) {
+        if ("group" %in% names(b) && !is.null(glance_margin)) {
+          b <- b[b$group != glance_margin, , drop = FALSE]
+        }
+        # The Total row of `total_row = TRUE` repeats the counts above it.
+        role <- b[[".row_role"]] %||% rep("level", nrow(b))
+        out <- role %in% c("total", if (valid) "missing")
+        sum(b$n[!out], na.rm = TRUE)
+      },
+      numeric(1)
+    )
+  }
+  n_total <- count_rows(FALSE)
+  n_valid <- count_rows(TRUE)
   # `nobs` counts rows and `weighted_nobs` sums their weights, as in the
   # glance() of `table_continuous_lm()`. Under `weights` the counts above
   # are weighted, so the rows come from the table: those of the variable's
@@ -673,12 +684,17 @@ glance.spicy_categorical_table <- function(x, ...) {
   rows_w <- attr(x, "nobs", exact = TRUE)
   if (is.null(rows_w)) {
     weighted_nobs <- rep(NA_real_, length(keys))
+    weighted_valid <- weighted_nobs
   } else {
     weighted_nobs <- unname(n_total)
+    weighted_valid <- unname(n_valid)
     n_total <- rows_w[keys]
     n_total[is.na(n_total)] <- 0L
+    n_valid <- attr(x, "nobs_valid", exact = TRUE)[keys]
+    n_valid[is.na(n_valid)] <- 0L
   }
   n_total <- as.integer(round(n_total))
+  n_valid <- as.integer(round(n_valid))
 
   pick_first <- function(b, col) {
     if (col %in% names(b) && nrow(b) > 0L) b[[col]][1] else NA
@@ -762,7 +778,9 @@ glance.spicy_categorical_table <- function(x, ...) {
       rep(NA_real_, length(keys))
     },
     nobs = unname(n_total),
+    nobs_valid = unname(n_valid),
     weighted_nobs = weighted_nobs,
+    weighted_nobs_valid = weighted_valid,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )

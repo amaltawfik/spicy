@@ -544,7 +544,8 @@ broom::tidy(out)
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
 # (test_type, statistic, df, p.value, es_type, es_value,
-# es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
+# es_ci_lower / es_ci_upper, smd_type, smd_value), and its counts: nobs
+# counts the (Missing) row, nobs_valid does not.
 broom::glance(out)
 ```
 
