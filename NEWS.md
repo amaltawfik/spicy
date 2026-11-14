@@ -659,6 +659,12 @@
   of AICc counts the parameters the AIC counts (it counted one too many
   for a `glm()` without a dispersion).
 
+* `table_regression()` with `nested = TRUE` compares Cox models by
+  their observations and by their events, and its refusal says which
+  count differs. A `coxph()` model beside its `rms::cph()` twin on the
+  same rows was refused, and two models that differed by their censored
+  rows only reached `anova()`, which refused them in its own words.
+
 * `table_regression()`: `labels` keyed by the term of an interaction
   (`"age:wc"`) labels its row (`"age:wcyes"`) when the term has one row.
   A term with several rows warns and lists them, in a stacked table too.

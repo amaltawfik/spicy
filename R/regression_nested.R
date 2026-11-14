@@ -1968,11 +1968,18 @@ aicc_of <- function(fit, aic_v) {
     },
     error = function(e) NULL
   )
+  # The fallback n of a coxph is its events, the n of its BIC
+  # (nobs.coxph()), not the observations .spicy_nobs() counts.
+  n <- if (inherits(fit, "coxph") && !inherits(fit, "cph")) {
+    .spicy_nevent(fit)
+  } else {
+    tryCatch(.spicy_nobs(fit), error = function(e) NA_real_)
+  }
   .aicc_from_ic(
     aic_v,
     ic_or_na(stats::BIC, fit),
     scalar_or_na(as.numeric(ll)),
-    tryCatch(.spicy_nobs(fit), error = function(e) NA_real_)
+    n
   )
 }
 
@@ -2042,7 +2049,25 @@ comparable_nobs <- function(fit_prev, fit_curr) {
   if (inherits(fit, c("zeroinfl", "hurdle"))) {
     return(as.numeric(fit$n))
   }
+  # survival's nobs.coxph() counts the events: the observations of a Cox
+  # fit are its rows, fit$n, which the table's n row shows (rms::cph
+  # already counts them, and its fit$n is c(censored, events)).
+  if (inherits(fit, "coxph") && !inherits(fit, "cph") && !is.null(fit$n)) {
+    return(as.numeric(fit$n[[1L]]))
+  }
   as.numeric(stats::nobs(fit))
+}
+
+# The number of events of a Cox fit, NA for any other class: two Cox
+# models with as many observations can still differ by their events.
+.spicy_nevent <- function(fit) {
+  if (inherits(fit, "cph")) {
+    return(unname(as.numeric(fit$stats["Events"])))
+  }
+  if (inherits(fit, "coxph")) {
+    return(as.numeric(fit$nevent %||% NA_real_))
+  }
+  NA_real_
 }
 
 

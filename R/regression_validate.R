@@ -545,26 +545,40 @@ validate_nested_alignment <- function(
   # double for some supported classes (e.g. coxph), which would make an
   # integer(1) vapply throw under `nested = TRUE`. .spicy_nobs() covers
   # classes without a registered nobs method (nnet::multinom).
+  # A Cox model is also compared by its events: two fits with as many
+  # observations can hold different ones.
   nobs_vec <- vapply(models, .spicy_nobs, numeric(1))
-  if (length(unique(nobs_vec)) > 1L) {
+  nev_vec <- vapply(models, .spicy_nevent, numeric(1))
+  nev_cox <- nev_vec[!is.na(nev_vec)]
+  differ <- c(
+    if (length(unique(nobs_vec)) > 1L) {
+      sprintf(
+        "Models have different `nobs` (observations): %s.",
+        paste(nobs_vec, collapse = ", ")
+      )
+    },
+    if (length(unique(nev_cox)) > 1L) {
+      sprintf(
+        "Cox models have different numbers of events: %s.",
+        paste(nev_cox, collapse = ", ")
+      )
+    }
+  )
+  if (length(differ) > 0L) {
     spicy_abort(
       c(
-        sprintf(
-          "Models have different `nobs`: %s.",
-          paste(nobs_vec, collapse = ", ")
-        ),
+        differ,
         "i" = paste0(
           "Hierarchical comparison statistics (\u0394R\u00B2, partial F, ",
           "\u0394AIC, LRT, etc.) require identical observations across ",
-          "all models. Different `nobs` typically results from R's ",
+          "all models. A difference typically results from R's ",
           "listwise deletion on different rows for each model."
         ),
         "i" = paste0(
-          "Refit all models on the common subset, e.g.:\n",
-          "  df_common <- tidyr::drop_na(your_data, ",
-          "<all-predictors-and-DV>)\n",
-          "  m1 <- lm(y ~ x1, data = df_common)\n",
-          "  m2 <- lm(y ~ x1 + x2, data = df_common)"
+          "Refit every model on the rows they all use: drop the rows ",
+          "with a missing value on any variable of the largest model ",
+          "(`tidyr::drop_na(data, <its variables>)`), then fit each ",
+          "model on that data."
         )
       ),
       class = "spicy_invalid_input",

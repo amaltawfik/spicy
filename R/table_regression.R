@@ -4865,6 +4865,8 @@ table_regression <- function(
     return(invisible(NULL))
   }
   n <- vapply(models, .spicy_nobs, numeric(1))
+  nev <- vapply(models, .spicy_nevent, numeric(1))
+  nev <- nev[!is.na(nev)]
   dv <- vapply(
     frames,
     function(f) f$info$dv %||% NA_character_,
@@ -4875,6 +4877,12 @@ table_regression <- function(
       sprintf(
         "different numbers of observations (n = %s)",
         paste(format(n, big.mark = ",", trim = TRUE), collapse = ", ")
+      )
+    },
+    if (length(unique(nev)) > 1L) {
+      sprintf(
+        "different numbers of events (%s)",
+        paste(format(nev, big.mark = ",", trim = TRUE), collapse = ", ")
       )
     },
     if (length(unique(dv)) > 1L) {

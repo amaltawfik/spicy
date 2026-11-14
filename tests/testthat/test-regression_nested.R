@@ -294,6 +294,53 @@ test_that("table_regression - all-glm with lm-only change tokens rejected", {
   )
 })
 
+test_that("Cox models are compared by their observations and their events", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("rms")
+  d <- survival::lung
+  ev <- which(d$status == 2)
+  ce <- which(d$status == 1)
+  cox <- function(f) survival::coxph(f, data = d)
+  fit_only <- function(fits) {
+    table_regression(
+      fits,
+      show_columns = "none",
+      show_fit_stats = c("nobs", "aic")
+    )
+  }
+  # Five censored rows fewer: 223 and 218 observations, 160 events each.
+  d$a <- replace(d$age, ev[1:5], NA)
+  d$b <- replace(d$age, ce[1:5], NA)
+  m1 <- cox(survival::Surv(time, status) ~ sex + a)
+  m2 <- cox(survival::Surv(time, status) ~ sex + a + b)
+  err <- expect_error(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "223, 218", fixed = TRUE)
+  expect_no_match(conditionMessage(err), "lm(", fixed = TRUE)
+  expect_warning(fit_only(list(m1, m2)), "223, 218", fixed = TRUE)
+  # 223 observations each, 160 and 165 events.
+  m3 <- cox(survival::Surv(time, status) ~ sex + b)
+  err <- expect_error(
+    table_regression(list(m1, m3), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "events: 160, 165", fixed = TRUE)
+  expect_warning(fit_only(list(m1, m3)), "events (160, 165)", fixed = TRUE)
+  # A coxph and its rms::cph twin on the same rows compare.
+  dd <- stats::na.omit(d[, c("time", "status", "age", "sex")])
+  c1 <- survival::coxph(survival::Surv(time, status) ~ age, data = dd)
+  c2 <- rms::cph(survival::Surv(time, status) ~ age + sex, data = dd)
+  c2b <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = dd)
+  expect_no_warning(fit_only(list(c1, c2)))
+  lrt <- function(fits) {
+    x <- table_regression(fits, nested = TRUE, output = "data.frame")
+    x[["Model 2: B"]][x$variable == "lrt_change"]
+  }
+  expect_equal(lrt(list(c1, c2)), lrt(list(c1, c2b)), tolerance = 1e-6)
+})
+
 
 # ============================================================================
 # The change test follows `vcov`: a Wald test of the added block on the
