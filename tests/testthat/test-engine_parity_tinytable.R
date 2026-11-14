@@ -1503,7 +1503,9 @@ test_that("Word takes the minus sign, Excel keeps the hyphen", {
     openxlsx2::wb_load(xlsx),
     col_names = FALSE
   ))
-  expect_true(all(c("-0.08", "-0.61") %in% excel))
+  # The negative cells are numbers, which Excel signs itself.
+  shown <- round(suppressWarnings(as.numeric(excel)), 2)
+  expect_true(all(c(-0.08, -0.61) %in% shown))
   expect_false(any(grepl(paste0(minus, "0."), excel, fixed = TRUE)))
 })
 

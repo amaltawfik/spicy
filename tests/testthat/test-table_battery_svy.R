@@ -1079,9 +1079,10 @@ test_that("Excel and Word read back the table", {
   expect_identical(unname(grid[3L, 2L]), "E")
   expect_identical(unname(grid[4L, 2:4]), c("No", "Yes", "n"))
   expect_identical(unname(grid[5L, 1L]), "awards")
+  # Numbers at full precision, shown at the console's precision.
   expect_equal(
-    as.numeric(grid[5L, 2:3]),
-    round(as.numeric(shown[1L, 2:3]), 1)
+    round(as.numeric(grid[5L, 2:3]), 1),
+    as.numeric(shown[1L, 2:3])
   )
   expect_identical(
     unname(openxlsx2::wb_get_sheet_names(openxlsx2::wb_load(xlsx))),

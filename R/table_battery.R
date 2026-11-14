@@ -858,6 +858,18 @@ table_battery <- function(
     return(long)
   }
 
+  structured <- .struct_attach_p_adjust(
+    .bat_structured(
+      wide = wide,
+      display_df = display_df,
+      cols = cols,
+      items = items[ord],
+      percent_digits = percent_digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark
+    ),
+    p_adjust_info
+  )
   if (!output %in% c("default", "data.frame")) {
     return(export_desc_table(
       display_df,
@@ -876,22 +888,11 @@ table_battery <- function(
       word_path = word_path,
       note = note_txt,
       header_layout = .mr_header_layout(cols),
-      clipboard_label = "Battery table copied to clipboard."
+      clipboard_label = "Battery table copied to clipboard.",
+      structured = structured
     ))
   }
 
-  structured <- .struct_attach_p_adjust(
-    .bat_structured(
-      wide = wide,
-      display_df = display_df,
-      cols = cols,
-      items = items[ord],
-      percent_digits = percent_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark
-    ),
-    p_adjust_info
-  )
   if (tested) {
     structured <- .struct_attach_test_type(
       structured,

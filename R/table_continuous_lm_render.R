@@ -731,6 +731,9 @@ export_continuous_lm_table <- function(
   title = NULL,
   labels = NULL,
   mean_keys = NULL,
+  # The typed view of the same rows: the full-precision values of the
+  # number cells of the Excel sheet (`.xl_body()`).
+  structured = NULL,
   call = rlang::caller_env()
 ) {
   # The file is checked before any engine runs, and the errors name the
@@ -1384,6 +1387,7 @@ export_continuous_lm_table <- function(
       )
     }
 
+    keys <- names(display_df)
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
     nc <- length(col_keys)
@@ -1531,6 +1535,15 @@ export_continuous_lm_table <- function(
         right_border = NULL
       )
     }
+    wb <- .xl_body(
+      wb,
+      display_df,
+      keys,
+      structured,
+      first_body_row,
+      1L,
+      decimal_mark
+    )
     # Note below the table (one worksheet row per note line), same
     # placement as table_regression()'s output_excel.
     wb <- .spicy_xl_add_note(wb, note = note, start_row = last_row + 2L)

@@ -1990,26 +1990,45 @@ table_continuous <- function(
     return(out)
   }
 
+  # Typed view for `as_structured()` and the Excel sheet: the numbers come
+  # from `result` (the compute frame), the composite cells from the very
+  # display frame print() renders, so the two can never word a cell
+  # differently.
+  display_df <- build_display_df(
+    result,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    show_ci = ci,
+    show_n = show_n,
+    show_p = attr(result, "show_p"),
+    show_statistic = attr(result, "show_statistic"),
+    show_effect_size = attr(result, "show_effect_size"),
+    show_effect_size_ci = attr(result, "show_effect_size_ci"),
+    show_smd = attr(result, "show_smd"),
+    tokens_union = tokens_union,
+    tokens_by_var = tokens_by_var,
+    digits_by_var = digits_by_var
+  )
+  structured <- .build_continuous_structured(
+    result = result,
+    display_df = display_df,
+    tokens_union = tokens_union,
+    tokens_by_var = tokens_by_var,
+    digits = digits,
+    digits_by_var = digits_by_var,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    missing_group_label = missing_group_label,
+    es_ci = isTRUE(attr(result, "show_effect_size_ci"))
+  )
+
   # --- raw return for non-default outputs ---
   if (!output %in% c("default", "data.frame")) {
-    display_df <- build_display_df(
-      result,
-      digits = digits,
-      effect_size_digits = effect_size_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark,
-      ci_level = ci_level,
-      show_ci = ci,
-      show_n = show_n,
-      show_p = attr(result, "show_p"),
-      show_statistic = attr(result, "show_statistic"),
-      show_effect_size = attr(result, "show_effect_size"),
-      show_effect_size_ci = attr(result, "show_effect_size_ci"),
-      show_smd = attr(result, "show_smd"),
-      tokens_union = tokens_union,
-      tokens_by_var = tokens_by_var,
-      digits_by_var = digits_by_var
-    )
     return(
       export_desc_table(
         display_df,
@@ -2038,7 +2057,8 @@ table_continuous <- function(
         clipboard_delim = clipboard_delim,
         word_path = word_path,
         note = table_note,
-        es_ci = isTRUE(attr(result, "show_effect_size_ci"))
+        es_ci = isTRUE(attr(result, "show_effect_size_ci")),
+        structured = structured
       )
     )
   }
@@ -2046,43 +2066,8 @@ table_continuous <- function(
   # --- return ---
   # Disclosure note: print() renders it under the table.
   attr(result, "note") <- table_note
-  # Typed view for `as_structured()`: the numbers come from `result`
-  # (the compute frame), the composite cells from the very display
-  # frame print() renders, so the two can never word a cell
-  # differently.
-  attr(result, "structured") <- .build_continuous_structured(
-    result = result,
-    display_df = build_display_df(
-      result,
-      digits = digits,
-      effect_size_digits = effect_size_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark,
-      ci_level = ci_level,
-      show_ci = ci,
-      show_n = show_n,
-      show_p = attr(result, "show_p"),
-      show_statistic = attr(result, "show_statistic"),
-      show_effect_size = attr(result, "show_effect_size"),
-      show_effect_size_ci = attr(result, "show_effect_size_ci"),
-      show_smd = attr(result, "show_smd"),
-      tokens_union = tokens_union,
-      tokens_by_var = tokens_by_var,
-      digits_by_var = digits_by_var
-    ),
-    tokens_union = tokens_union,
-    tokens_by_var = tokens_by_var,
-    digits = digits,
-    digits_by_var = digits_by_var,
-    effect_size_digits = effect_size_digits,
-    p_digits = p_digits,
-    decimal_mark = decimal_mark,
-    ci_level = ci_level,
-    missing_group_label = missing_group_label,
-    es_ci = isTRUE(attr(result, "show_effect_size_ci"))
-  )
   attr(result, "structured") <- .struct_attach_p_adjust(
-    attr(result, "structured"),
+    structured,
     p_adjust_info
   )
   # The title the console prints, from the helper every engine reads,
@@ -4115,6 +4100,9 @@ export_desc_table <- function(
   # The effect-size cells carry their interval: their header states its
   # level (`.continuous_label_map()`).
   es_ci = FALSE,
+  # The typed view of the same rows: the full-precision values of the
+  # number cells of the Excel sheet (`.xl_body()`).
+  structured = NULL,
   call = rlang::caller_env()
 ) {
   # The title is the CALLER's: each family words it from its own
@@ -4766,6 +4754,7 @@ export_desc_table <- function(
       )
     }
 
+    keys <- names(display_df)
     display_df <- hl_rename(display_df)
     col_keys <- names(display_df)
     nc <- length(col_keys)
@@ -4947,6 +4936,15 @@ export_desc_table <- function(
       )
     }
 
+    wb <- .xl_body(
+      wb,
+      display_df,
+      keys,
+      structured,
+      first_body_row,
+      length(stub_keys),
+      decimal_mark
+    )
     # Disclosure note (what left the table, which test was used) two
     # rows below the body -- the same text the console prints.
     wb <- .spicy_xl_add_note(wb, note = note, start_row = last_row + 2L)

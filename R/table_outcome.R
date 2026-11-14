@@ -1400,6 +1400,20 @@ table_outcome <- function(
     show_effect_size_ci = effect_size_ci,
     indent_text = indent_text
   )
+  # Typed view: the numbers come from the compute frame, the composite
+  # cells from the very display frame the console renders, so the two
+  # can never word a cell differently.
+  structured <- .build_outcome_structured(
+    result = result,
+    display_df = display_df,
+    tokens = tokens,
+    digits = digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    es_ci = isTRUE(effect_size_ci)
+  )
 
   if (!output %in% c("default", "data.frame")) {
     # The block geometry is handed over rather than derived: the
@@ -1433,26 +1447,14 @@ table_outcome <- function(
       clipboard_delim = clipboard_delim,
       word_path = word_path,
       note = table_note,
-      es_ci = isTRUE(effect_size_ci)
+      es_ci = isTRUE(effect_size_ci),
+      structured = structured
     ))
   }
 
   attr(result, "display_df") <- display_df
-  # Typed view: the numbers come from the compute frame, the composite
-  # cells from the very display frame the console renders, so the two
-  # can never word a cell differently.
   attr(result, "structured") <- .struct_attach_p_adjust(
-    .build_outcome_structured(
-      result = result,
-      display_df = display_df,
-      tokens = tokens,
-      digits = digits,
-      effect_size_digits = effect_size_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark,
-      ci_level = ci_level,
-      es_ci = isTRUE(effect_size_ci)
-    ),
+    structured,
     p_adjust_info
   )
   if (identical(output, "data.frame")) {

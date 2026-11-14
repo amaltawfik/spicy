@@ -1079,6 +1079,19 @@ table_multiresponse <- function(
     )
   )
   base_row <- nrow(display_df)
+  structured <- .struct_attach_p_adjust(
+    .build_multiresponse_structured(
+      wide = wide,
+      display_df = display_df,
+      cols = cols,
+      items = select_names[ord],
+      margin_key = margin_key,
+      percent_digits = percent_digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark
+    ),
+    p_adjust_info
+  )
 
   if (!output %in% c("default", "data.frame")) {
     return(export_desc_table(
@@ -1102,23 +1115,11 @@ table_multiresponse <- function(
       word_path = word_path,
       note = note_txt,
       header_layout = .mr_header_layout(cols),
-      clipboard_label = "Multiple-response table copied to clipboard."
+      clipboard_label = "Multiple-response table copied to clipboard.",
+      structured = structured
     ))
   }
 
-  structured <- .struct_attach_p_adjust(
-    .build_multiresponse_structured(
-      wide = wide,
-      display_df = display_df,
-      cols = cols,
-      items = select_names[ord],
-      margin_key = margin_key,
-      percent_digits = percent_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark
-    ),
-    p_adjust_info
-  )
   if (p_value) {
     structured <- .struct_attach_test_type(
       structured,

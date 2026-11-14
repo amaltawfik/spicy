@@ -1923,27 +1923,28 @@ table_continuous_lm <- function(
     digits_by_var = digits_by_var
   )
 
+  # Typed view for `as_structured()` and the Excel sheet: `wide_raw` and
+  # `wide_df` are the raw and displayed frames already built above, so the
+  # typed body and the printed body come from one computation each.
+  structured <- .build_continuous_lm_structured(
+    result = result,
+    wide_raw = wide_raw,
+    wide_display = wide_df,
+    digits = digits,
+    fit_digits = fit_digits,
+    effect_size_digits = effect_size_digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    show_statistic = statistic,
+    effect_size = effect_size,
+    effect_size_ci = effect_size_ci,
+    r2_type = r2,
+    spec = spec,
+    digits_by_var = digits_by_var
+  )
   if (output %in% c("default", "data.frame")) {
-    # Typed view for `as_structured()`: `wide_raw` and `wide_df` are
-    # the raw and displayed frames already built above, so the typed
-    # body and the printed body come from one computation each.
-    attr(result, "structured") <- .build_continuous_lm_structured(
-      result = result,
-      wide_raw = wide_raw,
-      wide_display = wide_df,
-      digits = digits,
-      fit_digits = fit_digits,
-      effect_size_digits = effect_size_digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark,
-      ci_level = ci_level,
-      show_statistic = statistic,
-      effect_size = effect_size,
-      effect_size_ci = effect_size_ci,
-      r2_type = r2,
-      spec = spec,
-      digits_by_var = digits_by_var
-    )
+    attr(result, "structured") <- structured
     class(result) <- c(
       "spicy_continuous_lm_table",
       "spicy_table",
@@ -1975,7 +1976,8 @@ table_continuous_lm <- function(
     note = table_note,
     title = .continuous_lm_title(by_note),
     labels = .lm_spec_labels(spec),
-    mean_keys = .lm_spec_mean_keys(spec)
+    mean_keys = .lm_spec_mean_keys(spec),
+    structured = structured
   )
 }
 

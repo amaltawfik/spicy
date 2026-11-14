@@ -1470,6 +1470,20 @@ table_continuous_svy <- function(
     digits_by_var = digits_by_var
   )
 
+  structured <- .build_continuous_structured(
+    result = result,
+    display_df = display_df,
+    tokens_union = tokens,
+    tokens_by_var = attr(result, "show_columns_by_var"),
+    digits = digits,
+    effect_size_digits = digits,
+    p_digits = p_digits,
+    decimal_mark = decimal_mark,
+    ci_level = ci_level,
+    missing_group_label = missing_group_label,
+    digits_by_var = digits_by_var
+  )
+
   if (!output %in% c("default", "data.frame")) {
     return(export_desc_table(
       display_df,
@@ -1497,25 +1511,14 @@ table_continuous_svy <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
-      note = table_note
+      note = table_note,
+      structured = structured
     ))
   }
 
   attr(result, "display_df") <- display_df
   attr(result, "structured") <- .struct_attach_p_adjust(
-    .build_continuous_structured(
-      result = result,
-      display_df = display_df,
-      tokens_union = tokens,
-      tokens_by_var = attr(result, "show_columns_by_var"),
-      digits = digits,
-      effect_size_digits = digits,
-      p_digits = p_digits,
-      decimal_mark = decimal_mark,
-      ci_level = ci_level,
-      missing_group_label = missing_group_label,
-      digits_by_var = digits_by_var
-    ),
+    structured,
     p_adjust_info
   )
   if (identical(output, "data.frame")) {

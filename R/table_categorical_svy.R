@@ -1454,7 +1454,8 @@ table_categorical_svy <- function(
       word_path = word_path,
       note = table_note,
       header_layout = layout,
-      clipboard_label = "Categorical table copied to clipboard."
+      clipboard_label = "Categorical table copied to clipboard.",
+      structured = .build_categorical_svy_structured(result, display_df)
     ))
   }
 
