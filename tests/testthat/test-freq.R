@@ -41,6 +41,8 @@ test_that("freq() refuses a survey design and names the design-based table", {
     )
     expect_error(freq(des), class = "spicy_wrong_regime")
   }
+  # The design is the first thing wrong with the call.
+  expect_error(freq(design, a, digits = 1.5), class = "spicy_wrong_regime")
 })
 
 

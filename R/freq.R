@@ -273,6 +273,7 @@ freq <- function(
     abort_styled_defunct("freq")
   }
   output <- match_tabulation_output(output, "freq")
+  .check_not_design(data, "freq", expects = "a data.frame or a vector")
 
   labelled_levels <- spicy_match_arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)
@@ -342,7 +343,6 @@ freq <- function(
   validate_varlist_logical(rescale, "rescale")
   validate_varlist_logical(user_na, "user_na")
 
-  .check_not_design(data, "freq", expects = "a data.frame or a vector")
   is_df <- is.data.frame(data)
   if (is_df && missing(x)) {
     spicy_abort(
