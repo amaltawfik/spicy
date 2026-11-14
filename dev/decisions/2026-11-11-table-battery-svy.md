@@ -53,3 +53,7 @@
 ## Relecture du 2026-11-12
 
 Le test par défaut, le F de Rao-Scott, est celui que Stata rapporte sous `svy: tabulate` (« design-based F »), que SAS donne dans PROC SURVEYFREQ (khi-deux de Rao-Scott) et que SPSS Complex Samples appelle « adjusted F ». survey le rend par `svychisq(statistic = "F")`, son défaut. L'effectif non pondéré des répondants dans la colonne `n` suit SAS, qui imprime la fréquence non pondérée à côté de la fréquence pondérée, et la sœur `table_categorical_svy()`. Les pourcentages estimés par `svymean()` sur le plan restreint par `[` sont l'estimation de domaine de Lumley (2010), qui garde la structure du plan. L'ajustement de Holm par défaut est celui de `table_battery()`. Rien à changer.
+
+## Complément du 2026-11-14
+
+La décision 3 est amendée par l'ADR 2026-11-14-battery-percent-base. Sous `drop_na = FALSE`, le domaine reste par défaut celui des personnes qui ont répondu à l'item et la colonne des non-réponses donne leur effectif observé. Le domaine de toutes les lignes de poids non nul, décrit ci-dessus, est `percent_base = "total"`.

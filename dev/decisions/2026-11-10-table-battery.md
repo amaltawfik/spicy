@@ -53,3 +53,7 @@ Une batterie, ce sont plusieurs items jugés sur la même échelle (question « 
 ## Garde
 
 `tests/testthat/test-table_battery.R` : oracles `prop.table(table(item))` par item, `xtabs()` avec poids, `chisq.test(table(item, groupe))` par item, `p.adjust()` à la main, puis les refus classés, les sorties machine, une lecture Excel et une lecture Word. Palier CRAN : un cœur léger inscrit dans la liste blanche de `tests/testthat.R`, le reste sous `skip_on_cran()`, comme `test-table_stack.R`.
+
+## Complément du 2026-11-14
+
+La décision 4 est amendée par l'ADR 2026-11-14-battery-percent-base. Sous `drop_na = FALSE`, la base reste par défaut celle des réponses à l'item et la colonne des non-réponses donne leur effectif. L'effectif complet comme base, décrit ci-dessus, est `percent_base = "total"`.
