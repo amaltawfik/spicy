@@ -104,7 +104,7 @@ the long output of a descriptive table names each statistic it holds
 (see the table below).\tabular{ll}{
    Concept \tab Column \cr
    the variable a row describes, its displayed label \tab \code{variable}, \code{label} \cr
-   the level of a categorical variable, the group of \code{by} (in the tables that take a \code{by}) \tab \code{level}, \code{group} \cr
+   the level of a categorical variable (in a regression table, also the outcome category or the equation of a row under the header of its term), the group of \code{by} (in the tables that take a \code{by}) \tab \code{level}, \code{group} \cr
    the role of the row's \code{level} (or item): a level, the row of missing values, ... \tab \code{.row_role} (\code{"level"}, \code{"missing"}, \code{"summary"}, ...) \cr
    the role of \code{group}: a group, the column of missing \code{by} values, the margin \tab \code{.group_role} (\code{"group"}, \code{"missing"}, \code{"total"}) \cr
    the \code{Total} margin of the groups \tab \code{total} (logical) \cr
@@ -115,7 +115,7 @@ the long output of a descriptive table names each statistic it holds
    the p-value, and the raw one under \code{p_adjust} \tab \code{p.value}, \code{p_unadjusted} \cr
    the effect size: its measure, value and interval \tab \code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} \cr
    the standardized mean difference \tab \code{smd_type}, \code{smd_value} \cr
-   the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count \tab \code{nobs}, \code{weighted_nobs} \cr
+   the observations of a variable or of a model (rows, a row of zero weight left out), and their weighted count; those with an observed value \tab \code{nobs}, \code{weighted_nobs}; \code{nobs_valid}, \code{weighted_nobs_valid} \cr
    the weighted count of a group (beside its \code{n}) \tab \code{weighted_n} \cr
    the counts of the groups of \code{by}, of the categories of a variable \tab \code{n_groups}, \code{n_levels} \cr
    the fit of a model \tab \code{r.squared}, \code{adj.r.squared} as columns; as a row, its \code{show_fit_stats} token in \code{variable} (\code{r2}, \code{adj_r2}, \code{aic}, ...) \cr

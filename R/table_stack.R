@@ -752,13 +752,14 @@ table_stack <- function(
 # holds one model and brings the sentences spicy wrote. A mixed type list
 # is in the language of that table when every type has a translation, and
 # English otherwise (decision 42): there, each panel keeps its own type
-# sentence instead, in the language of the stack. Any other sentence that every panel carries is printed once,
-# first in its kind; one only some panels carry follows, opening with
-# their labels, panel after panel. The abbreviations are defined once
-# over the panels, the legends of the stars likewise. A panel built with
-# `note = FALSE` contributes nothing; one built with a typed note
-# contributes it in place of its own sentences. `extra` holds sentences
-# about the whole stack (`inference`), printed bare.
+# sentence instead, in the language of the stack. Any other sentence that
+# every panel carries is printed once, first in its kind; one only some
+# panels carry follows, opening with their labels, panel after panel.
+# The abbreviations are defined once over the panels, the legends of the
+# stars likewise. A panel built with `note = FALSE` contributes nothing;
+# one built with a typed note contributes it in place of its own
+# sentences. `extra` holds sentences about the whole stack (`inference`),
+# printed bare.
 .stack_note <- function(
   tables,
   panel_labels,

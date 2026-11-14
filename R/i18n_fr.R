@@ -689,8 +689,8 @@
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
   # (le prefixe arrive en minuscule initiale, regle du site d'appel).
   note_type_models = "Mod\u00E8les de %s.",
-  # Not served while the mixed-family type footer stays English wholesale
-  # (decision 42): that arm reads the key with the language bypassed.
+  # Served when every type of a mixed-family type footer has a
+  # translation; one type without keeps the footer English (decision 42).
   note_type_models_sep = "\u00A0; ",
 
   # -- typographic markers: the significance-star legend --------------------

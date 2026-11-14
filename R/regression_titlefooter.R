@@ -648,11 +648,12 @@ build_regression_type_footer_block_from_frames <- function(
   types <- .table_title_prefixes(frames)
   # Decision 42: the single-model and same-family arms translate (the
   # prefix through the bridge, the plural through its whole-sentence
-  # key). The mixed-family arm below stays English wholesale --
-  # coherent or nothing -- including its default model names, its line
-  # TEMPLATE and its separator: `.spicy_fmt_en()` and `.spicy_str_en()`
-  # bypass the language so a French name, NBSP colon or semicolon never
-  # lands inside the English fallback sentence. The
+  # key), and so does the mixed-family arm when every type has a
+  # translation. Otherwise the mixed-family arm at the end stays English
+  # wholesale -- coherent or nothing -- including its default model
+  # names, its line TEMPLATE and its separator: `.spicy_fmt_en()` and
+  # `.spicy_str_en()` bypass the language so a French name, NBSP colon or
+  # semicolon never lands inside the English fallback sentence. The
   # plural English arm routes through the registry too, so a
   # `spicy.labels` override of `note_type_models` works in English, as
   # `spicy_labels()` advertises.

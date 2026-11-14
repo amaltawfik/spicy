@@ -611,9 +611,9 @@
   # French inverts the construction, so the whole sentence is the unit.
   note_type_models = "%s models.",
   # The joiner of the per-model lines of a mixed-family type footer
-  # ("Model 1: linear regression; Model 2: ..."). That arm stays English
-  # wholesale (decision 42), so it reads this key with the language
-  # bypassed, like its line template.
+  # ("Model 1: linear regression; Model 2: ..."), read in the language of
+  # the table when every type has a translation, and with the language
+  # bypassed otherwise, like its line template (decision 42).
   note_type_models_sep = "; ",
 
   # -- table_regression(): the absolute survival estimands -------------------

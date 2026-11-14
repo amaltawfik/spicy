@@ -22,7 +22,9 @@ fit-statistic token (\code{"nobs"}, \code{"r2"}, ...) or label (\code{"n"}).}
 
 \item{level}{For a factor variable, the level, as a string: a
 category shown as a row. \code{"(Missing)"} addresses the missing-value
-category by role. A group of \code{by} is selected with \code{model}.}
+category by role. A group of \code{by} is selected with \code{model}. In a
+regression table, the outcome category of a multinomial row or the
+equation of a Heckman row, under the header of its term.}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
@@ -109,10 +111,13 @@ Asked with \code{model}, whichever group it names, they are an error (class
 \code{spicy_invalid_input}) that gives that call.
 
 \code{level} names a category shown as a row: the level of a variable,
-its row of missing values. Until spicy 0.14.0 it also selected the
-groups of \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} and
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}: that use is an error (class \code{spicy_defunct})
-whose message gives the call to use instead.
+its row of missing values. In a regression table, it also names the
+rows under the header of a term: the outcome categories of a
+multinomial model beside other models (\code{inline(tbl, age, "Student", model = "Adjusted")}) and the two equations of a Heckman selection
+model (\code{"selection"}, \code{"outcome"}). Until spicy 0.14.0 it also
+selected the groups of \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}}
+and \code{\link[=table_continuous_lm]{table_continuous_lm()}}: that use is an error (class
+\code{spicy_defunct}) whose message gives the call to use instead.
 
 \code{\link[=table_multiresponse]{table_multiresponse()}} has one row per item, addressed by its column
 name, then the rows of \code{none_row}, addressed as \code{"none"} and

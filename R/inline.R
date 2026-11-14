@@ -88,10 +88,14 @@
 #' `spicy_invalid_input`) that gives that call.
 #'
 #' `level` names a category shown as a row: the level of a variable,
-#' its row of missing values. Until spicy 0.14.0 it also selected the
-#' groups of [table_continuous()], [table_continuous_svy()] and
-#' [table_continuous_lm()]: that use is an error (class `spicy_defunct`)
-#' whose message gives the call to use instead.
+#' its row of missing values. In a regression table, it also names the
+#' rows under the header of a term: the outcome categories of a
+#' multinomial model beside other models (`inline(tbl, age, "Student",
+#' model = "Adjusted")`) and the two equations of a Heckman selection
+#' model (`"selection"`, `"outcome"`). Until spicy 0.14.0 it also
+#' selected the groups of [table_continuous()], [table_continuous_svy()]
+#' and [table_continuous_lm()]: that use is an error (class
+#' `spicy_defunct`) whose message gives the call to use instead.
 #'
 #' [table_multiresponse()] has one row per item, addressed by its column
 #' name, then the rows of `none_row`, addressed as `"none"` and
@@ -158,7 +162,9 @@
 #'   fit-statistic token (`"nobs"`, `"r2"`, ...) or label (`"n"`).
 #' @param level For a factor variable, the level, as a string: a
 #'   category shown as a row. `"(Missing)"` addresses the missing-value
-#'   category by role. A group of `by` is selected with `model`.
+#'   category by role. A group of `by` is selected with `model`. In a
+#'   regression table, the outcome category of a multinomial row or the
+#'   equation of a Heckman row, under the header of its term.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
