@@ -4239,6 +4239,58 @@ test_that("the missing answers of a variable leave out its groups with no data",
   expect_identical(miss$n[miss$group == "Total"], 7)
 })
 
+test_that("a variable with no data keeps its levels when `by` has missing values", {
+  skip_on_cran()
+  mark <- spicy:::spicy_str("cell_undefined")
+  d <- data.frame(
+    z = factor(rep(NA, 10), levels = c("u", "v")),
+    g = factor(rep(c("G1", "G2"), each = 5)),
+    w = rep(c(1, 2), 5)
+  )
+  d$g_na <- d$g
+  d$g_na[c(5L, 10L)] <- NA
+  for (rescale in c(FALSE, TRUE)) {
+    ref <- attr(
+      table_categorical(d, z, by = g, weights = w, rescale = rescale),
+      "display_df"
+    )
+    out <- attr(
+      table_categorical(d, z, by = g_na, weights = w, rescale = rescale),
+      "display_df"
+    )
+    # The table of the same call without missing values in `by`, and the
+    # mark in the column of those missing values.
+    expect_identical(out[names(ref)], ref)
+    expect_identical(
+      c(out[["(Missing) n"]][-1L], out[["(Missing) %"]][-1L]),
+      rep(mark, 4L)
+    )
+  }
+  # Data in one group: the table is unchanged.
+  d$z[1:2] <- "u"
+  out <- attr(
+    table_categorical(d, z, by = g_na, weights = w, rescale = TRUE),
+    "display_df"
+  )
+  expect_identical(
+    out,
+    data.frame(
+      Variable = c("z", "  u", "  (Missing)"),
+      `G1 n` = c("", "2", "2"),
+      `G1 %` = c("", "100.0", ""),
+      `G2 n` = c("", mark, mark),
+      `G2 %` = c("", mark, mark),
+      `(Missing) n` = c("", "0", "2"),
+      `(Missing) %` = c("", mark, ""),
+      `Total n` = c("", "2", "4"),
+      `Total %` = c("", "100.0", ""),
+      p = c(mark, "", ""),
+      V = c(mark, "", ""),
+      check.names = FALSE
+    )
+  )
+})
+
 test_that("with fewer than two groups with data, the variable is not compared", {
   skip_on_cran()
   d <- as.data.frame(sochealth)

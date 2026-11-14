@@ -902,6 +902,12 @@
   LL and UL only in Excel and the clipboard, whose headers show them.
   The rendered tables defined them too.
 
+* `table_categorical()`: when `by` has missing values, a variable with
+  no observed value keeps its levels, with a dash in every group and in
+  the "(Missing)" column, as when `by` has none. With `rescale = TRUE`,
+  the call stopped on an error about the sum of the weights, and
+  without it the table showed only a "(Missing)" row.
+
 # spicy 0.14.1
 
 * Three tests compare their floating-point results with a tolerance, so

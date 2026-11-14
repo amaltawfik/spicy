@@ -4070,14 +4070,22 @@ table_categorical <- function(
       w <- w[keep]
     }
     this_measure <- assoc_measures_per_row[[select_names[i]]]
+    # Only rows of the missing values of `by` left, none observed: no
+    # group has data, and those rows leave too.
+    if (length(nd_i) && all(is.na(x))) {
+      x <- x[0L]
+      g <- g[0L]
+      w <- w[0L]
+    }
     if (!length(x)) {
       if (!length(nd_i)) {
         next
       }
       # No data in any group that holds rows: the variable keeps its row
       # shape -- its declared levels, or its one row (level NA) when it
-      # declares none -- with no count in those groups and in the margin,
-      # an empty group keeping its zero, and nothing tested.
+      # declares none -- with no count in those groups, in the column of
+      # the missing values of `by` and in the margin, an empty group
+      # keeping its zero, and nothing tested.
       keep_i <- levels_keep[[select_names[i]]]
       lv_use <- if (is.null(keep_i)) {
         var_level_order
@@ -4114,7 +4122,10 @@ table_categorical <- function(
       shown <- c(lv_use, if (has_total) total_label)
       for (k in seq_along(shown)) {
         for (gr in group_levels) {
-          void <- gr %in% nd_i || identical(gr, margin_key)
+          void <- gr %in%
+            nd_i ||
+            identical(gr, margin_key) ||
+            (missing_group && identical(gr, missing_label))
           rows[[rr]] <- cat_row(
             select_names[i],
             shown[[k]],
