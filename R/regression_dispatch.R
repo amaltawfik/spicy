@@ -2640,6 +2640,16 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       text_rows[!is.na(col_vals) & !is.na(thr) & col_vals < thr] <- TRUE
 
       txt_col <- txt_body[[j]]
+      # (8) Any other cell whose number would print otherwise than the
+      #     console under the format of its cell: a p-value whose
+      #     decimals follow its size (`p_bands`, `p_sigfig`), a number
+      #     in scientific notation.
+      for (i in which(!text_rows & !is.na(col_vals) & nzchar(txt_col))) {
+        shown <- .excel_cell_text(col_vals[[i]], .resolve_cell_fmt(meta, i))
+        if (!identical(shown, txt_col[[i]])) {
+          text_rows[[i]] <- TRUE
+        }
+      }
       if (all(text_rows)) {
         wb <- .spicy_xl_add_data(
           wb,

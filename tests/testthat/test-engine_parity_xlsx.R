@@ -340,6 +340,33 @@ test_that("the default decimal mark keeps the body numeric", {
   expect_gt(nchar(.xl_at(m, 5L, "B")), 6L)
 })
 
+test_that("a p-value the style shortens reaches Excel as the console prints it", {
+  .xl_skip()
+  fit <- lm(bmi ~ age + sex + smoking, data = .xl_data())
+  styles <- list(
+    spicy_style(p_bands = list(c(0.05, 3), c(Inf, 2))),
+    spicy_style(p_sigfig = 2)
+  )
+  for (style in styles) {
+    shown <- table_regression(fit, style = style)
+    p_of <- function(lv) trimws(shown$p[trimws(shown$Variable) == lv])
+    path <- .xl_write(function(p) {
+      table_regression(fit, style = style, output = "excel", excel_path = p)
+    })
+    m <- .xl_grid(path)
+    ref_of <- function(lv) {
+      paste0("F", rownames(m)[which(trimws(m[, "A"]) == lv)])
+    }
+    # Two decimals where the column has three: the console's text.
+    expect_identical(p_of("Yes"), ".82")
+    expect_identical(unname(.xl_row(m, "Yes")[["F"]]), ".82")
+    expect_identical(.xl_type(path, ref_of("Yes")), "text")
+    # Three decimals, as the column: still a number.
+    expect_identical(p_of("Male"), ".018")
+    expect_identical(.xl_type(path, ref_of("Male")), "number")
+  }
+})
+
 
 # ---- (e) survival estimands (contract, pinned here for Excel) -------------
 

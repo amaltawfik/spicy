@@ -673,6 +673,12 @@
   `outcome_labels = "<label>"` asks for. The label was ignored without a
   message.
 
+* `table_regression(output = "excel")` writes a p-value that `p_bands`
+  or `p_sigfig` shortens, and a number printed in scientific notation,
+  as the console prints them (`.02`, `3.40e+07`). The sheet showed the
+  p-value with the three decimals of its column (`.023`) and the number
+  in full.
+
 * `table_regression()` keeps the "Outcome" row out of the decimal
   alignment of the flextable, Word, gt and tinytable outputs. The label
   ended with figure spaces (a space before a parenthesis became one),
