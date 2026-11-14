@@ -1946,6 +1946,81 @@ test_that("Excel merges the Outcome row over each model, out of the widths", {
   }
 })
 
+test_that("flextable and tinytable merge the Outcome row of a single model", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("tinytable")
+  m <- lm(bmi ~ age + sex, data = sochealth)
+  # Its five columns: B, SE, LL, UL, p.
+  ft <- table_regression(m, outcome_labels = "BMI", output = "flextable")
+  html <- withr::local_tempfile(fileext = ".html")
+  flextable::save_as_html(ft, path = html)
+  expect_match(
+    paste(readLines(html, warn = FALSE), collapse = ""),
+    "<td[^>]*colspan=\"5\"[^>]*>.*?BMI",
+    perl = TRUE
+  )
+  tt <- table_regression(m, outcome_labels = "BMI", output = "tinytable")
+  expect_match(
+    tinytable::save_tt(tt, output = "html"),
+    "spanCell(1, 2, 1, 5)",
+    fixed = TRUE
+  )
+})
+
+test_that("Excel widens the columns of a merged label wider than them", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  m1 <- lm(wellbeing_score ~ age + sex, data = sochealth)
+  m2 <- lm(bmi ~ age + sex, data = sochealth)
+  # The width of each column of the sheet, from its `<cols>` element.
+  widths <- function(...) {
+    p <- withr::local_tempfile(fileext = ".xlsx")
+    dir <- withr::local_tempdir()
+    table_regression(
+      ...,
+      show_columns = c("b", "p"),
+      output = "excel",
+      excel_path = p
+    )
+    utils::unzip(p, files = "xl/worksheets/sheet1.xml", exdir = dir)
+    xml <- paste(
+      readLines(file.path(dir, "xl/worksheets/sheet1.xml"), warn = FALSE),
+      collapse = ""
+    )
+    cols <- regmatches(xml, gregexpr("<col [^>]*>", xml))[[1L]]
+    at <- function(a) {
+      as.numeric(sub(sprintf('.* %s="([^"]+)".*', a), "\\1", cols))
+    }
+    rep(at("width"), at("max") - at("min") + 1)
+  }
+  long <- "WHO-5 wellbeing index (0-100)"
+  base <- widths(list(m1, m2), outcome_labels = FALSE)
+  # A model name and an Outcome label of 29 characters over B and C: the
+  # two columns widen by equal parts, just enough to hold it; the others
+  # keep their width.
+  for (w in list(
+    widths(
+      stats::setNames(list(m1, m2), c(long, "BMI")),
+      outcome_labels = FALSE
+    ),
+    widths(list(m1, m2), outcome_labels = c(long, "BMI"))
+  )) {
+    expect_equal(w[[2L]], w[[3L]])
+    expect_equal(
+      sum(w[2:3]) - sum(base[2:3]),
+      nchar(long) + 2 - 2 * 8.43,
+      tolerance = 0.01
+    )
+    expect_identical(w[-(2:3)], base[-(2:3)])
+  }
+  # A label that fits changes nothing.
+  expect_identical(
+    widths(list(Wellbeing = m1, BMI = m2), outcome_labels = c("WHO-5", "BMI")),
+    widths(list(Wellbeing = m1, BMI = m2), outcome_labels = FALSE)
+  )
+})
+
 test_that("outcome_labels gives a single model its Outcome row", {
   skip_on_cran()
   withr::local_options(width = 200)

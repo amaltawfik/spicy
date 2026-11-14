@@ -2962,11 +2962,18 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     )
   }
   # The Outcome row: each label merged over the columns of its model,
-  # centered, as the console prints it. The widths leave it out, as they
-  # leave out the model names.
+  # centered, as the console prints it. As the model names, it counts in
+  # no column: its columns widen together when it is wider than them.
   outcome_spans <- .reg_outcome_spans(rendered)
   width_body <- txt_body
+  label_spans <- lapply(names(spanners), function(lbl) {
+    list(cols = spanners[[lbl]], text = lbl)
+  })
   for (sp in outcome_spans) {
+    label_spans[[length(label_spans) + 1L]] <- list(
+      cols = sp$cols,
+      text = txt_body[[sp$cols[[1L]]]][[sp$row]]
+    )
     dims <- openxlsx2::wb_dims(
       rows = body_first_row + sp$row - 1L,
       cols = sp$cols
@@ -2988,7 +2995,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   wb <- .spicy_xl_set_widths(
     wb,
     sheet = excel_sheet,
-    cells = .spicy_xl_cells(width_body, headers = list(hdr$top, hdr$bottom))
+    cells = .spicy_xl_cells(width_body, headers = list(hdr$top, hdr$bottom)),
+    spans = label_spans
   )
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)

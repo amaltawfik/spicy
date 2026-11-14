@@ -30,10 +30,19 @@
   )
 }
 
-# Set the computed widths on `sheet`. Returns the workbook, so it
-# chains like the other openxlsx2 verbs.
-.spicy_xl_set_widths <- function(wb, sheet, cells, ...) {
+# Set the computed widths on `sheet`. A merged cell does not overflow:
+# a label of `spans` (each a list of `cols` and `text`) wider than its
+# columns widens them together, by equal parts, just enough to hold it,
+# as the console does (`ascii_spanner_widths()`). Returns the workbook,
+# so it chains like the other openxlsx2 verbs.
+.spicy_xl_set_widths <- function(wb, sheet, cells, spans = list(), ...) {
   widths <- .spicy_xl_widths(cells, ...)
+  for (sp in spans) {
+    short <- .spicy_xl_widths(list(sp$text), ...) - sum(widths[sp$cols])
+    if (short > 0) {
+      widths[sp$cols] <- widths[sp$cols] + short / length(sp$cols)
+    }
+  }
   openxlsx2::wb_set_col_widths(
     wb,
     sheet = sheet,

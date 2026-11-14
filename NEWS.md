@@ -711,13 +711,18 @@
   show the decimal separator of the reader's Excel, and the mark stays
   in the text cells (`<0,001`). The whole body was text.
 
+* `table_regression(output = "excel")` widens the columns of a model
+  whose name is wider than them, by equal parts, just enough to show it.
+  The name was cut.
+
 * `table_regression()` keeps the "Outcome" row out of the decimal
   alignment of the flextable, Word, gt and tinytable outputs. The label
   ended with figure spaces (a space before a parenthesis became one),
   and the numbers of its column were padded to its width, off center.
   flextable, Word, tinytable (HTML, LaTeX, Typst) and Excel merge each
   label over the columns of its model, centered, where it widened the
-  first of them.
+  first of them. In Excel, a label wider than those columns widens them
+  together.
 
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in
