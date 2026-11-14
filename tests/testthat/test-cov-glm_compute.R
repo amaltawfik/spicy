@@ -46,29 +46,32 @@ test_that("compute_pseudo_r2_nagelkerke: NA when null logLik > 0 (upper <= 0)", 
 
 # ---- Tjur: non-binary and single-class guards (L272, L277) ----------------
 
-test_that("compute_pseudo_r2_tjur: NA for grouped/proportion binomial (y not 0/1)", {
-  # A proportion-response binomial (weights = trials) has a fitted
-  # response made of proportions, not 0/1, so the discrimination
-  # coefficient is undefined -> NA (L272).
+test_that("compute_pseudo_r2_tjur: a proportion response weights the means by its trials", {
+  # Each row holds w trials with a share p of successes: the successes
+  # weigh w * p in the mean of the successes, the failures w * (1 - p).
   d <- data.frame(
     p = c(0.2, 0.5, 0.7, 0.3, 0.9, 0.1),
     x = 1:6,
     w = c(10, 12, 8, 9, 11, 7)
   )
   fit <- suppressWarnings(glm(p ~ x, data = d, family = binomial, weights = w))
-  y <- stats::model.response(stats::model.frame(fit))
-  expect_false(all(y %in% c(0, 1)))
-  expect_identical(spicy:::compute_pseudo_r2_tjur(fit), NA_real_)
+  pi_hat <- fitted(fit)
+  expect_equal(
+    spicy:::compute_pseudo_r2_tjur(fit),
+    weighted.mean(pi_hat, d$w * d$p) - weighted.mean(pi_hat, d$w * (1 - d$p)),
+    tolerance = 1e-12
+  )
 })
 
-test_that("compute_pseudo_r2_tjur: NA for matrix (cbind) binomial response", {
-  # cbind(success, failure) gives a matrix response whose entries are
-  # counts, so they are not all in {0, 1} -> NA (L272).
+test_that("compute_pseudo_r2_tjur: a cbind() response weights the means by its counts", {
   d <- data.frame(s = c(2, 5, 7, 3, 1), n = c(10, 12, 15, 8, 9), x = 1:5)
   fit <- suppressWarnings(glm(cbind(s, n - s) ~ x, data = d, family = binomial))
-  y <- stats::model.response(stats::model.frame(fit))
-  expect_true(is.matrix(y))
-  expect_identical(spicy:::compute_pseudo_r2_tjur(fit), NA_real_)
+  pi_hat <- fitted(fit)
+  expect_equal(
+    spicy:::compute_pseudo_r2_tjur(fit),
+    weighted.mean(pi_hat, d$s) - weighted.mean(pi_hat, d$n - d$s),
+    tolerance = 1e-12
+  )
 })
 
 test_that("compute_pseudo_r2_tjur: NA when one outcome class is empty (m0 = NaN)", {

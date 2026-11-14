@@ -345,93 +345,140 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   is.factor(y) || is.logical(y) || all(y %in% c(0, 1))
 }
 
-# Pseudo-R^2 for glm. Three variants (the most reported in the
-# applied literature) implemented from scratch -- no new package
-# dependency, full control over formulas + edge cases.
+# Pseudo-R^2 of a glm, implemented from the definitions without a
+# package dependency:
 #
-#   * McFadden (1974)   : 1 - LL_full / LL_null
-#                         Most general; defined whenever a true
-#                         log-likelihood exists. Returns NA for
-#                         quasi-likelihood families.
-#   * Nagelkerke (1991) : (1 - exp((LL_null - LL_full) * 2 / n))
-#                         / (1 - exp(LL_null * 2 / n))
-#                         Cox-Snell rescaled to [0, 1]. Standard
-#                         in SPSS / SAS for binary outcomes.
-#                         Implemented from the original Nagelkerke
-#                         (1991) log-likelihood formula, NOT the
-#                         deviance-based variant used by
-#                         `performance::r2()`. The two forms agree
-#                         exactly for binomial (LL_saturated = 0)
-#                         and disagree mildly for poisson / Gamma /
-#                         inverse.gaussian (where LL_saturated != 0).
-#                         For binary outcomes (the dominant use case)
-#                         spicy and performance return identical
-#                         values to machine precision.
-#   * Tjur (2009)       : mean(prob | y=1) - mean(prob | y=0)
-#                         "Coefficient of discrimination"; only
-#                         defined for binary outcomes (binomial
-#                         family with 0/1 y). Returns NA otherwise.
+#   * McFadden (1974)   : 1 - LL_full / LL_null.
+#   * Nagelkerke (1991) : Cox and Snell's 1 - exp(2 (LL_null - LL_full) / n)
+#                         over its maximum 1 - exp(2 LL_null / n) (SAS's
+#                         "max-rescaled R-square", SPSS's Nagelkerke).
+#   * Tjur (2009)       : mean fitted probability of the successes minus
+#                         that of the failures. Binomial only.
 #
-# All three return a finite value in [0, 1] (Nagelkerke) or
-# (-Inf, 1] (McFadden and Tjur, both bounded above by 1 in
-# well-specified models) when defined; NA when not applicable.
-# `ll_null`: optional precomputed intercept-only log-likelihood.
-# Both pseudo-R2 need the same null refit; a call site that shows
-# McFadden AND Nagelkerke (the class-aware logit default) computes it
-# once and passes it to both instead of refitting the null twice.
-compute_pseudo_r2_mcfadden <- function(fit, ll_null = NULL) {
+# LL_null is the intercept-only model with the fit's offset and weights
+# (`.glm_null_fit()`). A binomial fit is read as Bernoulli trials,
+# whatever the form of its response: one 0/1 (or factor, or logical)
+# outcome per row, cbind(successes, failures), a proportion with the
+# trials as weights, 0/1 rows weighted by counts. glm() stores the
+# proportion of successes of row i in fit$y and its trials times the
+# user's weight in fit$prior.weights (m_i), so with p_i the fitted
+# probability
+#
+#   LL   = sum m_i [y_i log p_i + (1 - y_i) log(1 - p_i)],   n = sum m_i,
+#   Tjur = sum m_i y_i p_i / sum m_i y_i
+#            - sum m_i (1 - y_i) p_i / sum m_i (1 - y_i),
+#
+# and a grouped fit returns the numbers of the same model fitted to its
+# expanded 0/1 rows. stats::logLik() is not used there: on a grouped
+# response it adds the log binomial coefficients of the rows, which made
+# every measure depend on how the trials were grouped (McFadden 0.28 for
+# 30 rows of 10 trials, 0.10 for the same 300 trials as 0/1 rows), and it
+# rounds non-integer weights. With non-integer weights these formulas are
+# the weighted log-likelihood glm() maximizes, and n = the sum of the
+# weights leaves every measure unchanged when the weights are rescaled
+# (what SAS's NORMALIZE option does). Poisson and negative binomial fits
+# take logLik(), which weights each row by its prior weight, with the
+# same n. dev/decisions/2026-11-14-pseudo-r2-defaults.md has the sources.
+#
+# Tjur keeps its sign. D >= 0 for a logit with an intercept (Tjur 2009,
+# Corollary 1), but a fixed offset or another link can make it
+# negative, which an absolute value would hide.
+compute_pseudo_r2_glm <- function(fit) {
+  out <- list(mcfadden = NA_real_, nagelkerke = NA_real_, tjur = NA_real_)
   if (!inherits(fit, "glm")) {
-    return(NA_real_)
+    return(out)
   }
-  if (grepl("^quasi", stats::family(fit)$family)) {
-    return(NA_real_)
+  fam <- stats::family(fit)$family
+  if (grepl("^quasi", fam)) {
+    return(out)
   }
-  ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-    NA_real_
-  })
-  if (is.null(ll_null)) {
-    ll_null <- compute_intercept_only_loglik_glm(fit)
+  is_binomial <- identical(fam, "binomial")
+  if (is_binomial) {
+    out$tjur <- compute_pseudo_r2_tjur(fit)
   }
-  if (!is.finite(ll_full) || !is.finite(ll_null) || ll_null == 0) {
-    # nocov start: a converged non-quasi glm always has a finite,
-    # non-zero null log-likelihood (the intercept-only model is
-    # never saturated for a non-degenerate response), so this guard
-    # is defensive only.
-    return(NA_real_)
-    # nocov end
+  null_fit <- .glm_null_fit(fit)
+  if (is.null(null_fit)) {
+    return(out) # nocov: the intercept-only refit of a converged glm
   }
-  1 - (ll_full / ll_null)
+  if (is_binomial) {
+    tr <- .glm_bernoulli_trials(fit)
+    ll_full <- .bernoulli_loglik(tr$y, tr$m, tr$p)
+    ll_null <- .bernoulli_loglik(tr$y, tr$m, null_fit$fitted.values)
+    n <- sum(tr$m)
+  } else {
+    ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
+      NA_real_
+    })
+    ll_null <- tryCatch(
+      as.numeric(stats::logLik(null_fit)),
+      error = function(e) NA_real_
+    )
+    n <- sum(fit$prior.weights)
+  }
+  c(.lr_pseudo_r2(ll_full, ll_null, n), out["tjur"])
 }
 
-compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
-  if (!inherits(fit, "glm")) {
-    return(NA_real_)
+compute_pseudo_r2_mcfadden <- function(fit) {
+  compute_pseudo_r2_glm(fit)$mcfadden
+}
+
+compute_pseudo_r2_nagelkerke <- function(fit) {
+  compute_pseudo_r2_glm(fit)$nagelkerke
+}
+
+# McFadden's and Nagelkerke's R^2 from the log-likelihoods of the fitted
+# and the intercept-only model and n. Shared by the glm and multinom
+# paths. NA where undefined: a log-likelihood that is not finite, a
+# null log-likelihood of 0, or a Nagelkerke maximum that is not
+# positive (a null log-likelihood above 0, which a density can give).
+.lr_pseudo_r2 <- function(ll_full, ll_null, n) {
+  if (
+    !is.finite(ll_full) ||
+      !is.finite(ll_null) ||
+      ll_null == 0 ||
+      !is.finite(n) ||
+      n <= 0
+  ) {
+    return(list(mcfadden = NA_real_, nagelkerke = NA_real_))
   }
-  if (grepl("^quasi", stats::family(fit)$family)) {
-    return(NA_real_)
+  cox_snell <- 1 - exp(2 * (ll_null - ll_full) / n)
+  upper <- 1 - exp(2 * ll_null / n)
+  list(
+    mcfadden = 1 - ll_full / ll_null,
+    nagelkerke = if (is.finite(upper) && upper > 0) {
+      cox_snell / upper
+    } else {
+      NA_real_
+    }
+  )
+}
+
+# The Bernoulli trials of a binomial (or quasi-binomial) glm: y the
+# proportion of successes of each row, m its trials times its prior
+# weight, p its fitted probability. The fit's own vectors, which a
+# na.exclude fit does not pad: it reads as its na.omit twin.
+.glm_bernoulli_trials <- function(fit) {
+  y <- fit$y
+  if (is.null(y)) {
+    # glm(..., y = FALSE) keeps no response: rebuild the stored one.
+    y <- stats::model.response(stats::model.frame(fit))
+    if (is.factor(y)) {
+      y <- as.numeric(y != levels(y)[1L])
+    }
+    y <- .glm_stored_response(y, stats::family(fit))$y
   }
-  ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-    NA_real_
-  })
-  if (is.null(ll_null)) {
-    ll_null <- compute_intercept_only_loglik_glm(fit)
-  }
-  n <- stats::nobs(fit)
-  if (!is.finite(ll_full) || !is.finite(ll_null) || !is.finite(n) || n <= 0) {
-    # nocov start: a converged non-quasi glm always has a finite
-    # log-likelihood and a positive nobs(), so this guard is
-    # defensive only. (The reachable Nagelkerke NA path is the
-    # upper <= 0 guard below, exercised by the low-variance Gamma
-    # test in test-cov-glm_compute.R.)
-    return(NA_real_)
-    # nocov end
-  }
-  cox_snell <- 1 - exp((ll_null - ll_full) * 2 / n)
-  upper <- 1 - exp(ll_null * 2 / n)
-  if (!is.finite(upper) || upper <= 0) {
-    return(NA_real_)
-  }
-  cox_snell / upper
+  list(
+    y = as.numeric(y),
+    m = as.numeric(fit$prior.weights),
+    p = as.numeric(fit$fitted.values)
+  )
+}
+
+# sum m [y log p + (1 - y) log(1 - p)], with 0 log 0 = 0.
+.bernoulli_loglik <- function(y, m, p) {
+  sum(
+    m * (ifelse(y > 0, y * log(p), 0) + ifelse(y < 1, (1 - y) * log1p(-p), 0))
+  )
 }
 
 # Internal: stored-y representation of a glm response, for refits.
@@ -490,35 +537,36 @@ compute_pseudo_r2_nagelkerke <- function(fit, ll_null = NULL) {
 # so refitting on the raw matrix re-ran the binomial `initialize`
 # and evaluated ll_null under effective weights = totals^2 --
 # McFadden read 0.92 instead of 0.32 on real grouped data.
-# Falls back to NA on any failure.
-compute_intercept_only_loglik_glm <- function(fit) {
+# The weights are the fit's own prior weights, which a na.exclude fit
+# does not pad (stats::weights() does, and the refit then failed).
+# Falls back to NULL (NA for the log-likelihood) on any failure.
+.glm_null_fit <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) {
-    return(NA_real_) # nocov: a converged glm always carries a model.frame
+    return(NULL) # nocov: a converged glm always carries a model.frame
   }
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
   if (is.null(y)) {
-    return(NA_real_) # nocov: a glm model.frame always has a response column
+    return(NULL) # nocov: a glm model.frame always has a response column
   }
   fam <- stats::family(fit)
-  weights <- tryCatch(stats::weights(fit), error = function(e) NULL)
   offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
-
-  cv <- .glm_stored_response(y, fam, weights)
-  y <- cv$y
-  weights <- cv$wt
-
-  args <- list(formula = y ~ 1, family = fam, data = data.frame(y = y))
-  if (!is.null(weights)) {
-    args$weights <- weights
+  cv <- .glm_stored_response(y, fam, fit$prior.weights)
+  args <- list(formula = y ~ 1, family = fam, data = data.frame(y = cv$y))
+  if (!is.null(cv$wt)) {
+    args$weights <- cv$wt
   }
   if (!is.null(offset_vec)) {
     args$offset <- offset_vec
   }
-  null_fit <- tryCatch(
+  tryCatch(
     suppressWarnings(do.call(stats::glm, args)),
     error = function(e) NULL
   )
+}
+
+compute_intercept_only_loglik_glm <- function(fit) {
+  null_fit <- .glm_null_fit(fit)
   if (is.null(null_fit)) {
     return(NA_real_)
   }
@@ -529,29 +577,16 @@ compute_pseudo_r2_tjur <- function(fit) {
   if (!inherits(fit, "glm")) {
     return(NA_real_)
   }
-  fam <- stats::family(fit)
-  if (!identical(fam$family, "binomial")) {
+  if (!identical(stats::family(fit)$family, "binomial")) {
     return(NA_real_)
   }
-  y <- stats::model.response(stats::model.frame(fit))
-  if (is.factor(y)) {
-    y <- as.integer(y) - 1L
-  }
-  if (!all(y %in% c(0, 1))) {
+  tr <- .glm_bernoulli_trials(fit)
+  s1 <- sum(tr$m * tr$y)
+  s0 <- sum(tr$m * (1 - tr$y))
+  if (!(s1 > 0 && s0 > 0)) {
     return(NA_real_)
   }
-  pi_hat <- stats::fitted(fit)
-  # nocov: once y is a 0/1 vector (guard above), fitted() and the
-  # response always have matching length for a converged glm.
-  if (length(pi_hat) != length(y)) {
-    return(NA_real_)
-  }
-  m1 <- mean(pi_hat[y == 1])
-  m0 <- mean(pi_hat[y == 0])
-  if (!is.finite(m1) || !is.finite(m0)) {
-    return(NA_real_)
-  }
-  m1 - m0
+  sum(tr$m * tr$y * tr$p) / s1 - sum(tr$m * (1 - tr$y) * tr$p) / s0
 }
 
 

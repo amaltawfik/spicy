@@ -970,15 +970,10 @@ as_regression_frame.Glm <- function(
     dev <- c(NA_real_, NA_real_, fit$deviance)
     dev_null <- dev[[length(dev) - 1L]]
     dev_fit <- dev[[length(dev)]]
-    # rms's R2 takes n as the sum of the weights, as polr does. A binary
-    # lrm takes the rows, as glm does, so that a weighted fit gives the
-    # Nagelkerke R2 of its glm twin; the two agree without weights.
+    # rms's R2 takes n as the sum of the weights, as polr and the glm
+    # twin do (`compute_pseudo_r2_glm()`), so a weighted lrm gives the
+    # values of its expanded data.
     nagelkerke <- as.numeric(st["R2"] %||% NA_real_)
-    if (length(.lrm_cut_names(fit)) == 0L) {
-      n <- as.numeric(st["Obs"] %||% NA_real_)
-      nagelkerke <- (1 - exp((dev_fit - dev_null) / n)) /
-        (1 - exp(-dev_null / n))
-    }
     list(
       r_squared = NA_real_,
       adj_r_squared = NA_real_,
@@ -1026,14 +1021,14 @@ as_regression_frame.Glm <- function(
     # Glm: the pseudo-R2, AIC, BIC and log-likelihood of its glm twin,
     # computed on the glm it also is (rms's logLik() is -deviance / 2).
     fit_glm <- .rms_as_glm(fit)
-    ll_null <- compute_intercept_only_loglik_glm(fit_glm)
+    pr2 <- compute_pseudo_r2_glm(fit_glm)
     list(
       r_squared = NA_real_,
       adj_r_squared = NA_real_,
       pseudo_r2 = NULL,
-      pseudo_r2_mcfadden = compute_pseudo_r2_mcfadden(fit_glm, ll_null),
-      pseudo_r2_nagelkerke = compute_pseudo_r2_nagelkerke(fit_glm, ll_null),
-      pseudo_r2_tjur = compute_pseudo_r2_tjur(fit_glm),
+      pseudo_r2_mcfadden = pr2$mcfadden,
+      pseudo_r2_nagelkerke = pr2$nagelkerke,
+      pseudo_r2_tjur = pr2$tjur,
       aic = tryCatch(stats::AIC(fit_glm), error = function(e) NA_real_),
       bic = tryCatch(stats::BIC(fit_glm), error = function(e) NA_real_),
       log_lik = tryCatch(

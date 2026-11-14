@@ -1314,8 +1314,11 @@ test_that("a Glm carries the pseudo-R2 of its glm twin", {
       weights = w
     )
   )
-  n <- nrow(d)
+  # n is the sum of the prior weights: the rows of the unweighted logit,
+  # the weights of the Poisson fit.
+  n_of <- c(binomial = nrow(d), poisson = sum(d$w))
   for (nm in names(pairs)) {
+    n <- n_of[[nm]]
     fs <- as_regression_frame(pairs[[nm]][[1L]])$info$fit_stats
     ll1 <- as.numeric(stats::logLik(pairs[[nm]][[2L]]))
     ll0 <- as.numeric(stats::logLik(nulls[[nm]]))
@@ -1723,7 +1726,7 @@ test_that("an rms::psm() fit is refused, pointing to survival::survreg()", {
   )
 })
 
-test_that("a weighted binary lrm has the Nagelkerke R2 of its glm twin", {
+test_that("a weighted binary lrm has the R2 of its glm twin and of its expanded data", {
   skip_if_not_installed("rms")
   d <- .bin_data()
   set.seed(4)
@@ -1735,15 +1738,19 @@ test_that("a weighted binary lrm has the Nagelkerke R2 of its glm twin", {
     family = stats::binomial,
     weights = w
   ))
-  # glm's convention, n the number of rows (rms takes the sum of weights).
-  n <- nrow(d)
+  # n is the sum of the weights, as rms's own R2 takes it.
+  n <- sum(d$w)
   nag <- (1 - exp((g$deviance - g$null.deviance) / n)) /
     (1 - exp(-g$null.deviance / n))
   fs <- as_regression_frame(fit)$info$fit_stats
   expect_equal(fs$pseudo_r2_nagelkerke, nag, tolerance = 1e-6)
+  expect_equal(fs$pseudo_r2_nagelkerke, unname(fit$stats[["R2"]]))
   expect_equal(
     fs$pseudo_r2_mcfadden,
     1 - g$deviance / g$null.deviance,
     tolerance = 1e-6
   )
+  gs <- as_regression_frame(g)$info$fit_stats
+  expect_equal(gs$pseudo_r2_nagelkerke, nag, tolerance = 1e-6)
+  expect_equal(gs$pseudo_r2_mcfadden, fs$pseudo_r2_mcfadden, tolerance = 1e-6)
 })

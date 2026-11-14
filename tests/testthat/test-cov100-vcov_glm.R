@@ -271,7 +271,7 @@ test_that("spicy_glm_exp_header maps ordinal cloglog to HR and negbin log to IRR
 
 # ---- R/glm_compute.R 349: Tjur R2 length guard (na.exclude padding) ----
 
-test_that("Tjur R2 returns NA when na.exclude pads fitted() beyond the response", {
+test_that("Tjur R2 of a na.exclude fit is that of its na.omit twin", {
   d <- data.frame(
     x = c(1, 2, 3, 4, NA, 6, 7, 8, 9, 10),
     y = c(0, 0, 0, 1, 1, 1, 0, 1, 1, 1)
@@ -282,18 +282,23 @@ test_that("Tjur R2 returns NA when na.exclude pads fitted() beyond the response"
     family = binomial,
     na.action = stats::na.exclude
   )
-  # napredict() pads fitted() to 10 values while the model.frame response
-  # keeps the 9 complete cases -> the length guard must return NA.
+  # napredict() pads fitted() to 10 values; the fit's own fitted values
+  # and response keep the 9 complete cases, and Tjur reads those (it was
+  # NA before).
   expect_identical(length(stats::fitted(fit_ex)), 10L)
-  expect_identical(spicy:::compute_pseudo_r2_tjur(fit_ex), NA_real_)
-  # Same data under na.omit: lengths agree and Tjur R2 is the discrimination
-  # coefficient mean(pi | y=1) - mean(pi | y=0) (pinned manually).
+  # Under na.omit, Tjur R2 is the discrimination coefficient
+  # mean(pi | y=1) - mean(pi | y=0).
   fit_om <- glm(y ~ x, data = d, family = binomial, na.action = stats::na.omit)
   pi_hat <- stats::fitted(fit_om)
   y_om <- d$y[-5]
   oracle <- mean(pi_hat[y_om == 1]) - mean(pi_hat[y_om == 0])
   expect_equal(
     spicy:::compute_pseudo_r2_tjur(fit_om),
+    oracle,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    spicy:::compute_pseudo_r2_tjur(fit_ex),
     oracle,
     tolerance = 1e-12
   )

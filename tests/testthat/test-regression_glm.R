@@ -1679,10 +1679,15 @@ test_that("AUDIT B2: pseudo_r2_* work with formula-wrapped response", {
     ll_null,
     tolerance = 1e-12
   )
+  # McFadden on the Bernoulli trials: the binomial log-likelihood without
+  # the log binomial coefficients of the rows.
+  lchoose_sum <- sum(lchoose(d$n, d$s))
   expect_equal(
     spicy:::compute_pseudo_r2_mcfadden(fit_cb),
-    1 - as.numeric(stats::logLik(fit_cb)) / ll_null,
-    tolerance = 1e-12
+    1 -
+      (as.numeric(stats::logLik(fit_cb)) - lchoose_sum) /
+        (ll_null - lchoose_sum),
+    tolerance = 1e-10
   )
 })
 
@@ -1707,15 +1712,27 @@ test_that("pseudo-R2 on a cbind() fit match the proportion-form oracle", {
 
   ll_null <- spicy:::compute_intercept_only_loglik_glm(fit_cb)
   expect_equal(ll_null, -83.21304014662627, tolerance = 1e-12)
+  # The pseudo-R2 are those of the Bernoulli trials (n = sum(tot)): the
+  # binomial log-likelihoods less the log binomial coefficients.
+  lc <- sum(lchoose(d$tot, d$succ))
+  ll1 <- as.numeric(stats::logLik(fit_cb)) - lc
+  ll0 <- ll_null - lc
+  n_trials <- sum(d$tot)
   expect_equal(
     spicy:::compute_pseudo_r2_mcfadden(fit_cb),
-    0.32396695353665972,
-    tolerance = 1e-12
+    1 - ll1 / ll0,
+    tolerance = 1e-10
   )
   expect_equal(
     spicy:::compute_pseudo_r2_nagelkerke(fit_cb),
-    0.75194673902763853,
-    tolerance = 1e-12
+    (1 - exp(2 * (ll0 - ll1) / n_trials)) / (1 - exp(2 * ll0 / n_trials)),
+    tolerance = 1e-10
+  )
+  # The grouped values of the binomial log-likelihood (the pins of the
+  # 2026 cbind dossier) are no longer the ones reported.
+  expect_gt(
+    abs(spicy:::compute_pseudo_r2_mcfadden(fit_cb) - 0.32396695353665972),
+    0.05
   )
   # Invariance: the cbind and proportion-plus-weights forms of the SAME
   # model must report the same pseudo-R2.

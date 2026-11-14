@@ -1153,21 +1153,16 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
     f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
   }
 
-  # Pseudo-R^2 family (glm only; NA for lm). McFadden and Nagelkerke
-  # share the intercept-only refit -- compute it once here rather
-  # than once per statistic.
-  ll_null_glm <- if (is_glm) compute_intercept_only_loglik_glm(fit) else NULL
-  pseudo_r2_mcfadden <- if (is_glm) {
-    compute_pseudo_r2_mcfadden(fit, ll_null = ll_null_glm)
+  # Pseudo-R^2 family (glm only; NA for lm), from one intercept-only
+  # refit.
+  pr2 <- if (is_glm) {
+    compute_pseudo_r2_glm(fit)
   } else {
-    NA_real_
+    list(mcfadden = NA_real_, nagelkerke = NA_real_, tjur = NA_real_)
   }
-  pseudo_r2_nagelkerke <- if (is_glm) {
-    compute_pseudo_r2_nagelkerke(fit, ll_null = ll_null_glm)
-  } else {
-    NA_real_
-  }
-  pseudo_r2_tjur <- if (is_glm) compute_pseudo_r2_tjur(fit) else NA_real_
+  pseudo_r2_mcfadden <- pr2$mcfadden
+  pseudo_r2_nagelkerke <- pr2$nagelkerke
+  pseudo_r2_tjur <- pr2$tjur
 
   # Residual scale. For glm, `summary(fit)$sigma` does not exist; the
   # row is the square root of the dispersion estimate (sm$dispersion is
