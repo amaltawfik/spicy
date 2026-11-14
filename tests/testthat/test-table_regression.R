@@ -1850,6 +1850,42 @@ test_that("outcome_labels gives a single model its Outcome row", {
   )
 })
 
+test_that("the rich outputs keep the Outcome row out of the decimal alignment", {
+  skip_on_cran()
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("tinytable")
+  models <- list(
+    Wellbeing = lm(wellbeing_score ~ age + sex, data = sochealth),
+    BMI = lm(bmi ~ age + sex, data = sochealth)
+  )
+  labs <- c("Well-being (0-100)", "Body mass index")
+  bodies <- function(outcome_labels) {
+    list(
+      flextable = table_regression(
+        models,
+        outcome_labels = outcome_labels,
+        output = "flextable"
+      )$body$dataset,
+      tinytable = table_regression(
+        models,
+        outcome_labels = outcome_labels,
+        output = "tinytable"
+      )@data
+    )
+  }
+  shown <- bodies(labs)
+  bare <- bodies(FALSE)
+  for (engine in names(shown)) {
+    b <- as.data.frame(shown[[engine]])
+    ref <- as.data.frame(bare[[engine]])
+    # The labels arrive as typed, spaces included.
+    expect_identical(b[[2L]][[1L]], labs[[1L]])
+    expect_identical(b[[5L]][[1L]], labs[[2L]])
+    # The numbers keep the padding of the same table without the row.
+    expect_identical(b[-1L, ], ref, ignore_attr = TRUE)
+  }
+})
+
 
 test_that("spanner – tinytable output uses group_tt for column groups", {
   skip_on_cran()

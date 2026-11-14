@@ -663,6 +663,11 @@
   `outcome_labels = "<label>"` asks for. The label was ignored without a
   message.
 
+* `table_regression()` keeps the "Outcome" row out of the decimal
+  alignment of the flextable, Word, gt and tinytable outputs. The label
+  ended with figure spaces (a space before a parenthesis became one),
+  and the numbers of its column were padded to its width, off center.
+
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in
   French ("Modèle 1 : régression linéaire ; Modèle 2 : régression

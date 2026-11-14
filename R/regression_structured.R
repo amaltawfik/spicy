@@ -1992,11 +1992,12 @@ build_structured_body <- function(
   # to recognize the very mark the cell formatter wrote (Chicago /
   # NEJM / JAMA tabular "not applicable").
   na_dash <- spicy_str("cell_undefined")
-  # The header rows of a stacked table hold column labels, not numbers:
-  # neither measured nor padded.
+  # The header rows of a stacked table hold column labels, and the
+  # Outcome row the label of each model, not numbers: neither measured
+  # nor padded, as in the console.
   header <- logical(nrow(body))
   if (length(struct$body[[".row_role"]]) == nrow(body)) {
-    header <- struct$body[[".row_role"]] %in% "header"
+    header <- struct$body[[".row_role"]] %in% c("header", "outcome")
   }
 
   for (j in seq_along(body)) {
