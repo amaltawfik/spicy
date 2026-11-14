@@ -177,7 +177,7 @@ test_that("sum_n() refuses a survey design and says how to add the score", {
   expect_equal(design$variables$score, c(3, 5, 7, 9))
 })
 
-test_that("sum_n() on a two-phase or srvyr design gives a call that works", {
+test_that("sum_n() on a two-phase design names the items in update()", {
   skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(
@@ -205,20 +205,4 @@ test_that("sum_n() on a two-phase or srvyr design gives a call that works", {
     expect_equal(design$phase1$sample$variables$score, score[d$in2])
     expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
   }
-
-  one <- survey::svydesign(ids = ~1, weights = ~a, data = d)
-  as_tbl_svy <- function(x) structure(x, class = c("tbl_svy", class(x)))
-  err <- expect_error(sum_n(as_tbl_svy(one)), class = "spicy_wrong_regime")
-  expect_match(
-    conditionMessage(err),
-    "design <- design |> mutate(score = sum_n(select = ...))",
-    fixed = TRUE
-  )
-  skip_if_not_installed("srvyr")
-  # srvyr is not a declared dependency: no `::`, which R CMD check scans.
-  design <- getExportedValue("srvyr", "as_survey")(one)
-  expect_error(sum_n(design), class = "spicy_wrong_regime")
-  design <- dplyr::mutate(design, score = sum_n(select = c(a, b)))
-  expect_equal(design$variables$score, score)
-  expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
 })

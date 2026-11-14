@@ -23,7 +23,7 @@ count_n(
 automatically. A survey design is refused (class
 \code{spicy_wrong_regime}): compute the count on its data,
 \code{design$variables}, and add it to the design with \code{update()}. The
-error message says how for a two-phase design and for srvyr.}
+error message says how for a two-phase design.}
 
 \item{select}{Columns to include. Defaults to \code{tidyselect::everything()}.
 Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.; a

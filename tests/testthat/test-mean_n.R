@@ -249,7 +249,7 @@ test_that("mean_n() on a two-phase design names the items in update()", {
   }
 })
 
-test_that("mean_n() on a srvyr design gives srvyr's mutate()", {
+test_that("mean_n() on a srvyr design: the generic call, none if two-phase", {
   skip_on_cran()
   skip_if_not_installed("survey")
   d <- data.frame(
@@ -258,21 +258,23 @@ test_that("mean_n() on a srvyr design gives srvyr's mutate()", {
     b = c(2, NA, 4, 5, 6, 7, 8, 9),
     in2 = c(TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE)
   )
-  one <- survey::svydesign(ids = ~1, weights = ~a, data = d)
-  two <- survey::twophase(id = list(~id, ~id), subset = ~in2, data = d)
-  # The hint follows the class; the calls run below, where srvyr is.
+  # The srvyr class is simulated: srvyr is not a dependency. Checked by
+  # hand with srvyr 1.3.1 on 2026-11-14: the generic update() call works
+  # on an ordinary tbl_svy, and on a two-phase tbl_svy no single call
+  # serves both svymean() and srvyr's survey_mean() (mutate() fills only
+  # srvyr's copy of the phase-2 data, update() only survey's tables).
   as_tbl_svy <- function(x) structure(x, class = c("tbl_svy", class(x)))
+  one <- survey::svydesign(ids = ~1, weights = ~a, data = d)
   err <- expect_error(
     mean_n(as_tbl_svy(one), select = c(a, b)),
     class = "spicy_wrong_regime"
   )
   expect_match(
     conditionMessage(err),
-    "design <- design |> mutate(score = mean_n(select = ...))",
+    "update(design, score = mean_n(design$variables, select = ...))",
     fixed = TRUE
   )
-  # srvyr's mutate() fills only srvyr's copy of a two-phase design, and
-  # update() only survey's tables: no call is recommended.
+  two <- survey::twophase(id = list(~id, ~id), subset = ~in2, data = d)
   err <- expect_error(
     mean_n(as_tbl_svy(two), select = c(a, b)),
     class = "spicy_wrong_regime"
@@ -283,17 +285,4 @@ test_that("mean_n() on a srvyr design gives srvyr's mutate()", {
     fixed = TRUE
   )
   expect_no_match(conditionMessage(err), "design <-", fixed = TRUE)
-
-  skip_if_not_installed("srvyr")
-  # srvyr is not a declared dependency: no `::`, which R CMD check scans.
-  as_survey <- getExportedValue("srvyr", "as_survey")
-  design <- as_survey(one)
-  expect_error(mean_n(design, select = c(a, b)), class = "spicy_wrong_regime")
-  design <- dplyr::mutate(design, score = mean_n(select = c(a, b)))
-  expect_equal(design$variables$score, mean_n(d, select = c(a, b)))
-  expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
-  expect_error(
-    mean_n(as_survey(two), select = c(a, b)),
-    class = "spicy_wrong_regime"
-  )
 })

@@ -461,40 +461,32 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # The row-wise summaries' recipe above reads `design$variables`, which a
 # two-phase design does not have: survey's `update()` method evaluates
 # the expression in each of its two tables, so the items are named in
-# it. A srvyr design takes srvyr's `mutate()`. A srvyr two-phase design
-# takes neither: `mutate()` fills only srvyr's copy of the phase-2 data
-# and `update()` only survey's tables, so no call is given. Each recipe
-# was run on its class, and `svymean()` on the result (2026-11-14).
+# it. A srvyr two-phase design takes no call: srvyr's `mutate()` fills
+# only srvyr's copy of the phase-2 data and `update()` only survey's
+# tables. Each recipe was run on its class, and `svymean()` on the
+# result (2026-11-14).
 .design_regime_hint <- function(data, fn) {
-  two_phase <- inherits(data, c("twophase", "twophase2"))
-  srvyr <- inherits(data, "tbl_svy")
-  if (!fn %in% c("mean_n", "sum_n", "count_n") || !(two_phase || srvyr)) {
+  if (
+    !inherits(data, c("twophase", "twophase2")) ||
+      !fn %in% c("mean_n", "sum_n", "count_n")
+  ) {
     return(.DESIGN_REGIME_HINT[[fn]])
   }
   what <- if (fn == "count_n") "count" else "score"
-  count <- if (fn == "count_n") ", count = ..." else ""
-  if (two_phase && srvyr) {
-    sprintf(
+  if (inherits(data, "tbl_svy")) {
+    return(sprintf(
       "A row %s does not depend on the design: compute it with `%s()` on the data before building the two-phase design.",
       what,
       fn
-    )
-  } else if (two_phase) {
-    sprintf(
-      "A row %s does not depend on the design, but a two-phase design keeps its data in two tables: name the items, and `update()` computes the %s in each, `design <- update(design, score = %s(data.frame(<item1>, <item2>, ...)%s))`.",
-      what,
-      what,
-      fn,
-      count
-    )
-  } else {
-    sprintf(
-      "A row %s does not depend on the design: add it with srvyr's `mutate()`, `design <- design |> mutate(score = %s(select = ...%s))`.",
-      what,
-      fn,
-      count
-    )
+    ))
   }
+  sprintf(
+    "A row %s does not depend on the design, but a two-phase design keeps its data in two tables: name the items, and `update()` computes the %s in each, `design <- update(design, score = %s(data.frame(<item1>, <item2>, ...)%s))`.",
+    what,
+    what,
+    fn,
+    if (fn == "count_n") ", count = ..." else ""
+  )
 }
 
 

@@ -21,7 +21,7 @@ sum_n(
 used automatically. A survey design is refused (class
 \code{spicy_wrong_regime}): compute the score on its data,
 \code{design$variables}, and add it to the design with \code{update()}. The
-error message says how for a two-phase design and for srvyr.}
+error message says how for a two-phase design.}
 
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect syntax (default: \code{tidyselect::everything()}).
 If \code{regex = TRUE}, provide a regular expression pattern (character string).}
