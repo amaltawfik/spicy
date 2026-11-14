@@ -1060,6 +1060,55 @@ test_that("the Excel file leaves non-finite statistics empty, and means as they 
   expect_false(any(grepl("formatCode=\"0.00\"", fmts, fixed = TRUE)))
 })
 
+test_that("without an SD, the Excel file shows the decimals of the PDF", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  d <- data.frame(
+    constant = rep(1.5, 4),
+    whole = rep(5, 4),
+    single = c(2.25, NA, NA, NA)
+  )
+  typ <- withr::local_tempfile(fileext = ".typ")
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  code_book(d, output = typ)
+  code_book(d, output = path)
+  # The PDF writes a constant at the decimals of its min and max.
+  src <- readLines(typ, encoding = "UTF-8")
+  expect_true(any(grepl(
+    'mean: "1.5", sd: "0.0", median: "1.5"',
+    src,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl('mean: "5", sd: "0", median: "5"', src, fixed = TRUE)))
+  expect_true(any(grepl('mean: "2.25", median: "2.25"', src, fixed = TRUE)))
+  # So does the workbook, through the number formats of these cells.
+  wb <- openxlsx2::wb_load(path)
+  cc <- wb$worksheets[[2]]$sheet_data$cc
+  fmt <- function(ref) {
+    xf <- wb$styles_mgr$styles$cellXfs[[as.integer(cc$c_s[cc$r == ref]) + 1L]]
+    id <- sub('.*numFmtId="([0-9]+)".*', "\\1", xf)
+    hit <- grep(
+      paste0('numFmtId="', id, '"'),
+      wb$styles_mgr$styles$numFmts,
+      value = TRUE
+    )
+    sub('.*formatCode="([^"]*)".*', "\\1", hit)
+  }
+  head <- gsub("<[^>]+>", "", cc$is[cc$row_r == "1"])
+  col <- cc$c_r[cc$row_r == "1"][match(c("Mean", "SD", "Median"), head)]
+  expect_identical(
+    vapply(paste0(col, 2L), fmt, ""),
+    rep("0.0", 3L),
+    ignore_attr = TRUE
+  )
+  expect_identical(
+    vapply(paste0(col, 3L), fmt, ""),
+    rep("0", 3L),
+    ignore_attr = TRUE
+  )
+  expect_identical(fmt(paste0(col[[1L]], 4L)), "0.00")
+})
+
 test_that("the Excel file holds a value half way between two displays as the PDF shows it", {
   skip_on_cran()
   skip_if_not_installed("openxlsx2")

@@ -402,6 +402,10 @@
   itself is tested. Their standard errors were scaled by the Pearson
   dispersion of the refit, and their p-values could be far too small.
 
+* `code_book()`: in the Excel workbook, the mean, SD and median of a
+  variable with no SD (a constant, a single value) take the decimals of
+  its min and max, as in the PDF (`1.5`, not `1.50`). They had two.
+
 * `cross_tab()` and `freq()` refuse a survey design with an error of
   class `spicy_wrong_regime` that points to `table_categorical_svy()`,
   as the other plain tables do. A design used to stop them with an R

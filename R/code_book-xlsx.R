@@ -52,7 +52,8 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
     spec <- NULL
     formatted <- TRUE
     if (i == 2L) {
-      dec <- xl_decimals(df$sd)
+      raw <- tables[[i]]
+      dec <- xl_decimals(raw$sd, cbind(raw[["min"]], raw[["max"]]))
       spec <- lapply(dec, .xl_spec)
       formatted <- !is.na(df$mean)
       for (k in intersect(c("mean", "sd", "median"), names(df))) {
@@ -175,7 +176,7 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
   v <- cb$variables
   stat_cols <- which(names(v) %in% c("mean", "sd", "median"))
   if (nrow(v) > 0L && length(stat_cols) > 0L) {
-    dec <- xl_decimals(v$sd)
+    dec <- xl_decimals(v$sd, cbind(v[["min"]], v[["max"]]))
     for (r in which(!is.na(v$mean))) {
       wb <- openxlsx2::wb_add_numfmt(
         wb,
@@ -201,12 +202,22 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
 
 
 # The decimals of the mean, SD and median of each variable: three
-# significant digits of the SD (the rule of the PDF), from none to six;
-# two without an SD.
-xl_decimals <- function(sd) {
+# significant digits of the SD (the rule of the PDF), from none to six.
+# Without an SD (a constant, a single value), the decimals that the min
+# and max (`ends`, two columns) carry, as in the PDF; two when one of
+# them carries more than six.
+xl_decimals <- function(sd, ends = NULL) {
   dec <- rep(2L, length(sd))
   ok <- !is.na(sd) & is.finite(sd) & sd > 0
   dec[ok] <- pmin(6L, pmax(0L, 2L - floor(log10(signif(sd[ok], 3L)))))
+  places <- function(x) {
+    y <- x * 10^(0:6)
+    which(abs(y - round(y)) <= 1e-9 * pmax(1, abs(y)))[1L] - 1L
+  }
+  for (i in which(!ok & NROW(ends) == length(sd))) {
+    p <- vapply(stats::na.omit(ends[i, ]), places, integer(1))
+    dec[[i]] <- if (length(p) && !anyNA(p)) max(p) else 2L
+  }
   as.integer(dec)
 }
 
