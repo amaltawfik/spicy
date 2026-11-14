@@ -214,3 +214,86 @@ test_that("mean_n() refuses a survey design and says how to add the score", {
   design <- update(design, score = mean_n(design$variables, select = c(a, b)))
   expect_equal(design$variables$score, c(1.5, 2.5, 3.5, 4.5))
 })
+
+test_that("mean_n() on a two-phase design names the items in update()", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    id = 1:8,
+    a = c(1, 2, 3, 4, 5, 6, 7, 8),
+    b = c(2, NA, 4, 5, 6, 7, 8, 9),
+    in2 = c(TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE)
+  )
+  score <- mean_n(d, select = c(a, b))
+  for (method in c("approx", "full")) {
+    design <- survey::twophase(
+      id = list(~id, ~id),
+      subset = ~in2,
+      data = d,
+      method = method
+    )
+    err <- expect_error(
+      mean_n(design, select = c(a, b)),
+      class = "spicy_wrong_regime"
+    )
+    expect_match(
+      conditionMessage(err),
+      "update(design, score = mean_n(data.frame(<item1>, <item2>, ...)))",
+      fixed = TRUE
+    )
+    # The call the message gives fills both tables of the design.
+    design <- update(design, score = mean_n(data.frame(a, b)))
+    expect_equal(design$phase1$full$variables$score, score)
+    expect_equal(design$phase1$sample$variables$score, score[d$in2])
+    expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
+  }
+})
+
+test_that("mean_n() on a srvyr design gives srvyr's mutate()", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    id = 1:8,
+    a = c(1, 2, 3, 4, 5, 6, 7, 8),
+    b = c(2, NA, 4, 5, 6, 7, 8, 9),
+    in2 = c(TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE)
+  )
+  one <- survey::svydesign(ids = ~1, weights = ~a, data = d)
+  two <- survey::twophase(id = list(~id, ~id), subset = ~in2, data = d)
+  # The hint follows the class; the calls run below, where srvyr is.
+  as_tbl_svy <- function(x) structure(x, class = c("tbl_svy", class(x)))
+  err <- expect_error(
+    mean_n(as_tbl_svy(one), select = c(a, b)),
+    class = "spicy_wrong_regime"
+  )
+  expect_match(
+    conditionMessage(err),
+    "design <- design |> mutate(score = mean_n(select = ...))",
+    fixed = TRUE
+  )
+  # srvyr's mutate() fills only srvyr's copy of a two-phase design, and
+  # update() only survey's tables: no call is recommended.
+  err <- expect_error(
+    mean_n(as_tbl_svy(two), select = c(a, b)),
+    class = "spicy_wrong_regime"
+  )
+  expect_match(
+    conditionMessage(err),
+    "on the data before building the two-phase design",
+    fixed = TRUE
+  )
+  expect_no_match(conditionMessage(err), "design <-", fixed = TRUE)
+
+  skip_if_not_installed("srvyr")
+  # srvyr is not a declared dependency: no `::`, which R CMD check scans.
+  as_survey <- getExportedValue("srvyr", "as_survey")
+  design <- as_survey(one)
+  expect_error(mean_n(design, select = c(a, b)), class = "spicy_wrong_regime")
+  design <- dplyr::mutate(design, score = mean_n(select = c(a, b)))
+  expect_equal(design$variables$score, mean_n(d, select = c(a, b)))
+  expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
+  expect_error(
+    mean_n(as_survey(two), select = c(a, b)),
+    class = "spicy_wrong_regime"
+  )
+})

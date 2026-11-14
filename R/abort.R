@@ -379,7 +379,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
           expects,
           class(data)[1L]
         ),
-        "i" = .DESIGN_REGIME_HINT[[fn]],
+        "i" = .design_regime_hint(data, fn),
         if (inference) {
           c(
             "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
@@ -457,6 +457,45 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   sum_n = "A row score does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = sum_n(design$variables, select = ...))`.",
   count_n = "A row count does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = count_n(design$variables, select = ..., count = ...))`."
 )
+
+# The row-wise summaries' recipe above reads `design$variables`, which a
+# two-phase design does not have: survey's `update()` method evaluates
+# the expression in each of its two tables, so the items are named in
+# it. A srvyr design takes srvyr's `mutate()`. A srvyr two-phase design
+# takes neither: `mutate()` fills only srvyr's copy of the phase-2 data
+# and `update()` only survey's tables, so no call is given. Each recipe
+# was run on its class, and `svymean()` on the result (2026-11-14).
+.design_regime_hint <- function(data, fn) {
+  two_phase <- inherits(data, c("twophase", "twophase2"))
+  srvyr <- inherits(data, "tbl_svy")
+  if (!fn %in% c("mean_n", "sum_n", "count_n") || !(two_phase || srvyr)) {
+    return(.DESIGN_REGIME_HINT[[fn]])
+  }
+  what <- if (fn == "count_n") "count" else "score"
+  count <- if (fn == "count_n") ", count = ..." else ""
+  if (two_phase && srvyr) {
+    sprintf(
+      "A row %s does not depend on the design: compute it with `%s()` on the data before building the two-phase design.",
+      what,
+      fn
+    )
+  } else if (two_phase) {
+    sprintf(
+      "A row %s does not depend on the design, but a two-phase design keeps its data in two tables: name the items, and `update()` computes the %s in each, `design <- update(design, score = %s(data.frame(<item1>, <item2>, ...)%s))`.",
+      what,
+      what,
+      fn,
+      count
+    )
+  } else {
+    sprintf(
+      "A row %s does not depend on the design: add it with srvyr's `mutate()`, `design <- design |> mutate(score = %s(select = ...%s))`.",
+      what,
+      fn,
+      count
+    )
+  }
+}
 
 
 # Internal: column-selection sibling of `.check_integer64()` for the

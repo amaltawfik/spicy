@@ -14,7 +14,8 @@
 #'   `dplyr::mutate()`, where the current grouping/data context is
 #'   used automatically. A survey design is refused (class
 #'   `spicy_wrong_regime`): compute the score on its data,
-#'   `design$variables`, and add it to the design with `update()`.
+#'   `design$variables`, and add it to the design with `update()`. The
+#'   error message says how for a two-phase design and for srvyr.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).

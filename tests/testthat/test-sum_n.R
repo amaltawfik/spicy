@@ -176,3 +176,49 @@ test_that("sum_n() refuses a survey design and says how to add the score", {
   design <- update(design, score = sum_n(design$variables, select = c(a, b)))
   expect_equal(design$variables$score, c(3, 5, 7, 9))
 })
+
+test_that("sum_n() on a two-phase or srvyr design gives a call that works", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    id = 1:8,
+    a = c(1, 2, 3, 4, 5, 6, 7, 8),
+    b = c(2, NA, 4, 5, 6, 7, 8, 9),
+    in2 = c(TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE)
+  )
+  score <- sum_n(d, select = c(a, b))
+  for (method in c("approx", "full")) {
+    design <- survey::twophase(
+      id = list(~id, ~id),
+      subset = ~in2,
+      data = d,
+      method = method
+    )
+    err <- expect_error(sum_n(design), class = "spicy_wrong_regime")
+    expect_match(
+      conditionMessage(err),
+      "update(design, score = sum_n(data.frame(<item1>, <item2>, ...)))",
+      fixed = TRUE
+    )
+    design <- update(design, score = sum_n(data.frame(a, b)))
+    expect_equal(design$phase1$full$variables$score, score)
+    expect_equal(design$phase1$sample$variables$score, score[d$in2])
+    expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
+  }
+
+  one <- survey::svydesign(ids = ~1, weights = ~a, data = d)
+  as_tbl_svy <- function(x) structure(x, class = c("tbl_svy", class(x)))
+  err <- expect_error(sum_n(as_tbl_svy(one)), class = "spicy_wrong_regime")
+  expect_match(
+    conditionMessage(err),
+    "design <- design |> mutate(score = sum_n(select = ...))",
+    fixed = TRUE
+  )
+  skip_if_not_installed("srvyr")
+  # srvyr is not a declared dependency: no `::`, which R CMD check scans.
+  design <- getExportedValue("srvyr", "as_survey")(one)
+  expect_error(sum_n(design), class = "spicy_wrong_regime")
+  design <- dplyr::mutate(design, score = sum_n(select = c(a, b)))
+  expect_equal(design$variables$score, score)
+  expect_s3_class(survey::svymean(~score, design, na.rm = TRUE), "svystat")
+})

@@ -400,7 +400,9 @@
 
 * `mean_n()`, `sum_n()` and `count_n()` refuse a survey design with an
   error of class `spicy_wrong_regime` that shows how to add the score to
-  the design: `update(design, score = mean_n(design$variables, ...))`.
+  the design: `update(design, score = mean_n(design$variables, ...))`,
+  or `update(design, score = mean_n(data.frame(x1, x2)))` for a
+  two-phase design and `mutate(score = mean_n(...))` for a srvyr design.
   A design used to stop them with an R error.
 
 * `cross_tab()` writes the chi-squared statistic of its note with the

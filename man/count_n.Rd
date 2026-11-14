@@ -22,7 +22,8 @@ count_n(
 \code{dplyr::mutate()}, where the current data context is used
 automatically. A survey design is refused (class
 \code{spicy_wrong_regime}): compute the count on its data,
-\code{design$variables}, and add it to the design with \code{update()}.}
+\code{design$variables}, and add it to the design with \code{update()}. The
+error message says how for a two-phase design and for srvyr.}
 
 \item{select}{Columns to include. Defaults to \code{tidyselect::everything()}.
 Uses tidyselect helpers like \code{\link[tidyselect:starts_with]{tidyselect::starts_with()}}, etc.; a

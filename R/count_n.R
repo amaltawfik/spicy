@@ -12,7 +12,8 @@
 #'   `dplyr::mutate()`, where the current data context is used
 #'   automatically. A survey design is refused (class
 #'   `spicy_wrong_regime`): compute the count on its data,
-#'   `design$variables`, and add it to the design with `update()`.
+#'   `design$variables`, and add it to the design with `update()`. The
+#'   error message says how for a two-phase design and for srvyr.
 #' @param select Columns to include. Defaults to `tidyselect::everything()`.
 #'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.; a
 #'   character vector of names is validated with [tidyselect::all_of()],
