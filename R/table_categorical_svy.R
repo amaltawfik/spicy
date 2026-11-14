@@ -77,7 +77,8 @@
   deff_mode,
   ci_method,
   proportion_ci,
-  degf_dom = df
+  degf_dom = df,
+  out_of_base = NA_character_
 ) {
   k <- length(levels)
   out <- list(
@@ -101,6 +102,18 @@
   for (i in seq_len(k)) {
     out$n[[i]] <- sum(ok & !is.na(x) & x == levels[[i]])
   }
+  # `percent_base = "valid"`: the row of missing values keeps its count
+  # and leaves the base. Its rows are NA again, so that everything below
+  # is estimated on the domain of the observed values, as under
+  # `drop_na = TRUE`, and the row itself gets no estimate.
+  if (!is.na(out_of_base)) {
+    f <- design$variables[[var]]
+    design$variables[[var]] <- factor(
+      f,
+      levels = setdiff(levels(f), out_of_base)
+    )
+    x <- as.character(design$variables[[var]])
+  }
   if (!any(ok & !is.na(x))) {
     return(out)
   }
@@ -112,7 +125,7 @@
   # exact one of a percentage of 100 (`.cat_svy_exact_ci()`).
   one_level <- nlevels(design$variables[[var]]) == 1L
   if (one_level) {
-    out$pct[[1L]] <- 1
+    out$pct[levels %in% levels(design$variables[[var]])] <- 1
   }
   form <- .svy_formula(var)
   m <- if (!one_level) {
@@ -372,10 +385,11 @@
 #' an estimated population size. `%` is the estimated percentage
 #' *within* its column: without `by` it is the distribution of the
 #' variable in the population, with `by` the distribution inside that
-#' domain. The table note gives the sample size (the rows of non-zero
-#' weight, which the `n` columns count, as `survey::unwtd.count()` does)
-#' and the estimated population together, because neither alone tells
-#' the reader what they are looking at.
+#' domain, on the observed values of the variable unless
+#' `percent_base = "total"`. The table note gives the sample size (the
+#' rows of non-zero weight, which the `n` columns count, as
+#' `survey::unwtd.count()` does) and the estimated population together,
+#' because neither alone tells the reader what they are looking at.
 #'
 #' `proportion_ci = TRUE` adds the interval of each percentage.
 #' `ci_method` chooses among the seven `survey::svyciprop()` offers;
@@ -540,9 +554,11 @@
 #' @param drop_na Drop missing values. A table that counts shows them by
 #'   default, the rule of [table_categorical()]: `FALSE` (the default)
 #'   shows them as a `(Missing)` level, and a level displayed with that
-#'   label beside them is an error, as there. Shown or dropped, they
-#'   never enter the test: the p-value is computed on the complete cases
-#'   either way, which is the convention [table_categorical()] applies.
+#'   label beside them is an error, as there. Under the default
+#'   `percent_base = "valid"`, that row shows their count and no
+#'   percentage. Shown or dropped, they never enter the test: the p-value
+#'   is computed on the complete cases either way, which is the
+#'   convention [table_categorical()] applies.
 #'   Dropped, they are counted in the note, `by` last: a missing `by` takes
 #'   the observation out of every variable of the table, a missing value
 #'   only out of its own variable. Under `drop_na = TRUE`, a `by` that no
@@ -584,6 +600,22 @@
 #'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs `by`
 #'   and the p-value column. See *Multiple-comparison adjustment*.
+#' @param percent_base The base of the percentages of a variable whose
+#'   missing values the `(Missing)` row shows (`drop_na = FALSE`), as in
+#'   [table_categorical()]. `"valid"` (the default) estimates them on the
+#'   domain of the observed values of the variable, as
+#'   `survey::svymean(na.rm = TRUE)` does: the levels sum to 100, and the
+#'   `(Missing)` row shows its count and no percentage, interval or design
+#'   effect (blank cells, `NA` in the data frames and in
+#'   [tidy()][tidy.spicy_categorical_svy_table]). The intervals keep the
+#'   degrees of freedom of their block, as under `drop_na = TRUE`.
+#'   `"total"` estimates them on every row, the `(Missing)` row included,
+#'   as this function did up to 0.14.1. Under `by`, the base is the
+#'   observed values of each domain, the `Total` block and the column of
+#'   missing `by` values included. The test runs on the complete cases
+#'   whatever the base. Without missing values to show (`drop_na = TRUE`,
+#'   or a variable with none) the two bases give the same percentages.
+#'   Unique abbreviations are accepted (`"v"`, `"t"`).
 #' @param align Horizontal alignment of the numeric columns: `"decimal"`
 #'   (the default), `"center"` or `"right"`, as in [table_continuous()],
 #'   whose rendering engines this table shares, its Excel output included.
@@ -638,8 +670,10 @@
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, its lead-in included, in `attr(x, "note")`. The default object
-#' also keeps the title the console prints, in `attr(x, "title")`.
+#' printed, its lead-in included, in `attr(x, "note")`, and the base of
+#' their percentages in `attr(x, "percent_base")`, `"valid"` or `"total"`
+#' (see `percent_base`). The default object also keeps the title the
+#' console prints, in `attr(x, "title")`.
 #' [tidy()][tidy.spicy_categorical_svy_table] reports the proportions
 #' between 0 and 1.
 #'
@@ -695,6 +729,7 @@ table_categorical_svy <- function(
   df = NULL,
   p_value = NULL,
   p_adjust = "none",
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -729,6 +764,7 @@ table_categorical_svy <- function(
   align <- spicy_match_arg(align)
   chisq_statistic_explicit <- !missing(chisq_statistic)
   ci_method <- spicy_match_arg(ci_method)
+  percent_base <- spicy_match_arg(percent_base)
   factor_levels <- match_varlist_factor_levels(factor_levels)
   cfg <- .svy_validate_common(
     design = design,
@@ -1224,7 +1260,12 @@ table_categorical_svy <- function(
             deff,
             ci_method,
             proportion_ci,
-            degf_dom = dom_df
+            degf_dom = dom_df,
+            out_of_base = if (identical(percent_base, "valid")) {
+              lv$missing_label
+            } else {
+              NA_character_
+            }
           ),
           spicy_svy_estimation_failed = svy_log$record,
           warning = svy_warns$record
@@ -1337,6 +1378,7 @@ table_categorical_svy <- function(
 
   attr(result, "ci_level") <- ci_level
   attr(result, "percent_digits") <- percent_digits
+  attr(result, "percent_base") <- percent_base
   attr(result, "p_digits") <- p_digits
   attr(result, "decimal_mark") <- decimal_mark
   result <- .style_stamp(result)
@@ -1368,6 +1410,7 @@ table_categorical_svy <- function(
   if (identical(output, "long")) {
     out <- .cat_svy_publish_long(result)
     attr(out, "note") <- table_note
+    attr(out, "percent_base") <- percent_base
     return(out)
   }
 

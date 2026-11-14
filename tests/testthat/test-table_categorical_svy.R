@@ -374,7 +374,11 @@ test_that("missing values are a level of their own by default", {
   out <- .svycat_df(des, select = stype)
   expect_identical(out$level, c(NA, "E", "H", "M", "(Missing)"))
   expect_identical(out$n[[5L]], 5)
-  expect_equal(sum(out[["%"]][-1L]), 100, tolerance = 1e-9)
+  # Their row shows its count and stands outside the base by default.
+  expect_true(is.na(out[["%"]][[5L]]))
+  expect_equal(sum(out[["%"]][2:4]), 100, tolerance = 1e-9)
+  tot <- .svycat_df(des, select = stype, percent_base = "total")
+  expect_equal(sum(tot[["%"]][-1L]), 100, tolerance = 1e-9)
   expect_identical(
     as_structured(table_categorical_svy(des, select = stype))$body$.row_role,
     c("factor_header", "level", "level", "level", "missing")
@@ -1639,11 +1643,11 @@ test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` one row 
   # The p of the variable and the statistic it comes from, on every row.
   expect_identical(unique(b$test_type), "F")
   expect_equal(unique(b$p.value), 0.021747462370796899, tolerance = 1e-12)
-  # Only the note travels with either frame.
+  # Only the note and the base of the percentages travel with either frame.
   for (x in list(a, b)) {
     expect_identical(
       setdiff(names(attributes(x)), c("names", "row.names", "class")),
-      "note"
+      c("note", "percent_base")
     )
     expect_identical(attr(x, "note"), attr(tbl, "note"))
   }
@@ -2896,6 +2900,466 @@ test_that("negative weights withhold the logistic-regression CIs, and say so", {
       "gatifs."
     ),
     fixed = TRUE
+  )
+})
+
+# ---- the base of the percentages (`percent_base`) ---------------------------
+
+# apistrat with missing answers: 16 to `awards`, 10 to `comp.imp`, 6 to
+# `sch.wide`.
+.svycat_pb_data <- function() {
+  data(api, package = "survey", envir = environment())
+  dat <- apistrat
+  dat$awards[seq(5L, 200L, by = 13L)] <- NA
+  dat$comp.imp[seq(2L, 200L, by = 20L)] <- NA
+  dat$sch.wide[c(3L, 50L, 77L, 120L, 150L, 199L)] <- NA
+  dat
+}
+
+.svycat_pb_design <- function(dat = .svycat_pb_data()) {
+  survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+}
+
+# The interval survey gives a level on the complete cases of `awards`,
+# referred to the degrees of freedom of the block, the convention of
+# `drop_na = TRUE`. On a calibrated design the cut rows stay at weight
+# zero, which the indicator values 0.
+.svycat_pb_ci <- function(sub, level, method, df) {
+  f <- stats::as.formula(sprintf(
+    "~I(!is.na(awards) & awards == \"%s\")",
+    level
+  ))
+  100 *
+    as.numeric(stats::confint(suppressWarnings(survey::svyciprop(
+      f,
+      sub,
+      method = method,
+      df = df
+    ))))
+}
+
+test_that("percent_base = \"valid\" estimates the percentages on the observed values", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  des <- .svycat_pb_design()
+  sub <- subset(des, !is.na(awards))
+  ref <- survey::svymean(~awards, des, na.rm = TRUE, deff = TRUE)
+  for (m in c(
+    "logit",
+    "likelihood",
+    "asin",
+    "beta",
+    "mean",
+    "xlogit",
+    "wilson"
+  )) {
+    long <- table_categorical_svy(
+      des,
+      select = awards,
+      proportion_ci = TRUE,
+      ci_method = m,
+      deff = TRUE,
+      output = "long"
+    )
+    lv <- long$.row_role == "level"
+    expect_equal(
+      long$pct[lv],
+      100 * as.numeric(stats::coef(ref)),
+      tolerance = 1e-10
+    )
+    expect_equal(
+      long$deff[lv],
+      as.numeric(survey::deff(ref)),
+      tolerance = 1e-10
+    )
+    for (j in which(lv)) {
+      expect_equal(
+        c(long$ci_lower[[j]], long$ci_upper[[j]]),
+        .svycat_pb_ci(sub, long$level[[j]], m, survey::degf(des)),
+        tolerance = 1e-10,
+        info = paste(m, long$level[[j]])
+      )
+    }
+    # The `(Missing)` row: its count, and nothing estimated.
+    miss <- long[long$.row_role == "missing", ]
+    expect_identical(miss$n, 16L)
+    expect_true(all(is.na(unlist(miss[c(
+      "pct",
+      "ci_lower",
+      "ci_upper",
+      "deff"
+    )]))))
+  }
+  # "total": every row in the base, the numbers of 0.14.1.
+  tot <- table_categorical_svy(
+    des,
+    select = awards,
+    percent_base = "total",
+    output = "long"
+  )
+  all_rows <- stats::update(des, awards_na = addNA(awards))
+  expect_equal(
+    tot$pct,
+    100 * as.numeric(stats::coef(survey::svymean(~awards_na, all_rows))),
+    tolerance = 1e-10
+  )
+  expect_identical(tot$n, long$n)
+  # `drop_na = TRUE` takes the missing values out of both bases already,
+  # and gives the levels of "valid".
+  dropped <- table_categorical_svy(
+    des,
+    select = awards,
+    drop_na = TRUE,
+    proportion_ci = TRUE,
+    ci_method = "wilson",
+    deff = TRUE,
+    output = "long"
+  )
+  expect_equal(
+    dropped$pct,
+    table_categorical_svy(
+      des,
+      select = awards,
+      drop_na = TRUE,
+      percent_base = "total",
+      output = "long"
+    )$pct
+  )
+  # `long` is the last table of the loop, "wilson".
+  for (k in c("pct", "ci_lower", "ci_upper", "deff")) {
+    expect_equal(dropped[[k]], long[[k]][lv], info = k)
+  }
+  # Each variable has its own base.
+  two <- table_categorical_svy(
+    des,
+    select = c(awards, comp.imp),
+    output = "long"
+  )
+  ci <- two[two$variable == "comp.imp" & two$.row_role == "level", ]
+  expect_equal(
+    ci$pct,
+    100 *
+      as.numeric(stats::coef(survey::svymean(~comp.imp, des, na.rm = TRUE))),
+    tolerance = 1e-10
+  )
+})
+
+test_that("the `(Missing)` row is blank where its count stands, on every output", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  des <- .svycat_pb_design()
+  x <- table_categorical_svy(
+    des,
+    select = awards,
+    proportion_ci = TRUE,
+    deff = TRUE
+  )
+  disp <- attr(x, "display_df")
+  miss <- disp$Variable == "  (Missing)"
+  expect_identical(disp$n[miss], "16")
+  for (k in c("%", "% CI lower", "% CI upper", "DEff")) {
+    expect_identical(disp[[k]][miss], "", info = k)
+  }
+  s <- as_structured(x)
+  at <- s$body$.row_role == "missing"
+  expect_true(is.na(s$body[["%"]][at]))
+  expect_false(identical(s$cell_status[["%"]][at], "undefined"))
+  df <- as.data.frame(x)
+  expect_true(is.na(df[["%"]][df$.row_role == "missing"]))
+  expect_identical(df$n[df$.row_role == "missing"], 16)
+  td <- broom::tidy(x)
+  expect_true(all(is.na(unlist(td[
+    td$.row_role == "missing",
+    c("proportion", "conf.low", "conf.high", "deff")
+  ]))))
+  # The base is recorded on every machine output, as in
+  # `table_categorical()`.
+  for (o in list(
+    x,
+    df,
+    table_categorical_svy(des, select = awards, output = "long")
+  )) {
+    expect_identical(attr(o, "percent_base"), "valid")
+  }
+  expect_identical(
+    attr(
+      table_categorical_svy(des, select = awards, percent_base = "t"),
+      "percent_base"
+    ),
+    "total"
+  )
+  expect_error(
+    table_categorical_svy(des, select = awards, percent_base = "observed"),
+    class = "spicy_invalid_input"
+  )
+  # The base takes no sentence: the table shows it.
+  expect_identical(
+    attr(x, "note"),
+    attr(
+      table_categorical_svy(
+        des,
+        select = awards,
+        proportion_ci = TRUE,
+        deff = TRUE,
+        percent_base = "total"
+      ),
+      "note"
+    )
+  )
+  # Under "total", the row keeps its estimates.
+  disp_t <- attr(
+    table_categorical_svy(des, select = awards, percent_base = "total"),
+    "display_df"
+  )
+  expect_identical(disp_t[["%"]][miss], "6.3")
+  # `inline()` says why the cell is empty.
+  err <- tryCatch(inline(x, awards, "(Missing)", "pct"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "exclude missing values", fixed = TRUE)
+  expect_identical(inline(x, awards, "(Missing)", "n"), "16")
+})
+
+test_that("under `by`, the base is the observed values of each domain", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  des <- .svycat_pb_design()
+  long <- table_categorical_svy(
+    des,
+    select = awards,
+    by = sch.wide,
+    proportion_ci = TRUE,
+    deff = TRUE,
+    output = "long"
+  )
+  tot <- table_categorical_svy(
+    des,
+    select = awards,
+    by = sch.wide,
+    percent_base = "total",
+    output = "long"
+  )
+  domains <- list(
+    No = subset(des, sch.wide == "No"),
+    Yes = subset(des, sch.wide == "Yes"),
+    "(Missing)" = subset(des, is.na(sch.wide)),
+    Total = des
+  )
+  for (g in names(domains)) {
+    lv <- long$group == g & long$.row_role == "level"
+    expect_equal(
+      long$pct[lv],
+      100 *
+        as.numeric(stats::coef(survey::svymean(
+          ~awards,
+          domains[[g]],
+          na.rm = TRUE
+        ))),
+      tolerance = 1e-10,
+      info = g
+    )
+    expect_true(is.na(long$pct[long$group == g & long$.row_role == "missing"]))
+  }
+  # A domain strictly inside 0 and 100: its intervals and design effects.
+  dom <- domains$Yes
+  lv <- which(long$group == "Yes" & long$.row_role == "level")
+  ref <- survey::svymean(~awards, dom, na.rm = TRUE, deff = TRUE)
+  expect_equal(long$deff[lv], as.numeric(survey::deff(ref)), tolerance = 1e-10)
+  for (j in lv) {
+    expect_equal(
+      c(long$ci_lower[[j]], long$ci_upper[[j]]),
+      .svycat_pb_ci(
+        subset(dom, !is.na(awards)),
+        long$level[[j]],
+        "logit",
+        survey::degf(dom)
+      ),
+      tolerance = 1e-10
+    )
+  }
+  expect_identical(long$n, tot$n)
+  # The test runs on the complete cases under both bases.
+  expect_identical(long$p.value, tot$p.value)
+  expect_equal(
+    unique(long$p.value),
+    survey::svychisq(
+      ~ awards + sch.wide,
+      subset(des, !is.na(awards) & !is.na(sch.wide))
+    )$p.value[[1L]],
+    tolerance = 1e-10
+  )
+  # The `(Missing)` row: a count in every block, no percentage.
+  disp <- attr(
+    table_categorical_svy(des, select = awards, by = sch.wide),
+    "display_df"
+  )
+  miss <- disp$Variable == "  (Missing)"
+  for (g in names(domains)) {
+    expect_identical(disp[[paste(g, "%")]][miss], "", info = g)
+    expect_true(nzchar(disp[[paste(g, "n")]][miss]), info = g)
+  }
+})
+
+test_that("percent_base = \"valid\" follows survey on every kind of design", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  des <- .svycat_pb_design()
+  set.seed(7)
+  designs <- list(
+    replicate = survey::as.svrepdesign(
+      des,
+      type = "bootstrap",
+      replicates = 50
+    ),
+    poststratified = survey::postStratify(
+      des,
+      ~stype,
+      data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+    ),
+    calibrated = survey::calibrate(
+      des,
+      ~stype,
+      pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
+    )
+  )
+  for (k in names(designs)) {
+    d <- designs[[k]]
+    long <- table_categorical_svy(
+      d,
+      select = awards,
+      proportion_ci = TRUE,
+      deff = TRUE,
+      output = "long"
+    )
+    lv <- which(long$.row_role == "level")
+    ref <- survey::svymean(~awards, d, na.rm = TRUE, deff = TRUE)
+    expect_equal(
+      long$pct[lv],
+      100 * as.numeric(stats::coef(ref)),
+      tolerance = 1e-10,
+      info = k
+    )
+    expect_equal(
+      long$deff[lv],
+      as.numeric(survey::deff(ref)),
+      tolerance = 1e-10,
+      info = k
+    )
+    for (j in lv) {
+      expect_equal(
+        c(long$ci_lower[[j]], long$ci_upper[[j]]),
+        .svycat_pb_ci(
+          subset(d, !is.na(awards)),
+          long$level[[j]],
+          "logit",
+          survey::degf(d)
+        ),
+        tolerance = 1e-10,
+        info = paste(k, long$level[[j]])
+      )
+    }
+    expect_true(is.na(long$pct[long$.row_role == "missing"]), info = k)
+  }
+})
+
+test_that("percent_base = \"valid\" at the edges: zero weights, empty and single levels", {
+  skip_on_cran()
+  skip_if_not_installed("survey", "4.5")
+  dat <- .svycat_pb_data()
+  # Rows of zero weight are out of the sample, missing or not.
+  zw <- dat
+  zw$pw[1:10] <- 0
+  dz <- survey::svydesign(id = ~1, strata = ~stype, weights = ~pw, data = zw)
+  long <- table_categorical_svy(dz, select = awards, output = "long")
+  expect_equal(
+    long$pct[long$.row_role == "level"],
+    100 * as.numeric(stats::coef(survey::svymean(~awards, dz, na.rm = TRUE))),
+    tolerance = 1e-10
+  )
+  expect_identical(
+    long$n[long$.row_role == "missing"],
+    sum(is.na(zw$awards) & zw$pw != 0)
+  )
+  # A declared level nobody chose: 0, and the exact interval on the count
+  # of observed values, the base.
+  em <- dat
+  em$awards <- factor(em$awards, levels = c("No", "Maybe", "Yes"))
+  n_obs <- sum(!is.na(em$awards))
+  long <- table_categorical_svy(
+    .svycat_pb_design(em),
+    select = awards,
+    factor_levels = "all",
+    proportion_ci = TRUE,
+    output = "long"
+  )
+  maybe <- long[long$level == "Maybe", ]
+  expect_identical(maybe$pct, 0)
+  expect_equal(
+    c(maybe$ci_lower, maybe$ci_upper),
+    .svycat_exact(n_obs)[c(2L, 4L)],
+    tolerance = 1e-10
+  )
+  # One observed level: 100 by arithmetic, the exact interval on the
+  # count of observed values, no design effect; the `(Missing)` row blank.
+  one <- dat
+  one$only <- factor(ifelse(is.na(one$awards), NA, "only"))
+  x <- table_categorical_svy(
+    .svycat_pb_design(one),
+    select = only,
+    proportion_ci = TRUE,
+    deff = TRUE
+  )
+  lv <- x$.row_role == "level"
+  expect_identical(x[["%"]][lv], 100)
+  expect_equal(
+    c(x[["% CI lower"]][lv], x[["% CI upper"]][lv]),
+    .svycat_exact(n_obs)[c(1L, 3L)],
+    tolerance = 1e-10
+  )
+  expect_true(is.na(x$DEff[lv]))
+  disp <- attr(x, "display_df")
+  expect_identical(disp[["%"]][disp$Variable == "  (Missing)"], "")
+  # A column with no observed value has no base: the dash on its levels,
+  # the blank on its `(Missing)` row.
+  nb <- dat
+  nb$awards[is.na(nb$sch.wide)] <- NA
+  disp <- attr(
+    table_categorical_svy(
+      .svycat_pb_design(nb),
+      select = awards,
+      by = sch.wide
+    ),
+    "display_df"
+  )
+  lv <- disp$Variable %in% c("  No", "  Yes")
+  expect_identical(
+    disp[["(Missing) %"]][lv],
+    rep(spicy_str("cell_undefined"), 2L)
+  )
+  at <- disp$Variable == "  (Missing)"
+  expect_identical(disp[["(Missing) %"]][at], "")
+  expect_identical(disp[["(Missing) n"]][at], "6")
+  # A `(Missing)` row that `levels_keep` hides still leaves its values out
+  # of the base.
+  des <- .svycat_pb_design()
+  kept <- table_categorical_svy(
+    des,
+    select = awards,
+    levels_keep = "Yes",
+    output = "long"
+  )
+  expect_equal(
+    kept$pct,
+    100 *
+      as.numeric(stats::coef(survey::svymean(~awards, des, na.rm = TRUE)))[[
+        2L
+      ]],
+    tolerance = 1e-10
   )
 })
 

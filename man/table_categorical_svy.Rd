@@ -22,6 +22,7 @@ table_categorical_svy(
   df = NULL,
   p_value = NULL,
   p_adjust = "none",
+  percent_base = c("valid", "total"),
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -135,9 +136,11 @@ displayed with the label of that block is an error, as in
 \item{drop_na}{Drop missing values. A table that counts shows them by
 default, the rule of \code{\link[=table_categorical]{table_categorical()}}: \code{FALSE} (the default)
 shows them as a \code{(Missing)} level, and a level displayed with that
-label beside them is an error, as there. Shown or dropped, they
-never enter the test: the p-value is computed on the complete cases
-either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.
+label beside them is an error, as there. Under the default
+\code{percent_base = "valid"}, that row shows their count and no
+percentage. Shown or dropped, they never enter the test: the p-value
+is computed on the complete cases either way, which is the
+convention \code{\link[=table_categorical]{table_categorical()}} applies.
 Dropped, they are counted in the note, \code{by} last: a missing \code{by} takes
 the observation out of every variable of the table, a missing value
 only out of its own variable. Under \code{drop_na = TRUE}, a \code{by} that no
@@ -187,6 +190,23 @@ of \code{"none"} (default), \code{"holm"}, \code{"hochberg"}, \code{"hommel"},
 \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}, as in
 \code{\link[=table_regression]{table_regression()}}; delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs \code{by}
 and the p-value column. See \emph{Multiple-comparison adjustment}.}
+
+\item{percent_base}{The base of the percentages of a variable whose
+missing values the \code{(Missing)} row shows (\code{drop_na = FALSE}), as in
+\code{\link[=table_categorical]{table_categorical()}}. \code{"valid"} (the default) estimates them on the
+domain of the observed values of the variable, as
+\code{survey::svymean(na.rm = TRUE)} does: the levels sum to 100, and the
+\code{(Missing)} row shows its count and no percentage, interval or design
+effect (blank cells, \code{NA} in the data frames and in
+\link[=tidy.spicy_categorical_svy_table]{tidy()}). The intervals keep the
+degrees of freedom of their block, as under \code{drop_na = TRUE}.
+\code{"total"} estimates them on every row, the \code{(Missing)} row included,
+as this function did up to 0.14.1. Under \code{by}, the base is the
+observed values of each domain, the \code{Total} block and the column of
+missing \code{by} values included. The test runs on the complete cases
+whatever the base. Without missing values to show (\code{drop_na = TRUE},
+or a variable with none) the two bases give the same percentages.
+Unique abbreviations are accepted (\code{"v"}, \code{"t"}).}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
@@ -318,8 +338,10 @@ invisibly.
 }
 
 The default object and the two data frames carry the whole note as
-printed, its lead-in included, in \code{attr(x, "note")}. The default object
-also keeps the title the console prints, in \code{attr(x, "title")}.
+printed, its lead-in included, in \code{attr(x, "note")}, and the base of
+their percentages in \code{attr(x, "percent_base")}, \code{"valid"} or \code{"total"}
+(see \code{percent_base}). The default object also keeps the title the
+console prints, in \code{attr(x, "title")}.
 \link[=tidy.spicy_categorical_svy_table]{tidy()} reports the proportions
 between 0 and 1.
 }
@@ -340,10 +362,11 @@ of freedom.
 an estimated population size. \verb{\%} is the estimated percentage
 \emph{within} its column: without \code{by} it is the distribution of the
 variable in the population, with \code{by} the distribution inside that
-domain. The table note gives the sample size (the rows of non-zero
-weight, which the \code{n} columns count, as \code{survey::unwtd.count()} does)
-and the estimated population together, because neither alone tells
-the reader what they are looking at.
+domain, on the observed values of the variable unless
+\code{percent_base = "total"}. The table note gives the sample size (the
+rows of non-zero weight, which the \code{n} columns count, as
+\code{survey::unwtd.count()} does) and the estimated population together,
+because neither alone tells the reader what they are looking at.
 
 \code{proportion_ci = TRUE} adds the interval of each percentage.
 \code{ci_method} chooses among the seven \code{survey::svyciprop()} offers;

@@ -152,6 +152,7 @@ unclass_spicy_categorical_svy_table <- function(x) {
       )
     }
   }
+  attr(df, "percent_base") <- attr(x, "percent_base", exact = TRUE)
   df
 }
 

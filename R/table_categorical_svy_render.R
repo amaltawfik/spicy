@@ -103,6 +103,11 @@
   indent_text <- attr(x, "indent_text") %||% "  "
   is_header <- x$.row_role == "factor_header"
   lone <- .cat_svy_lone_rows(x)
+  # Under `percent_base = "valid"` the row of missing values stands
+  # outside the base: where it has a count, its percentage, interval and
+  # design effect do not apply, a blank rather than the dash.
+  out_of_base <- identical(attr(x, "percent_base", exact = TRUE), "valid") &
+    x$.row_role == "missing"
 
   df <- stats::setNames(
     data.frame(
@@ -138,6 +143,9 @@
     cell[is.na(v)] <- spicy_str("cell_undefined")
     # Blank the rows the statistic does not belong to.
     cell[if (identical(e$base, "p")) !is_header else is_header & !lone] <- ""
+    if (!e$base %in% c("n", "p")) {
+      cell[out_of_base & !is.na(x[[.cat_svy_key_n(e$block)]])] <- ""
+    }
     df[[e$key]] <- cell
   }
   df
