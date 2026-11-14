@@ -688,6 +688,11 @@ Exécution : design + prose fr par Fable en direct (8 clés = petit).
   titre en anglais. Raison : la note était déjà hybride. Ses autres
   phrases (erreurs standards, abréviations) sont traduites depuis
   octobre, et seule la phrase de type restait en anglais.
+  Le même jour, la disposition empilée et `table_stack()` passent à
+  cette phrase unique. Elles donnaient à chaque panneau sa propre
+  phrase en français (« BMI : régression linéaire. Dentist : régression
+  logistique. »). Un préfixe sans traduction y garde une phrase par
+  panneau.
 
 ## Décision 43 — Le « fr » quitte le registre des journaux ; la langue porte sa locale (2026-08-27)
 

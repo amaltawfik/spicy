@@ -1784,24 +1784,34 @@ test_that("a French stack of two families is French, title and note", {
     ))
   )
   expect_false(identical(attr(st, "title"), "Regression comparison"))
-  # Each panel gives its type in French, in a sentence of its own, in
-  # lower case after the label, as side by side.
-  types <- vapply(
-    models,
-    function(m) .st_parts(fr(table_regression(m)))$type,
-    character(1)
+  # One French sentence names the type of each panel, as side by side.
+  expect_identical(attr(st, "note"), fr(.st_side_note(models)))
+  expect_match(
+    attr(st, "note"),
+    fr(paste0(
+      spicy_fmt("note_model_line", "IMC", "régression linéaire"),
+      spicy_str("note_type_models_sep"),
+      spicy_fmt("note_model_line", "Dentiste", "régression logistique"),
+      "."
+    )),
+    fixed = TRUE
   )
-  for (k in seq_along(types)) {
-    expect_match(
-      attr(st, "note"),
-      fr(spicy_fmt(
-        "note_model_line",
-        names(models)[[k]],
-        spicy:::lowercase_first(types[[k]])
-      )),
-      fixed = TRUE
-    )
-  }
+  # A type without a French name (planted by hand): each panel keeps its
+  # own sentence, rather than an English list.
+  t1 <- fr(table_regression(.st_lm()))
+  t2 <- fr(table_regression(.st_glm()))
+  attr(t2, "spicy_note_parts")$models$type <- "Made-up model"
+  attr(t2, "spicy_note_parts")$type <- "Made-up model."
+  expect_match(
+    attr(fr(table_stack(IMC = t1, Autre = t2)), "note"),
+    fr(paste0(
+      spicy_fmt("note_model_line", "IMC", "régression linéaire"),
+      ". ",
+      spicy_fmt("note_model_line", "Autre", "made-up model"),
+      "."
+    )),
+    fixed = TRUE
+  )
 })
 
 
@@ -2749,7 +2759,7 @@ test_that("a type after a panel label goes on in lower case, as side by side", {
     "W: linear regression models. M: logistic regression.",
     fixed = TRUE
   )
-  # French: one sentence per panel, lower case after the colon.
+  # French: one sentence, lower case after each colon.
   fr <- withr::with_options(
     list(spicy.language = "fr"),
     attr(

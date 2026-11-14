@@ -199,8 +199,9 @@ univariable models and their own sample sizes included.
 The notes are merged sentence by sentence. The type of each model and
 its standard errors are worded as in a table of the models side by
 side: "Linear regression models.", or "Women: linear regression; Men:
-logistic regression." (in English; another language gives each panel
-its own sentence, as below), and "Std. errors: classical (OLS)." or
+logistic regression." (in another language, a type without a
+translation gives each panel its own sentence, as below), and "Std.
+errors: classical (OLS)." or
 one estimator per panel. So is an adjustment of the p-values ("P-values
 adjusted within each model ..."). Any other sentence that every panel
 carries is printed once, first; one that only some panels carry follows,
