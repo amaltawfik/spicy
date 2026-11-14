@@ -1809,6 +1809,37 @@ test_that("outcome_labels – NULL shows the row when DVs differ + names supplie
   expect_true("Outcome" %in% out2$Variable)
 })
 
+test_that("the console prints the Outcome row across the columns of a model", {
+  skip_on_cran()
+  withr::local_options(width = 200)
+  models <- list(
+    Wellbeing = lm(wellbeing_score ~ age + sex, data = sochealth),
+    BMI = lm(bmi ~ age + sex, data = sochealth)
+  )
+  shown <- capture.output(print(table_regression(models)))
+  bare <- capture.output(print(table_regression(
+    models,
+    outcome_labels = FALSE
+  )))
+  # An outcome longer than the first column of its model widens nothing.
+  at <- grep("^ Outcome ", shown)
+  expect_length(at, 1L)
+  expect_identical(shown[-at], bare)
+  expect_match(shown[[at]], "wellbeing_score", fixed = TRUE)
+  # A label longer than the columns of its model widens them, uncut.
+  long <- capture.output(print(table_regression(
+    models,
+    outcome_labels = c("Well-being score (0 to 100)", "BMI")
+  )))
+  expect_match(long, "Well-being score (0 to 100)", fixed = TRUE, all = FALSE)
+  # Two models of one outcome: each names it.
+  three <- capture.output(print(table_regression(
+    c(models, list(Age = lm(bmi ~ age, data = sochealth)))
+  )))
+  row <- three[[grep("^ Outcome ", three)]]
+  expect_length(gregexpr("bmi", row, fixed = TRUE)[[1L]], 2L)
+})
+
 
 test_that("spanner – tinytable output uses group_tt for column groups", {
   skip_on_cran()

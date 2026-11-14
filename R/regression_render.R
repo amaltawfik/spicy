@@ -470,11 +470,14 @@ render_regression_table <- function(
   # `decimal_align_strings()`. Other modes are passed through to
   # the print engine via the `align` attribute and applied at
   # output-dispatch time.
+  # The Outcome row is text that the console prints across the columns of
+  # each model: it takes no part in the alignment of the numbers.
   if (identical(align, "decimal")) {
     body <- .reg_align_char_body(
       body,
       .reg_ci_col_names(col_spec),
-      decimal_mark
+      decimal_mark,
+      rows = setdiff(seq_len(nrow(body)), seq_len(!is.null(outcome_row)))
     )
   }
 

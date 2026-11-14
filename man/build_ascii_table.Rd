@@ -107,7 +107,10 @@ body, each a list with \code{row} (the row index) and \code{spans} (a named
 list like \code{spanners}). The row is drawn as the spanner row is: each
 label centered over its columns, a thin rule under them. Its cells
 should be blank. Used by \code{print.spicy_stack_table()} for the column
-groups of a panel's own header. Defaults to \code{NULL}.}
+groups of a panel's own header. An entry may also carry \code{text}, a
+character vector named like \code{spans} printed in place of their names
+(and widening their columns as \code{whole_spanners} does), and \code{rule = FALSE}, which leaves out the rule: the Outcome row of
+\code{print.spicy_regression_table()}. Defaults to \code{NULL}.}
 
 \item{whole_spanners}{Logical. When \code{TRUE}, the columns of each
 spanner widen until its label fits over them, instead of the label

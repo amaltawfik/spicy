@@ -3593,17 +3593,33 @@ print.spicy_regression_table <- function(x, ...) {
   # "fit"`): the split into panels is the one of the truncated labels.
   dots <- list(...)
   dots$whole_spanners <- dots$whole_spanners %||% "fit"
+  # The Outcome row names each model across its columns, as a column
+  # group does, and widens none of them on its own.
+  shown <- x
+  spans <- attr(x, "spanners")
+  orow <- if (!is.null(struct)) .struct_outcome_row(struct)
+  if (length(orow) == 1L && length(spans) && nrow(struct$body) == nrow(x)) {
+    first <- vapply(spans, function(s) as.integer(min(s)), integer(1))
+    text <- vapply(first, function(j) trimws(x[[j]][[orow]]), character(1))
+    for (j in first) {
+      shown[[j]][[orow]] <- ""
+    }
+    dots$body_spanners <- list(
+      list(row = orow, spans = spans, text = text, rule = FALSE)
+    )
+  }
   do.call(
     .print_regression_like,
     c(
       list(
-        x,
+        shown,
         display_labels = display_labels,
         fit_stats_start = fit_stats_start
       ),
       dots
     )
   )
+  invisible(x)
 }
 
 # The console of a regression table and of a stacked table

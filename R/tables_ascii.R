@@ -171,7 +171,11 @@
 #'   list like `spanners`). The row is drawn as the spanner row is: each
 #'   label centered over its columns, a thin rule under them. Its cells
 #'   should be blank. Used by `print.spicy_stack_table()` for the column
-#'   groups of a panel's own header. Defaults to `NULL`.
+#'   groups of a panel's own header. An entry may also carry `text`, a
+#'   character vector named like `spans` printed in place of their names
+#'   (and widening their columns as `whole_spanners` does), and `rule =
+#'   FALSE`, which leaves out the rule: the Outcome row of
+#'   `print.spicy_regression_table()`. Defaults to `NULL`.
 #' @param whole_spanners Logical. When `TRUE`, the columns of each
 #'   spanner widen until its label fits over them, instead of the label
 #'   being truncated. Defaults to `FALSE`.
@@ -294,7 +298,11 @@ build_ascii_table <- function(
 
   sep_after <- ascii_table_separators(df, first_column_line, row_total_line)
   if (isTRUE(whole_spanners)) {
-    w <- ascii_spanner_widths(w, spanners, sep_after)
+    w <- ascii_spanner_widths(
+      w,
+      c(spanners, ascii_text_spans(body_spanners)),
+      sep_after
+    )
   }
 
   # Build line for header or data row. `is_header = TRUE` activates
@@ -428,11 +436,12 @@ build_ascii_table <- function(
     pos <- pos + 1L # right gutter
     if (i %in% sep_after) pos <- pos + 1L
   }
-  span_lines <- function(base, spans) {
+  span_lines <- function(base, spans, text = NULL) {
     spanner_chars <- strsplit(base, "", fixed = TRUE)[[1]]
     underline_chars <- spanner_chars
-    for (lbl in names(spans)) {
-      cols <- spans[[lbl]]
+    for (key in names(spans)) {
+      cols <- spans[[key]]
+      lbl <- if (is.null(text)) key else text[[key]]
       span_start <- col_starts[min(cols)]
       span_end <- col_ends[max(cols)]
       span_width <- span_end - span_start + 1L
@@ -486,8 +495,9 @@ build_ascii_table <- function(
   }
   for (b in body_spanners) {
     if (length(b$spans) && b$row >= 1L && b$row <= length(rows_txt)) {
+      lines <- span_lines(rows_txt[b$row], b$spans, b$text)
       rows_txt[b$row] <- paste(
-        span_lines(rows_txt[b$row], b$spans),
+        lines[seq_len(1L + !isFALSE(b$rule))],
         collapse = "\n"
       )
     }
@@ -580,18 +590,30 @@ ascii_table_widths <- function(df, padding) {
 # (`whole_spanners`): a group narrower than its label shares the missing
 # width out over its columns, the first ones taking the remainder. A span
 # runs across the gutters between its columns and any vertical bar
-# (`sep_after`).
+# (`sep_after`). Two spans may carry the same label.
 ascii_spanner_widths <- function(widths, spanners, sep_after = integer(0)) {
-  for (lbl in names(spanners)) {
-    cols <- spanners[[lbl]]
+  for (i in seq_along(spanners)) {
+    cols <- spanners[[i]]
     k <- length(cols)
     span <- sum(widths[cols]) + 2L * (k - 1L) + sum(cols[-k] %in% sep_after)
-    short <- nchar(lbl, type = "width") - span
+    short <- nchar(names(spanners)[[i]], type = "width") - span
     if (short > 0L) {
       widths[cols] <- widths[cols] + short %/% k + (seq_len(k) <= short %% k)
     }
   }
   widths
+}
+
+# The spans of the rows of `body_spanners` that print a `text` over each
+# group (the Outcome row of a regression table), keyed by that text.
+ascii_text_spans <- function(body_spanners) {
+  out <- list()
+  for (b in body_spanners) {
+    if (length(b$text) && length(b$spans)) {
+      out <- c(out, stats::setNames(b$spans, b$text[names(b$spans)]))
+    }
+  }
+  out
 }
 
 # The leading characters of `x` that fill at most `width` console columns:
@@ -848,8 +870,8 @@ ascii_table_panels <- function(
 #'   sit before it. Defaults to `FALSE`.
 #' @param body_spanners Optional list of column group rows inside the
 #'   body (see [build_ascii_table()]), in the columns of `x`. When the
-#'   table splits into stacked panels, each panel repeats a label over
-#'   the columns of its group it holds. Defaults to `NULL`.
+#'   table splits into stacked panels, each panel repeats a label (or its
+#'   `text`) over the columns of its group it holds. Defaults to `NULL`.
 #' @param blank_row_groups Optional list of integer vectors, each a set
 #'   of rows that go together (the rows of a panel of a stacked table,
 #'   or one of its fit-statistic rows). When the table splits into
@@ -976,7 +998,8 @@ spicy_print_table <- function(
       cols <- panel_cols[[panel_i]]
       panel_spanners <- ascii_panel_spans(spanners, cols)
       panel_body_spanners <- lapply(body_spanners, function(b) {
-        list(row = b$row, spans = ascii_panel_spans(b$spans, cols))
+        b$spans <- ascii_panel_spans(b$spans, cols)
+        b
       })
       # `x[, cols]` uniquifies duplicate names ("B"/"B" -> "B"/"B.1");
       # restore the originals so the header row prints the unprefixed
@@ -1133,7 +1156,10 @@ spicy_print_table <- function(
           }
           panel_body_spanners <- lapply(
             Filter(function(b) b$row %in% kept, panel_body_spanners),
-            function(b) list(row = at(b$row), spans = b$spans)
+            function(b) {
+              b$row <- at(b$row)
+              b
+            }
           )
           nm <- names(sub)
           sub <- sub[kept, , drop = FALSE]
@@ -1152,7 +1178,7 @@ spicy_print_table <- function(
           padding = padding,
           first_column_line = first_column_line,
           row_total_line = row_total_line,
-          spanners = panel_spanners
+          spanners = c(panel_spanners, ascii_text_spans(panel_body_spanners))
         ) <=
           getOption("width", 80L)
       } else {

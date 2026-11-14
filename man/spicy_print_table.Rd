@@ -110,8 +110,8 @@ sit before it. Defaults to \code{FALSE}.}
 
 \item{body_spanners}{Optional list of column group rows inside the
 body (see \code{\link[=build_ascii_table]{build_ascii_table()}}), in the columns of \code{x}. When the
-table splits into stacked panels, each panel repeats a label over
-the columns of its group it holds. Defaults to \code{NULL}.}
+table splits into stacked panels, each panel repeats a label (or its
+\code{text}) over the columns of its group it holds. Defaults to \code{NULL}.}
 
 \item{blank_row_groups}{Optional list of integer vectors, each a set
 of rows that go together (the rows of a panel of a stacked table,

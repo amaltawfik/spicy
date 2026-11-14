@@ -640,7 +640,9 @@
   headers do not name them (models named in the list or by
   `model_labels`, or an outcome that several of them share) get an
   "Outcome" row, as in the table of fit statistics alone. The outcomes
-  appeared nowhere. `outcome_labels = FALSE` removes the row.
+  appeared nowhere. `outcome_labels = FALSE` removes the row. The
+  console prints each outcome across the columns of its model, without
+  widening the first of them.
 
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in
