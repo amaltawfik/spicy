@@ -98,6 +98,12 @@
   χ² change printed `+204.01` reads `204.01 (4)`, an F-change
   `12.38 (1, 29)`. `output = "data.frame"` keeps the statistic alone.
 
+* `table_categorical_svy()` gains `percent_base` and, like
+  `table_categorical()`, estimates its percentages on the observed
+  values by default: the `(Missing)` row shows its count and no
+  percentage, interval or design effect. `percent_base = "total"` gives
+  back the previous percentages.
+
 * `table_continuous()`, `table_continuous_svy()` and `table_outcome()`
   show a `show_columns` vector in the order it is written:
   `c("med", "q1", "q3", "m", "sd", "n")` puts the median first. A token
