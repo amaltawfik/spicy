@@ -940,6 +940,66 @@ test_that("every plain builder refuses a design with a route out", {
   )
 })
 
+test_that("a plain table given a two-phase design names no twin", {
+  # Every twin refuses a two-phase design, so a hint naming one sent the
+  # caller to a second error. The plain tables now end on the twin's own
+  # closing lines; on an ordinary design their hint is unchanged.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  calls <- list(
+    freq = function(d) freq(d, stype),
+    cross_tab = function(d) cross_tab(d, stype, awards),
+    table_categorical = function(d) table_categorical(d, select = stype),
+    table_continuous = function(d) table_continuous(d, select = api00),
+    table_battery = function(d) table_battery(d, select = c(awards, both)),
+    table_multiresponse = function(d) table_multiresponse(d, select = c(a, b)),
+    table_outcome = function(d) {
+      table_outcome(d, outcome = api00, select = stype)
+    }
+  )
+  for (method in c("approx", "full")) {
+    two <- survey::twophase(
+      id = list(~1, ~1),
+      subset = ~ I(comp.imp == "Yes"),
+      data = apiclus1,
+      method = method
+    )
+    twin <- conditionMessage(expect_error(
+      table_categorical_svy(two, select = stype),
+      class = "spicy_unsupported"
+    ))
+    closing <- sub("^[^\n]*\n", "", twin)
+    for (fn in names(calls)) {
+      msg <- conditionMessage(expect_error(
+        calls[[fn]](two),
+        class = "spicy_wrong_regime"
+      ))
+      expect_no_match(msg, "_svy(", fixed = TRUE, info = fn)
+      if (fn != "table_multiresponse") {
+        expect_match(msg, closing, fixed = TRUE, info = fn)
+        expect_match(
+          msg,
+          sprintf(
+            "do not support survey designs of class `%s`",
+            class(two)[1L]
+          ),
+          fixed = TRUE,
+          info = fn
+        )
+      }
+    }
+  }
+  d <- .svy_fixture("clus1")
+  for (fn in names(calls)) {
+    msg <- conditionMessage(expect_error(
+      calls[[fn]](d),
+      class = "spicy_wrong_regime"
+    ))
+    expect_match(msg, .DESIGN_REGIME_HINT[[fn]], fixed = TRUE, info = fn)
+    expect_no_match(msg, "Supported:", fixed = TRUE, info = fn)
+  }
+})
+
 test_that("the plain refusal is untouched for a non-design non-frame", {
   # The design branch sits ABOVE the historical one; that one must
   # still answer exactly as before, class and message.

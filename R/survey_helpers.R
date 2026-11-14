@@ -148,15 +148,19 @@
     sprintf("survey designs of class `%s`", class(design)[1L])
   }
   spicy_abort(
-    c(
-      sprintf("`%s()` does not support %s.", fn, what),
-      "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
-      "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
-    ),
+    c(sprintf("`%s()` does not support %s.", fn, what), .SURVEY_SUPPORTED),
     class = "spicy_unsupported",
     call = call
   )
 }
+
+# The closing lines of that refusal, shared with the hint a plain table
+# gives a two-phase design (`.design_regime_hint()`), so that the two
+# messages say the same thing.
+.SURVEY_SUPPORTED <- c(
+  "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
+  "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
+)
 
 # The refusal a data.frame gets at a `_svy` entry point -- the mirror of
 # the `spicy_wrong_regime` a design gets at the plain entry point.

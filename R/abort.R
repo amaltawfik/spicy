@@ -371,6 +371,8 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   call = rlang::caller_env()
 ) {
   if (.is_survey_design(data)) {
+    hint <- .design_regime_hint(data, fn)
+    names(hint) <- rep("i", length(hint))
     spicy_abort(
       c(
         sprintf(
@@ -379,7 +381,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
           expects,
           class(data)[1L]
         ),
-        "i" = .design_regime_hint(data, fn),
+        hint,
         if (inference) {
           c(
             "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
@@ -458,6 +460,13 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   count_n = "A row count does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = count_n(design$variables, select = ..., count = ...))`."
 )
 
+# The hint for a two-phase design. The tables whose hint names a `_svy`
+# twin say what the twin's refusal says instead: no twin takes a
+# two-phase design (`.SURVEY_UNSUPPORTED_CLASSES`). The other tables'
+# hints stand: `survey::svyglm()` fits a two-phase design and
+# `table_regression()` tabulates the fit (run 2026-11-14), and
+# `table_multiresponse()` names no call.
+#
 # The row-wise summaries' recipe above reads `design$variables`, which a
 # two-phase design does not have: survey's `update()` method evaluates
 # the expression in each of its two tables, so the items are named in
@@ -466,10 +475,20 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # tables. Each recipe was run on its class, and `svymean()` on the
 # result (2026-11-14).
 .design_regime_hint <- function(data, fn) {
-  if (
-    !inherits(data, c("twophase", "twophase2")) ||
-      !fn %in% c("mean_n", "sum_n", "count_n")
-  ) {
+  two_phase <- intersect(class(data), c("twophase", "twophase2"))
+  if (length(two_phase) == 0L) {
+    return(.DESIGN_REGIME_HINT[[fn]])
+  }
+  if (grepl("_svy(", .DESIGN_REGIME_HINT[[fn]], fixed = TRUE)) {
+    return(c(
+      sprintf(
+        "The design twins of spicy's tables do not support survey designs of class `%s`.",
+        two_phase[[1L]]
+      ),
+      .SURVEY_SUPPORTED
+    ))
+  }
+  if (!fn %in% c("mean_n", "sum_n", "count_n")) {
     return(.DESIGN_REGIME_HINT[[fn]])
   }
   what <- if (fn == "count_n") "count" else "score"

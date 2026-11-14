@@ -391,7 +391,9 @@
   class `spicy_wrong_regime` that points to `table_categorical_svy()`,
   as the other plain tables do. A design used to stop them with an R
   error about a missing object, and `cross_tab(design, "x", "y")`
-  returned a meaningless one-cell table.
+  returned a meaningless one-cell table. On a two-phase design, which
+  the design twins do not support, the plain tables say so instead of
+  pointing to a twin.
 
 * `cross_tab()` and `freq()` refuse a plain list, and `cross_tab()` a
   matrix, with an error of class `spicy_invalid_data`. They stopped on
