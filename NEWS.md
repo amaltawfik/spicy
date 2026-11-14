@@ -624,6 +624,10 @@
   values. A fit with `subset`, and a `coxph()` fit that had dropped
   rows with missing values, failed on the length of the cluster.
 
+* `table_regression()` shows the AIC and the effective number of
+  parameters of a `survey::svyglm()` fit outside the gaussian family
+  when the survey package is not attached. Both rows were missing.
+
 * `table_categorical()` and `table_categorical_svy()` show a declared
   level that `levels_keep` names when it has no observation, with a
   count of 0. `table_categorical()` dropped it silently from a vector

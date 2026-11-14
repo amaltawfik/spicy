@@ -194,3 +194,27 @@ test_that("a no-intercept quasibinomial svyglm has no AIC, and says nothing", {
   expect_false(grepl("AIC", out2, fixed = TRUE))
   expect_false(grepl("Effective parameters", out2, fixed = TRUE))
 })
+
+test_that("a quasibinomial svyglm has its AIC without library(survey)", {
+  d <- .cov_svy_design()
+  fit <- survey::svyglm(
+    sch.wide ~ ell + meals,
+    design = d,
+    family = stats::quasibinomial()
+  )
+  # AIC.svyglm refits without the terms through update() of the stored
+  # call, a bare svyglm() that this environment does not see.
+  if (!"package:survey" %in% search()) {
+    expect_error(stats::AIC(fit))
+  }
+  oracle <- local({
+    svyglm <- survey::svyglm
+    stats::AIC(svyglm(
+      sch.wide ~ ell + meals,
+      design = d,
+      family = stats::quasibinomial()
+    ))
+  })
+  expect_equal(spicy:::.svyglm_aic(fit), oracle[["AIC"]])
+  expect_equal(spicy:::.svyglm_eff_p(fit), oracle[["eff.p"]])
+})

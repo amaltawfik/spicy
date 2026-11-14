@@ -387,8 +387,19 @@ as_regression_frame.svyglm <- function(
 # `extractAIC_svylm`, which has no such stop, which is why the fixture
 # that already existed did not exercise this.) The table then renders
 # without an AIC row, which is the right answer and is pinned as one.
+# Outside the gaussian family, `extractAIC.svyglm` refits the model
+# without its terms (`regTermTest(method = "LRT")`), through update() of
+# the stored call, a bare `svyglm(...)`: without library(survey) the
+# refit failed and the row went missing. The call is qualified first.
+.svyglm_aic_vector <- function(fit) {
+  if (is.call(fit$call) && identical(fit$call[[1L]], quote(svyglm))) {
+    fit$call[[1L]] <- quote(survey::svyglm)
+  }
+  tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+}
+
 .svyglm_eff_p <- function(fit) {
-  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  a <- .svyglm_aic_vector(fit)
   if (is.null(a) || !is.numeric(a) || !("eff.p" %in% names(a))) {
     return(NA_real_)
   }
@@ -397,7 +408,7 @@ as_regression_frame.svyglm <- function(
 
 
 .svyglm_aic <- function(fit) {
-  a <- tryCatch(suppressWarnings(stats::AIC(fit)), error = function(e) NULL)
+  a <- .svyglm_aic_vector(fit)
   if (is.null(a) || !is.numeric(a) || length(a) == 0L) {
     return(NA_real_)
   }
