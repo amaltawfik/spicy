@@ -217,10 +217,11 @@ raised by spicy. Leaves:
 (not a data.frame, data or a design with no rows, length
 mismatch, \code{bit64::integer64} columns, degenerate grouping).
 \item \code{spicy_wrong_regime} -- signaled together with
-\code{spicy_invalid_data} when a table receives the wrong kind
-of data for its regime: a survey design handed to a plain table,
-or a data frame handed to a survey twin. The message names the
-function to use instead.
+\code{spicy_invalid_data} when a function receives the wrong
+kind of data for its regime: a survey design handed to a plain
+table or to a row-wise function such as \code{\link[=mean_n]{mean_n()}}, or a data
+frame handed to a survey twin. The message names the function
+to use instead, or says how to work on the data of the design.
 \item \code{spicy_missing_pkg} -- a Suggests dependency
 is required by the requested operation but not installed.
 \item \code{spicy_missing_quarto} -- \code{\link[=code_book]{code_book()}} was asked

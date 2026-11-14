@@ -726,8 +726,10 @@ says "No data for X in G.", in one sentence for the variables with no
 data in the same groups ("No data for X and Y in G."). Without \code{by}, a
 variable with no observed value at all keeps its declared levels (its
 one row when it declares none) with the dash, and the note says "No
-data for X." The column of missing \code{by} values is never such a group,
-and a declared level of \code{by} that holds no row keeps its zero column.
+data for X." The column of missing \code{by} values is never named as such
+a group: it shows the dash, as the groups do, only for a variable with
+no observed value at all. A declared level of \code{by} that holds no row
+keeps its zero column.
 }
 
 \section{Multiple-comparison adjustment}{

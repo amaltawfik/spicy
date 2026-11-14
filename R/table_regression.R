@@ -1786,7 +1786,11 @@
 #'   With `output = "excel"` a numeric cell is displayed by Excel
 #'   with the *viewer's* locale separator, which a file cannot set,
 #'   so a non-default mark makes the body go out as pre-formatted
-#'   text (the default `"."` keeps every cell a real number).
+#'   text. Under the default `"."`, a cell that shows one number is a
+#'   real number whenever its number format prints what the console
+#'   prints. The other cells are text: a p-value below the threshold or
+#'   shortened by the style (`p_bands`, `p_sigfig` of [spicy_style()]),
+#'   a number in scientific notation, a dash, a cell with stars.
 #' @param align Numeric column alignment.
 #'   `"decimal"` (default) -- pre-pad cells so decimal marks line
 #'   up vertically (publication-style). For CI cells (`[LL, UL]`)

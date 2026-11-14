@@ -392,8 +392,8 @@
 
 * `cross_tab()` and `freq()` refuse a plain list, and `cross_tab()` a
   matrix, with an error of class `spicy_invalid_data`. They stopped on
-  an R error, or `freq()` returned a wrong table without a message
-  (`freq(l, "a")` counted the string "a").
+  an R error, or `freq()` returned a wrong table: `freq(list(c(1, 2, 2)))`
+  counted one value, without a message.
 
 * `mean_n()`, `sum_n()` and `count_n()` refuse a survey design with an
   error of class `spicy_wrong_regime` that shows how to add the score to
