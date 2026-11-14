@@ -189,6 +189,13 @@
   fn_label,
   user_na = TRUE
 ) {
+  .check_not_design(
+    data,
+    fn_label,
+    expects = "a data.frame or a matrix",
+    inference = FALSE,
+    call = rlang::caller_env()
+  )
   digits <- .validate_row_n_digits(digits)
   validate_varlist_logical(user_na, "user_na")
 

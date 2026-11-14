@@ -10,7 +10,9 @@
 #'
 #' @param data A `data.frame` or `matrix`. Optional inside
 #'   `dplyr::mutate()`, where the current data context is used
-#'   automatically.
+#'   automatically. A survey design is refused (class
+#'   `spicy_wrong_regime`): compute the count on its data,
+#'   `design$variables`, and add it to the design with `update()`.
 #' @param select Columns to include. Defaults to `tidyselect::everything()`.
 #'   Uses tidyselect helpers like [tidyselect::starts_with()], etc.; a
 #'   character vector of names is validated with [tidyselect::all_of()],
@@ -164,6 +166,12 @@ count_n <- function(
   verbose = FALSE,
   user_na = TRUE
 ) {
+  .check_not_design(
+    data,
+    "count_n",
+    expects = "a data.frame or a matrix",
+    inference = FALSE
+  )
   select_quo <- rlang::enquo(select)
   select_was_missing <- missing(select)
   validate_varlist_logical(user_na, "user_na")

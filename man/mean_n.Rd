@@ -18,7 +18,9 @@ mean_n(
 \arguments{
 \item{data}{A \code{data.frame} or \code{matrix}. Optional inside
 \code{dplyr::mutate()}, where the current grouping/data context is
-used automatically.}
+used automatically. A survey design is refused (class
+\code{spicy_wrong_regime}): compute the score on its data,
+\code{design$variables}, and add it to the design with \code{update()}.}
 
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect syntax (default: \code{tidyselect::everything()}).
 If \code{regex = TRUE}, provide a regular expression pattern (character string).}

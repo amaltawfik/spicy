@@ -159,3 +159,20 @@ test_that("sum_n() rejects bit64::integer64 columns with a classed error", {
   # excluding the integer64 column restores normal computation
   expect_equal(sum_n(df, select = a), c(1, 2))
 })
+
+test_that("sum_n() refuses a survey design and says how to add the score", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(a = c(1, 2, 3, 4), b = c(2, 3, 4, 5), w = c(1, 2, 1, 2))
+  design <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (des in list(design, survey::as.svrepdesign(design))) {
+    err <- expect_error(sum_n(des), class = "spicy_wrong_regime")
+    expect_match(
+      conditionMessage(err),
+      "update(design, score = sum_n(design$variables, select = ...))",
+      fixed = TRUE
+    )
+  }
+  design <- update(design, score = sum_n(design$variables, select = c(a, b)))
+  expect_equal(design$variables$score, c(3, 5, 7, 9))
+})

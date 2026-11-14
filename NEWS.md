@@ -390,6 +390,11 @@
   error about a missing object, and `cross_tab(design, "x", "y")`
   returned a meaningless one-cell table.
 
+* `mean_n()`, `sum_n()` and `count_n()` refuse a survey design with an
+  error of class `spicy_wrong_regime` that shows how to add the score to
+  the design: `update(design, score = mean_n(design$variables, ...))`.
+  A design used to stop them with an R error.
+
 * `cross_tab()` writes the chi-squared statistic of its note with the
   symbol, `χ²(df) = …` (was `Chi-2(df) = …`).
 

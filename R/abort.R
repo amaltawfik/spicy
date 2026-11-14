@@ -360,11 +360,14 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # standard errors, degrees of freedom and tests, so the answer is a
 # different function rather than a coercion. `.check_data_frame()` opens
 # with it; `cross_tab()` and `freq()`, which also take vectors, call it
-# alone (`expects`).
+# alone (`expects`). The row-wise summaries call it with
+# `inference = FALSE`: a respondent's score does not depend on the
+# design, and the sentence on design-based inference does not apply.
 .check_not_design <- function(
   data,
   fn,
   expects = "a data.frame",
+  inference = TRUE,
   call = rlang::caller_env()
 ) {
   if (.is_survey_design(data)) {
@@ -377,7 +380,11 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
           class(data)[1L]
         ),
         "i" = .DESIGN_REGIME_HINT[[fn]],
-        "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
+        if (inference) {
+          c(
+            "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
+          )
+        }
       ),
       class = "spicy_wrong_regime",
       call = call
@@ -414,7 +421,10 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_battery = "Use `table_battery_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`.",
   cross_tab = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>, by = <y>)`, the distribution of `x` within each level of `y` and survey's test of their independence.",
-  freq = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>)`, the distribution of `x` estimated under the design."
+  freq = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>)`, the distribution of `x` estimated under the design.",
+  mean_n = "A row score does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = mean_n(design$variables, select = ...))`.",
+  sum_n = "A row score does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = sum_n(design$variables, select = ...))`.",
+  count_n = "A row count does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = count_n(design$variables, select = ..., count = ...))`."
 )
 
 

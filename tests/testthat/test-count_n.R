@@ -339,3 +339,26 @@ test_that("count_n rejects an all-NA count vector instead of silent zeros", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("count_n() refuses a survey design and says how to add the count", {
+  skip_on_cran()
+  skip_if_not_installed("survey")
+  d <- data.frame(a = c(1, 2, 2, 4), b = c(2, 2, 4, 5), w = c(1, 2, 1, 2))
+  design <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (des in list(design, survey::as.svrepdesign(design))) {
+    err <- expect_error(
+      count_n(des, count = 2),
+      class = "spicy_wrong_regime"
+    )
+    expect_match(
+      conditionMessage(err),
+      "update(design, score = count_n(design$variables, select = ..., count = ...))",
+      fixed = TRUE
+    )
+  }
+  design <- update(
+    design,
+    score = count_n(design$variables, select = c(a, b), count = 2)
+  )
+  expect_equal(design$variables$score, c(1, 2, 1, 0))
+})
