@@ -15,7 +15,8 @@
 #'   used automatically. A survey design is refused (class
 #'   `spicy_wrong_regime`): compute the score on its data,
 #'   `design$variables`, and add it to the design with `update()`. The
-#'   error message says how for a two-phase design.
+#'   error message gives the call for a two-phase design, and says so
+#'   when a design keeps no data to compute the score on.
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect syntax (default: `tidyselect::everything()`).
 #' If `regex = TRUE`, provide a regular expression pattern (character string).
 #' @param exclude Columns to exclude (default: `NULL`).

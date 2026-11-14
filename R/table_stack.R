@@ -4,9 +4,11 @@
 #' `table_stack()` sets regression tables one under the other. Each table
 #' becomes a **panel**, opened by a row with its label, and keeps its own
 #' columns, rows, fit statistics and number formats: the cells of a panel
-#' have the content of the table passed, in every engine. The panels
-#' share one column header when they have the same columns, and each opens
-#' with its own header otherwise. Their notes are merged into one.
+#' have the content of the table passed, in every engine, under the
+#' "Outcome" row that *Panels* describes when the stack adds one. The
+#' panels share one column header when they have the same columns, and
+#' each opens with its own header otherwise. Their notes are merged into
+#' one.
 #'
 #' Build each table with its own arguments (`vcov`, `cluster`,
 #' `exponentiate`, `p_adjust`, `show_columns`, ...), then stack them: a
