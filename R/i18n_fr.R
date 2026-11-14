@@ -404,15 +404,15 @@
   note_exp_with_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s).%s",
   note_exp_no_se_single_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s.%s",
   note_exp_no_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille).%s",
-  note_exp_intercept = "La ligne %s estime %s.",
+  note_exp_intercept = "La ligne \u00AB\u00A0%s\u00A0\u00BB donne %s.",
   note_exp_intercept_odds = "la cote de base",
   note_exp_intercept_rate = "le taux de base",
   note_exp_intercept_risk = "le risque de base",
   note_exp_intercept_mean = "la moyenne de base",
   note_exp_intercept_cumhazard = "le risque cumul\u00E9 de base",
-  note_exp_intercept_survival_mean = "la dur\u00E9e de survie moyenne de base",
-  note_exp_intercept_survival_median = "la dur\u00E9e de survie m\u00E9diane de base",
-  note_exp_intercept_survival_p632 = "le 63,2e centile de base de la dur\u00E9e de survie",
+  note_exp_intercept_survival_mean = "le temps de survie moyen de base",
+  note_exp_intercept_survival_median = "le temps de survie m\u00E9dian de base",
+  note_exp_intercept_survival_p632 = "le 63,2e centile du temps de survie de base",
   # The Chicago lead-in of `spicy_style(note_label = "Note:")`, with the
   # no-break space French typography puts before a colon. "Note." needs
   # no entry: it is spelled the same in both languages.
@@ -527,7 +527,7 @@
   note_battery_population_all = "toutes les personnes, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
   note_battery_population_all_but_left_out = "toutes les personnes sauf celles dont la r\u00E9ponse est \u00E9cart\u00E9e, y compris celles qui n'ont pas r\u00E9pondu \u00E0 l'item",
   note_battery_levels_excluded = "R\u00E9ponses \u00E9cart\u00E9es des pourcentages et de la base\u00A0: %s.",
-  note_battery_missing_count = "La colonne %s compte les personnes qui n'ont pas r\u00E9pondu \u00E0 l'item.",
+  note_battery_missing_count = "La colonne \u00AB\u00A0%s\u00A0\u00BB compte les personnes qui n'ont pas r\u00E9pondu \u00E0 l'item.",
   excel_sheet_battery = "Batterie d'items",
   note_battery_svy_items_p = "Valeurs p des items, chaque item selon le groupe\u00A0: %s.",
   note_battery_svy_items_p_one = "Valeur p de l'item, selon le groupe\u00A0: %s.",

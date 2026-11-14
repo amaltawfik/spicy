@@ -87,7 +87,7 @@ test_that("side-by-side models name the models whose intercept is meant", {
   )
   expect_match(
     exp_note(list(mb, mp)),
-    "The (Intercept) row estimates the baseline odds (Model 1); the baseline rate (Model 2).",
+    "The (Intercept) row estimates the baseline odds (Model 1), the baseline rate (Model 2).",
     fixed = TRUE
   )
   expect_match(
@@ -97,7 +97,13 @@ test_that("side-by-side models name the models whose intercept is meant", {
   )
   expect_match(
     exp_note(list(A = mb, B = mp)),
-    "the baseline odds (A); the baseline rate (B)",
+    "the baseline odds (A), the baseline rate (B)",
+    fixed = TRUE
+  )
+  # A semicolon only when an estimand names two models.
+  expect_match(
+    exp_note(list(mb, mp, glm(yb ~ x + yc, binomial, d))),
+    "the baseline odds (Model 1, Model 3); the baseline rate (Model 2).",
     fixed = TRUE
   )
 })
@@ -156,12 +162,32 @@ test_that("the sentence is translated", {
   on.exit(options(old))
   expect_match(
     exp_note(glm(yb ~ x, binomial, d)),
-    "La ligne (Intercept) estime la cote de base.",
+    "La ligne \u00ab\u00a0(Intercept)\u00a0\u00bb donne la cote de base.",
+    fixed = TRUE
+  )
+  mp <- glm(yp ~ x, poisson, d)
+  expect_match(
+    exp_note(mp),
+    "La ligne \u00ab\u00a0(Intercept)\u00a0\u00bb donne le taux de base.",
     fixed = TRUE
   )
   expect_match(
-    exp_note(glm(yp ~ x, poisson, d)),
-    "La ligne (Intercept) estime le taux de base.",
+    exp_note(list(glm(yb ~ x, binomial, d), mp, glm(yg ~ x, Gamma("log"), d))),
+    paste0(
+      "La ligne \u00ab\u00a0(Intercept)\u00a0\u00bb donne la cote de base (Mod\u00e8le 1), ",
+      "le taux de base (Mod\u00e8le 2), la moyenne de base (Mod\u00e8le 3)."
+    ),
+    fixed = TRUE
+  )
+  skip_if_not_installed("survival")
+  ln <- survival::survreg(
+    survival::Surv(time, status) ~ x,
+    data = d,
+    dist = "lognormal"
+  )
+  expect_match(
+    exp_note(ln),
+    "La ligne \u00ab\u00a0(Intercept)\u00a0\u00bb donne le temps de survie m\u00e9dian de base.",
     fixed = TRUE
   )
 })
@@ -175,6 +201,17 @@ test_that("a stacked panel goes on in lower case after its label", {
   expect_match(
     paste(attr(s, "note"), collapse = "\n"),
     "B: the (Intercept) row estimates the baseline odds.",
+    fixed = TRUE
+  )
+  # In French too, with its guillemets around the label.
+  withr::local_options(spicy.language = "fr")
+  s <- suppressWarnings(table_stack(
+    A = table_regression(lm(yc ~ x, d)),
+    B = table_regression(glm(yb ~ x, binomial, d), exponentiate = TRUE)
+  ))
+  expect_match(
+    paste(attr(s, "note"), collapse = "\n"),
+    "B\u00a0: la ligne \u00ab\u00a0(Intercept)\u00a0\u00bb donne la cote de base.",
     fixed = TRUE
   )
 })
@@ -215,7 +252,7 @@ test_that("the sentence names the row by the label `labels` gives it", {
   )
   expect_match(
     exp_note(list(mb, mp), labels = lab),
-    "The Constant row estimates the baseline odds (Model 1); the baseline rate (Model 2).",
+    "The Constant row estimates the baseline odds (Model 1), the baseline rate (Model 2).",
     fixed = TRUE
   )
   odd <- "Base (x = 0), 50% [a-z]+ %s \\d «réf.»"
@@ -250,7 +287,7 @@ test_that("the sentence names the row by the label `labels` gives it", {
   on.exit(options(old))
   expect_match(
     exp_note(mb, labels = c("(Intercept)" = "Constante")),
-    "La ligne Constante estime la cote de base.",
+    "La ligne \u00ab\u00a0Constante\u00a0\u00bb donne la cote de base.",
     fixed = TRUE
   )
 })

@@ -3269,11 +3269,9 @@ build_exp_intercept_footer_block_from_frames <- function(
         },
         character(1)
       )
-      spicy_fmt(
-        "note_exp_intercept",
-        lab,
-        paste(items, collapse = spicy_str("note_estimand_sep"))
-      )
+      # The estimands are objects of one verb: commas, as every list a
+      # note gives (a semicolon only when an item holds a comma).
+      spicy_fmt("note_exp_intercept", lab, .join_note_vars(items))
     },
     character(1),
     USE.NAMES = FALSE

@@ -818,7 +818,7 @@
   # being a ratio: the baseline value of what the link models. Two holes
   # in `note_exp_intercept`: the label the row shows ("(Intercept)" in
   # every language, or the one `labels` gives it), then an estimand, or
-  # the estimands of the models joined by `note_estimand_sep`, each
+  # the estimands of the models joined by `.join_note_vars()`, each
   # followed by its models (`_models`, two holes: the estimand, the
   # model references joined). Each estimand carries its article.
   note_exp_intercept = "The %s row estimates %s.",

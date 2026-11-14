@@ -1383,7 +1383,7 @@ test_that("percent_base = \"valid\": the machine outputs, the note and inline()"
   withr::local_options(spicy.language = "fr")
   expect_match(
     attr(table_battery(d, c(q1, q2), drop_na = FALSE), "note"),
-    "Base : personnes ayant répondu à l'item. La colonne (Manquant) compte les personnes qui n'ont pas répondu à l'item.",
+    "Base : personnes ayant répondu à l'item. La colonne « (Manquant) » compte les personnes qui n'ont pas répondu à l'item.",
     fixed = TRUE
   )
 })
