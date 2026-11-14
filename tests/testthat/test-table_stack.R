@@ -2223,14 +2223,22 @@ test_that("panels of models with different outcomes open on an Outcome row", {
   expect_identical(mn$labels, c("bmi", "employment_status"))
 })
 
-test_that("the frames decide the Outcome row when the formulas mislead", {
+test_that("a stack builds each panel once, its messages given once", {
   skip_on_cran()
   skip_if_not_installed("MASS")
-  # The formulas name two outcomes, the frames one: no row, and the
-  # message of each fit given once.
+  # The formulas name two outcomes, the frames one: no row. Each call of
+  # table_regression() takes its request once: the list, then each panel.
   a <- MASS::polr(education ~ age, data = sochealth)
   b <- MASS::polr(ordered(education) ~ sex, data = sochealth)
-  count <- function(expr) {
+  calls <- 0L
+  req <- spicy:::.reg_panel
+  local_mocked_bindings(.reg_panel_take = function() {
+    calls <<- calls + 1L
+    r <- req$request
+    req$request <- NULL
+    r
+  })
+  messages <- function(expr) {
     n <- 0L
     withCallingHandlers(expr, message = function(m) {
       n <<- n + 1L
@@ -2238,15 +2246,14 @@ test_that("the frames decide the Outcome row when the formulas mislead", {
     })
     n
   }
-  alone <- count(table_regression(a)) + count(table_regression(b))
+  alone <- messages(table_regression(a)) + messages(table_regression(b))
+  calls <- 0L
   st <- NULL
-  n <- count(st <- table_regression(list(A = a, B = b), layout = "stacked"))
+  n <- messages(st <- table_regression(list(A = a, B = b), layout = "stacked"))
+  expect_identical(calls, 3L)
   expect_identical(n, alone)
   expect_false("outcome" %in% attr(st, "structured")$body$.row_role)
 })
-
-
-# ---- 9. machine outputs ------------------------------------------------------
 
 test_that("table_stack() opens its panels on an Outcome row by the same rule", {
   skip_on_cran()

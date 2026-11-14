@@ -23,8 +23,6 @@
 #           list, `name` the name the messages of the side-by-side table
 #           give the model ("Model 2", or its name in a named list), `id`
 #           its `model_id` there.
-#   outcome the Outcome row the panel opens on: NULL for none, TRUE for
-#           the outcome of its model, or the label given.
 # A panel keeps quiet what only the list can decide (the unknown names of
 # `labels`, an `exponentiate` that no model applies, a `keep` or `drop`
 # pattern that no model matches, the `vcov` and `cluster` of each model)
@@ -200,96 +198,52 @@
     },
     add = TRUE
   )
-  # `outcome`, the Outcome row of each panel (NULL: none; TRUE: the
-  # outcome of its model; else its label). `quiet` builds the panels again,
-  # the conditions given the first time muffled.
-  build_panels <- function(outcome, quiet = FALSE) {
-    gathered <<- list()
-    .reg_panel$frames <- list()
-    .reg_panel$terms <- list()
-    panels <- vector("list", n)
-    for (k in seq_len(n)) {
-      .reg_panel$request <- list(
-        nested = if (nested_on) {
-          list(
-            tokens = tokens,
-            prev_fit = if (k > 1L) models[[k - 1L]],
-            k = k
-          )
-        },
-        index = k,
-        n = n,
-        name = msg_names[[k]],
-        id = ids[[k]],
-        outcome = outcome[[k]]
-      )
-      panels[k] <- list(tryCatch(
-        withCallingHandlers(
-          do.call(table_regression, c(list(models[[k]]), panel_args(k))),
-          error = function(e) {
-            cl <- conditionCall(e)
-            if (
-              inherits(e, "spicy_error") ||
-                (is.call(cl) && is.function(cl[[1L]]))
-            ) {
-              e$call <- public_call
-              stop(e)
-            }
-          },
-          warning = function(w) {
-            if (!is.null(w$spicy_gather)) {
-              gather(w)
-            }
-            if (!is.null(w$spicy_gather) || quiet) {
-              invokeRestart("muffleWarning")
-            }
-          },
-          message = function(m) {
-            if (!is.null(m$spicy_gather)) {
-              gather(m)
-            }
-            if (!is.null(m$spicy_gather) || quiet) {
-              invokeRestart("muffleMessage")
-            }
-          }
-        ),
-        spicy_empty_table = gather
-      ))
-    }
-    panels
-  }
-  # The Outcome row of each panel: the labels given, none under FALSE,
-  # else the outcome of each model when the models have different
-  # outcomes that the labels of the panels do not name, the rule of the
-  # models side by side. The rule is read off the formulas first, then
-  # off the frames, which build the panels again when they disagree.
-  outcome_labels <- arg("outcome_labels")
-  named <- !is.null(.resolve_model_labels(models, model_labels))
-  outcome_of <- function(show) {
-    if (is.character(outcome_labels)) {
-      as.list(outcome_labels)
-    } else {
-      rep(list(if (show) TRUE), n)
-    }
-  }
-  probe <- vapply(models, .reg_probe_dv, character(1))
-  guess <- is.null(outcome_labels) &&
-    .reg_stacked_outcome_rows(probe, probe, named)
-  panels <- build_panels(outcome_of(guess))
-  frames <- .reg_panel$frames
-  if (is.null(outcome_labels) && length(frames) == n) {
-    dv <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
-    shown <- vapply(
-      frames,
-      function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
-      ""
+  .reg_panel$frames <- list()
+  .reg_panel$terms <- list()
+  panels <- vector("list", n)
+  for (k in seq_len(n)) {
+    .reg_panel$request <- list(
+      nested = if (nested_on) {
+        list(
+          tokens = tokens,
+          prev_fit = if (k > 1L) models[[k - 1L]],
+          k = k
+        )
+      },
+      index = k,
+      n = n,
+      name = msg_names[[k]],
+      id = ids[[k]]
     )
-    need <- .reg_stacked_outcome_rows(dv, shown, named)
-    if (!identical(need, guess)) {
-      panels <- build_panels(outcome_of(need), quiet = TRUE)
-      frames <- .reg_panel$frames
-    }
+    panels[k] <- list(tryCatch(
+      withCallingHandlers(
+        do.call(table_regression, c(list(models[[k]]), panel_args(k))),
+        error = function(e) {
+          cl <- conditionCall(e)
+          if (
+            inherits(e, "spicy_error") || (is.call(cl) && is.function(cl[[1L]]))
+          ) {
+            e$call <- public_call
+            stop(e)
+          }
+        },
+        warning = function(w) {
+          if (!is.null(w$spicy_gather)) {
+            gather(w)
+            invokeRestart("muffleWarning")
+          }
+        },
+        message = function(m) {
+          if (!is.null(m$spicy_gather)) {
+            gather(m)
+            invokeRestart("muffleMessage")
+          }
+        }
+      ),
+      spicy_empty_table = gather
+    ))
   }
+  frames <- .reg_panel$frames
 
   # ---- What only the list decides ----------------------------------------
   # The order of the terms in the side-by-side table: the order of the
@@ -325,11 +279,15 @@
     }
   }
 
-  # FALSE: no panel opens on an Outcome row, whatever the stack decides
+  # `outcome_labels` given: each panel opens on its label; FALSE: none.
+  # Otherwise the stack decides, as for tables stacked by table_stack()
   # (`.stack_outcome_rows()`).
-  if (isFALSE(outcome_labels)) {
+  if (is.character(outcome_labels)) {
+    panels <- Map(.reg_add_outcome_row, panels, outcome_labels)
+  } else if (isFALSE(outcome_labels)) {
     panels <- lapply(panels, `attr<-`, "spicy_outcome_row", FALSE)
   }
+
   title_txt <- if (isFALSE(stack_title)) {
     NULL
   } else if (is.character(stack_title)) {
@@ -507,22 +465,6 @@
   )
   .stack_distinct_outcomes(dv, shown) %||%
     spicy_fmt("label_model_name", seq_len(n))
-}
-
-# Whether the panels of a stacked table open on an Outcome row: their
-# models have different outcomes, which the labels of the panels do not
-# name (labels typed, `named`, or outcomes that cannot label the panels).
-.reg_stacked_outcome_rows <- function(dv, shown, named) {
-  length(unique(dv)) > 1L &&
-    (named || is.null(.stack_distinct_outcomes(dv, shown)))
-}
-
-# The outcome of a model read off its formula, before its frame is built.
-.reg_probe_dv <- function(fit) {
-  tryCatch(
-    deparse1(stats::formula(fit)[[2L]]),
-    error = function(e) NA_character_
-  )
 }
 
 # The labels distinct outcomes give the panels of a stack: their displays,

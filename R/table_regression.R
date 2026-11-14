@@ -4368,19 +4368,8 @@ table_regression <- function(
   # row when neither its title (which names a shared outcome) nor its
   # column headers (the outcomes, when they are all distinct and the
   # models unlabeled) do: it has no other place for them.
-  # `outcome_labels = FALSE` keeps the row out. A panel of a stacked table
-  # opens on the row its driver decided (`panel_req$outcome`), a
-  # multinomial model laid out by category labeling it once.
-  if (!is.null(panel_req$outcome)) {
-    outcome_labels <- c(
-      if (isTRUE(panel_req$outcome)) {
-        frames[[1L]]$info$dv_display %||% frames[[1L]]$info$dv %||% ""
-      } else {
-        panel_req$outcome
-      },
-      rep("", length(model_ids_render) - 1L)
-    )
-  } else if (is.null(outcome_labels) && n_models >= 2L) {
+  # `outcome_labels = FALSE` keeps the row out.
+  if (is.null(outcome_labels) && n_models >= 2L) {
     dvs <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
     if (
       length(unique(dvs)) > 1L &&
