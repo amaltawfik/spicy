@@ -410,7 +410,8 @@ column of <code>top</code>, <code>n</code>, each prefixed with the group under <
 <code>p</code>.</p></li>
 <li><p><code>"long"</code>: one row per item, group and level, with <code>variable</code>,
 <code>label</code>, <code>group</code> (with <code>by</code>), <code>level</code>, <code>.row_role</code>, <code>n</code> (the
-observed count) and <code>pct</code> (the estimated percentage), and, when
+observed count) and <code>pct</code> (the estimated percentage, <code>NA</code> on the
+missing answers under <code>percent_base = "valid"</code>), and, when
 the tests ran, <code>test_type</code> (the statistic of <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">survey::svychisq()</a></code>),
 <code>p.value</code> and <code>p_unadjusted</code> under an adjustment.</p></li>
 <li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table object.</p></li>

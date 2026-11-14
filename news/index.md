@@ -528,6 +528,24 @@
   returned a meaningless one-cell table.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  refuse a plain list, and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  a matrix, with an error of class `spicy_invalid_data`. They stopped on
+  an R error, or
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  returned a wrong table without a message (`freq(l, "a")` counted the
+  string “a”).
+
+- [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
+  refuse a survey design with an error of class `spicy_wrong_regime`
+  that shows how to add the score to the design:
+  `update(design, score = mean_n(design$variables, ...))`. A design used
+  to stop them with an R error.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   writes the chi-squared statistic of its note with the symbol,
   `χ²(df) = …` (was `Chi-2(df) = …`).
 
@@ -866,6 +884,18 @@
   `outcome_labels = "<label>"` asks for. The label was ignored without a
   message.
 
+- `table_regression(output = "excel")` writes a p-value that `p_bands`
+  or `p_sigfig` shortens, and a number printed in scientific notation,
+  as the console prints them (`.02`, `3.40e+07`). The sheet showed the
+  p-value with the three decimals of its column (`.023`) and the number
+  in full.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  keeps the “Outcome” row out of the decimal alignment of the flextable,
+  Word, gt and tinytable outputs. The label ended with figure spaces (a
+  space before a parenthesis became one), and the numbers of its column
+  were padded to its width, off center.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   in French: a table of models of several families words its title and
   the sentence that names the type of each model in French (“Modèle 1 :
@@ -1178,6 +1208,13 @@
   clipboard keep the bounds in columns of their own. The note defines LL
   and UL only in Excel and the clipboard, whose headers show them. The
   rendered tables defined them too.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  when `by` has missing values, a variable with no observed value keeps
+  its levels, with a dash in every group and in the “(Missing)” column,
+  as when `by` has none. With `rescale = TRUE`, the call stopped on an
+  error about the sum of the weights, and without it the table showed
+  only a “(Missing)” row.
 
 ## spicy 0.14.1
 

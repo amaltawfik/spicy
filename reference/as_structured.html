@@ -186,9 +186,10 @@ otherwise. Both marked statuses display as an en-dash. A cell
 whose value is <code>NA</code> with no status is <em>absent</em> and displays
 blank. Columns with no marked cell are omitted.</p></li>
 <li><p><code>outcome_labels_by_col</code> – for the outcome row (explicit
-<code>outcome_labels</code> with two or more models, or models with different
-outcomes that the column headers do not name), the display label
-keyed by each model's first structured column name.</p></li>
+<code>outcome_labels</code>, one model included, or models with different
+outcomes that the column headers do not name; under
+<code>layout = "stacked"</code>, the view of each panel carries its own), the
+display label keyed by each model's first structured column name.</p></li>
 <li><p><code>col_meta</code> – per-column metadata keyed by structured column
 name (token, model_id, precision, p-style, below-threshold,
 CI pair / role / label). A column whose cells cannot be

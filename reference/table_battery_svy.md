@@ -368,8 +368,9 @@ Depends on `output`, as in
 
 - `"long"`: one row per item, group and level, with `variable`, `label`,
   `group` (with `by`), `level`, `.row_role`, `n` (the observed count)
-  and `pct` (the estimated percentage), and, when the tests ran,
-  `test_type` (the statistic of
+  and `pct` (the estimated percentage, `NA` on the missing answers under
+  `percent_base = "valid"`), and, when the tests ran, `test_type` (the
+  statistic of
   [`survey::svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html)),
   `p.value` and `p_unadjusted` under an adjustment.
 

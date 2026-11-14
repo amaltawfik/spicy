@@ -81,7 +81,8 @@ table_battery(sat, select = starts_with("life_sat_"), labels = TRUE)
 ```
 
 Each row sums to 100. The base `n` is the number of respondents who
-answered the item, so it can differ from one item to the next. A level
+answered the item. Each item here has eight missing answers, not from
+the same respondents, hence the same base of 1192 on every row. A level
 that nobody chose keeps its column, at 0: it was offered and not chosen,
 which is worth reporting.
 
@@ -450,8 +451,11 @@ head(long)
 returns the rows of `output = "long"` with the percentage as a
 proportion of the item’s base, and
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-one row per item, with its test and its base `nobs`, summed over the
-groups:
+one row per item, with its test, its rows `nobs` and its answers
+`nobs_valid`, summed over the groups. The two are equal here, since
+`drop_na = TRUE` leaves the missing answers out. Under
+`drop_na = FALSE`, `nobs` counts them as well, and `nobs_valid` stays
+the base of the percentages under the default `percent_base = "valid"`:
 
 ``` r
 

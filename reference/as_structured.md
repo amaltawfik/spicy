@@ -119,9 +119,10 @@ This is the right entry point for users who want to:
   are omitted.
 
 - `outcome_labels_by_col` – for the outcome row (explicit
-  `outcome_labels` with two or more models, or models with different
-  outcomes that the column headers do not name), the display label keyed
-  by each model's first structured column name.
+  `outcome_labels`, one model included, or models with different
+  outcomes that the column headers do not name; under
+  `layout = "stacked"`, the view of each panel carries its own), the
+  display label keyed by each model's first structured column name.
 
 - `col_meta` – per-column metadata keyed by structured column name
   (token, model_id, precision, p-style, below-threshold, CI pair / role

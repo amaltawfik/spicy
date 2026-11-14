@@ -604,8 +604,9 @@ table_regression(
   by side, one group of columns per model. `"stacked"` sets them one
   under the other, one panel per model: each panel is the table of that
   model alone (its default columns, the confidence interval included,
-  its blocks and fit statistics), opened by a row with its label. See
-  *Multi-model semantics* and
+  its blocks and fit statistics), opened by a row with its label, then
+  by an Outcome row where *Stacked layout* says. See *Multi-model
+  semantics* and
   [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
   which stacks tables built separately.
 

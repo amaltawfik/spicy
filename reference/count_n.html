@@ -114,7 +114,9 @@ flow inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" cl
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A <code>data.frame</code> or <code>matrix</code>. Optional inside
 <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code>, where the current data context is used
-automatically.</p></dd>
+automatically. A survey design is refused (class
+<code>spicy_wrong_regime</code>): compute the count on its data,
+<code>design$variables</code>, and add it to the design with <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code>.</p></dd>
 
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>

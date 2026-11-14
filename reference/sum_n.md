@@ -31,7 +31,10 @@ sum_n(
 
   A `data.frame` or `matrix`. Optional inside
   [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html),
-  where the current grouping/data context is used automatically.
+  where the current grouping/data context is used automatically. A
+  survey design is refused (class `spicy_wrong_regime`): compute the
+  score on its data, `design$variables`, and add it to the design with
+  [`update()`](https://rdrr.io/r/stats/update.html).
 
 - select:
 

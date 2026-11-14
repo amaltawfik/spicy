@@ -185,9 +185,10 @@ chose.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Percentages are row percentages. Base: respondents who answered the item.</span></span></span></code></pre></div>
 <p>Each row sums to 100. The base <code>n</code> is the number of
-respondents who answered the item, so it can differ from one item to the
-next. A level that nobody chose keeps its column, at 0: it was offered
-and not chosen, which is worth reporting.</p>
+respondents who answered the item. Each item here has eight missing
+answers, not from the same respondents, hence the same base of 1192 on
+every row. A level that nobody chose keeps its column, at 0: it was
+offered and not chosen, which is worth reporting.</p>
 </div>
 <div class="section level2">
 <h2 id="levels-and-base">Levels and base<a class="anchor" aria-label="anchor" href="#levels-and-base"></a>
@@ -522,7 +523,12 @@ level, with the test of each item:</p>
 <p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the rows of
 <code>output = "long"</code> with the percentage as a proportion of the
 item’s base, and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> one row per item, with its
-test and its base <code>nobs</code>, summed over the groups:</p>
+test, its rows <code>nobs</code> and its answers
+<code>nobs_valid</code>, summed over the groups. The two are equal here,
+since <code>drop_na = TRUE</code> leaves the missing answers out. Under
+<code>drop_na = FALSE</code>, <code>nobs</code> counts them as well, and
+<code>nobs_valid</code> stays the base of the percentages under the
+default <code>percent_base = "valid"</code>:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_battery.html">table_battery</a></span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
