@@ -666,13 +666,17 @@ for the full rule. A character vector of length
 multinomial model: there the column groups are outcome
 categories, relabeled via \code{outcome_labels}.}
 
-\item{outcome_labels}{Optional \strong{Outcome body row} override.
-\code{NULL} (default) hides the row entirely -- under the
-multi-model spanner the DV is already visible above the data.
-A character vector of length \code{length(models)} forces an
-explicit Outcome row with those values (the spanner stays as
-\code{"Model 1, ..."} unless \code{model_labels} is also supplied).
-\code{FALSE} also suppresses the row. \strong{Single multinomial model}
+\item{outcome_labels}{The \strong{Outcome body row}, which names the
+outcome of each model under the column headers. \code{NULL} (default)
+shows it when the models do not all have the same outcome and the
+column headers do not name them: models named in the list or by
+\code{model_labels}, or an outcome that several of the models share.
+Otherwise the title (one outcome) or the column headers (the
+outcomes of unnamed models, all different) name them, and the row
+is left out. A character vector of length \code{length(models)} forces
+the row with those values (the spanner stays as \code{"Model 1, ..."}
+unless \code{model_labels} is also supplied). \code{FALSE} removes the row.
+\strong{Single multinomial model}
 (outcome-as-columns layout): repurposed as the category
 spanner override -- a character vector with one label per
 non-reference outcome category (unique, in model order), e.g.
@@ -1431,6 +1435,10 @@ and the redundant Outcome body row is suppressed. The outcome
 is named as in the title: its name (from \code{formula(fit)[[2]]}),
 or its \code{label} attribute under \code{labels = TRUE}. If DVs match,
 the labels default to \code{"Model 1, 2, ..."}.
+\item Models with different outcomes that the spanner labels do not
+name (named models, or an outcome that several models share) get
+an Outcome body row under the headers; \code{outcome_labels = FALSE}
+removes it.
 \item \code{model_labels = c("A", "B")} overrides everything.
 }
 

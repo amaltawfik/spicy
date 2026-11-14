@@ -456,6 +456,10 @@
 #'     is named as in the title: its name (from `formula(fit)[[2]]`),
 #'     or its `label` attribute under `labels = TRUE`. If DVs match,
 #'     the labels default to `"Model 1, 2, ..."`.
+#'   \item Models with different outcomes that the spanner labels do not
+#'     name (named models, or an outcome that several models share) get
+#'     an Outcome body row under the headers; `outcome_labels = FALSE`
+#'     removes it.
 #'   \item `model_labels = c("A", "B")` overrides everything.
 #' }
 #'
@@ -1713,13 +1717,17 @@
 #'   `length(models)` overrides. Refused (error) for a single
 #'   multinomial model: there the column groups are outcome
 #'   categories, relabeled via `outcome_labels`.
-#' @param outcome_labels Optional **Outcome body row** override.
-#'   `NULL` (default) hides the row entirely -- under the
-#'   multi-model spanner the DV is already visible above the data.
-#'   A character vector of length `length(models)` forces an
-#'   explicit Outcome row with those values (the spanner stays as
-#'   `"Model 1, ..."` unless `model_labels` is also supplied).
-#'   `FALSE` also suppresses the row. **Single multinomial model**
+#' @param outcome_labels The **Outcome body row**, which names the
+#'   outcome of each model under the column headers. `NULL` (default)
+#'   shows it when the models do not all have the same outcome and the
+#'   column headers do not name them: models named in the list or by
+#'   `model_labels`, or an outcome that several of the models share.
+#'   Otherwise the title (one outcome) or the column headers (the
+#'   outcomes of unnamed models, all different) name them, and the row
+#'   is left out. A character vector of length `length(models)` forces
+#'   the row with those values (the spanner stays as `"Model 1, ..."`
+#'   unless `model_labels` is also supplied). `FALSE` removes the row.
+#'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per
 #'   non-reference outcome category (unique, in model order), e.g.
@@ -4330,12 +4338,12 @@ table_regression <- function(
     probability = build_stars_footer_block(stars, decimal_mark)
   )
 
-  # A fit-only table of models with different outcomes names them in its
-  # Outcome row when neither its title (which names a shared outcome)
-  # nor its column headers (the outcomes, when they are all distinct and
-  # the models unlabeled) do: it has no other place for them.
+  # A table of models with different outcomes names them in its Outcome
+  # row when neither its title (which names a shared outcome) nor its
+  # column headers (the outcomes, when they are all distinct and the
+  # models unlabeled) do: it has no other place for them.
   # `outcome_labels = FALSE` keeps the row out.
-  if (fit_only && is.null(outcome_labels) && n_models >= 2L) {
+  if (is.null(outcome_labels) && n_models >= 2L) {
     dvs <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
     if (
       length(unique(dvs)) > 1L &&

@@ -630,6 +630,12 @@
   values. A fit with `subset`, and a `coxph()` fit that had dropped
   rows with missing values, failed on the length of the cluster.
 
+* `table_regression()`: models with different outcomes whose column
+  headers do not name them (models named in the list or by
+  `model_labels`, or an outcome that several of them share) get an
+  "Outcome" row, as in the table of fit statistics alone. The outcomes
+  appeared nowhere. `outcome_labels = FALSE` removes the row.
+
 * `table_regression()` shows the AIC and the effective number of
   parameters of a `survey::svyglm()` fit outside the gaussian family
   when the survey package is not attached. Both rows were missing.

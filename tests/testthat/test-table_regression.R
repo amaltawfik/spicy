@@ -1782,12 +1782,25 @@ test_that("default show_columns context-aware: single keeps CI, multi drops it",
 })
 
 
-test_that("outcome_labels – NULL hides the row even when DVs differ + names supplied", {
+test_that("outcome_labels – NULL shows the row when DVs differ + names supplied", {
   skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(hp ~ wt, data = mt)
+  # The column headers name the models, not their outcomes: the row does.
   out <- table_regression(list("Step 1" = m1, "Step 2" = m2))
-  expect_false("Outcome" %in% out$Variable)
+  expect_true("Outcome" %in% out$Variable)
+  cells <- trimws(unlist(out[out$Variable == "Outcome", -1L]))
+  expect_true(all(c("mpg", "hp") %in% cells))
+  # FALSE removes it.
+  out0 <- table_regression(
+    list("Step 1" = m1, "Step 2" = m2),
+    outcome_labels = FALSE
+  )
+  expect_false("Outcome" %in% out0$Variable)
+  # Outcomes that several unnamed models share: "Model k" headers, a row.
+  m3 <- lm(mpg ~ wt + hp, data = mt)
+  out3 <- table_regression(list(m1, m3, m2))
+  expect_true("Outcome" %in% out3$Variable)
   # Explicit opt-in still works.
   out2 <- table_regression(
     list("Step 1" = m1, "Step 2" = m2),
