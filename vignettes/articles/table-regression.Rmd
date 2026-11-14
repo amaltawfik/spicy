@@ -353,7 +353,9 @@ table_regression(list(m_wellbeing, m_bmi))
 When all models share the same DV, the DV appears in the title.
 Use a named list — e.g. `list(Crude = m1, Adjusted = m2)` — to
 set the spanner labels explicitly; pass `model_labels = c(...)`
-to override the names from the list.
+to override the names from the list. When such labels replace the
+names of different DVs, an "Outcome" row says which model has which
+(`outcome_labels = FALSE` removes it).
 
 ## Models one under the other
 

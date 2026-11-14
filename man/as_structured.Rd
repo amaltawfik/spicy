@@ -94,7 +94,8 @@ otherwise. Both marked statuses display as an en-dash. A cell
 whose value is \code{NA} with no status is \emph{absent} and displays
 blank. Columns with no marked cell are omitted.
 \item \code{outcome_labels_by_col} -- for the outcome row (explicit
-\code{outcome_labels} with two or more models), the display label
+\code{outcome_labels} with two or more models, or models with different
+outcomes that the column headers do not name), the display label
 keyed by each model's first structured column name.
 \item \code{col_meta} -- per-column metadata keyed by structured column
 name (token, model_id, precision, p-style, below-threshold,
