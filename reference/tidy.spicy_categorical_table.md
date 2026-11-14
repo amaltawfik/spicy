@@ -67,12 +67,18 @@ test), `df`, `p.value`, `es_type` (the key of the measure the variable
 carries: `"phi"`, `"cramer_v"`, ...), `es_value`, `es_ci_lower`,
 `es_ci_upper`, `smd_type`, `smd_value`, `nobs` (the observations of the
 variable, the margin and the Total row not counted twice: rows, never
-weights, a row of zero weight left out) and `weighted_nobs` (their
-weighted count, `NA` without `weights`). Without `by`, only `variable`,
-`label`, `nobs` and `weighted_nobs` are populated; the other columns are
-`NA`. The interval bounds are `NA` unless the table was built with
-`assoc_ci = TRUE`, and the SMD columns unless it was built with
-`smd = TRUE`.
+weights, a row of zero weight left out), `nobs_valid` (those of them
+with an observed value), `weighted_nobs` (their weighted count, `NA`
+without `weights`) and `weighted_nobs_valid` (the weighted count of the
+rows of `nobs_valid`). Under `drop_na = FALSE`, `nobs` and
+`weighted_nobs` count the rows of the `(Missing)` row, whatever
+`percent_base`; `nobs_valid` leaves them out, and counts the base of the
+percentages under `percent_base = "valid"` unless `levels_keep` hides a
+level. Under `drop_na = TRUE`, `nobs_valid` is `nobs`. Without `by`,
+only `variable`, `label` and the four counts are populated; the other
+columns are `NA`. The interval bounds are `NA` unless the table was
+built with `assoc_ci = TRUE`, and the SMD columns unless it was built
+with `smd = TRUE`.
 
 ## See also
 

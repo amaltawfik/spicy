@@ -9,9 +9,10 @@ levels of each factor, the reference levels, the fit statistics – with
 the key columns `variable` (the variable of the row: the term of a
 coefficient, the factor of a level, the token of a fit statistic such as
 `"nobs"` or `"r2"`), `label` (the label displayed for that variable, or
-the text of a fit-statistic row), `level` (the level of a factor row)
-and `.row_role` (`"coef"`, `"factor_header"`, `"level"`, `"reference"`,
-`"fit_stat"`, ..., the roles of
+the text of a fit-statistic row), `level` (the level of a factor row, or
+the outcome category of a multinomial row) and `.row_role` (`"coef"`,
+`"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`, ..., the
+roles of
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
 then the printed columns under their names, numeric: the interval of a
 coefficient is split into its two bounds (`"95% CI LL"`, `"95% CI UL"`),

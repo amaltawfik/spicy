@@ -50,7 +50,15 @@ not appear; their p-value is what `glance()` is for.
 `n_levels`, `test_type` (the `svychisq()` statistic of the test,
 `chisq_statistic`; `NA` where no test ran), `p.value`, `degf` (the
 design's own), `nobs` (the observed rows of the variable, a row of zero
-weight left out), `weighted_nobs` (the sum of their sampling weights).
+weight left out), `nobs_valid` (those of them with an observed value),
+`weighted_nobs` (the sum of the sampling weights of the rows of `nobs`)
+and `weighted_nobs_valid` (that of the rows of `nobs_valid`).
+
+Under `drop_na = FALSE`, `nobs` and `weighted_nobs` count the rows of
+the `(Missing)` row, whatever `percent_base`. `nobs_valid` and
+`weighted_nobs_valid` leave them out: they count the base of the
+percentages under `percent_base = "valid"` unless `levels_keep` hides a
+level. Under `drop_na = TRUE`, they equal `nobs` and `weighted_nobs`.
 
 `n_levels` counts the levels the TABLE displays, so a `(Missing)`
 display level counts; the test behind `p.value` runs on the complete

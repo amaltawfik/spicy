@@ -158,8 +158,8 @@ spicy_print_table(
   Optional list of column group rows inside the body (see
   [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)),
   in the columns of `x`. When the table splits into stacked panels, each
-  panel repeats a label over the columns of its group it holds. Defaults
-  to `NULL`.
+  panel repeats a label (or its `text`) over the columns of its group it
+  holds. Defaults to `NULL`.
 
 - blank_row_groups:
 

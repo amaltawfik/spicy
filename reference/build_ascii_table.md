@@ -141,7 +141,12 @@ build_ascii_table(
   row is drawn as the spanner row is: each label centered over its
   columns, a thin rule under them. Its cells should be blank. Used by
   [`print.spicy_stack_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_stack_table.md)
-  for the column groups of a panel's own header. Defaults to `NULL`.
+  for the column groups of a panel's own header. An entry may also carry
+  `text`, a character vector named like `spans` printed in place of
+  their names (and widening their columns as `whole_spanners` does), and
+  `rule = FALSE`, which leaves out the rule: the Outcome row of
+  [`print.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md).
+  Defaults to `NULL`.
 
 - whole_spanners:
 

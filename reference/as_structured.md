@@ -87,8 +87,9 @@ This is the right entry point for users who want to:
   fit-statistic row.
 
 - `body$.level` – the factor level (or the absorbed factor of a
-  fixed-effects block, or the grouping factor of an `"N (...)"` row);
-  `NA` outside a factor.
+  fixed-effects block, or the grouping factor of an `"N (...)"` row, or
+  the outcome category of a multinomial model's row under the header of
+  its term); `NA` outside a factor.
 
 - `body$.row_role` – what the row *is*: `"coef"`, `"factor_header"`,
   `"level"`, `"reference"`, `"fit_stat"`, `"outcome"`, `"vc"` (variance

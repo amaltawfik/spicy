@@ -186,7 +186,10 @@
   gains too. In
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   `weighted_nobs` sums the weights of each variable’s own rows, no
-  longer those of the design.
+  longer those of the design. Both tables gain `nobs_valid` and
+  `weighted_nobs_valid`, the rows with an observed value and their
+  weights: the `(Missing)` row that `nobs` and `weighted_nobs` count is
+  left out.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md):
@@ -509,6 +512,15 @@
   the standardized coefficients at a dispersion of 1, as the fit itself
   is tested. Their standard errors were scaled by the Pearson dispersion
   of the refit, and their p-values could be far too small.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  refuse a survey design with an error of class `spicy_wrong_regime`
+  that points to
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  as the other plain tables do. A design used to stop them with an R
+  error about a missing object, and `cross_tab(design, "x", "y")`
+  returned a meaningless one-cell table.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   writes the chi-squared statistic of its note with the symbol,
@@ -838,7 +850,9 @@
   (models named in the list or by `model_labels`, or an outcome that
   several of them share) get an “Outcome” row, as in the table of fit
   statistics alone. The outcomes appeared nowhere.
-  `outcome_labels = FALSE` removes the row.
+  `outcome_labels = FALSE` removes the row. The console prints each
+  outcome across the columns of its model, without widening the first of
+  them.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   in French: a table of models of several families words its title and
@@ -855,6 +869,10 @@
   (“Upper secondary: Male”).
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
   `output = "long"` keep the prefixed terms.
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives
+  the category in `level`, and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  reaches these rows by it.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and

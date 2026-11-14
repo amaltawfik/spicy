@@ -40,7 +40,10 @@ freq(
 
   A `data.frame`, vector, or factor. If a data frame is provided,
   specify the target variable `x`. If both `data` and `x` are supplied
-  as vectors, `data` is ignored with a warning.
+  as vectors, `data` is ignored with a warning. A survey design is
+  refused (class `spicy_wrong_regime`):
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  estimates the distribution of a variable under the design.
 
 - x:
 

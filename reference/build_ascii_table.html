@@ -223,7 +223,10 @@ body, each a list with <code>row</code> (the row index) and <code>spans</code> (
 list like <code>spanners</code>). The row is drawn as the spanner row is: each
 label centered over its columns, a thin rule under them. Its cells
 should be blank. Used by <code><a href="print.spicy_stack_table.html">print.spicy_stack_table()</a></code> for the column
-groups of a panel's own header. Defaults to <code>NULL</code>.</p></dd>
+groups of a panel's own header. An entry may also carry <code>text</code>, a
+character vector named like <code>spans</code> printed in place of their names
+(and widening their columns as <code>whole_spanners</code> does), and <code>rule = FALSE</code>, which leaves out the rule: the Outcome row of
+<code><a href="print.spicy_regression_table.html">print.spicy_regression_table()</a></code>. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-whole-spanners">whole_spanners<a class="anchor" aria-label="anchor" href="#arg-whole-spanners"></a></dt>
