@@ -210,6 +210,71 @@ test_that("a weighted binary lrm gives the R2 of its expanded data", {
   expect_equal(rows(w_lrm)[2L], unname(w_lrm$stats[["R2"]]), tolerance = 1e-12)
 })
 
+test_that("a binary lrm has the Tjur's R2 of its glm twin", {
+  skip_if_not_installed("rms")
+  set.seed(12)
+  d <- data.frame(x = rnorm(150), w = runif(150, 0.2, 3), o = rnorm(150))
+  d$y <- factor(rbinom(150, 1, plogis(0.2 + d$x)), labels = c("no", "yes"))
+  tjur_of <- function(fit) {
+    df <- table_regression(
+      fit,
+      show_fit_stats = "pseudo_r2_tjur",
+      output = "data.frame"
+    )
+    df[["B"]][df$.row_role == "fit_stat"]
+  }
+  tjur_glm <- function(fit) spicy:::compute_pseudo_r2_tjur(fit)
+  # The response from the model frame, from `y = TRUE`, with weights and
+  # with an offset, which rms leaves out of its linear predictors.
+  twin <- glm(y ~ x, binomial, d, control = ctl)
+  expect_equal(tjur_of(rms::lrm(y ~ x, d)), tjur_glm(twin), tolerance = 1e-10)
+  expect_equal(
+    tjur_of(rms::lrm(y ~ x, d, y = TRUE)),
+    tjur_glm(twin),
+    tolerance = 1e-10
+  )
+  w_twin <- suppressWarnings(glm(
+    y ~ x,
+    binomial,
+    d,
+    weights = w,
+    control = ctl
+  ))
+  expect_equal(
+    tjur_of(suppressWarnings(rms::lrm(y ~ x, d, weights = w))),
+    tjur_glm(w_twin),
+    tolerance = 1e-10
+  )
+  o_twin <- glm(y ~ x + offset(o), binomial, d, control = ctl)
+  expect_equal(
+    tjur_of(rms::lrm(y ~ x + offset(o), d)),
+    tjur_glm(o_twin),
+    tolerance = 1e-10
+  )
+  # Without its data and without `y = TRUE`, no default row and a dash.
+  dd <- d
+  gone <- rms::lrm(y ~ x, dd)
+  rm(dd)
+  df <- table_regression(gone, output = "data.frame")
+  expect_false("pseudo_r2_tjur" %in% df$variable)
+  both <- table_regression(
+    list(gone, twin),
+    show_fit_stats = "pseudo_r2_tjur",
+    output = "data.frame"
+  )
+  tj <- unlist(both[
+    both$variable == "pseudo_r2_tjur",
+    c("Model 1: B", "Model 2: B")
+  ])
+  expect_identical(is.na(unname(tj)), c(TRUE, FALSE))
+  # An ordinal lrm keeps McFadden's alone and refuses Tjur's.
+  d$ord <- cut(d$x, 3, labels = c("a", "b", "c"), ordered_result = TRUE)
+  expect_error(
+    table_regression(rms::lrm(ord ~ x, d), show_fit_stats = "pseudo_r2_tjur"),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("Tjur keeps its sign: a fixed offset can make it negative", {
   set.seed(3)
   d <- data.frame(x = rnorm(200))

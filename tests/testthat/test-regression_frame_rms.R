@@ -854,18 +854,18 @@ test_that("a binary lrm carries the fit statistics of a binomial glm", {
     tolerance = 1e-6
   )
   expect_equal(fs$deviance, stats::deviance(g), tolerance = 1e-6)
-  # The default fit block of an lrm is n, McFadden and AIC; the glm twin
-  # adds Tjur's R2 before McFadden's. The shared rows carry the same values.
+  # The default fit block of a binary lrm is its glm twin's: n, Tjur's R2,
+  # McFadden's and AIC, with the same values.
   fl <- table_regression(fit, output = "data.frame")
   fg <- table_regression(g, output = "data.frame")
   sl <- fl[fl$.row_role == "fit_stat", ]
   sg <- fg[fg$.row_role == "fit_stat", ]
-  expect_identical(sl$variable, c("nobs", "pseudo_r2_mcfadden", "aic"))
   expect_identical(
-    sg$variable,
+    sl$variable,
     c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")
   )
-  expect_equal(sl$B, sg$B[sg$variable != "pseudo_r2_tjur"], tolerance = 1e-6)
+  expect_identical(sl$variable, sg$variable)
+  expect_equal(sl$B, sg$B, tolerance = 1e-6)
   # With an offset the null model carries it, as glm's null deviance does.
   set.seed(11)
   d$off <- stats::rnorm(nrow(d), 0, 0.5)
@@ -1031,7 +1031,6 @@ test_that("an lrm factor level shares its row with a glm twin and its AME", {
   dg <- table_regression(
     g,
     show_columns = c("b", "ame"),
-    show_fit_stats = c("nobs", "pseudo_r2_mcfadden", "aic"),
     output = "data.frame"
   )
   expect_identical(

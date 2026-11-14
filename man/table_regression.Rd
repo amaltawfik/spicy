@@ -474,9 +474,10 @@ token order. \code{NULL} (default) resolves class-aware:
 and an IV \code{fixest::feols()} neither R-squared nor AIC -- the
 2SLS R-squared is not the classical one. Asked for, it is
 the R-squared of \code{ivreg()}, on the structural residuals.
-\item a logit on a binary outcome: \code{c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")}.
+\item a logit on a binary outcome (\code{glm} or binary \code{rms::lrm}):
+\code{c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")}.
 \item the other binomial, Poisson and negative binomial \code{glm}
-fits, \code{polr}, \code{clm}, \code{multinom}, \code{rms::lrm}: \code{c("nobs", "pseudo_r2_mcfadden", "aic")}.
+fits, \code{polr}, \code{clm}, \code{multinom}, ordinal \code{rms::lrm}: \code{c("nobs", "pseudo_r2_mcfadden", "aic")}.
 \item gaussian, Gamma, inverse Gaussian and Tweedie \code{glm} fits:
 \code{c("nobs", "r2_deviance", "aic")}.
 \item mixed \code{lm} + \code{glm}: the union of the two (the
@@ -1359,13 +1360,17 @@ and keeps the theta of the fitted model in the deviance
 shows the rows of its family:
 
 \itemize{
-\item A logit on a binary outcome (0/1, a factor or a logical):
-Tjur's \eqn{R^2}{R^2}, then McFadden's. Tjur's reads on the scale
-of the predicted probabilities; McFadden's cannot decrease when a
-predictor is added.
+\item A logit on a binary outcome (0/1, a factor or a logical), a
+\code{glm()} or a binary \code{rms::lrm()}: Tjur's \eqn{R^2}{R^2}, then
+McFadden's. Tjur's reads on the scale of the predicted
+probabilities; McFadden's cannot decrease when a predictor is
+added. An \code{lrm} fitted without \code{y = TRUE} reads its outcome from
+the data, as a \code{glm()} does; when the data are gone, its Tjur's
+cell is a dash and the row leaves its default.
 \item The other binomial models (probit, cloglog, a grouped
 response), Poisson and negative binomial models, \code{polr()},
-\code{clm()}, \code{multinom()} and \code{rms::lrm()}: McFadden's \eqn{R^2}{R^2},
+\code{clm()}, \code{multinom()} and an ordinal \code{rms::lrm()}: McFadden's
+\eqn{R^2}{R^2},
 which depends less than Cox and Snell's or Nagelkerke's on the
 proportion of events (Menard 2000) and is the Pseudo R2 of Stata's
 estimation output (Long & Freese 2014, p. 126).

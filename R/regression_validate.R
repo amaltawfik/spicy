@@ -2692,13 +2692,19 @@ validate_class_appropriate_tokens <- function(
         },
         logical(1)
       )
-    if (!any(is_binom_glm)) {
+    # A binary rms::lrm, the logit its glm twin is.
+    is_binary_lrm <- vapply(
+      eff_models,
+      function(m) inherits(m, "lrm") && length(.lrm_levels(m)) == 2L,
+      logical(1)
+    )
+    if (!any(is_binom_glm | is_binary_lrm)) {
       spicy_abort(
         c(
           paste0(
             "Token 'pseudo_r2_tjur' in `show_fit_stats` is defined only ",
             "for binomial models (binary outcomes), and no model in the ",
-            "set is a binomial-family `glm`."
+            "set is a binomial-family `glm` or a binary `rms::lrm()`."
           ),
           "i" = paste0(
             "Tjur's R\u00B2 (2009) is mean(fitted | y = 1) - ",

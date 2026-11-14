@@ -147,12 +147,12 @@
   and 7 degrees of freedom.
 
 * `table_regression()`: the default R-squared rows follow the family of
-  the model. A logit on a binary outcome shows Tjur's R-squared, then
-  McFadden's. Probit and cloglog models, grouped binomial responses,
-  Poisson, negative binomial, `polr()`, `clm()`, `multinom()` and
-  `rms::lrm()` models show McFadden's alone. Nagelkerke's R-squared
-  leaves the defaults; `show_fit_stats = "pseudo_r2_nagelkerke"` still
-  shows it.
+  the model. A logit on a binary outcome, `glm()` or `rms::lrm()`, shows
+  Tjur's R-squared, then McFadden's. Probit and cloglog models, grouped
+  binomial responses, Poisson, negative binomial, `polr()`, `clm()`,
+  `multinom()` and ordinal `rms::lrm()` models show McFadden's alone.
+  Nagelkerke's R-squared leaves the defaults;
+  `show_fit_stats = "pseudo_r2_nagelkerke"` still shows it.
 
 * `table_regression()` computes the pseudo-R-squared of a binomial model
   on its trials, so the same data give the same values whatever their

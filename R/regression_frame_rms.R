@@ -755,6 +755,32 @@ as_regression_frame.Glm <- function(
   as.character(fit$yunique %||% names(fit$freq))
 }
 
+# Tjur's R^2 of a binary lrm, as its glm twin computes it: the event is
+# the higher level (rms models P(Y >= y[2])), the probabilities those of
+# its linear predictors plus its offset, which rms leaves out of them, the
+# means weighted by its weights. The response is fit$y under `y = TRUE`,
+# else the model frame's, which re-reads the data as glm's does; NA when
+# the data are not there, and for an ordinal lrm.
+.lrm_tjur <- function(fit) {
+  lev <- .lrm_levels(fit)
+  lp <- fit$linear.predictors
+  if (length(lev) != 2L || is.null(lp)) {
+    return(NA_real_)
+  }
+  has_offset <- !is.null(attr(stats::terms(fit), "offset"))
+  mf <- if (is.null(fit$y) || has_offset) {
+    tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  }
+  y <- fit$y %||% if (!is.null(mf)) stats::model.response(mf)
+  off <- if (has_offset && !is.null(mf)) stats::model.offset(mf)
+  if (is.null(y) || length(y) != length(lp) || (has_offset && is.null(off))) {
+    return(NA_real_)
+  }
+  w <- fit$weights %||% rep(1, length(lp))
+  p <- stats::plogis(lp + (off %||% 0))
+  .tjur_d(as.numeric(as.character(y) == lev[2L]), w, p)
+}
+
 
 # The term of the row of each rms coefficient name, in lm's spelling:
 # "(Intercept)" for "Intercept", "smokeyes" for "smoke=yes" (the first
@@ -984,6 +1010,7 @@ as_regression_frame.Glm <- function(
       ),
       pseudo_r2_mcfadden = 1 - dev_fit / dev_null,
       pseudo_r2_nagelkerke = nagelkerke,
+      pseudo_r2_tjur = .lrm_tjur(fit),
       aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
       bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
       log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {

@@ -65,6 +65,7 @@ test_that("the default R-squared rows follow the family of each class", {
     fs_tokens(rms::Glm(y ~ x, family = binomial, data = d)),
     tjur_mcf
   )
+  expect_identical(fs_tokens(rms::lrm(y ~ x, d)), tjur_mcf)
   # McFadden alone: the other links, the grouped forms, the counts and
   # the categorical families.
   expect_identical(fs_tokens(glm(y ~ x, binomial("probit"), d)), mcf)
@@ -79,7 +80,6 @@ test_that("the default R-squared rows follow the family of each class", {
   expect_identical(fs_tokens(MASS::polr(ord ~ x, d, Hess = TRUE)), mcf)
   expect_identical(fs_tokens(ordinal::clm(ord ~ x, data = d)), mcf)
   expect_identical(fs_tokens(nnet::multinom(mn ~ x, d, trace = FALSE)), mcf)
-  expect_identical(fs_tokens(rms::lrm(y ~ x, d)), mcf)
   expect_identical(fs_tokens(rms::lrm(ord ~ x, d)), mcf)
   # No likelihood, no pseudo-R-squared.
   expect_identical(fs_tokens(glm(cnt ~ x, quasipoisson, d)), "nobs")

@@ -385,13 +385,17 @@
 #' shows the rows of its family:
 #'
 #' \itemize{
-#'   \item A logit on a binary outcome (0/1, a factor or a logical):
-#'     Tjur's \eqn{R^2}{R^2}, then McFadden's. Tjur's reads on the scale
-#'     of the predicted probabilities; McFadden's cannot decrease when a
-#'     predictor is added.
+#'   \item A logit on a binary outcome (0/1, a factor or a logical), a
+#'     `glm()` or a binary `rms::lrm()`: Tjur's \eqn{R^2}{R^2}, then
+#'     McFadden's. Tjur's reads on the scale of the predicted
+#'     probabilities; McFadden's cannot decrease when a predictor is
+#'     added. An `lrm` fitted without `y = TRUE` reads its outcome from
+#'     the data, as a `glm()` does; when the data are gone, its Tjur's
+#'     cell is a dash and the row leaves its default.
 #'   \item The other binomial models (probit, cloglog, a grouped
 #'     response), Poisson and negative binomial models, `polr()`,
-#'     `clm()`, `multinom()` and `rms::lrm()`: McFadden's \eqn{R^2}{R^2},
+#'     `clm()`, `multinom()` and an ordinal `rms::lrm()`: McFadden's
+#'     \eqn{R^2}{R^2},
 #'     which depends less than Cox and Snell's or Nagelkerke's on the
 #'     proportion of events (Menard 2000) and is the Pseudo R2 of Stata's
 #'     estimation output (Long & Freese 2014, p. 126).
@@ -1525,10 +1529,10 @@
 #'       and an IV `fixest::feols()` neither R-squared nor AIC -- the
 #'       2SLS R-squared is not the classical one. Asked for, it is
 #'       the R-squared of `ivreg()`, on the structural residuals.
-#'     \item a logit on a binary outcome: `c("nobs", "pseudo_r2_tjur",
-#'       "pseudo_r2_mcfadden", "aic")`.
+#'     \item a logit on a binary outcome (`glm` or binary `rms::lrm`):
+#'       `c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")`.
 #'     \item the other binomial, Poisson and negative binomial `glm`
-#'       fits, `polr`, `clm`, `multinom`, `rms::lrm`: `c("nobs",
+#'       fits, `polr`, `clm`, `multinom`, ordinal `rms::lrm`: `c("nobs",
 #'       "pseudo_r2_mcfadden", "aic")`.
 #'     \item gaussian, Gamma, inverse Gaussian and Tweedie `glm` fits:
 #'       `c("nobs", "r2_deviance", "aic")`.

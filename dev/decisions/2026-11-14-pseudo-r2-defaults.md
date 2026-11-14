@@ -207,7 +207,8 @@ performance 0.19.0, DescTools 0.99.60, pscl 1.5.9, rms 8.2.1, MASS
 1. Défauts. Un logit sur une réponse binaire (0/1, facteur ou logique,
    avec ou sans poids) affiche Tjur puis McFadden. Les autres binomiaux
    (probit, cloglog, réponse groupée), Poisson, la binomiale négative,
-   `polr`, `clm`, `multinom` et `rms::lrm` affichent McFadden seul.
+   `polr`, `clm`, `multinom` et `rms::lrm` affichent McFadden seul
+   (pour `rms::lrm`, seulement l'ordinal depuis l'amendement ci-dessous).
    `rms::Glm` suit son jumeau `glm`, et Tjur lui est désormais calculé.
    Nagelkerke quitte le défaut et reste un jeton. Les classes sans
    pseudo-R² par défaut (mixtes, `svyglm`, `coxph`, `survreg`,
@@ -217,6 +218,15 @@ performance 0.19.0, DescTools 0.99.60, pscl 1.5.9, rms 8.2.1, MASS
    mesure n'est pas définie pour son modèle et la valeur quand elle
    l'est, même hors du défaut de ce modèle : le Tjur d'un probit voisin
    d'un logit, le R² de déviance d'un Poisson voisin d'une Gamma.
+
+   Amendé le 2026-11-14 (lot restes). Le `rms::lrm` binaire suit son
+   jumeau `glm` : Tjur puis McFadden par défaut, Tjur pondéré par ses
+   poids et calculé sur ses prédicteurs linéaires plus l'offset, que rms
+   en exclut. La réponse vient de `fit$y` sous `y = TRUE`, sinon du
+   cadre du modèle, que `model.frame()` relit dans les données comme
+   pour le `glm`. Sans l'une ni l'autre, la cellule porte le tiret et la
+   ligne quitte le défaut. Le `lrm` ordinal garde McFadden seul et
+   refuse Tjur.
 2. Essais individuels. Pour un binomial, McFadden, Cox-Snell et
    Nagelkerke sont calculés sur la vraisemblance de Bernoulli des
    essais, avec n le nombre total d'essais (la somme des poids a

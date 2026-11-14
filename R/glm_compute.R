@@ -296,7 +296,8 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # (dev/decisions/2026-11-14-pseudo-r2-defaults.md): Tjur's then McFadden's
 # for a logit on a binary response, McFadden's alone for the other
 # binomial fits (probit, cloglog, grouped responses), Poisson and negative
-# binomial, and rms::lrm, the deviance R^2 for the continuous families.
+# binomial, and an ordinal rms::lrm, the deviance R^2 for the continuous
+# families. A binary lrm reads as its glm twin.
 # `models` are the glm-class fits of the table; the result is the union
 # of their rows, in that order. mgcv's gam inherits glm but has its own
 # frame and no R^2 row; quasi families have no likelihood, and no
@@ -310,7 +311,12 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   if (inherits(fit, "gam")) {
     return(character(0))
   }
+  # A binary lrm is a logit on a binary outcome, as its glm twin; Tjur's
+  # row needs its response (`.lrm_tjur()`).
   if (inherits(fit, "lrm")) {
+    if (is.finite(.lrm_tjur(fit))) {
+      return(c("pseudo_r2_tjur", "pseudo_r2_mcfadden"))
+    }
     return("pseudo_r2_mcfadden")
   }
   if (inherits(fit, "Glm")) {
@@ -719,12 +725,18 @@ compute_pseudo_r2_tjur <- function(fit) {
     return(NA_real_)
   }
   tr <- .glm_bernoulli_trials(fit)
-  s1 <- sum(tr$m * tr$y)
-  s0 <- sum(tr$m * (1 - tr$y))
+  .tjur_d(tr$y, tr$m, tr$p)
+}
+
+# Tjur's D from the proportions of successes y, the trials m and the
+# fitted probabilities p of the rows; NA without both outcomes.
+.tjur_d <- function(y, m, p) {
+  s1 <- sum(m * y)
+  s0 <- sum(m * (1 - y))
   if (!(s1 > 0 && s0 > 0)) {
     return(NA_real_)
   }
-  sum(tr$m * tr$y * tr$p) / s1 - sum(tr$m * (1 - tr$y) * tr$p) / s0
+  sum(m * y * p) / s1 - sum(m * (1 - y) * p) / s0
 }
 
 
