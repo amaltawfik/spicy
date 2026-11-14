@@ -571,7 +571,9 @@ options</em>):</p>
 <p>When all models share the same DV, the DV appears in the title. Use a
 named list — e.g. <code>list(Crude = m1, Adjusted = m2)</code> — to set
 the spanner labels explicitly; pass <code>model_labels = c(...)</code>
-to override the names from the list.</p>
+to override the names from the list. When such labels replace the names
+of different DVs, an “Outcome” row says which model has which
+(<code>outcome_labels = FALSE</code> removes it).</p>
 </div>
 <div class="section level2">
 <h2 id="models-one-under-the-other">Models one under the other<a class="anchor" aria-label="anchor" href="#models-one-under-the-other"></a>

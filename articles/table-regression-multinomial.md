@@ -639,8 +639,10 @@ mis-scales the sandwich for mlogit’s per-choice-situation scores.
 Multinomial fits can be compared like fits of any other model class —
 here the education gradient before and after adjustment. With several
 models the column groups are needed for the *models*, so the table falls
-back to the one-row-per-comparison layout (`Student: Tertiary` rows), as
-does `nested = TRUE` above:
+back to the one-row-per-comparison layout, as does `nested = TRUE`
+above. Under the header of a term, a row is named by its outcome
+category (`Student` under `age:`), and a factor level keeps both
+(`Student: Tertiary`):
 
 ``` r
 
