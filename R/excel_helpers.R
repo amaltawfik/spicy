@@ -109,3 +109,148 @@
     )
   })
 }
+
+# ---- Number cells ----------------------------------------------------------
+# One rule for every Excel export. A body cell that shows one number is a
+# number, under a format that shows exactly the console's text; any other
+# cell is the console's text. The decimal mark is the reader's: a number
+# shows the separator of the machine that opens the sheet, and only a
+# text cell keeps the mark the table was asked for.
+
+# A number format as the console's text shows it: `d` decimals, the
+# leading zero (dropped below 1 in the APA style), an explicit sign (the
+# difference of a nested comparison) and a literal suffix (the degrees of
+# freedom of a test). `.excel_numfmt()` writes its code.
+.xl_spec <- function(d, lead_zero = TRUE, signed = FALSE, suffix = NULL) {
+  d <- suppressWarnings(as.integer(d))
+  if (length(d) != 1L || is.na(d) || d < 0L) {
+    d <- 0L
+  }
+  if (length(suffix) != 1L || !nzchar(suffix)) {
+    suffix <- NULL
+  }
+  apa <- if (!isTRUE(lead_zero) && d > 0L) "apa"
+  list(decimals = d, apa = apa, signed = isTRUE(signed), suffix = suffix)
+}
+
+.xl_numfmt <- function(s) .excel_numfmt(s$decimals, s$apa, s$signed, s$suffix)
+
+# The text Excel shows for `x` under the format `spec`. Excel reads the
+# value at 15 significant digits and rounds it half away from zero, where
+# R rounds the binary value (2.675 shows "2.68" in Excel, "2.67" in R); a
+# value that rounds to zero loses its minus sign, except under a format
+# whose sections carry the sign. Checked against Excel 16.0 (build 20527)
+# on 2026-11-14, cell by cell (`test-excel_helpers.R`).
+.xl_shown <- function(x, spec) {
+  d <- spec$decimals
+  s <- sprintf("%.14e", abs(x))
+  digits <- paste0(substr(s, 1L, 1L), substr(s, 3L, 16L))
+  k <- as.integer(substring(s, 18L)) + 1L + d
+  n <- if (x == 0 || k < 0L) {
+    "0"
+  } else if (k >= 15L) {
+    paste0(digits, strrep("0", k - 15L))
+  } else {
+    up <- as.integer(substr(digits, k + 1L, k + 1L)) >= 5L
+    sprintf("%.0f", as.numeric(paste0("0", substr(digits, 1L, k))) + up)
+  }
+  n <- paste0(strrep("0", max(0L, d + 1L - nchar(n))), n)
+  int <- substr(n, 1L, nchar(n) - d)
+  if (!is.null(spec$apa) && !spec$signed && int == "0") {
+    int <- ""
+  }
+  out <- if (d > 0L) paste0(int, ".", substring(n, nchar(n) - d + 1L)) else int
+  minus <- x < 0 && (spec$signed || grepl("[1-9]", n))
+  pre <- if (minus) {
+    "-"
+  } else if (spec$signed && x > 0) {
+    "+"
+  } else {
+    ""
+  }
+  paste0(pre, out, spec$suffix)
+}
+
+# How one body cell is written: `NULL` for a blank cell (nothing is
+# written), `list(value, numfmt)` for a number, `list(text)` otherwise.
+# The number is the typed `value` when Excel shows it as the console does,
+# else the value the console shows (half way between two displays: 6.25
+# printed "6.2"). The format is the column's (`spec`) when it shows the
+# console's text, else the one the text shows. "<.001", "3.40e+07",
+# "12.3 (4.5)" or a dash are text.
+.xl_cell <- function(text, value = NA_real_, spec = NULL, mark = ".") {
+  if (is.na(text) || !nzchar(trimws(text))) {
+    return(NULL)
+  }
+  shown <- gsub(mark, ".", trimws(text), fixed = TRUE)
+  core <- shown
+  suffix <- NULL
+  if (!is.null(spec$suffix) && endsWith(shown, spec$suffix)) {
+    core <- substr(shown, 1L, nchar(shown) - nchar(spec$suffix))
+    suffix <- spec$suffix
+  }
+  m <- regmatches(core, regexec("^([+-]?)([0-9]*)(\\.[0-9]+)?$", core))[[1L]]
+  if (length(m) == 0L || !nzchar(paste0(m[[3L]], m[[4L]]))) {
+    return(list(text = text))
+  }
+  d <- max(0L, nchar(m[[4L]]) - 1L)
+  read <- .xl_spec(d, nzchar(m[[3L]]), m[[2L]] == "+", suffix)
+  for (v in c(value, as.numeric(core))) {
+    for (s in list(spec, read)) {
+      if (!is.null(s) && is.finite(v) && identical(.xl_shown(v, s), shown)) {
+        return(list(value = v, numfmt = .xl_numfmt(s)))
+      }
+    }
+  }
+  list(text = text)
+}
+
+# Write the cells of a column that `.xl_cell()` makes numbers, in runs of
+# one format, from row `at[1]` of column `at[2]`; with `text_too`, its
+# text cells as well. `value` holds the typed values (NA where none),
+# `spec` one format or one per row.
+.xl_col <- function(wb, text, value, spec, at, mark = ".", text_too = FALSE) {
+  n <- length(text)
+  value <- rep_len(as.numeric(value %||% NA_real_), n)
+  if (is.null(spec) || !is.null(spec$decimals)) {
+    spec <- rep(list(spec), n)
+  }
+  cells <- lapply(seq_len(n), function(i) {
+    .xl_cell(text[[i]], value[[i]], spec[[i]], mark)
+  })
+  fmt <- vapply(cells, function(x) x$numfmt %||% NA_character_, "")
+  runs <- rle(fmt)
+  end <- cumsum(runs$lengths)
+  for (r in which(!is.na(runs$values))) {
+    rows <- seq.int(end[[r]] - runs$lengths[[r]] + 1L, end[[r]])
+    dims <- openxlsx2::wb_dims(rows = at[[1L]] + rows - 1L, cols = at[[2L]])
+    x <- vapply(cells[rows], `[[`, numeric(1), "value")
+    wb <- openxlsx2::wb_add_data(wb, x = x, dims = dims)
+    wb <- openxlsx2::wb_add_numfmt(wb, dims = dims, numfmt = fmt[[rows[[1L]]]])
+  }
+  is_text <- !vapply(cells, function(x) is.null(x$text), NA)
+  for (i in which(text_too & is_text)) {
+    dims <- openxlsx2::wb_dims(rows = at[[1L]] + i - 1L, cols = at[[2L]])
+    wb <- .spicy_xl_add_data(wb, x = cells[[i]]$text, dims = dims)
+  }
+  wb
+}
+
+# The number cells of a descriptive body already in the sheet as text,
+# from row `row`: each column after the `stub` ones, its typed values and
+# format from the structured view (`keys` the frozen keys of `text_df`).
+.xl_body <- function(wb, text_df, keys, structured, row, stub, mark = ".") {
+  body <- structured$body
+  for (j in setdiff(seq_along(text_df), seq_len(stub))) {
+    meta <- structured$col_meta[[keys[[j]]]]
+    value <- if (NROW(body) == nrow(text_df)) body[[keys[[j]]]]
+    spec <- if (!is.null(meta$precision)) {
+      .xl_spec(meta$precision, !identical(meta$p_style, "apa"))
+    }
+    if (!is.numeric(value)) {
+      value <- NULL
+    }
+    wb <- .xl_col(wb, as.character(text_df[[j]]), value, spec, c(row, j), mark)
+  }
+  wb
+}
