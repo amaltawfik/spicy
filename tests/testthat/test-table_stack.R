@@ -2255,6 +2255,23 @@ test_that("a stack builds each panel once, its messages given once", {
   expect_false("outcome" %in% attr(st, "structured")$body$.row_role)
 })
 
+test_that("the Outcome row added to a built table is the one its build gives", {
+  skip_on_cran()
+  f <- .st_lm()
+  g <- .st_glm()
+  for (a in list(
+    list(f, stars = TRUE, p_adjust = "holm"),
+    list(g, show_columns = c("n_events", "b", "p")),
+    list(f, show_columns = c("b", "p", "partial_f")),
+    list(f, show_columns = "none")
+  )) {
+    expect_identical(
+      spicy:::.reg_add_outcome_row(do.call(table_regression, a), "Label"),
+      do.call(table_regression, c(a, outcome_labels = "Label"))
+    )
+  }
+})
+
 test_that("table_stack() opens its panels on an Outcome row by the same rule", {
   skip_on_cran()
   rows <- function(st) {
