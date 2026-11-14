@@ -276,6 +276,18 @@ performance 0.19.0, DescTools 0.99.60, pscl 1.5.9, rms 8.2.1, MASS
    son modèle nul avec le θ mis à jour, d'où le même écart de
    convergence.
 
+   Amendé le 2026-11-14 (lot restes). McFadden et Nagelkerke d'un
+   `MASS::glm.nb` prennent le modèle nul à θ réestimé,
+   `MASS::glm.nb(y ~ 1)` avec les poids et l'offset du modèle. C'est le
+   modèle nul du test du rapport de vraisemblance, celui de Stata, de
+   pscl et de DescTools (Pratiques des logiciels). Le modèle nul à θ fixé
+   n'est pas un maximum de vraisemblance sous contrainte. Sa
+   log-vraisemblance est toujours plus basse, ce qui gonflait McFadden
+   (0,00967 contre 0,00935 sur `MASS::quine`, `Days ~ Sex + Age`).
+   Le R² de déviance garde le θ du modèle complet. Un `glm()` avec
+   `negative.binomial(θ)` garde son θ, qui n'est pas estimé. Si le
+   réajustement du modèle nul échoue, les deux mesures valent NA.
+
    Les familles quasi ont une déviance sans vraisemblance. Le R² de
    déviance leur est offert en option, pas au défaut. Pour le binomial,
    le R² de déviance sur les essais égale McFadden (l(y;y) = 0, p. 333 et
@@ -332,14 +344,27 @@ d'utilisateur pour Horowitz ou Cox-Snell en jeton.
 - R : performance::r2() donne Tjur pour un logit et Nagelkerke pour le
   probit, Poisson et Gamma (vérifié avec la 0.19.0). rms::lrm imprime
   Nagelkerke (Harrell p. 206-207).
+- Binomiale négative, modèle nul de McFadden (vérifié le 2026-11-14).
+  Le manuel [R] maximize de Stata définit L0 comme la log-vraisemblance
+  du « constant-only model ». L'exemple de [R] nbreg (données rod93,
+  `nbreg deaths i.cohort, offset(logexp)`) imprime LR chi2(2) = 0.40,
+  que l'on retrouve avec α réestimé (0,4039) et pas avec θ fixé
+  (0,4066). `pscl::pR2` 1.5.9 réajuste par `update(object, ~1)`,
+  `performance::r2_mcfadden` 0.19.0 par `insight::null_model()` et
+  `DescTools::PseudoR2` 0.99.60 en reconstruisant l'appel
+  `glm.nb(y ~ 1)` : tous trois réestiment θ. Le Nagelkerke de
+  performance prend les déviances à θ fixé et le maximum
+  1 − exp(−D₀/n), qui n'est pas celui de Nagelkerke (0,101 contre 0,069
+  sur `MASS::quine`).
 
 ## Garde
 
 `tests/testthat/test-pseudo_r2.R` : oracles sur les données développées
 (`cbind`, proportion pondérée, lignes 0/1 pondérées par des effectifs),
 poids non entiers (formule pondérée, invariance à l'échelle), Poisson,
-binomiale négative, `multinom` et `lrm` pondérés, signe de Tjur avec un
-offset, `na.exclude`, `y = FALSE`, R² de déviance
+binomiale négative, `multinom` et `lrm` pondérés, modèle nul de
+`glm.nb` à θ réestimé (pscl, DescTools, exemple rod93 de Stata), signe
+de Tjur avec un offset, `na.exclude`, `y = FALSE`, R² de déviance
 (`1 - deviance/null.deviance`, invariance d'unité, `glm.nb`, quasi,
 Tweedie, gaussienne égale au R² de `lm()`), refus classés.
 `tests/testthat/test-fit-stats-defaults.R` : les lignes par défaut de

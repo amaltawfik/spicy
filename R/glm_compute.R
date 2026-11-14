@@ -491,10 +491,14 @@ compute_pseudo_r2_glm <- function(fit) {
     ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
       NA_real_ # nocov: logLik() of a Poisson or negative binomial glm
     })
-    ll_null <- tryCatch(
-      as.numeric(stats::logLik(null_fit)),
-      error = function(e) NA_real_ # nocov: as above
-    )
+    ll_null <- if (inherits(fit, "negbin")) {
+      .negbin_null_loglik(fit)
+    } else {
+      tryCatch(
+        as.numeric(stats::logLik(null_fit)),
+        error = function(e) NA_real_ # nocov: as above
+      )
+    }
     out[c("mcfadden", "nagelkerke")] <- .lr_pseudo_r2(
       ll_full,
       ll_null,
@@ -662,6 +666,40 @@ compute_r2_deviance <- function(fit) {
   tryCatch(
     suppressWarnings(do.call(stats::glm, args)),
     error = function(e) NULL
+  )
+}
+
+# The log-likelihood of the intercept-only model of a MASS::glm.nb fit,
+# theta re-estimated: the null model of the likelihood-ratio test, which
+# Stata's nbreg ("constant-only model"), pscl::pR2() and
+# DescTools::PseudoR2() fit. The response, prior weights and offset of
+# the fit; NA when the refit fails. A glm() with
+# negative.binomial(theta) keeps its theta, which is not estimated.
+.negbin_null_loglik <- function(fit) {
+  if (!spicy_pkg_available("MASS")) {
+    return(NA_real_) # nocov: a glm.nb fit needs MASS
+  }
+  tryCatch(
+    {
+      mf <- stats::model.frame(fit)
+      d <- data.frame(y = stats::model.response(mf), w = fit$prior.weights)
+      off <- stats::model.offset(mf)
+      d$off <- if (is.null(off)) 0 else off
+      # do.call(): glm.nb() substitutes `link`, which must arrive as the
+      # name of the link, not as an expression.
+      null <- suppressWarnings(do.call(
+        MASS::glm.nb,
+        list(
+          formula = y ~ 1 + offset(off),
+          data = d,
+          weights = d$w,
+          init.theta = fit$theta,
+          link = stats::family(fit)$link
+        )
+      ))
+      as.numeric(stats::logLik(null))
+    },
+    error = function(e) NA_real_
   )
 }
 

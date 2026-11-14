@@ -154,8 +154,8 @@ test_that("count weights of Poisson, negative binomial and multinom fits give n"
     cs <- 1 - exp(2 * (ll0 - ll1) / n)
     c(1 - ll1 / ll0, cs / (1 - exp(2 * ll0 / n)))
   }
-  # Without an offset, the intercept-only Poisson and negative binomial
-  # models (theta fixed at the fitted model's) predict the mean.
+  # Without an offset, the intercept-only Poisson model predicts the mean;
+  # the negative binomial one re-estimates its theta.
   pe <- glm(cnt ~ x, poisson, ex, control = ctl)
   expect_equal(
     nag(glm(cnt ~ x, poisson, d, weights = f, control = ctl)),
@@ -171,7 +171,7 @@ test_that("count weights of Poisson, negative binomial and multinom fits give n"
     nag(MASS::glm.nb(cnt ~ x, d, weights = f)),
     ll_oracle(
       as.numeric(logLik(ne)),
-      sum(dnbinom(ex$cnt, size = ne$theta, mu = mean(ex$cnt), log = TRUE)),
+      as.numeric(logLik(MASS::glm.nb(cnt ~ 1, ex))),
       nrow(ex)
     ),
     tolerance = 1e-6
@@ -349,6 +349,106 @@ test_that("the deviance R2 does not move with the unit of y; McFadden did", {
   # positive on another (Cameron & Windmeijer 1997, p. 333).
   expect_lt(min(mcf), 0)
   expect_gt(max(mcf), 0)
+})
+
+test_that("glm.nb: McFadden and Nagelkerke re-estimate theta in the null model", {
+  skip_if_not_installed("MASS")
+  fit <- MASS::glm.nb(Days ~ Sex + Age, data = MASS::quine)
+  null <- MASS::glm.nb(Days ~ 1, data = MASS::quine)
+  ll1 <- as.numeric(logLik(fit))
+  ll0 <- as.numeric(logLik(null))
+  n <- nrow(MASS::quine)
+  oracle <- c(
+    mcfadden = 1 - ll1 / ll0,
+    nagelkerke = (1 - exp(2 * (ll0 - ll1) / n)) / (1 - exp(2 * ll0 / n))
+  )
+  expect_equal(spicy_pr2(fit)[1:2], oracle, tolerance = 1e-8)
+  # DescTools::PseudoR2(fit, c("McFadden", "Nagelkerke")), DescTools
+  # 0.99.60, MASS 7.3-66.
+  expect_equal(
+    unname(spicy_pr2(fit)[1:2]),
+    c(0.009348189429, 0.069130512719),
+    tolerance = 1e-9
+  )
+  skip_if_not_installed("pscl")
+  utils::capture.output(p <- pscl::pR2(fit))
+  expect_equal(
+    unname(spicy_pr2(fit)[1:2]),
+    unname(p[c("McFadden", "r2CU")]),
+    tolerance = 1e-8
+  )
+})
+
+test_that("glm.nb: the likelihood-ratio statistic of Stata's nbreg example", {
+  skip_if_not_installed("MASS")
+  # [R] nbreg, the rod93 data (Rodriguez 1993): `nbreg deaths i.cohort,
+  # offset(logexp)` prints LR chi2(2) = 0.40 and Pseudo R2 = 0.0015.
+  d <- data.frame(
+    cohort = factor(rep(1:3, each = 7)),
+    deaths = c(
+      168,
+      48,
+      63,
+      89,
+      102,
+      81,
+      40,
+      197,
+      48,
+      62,
+      81,
+      97,
+      103,
+      39,
+      195,
+      55,
+      58,
+      85,
+      87,
+      70,
+      10
+    ),
+    exposure = c(
+      278.4,
+      538.8,
+      794.4,
+      1550.8,
+      3006,
+      8743.5,
+      14270,
+      403.2,
+      786,
+      1165.3,
+      2294.8,
+      4500.5,
+      13201.5,
+      19525,
+      495.3,
+      956.7,
+      1381.4,
+      2604.5,
+      4618.5,
+      9814.5,
+      5802.5
+    )
+  )
+  fit <- MASS::glm.nb(deaths ~ cohort + offset(log(exposure)), data = d)
+  mcf <- spicy:::compute_pseudo_r2_mcfadden(fit)
+  ll1 <- as.numeric(logLik(fit))
+  expect_equal(round(2 * (ll1 - ll1 / (1 - mcf)), 2), 0.40)
+  expect_equal(round(mcf, 4), 0.0015)
+  # theta fixed at the fitted model's would give 0.41.
+})
+
+test_that("glm.nb: a null model that cannot be refitted gives NA", {
+  skip_if_not_installed("MASS")
+  fit <- MASS::glm.nb(Days ~ Sex + Age, data = MASS::quine)
+  local_mocked_bindings(
+    glm.nb = function(...) stop("no fit"),
+    .package = "MASS"
+  )
+  expect_identical(unname(spicy_pr2(fit)[1:2]), c(NA_real_, NA_real_))
+  expect_false(is.na(spicy:::compute_r2_deviance(fit)))
 })
 
 test_that("glm.nb: both deviances take the theta of the fitted model", {

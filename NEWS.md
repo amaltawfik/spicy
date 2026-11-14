@@ -165,6 +165,12 @@
   weighted Poisson, negative binomial, `multinom()` and binary
   `rms::lrm()` models.
 
+* `table_regression()`: McFadden's and Nagelkerke's R-squared of a
+  `MASS::glm.nb()` fit compare it with an intercept-only model that
+  estimates its own theta, the null model of the likelihood-ratio test.
+  They used the theta of the fitted model, which gave higher values.
+  The deviance R-squared keeps that theta.
+
 * `table_regression()`: the gaussian, Gamma, inverse Gaussian and
   Tweedie families of `glm()` show the deviance R-squared by default
   and refuse `pseudo_r2_mcfadden` and `pseudo_r2_nagelkerke`, whose

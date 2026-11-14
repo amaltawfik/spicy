@@ -1352,7 +1352,11 @@ identity link it is the \eqn{R^2}{R^2} of \code{lm()}.
 }
 
 The intercept-only model keeps the offset and the weights of the
-fitted model. By default each model shows the rows of its family:
+fitted model. For a \code{MASS::glm.nb()} fit it re-estimates theta in
+McFadden's and Nagelkerke's \eqn{R^2}{R^2}, as Stata's \code{nbreg} does,
+and keeps the theta of the fitted model in the deviance
+\eqn{R^2}{R^2} (Cameron & Windmeijer 1997). By default each model
+shows the rows of its family:
 
 \itemize{
 \item A logit on a binary outcome (0/1, a factor or a logical):
