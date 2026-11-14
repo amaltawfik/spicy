@@ -2544,23 +2544,13 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       }
 
       # ---- Text overrides ------------------------------------------------
-      # `text_rows` flags the body rows of this column whose display
-      # string cannot be produced by a number plus a number format.
-      # Everything else stays a real number, so the workbook keeps its
-      # arithmetic value. The strings themselves always come from
-      # `txt_body` -- one formatter for every engine.
+      # `text_rows` flags the body rows of this column that are text
+      # whatever they print: a label, a mark, a composite. The others go
+      # through `.xl_col()` below. The strings themselves always come
+      # from `txt_body` -- one formatter for every engine.
       col_vals <- body[[j]]
       text_rows <- logical(nrow(body))
 
-      # (1) `decimal_mark`. Excel renders a numeric cell with the
-      #     VIEWER's locale separator, which the file cannot set: a
-      #     table asked for "," would show "65.07" next to its own
-      #     "<,001" text on a period-locale machine. When a non-default
-      #     mark is requested the body goes out as text, so the
-      #     requested convention holds in every locale.
-      if (!identical(format_spec$decimal_mark, ".")) {
-        text_rows[] <- TRUE
-      }
       # (2) Composite cells (`display_cells`, the "events/N" counts): no
       #     single number expresses them. They exist on reference rows
       #     too -- a reference level HAS events. A change test or a
@@ -2640,40 +2630,35 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       text_rows[!is.na(col_vals) & !is.na(thr) & col_vals < thr] <- TRUE
 
       txt_col <- txt_body[[j]]
-      # (8) Any other cell whose number would print otherwise than the
-      #     console under the format of its cell: a p-value whose
-      #     decimals follow its size (`p_bands`, `p_sigfig`), a number
-      #     in scientific notation.
-      for (i in which(!text_rows & !is.na(col_vals) & nzchar(txt_col))) {
-        shown <- .excel_cell_text(col_vals[[i]], .resolve_cell_fmt(meta, i))
-        if (!identical(shown, txt_col[[i]])) {
-          text_rows[[i]] <- TRUE
-        }
-      }
-      if (all(text_rows)) {
+      # Every other cell is the number Excel shows as the console does,
+      # under the format of its cell or the one its text shows (a p-value
+      # `p_bands` shortens), the value shown when the typed one would
+      # round otherwise; or the console's text ("3.40e+07"). The decimal
+      # mark is the reader's (`.xl_col()`).
+      cell_spec <- lapply(seq_len(nrow(body)), function(i) {
+        f <- .resolve_cell_fmt(meta, i)
+        signed <- isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS)
+        .xl_spec(f$precision, !identical(f$p_style, "apa"), signed, f$suffix)
+      })
+      wb <- .xl_col(
+        wb,
+        ifelse(text_rows, NA, txt_col),
+        col_vals,
+        cell_spec,
+        c(body_first_row, j),
+        format_spec$decimal_mark,
+        text_too = TRUE
+      )
+      # A blank display leaves the cell as written above (an NA numeric
+      # is already an empty cell).
+      for (i in which(text_rows & nzchar(txt_col))) {
         wb <- .spicy_xl_add_data(
           wb,
           sheet = excel_sheet,
-          x = data.frame(x = txt_col, stringsAsFactors = FALSE),
-          start_row = body_first_row,
-          start_col = j,
-          col_names = FALSE
+          x = txt_col[i],
+          start_row = body_first_row + i - 1L,
+          start_col = j
         )
-      } else {
-        for (i in which(text_rows)) {
-          # A blank display leaves the cell as written above (an NA
-          # numeric is already an empty cell).
-          if (!nzchar(txt_col[i])) {
-            next
-          }
-          wb <- .spicy_xl_add_data(
-            wb,
-            sheet = excel_sheet,
-            x = txt_col[i],
-            start_row = body_first_row + i - 1L,
-            start_col = j
-          )
-        }
       }
     }
   }

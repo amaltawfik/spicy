@@ -70,7 +70,8 @@
     for (i in which(as.integer(cc$row_r) == rows[[k]] & cc$c_r != "A")) {
       j <- match(cc$c_r[[i]], LETTERS)
       want <- if (j <= length(clip[[k]])) clip[[k]][[j]] else ""
-      norm <- gsub(mark, ".", want, fixed = TRUE)
+      # The mark of the number, not that of the df after it.
+      norm <- sub(paste0("^([+-]?[0-9]*)\\", mark), "\\1.", want)
       simple <- !is.null(spicy:::.xl_cell(want, NA, NULL, mark)$numfmt)
       at <- paste0(cc$r[[i]], " '", want, "'")
       if (number[[i]]) {
@@ -171,4 +172,51 @@ test_that("a value half way between two displays is written as the console shows
       })
   )
   expect_true(2.67 %in% read(function(...) table_continuous(d, x, ...)))
+})
+
+test_that("the regression sheets write each one-number cell as a number", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("clipr")
+  d <- as.data.frame(sochealth)
+  m1 <- lm(wellbeing_score ~ age + sex + education, data = d)
+  m2 <- lm(bmi ~ age + sex, data = d)
+  nested <- list(
+    lm(wellbeing_score ~ age, data = d),
+    lm(wellbeing_score ~ age + sex + education, data = d)
+  )
+  logit <- glm(smoking ~ age + sex, data = d, family = binomial)
+  tables <- list(
+    function(...) table_regression(m1, ...),
+    function(...) table_regression(list(Wellbeing = m1, BMI = m2), ...),
+    function(...) table_regression(nested, nested = TRUE, ...),
+    function(...) {
+      table_regression(m1, show_columns = c("b", "p", "partial_f"), ...)
+    },
+    function(...) table_regression(logit, exponentiate = TRUE, ...),
+    function(...) {
+      table_regression(
+        m1,
+        style = spicy_style(p_bands = list(c(0.05, 3), c(Inf, 2))),
+        ...
+      )
+    },
+    function(...) {
+      table_regression_uv(
+        d,
+        outcome = "smoking",
+        predictors = c("age", "sex"),
+        method = "glm",
+        ...
+      )
+    }
+  )
+  for (mark in c(".", ",")) {
+    for (f in tables) {
+      g <- function(...) f(decimal_mark = mark, ...)
+      n_body <- NROW(as_structured(suppressWarnings(g()))$body)
+      counts <- suppressWarnings(.xl_inv_check(g, n_body, mark))
+      expect_gt(counts[["number"]], 0L)
+    }
+  }
 })

@@ -1832,28 +1832,6 @@ build_structured_body <- function(
   paste0("0.", zeros)
 }
 
-# The text a number shows under the format `.excel_numfmt()` gives its
-# cell (`f`, from `.resolve_cell_fmt()`). The Excel export compares it
-# with the console's text and writes the console's text where they
-# differ: a p-value whose decimals follow its size (`p_bands`,
-# `p_sigfig`), a number the console prints in scientific notation.
-.excel_cell_text <- function(val, f) {
-  precision <- as.integer(f$precision)
-  if (length(precision) != 1L || is.na(precision) || precision < 0L) {
-    precision <- 0L
-  }
-  signed <- isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS)
-  s <- if (signed) {
-    format_signed(val, precision)
-  } else {
-    formatC(val, format = "f", digits = precision)
-  }
-  if (!signed && identical(f$p_style, "apa") && precision > 0L) {
-    s <- sub("^(-?)0(?=\\.)", "\\1", s, perl = TRUE)
-  }
-  paste0(s, f$suffix %||% "")
-}
-
 # Below-threshold display text used in p-columns when |p| < threshold.
 # Example: threshold = 0.001 -> "<.001" (US) or "<0,001" (EU).
 #

@@ -298,7 +298,7 @@ test_that("factor levels are indented once in the Excel stub column", {
 
 # ---- (d) decimal_mark -----------------------------------------------------
 
-test_that("decimal_mark = ',' holds in every Excel cell of the body", {
+test_that("decimal_mark = ',' leaves the numbers to the reader's separator", {
   .xl_skip()
   d <- .xl_data()
   fit <- lm(wellbeing_score ~ age + sex, data = d)
@@ -312,16 +312,18 @@ test_that("decimal_mark = ',' holds in every Excel cell of the body", {
   })
   m <- .xl_grid(path)
 
-  # A numeric cell would follow the VIEWER's locale separator, which
-  # the file cannot set: the body goes out pre-formatted instead.
-  expect_equal(.xl_at(m, 5L, "B"), "65,07")
-  expect_equal(.xl_at(m, 5L, "C"), "1,63")
+  # A cell of one number is a number, which Excel shows with the
+  # separator of the machine that opens the sheet; a text cell keeps
+  # the mark asked for.
+  expect_equal(round(as.numeric(.xl_at(m, 5L, "B")), 2), 65.07)
+  expect_equal(round(as.numeric(.xl_at(m, 5L, "C")), 2), 1.63)
   expect_equal(.xl_at(m, 5L, "F"), "<0,001")
-  expect_equal(.xl_at(m, 6L, "B"), "0,04")
+  expect_equal(round(as.numeric(.xl_at(m, 6L, "B")), 2), 0.04)
   expect_equal(
     .xl_types(path, c("B5", "C5", "F5", "B10")),
-    rep("text", 4L)
+    c("number", "number", "text", "number")
   )
+  expect_equal(.xl_numfmt(path, "B5"), "0.00")
 })
 
 test_that("the default decimal mark keeps the body numeric", {
@@ -357,13 +359,16 @@ test_that("a p-value the style shortens reaches Excel as the console prints it",
     ref_of <- function(lv) {
       paste0("F", rownames(m)[which(trimws(m[, "A"]) == lv)])
     }
-    # Two decimals where the column has three: the console's text.
+    # Two decimals where the column has three: a number under the format
+    # its text shows.
     expect_identical(p_of("Yes"), ".82")
-    expect_identical(unname(.xl_row(m, "Yes")[["F"]]), ".82")
-    expect_identical(.xl_type(path, ref_of("Yes")), "text")
-    # Three decimals, as the column: still a number.
+    expect_identical(.xl_type(path, ref_of("Yes")), "number")
+    expect_identical(.xl_numfmt(path, ref_of("Yes")), "#.00")
+    expect_equal(round(as.numeric(.xl_row(m, "Yes")[["F"]]), 2), 0.82)
+    # Three decimals, as the column: the column's format.
     expect_identical(p_of("Male"), ".018")
     expect_identical(.xl_type(path, ref_of("Male")), "number")
+    expect_identical(.xl_numfmt(path, ref_of("Male")), "#.000")
   }
 })
 

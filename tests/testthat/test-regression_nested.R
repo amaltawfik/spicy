@@ -1190,22 +1190,16 @@ test_that("change rows: Delta R^2 signed, F-change and p unsigned, in every outp
     if (requireNamespace("openxlsx2", quietly = TRUE)) {
       xr2 <- .sg_excel(build, labels[1L], cols)
       xf <- .sg_excel(build, labels[2L], cols)
-      if (lang == "en") {
-        # Real numbers, the sign carried by the number format.
-        expect_equal(as.numeric(xr2$value), diff(r2), tolerance = 1e-12)
-        expect_identical(xr2$numfmt, rep("+0.00;-0.00;0.00", 2L))
-        # The F stays a number; its format ends with the df.
-        expect_equal(as.numeric(xf$value), f, tolerance = 1e-12)
-        expect_identical(
-          gsub("&quot;", "\"", xf$numfmt, fixed = TRUE),
-          paste0("0.00\"", f_df, "\"")
-        )
-      } else {
-        # A comma table goes out as text (the viewer's locale cannot be
-        # set from the file): the text is the console's.
-        expect_identical(xr2$value, expected[[1L]])
-        expect_identical(xf$value, expected[[2L]])
-      }
+      # Real numbers, the sign carried by the number format, under either
+      # mark: Excel shows the reader's.
+      expect_equal(as.numeric(xr2$value), diff(r2), tolerance = 1e-12)
+      expect_identical(xr2$numfmt, rep("+0.00;-0.00;0.00", 2L))
+      # The F stays a number; its format ends with the df.
+      expect_equal(as.numeric(xf$value), f, tolerance = 1e-12)
+      expect_identical(
+        gsub("&quot;", "\"", xf$numfmt, fixed = TRUE),
+        paste0("0.00\"", f_df, "\"")
+      )
     }
   }
 })

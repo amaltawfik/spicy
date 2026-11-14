@@ -182,13 +182,14 @@
   if (is.na(text) || !nzchar(trimws(text))) {
     return(NULL)
   }
-  shown <- gsub(mark, ".", trimws(text), fixed = TRUE)
-  core <- shown
+  core <- trimws(text)
   suffix <- NULL
-  if (!is.null(spec$suffix) && endsWith(shown, spec$suffix)) {
-    core <- substr(shown, 1L, nchar(shown) - nchar(spec$suffix))
+  if (!is.null(spec$suffix) && endsWith(core, spec$suffix)) {
+    core <- substr(core, 1L, nchar(core) - nchar(spec$suffix))
     suffix <- spec$suffix
   }
+  core <- gsub(mark, ".", core, fixed = TRUE)
+  shown <- paste0(core, suffix)
   m <- regmatches(core, regexec("^([+-]?)([0-9]*)(\\.[0-9]+)?$", core))[[1L]]
   if (length(m) == 0L || !nzchar(paste0(m[[3L]], m[[4L]]))) {
     return(list(text = text))

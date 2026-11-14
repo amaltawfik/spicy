@@ -1021,12 +1021,15 @@ test_that("Excel keeps the statistic a number, its df in the number format", {
   y <- .pf_xlsx(fb, show_columns = c("b", "partial_chi2"))
   expect_identical(ncol(y$sheet), 3L)
   expect_identical(y$numfmt(paste0("C", y$row("6"))), "0.00\" (2)\"")
-  # A decimal comma sends the body out as text: the console's cell.
+  # Under a decimal comma the statistic stays a number, which Excel shows
+  # with the reader's separator; its df keep their comma.
   z <- .pf_xlsx(fl, show_columns = c("b", "partial_f"), decimal_mark = ",")
-  expect_identical(
-    .pf_norm(z$sheet[as.character(z$row("wt")), 3L]),
-    "18,08 (1, 28)"
+  expect_equal(
+    as.numeric(z$sheet[as.character(z$row("wt")), 3L]),
+    .pf_term(f_rows, "wt")$estimate,
+    tolerance = 1e-12
   )
+  expect_identical(z$numfmt(paste0("C", z$row("wt"))), "0.00\" (1, 28)\"")
 })
 
 test_that("the machine outputs keep the statistic and its df as numbers", {
