@@ -500,6 +500,17 @@ build_regression_footer_from_frames <- function(
       re_scale = re_scale,
       as_items = TRUE
     ),
+    # The same, with the bounds "LL" and "UL" of the intervals: the note
+    # of the outputs that head them so (`.reg_bounds_note()`).
+    abbreviation_items_bounds = build_abbreviations_footer_block_from_frames(
+      show_columns,
+      frames,
+      standardized,
+      show_fit_stats = show_fit_stats,
+      re_scale = re_scale,
+      as_items = TRUE,
+      bounds = TRUE
+    ),
     probability = build_stars_footer_block(stars, decimal_mark),
     # The sentences of `note_add`, last in the general note, before the
     # legend of the stars.
@@ -1050,14 +1061,17 @@ build_ci_method_footer_block_from_frames <- function(
 # `show_columns`, model after model, as `build_column_spec()` lays them
 # out -- then the rows of the random-effects block, then the fit-statistic
 # rows (`show_fit_stats`, those the table prints). The test statistics are
-# never defined.
+# never defined. `bounds = TRUE`: the note of the outputs that head the
+# bounds of an interval "LL" and "UL" (every one but the console, whose
+# cell is "[LL, UL]"), which defines them after the interval.
 build_abbreviations_footer_block_from_frames <- function(
   show_columns,
   frames = list(),
   standardized = "none",
   show_fit_stats = character(0),
   re_scale = "sd",
-  as_items = FALSE
+  as_items = FALSE,
+  bounds = FALSE
 ) {
   if (!is.list(frames)) {
     frames <- list() # nocov -- every caller passes the list of frames
@@ -1069,6 +1083,11 @@ build_abbreviations_footer_block_from_frames <- function(
     header_ci_label_hdi = "hdi",
     "ci"
   )
+  ci_items <- if (isTRUE(bounds)) {
+    as.list(c(ci_id, .abbrev_ci_bounds()[-1L]))
+  } else {
+    list(ci_id)
+  }
   # A per-category AME (ordinal, multinomial) is an effect on the
   # probability of one response category: its definition names that scale
   # and nothing more. The interpretation guidance -- the sum-to-zero
@@ -1152,7 +1171,7 @@ build_abbreviations_footer_block_from_frames <- function(
           ci = ,
           rmst_ci = ,
           risk_diff_ci = ,
-          ame_ci = list(ci_id),
+          ame_ci = ci_items,
           pd = list("pd"),
           rhat = list("rhat"),
           ess_bulk = ,
@@ -1166,11 +1185,11 @@ build_abbreviations_footer_block_from_frames <- function(
             list(.abbr("adj_r2", symbol = spicy_str("fitstat_adj_r2")))
           },
           partial_f2 = list(f2),
-          partial_f2_ci = list(f2, ci_id),
+          partial_f2_ci = c(list(f2), ci_items),
           partial_eta2 = list(eta2),
-          partial_eta2_ci = list(eta2, ci_id),
+          partial_eta2_ci = c(list(eta2), ci_items),
           partial_omega2 = list(omega2),
-          partial_omega2_ci = list(omega2, ci_id),
+          partial_omega2_ci = c(list(omega2), ci_items),
           partial_chi2 = chi2,
           partial_f = partial_f,
           # n, n_events, p, the t or z statistic and the survival

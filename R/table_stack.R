@@ -689,6 +689,19 @@ table_stack <- function(
   on.exit(.style_end(pushed), add = TRUE)
   note_txt <- .stack_note(tables, panel_labels, note, note_add, note_extra)
   st <- .stack_build(tables, panel_labels, title, note_txt)
+  # The note of the outputs that head the bounds "LL" and "UL"
+  # (`.reg_bounds_note()`).
+  bounds_txt <- .stack_note(
+    tables,
+    panel_labels,
+    note,
+    note_add,
+    note_extra,
+    bounds = TRUE
+  )
+  if (!identical(bounds_txt, note_txt)) {
+    attr(st, "spicy_bounds_note") <- bounds_txt
+  }
   attr(st, "spicy_model_ids") <- machine$ids
   attr(st, "spicy_term_order") <- machine$term_order
   .stack_dispatch(
@@ -745,7 +758,14 @@ table_stack <- function(
 # `note = FALSE` contributes nothing; one built with a typed note
 # contributes it in place of its own sentences. `extra` holds sentences
 # about the whole stack (`inference`), printed bare.
-.stack_note <- function(tables, panel_labels, note, note_add, extra = NULL) {
+.stack_note <- function(
+  tables,
+  panel_labels,
+  note,
+  note_add,
+  extra = NULL,
+  bounds = FALSE
+) {
   if (isFALSE(note)) {
     return(NULL)
   }
@@ -923,7 +943,13 @@ table_stack <- function(
     ),
     definitions = merge_kind(kind("definitions")),
     abbreviations = .note_abbreviations(unlist(
-      lapply(parts[auto], function(p) p$abbreviation_items),
+      lapply(parts[auto], function(p) {
+        if (bounds) {
+          p$abbreviation_items_bounds %||% p$abbreviation_items
+        } else {
+          p$abbreviation_items
+        }
+      }),
       recursive = FALSE
     )),
     probability = probability,

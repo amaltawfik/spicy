@@ -4337,6 +4337,16 @@ table_regression <- function(
     note_add,
     probability = build_stars_footer_block(stars, decimal_mark)
   )
+  # The same note with the bounds "LL" and "UL" of the intervals defined,
+  # for the outputs that head them so (`.reg_bounds_note()`).
+  bounds_parts <- footer_parts
+  bounds_parts$abbreviation_items <- footer_parts$abbreviation_items_bounds
+  bounds_footer_str <- .table_note(
+    .compose_note_parts(bounds_parts),
+    note,
+    note_add,
+    probability = build_stars_footer_block(stars, decimal_mark)
+  )
 
   # A table of models with different outcomes names them in its Outcome
   # row when neither its title (which names a shared outcome) nor its
@@ -4419,6 +4429,9 @@ table_regression <- function(
   # method can honor the call-site choice (and tooling like
   # `as.data.frame()` / broom continues to see the raw rendered
   # cells unchanged).
+  if (!identical(bounds_footer_str, full_footer_str)) {
+    attr(rendered, "spicy_bounds_note") <- bounds_footer_str
+  }
   attr(rendered, "padding") <- as.integer(padding)
   attr(rendered, "fit_stats_layout") <- fit_stats_layout
   # What `table_stack()` labels an unnamed panel by: the title when the

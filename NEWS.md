@@ -636,6 +636,12 @@
   "Outcome" row, as in the table of fit statistics alone. The outcomes
   appeared nowhere. `outcome_labels = FALSE` removes the row.
 
+* `table_regression()` and `table_stack()`: the note of the outputs that
+  print the bounds of an interval in columns headed "LL" and "UL"
+  (tinytable, gt, flextable, Word, Excel and the clipboard) defines
+  them. The console, which prints the interval in one cell, and the data
+  frames keep their note.
+
 * `table_regression()` shows the AIC and the effective number of
   parameters of a `survey::svyglm()` fit outside the gaussian family
   when the survey package is not attached. Both rows were missing.

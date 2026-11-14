@@ -1518,7 +1518,7 @@
           table.footer(
             repeat: false,
             // tinytable notes after
-          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] Linear regression. Std. errors: classical (OLS). CI \= confidence interval. Data: simulated for this example. \
+          table.cell(align: left, colspan: 6, text(size: 0.9em, [#emph[Note.] Linear regression. Std. errors: classical (OLS). CI \= confidence interval; LL \= lower limit; UL \= upper limit. Data: simulated for this example. \
       \*\*\* p \< .001, \*\* p \< .01, \* p \< .05.])),
           ),
           

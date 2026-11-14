@@ -363,6 +363,15 @@ output_long <- function(aligned, note = NULL) {
   specs
 }
 
+# The note of the outputs that head the bounds of an interval "LL" and
+# "UL" in columns of their own (tinytable, gt, flextable, Word, Excel,
+# the clipboard), which defines them; the console prints "[LL, UL]" in
+# one cell and keeps `attr(, "note")`.
+.reg_bounds_note <- function(rendered) {
+  attr(rendered, "spicy_bounds_note", exact = TRUE) %||%
+    attr(rendered, "note", exact = TRUE)
+}
+
 # ---- tinytable -----------------------------------------------------------
 
 output_tinytable <- function(rendered) {
@@ -379,7 +388,7 @@ output_tinytable <- function(rendered) {
     # nocov end
   }
   title <- attr(rendered, "title")
-  note <- attr(rendered, "note")
+  note <- .reg_bounds_note(rendered)
   # Every rule the console draws between blocks: the coefficients /
   # fit-stats divide (`group_sep_rows`) AND the rule that opens a
   # subordinate block -- ordinal `Thresholds:`, mixed-model
@@ -765,7 +774,7 @@ output_gt <- function(rendered) {
   .warn_merged_layout_ignored(rendered, "gt")
 
   title <- attr(rendered, "title")
-  note <- attr(rendered, "note")
+  note <- .reg_bounds_note(rendered)
   group_sep <- attr(rendered, "group_sep_rows")
 
   # ---- Read structured (typed) body, derive padded display strings ----
@@ -1977,7 +1986,7 @@ output_flextable <- function(rendered) {
 
   title <- attr(rendered, "title")
   note <- .apply_minus_sign(
-    attr(rendered, "note"),
+    .reg_bounds_note(rendered),
     where = "note",
     decimal_mark = struct$format_spec$decimal_mark
   )
@@ -2298,7 +2307,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   level_rows <- .struct_indent_rows(struct)
   outcome_row <- .struct_outcome_row(struct)
   title <- attr(rendered, "title")
-  note <- attr(rendered, "note")
+  note <- .reg_bounds_note(rendered)
   group_sep <- attr(rendered, "group_sep_rows")
   # Every rule the console draws between blocks: the coefficients /
   # fit-stats divide (`group_sep_rows`) AND the rule that opens a
@@ -3010,7 +3019,7 @@ clipboard_payload <- function(rendered, clipboard_delim) {
   struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
   title <- attr(rendered, "title")
-  note <- attr(rendered, "note")
+  note <- .reg_bounds_note(rendered)
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   n_cols <- ncol(body)

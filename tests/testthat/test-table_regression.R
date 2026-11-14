@@ -3918,3 +3918,40 @@ test_that("show_columns = \"none\" tables stack", {
     ignore_attr = TRUE
   )
 })
+
+test_that("the outputs that head LL and UL define them in their note", {
+  skip_on_cran()
+  fit <- lm(mpg ~ wt + hp, data = mt)
+  bounds <- "CI = confidence interval; LL = lower limit; UL = upper limit."
+  # The console prints "[a, b]" in one cell, and the data frames carry
+  # the note print() shows.
+  x <- table_regression(fit)
+  expect_true(endsWith(attr(x, "note"), "CI = confidence interval."))
+  expect_identical(
+    attr(table_regression(fit, output = "data.frame"), "note"),
+    attr(x, "note")
+  )
+  expect_true(endsWith(attr(x, "spicy_bounds_note"), bounds))
+  expect_match(clipboard_payload(x, "\t"), bounds, fixed = TRUE)
+  skip_if_not_installed("tinytable")
+  md <- capture.output(print(
+    table_regression(fit, output = "tinytable"),
+    output = "markdown"
+  ))
+  expect_match(paste(md, collapse = " "), "UL = upper limit", fixed = TRUE)
+  skip_if_not_installed("gt")
+  html <- as.character(gt::as_raw_html(table_regression(fit, output = "gt")))
+  expect_match(html, bounds, fixed = TRUE)
+  # No interval column, no bounds to define.
+  expect_null(attr(
+    table_regression(fit, show_columns = c("b", "se")),
+    "spicy_bounds_note"
+  ))
+  # A stack defines them as its panels do.
+  st <- table_stack(
+    A = table_regression(fit),
+    B = table_regression(lm(qsec ~ wt, data = mt))
+  )
+  expect_false(grepl("LL =", attr(st, "note"), fixed = TRUE))
+  expect_true(endsWith(attr(st, "spicy_bounds_note"), bounds))
+})
