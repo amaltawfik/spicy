@@ -774,6 +774,11 @@
   does ("inverse-Gaussian" instead of "Inverse.gaussian") and a Cox model
   "Cox proportional hazards regression", as the other tables do.
 
+* `table_regression_uv()` accepts `show_fit_stats = "pseudo_r2_tjur"`
+  on a logistic screen with `multivariable = FALSE`, which it refused,
+  and no longer warns about object lengths when the multivariable
+  model is shown.
+
 * The AME column needs marginaleffects 0.29.0 or later.
 
 * The console of `table_continuous()`, `table_continuous_svy()`,
