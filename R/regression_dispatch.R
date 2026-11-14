@@ -2961,6 +2961,20 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       )
     )
   }
+  # The Outcome row: each label merged over the columns of its model,
+  # centered, as the console prints it. The widths leave it out, as they
+  # leave out the model names.
+  outcome_spans <- .reg_outcome_spans(rendered)
+  width_body <- txt_body
+  for (sp in outcome_spans) {
+    dims <- openxlsx2::wb_dims(
+      rows = body_first_row + sp$row - 1L,
+      cols = sp$cols
+    )
+    wb$merge_cells(sheet = excel_sheet, dims = dims)
+    wb$add_cell_style(sheet = excel_sheet, dims = dims, horizontal = "center")
+    width_body[sp$row, sp$cols[[1L]]] <- ""
+  }
 
   wb <- .spicy_xl_add_note(
     wb,
@@ -2974,7 +2988,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   wb <- .spicy_xl_set_widths(
     wb,
     sheet = excel_sheet,
-    cells = .spicy_xl_cells(txt_body, headers = list(hdr$top, hdr$bottom))
+    cells = .spicy_xl_cells(width_body, headers = list(hdr$top, hdr$bottom))
   )
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)

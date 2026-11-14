@@ -1738,8 +1738,8 @@
 #'   built with `FALSE` taking no row. A multinomial model alone has no
 #'   Outcome row, its title naming the outcome; in a stack, its panel
 #'   takes one by this rule, the label once, across its columns. The
-#'   console, flextable, Word and tinytable (HTML, LaTeX, Typst) print
-#'   each label across the columns of its model; gt, which merges no
+#'   console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
+#'   print each label across the columns of its model; gt, which merges no
 #'   cells of the body, and the markdown grid of tinytable print it in
 #'   the first column of the model.
 #'   **Single multinomial model**

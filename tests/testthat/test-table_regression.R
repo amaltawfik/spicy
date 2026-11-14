@@ -1892,6 +1892,60 @@ test_that("tinytable and Word merge the Outcome row over each model", {
   }
 })
 
+test_that("Excel merges the Outcome row over each model, out of the widths", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  wb <- lm(wellbeing_score ~ age + sex, data = sochealth)
+  bmi <- lm(bmi ~ age + sex, data = sochealth)
+  models <- list(Wellbeing = wb, BMI = bmi)
+  sheet <- function(build) {
+    p <- withr::local_tempfile(fileext = ".xlsx")
+    dir <- withr::local_tempdir()
+    build(p)
+    utils::unzip(p, files = "xl/worksheets/sheet1.xml", exdir = dir)
+    xml <- paste(
+      readLines(file.path(dir, "xl/worksheets/sheet1.xml"), warn = FALSE),
+      collapse = ""
+    )
+    list(
+      merges = regmatches(
+        xml,
+        gregexpr("(?<=<mergeCell ref=\")[^\"]+", xml, perl = TRUE)
+      )[[1L]],
+      cols = regmatches(xml, regexpr("<cols>.*</cols>", xml))
+    )
+  }
+  reg <- function(...) {
+    function(p) table_regression(..., output = "excel", excel_path = p)
+  }
+  stack <- function(labels) {
+    function(p) {
+      table_stack(
+        A = table_regression(wb, outcome_labels = labels),
+        B = table_regression(bmi, outcome_labels = labels),
+        output = "excel",
+        excel_path = p
+      )
+    }
+  }
+  # The merged cells of the Outcome row, and the widths of the table
+  # without the row: the label widens no column.
+  for (case in list(
+    list(reg(models), reg(models, outcome_labels = FALSE), c("B5:D5", "E5:G5")),
+    list(
+      reg(models, layout = "stacked"),
+      reg(models, layout = "stacked", outcome_labels = FALSE),
+      c("B6:F6", "B16:F16")
+    ),
+    list(stack(NULL), stack(FALSE), c("B4:F4", "B14:F14")),
+    list(reg(bmi, outcome_labels = "Body mass index"), reg(bmi), "B5:F5")
+  )) {
+    with <- sheet(case[[1L]])
+    expect_true(all(case[[3L]] %in% with$merges))
+    expect_identical(with$cols, sheet(case[[2L]])$cols)
+  }
+})
+
 test_that("outcome_labels gives a single model its Outcome row", {
   skip_on_cran()
   withr::local_options(width = 200)

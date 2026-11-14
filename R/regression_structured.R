@@ -344,7 +344,11 @@
     return(list())
   }
   cols <- names(.struct_display_body(struct$body))
-  ranges <- if (length(attr(rendered, "model_ids", exact = TRUE)) == 1L) {
+  # The engines get a table before its `model_ids` are set: there a table
+  # of one model is the one without model spanners.
+  ids <- attr(rendered, "model_ids", exact = TRUE)
+  one <- if (is.null(ids)) !length(struct$spanners) else length(ids) == 1L
+  ranges <- if (one) {
     list(seq_along(cols)[-1L])
   } else {
     struct$spanners
