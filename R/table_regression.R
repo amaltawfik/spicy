@@ -487,9 +487,11 @@
 #' else the outcomes when they all differ, else "Model k". The panels
 #' share one column header when they have the same columns, and each opens
 #' with its own header otherwise (an odds ratio beside a coefficient, a
-#' multinomial model with its outcome categories in columns). `vcov` and
-#' `cluster` lists give each panel its own estimator; `outcome_labels`
-#' does not apply. Under `nested = TRUE`, the change statistics of each
+#' multinomial model with its outcome categories in columns). Models with
+#' different outcomes that the labels of the panels do not name open each
+#' panel on an Outcome row, under its label row (`outcome_labels`). `vcov`
+#' and `cluster` lists give each panel its own estimator. Under
+#' `nested = TRUE`, the change statistics of each
 #' model sit in its own panel, labeled "vs" the model before it. The type
 #' of each model, its standard errors and the adjustment of its p-values
 #' are worded as in the note of the models side by side, each panel named
@@ -1726,7 +1728,10 @@
 #'   outcomes of unnamed models, all different) name them, and the row
 #'   is left out. A character vector of length `length(models)` forces
 #'   the row with those values (the spanner stays as `"Model 1, ..."`
-#'   unless `model_labels` is also supplied). `FALSE` removes the row.
+#'   unless `model_labels` is also supplied), a single model included.
+#'   `FALSE` removes the row. With `layout = "stacked"`, the row opens
+#'   each panel, under the same rule, the labels of the panels taking
+#'   the place of the column headers; a vector gives each panel its label.
 #'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per
@@ -4352,8 +4357,19 @@ table_regression <- function(
   # row when neither its title (which names a shared outcome) nor its
   # column headers (the outcomes, when they are all distinct and the
   # models unlabeled) do: it has no other place for them.
-  # `outcome_labels = FALSE` keeps the row out.
-  if (is.null(outcome_labels) && n_models >= 2L) {
+  # `outcome_labels = FALSE` keeps the row out. A panel of a stacked table
+  # opens on the row its driver decided (`panel_req$outcome`), a
+  # multinomial model laid out by category labeling it once.
+  if (!is.null(panel_req$outcome)) {
+    outcome_labels <- c(
+      if (isTRUE(panel_req$outcome)) {
+        frames[[1L]]$info$dv_display %||% frames[[1L]]$info$dv %||% ""
+      } else {
+        panel_req$outcome
+      },
+      rep("", length(model_ids_render) - 1L)
+    )
+  } else if (is.null(outcome_labels) && n_models >= 2L) {
     dvs <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
     if (
       length(unique(dvs)) > 1L &&

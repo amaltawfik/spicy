@@ -503,17 +503,30 @@
 }
 
 # The builders of a list of models, each alone, with the same arguments.
-.st_alone <- function(models, ...) {
+.st_alone <- function(models, ..., .outcome = NULL) {
   args <- list(...)
-  lapply(models, function(m) {
-    force(m)
+  # `.outcome`: the label of the Outcome row of each table, which the
+  # panels of models with different outcomes open on.
+  out <- lapply(seq_along(models), function(k) {
+    m <- models[[k]]
+    ol <- if (!is.null(.outcome)) list(outcome_labels = .outcome[[k]])
     function(o = "default", ...) {
       .st_quiet(do.call(
         table_regression,
-        c(list(m), args, list(output = o), list(...))
+        c(list(m), args, ol, list(output = o), list(...))
       ))
     }
   })
+  stats::setNames(out, names(models))
+}
+
+# The outcome of each model, as the Outcome row of its panel names it.
+.st_outcomes <- function(models) {
+  vapply(
+    models,
+    function(m) attr(.st_quiet(table_regression(m)), "outcome"),
+    character(1)
+  )
 }
 
 
@@ -631,7 +644,11 @@ test_that("layout = 'stacked' gives one panel per model, the model alone", {
     attr(st, "title"),
     attr(table_regression(models), "title")
   )
-  tabs <- lapply(.st_alone(models), function(b) b())
+  # Each panel opens on the Outcome row of its model.
+  tabs <- lapply(
+    .st_alone(models, .outcome = .st_outcomes(models)),
+    function(b) b()
+  )
   .st_expect_oracle(st, tabs)
 
   # The two doors build the same stack: the panels, their cells and the
@@ -651,7 +668,14 @@ test_that("arguments reach every panel; a vcov list goes model by model", {
   st <- table_regression(models, show_columns = c("b", "p"), layout = "stacked")
   .st_expect_oracle(
     st,
-    lapply(.st_alone(models, show_columns = c("b", "p")), function(b) b())
+    lapply(
+      .st_alone(
+        models,
+        show_columns = c("b", "p"),
+        .outcome = .st_outcomes(models)
+      ),
+      function(b) b()
+    )
   )
   # A list of vcov specifications, one per model.
   st2 <- table_regression(
@@ -661,7 +685,10 @@ test_that("arguments reach every panel; a vcov list goes model by model", {
   )
   .st_expect_oracle(
     st2,
-    list(table_regression(f1, vcov = "HC3"), table_regression(f2))
+    list(
+      table_regression(f1, vcov = "HC3", outcome_labels = "bmi"),
+      table_regression(f2, outcome_labels = "wellbeing_score")
+    )
   )
 })
 
@@ -681,8 +708,18 @@ test_that("a cluster vector keeps its name in every panel of the stack", {
     layout = "stacked"
   )
   tabs <- list(
-    table_regression(f1, vcov = "CR1", cluster = d$region),
-    table_regression(f2, vcov = "CR1", cluster = d$region)
+    table_regression(
+      f1,
+      vcov = "CR1",
+      cluster = d$region,
+      outcome_labels = "bmi"
+    ),
+    table_regression(
+      f2,
+      vcov = "CR1",
+      cluster = d$region,
+      outcome_labels = "wellbeing_score"
+    )
   )
   .st_expect_oracle(st, tabs)
   # The note names the clusters as each table alone does, and as the two
@@ -711,7 +748,7 @@ test_that("lm, glm and coxph stack under one header, in every engine", {
   build_st <- function(o = "default", ...) {
     table_regression(models, layout = "stacked", output = o, ...)
   }
-  build_k <- .st_alone(models)
+  build_k <- .st_alone(models, .outcome = .st_outcomes(models))
   st <- build_st()
   tabs <- lapply(build_k, function(b) b())
   expect_identical(names(attr(st, "panels")), names(models))
@@ -741,7 +778,11 @@ test_that("panels with other columns open with a header of their own", {
       ...
     )
   }
-  build_k <- .st_alone(models, exponentiate = TRUE)
+  build_k <- .st_alone(
+    models,
+    exponentiate = TRUE,
+    .outcome = .st_outcomes(models)
+  )
   # exp() applies to two of the three models: no warning, as side by side.
   expect_no_warning(st <- build_st(), class = "spicy_ignored_arg")
   tabs <- lapply(build_k, function(b) b())
@@ -825,8 +866,16 @@ test_that("a multinomial model alone in its panel keeps its categories", {
   skip_on_cran()
   skip_if_not_installed("nnet")
   models <- list(Health = .st_lm(), Employment = .st_mn())
+  # Without their Outcome rows, which a multinomial model alone cannot
+  # take: the panels are the tables of the models alone.
   build_st <- function(o = "default", ...) {
-    table_regression(models, layout = "stacked", output = o, ...)
+    table_regression(
+      models,
+      layout = "stacked",
+      outcome_labels = FALSE,
+      output = o,
+      ...
+    )
   }
   build_k <- .st_alone(models)
   st <- build_st()
@@ -909,7 +958,12 @@ test_that("a multinomial model alone in its panel keeps its categories", {
 
   # `nested = FALSE` spelled out builds the same stack.
   expect_identical(
-    table_regression(models, layout = "stacked", nested = FALSE),
+    table_regression(
+      models,
+      layout = "stacked",
+      nested = FALSE,
+      outcome_labels = FALSE
+    ),
     st
   )
 })
@@ -918,7 +972,7 @@ test_that("a multinomial first panel heads the table with its categories", {
   skip_on_cran()
   skip_if_not_installed("nnet")
   models <- list(Employment = .st_mn(), Health = .st_lm())
-  st <- table_regression(models, layout = "stacked")
+  st <- table_regression(models, layout = "stacked", outcome_labels = FALSE)
   tabs <- lapply(.st_alone(models), function(b) b())
   expect_identical(attr(st, "spanners"), attr(tabs$Employment, "spanners"))
   # The lm panel opens with its label row and the row of the bounds of
@@ -1214,6 +1268,7 @@ test_that("a stack split by width repeats a group and drops empty rows", {
     c(
       "Variable",
       "Employment:",
+      "Outcome",
       "(Intercept)",
       "age",
       "sex:",
@@ -2121,7 +2176,7 @@ test_that("the console prints the Outcome row of a panel across its columns", {
   )
 })
 
-test_that("layout is validated; a stacked table has no Outcome row", {
+test_that("layout is validated, and outcome_labels as side by side", {
   f <- .st_lm()
   expect_error(
     table_regression(f, layout = "x"),
@@ -2131,7 +2186,7 @@ test_that("layout is validated; a stacked table has no Outcome row", {
   expect_error(
     table_regression(
       list(f, .st_glm()),
-      outcome_labels = c("BMI", "Dentist"),
+      outcome_labels = "BMI",
       layout = "stacked"
     ),
     class = "spicy_invalid_input"
@@ -2146,6 +2201,76 @@ test_that("layout is validated; a stacked table has no Outcome row", {
     ),
     class = "spicy_invalid_input"
   )
+})
+
+test_that("panels of models with different outcomes open on an Outcome row", {
+  skip_on_cran()
+  stacked <- function(models, ...) {
+    table_regression(models, layout = "stacked", ...)
+  }
+  # The Outcome row of each panel, as the row of the panel alone.
+  outcomes <- function(st) {
+    rows <- which(attr(st, "structured")$body$.row_role == "outcome")
+    lab <- vapply(
+      attr(st, "panels"),
+      function(p) {
+        ol <- as_structured(p)$outcome_labels_by_col
+        if (length(ol)) ol[[1L]] else NA_character_
+      },
+      character(1)
+    )
+    list(rows = rows, labels = unname(lab[!is.na(lab)]))
+  }
+  models <- list(BMI = .st_lm(), Dentist = .st_glm())
+  st <- outcomes(stacked(models))
+  # The first row of each panel, under its label row.
+  expect_identical(
+    st$rows,
+    unname(vapply(attr(stacked(models), "panel_rows"), min, integer(1)))
+  )
+  expect_identical(st$labels, c("bmi", "dentist_12m"))
+  # The outcomes label the panels, or the models share one: no row.
+  expect_length(outcomes(stacked(unname(models)))$rows, 0L)
+  same <- list(A = .st_lm(), B = stats::lm(bmi ~ age, data = .st_data()))
+  expect_length(outcomes(stacked(same))$rows, 0L)
+  # Outcomes repeated over unnamed models label no panel: a row each.
+  expect_length(outcomes(stacked(c(unname(models), list(.st_lm()))))$rows, 3L)
+  # FALSE removes the rows; labels given replace the outcomes.
+  expect_length(outcomes(stacked(models, outcome_labels = FALSE))$rows, 0L)
+  expect_identical(
+    outcomes(stacked(
+      models,
+      outcome_labels = c("BMI (kg/m2)", "Visit")
+    ))$labels,
+    c("BMI (kg/m2)", "Visit")
+  )
+  # A multinomial panel labels its row once.
+  skip_if_not_installed("nnet")
+  mn <- outcomes(stacked(list(Health = .st_lm(), Employment = .st_mn())))
+  expect_length(mn$rows, 2L)
+  expect_identical(mn$labels, c("bmi", "employment_status"))
+})
+
+test_that("the frames decide the Outcome row when the formulas mislead", {
+  skip_on_cran()
+  skip_if_not_installed("MASS")
+  # The formulas name two outcomes, the frames one: no row, and the
+  # message of each fit given once.
+  a <- MASS::polr(education ~ age, data = sochealth)
+  b <- MASS::polr(ordered(education) ~ sex, data = sochealth)
+  count <- function(expr) {
+    n <- 0L
+    withCallingHandlers(expr, message = function(m) {
+      n <<- n + 1L
+      invokeRestart("muffleMessage")
+    })
+    n
+  }
+  alone <- count(table_regression(a)) + count(table_regression(b))
+  st <- NULL
+  n <- count(st <- table_regression(list(A = a, B = b), layout = "stacked"))
+  expect_identical(n, alone)
+  expect_false("outcome" %in% attr(st, "structured")$body$.row_role)
 })
 
 
@@ -2364,7 +2489,7 @@ test_that("a multinomial model beside others keeps or hides its intercepts", {
   p <- attr(st, "panels")$Employment
   expect_identical(
     attr(p, "structured")$body$.variable[
-      attr(p, "structured")$body$.row_role != "fit_stat"
+      !attr(p, "structured")$body$.row_role %in% c("fit_stat", "outcome")
     ],
     c("(Intercept)", "age")
   )

@@ -655,7 +655,9 @@
   "Outcome" row, as in the table of fit statistics alone. The outcomes
   appeared nowhere. `outcome_labels = FALSE` removes the row. The
   console prints each outcome across the columns of its model, without
-  widening the first of them.
+  widening the first of them. Under `layout = "stacked"`, the row opens
+  each panel whose label does not name the outcome, by the same rule,
+  and `outcome_labels` labels or removes it.
 
 * `table_regression()` with one model shows the "Outcome" row that
   `outcome_labels = "<label>"` asks for. The label was ignored without a
