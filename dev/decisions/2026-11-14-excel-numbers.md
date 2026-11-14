@@ -60,6 +60,7 @@ Les batteries sont de ce cycle et n'ont pas de comportement publié.
 - Taille : environ 130 lignes nettes de R hors commentaires, dans une douzaine de fichiers. Les exportateurs perdent leurs règles particulières (le forçage en texte de `table_categorical()`, la branche de marque décimale et la garde des valeurs p de la régression).
 - La règle est écrite une fois pour l'utilisateur, dans la section *Excel output* de `?spicy`, et chaque `decimal_mark` y renvoie.
 - Six puces de NEWS, dont celles des comportements publiés qui changent.
+- Vitesse. Chaque `wb_add_*()` d'openxlsx2 copie le classeur, et la première version du lot, qui écrivait par suites de cellules, doublait ou triplait la durée des exports. Les nombres sont écrits par blocs, les formats regroupés par code et les écritures faites en place par les méthodes de l'objet classeur. Mesuré le 2026-11-14 sur neuf exports : ceux de la régression prennent de 0,73 à 0,93 fois leur durée d'avant le lot, ceux du descriptif 1,19 fois au plus, alors qu'ils écrivent maintenant des nombres et des formats.
 
 ## Ce qui rouvrirait la question
 
@@ -70,3 +71,4 @@ Un tableur répandu qui arrondit autrement qu'Excel 16.0. Une demande pour des c
 - `tests/testthat/test-excel_helpers.R` : l'émulateur contre les affichages observés dans Excel, et les décisions de `.xl_cell()`.
 - `tests/testthat/test-excel_number_cells.R` : chaque fonction qui a `output = "excel"` est relue cellule par cellule contre le texte de la console, sous le point et sous la virgule. Une cellule dont le texte est un nombre simple doit être un nombre dont l'affichage émulé égale ce texte, toute autre cellule doit être ce texte. Des valeurs à mi-chemin et un « -0.00 » y sont construits exprès.
 - `tests/testthat/test-code_book.R` : la garde d'arrondi et les décimales du classeur contre la source du PDF.
+- Dans `test-excel_number_cells.R`, un test compte les appels d'écriture et exige le même nombre pour un petit et un grand tableau, sans chronométrage.
