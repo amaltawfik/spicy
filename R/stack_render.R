@@ -341,6 +341,20 @@
     db[[h$col]][[h$row]] <- h$text
   }
   dbody <- as.data.frame(db, stringsAsFactors = FALSE, check.names = FALSE)
+  # The Outcome row of a panel: the console prints it as its table alone
+  # does, each label over the columns of its model, out of the alignment
+  # of the numbers.
+  outcome_rows <- integer(0)
+  for (k in seq_len(n)) {
+    for (r in which(views[[k]]$body[[".row_role"]] == "outcome")) {
+      b <- .outcome_row_spanner(tables[[k]], r)
+      if (!is.null(b)) {
+        b$row <- panel_rows[[k]][[r]]
+        body_spanners[[length(body_spanners) + 1L]] <- b
+        outcome_rows <- c(outcome_rows, b$row)
+      }
+    }
+  }
   align <- attr(tables[[1L]], "align", exact = TRUE) %||% "decimal"
   decimal_mark <- attr(tables[[1L]], "decimal_mark", exact = TRUE) %||% "."
   # Panels with the same columns are decimal-aligned as one column, so the
@@ -348,7 +362,7 @@
   # panel to the last: only the padding of a cell changes. Panels with
   # columns of their own keep the alignment of their table.
   if (same_structure && identical(align, "decimal")) {
-    rows <- setdiff(seq_len(n_rows), header_rows)
+    rows <- setdiff(seq_len(n_rows), c(header_rows, outcome_rows))
     for (dk in dkeys) {
       dbody[[dk]][rows] <- trimws(dbody[[dk]][rows])
     }

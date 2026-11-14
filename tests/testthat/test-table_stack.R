@@ -2094,6 +2094,33 @@ test_that("table_stack() refuses a table built for another engine", {
   }
 })
 
+test_that("the console prints the Outcome row of a panel across its columns", {
+  skip_on_cran()
+  withr::local_options(width = 200)
+  printed <- function(...) capture.output(print(table_stack(...)))
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(qsec ~ wt, data = mtcars)
+  side <- table_regression(list(A = m1, B = m2))
+  bare <- table_regression(list(A = m1, B = m2), outcome_labels = FALSE)
+  shown <- printed(First = side, Second = side)
+  at <- grep("^ Outcome ", shown)
+  expect_length(at, 2L)
+  # The outcomes widen no column.
+  expect_identical(shown[-at], printed(First = bare, Second = bare))
+  # A panel of one model: its label over all its columns.
+  one <- printed(
+    A = table_regression(.st_lm(), outcome_labels = "Body mass index"),
+    B = table_regression(.st_glm())
+  )
+  at <- grep("^ Outcome ", one)
+  expect_length(at, 1L)
+  expect_match(one[[at]], "Body mass index", fixed = TRUE)
+  expect_identical(
+    one[-at],
+    printed(A = table_regression(.st_lm()), B = table_regression(.st_glm()))
+  )
+})
+
 test_that("layout is validated; a stacked table has no Outcome row", {
   f <- .st_lm()
   expect_error(

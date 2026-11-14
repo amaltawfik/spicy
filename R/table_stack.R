@@ -1118,8 +1118,8 @@ print.spicy_stack_table <- function(x, ...) {
   })
   hr <- as.integer(attr(x, "header_rows", exact = TRUE) %||% integer(0))
   # The column groups of a panel's header are drawn over their columns,
-  # with a rule under them, as those of the top header: their labels
-  # leave the cells.
+  # with a rule under them, as those of the top header, and the labels of
+  # an Outcome row without one: they leave the cells.
   bs <- attr(x, "body_spanners", exact = TRUE) %||% list()
   bs_rows <- vapply(bs, function(b) as.integer(b$row), integer(1))
   shown[bs_rows, -1L] <- ""
@@ -1178,7 +1178,8 @@ print.spicy_stack_table <- function(x, ...) {
     display_labels = attr(x, "display_labels", exact = TRUE),
     fit_stats_start = NULL,
     body_spanners = lapply(bs, function(b) {
-      list(row = at(b$row), spans = b$spans)
+      b$row <- at(b$row)
+      b
     }),
     blank_row_groups = unname(lapply(groups, at)),
     ...
