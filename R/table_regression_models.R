@@ -381,8 +381,8 @@
 #' render as a `Non-proportional effects` block, one coefficient per
 #' cut-point. `exponentiate` yields proportional odds ratios under logit;
 #' `ci_method = "profile"` profiles the predictor coefficients. AME is
-#' per-category (the marginal effect on each P(Y = k)). Defaults include
-#' McFadden and Nagelkerke pseudo-R-squared. See the
+#' per-category (the marginal effect on each P(Y = k)). The default fit
+#' statistics include McFadden's pseudo-R-squared. See the
 #' [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 #' article.
 #'

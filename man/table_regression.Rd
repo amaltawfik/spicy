@@ -474,9 +474,11 @@ token order. \code{NULL} (default) resolves class-aware:
 and an IV \code{fixest::feols()} neither R-squared nor AIC -- the
 2SLS R-squared is not the classical one. Asked for, it is
 the R-squared of \code{ivreg()}, on the structural residuals.
-\item \code{glm}, ordinal \code{polr} / \code{clm}:
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")} (McFadden = Stata \code{ologit} default,
-Nagelkerke = SPSS PLUM).
+\item a logit on a binary outcome: \code{c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "aic")}.
+\item the other binomial, Poisson and negative binomial \code{glm}
+fits, \code{polr}, \code{clm}, \code{multinom}, \code{rms::lrm}: \code{c("nobs", "pseudo_r2_mcfadden", "aic")}.
+\item gaussian, Gamma, inverse Gaussian and Tweedie \code{glm} fits:
+\code{c("nobs", "r2_deviance", "aic")}.
 \item mixed \code{lm} + \code{glm}: the union of the two (the
 renderer en-dashes per cell the stat not defined for a
 given model class).
@@ -983,7 +985,8 @@ Publication-ready coefficient table from one or more fitted
 effect sizes (\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} /
 \emph{\eqn{\omega^2}{omega^2}} and partial \emph{F} for \code{lm}; partial
 \emph{\eqn{\chi^2}{chi-squared}} or partial \emph{F} for \code{glm}), pseudo-\eqn{R^2}{R^2}
-(\code{glm}), and a full vocabulary of variance estimators
+and deviance \eqn{R^2}{R^2} (\code{glm}), and a full vocabulary of variance
+estimators
 (classical / HC* / cluster-robust with Satterthwaite-corrected
 df / bootstrap / jackknife). \code{glm} covers binomial / poisson /
 Gamma / inverse.gaussian / quasi families with any link.
@@ -1153,10 +1156,13 @@ BIC follow the engine's \code{\link[stats:nobs]{stats::nobs()}}, which for a wei
 \code{polr} or \code{clm} fit is the sum of the weights.
 \item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
 \code{"omega2"}.
-\item Pseudo-\eqn{R^2}{R^2} (\code{glm} and ordinal \code{polr} / \code{clm}):
-\code{"pseudo_r2_mcfadden"} (McFadden 1974),
-\code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991),
-\code{"pseudo_r2_tjur"} (Tjur 2009; binomial only).
+\item \eqn{R^2}{R^2} outside least squares (\code{glm}, \code{polr}, \code{clm},
+\code{multinom} and \code{rms::lrm} fits): \code{"pseudo_r2_tjur"} (Tjur 2009;
+binomial models only), \code{"pseudo_r2_mcfadden"} (McFadden 1974),
+\code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991) and \code{"r2_deviance"}
+(Cameron & Windmeijer 1997; \code{glm} families other than the
+binomial). What each one computes, and which a family shows by
+default, is in \emph{R-squared of glm and categorical models} below.
 \item Residual scale: \code{"sigma"}, \code{"rmse"}. \code{"sigma"} is the lm
 \eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like \code{fixest}
 fits, it is the square root of the dispersion (so a gaussian glm
@@ -1299,8 +1305,9 @@ the larger model fits better, and is not signed either.
 
 Default (resolved when \code{NULL}) is class-aware: lm and
 \code{lm_robust} fits get
-\code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
-\code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")};
+\code{c("nobs", "r2", "adj_r2")}; glm, \code{polr}, \code{clm}, \code{multinom} and
+\code{rms::lrm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
+(see \emph{R-squared of glm and categorical models}) and \code{"aic"};
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
 \code{c("nobs", "n_events", "aic")}; GEE fits get
@@ -1312,6 +1319,92 @@ class-aware default is extended with change tokens
 for a glm whose dispersion is estimated). The order of tokens in
 \code{show_fit_stats} controls the order of the rows.
 }
+}
+
+\section{R-squared of glm and categorical models}{
+Outside least squares there is no variance to partition, and several
+\eqn{R^2}{R^2} measures compete. They answer different questions and
+give different numbers on the same fit, so the row label names the
+measure, and a report should too (Long & Freese 2014, p. 126). A
+threshold quoted for one measure, such as 0.2 to 0.4 for McFadden's,
+does not carry over to another (Hemmert et al. 2018).
+
+\itemize{
+\item \code{"pseudo_r2_tjur"}, Tjur's coefficient of discrimination: the
+mean predicted probability of the observations with the event
+minus that of the observations without it (Tjur 2009). Binomial
+models only.
+\item \code{"pseudo_r2_mcfadden"}, McFadden's \eqn{R^2}{R^2}:
+\eqn{1 - \log L / \log L_0}{1 - log L / log L0}, the proportional
+reduction of the log-likelihood from that of the intercept-only
+model, \eqn{L_0}{L0} (McFadden 1974).
+\item \code{"pseudo_r2_nagelkerke"}, Nagelkerke's \eqn{R^2}{R^2}: Cox and
+Snell's \eqn{1 - (L_0 / L)^{2/n}}{1 - (L0 / L)^(2/n)} divided by its
+largest possible value, \eqn{1 - L_0^{2/n}}{1 - L0^(2/n)}
+(Nagelkerke 1991). It is the max-rescaled R-square of SAS and the
+Nagelkerke R square of SPSS.
+\item \code{"r2_deviance"}, the deviance \eqn{R^2}{R^2}:
+\eqn{1 - D / D_0}{1 - D / D0}, the proportional reduction of the
+deviance from that of the intercept-only model (Cameron & Windmeijer
+1997). It lies between 0 and 1, and within a family it cannot
+decrease when a predictor is added. For a gaussian \code{glm()} with the
+identity link it is the \eqn{R^2}{R^2} of \code{lm()}.
+}
+
+The intercept-only model keeps the offset and the weights of the
+fitted model. By default each model shows the rows of its family:
+
+\itemize{
+\item A logit on a binary outcome (0/1, a factor or a logical):
+Tjur's \eqn{R^2}{R^2}, then McFadden's. Tjur's reads on the scale
+of the predicted probabilities; McFadden's cannot decrease when a
+predictor is added.
+\item The other binomial models (probit, cloglog, a grouped
+response), Poisson and negative binomial models, \code{polr()},
+\code{clm()}, \code{multinom()} and \code{rms::lrm()}: McFadden's \eqn{R^2}{R^2},
+which depends less than Cox and Snell's or Nagelkerke's on the
+proportion of events (Menard 2000) and is the Pseudo R2 of Stata's
+estimation output (Long & Freese 2014, p. 126).
+\item The continuous families of \code{glm()} (gaussian, Gamma, inverse
+Gaussian, Tweedie): the deviance \eqn{R^2}{R^2}. McFadden's and
+Nagelkerke's are refused for them: the log-likelihood of a density
+changes with the unit of the outcome, so the same model gets other
+values, even negative ones, when the outcome is rescaled (Cameron &
+Windmeijer 1997).
+\item The quasi families have no likelihood and no default row.
+}
+
+A table of several models shows the union of their rows. A row is
+filled for every model that defines the measure, and dashed for the
+others. Nagelkerke's \eqn{R^2}{R^2} is shown on request only: its
+rescaling is ad hoc and its values run high (Allison 2014). The
+deviance \eqn{R^2}{R^2} is available on request
+for Poisson, negative binomial and quasi models, where McFadden's is
+lower (Cameron & Windmeijer 1997). For a \code{MASS::glm.nb()} fit both
+deviances take the theta of the fitted model. It is refused for
+binomial, ordinal and multinomial models, where it equals McFadden's.
+
+A binomial model is measured on its individual trials, whatever the
+layout of its data: a \code{cbind(successes, failures)} response, a
+proportion with the trials as \code{weights}, and 0/1 rows weighted by
+counts give the McFadden, Nagelkerke and Tjur \eqn{R^2}{R^2} of the
+same model fitted to the expanded 0/1 rows. The likelihood is that of
+the trials, n is their number, and Tjur's means are weighted by them.
+For every family, the n of Nagelkerke's formula is the sum of the
+weights. Weights that are counts thus give the values of the expanded
+data, and non-integer weights give those of the weighted
+log-likelihood \code{glm()} maximizes, which do not change when the weights
+are rescaled. The \code{n} row still counts rows.
+
+Tjur's \eqn{R^2}{R^2} depends more than McFadden's on the proportion of
+events: in a simulated logit with fixed slopes, taking that proportion
+from 0.50 to 0.05 moves Tjur's from 0.21 to 0.07 and McFadden's from
+0.16 to 0.13. It can decrease when a predictor is added (Tjur 2009,
+p. 370; Allison 2014). It is at least 0 for a logit with an intercept,
+but a fixed offset can make it negative, and it is shown with its sign.
+On request it is also computed for the other links, as the same
+difference of means, although the mean predicted probability equals
+the proportion of events only under the logit link (Tjur 2009).
 }
 
 \section{Multi-model semantics}{
@@ -2183,9 +2276,17 @@ Tables 7.13-7.15.
 Aiken, L.S. & West, S.G. (1991). \emph{Multiple regression: Testing
 and interpreting interactions}.
 
+Allison, P.D. (2014). Measures of fit for logistic regression.
+\emph{SAS Global Forum 2014}, Paper 1485-2014. SAS Institute.
+
 Cameron, A.C. & Miller, D.L. (2015). A practitioner's guide to
 cluster-robust inference. \emph{Journal of Human Resources}, 50(2),
 317-372.
+
+Cameron, A.C. & Windmeijer, F.A.G. (1997). An R-squared measure of
+goodness of fit for some common nonlinear regression models.
+\emph{Journal of Econometrics}, 77(2), 329-342.
+\doi{10.1016/S0304-4076(96)01818-0}
 
 Cohen, J., Cohen, P., West, S.G., & Aiken, L.S. (2003).
 \emph{Applied multiple regression / correlation analysis for the
@@ -2207,6 +2308,11 @@ models with nonlinearity, interactions, and variance components.
 \emph{Sociological Methodology}, 37(1), 23-51.
 \doi{10.1111/j.1467-9531.2007.00181.x}
 
+Hemmert, G.A.J., Schons, L.M., Wieseke, J., & Schimmelpfennig, H.
+(2018). Log-likelihood-based pseudo-\eqn{R^2}{R^2} in logistic
+regression: Deriving sample-sensitive benchmarks. \emph{Sociological
+Methods & Research}, 47(3), 507-531. \doi{10.1177/0049124116638107}
+
 Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and
 efficiency of approximation methods for tied survival times in
 Cox regression. \emph{Biometrics}, 53(3), 1151-1156.
@@ -2217,15 +2323,32 @@ using generalized linear models. \emph{Biometrika}, 73(1), 13-22.
 Long, J.S. & Freese, J. (2014). \emph{Regression models for categorical
 dependent variables using Stata} (3rd ed.). Stata Press.
 
+McFadden, D. (1974). Conditional logit analysis of qualitative
+choice behavior. In P. Zarembka (Ed.), \emph{Frontiers in econometrics}
+(pp. 105-142). Academic Press.
+
+Menard, S. (2000). Coefficients of determination for multiple
+logistic regression analysis. \emph{The American Statistician}, 54(1),
+17-24. \doi{10.1080/00031305.2000.10474502}
+
 Mize, T.D., Doan, L., & Long, J.S. (2019). A general framework for
 comparing predictions and marginal effects across models.
 \emph{Sociological Methodology}, 49(1), 152-189.
 \doi{10.1177/0081175019852763}
 
+Nagelkerke, N.J.D. (1991). A note on a general definition of the
+coefficient of determination. \emph{Biometrika}, 78(3), 691-692.
+\doi{10.1093/biomet/78.3.691}
+
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. \emph{Journal of Business & Economic
 Statistics}, 36(4), 672-683.
+
+Tjur, T. (2009). Coefficients of determination in logistic
+regression models -- A new proposal: The coefficient of
+discrimination. \emph{The American Statistician}, 63(4), 366-372.
+\doi{10.1198/tast.2009.08210}
 
 Verbeke, G. & Lesaffre, E. (1997). The effect of misspecifying
 the random-effects distribution in linear mixed models for

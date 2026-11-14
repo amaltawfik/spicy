@@ -115,25 +115,30 @@ harmless.
 | Class(es) | Default | Notes |
 |---|---|---|
 | `lm` | `nobs, r2, adj_r2` | ✅ |
-| `glm` (+ `gam`) | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | ✅ Tjur (binomial) optional |
+| `glm` logit on a binary response (0/1, factor, logical), `rms::Glm` twin | `nobs, pseudo_r2_tjur, pseudo_r2_mcfadden, aic` | ✅ 2026-11-14 (ADR `dev/decisions/2026-11-14-pseudo-r2-defaults.md`); Nagelkerke opt-in |
+| `glm` other binomial (probit, cloglog, grouped), Poisson, `glm.nb`, `negative.binomial(theta)` | `nobs, pseudo_r2_mcfadden, aic` | ✅ 2026-11-14; Nagelkerke, Tjur (binomial) and `r2_deviance` (not binomial) opt-in |
+| `glm` continuous (gaussian, Gamma, inverse Gaussian, Tweedie) | `nobs, r2_deviance, aic` | ✅ 2026-11-14; McFadden / Nagelkerke refused (unit-dependent) |
+| `glm` quasi families | `nobs` | ✅ no likelihood; `r2_deviance` opt-in |
+| `gam` / `bam` | `nobs, aic` | ✅ no R-squared row: the frame stores mgcv's `dev.expl` as `pseudo_r2$dev_explained`, but no token renders it (corrected 2026-11-14: this row used to read as the glm default) |
 | survey: `svyglm` | `nobs, weighted_nobs, aic` | ✅ EXCLUDED from `any_glm` (2026-08, survey P2): no likelihood, so no pseudo-R²; the `aic` is the design-based AIC of Lumley & Scott (2015), read by name from survey's three-element `extractAIC`. `eff_p` opt-in. |
 | survey: `svyolr` | `nobs, weighted_nobs` | ✅ no likelihood at all: AIC / BIC / logLik / deviance are NA in the frame, so an explicit token cannot republish them |
 | survey: `svycoxph` | `nobs, weighted_nobs, n_events` | ✅ EXCLUDED from `any_coxph`; concordance in the footer; `deviance()` is a sign-flipped LRT on one engine and 0 on the other |
 | mixed: `lmer`/`glmer`, `glmmTMB`, `lme` | `nobs, r2_marginal, r2_conditional, AIC, BIC` | ✅ Nakagawa R² |
-| ordinal: `polr`, `clm` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | ✅ McFadden = Stata `ologit`, Nagelkerke = SPSS PLUM; closed-form null LL |
+| ordinal: `polr`, `clm` | `nobs, pseudo_r2_mcfadden, aic` | ✅ McFadden = Stata `ologit`; Nagelkerke (SPSS PLUM) opt-in since 2026-11-14; closed-form null LL |
+| `multinom`, `rms::lrm` (binary and ordinal) | `nobs, pseudo_r2_mcfadden, aic` | ✅ 2026-11-14; n of Nagelkerke = sum of the weights |
 | **universal fallback** (any class not matched above) | `nobs, AIC` | ✅ safety net; no blank block |
 
 ## 3. Fit-stats — proposed per-class (🔶 to validate + build)
 
 | Class | Proposed default | Optional | New work ⚙ |
 |---|---|---|---|
-| `multinom` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, AIC` | BIC, logLik, LR χ² | SHIPPED 2026-07-10: closed-form null LL shared with the ordinal path; multinom keeps weights on `fit$weights`, not in the model frame |
+| `multinom` | `nobs, pseudo_r2_mcfadden, AIC` (Nagelkerke left the default 2026-11-14) | BIC, logLik, LR χ² | SHIPPED 2026-07-10: closed-form null LL shared with the ordinal path; multinom keeps weights on `fit$weights`, not in the model frame |
 | `coxph` | `nobs, concordance, r2_nagelkerke, AIC` | LR/Wald/score χ², BIC | concordance; Cox R² |
 | `survreg` | `nobs, logLik, AIC, scale` | BIC, LR χ² | scale, logLik tokens |
 | `betareg` | `nobs, pseudo_r2, AIC` | φ, BIC, logLik | betareg pseudo-R² + φ |
-| `gam` | `nobs, dev_explained, adj_r2, AIC` | REML/GCV, edf, scale | dev_explained, edf |
+| `gam` | `nobs, dev_explained, adj_r2, AIC` (NOT shipped: the default is `nobs, aic`, see section 2) | REML/GCV, edf, scale | dev_explained token (the value is in the frame), edf |
 | `svyglm` | SHIPPED 2026-08 (survey P2) as `nobs, weighted_nobs, aic`; see section 2. `deviance` deliberately NOT offered: it is on the scale of the sum of the weights. | `eff_p` | design-based set |
-| `mlogit` | `nobs, pseudo_r2_mcfadden, logLik, AIC` | Nagelkerke, LR χ² | McFadden mlogit |
+| `mlogit` | `nobs, pseudo_r2_mcfadden, logLik, AIC` (NOT shipped: the frame carries no pseudo-R², and the default is the universal `nobs, aic`; checked 2026-11-14) | Nagelkerke, LR χ² | McFadden mlogit |
 | `fixest` | feols: `nobs, r2, within_r2, AIC`; feglm: `nobs, pseudo_r2, AIC` | RMSE, BIC, #FE | within-R², #FE |
 | `rms` | ols→lm; lrm→`nobs, C, r2_nagelkerke, Brier`; cph→coxph; orm→ordinal | LR χ², Dxy, g | C-index, Nagelkerke, Brier |
 | Bayesian (`brms`/`rstanarm`) | `nobs, r2_bayes, looic` | WAIC, ELPD | Bayesian R², LOO-IC/WAIC |
@@ -145,8 +150,9 @@ harmless.
 
 Existing renderable tokens (`R/regression_validate.R` `$show_fit_stats`):
 `nobs, weighted_nobs, r2, adj_r2, omega2, pseudo_r2_mcfadden,
-pseudo_r2_nagelkerke, pseudo_r2_tjur, r2_marginal, r2_conditional, sigma,
-rmse, f2, AIC, AICc, BIC, deviance` + the `*_change` nested-comparison family.
+pseudo_r2_nagelkerke, pseudo_r2_tjur, r2_deviance, r2_marginal,
+r2_conditional, sigma, rmse, f2, AIC, AICc, BIC, deviance` + the
+`*_change` nested-comparison family.
 
 Tokens the per-class work will likely need to ADD (⚙): `concordance` /
 `c_index`, `dev_explained`, `edf`, `within_r2`, `scale`, `phi`, `brier`,
@@ -198,7 +204,7 @@ has the parameter; a theta fixed in a `glm()` or mgcv call has no row.
 |---|---|---|
 | `fixest` feols | `fixed_effects, nobs, r2, within_r2, aic` | ✅ FE block = Yes/No rows keyed on INTERCEPT absorption (fixef_terms, NOT fixef_sizes — slope-only trap); rich engines display Yes/No, as_structured keeps 1/0/NA |
 | `fixest` feglm/fepois | `fixed_effects, nobs, pseudo_r2_mcfadden, aic` | ✅ fixest's own `pr2` |
-| `multinom` | `nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic` | ✅ shipped 2026-07-10 |
+| `multinom` | `nobs, pseudo_r2_mcfadden, aic` | ✅ shipped 2026-07-10; Nagelkerke left the default 2026-11-14 |
 | `coxph` | `nobs, n_events, aic` | ✅ (concordance = footer note; r2/LR tokens still 🔶) |
 | Bayesian | `nobs, r2_bayes` | ✅ elpd_loo/looic/waic opt-in |
 | `betareg` | (universal fallback) + opt-in `phi` | ✅ phi back-transformed from link.phi (y ~ x \| 1 trap); refused with precision covariates |
@@ -214,3 +220,20 @@ column = NA placeholder).
 estimands SHIPPED (coxph + survreg only; cph/flexsurvreg get neither);
 Bayesian AME draws-native SHIPPED; ordinal Thresholds block SHIPPED
 (+ clm Non-proportional effects); polr/clm profile CIs shipped.
+
+## Addendum 2026-11-14: R-squared defaults by family
+
+Decided in `dev/decisions/2026-11-14-pseudo-r2-defaults.md` (section 2
+above carries the new rows). A logit on a binary response shows Tjur's
+then McFadden's R-squared; the other discrete families McFadden's alone;
+the continuous `glm` families the new `r2_deviance` (1 - D / D0), with
+McFadden and Nagelkerke refused there because they depend on the unit of
+y. Nagelkerke left every default. A binomial fit is measured on its
+Bernoulli trials (n = sum of the prior weights), so a grouped fit gives
+the values of its expanded 0/1 rows; weights enter n as their sum for
+every family (`multinom` and binary `lrm` included).
+
+Two rows of this file had drifted from the behavior and were corrected:
+`gam` never showed a pseudo-R-squared (its frame stores `dev_explained`
+without a token), and `mlogit` was planned with McFadden but shows the
+universal `nobs, aic`. Neither behavior changed in this lot.

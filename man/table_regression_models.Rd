@@ -153,8 +153,8 @@ exponentiated; \code{show_thresholds}). Partial-proportional-odds \code{clm} ter
 render as a \verb{Non-proportional effects} block, one coefficient per
 cut-point. \code{exponentiate} yields proportional odds ratios under logit;
 \code{ci_method = "profile"} profiles the predictor coefficients. AME is
-per-category (the marginal effect on each P(Y = k)). Defaults include
-McFadden and Nagelkerke pseudo-R-squared. See the
+per-category (the marginal effect on each P(Y = k)). The default fit
+statistics include McFadden's pseudo-R-squared. See the
 \href{https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html}{Ordinal regression tables}
 article.
 
