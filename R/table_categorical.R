@@ -1392,7 +1392,9 @@
 #'   `FALSE`.
 #' @param decimal_mark The decimal mark, a single character: `"."` (the
 #'   default) or `","` in most styles; the Lancet style of
-#'   [spicy_style()] uses the middle dot.
+#'   [spicy_style()] uses the middle dot. In the Excel sheet, a cell of one
+#'   number shows the separator of the reader's machine (*Excel output* in
+#'   [spicy-package]).
 #' @param align Horizontal alignment of numeric columns in the
 #'   printed ASCII table and in the `tinytable`, `gt`, `flextable`,
 #'   `word`, and `clipboard` outputs. The first column (`Variable`)

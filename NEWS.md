@@ -347,6 +347,20 @@
   `spicy_svy_estimation_failed`) carries the call of the table function,
   so its header names the table.
 
+* The Excel sheets of `table_categorical_svy()`, `table_continuous()`,
+  `table_continuous_svy()`, `table_continuous_lm()`, `table_outcome()`
+  and `table_multiresponse()` write each cell that shows one number as a
+  number, at full precision, under a number format that shows the
+  console's text. These cells were text. The other cells (`<.001`, a
+  test with its statistic, a dash) stay the console's text. The rule is
+  set out in the new section *Excel output* of `?spicy`.
+
+* An Excel sheet holds a value half way between two displays as the
+  console shows it. Excel rounds such a value otherwise than R: a
+  percentage of 6.25 at one decimal, printed `6.2`, was a number that
+  Excel showed as `6.3`. This concerned `table_categorical()`,
+  `table_regression()` and the workbook of `code_book()`.
+
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
   in a stacked hierarchy) show their degrees of freedom in the cell,
@@ -681,10 +695,16 @@
   message.
 
 * `table_regression(output = "excel")` writes a p-value that `p_bands`
-  or `p_sigfig` shortens, and a number printed in scientific notation,
-  as the console prints them (`.02`, `3.40e+07`). The sheet showed the
-  p-value with the three decimals of its column (`.023`) and the number
-  in full.
+  or `p_sigfig` shortens under the format its text shows (`.02`), and a
+  number printed in scientific notation as the console's text
+  (`3.40e+07`). The sheet showed the p-value with the three decimals of
+  its column (`.023`) and the number in full.
+
+* `table_regression()` and `table_regression_uv()` with
+  `output = "excel"` write the numbers as numbers under any
+  `decimal_mark`, a French table and the Lancet style included: Excel
+  shows them with the separator of the reader's machine, and the mark
+  stays in the text cells (`<0,001`). The whole body was text.
 
 * `table_regression()` keeps the "Outcome" row out of the decimal
   alignment of the flextable, Word, gt and tinytable outputs. The label
@@ -930,6 +950,10 @@
   the "(Missing)" column, as when `by` has none. With `rescale = TRUE`,
   the call stopped on an error about the sum of the weights, and
   without it the table showed only a "(Missing)" row.
+
+* `table_categorical(output = "excel")` writes the p-value, the
+  association measure, its bounds and the SMD as numbers, like the
+  counts and percentages. They were text.
 
 # spicy 0.14.1
 

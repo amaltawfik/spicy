@@ -190,6 +190,27 @@
 #' (matching `lmerTest::glance()` and the `afex` output
 #' convention).
 #'
+#' @section Excel output:
+#' Every `output = "excel"` sheet follows one rule. A cell of the body
+#' that shows one number is a number, at full precision, under a number
+#' format that shows exactly the console's text: its decimals, its leading
+#' zero (dropped below 1 in the APA style), its sign, and the degrees of
+#' freedom some tests print after it. Excel rounds a value half way
+#' between two displays otherwise than R (6.25 at one decimal shows 6.3 in
+#' Excel, 6.2 in R): such a cell holds the value the console shows, so the
+#' sheet never shows a number the console does not. Every other cell is
+#' the console's text: a p-value below its threshold (`<.001`), a number
+#' in scientific notation, a test written with its statistic
+#' (`t(1168.70) = -4.33`), an effect size with its interval, a dash, an
+#' estimate with stars.
+#'
+#' The decimal mark belongs to the reader. Under `decimal_mark = ","`, or
+#' a style that sets another mark, the numbers show the separator of the
+#' machine that opens the sheet, and only the text cells carry the mark
+#' of the table. The workbook of [code_book()] keeps its numbers as
+#' numbers in the same way, a value half way between two displays as its
+#' PDF shows it.
+#'
 #' @section Classed conditions:
 #' All errors and warnings emitted by the stable / stabilizing
 #' surfaces carry classed conditions so downstream code can

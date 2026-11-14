@@ -2178,10 +2178,10 @@ spicy_fmt <- function(key, ...) {
 #'
 #' Two timing notes. Figures are frozen when a table is BUILT, like
 #' every formatting argument, while words resolve when it is printed --
-#' so set the language once, at the top of the document. And a comma
-#' mark makes an Excel export write its body as text rather than live
-#' numbers, since Excel would otherwise re-punctuate a numeric cell
-#' with the viewer's own locale.
+#' so set the language once, at the top of the document. And in an Excel
+#' export the numbers stay numbers, which Excel shows with the separator
+#' of the reader's machine: the comma reaches the text cells only
+#' (*Excel output* in [spicy-package]).
 #'
 #' Some French notes quote a name between guillemets, which the default
 #' LaTeX templates of Quarto and R Markdown set under every engine; a

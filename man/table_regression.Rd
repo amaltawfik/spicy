@@ -742,14 +742,10 @@ default) or \code{","} in most styles; the Lancet style of
 \code{\link[=spicy_style]{spicy_style()}} uses the middle dot. When
 \code{","} is used, the CI bracket separator switches to \code{"; "}
 automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.
-With \code{output = "excel"} a numeric cell is displayed by Excel
-with the \emph{viewer's} locale separator, which a file cannot set,
-so a non-default mark makes the body go out as pre-formatted
-text. Under the default \code{"."}, a cell that shows one number is a
-real number whenever its number format prints what the console
-prints. The other cells are text: a p-value below the threshold or
-shortened by the style (\code{p_bands}, \code{p_sigfig} of \code{\link[=spicy_style]{spicy_style()}}),
-a number in scientific notation, a dash, a cell with stars.}
+With \code{output = "excel"}, a cell that shows one number is a number,
+under any mark, which Excel shows with the separator of the reader's
+machine; the mark applies to the text cells (\verb{<,001}). See \emph{Excel
+output} in \link{spicy-package}.}
 
 \item{align}{Numeric column alignment.
 \code{"decimal"} (default) -- pre-pad cells so decimal marks line
