@@ -76,7 +76,7 @@ table_battery(sat, select = starts_with("life_sat_"), labels = TRUE)
 
 Each row sums to 100. The base `n` is the number of respondents who
 answered the item. Each item here has eight missing answers, not from
-the same respondents, hence the one base of 1192. A level
+the same respondents, hence the same base of 1192 on every row. A level
 that nobody chose keeps its column, at 0: it was offered and not chosen,
 which is worth reporting.
 
