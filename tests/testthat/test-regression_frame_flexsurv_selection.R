@@ -217,11 +217,17 @@ test_that("table_regression() body shows separate selection vs outcome rows", {
     capture.output(print(table_regression(fit))),
     collapse = "\n"
   )
-  expect_match(combined, "selection: (Intercept)", fixed = TRUE)
-  expect_match(combined, "outcome: (Intercept)", fixed = TRUE)
-  # `educ` appears in BOTH equations -- the body should show both rows.
-  expect_match(combined, "selection: educ", fixed = TRUE)
-  expect_match(combined, "outcome: educ", fixed = TRUE)
+  # `educ` appears in BOTH equations -- the body should show both rows,
+  # under its header, each named by its equation.
+  shown <- trimws(table_regression(fit)$Variable)
+  expect_identical(
+    shown[which(shown == "educ:") + 1:2],
+    c("selection", "outcome")
+  )
+  expect_identical(
+    shown[which(shown == "(Intercept):") + 1:2],
+    c("selection", "outcome")
+  )
 })
 
 
@@ -334,7 +340,7 @@ test_that("the intercepts of the two Heckman equations are intercepts", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$coefs$term[fr$coefs$is_intercept], ints)
   shown <- function(...) trimws(table_regression(...)$Variable)
-  expect_true(all(ints %in% shown(fit)))
+  expect_true("(Intercept):" %in% shown(fit))
   # show_intercept = FALSE hides them, alone and beside another model.
   expect_false(any(grepl(
     "(Intercept)",
@@ -350,7 +356,10 @@ test_that("the intercepts of the two Heckman equations are intercepts", {
   )))
   # keep / drop leave them to show_intercept, as they do the intercept
   # of lm().
-  expect_true(all(ints %in% shown(fit, keep = "educ")))
+  expect_identical(
+    shown(fit, keep = "educ")[1:3],
+    c("(Intercept):", "selection", "outcome")
+  )
   expect_true("(Intercept)" %in% shown(ols, keep = "educ"))
 })
 

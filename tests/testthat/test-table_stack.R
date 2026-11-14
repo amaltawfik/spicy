@@ -952,10 +952,10 @@ test_that("a multinomial model beside another keeps its long form", {
   }
   st <- build_st()
   tabs <- lapply(build_k, function(b) b())
-  # Panel A is the side-by-side table, one row per category and term.
-  expect_true(
-    "Student: age" %in% .st_console(st)[[1L]][attr(st, "panel_rows")$A]
-  )
+  # Panel A is the side-by-side table, one row per category and term,
+  # the category under the header of the term.
+  rows_a <- .st_console(st)[[1L]][attr(st, "panel_rows")$A]
+  expect_true(all(c("age:", "Student") %in% rows_a))
   # Panel B has other columns: its label row and the bounds of its
   # interval open it.
   expect_equal(attr(st, "header_rows"), attr(st, "section_rows")[[2L]] + 1:2)
@@ -2294,7 +2294,7 @@ test_that("a multinomial model beside others keeps or hides its intercepts", {
     unname(c(cf[, "(Intercept)"], cf[, "age"]))
   )
   expect_true("(Intercept)" %in% side$term[side$model_id == "Health"])
-  # The table still names each intercept by its outcome, indented under
+  # The table names each intercept by its outcome alone, indented under
   # "(Intercept):".
   body <- attr(table_regression(models), "structured")$body
   ic <- body[
@@ -2302,7 +2302,7 @@ test_that("a multinomial model beside others keeps or hides its intercepts", {
     ,
     drop = FALSE
   ]
-  expect_identical(ic$Variable, paste0("  ", cats, ": (Intercept)"))
+  expect_identical(ic$Variable, paste0("  ", cats))
   expect_identical(ic$.indent, rep(1L, length(cats)))
   # show_intercept = FALSE: neither model keeps an intercept.
   noint <- side_td(show_intercept = FALSE)

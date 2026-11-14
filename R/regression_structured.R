@@ -638,6 +638,7 @@ build_structured_body <- function(
   )])
   term_meta <- term_meta[order(term_meta$order_idx), , drop = FALSE]
   rownames(term_meta) <- NULL
+  term_meta$outcome_prefix <- .reg_term_outcome_prefix(term_meta$term, coefs)
 
   ref_level_map <- aligned$factor_ref_levels %||%
     stats::setNames(character(0), character(0))

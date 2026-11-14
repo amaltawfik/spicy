@@ -636,6 +636,13 @@
   "Outcome" row, as in the table of fit statistics alone. The outcomes
   appeared nowhere. `outcome_labels = FALSE` removes the row.
 
+* `table_regression()`: a multinomial model beside other models, and a
+  Heckman selection model, name each row under the header of a term by
+  its outcome category (or equation) alone: "Upper secondary" under
+  "age:", where the row read "Upper secondary: age". A factor level
+  keeps its category ("Upper secondary: Male"). `tidy()` and
+  `output = "long"` keep the prefixed terms.
+
 * `table_regression()` and `table_stack()`: the note of the outputs that
   print the bounds of an interval in columns headed "LL" and "UL"
   (tinytable, gt, flextable, Word, Excel and the clipboard) defines

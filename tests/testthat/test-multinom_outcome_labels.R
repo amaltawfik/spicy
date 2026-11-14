@@ -47,9 +47,39 @@ test_that("multi-model multinom body shows grouped rows with outcome", {
   expect_match(combined, "(Intercept):", fixed = TRUE)
   expect_match(combined, "Sepal.Length:", fixed = TRUE)
   expect_match(combined, "Sepal.Width:", fixed = TRUE)
-  # Outcome-labeled rows
-  expect_match(combined, "versicolor: (Intercept)", fixed = TRUE)
-  expect_match(combined, "virginica: (Intercept)", fixed = TRUE)
+  # Under each header, a row per outcome category, named by it alone.
+  shown <- trimws(table_regression(list(fit0, fit))$Variable)
+  expect_identical(
+    shown[which(shown == "(Intercept):") + 1:2],
+    c("versicolor", "virginica")
+  )
+  expect_false(grepl("versicolor: (Intercept)", combined, fixed = TRUE))
+})
+
+test_that("a multinomial row beside other models names its category alone", {
+  skip_if_not_installed("nnet")
+  d <- stats::na.omit(sochealth[, c("education", "age", "sex", "smoking")])
+  mn <- nnet::multinom(education ~ age + sex, data = d, trace = FALSE)
+  lg <- stats::glm(smoking ~ age + sex, data = d, family = stats::binomial)
+  out <- table_regression(
+    list(mn, lg),
+    labels = c("(Intercept)" = "Constant", age = "Age (years)")
+  )
+  shown <- trimws(out$Variable)
+  cats <- c("Upper secondary", "Tertiary")
+  # The header names the term (its label), the rows the categories.
+  expect_identical(shown[which(shown == "Constant:") + 1:2], cats)
+  expect_identical(shown[which(shown == "Age (years):") + 1:2], cats)
+  # A factor level keeps its category: the levels stay apart.
+  expect_true(all(paste0(cats, ": Male") %in% shown))
+  # The machine outputs keep the prefixed term and the category.
+  skip_if_not_installed("broom")
+  td <- broom::tidy(out)
+  expect_true("Tertiary: age" %in% td$term)
+  expect_identical(
+    unique(td$outcome_level[td$term == "Tertiary: age"]),
+    "Tertiary"
+  )
 })
 
 test_that("multinom shows DIFFERENT estimates for the two outcomes", {

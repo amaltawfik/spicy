@@ -282,6 +282,7 @@ render_regression_table <- function(
   )])
   term_meta <- term_meta[order(term_meta$order_idx), , drop = FALSE]
   rownames(term_meta) <- NULL
+  term_meta$outcome_prefix <- .reg_term_outcome_prefix(term_meta$term, coefs)
 
   ref_level_map <- aligned$factor_ref_levels %||%
     setNames(character(0), character(0))
@@ -1575,6 +1576,27 @@ format_cell_value <- function(
 
 # ---- Term label formatter ------------------------------------------------
 
+# The outcome category a term is named after, as a multinomial model names
+# its terms beside other models ("Tertiary: age", of `outcome_level`
+# "Tertiary"); NA for any other term, an ordinal per-category AME
+# included (its term is the predictor's, "age").
+.reg_term_outcome_prefix <- function(terms, coefs) {
+  vapply(
+    terms,
+    function(t) {
+      ol <- unique(coefs$outcome_level[coefs$term %in% t])
+      ol <- ol[!is.na(ol)]
+      if (length(ol) == 1L && startsWith(t, paste0(ol, ": "))) {
+        ol
+      } else {
+        NA_character_
+      }
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+}
+
 format_term_label <- function(
   term_row,
   reference_label,
@@ -1629,6 +1651,14 @@ format_term_label <- function(
   }
   if (!is.na(term_row$factor_term) && isTRUE(group_factor_levels)) {
     lvl <- term_row$factor_level
+    # A multinomial row under the header of its term ("age:",
+    # "(Intercept):") is named by its outcome category alone; a factor
+    # level keeps "category: level", which tells the levels apart.
+    ol <- term_row$outcome_prefix %||% NA_character_
+    if ((is.na(lvl) || !nzchar(lvl)) && !is.na(ol)) {
+      lbl <- resolve_label(term, labels)
+      return(paste0("  ", if (identical(lbl, term)) ol else lbl))
+    }
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
     }
