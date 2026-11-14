@@ -674,8 +674,8 @@ table_regression(
 #>    Yes              │    1.02  [0.77, 1.35]   .883   0.00  [-0.04, 0.05]   .883 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1175                                                      
+#>  R² (Tjur)          │    0.00                                                   
 #>  R² (McFadden)      │    0.00                                                   
-#>  R² (Nagelkerke)    │    0.00                                                   
 #>  AIC                │ 1220.5                                                    
 #> 
 #> Note. Logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect; AIC = Akaike information criterion.
@@ -1018,7 +1018,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_hdtreczockkuh21l8cc5 .table
+Categorical table by education {#tinytable_o7g1iay9whon5ph7dvyx .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

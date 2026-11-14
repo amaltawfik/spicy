@@ -512,8 +512,8 @@ reader:</p>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>   -0.91  [-1.29, -0.52]    -0.91  [-1.31, -0.56] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1175                     1175                    </span></span>
+<span><span class="co">#&gt;  R² (Tjur)                <span style="color: #9E9E9E;">│</span>    0.02                      –                   </span></span>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                      –                   </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                      –                   </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                       –                   </span></span>
 <span><span class="co">#&gt;  R² (Bayes)               <span style="color: #9E9E9E;">│</span>     –                       0.02                 </span></span>
 <span><span class="co">#&gt; </span></span>
@@ -527,9 +527,10 @@ equal-tailed posterior credible interval (the all-Bayesian table above
 relabels the header itself, <code>95% CrI</code>). In the fit-statistics
 block, <code>n</code> fills for both models; the remaining rows split by
 paradigm — <code>R² (Bayes)</code> fills only the Bayesian column, and
-the likelihood-based rows (the two pseudo-R² and AIC) only the
-frequentist one, because a posterior has none of them. Which brings us
-to the fit statistics a posterior does have — and to those it lacks.</p>
+the rows of the maximum-likelihood fit (Tjur’s and McFadden’s R², and
+AIC) only the frequentist one, because spicy computes none of them from
+a posterior. Which brings us to the fit statistics a posterior does have
+— and to those it lacks.</p>
 </div>
 <div class="section level2">
 <h2 id="fit-statistics-for-a-posterior">Fit statistics for a posterior<a class="anchor" aria-label="anchor" href="#fit-statistics-for-a-posterior"></a>

@@ -428,7 +428,7 @@ counts <- table_regression(
 sc <- as_structured(counts)
 sc$body[["Events/N"]]
 #> [1] 8.460000e+02 8.460000e+02           NA 4.370000e+02 4.090000e+02
-#> [6] 1.200000e+03 2.791201e-03 4.810310e-03 1.457700e+03
+#> [6] 1.200000e+03 3.410272e-03 2.791201e-03 1.457700e+03
 sc$col_meta[["Events/N"]]$display_cells
 #> [1] "846/1200" "846/1200" NA         "437/620"  "409/580"  NA         NA        
 #> [8] NA         NA

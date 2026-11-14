@@ -223,7 +223,6 @@ convention: <code>summary.polr()</code>, SPSS PLUM, SAS, Stata
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -250,17 +249,16 @@ the substance lies in the odds ratios and marginal effects below. Hide
 the block with <code>show_thresholds = FALSE</code> to fall back to a
 compact footer line.</li>
 <li>Below the fit-stats rule, the model-fit block reports
-<strong>n</strong>, two pseudo-<span class="math inline">\(R^2\)</span>
-(<strong>McFadden</strong>, the Stata <code>ologit</code> default, and
-<strong>Nagelkerke</strong>, one of the three measures SPSS PLUM prints
-by default, alongside Cox &amp; Snell and McFadden), and
-<strong>AIC</strong>. Both compare the fitted log-likelihood to the
-intercept-only model’s, and both round to 0.00 here: these four
+<strong>n</strong>, <strong>McFadden’s pseudo-<span class="math inline">\(R^2\)</span></strong> (the one Stata’s
+<code>ologit</code> prints) and <strong>AIC</strong>. McFadden’s <span class="math inline">\(R^2\)</span> compares the fitted log-likelihood to
+the intercept-only model’s, and it rounds to 0.00 here: these four
 predictors explain almost none of the variation in self-rated health.
-This survey model therefore illustrates table mechanics and
-interpretation <em>wording</em>; read the exemplary sentences below as
-templates, not as substantive findings. Override the block with
-<code>show_fit_stats</code>
+SPSS PLUM prints Cox &amp; Snell’s and Nagelkerke’s beside it, and
+<code>show_fit_stats</code> can add the latter
+(<code>"pseudo_r2_nagelkerke"</code>). This survey model therefore
+illustrates table mechanics and interpretation <em>wording</em>; read
+the exemplary sentences below as templates, not as substantive findings.
+Override the block with <code>show_fit_stats</code>
 (e.g. <code>show_fit_stats = c("nobs", "aic", "bic")</code>).</li>
 </ul>
 </div>
@@ -306,7 +304,6 @@ clear error.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -367,7 +364,6 @@ categories in columns (Long &amp; Freese 2014; Williams 2012).</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -441,7 +437,6 @@ quantities.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span>  1156                                       </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span>  2761.2                                     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -493,7 +488,6 @@ three accepted forms are detailed in the main article’s
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -567,7 +561,6 @@ following APA 7 / SAMPL / STROBE and matching
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                           </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                        </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                        </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -607,7 +600,6 @@ proportional odds.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -705,7 +697,6 @@ thresholds:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)                   <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)                 <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 2756.1                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -795,7 +786,6 @@ is a ratio of latent standard deviations, not an odds ratio:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2757.8                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -875,7 +865,6 @@ supplied as a list:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                  <span style="color: #9E9E9E;">│</span> 1156                                           1156    </span></span>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                           0.00 </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)    <span style="color: #9E9E9E;">│</span>    0.00                                           0.00 </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2755.3                                         2761.2  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                                    Adjusted               </span></span>
@@ -1425,22 +1414,6 @@ R² (McFadden)
 </td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">
-R² (Nagelkerke)
-</td>
-<td headers="B" class="gt_row gt_center">
-   0.00
-</td>
-<td headers="AME-Poor" class="gt_row gt_center">
-</td>
-<td headers="AME-Fair" class="gt_row gt_center">
-</td>
-<td headers="AME-Good" class="gt_row gt_center">
-</td>
-<td headers="AME-Very-good" class="gt_row gt_center">
-</td>
-</tr>
-<tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #333333;">
 AIC
 </td>
@@ -1481,7 +1454,7 @@ row is labeled by its response category in the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> M1       self_rated_hea… Poor          age   ame            3.91<span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">183</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> M1       self_rated_hea… Fair          age   ame            1.20<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">565</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> M1       self_rated_hea… Good          age   ame           -<span style="color: #BB0000;">1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">057</span>1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">691</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> M1       self_rated_hea… Very good     age   ame           -<span style="color: #BB0000;">1.47</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.000<span style="text-decoration: underline;">692</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> M1       self_rated_hea… <span style="color: #BB0000;">NA</span>            age   B             -<span style="color: #BB0000;">7.94</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.003<span style="text-decoration: underline;">72</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> M1       self_rated_hea… Poor          sexM… ame           -<span style="color: #BB0000;">8.52</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.005<span style="text-decoration: underline;">39</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> M1       self_rated_hea… Fair          sexM… ame           -<span style="color: #BB0000;">2.62</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.016<span style="text-decoration: underline;">6</span>   </span></span>

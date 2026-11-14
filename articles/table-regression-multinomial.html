@@ -220,7 +220,6 @@ log; unlike <code>polr()</code>, <code><a href="https://rdrr.io/pkg/nnet/man/mul
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                         </span></span>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                                      </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                      </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -252,9 +251,9 @@ substantive interest.</li>
 <li>Inference is <strong>Wald-z</strong> (<code>df = Inf</code>),
 matching <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>-based practice for ML fits and Stata
 <code>mlogit</code>; <code>nnet</code> itself prints no p-values.</li>
-<li>The model-fit block reports <strong>n</strong>, the <strong>McFadden
-and Nagelkerke pseudo-R²</strong>, and <strong>AIC</strong>, once, under
-the first group — they belong to the model, not to an equation.</li>
+<li>The model-fit block reports <strong>n</strong>, <strong>McFadden’s
+pseudo-R²</strong> and <strong>AIC</strong>, once, under the first
+group: they belong to the model, not to an equation.</li>
 </ul>
 <p>Before reading any cell, the whole model must earn its keep: the
 joint likelihood-ratio test against the intercept-only fit — the test
@@ -315,7 +314,6 @@ the ratio scale:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                                               </span></span>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                                                            </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                                            </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                                             </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Reference outcome: Employed. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -370,7 +368,6 @@ comparisons displayed change.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                     </span></span>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                  </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                  </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR. The (Intercept) row estimates the baseline odds. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -498,7 +495,6 @@ next to that category’s coefficients:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span> 1200                                                 </span></span>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                                              </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                              </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                               </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -613,7 +609,6 @@ freedom multiply by the number of non-reference outcomes:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                    <span style="color: #9E9E9E;">│</span> 1200            1200               </span></span>
 <span><span class="co">#&gt;  R² (McFadden)                        <span style="color: #9E9E9E;">│</span>    0.01            0.02            </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)                      <span style="color: #9E9E9E;">│</span>    0.03            0.04            </span></span>
 <span><span class="co">#&gt;  AIC                                  <span style="color: #9E9E9E;">│</span> 2514.3          2515.8             </span></span>
 <span><span class="co">#&gt;  Δχ²                                  <span style="color: #9E9E9E;">│</span>     –              4.52 (3)        </span></span>
 <span><span class="co">#&gt;  p (change)                           <span style="color: #9E9E9E;">│</span>     –               .211           </span></span>
@@ -763,7 +758,6 @@ table falls back to the one-row-per-comparison layout
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                    <span style="color: #9E9E9E;">│</span> 1200            1200           </span></span>
 <span><span class="co">#&gt;  R² (McFadden)                        <span style="color: #9E9E9E;">│</span>    0.01            0.02        </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)                      <span style="color: #9E9E9E;">│</span>    0.03            0.04        </span></span>
 <span><span class="co">#&gt;  AIC                                  <span style="color: #9E9E9E;">│</span> 2509.4          2515.8         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR. The (Intercept) row estimates the baseline odds. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
@@ -1324,28 +1318,6 @@ R² (McFadden)
 </td>
 <td headers="Student:-B" class="gt_row gt_center">
    0.02
-</td>
-<td headers="Student:-AME" class="gt_row gt_center">
-</td>
-<td headers="Unemployed:-B" class="gt_row gt_center">
-</td>
-<td headers="Unemployed:-AME" class="gt_row gt_center">
-</td>
-<td headers="Inactive:-B" class="gt_row gt_center">
-</td>
-<td headers="Inactive:-AME" class="gt_row gt_center">
-</td>
-<td headers="Employed:-B" class="gt_row gt_center">
-</td>
-<td headers="Employed:-AME" class="gt_row gt_center">
-</td>
-</tr>
-<tr>
-<td headers="Variable" class="gt_row gt_left">
-R² (Nagelkerke)
-</td>
-<td headers="Student:-B" class="gt_row gt_center">
-   0.04
 </td>
 <td headers="Student:-AME" class="gt_row gt_center">
 </td>

@@ -205,6 +205,38 @@
   post-stratified design, the note said “15 PSU” for the 8 units left
   and 7 degrees of freedom.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the default R-squared rows follow the family of the model. A logit on
+  a binary outcome shows Tjur’s R-squared, then McFadden’s. Probit and
+  cloglog models, grouped binomial responses, Poisson, negative
+  binomial, [`polr()`](https://rdrr.io/pkg/MASS/man/polr.html), `clm()`,
+  [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) and
+  [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) models show
+  McFadden’s alone. Nagelkerke’s R-squared leaves the defaults;
+  `show_fit_stats = "pseudo_r2_nagelkerke"` still shows it.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  computes the pseudo-R-squared of a binomial model on its trials, so
+  the same data give the same values whatever their layout: a
+  `cbind(successes, failures)` response, a proportion with the trials as
+  `weights` and 0/1 rows weighted by counts now give the values of the
+  expanded 0/1 rows. McFadden’s and Nagelkerke’s R-squared of such
+  models change, Tjur’s is computed for them, and Tjur’s of a weighted
+  model weights its means. The n of Nagelkerke’s R-squared is the sum of
+  the weights, which also changes it for weighted Poisson, negative
+  binomial, [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html)
+  and binary [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html)
+  models.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the gaussian, Gamma, inverse Gaussian and Tweedie families of
+  [`glm()`](https://rdrr.io/r/stats/glm.html) show the deviance
+  R-squared by default and refuse `pseudo_r2_mcfadden` and
+  `pseudo_r2_nagelkerke`, whose values change with the unit of the
+  outcome. A gaussian [`glm()`](https://rdrr.io/r/stats/glm.html) showed
+  McFadden’s and Nagelkerke’s R-squared, not the R-squared of
+  [`lm()`](https://rdrr.io/r/stats/lm.html).
+
 ### New features
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -355,6 +387,15 @@
   `betar(theta)`) has no row. A negative-binomial
   [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) always
   shows its theta.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `show_fit_stats = "r2_deviance"` shows the deviance R-squared of a
+  [`glm()`](https://rdrr.io/r/stats/glm.html), 1 - deviance / null
+  deviance. It is the default R-squared of the gaussian, Gamma, inverse
+  Gaussian and Tweedie families, the R-squared of
+  [`lm()`](https://rdrr.io/r/stats/lm.html) for a gaussian model with
+  the identity link, and is available for Poisson, negative binomial and
+  quasi models.
 
 - Word (flextable), gt (HTML, Word and RTF) and tinytable HTML tables
   now write a negative number with the minus sign (U+2212), in the cells
@@ -821,10 +862,10 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `p_adjust` leaves out of the family the intercepts of a multinomial
   model and of a
-  [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html)
+  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
   model, as it does other intercepts, and `show_intercept = FALSE`,
   `keep` and `drop` treat the intercepts of a
-  [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html)
+  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
   model as they do the intercept of other models.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):

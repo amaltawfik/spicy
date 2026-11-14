@@ -559,8 +559,8 @@ table_stack(
 #>    Yes           │    0.95  0.15  [ 0.70,  1.30]   .767 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
+#>  R² (Tjur)       │    0.00                              
 #>  R² (McFadden)   │    0.00                              
-#>  R² (Nagelkerke) │    0.00                              
 #>  AIC             │ 1421.8                               
 #> 
 #> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
@@ -605,8 +605,8 @@ table_regression_uv(sh, outcome = smoking,
 #>    Tertiary               │       0.41  [0.28, 0.60]  <.001           0.40 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │                                        1175    
+#>  R² (Tjur)                │                                           0.02 
 #>  R² (McFadden)            │                                           0.02 
-#>  R² (Nagelkerke)          │                                           0.03 
 #>  AIC                      │                                        1200.9  
 #> 
 #>                                Multivariable     
@@ -1191,8 +1191,11 @@ the family fixes it (binomial, Poisson). The confidence interval and the
 average marginal effects use the same distribution. The table title
 becomes family-aware (“Logistic regression”, “Poisson regression”,
 “Probit regression”, …) and the default fit-statistics block swaps in
-`nobs`, `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, and `aic` instead
-of `R²` and `Adj. R²`.
+`nobs`, the R² rows of the family and `aic` instead of `R²` and
+`Adj. R²`. A logit on a binary outcome shows Tjur’s and McFadden’s R²
+(`pseudo_r2_tjur`, `pseudo_r2_mcfadden`), the other binomial, Poisson
+and negative binomial models McFadden’s alone, and the gaussian, Gamma,
+inverse Gaussian and Tweedie families the deviance R² (`r2_deviance`).
 
 We illustrate with a logistic regression of `smoking` on `sex`, `age`,
 and `education` from `sochealth`, reusing `sh` — the copy of `sochealth`
@@ -1222,25 +1225,28 @@ table_regression(fit)
 #>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                 
+#>  R² (Tjur)                │    0.02                              
 #>  R² (McFadden)            │    0.02                              
-#>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
-Read the fit block with care. McFadden and Nagelkerke R² are
-likelihood-based analogs of R², not proportions of explained variance —
-their values are not comparable to an OLS R², and different measures
-disagree by construction on the same fit (here 0.02 for McFadden versus
-0.03 for Nagelkerke). Long and Freese (2014, §3.3) find these scalar
-measures of limited utility except as a rough index for comparing
-competing models on the same data, and prefer the information criteria —
-hence AIC in the default block. When reporting one, name the specific
-measure, as the row labels here do; a generic “pseudo-R²” is ambiguous
-across software. Tjur’s (2009) coefficient of discrimination, an
-alternative on the probability scale for binary outcomes, is available
-as the opt-in token `pseudo_r2_tjur` via `show_fit_stats`.
+Read the fit block with care. Neither row is a share of explained
+variance, and neither compares with an OLS R². Tjur’s (2009) R² is the
+mean predicted probability of the smokers minus that of the non-smokers.
+McFadden’s (1974) is the proportional reduction of the log-likelihood
+from the intercept-only model. Both read 0.02 here. Other measures give
+other numbers on the same fit: Nagelkerke’s R², which `show_fit_stats`
+adds with `"pseudo_r2_nagelkerke"`, is 0.03. When reporting one, name
+it, as the row labels do: a generic “pseudo-R²” is ambiguous across
+software (Long & Freese 2014, p. 126). A threshold quoted for one
+measure does not carry over to another (Hemmert et al. 2018). Long and
+Freese (2014, p. 120) find these measures of limited use in their own
+research, with the exception of the information criteria, hence AIC in
+the default block. The reference page,
+[`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+gives the measure of each family and why.
 
 ### Response-scale display: `exponentiate = TRUE`
 
@@ -1280,8 +1286,8 @@ table_regression(fit, exponentiate = TRUE)
 #>    Tertiary               │    0.40  0.08  [0.27, 0.59]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                               
+#>  R² (Tjur)                │    0.02                            
 #>  R² (McFadden)            │    0.02                            
-#>  R² (Nagelkerke)          │    0.03                            
 #>  AIC                      │ 1200.9                             
 #> 
 #> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
@@ -1333,8 +1339,8 @@ table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
 #>    Tertiary               │        59/391  -0.91  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │       1175                                  
+#>  R² (Tjur)                │          0.02                               
 #>  R² (McFadden)            │          0.02                               
-#>  R² (Nagelkerke)          │          0.03                               
 #>  AIC                      │       1200.9                                
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
@@ -1375,8 +1381,8 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>    Tertiary               │   -0.91  21.70 (2)  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                      
+#>  R² (Tjur)                │    0.02                   
 #>  R² (McFadden)            │    0.02                   
-#>  R² (Nagelkerke)          │    0.03                   
 #>  AIC                      │ 1198.9                    
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared; AIC = Akaike information criterion.
@@ -1453,8 +1459,8 @@ table_regression(fit, standardized = "pseudo")
 #>    Tertiary               │   -0.91  -0.49  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                        
+#>  R² (Tjur)                │    0.02                                     
 #>  R² (McFadden)            │    0.02                                     
-#>  R² (Nagelkerke)          │    0.03                                     
 #>  AIC                      │ 1200.9                                      
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies); CI = confidence interval; AIC = Akaike information criterion.
@@ -1492,8 +1498,8 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>    Tertiary               │   -0.91  <.001  -0.15  [-0.22, -0.09]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                         
+#>  R² (Tjur)                │    0.02                                      
 #>  R² (McFadden)            │    0.02                                      
-#>  R² (Nagelkerke)          │    0.03                                      
 #>  AIC                      │ 1200.9                                       
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.
@@ -1642,8 +1648,8 @@ table_regression(fit, ci_method = "profile")
 #>    Tertiary               │   -0.91  0.20  [-1.29, -0.52]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                 
+#>  R² (Tjur)                │    0.02                              
 #>  R² (McFadden)            │    0.02                              
-#>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
 #> Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood. CI = confidence interval; AIC = Akaike information criterion.
@@ -1692,8 +1698,8 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>    Tertiary               │                                                
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                  1175                     
+#>  R² (Tjur)                │    0.00                  0.00                  
 #>  R² (McFadden)            │    0.00                  0.00                  
-#>  R² (Nagelkerke)          │    0.00                  0.00                  
 #>  AIC                      │ 1217.6                1218.5                   
 #>  Δχ²                      │     –                    1.10 (1)              
 #>  p (change)               │     –                     .294                 
@@ -1713,8 +1719,8 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>    Tertiary               │   -0.91      0.20  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                     
+#>  R² (Tjur)                │    0.02                  
 #>  R² (McFadden)            │    0.02                  
-#>  R² (Nagelkerke)          │    0.03                  
 #>  AIC                      │ 1200.9                   
 #>  Δχ²                      │   21.64 (2)              
 #>  p (change)               │    <.001                 
@@ -2051,6 +2057,11 @@ Epidemiology*, 32(1), 3–20.
 
 Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
 Springer. Section 5.4 on multiplicity.
+
+Hemmert, G. A. J., Schons, L. M., Wieseke, J., and Schimmelpfennig, H.
+(2018). Log-likelihood-based pseudo-R² in logistic regression: Deriving
+sample-sensitive benchmarks. *Sociological Methods & Research*, 47(3),
+507–531.
 
 Hosmer, D. W., Lemeshow, S., and Sturdivant, R. X. (2013). *Applied
 Logistic Regression* (3rd ed.). Wiley.

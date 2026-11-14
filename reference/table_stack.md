@@ -342,8 +342,8 @@ table_stack(
 #>    Male          │    1.00  0.13  [ 0.78,  1.29]   .978 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1200                                 
+#>  R² (Tjur)       │    0.00                              
 #>  R² (McFadden)   │    0.00                              
-#>  R² (Nagelkerke) │    0.00                              
 #>  AIC             │ 1457.7                               
 #> 
 #> Note. BMI: linear regression; Dentist: logistic regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
@@ -374,8 +374,8 @@ table_regression(list(BMI = fit_bmi, Dentist = fit_dentist),
 #>    Male          │    0.00  0.13  [-0.25,  0.25]   .978 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1200                                 
+#>  R² (Tjur)       │    0.00                              
 #>  R² (McFadden)   │    0.00                              
-#>  R² (Nagelkerke) │    0.00                              
 #>  AIC             │ 1457.7                               
 #> 
 #> Note. BMI: linear regression; Dentist: logistic regression. Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.

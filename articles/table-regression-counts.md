@@ -87,7 +87,6 @@ table_regression(fit_pois, exponentiate = TRUE)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │  915                               
 #>  R² (McFadden)   │    0.05                            
-#>  R² (Nagelkerke) │    0.19                            
 #>  AIC             │ 3312.3                             
 #> 
 #> Note. Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
@@ -382,7 +381,6 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │  915      915      915      915    
 #>  R² (McFadden)   │    0.05      –       0.03      –   
-#>  R² (Nagelkerke) │    0.19      –       0.11      –   
 #>  AIC             │ 3312.3   3225.5   3134.1   3122.5  
 #> 
 #> Note. Poisson: Poisson regression; ZIP: zero-inflated Poisson regression; NB: negative-binomial regression; ZINB: zero-inflated negative-binomial regression. Coefficients exponentiated and displayed as IRR. The (Intercept) row estimates the baseline rate. Std. errors: Poisson: classical (Fisher information), ZIP: Wald asymptotic (z), NB: classical (Fisher information), ZINB: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; AIC = Akaike information criterion.

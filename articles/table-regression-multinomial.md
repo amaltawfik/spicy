@@ -119,7 +119,6 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                         
 #>  R² (McFadden)            │    0.02                                                      
-#>  R² (Nagelkerke)          │    0.04                                                      
 #>  AIC                      │ 2515.8                                                       
 #> 
 #> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
@@ -151,9 +150,9 @@ row blocks; side by side is the publication convention. Reading it:
 - Inference is **Wald-z** (`df = Inf`), matching
   [`summary()`](https://rdrr.io/r/base/summary.html)-based practice for
   ML fits and Stata `mlogit`; `nnet` itself prints no p-values.
-- The model-fit block reports **n**, the **McFadden and Nagelkerke
-  pseudo-R²**, and **AIC**, once, under the first group — they belong to
-  the model, not to an equation.
+- The model-fit block reports **n**, **McFadden’s pseudo-R²** and
+  **AIC**, once, under the first group: they belong to the model, not to
+  an equation.
 
 Before reading any cell, the whole model must earn its keep: the joint
 likelihood-ratio test against the intercept-only fit — the test Stata
@@ -219,7 +218,6 @@ table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                                               
 #>  R² (McFadden)            │    0.02                                                                            
-#>  R² (Nagelkerke)          │    0.04                                                                            
 #>  AIC                      │ 2515.8                                                                             
 #> 
 #> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Reference outcome: Employed. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
@@ -277,7 +275,6 @@ table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                     
 #>  R² (McFadden)            │    0.02                                  
-#>  R² (Nagelkerke)          │    0.04                                  
 #>  AIC                      │ 2515.8                                   
 #> 
 #> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR. The (Intercept) row estimates the baseline odds. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
@@ -416,7 +413,6 @@ table_regression(fit, show_columns = c("b", "ame"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1200                                                 
 #>  R² (McFadden)            │    0.02                                              
-#>  R² (Nagelkerke)          │    0.04                                              
 #>  AIC                      │ 2515.8                                               
 #> 
 #> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
@@ -535,7 +531,6 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                    │ 1200            1200               
 #>  R² (McFadden)                        │    0.01            0.02            
-#>  R² (Nagelkerke)                      │    0.03            0.04            
 #>  AIC                                  │ 2514.3          2515.8             
 #>  Δχ²                                  │     –              4.52 (3)        
 #>  p (change)                           │     –               .211           
@@ -686,7 +681,6 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                    │ 1200            1200           
 #>  R² (McFadden)                        │    0.01            0.02        
-#>  R² (Nagelkerke)                      │    0.03            0.04        
 #>  AIC                                  │ 2509.4          2515.8         
 #> 
 #> Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR. The (Intercept) row estimates the baseline odds. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.

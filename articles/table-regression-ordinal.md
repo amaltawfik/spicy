@@ -120,7 +120,6 @@ table_regression(fit)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                 
 #>  R² (McFadden)      │    0.00                              
-#>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
@@ -146,16 +145,16 @@ Reading the table:
   substance lies in the odds ratios and marginal effects below. Hide the
   block with `show_thresholds = FALSE` to fall back to a compact footer
   line.
-- Below the fit-stats rule, the model-fit block reports **n**, two
-  pseudo-\\R^2\\ (**McFadden**, the Stata `ologit` default, and
-  **Nagelkerke**, one of the three measures SPSS PLUM prints by default,
-  alongside Cox & Snell and McFadden), and **AIC**. Both compare the
-  fitted log-likelihood to the intercept-only model’s, and both round to
-  0.00 here: these four predictors explain almost none of the variation
-  in self-rated health. This survey model therefore illustrates table
-  mechanics and interpretation *wording*; read the exemplary sentences
-  below as templates, not as substantive findings. Override the block
-  with `show_fit_stats`
+- Below the fit-stats rule, the model-fit block reports **n**,
+  **McFadden’s pseudo-\\R^2\\** (the one Stata’s `ologit` prints) and
+  **AIC**. McFadden’s \\R^2\\ compares the fitted log-likelihood to the
+  intercept-only model’s, and it rounds to 0.00 here: these four
+  predictors explain almost none of the variation in self-rated health.
+  SPSS PLUM prints Cox & Snell’s and Nagelkerke’s beside it, and
+  `show_fit_stats` can add the latter (`"pseudo_r2_nagelkerke"`). This
+  survey model therefore illustrates table mechanics and interpretation
+  *wording*; read the exemplary sentences below as templates, not as
+  substantive findings. Override the block with `show_fit_stats`
   (e.g. `show_fit_stats = c("nobs", "aic", "bic")`).
 
 ## Odds ratios: `exponentiate = TRUE`
@@ -198,7 +197,6 @@ table_regression(fit, exponentiate = TRUE)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                 
 #>  R² (McFadden)      │    0.00                              
-#>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
@@ -260,7 +258,6 @@ table_regression(fit, show_columns = c("b", "ame"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                                 
 #>  R² (McFadden)      │    0.00                                              
-#>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
@@ -339,7 +336,6 @@ table_regression(fit, show_columns = "ame")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │  1156                                       
 #>  R² (McFadden)      │     0.00                                    
-#>  R² (Nagelkerke)    │     0.00                                    
 #>  AIC                │  2761.2                                     
 #> 
 #> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
@@ -395,7 +391,6 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                                 
 #>  R² (McFadden)      │    0.00                                              
-#>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CR1), clusters by region. AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
@@ -462,7 +457,6 @@ table_regression(fit, ci_method = "profile", show_columns = c("b", "ci", "p"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                           
 #>  R² (McFadden)      │    0.00                        
-#>  R² (Nagelkerke)    │    0.00                        
 #>  AIC                │ 2761.2                         
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
@@ -504,7 +498,6 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                                 
 #>  R² (McFadden)      │    0.00                                              
-#>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
@@ -602,7 +595,6 @@ table_regression(clm_npo)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │ 1156                                 
 #>  R² (McFadden)                   │    0.00                              
-#>  R² (Nagelkerke)                 │    0.01                              
 #>  AIC                             │ 2756.1                               
 #> 
 #> Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
@@ -697,7 +689,6 @@ table_regression(clm_scale)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                 
 #>  R² (McFadden)      │    0.00                              
-#>  R² (Nagelkerke)    │    0.01                              
 #>  AIC                │ 2757.8                               
 #> 
 #> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response. CI = confidence interval; AIC = Akaike information criterion.
@@ -776,7 +767,6 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                  │ 1156                                           1156    
 #>  R² (McFadden)      │    0.00                                           0.00 
-#>  R² (Nagelkerke)    │    0.00                                           0.00 
 #>  AIC                │ 2755.3                                         2761.2  
 #> 
 #>                                    Adjusted               
@@ -856,7 +846,7 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
 #>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

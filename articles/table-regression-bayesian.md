@@ -421,8 +421,8 @@ table_regression(list("ML (glm)" = gf, "Bayes (stan_glm)" = fit),
 #>    Tertiary               │   -0.91  [-1.29, -0.52]    -0.91  [-1.31, -0.56] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                     1175                    
+#>  R² (Tjur)                │    0.02                      –                   
 #>  R² (McFadden)            │    0.02                      –                   
-#>  R² (Nagelkerke)          │    0.03                      –                   
 #>  AIC                      │ 1200.9                       –                   
 #>  R² (Bayes)               │     –                       0.02                 
 #> 
@@ -437,10 +437,10 @@ discloses per model that the Bayesian column is an equal-tailed
 posterior credible interval (the all-Bayesian table above relabels the
 header itself, `95% CrI`). In the fit-statistics block, `n` fills for
 both models; the remaining rows split by paradigm — `R² (Bayes)` fills
-only the Bayesian column, and the likelihood-based rows (the two
-pseudo-R² and AIC) only the frequentist one, because a posterior has
-none of them. Which brings us to the fit statistics a posterior does
-have — and to those it lacks.
+only the Bayesian column, and the rows of the maximum-likelihood fit
+(Tjur’s and McFadden’s R², and AIC) only the frequentist one, because
+spicy computes none of them from a posterior. Which brings us to the fit
+statistics a posterior does have — and to those it lacks.
 
 ## Fit statistics for a posterior
 
