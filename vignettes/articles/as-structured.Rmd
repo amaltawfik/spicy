@@ -140,8 +140,9 @@ multi-model section below; `stars`, `cell_status` and
 `col_meta$display_cells` in the section after it. The last two are
 `ci_pairs`, which records which `LL`/`UL` columns pair up under one
 interval label (here, columns 4 and 5 under `95% CI`), and
-`outcome_labels_by_col`, which labels the outcome header row of
-multi-outcome tables (empty here). `version` names the contract the
+`outcome_labels_by_col`, which labels the Outcome row of a table that
+has one: models of different outcomes, or an explicit `outcome_labels`
+(empty here). `version` names the contract the
 object carries -- see *The contract* below. The complete schema,
 component by component, is in `?as_structured`.
 

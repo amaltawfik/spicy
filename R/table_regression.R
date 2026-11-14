@@ -1590,7 +1590,8 @@
 #'   sets them one under the other, one panel per model: each panel is
 #'   the table of that model alone (its default columns, the confidence
 #'   interval included, its blocks and fit statistics), opened by a row
-#'   with its label. See *Multi-model semantics* and [table_stack()],
+#'   with its label, then by an Outcome row where *Stacked layout* says.
+#'   See *Multi-model semantics* and [table_stack()],
 #'   which stacks tables built separately.
 #' @param show_re Logical. `TRUE` (default) renders the random-effects
 #'   variance components of a mixed-effects fit (`lmer`, `glmer`,

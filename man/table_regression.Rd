@@ -530,7 +530,8 @@ sets them side by side, one group of columns per model. \code{"stacked"}
 sets them one under the other, one panel per model: each panel is
 the table of that model alone (its default columns, the confidence
 interval included, its blocks and fit statistics), opened by a row
-with its label. See \emph{Multi-model semantics} and \code{\link[=table_stack]{table_stack()}},
+with its label, then by an Outcome row where \emph{Stacked layout} says.
+See \emph{Multi-model semantics} and \code{\link[=table_stack]{table_stack()}},
 which stacks tables built separately.}
 
 \item{show_re}{Logical. \code{TRUE} (default) renders the random-effects

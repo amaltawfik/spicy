@@ -262,7 +262,8 @@ column of \code{top}, \code{n}, each prefixed with the group under \code{by}, an
 \code{p}.
 \item \code{"long"}: one row per item, group and level, with \code{variable},
 \code{label}, \code{group} (with \code{by}), \code{level}, \code{.row_role}, \code{n} (the
-observed count) and \code{pct} (the estimated percentage), and, when
+observed count) and \code{pct} (the estimated percentage, \code{NA} on the
+missing answers under \code{percent_base = "valid"}), and, when
 the tests ran, \code{test_type} (the statistic of \code{survey::svychisq()}),
 \code{p.value} and \code{p_unadjusted} under an adjustment.
 \item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table object.
