@@ -1153,13 +1153,9 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
     f2 <- if (is.na(r2) || r2 >= 1) NA_real_ else r2 / (1 - r2)
   }
 
-  # Pseudo-R^2 family (glm only; NA for lm), from one intercept-only
-  # refit.
-  pr2 <- if (is_glm) {
-    compute_pseudo_r2_glm(fit)
-  } else {
-    list(mcfadden = NA_real_, nagelkerke = NA_real_, tjur = NA_real_)
-  }
+  # Pseudo-R^2 family and deviance R^2 (glm only; NA for lm), from one
+  # intercept-only refit.
+  pr2 <- compute_pseudo_r2_glm(fit)
   pseudo_r2_mcfadden <- pr2$mcfadden
   pseudo_r2_nagelkerke <- pr2$nagelkerke
   pseudo_r2_tjur <- pr2$tjur
@@ -1239,6 +1235,7 @@ extract_fit_stats <- function(fit, show_fit_stats, weights, model_id, outcome) {
     pseudo_r2_mcfadden = pseudo_r2_mcfadden,
     pseudo_r2_nagelkerke = pseudo_r2_nagelkerke,
     pseudo_r2_tjur = pseudo_r2_tjur,
+    r2_deviance = pr2$r2_deviance,
     sigma = sigma,
     rmse = rmse,
     f2 = f2,

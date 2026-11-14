@@ -295,6 +295,8 @@
   label_r2_within = "within",
   label_r2_marginal = "marginal",
   label_r2_conditional = "conditional",
+  # The deviance R2 of a glm, 1 - D / D0 (Cameron & Windmeijer 1997).
+  label_r2_deviance = "deviance",
   fitstat_theta = "\u03B8 (dispersion)",
   fitstat_alpha = "\u03B1 (= 1/\u03B8)",
   # The NB1 dispersion of glmmTMB's nbinom1, V = mu(1 + delta): Stata's

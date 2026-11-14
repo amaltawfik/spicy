@@ -2263,6 +2263,10 @@ fit_stat_label <- function(token) {
     pseudo_r2_mcfadden = spicy_fmt("fitstat_pseudo_r2", "McFadden"),
     pseudo_r2_nagelkerke = spicy_fmt("fitstat_pseudo_r2", "Nagelkerke"),
     pseudo_r2_tjur = spicy_fmt("fitstat_pseudo_r2", "Tjur"),
+    r2_deviance = spicy_fmt(
+      "fitstat_r2_qualified",
+      spicy_str("label_r2_deviance")
+    ),
     theta = spicy_str("fitstat_theta"),
     alpha = spicy_str("fitstat_alpha"),
     delta = spicy_str("fitstat_delta"),
@@ -2374,6 +2378,7 @@ format_fit_stat_value <- function(
     qicu = ic_digits,
     pseudo_r2_nagelkerke = fit_digits,
     pseudo_r2_tjur = fit_digits,
+    r2_deviance = fit_digits,
     r2_marginal = fit_digits,
     r2_conditional = fit_digits,
     icc = fit_digits,

@@ -100,6 +100,9 @@
     "pseudo_r2_mcfadden",
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur",
+    # Deviance R\u00B2 of a glm, 1 - D / D0 (Cameron & Windmeijer 1997):
+    # every family but the binomial.
+    "r2_deviance",
     # NB2 negative-binomial dispersion (glm.nb, glmer.nb, fixest
     # fenegbin, mgcv nb(), pscl negbin, glmmTMB nbinom2): theta
     # (V = mu + mu^2/theta) and alpha = 1/theta.
@@ -1870,7 +1873,9 @@ validate_class_appropriate_tokens <- function(
           "i" = paste0(
             "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
             "(McFadden 1974), `\"pseudo_r2_nagelkerke\"` (Nagelkerke ",
-            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only). ",
+            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only); ",
+            "for a gaussian, Gamma, inverse Gaussian or Tweedie family, ",
+            "`\"r2_deviance\"` (1 - deviance / null deviance). ",
             "For nested glm comparison, use `\"lrt_change\"` + ",
             "`\"p_change\"` (likelihood-ratio chi-square)."
           )
@@ -2051,7 +2056,12 @@ validate_class_appropriate_tokens <- function(
     # `partial_chi2` on an lm: `.check_term_test_tokens()` above.
     bad_fit <- intersect(
       show_fit_stats,
-      c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur")
+      c(
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "pseudo_r2_tjur",
+        "r2_deviance"
+      )
     )
     if (length(bad_fit) > 0L) {
       spicy_abort(
@@ -2275,6 +2285,7 @@ validate_class_appropriate_tokens <- function(
         "pseudo_r2_mcfadden",
         "pseudo_r2_nagelkerke",
         "pseudo_r2_tjur",
+        "r2_deviance",
         "sigma",
         "rmse"
       )
@@ -2502,6 +2513,7 @@ validate_class_appropriate_tokens <- function(
         "pseudo_r2_mcfadden",
         "pseudo_r2_nagelkerke",
         "pseudo_r2_tjur",
+        "r2_deviance",
         "aic",
         "aicc",
         "bic",
@@ -2568,7 +2580,8 @@ validate_class_appropriate_tokens <- function(
         "f2",
         "pseudo_r2_mcfadden",
         "pseudo_r2_nagelkerke",
-        "pseudo_r2_tjur"
+        "pseudo_r2_tjur",
+        "r2_deviance"
       )
     )
     if (length(bad_fit) > 0L) {
@@ -2689,8 +2702,9 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = paste0(
             "Tjur's R\u00B2 (2009) is mean(fitted | y = 1) - ",
-            "mean(fitted | y = 0), which needs a binary 0/1 response. ",
-            "Use `\"pseudo_r2_mcfadden\"` or `\"pseudo_r2_nagelkerke\"` ",
+            "mean(fitted | y = 0), which needs a binary outcome (the ",
+            "trials of a grouped binomial response count as such). ",
+            "Use `\"pseudo_r2_mcfadden\"` or `\"r2_deviance\"` ",
             "for other families."
           )
         ),
@@ -2698,6 +2712,90 @@ validate_class_appropriate_tokens <- function(
         call = call
       )
     }
+  }
+
+  # McFadden's and Nagelkerke's R^2 of a continuous family (gaussian,
+  # Gamma, inverse Gaussian, Tweedie) change with the unit of y: the
+  # log-likelihood of a density moves when y is rescaled, and their ratio
+  # and Nagelkerke's bound move with it (Cameron & Windmeijer 1997,
+  # p. 333). Refused when every model of the table is such a glm; beside
+  # other models the cell is dashed, as for the other class refusals.
+  lr_req <- intersect(
+    show_fit_stats,
+    c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke")
+  )
+  if (
+    length(lr_req) > 0L &&
+      length(eff_models) > 0L &&
+      all(vapply(eff_models, .glm_is_continuous, logical(1)))
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          paste0(
+            "Token(s) %s in `show_fit_stats` are not defined for a `glm` ",
+            "of a continuous family (gaussian, Gamma, inverse Gaussian, ",
+            "Tweedie)."
+          ),
+          paste(.quote_val(lr_req), collapse = ", ")
+        ),
+        "i" = paste0(
+          "They are built on the log-likelihood of a density, which ",
+          "changes with the unit of the outcome: the same model gives ",
+          "other values when y is rescaled."
+        ),
+        "i" = paste0(
+          "Use `\"r2_deviance\"`, 1 - deviance / null deviance, which does ",
+          "not depend on the unit (for a gaussian `glm` with the identity ",
+          "link, it is the R\u00B2 of `lm()`)."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+
+  # The deviance R^2 needs a glm family other than the binomial. On
+  # Bernoulli trials, and for ordinal and multinomial responses, the
+  # saturated log-likelihood is 0 and the deviance R^2 is McFadden's
+  # (Cameron & Windmeijer 1997, p. 333 and 337): refused there rather
+  # than printed twice under two names. ANY-gate, like Tjur's above.
+  if (
+    "r2_deviance" %in%
+      show_fit_stats &&
+      !any(vapply(eff_models, .glm_carries_r2_deviance, logical(1)))
+  ) {
+    categorical <- any(vapply(
+      eff_models,
+      function(m) {
+        inherits(m, c("polr", "clm", "multinom", "lrm")) ||
+          (inherits(m, "glm") && identical(.glm_r2_kind(m), "binomial"))
+      },
+      logical(1)
+    ))
+    spicy_abort(
+      c(
+        paste0(
+          "Token 'r2_deviance' in `show_fit_stats` is defined only for ",
+          "`glm` families other than the binomial, and no model in the ",
+          "table is one."
+        ),
+        "i" = if (categorical) {
+          paste0(
+            "For a binomial, ordinal or multinomial response, the deviance ",
+            "R\u00B2 equals McFadden's R\u00B2: use `\"pseudo_r2_mcfadden\"`."
+          )
+        } else {
+          paste0(
+            "It is 1 - deviance / null deviance of a `glm` of a gaussian, ",
+            "Gamma, inverse Gaussian, Tweedie, Poisson, negative binomial ",
+            "or quasi family."
+          )
+        }
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
   }
 
   # AME is not computable for mlogit: marginaleffects supports predictions()

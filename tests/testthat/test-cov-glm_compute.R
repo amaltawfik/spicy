@@ -10,37 +10,51 @@
 
 # ---- Nagelkerke: upper-bound <= 0 guard (L219) ----------------------------
 
-test_that("compute_pseudo_r2_nagelkerke: NA when null logLik > 0 (upper <= 0)", {
+test_that("a Gamma glm has a deviance R2 and no McFadden or Nagelkerke R2", {
   # A low-variance Gamma(log) glm has a density > 1, so logLik > 0 for
-  # both the full and the intercept-only model. Then the Nagelkerke
-  # denominator upper = 1 - exp(ll_null * 2 / n) is negative and the
-  # statistic is undefined -> NA. McFadden stays finite (it only needs
-  # the ratio of log-likelihoods, not a [0,1] rescaling).
+  # both the full and the intercept-only model: Nagelkerke's bound
+  # 1 - exp(ll_null * 2 / n) is negative and McFadden's ratio is that of
+  # two positive numbers. Neither is computed for a continuous family;
+  # the deviance R2 is.
   set.seed(11)
   d <- data.frame(y = rgamma(40, shape = 50, rate = 50), x = rnorm(40))
   fit <- suppressWarnings(glm(y ~ x, data = d, family = Gamma(link = "log")))
   ll_null <- spicy:::compute_intercept_only_loglik_glm(fit)
-  n <- stats::nobs(fit)
   # Oracle for the null log-likelihood: an independent intercept-only
   # refit of the same response / family (what the helper reconstructs).
   null_fit <- suppressWarnings(
     glm(y ~ 1, data = d, family = Gamma(link = "log"))
   )
-  ll_null_oracle <- as.numeric(stats::logLik(null_fit))
-  expect_equal(ll_null, ll_null_oracle, tolerance = 1e-8)
-  # Precondition for the guard: the rescaling upper bound is non-positive.
-  expect_true((1 - exp(ll_null * 2 / n)) <= 0)
+  expect_equal(ll_null, as.numeric(stats::logLik(null_fit)), tolerance = 1e-8)
+  expect_gt(ll_null, 0)
   expect_identical(spicy:::compute_pseudo_r2_nagelkerke(fit), NA_real_)
-  # McFadden is still finite on the same fit (different code path),
-  # pinned to the McFadden (1974) formula 1 - LL_full / LL_null with
-  # both log-likelihoods taken from the stats::logLik oracles.
-  mcfadden <- spicy:::compute_pseudo_r2_mcfadden(fit)
-  expect_true(is.finite(mcfadden))
+  expect_identical(spicy:::compute_pseudo_r2_mcfadden(fit), NA_real_)
   expect_equal(
-    mcfadden,
-    1 - as.numeric(stats::logLik(fit)) / ll_null_oracle,
-    tolerance = 1e-8
+    spicy:::compute_r2_deviance(fit),
+    1 - deviance(fit) / deviance(null_fit),
+    tolerance = 1e-10
   )
+})
+
+test_that("a constant response or an unknown family has no R2", {
+  d <- data.frame(y = rep(2, 10), x = 1:10)
+  fit <- suppressWarnings(glm(y ~ x, data = d, family = Gamma(link = "log")))
+  expect_identical(spicy:::compute_r2_deviance(fit), NA_real_)
+  # A family none of the R2 measures names.
+  fam <- stats::gaussian()
+  fam$family <- "my_family"
+  odd <- glm(mpg ~ wt, data = mtcars, family = fam)
+  expect_identical(spicy:::.glm_r2_kind(odd), "other")
+  expect_identical(
+    unlist(spicy:::compute_pseudo_r2_glm(odd)),
+    c(
+      mcfadden = NA_real_,
+      nagelkerke = NA_real_,
+      tjur = NA_real_,
+      r2_deviance = NA_real_
+    )
+  )
+  expect_identical(spicy:::.glm_default_r2_kind(odd), character(0))
 })
 
 

@@ -84,6 +84,23 @@ test_that("the default R-squared rows follow the family of each class", {
   # No likelihood, no pseudo-R-squared.
   expect_identical(fs_tokens(glm(cnt ~ x, quasipoisson, d)), "nobs")
   expect_identical(fs_tokens(glm(y ~ x, quasibinomial, d)), "nobs")
+  # The continuous families: the deviance R-squared.
+  d$pos <- exp(0.5 + 0.2 * d$x + rnorm(n, 0, 0.3))
+  dev <- c("nobs", "r2_deviance", "aic")
+  expect_identical(fs_tokens(glm(pos ~ x, Gamma("log"), d)), dev)
+  expect_identical(fs_tokens(glm(pos ~ x, inverse.gaussian("log"), d)), dev)
+  expect_identical(fs_tokens(glm(pos ~ x, gaussian, d)), dev)
+  expect_identical(fs_tokens(glm(pos ~ x, gaussian("log"), d)), dev)
+  expect_identical(
+    fs_tokens(rms::Glm(pos ~ x, family = Gamma("log"), data = d)),
+    dev
+  )
+  skip_if_not_installed("statmod")
+  # A Tweedie glm has no AIC (statmod gives it no likelihood).
+  expect_identical(
+    fs_tokens(glm(pos ~ x, statmod::tweedie(1.5, 0), d)),
+    c("nobs", "r2_deviance")
+  )
 })
 
 test_that("Nagelkerke's R2 stays available on request", {

@@ -15,7 +15,7 @@
          8           │  -0.27  0.08   .002   6.09 (2, 28) 
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        n             │  32                                
-       R² (McFadden) │   0.31                             
+       R² (deviance) │   0.86                             
        AIC           │ 149.2                              
       
       Note. Gamma regression. Std. errors: classical (Fisher information). F = partial F statistic; AIC = Akaike information criterion.

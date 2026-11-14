@@ -142,7 +142,7 @@ test_that("count weights of Poisson, negative binomial and multinom fits give n"
   skip_if_not_installed("nnet")
   set.seed(11)
   d <- data.frame(x = rnorm(120), f = sample(1:4, 120, TRUE))
-  d$cnt <- rpois(120, exp(0.4 + 0.3 * d$x))
+  d$cnt <- rnbinom(120, mu = exp(0.4 + 0.3 * d$x), size = 2)
   d$mn <- factor(sample(c("A", "B", "C"), 120, TRUE))
   ex <- d[rep(seq_len(nrow(d)), d$f), ]
   nag <- function(fit) {
@@ -271,4 +271,282 @@ test_that("McFadden and Nagelkerke are NA where undefined", {
   out <- spicy:::.lr_pseudo_r2(30, 20, 40)
   expect_equal(out$mcfadden, 1 - 30 / 20)
   expect_identical(out$nagelkerke, NA_real_)
+})
+
+# ---- the deviance R2 of the other glm families -------------------------
+
+continuous_data <- function() {
+  set.seed(20261114)
+  n <- 200
+  d <- data.frame(x = rnorm(n), t = runif(n, 1, 3))
+  d$yg <- rgamma(n, shape = 3, rate = 3 / exp(1 + 0.3 * d$x))
+  d$yn <- 5 + 0.8 * d$x + rnorm(n)
+  d$cnt <- rnbinom(n, mu = exp(0.3 + 0.5 * d$x) * d$t, size = 1.5)
+  d$w <- runif(n, 0.5, 2)
+  d
+}
+
+test_that("the deviance R2 is 1 - deviance / null deviance, family by family", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("statmod")
+  d <- continuous_data()
+  d$yi <- statmod::rinvgauss(nrow(d), mean = exp(1 + 0.3 * d$x), shape = 4)
+  d$yb <- rbinom(nrow(d), 1, plogis(d$x))
+  fits <- list(
+    gamma_log = glm(yg ~ x, Gamma("log"), d),
+    gamma_inverse = glm(yg ~ x, Gamma(), d),
+    inverse_gaussian = glm(yi ~ x, inverse.gaussian("log"), d),
+    gaussian_log = glm(yn ~ x, gaussian("log"), d),
+    gaussian_weighted = glm(yn ~ x, gaussian, d, weights = w),
+    tweedie = glm(
+      yg ~ x,
+      statmod::tweedie(var.power = 1.5, link.power = 0),
+      d
+    ),
+    poisson_offset = glm(cnt ~ x + offset(log(t)), poisson, d),
+    negative_binomial_fixed = glm(cnt ~ x, MASS::negative.binomial(2), d),
+    quasipoisson = glm(cnt ~ x, quasipoisson, d),
+    quasibinomial = glm(yb ~ x, quasibinomial, d)
+  )
+  for (nm in names(fits)) {
+    f <- fits[[nm]]
+    expect_equal(
+      spicy:::compute_r2_deviance(f),
+      1 - f$deviance / f$null.deviance,
+      tolerance = 1e-10,
+      info = nm
+    )
+  }
+  # A gaussian glm with the identity link: the R2 of lm().
+  expect_equal(
+    spicy:::compute_r2_deviance(glm(yn ~ x, gaussian, d, weights = w)),
+    summary(lm(yn ~ x, d, weights = w))$r.squared,
+    tolerance = 1e-12
+  )
+  # McFadden and Nagelkerke are not computed for the continuous families.
+  for (nm in c("gamma_log", "inverse_gaussian", "gaussian_log", "tweedie")) {
+    expect_identical(spicy:::compute_pseudo_r2_mcfadden(fits[[nm]]), NA_real_)
+    expect_identical(
+      spicy:::compute_pseudo_r2_nagelkerke(fits[[nm]]),
+      NA_real_
+    )
+  }
+})
+
+test_that("the deviance R2 does not move with the unit of y; McFadden did", {
+  d <- continuous_data()
+  r2 <- mcf <- numeric(0)
+  for (k in c(1e-3, 0.1, 1, 1000)) {
+    dd <- d
+    dd$y <- d$yg * k
+    f <- glm(y ~ x, Gamma("log"), dd)
+    r2 <- c(r2, spicy:::compute_r2_deviance(f))
+    ll0 <- as.numeric(logLik(glm(y ~ 1, Gamma("log"), dd)))
+    mcf <- c(mcf, 1 - as.numeric(logLik(f)) / ll0)
+  }
+  expect_equal(r2, rep(r2[1L], 4L), tolerance = 1e-10)
+  # The likelihood-ratio index of the same model: negative on one unit,
+  # positive on another (Cameron & Windmeijer 1997, p. 333).
+  expect_lt(min(mcf), 0)
+  expect_gt(max(mcf), 0)
+})
+
+test_that("glm.nb: both deviances take the theta of the fitted model", {
+  skip_if_not_installed("MASS")
+  d <- continuous_data()
+  for (f in list(
+    MASS::glm.nb(cnt ~ x, d),
+    MASS::glm.nb(cnt ~ x + offset(log(t)), d)
+  )) {
+    expect_equal(
+      spicy:::compute_r2_deviance(f),
+      1 - f$deviance / f$null.deviance,
+      tolerance = 1e-8
+    )
+    # Independent: the two deviances recomputed with theta fixed at the
+    # fitted model's estimate (Cameron & Windmeijer 1997, p. 339, note 4).
+    fam <- MASS::negative.binomial(f$theta)
+    dev1 <- sum(fam$dev.resids(f$y, fitted(f), rep(1, length(f$y))))
+    null <- glm(
+      f$y ~ 1,
+      family = fam,
+      offset = stats::model.offset(stats::model.frame(f))
+    )
+    expect_equal(
+      spicy:::compute_r2_deviance(f),
+      1 - dev1 / null$deviance,
+      tolerance = 1e-6
+    )
+  }
+})
+
+test_that("a quasi-binomial grouped fit gives the deviance R2 of its trials", {
+  dd <- grouped_data()
+  qb <- glm(cbind(s, m - s) ~ x, quasibinomial, dd$g, control = ctl)
+  ex <- glm(y ~ x, binomial, dd$ex, control = ctl)
+  # On the expanded 0/1 rows, the deviance R2 is McFadden's.
+  expect_equal(
+    spicy:::compute_r2_deviance(qb),
+    1 - ex$deviance / ex$null.deviance,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    spicy:::compute_r2_deviance(qb),
+    expanded_oracle(ex)[["mcfadden"]],
+    tolerance = 1e-10
+  )
+  # The grouped deviances give another number.
+  expect_gt(
+    abs(spicy:::compute_r2_deviance(qb) - (1 - qb$deviance / qb$null.deviance)),
+    0.01
+  )
+})
+
+test_that("the continuous families default to the deviance R2 and refuse the others", {
+  d <- continuous_data()
+  g <- glm(yg ~ x, Gamma("log"), d)
+  df <- table_regression(g, output = "data.frame")
+  fs <- df[df$.row_role == "fit_stat", ]
+  expect_identical(fs$variable, c("nobs", "r2_deviance", "aic"))
+  expect_equal(
+    fs[["B"]][fs$variable == "r2_deviance"],
+    1 - g$deviance / g$null.deviance,
+    tolerance = 1e-10
+  )
+  expect_identical(
+    fs$label[fs$variable == "r2_deviance"],
+    "R² (deviance)"
+  )
+  for (tok in c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke")) {
+    expect_error(
+      table_regression(g, show_fit_stats = c("nobs", tok)),
+      class = "spicy_invalid_input"
+    )
+  }
+  # The same rows under nested = TRUE and show_columns = "none".
+  g0 <- glm(yg ~ 1, Gamma("log"), d)
+  nest <- table_regression(list(g0, g), nested = TRUE, output = "data.frame")
+  expect_identical(
+    nest$variable[nest$.row_role == "fit_stat"],
+    c("nobs", "r2_deviance", "aic", "f_change", "p_change")
+  )
+  expect_equal(nest[["Model 1: B"]][nest$variable == "r2_deviance"], 0)
+  only <- table_regression(g, show_columns = "none", output = "data.frame")
+  expect_identical(only$variable, c("nobs", "r2_deviance", "aic"))
+  # A gaussian glm shows the R2 of its lm twin.
+  gs <- suppressWarnings(table_regression(
+    glm(yn ~ x, gaussian, d),
+    output = "data.frame"
+  ))
+  expect_equal(
+    gs[["B"]][gs$variable == "r2_deviance"],
+    summary(lm(yn ~ x, d))$r.squared,
+    tolerance = 1e-12
+  )
+  # Beside a logit, McFadden asked for is the logit's and dashes the Gamma.
+  d$yb <- rbinom(nrow(d), 1, plogis(d$x))
+  lg <- glm(yb ~ x, binomial, d)
+  mix <- table_regression(
+    list(Logit = lg, Gamma = g),
+    show_fit_stats = c("nobs", "pseudo_r2_mcfadden"),
+    output = "data.frame"
+  )
+  row <- mix[mix$variable == "pseudo_r2_mcfadden", ]
+  expect_true(is.finite(row[["Logit: B"]]))
+  expect_true(is.na(row[["Gamma: B"]]))
+  # An rms::Glm follows its glm twin.
+  skip_if_not_installed("rms")
+  rg <- rms::Glm(yg ~ x, family = Gamma("log"), data = d)
+  expect_error(
+    table_regression(rg, show_fit_stats = c("nobs", "pseudo_r2_mcfadden")),
+    class = "spicy_invalid_input"
+  )
+  rdf <- table_regression(rg, output = "data.frame")
+  expect_equal(
+    rdf[["B"]][rdf$variable == "r2_deviance"],
+    1 - g$deviance / g$null.deviance,
+    tolerance = 1e-8
+  )
+})
+
+test_that("a glm object without a family reads as an unknown family", {
+  expect_identical(
+    spicy:::.glm_r2_kind(structure(list(), class = c("glm", "lm"))),
+    "other"
+  )
+})
+
+test_that("the deviance R2 is refused where it would repeat McFadden's", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("survival")
+  d <- continuous_data()
+  d$yb <- rbinom(nrow(d), 1, plogis(d$x))
+  d$ord <- factor(
+    cut(d$x + rnorm(nrow(d)), 3, labels = c("a", "b", "c")),
+    ordered = TRUE
+  )
+  for (fit in list(
+    glm(yb ~ x, binomial, d),
+    MASS::polr(ord ~ x, d, Hess = TRUE)
+  )) {
+    err <- tryCatch(
+      table_regression(fit, show_fit_stats = c("nobs", "r2_deviance")),
+      error = function(e) e
+    )
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(conditionMessage(err), "pseudo_r2_mcfadden", fixed = TRUE)
+  }
+  # A class with no deviance R2 at all is refused too.
+  expect_error(
+    table_regression(
+      survival::coxph(survival::Surv(yg, rep(1, nrow(d))) ~ x, data = d),
+      show_fit_stats = c("nobs", "r2_deviance")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(lm(yn ~ x, d), show_fit_stats = c("nobs", "r2_deviance")),
+    class = "spicy_invalid_input"
+  )
+  # Offered for counts and quasi families, on request.
+  pois <- glm(cnt ~ x, poisson, d)
+  qp <- glm(cnt ~ x, quasipoisson, d)
+  df <- table_regression(
+    list(pois, qp),
+    show_fit_stats = c("nobs", "r2_deviance"),
+    output = "data.frame"
+  )
+  row <- df[df$variable == "r2_deviance", ]
+  expect_equal(
+    unname(unlist(row[c("Model 1: B", "Model 2: B")])),
+    rep(1 - pois$deviance / pois$null.deviance, 2L),
+    tolerance = 1e-10
+  )
+})
+
+test_that("a table mixing families shows the union of the default rows", {
+  d <- continuous_data()
+  d$yb <- rbinom(nrow(d), 1, plogis(d$x))
+  lg <- glm(yb ~ x, binomial, d)
+  gm <- glm(yg ~ x, Gamma("log"), d)
+  pois <- glm(cnt ~ x, poisson, d)
+  df <- table_regression(
+    list(Logit = lg, Gamma = gm, Poisson = pois),
+    output = "data.frame"
+  )
+  fs <- df[df$.row_role == "fit_stat", ]
+  expect_identical(
+    fs$variable,
+    c("nobs", "pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance", "aic")
+  )
+  dev <- fs[fs$variable == "r2_deviance", ]
+  expect_true(is.na(dev[["Logit: B"]]))
+  expect_equal(dev[["Gamma: B"]], 1 - gm$deviance / gm$null.deviance)
+  # The Poisson fit defines the row too and fills it.
+  expect_equal(dev[["Poisson: B"]], 1 - pois$deviance / pois$null.deviance)
+  mcf <- fs[fs$variable == "pseudo_r2_mcfadden", ]
+  expect_true(is.na(mcf[["Gamma: B"]]))
+  withr::local_options(spicy.language = "fr")
+  out <- table_regression(list(Logit = lg, Gamma = gm))
+  expect_true("R² (déviance)" %in% trimws(out$Variable))
 })

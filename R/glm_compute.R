@@ -296,13 +296,14 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # (dev/decisions/2026-11-14-pseudo-r2-defaults.md): Tjur's then McFadden's
 # for a logit on a binary response, McFadden's alone for the other
 # binomial fits (probit, cloglog, grouped responses), Poisson and negative
-# binomial, and rms::lrm. `models` are the glm-class fits of the table;
-# the result is the union of their rows, in that order. mgcv's gam
-# inherits glm but has its own frame and no pseudo-R^2 row; quasi
-# families have no likelihood.
+# binomial, and rms::lrm, the deviance R^2 for the continuous families.
+# `models` are the glm-class fits of the table; the result is the union
+# of their rows, in that order. mgcv's gam inherits glm but has its own
+# frame and no R^2 row; quasi families have no likelihood, and no
+# default row.
 .glm_default_r2_tokens <- function(models) {
   toks <- unlist(lapply(models, .glm_default_r2_kind))
-  intersect(c("pseudo_r2_tjur", "pseudo_r2_mcfadden"), toks)
+  intersect(c("pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance"), toks)
 }
 
 .glm_default_r2_kind <- function(fit) {
@@ -315,20 +316,80 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   if (inherits(fit, "Glm")) {
     fit <- .rms_as_glm(fit)
   }
-  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  if (!is.list(fam) || !is.character(fam$family)) {
-    return(character(0))
+  switch(
+    .glm_r2_kind(fit),
+    binomial = if (
+      identical(stats::family(fit)$link, "logit") && .glm_binary_response(fit)
+    ) {
+      c("pseudo_r2_tjur", "pseudo_r2_mcfadden")
+    } else {
+      "pseudo_r2_mcfadden"
+    },
+    count = "pseudo_r2_mcfadden",
+    continuous = "r2_deviance",
+    character(0)
+  )
+}
+
+# The family of a glm as the R^2 measures read it. McFadden's and
+# Nagelkerke's R^2 need a likelihood that is a probability (binomial,
+# Poisson, negative binomial): for a density they change with the unit
+# of y (Cameron & Windmeijer 1997, p. 333). The deviance R^2 needs a
+# deviance, which every family but the binomial gets; for the binomial
+# it equals McFadden's on the trials. "other" is a family none of these
+# names, with neither measure.
+.glm_r2_kind <- function(fit) {
+  fam <- tryCatch(stats::family(fit)$family, error = function(e) NULL)
+  if (!is.character(fam) || length(fam) != 1L) {
+    return("other")
   }
-  if (identical(fam$family, "binomial")) {
-    if (identical(fam$link, "logit") && .glm_binary_response(fit)) {
-      return(c("pseudo_r2_tjur", "pseudo_r2_mcfadden"))
-    }
-    return("pseudo_r2_mcfadden")
+  if (fam %in% c("binomial", "quasibinomial")) {
+    return(fam)
   }
-  if (grepl("^quasi", fam$family)) {
-    return(character(0))
+  if (identical(fam, "poisson") || grepl("^Negative Binomial\\(", fam)) {
+    return("count")
   }
-  "pseudo_r2_mcfadden"
+  if (
+    fam %in%
+      c("gaussian", "Gamma", "inverse.gaussian") ||
+      grepl("^Tweedie", fam)
+  ) {
+    return("continuous")
+  }
+  if (grepl("^quasi", fam)) {
+    return("quasi")
+  }
+  "other"
+}
+
+# A glm of a continuous family, as the table's refusal of McFadden and
+# Nagelkerke reads it (an rms::Glm through its glm twin; mgcv's gam,
+# which inherits glm, keeps its own frame and is not one).
+.glm_is_continuous <- function(m) {
+  if (!inherits(m, "glm") || inherits(m, c("gam", "lrm"))) {
+    return(FALSE)
+  }
+  if (inherits(m, "Glm")) {
+    m <- .rms_as_glm(m)
+  }
+  identical(.glm_r2_kind(m), "continuous")
+}
+
+# A fit whose frame carries the deviance R^2: a glm (an rms::Glm too) of
+# any family but the binomial. Not a design, GEE or Bayesian fit, which
+# inherit glm with frames of their own.
+.glm_carries_r2_deviance <- function(m) {
+  if (
+    !inherits(m, "glm") ||
+      inherits(m, c("gam", "lrm", "geeglm", "stanreg", "brmsfit")) ||
+      .is_design_fit(m)
+  ) {
+    return(FALSE)
+  }
+  if (inherits(m, "Glm")) {
+    m <- .rms_as_glm(m)
+  }
+  .glm_r2_kind(m) %in% c("quasibinomial", "count", "continuous", "quasi")
 }
 
 # TRUE when a binomial glm was fitted to one 0/1 (or factor, or logical)
@@ -354,9 +415,17 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 #                         "max-rescaled R-square", SPSS's Nagelkerke).
 #   * Tjur (2009)       : mean fitted probability of the successes minus
 #                         that of the failures. Binomial only.
+#   * Deviance R^2      : 1 - D_full / D_null (Cameron & Windmeijer 1997,
+#                         eq. 5). Every family but the binomial, where it
+#                         is McFadden's (l(y; y) = 0, their p. 333).
 #
-# LL_null is the intercept-only model with the fit's offset and weights
-# (`.glm_null_fit()`). A binomial fit is read as Bernoulli trials,
+# McFadden and Nagelkerke are computed for the binomial, Poisson and
+# negative binomial families only (`.glm_r2_kind()`), the deviance R^2
+# for the others; NA otherwise. LL_null and D_null are those of the
+# intercept-only model with the fit's offset and weights
+# (`.glm_null_fit()`); for a negative binomial both deviances take the
+# theta of family(fit), the fitted model's, as Cameron & Windmeijer
+# (1997, p. 339, note 4) propose. A binomial fit is read as Bernoulli trials,
 # whatever the form of its response: one 0/1 (or factor, or logical)
 # outcome per row, cbind(successes, failures), a proportion with the
 # trials as weights, 0/1 rows weighted by counts. glm() stores the
@@ -384,38 +453,56 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # Corollary 1), but a fixed offset or another link can make it
 # negative, which an absolute value would hide.
 compute_pseudo_r2_glm <- function(fit) {
-  out <- list(mcfadden = NA_real_, nagelkerke = NA_real_, tjur = NA_real_)
-  if (!inherits(fit, "glm")) {
+  out <- list(
+    mcfadden = NA_real_,
+    nagelkerke = NA_real_,
+    tjur = NA_real_,
+    r2_deviance = NA_real_
+  )
+  kind <- if (inherits(fit, "glm")) .glm_r2_kind(fit) else "other"
+  if (identical(kind, "other")) {
     return(out)
   }
-  fam <- stats::family(fit)$family
-  if (grepl("^quasi", fam)) {
-    return(out)
-  }
-  is_binomial <- identical(fam, "binomial")
-  if (is_binomial) {
+  if (identical(kind, "binomial")) {
     out$tjur <- compute_pseudo_r2_tjur(fit)
   }
   null_fit <- .glm_null_fit(fit)
   if (is.null(null_fit)) {
     return(out) # nocov: the intercept-only refit of a converged glm
   }
-  if (is_binomial) {
+  if (kind %in% c("binomial", "quasibinomial")) {
     tr <- .glm_bernoulli_trials(fit)
     ll_full <- .bernoulli_loglik(tr$y, tr$m, tr$p)
     ll_null <- .bernoulli_loglik(tr$y, tr$m, null_fit$fitted.values)
-    n <- sum(tr$m)
-  } else {
+    if (identical(kind, "binomial")) {
+      out[c("mcfadden", "nagelkerke")] <- .lr_pseudo_r2(
+        ll_full,
+        ll_null,
+        sum(tr$m)
+      )
+    } else {
+      # The quasi-binomial deviance on the trials: -2 times the Bernoulli
+      # log-likelihood, whose saturated value is 0.
+      out$r2_deviance <- .r2_deviance(-2 * ll_full, -2 * ll_null)
+    }
+    return(out)
+  }
+  if (identical(kind, "count")) {
     ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-      NA_real_
+      NA_real_ # nocov: logLik() of a Poisson or negative binomial glm
     })
     ll_null <- tryCatch(
       as.numeric(stats::logLik(null_fit)),
-      error = function(e) NA_real_
+      error = function(e) NA_real_ # nocov: as above
     )
-    n <- sum(fit$prior.weights)
+    out[c("mcfadden", "nagelkerke")] <- .lr_pseudo_r2(
+      ll_full,
+      ll_null,
+      sum(fit$prior.weights)
+    )
   }
-  c(.lr_pseudo_r2(ll_full, ll_null, n), out["tjur"])
+  out$r2_deviance <- .r2_deviance(fit$deviance, null_fit$deviance)
+  out
 }
 
 compute_pseudo_r2_mcfadden <- function(fit) {
@@ -424,6 +511,19 @@ compute_pseudo_r2_mcfadden <- function(fit) {
 
 compute_pseudo_r2_nagelkerke <- function(fit) {
   compute_pseudo_r2_glm(fit)$nagelkerke
+}
+
+compute_r2_deviance <- function(fit) {
+  compute_pseudo_r2_glm(fit)$r2_deviance
+}
+
+# 1 - D_full / D_null; NA for a null deviance that is not positive (a
+# constant response).
+.r2_deviance <- function(dev_full, dev_null) {
+  if (!is.finite(dev_full) || !is.finite(dev_null) || dev_null <= 0) {
+    return(NA_real_)
+  }
+  1 - dev_full / dev_null
 }
 
 # McFadden's and Nagelkerke's R^2 from the log-likelihoods of the fitted

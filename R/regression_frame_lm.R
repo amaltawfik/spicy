@@ -399,6 +399,7 @@ as_regression_frame.glm <- function(fit, ...) {
     max_cluster_size = .scalar_or_na(fs[["max_cluster_size"]]),
     pseudo_r2_nagelkerke = .scalar_or_na(fs[["pseudo_r2_nagelkerke"]]),
     pseudo_r2_tjur = .scalar_or_na(fs[["pseudo_r2_tjur"]]),
+    r2_deviance = .scalar_or_na(fs[["r2_deviance"]]),
     # fixest within (FE-partialled) R-squared, stashed in the
     # pseudo_r2 nested list by .fixest_fit_stats().
     within_r2 = .scalar_or_na(

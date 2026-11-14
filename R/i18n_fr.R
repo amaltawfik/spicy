@@ -163,6 +163,7 @@
   label_weighted_n = "n pond\u00E9r\u00E9",
   label_r2_within = "intra",
   label_r2_conditional = "conditionnel",
+  label_r2_deviance = "d\u00E9viance",
   fitstat_phi = "\u03C6 (pr\u00E9cision)",
   fitstat_delta = "\u03B4 (dispersion NB1)",
   fitstat_scale = "\u00C9chelle",

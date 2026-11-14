@@ -1659,7 +1659,11 @@ test_that("AUDIT B2: pseudo_r2_* work with formula-wrapped response", {
   expect_true(is.finite(spicy:::compute_pseudo_r2_nagelkerke(fit_I)))
 
   fit_log <- glm(I(log(mpg)) ~ wt, data = mt, family = gaussian)
-  expect_true(is.finite(spicy:::compute_pseudo_r2_mcfadden(fit_log)))
+  expect_equal(
+    spicy:::compute_r2_deviance(fit_log),
+    1 - fit_log$deviance / fit_log$null.deviance,
+    tolerance = 1e-12
+  )
 
   # cbind() form (grouped binomial): the intercept-only refit used to
   # pass the response MATRIX back to glm() together with the

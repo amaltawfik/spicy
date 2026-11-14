@@ -1279,6 +1279,7 @@ build_abbreviations_footer_block_from_frames <- function(
     tk,
     r2 = ,
     within_r2 = ,
+    r2_deviance = ,
     r2_marginal = ,
     r2_conditional = list("r2"),
     # A pseudo-R2 is no coefficient of determination, and the Bayesian R2

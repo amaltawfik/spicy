@@ -1651,6 +1651,7 @@ build_structured_body <- function(
       "pseudo_r2_mcfadden",
       "pseudo_r2_nagelkerke",
       "pseudo_r2_tjur",
+      "r2_deviance",
       "theta",
       "alpha",
       "delta",
