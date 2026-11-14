@@ -534,8 +534,8 @@
   a matrix, with an error of class `spicy_invalid_data`. They stopped on
   an R error, or
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
-  returned a wrong table without a message (`freq(l, "a")` counted the
-  string “a”).
+  returned a wrong table: `freq(list(c(1, 2, 2)))` counted one value,
+  without a message.
 
 - [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
   [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md) and

@@ -280,9 +280,13 @@ parent class plus a leaf class describing the specific cause:
     columns, degenerate grouping).
 
   - `spicy_wrong_regime` – signaled together with `spicy_invalid_data`
-    when a table receives the wrong kind of data for its regime: a
-    survey design handed to a plain table, or a data frame handed to a
-    survey twin. The message names the function to use instead.
+    when a function receives the wrong kind of data for its regime: a
+    survey design handed to a plain table or to a row-wise function such
+    as
+    [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+    or a data frame handed to a survey twin. The message names the
+    function to use instead, or says how to work on the data of the
+    design.
 
   - `spicy_missing_pkg` – a Suggests dependency is required by the
     requested operation but not installed.

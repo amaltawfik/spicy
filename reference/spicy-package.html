@@ -269,10 +269,11 @@ raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad 
 (not a data.frame, data or a design with no rows, length
 mismatch, <code><a href="https://bit64.r-lib.org/reference/bit64-package.html" class="external-link">bit64::integer64</a></code> columns, degenerate grouping).</p></li>
 <li><p><code>spicy_wrong_regime</code> – signaled together with
-<code>spicy_invalid_data</code> when a table receives the wrong kind
-of data for its regime: a survey design handed to a plain table,
-or a data frame handed to a survey twin. The message names the
-function to use instead.</p></li>
+<code>spicy_invalid_data</code> when a function receives the wrong
+kind of data for its regime: a survey design handed to a plain
+table or to a row-wise function such as <code><a href="mean_n.html">mean_n()</a></code>, or a data
+frame handed to a survey twin. The message names the function
+to use instead, or says how to work on the data of the design.</p></li>
 <li><p><code>spicy_missing_pkg</code> – a Suggests dependency
 is required by the requested operation but not installed.</p></li>
 <li><p><code>spicy_missing_quarto</code> – <code><a href="code_book.html">code_book()</a></code> was asked

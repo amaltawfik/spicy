@@ -860,8 +860,9 @@ the variables with no data in the same groups ("No data for X and Y in
 G."). Without `by`, a variable with no observed value at all keeps its
 declared levels (its one row when it declares none) with the dash, and
 the note says "No data for X." The column of missing `by` values is
-never such a group, and a declared level of `by` that holds no row keeps
-its zero column.
+never named as such a group: it shows the dash, as the groups do, only
+for a variable with no observed value at all. A declared level of `by`
+that holds no row keeps its zero column.
 
 ## Multiple-comparison adjustment
 

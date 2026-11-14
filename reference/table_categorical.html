@@ -873,8 +873,10 @@ says "No data for X in G.", in one sentence for the variables with no
 data in the same groups ("No data for X and Y in G."). Without <code>by</code>, a
 variable with no observed value at all keeps its declared levels (its
 one row when it declares none) with the dash, and the note says "No
-data for X." The column of missing <code>by</code> values is never such a group,
-and a declared level of <code>by</code> that holds no row keeps its zero column.</p>
+data for X." The column of missing <code>by</code> values is never named as such
+a group: it shows the dash, as the groups do, only for a variable with
+no observed value at all. A declared level of <code>by</code> that holds no row
+keeps its zero column.</p>
     </div>
     <div class="section level2">
     <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a></h2>

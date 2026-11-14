@@ -835,8 +835,13 @@ table_regression(
   switches to `"; "` automatically to avoid `"0,18 [0,07, 0,30]"`
   ambiguity. With `output = "excel"` a numeric cell is displayed by
   Excel with the *viewer's* locale separator, which a file cannot set,
-  so a non-default mark makes the body go out as pre-formatted text (the
-  default `"."` keeps every cell a real number).
+  so a non-default mark makes the body go out as pre-formatted text.
+  Under the default `"."`, a cell that shows one number is a real number
+  whenever its number format prints what the console prints. The other
+  cells are text: a p-value below the threshold or shortened by the
+  style (`p_bands`, `p_sigfig` of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
+  a number in scientific notation, a dash, a cell with stars.
 
 - align:
 
