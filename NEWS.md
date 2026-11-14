@@ -146,6 +146,32 @@
   post-stratified design, the note said "15 PSU" for the 8 units left
   and 7 degrees of freedom.
 
+* `table_regression()`: the default R-squared rows follow the family of
+  the model. A logit on a binary outcome shows Tjur's R-squared, then
+  McFadden's. Probit and cloglog models, grouped binomial responses,
+  Poisson, negative binomial, `polr()`, `clm()`, `multinom()` and
+  `rms::lrm()` models show McFadden's alone. Nagelkerke's R-squared
+  leaves the defaults; `show_fit_stats = "pseudo_r2_nagelkerke"` still
+  shows it.
+
+* `table_regression()` computes the pseudo-R-squared of a binomial model
+  on its trials, so the same data give the same values whatever their
+  layout: a `cbind(successes, failures)` response, a proportion with
+  the trials as `weights` and 0/1 rows weighted by counts now give the
+  values of the expanded 0/1 rows. McFadden's and Nagelkerke's
+  R-squared of such models change, Tjur's is computed for them, and
+  Tjur's of a weighted model weights its means. The n of Nagelkerke's
+  R-squared is the sum of the weights, which also changes it for
+  weighted Poisson, negative binomial, `multinom()` and binary
+  `rms::lrm()` models.
+
+* `table_regression()`: the gaussian, Gamma, inverse Gaussian and
+  Tweedie families of `glm()` show the deviance R-squared by default
+  and refuse `pseudo_r2_mcfadden` and `pseudo_r2_nagelkerke`, whose
+  values change with the unit of the outcome. A gaussian `glm()`
+  showed McFadden's and Nagelkerke's R-squared, not the R-squared of
+  `lm()`.
+
 ## New features
 
 * `table_categorical()`, `table_categorical_svy()`,
@@ -251,6 +277,13 @@
   (`negative.binomial(theta)` in `glm()`, mgcv `nb(theta)` or
   `betar(theta)`) has no row. A negative-binomial `lme4::glmer()`
   always shows its theta.
+
+* `table_regression()`: `show_fit_stats = "r2_deviance"` shows the
+  deviance R-squared of a `glm()`, 1 - deviance / null deviance. It is
+  the default R-squared of the gaussian, Gamma, inverse Gaussian and
+  Tweedie families, the R-squared of `lm()` for a gaussian model with
+  the identity link, and is available for Poisson, negative binomial
+  and quasi models.
 
 * Word (flextable), gt (HTML, Word and RTF) and tinytable HTML tables
   now write a negative number with the minus sign (U+2212), in the cells
