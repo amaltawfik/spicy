@@ -232,6 +232,7 @@ cross_tab <- function(
     )
   }
   .check_not_design(data, "cross_tab", expects = "a data.frame or a vector")
+  .check_not_list(data, refuse_matrix = TRUE)
 
   # The language's typographic locale supplies the DEFAULT decimal
   # mark, the same way it does in `freq()`: an argument you type > the

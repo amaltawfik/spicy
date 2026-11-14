@@ -504,6 +504,26 @@ test_that("cross_tab refuses a survey design and names the design-based table", 
   expect_error(cross_tab(design, "a", "b"), class = "spicy_wrong_regime")
 })
 
+test_that("cross_tab refuses a plain list or a matrix as data", {
+  skip_on_cran()
+  l <- list(a = c(1, 2, 2), b = c("x", "y", "x"))
+  expect_error(cross_tab(l, a, b), class = "spicy_invalid_data")
+  expect_error(
+    cross_tab(matrix(1:6, 3), V1, V2),
+    class = "spicy_invalid_data"
+  )
+  # What it takes still passes.
+  df <- data.frame(a = c(1, 2, 2), b = c("x", "y", "x"))
+  n_of <- function(x) x[x$Values != "Total", "Total"]
+  expect_identical(n_of(cross_tab(df, a, b)), c(1, 2))
+  expect_identical(n_of(cross_tab(tibble::as_tibble(df), a, b)), c(1, 2))
+  expect_identical(n_of(cross_tab(df$a, df$b)), c(1, 2))
+  expect_identical(n_of(cross_tab(factor(df$a), factor(df$b))), c(1, 2))
+  skip_if_not_installed("haven")
+  lab <- haven::labelled(c(1, 2, 2), c(Low = 1, High = 2))
+  expect_identical(n_of(cross_tab(lab, df$b)), c(1, 2))
+})
+
 test_that("cross_tab errors when x is missing for data.frame", {
   expect_error(
     cross_tab(mtcars),

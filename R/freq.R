@@ -274,6 +274,7 @@ freq <- function(
   }
   output <- match_tabulation_output(output, "freq")
   .check_not_design(data, "freq", expects = "a data.frame or a vector")
+  .check_not_list(data)
 
   labelled_levels <- spicy_match_arg(labelled_levels)
   factor_levels <- match_varlist_factor_levels(factor_levels)

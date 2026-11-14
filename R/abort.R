@@ -393,6 +393,37 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   invisible(data)
 }
 
+# `cross_tab()` and `freq()` take a data frame or a vector. A plain list
+# is neither (a classed list -- a data frame, a POSIXlt vector -- is not
+# plain), and `freq()` would count its elements as categories. A matrix
+# is refused where the caller asks (`cross_tab()`; `freq()` tabulates
+# its cells). Called after `.check_not_design()`: a design is a list too.
+.check_not_list <- function(
+  data,
+  refuse_matrix = FALSE,
+  call = rlang::caller_env()
+) {
+  what <- if (is.list(data) && !is.object(data)) {
+    "a list"
+  } else if (refuse_matrix && is.matrix(data)) {
+    "a matrix"
+  }
+  if (!is.null(what)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`data` must be a data.frame or a vector; it received %s.",
+          what
+        ),
+        "i" = "Convert it with `as.data.frame()`, or pass its variables as vectors."
+      ),
+      class = "spicy_invalid_data",
+      call = call
+    )
+  }
+  invisible(data)
+}
+
 # Data with no rows leaves nothing to tabulate, with or without `by`:
 # every table function refuses it with this one error, from its data gate
 # (`.check_data_frame()`, or `.svy_validate_common()` for a survey design),

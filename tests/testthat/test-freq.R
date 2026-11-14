@@ -45,6 +45,36 @@ test_that("freq() refuses a survey design and names the design-based table", {
   expect_error(freq(design, a, digits = 1.5), class = "spicy_wrong_regime")
 })
 
+test_that("freq() refuses a plain list", {
+  skip_on_cran()
+  l <- list(a = c(1, 2, 2), b = c("x", "y", "x"))
+  expect_error(freq(l), class = "spicy_invalid_data")
+  expect_error(freq(l, a), class = "spicy_invalid_data")
+  # Both used to give a table: of the string "a", of one category
+  # "c(1, 2, 2)".
+  expect_error(freq(l, "a"), class = "spicy_invalid_data")
+  expect_error(freq(list(c(1, 2, 2))), class = "spicy_invalid_data")
+  # What it takes still passes.
+  df <- data.frame(a = c(1, 2, 2))
+  expect_identical(freq(df, a, output = "data.frame")$n, c(1, 2))
+  expect_identical(
+    freq(tibble::as_tibble(df), a, output = "data.frame")$n,
+    c(1, 2)
+  )
+  expect_identical(freq(c(1, 2, 2), output = "data.frame")$n, c(1, 2))
+  expect_identical(
+    freq(factor(c("x", "y", "y")), output = "data.frame")$n,
+    c(1, 2)
+  )
+  expect_identical(
+    freq(matrix(c(1, 2, 2, 2), 2), output = "data.frame")$n,
+    c(1, 3)
+  )
+  skip_if_not_installed("haven")
+  lab <- haven::labelled(c(1, 2, 2), c(Low = 1, High = 2))
+  expect_identical(freq(lab, output = "data.frame")$n, c(1, 2))
+})
+
 
 test_that("freq() handles labelled variables correctly", {
   library(labelled)

@@ -390,6 +390,11 @@
   error about a missing object, and `cross_tab(design, "x", "y")`
   returned a meaningless one-cell table.
 
+* `cross_tab()` and `freq()` refuse a plain list, and `cross_tab()` a
+  matrix, with an error of class `spicy_invalid_data`. They stopped on
+  an R error, or `freq()` returned a wrong table without a message
+  (`freq(l, "a")` counted the string "a").
+
 * `mean_n()`, `sum_n()` and `count_n()` refuse a survey design with an
   error of class `spicy_wrong_regime` that shows how to add the score to
   the design: `update(design, score = mean_n(design$variables, ...))`.
