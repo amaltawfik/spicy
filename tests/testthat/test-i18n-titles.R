@@ -92,15 +92,15 @@ test_that("an unmapped family keeps its WHOLE English title under fr", {
   )
 })
 
-test_that("the mixed-family table stays English wholesale under fr", {
-  # Coherent or nothing at TABLE level: the mixed-family type footer is
-  # the frozen English "Model k: ..." list, so the title must not
+test_that("a mixed-family table with an untranslated type stays English", {
+  # Coherent or nothing at TABLE level: one type without a translation
+  # keeps the "Model k: ..." list English, so the title must not
   # translate either -- even though the mixed fallback prefix
   # "Regression" has a bridge entry -- and the footer's line template
   # must be the English one (ASCII colon, not the French NBSP colon).
   f1 <- .tf_lm_frame()
   f2 <- .tf_lm_frame()
-  f2$info$extras$title_prefix <- "Heckman selection model"
+  f2$info$extras$title_prefix <- "Made-up model"
   en_title <- build_regression_title_from_frames(list(f1, f2))
   en_note <- build_regression_type_footer_block_from_frames(list(f1, f2))
   withr::local_options(spicy.language = "fr")
@@ -117,10 +117,10 @@ test_that("the mixed-family table stays English wholesale under fr", {
 test_that("the mixed-family separator is a key, read with the language bypassed", {
   f1 <- .tf_lm_frame()
   f2 <- .tf_lm_frame()
-  f2$info$extras$title_prefix <- "Heckman selection model"
+  f2$info$extras$title_prefix <- "Made-up model"
   expect_identical(
     build_regression_type_footer_block_from_frames(list(f1, f2)),
-    "Model 1: linear regression; Model 2: Heckman selection model."
+    "Model 1: linear regression; Model 2: made-up model."
   )
   withr::local_options(
     spicy.language = "fr",
@@ -128,7 +128,7 @@ test_that("the mixed-family separator is a key, read with the language bypassed"
   )
   expect_identical(
     build_regression_type_footer_block_from_frames(list(f1, f2)),
-    "Model 1: linear regression | Model 2: Heckman selection model."
+    "Model 1: linear regression | Model 2: made-up model."
   )
 })
 

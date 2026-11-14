@@ -551,13 +551,20 @@ test_that("a French table of quantile regressions keeps the decimals of tau", {
     "Note. Régression quantile (τ = 0,975).",
     fixed = TRUE
   )
-  # A mixed-type table (lm + rq) keeps the English title and type line
-  # (coherent or nothing, decision 42), the tau in the table's mark.
+  # A mixed-type table (lm + rq) translates its title and type line,
+  # every type having a translation (decision 42, amended 2026-11-14),
+  # the tau in the table's mark.
   mixed <- table_regression(list(stats::lm(y ~ x, data = d), q975))
-  expect_identical(attr(mixed, "title"), "Regression comparison: y")
+  expect_identical(
+    attr(mixed, "title"),
+    "Régression — comparaison de modèles\u00a0: y"
+  )
   expect_match(
     attr(mixed, "note"),
-    "Model 1: linear regression; Model 2: quantile regression (τ = 0,975).",
+    paste0(
+      "Modèle 1\u00a0: régression linéaire\u00a0; ",
+      "Modèle 2\u00a0: régression quantile (τ = 0,975)."
+    ),
     fixed = TRUE
   )
 })

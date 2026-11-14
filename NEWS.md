@@ -636,6 +636,12 @@
   "Outcome" row, as in the table of fit statistics alone. The outcomes
   appeared nowhere. `outcome_labels = FALSE` removes the row.
 
+* `table_regression()` in French: a table of models of several families
+  words its title and the sentence that names the type of each model in
+  French ("Modèle 1 : régression linéaire ; Modèle 2 : régression
+  logistique."), as the rest of its note. Both were in English. A type
+  without a French name keeps them in English.
+
 * `table_regression()`: a multinomial model beside other models, and a
   Heckman selection model, name each row under the header of a term by
   its outcome category (or equation) alone: "Upper secondary" under

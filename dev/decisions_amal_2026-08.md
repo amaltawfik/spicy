@@ -679,6 +679,15 @@ rarement l'utiliser » ; la vraie question des traductions se posera
 - Le mode fr reste documenté comme partiel avec fallback anglais —
   état assumé, pas un défaut.
 Exécution : design + prose fr par Fable en direct (8 clés = petit).
+- Amendé le 2026-11-14 (lot restes) : un tableau côte à côte de
+  plusieurs familles traduit sa phrase de type (« Modèle 1 : régression
+  linéaire ; Modèle 2 : régression logistique. ») et son titre
+  (« Régression — comparaison de modèles ») quand chaque préfixe a sa
+  traduction, comme le faisaient déjà la disposition empilée et
+  `table_stack()`. Un préfixe sans traduction laisse la phrase et le
+  titre en anglais. Raison : la note était déjà hybride. Ses autres
+  phrases (erreurs standards, abréviations) sont traduites depuis
+  octobre, et seule la phrase de type restait en anglais.
 
 ## Décision 43 — Le « fr » quitte le registre des journaux ; la langue porte sa locale (2026-08-27)
 

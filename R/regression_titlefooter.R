@@ -240,13 +240,17 @@ build_regression_title_from_frames <- function(
 
   # Decision 42: a translatable prefix routes through the registry
   # templates; an untranslatable one falls through to the English arm
-  # below (coherent or nothing). A MIXED-family table never translates:
-  # its type footer is the frozen English "Model k: ..." list, and a
-  # French title over an English footer is the hybrid the rule forbids
-  # -- even though the fallback prefix "Regression" has a bridge entry.
-  # The note of a stack is worded in the language of the table, so its
-  # title is too.
-  disp <- if (mixed && !isTRUE(stacked)) {
+  # below (coherent or nothing). A MIXED-family table translates when
+  # every type has a translation, as its type footer then does
+  # (amended 2026-11-14); one type without leaves both English. The note
+  # of a stack is worded in the language of the table, so its title is
+  # too.
+  all_translated <- all(vapply(
+    prefixes,
+    function(p) !is.null(.title_prefix_display(p, decimal_mark)),
+    logical(1)
+  ))
+  disp <- if (mixed && !isTRUE(stacked) && !all_translated) {
     NULL
   } else {
     .title_prefix_display(prefix, decimal_mark)
@@ -689,6 +693,22 @@ build_regression_type_footer_block_from_frames <- function(
       return(spicy_fmt("note_type_models", lowercase_first(disp)))
     }
     return(.spicy_fmt_en("note_type_models", capitalize_first(types_en[1])))
+  }
+  # Decision 42, amended 2026-11-14: the rest of the note is in the
+  # language of the table, so a mixed list is too when every type has a
+  # translation ("Modele 1 : regression lineaire ; ..."). One type
+  # without keeps the list English wholesale, below.
+  disps <- lapply(types, .title_prefix_display, decimal_mark = decimal_mark)
+  if (!any(vapply(disps, is.null, logical(1)))) {
+    per <- vapply(
+      seq_along(types),
+      function(i) .model_line(frames, i, lowercase_first(disps[[i]])),
+      character(1)
+    )
+    return(paste0(
+      paste(per, collapse = spicy_str("note_type_models_sep")),
+      "."
+    ))
   }
   per <- vapply(
     seq_along(types),
