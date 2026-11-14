@@ -1060,6 +1060,24 @@ test_that("the Excel file leaves non-finite statistics empty, and means as they 
   expect_false(any(grepl("formatCode=\"0.00\"", fmts, fixed = TRUE)))
 })
 
+test_that("the Excel file holds a value half way between two displays as the PDF shows it", {
+  skip_on_cran()
+  skip_if_not_installed("openxlsx2")
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  # 1/16 = 6.25 % at one decimal, a mean of 2.675 at two: the PDF prints
+  # 6.2 and 2.67, Excel would round the full values to 6.3 and 2.68.
+  d <- data.frame(
+    f = factor(c("a", rep("b", 15L))),
+    x = rep(c(1.175, 4.175), 8L)
+  )
+  code_book(d, output = path)
+  values <- openxlsx2::read_xlsx(path, sheet = 3)
+  expect_identical(values[values$Value == "a", "%"][[1L]], 6.2)
+  vars <- openxlsx2::read_xlsx(path, sheet = 2)
+  expect_identical(vars$Mean[vars$Variable == "x"], 2.67)
+  expect_equal(vars$SD[vars$Variable == "x"], sd(d$x))
+})
+
 test_that("the Excel header takes the PDF colors, and the font when given", {
   skip_on_cran()
   skip_if_not_installed("openxlsx2")

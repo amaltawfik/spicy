@@ -49,17 +49,25 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
     # full precision: a mean of 49.2641666666667 would take an 18-wide
     # column.
     shown <- df
+    spec <- NULL
+    formatted <- TRUE
     if (i == 2L) {
       dec <- xl_decimals(df$sd)
+      spec <- lapply(dec, .xl_spec)
+      formatted <- !is.na(df$mean)
       for (k in intersect(c("mean", "sd", "median"), names(df))) {
         shown[[k]] <- xl_fixed(df[[k]], dec)
       }
     }
     if (i == 3L) {
+      spec <- .xl_spec(1L)
       for (k in c("pct_total", "pct_valid")) {
         shown[[k]] <- xl_fixed(df[[k]], 1L)
       }
     }
+    fixed <- which(
+      names(df) %in% c("mean", "sd", "median", "pct_total", "pct_valid")
+    )
     if (i > 1L) {
       names(df) <- code_book_headers(names(df))
       names(shown) <- names(df)
@@ -70,6 +78,13 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
     # NULL leaves a missing value's cell out; "" would write empty text
     # into numeric columns.
     wb <- openxlsx2::wb_add_data(wb, sheet = s, x = df, na.strings = NULL)
+    # A value half way between two displays (6.25 at one decimal) holds the
+    # value the PDF shows, which Excel then shows too (`.xl_col()`), in the
+    # cells the formats below reach.
+    for (j in fixed) {
+      text <- replace(shown[[j]], !formatted, NA)
+      wb <- .xl_col(wb, text, df[[j]], spec, c(2L, j))
+    }
     wb <- openxlsx2::wb_add_fill(
       wb,
       sheet = s,
