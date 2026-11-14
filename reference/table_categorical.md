@@ -441,7 +441,9 @@ table_categorical(
   In the `"data.frame"`, `"excel"` and `"clipboard"` outputs, two extra
   columns headed `95% CI LL` / `95% CI UL` are added, the level stated
   as the other tables state it; in the long output (`"long"`) the bounds
-  fill `es_ci_lower` / `es_ci_upper`. Defaults to `FALSE`.
+  fill `es_ci_lower` / `es_ci_upper`. The note defines `LL` and `UL` in
+  the `"excel"` and `"clipboard"` outputs only, whose headers show them.
+  Defaults to `FALSE`.
 
 - smd:
 
@@ -1246,7 +1248,7 @@ table_categorical(
 #>    Yes       │                
 #>    (Missing) │                
 #> 
-#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V; CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-value: Pearson chi-squared test. V = Cramér's V; CI = confidence interval.
 
 # --- Per-variable association measure ----------------------------------
 

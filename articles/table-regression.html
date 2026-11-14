@@ -689,23 +689,23 @@ introduced in <em>Per-coefficient effect sizes</em>:</p>
 <span>                    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Univariable and multivariable logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                       Univariable            Multiv… </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ───────────────────────────────  ─────── </span></span></span>
-<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>  N     OR      95% CI       p      OR    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼──────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                          </span></span>
-<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>    –   –         –         –         –   </span></span>
-<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> 1175  0.95  [0.72, 1.26]   .713     0.96 </span></span>
-<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> 1175  1.01  [1.00, 1.01]   .292     1.01 </span></span>
-<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                          </span></span>
-<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>    –   –         –         –         –   </span></span>
-<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> 1175  0.62  [0.44, 0.87]   .005     0.62 </span></span>
-<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>       0.41  [0.28, 0.60]  &lt;.001     0.40 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span>                                  1175    </span></span>
-<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>                                     0.02 </span></span>
-<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>                                     0.03 </span></span>
-<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span>                                  1200.9  </span></span>
+<span><span class="co">#&gt;                                       Univariable            Multivariable </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ───────────────────────────────  ───────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                 <span style="color: #9E9E9E;">│</span>  N     OR      95% CI       p            OR    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────┼────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  sex:                     <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Female (ref.)          <span style="color: #9E9E9E;">│</span>    –   –         –         –               –   </span></span>
+<span><span class="co">#&gt;    Male                   <span style="color: #9E9E9E;">│</span> 1175  0.95  [0.72, 1.26]   .713           0.96 </span></span>
+<span><span class="co">#&gt;  age                      <span style="color: #9E9E9E;">│</span> 1175  1.01  [1.00, 1.01]   .292           1.01 </span></span>
+<span><span class="co">#&gt;  education:               <span style="color: #9E9E9E;">│</span>                                                </span></span>
+<span><span class="co">#&gt;    Lower secondary (ref.) <span style="color: #9E9E9E;">│</span>    –   –         –         –               –   </span></span>
+<span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> 1175  0.62  [0.44, 0.87]   .005           0.62 </span></span>
+<span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span>       0.41  [0.28, 0.60]  &lt;.001           0.40 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                        <span style="color: #9E9E9E;">│</span>                                        1175    </span></span>
+<span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>                                           0.02 </span></span>
+<span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>                                           0.03 </span></span>
+<span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span>                                        1200.9  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                                Multivariable     </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">                            ──────────────────── </span></span></span>
@@ -904,6 +904,47 @@ often, so read it with care when many predictors enter at once.</p>
 <span><span class="co">#&gt;  p (change)      <span style="color: #9E9E9E;">│</span>    &lt;.001                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<div class="section level3">
+<h3 id="comparing-models-by-their-fit-statistics">Comparing models by their fit statistics<a class="anchor" aria-label="anchor" href="#comparing-models-by-their-fit-statistics"></a>
+</h3>
+<p><code>show_columns = "none"</code> keeps the fit statistics and drops
+every coefficient. Each model has one column, and the rows follow
+<code>show_fit_stats</code>. With <code>nested = TRUE</code> the change
+rows come last, so the table reads as the summary of the hierarchy.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">m1</span>, <span class="va">m2</span>, <span class="va">m3</span><span class="op">)</span>,</span>
+<span>  show_columns <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  nested <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  show_fit_stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nobs"</span>, <span class="st">"r2"</span>, <span class="st">"adj_r2"</span>, <span class="st">"aic"</span>, <span class="st">"bic"</span>,</span>
+<span>                     <span class="st">"r2_change"</span>, <span class="st">"f_change"</span>, <span class="st">"p_change"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span> Model 1       Model 2            Model 3      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  n          <span style="color: #9E9E9E;">│</span> 1163     1163               1163              </span></span>
+<span><span class="co">#&gt;  R²         <span style="color: #9E9E9E;">│</span>    0.02     0.02               0.04           </span></span>
+<span><span class="co">#&gt;  Adj. R²    <span style="color: #9E9E9E;">│</span>    0.02     0.02               0.04           </span></span>
+<span><span class="co">#&gt;  AIC        <span style="color: #9E9E9E;">│</span> 9683.9   9683.6             9657.7            </span></span>
+<span><span class="co">#&gt;  BIC        <span style="color: #9E9E9E;">│</span> 9704.2   9708.9             9688.1            </span></span>
+<span><span class="co">#&gt;  ΔR²        <span style="color: #9E9E9E;">│</span>     –      +0.00              +0.02           </span></span>
+<span><span class="co">#&gt;  F-change   <span style="color: #9E9E9E;">│</span>     –       2.28 (1, 1159)    28.13 (1, 1158) </span></span>
+<span><span class="co">#&gt;  p (change) <span style="color: #9E9E9E;">│</span>     –        .132              &lt;.001          </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<p>The title still names the outcome, and the note keeps what describes
+the models. Arguments that act on coefficients only, such as
+<code>exponentiate</code> or <code>keep</code>, are ignored with a
+warning. Without <code>nested = TRUE</code>, a table that compares an
+information criterion across models fitted to different samples or
+outcomes warns that the difference is not interpretable.
+<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> returns one row per model with its
+model-level statistics, <code>nobs</code>, <code>r.squared</code>,
+<code>adj.r.squared</code>, <code>AIC</code> and <code>BIC</code> among
+them. The change rows compare two models, so they are in the table
+only.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="robust-variance">Robust variance<a class="anchor" aria-label="anchor" href="#robust-variance"></a>
@@ -922,7 +963,7 @@ concern in cross-sectional social-science data), set
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>. The valid types are <code>HC0</code>
 through <code>HC5</code>; <code>HC3</code> is the small-sample-friendly
 default (Long and Ervin 2000):</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
@@ -977,7 +1018,7 @@ a different dataset with matching row order.</li>
 <strong>not</strong> accepted — they would require non-standard
 evaluation that breaks under programmatic use (function wrapping, loops,
 dynamic column choice).</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth_cc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
@@ -1026,7 +1067,7 @@ same as in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external
 (default), <code>"holm"</code>, <code>"hochberg"</code>,
 <code>"hommel"</code>, <code>"bonferroni"</code>, <code>"BH"</code> /
 <code>"fdr"</code>, <code>"BY"</code>.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, p_adjust <span class="op">=</span> <span class="st">"bonferroni"</span><span class="op">)</span></span>
@@ -1098,7 +1139,7 @@ matched against coefficient names (as returned by
 to hide a few control variables. Multiple patterns combine with logical
 OR. The intercept is not filtered: <code>show_intercept</code> decides
 whether it shows.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">bmi</span> <span class="op">+</span> <span class="va">education</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"^smoking"</span>, <span class="st">"^bmi$"</span><span class="op">)</span><span class="op">)</span></span>
@@ -1117,7 +1158,7 @@ whether it shows.</p>
 <span><span class="co">#&gt;  Adj. R²     <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, drop <span class="op">=</span> <span class="st">"^education"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1152,7 +1193,7 @@ guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the same
 point. Set <code>stars = TRUE</code> for the APA preset
 (<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
 named numeric vector for custom thresholds:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, stars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
@@ -1197,7 +1238,7 @@ the reference level into the factor header
 row, for compact tables. <code>decimal_mark = ","</code> switches to
 European decimal notation and automatically changes the CI separator to
 <code>";"</code> to avoid ambiguity:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
@@ -1252,7 +1293,7 @@ default fit-statistics block swaps in <code>nobs</code>,
 binary factor (<code>sex</code>), a numeric predictor
 (<code>age</code>), and a 3-level factor (<code>education</code>) —
 enough to exercise every glm-specific feature below.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
 <span>           family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -1312,7 +1353,7 @@ unexponentiated table verbatim. (Wald tests are not invariant to
 reparameterization — a z rebuilt from <code>SE_OR</code> would give a
 different statistic and p-value, which is why the link-scale test is
 kept; Long &amp; Freese 2014 §3.2.2.):</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1361,7 +1402,7 @@ make it the odds of such a woman at the mean age.</p>
 item 15; the NEJM house style). The opt-in <code>"n_events"</code>
 column token renders exactly that — per factor level, with the
 full-sample count on numeric predictors and the intercept row:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n_events"</span>, <span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1402,7 +1443,7 @@ Weisberg 2019; equal to <code>drop1(test = "LRT")</code> for additive
 models; on the LRT itself see Long &amp; Freese 2014 §3.2.2, §3.2.4).
 Rendered as <code>value (df)</code> so factor terms (<code>k − 1</code>
 df) and numeric terms (1 df) read at a glance:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit2</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"partial_chi2"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -1478,7 +1519,7 @@ same dummy convention as the other methods, which is why the factor rows
 in the table below are not <code>B × SD(X) / SD(Y*)</code>. Defined for
 binomial families; non-binomial returns NA with a
 <code>spicy_caveat</code>:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"pseudo"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1517,7 +1558,7 @@ quantity a substantive reader wants from a logistic regression, and it
 is the reason AME is increasingly recommended over odds ratios for
 communicating logistic effects (Mood 2010; Long and Freese 2014
 §6.2.3).</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1577,7 +1618,7 @@ the curve is straight over that step, and the gap grows as it bends
 monthly household income in thousands of francs, shows the gap. Each
 call below asks for one quantity, and <code><a href="../reference/table_stack.html">table_stack()</a></code> sets
 the three one under the other:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sh</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    good_health <span class="op">=</span> <span class="va">self_rated_health</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Good"</span>, <span class="st">"Very good"</span><span class="op">)</span>,</span>
@@ -1626,7 +1667,7 @@ marginal changes, as economics does (p. 241).</p>
 <p>A discrete change predicts at values the data may not hold. Incomes
 in the sample run from 1,000 to 7,388 francs, and the step carries some
 respondents past the highest of them:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">income_k</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; unit   sd </span></span>
@@ -1662,7 +1703,7 @@ than the quadratic Wald approximation, and the preferred choice under
 sparse data or near-boundary estimates (Venables &amp; Ripley
 <em>MASS</em> §7.2). The estimate, SE, statistic, and p-value all remain
 Wald; <code>"profile"</code> only refines the CI bounds:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1707,7 +1748,7 @@ variance-explained change tokens (<code>r2_change</code>,
 <code>show_fit_stats</code> raises a <code>spicy_invalid_input</code>
 error that points to the pseudo-R² family and to <code>lrt_change</code>
 + <code>p_change</code> instead:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span>,                   data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,             data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
@@ -1788,7 +1829,7 @@ columns. The number of groups — one
 <code>N (Subject)</code> — and the Nakagawa marginal / conditional R²
 (Nakagawa &amp; Schielzeth 2013) join the fit-statistic rows, so they
 align per model in a comparison table:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">sleepstudy</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -1885,7 +1926,7 @@ front), a long broom-style data.frame (<code>output = "long"</code>), or
 as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>excel</code>, <code>word</code>, or
 <code>clipboard</code>:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
@@ -1902,7 +1943,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span><span class="co">#&gt;  $ 95% CI UL: num  68.451 0.107 NA NA 5.632 ...</span></span>
 <span><span class="co">#&gt;  $ p        : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
 <span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval."</span></span></code></pre></div>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
@@ -1918,7 +1959,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> M1       sexMale     B               3.86      0.905   2.22<span style="color: #949494;">e</span><span style="color: #BB0000;">-  5</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> M1       smokingNo   B              <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>   <span style="color: #949494;"> </span>    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> M1       smokingYes  B              -<span style="color: #BB0000;">1.72</span>      1.11    1.21<span style="color: #949494;">e</span><span style="color: #BB0000;">-  1</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
@@ -2358,7 +2399,7 @@ names (<code>estimate</code>, <code>std.error</code>,
 <code>(model_id, outcome)</code> with model-level statistics;
 <code>df.residual</code> is preserved as a numeric so cluster-robust
 Satterthwaite df flows through verbatim:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span></span>

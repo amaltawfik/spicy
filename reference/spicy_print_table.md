@@ -177,7 +177,12 @@ spicy_print_table(
   panels keeps them together, unless the group alone is wider than the
   console. Used by the descriptive tables, whose spanners are the groups
   of `by`. When `FALSE` (the default), a label wider than its columns is
-  truncated and a split may fall inside a group.
+  truncated and a split may fall inside a group. `"fit"` keeps the split
+  of `FALSE` and widens the columns of the groups of a panel to their
+  labels when the panel, so widened, still fits the console; otherwise
+  its labels are truncated as under `FALSE`. Used by
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  whose spanners are the models.
 
 - ...:
 

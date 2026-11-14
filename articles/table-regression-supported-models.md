@@ -139,7 +139,7 @@ to get it as a data frame.
 |  | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- |
 | Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- |
 |  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
-|  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component |
+|  | `selection` | [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html) | no | \- | selection component |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
 |  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) |
 |  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
@@ -409,7 +409,7 @@ weights (`Weighted n`) are default fit statistics.
 [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
 (odds ratios on the logit mean link under `exponentiate`; the precision
 is the opt-in `phi` fit statistic), and
-[`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+[`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html)
 with its selection component as a block.
 
 **rms.** `ols`, `lrm`, `Glm` and `cph` are first-class citizens, so

@@ -624,21 +624,21 @@ table_regression(
 #>  R²                 │    0.00                            0.03                 
 #>  Adj. R²            │    0.00                            0.02                 
 #> 
-#>                       Adju… 
-#>                       ───── 
-#>  Variable           │ p (B) 
-#> ────────────────────┼───────
-#>  (Intercept)        │ <.001 
-#>  smoking:           │       
-#>    No (ref.)        │  –    
-#>    Yes              │  .117 
-#>  age                │  .171 
-#>  sex:               │       
-#>    Female (ref.)    │  –    
-#>    Male             │ <.001 
-#>  physical_activity: │       
-#>    No (ref.)        │  –    
-#>    Yes              │  .003 
+#>                       Adjusted 
+#>                       ──────── 
+#>  Variable           │    p (B) 
+#> ────────────────────┼──────────
+#>  (Intercept)        │    <.001 
+#>  smoking:           │          
+#>    No (ref.)        │     –    
+#>    Yes              │     .117 
+#>  age                │     .171 
+#>  sex:               │          
+#>    Female (ref.)    │     –    
+#>    Male             │    <.001 
+#>  physical_activity: │          
+#>    No (ref.)        │     –    
+#>    Yes              │     .003 
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS). CI = confidence interval.
 ```
@@ -1018,7 +1018,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_hlw81kwec4eioglhin8t .table
+Categorical table by education {#tinytable_hdtreczockkuh21l8cc5 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

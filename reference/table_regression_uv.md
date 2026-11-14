@@ -327,17 +327,17 @@ table_regression_uv(
 #>  R² (Nagelkerke) │                                     0.03               
 #>  AIC             │                                  1200.9                
 #> 
-#>                    Multi… 
-#>                    ────── 
-#>  Variable        │ p (OR) 
-#> ─────────────────┼────────
-#>  age             │   .214 
-#>  sex:            │        
-#>    Female (ref.) │   –    
-#>    Male          │   .800 
-#>  education:      │        
-#>    .L            │  <.001 
-#>    .Q            │   .852 
+#>                    Multivariable 
+#>                    ───────────── 
+#>  Variable        │        p (OR) 
+#> ─────────────────┼───────────────
+#>  age             │          .214 
+#>  sex:            │               
+#>    Female (ref.) │          –    
+#>    Male          │          .800 
+#>  education:      │               
+#>    .L            │         <.001 
+#>    .Q            │          .852 
 #> 
 #> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic). CI = confidence interval; AIC = Akaike information criterion.
 
@@ -352,19 +352,19 @@ table_regression_uv(
 )
 #> Univariable and multivariable linear regression: wellbeing_score
 #> 
-#>                                  Univariable                 Multiv… 
-#>                    ────────────────────────────────────────  ─────── 
-#>  Variable        │  N      B        95% CI        p     R²      B    
-#> ─────────────────┼───────────────────────────────────────────────────
-#>  age             │ 1200   0.04  [-0.02,  0.10]   .177  0.00     0.07 
-#>  sex:            │                                                   
-#>    Female (ref.) │    –    –          –          –      –        –   
-#>    Male          │ 1200   3.89  [ 2.13,  5.64]  <.001  0.02     4.27 
-#>  bmi             │ 1188  -0.60  [-0.83, -0.36]  <.001  0.02    -0.67 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n               │                                           1188    
-#>  R²              │                                              0.04 
-#>  Adj. R²         │                                              0.04 
+#>                                  Univariable                 Multivariable 
+#>                    ────────────────────────────────────────  ───────────── 
+#>  Variable        │  N      B        95% CI        p     R²            B    
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  age             │ 1200   0.04  [-0.02,  0.10]   .177  0.00           0.07 
+#>  sex:            │                                                         
+#>    Female (ref.) │    –    –          –          –      –              –   
+#>    Male          │ 1200   3.89  [ 2.13,  5.64]  <.001  0.02           4.27 
+#>  bmi             │ 1188  -0.60  [-0.83, -0.36]  <.001  0.02          -0.67 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │                                                 1188    
+#>  R²              │                                                    0.04 
+#>  Adj. R²         │                                                    0.04 
 #> 
 #>                        Multivariable     
 #>                    ───────────────────── 

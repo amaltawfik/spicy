@@ -591,23 +591,23 @@ table_regression_uv(sh, outcome = smoking,
                     family = binomial(), exponentiate = TRUE)
 #> Univariable and multivariable logistic regression: smoking
 #> 
-#>                                       Univariable            Multiv… 
-#>                             ───────────────────────────────  ─────── 
-#>  Variable                 │  N     OR      95% CI       p      OR    
-#> ──────────────────────────┼──────────────────────────────────────────
-#>  sex:                     │                                          
-#>    Female (ref.)          │    –   –         –         –         –   
-#>    Male                   │ 1175  0.95  [0.72, 1.26]   .713     0.96 
-#>  age                      │ 1175  1.01  [1.00, 1.01]   .292     1.01 
-#>  education:               │                                          
-#>    Lower secondary (ref.) │    –   –         –         –         –   
-#>    Upper secondary        │ 1175  0.62  [0.44, 0.87]   .005     0.62 
-#>    Tertiary               │       0.41  [0.28, 0.60]  <.001     0.40 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                        │                                  1175    
-#>  R² (McFadden)            │                                     0.02 
-#>  R² (Nagelkerke)          │                                     0.03 
-#>  AIC                      │                                  1200.9  
+#>                                       Univariable            Multivariable 
+#>                             ───────────────────────────────  ───────────── 
+#>  Variable                 │  N     OR      95% CI       p            OR    
+#> ──────────────────────────┼────────────────────────────────────────────────
+#>  sex:                     │                                                
+#>    Female (ref.)          │    –   –         –         –               –   
+#>    Male                   │ 1175  0.95  [0.72, 1.26]   .713           0.96 
+#>  age                      │ 1175  1.01  [1.00, 1.01]   .292           1.01 
+#>  education:               │                                                
+#>    Lower secondary (ref.) │    –   –         –         –               –   
+#>    Upper secondary        │ 1175  0.62  [0.44, 0.87]   .005           0.62 
+#>    Tertiary               │       0.41  [0.28, 0.60]  <.001           0.40 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                        │                                        1175    
+#>  R² (McFadden)            │                                           0.02 
+#>  R² (Nagelkerke)          │                                           0.03 
+#>  AIC                      │                                        1200.9  
 #> 
 #>                                Multivariable     
 #>                             ──────────────────── 
@@ -809,6 +809,48 @@ table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 #> 
 #> Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
 ```
+
+### Comparing models by their fit statistics
+
+`show_columns = "none"` keeps the fit statistics and drops every
+coefficient. Each model has one column, and the rows follow
+`show_fit_stats`. With `nested = TRUE` the change rows come last, so the
+table reads as the summary of the hierarchy.
+
+``` r
+
+table_regression(
+  list(m1, m2, m3),
+  show_columns = "none",
+  nested = TRUE,
+  show_fit_stats = c("nobs", "r2", "adj_r2", "aic", "bic",
+                     "r2_change", "f_change", "p_change")
+)
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>  Variable   │ Model 1       Model 2            Model 3      
+#> ────────────┼───────────────────────────────────────────────
+#>  n          │ 1163     1163               1163              
+#>  R²         │    0.02     0.02               0.04           
+#>  Adj. R²    │    0.02     0.02               0.04           
+#>  AIC        │ 9683.9   9683.6             9657.7            
+#>  BIC        │ 9704.2   9708.9             9688.1            
+#>  ΔR²        │     –      +0.00              +0.02           
+#>  F-change   │     –       2.28 (1, 1159)    28.13 (1, 1158) 
+#>  p (change) │     –        .132              <.001          
+#> 
+#> Note. Linear regression models. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+```
+
+The title still names the outcome, and the note keeps what describes the
+models. Arguments that act on coefficients only, such as `exponentiate`
+or `keep`, are ignored with a warning. Without `nested = TRUE`, a table
+that compares an information criterion across models fitted to different
+samples or outcomes warns that the difference is not interpretable.
+[`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+returns one row per model with its model-level statistics, `nobs`,
+`r.squared`, `adj.r.squared`, `AIC` and `BIC` among them. The change
+rows compare two models, so they are in the table only.
 
 ## Robust variance
 

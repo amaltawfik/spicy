@@ -453,7 +453,8 @@ layout: <code>"all_b"</code> (single model) or <code>"all_b_compact"</code>
 layout, which has the same width pressure – restore CIs with
 atomic tokens, e.g. <code>c("b", "se", "ci", "p")</code>). The <code>"p"</code>
 token is always the B / beta p-value; for the AME-specific
-p-value use <code>"ame_p"</code>.</p></dd>
+p-value use <code>"ame_p"</code>. <code>"none"</code> shows the fit statistics alone,
+one column per model (see <em>Fit statistics alone</em> in the details).</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
@@ -939,7 +940,7 @@ of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a
 for <code>"age * sex=Male"</code>), each naming one
 row. They keep that form whatever the language of the table.
 Classes with no <code>terms</code>
-component (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on
+component (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>, <code><a href="https://r-forge.r-project.org/projects/sampleselection/reference/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on
 their coefficient (or parameter) names alone. With several models,
 a name is looked up in the terms of all of them and lands on the
 rows where it exists. A name that matches nothing in the table warns
@@ -1262,6 +1263,32 @@ order of the displayed columns. If <code>standardized != "none"</code> and
 <code>"all_b"</code> for a single model (APA-7 Section 6.46 publication layout),
 <code>"all_b_compact"</code> for two or more models (CI dropped to fit the
 side-by-side layout; restore it explicitly when needed).</p>
+<p><strong>Fit statistics alone</strong> (<code>show_columns = "none"</code>): no coefficient
+row or column. Each model has one column, headed by its label (the
+outcome, "Model 1", a name of the list or <code>model_labels</code>, as for the
+column groups of the full table; "Model 1" for a single model), and
+the rows are the fit statistics of <code>show_fit_stats</code>, in its order,
+the change rows of <code>nested = TRUE</code> included. The title is the one of
+the full table; the note keeps what describes the models and their
+fit, and leaves out what describes coefficients. Models with
+different outcomes get an Outcome row when the column headers do not
+name them (<code>outcome_labels = FALSE</code> removes it). <code>"none"</code> goes alone, and
+<code>show_fit_stats = FALSE</code> is refused with it, as is <code>layout = "stacked"</code>; an empty <code>show_columns</code> (<code>character(0)</code>, <code>FALSE</code>) is an
+error that points to <code>"none"</code>. The arguments that act on coefficients
+only are ignored, with one <code>spicy_ignored_arg</code> warning naming those
+set to other than their default: <code>ci_level</code>, <code>ci_method</code>, <code>tau</code>,
+<code>at_time</code>, <code>standardized</code>, <code>exponentiate</code>, <code>ame_type</code>, <code>p_adjust</code>,
+<code>keep</code>, <code>drop</code>, <code>show_intercept</code>, <code>show_thresholds</code>,
+<code>show_components</code>, <code>intercept_position</code>, <code>factor_layout</code>,
+<code>reference_style</code>, <code>reference_label</code>, <code>fit_stats_layout</code>, <code>show_re</code>,
+<code>re_scale</code>, <code>re_columns</code>, <code>re_test</code>, <code>re_ci</code>, <code>stars</code>,
+<code>effect_size_digits</code>, and <code>vcov</code>, <code>cluster</code> and <code>boot_n</code> unless
+<code>nested = TRUE</code> (where a robust <code>vcov</code> gives the Wald change rows).
+An information criterion (AIC, BIC, deviance, ...) shown for models
+fitted to different numbers of observations or to different outcomes
+raises a <code>spicy_caveat</code> warning: its differences compare nothing.
+<code>tidy()</code> returns no row, <code>glance()</code> one row per model, and
+<code><a href="inline.html">inline()</a></code> cites a statistic of a model: <code>inline(tbl, "aic", model = 2)</code>. <code><a href="table_regression_uv.html">table_regression_uv()</a></code> refuses the token.</p>
 </div>
 
 <div class="section">
@@ -2448,6 +2475,25 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     .121                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># The same comparison by its fit statistics alone.</span></span></span>
+<span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Step 1"</span> <span class="op">=</span> <span class="va">m1</span>, <span class="st">"Step 2"</span> <span class="op">=</span> <span class="va">m2</span>, <span class="st">"Step 3"</span> <span class="op">=</span> <span class="va">m3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  show_columns <span class="op">=</span> <span class="st">"none"</span>,</span></span>
+<span class="r-in"><span>  nested <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Hierarchical linear regression: wellbeing_score</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span> Step 1        Step 2             Step 3       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n          <span style="color: #9E9E9E;">│</span> 1175     1175               1175              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R²         <span style="color: #9E9E9E;">│</span>    0.00     0.02               0.02           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²    <span style="color: #9E9E9E;">│</span>    0.00     0.02               0.02           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔR²        <span style="color: #9E9E9E;">│</span>     –      +0.02              +0.00           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  F-change   <span style="color: #9E9E9E;">│</span>     –      18.26 (1, 1172)     2.41 (1, 1171) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change) <span style="color: #9E9E9E;">│</span>     –       &lt;.001               .121          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
@@ -2590,30 +2636,30 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²                             <span style="color: #9E9E9E;">│</span>     –                  116.46 (1)       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)                      <span style="color: #9E9E9E;">│</span>     –                    &lt;.001          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                    Mode…          Model 3          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                   ─────  ──────────────────────── </span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                        <span style="color: #9E9E9E;">│</span> p (B)       B        SE     p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)                     <span style="color: #9E9E9E;">│</span> &lt;.001   251.41      6.63  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Days                            <span style="color: #9E9E9E;">│</span> &lt;.001    10.47      1.50  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Random effects:                 <span style="color: #9E9E9E;">│</span>                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>  –       23.78      5.58   –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    σ Subject Days                <span style="color: #9E9E9E;">│</span>           5.72      1.19   –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>           0.08      0.32   –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    σ (Residual)                  <span style="color: #9E9E9E;">│</span>  –       25.59      1.51   –    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n                               <span style="color: #9E9E9E;">│</span>         180                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  N (Subject)                     <span style="color: #9E9E9E;">│</span>          18                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ICC                             <span style="color: #9E9E9E;">│</span>            –                    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (marginal)                   <span style="color: #9E9E9E;">│</span>           0.29                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (conditional)                <span style="color: #9E9E9E;">│</span>           0.79                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  AIC                             <span style="color: #9E9E9E;">│</span>        1763.9                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  BIC                             <span style="color: #9E9E9E;">│</span>        1783.1                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔAIC                            <span style="color: #9E9E9E;">│</span>         -38.1                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔBIC                            <span style="color: #9E9E9E;">│</span>         -31.8                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²                             <span style="color: #9E9E9E;">│</span>          42.14 (2)              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)                      <span style="color: #9E9E9E;">│</span>           &lt;.001                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                    Model 2          Model 3          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">                                   ───────  ──────────────────────── </span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                        <span style="color: #9E9E9E;">│</span>   p (B)       B        SE     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept)                     <span style="color: #9E9E9E;">│</span>   &lt;.001   251.41      6.63  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Days                            <span style="color: #9E9E9E;">│</span>   &lt;.001    10.47      1.50  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Random effects:                 <span style="color: #9E9E9E;">│</span>                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>    –       23.78      5.58   –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    σ Subject Days                <span style="color: #9E9E9E;">│</span>             5.72      1.19   –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>             0.08      0.32   –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    σ (Residual)                  <span style="color: #9E9E9E;">│</span>    –       25.59      1.51   –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  n                               <span style="color: #9E9E9E;">│</span>           180                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  N (Subject)                     <span style="color: #9E9E9E;">│</span>            18                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ICC                             <span style="color: #9E9E9E;">│</span>              –                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (marginal)                   <span style="color: #9E9E9E;">│</span>             0.29                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  R² (conditional)                <span style="color: #9E9E9E;">│</span>             0.79                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  AIC                             <span style="color: #9E9E9E;">│</span>          1763.9                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  BIC                             <span style="color: #9E9E9E;">│</span>          1783.1                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔAIC                            <span style="color: #9E9E9E;">│</span>           -38.1                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ΔBIC                            <span style="color: #9E9E9E;">│</span>           -31.8                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Δχ²                             <span style="color: #9E9E9E;">│</span>            42.14 (2)              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)                      <span style="color: #9E9E9E;">│</span>             &lt;.001                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>

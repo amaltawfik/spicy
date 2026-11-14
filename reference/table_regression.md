@@ -361,7 +361,8 @@ table_regression(
   outcome-as-columns layout, which has the same width pressure – restore
   CIs with atomic tokens, e.g. `c("b", "se", "ci", "p")`). The `"p"`
   token is always the B / beta p-value; for the AME-specific p-value use
-  `"ame_p"`.
+  `"ame_p"`. `"none"` shows the fit statistics alone, one column per
+  model (see *Fit statistics alone* in the details).
 
 - keep:
 
@@ -881,7 +882,7 @@ table_regression(
   naming one row. They keep that form whatever the language of the
   table. Classes with no `terms` component
   ([`nls()`](https://rdrr.io/r/stats/nls.html),
-  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
+  [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html))
   are keyed on their coefficient (or parameter) names alone. With
   several models, a name is looked up in the terms of all of them and
   lands on the rows where it exists. A name that matches nothing in the
@@ -1214,6 +1215,37 @@ while `standardized = "none"` raises `spicy_invalid_input`.
 single model (APA-7 Section 6.46 publication layout), `"all_b_compact"`
 for two or more models (CI dropped to fit the side-by-side layout;
 restore it explicitly when needed).
+
+**Fit statistics alone** (`show_columns = "none"`): no coefficient row
+or column. Each model has one column, headed by its label (the outcome,
+"Model 1", a name of the list or `model_labels`, as for the column
+groups of the full table; "Model 1" for a single model), and the rows
+are the fit statistics of `show_fit_stats`, in its order, the change
+rows of `nested = TRUE` included. The title is the one of the full
+table; the note keeps what describes the models and their fit, and
+leaves out what describes coefficients. Models with different outcomes
+get an Outcome row when the column headers do not name them
+(`outcome_labels = FALSE` removes it). `"none"` goes alone, and
+`show_fit_stats = FALSE` is refused with it, as is `layout = "stacked"`;
+an empty `show_columns` (`character(0)`, `FALSE`) is an error that
+points to `"none"`. The arguments that act on coefficients only are
+ignored, with one `spicy_ignored_arg` warning naming those set to other
+than their default: `ci_level`, `ci_method`, `tau`, `at_time`,
+`standardized`, `exponentiate`, `ame_type`, `p_adjust`, `keep`, `drop`,
+`show_intercept`, `show_thresholds`, `show_components`,
+`intercept_position`, `factor_layout`, `reference_style`,
+`reference_label`, `fit_stats_layout`, `show_re`, `re_scale`,
+`re_columns`, `re_test`, `re_ci`, `stars`, `effect_size_digits`, and
+`vcov`, `cluster` and `boot_n` unless `nested = TRUE` (where a robust
+`vcov` gives the Wald change rows). An information criterion (AIC, BIC,
+deviance, ...) shown for models fitted to different numbers of
+observations or to different outcomes raises a `spicy_caveat` warning:
+its differences compare nothing. `tidy()` returns no row, `glance()` one
+row per model, and
+[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+cites a statistic of a model: `inline(tbl, "aic", model = 2)`.
+[`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+refuses the token.
 
 ### `show_fit_stats` – model-level rows below the coefficients
 
@@ -2503,6 +2535,25 @@ table_regression(
 #>  p (change)      │     .121                       
 #> 
 #> Note. Linear regression models. Std. errors: classical (OLS).
+
+# The same comparison by its fit statistics alone.
+table_regression(
+  list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
+  show_columns = "none",
+  nested = TRUE
+)
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>  Variable   │ Step 1        Step 2             Step 3       
+#> ────────────┼───────────────────────────────────────────────
+#>  n          │ 1175     1175               1175              
+#>  R²         │    0.00     0.02               0.02           
+#>  Adj. R²    │    0.00     0.02               0.02           
+#>  ΔR²        │     –      +0.02              +0.00           
+#>  F-change   │     –      18.26 (1, 1172)     2.41 (1, 1171) 
+#>  p (change) │     –       <.001               .121          
+#> 
+#> Note. Linear regression models.
 # }
 
 # \donttest{
@@ -2645,30 +2696,30 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                             │     –                  116.46 (1)       
 #>  p (change)                      │     –                    <.001          
 #> 
-#>                                    Mode…          Model 3          
-#>                                    ─────  ──────────────────────── 
-#>  Variable                        │ p (B)       B        SE     p   
-#> ─────────────────────────────────┼─────────────────────────────────
-#>  (Intercept)                     │ <.001   251.41      6.63  <.001 
-#>  Days                            │ <.001    10.47      1.50  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                 
-#>    σ Subject (Intercept)         │  –       23.78      5.58   –    
-#>    σ Subject Days                │           5.72      1.19   –    
-#>    ρ Subject ((Intercept), Days) │           0.08      0.32   –    
-#>    σ (Residual)                  │  –       25.59      1.51   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │         180                     
-#>  N (Subject)                     │          18                     
-#>  ICC                             │            –                    
-#>  R² (marginal)                   │           0.29                  
-#>  R² (conditional)                │           0.79                  
-#>  AIC                             │        1763.9                   
-#>  BIC                             │        1783.1                   
-#>  ΔAIC                            │         -38.1                   
-#>  ΔBIC                            │         -31.8                   
-#>  Δχ²                             │          42.14 (2)              
-#>  p (change)                      │           <.001                 
+#>                                    Model 2          Model 3          
+#>                                    ───────  ──────────────────────── 
+#>  Variable                        │   p (B)       B        SE     p   
+#> ─────────────────────────────────┼───────────────────────────────────
+#>  (Intercept)                     │   <.001   251.41      6.63  <.001 
+#>  Days                            │   <.001    10.47      1.50  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Random effects:                 │                                   
+#>    σ Subject (Intercept)         │    –       23.78      5.58   –    
+#>    σ Subject Days                │             5.72      1.19   –    
+#>    ρ Subject ((Intercept), Days) │             0.08      0.32   –    
+#>    σ (Residual)                  │    –       25.59      1.51   –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                               │           180                     
+#>  N (Subject)                     │            18                     
+#>  ICC                             │              –                    
+#>  R² (marginal)                   │             0.29                  
+#>  R² (conditional)                │             0.79                  
+#>  AIC                             │          1763.9                   
+#>  BIC                             │          1783.1                   
+#>  ΔAIC                            │           -38.1                   
+#>  ΔBIC                            │           -31.8                   
+#>  Δχ²                             │            42.14 (2)              
+#>  p (change)                      │             <.001                 
 #> 
 #> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }

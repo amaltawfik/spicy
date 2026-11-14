@@ -128,7 +128,10 @@
   as in the console, and test statistics (F-change, χ², Wald) and the
   deviance drop are no longer signed in the console. Those outputs also
   print the F-change with `digits` and the Deviance row and its change
-  with `ic_digits`, as the console does.
+  with `ic_digits`, as the console does. The cell of a test carries its
+  degrees of freedom: a χ² change printed `+204.01` reads `204.01 (4)`,
+  an F-change `12.38 (1, 29)`. `output = "data.frame"` keeps the
+  statistic alone.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
@@ -190,6 +193,17 @@
   refuses a level of `y` or of `by` that is the empty string. The column
   was headed `V1`, and the rows of such a `by` group were dropped
   without a word.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  and
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  on a survey fit count in the design line of the note only the primary
+  sampling units that hold a row of non-zero weight, as
+  [`survey::degf()`](https://rdrr.io/pkg/survey/man/svychisq.html) does.
+  After [`subset()`](https://rdrr.io/r/base/subset.html) on a
+  post-stratified design, the note said “15 PSU” for the 8 units left
+  and 7 degrees of freedom.
 
 ### New features
 
@@ -305,6 +319,16 @@
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html), `glance()`
   and `output = "long"` return the rows of the models side by side, with
   a leading `panel` column.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `show_columns = "none"`: the fit statistics of the models alone,
+  one column per model, in the order of `show_fit_stats`, with the
+  change rows of `nested = TRUE`. The arguments that act on coefficients
+  only are ignored with a warning. Another warning flags an information
+  criterion compared across models fitted to different samples or
+  outcomes.
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  refuses the token.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   glmmTMB models take `vcov = "CR1"`, glmmTMB’s cluster sandwich scaled
@@ -797,10 +821,10 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `p_adjust` leaves out of the family the intercepts of a multinomial
   model and of a
-  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+  [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html)
   model, as it does other intercepts, and `show_intercept = FALSE`,
   `keep` and `drop` treat the intercepts of a
-  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+  [`sampleSelection::selection()`](https://r-forge.r-project.org/projects/sampleselection/reference/selection.html)
   model as they do the intercept of other models.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
@@ -921,6 +945,12 @@
   label contains the word “Total”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  in the console, a model label wider than its columns widens them when
+  the table still fits the console, instead of being cut (“Mode…” over a
+  single column). A label that would not fit is still cut, with its
+  ellipsis, and the table splits into panels as before.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a `keep`, `drop`, `show_intercept = FALSE` or
   `show_thresholds = FALSE` that leaves no coefficient row now stops
   with `spicy_empty_table`, naming the model and the setting, instead of
@@ -997,7 +1027,9 @@
 - `table_categorical(assoc_ci = TRUE)` prints the interval of the
   association measure in the measure’s cell, `.52 [.21, .74]` under
   `V [95% CI]`, as the rendered tables do. The data frame, Excel and the
-  clipboard keep the bounds in columns of their own.
+  clipboard keep the bounds in columns of their own. The note defines LL
+  and UL only in Excel and the clipboard, whose headers show them. The
+  rendered tables defined them too.
 
 ## spicy 0.14.1
 

@@ -260,7 +260,10 @@ them, and a split into panels keeps them together, unless the group
 alone is wider than the console. Used by the descriptive tables,
 whose spanners are the groups of <code>by</code>. When <code>FALSE</code> (the default), a
 label wider than its columns is truncated and a split may fall inside
-a group.</p></dd>
+a group. <code>"fit"</code> keeps the split of <code>FALSE</code> and widens the columns of
+the groups of a panel to their labels when the panel, so widened,
+still fits the console; otherwise its labels are truncated as under
+<code>FALSE</code>. Used by <code><a href="table_regression.html">table_regression()</a></code>, whose spanners are the models.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
