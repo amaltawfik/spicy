@@ -511,10 +511,10 @@ Cell merging is supported by \code{excel}, \code{flextable}, and
 \code{default} (console) always render in \code{"first_col"} mode
 regardless of this setting:
 \itemize{
-\item \code{gt} lacks a native row-spanning cell-merge API
-(\code{tab_spanner} covers columns, not row-cell ranges).
-\item \code{tinytable}'s \code{style_tt(colspan = N)} emits HTML
-\code{colspan} only on header rows, not on body cells.
+\item \code{gt} merges no cells of the body (\code{tab_spanner()}
+spans column labels).
+\item \code{tinytable}: the merged layout is not implemented
+for this engine.
 \item \code{clipboard} ships TSV plaintext.
 \item \code{default} ships fixed-width ASCII.
 }
@@ -2073,7 +2073,7 @@ HTML / Word / PDF tables (require the corresponding
 Suggests package). In a PDF, a \code{"flextable"} table wider than
 the page can be fitted with \code{flextable::fit_to_width()}.
 \item \code{"excel"} -- writes to \code{excel_path} via
-\code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}} and returns the path invisibly.
+\code{openxlsx2::wb_save()} and returns the path invisibly.
 \item \code{"word"} -- writes to \code{word_path} via
 \code{flextable::save_as_docx()} and returns the path invisibly.
 \item \code{"clipboard"} -- copies to the system clipboard via

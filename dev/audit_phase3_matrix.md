@@ -259,7 +259,7 @@ PREUVE: test-regression_dispatch_engines.R "fit_stats_layout enum validates + pr
 man/table_regression.Rd:404-423
 PROMESSE: fit_stats_layout="merged" merges the model's numeric sub-columns into one centred wide cell; merging is supported by excel, flextable, and word only -- gt, tinytable, clipboard, and default always render first_col regardless.
 TEST ATTENDU: flextable output under 'merged' has merged cells for fit rows; the console/gt render of the same call is byte-identical to first_col.
-PREUVE: test-regression_dispatch_engines.R "Excel fit_stats_layout = 'merged' inserts merged cells" + "flextable ... emits colspan in fit-stat rows" + "'merged' warns for engines without body-cell merge (tinytable, gt)"; word merged et l'identité console/first_col ne sont pas testés
+PREUVE: test-regression_dispatch_engines.R "Excel fit_stats_layout = 'merged' inserts merged cells" + "flextable ... emits colspan in fit-stat rows" + "'merged' warns for the engines that ignore it (tinytable, gt)"; word merged et l'identité console/first_col ne sont pas testés
 
 ### rd-core:fit-stats-nevents-cox-blank [partial]
 man/table_regression.Rd:832-834

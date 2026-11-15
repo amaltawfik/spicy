@@ -22,7 +22,7 @@
 #   tinytable   -- tinytable::tt() wrapper
 #   gt          -- gt::gt() wrapper
 #   flextable   -- flextable::flextable() wrapper
-#   excel       -- openxlsx2::write_xlsx() side-effect; returns
+#   excel       -- openxlsx2 workbook saved by wb_save(); returns
 #                 invisible(excel_path), as the descriptive tables do
 #   clipboard   -- clipr::write_clip() side-effect; returns
 #                 invisible(rendered)
@@ -289,15 +289,15 @@ output_long <- function(aligned, note = NULL) {
   nm
 }
 
-# Warn when `fit_stats_layout = "merged"` is silently ignored by
-# the chosen rich output engine (gt, tinytable). Both lack a
-# body-cell row-spanning merge primitive: `gt::tab_spanner()`
-# covers columns only, and `tinytable::style_tt(colspan = N)`
-# emits HTML `colspan` only on header rows. The user passed a
-# non-default value, so a classed warning closes the loop rather
-# than letting the table render in `"first_col"` mode without
-# explanation. Only the engines with native body-cell merge
-# (flextable, excel, word via flextable) honor the layout.
+# Warn when `fit_stats_layout = "merged"` is ignored by the chosen
+# rich output engine (gt, tinytable). gt merges no cells of the
+# body: `gt::tab_spanner()` spans column labels. tinytable can
+# merge them in HTML, LaTeX and Typst, as the Outcome row does,
+# but the merged layout is not implemented for it. The user
+# passed a non-default value, so a classed warning closes the loop
+# rather than letting the table render in `"first_col"` mode
+# without explanation. Only flextable, excel and word (via
+# flextable) honor the layout.
 .warn_merged_layout_ignored <- function(rendered, engine) {
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
   if (!identical(fit_stats_layout, "merged")) {
@@ -718,7 +718,7 @@ output_tinytable <- function(rendered) {
   }
 
   # `fit_stats_layout = "merged"` is NOT honored for tinytable
-  # (HTML colspan on body cells; see .warn_merged_layout_ignored).
+  # (not implemented; see .warn_merged_layout_ignored).
   .warn_merged_layout_ignored(rendered, "tinytable")
 
   # ---- Note rendering: strip the rendered `<tfoot>` and wrap the ------

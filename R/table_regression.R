@@ -1082,7 +1082,7 @@
 #'     Suggests package). In a PDF, a `"flextable"` table wider than
 #'     the page can be fitted with `flextable::fit_to_width()`.
 #'   \item `"excel"` -- writes to `excel_path` via
-#'     [openxlsx2::write_xlsx()] and returns the path invisibly.
+#'     `openxlsx2::wb_save()` and returns the path invisibly.
 #'   \item `"word"` -- writes to `word_path` via
 #'     `flextable::save_as_docx()` and returns the path invisibly.
 #'   \item `"clipboard"` -- copies to the system clipboard via
@@ -1573,10 +1573,10 @@
 #'   `default` (console) always render in `"first_col"` mode
 #'   regardless of this setting:
 #'   \itemize{
-#'     \item `gt` lacks a native row-spanning cell-merge API
-#'       (`tab_spanner` covers columns, not row-cell ranges).
-#'     \item `tinytable`'s `style_tt(colspan = N)` emits HTML
-#'       `colspan` only on header rows, not on body cells.
+#'     \item `gt` merges no cells of the body (`tab_spanner()`
+#'       spans column labels).
+#'     \item `tinytable`: the merged layout is not implemented
+#'       for this engine.
 #'     \item `clipboard` ships TSV plaintext.
 #'     \item `default` ships fixed-width ASCII.
 #'   }

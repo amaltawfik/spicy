@@ -276,7 +276,9 @@ test_that("the Excel export does not copy the workbook per row", {
     })
   )
   expect_identical(
-    count(function(...) table_categorical(d, c(smoking, dentist_12m), by = sex, ...)),
+    count(function(...) {
+      table_categorical(d, c(smoking, dentist_12m), by = sex, ...)
+    }),
     count(function(...) {
       table_categorical(d, c(smoking, education, region), by = sex, ...)
     })
