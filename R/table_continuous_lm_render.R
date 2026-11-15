@@ -863,9 +863,8 @@ export_continuous_lm_table <- function(
       gspec[[ci_spanner_label]] <- c(ll_pos, ul_pos)
     }
 
-    # `notes = note` keeps native footnote rendering for the LaTeX /
-    # typst / markdown backends; the HTML output re-injects the note
-    # outside the table grid via the finalize below.
+    # The note is set for each output, HTML included, by the finalizer
+    # of `.spicy_tt_bare()` (R/tt_theme.R).
     tt <- tinytable::tt(
       display_df,
       # Same title the console prints ("Continuous outcomes by <x>"),
@@ -961,20 +960,6 @@ export_continuous_lm_table <- function(
       }
     }
 
-    # ---- Note rendering (HTML): strip the rendered `<tfoot>` and ------
-    # wrap the table together with the note in an `inline-block` flex
-    # sibling. Same mechanism, markup and CSS as table_regression()'s
-    # output_tinytable(): both call the shared pair in R/tt_theme.R, so
-    # a note reads the same way whichever family produced the table.
-    if (!is.null(note) && nzchar(note)) {
-      note_div <- .spicy_tt_note_div(note)
-      tt <- tinytable::style_tt(tt, finalize = function(x) {
-        if (identical(x@output, "html")) {
-          x@table_string <- .spicy_tt_wrap_html(x@table_string, note_div)
-        }
-        x
-      })
-    }
     return(tt)
   }
 
@@ -1366,7 +1351,7 @@ export_continuous_lm_table <- function(
     # note so `print.spicy_flextable` / `knit_print.spicy_flextable`
     # (regression_dispatch.R) strip the rendered `<tfoot>` and
     # re-inject the note as a `<div>` outside the table in HTML
-    # contexts (same trick as the tinytable branch above).
+    # contexts.
     if (!is.null(note) && nzchar(note)) {
       attr(ft, "spicy_note") <- note
       attr(ft, "spicy_note_lead") <- .note_lead() # see .note_lead_keys()

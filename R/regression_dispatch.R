@@ -721,49 +721,20 @@ output_tinytable <- function(rendered) {
   # (not implemented; see .warn_merged_layout_ignored).
   .warn_merged_layout_ignored(rendered, "tinytable")
 
-  # ---- Note rendering: strip the rendered `<tfoot>` and wrap the ------
-  # table together with the note in an `inline-block` flex sibling
-  # (HTML output only). `.spicy_tt_note_div()` / `.spicy_tt_wrap_html()`
-  # (R/tt_theme.R) hold the markup and the CSS rationale; the same pair
-  # serves table_continuous_lm(), so the two families read alike.
-  #
-  # We still pass `notes = note` to `tt()` so LaTeX, typst and
-  # markdown backends keep their native footnote rendering; this
-  # finalize is gated on `x@output == "html"` and only mutates the
-  # HTML output. `finalize` receives the S4 object; we mutate
-  # `x@table_string` and return `x`. tinytable runs each
-  # `lazy_finalize` exactly once after building `table_string`, so
-  # no idempotency check is required.
-  if (!is.null(note)) {
-    note_div <- .spicy_tt_note_div(note)
-    tt <- tinytable::style_tt(tt, finalize = function(x) {
-      # Strip the U+200B disambiguator we added to duplicate spanner
-      # labels so the rendered output is identical regardless of how
-      # many CIs (or other identically-labeled spanners) the user
-      # requested. See the "tinytable's `group_tt(j = list)`..."
-      # comment above for the rationale.
-      # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
-      zwsp <- intToUtf8(0x200B)
-      if (grepl(zwsp, x@table_string, fixed = TRUE)) {
-        x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
-      }
-      if (identical(x@output, "html")) {
-        x@table_string <- .spicy_tt_wrap_html(x@table_string, note_div)
-      }
-      x
-    })
-  } else {
-    # No note: still register a finalize ONLY to strip the U+200B
-    # spanner-label disambiguator from the rendered output.
-    tt <- tinytable::style_tt(tt, finalize = function(x) {
-      # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
-      zwsp <- intToUtf8(0x200B)
-      if (grepl(zwsp, x@table_string, fixed = TRUE)) {
-        x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
-      }
-      x
-    })
-  }
+  # The note is set in the `<tfoot>` by the finalizer of `.spicy_tt_bare()`
+  # (`.spicy_tt_note_tfoot()`, R/tt_theme.R), as in every family. This
+  # finalizer strips the U+200B disambiguator added to duplicate spanner
+  # labels, so the rendered output is the same however many CIs (or
+  # other identically-labeled spanners) were requested; see the
+  # "tinytable's `group_tt(j = list)`..." comment above.
+  tt <- tinytable::style_tt(tt, finalize = function(x) {
+    # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
+    zwsp <- intToUtf8(0x200B)
+    if (grepl(zwsp, x@table_string, fixed = TRUE)) {
+      x@table_string <- gsub(zwsp, "", x@table_string, fixed = TRUE)
+    }
+    x
+  })
 
   tt
 }
@@ -1190,8 +1161,8 @@ output_gt <- function(rendered) {
   # 2. `attr(tbl, "spicy_note")` + the `spicy_gt` sub-class drive the
   #    HTML display path below, which RE-STYLES the note: gt renders a
   #    source note inside `<tfoot>` as a `<td colspan="N">` cell whose
-  #    max-content widens the whole table in narrow viewports (same
-  #    pathology as `output_tinytable` / `output_flextable`), so
+  #    max-content widens the whole table in narrow viewports (as in
+  #    `output_flextable`), so
   #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
   #    `<div>` sibling outside the table.
   # Its numbers take the minus sign of the style in force, as the cells.
@@ -1252,9 +1223,9 @@ output_gt <- function(rendered) {
 
 # Wrap rendered gt HTML so the title (already inside the `<table>`
 # as a heading row) is preserved but the source note is injected as
-# a `<div>` sibling immediately after `</table>`. The wrapping +
-# note-styling mirror `output_tinytable` so the visual reading of
-# the note matches across engines.
+# a `<div>` sibling immediately after `</table>`. The note's
+# `width: min-content; min-width: 100%` keeps it from widening the
+# wrapper, then fills it, so it wraps at the table's width.
 .spicy_gt_html_postprocess <- function(html_str, note, lead = .note_lead()) {
   # A table without a note takes the wrapper and its rules too, as it
   # takes the `spicy_gt` class (section 19 of
@@ -2073,8 +2044,8 @@ output_flextable <- function(rendered) {
   # `print.spicy_flextable` / `knit_print.spicy_flextable` methods
   # use this attr to post-process the rendered HTML: strip the
   # rendered `<tfoot>` and re-inject the note as a `<div>` outside
-  # the table (same trick as `output_tinytable` to keep the colspan
-  # footer from widening the table). The Word / docx path
+  # the table (as `output_gt` does, to keep the colspan footer from
+  # widening the table). The Word / docx path
   # (`output_word`) ignores these methods and uses
   # `body_add_flextable()` on the underlying flextable, so the
   # in-table footer is preserved for docx fidelity.
@@ -2093,8 +2064,7 @@ output_flextable <- function(rendered) {
 # inject `note` (HTML-escaped, with the leading "Note." italicized)
 # as a `<div>` immediately after `</table>`, wrapped in an
 # inline-block so the note inherits the table's content width
-# without contributing to it. See the analogous comment in
-# `output_tinytable` for the CSS rationale.
+# without contributing to it, as in `.spicy_gt_html_postprocess()`.
 .spicy_ft_html_postprocess <- function(html_str, note, lead = .note_lead()) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)

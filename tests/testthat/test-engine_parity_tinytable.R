@@ -313,8 +313,8 @@ test_that("notes are subordinated by size, in black, by default", {
     fixed = TRUE
   )
   expect_match(.pt_latex(tt), "note{}={\\small \\emph{Note.}", fixed = TRUE)
-  # The descriptive families keep tinytable's own <tfoot> cell: it is
-  # restyled in place.
+  # Every family keeps tinytable's own <tfoot> cell: it is restyled in
+  # place.
   cat_tt <- table_categorical(
     d,
     c(sex, smoking),
@@ -323,7 +323,7 @@ test_that("notes are subordinated by size, in black, by default", {
   )
   expect_match(
     .pt_html(cat_tt),
-    "<td colspan='3' style=\"font-size: 0.9em; \">",
+    "<td colspan='3' style=\"font-size: 0.9em; line-height: 1.25; \">",
     fixed = TRUE
   )
   # No color is imposed: the note inherits the document's text color.
@@ -362,9 +362,10 @@ test_that("options(spicy.note_style) opts out or adds Typst styling", {
     expect_match(.pt_html(tt), "font-size: 0.9em;", fixed = TRUE)
   })
 
+  # The option is read where the note is set, when the table renders.
   withr::with_options(list(spicy.note_style = 0.8), {
     expect_error(
-      table_regression(fit, output = "tinytable"),
+      .pt_html(table_regression(fit, output = "tinytable")),
       class = "spicy_invalid_input"
     )
   })
@@ -2018,4 +2019,180 @@ test_that("decked heads give the stub the width the difference took, in a PDF", 
   # The stub label holds on one line from a 17.3 cm block, where the
   # composite headers needed 23.4 cm.
   expect_identical(stub_lines(words_at(18)), 1L)
+})
+
+
+# ---- one note route in HTML, for every family -----------------------------
+#
+# Every spicy tinytable sets its note in the `<tfoot>` cell tinytable
+# renders, wrapped in a `<div>` whose `width: min-content; min-width:
+# 100%` keeps the note from widening the columns. The note stays inside
+# the `<table>`, where the PNG capture of `tinytable::save_tt()` looks.
+
+.pt_note_div <- paste0(
+  "<div class=\"spicy-tt-note\" ",
+  "style=\"width: min-content; min-width: 100%;\">"
+)
+
+.pt_note_routes <- function() {
+  d <- .pt_data()
+  list(
+    regression = table_regression(
+      stats::lm(wellbeing_score ~ age + sex, data = d),
+      output = "tinytable"
+    ),
+    continuous_lm = table_continuous_lm(
+      d,
+      select = wellbeing_score,
+      by = sex,
+      output = "tinytable"
+    ),
+    descriptive = table_categorical(
+      d,
+      c(sex, smoking),
+      drop_na = TRUE,
+      output = "tinytable"
+    )
+  )
+}
+
+test_that("every family sets its HTML note in the <tfoot>, width-neutral", {
+  skip_if_not_installed("tinytable")
+  for (tt in .pt_note_routes()) {
+    html <- .pt_html(tt)
+    expect_no_match(html, "spicy-tt-outer", fixed = TRUE)
+    expect_no_match(html, "spicy-tt-wrap", fixed = TRUE)
+    foot <- regmatches(html, regexpr("<tfoot>.*?</tfoot>", html))
+    expect_length(foot, 1L)
+    expect_match(
+      foot,
+      paste0(
+        "^<tfoot><tr><td colspan='[0-9]+' ",
+        "style=\"font-size: 0.9em; line-height: 1.25; \">"
+      )
+    )
+    expect_match(
+      foot,
+      paste0(.pt_note_div, "<em>Note.</em> "),
+      fixed = TRUE
+    )
+    expect_match(foot, "</div></td></tr></tfoot>$")
+  }
+})
+
+test_that("the note div is set under every note style, the cell style kept", {
+  skip_if_not_installed("tinytable")
+  # `spicy.note_style = "none"`: no style on the cell, the div still set.
+  withr::with_options(list(spicy.note_style = "none"), {
+    for (tt in .pt_note_routes()) {
+      html <- .pt_html(tt)
+      expect_match(
+        html,
+        paste0("<tfoot><tr><td colspan='[0-9]+'>", .pt_note_div)
+      )
+    }
+  })
+  # A note the user styled through tinytable keeps that style, inside
+  # the div.
+  for (tt in .pt_note_routes()) {
+    tt <- tinytable::style_tt(tt, i = "notes", color = "red")
+    expect_match(
+      .pt_html(tt),
+      paste0(.pt_note_div, "<span style='color:red'><em>Note.</em>"),
+      fixed = TRUE
+    )
+  }
+  # A cell that already carries a style keeps it as it is.
+  html <- paste0(
+    "<table><tbody><tr><td>1</td></tr></tbody>",
+    "<tfoot><tr><td colspan='1' style=\"color: red;\">Note. x</td></tr>",
+    "</tfoot></table>"
+  )
+  expect_identical(
+    spicy:::.spicy_tt_note_tfoot(html, "Note. x"),
+    paste0(
+      "<table><tbody><tr><td>1</td></tr></tbody>",
+      "<tfoot><tr><td colspan='1' style=\"color: red;\">",
+      .pt_note_div,
+      "<em>Note.</em> x</div></td></tr></tfoot></table>"
+    )
+  )
+})
+
+test_that("a table without a note has no <tfoot> and no note div", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()
+  tts <- list(
+    table_regression(
+      stats::lm(wellbeing_score ~ age, data = d),
+      note = FALSE,
+      output = "tinytable"
+    ),
+    table_continuous_lm(
+      d,
+      select = wellbeing_score,
+      by = sex,
+      note = FALSE,
+      output = "tinytable"
+    ),
+    table_categorical(d, sex, note = FALSE, output = "tinytable")
+  )
+  for (tt in tts) {
+    html <- .pt_html(tt)
+    expect_no_match(html, "<tfoot>", fixed = TRUE)
+    expect_no_match(html, "spicy-tt-note", fixed = TRUE)
+  }
+})
+
+test_that("save_tt() writes the PNG, and a long note does not widen it", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("webshot2")
+  d <- .pt_data()
+  dir <- withr::local_tempdir()
+  png_width <- function(path) {
+    con <- file(path, "rb")
+    on.exit(close(con))
+    b <- readBin(con, "raw", 24L)
+    sum(as.integer(b[17:20]) * 256^(3:0))
+  }
+  save_png <- function(tt, name) {
+    path <- file.path(dir, name)
+    suppressMessages(tinytable::save_tt(tt, path, overwrite = TRUE))
+    path
+  }
+  reg <- save_png(
+    table_regression(
+      stats::lm(wellbeing_score ~ age, data = d),
+      output = "tinytable"
+    ),
+    "regression.png"
+  )
+  expect_true(file.exists(reg))
+  long <- paste(
+    rep("A long sentence to wrap within the table.", 12),
+    collapse = " "
+  )
+  with_note <- save_png(
+    table_multiresponse(
+      d,
+      select = starts_with("info_"),
+      note_add = long,
+      output = "tinytable"
+    ),
+    "with_note.png"
+  )
+  without_note <- save_png(
+    table_multiresponse(
+      d,
+      select = starts_with("info_"),
+      note = FALSE,
+      output = "tinytable"
+    ),
+    "without_note.png"
+  )
+  expect_true(file.exists(with_note))
+  expect_true(file.exists(without_note))
+  expect_identical(png_width(with_note), png_width(without_note))
 })

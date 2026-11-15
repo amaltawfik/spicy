@@ -835,9 +835,16 @@
 }
 
 # HTML: escape the note, then restyle the `<tfoot>` note cell tinytable
-# renders (the route taken by the descriptive families;
-# table_regression() and table_continuous_lm() lift the note out of the
-# table grid instead, see `.spicy_tt_note_div()`).
+# renders. Every spicy tinytable takes this route (the finalizer of
+# `.spicy_tt_bare()`), whatever the family.
+#
+# A `<td colspan="N">` cell gives its max-content width to the columns
+# it spans, so a long note stretched the table past its body. The text
+# sits in a `<div>` with `width: min-content; min-width: 100%`: its
+# contribution to the column widths falls to its longest word, then it
+# fills the cell, so the note wraps at the width of the body. The note
+# stays inside the `<table>`, where the PNG capture of
+# `tinytable::save_tt()` finds it (`body > div > table`).
 #
 # The note is package prose, but it INTERPOLATES user data -- the
 # outcome label, the grouping variable's name, the levels a measure was
@@ -896,12 +903,19 @@
     text <- substring(pieces[k], open_end + 1L)
     text <- .spicy_note_lines(text)
     if (nzchar(css) && !grepl("style=", open_tag, fixed = TRUE)) {
-      open_tag <- sub(">$", paste0(" style=\"", css, "\">"), open_tag)
+      open_tag <- sub(
+        ">$",
+        paste0(" style=\"", css, "line-height: 1.25; \">"),
+        open_tag
+      )
     }
     pieces[k] <- paste0(
       substring(pieces[k], 1L, open_start - 1L),
       open_tag,
-      text
+      "<div class=\"spicy-tt-note\" ",
+      "style=\"width: min-content; min-width: 100%;\">",
+      text,
+      "</div>"
     )
   }
   regmatches(s, m) <- paste(pieces, collapse = "</td>")
@@ -1113,81 +1127,6 @@
   s
 }
 
-
-# ---- HTML: the note as a table-width sibling ------------------------------
-#
-# In `table-layout: auto`, a `<tfoot><td colspan="N">` cell contributes
-# its max-content width to every column it spans, so a multi-line note
-# (longest line unwrapped) forces the whole table wider than the body
-# needs. `.spicy_tt_note_div()` + `.spicy_tt_wrap_html()` pull the note
-# out of the table grid entirely and re-inject it as an inline-block
-# sibling, so the body alone determines column widths.
-#
-# APA Manual 7 Section 7.14 expects the note flush-left with the table's
-# left edge AND wrapped within the table's width. Pure CSS achieves
-# this with the `width: min-content; min-width: 100%` trick: the note's
-# *preferred* width is its longest word (negligible), so it does not
-# push the inline-block wrapper wider than the table; `min-width: 100%`
-# then forces the rendered note to fill the wrapper, which is exactly
-# the table's content width.
-.spicy_tt_note_div <- function(note, lead = .note_lead()) {
-  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14). Called
-  # where the table is built, so the default is the lead-in of the note,
-  # and the style in force sets the minus sign of its numbers.
-  note_html <- .note_markup(
-    .apply_minus_sign(note, where = "note"),
-    .spicy_html_escape,
-    .spicy_html_em,
-    lead
-  )
-  note_html <- .spicy_note_lines(note_html)
-  paste0(
-    "<div class=\"spicy-tt-note\" style=\"",
-    "width: min-content; min-width: 100%; box-sizing: border-box; ",
-    "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
-    .spicy_note_css(),
-    "line-height: 1.25; ",
-    "text-align: left;\">",
-    note_html,
-    "</div>"
-  )
-}
-
-# Strip the rendered `<tfoot>` and wrap the table + note in the
-# centering / inline-block pair. Operates on a rendered HTML string.
-.spicy_tt_wrap_html <- function(html, note_div) {
-  open_outer <- paste0(
-    "<div class=\"spicy-tt-outer\" ",
-    "style=\"text-align: center;\">"
-  )
-  open_inner <- paste0(
-    "<div class=\"spicy-tt-wrap\" style=\"",
-    "display: inline-block; max-width: 100%; ",
-    "text-align: left; vertical-align: top;\">"
-  )
-  # 1. Drop the rendered tfoot. tinytable emits
-  #    `<tfoot><tr><td colspan='N'>...</td></tr></tfoot>` as one piece
-  #    (newlines inside survive as plain text); a perl multiline regex
-  #    covers it.
-  html <- sub("<tfoot>[\\s\\S]*?</tfoot>", "", html, perl = TRUE)
-  # 2. Open the centering outer + inline-block inner wrapper just
-  #    before `<table ...>`. We match the literal "<table " (with
-  #    trailing space) so we hit the opening tag, not the closer.
-  html <- sub(
-    "<table ",
-    paste0(open_outer, open_inner, "<table "),
-    html,
-    fixed = TRUE
-  )
-  # 3. Append the note div + close both wrappers right after
-  #    `</table>`.
-  sub(
-    "</table>",
-    paste0("</table>", note_div, "</div></div>"),
-    html,
-    fixed = TRUE
-  )
-}
 
 # HTML-escape the parts of a tinytable that carry USER DATA.
 #

@@ -459,7 +459,7 @@ test_that("flextable output without a note is wrapped, note attr absent", {
 
 # ---- tinytable ----
 
-test_that("tinytable HTML output injects the note div outside the table", {
+test_that("tinytable HTML output sets the note div in the <tfoot>", {
   skip_if_not_installed("tinytable")
   tt <- table_continuous_lm(
     sochealth,
@@ -477,8 +477,8 @@ test_that("tinytable HTML output injects the note div outside the table", {
     "Std. errors: heteroskedasticity-robust (HC3).",
     fixed = TRUE
   )
-  # The rendered tfoot was stripped (the note lives outside the grid).
-  expect_false(grepl("<tfoot>", html, fixed = TRUE))
+  # The note stays in the table, in the <tfoot> cell.
+  expect_match(html, "<tfoot><tr><td [^>]*><div class=\"spicy-tt-note\"")
 })
 
 test_that("tinytable output without a note renders no note div", {
