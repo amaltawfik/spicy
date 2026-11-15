@@ -362,6 +362,20 @@
   `table_regression()` and the workbook of `code_book()`. A negative
   value printed `-0.00`, which Excel showed as `0.00`, keeps its minus.
 
+* `tinytable::save_tt()` writes the PNG of a `table_regression()`,
+  `table_regression_uv()` or `table_continuous_lm()` table. It wrote no
+  file, with warnings and no error: the note sat outside the table that
+  tinytable captures. In HTML the note of these tables now stays in the
+  foot of the table, as in the other tinytable tables, 8 px closer to
+  the bottom rule. Under `options(spicy.note_style = "none")` it takes
+  the size tinytable gives a table foot.
+
+* In HTML, a note longer than its table no longer stretches a tinytable
+  table of `table_categorical()`, `table_continuous()`,
+  `table_outcome()`, `table_multiresponse()`, `table_categorical_svy()`
+  or `table_continuous_svy()`. The table keeps the width of its body and
+  the note wraps at that width, as it did for `table_regression()`.
+
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
   in a stacked hierarchy) show their degrees of freedom in the cell,
