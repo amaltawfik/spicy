@@ -362,11 +362,24 @@ test_that("options(spicy.note_style) opts out or adds Typst styling", {
     expect_match(.pt_html(tt), "font-size: 0.9em;", fixed = TRUE)
   })
 
-  # The option is read where the note is set, when the table renders.
+  # An invalid value is refused in the call that builds a table with a
+  # note, whatever the family. A table without a note sets none.
   withr::with_options(list(spicy.note_style = 0.8), {
     expect_error(
-      .pt_html(table_regression(fit, output = "tinytable")),
+      table_regression(fit, output = "tinytable"),
       class = "spicy_invalid_input"
+    )
+    expect_error(
+      table_categorical(
+        d,
+        c(sex, smoking),
+        drop_na = TRUE,
+        output = "tinytable"
+      ),
+      class = "spicy_invalid_input"
+    )
+    expect_no_error(
+      table_categorical(d, sex, note = FALSE, output = "tinytable")
     )
   })
 })

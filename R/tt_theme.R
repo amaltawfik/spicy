@@ -68,6 +68,11 @@
   # by the time a finalizer runs, tinytable has rewritten the slot for
   # some outputs (in Typst it holds `text([...])`).
   notes <- x@notes
+  # An invalid `options(spicy.note_style = )` is refused in this call,
+  # which builds the table, not when the table is printed or saved.
+  if (any(nzchar(.spicy_note_texts(notes)))) {
+    .spicy_note_style()
+  }
   tinytable::style_tt(x, finalize = function(tbl) {
     if (identical(tbl@output, "typst")) {
       s <- sub("\\s*column-gutter: 5pt,", "", tbl@table_string)
@@ -839,7 +844,7 @@
 # `.spicy_tt_bare()`), whatever the family.
 #
 # A `<td colspan="N">` cell gives its max-content width to the columns
-# it spans, so a long note stretched the table past its body. The text
+# it spans, so a long note would stretch the table past its body. The text
 # sits in a `<div>` with `width: min-content; min-width: 100%`: its
 # contribution to the column widths falls to its longest word, then it
 # fills the cell, so the note wraps at the width of the body. The note
