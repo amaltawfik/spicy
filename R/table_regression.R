@@ -1741,7 +1741,7 @@
 #'   console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 #'   print each label across the columns of its model; gt, which merges no
 #'   cells of the body, and the markdown grid of tinytable print it in
-#'   the first column of the model.
+#'   the first column of the model. A long label widens that column.
 #'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per
