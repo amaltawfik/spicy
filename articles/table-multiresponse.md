@@ -985,19 +985,9 @@ table_multiresponse(
 )
 ```
 
-| Variable | Female |  |  | Male |  |  | Total |  |  |
-|----|----|----|----|----|----|----|----|----|----|
-|  | n | % of cases | % of responses | n | % of cases | % of responses | n | % of cases | % of responses |
-| Doctor or other health professional | 377 | 62.9 | 34.9 | 344 | 60.9 | 37.3 |  721 | 61.9 | 36.0 |
-| Pharmacist | 137 | 22.9 | 12.7 | 119 | 21.1 | 12.9 |  256 | 22.0 | 12.8 |
-| Internet, websites or apps | 268 | 44.7 | 24.8 | 255 | 45.1 | 27.7 |  523 | 44.9 | 26.1 |
-| Family or friends | 219 | 36.6 | 20.3 | 141 | 25.0 | 15.3 |  360 | 30.9 | 18.0 |
-| Television, radio or newspapers |  78 | 13.0 |  7.2 |  63 | 11.2 |  6.8 |  141 | 12.1 |  7.0 |
-| (No item chosen) |  31 |  5.2 |   –  |  36 |  6.4 |   –  |   67 |  5.8 |   –  |
-| Base | 599 |      |      | 565 |      |      | 1164 |      |      |
-| *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents who answered the question (excluded: 36 with no answer to the question). |  |  |  |  |  |  |  |  |  |
+[TABLE]
 
-Multiple responses by Sex {#tinytable_vu9rk9xqgndiapxtpvlf .table
+Multiple responses by Sex {#tinytable_53dpu8el4t0ec58ykr2z .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

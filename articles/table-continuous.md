@@ -1023,21 +1023,9 @@ table_continuous(
 )
 ```
 
-| Variable | Group | M | SD | Min | Max | 95% CI |  | n | p |
-|----|----|----|----|----|----|----|----|----|----|
-|  |  |  |  |  |  | LL | UL |  |  |
-| bmi | Lower secondary | 28.09 |  3.47 | 18.20 |  38.90 | 27.66 | 28.51 | 260 | \<.001 |
-|  | Upper secondary | 26.02 |  3.43 | 16.00 |  37.10 | 25.73 | 26.31 | 534 |       |
-|  | Tertiary | 24.39 |  3.52 | 16.00 |  33.00 | 24.04 | 24.74 | 394 |       |
-| wellbeing_score | Lower secondary | 57.22 | 15.44 | 18.70 |  97.90 | 55.33 | 59.10 | 261 | \<.001 |
-|  | Upper secondary | 68.97 | 13.62 | 26.70 | 100.00 | 67.82 | 70.12 | 539 |       |
-|  | Tertiary | 76.85 | 13.23 | 40.40 | 100.00 | 75.55 | 78.15 | 400 |       |
-| life_sat_health | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
-|  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
-|  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
-| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health (8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit. |  |  |  |  |  |  |  |  |  |
+[TABLE]
 
-Descriptive statistics by education {#tinytable_2sfiwuzmboszxg1fi14e
+Descriptive statistics by education {#tinytable_qud9xisr2zrottneje1q
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

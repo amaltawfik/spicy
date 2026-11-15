@@ -497,6 +497,32 @@
   A negative value printed `-0.00`, which Excel showed as `0.00`, keeps
   its minus.
 
+- [`tinytable::save_tt()`](https://vincentarelbundock.github.io/tinytable/man/save_tt.html)
+  writes the PNG of a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  or
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  table. It wrote no file, with warnings and no error: the note sat
+  outside the table that tinytable captures. In HTML the note of these
+  tables now stays in the foot of the table, as in the other tinytable
+  tables, 8 px closer to the bottom rule. Under
+  `options(spicy.note_style = "none")` it takes the size tinytable gives
+  a table foot.
+
+- In HTML, a note longer than its table no longer stretches a tinytable
+  table of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  or
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md).
+  The table keeps the width of its body and the note wraps at that
+  width, as it did for
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
 - The model-change rows of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   (F-change, Wald F-change, the LR χ² change, Wald χ² (change),

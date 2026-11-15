@@ -1006,19 +1006,9 @@ tab |>
   )
 ```
 
-| Variable | Lower secondary |  | Upper secondary |  | Tertiary |  | Total |  | p | V |
-|----|----|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % | n | % |  |  |
-| Smoking status |     |      |     |      |     |      |     |      | \<.001 | .14 |
-|     No | 179 | 69.6 | 415 | 78.7 | 332 | 84.9 | 926 | 78.8 |       |     |
-|     Yes |  78 | 30.4 | 112 | 21.3 |  59 | 15.1 | 249 | 21.2 |       |     |
-|     (Missing) |   4 |      |  12 |      |   9 |      |  25 |      |       |     |
-| Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
-|     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
-|     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| *Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539), Tertiary (n = 400). Percentages are column percentages. P-values: Pearson chi-squared test. V = Cramér's V. |  |  |  |  |  |  |  |  |  |  |
+[TABLE]
 
-Categorical table by education {#tinytable_wz724vfwxpgq1zzz6sah .table
+Categorical table by education {#tinytable_7hxx35h1bjsgk6y1r03k .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

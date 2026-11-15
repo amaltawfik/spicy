@@ -699,20 +699,10 @@ table_outcome(
 )
 ```
 
-| Variable | Mdn \[Q1, Q3\] | n | p |
-|----|----|----|----|
-| Overall | 70.25 \[58.90, 79.23\] | 1200 |       |
-| sex |                      |      | \<.001 |
-|     Female | 68.20 \[57.30, 77.53\] |  620 |       |
-|     Male | 72.30 \[61.27, 81.58\] |  580 |       |
-| smoking |                      |      |  .104 |
-|     No | 70.95 \[59.23, 79.60\] |  926 |       |
-|     Yes | 68.50 \[58.30, 77.30\] |  249 |       |
-|     (Missing) | 69.70 \[62.80, 77.10\] |   25 |       |
-| *Note.* N = 1200. P-values: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable, without controlling for the other variables. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
+[TABLE]
 
 Descriptive statistics of wellbeing_score
-{#tinytable_z76pboif9euapahp4o6r .table .tinytable
+{#tinytable_fdhw8wjxj2tat5gxpczk .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

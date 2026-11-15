@@ -1004,19 +1004,9 @@ table_categorical(
 )
 ```
 
-| Variable | Female |  | Male |  | Total |  | p | φ |
-|----|----|----|----|----|----|----|----|----|
-|  | n | % | n | % | n | % |  |  |
-| smoking |     |      |     |      |     |      | .713 | .01 |
-|     No | 475 | 78.4 | 451 | 79.3 | 926 | 78.8 |      |     |
-|     Yes | 131 | 21.6 | 118 | 20.7 | 249 | 21.2 |      |     |
-|     (Missing) |  14 |      |  11 |      |  25 |      |      |     |
-| physical_activity |     |      |     |      |     |      | .832 | .01 |
-|     No | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |     |
-|     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
-| *Note.* N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-values: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
+[TABLE]
 
-Categorical table by sex {#tinytable_nnwtdvg6v8mscwlhrkf3 .table
+Categorical table by sex {#tinytable_uc0k5y5y8lqu1ratb5rh .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

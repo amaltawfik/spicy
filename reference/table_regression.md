@@ -773,12 +773,13 @@ table_regression(
   Word, Excel and tinytable (HTML, LaTeX, Typst) print each label across
   the columns of its model; gt, which merges no cells of the body, and
   the markdown grid of tinytable print it in the first column of the
-  model. **Single multinomial model** (outcome-as-columns layout):
-  repurposed as the category spanner override – a character vector with
-  one label per non-reference outcome category (unique, in model order),
-  e.g. `c("Student vs Employed", ...)`; the reference category's
-  AME-only group (when displayed) keeps its own name, and `FALSE` is a
-  no-op (there is no Outcome row to suppress).
+  model. A long label widens that column. **Single multinomial model**
+  (outcome-as-columns layout): repurposed as the category spanner
+  override – a character vector with one label per non-reference outcome
+  category (unique, in model order), e.g.
+  `c("Student vs Employed", ...)`; the reference category's AME-only
+  group (when displayed) keeps its own name, and `FALSE` is a no-op
+  (there is no Outcome row to suppress).
 
 - stars:
 
