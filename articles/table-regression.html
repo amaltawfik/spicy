@@ -639,6 +639,7 @@ with its own header, here the odds ratios of a logistic model:</p>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  BMI:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
+<span><span class="co">#&gt;  Outcome         <span style="color: #9E9E9E;">│</span>                 bmi                  </span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>   23.98  0.40  [23.20, 24.75]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    0.04  0.01  [ 0.02,  0.05]  &lt;.001 </span></span>
 <span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
@@ -655,6 +656,7 @@ with its own header, here the odds ratios of a logistic model:</p>
 <span><span class="co">#&gt;  Dentist:        <span style="color: #9E9E9E;">│</span>                                      </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span>   OR      SE       95% CI        p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Outcome         <span style="color: #9E9E9E;">│</span>             dentist_12m              </span></span>
 <span><span class="co">#&gt;  (Intercept)     <span style="color: #9E9E9E;">│</span>    1.66  0.39  [ 1.05,  2.62]   .030 </span></span>
 <span><span class="co">#&gt;  age             <span style="color: #9E9E9E;">│</span>    1.01  0.00  [ 1.00,  1.02]   .064 </span></span>
 <span><span class="co">#&gt;  sex:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
@@ -675,10 +677,10 @@ side by side: one sentence gives the type of each model, one its
 standard errors, and a sentence that holds for one panel only opens with
 its label. A table without a name takes its label from
 <code>panel_labels</code>, else from a title you typed for it, else from
-its outcome. <code><a href="../reference/table_stack.html">table_stack()</a></code> adds no “Outcome” row of its
-own: a table built with <code>outcome_labels</code>
-(<code>table_regression(m_bmi, outcome_labels = "bmi")</code>) brings
-one.</p>
+its outcome. As in the stacked layout, panels of different outcomes
+whose labels do not name them open on an “Outcome” row, here under the
+header of the logistic panel; a table built with
+<code>outcome_labels = FALSE</code> takes none.</p>
 </div>
 <div class="section level2">
 <h2 id="univariable-screening">Univariable screening<a class="anchor" aria-label="anchor" href="#univariable-screening"></a>

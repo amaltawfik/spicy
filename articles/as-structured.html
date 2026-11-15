@@ -842,12 +842,15 @@ spicy’s self-documenting footer verbatim.</p>
 <ul>
 <li>
 <strong>Engine parity.</strong> For regression tables, the built-in
-engines consume this exact structure: what you read in <code>body</code>
-is, cell for cell, what the Excel workbook contains and what the gt
-table displays at its precision. For the descriptive families the typed
-view is built from the same computation frames the display is – value
-fidelity is pinned by tests, and the engines migrate onto the view as
-the contract settles.</li>
+engines consume this exact structure. A cell of <code>body</code> that
+the console prints as one number is the number the Excel workbook
+stores, at full precision, unless it sits half way between two displays,
+which Excel rounds otherwise than R: there the workbook holds the value
+the console shows (<code><a href="../reference/spicy-package.html">?spicy</a></code>, section <em>Excel output</em>).
+The gt table displays each number at its precision. For the descriptive
+families the typed view is built from the same computation frames as the
+display, and tests pin its values. Their Excel workbooks take their
+numbers from it.</li>
 <li>
 <strong>Stability tier.</strong> <code><a href="../reference/as_structured.html">as_structured()</a></code> sits
 in the <em>stabilizing</em> tier of the API (see <code><a href="../reference/spicy-package.html">?spicy</a></code>,

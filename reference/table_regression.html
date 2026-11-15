@@ -647,10 +647,10 @@ coefficients).</p></li>
 </ul><p>Cell merging is supported by <code>excel</code>, <code>flextable</code>, and
 <code>word</code> (via flextable). <code>gt</code>, <code>tinytable</code>, <code>clipboard</code>, and
 <code>default</code> (console) always render in <code>"first_col"</code> mode
-regardless of this setting:</p><ul><li><p><code>gt</code> lacks a native row-spanning cell-merge API
-(<code>tab_spanner</code> covers columns, not row-cell ranges).</p></li>
-<li><p><code>tinytable</code>'s <code>style_tt(colspan = N)</code> emits HTML
-<code>colspan</code> only on header rows, not on body cells.</p></li>
+regardless of this setting:</p><ul><li><p><code>gt</code> merges no cells of the body (<code>tab_spanner()</code>
+spans column labels).</p></li>
+<li><p><code>tinytable</code>: the merged layout is not implemented
+for this engine.</p></li>
 <li><p><code>clipboard</code> ships TSV plaintext.</p></li>
 <li><p><code>default</code> ships fixed-width ASCII.</p></li>
 </ul><p>Decimal alignment of every numeric column is preserved in
@@ -820,6 +820,14 @@ unless <code>model_labels</code> is also supplied), a single model included.
 <code>FALSE</code> removes the row. With <code>layout = "stacked"</code>, the row opens
 each panel, under the same rule, the labels of the panels taking
 the place of the column headers; a vector gives each panel its label.
+<code><a href="table_stack.html">table_stack()</a></code> applies the rule to tables built separately, a table
+built with <code>FALSE</code> taking no row. A multinomial model alone has no
+Outcome row, its title naming the outcome; in a stack, its panel
+takes one by this rule, the label once, across its columns. The
+console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
+print each label across the columns of its model; gt, which merges no
+cells of the body, and the markdown grid of tinytable print it in
+the first column of the model.
 <strong>Single multinomial model</strong>
 (outcome-as-columns layout): repurposed as the category
 spanner override – a character vector with one label per
@@ -894,14 +902,10 @@ default) or <code>","</code> in most styles; the Lancet style of
 <code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot. When
 <code>","</code> is used, the CI bracket separator switches to <code>"; "</code>
 automatically to avoid <code>"0,18 [0,07, 0,30]"</code> ambiguity.
-With <code>output = "excel"</code> a numeric cell is displayed by Excel
-with the <em>viewer's</em> locale separator, which a file cannot set,
-so a non-default mark makes the body go out as pre-formatted
-text. Under the default <code>"."</code>, a cell that shows one number is a
-real number whenever its number format prints what the console
-prints. The other cells are text: a p-value below the threshold or
-shortened by the style (<code>p_bands</code>, <code>p_sigfig</code> of <code><a href="spicy_style.html">spicy_style()</a></code>),
-a number in scientific notation, a dash, a cell with stars.</p></dd>
+With <code>output = "excel"</code>, a cell that shows one number is a number,
+under any mark, which shows the decimal separator of the reader's
+Excel; the mark applies to the text cells (<code>&lt;,001</code>). See <em>Excel
+output</em> in <a href="spicy-package.html">spicy-package</a>.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
@@ -1610,7 +1614,8 @@ share one column header when they have the same columns, and each opens
 with its own header otherwise (an odds ratio beside a coefficient, a
 multinomial model with its outcome categories in columns). Models with
 different outcomes that the labels of the panels do not name open each
-panel on an Outcome row, under its label row (<code>outcome_labels</code>). <code>vcov</code>
+panel on an Outcome row, under its label row (<code>outcome_labels</code>), as the
+tables built alone do in <code><a href="table_stack.html">table_stack()</a></code>. <code>vcov</code>
 and <code>cluster</code> lists give each panel its own estimator. Under
 <code>nested = TRUE</code>, the change statistics of each
 model sit in its own panel, labeled "vs" the model before it. The type
@@ -2190,7 +2195,7 @@ HTML / Word / PDF tables (require the corresponding
 Suggests package). In a PDF, a <code>"flextable"</code> table wider than
 the page can be fitted with <code><a href="https://davidgohel.github.io/flextable/reference/fit_to_width.html" class="external-link">flextable::fit_to_width()</a></code>.</p></li>
 <li><p><code>"excel"</code> – writes to <code>excel_path</code> via
-<code><a href="https://janmarvin.github.io/openxlsx2/reference/write_xlsx.html" class="external-link">openxlsx2::write_xlsx()</a></code> and returns the path invisibly.</p></li>
+<code><a href="https://janmarvin.github.io/openxlsx2/reference/wb_save.html" class="external-link">openxlsx2::wb_save()</a></code> and returns the path invisibly.</p></li>
 <li><p><code>"word"</code> – writes to <code>word_path</code> via
 <code><a href="https://davidgohel.github.io/flextable/reference/save_as_docx.html" class="external-link">flextable::save_as_docx()</a></code> and returns the path invisibly.</p></li>
 <li><p><code>"clipboard"</code> – copies to the system clipboard via

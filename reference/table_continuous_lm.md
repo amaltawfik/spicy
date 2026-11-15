@@ -616,7 +616,9 @@ table_continuous_lm(
   The decimal mark, a single character: `"."` (the default) or `","` in
   most styles; the Lancet style of
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  uses the middle dot.
+  uses the middle dot. In the Excel sheet, a cell of one number shows
+  the decimal separator of the reader's Excel (*Excel output* in
+  [spicy-package](https://amaltawfik.github.io/spicy/reference/spicy-package.md)).
 
 - align:
 
@@ -643,9 +645,10 @@ table_continuous_lm(
   - `"right"`: right-align all numeric columns.
 
   The `excel` output uses the engine's default alignment in any case:
-  cell-string padding does not align decimals under proportional fonts,
-  and writing raw numbers with a numeric format would require a separate
-  refactor.
+  cell-string padding does not align decimals under proportional fonts.
+  Its cells of one number are numbers, under a format that shows the
+  console's text (*Excel output* in
+  [spicy-package](https://amaltawfik.github.io/spicy/reference/spicy-package.md)).
 
 - note:
 

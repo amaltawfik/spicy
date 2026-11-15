@@ -257,7 +257,9 @@ table_battery_svy(
   The decimal mark, a single character: `"."` (the default) or `","` in
   most styles; the Lancet style of
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-  uses the middle dot.
+  uses the middle dot. In the Excel sheet, a cell of one number shows
+  the decimal separator of the reader's Excel (*Excel output* in
+  [spicy-package](https://amaltawfik.github.io/spicy/reference/spicy-package.md)).
 
 - align:
 

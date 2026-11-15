@@ -34,7 +34,9 @@ count_n(
   where the current data context is used automatically. A survey design
   is refused (class `spicy_wrong_regime`): compute the count on its
   data, `design$variables`, and add it to the design with
-  [`update()`](https://rdrr.io/r/stats/update.html).
+  [`update()`](https://rdrr.io/r/stats/update.html). The error message
+  gives the call for a two-phase design, and says so when a design keeps
+  no data to compute the count on.
 
 - select:
 

@@ -582,11 +582,10 @@ table_regression(
   flextable). `gt`, `tinytable`, `clipboard`, and `default` (console)
   always render in `"first_col"` mode regardless of this setting:
 
-  - `gt` lacks a native row-spanning cell-merge API (`tab_spanner`
-    covers columns, not row-cell ranges).
+  - `gt` merges no cells of the body (`tab_spanner()` spans column
+    labels).
 
-  - `tinytable`'s `style_tt(colspan = N)` emits HTML `colspan` only on
-    header rows, not on body cells.
+  - `tinytable`: the merged layout is not implemented for this engine.
 
   - `clipboard` ships TSV plaintext.
 
@@ -765,12 +764,21 @@ table_regression(
   model included. `FALSE` removes the row. With `layout = "stacked"`,
   the row opens each panel, under the same rule, the labels of the
   panels taking the place of the column headers; a vector gives each
-  panel its label. **Single multinomial model** (outcome-as-columns
-  layout): repurposed as the category spanner override – a character
-  vector with one label per non-reference outcome category (unique, in
-  model order), e.g. `c("Student vs Employed", ...)`; the reference
-  category's AME-only group (when displayed) keeps its own name, and
-  `FALSE` is a no-op (there is no Outcome row to suppress).
+  panel its label.
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  applies the rule to tables built separately, a table built with
+  `FALSE` taking no row. A multinomial model alone has no Outcome row,
+  its title naming the outcome; in a stack, its panel takes one by this
+  rule, the label once, across its columns. The console, flextable,
+  Word, Excel and tinytable (HTML, LaTeX, Typst) print each label across
+  the columns of its model; gt, which merges no cells of the body, and
+  the markdown grid of tinytable print it in the first column of the
+  model. **Single multinomial model** (outcome-as-columns layout):
+  repurposed as the category spanner override – a character vector with
+  one label per non-reference outcome category (unique, in model order),
+  e.g. `c("Student vs Employed", ...)`; the reference category's
+  AME-only group (when displayed) keeps its own name, and `FALSE` is a
+  no-op (there is no Outcome row to suppress).
 
 - stars:
 
@@ -833,15 +841,11 @@ table_regression(
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   uses the middle dot. When `","` is used, the CI bracket separator
   switches to `"; "` automatically to avoid `"0,18 [0,07, 0,30]"`
-  ambiguity. With `output = "excel"` a numeric cell is displayed by
-  Excel with the *viewer's* locale separator, which a file cannot set,
-  so a non-default mark makes the body go out as pre-formatted text.
-  Under the default `"."`, a cell that shows one number is a real number
-  whenever its number format prints what the console prints. The other
-  cells are text: a p-value below the threshold or shortened by the
-  style (`p_bands`, `p_sigfig` of
-  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)),
-  a number in scientific notation, a dash, a cell with stars.
+  ambiguity. With `output = "excel"`, a cell that shows one number is a
+  number, under any mark, which shows the decimal separator of the
+  reader's Excel; the mark applies to the text cells (`<,001`). See
+  *Excel output* in
+  [spicy-package](https://amaltawfik.github.io/spicy/reference/spicy-package.md).
 
 - align:
 
@@ -1598,23 +1602,24 @@ have the same columns, and each opens with its own header otherwise (an
 odds ratio beside a coefficient, a multinomial model with its outcome
 categories in columns). Models with different outcomes that the labels
 of the panels do not name open each panel on an Outcome row, under its
-label row (`outcome_labels`). `vcov` and `cluster` lists give each panel
-its own estimator. Under `nested = TRUE`, the change statistics of each
-model sit in its own panel, labeled "vs" the model before it. The type
-of each model, its standard errors and the adjustment of its p-values
-are worded as in the note of the models side by side, each panel named
-by its label; the other sentences each open with the labels of the
-panels they concern. A warning or an error names a model as the
-side-by-side table does. `tidy()`, `glance()` and `output = "long"`
-return the rows of the models side by side, under a leading `panel`
-column, with one exception: under `keep` or `drop`, a multinomial model
-returns the rows its panel shows, selected by its terms as in its table
-alone (`"age"`), where side by side the patterns meet terms named with
-their outcome (`"Student: age"`). `output = "data.frame"` binds the data
-frames of the panels by rows. A `keep`, `drop` or
-`show_intercept = FALSE` that leaves a panel without a coefficient row
-is an error: side by side, such a model keeps its fit statistics beside
-the others.
+label row (`outcome_labels`), as the tables built alone do in
+[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md).
+`vcov` and `cluster` lists give each panel its own estimator. Under
+`nested = TRUE`, the change statistics of each model sit in its own
+panel, labeled "vs" the model before it. The type of each model, its
+standard errors and the adjustment of its p-values are worded as in the
+note of the models side by side, each panel named by its label; the
+other sentences each open with the labels of the panels they concern. A
+warning or an error names a model as the side-by-side table does.
+`tidy()`, `glance()` and `output = "long"` return the rows of the models
+side by side, under a leading `panel` column, with one exception: under
+`keep` or `drop`, a multinomial model returns the rows its panel shows,
+selected by its terms as in its table alone (`"age"`), where side by
+side the patterns meet terms named with their outcome
+(`"Student: age"`). `output = "data.frame"` binds the data frames of the
+panels by rows. A `keep`, `drop` or `show_intercept = FALSE` that leaves
+a panel without a coefficient row is an error: side by side, such a
+model keeps its fit statistics beside the others.
 
 ## Inference and standard errors
 
@@ -2229,7 +2234,7 @@ as "it probably doesn't make much difference" (Efron 1977).
   [`flextable::fit_to_width()`](https://davidgohel.github.io/flextable/reference/fit_to_width.html).
 
 - `"excel"` – writes to `excel_path` via
-  [`openxlsx2::write_xlsx()`](https://janmarvin.github.io/openxlsx2/reference/write_xlsx.html)
+  [`openxlsx2::wb_save()`](https://janmarvin.github.io/openxlsx2/reference/wb_save.html)
   and returns the path invisibly.
 
 - `"word"` – writes to `word_path` via

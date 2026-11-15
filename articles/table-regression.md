@@ -540,6 +540,7 @@ table_stack(
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
 #>  BMI:            │                                      
+#>  Outcome         │                 bmi                  
 #>  (Intercept)     │   23.98  0.40  [23.20, 24.75]  <.001 
 #>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
 #>  sex:            │                                      
@@ -556,6 +557,7 @@ table_stack(
 #>  Dentist:        │                                      
 #>                  │   OR      SE       95% CI        p   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Outcome         │             dentist_12m              
 #>  (Intercept)     │    1.66  0.39  [ 1.05,  2.62]   .030 
 #>  age             │    1.01  0.00  [ 1.00,  1.02]   .064 
 #>  sex:            │                                      
@@ -577,10 +579,10 @@ The notes of the panels are merged as the note of the same models side
 by side: one sentence gives the type of each model, one its standard
 errors, and a sentence that holds for one panel only opens with its
 label. A table without a name takes its label from `panel_labels`, else
-from a title you typed for it, else from its outcome.
-[`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
-adds no “Outcome” row of its own: a table built with `outcome_labels`
-(`table_regression(m_bmi, outcome_labels = "bmi")`) brings one.
+from a title you typed for it, else from its outcome. As in the stacked
+layout, panels of different outcomes whose labels do not name them open
+on an “Outcome” row, here under the header of the logistic panel; a
+table built with `outcome_labels = FALSE` takes none.
 
 ## Univariable screening
 

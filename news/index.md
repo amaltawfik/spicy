@@ -364,9 +364,12 @@
   `panel_labels`), under one column header when the panels share their
   columns and with its own header otherwise. The notes are merged as for
   the models side by side, a sentence that holds for some panels only
-  opening with their names. Tables built in different languages, with
-  different decimal marks or alignments, or under styles that format a
-  cell differently are refused.
+  opening with their names. When the panels have different outcomes that
+  their labels do not name, a panel of one outcome opens on an “Outcome”
+  row, as with `layout = "stacked"`; a table built with
+  `outcome_labels = FALSE` takes none. Tables built in different
+  languages, with different decimal marks or alignments, or under styles
+  that format a cell differently are refused.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gains `layout = "stacked"`: one panel per model, each with the columns
@@ -468,6 +471,32 @@
   `spicy_svy_estimation_failed`) carries the call of the table function,
   so its header names the table.
 
+- The Excel sheets of
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  and
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  write each cell that shows one number as a number, at full precision,
+  under a number format that shows the console’s text. These cells were
+  text. The other cells (`<.001`, a test with its statistic, a dash)
+  stay the console’s text. The rule is set out in the new section *Excel
+  output* of
+  [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md).
+
+- An Excel sheet holds a value half way between two displays as the
+  console shows it. Excel rounds such a value otherwise than R: a
+  percentage of 6.25 at one decimal, printed `6.2`, was a number that
+  Excel showed as `6.3`. This concerned
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and the workbook of
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
+  A negative value printed `-0.00`, which Excel showed as `0.00`, keeps
+  its minus.
+
 - The model-change rows of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   (F-change, Wald F-change, the LR χ² change, Wald χ² (change),
@@ -518,6 +547,11 @@
   is tested. Their standard errors were scaled by the Pearson dispersion
   of the refit, and their p-values could be far too small.
 
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
+  in the Excel workbook, the mean, SD and median of a variable with no
+  SD (a constant, a single value) take the decimals of its min and max,
+  as in the PDF (`1.5`, not `1.50`). They had two.
+
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   refuse a survey design with an error of class `spicy_wrong_regime`
@@ -525,7 +559,9 @@
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   as the other plain tables do. A design used to stop them with an R
   error about a missing object, and `cross_tab(design, "x", "y")`
-  returned a meaningless one-cell table.
+  returned a meaningless one-cell table. On a design the twins do not
+  support (two-phase, without-replacement pps, database-backed,
+  multiframe), the plain tables say so instead of pointing to a twin.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   and [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
@@ -542,8 +578,9 @@
   [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md)
   refuse a survey design with an error of class `spicy_wrong_regime`
   that shows how to add the score to the design:
-  `update(design, score = mean_n(design$variables, ...))`. A design used
-  to stop them with an R error.
+  `update(design, score = mean_n(design$variables, ...))`, or
+  `update(design, score = mean_n(data.frame(x1, x2)))` for a two-phase
+  design. A design used to stop them with an R error.
 
 - [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   writes the chi-squared statistic of its note with the symbol,
@@ -877,7 +914,9 @@
   outcome across the columns of its model, without widening the first of
   them. Under `layout = "stacked"`, the row opens each panel whose label
   does not name the outcome, by the same rule, and `outcome_labels`
-  labels or removes it.
+  labels or removes it;
+  [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
+  applies the rule to tables built separately.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   with one model shows the “Outcome” row that
@@ -885,16 +924,31 @@
   message.
 
 - `table_regression(output = "excel")` writes a p-value that `p_bands`
-  or `p_sigfig` shortens, and a number printed in scientific notation,
-  as the console prints them (`.02`, `3.40e+07`). The sheet showed the
-  p-value with the three decimals of its column (`.023`) and the number
-  in full.
+  or `p_sigfig` shortens under the format its text shows (`.02`), and a
+  number printed in scientific notation as the console’s text
+  (`3.40e+07`). The sheet showed the p-value with the three decimals of
+  its column (`.023`) and the number in full.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  with `output = "excel"` write the numbers as numbers under any
+  `decimal_mark`, a French table and the Lancet style included: they
+  show the decimal separator of the reader’s Excel, and the mark stays
+  in the text cells (`<0,001`). The whole body was text.
+
+- `table_regression(output = "excel")` widens the columns of a model
+  whose name is wider than them, by equal parts, just enough to show it.
+  The name was cut.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   keeps the “Outcome” row out of the decimal alignment of the flextable,
   Word, gt and tinytable outputs. The label ended with figure spaces (a
   space before a parenthesis became one), and the numbers of its column
-  were padded to its width, off center.
+  were padded to its width, off center. flextable, Word, tinytable
+  (HTML, LaTeX, Typst) and Excel merge each label over the columns of
+  its model, centered, where it widened the first of them. In Excel, a
+  label wider than those columns widens them together.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   in French: a table of models of several families words its title and
@@ -1215,6 +1269,10 @@
   as when `by` has none. With `rescale = TRUE`, the call stopped on an
   error about the sum of the weights, and without it the table showed
   only a “(Missing)” row.
+
+- `table_categorical(output = "excel")` writes the p-value, the
+  association measure, its bounds and the SMD as numbers, like the
+  counts and percentages. They were text.
 
 ## spicy 0.14.1
 

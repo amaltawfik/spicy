@@ -42,8 +42,12 @@ freq(
   specify the target variable `x`. If both `data` and `x` are supplied
   as vectors, `data` is ignored with a warning. A survey design is
   refused (class `spicy_wrong_regime`):
-  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  estimates the distribution of a variable under the design.
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  for the designs it takes, estimates the distribution of a variable
+  under the design. A plain list is refused (class
+  `spicy_invalid_data`): convert it with
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) or pass
+  the variable as a vector.
 
 - x:
 

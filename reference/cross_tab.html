@@ -125,8 +125,11 @@ test with an APA-style association measure).</p>
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data frame. Alternatively, a vector when using the
 vector-based interface. A survey design is refused (class
-<code>spicy_wrong_regime</code>): <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> tabulates a variable
-by another under the design.</p></dd>
+<code>spicy_wrong_regime</code>): <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, for the designs it
+takes, tabulates a variable by another under the design. A plain list
+or a matrix is refused
+(class <code>spicy_invalid_data</code>): convert it with <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> or
+pass its variables as vectors.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>

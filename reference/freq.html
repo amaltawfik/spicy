@@ -126,8 +126,11 @@ frequencies and proportions.</p>
 <dd><p>A <code>data.frame</code>, vector, or factor. If a data frame is provided,
 specify the target variable <code>x</code>. If both <code>data</code> and <code>x</code> are supplied as
 vectors, <code>data</code> is ignored with a warning. A survey design is refused
-(class <code>spicy_wrong_regime</code>): <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> estimates the
-distribution of a variable under the design.</p></dd>
+(class <code>spicy_wrong_regime</code>): <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, for the
+designs it takes, estimates the distribution of a variable under the
+design. A plain list is refused
+(class <code>spicy_invalid_data</code>): convert it with <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> or
+pass the variable as a vector.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>

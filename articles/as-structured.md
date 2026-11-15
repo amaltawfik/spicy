@@ -721,12 +721,15 @@ renderer can reproduce spicy’s self-documenting footer verbatim.
 Three properties make the structured view safe to build on:
 
 - **Engine parity.** For regression tables, the built-in engines consume
-  this exact structure: what you read in `body` is, cell for cell, what
-  the Excel workbook contains and what the gt table displays at its
+  this exact structure. A cell of `body` that the console prints as one
+  number is the number the Excel workbook stores, at full precision,
+  unless it sits half way between two displays, which Excel rounds
+  otherwise than R: there the workbook holds the value the console shows
+  ([`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md),
+  section *Excel output*). The gt table displays each number at its
   precision. For the descriptive families the typed view is built from
-  the same computation frames the display is – value fidelity is pinned
-  by tests, and the engines migrate onto the view as the contract
-  settles.
+  the same computation frames as the display, and tests pin its values.
+  Their Excel workbooks take their numbers from it.
 - **Stability tier.**
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   sits in the *stabilizing* tier of the API (see

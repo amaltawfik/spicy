@@ -3,9 +3,10 @@
 `table_stack()` sets regression tables one under the other. Each table
 becomes a **panel**, opened by a row with its label, and keeps its own
 columns, rows, fit statistics and number formats: the cells of a panel
-have the content of the table passed, in every engine. The panels share
-one column header when they have the same columns, and each opens with
-its own header otherwise. Their notes are merged into one.
+have the content of the table passed, in every engine, under the
+"Outcome" row that *Panels* describes when the stack adds one. The
+panels share one column header when they have the same columns, and each
+opens with its own header otherwise. Their notes are merged into one.
 
 Build each table with its own arguments (`vcov`, `cluster`,
 `exponentiate`, `p_adjust`, `show_columns`, ...), then stack them: a
@@ -197,6 +198,14 @@ it describes the model ("Linear regression: bmi"), not the panel. The
 rows of a panel follow, in the order of its table: coefficients, blocks
 (thresholds, random effects, components), fit statistics.
 
+When the panels have different outcomes and their labels do not name
+them (labels given in `...`, by `panel_labels` or by a title), a panel
+of one outcome opens on an "Outcome" row under its label row, by the
+rule of `outcome_labels` in
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+A panel that has its own Outcome row keeps it, and a table built with
+`outcome_labels = FALSE` takes none.
+
 When every panel has the same column headers, one header heads the whole
 table. Otherwise the header of the first panel heads it and each later
 panel opens with its own header rows, below its label row: an
@@ -322,6 +331,7 @@ table_stack(
 #>  Variable        │    B      SE       95% CI        p   
 #> ─────────────────┼──────────────────────────────────────
 #>  BMI:            │                                      
+#>  Outcome         │                 bmi                  
 #>  (Intercept)     │   23.95  0.39  [23.18, 24.71]  <.001 
 #>  age             │    0.04  0.01  [ 0.02,  0.05]  <.001 
 #>  sex:            │                                      
@@ -335,6 +345,7 @@ table_stack(
 #>  Dentist:        │                                      
 #>                  │   OR      SE       95% CI        p   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Outcome         │             dentist_12m              
 #>  (Intercept)     │    1.56  0.36  [ 1.00,  2.44]   .052 
 #>  age             │    1.01  0.00  [ 1.00,  1.02]   .044 
 #>  sex:            │                                      

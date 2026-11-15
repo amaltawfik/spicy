@@ -43,8 +43,12 @@ cross_tab(
 
   A data frame. Alternatively, a vector when using the vector-based
   interface. A survey design is refused (class `spicy_wrong_regime`):
-  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  tabulates a variable by another under the design.
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  for the designs it takes, tabulates a variable by another under the
+  design. A plain list or a matrix is refused (class
+  `spicy_invalid_data`): convert it with
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) or pass
+  its variables as vectors.
 
 - x:
 
