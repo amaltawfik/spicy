@@ -289,15 +289,13 @@ output_long <- function(aligned, note = NULL) {
   nm
 }
 
-# Warn when `fit_stats_layout = "merged"` is ignored by the chosen
-# rich output engine (gt, tinytable). gt merges no cells of the
-# body: `gt::tab_spanner()` spans column labels. tinytable can
-# merge them in HTML, LaTeX and Typst, as the Outcome row does,
-# but the merged layout is not implemented for it. The user
-# passed a non-default value, so a classed warning closes the loop
-# rather than letting the table render in `"first_col"` mode
-# without explanation. Only flextable, excel and word (via
-# flextable) honor the layout.
+# Warn when `fit_stats_layout = "merged"` is ignored by gt, which
+# merges no cells of the body: `gt::tab_spanner()` spans column
+# labels. The user passed a non-default value, so a classed warning
+# closes the loop rather than letting the table render in
+# `"first_col"` mode without explanation. tinytable, flextable, excel
+# and word honor the layout (tinytable in HTML, LaTeX and Typst; its
+# markdown grid keeps the value in the first column of the model).
 .warn_merged_layout_ignored <- function(rendered, engine) {
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
   if (!identical(fit_stats_layout, "merged")) {
@@ -310,7 +308,7 @@ output_long <- function(aligned, note = NULL) {
         engine
       ),
       "i" = "Falling back to `\"first_col\"` layout for the fit-stat rows.",
-      "i" = "For merged fit-stat cells, use `output = \"flextable\"`, `\"excel\"`, or `\"word\"`."
+      "i" = "For merged fit-stat cells, use `output = \"tinytable\"`, `\"flextable\"`, `\"excel\"`, or `\"word\"`."
     ),
     class = "spicy_ignored_arg"
   )
@@ -361,6 +359,21 @@ output_long <- function(aligned, note = NULL) {
     }
   }
   specs
+}
+
+# The fit cells an engine merges: the ranges a stacked table carries
+# (`fit_merge_specs`, its "merged" panels only), else every fit row of
+# a table in `fit_stats_layout = "merged"`, else none. Read before the
+# decimal padding, which leaves these cells as typed.
+.reg_fit_merge_specs <- function(rendered, body, spanners) {
+  specs <- attr(rendered, "fit_merge_specs")
+  if (
+    is.null(specs) && identical(attr(rendered, "fit_stats_layout"), "merged")
+  ) {
+    group_sep <- as.integer(attr(rendered, "group_sep_rows") %||% integer(0))
+    specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
+  }
+  specs %||% list()
 }
 
 # The note of the outputs that head the bounds of an interval "LL" and
@@ -414,7 +427,9 @@ output_tinytable <- function(rendered) {
   # web fonts).
   struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
-  body <- .pad_for_decimal_align(body, struct)
+  # The fit cells merged below are centered as typed, not padded.
+  fit_specs <- .reg_fit_merge_specs(rendered, body, struct$spanners)
+  body <- .pad_for_decimal_align(body, struct, skip = fit_specs)
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   level_rows <- .struct_indent_rows(struct)
@@ -597,6 +612,19 @@ output_tinytable <- function(rendered) {
       output = c("html", "latex", "typst")
     )
   }
+  # fit_stats_layout = "merged": each fit value merged over the columns
+  # of its model, centered. The markdown grid keeps it in the first
+  # column of the model, for the reason given for the Outcome row.
+  for (sp in fit_specs) {
+    tt <- tinytable::style_tt(
+      tt,
+      i = sp$row,
+      j = sp$cols[[1L]],
+      colspan = length(sp$cols),
+      align = "c",
+      output = c("html", "latex", "typst")
+    )
+  }
   # Header rows: Variable column left, the rest centered.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
   if (n_cols >= 2L) {
@@ -716,10 +744,6 @@ output_tinytable <- function(rendered) {
       html_css = "padding-left: 1.4em;"
     )
   }
-
-  # `fit_stats_layout = "merged"` is NOT honored for tinytable
-  # (not implemented; see .warn_merged_layout_ignored).
-  .warn_merged_layout_ignored(rendered, "tinytable")
 
   # The note is set in the `<tfoot>` by the finalizer of `.spicy_tt_bare()`
   # (`.spicy_tt_note_tfoot()`, R/tt_theme.R), as in every family. This
@@ -1520,7 +1544,9 @@ output_flextable <- function(rendered) {
   # primitive, so we emulate gt's `cols_align_decimal()` manually).
   struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
-  body <- .pad_for_decimal_align(body, struct)
+  # The fit cells merged below are centered as typed, not padded.
+  fit_specs <- .reg_fit_merge_specs(rendered, body, struct$spanners)
+  body <- .pad_for_decimal_align(body, struct, skip = fit_specs)
   # The minus sign of the style in force, in the cells after the label
   # column and in the numbers of the note (`.apply_minus_sign()`).
   body <- .apply_minus_sign(
@@ -1864,12 +1890,8 @@ output_flextable <- function(rendered) {
   # columns into one wide centered cell per fit-stat row (Stata
   # esttab / Econometrica convention). A stacked table carries its own
   # ranges (`fit_merge_specs`): the fit rows of its "merged" panels only.
-  fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
-  specs <- attr(rendered, "fit_merge_specs")
-  if (is.null(specs) && identical(fit_stats_layout, "merged")) {
-    specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
-  }
-  for (sp in specs) {
+  # `fit_specs` was computed above, before the padding.
+  for (sp in fit_specs) {
     ft <- flextable::merge_at(ft, i = sp$row, j = sp$cols, part = "body")
     ft <- flextable::align(
       ft,

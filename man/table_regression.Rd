@@ -506,24 +506,14 @@ Resolves the mixed-precision look of \code{"first_col"} (an
 integer \code{n} row sharing the B column with two-decimal
 coefficients).
 }
-Cell merging is supported by \code{excel}, \code{flextable}, and
-\code{word} (via flextable). \code{gt}, \code{tinytable}, \code{clipboard}, and
-\code{default} (console) always render in \code{"first_col"} mode
-regardless of this setting:
-\itemize{
-\item \code{gt} merges no cells of the body (\code{tab_spanner()}
-spans column labels).
-\item \code{tinytable}: the merged layout is not implemented
-for this engine.
-\item \code{clipboard} ships TSV plaintext.
-\item \code{default} ships fixed-width ASCII.
-}
-Decimal alignment of every numeric column is preserved in
-both modes: the \code{B} column decimal-aligns its coefficient
-values plus any fit-stat value(s) in \code{"first_col"} mode
-(native primitives handle the mixed-precision case), and
-trivially decimal-aligns in \code{"merged"} mode (the fit-stat
-values move out of the B column into the merged cell).}
+\code{excel}, \code{flextable}, \code{word} and \code{tinytable} (in HTML, LaTeX
+and Typst) merge the cells. The markdown output of \code{tinytable},
+\code{gt} (with a warning), \code{clipboard} and \code{default} (console) keep
+the \code{"first_col"} layout.
+In \code{"first_col"} mode the \code{B} column aligns the fit-stat values
+on the decimal mark with its coefficients. In \code{"merged"} mode the
+fit-stat values move out of the \code{B} column, which aligns its
+coefficients alone, and each merged value is centered as typed.}
 
 \item{layout}{How several models are laid out. \code{"columns"} (default)
 sets them side by side, one group of columns per model. \code{"stacked"}

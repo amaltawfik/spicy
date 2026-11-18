@@ -179,19 +179,17 @@ test_that("Typst output strips the forced column gutter on grouped headers", {
 })
 
 
-test_that("fit_stats_layout = 'merged' warns for the engines that ignore it (tinytable, gt)", {
+test_that("fit_stats_layout = 'merged' warns for gt, which ignores it, not for tinytable", {
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   m1 <- lm(mpg ~ wt, data = mt)
   m2 <- lm(mpg ~ wt + cyl, data = mt)
-  # tinytable: the merged layout is not implemented.
-  expect_warning(
+  expect_no_warning(
     table_regression(
       list(m1, m2),
       fit_stats_layout = "merged",
       output = "tinytable"
-    ),
-    class = "spicy_ignored_arg"
+    )
   )
   # gt: tab_spanner() covers columns, not body rows.
   expect_warning(

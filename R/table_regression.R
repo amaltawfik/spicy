@@ -1569,24 +1569,14 @@
 #'       integer `n` row sharing the B column with two-decimal
 #'       coefficients).
 #'   }
-#'   Cell merging is supported by `excel`, `flextable`, and
-#'   `word` (via flextable). `gt`, `tinytable`, `clipboard`, and
-#'   `default` (console) always render in `"first_col"` mode
-#'   regardless of this setting:
-#'   \itemize{
-#'     \item `gt` merges no cells of the body (`tab_spanner()`
-#'       spans column labels).
-#'     \item `tinytable`: the merged layout is not implemented
-#'       for this engine.
-#'     \item `clipboard` ships TSV plaintext.
-#'     \item `default` ships fixed-width ASCII.
-#'   }
-#'   Decimal alignment of every numeric column is preserved in
-#'   both modes: the `B` column decimal-aligns its coefficient
-#'   values plus any fit-stat value(s) in `"first_col"` mode
-#'   (native primitives handle the mixed-precision case), and
-#'   trivially decimal-aligns in `"merged"` mode (the fit-stat
-#'   values move out of the B column into the merged cell).
+#'   `excel`, `flextable`, `word` and `tinytable` (in HTML, LaTeX
+#'   and Typst) merge the cells. The markdown output of `tinytable`,
+#'   `gt` (with a warning), `clipboard` and `default` (console) keep
+#'   the `"first_col"` layout.
+#'   In `"first_col"` mode the `B` column aligns the fit-stat values
+#'   on the decimal mark with its coefficients. In `"merged"` mode the
+#'   fit-stat values move out of the `B` column, which aligns its
+#'   coefficients alone, and each merged value is centered as typed.
 #' @param layout How several models are laid out. `"columns"` (default)
 #'   sets them side by side, one group of columns per model. `"stacked"`
 #'   sets them one under the other, one panel per model: each panel is

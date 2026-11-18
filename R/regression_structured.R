@@ -2022,7 +2022,12 @@ build_structured_body <- function(
 #     will center-align in the column without a decimal anchor).
 #
 # `decimal_mark` is read from the structured format spec ("." or ",").
-.pad_for_decimal_align <- function(body, struct) {
+#
+# `skip` lists the cells an engine merges (`fit_stats_layout =
+# "merged"`, specs of `.reg_fit_merge_specs()`): a merged fit value is
+# centered as typed, so those cells are neither measured nor padded and
+# the column aligns on its coefficients alone.
+.pad_for_decimal_align <- function(body, struct, skip = list()) {
   decimal_mark <- struct$format_spec$decimal_mark
   fig_space <- "\u2007" # U+2007 figure space (digit-width)
   # The undefined / reference glyph, from the registry: the padder has
@@ -2036,18 +2041,23 @@ build_structured_body <- function(
   if (length(struct$body[[".row_role"]]) == nrow(body)) {
     header <- struct$body[[".row_role"]] %in% c("header", "outcome")
   }
+  merged <- matrix(FALSE, nrow(body), ncol(body))
+  for (sp in skip) {
+    merged[sp$row, sp$cols] <- TRUE
+  }
 
   for (j in seq_along(body)) {
     if (j == 1L) {
       next
     } # Variable column stays as-is
     col_vals <- body[[j]]
+    skip_row <- header | merged[, j]
     # Compute per-cell LHS / RHS widths for decimal-bearing cells.
     lhs <- character(length(col_vals))
     rhs <- character(length(col_vals))
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || identical(v, na_dash) || header[i]) {
+      if (is.na(v) || !nzchar(v) || identical(v, na_dash) || skip_row[i]) {
         lhs[i] <- ""
         rhs[i] <- ""
         next
@@ -2076,7 +2086,7 @@ build_structured_body <- function(
 
     for (i in seq_along(col_vals)) {
       v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || header[i]) {
+      if (is.na(v) || !nzchar(v) || skip_row[i]) {
         next
       }
       # Phase 7c24 (item g): en-dash cells (factor reference rows /
