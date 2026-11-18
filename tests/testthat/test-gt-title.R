@@ -241,9 +241,7 @@ test_that("the HTML display path still prints the note once", {
     select = sex,
     output = "gt"
   ))
-  html <- spicy:::.spicy_gt_html_postprocess(
-    as.character(gt::as_raw_html(tbl, inline_css = FALSE))
-  )
+  html <- as.character(knit_print.spicy_gt(tbl))
   expect_identical(
     lengths(gregexpr("Missing values removed", html, fixed = TRUE)),
     1L

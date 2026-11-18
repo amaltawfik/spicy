@@ -359,7 +359,7 @@ test_that("an effect size shown alone names its test, a comparison or a slope", 
   )
 })
 
-test_that("gt HTML without a note takes the spicy wrapper, without a note", {
+test_that("gt HTML without a note takes the spicy header rules, without a note", {
   skip_if_not_installed("gt")
   g <- table_continuous_lm(
     sochealth,
@@ -369,8 +369,11 @@ test_that("gt HTML without a note takes the spicy wrapper, without a note", {
     output = "gt"
   )
   html <- as.character(knit_print.spicy_gt(g))
-  expect_match(html, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
-  expect_match(html, "</table></div></div>", fixed = TRUE)
+  expect_match(
+    gsub("\\s+", " ", html),
+    ".gt_col_heading { border-bottom: 1px solid #333333 !important;",
+    fixed = TRUE
+  )
   expect_no_match(html, "<td class=\"gt_sourcenote\"", fixed = TRUE)
 })
 

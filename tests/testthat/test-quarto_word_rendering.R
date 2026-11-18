@@ -89,7 +89,11 @@ test_that("HTML target keeps the styled-note post-processing", {
     paste(as.character(knitr::knit_print(gtb)), collapse = "")
   )
   expect_match(s_ft, "spicy-ft-note", fixed = TRUE)
-  expect_match(s_gt, "spicy-gt-outer", fixed = TRUE)
+  expect_match(
+    gsub("\\s+", " ", s_gt),
+    ".gt_col_heading { border-bottom: 1px solid #333333 !important;",
+    fixed = TRUE
+  )
 })
 
 test_that("docx target: table_continuous_lm flextable renders too", {

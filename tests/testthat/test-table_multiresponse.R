@@ -1424,9 +1424,7 @@ test_that("the engines set the \"Note.\" of a note in italics, typed or not", {
   expect_match(html, "<em>Note.</em> Source:", fixed = TRUE)
   g <- .mr_farm_tbl(output = "gt")
   expect_match(
-    spicy:::.spicy_gt_html_postprocess(
-      as.character(gt::as_raw_html(g, inline_css = FALSE))
-    ),
+    as.character(knit_print.spicy_gt(g)),
     "<em>Note.</em> Multiple answers possible:",
     fixed = TRUE
   )

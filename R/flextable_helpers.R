@@ -43,8 +43,9 @@
 }
 
 # Every gt table of the package is built here: `gt::gt()` with an id of
-# its own, and the rules of its source notes in HTML (`.spicy_gt_note_css()`),
-# which need that id to stay within the table.
+# its own, and the rules of its source notes and of its header in HTML
+# (`.spicy_gt_note_css()`, `.spicy_gt_header_css()`), which need that id
+# to stay within the table.
 #
 # The id is a counter of the session, not gt's random one, so that
 # building a table leaves the random number stream alone. The name of
@@ -62,7 +63,7 @@
   .spicy_gt_ids$n <- .spicy_gt_ids$n + 1L
   id <- paste0("spicy-gt-", .spicy_gt_ids$session, "-", .spicy_gt_ids$n)
   # `css`: further rules, each scoped to the table by its id.
-  rules <- .spicy_gt_note_css(id)
+  rules <- paste(.spicy_gt_note_css(id), .spicy_gt_header_css(id), sep = "\n")
   if (length(css)) {
     rules <- paste(c(rules, paste0("#", id, " ", css)), collapse = "\n")
   }
@@ -92,6 +93,51 @@
     "#",
     id,
     " .gt_sourcenotes:last-child .gt_sourcenote { padding-bottom: 0.2rem; }"
+  )
+}
+
+# The rules of the header, in every route that writes HTML, as the note's
+# are. gt's theme draws a line under each spanner row and under the
+# label of each spanner (B, p, Variable); spicy keeps one 1px #333333
+# rule under the column labels (the body cells lose their transparent
+# top border, which would otherwise win the collapsed border), the CI
+# bracket (the inline top border of LL and UL), and a rule under each
+# model spanner, inset 0.5em on each side so that the rules of adjacent
+# models stay apart (booktabs' `\cmidrule(lr)`). `!important` wins over
+# gt's own rules and over the inline styles of `tab_style()`.
+#
+# `as_raw_html(inline_css = TRUE)` inlines the rules into style attributes
+# and drops what it cannot inline: the model rule is therefore the bottom
+# border of the label's `<div>` inside the spanner cell, not a
+# pseudo-element of the cell. The cell has 4px of side padding (none on
+# the right of the last cell of the row), so the margins of the `<div>`
+# give the 0.5em inset; in the last cell, a left padding keeps the label
+# where gt sets it, 2px right of the centre. One pixel of the bottom
+# padding makes room for the rule.
+.spicy_gt_header_css <- function(id) {
+  s <- paste0("#", id, " ")
+  model <- paste0(s, "th[id^=\"model_span_\"]")
+  paste0(
+    s,
+    ".gt_col_headings.gt_spanner_row, ",
+    s,
+    ".gt_spanner_row { border-bottom-style: none !important; ",
+    "border-bottom-width: 0 !important; }\n",
+    s,
+    ".gt_col_heading { border-bottom: 1px solid #333333 !important; }\n",
+    s,
+    ".gt_table tbody .gt_row { border-top-width: 0 !important; }\n",
+    s,
+    ".gt_column_spanner { border-bottom-width: 0 !important; ",
+    "border-bottom-color: transparent !important; }\n",
+    model,
+    " > .gt_column_spanner { display: block !important; ",
+    "width: auto !important; margin-left: calc(0.5em - 4px); ",
+    "margin-right: calc(0.5em - 4px); padding-bottom: 4px !important; ",
+    "border-bottom: 1px solid #333333 !important; }\n",
+    model,
+    ":last-child > .gt_column_spanner { margin-right: 0.5em; ",
+    "padding-left: 4px; }"
   )
 }
 

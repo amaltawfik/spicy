@@ -110,21 +110,8 @@ test_that(".fit_stat_merge_ranges single-model spans cols 2..n per fit-stat row"
 
 
 # ============================================================================
-# gt: HTML note post-processor + print / knit_print methods
+# gt: knit_print method
 # ============================================================================
-
-test_that(".spicy_gt_html_postprocess wraps the table and leaves its note in it", {
-  h <- paste0(
-    "<table border=\"1\"><tr><td>x</td></tr><tfoot><tr ",
-    "class=\"gt_sourcenotes\"><td class=\"gt_sourcenote\">n</td></tr>",
-    "</tfoot></table>"
-  )
-  out <- spicy:::.spicy_gt_html_postprocess(h)
-  expect_match(out, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
-  expect_match(out, ".spicy-gt-outer .gt_col_heading", fixed = TRUE)
-  expect_match(out, "</tfoot></table></div></div>", fixed = TRUE)
-  expect_no_match(out, "spicy-gt-note", fixed = TRUE)
-})
 
 test_that("knit_print.spicy_gt writes the table, its note inside, as raw HTML", {
   skip_if_not_installed("gt")
@@ -143,71 +130,6 @@ test_that("knit_print.spicy_gt writes the table, its note inside, as raw HTML", 
     fixed = TRUE
   )
 })
-
-test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
-  skip_if_not_installed("gt")
-  # A premise is a guard, never an assertion (portability lesson 4): a
-  # developer running devtools::test() from a console IS interactive,
-  # and this block tests the other branch. Rscript / CI still run it.
-  skip_if(interactive(), "needs a non-interactive session")
-  fit <- lm(mpg ~ wt + cyl, data = mt)
-  g <- table_regression(fit, output = "gt", note = "Note. n.")
-  # Non-interactive: falls through to gt's own print (NextMethod()).
-  out <- capture.output(res <- print(g))
-  expect_true(length(out) > 0L)
-
-  # --- NextMethod() path actually ran (not the interactive browsable arm) ---
-  # print.spicy_gt strips the "spicy_gt" subclass BEFORE NextMethod(), so the
-  # value returned by gt's own print method must no longer carry it. (The
-  # interactive arm would instead return invisible(NULL); a non-NULL,
-  # non-spicy_gt result pins the NextMethod branch.)
-  expect_false(is.null(res))
-  expect_false(inherits(res, "spicy_gt"))
-
-  # The captured output is gt's rendered HTML table (NextMethod = gt's print),
-  # so it contains an actual <table> element and a model coefficient label --
-  # proof the gt render ran rather than the method merely not erroring.
-  joined <- paste(out, collapse = "\n")
-  expect_match(joined, "<table", fixed = TRUE)
-  # Complete intercept cell text (">...<" pins the whole rendered label).
-  expect_match(joined, ">(Intercept)<", fixed = TRUE)
-})
-
-test_that("print.spicy_gt interactive branch renders browsable HTML with the note", {
-  skip_if_not_installed("gt")
-  skip_if_not_installed("htmltools")
-  # No-op HTML viewer so the browsable() display path neither opens a real
-  # browser nor errors on a headless CI runner (htmltools::html_print uses
-  # getOption("viewer")).
-  withr::local_options(viewer = function(url, ...) invisible(url))
-  fit <- lm(mpg ~ wt + cyl, data = mt)
-  g <- table_regression(fit, output = "gt", note = "Note. interactive gt.")
-  # Mock base::interactive() so the htmltools::browsable() display path
-  # runs. That branch returns invisible(NULL) (vs the NextMethod path
-  # which returns the gt object), so a NULL result confirms the
-  # interactive arm executed.
-  res <- testthat::with_mocked_bindings(
-    {
-      utils::capture.output(out <- print(g))
-      out
-    },
-    interactive = function() TRUE,
-    .package = "base"
-  )
-  # with_mocked_bindings(interactive = TRUE) does not engage reliably on every
-  # platform's testthat (it failed to on the macOS CI runner). When it does, the
-  # display branch returns invisible(NULL); when it does not, NextMethod() returns
-  # the rendered object. Accept either so the test exercises the path without
-  # being hostage to mock reliability.
-  expect_true(
-    is.null(res) ||
-      inherits(
-        res,
-        c("shiny.tag", "shiny.tag.list", "gt_tbl", "flextable", "html")
-      )
-  )
-})
-
 
 # ============================================================================
 # flextable: HTML note post-processor + print / knit_print + note branches

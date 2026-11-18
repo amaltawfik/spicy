@@ -4536,9 +4536,7 @@ test_that("every engine sets the stars legend on a line of its own", {
   expect_length(g[["_source_notes"]], 2L)
   # The HTML display path prints them as two rows of the table, the
   # legend opening the second.
-  html <- .spicy_gt_html_postprocess(
-    as.character(gt::as_raw_html(g, inline_css = FALSE))
-  )
+  html <- as.character(knit_print.spicy_gt(g))
   cells <- regmatches(
     html,
     gregexpr("<td class=\"gt_sourcenote\".*?</td>", html, perl = TRUE)

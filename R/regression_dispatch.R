@@ -1061,7 +1061,7 @@ output_gt <- function(rendered) {
     # so both horizontal rules read as a matched pair. Setting this
     # via tab_options writes the value into gt's `.gt_col_headings`
     # CSS rule (applies to BOTH header rows -- the spanner row is
-    # zeroed out by the CSS injection in the post-process so only
+    # zeroed out by `.spicy_gt_header_css()` so only
     # the column-labels row keeps the rule). This avoids relying on
     # cell-level CSS injection that may not win the border-collapse
     # tiebreaker against the body cells' default transparent
@@ -1095,9 +1095,8 @@ output_gt <- function(rendered) {
     # `cells_column_spanners`: gt expands the styling to ALL `<th>`
     # cells in the same spanner row -- including the empty col 1
     # above "Variable" -- producing an unwanted hairline. Instead
-    # the line under each Model spanner is drawn via a CSS rule
-    # injected in `.spicy_gt_html_postprocess` that targets only
-    # `th[id^="model_span_"]`.
+    # the line under each Model spanner is drawn by a CSS rule of
+    # `.spicy_gt_header_css()` that targets only `th[id^="model_span_"]`.
   } else if (has_outcome_spanner) {
     # Single model with its Outcome level: that level is the outermost.
     tbl <- gt::tab_style(
@@ -1287,140 +1286,8 @@ output_gt <- function(rendered) {
   tbl
 }
 
-# Wrap rendered gt HTML in the two `<div>` of the display methods and
-# their header rules. The note stays in the table, as its native source
-# notes (`.spicy_gt_note_css()`). A table without a note takes the
-# wrapper and its rules too, as it takes the `spicy_gt` class (section 19
-# of dev/decisions/2026-10-23-sorties-publiables-fr.md): one design for
-# every table of the family.
-.spicy_gt_html_postprocess <- function(html_str) {
-  open_outer <- paste0(
-    "<div class=\"spicy-gt-outer\" ",
-    "style=\"text-align: center;\">"
-  )
-  open_inner <- paste0(
-    "<div class=\"spicy-gt-wrap\" style=\"",
-    "display: inline-block; max-width: 100%; ",
-    "text-align: left; vertical-align: top;\">"
-  )
-  # gt's default theme draws two unwanted lines inside the header:
-  #   * `.gt_col_headings { border-bottom: 2px solid #D3D3D3 }` is
-  #     applied to BOTH header rows (the spanner row carries class
-  #     `gt_col_headings gt_spanner_row`, the column-labels row
-  #     carries `gt_col_headings`), so the rule draws a 2px gray
-  #     line under the spanner row in addition to the bottom of the
-  #     header.
-  #   * `.gt_column_spanner { border-bottom: 2px solid #D3D3D3 }` is
-  #     applied inside each spanner cell (B / SE / p / Variable /
-  #     95% CI), adding its own underline.
-  # We neutralize both with `!important` (gt's selectors carry an id
-  # which outranks a class-only selector) and at the same time
-  # match the column-labels-row bottom rule to the outer top rule
-  # (1px solid #333333) so they read as a matched pair. The CSS is
-  # scoped to `.spicy-gt-outer` so unrelated gt tables elsewhere
-  # on the page keep their stock styling.
-  spanner_css <- paste0(
-    "<style>",
-    # Mid rule under each Model spanner in multi-model mode. The
-    # rule is drawn via a `::after` pseudo-element (rather than a
-    # plain `border-bottom`) so each rule is INSET inside the
-    # spanner cell with a small horizontal gap on each side --
-    # adjacent models therefore have visibly separated rules, the
-    # booktabs `\cmidrule(lr){...}` convention. Without the inset
-    # the rules would touch at the column boundaries and the
-    # multi-model header would read as one continuous line.
-    # Scoped via `[id^=\"model_span_\"]` so only Model spanner
-    # cells (which have an id) are styled; col 1 above "Variable"
-    # has no id and stays untouched.
-    ".spicy-gt-outer th[id^=\"model_span_\"] { ",
-    "position: relative; }",
-    ".spicy-gt-outer th[id^=\"model_span_\"]::after { ",
-    "content: \"\"; position: absolute; ",
-    "left: 0.5em; right: 0.5em; bottom: 0; ",
-    "border-bottom: 1px solid #333333; }",
-    # gt emits `.gt_spanner_row { border-bottom-style: hidden }`
-    # which, per CSS 2.1 Section 17.6.2.1, *suppresses any conflicting
-    # border at this edge* -- including the inline `border-top` we
-    # put on the LL/UL cells to draw the CI bracket. Override both
-    # the style and width to `none` / 0 so the spanner row carries
-    # no border-bottom contribution at all, leaving the LL/UL
-    # cell-level top border (and the CI spanner cell's bottom) free
-    # to render.
-    ".spicy-gt-outer .gt_col_headings.gt_spanner_row, ",
-    ".spicy-gt-outer .gt_spanner_row { ",
-    "border-bottom-style: none !important; ",
-    "border-bottom-width: 0 !important; }",
-    # Mid-rule under the column-labels row (= bottom of header,
-    # above body). Applied at the CELL level (`.gt_col_heading`),
-    # AND we simultaneously neutralize the body cells'
-    # `.gt_row { border-top: 1px solid transparent }` -- without
-    # this, both sides are cell-level borders with the same width
-    # and style, and the browser tie-breaker picks the later
-    # element (= body row, transparent), making our color
-    # invisible. Setting body's `border-top: 0` removes the
-    # competing border entirely so our #333333 always shows.
-    ".spicy-gt-outer .gt_col_heading { ",
-    "border-bottom: 1px solid #333333 !important; }",
-    ".spicy-gt-outer .gt_table tbody .gt_row { ",
-    "border-top-width: 0 !important; }",
-    # Remove the 2px gray underline that gt draws inside every
-    # `<div class=\"gt_column_spanner\">`. The CI bracket line stays
-    # because it lives on the LL/UL cells' inline `border-top`.
-    ".spicy-gt-outer .gt_column_spanner { ",
-    "border-bottom-width: 0 !important; ",
-    "border-bottom-color: transparent !important; }",
-    "</style>"
-  )
-  close_both <- "</div></div>"
-  html_str <- sub(
-    "<table ",
-    paste0(open_outer, open_inner, spanner_css, "<table "),
-    html_str,
-    fixed = TRUE
-  )
-  html_str <- sub(
-    "</table>",
-    paste0("</table>", close_both),
-    html_str,
-    fixed = TRUE
-  )
-  html_str
-}
-
-#' Print method for spicy-tagged gt tables
-#'
-#' @description
-#' Prints a `spicy_gt` object -- the [gt::gt()] table returned by
-#' `output = "gt"`, tagged so its header keeps its rules in interactive
-#' HTML display. Every gt verb works on the tagged object directly;
-#' printing delegates to gt's own rendering.
-#'
-#' @param x A `spicy_gt` object.
-#' @param ... Additional arguments (currently ignored).
-#'
-#' @return Invisibly returns `NULL` (HTML display path) or the result
-#'   of gt's own print method.
-#'
-#' @seealso [table_regression()]
-#' @keywords internal
-#' @exportS3Method print spicy_gt
-print.spicy_gt <- function(x, ...) {
-  class(x) <- setdiff(class(x), "spicy_gt")
-  if (
-    interactive() &&
-      !isTRUE(getOption("knitr.in.progress")) &&
-      requireNamespace("htmltools", quietly = TRUE)
-  ) {
-    h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-    h_str <- .spicy_gt_html_postprocess(h_str)
-    print(htmltools::browsable(htmltools::HTML(h_str)))
-    return(invisible(NULL))
-  }
-  NextMethod()
-}
-
 # The LaTeX a gt table knits into a PDF, brought in line with its HTML
-# design (`.spicy_gt_html_postprocess()`). Three edits of the string gt
+# design (`.spicy_gt_header_css()`). Three edits of the string gt
 # writes, none of which gt's API (1.4.0) offers:
 #
 # * The rule under a one-column spanner. spicy lifts the label of every
@@ -1612,7 +1479,6 @@ knit_print.spicy_gt <- function(x, ...) {
     return(out)
   }
   h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-  h_str <- .spicy_gt_html_postprocess(h_str)
   # A raw HTML block: pandoc read bare HTML as markdown, and in an R
   # Markdown `html_document` it turned the style sheet of the table into
   # paragraphs of text (its rules, the note's among them, were lost).
@@ -2110,7 +1976,7 @@ output_flextable <- function(rendered) {
 # inject `note` (HTML-escaped, with the leading "Note." italicized)
 # as a `<div>` immediately after `</table>`, wrapped in an
 # inline-block so the note inherits the table's content width
-# without contributing to it, as in `.spicy_gt_html_postprocess()`.
+# without contributing to it.
 .spicy_ft_html_postprocess <- function(html_str, note, lead = .note_lead()) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)

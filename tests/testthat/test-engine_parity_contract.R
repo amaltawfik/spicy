@@ -397,8 +397,7 @@ test_that("the HTML display path prints the note in the table, once", {
   skip_if_not_installed("gt")
   fit <- stats::lm(wellbeing_score ~ age + sex, data = .ep_data())
   g <- table_regression(fit, output = "gt")
-  html <- as.character(gt::as_raw_html(g, inline_css = FALSE))
-  out <- spicy:::.spicy_gt_html_postprocess(html)
+  out <- as.character(knit_print.spicy_gt(g))
   expect_false(grepl("spicy-gt-note", out, fixed = TRUE))
   expect_true(grepl("<tfoot", out, fixed = TRUE))
   n_note <- lengths(regmatches(
@@ -408,8 +407,7 @@ test_that("the HTML display path prints the note in the table, once", {
   expect_identical(as.integer(n_note), 1L)
   # A source note the user added themselves is left alone.
   g2 <- gt::tab_source_note(g, "My own note")
-  html2 <- as.character(gt::as_raw_html(g2, inline_css = FALSE))
-  out2 <- spicy:::.spicy_gt_html_postprocess(html2)
+  out2 <- as.character(knit_print.spicy_gt(g2))
   expect_true(grepl("My own note", out2, fixed = TRUE))
   # The native note is markdown: the characters of a note print as typed.
   g3 <- table_regression(
@@ -417,8 +415,7 @@ test_that("the HTML display path prints the note in the table, once", {
     note = "Note. \"Quoted\" & <tagged> *starred*.",
     output = "gt"
   )
-  html3 <- as.character(gt::as_raw_html(g3, inline_css = FALSE))
-  out3 <- spicy:::.spicy_gt_html_postprocess(html3)
+  out3 <- as.character(knit_print.spicy_gt(g3))
   expect_true(grepl("&lt;tagged&gt; *starred*.</span>", out3, fixed = TRUE))
 })
 

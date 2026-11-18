@@ -92,49 +92,6 @@ test_that("output = 'clipboard' dispatches to the clipr writer with the TSV payl
 
 
 # ---------------------------------------------------------------------------
-# regression_dispatch.R lines 1109-1112: print.spicy_gt interactive arm
-# ---------------------------------------------------------------------------
-
-test_that("print.spicy_gt interactive arm displays post-processed browsable HTML", {
-  skip_if_not_installed("gt")
-  skip_if_not_installed("htmltools")
-
-  mt <- mtcars
-  mt$cyl <- factor(mt$cyl)
-  fit <- lm(mpg ~ wt + cyl, data = mt)
-  g <- table_regression(fit, output = "gt", note = "Note. interactive gt path.")
-
-  # Capture the HTML file that htmltools::html_print() hands to the viewer
-  # instead of opening a browser.
-  viewed <- NULL
-  withr::local_options(viewer = function(url, ...) {
-    viewed <<- url
-    invisible(url)
-  })
-
-  res <- as_interactive(spicy:::print.spicy_gt)(g)
-
-  # The interactive arm returns invisible(NULL) (the NextMethod() arm
-  # would return the gt object).
-  expect_null(res)
-
-  # The viewer received a real HTML file containing the POST-PROCESSED
-  # markup: the .spicy-gt-outer wrapper is injected by
-  # .spicy_gt_html_postprocess(), so its presence proves
-  # the interactive branch ran end-to-end (as_raw_html -> postprocess ->
-  # browsable print).
-  expect_false(is.null(viewed))
-  expect_true(file.exists(viewed))
-  html <- paste(readLines(viewed, warn = FALSE), collapse = "\n")
-  expect_match(html, "spicy-gt-outer", fixed = TRUE)
-  # The note prefix "Note." is emitted as its own italic chunk, so match
-  # the body text only.
-  expect_match(html, "interactive gt path.", fixed = TRUE)
-  expect_match(html, "<table", fixed = TRUE)
-})
-
-
-# ---------------------------------------------------------------------------
 # regression_dispatch.R lines 1574-1578: print.spicy_flextable interactive arm
 # ---------------------------------------------------------------------------
 

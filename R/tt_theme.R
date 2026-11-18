@@ -981,9 +981,8 @@
 # is set in `*...*` on the note TEXT, before tinytable lays it out, so the
 # grid stays aligned; printed in a terminal, the grid is plain text and
 # the note stays as the console prints it, with no markup. "A document"
-# is a knit in progress -- Quarto and R Markdown -- which is also how
-# `print.spicy_gt()` tells the two apart. Registered by `.spicy_tt_bare()`
-# as a preparation step for the markdown output only.
+# is a knit in progress -- Quarto and R Markdown. Registered by
+# `.spicy_tt_bare()` as a preparation step for the markdown output only.
 .spicy_tt_note_markdown <- function(lead, minus = identity) {
   structure(
     function(tbl) {
