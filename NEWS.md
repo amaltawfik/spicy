@@ -400,7 +400,7 @@
   of the size of the table. `gt::rm_source_notes()` also removes it from
   the HTML display.
 
-* In an R Markdown `html_document`, a gt table keeps its style: pandoc
+* In an R Markdown `html_document`, a gt table keeps its style: Pandoc
   read the style sheet of the table as text, and the table lost the
   look gt gives it.
 
