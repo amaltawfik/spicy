@@ -376,6 +376,21 @@
   or `table_continuous_svy()`. The table keeps the width of its body and
   the note wraps at that width, as it did for `table_regression()`.
 
+* In Typst, a tinytable table with a note measures its columns as the
+  table and the document style them. The cells were measured outside
+  the table, at the size of the document, so a table resized with
+  `tinytable::style_tt(fontsize = )` took the widths of a larger text.
+  A table wider than the page no longer shrinks every column alike,
+  which broke short headers after their first word and set number
+  columns on top of each other. Each column keeps at least its longest
+  word, the label column wraps first, up to three lines, and the other
+  columns give way after it.
+
+* The note of a tinytable table follows a body resized with
+  `tinytable::style_tt(fontsize = )`: it takes 0.9 of the size of the
+  cells, in HTML, LaTeX and Typst. It kept 0.9 of the size of the
+  document and came out larger than the body.
+
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
   in a stacked hierarchy) show their degrees of freedom in the cell,

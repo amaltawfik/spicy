@@ -2105,18 +2105,19 @@ restores spicy's own defaults. See \code{\link[=spicy_style]{spicy_style()}} for
 rules each theme encodes and the official document they come
 from.
 \item \strong{\code{options(spicy.note_style = )}} -- how the table note is
-rendered by the \code{"tinytable"} engine (all nine table functions).
+rendered by the \code{"tinytable"} engine (every table function).
 A note is subordinate to the table it documents, so it is set
 one size down, in black: \verb{0.9em} (\verb{\\small} in LaTeX), matching
-the \code{"gt"} engine and the 10pt-on-11pt of the Word engine. Two
-opt-ins:
+the \code{"gt"} engine and the 10pt-on-11pt of the Word engine. When
+\code{tinytable::style_tt(fontsize = )} resizes the whole body, the
+note takes 0.9 of that size. Two opt-ins:
 \itemize{
 \item \code{"none"} -- no intervention; the note is rendered
 exactly as the receiving document template styles it.
 \item any other string -- extra arguments for the Typst
 \code{text()} call around the note, appended to the size (e.g.
 \code{options(spicy.note_style = "fill: luma(89)")} for a gray
-note). Typst only; the HTML note keeps the plain \verb{0.9em}.
+note). Typst only: the HTML note keeps its size.
 }
 \code{options(spicy.note_style = NULL)} restores the default.
 }
