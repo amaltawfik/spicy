@@ -14,11 +14,11 @@ test_that("Typst widens no column for labels that span two lines", {
   one_line <- typst(list(A = m1, B = m2))
   two_lines <- typst(list("Crude\nmodel" = m1, "Adjusted\nmodel" = m2))
   # Both tables measure their columns ...
-  anchor <- "let tinytable-naturals = tinytable-coldata.map("
+  anchor <- "let tinytable-naturals = tinytable-coldata.enumerate().map("
   expect_match(one_line, anchor, fixed = TRUE)
   expect_match(two_lines, anchor, fixed = TRUE)
   # ... and only a label on one line is measured against them.
-  expect_match(one_line, "((1, 3, [A]), (4, 6, [B]),)", fixed = TRUE)
+  expect_match(one_line, "((1, 3, 0, [A]), (4, 6, 0, [B]),)", fixed = TRUE)
   expect_no_match(two_lines, "spicy_label", fixed = TRUE)
 })
 

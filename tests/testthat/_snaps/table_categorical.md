@@ -38,7 +38,7 @@
           let tmp = it
           if ("fontsize" in style) { tmp = text(size: style.fontsize, tmp) }
           if ("color" in style) { tmp = text(fill: style.color, tmp) }
-          if ("indent" in style) { tmp = pad(left: style.indent, tmp) }
+          if ("indent" in style and it.body != []) { tmp = pad(left: style.indent, tmp) }
           if ("underline" in style) { tmp = underline(tmp) }
           if ("italic" in style) { tmp = emph(tmp) }
           if ("bold" in style) { tmp = strong(tmp) }
@@ -62,24 +62,93 @@
         )
       
         #context layout(size => {
-          // spicy: an indented cell is measured with its indent
-          let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
-            let spicy_style = get-style(spicy_x, spicy_k + 1)
-            if spicy_style != none and "indent" in spicy_style { pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }
-          }))
           // spicy: a cell that spans columns is measured with none of them
           let tinytable-coldata = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_col.enumerate().map(((spicy_k, spicy_cell)) => {
             if (spicy_x, spicy_k) in ((0, 1),) { [] } else { spicy_cell }
           }))
-          let tinytable-naturals = tinytable-coldata.map(col => measure(grid(columns: 1, inset: table.inset, ..col)).width)
+          // spicy: each column measured at its place in a table
+          let spicy_n = tinytable-coldata.len()
+          let spicy_inset = measure(table(columns: 1, stroke: none, table.cell(x: 0, y: 0, []))).width
+          let spicy_blank = measure(table(columns: spicy_n, stroke: none, ..range(spicy_n).map(spicy_x => table.cell(x: spicy_x, y: 0, [])))).width
+          let spicy_width(spicy_x, spicy_col, spicy_least) = {
+            let spicy_t = table(columns: spicy_n, stroke: none, ..spicy_col.enumerate().map(((spicy_k, spicy_cell)) => table.cell(x: spicy_x, y: spicy_k + 1, spicy_cell)))
+            measure(if spicy_least { show " ": linebreak(); spicy_t } else { spicy_t }).width - spicy_blank + spicy_inset
+          }
+          let tinytable-naturals = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) => spicy_width(spicy_x, spicy_col, false))
           // spicy: a column-group label wider than its columns widens them
-          for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), (1, 2, [A]), (3, 4, [B]), (5, 6, [Total]), (7, 7, [p]), (8, 8, [V]),) {
-            let spicy_need = measure(grid(columns: 1, inset: table.inset, spicy_label)).width
+          let spicy_spans = ((0, 0, 0, [Variable]), (1, 2, 0, [A]), (3, 4, 0, [B]), (5, 6, 0, [Total]), (7, 7, 0, [p]), (8, 8, 0, [V]),)
+          let spicy_span_width(spicy_from, spicy_to, spicy_row, spicy_label, spicy_least) = {
+            let spicy_span = spicy_to - spicy_from + 1
+            let spicy_t = table(columns: spicy_n, stroke: none, table.cell(x: spicy_from, y: spicy_row, colspan: spicy_span, spicy_label))
+            measure(if spicy_least { show " ": linebreak(); spicy_t } else { spicy_t }).width - spicy_blank + spicy_span * spicy_inset
+          }
+          for (spicy_from, spicy_to, spicy_row, spicy_label) in spicy_spans {
+            let spicy_span = spicy_to - spicy_from + 1
+            let spicy_need = spicy_span_width(spicy_from, spicy_to, spicy_row, spicy_label, false)
             let spicy_have = tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()
             if spicy_need > spicy_have {
               for k in range(spicy_from, spicy_to + 1) {
-                tinytable-naturals.at(k) += (spicy_need - spicy_have) / (spicy_to - spicy_from + 1)
+                tinytable-naturals.at(k) += (spicy_need - spicy_have) / spicy_span
               }
+            }
+          }
+          // spicy: a table wider than the space shrinks by the role of its columns
+          if tinytable-naturals.sum() > size.width {
+            let spicy_nat = tinytable-naturals
+            let spicy_floor = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) =>
+              calc.min(spicy_width(spicy_x, spicy_col, true), spicy_nat.at(spicy_x)))
+            for (spicy_from, spicy_to, spicy_row, spicy_label) in spicy_spans {
+              let spicy_span = spicy_to - spicy_from + 1
+              let spicy_need = spicy_span_width(spicy_from, spicy_to, spicy_row, spicy_label, true)
+              let spicy_have = spicy_floor.slice(spicy_from, spicy_to + 1).sum()
+              if spicy_need > spicy_have {
+                for k in range(spicy_from, spicy_to + 1) {
+                  spicy_floor.at(k) = calc.min(spicy_nat.at(k), spicy_floor.at(k) + (spicy_need - spicy_have) / spicy_span)
+                }
+              }
+            }
+            let spicy_two = range(spicy_n).map(spicy_k => (spicy_nat.at(spicy_k) + spicy_floor.at(spicy_k)) / 2)
+            let spicy_three = range(spicy_n).map(spicy_k => (spicy_nat.at(spicy_k) + 2 * spicy_floor.at(spicy_k)) / 3)
+            let spicy_sum(spicy_cols, spicy_w) = spicy_cols.map(spicy_k => spicy_w.at(spicy_k)).sum(default: 0pt)
+            let spicy_fit(spicy_cols, spicy_target, spicy_low, spicy_high) = {
+              if spicy_sum(spicy_cols, spicy_high) <= spicy_target {
+                return spicy_cols.map(spicy_k => spicy_high.at(spicy_k))
+              }
+              let spicy_at(spicy_t) = spicy_cols.map(spicy_k =>
+                calc.max(spicy_low.at(spicy_k), calc.min(spicy_high.at(spicy_k), spicy_t)))
+              let spicy_lo = 0pt
+              let spicy_hi = calc.max(..spicy_cols.map(spicy_k => spicy_high.at(spicy_k)))
+              for _ in range(30) {
+                let spicy_mid = (spicy_lo + spicy_hi) / 2
+                if spicy_at(spicy_mid).sum() > spicy_target { spicy_hi = spicy_mid } else { spicy_lo = spicy_mid }
+              }
+              spicy_at(spicy_lo)
+            }
+            let spicy_stub = if 1 > 0 and 1 < spicy_n { 1 } else { 0 }
+            let spicy_s = range(0, spicy_stub)
+            let spicy_d = range(spicy_stub, spicy_n)
+            let spicy_room = size.width
+            let spicy_three_s = spicy_sum(spicy_s, spicy_three)
+            let spicy_two_s = spicy_sum(spicy_s, spicy_two)
+            let spicy_floor_s = spicy_sum(spicy_s, spicy_floor)
+            let spicy_nat_d = spicy_sum(spicy_d, spicy_nat)
+            let spicy_two_d = spicy_sum(spicy_d, spicy_two)
+            let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
+            if spicy_room - spicy_nat_d >= spicy_three_s {
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
+            } else if spicy_room - spicy_two_d >= spicy_two_s {
+              let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
+              let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
+                spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
+              for spicy_i in spicy_order {
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
+              }
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+            } else if spicy_room - spicy_floor_d >= spicy_two_s {
+              tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_floor_s {
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
           }
           let tinytable-total = calc.min(tinytable-naturals.sum(), size.width)

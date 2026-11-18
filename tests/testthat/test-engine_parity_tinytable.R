@@ -674,12 +674,14 @@ test_that("the Typst note is escaped like the cells around it", {
   )
 })
 
-test_that("Typst sizes the columns with the inset the table is set with", {
-  # tinytable measured each column with Typst's default 5pt inset, the
-  # table took the document's: Quarto sets 6pt, so every column came out
-  # 2pt short and its widest cell wrapped ("Fe-male"). And Quarto
-  # justifies paragraphs, which hyphenates them: the table is set ragged
-  # right, so a cell wraps between words, never inside one.
+test_that("Typst sizes the columns in a table, as the table is set", {
+  # tinytable measures each column in a grid with Typst's default 5pt
+  # inset, outside the table: the document's inset (Quarto sets 6pt), its
+  # rules for tables and the styles of the cells are not applied, and the
+  # widest cell wraps ("Fe-male"). Each column is measured in a table at
+  # its place. And Quarto justifies paragraphs, which hyphenates them: the
+  # table is set ragged right, so a cell wraps between words, never
+  # inside one.
   skip_if_not_installed("tinytable")
   typ <- .pt_typst(table_continuous(
     .pt_data(),
@@ -689,7 +691,10 @@ test_that("Typst sizes the columns with the inset the table is set with", {
   ))
   expect_match(
     typ,
-    "measure(grid(columns: 1, inset: table.inset, ..col))",
+    paste0(
+      "let tinytable-naturals = tinytable-coldata.enumerate().map(",
+      "((spicy_x, spicy_col)) => spicy_width(spicy_x, spicy_col, false))"
+    ),
     fixed = TRUE
   )
   expect_no_match(typ, "inset: 5pt", fixed = TRUE)
@@ -715,9 +720,10 @@ test_that("Typst widens the columns under a group label wider than them", {
   expect_match(
     typ,
     paste0(
-      "for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), ",
-      "(1, 2, [Employeurs]), (3, 4, [Participants]), (5, 6, [Etudiants]), ",
-      "(7, 8, [Total]), (9, 9, [p]), (10, 10, [V]),) {"
+      "let spicy_spans = ((0, 0, 0, [Variable]), ",
+      "(1, 2, 0, [Employeurs]), (3, 4, 0, [Participants]), ",
+      "(5, 6, 0, [Etudiants]), (7, 8, 0, [Total]), (9, 9, 0, [p]), ",
+      "(10, 10, 0, [V]),)"
     ),
     fixed = TRUE
   )
@@ -956,22 +962,36 @@ test_that("Typst indents a level row by its cell, not by spaces", {
     fixed = TRUE
   )
   expect_match(typ, "text(size: 0.9em, [#emph[Note.]", fixed = TRUE)
-  # The natural widths are measured with the same indent.
-  expect_match(typ, "get-style(spicy_x, spicy_k + 1)", fixed = TRUE)
+  # The natural widths are measured with the same indent: each cell at
+  # its place, under the header row of groups, where the rule pads it;
+  # an empty cell of the measure is not padded.
+  expect_match(typ, "table.cell(x: spicy_x, y: spicy_k + 1, ", fixed = TRUE)
+  expect_match(
+    typ,
+    "if (\"indent\" in style and it.body != []) { tmp = pad(",
+    fixed = TRUE
+  )
   # The other outputs keep the spaces.
   for (out in list(.pt_latex(tt), .pt_html(tt), .pt_markdown(tt))) {
     expect_match(out, paste0(nbsp4, long), fixed = TRUE)
   }
-  # A table with no indented row is measured as before.
-  plain <- .pt_typst(table_continuous(
-    data.frame(y = c(1, 4, 2, 8, 5, 7), g = rep(c("A", "B"), 3L)),
-    y,
-    by = g,
+  # A table without a note keeps tinytable's rule: Typst sizes its
+  # `auto` columns itself.
+  bare <- .pt_typst(table_categorical(
+    d,
+    parents,
+    by = grp,
+    p_value = FALSE,
+    assoc_measure = "none",
+    note = FALSE,
     output = "tinytable"
   ))
-  expect_match(plain, "tinytable-coldata.map(", fixed = TRUE)
-  expect_no_match(plain, "spicy_style", fixed = TRUE)
-  expect_identical(spicy:::.spicy_tt_typst_indents("x", NULL), "x")
+  expect_match(
+    bare,
+    "if (\"indent\" in style) { tmp = pad(left: style.indent, tmp) }",
+    fixed = TRUE
+  )
+  expect_identical(spicy:::.spicy_tt_typst_indent_rule("x"), "x")
 })
 
 test_that("the Typst source of a table with a long level label", {

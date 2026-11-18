@@ -74,79 +74,75 @@
     .spicy_note_style()
   }
   tinytable::style_tt(x, finalize = function(tbl) {
+    # The size every body cell shares, which the note follows in every
+    # output (`.spicy_tt_note_scale()`).
+    scale <- .spicy_tt_note_scale(tbl@style, tbl@nrow, tbl@ncol)
     if (identical(tbl@output, "typst")) {
       s <- sub("\\s*column-gutter: 5pt,", "", tbl@table_string)
       groups <- tryCatch(tbl@group_data_j, error = function(e) NULL)
       spans <- .spicy_tt_colspan_cells(tbl@style)
-      s <- .spicy_tt_typst_layout(s, groups, spans)
-      tbl@table_string <- .spicy_tt_note_typst(s, notes, lead, minus)
+      s <- .spicy_tt_typst_layout(s, groups, spans, stub)
+      tbl@table_string <- .spicy_tt_note_typst(s, notes, lead, minus, scale)
     } else if (identical(tbl@output, "html")) {
       tbl@table_string <- .spicy_tt_note_tfoot(
         tbl@table_string,
         notes,
         lead,
-        minus
+        minus,
+        scale
       )
     } else if (identical(tbl@output, "latex")) {
       tbl@table_string <- .spicy_tt_note_latex(
         tbl@table_string,
         notes,
         lead,
-        minus
+        minus,
+        scale
       )
     }
     tbl
   })
 }
 
-# Typst: five repairs of the layout tinytable writes for a table with a
-# note, all behind words broken in the middle ("Fe-male", "(No item
-# cho-sen)"), run into each other ("EmployeursParticipants") or wrapped
-# in a column wide enough for them.
+# Typst: the layout tinytable writes for a table with a note. Without a
+# note, tinytable gives Typst `auto` columns, which Typst sizes itself,
+# and none of this applies. With one, tinytable measures each column in
+# a one-column grid, outside the table, and when their sum is wider than
+# the space it shrinks every column in the same proportion. The grid
+# meets none of the styles of the cells (`style_tt(fontsize = )`, bold,
+# indent) nor the document's rules for tables (`show table: set text()`,
+# `set table(inset: )`, a bold header row), so a column can come out
+# narrower than its widest cell, which wraps; and the proportional shrink
+# cuts short headers under their longest word and squeezes the columns of
+# numbers.
 #
-# * tinytable sizes such a table's columns from their natural widths,
-#   each measured as a one-column grid with `inset: 5pt`, Typst's default
-#   -- while the table takes the inset of the document's `#set table()`
-#   rule, and Quarto's Typst template sets 6pt. Every column came out 2pt
-#   narrower than its widest cell, which wrapped. The measure now uses
-#   the inset the table will have, `table.inset`, read in the `context`
-#   the measure already runs in.
-# * The same measure reads the cells of each column and its name, not
-#   the column-group labels above them (`group_tt(j = )`: a `by` level
-#   over its n and %, "95% CI" over LL and UL, "p" and "Cramer's V" in
-#   the top header row). A label wider than the columns under it ran
-#   into the next one, or wrapped. Each label is measured as well, and
-#   the columns it spans are widened, evenly, until it fits
-#   (`.spicy_tt_typst_spans()`). Without a note, tinytable gives Typst
-#   `auto` columns, which Typst widens for a spanning cell itself.
-# * The same measure reads an indented cell bare, while the table pads
-#   it by its indent: the widest indented label of a column wrapped on
-#   a page wide enough for it. Each such cell is measured padded
-#   (`.spicy_tt_typst_indents()`).
-# * The same measure reads a cell that spans columns (`spans`: the label
-#   of a group row, `.spicy_tt_span_label()`) as an entry of its first
-#   column, which it kept as wide as the label. It is left out of the
-#   measure: a section head never sizes the columns, and one longer than
-#   the columns it spans wraps inside them (`.spicy_tt_typst_colspans()`).
+# * Each column is measured alone, at its place, in a real table
+#   (`.spicy_tt_typst_measure()`): the widths are those Typst gives
+#   `auto` columns. A rule of tinytable's template pads an indented cell
+#   even when it is empty; the cell is padded only when it has content
+#   (`.spicy_tt_typst_indent_rule()`), so the empty cells of the measure
+#   weigh nothing.
+# * A cell that spans columns (the label of a group row) is left out of
+#   the measure (`.spicy_tt_typst_colspans()`), and each column-group
+#   label is measured over the columns it spans, which are widened until
+#   it fits (`.spicy_tt_typst_spans()`).
+# * A table wider than the space shrinks by the role of its columns, the
+#   labels first and by whole lines (`.spicy_tt_typst_shrink()`).
 # * Quarto's template justifies paragraphs, and Typst hyphenates
 #   justified text, table cells and notes included. No other engine
 #   justifies a cell. The table is set ragged right, which also stops the
-#   hyphenation: a column narrower than its words -- a table wider than
-#   the page, which tinytable shrinks to it -- wraps between words, never
-#   inside one, and the note reads flush left as in HTML and Word.
+#   hyphenation: a column narrower than its words wraps between words,
+#   never inside one, and the note reads flush left as in HTML and Word.
 #
 # Each is a substitution on a line of tinytable's template; on another
-# template it matches nothing and the table is left as it came.
-.spicy_tt_typst_layout <- function(s, groups = NULL, spans = NULL) {
-  s <- gsub(
-    "measure(grid(columns: 1, inset: 5pt, ..col))",
-    "measure(grid(columns: 1, inset: table.inset, ..col))",
-    s,
-    fixed = TRUE
-  )
-  s <- .spicy_tt_typst_indents(s, groups)
+# template it matches nothing and the table is left as it came. `stub`
+# is the number of label columns that open the table.
+.spicy_tt_typst_layout <- function(s, groups = NULL, spans = NULL, stub = 1L) {
+  s <- .spicy_tt_typst_indent_rule(s)
   s <- .spicy_tt_typst_colspans(s, spans)
+  s <- .spicy_tt_typst_measure(s, groups)
   s <- .spicy_tt_typst_spans(s, groups)
+  s <- .spicy_tt_typst_shrink(s, stub)
   sub(
     "// start block\n",
     "// start block\n  #set par(justify: false)\n",
@@ -155,21 +151,110 @@
   )
 }
 
+# The line of tinytable's template that measures the natural widths of
+# the columns, which `.spicy_tt_typst_measure()` replaces.
+.spicy_tt_typst_naturals <- paste0(
+  "    let tinytable-naturals = tinytable-coldata.map(col => ",
+  "measure(grid(columns: 1, inset: 5pt, ..col)).width)"
+)
+
+# The line that takes the total width from the natural widths, before
+# which the column-group labels and the shrink are inserted.
+.spicy_tt_typst_total <- paste0(
+  "    let tinytable-total = ",
+  "calc.min(tinytable-naturals.sum(), size.width)"
+)
+
+# tinytable's `show table.cell` rule pads a cell with an `indent` style
+# even when it is empty. The measure places each column in a table whose
+# other cells are empty: an indented row would pad its empty label cell
+# and widen every other column by the indent. Only a cell with content is
+# padded, and only where the measure applies.
+.spicy_tt_typst_indent_rule <- function(s) {
+  if (!grepl(.spicy_tt_typst_naturals, s, fixed = TRUE)) {
+    return(s)
+  }
+  sub(
+    "if (\"indent\" in style) { tmp = pad(left: style.indent, tmp) }",
+    paste0(
+      "if (\"indent\" in style and it.body != []) ",
+      "{ tmp = pad(left: style.indent, tmp) }"
+    ),
+    s,
+    fixed = TRUE
+  )
+}
+
+# The natural width of each column, measured in a real table with that
+# column at its place and every other cell empty, so that tinytable's
+# `show table.cell` rule (size, weight, indent of each cell) and the
+# document's rules for tables apply as they do in the table. The column
+# names sit under the `NROW(groups)` rows of column-group labels.
+# `spicy_blank` is the width of the empty table, `spicy_inset` that of
+# one empty column (its two insets): the measured width less the empty
+# columns is the column's own. `spicy_width(x, col, true)` sets every
+# space as a line break: the width of the longest word, which the shrink
+# reads.
+.spicy_tt_typst_measure <- function(s, groups = NULL) {
+  if (!grepl(.spicy_tt_typst_naturals, s, fixed = TRUE)) {
+    return(s)
+  }
+  code <- c(
+    "    // spicy: each column measured at its place in a table",
+    "    let spicy_n = tinytable-coldata.len()",
+    paste0(
+      "    let spicy_inset = measure(table(columns: 1, stroke: none, ",
+      "table.cell(x: 0, y: 0, []))).width"
+    ),
+    paste0(
+      "    let spicy_blank = measure(table(columns: spicy_n, stroke: none, ",
+      "..range(spicy_n).map(spicy_x => table.cell(x: spicy_x, y: 0, []))))",
+      ".width"
+    ),
+    "    let spicy_width(spicy_x, spicy_col, spicy_least) = {",
+    paste0(
+      "      let spicy_t = table(columns: spicy_n, stroke: none, ",
+      "..spicy_col.enumerate().map(((spicy_k, spicy_cell)) => ",
+      sprintf(
+        "table.cell(x: spicy_x, y: spicy_k + %d, spicy_cell)))",
+        NROW(groups)
+      )
+    ),
+    paste0(
+      "      measure(if spicy_least { show \" \": linebreak(); spicy_t } ",
+      "else { spicy_t }).width - spicy_blank + spicy_inset"
+    ),
+    "    }",
+    paste0(
+      "    let tinytable-naturals = tinytable-coldata.enumerate().map(",
+      "((spicy_x, spicy_col)) => spicy_width(spicy_x, spicy_col, false))"
+    )
+  )
+  sub(
+    .spicy_tt_typst_naturals,
+    paste(code, collapse = "\n"),
+    s,
+    fixed = TRUE
+  )
+}
+
 # The column-group labels of a tinytable (`groups`, its `group_data_j`:
-# one row per header row of groups, the label in the first column of
-# its span, blank in the columns the span continues over, NA where no
-# group sits) as Typst code that widens the measured natural widths
-# until every label fits over its span. The spans are read as tinytable
+# one row per header row of groups, the label in the first column of its
+# span, blank in the columns the span continues over, NA where no group
+# sits), each measured at its place in the header (its row, its first
+# column, its span) as the measure reads the columns, and the columns
+# under a label wider than they are widened, evenly, until it fits. Row
+# `r` of `groups` is header row `r - 1`. The spans are read as tinytable
 # reads them when it writes the header (`parse_group_spans()`); the
 # labels are already escaped for Typst when the finalizer runs, exactly
-# as the header prints them. The code goes right after the line that
-# measures the columns, before the total width is taken from them.
+# as the header prints them. Only after the measure, whose `spicy_blank`
+# it reads.
 .spicy_tt_typst_spans <- function(s, groups) {
-  anchor <- "let tinytable-naturals = tinytable-coldata.map("
   if (
     !is.data.frame(groups) ||
       nrow(groups) == 0L ||
-      !grepl(anchor, s, fixed = TRUE)
+      !grepl(.spicy_tt_typst_total, s, fixed = TRUE) ||
+      !grepl("let spicy_blank = ", s, fixed = TRUE)
   ) {
     return(s)
   }
@@ -193,7 +278,7 @@
       if (nzchar(trimws(label)) && !grepl("\n", label, fixed = TRUE)) {
         spans <- c(
           spans,
-          sprintf("(%d, %d, [%s])", start - 1L, pos - 2L, label)
+          sprintf("(%d, %d, %d, [%s])", start - 1L, pos - 2L, r - 1L, label)
         )
       }
     }
@@ -203,13 +288,27 @@
   }
   code <- c(
     "    // spicy: a column-group label wider than its columns widens them",
-    sprintf(
-      "    for (spicy_from, spicy_to, spicy_label) in (%s,) {",
-      paste(spans, collapse = ", ")
+    sprintf("    let spicy_spans = (%s,)", paste(spans, collapse = ", ")),
+    paste0(
+      "    let spicy_span_width(spicy_from, spicy_to, spicy_row, spicy_label, ",
+      "spicy_least) = {"
+    ),
+    "      let spicy_span = spicy_to - spicy_from + 1",
+    paste0(
+      "      let spicy_t = table(columns: spicy_n, stroke: none, ",
+      "table.cell(x: spicy_from, y: spicy_row, colspan: spicy_span, ",
+      "spicy_label))"
     ),
     paste0(
-      "      let spicy_need = measure(grid(columns: 1, inset: table.inset, ",
-      "spicy_label)).width"
+      "      measure(if spicy_least { show \" \": linebreak(); spicy_t } ",
+      "else { spicy_t }).width - spicy_blank + spicy_span * spicy_inset"
+    ),
+    "    }",
+    "    for (spicy_from, spicy_to, spicy_row, spicy_label) in spicy_spans {",
+    "      let spicy_span = spicy_to - spicy_from + 1",
+    paste0(
+      "      let spicy_need = spicy_span_width(spicy_from, spicy_to, ",
+      "spicy_row, spicy_label, false)"
     ),
     paste0(
       "      let spicy_have = ",
@@ -217,56 +316,169 @@
     ),
     "      if spicy_need > spicy_have {",
     "        for k in range(spicy_from, spicy_to + 1) {",
-    paste0(
-      "          tinytable-naturals.at(k) += ",
-      "(spicy_need - spicy_have) / (spicy_to - spicy_from + 1)"
-    ),
+    "          tinytable-naturals.at(k) += (spicy_need - spicy_have) / spicy_span",
     "        }",
     "      }",
-    "    }"
+    "    }",
+    ""
   )
-  lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
-  at <- grep(anchor, lines, fixed = TRUE)[[1L]]
-  paste(append(lines, code, after = at), collapse = "\n")
+  sub(
+    .spicy_tt_typst_total,
+    paste0(paste(code, collapse = "\n"), .spicy_tt_typst_total),
+    s,
+    fixed = TRUE
+  )
 }
 
-# The cells of `tinytable-coldata` padded as the table pads them, before
-# the natural widths are measured: tinytable's `show table.cell` rule
-# wraps a cell whose style has an `indent` in `pad(left:)`, a rule the
-# measure, a grid, never meets. Each cell is found by its position, the
-# style-dict key of the table: its column, and its row counted from the
-# column names, which the column-group rows (`groups`) precede in the
-# table and not in the measure. Only for a template with that rule and a
-# table with an indented cell; any other string comes back unchanged.
-.spicy_tt_typst_indents <- function(s, groups) {
-  anchor <- "    let tinytable-naturals = tinytable-coldata.map("
-  rule <- "if (\"indent\" in style) { tmp = pad(left: style.indent, tmp) }"
+# A table wider than the space shrinks by the role of its columns: the
+# `stub` label columns that open it, then the data columns. Each column
+# has a natural width `nat`, a floor (its longest word, never more than
+# `nat`; a column-group label raises the floors of its columns, up to
+# `nat`), `two` (half-way between, at which its longest text takes two
+# lines at most) and `three` (a third of the way up from the floor, three
+# lines at most). A column of numbers has floor = nat: it never gives.
+# The first step that fits applies:
+#   1. the data keep `nat`; the labels share the rest, between `three`
+#      and `nat`, so a label wraps before a header does;
+#   2. data columns drop to `two` one at a time, largest gain first,
+#      until the labels can have their `two`; the labels share the rest;
+#   3. the labels at `two`; the data share the rest, between floor and
+#      `two`;
+#   4. the data at their floors; the labels share the rest, between floor
+#      and `two`;
+#   5. nothing fits at the floors: tinytable's proportional shrink of the
+#      natural widths.
+# "Share" is Typst's shrink of `auto` columns held between two bounds:
+# each column takes min(high, t), never under low, for the largest t that
+# fits, found by bisection. With one block only (no stub, or every column
+# a label), every column is a data column. The floors are measured only
+# for a table wider than the space.
+.spicy_tt_typst_shrink <- function(s, stub = 1L) {
   if (
-    !grepl(anchor, s, fixed = TRUE) ||
-      !grepl(rule, s, fixed = TRUE) ||
-      !grepl("indent: [0-9.]+em", s)
+    !grepl(.spicy_tt_typst_total, s, fixed = TRUE) ||
+      !grepl("let spicy_width(", s, fixed = TRUE)
   ) {
     return(s)
   }
+  stub <- suppressWarnings(as.integer(stub))
+  if (length(stub) != 1L || is.na(stub) || stub < 0L) {
+    stub <- 1L
+  }
+  raise <- c(
+    "      for (spicy_from, spicy_to, spicy_row, spicy_label) in spicy_spans {",
+    "        let spicy_span = spicy_to - spicy_from + 1",
+    "        let spicy_need = spicy_span_width(spicy_from, spicy_to, spicy_row, spicy_label, true)",
+    "        let spicy_have = spicy_floor.slice(spicy_from, spicy_to + 1).sum()",
+    "        if spicy_need > spicy_have {",
+    "          for k in range(spicy_from, spicy_to + 1) {",
+    "            spicy_floor.at(k) = calc.min(spicy_nat.at(k), spicy_floor.at(k) + (spicy_need - spicy_have) / spicy_span)",
+    "          }",
+    "        }",
+    "      }"
+  )
   code <- c(
-    "    // spicy: an indented cell is measured with its indent",
-    paste0(
-      "    let tinytable-coldata = tinytable-coldata.enumerate().map(",
-      "((spicy_x, spicy_col)) => spicy_col.enumerate().map(",
-      "((spicy_k, spicy_cell)) => {"
-    ),
+    "    // spicy: a table wider than the space shrinks by the role of its columns",
+    "    if tinytable-naturals.sum() > size.width {",
+    "      let spicy_nat = tinytable-naturals",
+    "      let spicy_floor = tinytable-coldata.enumerate().map(((spicy_x, spicy_col)) =>",
+    "        calc.min(spicy_width(spicy_x, spicy_col, true), spicy_nat.at(spicy_x)))",
+    if (grepl("let spicy_spans = ", s, fixed = TRUE)) raise,
+    "      let spicy_two = range(spicy_n).map(spicy_k => (spicy_nat.at(spicy_k) + spicy_floor.at(spicy_k)) / 2)",
+    "      let spicy_three = range(spicy_n).map(spicy_k => (spicy_nat.at(spicy_k) + 2 * spicy_floor.at(spicy_k)) / 3)",
+    "      let spicy_sum(spicy_cols, spicy_w) = spicy_cols.map(spicy_k => spicy_w.at(spicy_k)).sum(default: 0pt)",
+    "      let spicy_fit(spicy_cols, spicy_target, spicy_low, spicy_high) = {",
+    "        if spicy_sum(spicy_cols, spicy_high) <= spicy_target {",
+    "          return spicy_cols.map(spicy_k => spicy_high.at(spicy_k))",
+    "        }",
+    "        let spicy_at(spicy_t) = spicy_cols.map(spicy_k =>",
+    "          calc.max(spicy_low.at(spicy_k), calc.min(spicy_high.at(spicy_k), spicy_t)))",
+    "        let spicy_lo = 0pt",
+    "        let spicy_hi = calc.max(..spicy_cols.map(spicy_k => spicy_high.at(spicy_k)))",
+    "        for _ in range(30) {",
+    "          let spicy_mid = (spicy_lo + spicy_hi) / 2",
+    "          if spicy_at(spicy_mid).sum() > spicy_target { spicy_hi = spicy_mid } else { spicy_lo = spicy_mid }",
+    "        }",
+    "        spicy_at(spicy_lo)",
+    "      }",
     sprintf(
-      "      let spicy_style = get-style(spicy_x, spicy_k + %d)",
-      NROW(groups)
+      "      let spicy_stub = if %d > 0 and %d < spicy_n { %d } else { 0 }",
+      stub,
+      stub,
+      stub
     ),
-    paste0(
-      "      if spicy_style != none and \"indent\" in spicy_style ",
-      "{ pad(left: spicy_style.indent, spicy_cell) } else { spicy_cell }"
-    ),
-    "    }))",
+    "      let spicy_s = range(0, spicy_stub)",
+    "      let spicy_d = range(spicy_stub, spicy_n)",
+    "      let spicy_room = size.width",
+    "      let spicy_three_s = spicy_sum(spicy_s, spicy_three)",
+    "      let spicy_two_s = spicy_sum(spicy_s, spicy_two)",
+    "      let spicy_floor_s = spicy_sum(spicy_s, spicy_floor)",
+    "      let spicy_nat_d = spicy_sum(spicy_d, spicy_nat)",
+    "      let spicy_two_d = spicy_sum(spicy_d, spicy_two)",
+    "      let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)",
+    "      if spicy_room - spicy_nat_d >= spicy_three_s {",
+    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))",
+    "      } else if spicy_room - spicy_two_d >= spicy_two_s {",
+    "        let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))",
+    "        let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>",
+    "          spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))",
+    "        for spicy_i in spicy_order {",
+    "          if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }",
+    "          spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))",
+    "        }",
+    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data",
+    "      } else if spicy_room - spicy_floor_d >= spicy_two_s {",
+    "        tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)",
+    "      } else if spicy_room - spicy_floor_d >= spicy_floor_s {",
+    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))",
+    "      }",
+    "    }",
     ""
   )
-  sub(anchor, paste0(paste(code, collapse = "\n"), anchor), s, fixed = TRUE)
+  sub(
+    .spicy_tt_typst_total,
+    paste0(paste(code, collapse = "\n"), .spicy_tt_typst_total),
+    s,
+    fixed = TRUE
+  )
+}
+
+# The size every body cell of a built tinytable shares, from its styles
+# (`style_tt(fontsize = )`, its `style` slot when it is finalized): the
+# last size set on each cell; 1 when the cells differ, some carry none, or
+# the styles cannot be read. Header rows (i < 1) and the notes are not
+# body cells. The note is set at 0.9 of it in every output.
+.spicy_tt_note_scale <- function(style, nrow, ncol) {
+  if (
+    !is.data.frame(style) ||
+      !all(c("i", "j", "fontsize") %in% names(style)) ||
+      length(nrow) != 1L ||
+      length(ncol) != 1L ||
+      is.na(nrow) ||
+      is.na(ncol) ||
+      nrow < 1L ||
+      ncol < 1L
+  ) {
+    return(1)
+  }
+  size <- suppressWarnings(as.numeric(style$fontsize))
+  i <- suppressWarnings(as.integer(style$i))
+  j <- suppressWarnings(as.integer(style$j))
+  cells <- matrix(NA_real_, nrow, ncol)
+  for (k in which(!is.na(size))) {
+    rows <- if (is.na(style$i[[k]])) seq_len(nrow) else i[[k]]
+    cols <- if (is.na(style$j[[k]])) seq_len(ncol) else j[[k]]
+    rows <- rows[!is.na(rows) & rows >= 1L & rows <= nrow]
+    cols <- cols[!is.na(cols) & cols >= 1L & cols <= ncol]
+    cells[rows, cols] <- size[[k]]
+  }
+  f <- unique(as.vector(cells))
+  if (length(f) == 1L && !is.na(f) && f > 0) f else 1
+}
+
+# The size of a note in em of its table: 0.9 of the size of the body
+# cells (`scale`, `.spicy_tt_note_scale()`), as a number for the markup.
+.spicy_note_em <- function(scale = 1) {
+  format(round(0.9 * scale, 4), scientific = FALSE)
 }
 
 # The cells of `tinytable-coldata` that span columns, out of the measure
@@ -276,11 +488,10 @@
 # wide as itself. A group label is a section head, which never sizes
 # the columns: longer than the columns it spans, it wraps inside them.
 # `cells` are those of the built table's styles
-# (`.spicy_tt_colspan_cells()`), each found by its position, as in
-# `.spicy_tt_typst_indents()`: its column, and its body row, the row
-# counted from the column names that open each column of the measure.
-# Emptied after the indents, it weighs nothing. The cells it covers stay
-# in the measure: blank in a spicy table, which spans no other row.
+# (`.spicy_tt_colspan_cells()`), each found by its position: its column,
+# and its body row, the row counted from the column names that open each
+# column of the measure. Emptied, it weighs nothing. The cells it covers
+# stay in the measure: blank in a spicy table, which spans no other row.
 .spicy_tt_typst_colspans <- function(s, cells) {
   anchor <- "    let tinytable-naturals = tinytable-coldata.map("
   if (
@@ -592,7 +803,10 @@
 # gray is a screen convention that fails on a dark background. Default:
 # 0.9em, black, on the tinytable engine's Typst and HTML output, and
 # LaTeX's `\small`, the size one step down (0.9 of a 10pt body, 0.91 of
-# an 11pt or 12pt one).
+# an 11pt or 12pt one). When every body cell carries the same size `f`
+# (`style_tt(fontsize = )`, `.spicy_tt_note_scale()`), the note follows
+# it, at 0.9 * f em in all three outputs, unless the note was styled
+# itself (`style_tt(i = "notes")`).
 #
 # `options(spicy.note_style)`:
 #   * unset / NULL -- the 0.9em default;
@@ -627,9 +841,13 @@
 }
 
 # CSS declaration for spicy's own HTML note container ("" when the
-# user asked for no intervention).
-.spicy_note_css <- function() {
-  if (isTRUE(.spicy_note_style()$resize)) "font-size: 0.9em; " else ""
+# user asked for no intervention), at 0.9 of the body size `scale`.
+.spicy_note_css <- function(scale = 1) {
+  if (isTRUE(.spicy_note_style()$resize)) {
+    paste0("font-size: ", .spicy_note_em(scale), "em; ")
+  } else {
+    ""
+  }
 }
 
 # Minimal HTML text-content escape: the three characters that change
@@ -870,17 +1088,22 @@
 # The same substitution sets the lead-in `lead` in italics (APA Manual 7
 # Section 7.14) through `.note_markup()`, as every engine does. A note
 # that does not open with the lead-in is escaped and left unmarked.
+#
+# The cell is set at 0.9 of the body size `scale`
+# (`.spicy_tt_note_scale()`), and at 0.9em when the note was styled
+# itself (`style_tt(i = "notes")`, which tinytable writes as a
+# `<span style=>` around the text).
 .spicy_tt_note_tfoot <- function(
   s,
   notes = NULL,
   lead = .note_lead(),
-  minus = identity
+  minus = identity,
+  scale = 1
 ) {
   m <- regexpr("<tfoot>[\\s\\S]*?</tfoot>", s, perl = TRUE)
   if (m < 0L) {
     return(s)
   }
-  css <- .spicy_note_css()
   block <- regmatches(s, m)
   for (note in .spicy_note_texts(notes)) {
     if (nzchar(note)) {
@@ -907,6 +1130,7 @@
     open_tag <- substring(pieces[k], open_start, open_end)
     text <- substring(pieces[k], open_end + 1L)
     text <- .spicy_note_lines(text)
+    css <- .spicy_note_css(if (startsWith(text, "<span style=")) 1 else scale)
     if (nzchar(css) && !grepl("style=", open_tag, fixed = TRUE)) {
       open_tag <- sub(
         ">$",
@@ -942,13 +1166,15 @@
 # with (`notes`), as the HTML branch does. The embedded newlines (Typst
 # collapses them exactly as HTML does) become forced line breaks with
 # their indentation kept as no-break spaces. And the whole note is
-# wrapped at 0.9em, unless it was already styled through
+# wrapped at 0.9 of the body size `scale` (`.spicy_tt_note_scale()`), in
+# em of the table, unless it was already styled through
 # `tinytable::style_tt(i = "notes")` -- an explicit user style wins.
 .spicy_tt_note_typst <- function(
   s,
   notes = NULL,
   lead = .note_lead(),
-  minus = identity
+  minus = identity,
+  scale = 1
 ) {
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   cell_open <- "^\\s*table\\.cell\\(align: left, colspan: [0-9]+, "
@@ -990,20 +1216,21 @@
         lines[k] <- paste0(lines[k], " \\")
       }
       for (k in seq.int(i0 + 1L, i1)) {
-        lead <- regmatches(lines[k], regexpr("^[ \t]+", lines[k]))
-        if (length(lead) == 1L && nzchar(lead)) {
+        indent <- regmatches(lines[k], regexpr("^[ \t]+", lines[k]))
+        if (length(indent) == 1L && nzchar(indent)) {
           lines[k] <- paste0(
-            strrep("~", nchar(lead)),
-            substring(lines[k], nchar(lead) + 1L)
+            strrep("~", nchar(indent)),
+            substring(lines[k], nchar(indent) + 1L)
           )
         }
       }
     }
     if (isTRUE(st$resize) && grepl("text\\(\\[", lines[i0])) {
+      size <- paste0("size: ", .spicy_note_em(scale), "em")
       args <- if (is.null(st$typst_extra)) {
-        "size: 0.9em"
+        size
       } else {
-        paste0("size: 0.9em, ", st$typst_extra)
+        paste0(size, ", ", st$typst_extra)
       }
       lines[i0] <- sub(
         "text\\(\\[",
@@ -1026,16 +1253,30 @@
 # note is substituted there escaped for LaTeX, its lead-in `lead` in
 # `\emph{}` (APA Manual 7 Section 7.14, as in HTML and Typst), one
 # disclosure per line and one size down (`\small`) as in those two
-# outputs. Then the characters spicy writes that LaTeX cannot set with
-# every engine and font are mapped, for the whole table
-# (`.spicy_latex_unicode()`).
+# outputs; when every body cell has the size `scale`
+# (`.spicy_tt_note_scale()`), 0.9 of it, written as tinytable writes the
+# size of a cell. A note styled itself (`style_tt(i = "notes")`) comes
+# wrapped in a group of its own, which the key below does not match. Then
+# the characters spicy writes that LaTeX cannot set with every engine and
+# font are mapped, for the whole table (`.spicy_latex_unicode()`).
 .spicy_tt_note_latex <- function(
   s,
   notes = NULL,
   lead = .note_lead(),
-  minus = identity
+  minus = identity,
+  scale = 1
 ) {
-  size <- if (isTRUE(.spicy_note_style()$resize)) "\\small " else ""
+  size <- if (!isTRUE(.spicy_note_style()$resize)) {
+    ""
+  } else if (scale == 1) {
+    "\\small "
+  } else {
+    sprintf(
+      "\\fontsize{%sem}{%sem}\\selectfont ",
+      .spicy_note_em(scale),
+      format(round(0.9 * scale + 0.3, 4), scientific = FALSE)
+    )
+  }
   for (note in .spicy_note_texts(notes)) {
     key <- paste0("note{}={", note, "}")
     if (!nzchar(note) || !grepl(key, s, fixed = TRUE)) {
