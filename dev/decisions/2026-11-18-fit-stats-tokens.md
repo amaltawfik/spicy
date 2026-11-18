@@ -44,6 +44,8 @@ La déviance nulle de mgcv traite donc l'offset et les poids comme le réajustem
 
 **Reproduction des défauts** sur fe1bd2ba : `table_regression(list(lm, gam), show_fit_stats = c("nobs", "r2", "adj_r2"))` donnait 0,46207 dans les deux lignes du GAM. Les jetons muets de la décision 4 passaient sans erreur ni ligne. La phrase sans erreur standard ignorait `spicy.labels`.
 
+**Balayage des jetons muets** après le lot : un ajustement léger pour chacune de 44 classes, les 47 jetons autres que `nobs`, soit 2 068 appels `table_regression(fit, show_fit_stats = c("nobs", jeton))`. Hors jetons de variation : 855 paires refusées, 269 rendues, 504 muettes, aucune autre erreur. Jetons de variation demandés sans `nested = TRUE` : 146 paires refusées, 294 muettes. Aucun des trois jetons du lot ni de ses nouveaux refus n'est muet. Les paires muettes sont pour la plupart un jeton hors de sa classe dans un tableau d'un seul modèle (`icc` hors modèles mixtes, `n_events` hors Cox, `rmse` hors lm et glm, `r2` pour un `polr`), que les contrôles par famille ne couvrent qu'en partie.
+
 ## Alternatives écartées
 
 - Un jeton `dev_explained` : deux noms pour le nombre du R² de déviance.
@@ -60,7 +62,7 @@ La déviance nulle de mgcv traite donc l'offset et les poids comme le réajustem
 - L'AIC, le BIC et la log-vraisemblance d'un binomial à poids non entiers passent par l'arrondi des poids de `logLik()`. Hors lot.
 - Pas de McFadden pour un GAM binomial. Sur réponse 0/1, `dev.expl` en serait exactement la valeur. Hors lot.
 - `glance()` n'a pas de colonne `logLik`. Hors lot.
-- Les jetons muets corrigés sont ceux que le lot a croisés. D'autres classes peuvent en avoir. Une règle générale reste à décider.
+- Les jetons muets corrigés sont ceux que le lot a croisés. Le balayage en compte 504 autres, et 294 pour les jetons de variation sans `nested = TRUE`. Une règle générale (refus de tout jeton demandé qu'aucun modèle du tableau ne peut afficher) changerait le contrat de `show_fit_stats` : c'est une décision à part, pour Amal.
 
 ## Conséquences
 
