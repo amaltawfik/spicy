@@ -48,7 +48,7 @@ test_that("the header rules are in the style sheet, within the table's id", {
     )
     expect_match(
       page,
-      paste0(s, ".gt_column_spanner { border-bottom-width: 0 !important;"),
+      paste0(s, ".gt_column_spanner { border-bottom-width: 0px !important;"),
       fixed = TRUE
     )
     expect_match(page, paste0(s, ".gt_spanner_row {"), fixed = TRUE)
@@ -85,13 +85,13 @@ test_that("the header rules survive inlined CSS", {
       inline,
       gregexpr("<td[^>]*class=\"gt_row[^>]*>", inline)
     )[[1L]]
-    expect_true(all(grepl("border-top-width: 0;", rows, fixed = TRUE)))
+    expect_true(all(grepl("border-top-width: 0px;", rows, fixed = TRUE)))
     spans <- regmatches(
       inline,
       gregexpr("<div class=\"gt_column_spanner\"[^>]*>", inline)
     )[[1L]]
     expect_true(all(grepl(
-      "border-bottom-width: 0; border-bottom-color: transparent;",
+      "border-bottom-width: 0px; border-bottom-color: transparent;",
       spans,
       fixed = TRUE
     )))

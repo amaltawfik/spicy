@@ -123,7 +123,9 @@
 # the right of the last cell of the row), so the margins of the `<div>`
 # give the 0.5em inset; in the last cell, a left padding keeps the label
 # where gt sets it, 2px right of the centre. One pixel of the bottom
-# padding makes room for the rule.
+# padding makes room for the rule. The widths of zero carry a unit: Quarto
+# writes them into the Typst of the table, where a bare 0 is no length
+# and stopped the compilation.
 .spicy_gt_header_css <- function(id) {
   s <- paste0("#", id, " ")
   model <- paste0(s, "th[id^=\"model_span_\"]")
@@ -132,13 +134,13 @@
     ".gt_col_headings.gt_spanner_row, ",
     s,
     ".gt_spanner_row { border-bottom-style: none !important; ",
-    "border-bottom-width: 0 !important; }\n",
+    "border-bottom-width: 0px !important; }\n",
     s,
     ".gt_col_heading { border-bottom: 1px solid #333333 !important; }\n",
     s,
-    ".gt_table tbody .gt_row { border-top-width: 0 !important; }\n",
+    ".gt_table tbody .gt_row { border-top-width: 0px !important; }\n",
     s,
-    ".gt_column_spanner { border-bottom-width: 0 !important; ",
+    ".gt_column_spanner { border-bottom-width: 0px !important; ",
     "border-bottom-color: transparent !important; }\n",
     model,
     " > .gt_column_spanner { display: block !important; ",
