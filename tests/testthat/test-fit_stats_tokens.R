@@ -187,6 +187,8 @@ test_that("log_lik is refused when no model in the table has a likelihood", {
     class = "spicy_invalid_input"
   )
   expect_match(conditionMessage(err), "needs a likelihood", fixed = TRUE)
+  # The error names the user's call, not the internal helper.
+  expect_identical(conditionCall(err)[[1L]], quote(table_regression))
   skip_if_not_installed("survey")
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
   sg <- survey::svyglm(yn ~ x, design = des)
@@ -559,6 +561,136 @@ test_that("deviance and BIC are refused for a table of design fits", {
   )
   expect_equal(fs_cell(tbl, "bic", "GLM: B"), stats::BIC(g))
   expect_true(is.na(fs_cell(tbl, "bic", "SVY: B")))
+})
+
+
+test_that("a table of GAMs shows mgcv's adjusted R2 and refuses its R2", {
+  skip_if_not_installed("mgcv")
+  d <- tok_data()
+  a <- mgcv::gam(yn ~ x + s(z), data = d)
+  tbl <- table_regression(
+    a,
+    show_fit_stats = c("nobs", "adj_r2"),
+    output = "data.frame"
+  )
+  expect_equal(fs_cell(tbl, "adj_r2"), summary(a)$r.sq, tolerance = 1e-12)
+  # The default is unchanged.
+  expect_identical(
+    fs_rows(table_regression(a, output = "data.frame"))$variable,
+    c("nobs", "aic")
+  )
+  err <- expect_error(
+    table_regression(a, show_fit_stats = c("nobs", "r2")),
+    class = "spicy_invalid_input"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "not defined for `mgcv` GAMs", fixed = TRUE)
+  expect_match(msg, "\"adj_r2\"", fixed = TRUE)
+  expect_match(msg, "\"r2_deviance\"", fixed = TRUE)
+})
+
+test_that("no refusal for a table of GAMs points at a token it refuses", {
+  skip_if_not_installed("mgcv")
+  d <- tok_data()
+  gn <- mgcv::gam(yn ~ x + s(z), data = d)
+  gb <- mgcv::gam(yb ~ x + s(z), family = binomial, data = d)
+  refused_for_gam <- c(
+    "pseudo_r2_mcfadden",
+    "pseudo_r2_nagelkerke",
+    "pseudo_r2_tjur",
+    "partial_chi2",
+    "partial_f",
+    "lrt_change"
+  )
+  check <- function(expr, binomial = FALSE) {
+    err <- expect_error(expr, class = "spicy_invalid_input")
+    msg <- conditionMessage(err)
+    expect_no_match(msg, "`glm`", fixed = TRUE)
+    # The hints, below the headline that names the requested token.
+    msg <- sub("^[^\n]*\n", "", msg)
+    expect_true(nzchar(msg))
+    for (tk in refused_for_gam) {
+      expect_no_match(msg, sprintf("\"%s\"", tk), fixed = TRUE)
+    }
+    if (binomial) {
+      expect_no_match(msg, "r2_deviance", fixed = TRUE)
+    }
+  }
+  for (fit in list(gn, gb)) {
+    bin <- identical(fit, gb)
+    for (tk in c(
+      "r2",
+      "omega2",
+      "f2",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_tjur"
+    )) {
+      check(table_regression(fit, show_fit_stats = c("nobs", tk)), bin)
+    }
+    for (tk in c("r2", "adj_r2", "partial_eta2", "partial_f2")) {
+      check(table_regression(fit, show_columns = c("b", tk)), bin)
+    }
+  }
+  g0 <- mgcv::gam(yn ~ x, data = d)
+  for (tk in c("r2_change", "adj_r2_change", "f2_change")) {
+    check(table_regression(
+      list(g0, gn),
+      nested = TRUE,
+      show_fit_stats = c("nobs", tk)
+    ))
+  }
+})
+
+test_that("the information criteria of design fits without one are refused", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  d <- tok_data()
+  d$yo <- cut(d$yn, 3, labels = c("a", "b", "c"), ordered_result = TRUE)
+  des <- survey::svydesign(id = ~1, weights = ~w, data = d)
+  sg <- survey::svyglm(yn ~ x, design = des)
+  sc <- survey::svycoxph(survival::Surv(time, status) ~ x, design = des)
+  so <- survey::svyolr(yo ~ x, design = des)
+  # svyglm keeps its design-based AIC, and has no AICc.
+  tbl <- table_regression(
+    sg,
+    show_fit_stats = c("nobs", "aic"),
+    output = "data.frame"
+  )
+  expect_true(is.finite(fs_cell(tbl, "aic")))
+  expect_error(
+    table_regression(sg, show_fit_stats = c("nobs", "aicc")),
+    class = "spicy_invalid_input"
+  )
+  for (fit in list(sc, so, list(sc, so))) {
+    err <- expect_error(
+      table_regression(fit, show_fit_stats = c("nobs", "aic")),
+      class = "spicy_invalid_input"
+    )
+    # No pointer to an AIC these models do not have.
+    expect_no_match(conditionMessage(err), "extractAIC", fixed = TRUE)
+  }
+  # Beside a svyglm, the svycoxph cell is dashed.
+  tbl <- table_regression(
+    list(SVY = sg, COX = sc),
+    show_fit_stats = c("nobs", "aic"),
+    output = "data.frame"
+  )
+  expect_true(is.na(fs_cell(tbl, "aic", "COX: B")))
+})
+
+test_that("the Cox hint names the concordance row", {
+  skip_if_not_installed("survival")
+  d <- tok_data()
+  cx <- survival::coxph(survival::Surv(time, status) ~ x, d)
+  err <- expect_error(
+    table_regression(cx, show_columns = c("b", "r2")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "the concordance, a row with `show_fit_stats = \"concordance\"`",
+    fixed = TRUE
+  )
 })
 
 

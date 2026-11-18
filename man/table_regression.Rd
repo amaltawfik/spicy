@@ -1429,8 +1429,9 @@ other extended families, have none.
 
 A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
 they are refused for a table of GAMs. mgcv reports only an adjusted
-\eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM beside an \code{lm()}, and
-the \code{"r2"} row is dashed.
+\eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM, in a table of GAMs
+or beside an \code{lm()}. The \code{"r2"} row of a GAM is dashed beside other
+models, and refused for a table of GAMs.
 
 The intercept-only model keeps the offset and the weights of the
 fitted model. For a \code{MASS::glm.nb()} fit it re-estimates theta in

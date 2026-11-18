@@ -404,6 +404,27 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   .glm_r2_kind(m) %in% c("quasibinomial", "count", "continuous", "quasi")
 }
 
+# The R^2 rows a table of mgcv GAMs does show, for its refusal messages:
+# the adjusted R^2 mgcv prints for every GAM, and the deviance explained
+# when a GAM of the table carries it (never offered to a table of
+# binomial GAMs, which would refuse it).
+.gam_r2_hint <- function(models) {
+  dev <- any(vapply(models, .glm_carries_r2_deviance, logical(1)))
+  c(
+    "i" = paste0(
+      "A GAM shows mgcv's adjusted R², `\"adj_r2\"`",
+      if (dev) {
+        paste0(
+          ", and the deviance explained of its `summary()`, ",
+          "`\"r2_deviance\"`."
+        )
+      } else {
+        "."
+      }
+    )
+  )
+}
+
 # TRUE when a binomial glm was fitted to one 0/1 (or factor, or logical)
 # outcome per row, FALSE for a grouped response: a cbind(successes,
 # failures) matrix or a proportion.

@@ -323,19 +323,14 @@ test_that("a third package re-registering logLik cannot move the frame", {
 
 test_that("an explicit fit-stat token cannot republish an absent number", {
   for (fit in list(.scox_fit(), .scox_rep_fit())) {
-    out <- paste(
-      utils::capture.output(print(table_regression(
-        fit,
-        show_fit_stats = c("nobs", "aic")
-      ))),
-      collapse = "\n"
-    )
-    expect_false(grepl("AIC", out, fixed = TRUE), info = class(fit)[1L])
-    # The deviance and the BIC of a design fit are refused outright.
-    expect_error(
-      table_regression(fit, show_fit_stats = c("nobs", "deviance", "bic")),
-      class = "spicy_invalid_input"
-    )
+    # Refused outright rather than left out of the table.
+    for (tk in c("deviance", "aic", "aicc", "bic")) {
+      expect_error(
+        table_regression(fit, show_fit_stats = c("nobs", tk)),
+        class = "spicy_invalid_input",
+        info = tk
+      )
+    }
   }
 })
 

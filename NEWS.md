@@ -209,7 +209,8 @@
   models do not compute, where the row used to be left out without a
   word: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"` and
   `"pseudo_r2_tjur"` for a table of `mgcv::gam()` or `bam()` models,
-  and `"deviance"` and `"bic"` for a table of survey-design fits. Beside
+  and `"deviance"`, `"bic"` and `"aicc"` for a table of survey-design
+  fits, with `"aic"` too when none of them is a `svyglm()`. Beside
   other models, the cell of such a model shows a dash.
 
 ## New features
@@ -227,6 +228,7 @@
   `mgcv::gam()` and `bam()` models of the gaussian, Gamma, inverse
   Gaussian, Tweedie, Poisson, negative binomial and quasi families,
   where it is the deviance explained that `summary()` reports.
+  `"adj_r2"`, mgcv's adjusted R², is accepted for a table of GAMs.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_multiresponse()`, `table_battery()` and

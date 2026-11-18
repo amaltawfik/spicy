@@ -229,17 +229,14 @@ test_that("no likelihood statistic is invented for a design-weighted fit", {
 
 test_that("an explicit token cannot republish an absent statistic", {
   fit <- .olr_fit()
-  out <- paste(
-    utils::capture.output(print(table_regression(
-      fit,
-      show_fit_stats = c("nobs", "deviance", "aic", "bic")
-    ))),
-    collapse = "\n"
-  )
-  expect_match(out, "n ", fixed = TRUE)
-  expect_false(grepl("Deviance", out, fixed = TRUE))
-  expect_false(grepl("AIC", out, fixed = TRUE))
-  expect_false(grepl("BIC", out, fixed = TRUE))
+  # Refused outright rather than left out of the table.
+  for (tk in c("deviance", "aic", "aicc", "bic")) {
+    expect_error(
+      table_regression(fit, show_fit_stats = c("nobs", tk)),
+      class = "spicy_invalid_input",
+      info = tk
+    )
+  }
 })
 
 

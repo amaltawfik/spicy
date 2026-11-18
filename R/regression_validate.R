@@ -1903,6 +1903,10 @@ validate_class_appropriate_tokens <- function(
     logical(1)
   )
   all_glm <- length(eff_models) > 0L && all(glm_flags)
+  # mgcv's gam inherits glm but has its own frame: a table of GAMs is
+  # answered in its own words, never pointed at a glm-only token.
+  all_gam <- length(eff_models) > 0L &&
+    all(vapply(eff_models, inherits, logical(1), "gam"))
   # The term-level test facts, once per fit and only when a partial token
   # is requested (summary() per glm).
   facts <- if (any(.PARTIAL_ES_TOKENS %in% show_columns)) {
@@ -1941,6 +1945,22 @@ validate_class_appropriate_tokens <- function(
   # populates lm rows, which is the right behavior.
   if (all_glm) {
     bad <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
+    if (length(bad) > 0L && all_gam) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for `mgcv` GAMs.",
+            paste(.quote_val(bad), collapse = ", ")
+          ),
+          "i" = paste0(
+            "spicy computes no term-level effect size or test for a GAM: ",
+            "`summary()` of the GAM gives the tests of its terms."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
     if (length(bad) > 0L) {
       # The analog of each model: the term-level test it carries.
       analog_tok <- ifelse(
@@ -2007,7 +2027,8 @@ validate_class_appropriate_tokens <- function(
       show_fit_stats,
       c(
         "r2",
-        "adj_r2",
+        # mgcv's adjusted R^2 (r.sq), which summary() prints for every GAM.
+        if (!all_gam) "adj_r2",
         "omega2",
         "f2",
         # Nested change variants of the above
@@ -2017,6 +2038,19 @@ validate_class_appropriate_tokens <- function(
         "f2_change"
       )
     )
+    if (length(bad_fit) > 0L && all_gam) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for `mgcv` GAMs.",
+            paste(.quote_val(bad_fit), collapse = ", ")
+          ),
+          .gam_r2_hint(eff_models)
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -2252,6 +2286,24 @@ validate_class_appropriate_tokens <- function(
       function(f) inherits(f, "lm") && !inherits(f, "glm"),
       logical(1)
     ))
+    if (!any_ols && all_gam) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_columns` are not defined for `mgcv` GAMs.",
+            paste(.quote_val(r2_cols), collapse = ", ")
+          ),
+          "i" = paste0(
+            "The column reports the R² of each fit of a univariable ",
+            "screen of least-squares models. For a GAM, ask for a ",
+            "fit-statistics row in `show_fit_stats`."
+          ),
+          .gam_r2_hint(eff_fits)
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
     if (!any_ols) {
       eff_classes <- unique(vapply(eff_fits, function(f) class(f)[1L], ""))
       any_glm_eff <- any(vapply(eff_fits, inherits, logical(1), "glm"))
@@ -2277,9 +2329,9 @@ validate_class_appropriate_tokens <- function(
             )
           } else {
             paste0(
-              "Report the model's own summary instead (for `coxph`, ",
-              "the concordance, `show_fit_stats = \"concordance\"`, and ",
-              "the likelihood-ratio test)."
+              "Report the model's own summary instead (for `coxph`, the ",
+              "likelihood-ratio test, and the concordance, a row with ",
+              "`show_fit_stats = \"concordance\"`)."
             )
           }
         ),
@@ -2830,8 +2882,6 @@ validate_class_appropriate_tokens <- function(
   # the likelihood-ratio pseudo-R^2: the rows used to pass the glm gates
   # and render nothing. Refused when every model is a GAM; beside other
   # models the GAM cell is dashed.
-  all_gam <- length(eff_models) > 0L &&
-    all(vapply(eff_models, inherits, logical(1), "gam"))
   if (all_gam) {
     bad_fit <- intersect(
       show_fit_stats,
@@ -2844,11 +2894,7 @@ validate_class_appropriate_tokens <- function(
             "Token(s) %s in `show_fit_stats` are not computed for `mgcv` GAMs.",
             paste(.quote_val(bad_fit), collapse = ", ")
           ),
-          "i" = paste0(
-            "For a gaussian, Gamma, inverse Gaussian, Tweedie, Poisson, ",
-            "negative binomial or quasi family, `\"r2_deviance\"` gives ",
-            "the deviance explained that `summary()` of the GAM reports."
-          )
+          .gam_r2_hint(eff_models)
         ),
         class = "spicy_invalid_input",
         call = call
@@ -2856,15 +2902,22 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
-  # A design-based fit has no likelihood: its frame posts the deviance and
-  # the BIC as NA (survey's own deviance() is a sign-flipped LRT on one
-  # engine and 0 on the other), so the rows used to render nothing.
-  # Refused when every model is a design fit.
+  # A design-based fit has no likelihood: its frame posts the deviance,
+  # the BIC and the AICc as NA (survey's own deviance() is a sign-flipped
+  # LRT on one engine and 0 on the other), and the AIC too outside
+  # svyglm, so the rows used to render nothing. Refused when every model
+  # is a design fit.
   if (
     length(eff_models) > 0L &&
       all(vapply(eff_models, .is_design_fit, logical(1)))
   ) {
-    bad_fit <- intersect(show_fit_stats, c("deviance", "bic"))
+    # The AIC is the design-based one of survey's extractAIC(), which only
+    # svyglm has; none of the design classes carries an AICc.
+    any_svyglm <- any(vapply(eff_models, inherits, logical(1), "svyglm"))
+    bad_fit <- intersect(
+      show_fit_stats,
+      c("deviance", "bic", "aicc", if (!any_svyglm) "aic")
+    )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
@@ -2873,9 +2926,13 @@ validate_class_appropriate_tokens <- function(
             paste(.quote_val(bad_fit), collapse = ", ")
           ),
           "i" = paste0(
-            "A design-based fit is estimated without a likelihood. For ",
-            "`svyglm()`, `\"aic\"` gives the design-based AIC of survey's ",
-            "`extractAIC()`."
+            "A design-based fit is estimated without a likelihood.",
+            if (any_svyglm) {
+              paste0(
+                " For `svyglm()`, `\"aic\"` gives the design-based AIC of ",
+                "survey's `extractAIC()`."
+              )
+            }
           )
         ),
         class = "spicy_invalid_input",

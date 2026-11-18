@@ -400,8 +400,9 @@
 #'
 #' A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
 #' they are refused for a table of GAMs. mgcv reports only an adjusted
-#' \eqn{R^2}{R^2}: it is the `"adj_r2"` row of a GAM beside an `lm()`, and
-#' the `"r2"` row is dashed.
+#' \eqn{R^2}{R^2}: it is the `"adj_r2"` row of a GAM, in a table of GAMs
+#' or beside an `lm()`. The `"r2"` row of a GAM is dashed beside other
+#' models, and refused for a table of GAMs.
 #'
 #' The intercept-only model keeps the offset and the weights of the
 #' fitted model. For a `MASS::glm.nb()` fit it re-estimates theta in
@@ -4996,7 +4997,11 @@ table_regression <- function(
   "qicu"
 )
 
-.reg_check_log_lik_rows <- function(frames, show_fit_stats) {
+.reg_check_log_lik_rows <- function(
+  frames,
+  show_fit_stats,
+  call = rlang::caller_env()
+) {
   if (!"log_lik" %in% show_fit_stats) {
     return(invisible(NULL))
   }
@@ -5017,7 +5022,8 @@ table_regression <- function(
           "and posterior fits are estimated without a maximized likelihood."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)

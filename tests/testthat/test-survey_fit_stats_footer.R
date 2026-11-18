@@ -152,13 +152,15 @@ test_that("a design fit alone never carries a statistic it cannot compute", {
   expect_true(is.na(fr$info$fit_stats$sigma))
   expect_true(is.finite(stats::deviance(fit)))
   expect_gt(stats::deviance(fit), 1e5)
-  # And an explicit token cannot bring them back.
-  out <- .fsf_render(
-    fit,
-    show_columns = c("b"),
-    show_fit_stats = c("nobs", "deviance", "sigma")
+  # And an explicit token cannot bring them back: the deviance is refused.
+  expect_error(
+    .fsf_render(
+      fit,
+      show_columns = c("b"),
+      show_fit_stats = c("nobs", "deviance", "sigma")
+    ),
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl("Deviance", out, fixed = TRUE))
 })
 
 

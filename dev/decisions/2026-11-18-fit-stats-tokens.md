@@ -16,7 +16,7 @@ Le critère est celui de l'ADR `2026-11-14-pseudo-r2-defaults.md`. Un nombre ne 
 4. **Défauts vus en passant**, corrigés dans le lot après un test qui échouait avant :
    - le R² d'un GAM à côté d'un `lm()` affichait `r.sq` de mgcv, qui est ajusté, le nombre de la ligne R² ajusté. Le cadre pose `r_squared = NA` et garde `adj_r_squared = r.sq` ;
    - la phrase de concordance sans erreur standard était écrite en dur. Elle passe par la clé `note_survival_concordance`, avec sa chaîne française ;
-   - `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke` et `pseudo_r2_tjur` sur un tableau tout GAM, `deviance` et `bic` sur un tableau tout plan d'enquête passaient la validation et ne rendaient rien. Ils sont refusés. À côté d'autres modèles, la cellule porte le tiret.
+   - `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke` et `pseudo_r2_tjur` sur un tableau tout GAM, `deviance`, `bic` et `aicc` sur un tableau tout plan d'enquête (`aic` aussi quand aucun modèle n'est un `svyglm`) passaient la validation et ne rendaient rien. Ils sont refusés. À côté d'autres modèles, la cellule porte le tiret.
 
 Les défauts du GAM et du Cox ne changent pas.
 
@@ -55,7 +55,7 @@ La déviance nulle de mgcv traite donc l'offset et les poids comme le réajustem
 ## Limites
 
 - L'AIC, le BIC et la log-vraisemblance d'un binomial à poids non entiers passent par l'arrondi des poids de `logLik()`. Hors lot.
-- Un GAM n'a toujours aucune ligne R² ajusté seul : `adj_r2` est refusé pour un tableau tout GAM par la règle des glm, dont le GAM hérite.
+- `adj_r2` est accepté pour un tableau tout GAM (le `r.sq` que `summary()` de mgcv imprime pour tout GAM), `r2` y est refusé avec un message propre aux GAM. Le défaut des GAM ne change pas.
 - Pas de McFadden pour un GAM binomial. Sur réponse 0/1, `dev.expl` en serait exactement la valeur. Hors lot.
 - `glance()` n'a pas de colonne `logLik`. Hors lot.
 
