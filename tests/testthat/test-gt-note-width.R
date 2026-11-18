@@ -33,7 +33,7 @@ test_that("the source notes of a gt table take a set width in its HTML", {
     id <- g[["_options"]]$value[[which(
       g[["_options"]]$parameter == "table_id"
     )]]
-    expect_match(id, "^spicy-gt-[0-9]+$")
+    expect_match(id, "^spicy-gt-[A-Za-z0-9]+-[0-9]+$")
     rule <- paste0(
       "#",
       id,
@@ -68,6 +68,10 @@ test_that("each gt table has an id of its own, drawn without the RNG", {
     g[["_options"]]$value[[which(g[["_options"]]$parameter == "table_id")]]
   }
   expect_false(identical(id(a), id(b)))
+  # The name of the temporary directory sets the session apart, so that
+  # a cached chunk and a fresh one never share an id.
+  session <- gsub("[^A-Za-z0-9]", "", basename(tempdir()))
+  expect_match(id(a), paste0("^spicy-gt-", session, "-[0-9]+$"))
 })
 
 test_that("the rules of the note leave the LaTeX, RTF and Word outputs alone", {

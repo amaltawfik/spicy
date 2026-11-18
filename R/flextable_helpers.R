@@ -47,13 +47,20 @@
 # which need that id to stay within the table.
 #
 # The id is a counter of the session, not gt's random one, so that
-# building a table leaves the random number stream alone.
+# building a table leaves the random number stream alone. The name of
+# the session's temporary directory makes it unique across sessions:
+# a page that mixes tables from two sessions (a chunk replayed from the
+# knitr cache next to one run again) would otherwise give two tables
+# the same id, and each the rules of the other.
 .spicy_gt_ids <- new.env(parent = emptyenv())
 .spicy_gt_ids$n <- 0L
 
 .spicy_gt <- function(data) {
+  if (is.null(.spicy_gt_ids$session)) {
+    .spicy_gt_ids$session <- gsub("[^A-Za-z0-9]", "", basename(tempdir()))
+  }
   .spicy_gt_ids$n <- .spicy_gt_ids$n + 1L
-  id <- paste0("spicy-gt-", .spicy_gt_ids$n)
+  id <- paste0("spicy-gt-", .spicy_gt_ids$session, "-", .spicy_gt_ids$n)
   gt::opt_css(gt::gt(data, id = id), .spicy_gt_note_css(id))
 }
 
