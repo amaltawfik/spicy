@@ -409,6 +409,14 @@
   and kept the rules of gt's default theme. The rules now belong to the
   table itself, so every HTML output carries them.
 
+* In the console, a label that holds a degree sign, or one of `©`, `®`,
+  `™`, `№` and some other symbols, no longer shifts its row by one
+  column. The cells were padded on a width that counted these
+  characters as two columns, while the columns were measured on one.
+  Every console table was concerned.
+
+* spicy no longer imports stringr.
+
 * `table_regression(fit_stats_layout = "merged")` merges the cells of
   the fit statistics in tinytable tables, in HTML, LaTeX and Typst. It
   fell back to `"first_col"` with a warning. The markdown output keeps
