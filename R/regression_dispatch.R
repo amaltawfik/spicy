@@ -169,6 +169,8 @@ output_long <- function(aligned, note = NULL) {
     )
   )
   long$order_idx <- NULL
+  # The hypothesis of the partial rows' test, last, as in tidy().
+  long <- long[c(setdiff(names(long), "partial_type"), "partial_type")]
   out <- maybe_as_tibble(long)
   attr(out, "note") <- note
   out

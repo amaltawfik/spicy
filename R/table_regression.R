@@ -2010,9 +2010,9 @@
 #'   (`model_id`, `outcome`, `term`, `estimate_type`, `estimate`,
 #'   `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
 #'   `df.residual` (the second df of an F test, `NA` elsewhere),
-#'   `p.value`, `test_type`, `partial_type` (the hypothesis of a partial
-#'   row's test, `"II"` or `"III"`, `NA` elsewhere), `nobs`,
-#'   `r.squared`, `adj.r.squared`, ...); the file
+#'   `p.value`, `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...,
+#'   and last `partial_type`, the hypothesis of a partial row's test,
+#'   `"II"` or `"III"`, `NA` elsewhere); the file
 #'   path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
 #'   for `"clipboard"`. The two data frames carry the note as printed in
 #'   `attr(x, "note")`. With `layout = "stacked"`, the stacked table of

@@ -1023,9 +1023,9 @@ format-specific object: \code{gt_tbl}, \code{flextable}, \code{tinytable}; for
 (\code{model_id}, \code{outcome}, \code{term}, \code{estimate_type}, \code{estimate},
 \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic}, \code{df},
 \code{df.residual} (the second df of an F test, \code{NA} elsewhere),
-\code{p.value}, \code{test_type}, \code{partial_type} (the hypothesis of a partial
-row's test, \code{"II"} or \code{"III"}, \code{NA} elsewhere), \code{nobs},
-\code{r.squared}, \code{adj.r.squared}, ...); the file
+\code{p.value}, \code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...,
+and last \code{partial_type}, the hypothesis of a partial row's test,
+\code{"II"} or \code{"III"}, \code{NA} elsewhere); the file
 path, invisibly, for \code{"excel"} and \code{"word"}; the table, invisibly,
 for \code{"clipboard"}. The two data frames carry the note as printed in
 \code{attr(x, "note")}. With \code{layout = "stacked"}, the stacked table of
