@@ -1489,7 +1489,22 @@ fixest's <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">
 rule; Poisson, binomial and IV fits keep fixest's values. A lean
 fit (<code>lean = TRUE</code>) that lost what they need, its weights or the
 fitted values of a Gamma or inverse-Gaussian <code>feglm()</code>, shows no
-AIC, BIC or nested rows.</p></li>
+AIC, BIC or nested rows. A survey-design fit has no likelihood:
+<code>"deviance"</code> and <code>"bic"</code> are refused for a table of design fits.</p></li>
+<li><p>Log-likelihood: <code>"log_lik"</code>, the value of <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">stats::logLik()</a></code>,
+from which the AIC row is computed. It is the restricted
+log-likelihood of a model fitted by REML, and for a binomial <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
+it is <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code>'s value whatever the layout of the data: it includes
+the binomial coefficients of a grouped response and rounds
+non-integer weights, unlike the pseudo-\(R^2\) rows. A column
+whose model has no likelihood (a quasi family, a survey design, GEE,
+two-stage least squares) shows a dash; the token is refused when no
+model of the table has one, and for Bayesian fits.</p></li>
+<li><p>Cox models (<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph</a></code>):
+<code>"concordance"</code>, Harrell's C, the value <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports. When
+the row is shown, the concordance leaves the note, which otherwise
+gives it with its standard error. <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code> fits have no
+concordance row or note.</p></li>
 <li><p>Change-stats for hierarchical comparison
 (active under <code>nested = TRUE</code>; see <em>Hierarchical
 comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
@@ -1556,8 +1571,17 @@ Nagelkerke R square of SPSS.</p></li>
 deviance from that of the intercept-only model (Cameron &amp; Windmeijer
 1997). It lies between 0 and 1, and within a family it cannot
 decrease when a predictor is added. For a gaussian <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> with the
-identity link it is the \(R^2\) of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>.</p></li>
-</ul><p>The intercept-only model keeps the offset and the weights of the
+identity link it is the \(R^2\) of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. For <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>
+and <code>bam</code> fits of the same families (and of mgcv's <code>nb()</code> and
+<code>tw()</code>), it is the deviance explained of their <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, as a
+proportion. A binomial or quasi-binomial GAM, and those of mgcv's
+other extended families, have none.</p></li>
+</ul><p>A GAM shows none of the other \(R^2\) rows of this section, and
+they are refused for a table of GAMs. mgcv reports only an adjusted
+\(R^2\): it is the <code>"adj_r2"</code> row of a GAM, in a table of GAMs
+or beside an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. The <code>"r2"</code> row of a GAM is dashed beside other
+models, and refused for a table of GAMs.</p>
+<p>The intercept-only model keeps the offset and the weights of the
 fitted model. For a <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fit it re-estimates theta in
 McFadden's and Nagelkerke's \(R^2\), as Stata's <code>nbreg</code> does,
 and keeps the theta of the fitted model in the deviance

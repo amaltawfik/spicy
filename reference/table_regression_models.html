@@ -312,7 +312,8 @@ analytic sample, with its variance from the delta method on the
 design vcov.</p>
 <p>Counts are both reported: the observed <code>n</code> and the <code>Weighted n</code> the
 estimates describe. <code>svycoxph</code> adds the number of events, and its
-concordance goes to the footer.</p>
+concordance goes to the footer, or to a row with
+<code>show_fit_stats = "concordance"</code>.</p>
 <p>What is refused, and why: every model-derived variance (<code>HC*</code>,
 <code>CR*</code>, bootstrap, jackknife) – the design is the variance
 authority, and the way to change the estimator is to change the

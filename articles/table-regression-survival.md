@@ -113,8 +113,10 @@ Reading the table:
   14. sits next to `n` as its own row. The footer adds the
       **concordance** C = 0.64: the probability that, of two comparable
       patients, the one predicted to fail earlier actually does. 0.5 is
-      a coin flip; 0.64 is modest discrimination (Harrell 2015). The
-      same token also renders as a per-level *column* —
+      a coin flip; 0.64 is modest discrimination (Harrell 2015).
+      `show_fit_stats = c("nobs", "n_events", "concordance", "aic")`
+      moves it into the fit block as a row, and out of the footer. The
+      `n_events` token also renders as a per-level *column* —
       `show_columns = c("n_events", "b", "ci", "p")` gives events/N next
       to each hazard ratio, the univariable screen below uses it, and
       binomial tables share the convention (see the core article).

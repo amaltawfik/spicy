@@ -1463,7 +1463,31 @@ refuses the token.
   `femlm()` follows the same rule; Poisson, binomial and IV fits keep
   fixest's values. A lean fit (`lean = TRUE`) that lost what they need,
   its weights or the fitted values of a Gamma or inverse-Gaussian
-  `feglm()`, shows no AIC, BIC or nested rows.
+  `feglm()`, shows no AIC, BIC or nested rows. A survey-design fit has
+  no likelihood: `"deviance"` and `"bic"` are refused for a table of
+  design fits.
+
+- Log-likelihood: `"log_lik"`, the value of
+  [`stats::logLik()`](https://rdrr.io/r/stats/logLik.html), from which
+  the AIC row is computed. It is the restricted log-likelihood of a
+  model fitted by REML, and for a binomial
+  [`glm()`](https://rdrr.io/r/stats/glm.html) it is
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html)'s value whatever the
+  layout of the data: it includes the binomial coefficients of a grouped
+  response and rounds non-integer weights, unlike the pseudo-\\R^2\\
+  rows. A column whose model has no likelihood (a quasi family, a survey
+  design, GEE, two-stage least squares) shows a dash; the token is
+  refused when no model of the table has one, and for Bayesian fits.
+
+- Cox models
+  ([`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) and
+  [`survey::svycoxph`](https://rdrr.io/pkg/survey/man/svycoxph.html)):
+  `"concordance"`, Harrell's C, the value
+  [`summary()`](https://rdrr.io/r/base/summary.html) reports. When the
+  row is shown, the concordance leaves the note, which otherwise gives
+  it with its standard error.
+  [`rms::cph`](https://rdrr.io/pkg/rms/man/cph.html) fits have no
+  concordance row or note.
 
 - Change-stats for hierarchical comparison (active under
   `nested = TRUE`; see *Hierarchical comparison* below): `"r2_change"`,
@@ -1528,7 +1552,19 @@ to another (Hemmert et al. 2018).
   model (Cameron & Windmeijer 1997). It lies between 0 and 1, and within
   a family it cannot decrease when a predictor is added. For a gaussian
   [`glm()`](https://rdrr.io/r/stats/glm.html) with the identity link it
-  is the \\R^2\\ of [`lm()`](https://rdrr.io/r/stats/lm.html).
+  is the \\R^2\\ of [`lm()`](https://rdrr.io/r/stats/lm.html). For
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam` fits of
+  the same families (and of mgcv's `nb()` and `tw()`), it is the
+  deviance explained of their
+  [`summary()`](https://rdrr.io/r/base/summary.html), as a proportion. A
+  binomial or quasi-binomial GAM, and those of mgcv's other extended
+  families, have none.
+
+A GAM shows none of the other \\R^2\\ rows of this section, and they are
+refused for a table of GAMs. mgcv reports only an adjusted \\R^2\\: it
+is the `"adj_r2"` row of a GAM, in a table of GAMs or beside an
+[`lm()`](https://rdrr.io/r/stats/lm.html). The `"r2"` row of a GAM is
+dashed beside other models, and refused for a table of GAMs.
 
 The intercept-only model keeps the offset and the weights of the fitted
 model. For a
