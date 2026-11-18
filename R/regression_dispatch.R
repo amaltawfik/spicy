@@ -366,7 +366,7 @@ output_long <- function(aligned, note = NULL) {
 # The fit cells an engine merges: the ranges a stacked table carries
 # (`fit_merge_specs`, its "merged" panels only), else every fit row of
 # a table in `fit_stats_layout = "merged"`, else none. Read before the
-# decimal padding, which leaves these cells as typed.
+# decimal padding, which aligns these cells among themselves.
 .reg_fit_merge_specs <- function(rendered, body, spanners) {
   specs <- attr(rendered, "fit_merge_specs")
   if (
@@ -429,7 +429,7 @@ output_tinytable <- function(rendered) {
   # web fonts).
   struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
-  # The fit cells merged below are centered as typed, not padded.
+  # The fit cells merged below are padded among themselves, per model.
   fit_specs <- .reg_fit_merge_specs(rendered, body, struct$spanners)
   body <- .pad_for_decimal_align(body, struct, skip = fit_specs)
   spanners <- struct$spanners
@@ -1537,7 +1537,7 @@ output_flextable <- function(rendered) {
   # primitive, so we emulate gt's `cols_align_decimal()` manually).
   struct <- .reg_engine_view(attr(rendered, "structured"))
   body <- .format_structured_to_string_body(struct)
-  # The fit cells merged below are centered as typed, not padded.
+  # The fit cells merged below are padded among themselves, per model.
   fit_specs <- .reg_fit_merge_specs(rendered, body, struct$spanners)
   body <- .pad_for_decimal_align(body, struct, skip = fit_specs)
   # The minus sign of the style in force, in the cells after the label

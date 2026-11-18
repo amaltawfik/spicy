@@ -552,7 +552,9 @@ the \code{"first_col"} layout.
 In \code{"first_col"} mode the \code{B} column aligns the fit-stat values
 on the decimal mark with its coefficients. In \code{"merged"} mode the
 fit-stat values move out of the \code{B} column, which aligns its
-coefficients alone, and each merged value is centered as typed.
+coefficients alone, and the merged values of a model align on the
+decimal mark among themselves, one centered block under the model
+(Excel centers each number as it is).
 Under \code{nested = TRUE} the change rows carry their degrees of
 freedom (\code{F-change} prints \code{7.29 (2, 28)}), which widens the \code{B}
 column in the \code{"first_col"} layout; \code{"merged"} spans them over

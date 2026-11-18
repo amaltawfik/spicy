@@ -9,7 +9,8 @@
 ## Décisions
 
 1. **tinytable fusionne les cellules** par `style_tt(colspan = )` en HTML, LaTeX et Typst, comme la ligne Outcome. La sortie markdown garde `"first_col"` : l'écrivain markdown de tinytable 0.19.0 casse sa grille sur une ligne qui porte deux cellules fusionnées (non signalé en amont à ce jour).
-2. **Les cellules fusionnées ne sont plus mesurées ni complétées** par l'alignement décimal (`.pad_for_decimal_align()`, argument `skip`), pour tinytable comme pour flextable. La colonne B aligne ses seuls coefficients, ce que l'aide promettait déjà, et chaque valeur fusionnée est centrée telle quelle.
+2. **Les cellules fusionnées ne sont plus mesurées ni complétées** par l'alignement décimal (`.pad_for_decimal_align()`, argument `skip`), pour tinytable comme pour flextable. La colonne B aligne ses seuls coefficients, ce que l'aide promettait déjà, et chaque valeur fusionnée était centrée telle quelle.
+   Modifié le 2026-11-18 : les cellules fusionnées d'un modèle sont complétées entre elles, avec les règles d'une colonne, et forment un bloc centré aligné sur la marque décimale (Excel centre chaque nombre tel quel).
 3. **gt garde son avertissement** : il ne fusionne aucune cellule du corps.
 
 ## Ce qui a été mesuré
@@ -22,7 +23,7 @@ Deux modèles, n = 1280 :
 
 ## Limites
 
-- En markdown, la valeur d'ajustement reste dans la colonne B sans remplissage : elle y est centrée, pas alignée sur la marque décimale.
+- En markdown, la valeur d'ajustement reste dans la colonne B, alignée sur les seules autres valeurs d'ajustement du modèle (depuis la modification du 2026-11-18).
 - flextable et Word vérifiés sur les chaînes des cellules, sans rendu en image. LaTeX vérifié sur la source, sans compilation.
 
 ## Conséquences
@@ -32,4 +33,4 @@ Deux modèles, n = 1280 :
 
 ## Garde
 
-`tests/testthat/test-tinytable_merged_fit_stats.R` : un et deux modèles, HTML, LaTeX, Typst et markdown, une pile avec un panneau fusionné et un panneau `"first_col"`, pas d'avertissement pour tinytable et un pour gt, remplissage (aucune espace de chiffre dans une cellule fusionnée, B complétée comme sans les lignes d'ajustement), contrôle de flextable.
+`tests/testthat/test-tinytable_merged_fit_stats.R` : un et deux modèles, HTML, LaTeX, Typst et markdown, une pile avec un panneau fusionné et un panneau `"first_col"`, pas d'avertissement pour tinytable et un pour gt, remplissage (cellules fusionnées d'un modèle de même largeur, marque décimale au même rang, B complétée comme sans les lignes d'ajustement), flextable, `nested = TRUE` et pile.

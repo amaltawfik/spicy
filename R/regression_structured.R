@@ -2024,16 +2024,14 @@ build_structured_body <- function(
 # `decimal_mark` is read from the structured format spec ("." or ",").
 #
 # `skip` lists the cells an engine merges (`fit_stats_layout =
-# "merged"`, specs of `.reg_fit_merge_specs()`): a merged fit value is
-# centered as typed, so those cells are neither measured nor padded and
-# the column aligns on its coefficients alone.
+# "merged"`, specs of `.reg_fit_merge_specs()`): they are left out of
+# their column, so the column aligns on its coefficients alone. The
+# merged cells of one model (one block of consecutive fit rows under the
+# same first column: a stacked table gives one per panel and model) are
+# padded among themselves by the same rules, so that, centered, their
+# decimal marks line up under the model.
 .pad_for_decimal_align <- function(body, struct, skip = list()) {
   decimal_mark <- struct$format_spec$decimal_mark
-  fig_space <- "\u2007" # U+2007 figure space (digit-width)
-  # The undefined / reference glyph, from the registry: the padder has
-  # to recognize the very mark the cell formatter wrote (Chicago /
-  # NEJM / JAMA tabular "not applicable").
-  na_dash <- spicy_str("cell_undefined")
   # The header rows of a stacked table hold column labels, and the
   # Outcome row the label of each model, not numbers: neither measured
   # nor padded, as in the console.
@@ -2050,78 +2048,106 @@ build_structured_body <- function(
     if (j == 1L) {
       next
     } # Variable column stays as-is
-    col_vals <- body[[j]]
-    skip_row <- header | merged[, j]
-    # Compute per-cell LHS / RHS widths for decimal-bearing cells.
-    lhs <- character(length(col_vals))
-    rhs <- character(length(col_vals))
-    for (i in seq_along(col_vals)) {
-      v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || identical(v, na_dash) || skip_row[i]) {
-        lhs[i] <- ""
-        rhs[i] <- ""
-        next
-      }
-      # A test cell carries its df after the number, "12 (1, 29)": the
-      # mark is looked for before them, and they go to the right-hand
-      # part, their space in the place of the mark.
-      core <- sub(" \\([^()]*\\)$", "", v)
-      pos <- regexpr(decimal_mark, core, fixed = TRUE)
-      if (pos < 0L) {
-        # No decimal mark -- integer-only or special token.
-        lhs[i] <- core
-        rhs[i] <- substring(v, nchar(core) + 2L)
-      } else {
-        lhs[i] <- substring(v, 1L, pos - 1L)
-        rhs[i] <- substring(v, pos + 1L)
-      }
-    }
-    # Max widths only consider cells that actually have either side --
-    # blank cells contribute nothing and stay un-padded.
-    max_lhs <- max(nchar(lhs))
-    max_rhs <- max(nchar(rhs))
-    if (max_lhs == 0L && max_rhs == 0L) {
-      next
-    }
+    body[[j]] <- .pad_decimal_cells(
+      body[[j]],
+      header | merged[, j],
+      decimal_mark
+    )
+  }
 
-    for (i in seq_along(col_vals)) {
-      v <- col_vals[i]
-      if (is.na(v) || !nzchar(v) || skip_row[i]) {
-        next
-      }
-      # Phase 7c24 (item g): en-dash cells (factor reference rows /
-      # "not applicable" placeholders) used to skip the padding
-      # entirely, so gt centered them in the column instead of
-      # aligning to the decimal-mark anchor used by the numeric
-      # cells. Treat the en-dash as a 1-glyph "integer" token: pad
-      # LHS to (max_lhs - 1) figure-spaces, the dash itself takes
-      # the units position, a digit-width space stands in for the
-      # decimal mark, and the RHS is padded to max_rhs figure-spaces.
-      # The dash now sits visually at the units column, aligned with
-      # the leftmost digit of the longest numeric value -- the
-      # publication-grade decimal alignment Stata / SAS use for
-      # missing cells.
-      if (identical(v, na_dash)) {
-        pad_lhs <- strrep(fig_space, max(0L, max_lhs - 1L))
-        pad_rhs <- strrep(fig_space, max_rhs)
-        col_vals[i] <- paste0(pad_lhs, na_dash, fig_space, pad_rhs)
-        next
-      }
-      pos <- regexpr(decimal_mark, sub(" \\([^()]*\\)$", "", v), fixed = TRUE)
-      pad_lhs <- strrep(fig_space, max_lhs - nchar(lhs[i]))
-      pad_rhs <- strrep(fig_space, max_rhs - nchar(rhs[i]))
-      if (pos < 0L) {
-        # Integer-only cell: pad LHS, then place a digit-width space
-        # at the implicit decimal column, then the df if any, then
-        # trailing figure-spaces to fill the (absent) RHS digits.
-        col_vals[i] <- paste0(pad_lhs, lhs[i], fig_space, rhs[i], pad_rhs)
-      } else {
-        col_vals[i] <- paste0(pad_lhs, lhs[i], decimal_mark, rhs[i], pad_rhs)
+  # The merged cells, one group per model and block of fit rows. The
+  # value sits in the first column of the span.
+  if (length(skip) > 0L) {
+    first <- vapply(skip, function(sp) as.integer(sp$cols[[1L]]), integer(1))
+    rows <- vapply(skip, function(sp) as.integer(sp$row), integer(1))
+    for (j in unique(first)) {
+      r <- sort(unique(rows[first == j]))
+      for (g in split(r, cumsum(c(1L, diff(r) != 1L)))) {
+        body[[j]][g] <- .pad_decimal_cells(
+          body[[j]][g],
+          header[g],
+          decimal_mark
+        )
       }
     }
-    body[[j]] <- col_vals
   }
   body
+}
+
+# Pad one group of cells (a column, or the merged fit cells of a model)
+# by the rules above; `ignore` marks the cells left as they are.
+.pad_decimal_cells <- function(col_vals, ignore, decimal_mark) {
+  fig_space <- "\u2007" # U+2007 figure space (digit-width)
+  # The undefined / reference glyph, from the registry: the padder has
+  # to recognize the very mark the cell formatter wrote (Chicago /
+  # NEJM / JAMA tabular "not applicable").
+  na_dash <- spicy_str("cell_undefined")
+  # Compute per-cell LHS / RHS widths for decimal-bearing cells.
+  lhs <- character(length(col_vals))
+  rhs <- character(length(col_vals))
+  for (i in seq_along(col_vals)) {
+    v <- col_vals[i]
+    if (is.na(v) || !nzchar(v) || identical(v, na_dash) || ignore[i]) {
+      next
+    }
+    # A test cell carries its df after the number, "12 (1, 29)": the
+    # mark is looked for before them, and they go to the right-hand
+    # part, their space in the place of the mark.
+    core <- sub(" \\([^()]*\\)$", "", v)
+    pos <- regexpr(decimal_mark, core, fixed = TRUE)
+    if (pos < 0L) {
+      # No decimal mark -- integer-only or special token.
+      lhs[i] <- core
+      rhs[i] <- substring(v, nchar(core) + 2L)
+    } else {
+      lhs[i] <- substring(v, 1L, pos - 1L)
+      rhs[i] <- substring(v, pos + 1L)
+    }
+  }
+  # Max widths only consider cells that actually have either side --
+  # blank cells contribute nothing and stay un-padded.
+  max_lhs <- max(0L, nchar(lhs))
+  max_rhs <- max(0L, nchar(rhs))
+  if (max_lhs == 0L && max_rhs == 0L) {
+    return(col_vals)
+  }
+
+  for (i in seq_along(col_vals)) {
+    v <- col_vals[i]
+    if (is.na(v) || !nzchar(v) || ignore[i]) {
+      next
+    }
+    # Phase 7c24 (item g): en-dash cells (factor reference rows /
+    # "not applicable" placeholders) used to skip the padding
+    # entirely, so gt centered them in the column instead of
+    # aligning to the decimal-mark anchor used by the numeric
+    # cells. Treat the en-dash as a 1-glyph "integer" token: pad
+    # LHS to (max_lhs - 1) figure-spaces, the dash itself takes
+    # the units position, a digit-width space stands in for the
+    # decimal mark, and the RHS is padded to max_rhs figure-spaces.
+    # The dash now sits visually at the units column, aligned with
+    # the leftmost digit of the longest numeric value -- the
+    # publication-grade decimal alignment Stata / SAS use for
+    # missing cells.
+    if (identical(v, na_dash)) {
+      pad_lhs <- strrep(fig_space, max(0L, max_lhs - 1L))
+      pad_rhs <- strrep(fig_space, max_rhs)
+      col_vals[i] <- paste0(pad_lhs, na_dash, fig_space, pad_rhs)
+      next
+    }
+    pos <- regexpr(decimal_mark, sub(" \\([^()]*\\)$", "", v), fixed = TRUE)
+    pad_lhs <- strrep(fig_space, max_lhs - nchar(lhs[i]))
+    pad_rhs <- strrep(fig_space, max_rhs - nchar(rhs[i]))
+    if (pos < 0L) {
+      # Integer-only cell: pad LHS, then place a digit-width space
+      # at the implicit decimal column, then the df if any, then
+      # trailing figure-spaces to fill the (absent) RHS digits.
+      col_vals[i] <- paste0(pad_lhs, lhs[i], fig_space, rhs[i], pad_rhs)
+    } else {
+      col_vals[i] <- paste0(pad_lhs, lhs[i], decimal_mark, rhs[i], pad_rhs)
+    }
+  }
+  col_vals
 }
 
 # Derive a fully-formatted CHAR body (data.frame) from the structured

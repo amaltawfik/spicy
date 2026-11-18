@@ -79,7 +79,13 @@ test_that("one model: the fit value spans every column after the label", {
     expect_match(html, sprintf("spanCell(%d, 2, 1, 5)", r), fixed = TRUE)
   }
   typ <- tinytable::save_tt(.mf_tt(m), output = "typst")
-  expect_match(typ, "[n], table.cell(colspan: 5)[1280],", fixed = TRUE)
+  # n is padded to the width of R2 ("0.75"), with which it aligns.
+  n_cell <- paste0("1280", strrep(intToUtf8(0x2007), 3L))
+  expect_match(
+    typ,
+    sprintf("[n], table.cell(colspan: 5)[%s],", n_cell),
+    fixed = TRUE
+  )
 })
 
 test_that("LaTeX: the fit rows carry SetCell spans, the coefficient rows none", {
@@ -101,13 +107,18 @@ test_that("Typst: the fit cells are table.cell(colspan: 3)", {
   skip_if_not_installed("tinytable")
   ms <- .mf_models()
   typ <- tinytable::save_tt(.mf_tt(ms), output = "typst")
+  n_cell <- paste0("1280", strrep(intToUtf8(0x2007), 3L))
   expect_match(
     typ,
-    "[n], table.cell(colspan: 3)[1280], table.cell(colspan: 3)[1280],",
+    sprintf(
+      "[n], table.cell(colspan: 3)[%s], table.cell(colspan: 3)[%s],",
+      n_cell,
+      n_cell
+    ),
     fixed = TRUE
   )
   typ_first <- tinytable::save_tt(.mf_tt(ms, "first_col"), output = "typst")
-  expect_no_match(typ_first, "table.cell(colspan: 3)[1280]", fixed = TRUE)
+  expect_no_match(typ_first, "table.cell(colspan: 3)[1280", fixed = TRUE)
 })
 
 test_that("markdown: no merge, the value stays in the first column of its model", {
@@ -118,7 +129,10 @@ test_that("markdown: no merge, the value stays in the first column of its model"
   n_line <- grep("^\\| n ", lines, value = TRUE)
   expect_length(n_line, 1L)
   cells <- trimws(strsplit(n_line, "|", fixed = TRUE)[[1L]])[-1L]
-  expect_identical(cells[1:7], c("n", "1280", "", "", "1280", "", ""))
+  # The values are padded among themselves (n to the width of R2), not
+  # with the coefficients of the column.
+  n_cell <- paste0("1280", strrep(intToUtf8(0x2007), 3L))
+  expect_identical(cells[1:7], c("n", n_cell, "", "", n_cell, "", ""))
 })
 
 test_that("tinytable merges without warning; gt still warns", {
@@ -162,7 +176,24 @@ test_that("a stacked table merges the fit rows of its merged panels only", {
   }
 })
 
-test_that("padding: merged fit cells are typed, the B column aligns its coefficients alone", {
+# Where a padded cell puts its decimal mark: the mark itself, or the
+# figure space that stands in for it after the units digit (an integer,
+# a dash).
+.mf_mark_at <- function(s) {
+  at <- regexpr(".", s, fixed = TRUE)
+  alt <- regexpr("[0-9\u2013]\u2007", s) + 1L
+  ifelse(at > 0L, at, alt)
+}
+
+# The merged cells of one model: one display width, one mark offset.
+.mf_expect_aligned <- function(cells) {
+  expect_gt(length(cells), 1L)
+  expect_length(unique(nchar(cells)), 1L)
+  expect_length(unique(.mf_mark_at(cells)), 1L)
+  expect_true(all(.mf_mark_at(cells) > 0L))
+}
+
+test_that("padding: merged fit cells align among themselves, the B column on its coefficients alone", {
   skip_if_not_installed("tinytable")
   ms <- .mf_models()
   fs <- intToUtf8(0x2007)
@@ -174,10 +205,15 @@ test_that("padding: merged fit cells are typed, the B column aligns its coeffici
   }
   merged <- body_of("merged")
   first <- body_of("first_col")
-  # The merged fit cells carry no figure space.
+  # The merged cells of each model: "1280" over "0.75" over "0.75",
+  # padded to one width with their marks at one offset.
   for (j in b_cols) {
-    expect_false(any(grepl(fs, merged[[j]][fit_rows], fixed = TRUE)))
+    .mf_expect_aligned(merged[[j]][fit_rows])
   }
+  expect_identical(
+    merged[[2L]][fit_rows],
+    paste0(c("1280", "", ""), strrep(fs, c(3L, 3L, 3L)), c("", "0.75", "0.75"))
+  )
   # The coefficients are padded as if the fit rows were absent: here
   # every coefficient has two digits before the mark, so none is padded,
   # while first_col pads them to the width of n (four digits).
@@ -201,15 +237,76 @@ test_that("padding: merged fit cells are typed, the B column aligns its coeffici
   }
 })
 
-test_that("flextable: merged fit cells are typed, not padded", {
+test_that("flextable: the merged fit cells of a model align among themselves", {
   skip_if_not_installed("flextable")
   ms <- .mf_models()
   fs <- intToUtf8(0x2007)
   fit_rows <- .mf_fit_rows(ms)
   ft <- table_regression(ms, output = "flextable", fit_stats_layout = "merged")
   ds <- ft$body$dataset
-  expect_false(any(grepl(fs, unlist(ds[fit_rows, -1L]), fixed = TRUE)))
-  expect_false(any(grepl(fs, ds[[2L]], fixed = TRUE)))
+  for (j in c(2L, 5L)) {
+    .mf_expect_aligned(ds[[j]][fit_rows])
+  }
+  # The coefficients of B are not padded to the width of n.
+  coef_rows <- seq_len(min(fit_rows) - 1L)
+  expect_false(any(grepl(fs, ds[[2L]][coef_rows], fixed = TRUE)))
   ft_first <- table_regression(ms, output = "flextable")
   expect_true(any(grepl(fs, ft_first$body$dataset[[2L]], fixed = TRUE)))
+})
+
+test_that("nested = TRUE: the change rows and dashes align with the fit values", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("tinytable")
+  d <- mtcars[rep(seq_len(nrow(mtcars)), 40L), ]
+  ms <- list(
+    stats::lm(mpg ~ wt, data = d),
+    stats::lm(mpg ~ wt + hp + qsec, data = d)
+  )
+  rendered <- table_regression(ms, fit_stats_layout = "merged", nested = TRUE)
+  fit_rows <- seq.int(attr(rendered, "group_sep_rows")[[1L]], nrow(rendered))
+  ds <- table_regression(
+    ms,
+    output = "flextable",
+    fit_stats_layout = "merged",
+    nested = TRUE
+  )$body$dataset
+  tt <- table_regression(
+    ms,
+    output = "tinytable",
+    fit_stats_layout = "merged",
+    nested = TRUE
+  )@data
+  for (body in list(ds, tt)) {
+    # The first model: n, R2 and the dashes of its change rows.
+    .mf_expect_aligned(body[[2L]][fit_rows])
+    expect_true(any(grepl("\u2013", body[[2L]][fit_rows], fixed = TRUE)))
+    # The second: the F-change carries its df, "316.37 (2, 1276)".
+    .mf_expect_aligned(body[[5L]][fit_rows])
+    expect_true(any(grepl(" (2, 1276)", body[[5L]][fit_rows], fixed = TRUE)))
+  }
+})
+
+test_that("a stacked table pads the merged cells of each panel and model as one group", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("flextable")
+  skip_on_cran()
+  ms <- .mf_models()
+  t_merged <- table_regression(ms, fit_stats_layout = "merged")
+  t_first <- table_regression(ms[[2L]])
+  st <- table_stack(A = t_merged, B = t_first)
+  specs <- attr(st, "fit_merge_specs")
+  bodies <- list(
+    table_stack(A = t_merged, B = t_first, output = "tinytable")@data,
+    table_stack(A = t_merged, B = t_first, output = "flextable")$body$dataset
+  )
+  for (body in bodies) {
+    for (j in unique(vapply(specs, function(sp) sp$cols[[1L]], integer(1)))) {
+      rows <- unique(vapply(
+        Filter(function(sp) sp$cols[[1L]] == j, specs),
+        function(sp) as.integer(sp$row),
+        integer(1)
+      ))
+      .mf_expect_aligned(body[[j]][rows])
+    }
+  }
 })
