@@ -1764,6 +1764,43 @@ absorbs_fixed_effects <- function(model) {
       call = call
     )
   }
+  reduced <- lapply(seq_along(eff_models), function(i) {
+    if (!tested[[i]]) {
+      return(character(0))
+    }
+    r <- tryCatch(
+      .type3_reduced_contrasts(eff_models[[i]]),
+      error = function(e) {
+        character(0)
+      }
+    )
+    if (length(r)) paste0(r, " in ", label[[i]]) else character(0)
+  })
+  reduced <- unique(unlist(reduced))
+  if (length(reduced) > 0L) {
+    spicy_abort(
+      c(
+        paste0(
+          "`partial_type = \"III\"` tests the equality of every level of a ",
+          "factor, but ",
+          if (length(reduced) > 1L) "the contrasts of " else "the contrast of ",
+          paste(reduced, collapse = ", "),
+          if (length(reduced) > 1L) " have" else " has",
+          " fewer columns than levels minus one."
+        ),
+        "i" = paste0(
+          "Such a model constrains the factor to fewer directions than its ",
+          "levels span, so its Type III test is not defined."
+        ),
+        "i" = paste0(
+          "Use `partial_type = \"II\"` (the default), or fit the factor ",
+          "with a complete contrast (one column per level but one)."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   pairs <- unique(unlist(lapply(
     eff_models[tested],
     function(f) tryCatch(.type3_covariate_pairs(f), error = function(e) NULL)
@@ -1802,6 +1839,55 @@ absorbs_fixed_effects <- function(model) {
     return(FALSE)
   }
   anyNA(stats::coef(fit))
+}
+
+# The factors of a fit coded by a user contrast of fewer columns than
+# levels minus one, as "`f` (3 levels, 1 column)", when the design they
+# give has fewer columns than the sum-to-zero design of the Type III test.
+# A factor whose contrast the design does not use (the first factor of a
+# model without intercept) is not one: its design is complete.
+.type3_reduced_contrasts <- function(fit) {
+  if (inherits(fit, "merMod")) {
+    x_fit <- lme4::getME(fit, "X")
+    ctr <- attr(x_fit, "contrasts")
+  } else if (inherits(fit, "glmmTMB")) {
+    x_fit <- glmmTMB::getME(fit, "X")
+    ctr <- attr(x_fit, "contrasts")
+  } else if (inherits(fit, "lme")) {
+    ctr <- fit$contrasts
+    td <- .type3_terms_data(fit)
+    x_fit <- stats::model.matrix(td$terms, td$data, contrasts.arg = ctr)
+  } else {
+    x_fit <- stats::model.matrix(fit)
+    ctr <- fit$contrasts
+  }
+  short <- vapply(
+    ctr,
+    function(m) is.matrix(m) && ncol(m) < nrow(m) - 1L,
+    logical(1)
+  )
+  if (!any(short)) {
+    return(character(0))
+  }
+  td <- .type3_terms_data(fit)
+  if (ncol(x_fit) >= ncol(.type3_sum_design(td$terms, td$data))) {
+    return(character(0))
+  }
+  vapply(
+    names(ctr)[short],
+    function(v) {
+      m <- ctr[[v]]
+      sprintf(
+        "`%s` (%d levels, %d %s)",
+        v,
+        nrow(m),
+        ncol(m),
+        if (ncol(m) == 1L) "column" else "columns"
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 # The factor terms of a fit that interact with a numeric covariate, as

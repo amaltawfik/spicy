@@ -394,35 +394,112 @@ test_that("lme under na.exclude has the Type III tests of the same model under n
   expect_equal(chi2(na.exclude), omit, tolerance = 1e-10)
 })
 
-test_that("Type III is left empty, never miscomputed, for a contrast of too few columns", {
+test_that("Type III refuses a user contrast of too few columns, and Type II matches car", {
   # A user contrast of one column for a three-level factor constrains the
-  # fit to a direction of the factor: the fit has no sum-to-zero
-  # parametrization, so the Type III cells stay empty while Type II is
-  # computed.
+  # fit to a direction of the factor: the equality of its three means is
+  # not in the model, so its Type III test is refused.
+  skip_if_not_installed("car")
   d <- .pt_data()
   d$n <- rpois(nrow(d), 3)
   one <- list(A = matrix(c(1, 0, -1), ncol = 1))
-  has_test <- function(fit, token, type) {
-    td <- broom::tidy(table_regression(
-      fit,
-      show_columns = c("b", token),
-      partial_type = type
-    ))
-    td$term[td$estimate_type == token & !is.na(td$statistic)]
+  refused <- function(fit, token) {
+    expect_error(
+      suppressWarnings(.pt_tr(fit, show_columns = c("b", token))),
+      class = "spicy_invalid_input"
+    )
+    tryCatch(
+      suppressWarnings(.pt_tr(fit, show_columns = c("b", token))),
+      error = function(e) conditionMessage(e)
+    )
   }
   fl <- lm(y ~ A + x, d, contrasts = one)
-  expect_null(compute_lm_type3_f_stat(fl, "A"))
-  expect_identical(has_test(fl, "partial_f", "III"), character(0))
-  expect_setequal(has_test(fl, "partial_f", "II"), c("A1", "x"))
+  msg <- refused(fl, "partial_f")
+  expect_match(
+    msg,
+    "`A` (3 levels, 1 column) in the model (`lm`)",
+    fixed = TRUE
+  )
+  expect_match(msg, "partial_type = \"II\"", fixed = TRUE)
+  expect_match(msg, "complete contrast", fixed = TRUE)
   fg <- glm(n ~ A + x, poisson, d, contrasts = one)
+  refused(fg, "partial_chi2")
+  # Two models: each factor named, with its count of columns.
+  d$C <- factor(rep(c("c1", "c2", "c3", "c4"), length.out = nrow(d)))
+  two <- list(C = matrix(c(1, 0, 0, -1, 0, 1, -1, 0), ncol = 2))
+  fc <- lm(y ~ C + x, d, contrasts = two)
+  msg2 <- refused(list(fl, fc), "partial_f")
+  expect_match(msg2, "the contrasts of `A` (3 levels, 1 column)", fixed = TRUE)
+  expect_match(msg2, "`C` (4 levels, 2 columns) in model 2", fixed = TRUE)
+  expect_match(msg2, " have fewer columns", fixed = TRUE)
+  # A model with no term-level test (a gls) is not examined, and the
+  # table beside it keeps its tests.
+  skip_if_not_installed("nlme")
+  gl <- nlme::gls(y ~ A + x, data = d)
+  expect_no_error(suppressWarnings(
+    .pt_tr(list(lm(y ~ A + x, d), gl), show_columns = c("b", "partial_f"))
+  ))
+  # The internal tests, reached directly, compute nothing.
+  expect_null(compute_lm_type3_f_stat(fl, "A"))
   expect_null(compute_glm_type2_lrt(fg, "A", type = "III"))
-  expect_identical(has_test(fg, "partial_chi2", "III"), character(0))
+  # Type II is defined on the same fits: car::Anova(type = 2).
+  t2 <- function(fit, token) {
+    td <- broom::tidy(table_regression(fit, show_columns = c("b", token)))
+    td$statistic[td$estimate_type == token]
+  }
+  expect_equal(
+    t2(fl, "partial_f"),
+    car::Anova(fl, type = 2)[c("A", "x"), "F value"],
+    tolerance = 1e-10
+  )
+  expect_equal(
+    t2(fg, "partial_chi2"),
+    car::Anova(fg, type = 2)[c("A", "x"), "LR Chisq"],
+    tolerance = 1e-10
+  )
+  skip_if_not_installed("MASS")
+  fn <- suppressWarnings(MASS::glm.nb(n ~ A + x, d, contrasts = one))
+  refused(fn, "partial_chi2")
   skip_if_not_installed("lme4")
   fm <- suppressMessages(lme4::lmer(y ~ A + x + (1 | cl), d, contrasts = one))
-  expect_identical(
-    suppressWarnings(has_test(fm, "partial_chi2", "III")),
-    character(0)
+  refused(fm, "partial_chi2")
+  skip_if_not_installed("glmmTMB")
+  ft <- glmmTMB::glmmTMB(y ~ A + x + (1 | cl), d, contrasts = one)
+  refused(ft, "partial_chi2")
+})
+
+test_that("Type III takes every complete contrast", {
+  d <- .pt_data()
+  d$O <- factor(d$A, ordered = TRUE)
+  one <- list(A = matrix(c(1, 0, -1), ncol = 1))
+  fits <- list(
+    poly = lm(y ~ O + x, d),
+    helmert = lm(y ~ A + x, d, contrasts = list(A = contr.helmert(3))),
+    sum = lm(y ~ A + x, d, contrasts = list(A = contr.sum(3))),
+    treatment = lm(y ~ A + x, d, contrasts = list(A = contr.treatment(3))),
+    # Without an intercept the first factor is coded by indicators, its
+    # contrast unused: the design is complete.
+    no_intercept = lm(y ~ 0 + A + x, d, contrasts = one)
   )
+  for (nm in names(fits)) {
+    tb <- suppressMessages(.pt_tr(
+      fits[[nm]],
+      show_columns = c("b", "partial_f")
+    ))
+    td <- broom::tidy(tb)
+    expect_true(
+      any(td$estimate_type == "partial_f" & !is.na(td$statistic)),
+      info = nm
+    )
+  }
+  skip_if_not_installed("nlme")
+  # nlme completes a contrast of too few columns before it fits, so the
+  # lme carries the whole factor and is tested.
+  l <- nlme::lme(y ~ A + x, random = ~ 1 | cl, data = d, contrasts = one)
+  expect_identical(ncol(l$contrasts$A), 2L)
+  td <- broom::tidy(suppressWarnings(
+    .pt_tr(l, show_columns = c("b", "partial_chi2"))
+  ))
+  expect_true(any(td$estimate_type == "partial_chi2" & !is.na(td$statistic)))
 })
 
 test_that("a saturated lm has no Type III F, as it has no Type II F", {
