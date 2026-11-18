@@ -308,10 +308,19 @@ build_ascii_table <- function(
     integer(1)
   )
 
-  # Helper for cell alignment
+  # Helper for cell alignment. Pads on the width the column widths are
+  # measured with (`crayon::col_nchar(type = "width")`), not on
+  # `stringr::str_pad()`'s: stringi counts the degree and trademark
+  # signs, box drawing and other characters as two columns where R counts
+  # one, and the cell then came out one space short. Same sides as
+  # `str_pad()` (centered: the odd space on the right), NA stays NA and
+  # wider text is left whole.
   pad_cell <- function(txt, width, align = "right") {
-    side <- switch(align, left = "right", center = "both", "left")
-    stringr::str_pad(txt, width, side = side)
+    gap <- pmax(0L, width - crayon::col_nchar(txt, type = "width"))
+    left <- switch(align, left = 0L, center = gap %/% 2L, gap)
+    out <- paste0(strrep(" ", left), txt, strrep(" ", gap - left))
+    out[is.na(txt)] <- NA_character_
+    out
   }
 
   sep_after <- ascii_table_separators(df, first_column_line, row_total_line)

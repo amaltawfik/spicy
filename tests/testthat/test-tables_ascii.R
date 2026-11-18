@@ -670,3 +670,56 @@ test_that("ascii_group_header heads the columns of a group", {
   expect_identical(hdr$labels[2:5], c("n", "%", "M n", "M %"))
   expect_null(spicy:::ascii_group_header(labels, NULL)$spanners)
 })
+
+
+test_that("cells and headers holding a degree or trademark sign stay in register", {
+  # stringi counts `\u00b0`, `\u2122` and other ambiguous-width signs as
+  # two columns where R counts one. The cells used to be padded on
+  # stringi's count and the column widths measured on R's, so such a
+  # cell came out one space short and its row shifted left. The table
+  # must be the one its ASCII twin gives, sign for letter.
+  signs <- "\u00b0\u2122\u2116"
+  df <- data.frame(
+    a = c("37 \u00b0C", "x"),
+    b = c("1", "\u2122"),
+    c = c("\u2116 5", "22"),
+    stringsAsFactors = FALSE
+  )
+  names(df) <- c("Temp \u00b0", "Mark \u2122", "No \u2116")
+  twin <- df
+  twin[] <- lapply(twin, function(z) chartr(signs, "oTN", z))
+  names(twin) <- chartr(signs, "oTN", names(twin))
+  for (al in list(
+    list(left = 1:3, center = integer(0)),
+    list(left = integer(0), center = 1:3),
+    list(left = integer(0), center = integer(0))
+  )) {
+    render <- function(d) {
+      spicy:::build_ascii_table(
+        d,
+        align_left_cols = al$left,
+        align_center_cols = al$center
+      )
+    }
+    out <- render(df)
+    expect_identical(chartr(signs, "oTN", out), render(twin))
+    txt <- strsplit(out, "\n", fixed = TRUE)[[1L]]
+    expect_length(unique(nchar(txt, type = "width")), 1L)
+  }
+})
+
+
+test_that("freq() keeps a level holding a degree sign in register", {
+  lv <- c(
+    "Below 37 \u00b0C",
+    "37 \u00b0C or more",
+    "37 \u00b0C or more",
+    "Unknown"
+  )
+  show <- function(x) capture.output(print(freq(x)))
+  out <- show(factor(lv))
+  ref <- show(factor(chartr("\u00b0", "o", lv)))
+  expect_identical(chartr("\u00b0", "o", out), ref)
+  body <- out[grepl("\u2502|\u253c", out)]
+  expect_length(unique(nchar(body, type = "width")), 1L)
+})

@@ -31,7 +31,6 @@ Imports:
     rlang (>= 1.1.0),
     sandwich (>= 3.1-2),
     stats,
-    stringr,
     tibble,
     tidyselect,
     utils
