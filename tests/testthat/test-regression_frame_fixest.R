@@ -1706,6 +1706,41 @@ test_that("a lean feols with fixed effects has no AME, and the refusal says why"
   expect_no_match(conditionMessage(err3), "lean = FALSE", fixed = TRUE)
 })
 
+test_that("the AME refusal of fixest fits names each model with its reason", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("marginaleffects")
+  d <- mtcars
+  d$high <- as.integer(d$mpg > 20)
+  lean <- fixest::feols(mpg ~ wt + hp | cyl, data = d, lean = TRUE)
+  glm_fe <- fixest::feglm(high ~ wt | cyl, data = d, family = binomial)
+  refusal <- function(models) {
+    err <- expect_error(
+      suppressWarnings(table_regression(models, show_columns = c("b", "ame"))),
+      class = "spicy_invalid_input"
+    )
+    gsub("\\s+", " ", conditionMessage(err))
+  }
+  msg <- refusal(list(Lean = lean, Logit = glm_fe))
+  expect_match(
+    msg,
+    "Lean: a fixest fit with fixed effects and `lean = TRUE`",
+    fixed = TRUE
+  )
+  expect_match(
+    msg,
+    "Logit: marginaleffects, which computes the AME, refuses",
+    fixed = TRUE
+  )
+  # Unnamed, the models take their position; a table of GLMs alone
+  # names them too.
+  msg2 <- refusal(list(glm_fe, lean, glm_fe))
+  expect_match(msg2, "Model 2: a fixest fit", fixed = TRUE)
+  expect_match(msg2, "Model 1, Model 3: marginaleffects", fixed = TRUE)
+  msg3 <- refusal(list(Logit = glm_fe))
+  expect_match(msg3, "Logit: marginaleffects", fixed = TRUE)
+  expect_no_match(msg3, "lean = TRUE", fixed = TRUE)
+})
+
 test_that("an estimatr fit with fixed effects is titled as a fixest one", {
   skip_if_not_installed("fixest")
   skip_if_not_installed("estimatr")

@@ -3860,33 +3860,39 @@ table_regression <- function(
         "without fixed effects."
       )
       lean_fe <- vapply(frames, .fixest_lean_fe, logical(1))
+      is_fixest <- vapply(
+        frames,
+        function(fr) inherits(attr(fr, "fit"), "fixest"),
+        logical(1)
+      )
+      # Each refused fixest fit is named with its own reason. The ones
+      # that are not lean feols fits with fixed effects are GLMs with
+      # fixed effects (supports$ame of the fixest frame).
+      fixest_names <- function(which) {
+        paste(.model_display_names(models, panel_req)[which], collapse = ", ")
+      }
       hint_main <- if (any(classes == "coxph")) {
         paste0(
           "For a Cox model, the absolute-effect columns are the RMST ",
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
           "with `tau = `, or `\"risk_diff\"` with `at_time = `."
         )
-      } else if (any(lean_fe)) {
-        is_fixest <- vapply(
-          frames,
-          function(fr) inherits(attr(fr, "fit"), "fixest"),
-          logical(1)
-        )
+      } else if (any(is_fixest)) {
         c(
-          sprintf(
-            paste0(
-              "%s: a fixest fit with fixed effects and `lean = TRUE` keeps ",
-              "too little for marginaleffects to predict from it. ",
-              "Re-estimate it with `lean = FALSE`."
-            ),
-            paste(.model_display_names(models)[lean_fe], collapse = ", ")
-          ),
-          # The other refused fixest fits are GLMs with fixed effects:
-          # their own reason, or the refusal would hide it.
-          if (any(is_fixest & !lean_fe)) fixest_glm_hint
+          if (any(lean_fe)) {
+            sprintf(
+              paste0(
+                "%s: a fixest fit with fixed effects and `lean = TRUE` ",
+                "keeps too little for marginaleffects to predict from it. ",
+                "Re-estimate it with `lean = FALSE`."
+              ),
+              fixest_names(lean_fe)
+            )
+          },
+          if (any(is_fixest & !lean_fe)) {
+            paste0(fixest_names(is_fixest & !lean_fe), ": ", fixest_glm_hint)
+          }
         )
-      } else if (any(classes == "fixest")) {
-        fixest_glm_hint
       } else {
         paste0(
           "No average-marginal-effects backend exists for this class ",
