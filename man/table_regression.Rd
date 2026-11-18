@@ -711,7 +711,8 @@ the classes it covers and its small-sample caution.}
 \item{digits}{Decimal places for general numeric tokens
 (\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change}, \code{ame},
 \code{ame_se}, \code{weighted_nobs}; the Wald change statistics under a
-robust \code{vcov} follow \code{f_change}). Default \code{2L}.}
+robust \code{vcov} follow \code{f_change}) and for the term-level tests
+(\code{partial_chi2}, \code{partial_f}). Default \code{2L}.}
 
 \item{p_digits}{Decimal places for p-values (\code{p}, \code{ame_p},
 \code{p_change}). APA-strict: leading zero stripped, \verb{<.001} (or
@@ -720,9 +721,8 @@ Default \code{3L}; at least \code{1L}, as in the descriptive tables. Every
 \verb{*_digits} argument is a whole number: a fraction is an error.}
 
 \item{effect_size_digits}{Decimals for per-coefficient effect
-sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}) and the
-term-level tests (\code{partial_chi2}, \code{partial_f}).
-Default \code{2L}.}
+sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}) and their
+intervals. Default \code{2L}.}
 
 \item{fit_digits}{Decimals for variance-explained / model-level
 effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},

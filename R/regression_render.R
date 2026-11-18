@@ -1365,7 +1365,9 @@ format_cell_value <- function(
   show_columns
 ) {
   tk <- cs$token
-  is_es <- tk %in% .PARTIAL_ES_TOKENS
+  # The term-level tests (partial F, partial chi-square) are test
+  # statistics: `digits`, as t, z and the change rows of the footer.
+  is_es <- tk %in% .PARTIAL_VARIANCE_ES_TOKENS
   digits_to_use <- if (is_es) {
     effect_size_digits
   } else if (tk %in% c("r2", "adj_r2")) {

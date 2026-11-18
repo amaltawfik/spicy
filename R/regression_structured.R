@@ -531,7 +531,7 @@ build_structured_body <- function(
     # 2-decimal number -- which turned a p of .00098 into "0.00".
     is_p_col <- identical(e$source, "p_value")
     # Precision selection mirrors format_cell_value() / format_fit_stat_value()
-    prec <- if (token %in% .PARTIAL_ES_TOKENS) {
+    prec <- if (token %in% .PARTIAL_VARIANCE_ES_TOKENS) {
       effect_size_digits
     } else if (is_p_col) {
       p_digits

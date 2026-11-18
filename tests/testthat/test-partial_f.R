@@ -1180,3 +1180,55 @@ test_that("console snapshot of the partial F column", {
     table_regression(fit, show_columns = c("b", "se", "p", "partial_f"))
   ))
 })
+
+test_that("the term-level tests follow `digits`, as the change rows do", {
+  d <- .pf_data()
+  lm1 <- lm(mpg ~ wt, data = d)
+  lm2 <- lm(mpg ~ wt + cyl, data = d)
+  bn1 <- glm(am ~ wt, data = d, family = binomial)
+  bn2 <- glm(am ~ wt + cyl, data = d, family = binomial)
+  # Every "value (df)" cell of the printed table: the four per-term
+  # tests of the two models and the change row of the footer.
+  decimals <- function(tbl) {
+    out <- capture.output(print(tbl))
+    hit <- unlist(regmatches(
+      out,
+      gregexpr("-?[0-9]+([.][0-9]+)? [(][0-9]+(, [0-9]+)?[)]", out)
+    ))
+    num <- sub(" .*$", "", hit)
+    nchar(sub("^[^.]*[.]?", "", num))
+  }
+  for (dg in c(0L, 1L, 3L)) {
+    tf <- table_regression(
+      list(lm1, lm2),
+      nested = TRUE,
+      show_columns = c("b", "partial_f"),
+      digits = dg
+    )
+    expect_length(decimals(tf), 5L)
+    expect_identical(unique(decimals(tf)), dg)
+    tc <- suppressWarnings(table_regression(
+      list(bn1, bn2),
+      nested = TRUE,
+      show_columns = c("b", "partial_chi2"),
+      digits = dg
+    ))
+    expect_length(decimals(tc), 5L)
+    expect_identical(unique(decimals(tc)), dg)
+  }
+  # The typed contract (Excel number format, inline()) reads the same
+  # precision; `effect_size_digits` keeps the effect sizes only.
+  t3 <- table_regression(
+    lm2,
+    show_columns = c("b", "partial_f", "partial_eta2"),
+    digits = 3,
+    effect_size_digits = 1
+  )
+  cm <- as_structured(t3)$col_meta
+  tok <- vapply(cm, function(m) m$token %||% NA_character_, character(1))
+  df_col <- vapply(cm, function(m) isTRUE(m$is_df), logical(1))
+  expect_identical(cm[[which(tok %in% "partial_f" & !df_col)]]$precision, 3L)
+  expect_identical(cm[[which(tok %in% "partial_eta2")]]$precision, 1L)
+  expect_identical(inline(t3, wt, column = "partial_f"), "18.080")
+  expect_identical(inline(t3, wt, column = "partial_eta2"), "0.4")
+})

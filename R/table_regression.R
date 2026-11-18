@@ -1763,16 +1763,16 @@
 #' @param digits Decimal places for general numeric tokens
 #'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`, `ame`,
 #'   `ame_se`, `weighted_nobs`; the Wald change statistics under a
-#'   robust `vcov` follow `f_change`). Default `2L`.
+#'   robust `vcov` follow `f_change`) and for the term-level tests
+#'   (`partial_chi2`, `partial_f`). Default `2L`.
 #' @param p_digits Decimal places for p-values (`p`, `ame_p`,
 #'   `p_change`). APA-strict: leading zero stripped, `<.001` (or
 #'   `<.0001` etc. depending on `p_digits`) for small values.
 #'   Default `3L`; at least `1L`, as in the descriptive tables. Every
 #'   `*_digits` argument is a whole number: a fraction is an error.
 #' @param effect_size_digits Decimals for per-coefficient effect
-#'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) and the
-#'   term-level tests (`partial_chi2`, `partial_f`).
-#'   Default `2L`.
+#'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) and their
+#'   intervals. Default `2L`.
 #' @param fit_digits Decimals for variance-explained / model-level
 #'   effect-size fit stats (`r2`, `adj_r2`, `r2_change`,
 #'   `adj_r2_change`, `omega2`, `f2`, `f2_change`, `sigma`,
