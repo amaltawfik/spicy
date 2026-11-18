@@ -89,14 +89,15 @@
 # the note of a tinytable does (dev/decisions/2026-11-15-tinytable-note-html.md).
 # The other rules set the note with an interline of 1.25 and the lines of
 # a note close together, as a single block; gt sets its size, 0.9 of the
-# table's. The rules are HTML only: gt writes `opt_css()` into no other
+# table's. Its text starts 5px in, where the text of a body cell starts
+# (the side padding gt gives it). The rules are HTML only: gt writes `opt_css()` into no other
 # output.
 .spicy_gt_note_css <- function(id) {
   paste0(
     "#",
     id,
     " .gt_sourcenote { width: 1px; line-height: 1.25; ",
-    "padding: 0 0.5rem; }\n",
+    "padding: 0 5px; }\n",
     "#",
     id,
     " .gt_sourcenotes:first-child .gt_sourcenote { padding-top: 0.5rem; }\n",
@@ -123,7 +124,10 @@
 # the right of the last cell of the row), so the margins of the `<div>`
 # give the 0.5em inset; in the last cell, a left padding keeps the label
 # where gt sets it, 2px right of the centre. One pixel of the bottom
-# padding makes room for the rule. The widths of zero carry a unit: Quarto
+# padding makes room for the rule. gt gives the first cell of a spanner
+# row no left padding, which set "Variable" flush with the edge of the
+# table: it gets the 5px of a body cell, so the label of the first column
+# starts where the labels under it start. The widths of zero carry a unit: Quarto
 # writes them into the Typst of the table, where a bare 0 is no length
 # and stopped the compilation.
 .spicy_gt_header_css <- function(id) {
@@ -149,7 +153,9 @@
     "border-bottom: 1px solid #333333 !important; }\n",
     model,
     ":last-child > .gt_column_spanner { margin-right: 0.5em; ",
-    "padding-left: 4px; }"
+    "padding-left: 4px; }\n",
+    s,
+    ".gt_column_spanner_outer:first-child { padding-left: 5px !important; }"
   )
 }
 

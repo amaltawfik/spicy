@@ -52,6 +52,15 @@ test_that("the header rules are in the style sheet, within the table's id", {
       fixed = TRUE
     )
     expect_match(page, paste0(s, ".gt_spanner_row {"), fixed = TRUE)
+    # The label of the first column starts 5px in, as the body labels do.
+    expect_match(
+      page,
+      paste0(
+        s,
+        ".gt_column_spanner_outer:first-child { padding-left: 5px !important; }"
+      ),
+      fixed = TRUE
+    )
     expect_match(page, paste0(s, ".gt_table tbody .gt_row {"), fixed = TRUE)
     expect_match(
       page,

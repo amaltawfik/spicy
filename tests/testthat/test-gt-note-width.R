@@ -54,6 +54,8 @@ test_that("the source notes of a gt table take a set width in its HTML", {
     )
     expect_match(cell, "width: 1px; line-height: 1.25;", fixed = TRUE)
     expect_match(cell, "padding-top: 0.5rem; padding-bottom: 0.2rem;")
+    # Its text starts 5px in, as the text of a body cell does.
+    expect_match(cell, "padding-left: 5px;", fixed = TRUE)
   }
 })
 
