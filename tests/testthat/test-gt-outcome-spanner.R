@@ -142,6 +142,34 @@ test_that("the knitted LaTeX draws no rule under the Outcome level", {
   expect_true(all(startsWith(lines[at - 1L], "\\cmidrule(lr){2-4}")))
 })
 
+test_that("the knitted LaTeX drops the empty row of column labels", {
+  skip_if_not_installed("gt")
+  f <- gt_outcome_fits()
+  above_mid <- function(g) {
+    class(g) <- setdiff(class(g), "spicy_gt")
+    raw <- as.character(gt::as_latex(g))
+    tex <- .spicy_gt_latex_layout(raw)
+    lines <- strsplit(tex, "\n", fixed = TRUE)[[1L]]
+    list(
+      raw = strsplit(raw, "\n", fixed = TRUE)[[1L]],
+      above = lines[grep("^\\\\midrule", lines) - 1L]
+    )
+  }
+  # Every label in a spanner: gt's own label row is empty, and goes.
+  x <- above_mid(table_regression(list(A = f$m1, B = f$m2), output = "gt"))
+  raw_above <- x$raw[grep("^\\\\midrule", x$raw) - 1L]
+  expect_true(.spicy_latex_row_empty(raw_above))
+  expect_length(x$above, 2L) # the natural-width box and the tabular*
+  expect_true(all(grepl("{\\mdseries Variable}}", x$above, fixed = TRUE)))
+  # A CI keeps the row: LL and UL sit in it.
+  ci <- above_mid(
+    table_regression(f$m1, show_columns = c("b", "ci", "p"), output = "gt")
+  )
+  expect_true(all(grepl("LL", ci$above, fixed = TRUE)))
+  expect_true(all(grepl("UL", ci$above, fixed = TRUE)))
+  expect_false(.spicy_latex_row_empty(" & A & \\\\ "))
+})
+
 test_that("stacked tables keep their Outcome rows in the body", {
   skip_if_not_installed("gt")
   f <- gt_outcome_fits()

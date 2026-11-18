@@ -1312,12 +1312,22 @@ output_gt <- function(rendered) {
 #   gt wrote it. The body is written once per branch, and TeX skips the
 #   branch it does not take.
 #
+# * The row of column labels. The labels of a table whose columns all
+#   sit under a spanner of their own live in the spanners, and gt still
+#   writes its row of column labels, every cell empty: a blank line of
+#   about 14pt above `\midrule`. That row goes when every cell of it is
+#   empty; the LL and UL of a CI keep it.
+#
 # A string gt wrote differently (longtable, a set `table.width`) keeps
 # the parts that do not match.
 .spicy_gt_latex_layout <- function(s, outcome_level = FALSE) {
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   rule_one <- "\\\\cmidrule\\(lr\\)\\{([0-9]+)-([0-9]+)\\}"
   mid <- grep("^\\\\midrule", lines)[1L]
+  if (!is.na(mid) && mid > 1L && .spicy_latex_row_empty(lines[[mid - 1L]])) {
+    lines <- lines[-(mid - 1L)]
+    mid <- mid - 1L
+  }
   if (!is.na(mid) && mid > 1L) {
     rows <- grep(
       paste0("^\\s*(", rule_one, "\\s*)+$"),
@@ -1376,6 +1386,18 @@ output_gt <- function(rendered) {
     )
   }
   paste(lines, collapse = "\n")
+}
+
+# A row of a LaTeX table with nothing in any cell: once the wrappers gt
+# puts around a header label (`\multicolumn{1}{c}{...}`, `\mdseries`) and
+# the braces are gone, only the cell separators and the line end remain.
+.spicy_latex_row_empty <- function(line) {
+  if (!grepl("\\\\\\s*$", line)) {
+    return(FALSE)
+  }
+  rest <- gsub("\\\\multicolumn\\{[0-9]+\\}\\{[^}]*\\}", "", line)
+  rest <- gsub("\\\\mdseries|[{}&]|\\\\\\\\\\s*$", "", rest)
+  !nzchar(trimws(rest))
 }
 
 # The minus sign in the body of the LaTeX gt writes, its rows between
