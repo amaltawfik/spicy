@@ -1435,6 +1435,10 @@ knit_print.spicy_gt <- function(x, ...) {
     if (!is.null(note) && nzchar(note) && !has_source_note) {
       x <- .spicy_gt_add_source_notes(x, note, lead)
     }
+    # gt writes HTML for a target it has no writer for (Typst): Quarto
+    # reads that HTML to write the table, and dropped a table that opts
+    # out of its processing (`.spicy_gt()`).
+    x <- gt::tab_options(x, quarto.disable_processing = FALSE)
     latex <- isTRUE(knitr::is_latex_output())
     if (latex) {
       # The title at the size of the table, as in HTML: gt's LaTeX writer

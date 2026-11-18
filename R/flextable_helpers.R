@@ -67,7 +67,17 @@
   if (length(css)) {
     rules <- paste(c(rules, paste0("#", id, " ", css)), collapse = "\n")
   }
-  gt::opt_css(gt::gt(data, id = id), rules)
+  # Quarto re-parses an HTML table that does not opt out: it gave a gt
+  # table of the package the width of the page, columns of equal widths,
+  # Bootstrap's stripes, and kept one of the two alignments of a header
+  # cell. Opted out, the table renders in Quarto as in R Markdown.
+  # `knit_print.spicy_gt()` opts back in for a knit to another format,
+  # where Quarto reads gt's HTML to write the table (Typst).
+  tbl <- gt::tab_options(
+    gt::gt(data, id = id),
+    quarto.disable_processing = TRUE
+  )
+  gt::opt_css(tbl, rules)
 }
 
 # A source note is a `<td colspan="N">` in the `<tfoot>` gt writes, and a
