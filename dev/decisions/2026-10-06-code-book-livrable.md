@@ -1,8 +1,9 @@
 # ADR 2026-10-06 — `code_book()` comme livrable : seuil de valeurs, export depuis R, en-tête, étendues, noms de classes
 
 **Statut** : périmètre arbitré par Amal le 2026-10-06 (voir « Arbitrage » en
-fin de fiche). Rien n'est implémenté. Cinq questions restent ouvertes, dont
-la voie du document.
+fin de fiche). Mis à jour le 2026-11-18 : les questions ouvertes ont été
+tranchées le 2026-10-07 (« Décisions complémentaires ») et la refonte est
+livrée depuis (objet, classeur Excel, PDF par Typst), auditée le 2026-10-09.
 
 Proposition d'origine : cinq points liés, un seul périmètre, faire de
 `code_book()` un codebook qu'on livre, pas seulement qu'on consulte.
