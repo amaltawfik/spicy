@@ -60,6 +60,55 @@
   tinytable::style_tt(x, i = 0, alignv = "b")
 }
 
+# The same shape, invented data, with no-break spaces after "À" and in
+# "tel quel": only "À maintenir tel quel" and "Pas d'avis" can break,
+# each into two lines.
+.tw_battery_nbsp <- function() {
+  nb <- " "
+  niv <- c(
+    paste0("À", nb, "renforcer"),
+    paste0("À", nb, "maintenir tel", nb, "quel"),
+    paste0("À", nb, "réduire"),
+    paste0("À", nb, "retirer"),
+    "Pas d'avis"
+  )
+  lab <- c(
+    "Planifier les semaines de stage avec l'équipe de soins",
+    "Préparer les entretiens d'accueil des nouveaux patients",
+    "Rédiger les transmissions écrites de fin de journée",
+    "Organiser le matériel de la salle de soins partagée",
+    "Coordonner les visites avec les médecins de garde",
+    "Évaluer la douleur avec les échelles du service",
+    "Suivre les protocoles d'hygiène des mains au chevet",
+    "Accompagner les familles lors des visites du soir",
+    "Transmettre les consignes au collègue de nuit"
+  )
+  cnt <- rbind(
+    c(12, 10, 3, 2, 4),
+    c(9, 14, 2, 1, 5),
+    c(15, 9, 3, 1, 3),
+    c(11, 11, 4, 2, 3),
+    c(8, 15, 3, 2, 3),
+    c(13, 9, 5, 1, 3),
+    c(10, 12, 3, 3, 3),
+    c(7, 16, 3, 1, 4),
+    c(12, 13, 2, 1, 3)
+  )
+  d <- as.data.frame(lapply(seq_len(nrow(cnt)), function(i) {
+    factor(rep(niv, times = cnt[i, ]), levels = niv)
+  }))
+  names(d) <- paste0("q", seq_along(lab))
+  table_battery(
+    d,
+    select = tidyselect::everything(),
+    percent_digits = 0,
+    labels = stats::setNames(lab, names(d)),
+    title = FALSE,
+    note = "Pourcentages en ligne. n = nombre de réponses.",
+    output = "tinytable"
+  )
+}
+
 .tw_fit <- function() stats::lm(wellbeing_score ~ age, data = sochealth)
 
 # The `style` slot of a tinytable when it is finalized, and its size.
@@ -248,6 +297,56 @@ test_that("the shrink reads the label columns, and the labels when there are som
   )
 })
 
+test_that("after steps 2 to 4 the data columns keep only the width of their lines", {
+  shrink <- function(groups = NULL) {
+    spicy:::.spicy_tt_typst_shrink(spicy:::.spicy_tt_typst_measure(
+      paste0(
+        spicy:::.spicy_tt_typst_naturals,
+        "\n",
+        spicy:::.spicy_tt_typst_total
+      ),
+      groups
+    ))
+  }
+  out <- shrink()
+  # Only for steps 2 to 4: neither the natural widths nor the floors.
+  expect_match(
+    out,
+    paste0(
+      "if spicy_room - spicy_nat_d < spicy_three_s and ",
+      "spicy_room - spicy_floor_d >= spicy_three_s {"
+    ),
+    fixed = TRUE
+  )
+  # Each column measured at its place, at a fixed width, under the rows
+  # of groups.
+  expect_match(
+    out,
+    "table.cell(x: spicy_k, y: spicy_i + 0, spicy_cell)))).height",
+    fixed = TRUE
+  )
+  expect_match(
+    shrink(data.frame(a = 1:2)),
+    "table.cell(x: spicy_k, y: spicy_i + 2, spicy_cell)))).height",
+    fixed = TRUE
+  )
+  # Down to the floor at most, to 0.5pt; the room freed to the labels, up
+  # to their natural widths; what is left only where it removes a line.
+  expect_match(
+    out,
+    "spicy_least(spicy_k, spicy_floor.at(spicy_k), spicy_w.at(spicy_k),",
+    fixed = TRUE
+  )
+  expect_match(out, "while spicy_hi - spicy_lo > 0.5pt {", fixed = TRUE)
+  expect_match(
+    out,
+    "spicy_w = spicy_fit(spicy_s, spicy_room - spicy_sum(spicy_d, spicy_w), spicy_w, spicy_nat)",
+    fixed = TRUE
+  )
+  expect_match(out, "spicy_height(spicy_k, spicy_w) - 1pt", fixed = TRUE)
+  expect_match(out, "tinytable-naturals = spicy_w\n", fixed = TRUE)
+})
+
 test_that("a table without a note keeps tinytable's Typst", {
   skip_if_not_installed("tinytable")
   typ <- .tw_typst(table_categorical(
@@ -430,4 +529,80 @@ test_that("the battery compiles in Typst with every header on one line", {
     expect_identical(unique(words$y[words$text == w]), top, info = w)
   }
   expect_identical(unique(words$y[startsWith(words$text, "Pas")]), top)
+})
+
+test_that("a data column keeps only the width of its lines (body 9.5pt, text 379.8pt)", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("pdftools")
+  quarto <- Sys.which("quarto")
+  skip_if(!nzchar(quarto), "the Quarto CLI is not installed")
+  dir <- withr::local_tempdir()
+  typ <- file.path(dir, "nbsp.typ")
+  pdf <- file.path(dir, "nbsp.pdf")
+  # The widths after the rule, printed above the table: only steps 2 to 4
+  # reach this line.
+  show <- function(x) {
+    sprintf(
+      "%s #%s.map(w => str(calc.round(w.pt(), digits: 3))).join(\" \") ",
+      toupper(x),
+      x
+    )
+  }
+  src <- sub(
+    "tinytable-naturals = spicy_w\n",
+    paste0(
+      "tinytable-naturals = spicy_w\n[",
+      show("spicy_w"),
+      show("spicy_nat"),
+      show("spicy_floor"),
+      "END]\n"
+    ),
+    .tw_typst(.tw_battery_nbsp()),
+    fixed = TRUE
+  )
+  # Typst's own font, the body at 9.5pt, a text block of 379.8pt.
+  writeLines(
+    enc2utf8(c(
+      "#set page(width: 379.8pt + 4cm, height: auto, margin: 2cm)",
+      "#set text(size: 11pt, lang: \"fr\")",
+      "#show table: set text(9.5pt)",
+      "",
+      src
+    )),
+    typ,
+    useBytes = TRUE
+  )
+  out <- system2(
+    quarto,
+    c("typst", "compile", shQuote(typ), shQuote(pdf)),
+    stdout = TRUE,
+    stderr = TRUE
+  )
+  expect_null(attr(out, "status"))
+  txt <- paste(pdftools::pdf_text(pdf), collapse = " ")
+  read <- function(x) {
+    m <- regmatches(txt, regexpr(paste0(x, "[0-9.[:space:]]+"), txt))
+    as.numeric(strsplit(trimws(sub(x, "", m)), "[[:space:]]+")[[1L]])
+  }
+  w <- read("SPICY_W")
+  nat <- read("SPICY_NAT")
+  floor <- read("SPICY_FLOOR")
+  expect_length(w, 7L)
+  # The two headers that break keep their two lines at their floor, the
+  # narrowest width they can have; the other columns keep their width.
+  expect_true(all(abs(w[c(3, 6)] - floor[c(3, 6)]) <= 0.5))
+  expect_equal(w[c(2, 4, 5, 7)], nat[c(2, 4, 5, 7)])
+  # The labels take the room freed, within the text block.
+  expect_lt(w[[1L]], nat[[1L]])
+  expect_lte(abs(sum(w) - 379.8), 0.05)
+  words <- pdftools::pdf_data(pdf)[[1L]]
+  top <- words$y[words$text == "Variable"]
+  expect_length(top, 1L)
+  for (h in c("renforcer", "maintenir", "réduire", "retirer", "Pas")) {
+    expect_identical(unique(words$y[words$text == h]), top, info = h)
+  }
+  expect_gt(unique(words$y[words$text == "tel"]), top)
+  expect_gt(unique(words$y[endsWith(words$text, "avis")]), top)
 })

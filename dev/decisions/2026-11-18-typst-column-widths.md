@@ -16,6 +16,8 @@ Pour un tableau avec note, le gabarit Typst de tinytable mesure la largeur natur
 
 1. **Chaque colonne est mesurée seule, à sa place, dans un vrai tableau.** Ses cellules prennent ainsi les styles de tinytable et ceux du document. Les libellés de groupe de colonnes sont mesurés de la même façon. Sur six tableaux et deux documents, l'écart avec les colonnes `auto` de Typst est de 0,0 pt. Cette mesure remplace deux réparations que spicy faisait déjà (retrait, marge intérieure).
 2. **Un tableau trop large se réduit par paliers.** Chaque colonne a un plancher, son mot le plus long, relevé au besoin par le libellé de groupe qui la couvre. Les colonnes de libellés (l'argument `stub`) cèdent les premières, jusqu'à la largeur qui garantit trois lignes. Ensuite les colonnes de données passent une à une à leur largeur de deux lignes, celle qui libère le plus de place d'abord, et ce qui reste revient aux libellés. Puis les données descendent vers leurs planchers, puis les libellés. Si les planchers eux-mêmes ne tiennent pas, la réduction proportionnelle de tinytable s'applique, sur les largeurs exactes. Une colonne de nombres ne cède jamais : son plancher est sa largeur.
+
+   Ajout du 2026-11-18 : après les paliers 2 à 4, chaque colonne de données descend à la plus petite largeur, à 0,5 pt près, qui garde le nombre de lignes de son en-tête et de ses cellules. La place libérée revient aux libellés jusqu'à leur largeur naturelle. Le reste ne va à une colonne de données que s'il lui retire une ligne, la moins chère d'abord, sinon le tableau reste plus étroit que la page.
 3. **La note suit le corps.** Quand toutes les cellules du corps portent la même taille `f`, la note prend `0,9 × f`, en Typst, en HTML et en LaTeX. Sans taille commune, sous `options(spicy.note_style = "none")` ou quand la note est stylée par `style_tt(i = "notes")`, rien ne change.
 
 Un tableau sans note garde les colonnes `auto` de Typst : sa source est identique à celle d'avant.
@@ -41,7 +43,7 @@ Un tableau sans note garde les colonnes `auto` de Typst : sa source est identiqu
 - Typst coupe les lignes au plus long. Une colonne ramenée à sa largeur de deux lignes peut finir par un mot seul (« À maintenir tel / quel »). Le remède est une espace insécable dans le libellé.
 - Les seuils des paliers font des sauts : deux tableaux très proches peuvent tomber de part et d'autre.
 - La garantie des deux ou trois lignes vaut pour les cellules, pas pour les libellés de groupe.
-- Coût de compilation : environ 0,3 s de plus pour un tableau de 58 × 11 ou de 39 × 16 qui déborde, rien de mesurable pour un petit tableau.
+- Coût de compilation : environ 0,3 s de plus pour un tableau de 58 × 11 ou de 39 × 16 qui déborde, rien de mesurable pour un petit tableau. Quand les paliers 2 à 4 s'appliquent, l'ajout du 2026-11-18 coûte encore 0,1 à 0,6 s sur le tableau de 58 × 11.
 - Non vérifié : plus de deux lignes de groupes de colonnes, une marge intérieure de tableau qui dépend de la position, pdflatex et xelatex pour la note en LaTeX.
 - La cause 1 est dans le gabarit de tinytable. Elle n'est pas signalée en amont.
 

@@ -351,6 +351,15 @@
 #      and `two`;
 #   6. nothing fits at the floors: tinytable's proportional shrink of the
 #      natural widths.
+# After steps 2 to 4, each data column comes down to the narrowest width,
+# never under its floor and to 0.5pt, at which its header and cells keep
+# the lines they have: a text keeps its lines over a whole interval of
+# widths, and what a column gets above the bottom of that interval takes
+# room from the labels and removes no line. The labels take the room
+# freed, up to `nat`. What is still left goes to a data column only where
+# it removes a line, the cheapest first; the rest stays out of the table,
+# which comes out narrower than the space. `spicy_height` measures the
+# column at its place, at a fixed width, under the rows of groups.
 # "Share" is Typst's shrink of `auto` columns held between two bounds:
 # each column takes min(high, t), never under low, for the largest t that
 # fits, found by bisection. With one block only (no stub, or every column
@@ -367,6 +376,8 @@
   if (length(stub) != 1L || is.na(stub) || stub < 0L) {
     stub <- 1L
   }
+  # The rows of groups above the column names, as the measure placed them.
+  rows <- sub(".* ", "", regmatches(s, regexpr("y: spicy_k [+] [0-9]+", s)))
   raise <- c(
     "      for (spicy_from, spicy_to, spicy_row, spicy_label) in spicy_spans {",
     "        let spicy_span = spicy_to - spicy_from + 1",
@@ -436,6 +447,39 @@
     "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data",
     "      } else if spicy_room - spicy_floor_d >= spicy_floor_s {",
     "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))",
+    "      }",
+    "      // spicy: steps 2 to 4, each data column at its narrowest width for its lines",
+    "      if spicy_room - spicy_nat_d < spicy_three_s and spicy_room - spicy_floor_d >= spicy_three_s {",
+    sprintf(
+      "        let spicy_height(spicy_k, spicy_w) = measure(table(columns: range(spicy_k).map(_ => 0pt) + (spicy_w,), stroke: none, ..tinytable-coldata.at(spicy_k).enumerate().map(((spicy_i, spicy_cell)) => table.cell(x: spicy_k, y: spicy_i + %s, spicy_cell)))).height",
+      rows
+    ),
+    "        let spicy_least(spicy_k, spicy_lo, spicy_hi, spicy_h) = {",
+    "          if spicy_height(spicy_k, spicy_lo) <= spicy_h { return spicy_lo }",
+    "          while spicy_hi - spicy_lo > 0.5pt {",
+    "            let spicy_mid = (spicy_lo + spicy_hi) / 2",
+    "            if spicy_height(spicy_k, spicy_mid) <= spicy_h { spicy_hi = spicy_mid } else { spicy_lo = spicy_mid }",
+    "          }",
+    "          spicy_hi",
+    "        }",
+    "        let spicy_next(spicy_k, spicy_w) = {",
+    "          let spicy_h = spicy_height(spicy_k, spicy_w) - 1pt",
+    "          if spicy_w < spicy_nat.at(spicy_k) and spicy_height(spicy_k, spicy_nat.at(spicy_k)) <= spicy_h { spicy_least(spicy_k, spicy_w, spicy_nat.at(spicy_k), spicy_h) }",
+    "        }",
+    "        let spicy_w = tinytable-naturals",
+    "        for spicy_k in spicy_d.filter(spicy_k => spicy_floor.at(spicy_k) < spicy_w.at(spicy_k) and spicy_w.at(spicy_k) < spicy_nat.at(spicy_k)) {",
+    "          spicy_w.at(spicy_k) = spicy_least(spicy_k, spicy_floor.at(spicy_k), spicy_w.at(spicy_k), spicy_height(spicy_k, spicy_w.at(spicy_k)))",
+    "        }",
+    "        spicy_w = spicy_fit(spicy_s, spicy_room - spicy_sum(spicy_d, spicy_w), spicy_w, spicy_nat) + spicy_d.map(spicy_k => spicy_w.at(spicy_k))",
+    "        let spicy_gain = if spicy_sum(spicy_s, spicy_w) < spicy_sum(spicy_s, spicy_nat) { () } else { spicy_d.map(spicy_k => spicy_next(spicy_k, spicy_w.at(spicy_k))) }",
+    "        while spicy_gain.len() > 0 {",
+    "          let spicy_ok = range(spicy_d.len()).filter(spicy_i => spicy_gain.at(spicy_i) != none and spicy_gain.at(spicy_i) - spicy_w.at(spicy_d.at(spicy_i)) <= spicy_room - spicy_w.sum())",
+    "          if spicy_ok.len() == 0 { break }",
+    "          let spicy_i = spicy_ok.sorted(key: spicy_i => spicy_gain.at(spicy_i) - spicy_w.at(spicy_d.at(spicy_i))).first()",
+    "          spicy_w.at(spicy_d.at(spicy_i)) = spicy_gain.at(spicy_i)",
+    "          spicy_gain.at(spicy_i) = spicy_next(spicy_d.at(spicy_i), spicy_gain.at(spicy_i))",
+    "        }",
+    "        tinytable-naturals = spicy_w",
     "      }",
     "    }",
     ""
