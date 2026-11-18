@@ -119,7 +119,7 @@ harmless.
 | `glm` other binomial (probit, cloglog, grouped), Poisson, `glm.nb`, `negative.binomial(theta)` | `nobs, pseudo_r2_mcfadden, aic` | ✅ 2026-11-14; Nagelkerke, Tjur (binomial) and `r2_deviance` (not binomial) opt-in |
 | `glm` continuous (gaussian, Gamma, inverse Gaussian, Tweedie) | `nobs, r2_deviance, aic` | ✅ 2026-11-14; McFadden / Nagelkerke refused (unit-dependent) |
 | `glm` quasi families | `nobs` | ✅ no likelihood; `r2_deviance` opt-in |
-| `gam` / `bam` | `nobs, aic` | ✅ no R-squared row: the frame stores mgcv's `dev.expl` as `pseudo_r2$dev_explained`, but no token renders it (corrected 2026-11-14: this row used to read as the glm default) |
+| `gam` / `bam` | `nobs, aic` | ✅ no R-squared row by default; since 2026-11-18 `r2_deviance` (mgcv's `dev.expl`) is opt-in for the count, continuous and quasi families, `adj_r2` is mgcv's `r.sq`, `r2` is blank |
 | survey: `svyglm` | `nobs, weighted_nobs, aic` | ✅ EXCLUDED from `any_glm` (2026-08, survey P2): no likelihood, so no pseudo-R²; the `aic` is the design-based AIC of Lumley & Scott (2015), read by name from survey's three-element `extractAIC`. `eff_p` opt-in. |
 | survey: `svyolr` | `nobs, weighted_nobs` | ✅ no likelihood at all: AIC / BIC / logLik / deviance are NA in the frame, so an explicit token cannot republish them |
 | survey: `svycoxph` | `nobs, weighted_nobs, n_events` | ✅ EXCLUDED from `any_coxph`; concordance in the footer; `deviance()` is a sign-flipped LRT on one engine and 0 on the other |
@@ -151,13 +151,13 @@ harmless.
 Existing renderable tokens (`R/regression_validate.R` `$show_fit_stats`):
 `nobs, weighted_nobs, r2, adj_r2, omega2, pseudo_r2_mcfadden,
 pseudo_r2_nagelkerke, pseudo_r2_tjur, r2_deviance, r2_marginal,
-r2_conditional, sigma, rmse, f2, AIC, AICc, BIC, deviance` + the
-`*_change` nested-comparison family.
+r2_conditional, sigma, rmse, f2, aic, aicc, bic, deviance, log_lik,
+concordance` + the `*_change` nested-comparison family (lowercase since
+0.13; `log_lik` and `concordance` since 2026-11-18).
 
-Tokens the per-class work will likely need to ADD (⚙): `concordance` /
-`c_index`, `dev_explained`, `edf`, `within_r2`, `scale`, `phi`, `brier`,
-`r2_bayes`, `looic` / `waic`, `logLik` (currently `log_lik` is stashed but not
-renderable), `lr_chisq` (+ df / p).
+Tokens the per-class work will likely need to ADD (⚙): `edf`, `brier`,
+`lr_chisq` (+ df / p). `dev_explained` is not one: mgcv's deviance
+explained is the `r2_deviance` row (2026-11-18).
 
 ## 5. Design invariants (do NOT break)
 
@@ -205,7 +205,7 @@ has the parameter; a theta fixed in a `glm()` or mgcv call has no row.
 | `fixest` feols | `fixed_effects, nobs, r2, within_r2, aic` | ✅ FE block = Yes/No rows keyed on INTERCEPT absorption (fixef_terms, NOT fixef_sizes — slope-only trap); rich engines display Yes/No, as_structured keeps 1/0/NA |
 | `fixest` feglm/fepois | `fixed_effects, nobs, pseudo_r2_mcfadden, aic` | ✅ fixest's own `pr2` |
 | `multinom` | `nobs, pseudo_r2_mcfadden, aic` | ✅ shipped 2026-07-10; Nagelkerke left the default 2026-11-14 |
-| `coxph` | `nobs, n_events, aic` | ✅ (concordance = footer note; r2/LR tokens still 🔶) |
+| `coxph` | `nobs, n_events, aic` | ✅ (concordance = footer note, or opt-in `concordance` row since 2026-11-18; r2/LR tokens still 🔶) |
 | Bayesian | `nobs, r2_bayes` | ✅ elpd_loo/looic/waic opt-in |
 | `betareg` | (universal fallback) + opt-in `phi` | ✅ phi back-transformed from link.phi (y ~ x \| 1 trap); refused with precision covariates |
 
@@ -237,3 +237,17 @@ Two rows of this file had drifted from the behavior and were corrected:
 `gam` never showed a pseudo-R-squared (its frame stores `dev_explained`
 without a token), and `mlogit` was planned with McFadden but shows the
 universal `nobs, aic`. Neither behavior changed in this lot.
+
+## Addendum 2026-11-18: log_lik, concordance, GAM deviance R-squared
+
+Decided in `dev/decisions/2026-11-18-fit-stats-tokens.md`. Three opt-in
+tokens, no default changed. `log_lik` is `stats::logLik()` of the fit,
+the likelihood the AIC row comes from, refused when no model of the
+table has one (and for Bayesian and GEE fits). `concordance` is the C of
+a `coxph` or `svycoxph` fit; the footer sentence leaves the note when the
+row is shown; `rms::cph` has none. `r2_deviance` covers `gam` / `bam`
+fits of the count, continuous and quasi families: it is mgcv's
+`dev.expl`, equal to the deviance R-squared of the glm twin. A GAM's `r2`
+cell is blank (mgcv's `r.sq` is adjusted, the `adj_r2` row). McFadden,
+Nagelkerke and Tjur are refused for a table of GAMs, deviance and BIC for
+a table of design fits: they used to render nothing.

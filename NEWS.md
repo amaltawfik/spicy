@@ -205,7 +205,28 @@
   to no coding of the model. Refit with the default contrasts, or set
   the same `options(contrasts = )` again.
 
+* `table_regression()` refuses `show_fit_stats` tokens that a table's
+  models do not compute, where the row used to be left out without a
+  word: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"` and
+  `"pseudo_r2_tjur"` for a table of `mgcv::gam()` or `bam()` models,
+  and `"deviance"` and `"bic"` for a table of survey-design fits. Beside
+  other models, the cell of such a model shows a dash.
+
 ## New features
+
+* `table_regression()`: `show_fit_stats = "log_lik"` shows the
+  log-likelihood of each model, the value of `logLik()` from which the
+  AIC row is computed. A model without a likelihood shows a dash, and
+  the token is refused when no model of the table has one.
+
+* `table_regression()`: `show_fit_stats = "concordance"` shows the
+  concordance C of a `survival::coxph()` or `survey::svycoxph()` model
+  as a row, and takes it out of the note.
+
+* `table_regression()`: `show_fit_stats = "r2_deviance"` also covers
+  `mgcv::gam()` and `bam()` models of the gaussian, Gamma, inverse
+  Gaussian, Tweedie, Poisson, negative binomial and quasi families,
+  where it is the deviance explained that `summary()` reports.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_multiresponse()`, `table_battery()` and
@@ -374,6 +395,14 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression()`: beside an `lm()` model, the R² row of an
+  `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
+  number of the adjusted R² row below it.
+
+* `table_regression()`: the note of a Cox model whose concordance has no
+  standard error follows `spicy.language` and `spicy.labels`, like the
+  sentence with the standard error.
 
 * In the rich outputs (tinytable, gt, flextable, Word, Excel, clipboard)
   a term-level test is one column, as in the console: "F" with
