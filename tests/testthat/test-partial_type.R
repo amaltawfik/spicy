@@ -350,6 +350,12 @@ test_that("an aliased coefficient under Type III is an error that names the mode
   )
   expect_match(err, "model 2 (`lm`)", fixed = TRUE)
   expect_match(err, "partial_type = \"II\"", fixed = TRUE)
+  # Two aliased models: both named, and the verb agrees.
+  err2 <- tryCatch(
+    .pt_tr(list(f, lm(y ~ A * B + x, e)), show_columns = c("b", "partial_f")),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(err2, "model 1 (`lm`), model 2 (`lm`) have an", fixed = TRUE)
   # Type II is defined on the same model.
   expect_no_error(table_regression(f, show_columns = c("b", "partial_f")))
   # The same for a glm and an lmer.
@@ -366,6 +372,74 @@ test_that("an aliased coefficient under Type III is an error that names the mode
     .pt_tr(m, show_columns = c("b", "partial_chi2")),
     class = "spicy_invalid_input"
   )
+})
+
+test_that("lme under na.exclude has the Type III tests of the same model under na.omit", {
+  skip_if_not_installed("nlme")
+  # fitted() pads an na.exclude fit to the rows of the data: the check of
+  # the rebuilt design used to fail on the length, and every Type III cell
+  # of the lme stayed empty.
+  d <- .pt_data()
+  d$x[c(4, 20, 33)] <- NA
+  chi2 <- function(na) {
+    l <- nlme::lme(y ~ A * B + x, random = ~ 1 | cl, data = d, na.action = na)
+    .pt_terms(
+      suppressWarnings(.pt_tr(l, show_columns = c("b", "partial_chi2"))),
+      "partial_chi2"
+    )$statistic
+  }
+  omit <- chi2(na.omit)
+  expect_length(omit, 4L)
+  expect_false(anyNA(omit))
+  expect_equal(chi2(na.exclude), omit, tolerance = 1e-10)
+})
+
+test_that("Type III is left empty, never miscomputed, for a contrast of too few columns", {
+  # A user contrast of one column for a three-level factor constrains the
+  # fit to a direction of the factor: the fit has no sum-to-zero
+  # parametrization, so the Type III cells stay empty while Type II is
+  # computed.
+  d <- .pt_data()
+  d$n <- rpois(nrow(d), 3)
+  one <- list(A = matrix(c(1, 0, -1), ncol = 1))
+  has_test <- function(fit, token, type) {
+    td <- broom::tidy(table_regression(
+      fit,
+      show_columns = c("b", token),
+      partial_type = type
+    ))
+    td$term[td$estimate_type == token & !is.na(td$statistic)]
+  }
+  fl <- lm(y ~ A + x, d, contrasts = one)
+  expect_null(compute_lm_type3_f_stat(fl, "A"))
+  expect_identical(has_test(fl, "partial_f", "III"), character(0))
+  expect_setequal(has_test(fl, "partial_f", "II"), c("A1", "x"))
+  fg <- glm(n ~ A + x, poisson, d, contrasts = one)
+  expect_null(compute_glm_type2_lrt(fg, "A", type = "III"))
+  expect_identical(has_test(fg, "partial_chi2", "III"), character(0))
+  skip_if_not_installed("lme4")
+  fm <- suppressMessages(lme4::lmer(y ~ A + x + (1 | cl), d, contrasts = one))
+  expect_identical(
+    suppressWarnings(has_test(fm, "partial_chi2", "III")),
+    character(0)
+  )
+})
+
+test_that("a saturated lm has no Type III F, as it has no Type II F", {
+  d <- data.frame(y = c(1, 2, 4), f = factor(c("a", "b", "c")))
+  m <- lm(y ~ f, d)
+  expect_identical(stats::df.residual(m), 0L)
+  expect_null(compute_lm_type3_f_stat(m, "f"))
+  expect_null(compute_lm_type2_f_stat(m, "f"))
+})
+
+test_that("the Type III helpers take a model with no term", {
+  d <- .pt_data()
+  m <- lm(y ~ 1, d)
+  expect_identical(.type3_covariate_pairs(m), character(0))
+  x <- .type3_sum_design(stats::terms(m), stats::model.frame(m))
+  expect_identical(colnames(x), "(Intercept)")
+  expect_identical(nrow(x), nrow(d))
 })
 
 test_that("a factor in an interaction with a numeric covariate gives one warning per table", {

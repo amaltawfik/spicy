@@ -127,13 +127,17 @@
   if (!identical(dim(x_fit), dim(x_sum))) {
     return(NULL)
   }
+  # Defensive: a design of full rank coded with any full-rank contrasts
+  # spans the sum-to-zero one (an aliased fit is refused before, by
+  # .check_partial_type()), and a contrast of fewer columns already
+  # differs in dim.
   m <- tryCatch(qr.solve(x_sum, unclass(x_fit)), error = function(e) NULL)
   if (is.null(m)) {
-    return(NULL)
+    return(NULL) # nocov
   }
   err <- max(abs(x_sum %*% m - x_fit))
   if (!is.finite(err) || err > 1e-7 * max(1, abs(x_fit))) {
-    return(NULL)
+    return(NULL) # nocov
   }
   m
 }
@@ -145,8 +149,9 @@
 # `contr.sum` refit (`linearHypothesis()` on the term's rows).
 .type3_wald <- function(b, V, asgn, k) {
   i <- which(asgn == k)
+  # Defensive: `k` is a term of the design, and every term has a column.
   if (length(i) == 0L) {
-    return(NULL)
+    return(NULL) # nocov
   }
   bb <- b[i]
   list(
@@ -643,7 +648,8 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   # Type III: the coefficients carried to the sum-to-zero design, from the
   # design the fit estimated them on. The design of an `lme` is rebuilt
   # with its contrasts and checked against its population-level fitted
-  # values.
+  # values, those of the rows it was fitted on (`fitted()` pads them to
+  # the data under `na.action = na.exclude`).
   type3 <- identical(.partial_type_in_force(), "III")
   if (type3) {
     sum3 <- tryCatch(
@@ -655,12 +661,14 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
             td$data,
             contrasts.arg = fit$contrasts
           )
-          fx <- stats::fitted(fit, level = 0)
+          fx <- fit$fitted[, "fixed"]
+          # Defensive: the design is that of the fit, rebuilt from its own
+          # data and contrasts; no fit is known that fails the check.
           if (
             length(fx) != nrow(x) ||
               max(abs(drop(x %*% bhat) - fx)) > 1e-6 * max(1, abs(fx))
           ) {
-            NULL
+            NULL # nocov
           } else {
             x
           }
@@ -668,15 +676,17 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
           lme4::getME(fit, "X")
         }
         if (is.null(x_fit)) {
-          NULL
+          NULL # nocov
         } else {
           .type3_coefs(bhat, V, x_fit, td$terms, td$data)
         }
       },
       error = function(e) NULL
     )
+    # Defensive: reached only through the guards marked above. A user
+    # contrast of fewer columns stops earlier, at the column count of `mm`.
     if (is.null(sum3)) {
-      return(NULL)
+      return(NULL) # nocov
     }
   }
 

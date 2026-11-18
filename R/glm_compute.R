@@ -1092,13 +1092,15 @@ compute_partial_f_for_term <- function(
 # fitted one, so the full model is the fit itself.
 compute_glm_type2_lrt <- function(fit, term_label, type = "II") {
   if (identical(type, "III")) {
+    # Defensive: .check_partial_type() refuses an aliased fit under Type
+    # III, and the term is a label of the fit's own terms.
     if (anyNA(stats::coef(fit))) {
-      return(NULL)
+      return(NULL) # nocov
     }
     td <- .type3_terms_data(fit)
     k <- match(term_label, attr(td$terms, "term.labels"))
     if (is.na(k)) {
-      return(NULL)
+      return(NULL) # nocov
     }
     x <- .type3_sum_design(td$terms, td$data)
     asgn <- attr(x, "assign")

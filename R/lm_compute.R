@@ -391,14 +391,16 @@ extract_lm_focal_f_stat <- function(fit, focal_term = NULL, type = "II") {
 # sum-to-zero design (`.type3_coefs()`, R/regression_partial.R). NULL for
 # a fit with an aliased coefficient (table_regression() refuses it).
 compute_lm_type3_f_stat <- function(fit, focal_term) {
+  # Defensive: .check_partial_type() refuses an aliased fit under Type
+  # III, and the focal term is a label of the fit's own terms.
   b <- stats::coef(fit)
   if (anyNA(b)) {
-    return(NULL)
+    return(NULL) # nocov
   }
   td <- .type3_terms_data(fit)
   k <- match(focal_term, attr(td$terms, "term.labels"))
   if (is.na(k)) {
-    return(NULL)
+    return(NULL) # nocov
   }
   s3 <- .type3_coefs(
     b,
