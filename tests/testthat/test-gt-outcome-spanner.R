@@ -168,6 +168,8 @@ test_that("the knitted LaTeX drops the empty row of column labels", {
   expect_true(all(grepl("LL", ci$above, fixed = TRUE)))
   expect_true(all(grepl("UL", ci$above, fixed = TRUE)))
   expect_false(.spicy_latex_row_empty(" & A & \\\\ "))
+  # A line that is no row of cells (a rule) is never taken for one.
+  expect_false(.spicy_latex_row_empty("\\toprule"))
 })
 
 test_that("stacked tables keep their Outcome rows in the body", {

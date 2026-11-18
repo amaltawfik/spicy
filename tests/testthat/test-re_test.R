@@ -191,6 +191,16 @@ test_that("lrt refits a model whose data exists only inside a function", {
       rf <- ~ age | Subject
       nlme::lme(distance ~ age + Sex, random = rf, data = dd)
     },
+    # Without its data, getData() of the fit evaluates `dd` where it
+    # cannot be found.
+    lme_nokeep = function(dd) {
+      nlme::lme(
+        distance ~ age + Sex,
+        random = ~ age | Subject,
+        data = dd,
+        keep.data = FALSE
+      )
+    },
     lme_subset = function(dd) {
       nlme::lme(
         distance ~ age,
@@ -216,6 +226,11 @@ test_that("lrt refits a model whose data exists only inside a function", {
       random = ~ age | Subject,
       data = .rt_d
     ),
+    lme_nokeep = nlme::lme(
+      distance ~ age + Sex,
+      random = ~ age | Subject,
+      data = .rt_d
+    ),
     lme_subset = nlme::lme(
       distance ~ age,
       random = ~ age | Subject,
@@ -236,6 +251,30 @@ test_that("lrt refits a model whose data exists only inside a function", {
     # The same through lapply(), a common way to fit by subgroup.
     expect_equal(tested(lapply(list(d), fitters[[cls]])[[1L]]), oracle)
   }
+})
+
+test_that("the data of an lme is NULL where neither the fit nor its call holds it", {
+  skip_if_not_installed("nlme")
+  d <- as.data.frame(nlme::Orthodont)
+  # No `data` argument: the variables are those of the calling frame.
+  distance <- d$distance
+  age <- d$age
+  Subject <- factor(d$Subject, ordered = FALSE)
+  no_arg <- nlme::lme(distance ~ age, random = ~ 1 | Subject, keep.data = FALSE)
+  expect_null(.nlme_get_data(no_arg))
+  # A `data` that no longer exists where the formula was made.
+  gone <- local({
+    dd <- d
+    fit <- nlme::lme(
+      distance ~ age,
+      random = ~ 1 | Subject,
+      data = dd,
+      keep.data = FALSE
+    )
+    rm(dd)
+    fit
+  })
+  expect_null(.nlme_get_data(gone))
 })
 
 test_that("the footer discloses the per-term test", {

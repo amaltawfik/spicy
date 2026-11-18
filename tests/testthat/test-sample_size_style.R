@@ -121,6 +121,16 @@ test_that("spicy_style() takes sample_size and refuses any other value", {
   expect_true("sample_size" %in% attr(st, "provenance")$overrides)
 })
 
+test_that("a group the sizes do not hold keeps its header as it is", {
+  sizes <- c(Female = 620L, Male = 580L)
+  expect_identical(.sample_size_header_label("Other", "Other", sizes), "Other")
+  expect_identical(.sample_size_header_label("Other", "Other"), "Other")
+  # A key it holds carries its n.
+  fem <- .sample_size_header_label("Female", "Female", sizes)
+  expect_true(startsWith(fem, "Female"))
+  expect_true(grepl("620)", fem, fixed = TRUE))
+})
+
 test_that("sample_size = \"note\" is the output of a table without it", {
   d <- na_by_data()
   N <- spicy_style(sample_size = "note")
