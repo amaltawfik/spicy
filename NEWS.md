@@ -501,6 +501,12 @@
   `lapply()`. The rows stayed empty, with a warning that the refit had
   failed.
 
+* `table_regression()` gives a `gls()` model fitted inside a function,
+  or an `lme()` model fitted there with `keep.data = FALSE`, the same
+  table as the model fitted outside it. The reference row of a factor,
+  the conditional R², the test of the random effects in the note and
+  the partial tests were missing.
+
 * In the console, a label that holds a degree sign, or one of `©`, `®`,
   `™`, `№` and some other symbols, no longer shifts its row by one
   column. The cells were padded on a width that counted these

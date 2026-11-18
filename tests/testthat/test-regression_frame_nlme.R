@@ -722,3 +722,118 @@ test_that("gls carries no singular flag (no random structure to collapse)", {
   fr <- as_regression_frame(.fit_gls_plain(), model_id = "M1")
   expect_false(fr$info$extras$has_singular)
 })
+
+test_that("an lme or gls fitted inside a function gives the table of the same model fitted outside", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("broom")
+  # nlme::getData() looks for `dd` from its own frame: the reference row
+  # of the factor, the conditional R2, the random-effect LR test and the
+  # partial tests of the fit were lost.
+  set.seed(7)
+  d <- data.frame(
+    y = rnorm(60),
+    f = factor(rep(c("a", "b", "c"), 20)),
+    x = rnorm(60),
+    cl = factor(rep(1:10, 6))
+  )
+  d$y <- d$y + (d$f == "b") + as.numeric(d$cl) / 3
+  # The oracle gls reads data that getData() finds: a global object (an
+  # lme keeps its own data).
+  assign(".nlme_d", d, envir = globalenv())
+  withr::defer(rm(".nlme_d", envir = globalenv()))
+  local_lme <- function(dd) {
+    nlme::lme(y ~ f + x, random = ~ 1 | cl, data = dd, keep.data = FALSE)
+  }
+  local_gls <- function(dd) nlme::gls(y ~ f + x, data = dd)
+  pairs <- list(
+    lme = list(
+      local_lme(d),
+      nlme::lme(y ~ f + x, random = ~ 1 | cl, data = d)
+    ),
+    gls = list(local_gls(d), nlme::gls(y ~ f + x, data = .nlme_d))
+  )
+  expect_s3_class(nlme::getData(pairs$gls[[2L]]), "data.frame")
+  args <- list(
+    lme = list(
+      default = list(),
+      II = list(show_columns = c("b", "partial_chi2")),
+      III = list(show_columns = c("b", "partial_chi2"), partial_type = "III")
+    ),
+    gls = list(default = list())
+  )
+  for (cls in names(pairs)) {
+    for (k in names(args[[cls]])) {
+      tab <- function(fit) {
+        suppressWarnings(do.call(
+          table_regression,
+          c(list(fit), args[[cls]][[k]])
+        ))
+      }
+      inside <- tab(pairs[[cls]][[1L]])
+      outside <- tab(pairs[[cls]][[2L]])
+      expect_identical(
+        capture.output(print(inside)),
+        capture.output(print(outside)),
+        info = paste(cls, k)
+      )
+      expect_equal(
+        as.data.frame(broom::tidy(inside)),
+        as.data.frame(broom::tidy(outside)),
+        info = paste(cls, k)
+      )
+    }
+  }
+  td <- suppressWarnings(table_regression(
+    pairs$lme[[1L]],
+    show_columns = c("b", "partial_chi2"),
+    partial_type = "III",
+    output = "long"
+  ))
+  expect_identical(td$term[td$is_reference %in% TRUE], "fa")
+  expect_true(any(td$estimate_type == "partial_chi2" & !is.na(td$statistic)))
+})
+
+test_that("an lme whose data are gone keeps its coefficients, without partial tests", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("broom")
+  set.seed(7)
+  d <- data.frame(
+    yy_gone = rnorm(40),
+    ff_gone = factor(rep(c("a", "b"), 20)),
+    cl_gone = factor(rep(1:8, 5))
+  )
+  gone <- local({
+    dd <- d
+    fit <- nlme::lme(
+      yy_gone ~ ff_gone,
+      random = ~ 1 | cl_gone,
+      data = dd,
+      keep.data = FALSE
+    )
+    rm(dd)
+    fit
+  })
+  expect_null(.nlme_get_data(gone))
+  # Each reader of the data has no answer rather than an error.
+  expect_null(.null_lrt_lme(gone))
+  expect_identical(.lme_re_variance_contribution(gone, NULL), NA_real_)
+  expect_null(.compute_partial_chi2_rows_for_mixed(gone))
+  expect_null(.compute_beta_rows_for_mixed(gone))
+  expect_error(.type3_terms_data(gone), "cannot be found")
+  # Type III is not refused for lack of data: its cells stay empty.
+  t3 <- broom::tidy(suppressWarnings(table_regression(
+    gone,
+    show_columns = c("b", "partial_chi2"),
+    partial_type = "III"
+  )))
+  expect_false(any(t3$estimate_type == "partial_chi2" & !is.na(t3$statistic)))
+  td <- broom::tidy(suppressWarnings(table_regression(
+    gone,
+    show_columns = c("b", "partial_chi2")
+  )))
+  expect_equal(
+    td$estimate[td$term == "ff_goneb" & td$estimate_type == "B"],
+    unname(nlme::fixef(gone)[["ff_goneb"]])
+  )
+  expect_false(any(td$estimate_type == "partial_chi2" & !is.na(td$statistic)))
+})

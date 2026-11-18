@@ -86,7 +86,11 @@
     data <- stats::model.frame(fit)
   } else if (inherits(fit, "lme")) {
     trm <- stats::terms(stats::formula(fit))
-    data <- stats::model.frame(trm, nlme::getData(fit))
+    d <- .nlme_get_data(fit)
+    if (is.null(d)) {
+      stop("the data of the lme cannot be found", call. = FALSE)
+    }
+    data <- stats::model.frame(trm, d)
   } else {
     trm <- stats::terms(fit)
     data <- stats::model.frame(fit)
@@ -618,7 +622,7 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
 
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {
-      nlme::getData(fit)
+      .nlme_get_data(fit)
     } else {
       stats::model.frame(fit)
     },
@@ -628,8 +632,11 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     stats::model.matrix(fixed_form, data = data),
     error = function(e) NULL
   )
+  # The data of an lme that cannot be found, or a design rebuilt with the
+  # default contrasts that is not the fit's (a user contrast of too few
+  # columns): no test.
   if (is.null(mm) || ncol(mm) != length(bhat)) {
-    return(NULL) # nocov
+    return(NULL)
   }
 
   assign_idx <- attr(mm, "assign")

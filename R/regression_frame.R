@@ -1535,9 +1535,9 @@ validate_regression_frame <- function(frame) {
     return(NULL)
   }
   no_re_formula <- stats::formula(fit)
-  data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
+  data <- .nlme_get_data(fit)
   if (is.null(data)) {
-    return(NULL) # nocov -- getData succeeds for a fitted lme
+    return(NULL) # the data of the fit cannot be found
   }
 
   # nlme::lme is Gaussian by spec. Likelihood follows the fit's
@@ -2056,9 +2056,9 @@ validate_regression_frame <- function(frame) {
 # Random-effect variance contribution for an `lme` fit: sum over
 # grouping factors g of mean_i(z_i W_g z_i^T).
 .lme_re_variance_contribution <- function(fit, vc_list) {
-  data <- tryCatch(nlme::getData(fit), error = function(e) NULL)
+  data <- .nlme_get_data(fit)
   if (is.null(data)) {
-    return(NA_real_) # nocov -- getData succeeds for a fitted lme
+    return(NA_real_) # the data of the fit cannot be found
   }
   re_formulas <- nlme::reStruct(fit$modelStruct$reStruct)
   total <- 0

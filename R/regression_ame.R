@@ -1425,13 +1425,13 @@ extract_ame_glm <- function(
   })
   # Engine-aware data-frame retrieval: stats::model.frame() returns
   # the lmeStruct (not the data) for nlme::lme fits, so we use
-  # nlme::getData() instead, and an empty list for fixest fits, whose
+  # .nlme_get_data() instead, and an empty list for fixest fits, whose
   # data .fixest_model_data() reads (the estimation sample, or the
   # original data for a `lean = TRUE` fit, which no longer records its
   # sample while avg_slopes() still succeeds on it). lme4 + glmmTMB +
   # lm / glm all return a plain data.frame via stats::model.frame().
   mf <- if (inherits(fit, c("lme", "gls"))) {
-    tryCatch(nlme::getData(fit), error = function(e) NULL)
+    .nlme_get_data(fit)
   } else if (inherits(fit, "fixest")) {
     .fixest_model_data(fit)
   } else {

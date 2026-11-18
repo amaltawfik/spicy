@@ -1019,6 +1019,9 @@ as_regression_frame.gls <- function(
 # keep.data = FALSE) whose data exists only where the fit was made, as
 # inside a function. The terms keep the environment of that formula:
 # evaluate `data` there, and let getData() apply na.action and subset.
+# NULL when the data cannot be found. Every reader of the data of an lme
+# or gls goes through it (coefficient rows, R2, re_test, partial tests,
+# AME, standardization, the cluster-robust check).
 .nlme_get_data <- function(fit) {
   # A call with `data = data` can make getData() find utils::data().
   d <- tryCatch(nlme::getData(fit), error = function(e) NULL)
@@ -1043,7 +1046,7 @@ as_regression_frame.gls <- function(
 .extract_dv_label_nlme <- function(fit, dv) {
   tryCatch(
     {
-      d <- nlme::getData(fit)
+      d <- .nlme_get_data(fit)
       if (is.null(d) || !(dv %in% names(d))) {
         return(dv)
       }

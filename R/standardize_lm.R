@@ -683,14 +683,14 @@ extract_beta_rows <- function(
   # design matrix, matching the lm path's convention).
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {
-      nlme::getData(fit)
+      .nlme_get_data(fit)
     } else {
       stats::model.frame(fit)
     },
     error = function(e) NULL
   )
   if (is.null(data)) {
-    return(NULL) # nocov (model.frame/getData errors on real fits)
+    return(NULL) # the data of the fit cannot be found
   }
 
   # Identify the response variable -- non-Gaussian families (binomial,

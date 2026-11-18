@@ -755,7 +755,7 @@ detect_factor_term_meta <- function(fit) {
   d <- tryCatch(
     {
       if (inherits(fit, c("lme", "gls"))) {
-        nlme::getData(fit)
+        .nlme_get_data(fit)
       } else if (inherits(fit, c("brmsfit", "stanreg"))) {
         fit$data
       } else if (inherits(fit, "fixest")) {
@@ -896,14 +896,14 @@ detect_factor_term_meta <- function(fit) {
     ))
   }
   # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
-  # objects (not the data frame). Use nlme::getData() which reconstructs
-  # the modeling data frame from fit$call.
+  # objects (not the data frame). Use .nlme_get_data(), which rebuilds
+  # the modeling data frame from fit$call, NULL when it cannot.
   if (inherits(fit, c("lme", "gls"))) {
     return(tryCatch(
       {
-        d <- nlme::getData(fit)
+        d <- .nlme_get_data(fit)
         if (is.null(d)) {
-          return(NULL) # nocov: lme/gls require `data`; getData() returns a df or errors (caught below)
+          return(NULL)
         }
         stats::.getXlevels(stats::terms(fit), d)
       },
