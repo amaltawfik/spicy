@@ -507,7 +507,8 @@ One note sits under the table. It opens with the sample size, as in
 \code{\link[=table_categorical]{table_categorical()}}, "N = 159.": the rows of the data, a row with a
 missing or zero weight left out, rows rather than weights under
 \code{weights} ("N = 60 (unweighted)."), the outcome's complete cases in the
-n of the \code{Overall} row. It then states what left the analytic
+n of the \code{Overall} row (\code{spicy_style(sample_size = "none")} leaves the
+sentence out, see \code{\link[=spicy_style]{spicy_style()}}). It then states what left the analytic
 sample, which group comparison ran in each block, what the displayed
 columns mean, and how the blocks and the \code{Overall} row are to be
 read. The rendering engines carry the same sentence as a table note.

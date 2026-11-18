@@ -344,8 +344,27 @@ resolve_variable_labels <- function(data, cols, labels) {
 # never weights: under `weighted` the sentence says N is unweighted.
 # Integers, written as the counts of the tables, with no thousands
 # separator. Each table counts its own rows; this helper only words them.
-.sample_size_sentence <- function(n = NULL, groups = NULL, weighted = FALSE) {
-  fmt <- function(x) formatC(round(x), format = "f", digits = 0)
+#
+# The place of the sample size (`spicy_style(sample_size = )`) is read
+# here: NULL under "none"; under "header", a table whose group headers
+# carry their n (`in_header = TRUE`, see `.sample_size_header_n()`) keeps
+# "N = 159." without the list of groups. A table whose groups are rows
+# passes no `in_header` and keeps the list.
+.sample_size_sentence <- function(
+  n = NULL,
+  groups = NULL,
+  weighted = FALSE,
+  in_header = FALSE
+) {
+  place <- .sample_size_place()
+  if (identical(place, "none")) {
+    return(NULL)
+  }
+  fmt <- .fmt_sample_size
+  if (!is.null(groups) && isTRUE(in_header) && identical(place, "header")) {
+    n <- sum(groups)
+    groups <- NULL
+  }
   if (is.null(groups)) {
     return(spicy_fmt(
       if (weighted) "note_sample_size_unweighted" else "note_sample_size",
@@ -365,6 +384,61 @@ resolve_variable_labels <- function(data, cols, labels) {
       fmt(unname(groups))
     ))
   )
+}
+
+# Internal: a count of the sample-size sentence or of a header, an
+# integer with no thousands separator, as the counts of the tables.
+.fmt_sample_size <- function(x) formatC(round(x), format = "f", digits = 0)
+
+# Internal: where the tables put the sample size, the lever
+# `spicy_style(sample_size = )`: "note" (the default), "header" or "none".
+.sample_size_place <- function() {
+  .style_fmt()$sample_size %||% "note"
+}
+
+# Internal: the n of each group a table heads its columns with under
+# `spicy_style(sample_size = "header")`, or NULL. `groups` holds the rows
+# of each group as the sample-size sentence counts them, named by the
+# key of the group; `margin`, the key of a Total column, which heads the
+# whole N. NULL under the other places, and for a table with no groups.
+# The table stores the result (`attr(, "header_n")`) so that a print
+# outside the call heads its columns the same way.
+.sample_size_header_n <- function(groups, margin = NULL) {
+  if (!identical(.sample_size_place(), "header") || !length(groups)) {
+    return(NULL)
+  }
+  out <- as.integer(round(groups))
+  names(out) <- names(groups)
+  if (length(margin) == 1L && !is.na(margin)) {
+    out <- c(out, stats::setNames(as.integer(round(sum(groups))), margin))
+  }
+  out
+}
+
+# Internal: the header of a group column under
+# `spicy_style(sample_size = "header")`, "Female (n = 620)", in the words
+# of the group of the sample-size sentence. `sizes` is the `header_n` of
+# the table, named by group key and matched by position, since a level of
+# `by` can be the empty string; a key it does not hold, or no `sizes`,
+# leaves the label as it is. The spaces of "(n = 620)" are no-break
+# spaces: a narrow column wraps the header between the label and its n,
+# never inside the n ("Central (n" over "= 245)" in Typst).
+.sample_size_header_label <- function(label, key, sizes = NULL) {
+  if (is.null(sizes)) {
+    return(label)
+  }
+  i <- match(key, names(sizes))
+  if (is.na(i)) {
+    return(label)
+  }
+  n <- spicy_fmt(
+    "note_sample_size_group_item",
+    "",
+    .fmt_sample_size(sizes[[i]])
+  )
+  lead <- sub("^(\\s*).*$", "\\1", n)
+  rest <- gsub(" ", "\u00A0", substring(n, nchar(lead) + 1L), fixed = TRUE)
+  paste0(label, lead, rest)
 }
 
 # Internal: the rows a weighted table keeps, for the sample-size sentence:

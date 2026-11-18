@@ -113,7 +113,10 @@ print.spicy_categorical_table <- function(x, ...) {
   # Under `by`, each group heads its own columns, as in the rich engines.
   spanners <- NULL
   if (!is.null(header_labels)) {
-    hdr <- ascii_group_header(header_labels, .categorical_header_groups(s))
+    hdr <- ascii_group_header(
+      header_labels,
+      .categorical_header_groups(s, attr(x, "header_n", exact = TRUE))
+    )
     header_labels <- hdr$labels
     spanners <- hdr$spanners
   }
@@ -178,8 +181,9 @@ print.spicy_categorical_table <- function(x, ...) {
 # Internal: the groups of `by` over their columns, in the records of a
 # header layer (`ascii_group_header()`): the label of the group (the margin
 # in the words of `.cat_group_label()`) and, under it, the count and the
-# percentage, as every rich engine of the family heads them.
-.categorical_header_groups <- function(s) {
+# percentage, as every rich engine of the family heads them. `sizes`, the
+# `header_n` of the table, adds the n of each group to its label.
+.categorical_header_groups <- function(s, sizes = NULL) {
   keys <- c(.CAT_KEY_VARIABLE, .struct_value_cols(s$body))
   # By position: a level of `by` can be the empty string, which `[[`
   # does not match by name.
@@ -188,7 +192,7 @@ print.spicy_categorical_table <- function(x, ...) {
     cols <- s$spanners[[i]]
     meta <- s$col_meta[keys[cols]]
     list(
-      label = .cat_group_label(g, if (isTRUE(meta[[1L]]$total)) g),
+      label = .cat_group_label(g, if (isTRUE(meta[[1L]]$total)) g, sizes),
       cols = cols,
       bounds = vapply(
         meta,

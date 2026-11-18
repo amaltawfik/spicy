@@ -162,6 +162,8 @@
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
   margin_key <- attr(x, "margin_key", exact = TRUE)
+  # Under `spicy_style(sample_size = "header")`, the n of each domain.
+  header_n <- attr(x, "header_n", exact = TRUE)
   cols <- .cat_svy_columns(x)
   keys <- vapply(cols, function(e) e$key, character(1))
   base_labels <- vapply(
@@ -186,7 +188,7 @@
       } else {
         spicy_fmt(
           "header_group_qualified",
-          .cat_group_label(b, margin_key),
+          .cat_group_label(b, margin_key, header_n),
           standalone[[i]]
         )
       }
@@ -277,7 +279,7 @@
       } else {
         groups[[length(groups) + 1L]] <- list(
           key = b,
-          label = .cat_group_label(b, margin_key),
+          label = .cat_group_label(b, margin_key, header_n),
           cols = i:j,
           bounds = unname(sub_labels[col_keys[i:j]])
         )

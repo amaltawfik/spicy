@@ -783,6 +783,9 @@
 #' rows with a `by` value, a row with a missing or zero weight left out,
 #' rows rather than weights under `weights` ("N = 60 (unweighted)."), the
 #' complete cases of each model in its n column.
+#' `spicy_style(sample_size = "header")` heads the mean of each level with
+#' its n instead, "Women (n = 80)", and leaves "N = 159." in the note;
+#' `sample_size = "none"` leaves the sentence out (see [spicy_style()]).
 #'
 #' When `covariates` is non-empty, the note then names the covariates and
 #' the chosen estimand, e.g.
@@ -1829,6 +1832,16 @@ table_continuous_lm <- function(
       .no_data_sentences(outcome_notes, unname(no_data_levels))
     )
   }
+  # The rows the sample size counts (see below), and under a categorical
+  # `by` those of each group, which head the mean columns under
+  # `spicy_style(sample_size = "header")` (`attr(, "header_n")`, read by
+  # `.lm_column_spec()` here and at print time).
+  size_rows <- !is.na(by_vector) &
+    .weighted_rows_in(weights_vec, length(by_vector))
+  size_groups <- if (!is.null(by_levels)) {
+    .group_row_counts(coerce_lm_factor(by_vector), by_levels, size_rows)
+  }
+  attr(result, "header_n") <- .sample_size_header_n(size_groups)
   # The ordered columns of this table -- frozen key, displayed header,
   # semantic token -- resolved ONCE and handed to every consumer below,
   # the note first, which defines the abbreviations of the headers.
@@ -1858,18 +1871,13 @@ table_continuous_lm <- function(
   # under the labels of the mean columns, so that the n add up to N. The
   # complete cases of each model are in its n column and the
   # missing-values sentence. A numeric `by` has no groups.
-  size_rows <- !is.na(by_vector) &
-    .weighted_rows_in(weights_vec, length(by_vector))
   sample_size <- if (is.null(by_levels)) {
     .sample_size_sentence(sum(size_rows), weighted = !is.null(weights_vec))
   } else {
     .sample_size_sentence(
-      groups = .group_row_counts(
-        coerce_lm_factor(by_vector),
-        by_levels,
-        size_rows
-      ),
-      weighted = !is.null(weights_vec)
+      groups = size_groups,
+      weighted = !is.null(weights_vec),
+      in_header = TRUE
     )
   }
   # The whole note, for every route: print() shows it as it is here, and

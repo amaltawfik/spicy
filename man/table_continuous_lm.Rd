@@ -945,6 +945,9 @@ The note opens with the sample size, as in \code{\link[=table_categorical]{table
 rows with a \code{by} value, a row with a missing or zero weight left out,
 rows rather than weights under \code{weights} ("N = 60 (unweighted)."), the
 complete cases of each model in its n column.
+\code{spicy_style(sample_size = "header")} heads the mean of each level with
+its n instead, "Women (n = 80)", and leaves "N = 159." in the note;
+\code{sample_size = "none"} leaves the sentence out (see \code{\link[=spicy_style]{spicy_style()}}).
 
 When \code{covariates} is non-empty, the note then names the covariates and
 the chosen estimand, e.g.

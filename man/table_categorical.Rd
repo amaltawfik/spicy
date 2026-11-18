@@ -609,6 +609,10 @@ leaves it out of a weighted fit. One N per table, the missing values of
 a variable in its \code{"(Missing)"} row or in the note. With \code{by}, the direction of the
 percentages follows, then the weights. Their base takes no sentence:
 the table shows it (see \code{percent_base}).
+\code{spicy_style(sample_size = "header")} moves the n of the groups into
+the headers of their columns, "Women (n = 80)", the Total column headed
+by N, and leaves "N = 159." in the note; \code{sample_size = "none"} leaves
+the sentence out (see \code{\link[=spicy_style]{spicy_style()}}).
 
 The note, the \code{drop_na = TRUE} disclosure included, travels with the
 table on every route, not just the console: \code{"default"} prints it

@@ -392,6 +392,10 @@ domain, on the observed values of the variable unless
 rows of non-zero weight, which the \code{n} columns count, as
 \code{survey::unwtd.count()} does) and the estimated population together,
 because neither alone tells the reader what they are looking at.
+\code{spicy_style(sample_size = "header")} heads each domain with its
+unweighted count as well, "E (n = 144)", the Total column with N, and
+keeps that sentence; \code{sample_size = "none"} leaves it out (see
+\code{\link[=spicy_style]{spicy_style()}}).
 
 \code{proportion_ci = TRUE} adds the interval of each percentage.
 \code{ci_method} chooses among the seven \code{survey::svyciprop()} offers;

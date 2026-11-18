@@ -532,7 +532,9 @@ rows the table describes and those of each group (the group of missing
 weight left out, rows rather than weights under \code{weights}
 ("N = 60 (unweighted)."), a row of zero weight left out as it is left
 out of every statistic, the complete cases of each variable in its n
-column.
+column. \code{spicy_style(sample_size = "none")} leaves the sentence out;
+the groups being rows, \code{sample_size = "header"} keeps it as it is (see
+\code{\link[=spicy_style]{spicy_style()}}).
 
 The missing-value disclosure (values excluded from the summaries,
 and rows removed for a missing \code{by} value under \code{drop_na = TRUE})

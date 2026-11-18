@@ -48,8 +48,10 @@
 # format context and are read by the formatters -- and, for
 # `note_label` and `abbreviations`, by the note builders
 # (`.note_lead_keys()`, R/i18n.R; `.note_abbreviations()`,
-# R/table_helpers.R), for `minus_sign`, by the tinytable builder
-# (`.spicy_tt_bare()`, R/tt_theme.R).
+# R/table_helpers.R), for `sample_size`, by the sample-size sentence and
+# the group headers (`.sample_size_place()`, R/table_helpers.R), for
+# `minus_sign`, by the tinytable builder (`.spicy_tt_bare()`,
+# R/tt_theme.R).
 .STYLE_FMT_FIELDS <- c(
   "p_style",
   "p_floor",
@@ -59,6 +61,7 @@
   "ci_brackets",
   "note_label",
   "abbreviations",
+  "sample_size",
   "minus_sign"
 )
 
@@ -505,6 +508,22 @@
 #'   Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
 #'   standard error). Either way the definitions take the form and the
 #'   place of the theme in force. A `note` you type is printed as typed.
+#' @param sample_size Where the tables give their sample size, the
+#'   number of rows they describe. `"note"` (the default) opens the note
+#'   with it: "N = 1200." and, under `by`, the n of each group, "N = 1200:
+#'   Female (n = 620), Male (n = 580).". `"header"` heads each group
+#'   column with its n instead, "Female (n = 620)", the Total column with N
+#'   and the column of missing `by` values with its own n, in the tables
+#'   whose groups are columns ([table_categorical()],
+#'   [table_categorical_svy()] and [table_continuous_lm()]), in every
+#'   output; the note then keeps "N = 1200." alone, and the note of
+#'   [table_categorical_svy()] keeps its own sentence. The n are the
+#'   unweighted counts the note gives, for a survey design too. Without
+#'   `by`, and in [table_continuous()] and [table_outcome()], whose groups
+#'   are rows, `"header"` is `"note"`. `"none"` leaves the sentence out of
+#'   the note of every table that writes one, the survey tables included;
+#'   the Base row of [table_multiresponse()] stays. The data frames,
+#'   `tidy()` and `glance()` do not change. No theme sets it.
 #' @param minus_sign The sign of a negative number in the outputs that are
 #'   printed: `output = "flextable"` and `"word"` (a flextable knitted into
 #'   Word too), `output = "gt"` in HTML, Word, RTF and LaTeX, the HTML, Typst
@@ -585,6 +604,7 @@ spicy_style <- function(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  sample_size = NULL,
   minus_sign = NULL,
   v_digits
 ) {
@@ -645,6 +665,11 @@ spicy_style <- function(
     "abbreviations",
     c("all", "none")
   )
+  sample_size <- .style_check_enum(
+    sample_size,
+    "sample_size",
+    c("note", "header", "none")
+  )
   minus_sign <- .style_check_enum(
     minus_sign,
     "minus_sign",
@@ -681,6 +706,7 @@ spicy_style <- function(
     percent_digits = percent_digits,
     note_label = note_label,
     abbreviations = abbreviations,
+    sample_size = sample_size,
     minus_sign = minus_sign
   )
   out <- out[!vapply(out, is.null, logical(1))]

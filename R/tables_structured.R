@@ -1038,7 +1038,9 @@
     )
     # The header a reader sees, from the same spec the engines read: the
     # typed view is one consumer of the label layer, never its source.
-    meta$display_label <- ent$label
+    # A mean keeps its level alone (`typed_label`), without the n
+    # `spicy_style(sample_size = "header")` adds to its header.
+    meta$display_label <- ent$typed_label %||% ent$label
     col_meta[[nm]] <- meta
   }
   if (all(c(ci_ll_name, ci_ul_name) %in% col_names)) {

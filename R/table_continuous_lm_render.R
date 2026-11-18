@@ -254,14 +254,19 @@
   }
 
   if (identical(by_type, "categorical")) {
-    # Each mean is headed by its level, under `spanner_label`.
+    # Each mean is headed by its level, under `spanner_label`, with its n
+    # under `spicy_style(sample_size = "header")` (`attr(, "header_n")`).
     mean_hdr <- .style_header("header_mean")
+    header_n <- attr(x, "header_n", exact = TRUE)
     for (lev in first_block$level) {
       add(
         .lm_key_emmean(lev),
-        lev,
+        .sample_size_header_label(lev, lev, header_n),
         "emmean",
         level = lev,
+        # The header of the typed view, which carries no n, as in the
+        # categorical tables.
+        typed_label = lev,
         spanner_label = mean_hdr
       )
     }

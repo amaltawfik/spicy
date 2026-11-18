@@ -120,9 +120,12 @@
 # margin never needs another word to stand apart.
 #
 # One resolver for every engine: split it and the margin would translate
-# in some outputs and not in others.
-.cat_group_label <- function(g, margin_key = NULL) {
-  if (
+# in some outputs and not in others. `sizes`, the `header_n` of a table
+# built under `spicy_style(sample_size = "header")`, adds the n of the
+# group to its header ("Female (n = 620)"); the typed view and the machine
+# outputs pass none.
+.cat_group_label <- function(g, margin_key = NULL, sizes = NULL) {
+  label <- if (
     length(margin_key) == 1L &&
       !is.na(margin_key) &&
       identical(g, margin_key)
@@ -131,6 +134,7 @@
   } else {
     g
   }
+  .sample_size_header_label(label, g, sizes)
 }
 
 # The KEY of the margin column of `table_categorical()`, its survey twin
@@ -1609,6 +1613,10 @@
 #' a variable in its `"(Missing)"` row or in the note. With `by`, the direction of the
 #' percentages follows, then the weights. Their base takes no sentence:
 #' the table shows it (see `percent_base`).
+#' `spicy_style(sample_size = "header")` moves the n of the groups into
+#' the headers of their columns, "Women (n = 80)", the Total column headed
+#' by N, and leaves "N = 159." in the note; `sample_size = "none"` leaves
+#' the sentence out (see [spicy_style()]).
 #'
 #' The note, the `drop_na = TRUE` disclosure included, travels with the
 #' table on every route, not just the console: `"default"` prints it
@@ -2417,12 +2425,11 @@ table_categorical <- function(
   # missing values are in its `(Missing)` row or in that sentence. Rows,
   # never weights, so a weighted table says N is unweighted. `size_groups`,
   # `missing_group` and `g_fac` are read when the note is built.
-  build_size_note <- function() {
+  # The rows of each group column, named by its key: the n of the
+  # sentence, and of the headers under `spicy_style(sample_size =
+  # "header")` (`.sample_size_header_n()`).
+  size_group_counts <- function() {
     rows_in <- .weighted_rows_in(weights_vec, nrow(data))
-    weighted <- !is.null(weights_vec)
-    if (!has_group) {
-      return(.sample_size_sentence(sum(rows_in), weighted = weighted))
-    }
     g_chr <- as.character(g_fac)
     n_groups <- vapply(
       size_groups,
@@ -2436,9 +2443,18 @@ table_categorical <- function(
       },
       integer(1)
     )
+    stats::setNames(n_groups, size_groups)
+  }
+  build_size_note <- function() {
+    weighted <- !is.null(weights_vec)
+    if (!has_group) {
+      rows_in <- .weighted_rows_in(weights_vec, nrow(data))
+      return(.sample_size_sentence(sum(rows_in), weighted = weighted))
+    }
     .sample_size_sentence(
-      groups = stats::setNames(n_groups, size_groups),
-      weighted = weighted
+      groups = size_group_counts(),
+      weighted = weighted,
+      in_header = TRUE
     )
   }
   # What the numbers are, (a) of `.compose_note()`, in this order: the
@@ -5006,12 +5022,17 @@ table_categorical <- function(
     as.integer(do_smd)
 
   # Group headers, resolved once: user levels are data, the margin is
-  # the single entry that carries a word of ours.
+  # the single entry that carries a word of ours. Under
+  # `spicy_style(sample_size = "header")` each carries its n.
+  header_n <- if (has_group) {
+    .sample_size_header_n(size_group_counts(), margin_col_key)
+  }
   group_labels <- vapply(
     group_levels,
     .cat_group_label,
     character(1),
     margin_key = margin_col_key,
+    sizes = header_n,
     USE.NAMES = FALSE
   )
   make_report_wide <- function(ldf, mode = c("char", "excel")) {
@@ -5297,6 +5318,9 @@ table_categorical <- function(
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "abbrev_note") <- abbrev_note
     attr(out, "structured") <- structured
+    # The n print() heads each group with, under `spicy_style(sample_size
+    # = "header")`.
+    attr(out, "header_n") <- header_n
     if (include_total) {
       # The internal key of the margin group in `long_data` ("Total", or
       # the first free "Total_<i>" when a `by` level holds that key beside

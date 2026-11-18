@@ -390,6 +390,10 @@
 #' rows of non-zero weight, which the `n` columns count, as
 #' `survey::unwtd.count()` does) and the estimated population together,
 #' because neither alone tells the reader what they are looking at.
+#' `spicy_style(sample_size = "header")` heads each domain with its
+#' unweighted count as well, "E (n = 144)", the Total column with N, and
+#' keeps that sentence; `sample_size = "none"` leaves it out (see
+#' [spicy_style()]).
 #'
 #' `proportion_ci = TRUE` adds the interval of each percentage.
 #' `ci_method` chooses among the seven `survey::svyciprop()` offers;
@@ -1050,6 +1054,15 @@ table_categorical_svy <- function(
   real_groups <- setdiff(group_keys, missing_group_label)
   w_design <- .design_weights(design)
   in_sample <- !is.na(w_design) & w_design != 0
+  # Under `spicy_style(sample_size = "header")`, each domain heads its
+  # columns with its unweighted count, the rows of non-zero weight the N
+  # of the note counts (`.design_meta()`), and the margin with that N.
+  header_n <- if (has_group) {
+    .sample_size_header_n(
+      .group_row_counts(geom$values, group_keys, in_sample),
+      margin_key
+    )
+  }
   glance_counts <- list()
   no_data_groups <- list()
   no_data_vars <- character(0)
@@ -1399,6 +1412,7 @@ table_categorical_svy <- function(
   attr(result, "group_label") <- by_note
   attr(result, "blocks") <- blocks
   attr(result, "margin_key") <- margin_key
+  attr(result, "header_n") <- header_n
   attr(result, "missing_group_label") <- missing_group_label
   attr(result, "show_p") <- p_value
   attr(result, "proportion_ci") <- proportion_ci

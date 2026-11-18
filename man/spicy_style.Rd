@@ -24,6 +24,7 @@ spicy_style(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  sample_size = NULL,
   minus_sign = NULL,
   v_digits
 )
@@ -115,6 +116,23 @@ symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
 Q1, the method of a standardized \eqn{\beta}{beta}, the design-based
 standard error). Either way the definitions take the form and the
 place of the theme in force. A \code{note} you type is printed as typed.}
+
+\item{sample_size}{Where the tables give their sample size, the
+number of rows they describe. \code{"note"} (the default) opens the note
+with it: "N = 1200." and, under \code{by}, the n of each group, "N = 1200:
+Female (n = 620), Male (n = 580).". \code{"header"} heads each group
+column with its n instead, "Female (n = 620)", the Total column with N
+and the column of missing \code{by} values with its own n, in the tables
+whose groups are columns (\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_categorical_svy]{table_categorical_svy()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}), in every
+output; the note then keeps "N = 1200." alone, and the note of
+\code{\link[=table_categorical_svy]{table_categorical_svy()}} keeps its own sentence. The n are the
+unweighted counts the note gives, for a survey design too. Without
+\code{by}, and in \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_outcome]{table_outcome()}}, whose groups
+are rows, \code{"header"} is \code{"note"}. \code{"none"} leaves the sentence out of
+the note of every table that writes one, the survey tables included;
+the Base row of \code{\link[=table_multiresponse]{table_multiresponse()}} stays. The data frames,
+\code{tidy()} and \code{glance()} do not change. No theme sets it.}
 
 \item{minus_sign}{The sign of a negative number in the outputs that are
 printed: \code{output = "flextable"} and \code{"word"} (a flextable knitted into

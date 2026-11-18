@@ -1130,12 +1130,17 @@
 # The sample-size sentence. Both numbers, because neither alone is
 # enough: the unweighted count is the robustness information, the sum
 # of weights is the population the estimates describe (decision 28).
+# Left out under `spicy_style(sample_size = "none")`; kept under
+# "header", whose group headers give the unweighted n of each domain.
 .design_n_note <- function(
   n_obs,
   sum_weights,
   digits = 0L,
   decimal_mark = "."
 ) {
+  if (identical(.sample_size_place(), "none")) {
+    return(NULL)
+  }
   spicy_fmt(
     "note_design_n",
     format_number(n_obs, digits = 0L, decimal_mark = decimal_mark),
