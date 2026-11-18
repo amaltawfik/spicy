@@ -43,6 +43,7 @@ table_continuous_lm(
   excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
+  word_template = NULL,
   verbose = FALSE,
   user_na = TRUE,
   style = NULL
@@ -570,6 +571,28 @@ delimiter you choose.}
 
 \item{word_path}{File path for \code{output = "word"}, ending in \code{".docx"},
 in a directory that exists.}
+
+\item{word_template}{Optional path to a custom .docx file used as the
+template for \code{output = "word"}. The template's header, footer,
+page size, margins, and named styles ("Table Caption" in
+particular) are honored; the table is appended to the template
+body. Useful for institutional templates with pre-set headers
+("APA Style", "Manuscript Submission Template", etc.). Default
+\code{NULL} (uses flextable's stock template).
+
+\strong{Customizing the caption appearance:} the table caption is
+tagged with the Word named style \code{"Table Caption"}. The visual
+rendering (italic / bold / color / font) follows whatever that
+style is set to in the docx template. The stock Word template
+renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
+condensed convention. For a different appearance (Nature-style
+bold non-italic, APA-strict 2-line bold-number / italic-title,
+etc.), edit the \code{"Table Caption"} style in a docx template and
+pass it via \code{word_template = "your_template.docx"}. Style-based
+delegation keeps the rendered caption consistent with the
+surrounding document and lets editorial conventions (Nature,
+APA-strict, journal-specific) be applied without modifying the
+call site.}
 
 \item{verbose}{Logical. If \code{TRUE}, a message (class \code{spicy_info})
 names the non-numeric columns left out of the outcomes (default:

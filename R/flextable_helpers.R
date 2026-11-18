@@ -488,6 +488,39 @@
   )
 }
 
+# The document a Word route writes into: the user's `word_template`, or
+# officer's stock document. One helper for every table function that
+# writes Word, so the check on the path and its message are the same.
+.spicy_word_doc <- function(word_template = NULL) {
+  if (is.null(word_template) || !nzchar(word_template)) {
+    return(officer::read_docx())
+  }
+  if (!file.exists(word_template)) {
+    spicy_abort(
+      sprintf("`word_template` file does not exist: %s", word_template),
+      class = "spicy_invalid_input"
+    )
+  }
+  officer::read_docx(path = word_template)
+}
+
+# Write the flextable of a descriptive table to `word_path`: through
+# `save_as_docx()` as before without a template, appended to the body
+# of the template otherwise.
+.spicy_save_docx <- function(ft, word_path, word_template = NULL) {
+  if (is.null(word_template) || !nzchar(word_template)) {
+    flextable::save_as_docx(ft, path = word_path)
+  } else {
+    doc <- flextable::body_add_flextable(
+      .spicy_word_doc(word_template),
+      value = ft,
+      align = "center"
+    )
+    print(doc, target = word_path)
+  }
+  invisible(word_path)
+}
+
 # Set the caption every HTML (flextable) route prints above its
 # table: the same title the console announces. Word gets its own
 # auto-numbered caption from `.spicy_ft_word_caption()` above -- that

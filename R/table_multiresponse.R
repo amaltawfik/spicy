@@ -574,6 +574,7 @@ table_multiresponse <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   style = NULL
 ) {
   # `select` has no default: the indicator columns ARE the question, and a
@@ -1113,6 +1114,7 @@ table_multiresponse <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
+      word_template = word_template,
       note = note_txt,
       header_layout = .mr_header_layout(cols),
       clipboard_label = "Multiple-response table copied to clipboard.",

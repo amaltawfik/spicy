@@ -444,3 +444,95 @@ test_that(".spicy_ft_word_caption reports a missing 'officer'", {
     class = "spicy_missing_pkg"
   )
 })
+
+test_that("every descriptive table writes into a `word_template`", {
+  .wd_skip()
+  skip_if_not_installed("survey")
+  d <- .wd_data()
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  pgsz <- function(path) {
+    xml <- paste(
+      readLines(
+        unz(path, "word/document.xml"),
+        warn = FALSE,
+        encoding = "UTF-8"
+      ),
+      collapse = ""
+    )
+    regmatches(xml, regexpr("<w:pgSz[^/]*/>", xml))
+  }
+  # A template with a page setup of its own: landscape, 13 x 8 inches.
+  tmpl <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmpl), add = TRUE)
+  doc <- officer::body_set_default_section(
+    officer::read_docx(),
+    officer::prop_section(
+      page_size = officer::page_size(
+        width = 13,
+        height = 8,
+        orient = "landscape"
+      )
+    )
+  )
+  print(doc, target = tmpl)
+  expect_match(pgsz(tmpl), "landscape", fixed = TRUE)
+
+  items <- c("life_sat_health", "life_sat_work")
+  info <- c("info_doctor", "info_internet")
+  writers <- list(
+    table_categorical = function(...) {
+      table_categorical(d, select = "smoking", by = "sex", ...)
+    },
+    table_categorical_oneway = function(...) {
+      table_categorical(d, select = "smoking", ...)
+    },
+    table_continuous = function(...) {
+      table_continuous(d, select = "bmi", by = "sex", ...)
+    },
+    table_continuous_lm = function(...) {
+      table_continuous_lm(d, select = "bmi", by = "sex", ...)
+    },
+    table_outcome = function(...) {
+      table_outcome(d, outcome = "bmi", select = "smoking", ...)
+    },
+    table_multiresponse = function(...) {
+      table_multiresponse(d, select = info, ...)
+    },
+    table_battery = function(...) table_battery(d, select = items, ...),
+    table_categorical_svy = function(...) {
+      table_categorical_svy(des, select = "smoking", by = "sex", ...)
+    },
+    table_continuous_svy = function(...) {
+      table_continuous_svy(des, select = "bmi", by = "sex", ...)
+    },
+    table_battery_svy = function(...) {
+      table_battery_svy(des, select = items, ...)
+    }
+  )
+  for (nm in names(writers)) {
+    out <- tempfile(fileext = ".docx")
+    res <- suppressWarnings(writers[[nm]](
+      output = "word",
+      word_path = out,
+      word_template = tmpl
+    ))
+    expect_identical(res, out, info = nm)
+    # The template's page size survives in the written document, and the
+    # caption keeps the named style the template defines.
+    expect_identical(pgsz(out), pgsz(tmpl), info = nm)
+    expect_match(.wd_caption(out), "SEQ tab", fixed = TRUE, info = nm)
+    unlink(out)
+  }
+  # A template that does not exist is refused, as in table_regression().
+  expect_error(
+    table_categorical(
+      d,
+      select = "smoking",
+      output = "word",
+      word_path = tempfile(fileext = ".docx"),
+      word_template = tempfile(fileext = ".docx")
+    ),
+    "`word_template` file does not exist",
+    class = "spicy_invalid_input"
+  )
+})

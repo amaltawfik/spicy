@@ -851,6 +851,7 @@ table_outcome <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   user_na = TRUE,
   style = NULL,
   by
@@ -1446,6 +1447,7 @@ table_outcome <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
+      word_template = word_template,
       note = table_note,
       es_ci = isTRUE(effect_size_ci),
       structured = structured

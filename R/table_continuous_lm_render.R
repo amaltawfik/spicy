@@ -727,6 +727,7 @@ export_continuous_lm_table <- function(
   excel_sheet,
   clipboard_delim,
   word_path,
+  word_template = NULL,
   note = NULL,
   title = NULL,
   labels = NULL,
@@ -1343,8 +1344,7 @@ export_continuous_lm_table <- function(
       # names the grouping variable, which nothing else in the
       # document states.
       ft <- .spicy_ft_word_caption(ft, title)
-      flextable::save_as_docx(ft, path = word_path)
-      return(invisible(word_path))
+      return(.spicy_save_docx(ft, word_path, word_template))
     }
 
     # Tag with the shared `spicy_flextable` sub-class + stash the raw

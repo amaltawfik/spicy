@@ -753,6 +753,7 @@ table_categorical_svy <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   user_na = TRUE,
   style = NULL
 ) {
@@ -1452,6 +1453,7 @@ table_categorical_svy <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
+      word_template = word_template,
       note = table_note,
       header_layout = layout,
       clipboard_label = "Categorical table copied to clipboard.",

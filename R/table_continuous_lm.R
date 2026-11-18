@@ -1231,6 +1231,7 @@ table_continuous_lm <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   verbose = FALSE,
   user_na = TRUE,
   style = NULL
@@ -1976,6 +1977,7 @@ table_continuous_lm <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
+    word_template = word_template,
     note = table_note,
     title = .continuous_lm_title(by_note),
     labels = .lm_spec_labels(spec),

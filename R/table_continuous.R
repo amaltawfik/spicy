@@ -926,6 +926,7 @@ table_continuous <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   verbose = FALSE,
   user_na = TRUE,
   style = NULL
@@ -2058,6 +2059,7 @@ table_continuous <- function(
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
         word_path = word_path,
+        word_template = word_template,
         note = table_note,
         es_ci = isTRUE(attr(result, "show_effect_size_ci")),
         structured = structured
@@ -4096,6 +4098,7 @@ export_desc_table <- function(
   excel_sheet,
   clipboard_delim,
   word_path,
+  word_template = NULL,
   note = NULL,
   header_layout = NULL,
   clipboard_label = NULL,
@@ -4736,8 +4739,7 @@ export_desc_table <- function(
     if (output == "word") {
       # Same title the console prints, from the same helper.
       ft <- .spicy_ft_word_caption(ft, title)
-      flextable::save_as_docx(ft, path = word_path)
-      return(invisible(word_path))
+      return(.spicy_save_docx(ft, word_path, word_template))
     }
 
     # Same title the console prints, from the same helper.

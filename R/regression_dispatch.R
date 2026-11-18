@@ -3067,17 +3067,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
   # --- Save via officer: gives us `split = FALSE` (row cant-split) +
   # `keepnext = TRUE` (keep table together with its caption) uniformly,
   # whether the user supplied a custom template or not.
-  if (!is.null(word_template) && nzchar(word_template)) {
-    if (!file.exists(word_template)) {
-      spicy_abort(
-        sprintf("`word_template` file does not exist: %s", word_template),
-        class = "spicy_invalid_input"
-      )
-    }
-    doc <- officer::read_docx(path = word_template)
-  } else {
-    doc <- officer::read_docx()
-  }
+  doc <- .spicy_word_doc(word_template)
   doc <- flextable::body_add_flextable(
     doc,
     value = ft,

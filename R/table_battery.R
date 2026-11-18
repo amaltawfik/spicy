@@ -384,6 +384,7 @@ table_battery <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   style = NULL
 ) {
   # `select` has no default: the items ARE the battery.
@@ -724,6 +725,7 @@ table_battery <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
+    word_template = word_template,
     by_name = by_name,
     by_note = by_note,
     nobs = data.frame(
@@ -786,6 +788,7 @@ table_battery <- function(
   excel_sheet,
   clipboard_delim,
   word_path,
+  word_template,
   by_name,
   by_note,
   class,
@@ -886,6 +889,7 @@ table_battery <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
+      word_template = word_template,
       note = note_txt,
       header_layout = .mr_header_layout(cols),
       clipboard_label = "Battery table copied to clipboard.",

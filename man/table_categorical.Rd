@@ -45,6 +45,7 @@ table_categorical(
   excel_sheet = NULL,
   clipboard_delim = "\\t",
   word_path = NULL,
+  word_template = NULL,
   user_na = TRUE,
   style = NULL,
   v_digits
@@ -482,6 +483,28 @@ also wrote a \code{.docx} as a side effect; it is now used exclusively
 by \code{output = "word"} (the contract shared with the rest of the
 table family) and is ignored, with a warning, under any other
 \code{output}.}
+
+\item{word_template}{Optional path to a custom .docx file used as the
+template for \code{output = "word"}. The template's header, footer,
+page size, margins, and named styles ("Table Caption" in
+particular) are honored; the table is appended to the template
+body. Useful for institutional templates with pre-set headers
+("APA Style", "Manuscript Submission Template", etc.). Default
+\code{NULL} (uses flextable's stock template).
+
+\strong{Customizing the caption appearance:} the table caption is
+tagged with the Word named style \code{"Table Caption"}. The visual
+rendering (italic / bold / color / font) follows whatever that
+style is set to in the docx template. The stock Word template
+renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
+condensed convention. For a different appearance (Nature-style
+bold non-italic, APA-strict 2-line bold-number / italic-title,
+etc.), edit the \code{"Table Caption"} style in a docx template and
+pass it via \code{word_template = "your_template.docx"}. Style-based
+delegation keeps the rendered caption consistent with the
+surrounding document and lets editorial conventions (Nature,
+APA-strict, journal-specific) be applied without modifying the
+call site.}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values in the row variables and in \code{by} are treated as missing:

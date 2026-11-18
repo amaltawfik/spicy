@@ -231,6 +231,7 @@ table_battery_svy <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   style = NULL
 ) {
   .style_pushed <- .style_begin(style, match.call(), environment())
@@ -687,6 +688,7 @@ table_battery_svy <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
+    word_template = word_template,
     by_name = by_name,
     by_note = by_note,
     nobs = data.frame(

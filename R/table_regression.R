@@ -1947,28 +1947,6 @@
 #'   (returns the flextable object that knits to docx/HTML/PDF natively).
 #'   `output = "word"` writes a standalone .docx file, suited to scripted
 #'   exports rather than chunk-level rendering.
-#' @param word_template Optional path to a custom .docx file used as the
-#'   template for `output = "word"`. The template's header, footer,
-#'   page size, margins, and named styles ("Table Caption" in
-#'   particular) are honored; the table is appended to the template
-#'   body. Useful for institutional templates with pre-set headers
-#'   ("APA Style", "Manuscript Submission Template", etc.). Default
-#'   `NULL` (uses flextable's stock template).
-#'
-#'   **Customizing the caption appearance:** the table caption is
-#'   tagged with the Word named style `"Table Caption"`. The visual
-#'   rendering (italic / bold / color / font) follows whatever that
-#'   style is set to in the docx template. The stock Word template
-#'   renders `"Table Caption"` in italic — the APA Manual 7 §7.10
-#'   condensed convention. For a different appearance (Nature-style
-#'   bold non-italic, APA-strict 2-line bold-number / italic-title,
-#'   etc.), edit the `"Table Caption"` style in a docx template and
-#'   pass it via `word_template = "your_template.docx"`. Style-based
-#'   delegation keeps the rendered caption consistent with the
-#'   surrounding document and lets editorial conventions (Nature,
-#'   APA-strict, journal-specific) be applied without modifying the
-#'   call site.
-#'
 #' @param style A journal style: a theme name (`"jama"`, `"nejm"`,
 #'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`), a
 #'   [spicy_style()] object, or `NULL` (the default). A style only

@@ -873,6 +873,7 @@ table_continuous_svy <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   verbose = FALSE,
   user_na = TRUE,
   style = NULL
@@ -1511,6 +1512,7 @@ table_continuous_svy <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
+      word_template = word_template,
       note = table_note,
       structured = structured
     ))
