@@ -505,7 +505,12 @@
   or an `lme()` model fitted there with `keep.data = FALSE`, the same
   table as the model fitted outside it. The reference row of a factor,
   the conditional R², the test of the random effects in the note and
-  the partial tests were missing.
+  the partial tests were missing. When the data of such a model can no
+  longer be found, a warning now says what the table leaves out.
+
+* `table_regression(show_columns = "partial_chi2")` tests an lme4 or
+  glmmTMB model fitted with a user contrast of fewer columns than levels
+  minus one. Its cells were empty.
 
 * In the console, a label that holds a degree sign, or one of `©`, `®`,
   `™`, `№` and some other symbols, no longer shifts its row by one

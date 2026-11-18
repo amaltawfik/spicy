@@ -3903,6 +3903,39 @@ table_regression <- function(
     )
   }
 
+  # An lme or gls whose data cannot be found (fitted without `data`, or
+  # that object no longer exists where the model was fitted): what is
+  # computed from the data is left out, once per table.
+  no_data <- vapply(
+    frames,
+    function(fr) isTRUE(fr$info$extras$data_not_found),
+    logical(1)
+  )
+  if (any(no_data)) {
+    mod_labels <- .model_display_names(models, panel_req)
+    msg <- function(it) {
+      c(
+        sprintf(
+          "The data of %s cannot be found: the model was fitted without `data`, or that object no longer exists where it was fitted.",
+          paste(it$names, collapse = ", ")
+        ),
+        "i" = paste0(
+          "The table leaves out what is computed from the data: the ",
+          "reference rows of the factors, the conditional R2, the test of ",
+          "the random effects, the partial tests and the standardized ",
+          "coefficients."
+        ),
+        "i" = "Refit the model where its data exist."
+      )
+    }
+    items <- list(names = mod_labels[no_data])
+    spicy_warn(
+      msg(items),
+      class = "spicy_fallback",
+      spicy_gather = .reg_gather(panel_req, "data_not_found", items, msg)
+    )
+  }
+
   # AME capability guard (finding M2): a class with no
   # average-marginal-effects backend (supports$ame = FALSE: mlogit, coxph,
   # flexsurv, selection, nls, Bayesian) must REFUSE the request rather

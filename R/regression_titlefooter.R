@@ -1152,13 +1152,19 @@ build_abbreviations_footer_block_from_frames <- function(
   )
   # The test each model ran for its partial chi-squared: a likelihood-ratio
   # test for glm, a Wald test for the mixed models (regression_partial.R).
+  # A mixed model names its test by its class, even when its cells are
+  # empty (its data cannot be found); a glm by the rows it carries.
   chi2_kind <- vapply(
     frames,
     function(f) {
-      if (!any(f$coefs$estimate_type %in% "partial_chi2")) {
-        return(NA_character_)
+      if (.is_mixed_frame(f)) {
+        return("wald")
       }
-      if (.is_mixed_frame(f)) "wald" else "lrt"
+      if (any(f$coefs$estimate_type %in% "partial_chi2")) {
+        "lrt"
+      } else {
+        NA_character_
+      }
     },
     character(1)
   )

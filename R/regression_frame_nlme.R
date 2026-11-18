@@ -401,6 +401,9 @@ as_regression_frame.gls <- function(
     # model-level, not per-coefficient.
     has_singular = .lme_is_singular(fit),
     singular_terms = character(0),
+    # Data that .nlme_get_data() cannot find: table_regression() warns
+    # once per table of what it leaves out.
+    data_not_found = is.null(.nlme_get_data(fit)),
     has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Linear mixed-effects regression",
@@ -471,6 +474,7 @@ as_regression_frame.gls <- function(
     # regime can arise: the flag is a constant here, not a stub.
     has_singular = FALSE,
     singular_terms = character(0),
+    data_not_found = is.null(.nlme_get_data(fit)),
     has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Generalized least squares",

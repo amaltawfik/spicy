@@ -827,6 +827,36 @@ test_that("an lme whose data are gone keeps its coefficients, without partial te
     partial_type = "III"
   )))
   expect_false(any(t3$estimate_type == "partial_chi2" & !is.na(t3$statistic)))
+  # One warning per table, which names every model whose data are gone.
+  ok <- nlme::lme(yy_gone ~ ff_gone, random = ~ 1 | cl_gone, data = d)
+  fallbacks <- function(models) {
+    w <- character(0)
+    withCallingHandlers(
+      table_regression(models, show_columns = c("b", "partial_chi2")),
+      spicy_fallback = function(cnd) {
+        w <<- c(w, conditionMessage(cnd))
+        invokeRestart("muffleWarning")
+      },
+      warning = function(cnd) invokeRestart("muffleWarning")
+    )
+    w
+  }
+  w <- fallbacks(list(gone, ok, gone))
+  expect_length(w, 1L)
+  expect_match(w, "The data of Model 1, Model 3 cannot be found", fixed = TRUE)
+  expect_match(w, "reference rows of the factors", fixed = TRUE)
+  # None when the data are found.
+  expect_length(fallbacks(ok), 0L)
+  # The note names the test of the class, though the cells are empty.
+  note <- paste(
+    capture.output(print(suppressWarnings(table_regression(
+      gone,
+      show_columns = c("b", "partial_chi2")
+    )))),
+    collapse = " "
+  )
+  expect_match(note, "partial Wald chi-squared", fixed = TRUE)
+  expect_no_match(note, "likelihood-ratio chi-squared", fixed = TRUE)
   td <- broom::tidy(suppressWarnings(table_regression(
     gone,
     show_columns = c("b", "partial_chi2")
