@@ -3433,7 +3433,7 @@ table_categorical <- function(
         )
       }
       names(dat_gt) <- c(.CAT_KEY_VARIABLE, "n", "pct")
-      tbl <- gt::gt(dat_gt)
+      tbl <- .spicy_gt(dat_gt)
       # "Variable", not a blanked corner: the console, tinytable and
       # flextable all label the first column, and gt was the last
       # dissenter (lot B incident).
@@ -5572,7 +5572,7 @@ table_categorical <- function(
     grp_id_pct <- col_ids[2L * seq_along(group_levels) + 1L]
     names(dat_gt) <- col_ids
 
-    tbl <- gt::gt(dat_gt)
+    tbl <- .spicy_gt(dat_gt)
 
     # Column labels: n / % under each group; empty for single-col spanners
     label_list <- list()

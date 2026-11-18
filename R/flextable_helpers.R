@@ -42,15 +42,50 @@
   ft
 }
 
+# Every gt table of the package is built here: `gt::gt()` with an id of
+# its own, and the rules of its source notes in HTML (`.spicy_gt_note_css()`),
+# which need that id to stay within the table.
+#
+# The id is a counter of the session, not gt's random one, so that
+# building a table leaves the random number stream alone.
+.spicy_gt_ids <- new.env(parent = emptyenv())
+.spicy_gt_ids$n <- 0L
+
+.spicy_gt <- function(data) {
+  .spicy_gt_ids$n <- .spicy_gt_ids$n + 1L
+  id <- paste0("spicy-gt-", .spicy_gt_ids$n)
+  gt::opt_css(gt::gt(data, id = id), .spicy_gt_note_css(id))
+}
+
+# A source note is a `<td colspan="N">` in the `<tfoot>` gt writes, and a
+# spanning cell gives its max-content width to the columns it spans: a
+# note longer than the body stretched the table, in every route that
+# writes HTML (`gtsave()` to .html or .png, `as_raw_html()`, the display
+# methods). A cell with a set width gives no more than its longest word,
+# so the table keeps the width of its body and the note wraps at it, as
+# the note of a tinytable does (dev/decisions/2026-11-15-tinytable-note-html.md).
+# The other rules set the note with an interline of 1.25 and the lines of
+# a note close together, as a single block; gt sets its size, 0.9 of the
+# table's. The rules are HTML only: gt writes `opt_css()` into no other
+# output.
+.spicy_gt_note_css <- function(id) {
+  paste0(
+    "#",
+    id,
+    " .gt_sourcenote { width: 1px; line-height: 1.25; ",
+    "padding: 0 0.5rem; }\n",
+    "#",
+    id,
+    " .gt_sourcenotes:first-child .gt_sourcenote { padding-top: 0.5rem; }\n",
+    "#",
+    id,
+    " .gt_sourcenotes:last-child .gt_sourcenote { padding-bottom: 0.2rem; }"
+  )
+}
+
 # Attach a table note to a gt table built by `table_categorical()` /
-# `table_continuous()`. NOT via `gt::tab_source_note()`: its `<tfoot>`
-# colspan cell widens the table in narrow viewports (see the comment
-# in `output_gt()`). The `spicy_gt` tag routes the note through
-# `print.spicy_gt()` / `knit_print.spicy_gt()`, which inject it as a
-# `<div>` outside the table in HTML and fall back to the native source
-# note for non-HTML knit targets.
-# The note is attached TWICE, on purpose -- the same reasoning
-# `output_gt()` records for the regression family.
+# `table_continuous()`. The note is attached TWICE, on purpose -- the
+# same reasoning `output_gt()` records for the regression family.
 #
 # 1. `gt::tab_source_note()` puts it on the gt object itself, so it
 #    survives every route to a rendered table: `gt::gtsave()`,
@@ -59,12 +94,12 @@
 #    stripped of the disclosure the console prints -- which missing
 #    values were removed, which test each block ran, that no block
 #    controls for the other variables. The twin of the title hole, on
-#    the same engine.
+#    the same engine. In HTML, the rules `.spicy_gt()` set keep it out
+#    of the width of the table.
 # 2. The `spicy_gt` tag routes it through `print.spicy_gt()` /
 #    `knit_print.spicy_gt()`, which inject it as a `<div>` OUTSIDE the
-#    table in HTML -- gt's own `<tfoot>` colspan cell widens the table
-#    in narrow viewports. Those methods drop the native note when they
-#    take over, so the two never print together.
+#    table in HTML. Those methods drop the native note when they take
+#    over, so the two never print together.
 #
 # `stub` and `decimal_mark` are the label columns and the mark of the
 # table, for the minus sign of its LaTeX (`.spicy_gt_minus_attr()`).

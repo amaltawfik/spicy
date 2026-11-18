@@ -806,7 +806,7 @@ output_gt <- function(rendered) {
   gt_names <- unname(gt_ids)
   names(body) <- gt_names
 
-  tbl <- gt::gt(body)
+  tbl <- .spicy_gt(body)
 
   # Match table_continuous_lm header structure: actual column
   # labels are blank for non-CI columns ("LL" / "UL" for CI
@@ -1157,7 +1157,8 @@ output_gt <- function(rendered) {
   #    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a
   #    non-interactive `print()`. Without it those deliverables shipped
   #    a table stripped of the disclosure the console prints (model
-  #    family, standard errors, star legend).
+  #    family, standard errors, star legend). In HTML, the rules
+  #    `.spicy_gt()` set keep it out of the width of the table.
   # 2. `attr(tbl, "spicy_note")` + the `spicy_gt` sub-class drive the
   #    HTML display path below, which RE-STYLES the note: gt renders a
   #    source note inside `<tfoot>` as a `<td colspan="N">` cell whose

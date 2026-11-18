@@ -4389,7 +4389,7 @@ export_desc_table <- function(
       )
     }
     names(display_df) <- gt_col_ids
-    tbl <- gt::gt(display_df)
+    tbl <- .spicy_gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner. With no spanner at all, the labels are the column

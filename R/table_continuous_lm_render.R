@@ -981,7 +981,7 @@ export_continuous_lm_table <- function(
     # reading the KEY, so nothing a reader sees moves.
     gt_ids <- .gt_safe_ids(col_keys)
     names(display_df) <- unname(gt_ids)
-    tbl <- gt::gt(display_df)
+    tbl <- .spicy_gt(display_df)
 
     # The columns under a spanner, headed on the second row: the means,
     # then the bounds of the interval.
