@@ -378,6 +378,16 @@ test_that("a keep / drop pattern matching no term warns spicy_no_match", {
     conditionMessage(cond),
     fixed = TRUE
   ))
+
+  # The message lists the first twelve terms, then an ellipsis.
+  d <- data.frame(y = rnorm(39), g = factor(rep(letters[1:13], 3)))
+  w <- expect_warning(
+    table_regression(lm(y ~ g, data = d), keep = "nope"),
+    class = "spicy_no_match"
+  )
+  expect_match(conditionMessage(w), "\"(Intercept)\", \"ga\",", fixed = TRUE)
+  expect_match(conditionMessage(w), "\"gk\", ...", fixed = TRUE)
+  expect_no_match(conditionMessage(w), "\"gl\"", fixed = TRUE)
 })
 
 

@@ -84,6 +84,24 @@ test_that("cluster_lookup_data subsets original data via na.action to match nobs
   expect_equal(nrow(src$df), stats::nobs(fit))
   # The dropped rows (2, 5) are gone.
   expect_equal(src$df$clinic, df$clinic[-c(2, 5)])
+  # Rows renamed after the fit: the model frame's row names are no
+  # longer the data's, and na.action alone drops the rows.
+  rownames(df) <- paste0("r", seq_len(nrow(df)))
+  src <- spicy:::cluster_lookup_data(fit, "clinic")
+  expect_equal(nrow(src$df), stats::nobs(fit))
+  expect_equal(src$df$clinic, df$clinic[-c(2, 5)])
+  # The cluster-robust SE are sandwich's on the model's rows.
+  skip_if_not_installed("sandwich")
+  se <- table_regression(
+    fit,
+    vcov = "CR1",
+    cluster = "clinic",
+    output = "long"
+  )
+  se <- se$std.error[se$term == "wt" & se$estimate_type == "B"]
+  # CR1 is sandwich's HC0 with its G / (G - 1) cluster adjustment.
+  v <- sandwich::vcovCL(fit, cluster = df$clinic[-c(2, 5)], type = "HC0")
+  expect_equal(se, sqrt(v["wt", "wt"]), tolerance = 1e-10)
 })
 
 

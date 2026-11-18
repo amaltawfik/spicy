@@ -106,6 +106,40 @@ test_that("lrt works for nlme::lme (random = ~ slope | group)", {
   expect_equal(tested$statistic, chi2_h, tolerance = 1e-6)
 })
 
+test_that("lrt on an lme with no random intercept keeps it out of the refit", {
+  skip_if_not_installed("nlme")
+  set.seed(5)
+  d <- data.frame(g = factor(rep(1:20, each = 8)), x = rnorm(160))
+  d$z <- rnorm(160)
+  u <- rnorm(20, 0, 0.8)
+  v <- rnorm(20, 0, 0.6)
+  d$y <- 1 + (0.5 + u[d$g]) * d$x + (0.3 + v[d$g]) * d$z + rnorm(160)
+  # do.call() puts the data in the stored call, which the refits
+  # through update() evaluate away from this block.
+  ml <- do.call(
+    nlme::lme,
+    list(
+      y ~ x + z,
+      data = d,
+      random = ~ 0 + x + z | g,
+      control = nlme::lmeControl(opt = "optim")
+    )
+  )
+  vc <- .rt_vc(ml, re_test = "lrt")
+  tested <- vc[!is.na(vc$p.value) & grepl("::x$", vc$term), ]
+  expect_equal(nrow(tested), 1L)
+  # oracle: the REML refit without the x slope and without an intercept
+  ml_red <- nlme::lme(
+    y ~ x + z,
+    data = d,
+    random = ~ 0 + z | g,
+    control = nlme::lmeControl(opt = "optim")
+  )
+  chi2_h <- 2 *
+    (as.numeric(stats::logLik(ml)) - as.numeric(stats::logLik(ml_red)))
+  expect_equal(tested$statistic, chi2_h, tolerance = 1e-6)
+})
+
 test_that("rlrt works for a single-component nlme::lme (matches exactRLRT)", {
   skip_if_not_installed("nlme")
   skip_if_not_installed("RLRsim")

@@ -5315,6 +5315,14 @@ test_that("table_categorical() rejects bit64::integer64 columns", {
     table_categorical(d, select = g, weights = code),
     class = "spicy_invalid_data"
   )
+  # Several such columns are named in one message.
+  d$code2 <- i64
+  expect_error(
+    table_categorical(d, select = c(code, code2)),
+    "columns `code`, `code2` are bit64::integer64",
+    class = "spicy_invalid_data"
+  )
+  d$code2 <- NULL
   # The select-less default excludes integer64 columns via the
   # categorical-eligibility filter, so the call still works.
   res <- table_categorical(d, output = "data.frame")

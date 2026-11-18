@@ -127,6 +127,20 @@ test_that("outcome_labels validates length against non-ref categories", {
     table_regression(fit, outcome_labels = 1:3),
     class = "spicy_invalid_input"
   )
+  # A binary outcome has one non-reference category.
+  d <- as.data.frame(sochealth)
+  d$working <- factor(ifelse(
+    d$employment_status == "Employed",
+    "Employed",
+    "Not employed"
+  ))
+  fit2 <- nnet::multinom(working ~ age, data = d, trace = FALSE)
+  expect_error(
+    table_regression(fit2, outcome_labels = c("a", "b")),
+    "2 label(s) for 1 non-reference category (Not employed)",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("model_labels is refused for a single multinom", {

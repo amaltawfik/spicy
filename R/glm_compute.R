@@ -653,7 +653,7 @@ compute_r2_deviance <- function(fit) {
 .glm_null_fit <- function(fit) {
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
   if (is.null(mf)) {
-    return(NULL) # nocov: a converged glm always carries a model.frame
+    return(NULL) # a glm fitted with model = FALSE whose data are gone
   }
   y <- tryCatch(stats::model.response(mf), error = function(e) NULL)
   if (is.null(y)) {

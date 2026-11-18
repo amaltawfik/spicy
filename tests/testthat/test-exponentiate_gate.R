@@ -42,6 +42,22 @@ test_that("gate errors: poisson(sqrt)", {
   expect_match(conditionMessage(err), "square-root", fixed = TRUE)
 })
 
+test_that("gate errors: a link it does not list is named in the message", {
+  set.seed(2)
+  d <- data.frame(y = rpois(100, 4) + 1, x = rnorm(100))
+  fit <- glm(y ~ x, data = d, family = quasi(power(1 / 3), "mu"))
+  err <- .gate_err(table_regression(fit, exponentiate = TRUE))
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    sprintf(
+      "The \"%s\" link does not place coefficients on a log scale",
+      power(1 / 3)$name
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("gate is family-aware for cloglog: betareg cloglog errors", {
   skip_if_not_installed("betareg")
   # A beta-mean cloglog coefficient is NOT a log hazard ratio -- the

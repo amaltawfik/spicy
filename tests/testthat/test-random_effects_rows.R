@@ -547,6 +547,14 @@ test_that("re_ci validates its value and its engine support", {
   })
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "lme4", fixed = TRUE)
+  expect_match(conditionMessage(err), "Model 1 is not fitted", fixed = TRUE)
+  # Each refused model is named.
+  expect_error(
+    table_regression(list(fit, gt, gt), re_ci = "profile"),
+    "Models 2, 3 are not fitted with lme4",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 })
 
 ## ---- 13. ci_level flows into the variance-component CIs -------------------

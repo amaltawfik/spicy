@@ -36,6 +36,20 @@ test_that("a Gamma glm has a deviance R2 and no McFadden or Nagelkerke R2", {
   )
 })
 
+test_that("the null log-likelihood is NA when the fit's data are gone", {
+  # A glm fitted with model = FALSE rebuilds its model frame from its
+  # data, here removed after the fit: no null model can be refitted.
+  make <- function() {
+    dd <- data.frame(y = c(0, 1, 0, 1, 1, 0, 1, 0), x = 1:8)
+    glm(y ~ x, family = binomial, data = dd, model = FALSE)
+  }
+  fit <- make()
+  rm("dd", envir = environment(formula(fit)))
+  expect_error(stats::model.frame(fit))
+  expect_identical(spicy:::compute_intercept_only_loglik_glm(fit), NA_real_)
+  expect_identical(spicy:::compute_pseudo_r2_mcfadden(fit), NA_real_)
+})
+
 test_that("a constant response or an unknown family has no R2", {
   d <- data.frame(y = rep(2, 10), x = 1:10)
   fit <- suppressWarnings(glm(y ~ x, data = d, family = Gamma(link = "log")))

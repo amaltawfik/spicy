@@ -205,6 +205,7 @@ test_that("the regression sheets write each one-number cell as a number", {
     lm(wellbeing_score ~ age + sex + education, data = d)
   )
   logit <- glm(smoking ~ age + sex, data = d, family = binomial)
+  big <- lm(I(wellbeing_score * 1e9) ~ age + sex, data = d)
   tables <- list(
     function(...) table_regression(m1, ...),
     function(...) table_regression(list(Wellbeing = m1, BMI = m2), ...),
@@ -213,6 +214,8 @@ test_that("the regression sheets write each one-number cell as a number", {
       table_regression(m1, show_columns = c("b", "p", "partial_f"), ...)
     },
     function(...) table_regression(logit, exponentiate = TRUE, ...),
+    # Numbers the console prints in scientific notation: text cells.
+    function(...) table_regression(big, ...),
     function(...) {
       table_regression(
         m1,

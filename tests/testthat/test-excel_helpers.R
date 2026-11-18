@@ -410,6 +410,28 @@ test_that("the emulator shows the negative section as Excel showed it", {
   }
 })
 
+# Past 15 significant digits Excel shows zeros: it keeps no more digits
+# of a number (Microsoft, "Excel specifications and limits": number
+# precision, 15 digits).
+test_that("the emulator shows zeros past the 15th significant digit", {
+  expect_identical(
+    spicy:::.xl_shown(123456789012345678, spicy:::.xl_spec(0)),
+    "123456789012346000"
+  )
+  expect_identical(
+    spicy:::.xl_shown(1234567.891234567, spicy:::.xl_spec(8)),
+    "1234567.89123457"
+  )
+  expect_identical(
+    spicy:::.xl_shown(-1e15, spicy:::.xl_spec(2)),
+    "-1000000000000000.00"
+  )
+  # A number of decimals that is not one is read as none.
+  for (d in list(NA, "x", -1L, 1:2)) {
+    expect_identical(spicy:::.xl_spec(d)$decimals, 0L)
+  }
+})
+
 test_that(".xl_cell() writes a number Excel shows as the console does, or text", {
   cell <- spicy:::.xl_cell
   spec2 <- spicy:::.xl_spec(2)

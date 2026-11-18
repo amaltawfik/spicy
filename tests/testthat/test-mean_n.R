@@ -187,7 +187,15 @@ test_that("mean_n() rejects bit64::integer64 columns with a classed error", {
   df <- data.frame(a = c(1, 2))
   df$b <- structure(c(9.9e-324, 1.5e-323), class = "integer64")
   expect_error(mean_n(df), class = "spicy_invalid_data")
-  expect_error(mean_n(df), "integer64")
+  expect_error(mean_n(df), "selected column `b` is bit64::integer64")
+  # Several such columns are named in one message.
+  df$c <- df$b
+  expect_error(
+    mean_n(df),
+    "selected columns `b`, `c` are bit64::integer64",
+    class = "spicy_invalid_data"
+  )
+  df$c <- NULL
   # excluding the integer64 column restores normal computation
   expect_equal(mean_n(df, select = a), c(1, 2))
 })
