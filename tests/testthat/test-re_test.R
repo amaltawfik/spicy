@@ -169,6 +169,75 @@ test_that("lrt works for glmmTMB and never tests rho / residual", {
   expect_true(all(is.na(vc$p.value[grepl("Residual", vc$term)])))
 })
 
+test_that("lrt refits a model whose data exists only inside a function", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  # The reduced refits used to re-evaluate the call from spicy's frame,
+  # where `dd` is not visible: the rows stayed NA with a warning (lme and
+  # glmmTMB; lme4's update() already looked where the formula was made).
+  # Oracle: the same model fitted on data visible everywhere.
+  d <- as.data.frame(nlme::Orthodont)
+  d$Subject <- factor(d$Subject, ordered = FALSE)
+  assign(".rt_d", d, envir = globalenv())
+  withr::defer(rm(".rt_d", envir = globalenv()))
+  .rt_d <- d
+  tested <- function(fit) {
+    vc <- expect_no_warning(.rt_vc(fit, re_test = "lrt"))
+    vc[!is.na(vc$p.value), c("term", "statistic", "p.value")]
+  }
+  fitters <- list(
+    lme = function(dd) {
+      rf <- ~ age | Subject
+      nlme::lme(distance ~ age + Sex, random = rf, data = dd)
+    },
+    lme_subset = function(dd) {
+      nlme::lme(
+        distance ~ age,
+        random = ~ age | Subject,
+        data = dd,
+        subset = Sex == "Male"
+      )
+    },
+    lmer = function(dd) {
+      lme4::lmer(distance ~ age + Sex + (age | Subject), data = dd)
+    },
+    glmmTMB = function(dd) {
+      glmmTMB::glmmTMB(
+        distance ~ age + Sex + (age | Subject),
+        data = dd,
+        REML = TRUE
+      )
+    }
+  )
+  global <- list(
+    lme = nlme::lme(
+      distance ~ age + Sex,
+      random = ~ age | Subject,
+      data = .rt_d
+    ),
+    lme_subset = nlme::lme(
+      distance ~ age,
+      random = ~ age | Subject,
+      data = .rt_d,
+      subset = Sex == "Male"
+    ),
+    lmer = lme4::lmer(distance ~ age + Sex + (age | Subject), data = .rt_d),
+    glmmTMB = glmmTMB::glmmTMB(
+      distance ~ age + Sex + (age | Subject),
+      data = .rt_d,
+      REML = TRUE
+    )
+  )
+  for (cls in names(fitters)) {
+    oracle <- tested(global[[cls]])
+    expect_equal(nrow(oracle), 1L, info = cls)
+    expect_equal(tested(fitters[[cls]](d)), oracle, info = cls)
+    # The same through lapply(), a common way to fit by subgroup.
+    expect_equal(tested(lapply(list(d), fitters[[cls]])[[1L]]), oracle)
+  }
+})
+
 test_that("the footer discloses the per-term test", {
   fit <- .rt_lmer_slope()
   out <- paste(

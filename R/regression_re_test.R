@@ -159,8 +159,15 @@
     return(NULL) # nocov
   }
 
+  # The call is evaluated where the model formula was made, as lme4's
+  # update() does: glmmTMB's update() evaluates it from spicy's frame,
+  # where data local to the user's function (lapply, purrr::map) is not
+  # visible.
   tryCatch(
-    suppressWarnings(suppressMessages(stats::update(fit, formula = new_f))),
+    suppressWarnings(suppressMessages({
+      cl <- stats::update(fit, formula = new_f, evaluate = FALSE)
+      eval(cl, environment(f) %||% parent.frame())
+    })),
     error = function(e) NULL
   )
 }
@@ -172,8 +179,12 @@
 # (`~ terms | group`, incl. the `random = ~ terms` shorthand) is handled;
 # pdMat / multilevel list structures leave the rows untested with a warning.
 .re_term_tests_lrt_lme <- function(fit) {
+  # The call is evaluated where the fit was made (the environment its terms
+  # keep), on the fit's own data: data local to the user's function (lapply,
+  # purrr::map) is not visible from spicy's frame.
+  env <- environment(fit$terms) %||% parent.frame()
   rnd <- tryCatch(fit$call$random, error = function(e) NULL)
-  rnd <- tryCatch(eval(rnd, envir = parent.frame()), error = function(e) rnd)
+  rnd <- tryCatch(eval(rnd, envir = env), error = function(e) rnd)
   unsupported <- function() {
     spicy_warn(
       c(
@@ -255,10 +266,13 @@
           call_copy <- fit$call
           call_copy[[1L]] <- quote(nlme::lme)
           call_copy$random <- new_rnd
-          suppressWarnings(suppressMessages(eval(
-            call_copy,
-            envir = parent.frame()
-          )))
+          # getData() has already applied `subset`.
+          dat <- .nlme_get_data(fit)
+          if (!is.null(dat)) {
+            call_copy$data <- dat
+            call_copy$subset <- NULL
+          }
+          suppressWarnings(suppressMessages(eval(call_copy, envir = env)))
         },
         error = function(e) NULL
       )

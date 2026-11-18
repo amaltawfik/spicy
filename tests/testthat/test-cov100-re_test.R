@@ -99,14 +99,16 @@ test_that("lme lrt: the `random = ~ terms` shorthand resolves the group and reus
 
 test_that("lme lrt: a failing reduced refit warns spicy_fallback and returns nothing", {
   skip_if_not_installed("nlme")
-  # The data object exists only inside local(): the reduced refit
-  # re-evaluates the captured lme call in the caller's frame, where
-  # `dat_hidden` no longer resolves -> the refit fails, the row's
-  # test columns stay NA.
-  fit <- local({
-    dat_hidden <- as.data.frame(nlme::Orthodont)
-    nlme::lme(distance ~ age, data = dat_hidden, random = ~ age | Subject)
-  })
+  # The reduced refit gets data without the model's columns -> the refit
+  # fails, the row's test columns stay NA.
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ age | Subject
+  )
+  testthat::local_mocked_bindings(
+    .nlme_get_data = function(fit) data.frame(z = 1:3)
+  )
   expect_warning(
     res <- spicy:::.re_term_tests_lrt_lme(fit),
     regexp = "reduced refit for random term `age` (Subject) failed",
