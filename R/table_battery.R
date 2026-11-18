@@ -1124,7 +1124,11 @@ table_battery <- function(
   if (all(declared)) {
     show <- function(x) {
       txt <- paste(.quote_val(utils::head(x, 8L)), collapse = ", ")
-      if (length(x) > 8L) paste0(txt, ", ...") else txt
+      if (length(x) > 8L) {
+        sprintf("%s and %d more", txt, length(x) - 8L)
+      } else {
+        txt
+      }
     }
     for (j in seq_along(items)) {
       if (setequal(declared_lv[[j]], declared_lv[[1L]])) {

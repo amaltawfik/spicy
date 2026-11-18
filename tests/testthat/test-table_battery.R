@@ -1046,7 +1046,7 @@ test_that("the messages about the scale agree in number with what they name", {
   )
   expect_error(
     table_battery(f9, c(a, b)),
-    "Levels of `b`: \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", ...",
+    "Levels of `b`: \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\" and 1 more.",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
