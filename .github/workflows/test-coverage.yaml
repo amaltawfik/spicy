@@ -41,6 +41,16 @@ jobs:
           covr::to_cobertura(cov)
         shell: Rscript {0}
 
+      # The line-by-line report, kept so that a coverage audit reads the
+      # lines this run missed without running the suite again.
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cobertura
+          path: ./cobertura.xml
+          if-no-files-found: ignore
+
       - uses: codecov/codecov-action@v7
         with:
           # Fail if error if not on PR, or if on PR and token is given
