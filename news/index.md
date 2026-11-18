@@ -258,7 +258,26 @@
   McFadden’s and Nagelkerke’s R-squared, not the R-squared of
   [`lm()`](https://rdrr.io/r/stats/lm.html).
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the partial chi-square (`partial_chi2`) takes its decimals from
+  `digits`, as the other test statistics of the table do, and no longer
+  from `effect_size_digits`, which now sets the effect sizes alone.
+  Nothing changes under the default digits. A table that sets
+  `digits = 0` printed a model-change test as “9 (1)” and the partial
+  test of the same model as “24.05 (1)”.
+
 ### New features
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  [`table_battery()`](https://amaltawfik.github.io/spicy/reference/table_battery.md)
+  and their survey twins gain `word_template`, the argument
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  has: the table is written into a copy of that Word document and takes
+  its styles and its page setup.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
@@ -878,7 +897,8 @@
   `lean = TRUE`, which marginaleffects cannot predict from, and says to
   re-estimate it with `lean = FALSE`. It used to warn and leave the
   column empty. Other `feols()` models and a GLM without fixed effects
-  keep their AME.
+  keep their AME. When several models of a table are refused, the error
+  names each one with its reason.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses a fixest model with fixed effects only (`y ~ 1 | f`), which

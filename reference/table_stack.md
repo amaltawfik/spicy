@@ -148,7 +148,7 @@ table_stack(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic — the APA Manual 7 §7.10 condensed
+  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
   convention. For a different appearance (Nature-style bold non-italic,
   APA-strict 2-line bold-number / italic-title, etc.), edit the
   `"Table Caption"` style in a docx template and pass it via

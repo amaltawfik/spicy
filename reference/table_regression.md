@@ -584,7 +584,11 @@ table_regression(
   layout. In `"first_col"` mode the `B` column aligns the fit-stat
   values on the decimal mark with its coefficients. In `"merged"` mode
   the fit-stat values move out of the `B` column, which aligns its
-  coefficients alone, and each merged value is centered as typed.
+  coefficients alone, and each merged value is centered as typed. Under
+  `nested = TRUE` the change rows carry their degrees of freedom
+  (`F-change` prints `7.29 (2, 28)`), which widens the `B` column in the
+  `"first_col"` layout; `"merged"` spans them over the model's columns
+  in the engines that merge.
 
 - layout:
 
@@ -798,8 +802,8 @@ table_regression(
 
   Decimal places for general numeric tokens (`b`, `beta`, `se`, `ci`,
   `t`, `f_change`, `lrt_change`, `ame`, `ame_se`, `weighted_nobs`; the
-  Wald change statistics under a robust `vcov` follow `f_change`).
-  Default `2L`.
+  Wald change statistics under a robust `vcov` follow `f_change`) and
+  for the term-level tests (`partial_chi2`, `partial_f`). Default `2L`.
 
 - p_digits:
 
@@ -812,8 +816,7 @@ table_regression(
 - effect_size_digits:
 
   Decimals for per-coefficient effect sizes (`partial_f2`,
-  `partial_eta2`, `partial_omega2`) and the term-level tests
-  (`partial_chi2`, `partial_f`). Default `2L`.
+  `partial_eta2`, `partial_omega2`) and their intervals. Default `2L`.
 
 - fit_digits:
 
@@ -1055,7 +1058,7 @@ table_regression(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic — the APA Manual 7 §7.10 condensed
+  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
   convention. For a different appearance (Nature-style bold non-italic,
   APA-strict 2-line bold-number / italic-title, etc.), edit the
   `"Table Caption"` style in a docx template and pass it via

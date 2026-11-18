@@ -59,6 +59,7 @@ table_categorical(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
+  word_template = NULL,
   user_na = TRUE,
   style = NULL,
   v_digits
@@ -452,10 +453,13 @@ table_categorical(
   the Table 1 literature. Requires exactly two groups; the value sits on
   the variable row beside `p`, never on a level row. Signed for a
   two-category variable (group 1 minus group 2 on the second category),
-  unsigned for three or more, where it is a distance. No confidence
-  interval and no p-value, by design. Rounded with `effect_size_digits`.
-  See the "Standardized mean difference" section below. Defaults to
-  `FALSE`.
+  unsigned for three or more, where it is a distance. The table note
+  states the direction.
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  reports its difference and its d the other way round, second level
+  minus first, as a linear model does. No confidence interval and no
+  p-value, by design. Rounded with `effect_size_digits`. See the
+  "Standardized mean difference" section below. Defaults to `FALSE`.
 
 - decimal_mark:
 
@@ -610,6 +614,28 @@ table_categorical(
   now used exclusively by `output = "word"` (the contract shared with
   the rest of the table family) and is ignored, with a warning, under
   any other `output`.
+
+- word_template:
+
+  Optional path to a custom .docx file used as the template for
+  `output = "word"`. The template's header, footer, page size, margins,
+  and named styles ("Table Caption" in particular) are honored; the
+  table is appended to the template body. Useful for institutional
+  templates with pre-set headers ("APA Style", "Manuscript Submission
+  Template", etc.). Default `NULL` (uses flextable's stock template).
+
+  **Customizing the caption appearance:** the table caption is tagged
+  with the Word named style `"Table Caption"`. The visual rendering
+  (italic / bold / color / font) follows whatever that style is set to
+  in the docx template. The stock Word template renders
+  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
+  convention. For a different appearance (Nature-style bold non-italic,
+  APA-strict 2-line bold-number / italic-title, etc.), edit the
+  `"Table Caption"` style in a docx template and pass it via
+  `word_template = "your_template.docx"`. Style-based delegation keeps
+  the rendered caption consistent with the surrounding document and lets
+  editorial conventions (Nature, APA-strict, journal-specific) be
+  applied without modifying the call site.
 
 - user_na:
 

@@ -651,7 +651,11 @@ the <code>"first_col"</code> layout.
 In <code>"first_col"</code> mode the <code>B</code> column aligns the fit-stat values
 on the decimal mark with its coefficients. In <code>"merged"</code> mode the
 fit-stat values move out of the <code>B</code> column, which aligns its
-coefficients alone, and each merged value is centered as typed.</p></dd>
+coefficients alone, and each merged value is centered as typed.
+Under <code>nested = TRUE</code> the change rows carry their degrees of
+freedom (<code>F-change</code> prints <code>7.29 (2, 28)</code>), which widens the <code>B</code>
+column in the <code>"first_col"</code> layout; <code>"merged"</code> spans them over
+the model's columns in the engines that merge.</p></dd>
 
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
@@ -860,7 +864,8 @@ the classes it covers and its small-sample caution.</p></dd>
 <dd><p>Decimal places for general numeric tokens
 (<code>b</code>, <code>beta</code>, <code>se</code>, <code>ci</code>, <code>t</code>, <code>f_change</code>, <code>lrt_change</code>, <code>ame</code>,
 <code>ame_se</code>, <code>weighted_nobs</code>; the Wald change statistics under a
-robust <code>vcov</code> follow <code>f_change</code>). Default <code>2L</code>.</p></dd>
+robust <code>vcov</code> follow <code>f_change</code>) and for the term-level tests
+(<code>partial_chi2</code>, <code>partial_f</code>). Default <code>2L</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -873,9 +878,8 @@ Default <code>3L</code>; at least <code>1L</code>, as in the descriptive tables.
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
 <dd><p>Decimals for per-coefficient effect
-sizes (<code>partial_f2</code>, <code>partial_eta2</code>, <code>partial_omega2</code>) and the
-term-level tests (<code>partial_chi2</code>, <code>partial_f</code>).
-Default <code>2L</code>.</p></dd>
+sizes (<code>partial_f2</code>, <code>partial_eta2</code>, <code>partial_omega2</code>) and their
+intervals. Default <code>2L</code>.</p></dd>
 
 
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
@@ -1117,7 +1121,7 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style <code>"Table Caption"</code>. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders <code>"Table Caption"</code> in italic — the APA Manual 7 §7.10
+renders <code>"Table Caption"</code> in italic – the APA Manual 7 section 7.10
 condensed convention. For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the <code>"Table Caption"</code> style in a docx template and
