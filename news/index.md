@@ -554,6 +554,13 @@
   read the style sheet of the table as text, and the table lost the look
   gt gives it.
 
+- [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html) and
+  [`gt::as_raw_html()`](https://gt.rstudio.com/reference/as_raw_html.html)
+  draw the header of a gt table as the HTML display does. They
+  underlined each column label in gray and kept the rules of gt’s
+  default theme. The rules now belong to the table itself, so every HTML
+  output carries them.
+
 - `table_regression(fit_stats_layout = "merged")` merges the cells of
   the fit statistics in tinytable tables, in HTML, LaTeX and Typst. It
   fell back to `"first_col"` with a warning. The markdown output keeps

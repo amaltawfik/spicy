@@ -1022,9 +1022,6 @@ Documented here for direct invocation with custom arguments (e.g.,
   [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   tables
 
-- [`print(`*`<spicy_gt>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_gt.md)
-  : Print method for spicy-tagged gt tables
-
 - [`print(`*`<spicy_multiresponse_table>`*`)`](https://amaltawfik.github.io/spicy/reference/print.spicy_multiresponse_table.md)
   : Print method for multiple-response tables
 
