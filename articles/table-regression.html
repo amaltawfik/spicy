@@ -407,7 +407,7 @@ reuse this copy throughout the article:</p>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared; CI = confidence interval; ω² = partial omega squared.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared (Type II); CI = confidence interval; ω² = partial omega squared (Type II).</span></span></span></code></pre></div>
 <p>Methodology notes:</p>
 <ul>
 <li>The partial F-test is a Type-II test (marginality-respecting,
@@ -1480,7 +1480,7 @@ df) and numeric terms (1 df) read at a glance:</p>
 <span><span class="co">#&gt;  R² (McFadden)            <span style="color: #9E9E9E;">│</span>    0.02                   </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1198.9                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared (Type II); AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The <code>p</code> column and the <code>χ²</code> column answer
 different questions. Each per-level p-value compares one education level
 with the reference, so it changes when the reference level changes; the
@@ -1984,23 +1984,23 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpZtYABS-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpZtYABS-1 table {
+<div id="spicy-gt-Rtmp07VKnS-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-Rtmp07VKnS-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpZtYABS-1 thead, #spicy-gt-RtmpZtYABS-1 tbody, #spicy-gt-RtmpZtYABS-1 tfoot, #spicy-gt-RtmpZtYABS-1 tr, #spicy-gt-RtmpZtYABS-1 td, #spicy-gt-RtmpZtYABS-1 th {
+#spicy-gt-Rtmp07VKnS-1 thead, #spicy-gt-Rtmp07VKnS-1 tbody, #spicy-gt-Rtmp07VKnS-1 tfoot, #spicy-gt-Rtmp07VKnS-1 tr, #spicy-gt-Rtmp07VKnS-1 td, #spicy-gt-Rtmp07VKnS-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpZtYABS-1 p {
+#spicy-gt-Rtmp07VKnS-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_table {
+#spicy-gt-Rtmp07VKnS-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2026,12 +2026,12 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_caption {
+#spicy-gt-Rtmp07VKnS-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_title {
+#spicy-gt-Rtmp07VKnS-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -2043,7 +2043,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_subtitle {
+#spicy-gt-Rtmp07VKnS-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2055,7 +2055,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_heading {
+#spicy-gt-Rtmp07VKnS-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2067,13 +2067,13 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_bottom_border {
+#spicy-gt-Rtmp07VKnS-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_col_headings {
+#spicy-gt-Rtmp07VKnS-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2088,7 +2088,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_col_heading {
+#spicy-gt-Rtmp07VKnS-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2108,7 +2108,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_column_spanner_outer {
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2120,15 +2120,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_column_spanner {
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -2140,11 +2140,11 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   width: 100%;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_spanner_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_group_heading {
+#spicy-gt-Rtmp07VKnS-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2170,7 +2170,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   text-align: left;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_empty_group_heading {
+#spicy-gt-Rtmp07VKnS-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2185,15 +2185,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_from_md > :first-child {
+#spicy-gt-Rtmp07VKnS-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_from_md > :last-child {
+#spicy-gt-Rtmp07VKnS-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2212,7 +2212,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_stub {
+#spicy-gt-Rtmp07VKnS-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2225,7 +2225,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_stub_row_group {
+#spicy-gt-Rtmp07VKnS-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2239,15 +2239,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   vertical-align: top;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_row_group_first td {
+#spicy-gt-Rtmp07VKnS-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_row_group_first th {
+#spicy-gt-Rtmp07VKnS-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_summary_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2257,16 +2257,16 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_first_summary_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_first_summary_row.thick {
+#spicy-gt-Rtmp07VKnS-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_last_summary_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2276,7 +2276,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_grand_summary_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2286,7 +2286,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_first_grand_summary_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2296,7 +2296,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_last_grand_summary_row_top {
+#spicy-gt-Rtmp07VKnS-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2306,11 +2306,11 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_striped {
+#spicy-gt-Rtmp07VKnS-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_table_body {
+#spicy-gt-Rtmp07VKnS-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2319,7 +2319,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_footnotes {
+#spicy-gt-Rtmp07VKnS-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2333,7 +2333,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_footnote {
+#spicy-gt-Rtmp07VKnS-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2342,7 +2342,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_sourcenotes {
+#spicy-gt-Rtmp07VKnS-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2356,7 +2356,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_sourcenote {
+#spicy-gt-Rtmp07VKnS-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2364,108 +2364,108 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_left {
+#spicy-gt-Rtmp07VKnS-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_center {
+#spicy-gt-Rtmp07VKnS-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_right {
+#spicy-gt-Rtmp07VKnS-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_font_normal {
+#spicy-gt-Rtmp07VKnS-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_font_bold {
+#spicy-gt-Rtmp07VKnS-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_font_italic {
+#spicy-gt-Rtmp07VKnS-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_super {
+#spicy-gt-Rtmp07VKnS-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_footnote_marks {
+#spicy-gt-Rtmp07VKnS-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_asterisk {
+#spicy-gt-Rtmp07VKnS-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_indent_1 {
+#spicy-gt-Rtmp07VKnS-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_indent_2 {
+#spicy-gt-Rtmp07VKnS-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_indent_3 {
+#spicy-gt-Rtmp07VKnS-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_indent_4 {
+#spicy-gt-Rtmp07VKnS-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_indent_5 {
+#spicy-gt-Rtmp07VKnS-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .katex-display {
+#spicy-gt-Rtmp07VKnS-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-Rtmp07VKnS-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_sourcenote {
+#spicy-gt-Rtmp07VKnS-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
-  padding: 0 0.5rem;
+  padding: 0 5px;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-Rtmp07VKnS-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-Rtmp07VKnS-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpZtYABS-1 .gt_spanner_row {
+#spicy-gt-Rtmp07VKnS-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmp07VKnS-1 .gt_spanner_row {
   border-bottom-style: none !important;
-  border-bottom-width: 0 !important;
+  border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_col_heading {
+#spicy-gt-Rtmp07VKnS-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_table tbody .gt_row {
-  border-top-width: 0 !important;
+#spicy-gt-Rtmp07VKnS-1 .gt_table tbody .gt_row {
+  border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 .gt_column_spanner {
-  border-bottom-width: 0 !important;
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner {
+  border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-Rtmp07VKnS-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -2474,9 +2474,13 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpZtYABS-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-Rtmp07VKnS-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
+}
+
+#spicy-gt-Rtmp07VKnS-1 .gt_column_spanner_outer:first-child {
+  padding-left: 5px !important;
 }
 
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
@@ -2486,7 +2490,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   color: currentColor !important;
 }
 </style>
-<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="table gt_table" data-quarto-disable-processing="true" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
 <td colspan="6" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Linear regression: wellbeing_score</td>
@@ -2629,7 +2633,7 @@ Satterthwaite df flows through verbatim:</p>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 17</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 18</span></span></span>
 <span><span class="co">#&gt;   model_id outcome outcome_level term  estimate_type estimate std.error conf.low</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            (Int… B              65.2       1.66    62.0   </span></span>
@@ -2640,9 +2644,9 @@ Satterthwaite df flows through verbatim:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            sexM… beta            0.247     0.057<span style="text-decoration: underline;">9</span>   0.133 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            smok… B              -<span style="color: #BB0000;">1.72</span>      1.11    -<span style="color: #BB0000;">3.89</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> M1       wellbe… <span style="color: #BB0000;">NA</span>            smok… beta           -<span style="color: #BB0000;">0.110</span>     0.070<span style="text-decoration: underline;">8</span>  -<span style="color: #BB0000;">0.249</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 10 more variables: conf.high &lt;dbl&gt;, statistic &lt;dbl&gt;, df &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   df.residual &lt;dbl&gt;, p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   factor_term &lt;chr&gt;, factor_level &lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   factor_term &lt;chr&gt;, factor_level &lt;chr&gt;, partial_type &lt;chr&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 15</span></span></span>
 <span><span class="co">#&gt;   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma</span></span>

@@ -542,7 +542,11 @@ domain, on the observed values of the variable unless
 <code>percent_base = "total"</code>. The table note gives the sample size (the
 rows of non-zero weight, which the <code>n</code> columns count, as
 <code><a href="https://rdrr.io/pkg/survey/man/svyby.html" class="external-link">survey::unwtd.count()</a></code> does) and the estimated population together,
-because neither alone tells the reader what they are looking at.</p>
+because neither alone tells the reader what they are looking at.
+<code>spicy_style(sample_size = "header")</code> heads each domain with its
+unweighted count as well, "E (n = 144)", the Total column with N, and
+keeps that sentence; <code>sample_size = "none"</code> leaves it out (see
+<code><a href="spicy_style.html">spicy_style()</a></code>).</p>
 <p><code>proportion_ci = TRUE</code> adds the interval of each percentage.
 <code>ci_method</code> chooses among the seven <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">survey::svyciprop()</a></code> offers;
 the default <code>"logit"</code> is bounded inside 0 to 100, which the Wald

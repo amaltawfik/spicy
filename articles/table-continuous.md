@@ -1020,7 +1020,7 @@ table_continuous(
 
 [TABLE]
 
-Descriptive statistics by education {#tinytable_tbqzpib3drpjo8tq8ef4
+Descriptive statistics by education {#tinytable_1r53lnfnn15csgzj7bj7
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

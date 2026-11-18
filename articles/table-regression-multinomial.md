@@ -738,7 +738,7 @@ the reference:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 31 × 17
+#> # A tibble: 31 × 18
 #>    model_id outcome    outcome_level term  estimate_type estimate std.error conf.low conf.high statistic    df df.residual p.value
 #>    <chr>    <chr>      <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>     <dbl> <dbl>       <dbl>   <dbl>
 #>  1 M1       employmen… Student       Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf          NA 2.13e-4
@@ -752,7 +752,7 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>  9 M1       employmen… Inactive      Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf          NA 7.19e-1
 #> 10 M1       employmen… Employed      Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf          NA 3.18e-1
 #> # ℹ 21 more rows
-#> # ℹ 4 more variables: test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>
+#> # ℹ 5 more variables: test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>, partial_type <chr>
 ```
 
 ## References

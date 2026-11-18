@@ -495,6 +495,10 @@ table note gives the sample size (the rows of non-zero weight, which the
 [`survey::unwtd.count()`](https://rdrr.io/pkg/survey/man/svyby.html)
 does) and the estimated population together, because neither alone tells
 the reader what they are looking at.
+`spicy_style(sample_size = "header")` heads each domain with its
+unweighted count as well, "E (n = 144)", the Total column with N, and
+keeps that sentence; `sample_size = "none"` leaves it out (see
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)).
 
 `proportion_ci = TRUE` adds the interval of each percentage. `ci_method`
 chooses among the seven

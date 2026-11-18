@@ -32,6 +32,7 @@ spicy_style(
   percent_digits = NULL,
   note_label = NULL,
   abbreviations = NULL,
+  sample_size = NULL,
   minus_sign = NULL,
   v_digits
 )
@@ -152,6 +153,34 @@ spicy_style_names()
   \\\beta\\, the design-based standard error). Either way the
   definitions take the form and the place of the theme in force. A
   `note` you type is printed as typed.
+
+- sample_size:
+
+  Where the tables give their sample size, the number of rows they
+  describe. `"note"` (the default) opens the note with it: "N = 1200."
+  and, under `by`, the n of each group, "N = 1200: Female (n = 620),
+  Male (n = 580).". `"header"` heads each group column with its n
+  instead, "Female (n = 620)", the Total column with N and the column of
+  missing `by` values with its own n, in the tables whose groups are
+  columns
+  ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)),
+  in every output; the note then keeps "N = 1200." alone, and the note
+  of
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  keeps its own sentence. The n are the unweighted counts the note
+  gives, for a survey design too. Without `by`, and in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  whose groups are rows, `"header"` is `"note"`. `"none"` leaves the
+  sentence out of the note of every table that writes one, the survey
+  tables included; the Base row of
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  stays. The data frames, `tidy()` and `glance()` do not change. No
+  theme sets it.
 
 - minus_sign:
 

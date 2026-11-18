@@ -25,6 +25,7 @@ table_regression(
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   ame_type = c("slope", "unit", "sd"),
+  partial_type = c("II", "III"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -324,6 +325,49 @@ table_regression(
   its draws. The table note names the quantity. Ignored, with a warning,
   when no AME column is shown.
 
+- partial_type:
+
+  The hypothesis of the term-level tests and of the partial effect sizes
+  built on them: every `partial_*` column (`"partial_f"`,
+  `"partial_chi2"`, `"partial_f2"`, `"partial_eta2"`, `"partial_omega2"`
+  and their intervals), for the models that have a term-level test
+  (`lm`, `glm`,
+  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), `lmer` /
+  `glmer`, `glmmTMB`,
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)). `"II"`
+  (default) tests a term against the model without it and without the
+  interactions that contain it, the convention of `car::Anova(type = 2)`
+  that respects marginality: a main effect is tested as if its
+  interactions were absent. `"III"` tests a term's own coefficients with
+  every other term kept, its interactions included, the default of SPSS
+  UNIANOVA, SAS PROC GLM and `afex`: a main effect is tested at the
+  average of the levels of the factors it interacts with. The two give
+  the same test for a term contained in no interaction. The numbers `2`
+  and `3` (or `"2"` and `"3"`), as
+  [`car::Anova()`](https://rdrr.io/pkg/car/man/Anova.html), `afex` and
+  `lmerTest` take them, name the same two types.
+
+  A Type III test depends on how the factors are coded, so it is
+  computed with every unordered factor (character and logical variables
+  included) coded to sum to zero and every ordered factor by orthogonal
+  polynomials, whatever contrasts the model was fitted with: the table
+  shows the coefficients as fitted, and the test is that of
+  `car::Anova(type = 3)` on the model refitted with
+  `contrasts = list(A = "contr.sum", ...)`. For `lm` and the mixed
+  models it is the Wald test of the term's coefficients in that coding
+  (the F over its df for `lm`, the chi-square for the mixed models,
+  under a robust `vcov` too); for `glm`, the likelihood-ratio chi-square
+  or the F of the refit without the term's columns. A model with an
+  aliased coefficient (an empty cell of an interaction) has no Type III
+  test and is refused. A numeric covariate that interacts with a factor
+  makes the Type III test of that factor a test where the covariate is
+  0, as in SPSS and SAS: a warning says so, and centering the covariate
+  tests the factor at its mean. Nothing is centered for you. The note
+  ends the definition of each partial statistic with "(Type II)" or
+  "(Type III)", and `tidy()` and `output = "long"` carry the type in a
+  `partial_type` column. Ignored, with a warning, when no partial column
+  is shown.
+
 - p_adjust:
 
   Multiple-comparison adjustment method applied to the family of
@@ -584,11 +628,13 @@ table_regression(
   layout. In `"first_col"` mode the `B` column aligns the fit-stat
   values on the decimal mark with its coefficients. In `"merged"` mode
   the fit-stat values move out of the `B` column, which aligns its
-  coefficients alone, and each merged value is centered as typed. Under
-  `nested = TRUE` the change rows carry their degrees of freedom
-  (`F-change` prints `7.29 (2, 28)`), which widens the `B` column in the
-  `"first_col"` layout; `"merged"` spans them over the model's columns
-  in the engines that merge.
+  coefficients alone, and the merged values of a model align on the
+  decimal mark among themselves, one centered block under the model
+  (Excel centers each number as it is). Under `nested = TRUE` the change
+  rows carry their degrees of freedom (`F-change` prints
+  `7.29 (2, 28)`), which widens the `B` column in the `"first_col"`
+  layout; `"merged"` spans them over the model's columns in the engines
+  that merge.
 
 - layout:
 
@@ -1095,10 +1141,12 @@ other `output` values, returns the format-specific object: `gt_tbl`,
 for `"long"` a `tbl_df` (`model_id`, `outcome`, `term`, `estimate_type`,
 `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
 `df.residual` (the second df of an F test, `NA` elsewhere), `p.value`,
-`test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the file path,
-invisibly, for `"excel"` and `"word"`; the table, invisibly, for
-`"clipboard"`. The two data frames carry the note as printed in
-`attr(x, "note")`. With `layout = "stacked"`, the stacked table of
+`test_type`, `nobs`, `r.squared`, `adj.r.squared`, ..., and last
+`partial_type`, the hypothesis of a partial row's test, `"II"` or
+`"III"`, `NA` elsewhere); the file path, invisibly, for `"excel"` and
+`"word"`; the table, invisibly, for `"clipboard"`. The two data frames
+carry the note as printed in `attr(x, "note")`. With
+`layout = "stacked"`, the stacked table of
 [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
 whose value is described there.
 
@@ -1126,11 +1174,13 @@ Each token = one displayed column.
   (`"partial_f2_ci"`, ...).
 
 - Term-level test – `lm`, `glm` and mixed-effects models:
-  `"partial_chi2"` and its twin `"partial_f"`, the term-level Type-II
-  test. Each term is tested under the marginality-respecting hypothesis
-  that excludes any higher-order interaction containing it (the
-  `car::Anova(type = 2)` convention), so the value does not depend on
-  the factor coding. For `glm` the term-level test is the F that
+  `"partial_chi2"` and its twin `"partial_f"`, the term-level test. By
+  default (`partial_type = "II"`) each term is tested under the
+  marginality-respecting hypothesis that excludes any higher-order
+  interaction containing it (the `car::Anova(type = 2)` convention), so
+  the value does not depend on the factor coding. `partial_type = "III"`
+  keeps the interactions and tests the term in a sum-to-zero coding (see
+  `partial_type`). For `glm` the term-level test is the F that
   `anova(reduced, full, test = "F")` reports when the dispersion is
   estimated, the likelihood-ratio chi-square otherwise: `"partial_f"`,
   \\F = (\Delta D / q) / \hat\phi\\ on \\(q, df)\\ degrees of freedom,
@@ -1148,8 +1198,9 @@ Each token = one displayed column.
   chi-square (Long & Freese 2014 Sections 3.2.2, 3.2.4), for binomial,
   Poisson and
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html). For `lm`,
-  `"partial_f"` is the Type II F of `car::Anova(type = 2)`, the F the
-  variance-explained partials are built on, so a gaussian `glm` and its
+  `"partial_f"` is the F of `car::Anova(type = 2)` (`type = 3` under
+  `partial_type = "III"`), the F the variance-explained partials are
+  built on, so a gaussian `glm` and its
   [`lm()`](https://rdrr.io/r/stats/lm.html) twin print the same value. A
   token is refused when no model of the table carries it, and when a
   model carries the other one while that one is not requested (each test
@@ -1157,18 +1208,18 @@ Each token = one displayed column.
   model's own dispersion (the residual variance of an `lm`) whatever
   `vcov`. For `lmer` / `glmer` / `glmmTMB` /
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html), `"partial_chi2"`
-  is the Wald chi-square built from the same Type-II hypothesis – a
-  deliberate departure from the Type-III default of SAS PROC MIXED and
-  `lmerTest` (the two conventions coincide for models without
-  interactions). Rendered as `value (df)` to disambiguate factor terms
-  (k-1 df) from numeric terms (1 df), and the partial F as `F (q, df)`
-  with both of its degrees of freedom, `3.45 (2, 28)`, as Stata and SAS
-  report them: each cell carries the residual df of its own model, and
-  the note defines the statistic only. The console and the rich outputs
-  (tinytable, gt, flextable, Word, the clipboard) print the test in one
-  column under the statistic's header, and Excel writes the statistic as
-  a number with its df in the number format (`0.00" (2, 28)"`).
-  `output = "data.frame"` and
+  is the Wald chi-square built from the same hypothesis: Type II by
+  default, where SAS PROC MIXED and `lmerTest` test Type III, which
+  `partial_type = "III"` gives (the two conventions coincide for models
+  without interactions). Rendered as `value (df)` to disambiguate factor
+  terms (k-1 df) from numeric terms (1 df), and the partial F as
+  `F (q, df)` with both of its degrees of freedom, `3.45 (2, 28)`, as
+  Stata and SAS report them: each cell carries the residual df of its
+  own model, and the note defines the statistic only. The console and
+  the rich outputs (tinytable, gt, flextable, Word, the clipboard) print
+  the test in one column under the statistic's header, and Excel writes
+  the statistic as a number with its df in the number format
+  (`0.00" (2, 28)"`). `output = "data.frame"` and
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   keep the statistic and its df as numbers, in the statistic's column,
   then `"<column>: df"` and, for the F, `"<column>: residual df"`.
@@ -2767,16 +2818,16 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 if (requireNamespace("broom", quietly = TRUE)) {
   broom::tidy(table_regression(fit))
 }
-#> # A tibble: 4 × 17
+#> # A tibble: 4 × 18
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
 #> 2 M1       wellbe… NA            age   B               0.0465    0.0307  -0.0137
 #> 3 M1       wellbe… NA            sexM… B               3.86      0.905    2.08  
 #> 4 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
-#> # ℹ 9 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> # ℹ 10 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
-#> #   factor_term <chr>, factor_level <chr>
+#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
 
 # \donttest{
 # ---- Mixed-effects models ----------------------------------------

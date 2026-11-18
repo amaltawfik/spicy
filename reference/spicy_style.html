@@ -124,6 +124,7 @@ institution.</p>
 <span>  percent_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  note_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  abbreviations <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sample_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  minus_sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">v_digits</span></span>
 <span><span class="op">)</span></span>
@@ -248,6 +249,25 @@ symbol is ambiguous (partial eta squared, the IQR as the width Q3 -
 Q1, the method of a standardized \(\beta\), the design-based
 standard error). Either way the definitions take the form and the
 place of the theme in force. A <code>note</code> you type is printed as typed.</p></dd>
+
+
+<dt id="arg-sample-size">sample_size<a class="anchor" aria-label="anchor" href="#arg-sample-size"></a></dt>
+<dd><p>Where the tables give their sample size, the
+number of rows they describe. <code>"note"</code> (the default) opens the note
+with it: "N = 1200." and, under <code>by</code>, the n of each group, "N = 1200:
+Female (n = 620), Male (n = 580).". <code>"header"</code> heads each group
+column with its n instead, "Female (n = 620)", the Total column with N
+and the column of missing <code>by</code> values with its own n, in the tables
+whose groups are columns (<code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>), in every
+output; the note then keeps "N = 1200." alone, and the note of
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> keeps its own sentence. The n are the
+unweighted counts the note gives, for a survey design too. Without
+<code>by</code>, and in <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_outcome.html">table_outcome()</a></code>, whose groups
+are rows, <code>"header"</code> is <code>"note"</code>. <code>"none"</code> leaves the sentence out of
+the note of every table that writes one, the survey tables included;
+the Base row of <code><a href="table_multiresponse.html">table_multiresponse()</a></code> stays. The data frames,
+<code>tidy()</code> and <code>glance()</code> do not change. No theme sets it.</p></dd>
 
 
 <dt id="arg-minus-sign">minus_sign<a class="anchor" aria-label="anchor" href="#arg-minus-sign"></a></dt>

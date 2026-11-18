@@ -725,7 +725,9 @@ rows the table describes and those of each group (the group of missing
 weight left out, rows rather than weights under <code>weights</code>
 ("N = 60 (unweighted)."), a row of zero weight left out as it is left
 out of every statistic, the complete cases of each variable in its n
-column.</p>
+column. <code>spicy_style(sample_size = "none")</code> leaves the sentence out;
+the groups being rows, <code>sample_size = "header"</code> keeps it as it is (see
+<code><a href="spicy_style.html">spicy_style()</a></code>).</p>
 <p>The missing-value disclosure (values excluded from the summaries,
 and rows removed for a missing <code>by</code> value under <code>drop_na = TRUE</code>)
 travels with the table on every route, not just the console:

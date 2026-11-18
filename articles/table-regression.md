@@ -302,7 +302,7 @@ table_regression(
 #>    Upper secondary        │ [0.17, 0.25] 
 #>    Tertiary               │ [0.17, 0.25] 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared; CI = confidence interval; ω² = partial omega squared.
+#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared (Type II); CI = confidence interval; ω² = partial omega squared (Type II).
 ```
 
 Methodology notes:
@@ -1397,7 +1397,7 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  R² (McFadden)            │    0.02                   
 #>  AIC                      │ 1198.9                    
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared; AIC = Akaike information criterion.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared (Type II); AIC = Akaike information criterion.
 ```
 
 The `p` column and the `χ²` column answer different questions. Each
@@ -1934,7 +1934,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 out <- table_regression(fit, standardized = "refit")
 
 broom::tidy(out)
-#> # A tibble: 8 × 17
+#> # A tibble: 8 × 18
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
@@ -1945,9 +1945,9 @@ broom::tidy(out)
 #> 6 M1       wellbe… NA            sexM… beta            0.247     0.0579   0.133 
 #> 7 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
 #> 8 M1       wellbe… NA            smok… beta           -0.110     0.0708  -0.249 
-#> # ℹ 9 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> # ℹ 10 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
-#> #   factor_term <chr>, factor_level <chr>
+#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
 broom::glance(out)
 #> # A tibble: 1 × 15
 #>   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma

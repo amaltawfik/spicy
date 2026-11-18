@@ -1083,6 +1083,10 @@ The note opens with the sample size, as in
 for a categorical one, the rows with a `by` value, a row with a missing
 or zero weight left out, rows rather than weights under `weights` ("N =
 60 (unweighted)."), the complete cases of each model in its n column.
+`spicy_style(sample_size = "header")` heads the mean of each level with
+its n instead, "Women (n = 80)", and leaves "N = 159." in the note;
+`sample_size = "none"` leaves the sentence out (see
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)).
 
 When `covariates` is non-empty, the note then names the covariates and
 the chosen estimand, e.g. `Adjusted for age, education (proportional).`

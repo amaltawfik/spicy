@@ -266,6 +266,16 @@
   `digits = 0` printed a model-change test as “9 (1)” and the partial
   test of the same model as “24.05 (1)”.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses a cluster-robust variance (`vcov = "CR0"` to `"CR3"`) for an
+  [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) model fitted
+  with contrasts of its own: the `contrasts` argument, contrasts set on
+  the data, or `options(contrasts = )` changed since the fit.
+  clubSandwich, which computes the variance, rebuilds the design of such
+  a model under the contrasts in force, and the table showed standard
+  errors that belong to no coding of the model. Refit with the default
+  contrasts, or set the same `options(contrasts = )` again.
+
 ### New features
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -278,6 +288,36 @@
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   has: the table is written into a copy of that Word document and takes
   its styles and its page setup.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `partial_type` for the per-term tests (`partial_f`,
+  `partial_chi2`) and the partial effect sizes. `"II"` (default,
+  unchanged) tests each term after the others and ignores the
+  interactions that contain it. `"III"` tests each term with every other
+  term in the model, interactions included: the model is recoded with
+  sum-to-zero contrasts whatever contrasts it was fitted with, so the
+  test does not depend on them. It covers
+  [`lm()`](https://rdrr.io/r/stats/lm.html),
+  [`glm()`](https://rdrr.io/r/stats/glm.html),
+  [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) and the
+  mixed models, and `2` and `3` are accepted. Under `"III"` a design
+  with an empty cell is refused, and a factor in an interaction with a
+  numeric covariate gives a warning: its test is taken where the
+  covariate is 0. The note names the type of every partial statistic,
+  “(Type II)” by default, and
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and the
+  long output gain a `partial_type` column.
+
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  gains `sample_size`. `"note"` (default, unchanged) states the sample
+  size at the head of the note. `"header"` puts the size of each group
+  in its column header, “Female (n = 620)”, for
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  under `by`, and the note keeps the overall N. `"none"` leaves the
+  sentence out of the note.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
@@ -552,7 +592,8 @@
   broke short headers after their first word and set number columns on
   top of each other. Each column keeps at least its longest word, the
   label column wraps first, up to three lines, and the other columns
-  give way after it.
+  give way after it. A column that gives way keeps only the width its
+  lines need, and the labels take the rest.
 
 - The note of a tinytable table follows a body resized with
   `tinytable::style_tt(fontsize = )`: it takes 0.9 of the size of the
@@ -580,6 +621,23 @@
   default theme. The rules now belong to the table itself, so every HTML
   output carries them.
 
+- In a Quarto HTML document or a revealjs deck, a gt table keeps the
+  layout it has elsewhere. Quarto processed the table again: stripes,
+  columns of equal width, and the whole width of a slide.
+
+- gt tables: the label of the first column and the note start at the
+  left edge of the labels of the body. A table knitted to LaTeX loses
+  the empty line between its column labels and the rule under them.
+
+- In LaTeX, the note of a tinytable table takes the line spacing of its
+  own size. It kept the spacing of the text around it, too loose for a
+  smaller note.
+
+- `table_regression(re_test = "lrt")` tests the random effects of an
+  `lme()` or glmmTMB model fitted inside a function or through
+  [`lapply()`](https://rdrr.io/r/base/lapply.html). The rows stayed
+  empty, with a warning that the refit had failed.
+
 - In the console, a label that holds a degree sign, or one of `©`, `®`,
   `™`, `№` and some other symbols, no longer shifts its row by one
   column. The cells were padded on a width that counted these characters
@@ -596,7 +654,8 @@
 - Under `fit_stats_layout = "merged"`, the B column of a flextable or
   Word table aligns its coefficients alone, as the help says: a sample
   size with more digits no longer widens the column and shifts them. The
-  merged values are centered as typed.
+  merged values of a model are aligned on the decimal mark among
+  themselves and centered as a block.
 
 - The model-change rows of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

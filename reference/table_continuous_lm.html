@@ -1070,7 +1070,10 @@ constant across outcomes).</p>
 "N = 159: Women (n = 80), Men (n = 79)." for a categorical one, the
 rows with a <code>by</code> value, a row with a missing or zero weight left out,
 rows rather than weights under <code>weights</code> ("N = 60 (unweighted)."), the
-complete cases of each model in its n column.</p>
+complete cases of each model in its n column.
+<code>spicy_style(sample_size = "header")</code> heads the mean of each level with
+its n instead, "Women (n = 80)", and leaves "N = 159." in the note;
+<code>sample_size = "none"</code> leaves the sentence out (see <code><a href="spicy_style.html">spicy_style()</a></code>).</p>
 <p>When <code>covariates</code> is non-empty, the note then names the covariates and
 the chosen estimand, e.g.
 <code>Adjusted for age, education (proportional).</code> With p-values, the
