@@ -412,7 +412,7 @@ spicy_glm_exp_header <- function(family_name, link_name) {
   dev <- any(vapply(models, .glm_carries_r2_deviance, logical(1)))
   c(
     "i" = paste0(
-      "A GAM shows mgcv's adjusted R², `\"adj_r2\"`",
+      "A GAM shows mgcv's adjusted R\u00B2, `\"adj_r2\"`",
       if (dev) {
         paste0(
           ", and the deviance explained of its `summary()`, ",

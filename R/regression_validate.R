@@ -2294,7 +2294,7 @@ validate_class_appropriate_tokens <- function(
             paste(.quote_val(r2_cols), collapse = ", ")
           ),
           "i" = paste0(
-            "The column reports the R² of each fit of a univariable ",
+            "The column reports the R\u00B2 of each fit of a univariable ",
             "screen of least-squares models. For a GAM, ask for a ",
             "fit-statistics row in `show_fit_stats`."
           ),
