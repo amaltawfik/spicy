@@ -774,7 +774,10 @@
   flextable, Word, tinytable (HTML, LaTeX, Typst) and Excel merge each
   label over the columns of its model, centered, where it widened the
   first of them. In Excel, a label wider than those columns widens them
-  together.
+  together. gt, which merges no cells of the body, sets the labels of
+  models side by side in a row of the header, each over the columns of
+  its model. A stacked gt table keeps each label in the first column of
+  its model.
 
 * `table_regression()` in French: a table of models of several families
   words its title and the sentence that names the type of each model in
