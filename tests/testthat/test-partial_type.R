@@ -491,7 +491,9 @@ test_that("the note, tidy() and the long output name the type", {
   expect_true(all(td$partial_type[part] == "III"))
   expect_true(all(is.na(td$partial_type[!part])))
   lo <- .pt_tr(f, show_columns = sc, output = "long")
-  expect_true("partial_type" %in% names(lo))
+  # The last column, in both data frames.
+  expect_identical(utils::tail(names(lo), 1L), "partial_type")
+  expect_identical(utils::tail(names(td), 1L), "partial_type")
   expect_true(all(lo$partial_type[lo$estimate_type == "partial_f"] == "III"))
   expect_true(all(is.na(lo$partial_type[lo$estimate_type == "b"])))
 
@@ -509,4 +511,231 @@ test_that("the note, tidy() and the long output name the type", {
   expect_match(fr, "statistique F partielle (type III)", fixed = TRUE)
   fr2 <- attr(table_regression(f, show_columns = sc), "note")
   expect_match(fr2, "statistique F partielle (type II)", fixed = TRUE)
+})
+
+test_that("glmer, glm.nb, the quasi families and Tweedie match car's Type III", {
+  skip_if_not_installed("car")
+  d <- .pt_data()
+  d$z <- as.integer(d$y > median(d$y))
+  d$k <- round(d$y / 2)
+
+  # The quasi families and Tweedie: the F over the dispersion summary()
+  # estimates.
+  fams <- list(
+    list(quasipoisson(), "k"),
+    list(quasibinomial(), "z")
+  )
+  if (requireNamespace("statmod", quietly = TRUE)) {
+    fams <- c(fams, list(list(statmod::tweedie(1.5, 0), "k")))
+  }
+  for (fm in fams) {
+    fit <- glm(stats::reformulate(c("A * B", "x"), fm[[2L]]), fm[[1L]], d)
+    r <- .pt_terms(.pt_tr(fit, show_columns = c("b", "partial_f")), "partial_f")
+    a <- car::Anova(
+      update(fit, contrasts = .pt_sum),
+      type = 3,
+      test.statistic = "F",
+      error.estimate = "dispersion"
+    )
+    expect_equal(r$statistic, .pt_car(a, "F values"), tolerance = 1e-8)
+    expect_equal(r$p.value, .pt_car(a, "Pr(>F)"), tolerance = 1e-8)
+  }
+
+  # glm.nb: the likelihood-ratio chi-square at the fit's theta. A refit
+  # under contr.sum re-estimates theta, so car is taken on the sum-coded
+  # fit itself, and the coding invariance to the precision of theta.
+  set.seed(11)
+  d$nb <- stats::rnbinom(nrow(d), mu = exp(1 + 0.3 * (d$A == "a3")), size = 2)
+  nb_sum <- MASS::glm.nb(nb ~ A * B + x, d, contrasts = .pt_sum)
+  r <- .pt_terms(
+    .pt_tr(nb_sum, show_columns = c("b", "partial_chi2")),
+    "partial_chi2"
+  )
+  a <- car::Anova(nb_sum, type = 3)
+  expect_equal(r$statistic, .pt_car(a, "LR Chisq"), tolerance = 1e-8)
+  nb_trt <- MASS::glm.nb(nb ~ A * B + x, d)
+  rt <- .pt_terms(
+    .pt_tr(nb_trt, show_columns = c("b", "partial_chi2")),
+    "partial_chi2"
+  )
+  expect_equal(rt$statistic, r$statistic, tolerance = 1e-6)
+
+  # glmer: the Wald chi-square, and its coding invariance.
+  skip_if_not_installed("lme4")
+  gm <- lme4::glmer(z ~ A * B + x + (1 | cl), d, binomial)
+  gm_sum <- update(gm, contrasts = .pt_sum)
+  a <- car::Anova(gm_sum, type = 3)
+  for (fit in list(gm, gm_sum)) {
+    r <- .pt_terms(
+      suppressWarnings(.pt_tr(fit, show_columns = c("b", "partial_chi2"))),
+      "partial_chi2"
+    )
+    expect_equal(r$statistic, .pt_car(a, "Chisq"), tolerance = 1e-8)
+  }
+})
+
+test_that("under a robust variance, the mixed Wald test takes the robust matrix", {
+  skip_if_not_installed("car")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("clubSandwich")
+  d <- .pt_data()
+  block_wald <- function(b, V, asg) {
+    vapply(
+      1:4,
+      function(k) {
+        i <- which(asg == k)
+        drop(crossprod(b[i], solve(V[i, i], b[i])))
+      },
+      numeric(1)
+    )
+  }
+  robust3 <- function(fit) {
+    .pt_terms(
+      suppressWarnings(.pt_tr(
+        fit,
+        show_columns = c("b", "partial_chi2"),
+        vcov = "CR2",
+        cluster = d$cl
+      )),
+      "partial_chi2"
+    )$statistic
+  }
+  x_sum <- stats::model.matrix(~ A * B + x, d, contrasts.arg = .pt_sum)
+
+  # lmer: car on the sum-coded refit, with CR2 computed on that refit, and
+  # the same block Wald test by hand.
+  m <- suppressMessages(lme4::lmer(y ~ A * B + x + (1 | cl), d))
+  m_sum <- suppressMessages(lme4::lmer(
+    y ~ A * B + x + (1 | cl),
+    d,
+    contrasts = .pt_sum
+  ))
+  V <- as.matrix(clubSandwich::vcovCR(m_sum, cluster = d$cl, type = "CR2"))
+  a <- car::Anova(m_sum, type = 3, vcov. = V)
+  hand <- block_wald(lme4::fixef(m_sum), V, attr(x_sum, "assign"))
+  expect_equal(hand, .pt_car(a, "Chisq"), tolerance = 1e-8)
+  r <- robust3(m)
+  expect_equal(r, hand, tolerance = 1e-8)
+  # Not the model-based test.
+  r0 <- .pt_terms(
+    suppressWarnings(.pt_tr(m, show_columns = c("b", "partial_chi2"))),
+    "partial_chi2"
+  )$statistic
+  expect_gt(max(abs(r - r0)), 0.1)
+
+  # lme: clubSandwich builds the design of an lme without the fit's
+  # contrasts, so its CR2 of a sum-coded lme is not that fit's. The oracle
+  # is the CR2 of the treatment-coded fit carried to the sum-to-zero
+  # coefficients by the normal equations, b = M b_t, V = M V_t M'. The
+  # random-intercept REML fit is the lmer one, whose robust test above it
+  # equals.
+  l <- nlme::lme(y ~ A * B + x, random = ~ 1 | cl, data = d)
+  x_trt <- stats::model.matrix(~ A * B + x, d)
+  M <- solve(crossprod(x_sum), crossprod(x_sum, x_trt))
+  V_t <- as.matrix(clubSandwich::vcovCR(l, cluster = d$cl, type = "CR2"))
+  hand_l <- block_wald(
+    drop(M %*% nlme::fixef(l)),
+    M %*% V_t %*% t(M),
+    attr(x_sum, "assign")
+  )
+  rl <- robust3(l)
+  expect_equal(rl, hand_l, tolerance = 1e-8)
+  expect_equal(rl, r, tolerance = 1e-5)
+})
+
+test_that("the Type III cells and note reach the rich outputs, in English and French", {
+  skip_on_cran()
+  d <- .pt_data()
+  f <- lm(y ~ A * B + x, d)
+  sc <- c("b", "partial_f")
+  cell <- function(x) {
+    trimws(gsub("[\u2007\u00A0]", " ", gsub("\u2212", "-", as.character(x))))
+  }
+  row_cell <- function(df, row) {
+    df <- as.data.frame(df, stringsAsFactors = FALSE)
+    cell(df[[3L]][cell(df[[1L]]) == row])
+  }
+  check <- function(en) {
+    note <- if (en) {
+      "partial F statistic (Type III)"
+    } else {
+      "statistique F partielle (type III)"
+    }
+    console <- .pt_tr(f, show_columns = sc)
+    body <- structure(console, class = "data.frame")
+    want <- cell(body[["F"]][trimws(body$Variable) == "a2"])
+    expect_identical(want, if (en) "5.72 (2, 83)" else "5,72 (2, 83)")
+    skip_if_not_installed("tinytable")
+    tt <- .pt_tr(f, show_columns = sc, output = "tinytable")
+    expect_identical(row_cell(tt@data, "a2"), want)
+    expect_match(unlist(tt@notes), note, fixed = TRUE)
+    skip_if_not_installed("gt")
+    g <- .pt_tr(f, show_columns = sc, output = "gt")
+    expect_identical(row_cell(g[["_data"]], "a2"), want)
+    expect_match(
+      gsub("\\", "", unlist(g[["_source_notes"]]), fixed = TRUE),
+      note,
+      fixed = TRUE
+    )
+    skip_if_not_installed("flextable")
+    ft <- .pt_tr(f, show_columns = sc, output = "flextable")
+    expect_identical(row_cell(ft$body$dataset, "a2"), want)
+    foot <- unlist(lapply(ft$footer$content$data, function(p) {
+      paste(p$txt, collapse = "")
+    }))
+    expect_true(any(grepl(note, foot, fixed = TRUE)))
+    skip_if_not_installed("openxlsx2")
+    path <- tempfile(fileext = ".xlsx")
+    .pt_tr(f, show_columns = sc, output = "excel", excel_path = path)
+    sheet <- openxlsx2::wb_to_df(openxlsx2::wb_load(path), col_names = FALSE)
+    strings <- cell(unlist(sheet))
+    expect_true(any(grepl(note, strings, fixed = TRUE)))
+    # The cell holds the Type III F as a number.
+    xa2 <- sheet[which(cell(sheet[[1L]]) == "a2"), 3L]
+    expect_equal(round(as.numeric(xa2), 2), 5.72)
+  }
+  check(TRUE)
+  withr::local_options(spicy.language = "fr")
+  check(FALSE)
+})
+
+test_that("a univariable screen accepts Type III, where it equals Type II", {
+  d <- .pt_data()
+  sc <- c("b", "partial_f", "partial_eta2")
+  uv <- function(...) {
+    table_regression_uv(
+      d,
+      outcome = "y",
+      predictors = c("A", "B", "x"),
+      show_columns = sc,
+      ...
+    )
+  }
+  u2 <- broom::tidy(uv())
+  t3 <- uv(partial_type = "III")
+  u3 <- broom::tidy(t3)
+  # Each model has one predictor, and the multivariable model none in an
+  # interaction: the two hypotheses are the same test.
+  part <- u3$estimate_type %in% c("partial_f", "partial_eta2")
+  expect_true(any(part))
+  expect_equal(u3$statistic[part], u2$statistic[part], tolerance = 1e-10)
+  expect_equal(u3$estimate[part], u2$estimate[part], tolerance = 1e-10)
+  expect_true(all(u3$partial_type[part] == "III"))
+  expect_true(all(u2$partial_type[part] == "II"))
+  expect_match(attr(t3, "note"), "partial F statistic (Type III)", fixed = TRUE)
+  expect_identical(
+    broom::tidy(uv(partial_type = 3)),
+    u3
+  )
+  expect_warning(
+    table_regression_uv(
+      d,
+      outcome = "y",
+      predictors = c("A", "x"),
+      show_columns = c("b", "se"),
+      partial_type = "III"
+    ),
+    class = "spicy_ignored_arg"
+  )
 })
