@@ -516,6 +516,31 @@ test_that("whole_spanners widens a group to its label instead of truncating", {
   expect_match(cut, "…", fixed = TRUE)
 })
 
+test_that("whole_spanners widens a group of the body to its label", {
+  # A row of column groups inside the body, without `text`: the column
+  # groups of a panel's own header in a stack.
+  m <- data.frame(
+    V = c("a", "", "b"),
+    A = c("1.0", "", "2.0"),
+    B = c("3.0", "", "4.0"),
+    C = c("5", "", "6")
+  )
+  lbl <- "A rather long group label"
+  bs <- list(list(row = 2L, spans = stats::setNames(list(2:3), lbl)))
+  wide <- spicy:::build_ascii_table(
+    m,
+    align_left_cols = 1L,
+    body_spanners = bs,
+    whole_spanners = TRUE
+  )
+  lines <- strsplit(wide, "\n", fixed = TRUE)[[1]]
+  expect_true(any(grepl(lbl, lines, fixed = TRUE)))
+  expect_length(unique(nchar(lines, type = "width")), 1L)
+  cut <- spicy:::build_ascii_table(m, align_left_cols = 1L, body_spanners = bs)
+  expect_false(grepl(lbl, cut, fixed = TRUE))
+  expect_match(cut, "…", fixed = TRUE)
+})
+
 test_that("spanner labels with wide or combining characters stay aligned", {
   m <- .spanner_df()
   row_of <- function(first) {
