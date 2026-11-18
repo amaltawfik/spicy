@@ -341,12 +341,15 @@
 #   1. the data keep `nat`; the labels share the rest, between `three`
 #      and `nat`, so a label wraps before a header does;
 #   2. data columns drop to `two` one at a time, largest gain first,
-#      until the labels can have their `two`; the labels share the rest;
+#      until the labels can have their `three`; the labels share the
+#      rest, between `three` and `nat`;
 #   3. the labels at `two`; the data share the rest, between floor and
 #      `two`;
-#   4. the data at their floors; the labels share the rest, between floor
+#   4. the data share the room the labels leave at `three`, between floor
+#      and `two`; the labels share the rest, between `three` and `two`;
+#   5. the data at their floors; the labels share the rest, between floor
 #      and `two`;
-#   5. nothing fits at the floors: tinytable's proportional shrink of the
+#   6. nothing fits at the floors: tinytable's proportional shrink of the
 #      natural widths.
 # "Share" is Typst's shrink of `auto` columns held between two bounds:
 # each column takes min(high, t), never under low, for the largest t that
@@ -417,17 +420,20 @@
     "      let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)",
     "      if spicy_room - spicy_nat_d >= spicy_three_s {",
     "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))",
-    "      } else if spicy_room - spicy_two_d >= spicy_two_s {",
+    "      } else if spicy_room - spicy_two_d >= spicy_three_s {",
     "        let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))",
     "        let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>",
     "          spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))",
     "        for spicy_i in spicy_order {",
-    "          if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }",
+    "          if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }",
     "          spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))",
     "        }",
-    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data",
+    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data",
     "      } else if spicy_room - spicy_floor_d >= spicy_two_s {",
     "        tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)",
+    "      } else if spicy_room - spicy_floor_d >= spicy_three_s {",
+    "        let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)",
+    "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data",
     "      } else if spicy_room - spicy_floor_d >= spicy_floor_s {",
     "        tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))",
     "      }",

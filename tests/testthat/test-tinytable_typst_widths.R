@@ -220,6 +220,18 @@ test_that("the shrink reads the label columns, and the labels when there are som
     "if spicy_room - spicy_nat_d >= spicy_three_s {",
     fixed = TRUE
   )
+  # The data give up to `two` for labels at `three`, and below `two` with
+  # the labels between `three` and `two` when the labels cannot have `two`.
+  expect_match(
+    out,
+    "} else if spicy_room - spicy_two_d >= spicy_three_s {",
+    fixed = TRUE
+  )
+  expect_match(
+    out,
+    "} else if spicy_room - spicy_floor_d >= spicy_three_s {",
+    fixed = TRUE
+  )
   expect_no_match(out, "// tier", fixed = TRUE)
   # The floors are raised by the column-group labels only when there are.
   expect_no_match(out, "spicy_span_width", fixed = TRUE)

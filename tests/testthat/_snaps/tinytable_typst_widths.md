@@ -104,17 +104,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
@@ -282,17 +285,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
@@ -493,17 +499,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
@@ -668,17 +677,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
@@ -881,17 +893,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
@@ -1094,17 +1109,20 @@
             let spicy_floor_d = spicy_sum(spicy_d, spicy_floor)
             if spicy_room - spicy_nat_d >= spicy_three_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_nat_d, spicy_three, spicy_nat) + spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
-            } else if spicy_room - spicy_two_d >= spicy_two_s {
+            } else if spicy_room - spicy_two_d >= spicy_three_s {
               let spicy_data = spicy_d.map(spicy_k => spicy_nat.at(spicy_k))
               let spicy_order = range(spicy_d.len()).sorted(key: spicy_i =>
                 spicy_two.at(spicy_d.at(spicy_i)) - spicy_nat.at(spicy_d.at(spicy_i)))
               for spicy_i in spicy_order {
-                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_two_s { break }
+                if spicy_room - spicy_data.sum(default: 0pt) >= spicy_three_s { break }
                 spicy_data.at(spicy_i) = spicy_two.at(spicy_d.at(spicy_i))
               }
-              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_two, spicy_nat) + spicy_data
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_nat) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_two_s {
               tinytable-naturals = spicy_s.map(spicy_k => spicy_two.at(spicy_k)) + spicy_fit(spicy_d, spicy_room - spicy_two_s, spicy_floor, spicy_two)
+            } else if spicy_room - spicy_floor_d >= spicy_three_s {
+              let spicy_data = spicy_fit(spicy_d, spicy_room - spicy_three_s, spicy_floor, spicy_two)
+              tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_data.sum(default: 0pt), spicy_three, spicy_two) + spicy_data
             } else if spicy_room - spicy_floor_d >= spicy_floor_s {
               tinytable-naturals = spicy_fit(spicy_s, spicy_room - spicy_floor_d, spicy_floor, spicy_two) + spicy_d.map(spicy_k => spicy_floor.at(spicy_k))
             }
