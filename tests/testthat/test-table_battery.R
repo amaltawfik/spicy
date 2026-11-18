@@ -486,6 +486,23 @@ test_that("glance() counts rows under weights, and sums their weights apart", {
   expect_true(all(is.na(broom::glance(.bat_tbl())$weighted_nobs)))
 })
 
+test_that("glance() of a table without its recorded sizes counts the rows", {
+  skip_on_cran()
+  skip_if_not_installed("broom")
+  # Item a has a missing answer, kept in the table by drop_na = FALSE.
+  d <- data.frame(a = factor(c("x", "y", NA)), b = factor(c("y", "y", "x")))
+  tbl <- table_battery(d, c(a, b), drop_na = FALSE)
+  recorded <- broom::glance(tbl)
+  attr(tbl, "nobs") <- NULL
+  counted <- broom::glance(tbl)
+  expect_identical(counted$nobs, c(3L, 3L))
+  expect_identical(counted$nobs_valid, c(2L, 3L))
+  expect_true(all(is.na(counted$weighted_nobs)))
+  expect_true(all(is.na(counted$weighted_nobs_valid)))
+  # Without weights the counts of the long output are the rows recorded.
+  expect_identical(counted, recorded)
+})
+
 test_that("the default note says what the percentages and the base are", {
   tbl <- .bat_tbl()
   expect_identical(
@@ -695,7 +712,7 @@ test_that("factor and non-factor items are refused together, unless levels says 
   expect_identical(df$x, c(50, 50))
 })
 
-# ---- beyond the contract# ---- beyond the contract -------------------------------------------------------------
+# ---- beyond the contract -------------------------------------------------------------
 
 test_that("sort orders the rows on top, a level or the labels", {
   skip_on_cran()
@@ -961,6 +978,92 @@ test_that("show_n = FALSE, p_value = FALSE and the ignored arguments", {
   expect_error(
     .bat_tbl(top = "Neutral"),
     "one level",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("the checks of the call name what they refuse", {
+  skip_on_cran()
+  d <- data.frame(a = factor(c("x", "y")), b = factor(c("y", "x")))
+  expect_error(
+    table_battery(d, tidyselect::starts_with("zzz")),
+    "`select` selects no column.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_battery(d, c(a, b), p_value = "yes"),
+    "`p_value` must be TRUE, FALSE, or NULL.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  for (bad in list(c("x", NA), character(0), c("x", ""))) {
+    expect_error(
+      table_battery(d, c(a, b), levels = bad),
+      "`levels` must be NULL or a vector of levels",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  # A factor gives its values, in their order, not its levels.
+  df <- table_battery(
+    d,
+    c(a, b),
+    levels = factor(c("y", "x"), levels = c("x", "y")),
+    output = "data.frame"
+  )
+  expect_identical(names(df)[3:4], c("y", "x"))
+})
+
+test_that("the messages about the scale agree in number with what they name", {
+  skip_on_cran()
+  ch <- data.frame(a = c("A", "B"), b = c("B", "A"))
+  cnd <- expect_warning(
+    table_battery(ch, c(a, b), levels = c("A", "B", "Bee", "Wasp")),
+    "`levels` has entries that no item declares or holds: \"Bee\", \"Wasp\".",
+    fixed = TRUE,
+    class = "spicy_unknown_name"
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "Their columns show at 0.",
+    fixed = TRUE
+  )
+  # The first item declares no levels and a later one does.
+  expect_error(
+    table_battery(
+      data.frame(a = c("x", "y"), b = factor(c("x", "y"))),
+      c(a, b)
+    ),
+    "`b` declares its levels, but `a` does not",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  # A long scale is cut after eight levels.
+  f9 <- data.frame(
+    a = factor(letters[1:9]),
+    b = factor(letters[1:9], levels = letters[2:10])
+  )
+  expect_error(
+    table_battery(f9, c(a, b)),
+    "Levels of `b`: \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", ...",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_battery(data.frame(a = c(NA, NA), b = c(NA, NA)), c(a, b)),
+    "there is no scale to tabulate",
+    fixed = TRUE,
+    class = "spicy_invalid_data"
+  )
+  expect_error(
+    table_battery(
+      data.frame(a = factor(c("x", "y", "z")), b = factor(c("y", "x", "z"))),
+      c(a, b),
+      top = c("p", "q")
+    ),
+    "`top` names \"p\", \"q\", which are not among the levels shown.",
+    fixed = TRUE,
     class = "spicy_invalid_input"
   )
 })

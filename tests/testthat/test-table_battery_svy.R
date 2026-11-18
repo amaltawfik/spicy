@@ -675,6 +675,17 @@ test_that("labels name the items, as in table_battery()", {
   )
   expect_identical(df$label, c("q1", "Second item"))
   expect_identical(df$variable, c("q1", "q2"))
+  # Under `by`, `labels` may name the grouping column: it heads the title.
+  expect_no_warning(
+    tbl <- table_battery_svy(
+      des,
+      c(q1, q2),
+      by = g,
+      labels = c(g = "Group", q2 = "Second item")
+    )
+  )
+  expect_match(attr(tbl, "title"), "Group", fixed = TRUE)
+  expect_identical(as.data.frame(tbl)$label, c("q1", "Second item"))
 })
 
 # ---- designs ----------------------------------------------------------------------
@@ -911,6 +922,79 @@ test_that("p_adjust: none, BH, and the refusals of the family", {
     output = "data.frame"
   )
   expect_false("p" %in% names(nop))
+})
+
+test_that("the switches a table cannot use warn, and one answering group runs no test", {
+  skip_on_cran()
+  des <- .bsvy_built_design()
+  expect_error(
+    table_battery_svy(des, tidyselect::starts_with("zzz")),
+    "`select` selects no column.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_warning(
+    df <- table_battery_svy(
+      des,
+      c(q1, q2),
+      p_value = TRUE,
+      output = "data.frame"
+    ),
+    "`p_value` is ignored when `by` is not used.",
+    fixed = TRUE,
+    class = "spicy_ignored_arg"
+  )
+  expect_false("p" %in% names(df))
+  expect_warning(
+    table_battery_svy(
+      des,
+      c(q1, q2),
+      by = g,
+      p_value = FALSE,
+      chisq_statistic = "Wald"
+    ),
+    "`chisq_statistic` is ignored when `p_value = FALSE`.",
+    fixed = TRUE,
+    class = "spicy_ignored_arg"
+  )
+  expect_null(attr(table_battery_svy(des, c(q1, q2), title = FALSE), "title"))
+  # Group B is a level of `g` with no respondent: nothing to compare.
+  d <- .bsvy_built()
+  d$g <- factor(ifelse(is.na(d$g), NA, "A"), levels = c("A", "B"))
+  des1 <- .bsvy_built_design(d)
+  expect_no_warning(
+    df <- table_battery_svy(des1, c(q1, q2), by = g, output = "data.frame")
+  )
+  expect_false("p" %in% names(df))
+  expect_equal(df[["B n"]], c(0, 0))
+  expect_warning(
+    long <- table_battery_svy(
+      des1,
+      c(q1, q2),
+      by = g,
+      p_value = TRUE,
+      output = "long"
+    ),
+    "`p_value` is ignored: fewer than two groups of `by` have respondents",
+    fixed = TRUE,
+    class = "spicy_ignored_arg"
+  )
+  expect_false("p.value" %in% names(long))
+  expect_identical(
+    capture_warnings(
+      table_battery_svy(
+        des1,
+        c(q1, q2),
+        by = g,
+        chisq_statistic = "Wald",
+        p_adjust = "BH"
+      )
+    ),
+    c(
+      "`chisq_statistic` is ignored when fewer than two groups of `by` have respondents.",
+      "`p_adjust` is ignored when fewer than two groups of `by` have respondents."
+    )
+  )
 })
 
 # ---- the outputs -------------------------------------------------------------------
