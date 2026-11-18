@@ -405,7 +405,7 @@
   look gt gives it.
 
 * `gt::gtsave()` and `gt::as_raw_html()` draw the header of a gt table
-  as the HTML display does. They underlined each column label in grey
+  as the HTML display does. They underlined each column label in gray
   and kept the rules of gt's default theme. The rules now belong to the
   table itself, so every HTML output carries them.
 
