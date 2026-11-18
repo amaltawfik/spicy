@@ -482,3 +482,41 @@ test_that("glmer sum-coded refit still matches car::Anova(type = 2) exactly", {
     expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
   }
 })
+
+test_that("a user contrast, complete or not, is the one tested: lmer and glmmTMB match car::Anova(type = 2)", {
+  skip_if_not_installed("car")
+  skip_if_not_installed("lme4")
+  # The design used to be rebuilt with the default contrasts: under a
+  # contrast of one column for the three levels of A, its column count
+  # was not the fit's and every cell stayed empty.
+  d <- .pchi_inter_lmer_data()
+  codings <- list(
+    reduced = list(A = matrix(c(1, 0, -1), ncol = 1)),
+    sum = list(A = contr.sum(3), B = contr.sum(2)),
+    helmert = list(A = contr.helmert(3))
+  )
+  check <- function(fit, ca) {
+    ours <- .pchi_by_term(fit)
+    for (term in rownames(ca)) {
+      expect_equal(ours[[term]]$chi2, ca[term, "Chisq"], tolerance = 1e-8)
+      expect_equal(ours[[term]]$df, as.numeric(ca[term, "Df"]))
+    }
+  }
+  for (k in names(codings)) {
+    fit <- lme4::lmer(
+      Reaction ~ Days + A * B + (1 | Subject),
+      data = d,
+      contrasts = codings[[k]]
+    )
+    check(fit, car::Anova(fit, type = 2))
+  }
+  skip_if_not_installed("glmmTMB")
+  for (k in names(codings)) {
+    fit <- glmmTMB::glmmTMB(
+      Reaction ~ Days + A * B + (1 | Subject),
+      data = d,
+      contrasts = codings[[k]]
+    )
+    check(fit, car::Anova(fit, type = 2, component = "cond"))
+  }
+})

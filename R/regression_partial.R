@@ -620,22 +620,26 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   V[fixed_par, ] <- 0
   V[, fixed_par] <- 0
 
-  data <- tryCatch(
-    if (inherits(fit, c("lme", "gls"))) {
-      .nlme_get_data(fit)
+  # The design of the fit itself for lme4 and glmmTMB, so that a user
+  # contrast is the one tested. The design of an lme is rebuilt from its
+  # data (nlme completes a contrast of too few columns before it fits).
+  mm <- tryCatch(
+    if (inherits(fit, "merMod")) {
+      lme4::getME(fit, "X")
+    } else if (inherits(fit, "glmmTMB")) {
+      glmmTMB::getME(fit, "X")
     } else {
-      stats::model.frame(fit)
+      stats::model.matrix(fixed_form, data = .nlme_get_data(fit))
     },
     error = function(e) NULL
   )
-  mm <- tryCatch(
-    stats::model.matrix(fixed_form, data = data),
-    error = function(e) NULL
-  )
-  # The data of an lme that cannot be found, or a design rebuilt with the
-  # default contrasts that is not the fit's (a user contrast of too few
-  # columns): no test.
-  if (is.null(mm) || ncol(mm) != length(bhat)) {
+  # The data of an lme that cannot be found, or a column lme4 dropped:
+  # no test.
+  if (
+    is.null(mm) ||
+      ncol(mm) != length(bhat) ||
+      length(attr(mm, "assign")) != ncol(mm)
+  ) {
     return(NULL)
   }
 
