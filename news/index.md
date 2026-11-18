@@ -333,8 +333,9 @@
   [`glm()`](https://rdrr.io/r/stats/glm.html),
   [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) and the
   mixed models, and `2` and `3` are accepted. Under `"III"` a design
-  with an empty cell is refused, and a factor in an interaction with a
-  numeric covariate gives a warning: its test is taken where the
+  with an empty cell is refused, as is a factor fitted with a contrast
+  of fewer columns than its levels minus one. A factor in an interaction
+  with a numeric covariate gives a warning: its test is taken where the
   covariate is 0. The note names the type of every partial statistic,
   “(Type II)” by default, and
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and the
@@ -680,6 +681,18 @@
   `lme()` or glmmTMB model fitted inside a function or through
   [`lapply()`](https://rdrr.io/r/base/lapply.html). The rows stayed
   empty, with a warning that the refit had failed.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gives a `gls()` model fitted inside a function, or an `lme()` model
+  fitted there with `keep.data = FALSE`, the same table as the model
+  fitted outside it. The reference row of a factor, the conditional R²,
+  the test of the random effects in the note and the partial tests were
+  missing. When the data of such a model can no longer be found, a
+  warning now says what the table leaves out.
+
+- `table_regression(show_columns = "partial_chi2")` tests an lme4 or
+  glmmTMB model fitted with a user contrast of fewer columns than levels
+  minus one. Its cells were empty.
 
 - In the console, a label that holds a degree sign, or one of `©`, `®`,
   `™`, `№` and some other symbols, no longer shifts its row by one

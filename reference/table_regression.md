@@ -359,7 +359,9 @@ table_regression(
   under a robust `vcov` too); for `glm`, the likelihood-ratio chi-square
   or the F of the refit without the term's columns. A model with an
   aliased coefficient (an empty cell of an interaction) has no Type III
-  test and is refused. A numeric covariate that interacts with a factor
+  test and is refused. So is a factor fitted with a contrast matrix of
+  fewer columns than its levels minus one, a model that does not hold
+  the whole factor. A numeric covariate that interacts with a factor
   makes the Type III test of that factor a test where the covariate is
   0, as in SPSS and SAS: a warning says so, and centering the covariate
   tests the factor at its mean. Nothing is centered for you. The note
