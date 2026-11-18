@@ -346,6 +346,10 @@ test_that("the note is set at 0.9 of the size the body cells share", {
     "note{}={\\fontsize{0.72em}{1.02em}\\selectfont \\emph{Note.}",
     fixed = TRUE
   )
+  # The paragraph ends inside the size group, so the note's lines take
+  # its leading, not the document's.
+  expect_match(.tw_latex(sized), "\\endgraf},", fixed = TRUE)
+  expect_match(.tw_latex(x), "\\endgraf},", fixed = TRUE)
   # Only part of the body at that size: the note keeps 0.9em.
   part <- tinytable::style_tt(x, i = 1, fontsize = 0.8)
   expect_match(.tw_typst(part), "text(size: 0.9em, [", fixed = TRUE)
@@ -367,6 +371,7 @@ test_that("the note is set at 0.9 of the size the body cells share", {
   expect_match(.tw_typst(sized), "text([#emph[Note.]", fixed = TRUE)
   expect_no_match(.tw_html(sized), "0.72em", fixed = TRUE)
   expect_match(.tw_latex(sized), "note{}={\\emph{Note.}", fixed = TRUE)
+  expect_no_match(.tw_latex(sized), "\\endgraf", fixed = TRUE)
 })
 
 test_that("the Typst note keeps its lead-in after a note of several lines", {

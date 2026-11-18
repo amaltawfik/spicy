@@ -1260,10 +1260,11 @@
 # disclosure per line and one size down (`\small`) as in those two
 # outputs; when every body cell has the size `scale`
 # (`.spicy_tt_note_scale()`), 0.9 of it, written as tinytable writes the
-# size of a cell. A note styled itself (`style_tt(i = "notes")`) comes
-# wrapped in a group of its own, which the key below does not match. Then
-# the characters spicy writes that LaTeX cannot set with every engine and
-# font are mapped, for the whole table (`.spicy_latex_unicode()`).
+# size of a cell, with its leading. A note styled itself
+# (`style_tt(i = "notes")`) comes wrapped in a group of its own, which
+# the key below does not match. Then the characters spicy writes that
+# LaTeX cannot set with every engine and font are mapped, for the whole
+# table (`.spicy_latex_unicode()`).
 .spicy_tt_note_latex <- function(
   s,
   notes = NULL,
@@ -1294,6 +1295,13 @@
       lead
     )
     tex <- .spicy_note_lines(tex, br = "\\\\\n", space = "~")
+    # A paragraph takes the leading in force where it ends: tabularray
+    # ends it outside the group of the note, so the note's lines kept the
+    # leading of the document. `\endgraf` ends it inside, where the
+    # `\par` of the key's argument would not be allowed.
+    if (nzchar(size)) {
+      tex <- paste0(tex, "\\endgraf")
+    }
     s <- sub(key, paste0("note{}={", size, tex, "}"), s, fixed = TRUE)
   }
   .spicy_latex_unicode(s)

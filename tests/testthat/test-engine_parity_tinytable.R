@@ -566,7 +566,7 @@ test_that("a note that does not open with the prefix is left as typed", {
   )
   expect_match(
     .pt_latex(tt),
-    "note{}={\\small Source: a survey.}",
+    "note{}={\\small Source: a survey.\\endgraf}",
     fixed = TRUE
   )
   expect_match(.pt_markdown(tt), "| Source: a survey.", fixed = TRUE)
@@ -640,7 +640,7 @@ test_that("the LaTeX note is escaped like the cells around it", {
     .pt_latex(tt),
     paste0(
       "\\emph{Note.} 5\\% \\& a\\_b \\#1 \\$2 \\textasciitilde{}3 ",
-      "\\textasciicircum{}4 \\{5\\} \\textbackslash{}6}"
+      "\\textasciicircum{}4 \\{5\\} \\textbackslash{}6\\endgraf}"
     ),
     fixed = TRUE
   )
