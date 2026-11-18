@@ -19,7 +19,6 @@ assignees: []
 ## 02 CRAN RELEASE PREPARATION
 - [ ] Run relevant sections of `dev/02_release_cran.R`
 - [ ] All WinBuilder checks passed (release, devel, oldrelease)
-- [ ] All R-hub checks passed (Windows, macOS, Ubuntu)
 - [ ] Reverse dependencies checked with `tools::package_dependencies()` (none detected)
 - [ ] URLs and spelling verified
 - [ ] `NEWS.md` updated [Tidyverse Style Guide — News and Release Notes](https://style.tidyverse.org/news.html#news-release)
@@ -44,5 +43,5 @@ assignees: []
 
 ---
 
-### R-hub & WinBuilder checks
+### WinBuilder checks
 Run each platform one by one and review logs manually before submission.

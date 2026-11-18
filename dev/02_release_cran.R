@@ -94,17 +94,12 @@ devtools::check_win_release() # Current stable R
 devtools::check_win_devel() # Development version of R
 # devtools::check_win_oldrelease() # Optional, backward compatibility
 
-# 04bis R-HUB, TARGETED (day-J only; workflow_dispatch on rhub.yaml) -------
-# Only the two platforms that add signal beyond the CI matrix
-# (3 OS x release/devel/oldrel already run on every push):
-#   - nosuggests: CRAN's additional check; catches any unguarded use
-#     of the ~50 Suggests behind requireNamespace().
-#   - atlas: alternative BLAS; the numeric-tolerance class of failure
-#     (cf. the 2026-09 Jacobian episode). Both are linux containers,
-#     the stable side of R-hub's infra.
-# rhub::rhub_check(platforms = c("nosuggests", "atlas"))
-# (The README no longer carries the R-hub badge -- a manual-trigger
-# workflow is a pre-release tool, not a live health signal.)
+# R-hub was dropped on 2026-11-18 (the workflow rhub.yaml is gone). Its
+# nosuggests container failed on its own setup (lme4 could not load) and
+# that check runs here, as mode (c) above. Its atlas job passed two days
+# before CRAN's MKL check failed on 0.14.0: an alternative BLAS is not
+# checked before a submission, and CRAN's additional checks report it
+# after. The r-hub container images run under Docker to reproduce one.
 
 # 05 COMMIT + PUSH THE RELEASE STATE -------
 # The day-J commit (bump + Title + Description + spicy-package.R +
