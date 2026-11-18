@@ -188,14 +188,14 @@ test_that("lm: partial eta squared is SS_III / (SS_III + SS_error), as afex and 
   )
   expect_equal(round(f2$statistic[1:2], 2), c(7.96, 18.40))
 
-  skip_if_not_installed("afex")
-  av <- suppressMessages(afex::aov_car(
-    y ~ A * B + Error(id),
-    d,
-    type = 3,
-    anova_table = list(es = "pes")
-  ))
-  expect_equal(r$estimate, av$anova_table$pes, tolerance = 1e-8)
+  # afex 1.5.1, aov_car(y ~ A * B + Error(id), d, type = 3, anova_table =
+  # list(es = "pes")): its pes column, pinned because afex is not among
+  # the Suggests.
+  expect_equal(
+    r$estimate,
+    c(0.128116484703, 0.206159737582, 0.108903855865),
+    tolerance = 1e-8
+  )
 })
 
 test_that("lm: weights, and a model with an offset, match car's Type III", {

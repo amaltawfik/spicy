@@ -46,6 +46,9 @@ test_that("output_long returns a tbl_df for empty / NULL coefs too", {
   expect_s3_class(out_null, "tbl_df")
   expect_identical(nrow(out_null), 0L)
   expect_true("std.error" %in% names(out_null))
+  # The type of the partial rows' test closes the columns, as on a
+  # populated table.
+  expect_identical(names(out_null)[ncol(out_null)], "partial_type")
   # zero-row coefs_aligned -> 0-row tibble, renamed like the full path
   fit <- lm(mpg ~ wt, data = mt)
   tbl <- table_regression(fit)

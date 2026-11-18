@@ -144,7 +144,7 @@ output_default <- function(rendered, aligned, labels = NULL) {
 #   model_id, term, estimate_type, estimate, std.error, conf.low,
 #   conf.high, statistic, df, df.residual, p.value, test_type, nobs,
 #   r.squared, adj.r.squared, ..., is_singular, is_intercept,
-#   is_reference, factor_term, factor_level
+#   is_reference, factor_term, factor_level, ..., partial_type
 output_long <- function(aligned, note = NULL) {
   long <- aligned$coefs_aligned
   if (is.null(long)) {

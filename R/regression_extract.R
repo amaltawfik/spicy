@@ -1268,6 +1268,7 @@ empty_coefs_long <- function() {
     df_residual = numeric(0),
     p_value = numeric(0),
     test_type = character(0),
+    partial_type = character(0),
     is_singular = logical(0),
     is_intercept = logical(0),
     is_reference = logical(0),

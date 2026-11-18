@@ -114,7 +114,8 @@ test_that("pivot_aligned_wide – empty aligned returns empty wide shape (NULL l
       "factor_term",
       "factor_level",
       "order_idx",
-      "test_type"
+      "test_type",
+      "partial_type"
     )
   )
   expect_type(wide$term, "character")
