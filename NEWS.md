@@ -404,6 +404,16 @@
   read the style sheet of the table as text, and the table lost the
   look gt gives it.
 
+* `table_regression(fit_stats_layout = "merged")` merges the cells of
+  the fit statistics in tinytable tables, in HTML, LaTeX and Typst. It
+  fell back to `"first_col"` with a warning. The markdown output keeps
+  `"first_col"`.
+
+* Under `fit_stats_layout = "merged"`, the B column of a flextable or
+  Word table aligns its coefficients alone, as the help says: a sample
+  size with more digits no longer widens the column and shifts them.
+  The merged values are centered as typed.
+
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
   in a stacked hierarchy) show their degrees of freedom in the cell,
