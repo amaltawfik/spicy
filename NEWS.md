@@ -261,7 +261,9 @@
   holds for some panels only opening with their names. When the panels
   have different outcomes that their labels do not name, a panel of one
   outcome opens on an "Outcome" row, as with `layout = "stacked"`; a
-  table built with `outcome_labels = FALSE` takes none. Tables built in
+  table built with `outcome_labels = FALSE` takes none. In the console,
+  a panel with its own header keeps the column widths of its table
+  alone, as do the panels of `layout = "stacked"`. Tables built in
   different languages, with different decimal marks or alignments, or
   under styles that format a cell differently are refused.
 
@@ -390,6 +392,17 @@
   `tinytable::style_tt(fontsize = )`: it takes 0.9 of the size of the
   cells, in HTML, LaTeX and Typst. It kept 0.9 of the size of the
   document and came out larger than the body.
+
+* In HTML, the note of a gt table no longer widens the table:
+  `gt::gtsave()` to HTML or PNG and `gt::as_raw_html()` stretched a
+  table to the width of a long note. The note is now the source note of
+  the table in every output and wraps at the width of the body, at 0.9
+  of the size of the table. `gt::rm_source_notes()` also removes it from
+  the HTML display.
+
+* In an R Markdown `html_document`, a gt table keeps its style: pandoc
+  read the style sheet of the table as text, and the table lost the
+  look gt gives it.
 
 * The model-change rows of `table_regression()` (F-change, Wald
   F-change, the LR χ² change, Wald χ² (change), "F-change vs Model k"
