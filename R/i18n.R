@@ -316,6 +316,10 @@
   fitstat_aicc = "AICc",
   fitstat_bic = "BIC",
   fitstat_deviance = "Deviance",
+  fitstat_log_lik = "Log-likelihood",
+  # Harrell's C of a Cox model, as a row (the footer sentence below
+  # carries it with its standard error when the row is not shown).
+  fitstat_concordance = "Concordance",
   # survey's `extractAIC.svyglm` returns the effective number of
   # parameters of the design beside the criterion itself. Opt-in, under
   # its own name -- it was published under "AIC" until 0.13.
@@ -575,6 +579,7 @@
   # distribution (one hole: its display name) and the survreg scale,
   # joined by the separator.
   note_survival_concordance_se = "Concordance C = %s (SE = %s)",
+  note_survival_concordance = "Concordance C = %s",
   note_survival_distribution = "Distribution: %s",
   note_survival_scale = "scale = %s",
   note_survival_sep = "; ",

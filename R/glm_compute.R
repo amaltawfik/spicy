@@ -383,11 +383,17 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 
 # A fit whose frame carries the deviance R^2: a glm (an rms::Glm too) of
 # any family but the binomial. Not a design, GEE or Bayesian fit, which
-# inherit glm with frames of their own.
+# inherit glm with frames of their own. An mgcv GAM carries it for the
+# same families but the quasi-binomial: there mgcv's deviance explained
+# is taken over the rows of a grouped response, and the glm's over its
+# trials, so the two would be different numbers under one name.
 .glm_carries_r2_deviance <- function(m) {
+  if (inherits(m, "gam")) {
+    return(.glm_r2_kind(m) %in% c("count", "continuous", "quasi"))
+  }
   if (
     !inherits(m, "glm") ||
-      inherits(m, c("gam", "lrm", "geeglm", "stanreg", "brmsfit")) ||
+      inherits(m, c("lrm", "geeglm", "stanreg", "brmsfit")) ||
       .is_design_fit(m)
   ) {
     return(FALSE)

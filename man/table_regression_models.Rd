@@ -261,7 +261,8 @@ design vcov.
 
 Counts are both reported: the observed \code{n} and the \verb{Weighted n} the
 estimates describe. \code{svycoxph} adds the number of events, and its
-concordance goes to the footer.
+concordance goes to the footer, or to a row with
+\code{show_fit_stats = "concordance"}.
 
 What is refused, and why: every model-derived variance (\verb{HC*},
 \verb{CR*}, bootstrap, jackknife) -- the design is the variance

@@ -434,6 +434,10 @@ as_regression_frame.glm <- function(fit, ...) {
     ),
     bic = .scalar_or_na(fs[["BIC"]] %||% fs[["bic"]]),
     deviance = .scalar_or_na(fs[["deviance"]]),
+    # stats::logLik() of the fit, the likelihood the AIC row comes from.
+    log_lik = .scalar_or_na(fs[["log_lik"]]),
+    # Harrell's C of a Cox fit (coxph, svycoxph).
+    concordance = .scalar_or_na(fs[["concordance"]]),
     # survey::svyglm only: the effective number of parameters of the
     # design. NA everywhere else, so the row is dropped unless a design
     # glm is in the table AND the token was asked for.

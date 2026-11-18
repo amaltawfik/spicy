@@ -326,13 +326,16 @@ test_that("an explicit fit-stat token cannot republish an absent number", {
     out <- paste(
       utils::capture.output(print(table_regression(
         fit,
-        show_fit_stats = c("nobs", "deviance", "aic", "bic")
+        show_fit_stats = c("nobs", "aic")
       ))),
       collapse = "\n"
     )
-    expect_false(grepl("Deviance", out, fixed = TRUE), info = class(fit)[1L])
     expect_false(grepl("AIC", out, fixed = TRUE), info = class(fit)[1L])
-    expect_false(grepl("BIC", out, fixed = TRUE), info = class(fit)[1L])
+    # The deviance and the BIC of a design fit are refused outright.
+    expect_error(
+      table_regression(fit, show_fit_stats = c("nobs", "deviance", "bic")),
+      class = "spicy_invalid_input"
+    )
   }
 })
 

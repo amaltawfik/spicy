@@ -409,7 +409,8 @@ build_regression_footer_from_frames <- function(
       build_gee_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_survival_footer_block_from_frames(
         frames,
-        decimal_mark = decimal_mark
+        decimal_mark = decimal_mark,
+        show_fit_stats = show_fit_stats
       ),
       if (coef_note && !thresholds_as_rows) thresholds,
       if (coef_note) {
@@ -1820,26 +1821,32 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 }
 
 
-# Phase 7c2: survival-specific footer block for coxph / cph / survreg /
-# flexsurvreg. Surfaces events count + concordance C (Cox) or
+# Phase 7c2: survival-specific footer block for coxph / svycoxph /
+# survreg / flexsurvreg. Surfaces the concordance C (Cox) or the
 # distribution + scale (parametric AFT).
 #
 # Single-model output examples:
-#   coxph / cph: "Concordance C = 0.60 (SE = 0.03)." (n / events are
-#                 fit-stat rows since 2026-07-09)
+#   coxph / svycoxph: "Concordance C = 0.60 (SE = 0.03)." (n / events
+#                 are fit-stat rows since 2026-07-09; rms::cph carries
+#                 no concordance, see `.carries_concordance()`)
 #   survreg:    "Distribution: Weibull; scale = 0.75."
 #   flexsurv:   "Distribution: Weibull; shape = 1.33, scale = 531.05."
+#
+# `show_fit_stats`: when it holds "concordance", the C is a row of the
+# table and leaves the note, so the number is printed in one place.
 build_survival_footer_block_from_frames <- function(
   frames,
-  decimal_mark = "."
+  decimal_mark = ".",
+  show_fit_stats = NULL
 ) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
+  concordance_row <- "concordance" %in% show_fit_stats
 
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
-    txt <- .format_survival_for_frame(f, decimal_mark)
+    txt <- .format_survival_for_frame(f, decimal_mark, concordance_row)
     if (is.null(txt)) NULL else list(idx = i, text = txt)
   })
   per_model <- Filter(Negate(is.null), per_model)
@@ -1864,9 +1871,16 @@ build_survival_footer_block_from_frames <- function(
 }
 
 
-.format_survival_for_frame <- function(frame, decimal_mark = ".") {
+.format_survival_for_frame <- function(
+  frame,
+  decimal_mark = ".",
+  concordance_row = FALSE
+) {
   cls <- frame$info$class %||% ""
   if (cls %in% c("coxph", "cph", "svycoxph")) {
+    if (concordance_row) {
+      return(NULL)
+    }
     .format_coxph_survival(frame, decimal_mark)
   } else if (cls == "survreg") {
     .format_survreg_survival(frame, decimal_mark)
@@ -1904,7 +1918,10 @@ build_survival_footer_block_from_frames <- function(
     } else {
       parts <- c(
         parts,
-        sprintf("Concordance C = %s", .footer_num(conc$c, 2L, decimal_mark))
+        spicy_fmt(
+          "note_survival_concordance",
+          .footer_num(conc$c, 2L, decimal_mark)
+        )
       )
     }
   }

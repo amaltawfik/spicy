@@ -2395,6 +2395,8 @@ fit_stat_label <- function(token) {
     aicc = spicy_str("fitstat_aicc"),
     bic = spicy_str("fitstat_bic"),
     deviance = spicy_str("fitstat_deviance"),
+    log_lik = spicy_str("fitstat_log_lik"),
+    concordance = spicy_str("fitstat_concordance"),
     eff_p = spicy_str("fitstat_eff_p"),
     # Nested-comparison change tokens (APA Table 7.13)
     r2_change = change_label(spicy_str("symbol_r2")),
@@ -2487,6 +2489,9 @@ format_fit_stat_value <- function(
     # convention; the previous `digits` (= 2L by default) over-
     # specified the precision for values typically in the hundreds.
     deviance = ic_digits,
+    # The log-likelihood is on the scale of the AIC it gives.
+    log_lik = ic_digits,
+    concordance = fit_digits,
     # Change tokens: precision matches the absolute version
     r2_change = fit_digits,
     adj_r2_change = fit_digits,

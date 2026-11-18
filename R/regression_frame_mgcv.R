@@ -21,10 +21,11 @@
 #     - gaussian-identity: Wald-t with df.residual; p.table carries
 #       Estimate / Std. Error / t value / Pr(>|t|).
 #     - other families: Wald z-asymptotic; p.table carries z / Pr(>|z|).
-#   * fit_stats$r_squared = summary(fit)$r.sq (adjusted R^2, the GAM
-#     convention -- this is NOT the raw R^2 in lm).
+#   * fit_stats$adj_r_squared = summary(fit)$r.sq (adjusted R^2, the
+#     only R^2 mgcv reports); fit_stats$r_squared is NA.
 #   * fit_stats$pseudo_r2$dev_explained = summary(fit)$dev.expl
-#     (deviance-explained ratio, the GAM-canonical pseudo-R^2).
+#     (deviance-explained ratio), also fit_stats$r2_deviance for the
+#     families whose glm carries the deviance R^2.
 # ---------------------------------------------------------------------------
 
 #' `as_regression_frame()` method for `gam` fits (mgcv::gam() / bam()).
@@ -316,14 +317,22 @@ as_regression_frame.gam <- function(
   }
 
   sm <- summary(fit)
+  dev_expl <- if (is.null(sm$dev.expl)) NA_real_ else as.numeric(sm$dev.expl)
   fit_stats <- list(
-    r_squared = as.numeric(sm$r.sq %||% NA_real_), # GAM-adjusted R^2
-    adj_r_squared = as.numeric(sm$r.sq %||% NA_real_), # same -- mgcv only reports adjusted
+    # mgcv reports only the ADJUSTED R^2 (r.sq): it is the adj_r2 row,
+    # and the R^2 row stays blank rather than repeat it under another
+    # name.
+    r_squared = NA_real_,
+    adj_r_squared = as.numeric(sm$r.sq %||% NA_real_),
     pseudo_r2 = if (!is.null(sm$dev.expl)) {
-      list(dev_explained = as.numeric(sm$dev.expl))
+      list(dev_explained = dev_expl)
     } else {
       NULL
     },
+    # mgcv's deviance explained, 1 - D / D0, is the deviance R^2 of the
+    # glm twin (same null deviance, offset and weights included), so it
+    # takes that row in the families the glm carries it for.
+    r2_deviance = if (.glm_carries_r2_deviance(fit)) dev_expl else NA_real_,
     aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
     bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
     log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {

@@ -1335,7 +1335,22 @@ fixest's \code{AIC()} leaves out. A Gaussian \code{femlm()} follows the same
 rule; Poisson, binomial and IV fits keep fixest's values. A lean
 fit (\code{lean = TRUE}) that lost what they need, its weights or the
 fitted values of a Gamma or inverse-Gaussian \code{feglm()}, shows no
-AIC, BIC or nested rows.
+AIC, BIC or nested rows. A survey-design fit has no likelihood:
+\code{"deviance"} and \code{"bic"} are refused for a table of design fits.
+\item Log-likelihood: \code{"log_lik"}, the value of \code{\link[stats:logLik]{stats::logLik()}},
+from which the AIC row is computed. It is the restricted
+log-likelihood of a model fitted by REML, and for a binomial \code{glm()}
+it is \code{logLik()}'s value whatever the layout of the data: it includes
+the binomial coefficients of a grouped response and rounds
+non-integer weights, unlike the pseudo-\eqn{R^2}{R^2} rows. A column
+whose model has no likelihood (a quasi family, a survey design, GEE,
+two-stage least squares) shows a dash; the token is refused when no
+model of the table has one, and for Bayesian fits.
+\item Cox models (\code{survival::coxph} and \code{survey::svycoxph}):
+\code{"concordance"}, Harrell's C, the value \code{summary()} reports. When
+the row is shown, the concordance leaves the note, which otherwise
+gives it with its standard error. \code{rms::cph} fits have no
+concordance row or note.
 \item Change-stats for hierarchical comparison
 (active under \code{nested = TRUE}; see \emph{Hierarchical
 comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
@@ -1405,8 +1420,17 @@ Nagelkerke R square of SPSS.
 deviance from that of the intercept-only model (Cameron & Windmeijer
 1997). It lies between 0 and 1, and within a family it cannot
 decrease when a predictor is added. For a gaussian \code{glm()} with the
-identity link it is the \eqn{R^2}{R^2} of \code{lm()}.
+identity link it is the \eqn{R^2}{R^2} of \code{lm()}. For \code{mgcv::gam}
+and \code{bam} fits of the same families (and of mgcv's \code{nb()} and
+\code{tw()}), it is the deviance explained of their \code{summary()}, as a
+proportion. A binomial or quasi-binomial GAM, and those of mgcv's
+other extended families, have none.
 }
+
+A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
+they are refused for a table of GAMs. mgcv reports only an adjusted
+\eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM beside an \code{lm()}, and
+the \code{"r2"} row is dashed.
 
 The intercept-only model keeps the offset and the weights of the
 fitted model. For a \code{MASS::glm.nb()} fit it re-estimates theta in

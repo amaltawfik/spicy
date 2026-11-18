@@ -307,7 +307,22 @@
 #'     rule; Poisson, binomial and IV fits keep fixest's values. A lean
 #'     fit (`lean = TRUE`) that lost what they need, its weights or the
 #'     fitted values of a Gamma or inverse-Gaussian `feglm()`, shows no
-#'     AIC, BIC or nested rows.
+#'     AIC, BIC or nested rows. A survey-design fit has no likelihood:
+#'     `"deviance"` and `"bic"` are refused for a table of design fits.
+#'   \item Log-likelihood: `"log_lik"`, the value of [stats::logLik()],
+#'     from which the AIC row is computed. It is the restricted
+#'     log-likelihood of a model fitted by REML, and for a binomial `glm()`
+#'     it is `logLik()`'s value whatever the layout of the data: it includes
+#'     the binomial coefficients of a grouped response and rounds
+#'     non-integer weights, unlike the pseudo-\eqn{R^2}{R^2} rows. A column
+#'     whose model has no likelihood (a quasi family, a survey design, GEE,
+#'     two-stage least squares) shows a dash; the token is refused when no
+#'     model of the table has one, and for Bayesian fits.
+#'   \item Cox models (`survival::coxph` and `survey::svycoxph`):
+#'     `"concordance"`, Harrell's C, the value `summary()` reports. When
+#'     the row is shown, the concordance leaves the note, which otherwise
+#'     gives it with its standard error. `rms::cph` fits have no
+#'     concordance row or note.
 #'   \item Change-stats for hierarchical comparison
 #'     (active under `nested = TRUE`; see *Hierarchical
 #'     comparison* below): `"r2_change"`, `"adj_r2_change"`,
@@ -376,8 +391,17 @@
 #'     deviance from that of the intercept-only model (Cameron & Windmeijer
 #'     1997). It lies between 0 and 1, and within a family it cannot
 #'     decrease when a predictor is added. For a gaussian `glm()` with the
-#'     identity link it is the \eqn{R^2}{R^2} of `lm()`.
+#'     identity link it is the \eqn{R^2}{R^2} of `lm()`. For `mgcv::gam`
+#'     and `bam` fits of the same families (and of mgcv's `nb()` and
+#'     `tw()`), it is the deviance explained of their `summary()`, as a
+#'     proportion. A binomial or quasi-binomial GAM, and those of mgcv's
+#'     other extended families, have none.
 #' }
+#'
+#' A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
+#' they are refused for a table of GAMs. mgcv reports only an adjusted
+#' \eqn{R^2}{R^2}: it is the `"adj_r2"` row of a GAM beside an `lm()`, and
+#' the `"r2"` row is dashed.
 #'
 #' The intercept-only model keeps the offset and the weights of the
 #' fitted model. For a `MASS::glm.nb()` fit it re-estimates theta in
@@ -2854,11 +2878,10 @@ table_regression <- function(
       )
     }
     # Universal safety net: a class matched by none of the branches above
-    # (betareg, survreg, coxph, multinom, mlogit, rms, stan, ...) still
-    # gets N + AIC, so no fit ever renders a blank model-fit block. The
-    # per-class passes refine this to each family's field-standard set (e.g.
-    # concordance for coxph, deviance-explained for gam). nobs / AIC are defined
-    # for essentially every likelihood fit; an absent token is skipped per row.
+    # (betareg, survreg, mlogit, nls, pscl, flexsurvreg, ...) still gets
+    # N + AIC, so no fit ever renders a blank model-fit block. nobs / AIC
+    # are defined for essentially every likelihood fit; an absent token is
+    # skipped per row.
     if (length(show_fit_stats) == 0L) {
       show_fit_stats <- c("nobs", "aic")
     }
@@ -3772,6 +3795,11 @@ table_regression <- function(
       spicy_gather = .reg_gather(panel_req, "empty_frames", items, msg)
     )
   }
+
+  # `log_lik` follows the frames: a fit without a likelihood (quasi
+  # family, survey design, GEE, posterior, 2SLS) posts NA, and a table
+  # where every model does would drop the requested row in silence.
+  .reg_check_log_lik_rows(frames, show_fit_stats)
 
   # Singular mixed fits: the table note states the FACT (boundary
   # estimate, SE/CI omitted); the actionable advice belongs here, to the
@@ -4960,12 +4988,40 @@ table_regression <- function(
   "aicc",
   "bic",
   "deviance",
+  "log_lik",
   "elpd_loo",
   "looic",
   "waic",
   "qic",
   "qicu"
 )
+
+.reg_check_log_lik_rows <- function(frames, show_fit_stats) {
+  if (!"log_lik" %in% show_fit_stats) {
+    return(invisible(NULL))
+  }
+  has_ll <- vapply(
+    frames,
+    function(fr) is.finite(.scalar_or_na(fr$info$fit_stats[["log_lik"]])),
+    logical(1)
+  )
+  if (!any(has_ll)) {
+    spicy_abort(
+      c(
+        paste0(
+          "Token 'log_lik' in `show_fit_stats` needs a likelihood, and no ",
+          "model in the table has one."
+        ),
+        "i" = paste0(
+          "Quasi families, survey designs, GEE, two-stage least squares ",
+          "and posterior fits are estimated without a maximized likelihood."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
 
 .reg_warn_ic_not_comparable <- function(models, frames, show_fit_stats) {
   ic <- intersect(show_fit_stats, .REG_IC_TOKENS)

@@ -145,14 +145,16 @@ test_that("gam: n_smooth_terms = nrow(smooth_terms)", {
 
 # ---- 5. gam: fit stats --------------------------------------------------
 
-test_that("gam: r_squared = summary(fit)$r.sq (GAM-adjusted)", {
+test_that("gam: adj_r_squared = summary(fit)$r.sq (GAM-adjusted), r_squared NA", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_equal(
-    fr$info$fit_stats$r_squared,
+    fr$info$fit_stats$adj_r_squared,
     summary(fit)$r.sq,
     tolerance = 1e-10
   )
+  # mgcv reports no unadjusted R^2: the R^2 row must not repeat r.sq.
+  expect_identical(fr$info$fit_stats$r_squared, NA_real_)
 })
 
 test_that("gam: pseudo_r2$dev_explained = summary(fit)$dev.expl", {

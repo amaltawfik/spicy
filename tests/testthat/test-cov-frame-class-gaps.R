@@ -200,8 +200,10 @@ test_that(".gam_info leaves pseudo_r2 NULL when summary() reports no deviance ex
 
   expect_null(info$fit_stats$pseudo_r2)
   # The rest of the fit-stats block is still built from what summary() gave.
-  expect_identical(info$fit_stats$r_squared, 0.5)
+  # mgcv's r.sq is adjusted: the unadjusted slot stays NA.
+  expect_identical(info$fit_stats$r_squared, NA_real_)
   expect_identical(info$fit_stats$adj_r_squared, 0.5)
+  expect_identical(info$fit_stats$r2_deviance, NA_real_)
   expect_identical(info$extras$n_smooth_terms, 0L)
   expect_identical(info$n_obs, 10L)
 })

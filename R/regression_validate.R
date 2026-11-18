@@ -156,6 +156,10 @@
     "aicc",
     "bic",
     "deviance",
+    # The log-likelihood the AIC row is computed from (stats::logLik()).
+    "log_lik",
+    # Harrell's concordance of a Cox model (coxph, svycoxph).
+    "concordance",
     # survey::svyglm only: the effective number of parameters of the
     # design (the first element of survey's extractAIC), beside the
     # design-based AIC of Lumley & Scott rather than instead of it.
@@ -2274,7 +2278,8 @@ validate_class_appropriate_tokens <- function(
           } else {
             paste0(
               "Report the model's own summary instead (for `coxph`, ",
-              "the concordance and the likelihood-ratio test)."
+              "the concordance, `show_fit_stats = \"concordance\"`, and ",
+              "the likelihood-ratio test)."
             )
           }
         ),
@@ -2428,6 +2433,7 @@ validate_class_appropriate_tokens <- function(
         "aicc",
         "bic",
         "deviance",
+        "log_lik",
         "r2",
         "adj_r2",
         "omega2",
@@ -2667,7 +2673,8 @@ validate_class_appropriate_tokens <- function(
         "aic",
         "aicc",
         "bic",
-        "deviance"
+        "deviance",
+        "log_lik"
       )
     )
     if (length(bad_fit) > 0L) {
@@ -2819,6 +2826,90 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
+  # mgcv's gam inherits glm but has its own frame, which computes none of
+  # the likelihood-ratio pseudo-R^2: the rows used to pass the glm gates
+  # and render nothing. Refused when every model is a GAM; beside other
+  # models the GAM cell is dashed.
+  all_gam <- length(eff_models) > 0L &&
+    all(vapply(eff_models, inherits, logical(1), "gam"))
+  if (all_gam) {
+    bad_fit <- intersect(
+      show_fit_stats,
+      c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur")
+    )
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not computed for `mgcv` GAMs.",
+            paste(.quote_val(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "For a gaussian, Gamma, inverse Gaussian, Tweedie, Poisson, ",
+            "negative binomial or quasi family, `\"r2_deviance\"` gives ",
+            "the deviance explained that `summary()` of the GAM reports."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+  }
+
+  # A design-based fit has no likelihood: its frame posts the deviance and
+  # the BIC as NA (survey's own deviance() is a sign-flipped LRT on one
+  # engine and 0 on the other), so the rows used to render nothing.
+  # Refused when every model is a design fit.
+  if (
+    length(eff_models) > 0L &&
+      all(vapply(eff_models, .is_design_fit, logical(1)))
+  ) {
+    bad_fit <- intersect(show_fit_stats, c("deviance", "bic"))
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for survey-design fits.",
+            paste(.quote_val(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "A design-based fit is estimated without a likelihood. For ",
+            "`svyglm()`, `\"aic\"` gives the design-based AIC of survey's ",
+            "`extractAIC()`."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+  }
+
+  # The concordance of a Cox model, from `survival`'s own computation.
+  # ANY-gate, like Tjur's below. rms::cph inherits coxph but is not
+  # covered: neither survival::concordance() on a cph fit nor
+  # (Dxy + 1) / 2 gives the C of its coxph twin when the model has strata.
+  if (
+    "concordance" %in%
+      show_fit_stats &&
+      !any(vapply(eff_models, .carries_concordance, logical(1)))
+  ) {
+    spicy_abort(
+      c(
+        paste0(
+          "Token 'concordance' in `show_fit_stats` is defined only for ",
+          "`survival::coxph()` and `survey::svycoxph()` fits, and no ",
+          "model in the table is one."
+        ),
+        "i" = paste0(
+          "It is Harrell's C of the fit, the value `summary()` of a ",
+          "`coxph` model reports."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+
   # Tjur's R^2 is defined only for binary outcomes (binomial-family glm;
   # Tjur 2009 "coefficient of discrimination"). ANY-gate, aligned on the
   # theta / alpha dispersion precedent: when NO model in the set can
@@ -2829,8 +2920,14 @@ validate_class_appropriate_tokens <- function(
   # family gates above so homogeneous non-glm sets (all-lm, all-GEE,
   # all-mixed, all-Bayesian) keep their more specific refusal wording.
   if ("pseudo_r2_tjur" %in% show_fit_stats) {
+    # A binomial GAM computes no Tjur (see the GAM arm above).
     is_binom_glm <- glm_flags &
-      !vapply(eff_models, inherits, logical(1), c("stanreg", "brmsfit")) &
+      !vapply(
+        eff_models,
+        inherits,
+        logical(1),
+        c("stanreg", "brmsfit", "gam")
+      ) &
       vapply(
         eff_models,
         function(m) {
@@ -2915,7 +3012,10 @@ validate_class_appropriate_tokens <- function(
   # Bernoulli trials, and for ordinal and multinomial responses, the
   # saturated log-likelihood is 0 and the deviance R^2 is McFadden's
   # (Cameron & Windmeijer 1997, p. 333 and 337): refused there rather
-  # than printed twice under two names. ANY-gate, like Tjur's above.
+  # than printed twice under two names. ANY-gate, like Tjur's above. An
+  # mgcv GAM of the same families carries it too (mgcv's deviance
+  # explained); a binomial GAM is pointed at no McFadden, which the GAM
+  # frame does not compute.
   if (
     "r2_deviance" %in%
       show_fit_stats &&
@@ -2925,7 +3025,9 @@ validate_class_appropriate_tokens <- function(
       eff_models,
       function(m) {
         inherits(m, c("polr", "clm", "multinom", "lrm")) ||
-          (inherits(m, "glm") && identical(.glm_r2_kind(m), "binomial"))
+          (inherits(m, "glm") &&
+            !inherits(m, "gam") &&
+            identical(.glm_r2_kind(m), "binomial"))
       },
       logical(1)
     ))
@@ -2933,8 +3035,8 @@ validate_class_appropriate_tokens <- function(
       c(
         paste0(
           "Token 'r2_deviance' in `show_fit_stats` is defined only for ",
-          "`glm` families other than the binomial, and no model in the ",
-          "table is one."
+          "`glm` and `mgcv` GAM families other than the binomial, and no ",
+          "model in the table is one."
         ),
         "i" = if (categorical) {
           paste0(
@@ -2943,9 +3045,9 @@ validate_class_appropriate_tokens <- function(
           )
         } else {
           paste0(
-            "It is 1 - deviance / null deviance of a `glm` of a gaussian, ",
-            "Gamma, inverse Gaussian, Tweedie, Poisson, negative binomial ",
-            "or quasi family."
+            "It is 1 - deviance / null deviance of a `glm` or a GAM of a ",
+            "gaussian, Gamma, inverse Gaussian, Tweedie, Poisson, negative ",
+            "binomial or quasi family."
           )
         }
       ),

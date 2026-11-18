@@ -1306,9 +1306,10 @@ as_regression_frame.brmsfit <- function(
     waic = waic_pair$waic,
     aic = NA_real_,
     bic = NA_real_,
-    log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-      NA_real_
-    }),
+    # A posterior has no maximized log-likelihood: logLik() of a brmsfit
+    # is the draws x observations matrix of pointwise log densities, and
+    # a stanreg reaches logLik.glm(). NA, like the AIC, and never computed.
+    log_lik = NA_real_,
     deviance = NA_real_,
     sigma = NA_real_,
     nobs = as.integer(tryCatch(stats::nobs(fit), error = function(e) {

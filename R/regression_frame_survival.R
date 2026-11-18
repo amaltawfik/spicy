@@ -503,7 +503,14 @@ as_regression_frame.survreg <- function(
     nobs = as.integer(fit$n %||% stats::nobs(fit)),
     # Field convention (EpiRHandbook survival ch.; Stata stcox): a Cox
     # table reports n AND the number of events.
-    n_events = as.integer(fit$nevent %||% NA_integer_)
+    n_events = as.integer(fit$nevent %||% NA_integer_),
+    # Harrell's C, the `concordance` row (the footer keeps it with its
+    # standard error when the row is not shown).
+    concordance = if (!is.null(concordance)) {
+      unname(concordance["C"])
+    } else {
+      NA_real_
+    }
   )
 
   supports <- list(
@@ -706,4 +713,13 @@ as_regression_frame.survreg <- function(
   # regression_titlefooter.R) -- this used to be a second, diverging
   # copy.
   .surv_title_dist(dist)
+}
+
+
+# A fit whose frame carries the `concordance` row: a survival::coxph or
+# a survey::svycoxph fit, which inherits coxph. Not rms::cph, which also
+# inherits coxph: on a stratified cph, survival::concordance() and
+# (Dxy + 1) / 2 both give a C other than that of the coxph twin.
+.carries_concordance <- function(m) {
+  inherits(m, "coxph") && !inherits(m, "cph")
 }

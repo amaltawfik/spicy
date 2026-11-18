@@ -1709,6 +1709,7 @@ build_structured_body <- function(
       "r2_marginal",
       "r2_conditional",
       "icc",
+      "concordance",
       "r2_change",
       "adj_r2_change",
       "f2_change"
@@ -1724,6 +1725,7 @@ build_structured_body <- function(
       "aicc",
       "bic",
       "deviance",
+      "log_lik",
       "elpd_loo",
       "looic",
       "waic",

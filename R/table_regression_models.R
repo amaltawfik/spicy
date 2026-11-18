@@ -481,7 +481,8 @@
 #'
 #' Counts are both reported: the observed `n` and the `Weighted n` the
 #' estimates describe. `svycoxph` adds the number of events, and its
-#' concordance goes to the footer.
+#' concordance goes to the footer, or to a row with
+#' `show_fit_stats = "concordance"`.
 #'
 #' What is refused, and why: every model-derived variance (`HC*`,
 #' `CR*`, bootstrap, jackknife) -- the design is the variance

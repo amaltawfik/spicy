@@ -307,6 +307,19 @@ test_that("stanreg: coefs$p_value all NA; pd in [0.5, 1] on non-ref rows", {
   expect_true(all(b_rows$pd <= 1.0 + 1e-9))
 })
 
+test_that("a posterior frame posts no log-likelihood, and the row is refused", {
+  # logLik() of a brmsfit is the draws x observations matrix of pointwise
+  # log densities: its first element must never reach a table.
+  for (fit in list(.fit_brms_basic(), .fit_rstanarm_basic())) {
+    fr <- as_regression_frame(fit, model_id = "M1")
+    expect_identical(fr$info$fit_stats$log_lik, NA_real_)
+    expect_error(
+      table_regression(fit, show_fit_stats = c("nobs", "log_lik")),
+      class = "spicy_invalid_input"
+    )
+  }
+})
+
 
 # ---- 7. Oracle: parameters::model_parameters() --------------------------
 
