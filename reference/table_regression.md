@@ -2278,10 +2278,12 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
   come from.
 
 - **`options(spicy.note_style = )`** – how the table note is rendered by
-  the `"tinytable"` engine (all nine table functions). A note is
-  subordinate to the table it documents, so it is set one size down, in
-  black: `0.9em` (`\small` in LaTeX), matching the `"gt"` engine and the
-  10pt-on-11pt of the Word engine. Two opt-ins:
+  the `"tinytable"` engine (every table function). A note is subordinate
+  to the table it documents, so it is set one size down, in black:
+  `0.9em` (`\small` in LaTeX), matching the `"gt"` engine and the
+  10pt-on-11pt of the Word engine. When
+  `tinytable::style_tt(fontsize = )` resizes the whole body, the note
+  takes 0.9 of that size. Two opt-ins:
 
   - `"none"` – no intervention; the note is rendered exactly as the
     receiving document template styles it.
@@ -2290,7 +2292,7 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
     [`text()`](https://rdrr.io/r/graphics/text.html) call around the
     note, appended to the size (e.g.
     `options(spicy.note_style = "fill: luma(89)")` for a gray note).
-    Typst only; the HTML note keeps the plain `0.9em`.
+    Typst only: the HTML note keeps its size.
 
   `options(spicy.note_style = NULL)` restores the default.
 

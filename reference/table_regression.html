@@ -2225,16 +2225,17 @@ restores spicy's own defaults. See <code><a href="spicy_style.html">spicy_style(
 rules each theme encodes and the official document they come
 from.</p></li>
 <li><p><strong><code>options(spicy.note_style = )</code></strong> – how the table note is
-rendered by the <code>"tinytable"</code> engine (all nine table functions).
+rendered by the <code>"tinytable"</code> engine (every table function).
 A note is subordinate to the table it documents, so it is set
 one size down, in black: <code>0.9em</code> (<code>\small</code> in LaTeX), matching
-the <code>"gt"</code> engine and the 10pt-on-11pt of the Word engine. Two
-opt-ins:</p><ul><li><p><code>"none"</code> – no intervention; the note is rendered
+the <code>"gt"</code> engine and the 10pt-on-11pt of the Word engine. When
+<code>tinytable::style_tt(fontsize = )</code> resizes the whole body, the
+note takes 0.9 of that size. Two opt-ins:</p><ul><li><p><code>"none"</code> – no intervention; the note is rendered
 exactly as the receiving document template styles it.</p></li>
 <li><p>any other string – extra arguments for the Typst
 <code><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text()</a></code> call around the note, appended to the size (e.g.
 <code>options(spicy.note_style = "fill: luma(89)")</code> for a gray
-note). Typst only; the HTML note keeps the plain <code>0.9em</code>.</p></li>
+note). Typst only: the HTML note keeps its size.</p></li>
 </ul><p><code>options(spicy.note_style = NULL)</code> restores the default.</p></li>
 </ul></div>
     <div class="section level2">
