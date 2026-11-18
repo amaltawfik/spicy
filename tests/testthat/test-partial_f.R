@@ -630,7 +630,11 @@ test_that("compute_partial_f_for_term declines what it cannot test", {
     show_columns = c("b", "partial_f")
   )
   expect_false(any(broom::tidy(tbl)$estimate_type == "partial_f"))
-  expect_match(attr(tbl, "note"), "F = partial F statistic;", fixed = TRUE)
+  expect_match(
+    attr(tbl, "note"),
+    "F = partial F statistic (Type II);",
+    fixed = TRUE
+  )
 })
 
 
@@ -755,7 +759,11 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
   m2 <- r2[r2$model_id == unique(r2$model_id)[2L], ]
   out <- paste(capture.output(print(two)), collapse = "\n")
   expect_match(out, .pf_cell(m2$estimate, 1, df.residual(g30)), fixed = TRUE)
-  expect_match(attr(two, "note"), "F = partial F statistic;", fixed = TRUE)
+  expect_match(
+    attr(two, "note"),
+    "F = partial F statistic (Type II);",
+    fixed = TRUE
+  )
 
   # A univariable screen: the df of each predictor's own fit.
   uv <- table_regression_uv(
@@ -788,7 +796,11 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
     .pf_cell(.pf_term(uni, "cyl")$estimate, 2, df_cyl),
     fixed = TRUE
   )
-  expect_match(attr(uv, "note"), "F = partial F statistic;", fixed = TRUE)
+  expect_match(
+    attr(uv, "note"),
+    "F = partial F statistic (Type II);",
+    fixed = TRUE
+  )
 
   # A stack of two lm panels with different residual df: each panel's
   # cells carry their own, and the note defines F once.
@@ -808,7 +820,7 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
     df.residual(lb)
   )
   st_note <- attr(st, "note")
-  expect_match(st_note, "F = partial F statistic.", fixed = TRUE)
+  expect_match(st_note, "F = partial F statistic (Type II).", fixed = TRUE)
   expect_identical(lengths(regmatches(st_note, gregexpr("F = ", st_note))), 1L)
   expect_false(grepl("degree", st_note, fixed = TRUE))
 

@@ -1560,7 +1560,7 @@ test_that("the abbreviation and association-measure notes join in the language",
   }
   expect_identical(
     abbrev(),
-    "AME = average marginal effect; \u03B7\u00B2 = partial eta squared."
+    "AME = average marginal effect; \u03B7\u00B2 = partial eta squared (Type II)."
   )
   expect_identical(
     assoc(),
@@ -1571,7 +1571,7 @@ test_that("the abbreviation and association-measure notes join in the language",
     abbrev(),
     paste0(
       "AME = effet marginal moyen\u00A0; \u03B7\u00B2 = \u00EAta-carr\u00E9 ",
-      "partiel."
+      "partiel (type II)."
     )
   )
   expect_identical(

@@ -957,7 +957,7 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
 # never asks this function for a glm whose dispersion is estimated: its
 # term-level test is the partial F below (`extract_partial_effect_rows()`
 # routes it there).
-compute_partial_chi2_for_term <- function(fit, term_label) {
+compute_partial_chi2_for_term <- function(fit, term_label, type = "II") {
   if (!inherits(fit, "glm")) {
     return(NULL)
   }
@@ -965,7 +965,7 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
     return(NULL)
   }
   out <- tryCatch(
-    suppressWarnings(compute_glm_type2_lrt(fit, term_label)),
+    suppressWarnings(compute_glm_type2_lrt(fit, term_label, type)),
     error = function(e) NULL
   )
   if (is.null(out)) {
@@ -998,7 +998,12 @@ compute_partial_chi2_for_term <- function(fit, term_label) {
 # needs no likelihood. `phi`, read once per fit by the row builder, is
 # taken here when the function is called alone. Returns NULL on any
 # failure, like the chi-square.
-compute_partial_f_for_term <- function(fit, term_label, phi = NULL) {
+compute_partial_f_for_term <- function(
+  fit,
+  term_label,
+  phi = NULL,
+  type = "II"
+) {
   if (is.null(phi)) {
     if (!suppressWarnings(has_estimated_dispersion(fit))) {
       return(NULL)
@@ -1006,7 +1011,7 @@ compute_partial_f_for_term <- function(fit, term_label, phi = NULL) {
     phi <- .glm_dispersion_quiet(fit)
   }
   out <- tryCatch(
-    suppressWarnings(compute_glm_type2_lrt(fit, term_label)),
+    suppressWarnings(compute_glm_type2_lrt(fit, term_label, type)),
     error = function(e) NULL
   )
   if (is.null(out)) {
@@ -1052,15 +1057,42 @@ compute_partial_f_for_term <- function(fit, term_label, phi = NULL) {
 # the difference of effective ranks (collinearity-safe). `dev_diff`, the
 # unscaled deviance difference, feeds the partial F of
 # `compute_partial_f_for_term()`.
-compute_glm_type2_lrt <- function(fit, term_label) {
-  x <- stats::model.matrix(fit)
-  asgn <- attr(x, "assign")
-  if (is.null(asgn) || length(asgn) != ncol(x)) {
-    return(NULL)
-  }
-  masks <- type2_nested_column_masks(stats::terms(fit), asgn, term_label)
-  if (is.null(masks)) {
-    return(NULL)
+#
+# `type = "III"`: the term's own columns dropped from the full model,
+# its higher-order relatives kept, on the design whose unordered factors
+# sum to zero (`.type3_sum_design()`, R/regression_partial.R): the refit
+# of `car::Anova(type = 3)` on a `contr.sum` fit. That design spans the
+# fitted one, so the full model is the fit itself.
+compute_glm_type2_lrt <- function(fit, term_label, type = "II") {
+  if (identical(type, "III")) {
+    if (anyNA(stats::coef(fit))) {
+      return(NULL)
+    }
+    td <- .type3_terms_data(fit)
+    k <- match(term_label, attr(td$terms, "term.labels"))
+    if (is.na(k)) {
+      return(NULL)
+    }
+    x <- .type3_sum_design(td$terms, td$data)
+    asgn <- attr(x, "assign")
+    if (ncol(x) != fit$rank) {
+      return(NULL)
+    }
+    masks <- list(
+      keep_base = asgn != k,
+      keep_with = rep(TRUE, ncol(x)),
+      has_relatives = FALSE
+    )
+  } else {
+    x <- stats::model.matrix(fit)
+    asgn <- attr(x, "assign")
+    if (is.null(asgn) || length(asgn) != ncol(x)) {
+      return(NULL)
+    }
+    masks <- type2_nested_column_masks(stats::terms(fit), asgn, term_label)
+    if (is.null(masks)) {
+      return(NULL)
+    }
   }
   n <- nrow(x)
   y <- fit$y

@@ -139,7 +139,10 @@ test_that("abbreviations footer defines partial f-squared", {
     list()
   )
   sup2 <- intToUtf8(0xB2) # superscript two (ASCII-safe source)
-  expect_identical(out, paste0("f", sup2, " = Cohen's partial f", sup2, "."))
+  expect_identical(
+    out,
+    paste0("f", sup2, " = Cohen's partial f", sup2, " (Type II).")
+  )
 })
 
 test_that("abbreviations footer defines partial omega squared", {
@@ -148,7 +151,7 @@ test_that("abbreviations footer defines partial omega squared", {
     list()
   )
   omega_sq <- intToUtf8(c(0x3C9, 0xB2)) # omega + superscript two
-  expect_identical(out, paste0(omega_sq, " = partial omega squared."))
+  expect_identical(out, paste0(omega_sq, " = partial omega squared (Type II)."))
 })
 
 

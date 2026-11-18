@@ -1161,20 +1161,27 @@ build_abbreviations_footer_block_from_frames <- function(
     },
     character(1)
   )
+  # Every partial statistic is defined with the hypothesis of its test,
+  # "(Type II)" or "(Type III)": `partial_type`, one per table.
+  ptype <- "II"
+  for (f in frames) {
+    ptype <- f$info$extras$partial_type %||% ptype
+  }
+  typed <- function(key) spicy_fmt("abbrev_partial_type", spicy_str(key), ptype)
   chi2 <- c(
     if (any(chi2_kind %in% "lrt") || !any(chi2_kind %in% "wald")) {
-      list(.abbr("chi2", term = spicy_str("abbrev_chi2_lrt")))
+      list(.abbr("chi2", term = typed("abbrev_chi2_lrt")))
     },
     if (any(chi2_kind %in% "wald")) {
-      list(.abbr("chi2", term = spicy_str("abbrev_chi2_wald")))
+      list(.abbr("chi2", term = typed("abbrev_chi2_wald")))
     }
   )
   # The partial F cell carries both of its df, "3.45 (2, 28)": the note
   # defines the statistic only.
-  partial_f <- list(.abbr("f", term = spicy_str("abbrev_f_partial")))
-  f2 <- .abbr("f2", term = spicy_str("abbrev_f2_partial"))
-  eta2 <- .abbr("eta2", term = spicy_str("abbrev_eta2_partial"))
-  omega2 <- .abbr("omega2", term = spicy_str("abbrev_omega2_partial"))
+  partial_f <- list(.abbr("f", term = typed("abbrev_f_partial")))
+  f2 <- .abbr("f2", term = typed("abbrev_f2_partial"))
+  eta2 <- .abbr("eta2", term = typed("abbrev_eta2_partial"))
+  omega2 <- .abbr("omega2", term = typed("abbrev_omega2_partial"))
 
   items <- list()
   for (f in if (length(frames)) frames else list(NULL)) {

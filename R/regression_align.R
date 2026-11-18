@@ -239,6 +239,13 @@ align_frames <- function(
         df_residual = df_residual_col,
         p_value = cf$p_value,
         test_type = test_type_col,
+        # The hypothesis of a partial row's test (`partial_type`), "II" or
+        # "III"; NA on every other row.
+        partial_type = ifelse(
+          cf$estimate_type %in% .PARTIAL_ES_TOKENS,
+          frames[[i]]$info$extras$partial_type %||% "II",
+          NA_character_
+        ),
         n_obs = n_obs_col,
         r2 = r2_col,
         adj_r2 = adj_r2_col,
@@ -673,6 +680,7 @@ empty_coefs_wide <- function(value_fields, model_labels) {
     factor_level = character(0),
     order_idx = integer(0),
     test_type = character(0),
+    partial_type = character(0),
     stringsAsFactors = FALSE
   )
   if (is.null(model_labels)) {

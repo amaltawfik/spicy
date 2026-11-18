@@ -743,6 +743,9 @@
   abbrev_chi2_lrt = "partial likelihood-ratio chi-squared",
   abbrev_chi2_wald = "partial Wald chi-squared",
   abbrev_f_partial = "partial F statistic",
+  # A partial statistic and the hypothesis of its test, `partial_type` of
+  # table_regression(): "partial eta squared (Type II)".
+  abbrev_partial_type = "%s (Type %s)",
   abbrev_ame_category = "average marginal effect on a response-category probability",
   abbrev_pd = "probability of direction",
   abbrev_mcse = "Monte Carlo standard error of the posterior median",

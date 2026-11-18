@@ -1634,7 +1634,7 @@ absorbs_fixed_effects <- function(model) {
     test_of <- if (tok == "partial_f") {
       paste0(
         q("partial_f"),
-        " is the Type II partial F of an `lm` and of a `glm` whose ",
+        " is the partial F of an `lm` and of a `glm` whose ",
         "dispersion is estimated (gaussian, Gamma, inverse Gaussian, ",
         "Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi ",
         "families), the F that `anova(reduced, full, test = \"F\")` reports."
@@ -1707,6 +1707,142 @@ absorbs_fixed_effects <- function(model) {
     }
   }
   invisible(TRUE)
+}
+
+# `partial_type = "III"` and a partial column shown. The Type III test of a
+# term is that of its own coefficients in the sum-to-zero
+# parametrization: a model with an aliased coefficient (an empty cell of
+# an interaction) has no such parametrization, and is refused. A factor
+# that interacts with a numeric covariate is tested where the covariate
+# is 0, as SPSS and SAS test it: one warning names every such factor,
+# and says to center the covariate. Nothing is centered for the user.
+.check_partial_type <- function(
+  models,
+  show_columns,
+  partial_type,
+  panel = NULL,
+  call = rlang::caller_env()
+) {
+  if (
+    !identical(partial_type, "III") ||
+      !any(.PARTIAL_ES_TOKENS %in% show_columns)
+  ) {
+    return(invisible(NULL))
+  }
+  eff_models <- .unwrap_screen_bundles(models)
+  facts <- .term_test_facts(models, eff_models)
+  tested <- facts$carries_f | facts$carries_chi2
+  label <- facts$label
+  if (!is.null(panel$name)) {
+    label <- sub("^the model", panel$name, label)
+  }
+  aliased <- tested & vapply(eff_models, .type3_aliased, logical(1))
+  if (any(aliased)) {
+    lost <- unique(label[aliased])
+    spicy_abort(
+      c(
+        sprintf(
+          "`partial_type = \"III\"` needs every coefficient to be estimable, but %s %s an aliased coefficient.",
+          paste(lost, collapse = ", "),
+          if (length(lost) > 1L) "have" else "has"
+        ),
+        "i" = paste0(
+          "An empty cell of an interaction leaves a coefficient ",
+          "undetermined (`NA`), and the Type III test of a term is that ",
+          "of its own coefficients."
+        ),
+        "i" = paste0(
+          "Use `partial_type = \"II\"` (the default), which is defined ",
+          "here, or drop the empty cell."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  pairs <- unique(unlist(lapply(
+    eff_models[tested],
+    function(f) tryCatch(.type3_covariate_pairs(f), error = function(e) NULL)
+  )))
+  if (length(pairs) > 0L) {
+    spicy_warn(
+      c(
+        paste0(
+          "Under `partial_type = \"III\"`, a factor that interacts with a ",
+          "numeric covariate is tested where the covariate is 0: ",
+          paste(pairs, collapse = ", "),
+          "."
+        ),
+        "i" = paste0(
+          "Center the covariate (subtract its mean) to test the factor ",
+          "at the mean of the covariate."
+        )
+      ),
+      class = "spicy_caveat",
+      spicy_gather = .reg_gather(panel, "partial_type_covariate")
+    )
+  }
+  invisible(NULL)
+}
+
+# A fit whose design has an aliased column: an `NA` coefficient (lm,
+# glm, glmmTMB), or a column lme4 dropped. nlme refuses such a fit.
+.type3_aliased <- function(fit) {
+  if (inherits(fit, "merMod")) {
+    return(!is.null(attr(lme4::getME(fit, "X"), "col.dropped")))
+  }
+  if (inherits(fit, "glmmTMB")) {
+    return(anyNA(glmmTMB::fixef(fit)$cond))
+  }
+  if (inherits(fit, "lme")) {
+    return(FALSE)
+  }
+  anyNA(stats::coef(fit))
+}
+
+# The factor terms of a fit that interact with a numeric covariate, as
+# "`A` (with `x`)": a term whose variables are all categorical, contained
+# in a higher-order term that has a numeric variable.
+.type3_covariate_pairs <- function(fit) {
+  td <- .type3_terms_data(fit)
+  fac <- attr(td$terms, "factors")
+  if (!length(fac)) {
+    return(character(0))
+  }
+  vars <- rownames(fac)
+  is_cat <- vapply(
+    vars,
+    function(v) {
+      x <- td$data[[v]]
+      is.factor(x) || is.character(x) || is.logical(x)
+    },
+    logical(1)
+  )
+  labs <- colnames(fac)
+  out <- character(0)
+  for (k in seq_along(labs)) {
+    in_k <- fac[, k] != 0
+    if (!all(is_cat[in_k])) {
+      next
+    }
+    for (j in setdiff(seq_along(labs), k)) {
+      if (!all(fac[in_k, j] != 0)) {
+        next
+      }
+      cov <- vars[fac[, j] != 0 & !is_cat]
+      if (length(cov)) {
+        out <- c(
+          out,
+          sprintf(
+            "`%s` (with %s)",
+            labs[k],
+            paste0("`", cov, "`", collapse = ", ")
+          )
+        )
+      }
+    }
+  }
+  unique(out)
 }
 
 # Class-aware token validation. Rejects tokens that are
@@ -1834,7 +1970,7 @@ validate_class_appropriate_tokens <- function(
             "Variance-explained partition (R\u00B2 / partial f\u00B2 / \u03B7\u00B2 / \u03C9\u00B2) ",
             "does not apply outside the least-squares framework. The ",
             "analog for a `glm` whose dispersion is estimated is ",
-            "`\"partial_f\"`, the Type II partial F test that ",
+            "`\"partial_f\"`, the partial F test that ",
             "`anova(reduced, full, test = \"F\")` reports."
           ),
           "i" = "Replace with `\"partial_f\"` or drop the token."

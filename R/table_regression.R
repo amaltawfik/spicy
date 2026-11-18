@@ -38,11 +38,13 @@
 #'     `_ci` companion (`"partial_f2_ci"`, ...).
 #'   \item Term-level test -- `lm`, `glm` and mixed-effects models:
 #'     `"partial_chi2"` and its twin `"partial_f"`, the term-level
-#'     Type-II test. Each term is tested under the
-#'     marginality-respecting hypothesis that excludes any
+#'     test. By default (`partial_type = "II"`) each term is tested
+#'     under the marginality-respecting hypothesis that excludes any
 #'     higher-order interaction containing it (the
 #'     `car::Anova(type = 2)` convention), so the value does not
-#'     depend on the factor coding. For `glm` the term-level test is
+#'     depend on the factor coding. `partial_type = "III"` keeps the
+#'     interactions and tests the term in a sum-to-zero coding (see
+#'     `partial_type`). For `glm` the term-level test is
 #'     the F that `anova(reduced, full, test = "F")` reports when the
 #'     dispersion is estimated, the likelihood-ratio chi-square
 #'     otherwise: `"partial_f"`,
@@ -58,9 +60,9 @@
 #'     `drop1(test = "F")` divides by the deviance dispersion instead);
 #'     `"partial_chi2"`, the likelihood-ratio chi-square (Long & Freese
 #'     2014 Sections 3.2.2, 3.2.4), for binomial, Poisson and
-#'     `MASS::glm.nb`. For `lm`, `"partial_f"` is the Type II F of
-#'     `car::Anova(type = 2)`, the F the variance-explained partials are
-#'     built on, so a gaussian `glm` and its `lm()` twin print the same
+#'     `MASS::glm.nb`. For `lm`, `"partial_f"` is the F of
+#'     `car::Anova(type = 2)` (`type = 3` under `partial_type = "III"`),
+#'     the F the variance-explained partials are built on, so a gaussian `glm` and its `lm()` twin print the same
 #'     value. A token is refused when no model of the table carries it,
 #'     and when a model carries the other one while that one is not
 #'     requested (each test has its own column: ask for both). Both come
@@ -68,10 +70,10 @@
 #'     variance of an `lm`) whatever `vcov`.
 #'     For `lmer` / `glmer` /
 #'     `glmmTMB` / `nlme::lme`, `"partial_chi2"` is the Wald
-#'     chi-square built from the same Type-II hypothesis -- a
-#'     deliberate departure from the Type-III default of SAS PROC
-#'     MIXED and `lmerTest` (the two conventions coincide for models
-#'     without interactions). Rendered as `value (df)` to
+#'     chi-square built from the same hypothesis: Type II by default,
+#'     where SAS PROC MIXED and `lmerTest` test Type III, which
+#'     `partial_type = "III"` gives (the two conventions coincide for
+#'     models without interactions). Rendered as `value (df)` to
 #'     disambiguate factor terms (k-1 df) from numeric terms (1 df),
 #'     and the partial F as `F (q, df)` with both of its degrees of
 #'     freedom, `3.45 (2, 28)`, as Stata and SAS report them: each cell
@@ -1353,6 +1355,43 @@
 #'   multinomial) report the quantity for each category probability, and
 #'   Bayesian fits summarize its draws. The table note names the quantity.
 #'   Ignored, with a warning, when no AME column is shown.
+#' @param partial_type The hypothesis of the term-level tests and of the
+#'   partial effect sizes built on them: every `partial_*` column
+#'   (`"partial_f"`, `"partial_chi2"`, `"partial_f2"`, `"partial_eta2"`,
+#'   `"partial_omega2"` and their intervals), for the models that have a
+#'   term-level test (`lm`, `glm`, `MASS::glm.nb`, `lmer` / `glmer`,
+#'   `glmmTMB`, `nlme::lme`). `"II"` (default) tests a term against the
+#'   model without it and without the interactions that contain it, the
+#'   convention of `car::Anova(type = 2)` that respects marginality: a
+#'   main effect is tested as if its interactions were absent. `"III"`
+#'   tests a term's own coefficients with every other term kept, its
+#'   interactions included, the default of SPSS UNIANOVA, SAS PROC GLM
+#'   and `afex`: a main effect is tested at the average of the levels of
+#'   the factors it interacts with. The two give the same test for a term
+#'   contained in no interaction. The numbers `2` and `3` (or `"2"` and
+#'   `"3"`), as `car::Anova()`, `afex` and `lmerTest` take them, name the
+#'   same two types.
+#'
+#'   A Type III test depends on how the factors are coded, so it is
+#'   computed with every unordered factor (character and logical
+#'   variables included) coded to sum to zero and every ordered factor
+#'   by orthogonal polynomials, whatever contrasts the model was fitted
+#'   with: the table shows the coefficients as fitted, and the test is
+#'   that of `car::Anova(type = 3)` on the model refitted with
+#'   `contrasts = list(A = "contr.sum", ...)`. For `lm` and the mixed
+#'   models it is the Wald test of the term's coefficients in that coding
+#'   (the F over its df for `lm`, the chi-square for the mixed models,
+#'   under a robust `vcov` too); for `glm`, the likelihood-ratio
+#'   chi-square or the F of the refit without the term's columns. A model
+#'   with an aliased coefficient (an empty cell of an interaction) has no
+#'   Type III test and is refused. A numeric covariate that interacts
+#'   with a factor makes the Type III test of that factor a test where
+#'   the covariate is 0, as in SPSS and SAS: a warning says so, and
+#'   centering the covariate tests the factor at its mean. Nothing is
+#'   centered for you. The note ends the definition of each partial
+#'   statistic with "(Type II)" or "(Type III)", and `tidy()` and
+#'   `output = "long"` carry the type in a `partial_type` column. Ignored,
+#'   with a warning, when no partial column is shown.
 #' @param p_adjust Multiple-comparison adjustment method applied
 #'   to the family of estimated coefficient p-values within each
 #'   model (intercept and reference rows excluded). One of
@@ -1971,8 +2010,9 @@
 #'   (`model_id`, `outcome`, `term`, `estimate_type`, `estimate`,
 #'   `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
 #'   `df.residual` (the second df of an F test, `NA` elsewhere),
-#'   `p.value`, `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...);
-#'   the file
+#'   `p.value`, `test_type`, `partial_type` (the hypothesis of a partial
+#'   row's test, `"II"` or `"III"`, `NA` elsewhere), `nobs`,
+#'   `r.squared`, `adj.r.squared`, ...); the file
 #'   path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
 #'   for `"clipboard"`. The two data frames carry the note as printed in
 #'   `attr(x, "note")`. With `layout = "stacked"`, the stacked table of
@@ -2262,6 +2302,7 @@ table_regression <- function(
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   ame_type = c("slope", "unit", "sd"),
+  partial_type = c("II", "III"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -2375,6 +2416,9 @@ table_regression <- function(
   # Resolve enum args (classed spicy_invalid_input on invalid values)
   standardized <- spicy_match_arg(standardized)
   ame_type <- spicy_match_arg(ame_type)
+  # The numbers of car::Anova(), afex and lmerTest name the same types.
+  partial_type <- .partial_type_numeral(partial_type)
+  partial_type <- spicy_match_arg(partial_type)
   ci_method <- spicy_match_arg(ci_method)
   intercept_position <- spicy_match_arg(intercept_position)
   reference_style <- spicy_match_arg(reference_style)
@@ -2536,6 +2580,18 @@ table_regression <- function(
       "ame_type",
       "when no AME column is shown",
       spicy_gather = .reg_gather(panel_req, "ame_type")
+    )
+  }
+  # `partial_type` defines the term-level tests and the partial effect
+  # sizes; a table without one reaches nothing.
+  if (
+    !identical(partial_type, "II") &&
+      !any(.PARTIAL_ES_TOKENS %in% show_columns)
+  ) {
+    .warn_ignored(
+      "partial_type",
+      "when no partial column is shown (`\"partial_f\"`, `\"partial_chi2\"`, `\"partial_eta2\"`, ...)",
+      spicy_gather = .reg_gather(panel_req, "partial_type")
     )
   }
   # Phase 7c23 (item a): coerce `FALSE` to `character(0)` so the
@@ -2828,6 +2884,10 @@ table_regression <- function(
   # (partial_f where the dispersion is estimated). The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
+  # `partial_type = "III"`: a model with an aliased coefficient is refused,
+  # and a factor that interacts with a numeric covariate is said to be
+  # tested where the covariate is 0.
+  .check_partial_type(models, show_columns, partial_type, panel_req)
 
   # Bayesian fits and ci_method. The posterior interval is the only
   # interval a posterior has: `"hdi"` is the Bayesian-only opt-in
@@ -3371,6 +3431,11 @@ table_regression <- function(
   ame_type_before <- .ame_state$type
   .ame_state$type <- ame_type
   on.exit(.ame_state$type <- ame_type_before, add = TRUE)
+  # The hypothesis of the term-level tests (`.partial_type_in_force()`,
+  # R/regression_partial.R), likewise.
+  partial_type_before <- .partial_state$type
+  .partial_state$type <- partial_type
+  on.exit(.partial_state$type <- partial_type_before, add = TRUE)
   for (i in seq_len(n_models)) {
     # The frame computes the variances (`R/vcov.R`): an estimator that
     # fails there is refused in the name of this function.
@@ -3400,6 +3465,8 @@ table_regression <- function(
     )
     # What the note names the AME of a continuous predictor by.
     frames[[i]]$info$extras$ame_type <- ame_type
+    # What the note names the hypothesis of the partial statistics by.
+    frames[[i]]$info$extras$partial_type <- partial_type
     # Truthfulness gate: `standardized` requires a class with a real
     # standardized-coefficients path (the beta attach). Classes without
     # one used to accept the argument and render the auto-injected beta
@@ -4739,6 +4806,21 @@ table_regression <- function(
   invisible(NULL)
 }
 
+# `partial_type` given as a number, 2 or 3 (or "2", "3"), as car::Anova(),
+# afex and lmerTest take it: the type it names, "II" or "III". Any other
+# value is left to `spicy_match_arg()`.
+.partial_type_numeral <- function(x) {
+  if (
+    length(x) == 1L &&
+      (is.numeric(x) || is.character(x)) &&
+      !is.na(x) &&
+      as.character(x) %in% c("2", "3")
+  ) {
+    return(if (as.character(x) == "2") "II" else "III")
+  }
+  x
+}
+
 # ---- show_columns = "none" -------------------------------------------------
 
 # The arguments that act on the coefficient rows or columns only: a
@@ -4754,6 +4836,7 @@ table_regression <- function(
   "standardized",
   "exponentiate",
   "ame_type",
+  "partial_type",
   "p_adjust",
   "keep",
   "drop",

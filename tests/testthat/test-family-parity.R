@@ -4906,7 +4906,14 @@ test_that("every table function refuses data with no rows, first", {
         "or",
         "se",
         "ci",
-        .abbr("chi2", term = spicy_str("abbrev_chi2_lrt")),
+        .abbr(
+          "chi2",
+          term = spicy_fmt(
+            "abbrev_partial_type",
+            spicy_str("abbrev_chi2_lrt"),
+            "II"
+          )
+        ),
         .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_tjur")),
         .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_mcfadden")),
         "aic"
@@ -5111,7 +5118,7 @@ test_that("n, N, p and the test statistics are never defined, and a disambiguati
       paste(
         spicy_str("symbol_eta_sq_partial"),
         "=",
-        spicy_str("abbrev_eta2_partial")
+        spicy_fmt("abbrev_partial_type", spicy_str("abbrev_eta2_partial"), "II")
       ),
       fixed = TRUE
     )
@@ -5201,7 +5208,11 @@ test_that("a definition names the quantity and never explains it", {
         stats::lm(y ~ cov1 + h, data = d),
         show_columns = c("b", "partial_omega2")
       )),
-      paste0(e[["omega2_partial"]], sep),
+      # The partial statistics of a regression name their type.
+      paste0(
+        spicy_fmt("abbrev_partial_type", e[["omega2_partial"]], "II"),
+        sep
+      ),
       fixed = TRUE,
       info = lang
     )

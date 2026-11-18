@@ -221,8 +221,9 @@ test_that("the chi^2 legend names the test each class runs", {
     # no-break space.
     regmatches(note, gregexpr("\u03C7\u00B2 = [^;.\u00A0]+", note))[[1L]]
   }
-  wald <- "\u03C7\u00B2 = partial Wald chi-squared"
-  lrt <- "\u03C7\u00B2 = partial likelihood-ratio chi-squared"
+  # Each definition ends with the type of the test (`partial_type`).
+  wald <- "\u03C7\u00B2 = partial Wald chi-squared (Type II)"
+  lrt <- "\u03C7\u00B2 = partial likelihood-ratio chi-squared (Type II)"
   fit_lmer <- .fit_lmer_factor_pchi()
   fit_glm <- stats::glm(
     carb ~ wt + factor(cyl),
@@ -238,11 +239,11 @@ test_that("the chi^2 legend names the test each class runs", {
   withr::local_options(spicy.language = "fr")
   expect_identical(
     legends(fit_lmer),
-    "\u03C7\u00B2 = khi-deux partiel de Wald"
+    "\u03C7\u00B2 = khi-deux partiel de Wald (type II)"
   )
   expect_identical(
     legends(fit_glm),
-    "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance"
+    "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance (type II)"
   )
 })
 

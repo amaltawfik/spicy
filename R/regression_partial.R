@@ -55,6 +55,122 @@
   c("partial_chi2", "partial_f")
 )
 
+# ---- The hypothesis of the term-level tests (`partial_type`) --------------
+
+# `table_regression(partial_type = )`: "II" (default) tests a term with its
+# higher-order relatives out of both compared models (`car::Anova(type =
+# 2)`); "III" tests it with them kept, each unordered factor coded to sum
+# to zero (`car::Anova(type = 3)` on a `contr.sum` refit, SPSS UNIANOVA,
+# SAS PROC GLM). The value is set by table_regression() for the frames of
+# one call, as `.ame_state` is (R/regression_ame.R), so the lm, glm and
+# mixed extractors read it without an argument of their own.
+.partial_state <- new.env(parent = emptyenv())
+.partial_state$type <- NULL
+
+.partial_type_in_force <- function() {
+  .partial_state$type %||% "II"
+}
+
+# The fixed-effect terms of a fit with a term-level test and the model
+# frame its design is built from. The frame of an `lme` is rebuilt from
+# its data, so that a variable written in the formula (`factor(g)`) is a
+# column of it.
+.type3_terms_data <- function(fit) {
+  if (inherits(fit, "glmmTMB")) {
+    trm <- stats::terms(
+      stats::formula(fit, fixed.only = TRUE, component = "cond")
+    )
+    data <- stats::model.frame(fit)
+  } else if (inherits(fit, "merMod")) {
+    trm <- stats::terms(stats::formula(.re_nobars(stats::formula(fit))))
+    data <- stats::model.frame(fit)
+  } else if (inherits(fit, "lme")) {
+    trm <- stats::terms(stats::formula(fit))
+    data <- stats::model.frame(trm, nlme::getData(fit))
+  } else {
+    trm <- stats::terms(fit)
+    data <- stats::model.frame(fit)
+  }
+  list(terms = trm, data = data)
+}
+
+# The variables of the terms of `trm` (the response is in no term).
+.type3_term_vars <- function(trm, data) {
+  fac <- attr(trm, "factors")
+  if (!length(fac)) {
+    return(character(0))
+  }
+  intersect(rownames(fac)[rowSums(fac != 0) > 0], names(data))
+}
+
+# The design of the Type III tests: every unordered factor (character and
+# logical variables included) coded to sum to zero, every ordered factor
+# by orthogonal polynomials, whatever coding the model was fitted with.
+.type3_sum_design <- function(trm, data) {
+  ca <- list()
+  for (v in .type3_term_vars(trm, data)) {
+    x <- data[[v]]
+    if (is.ordered(x)) {
+      ca[[v]] <- "contr.poly"
+    } else if (is.factor(x) || is.character(x) || is.logical(x)) {
+      ca[[v]] <- "contr.sum"
+    }
+  }
+  stats::model.matrix(trm, data, contrasts.arg = if (length(ca)) ca)
+}
+
+# The matrix M that carries the coefficients of the fitted design to those
+# of the sum-to-zero design: both code the same terms, so they span one
+# column space and x_fit = x_sum M exactly. NULL when they do not (the
+# test is then not computed).
+.type3_reparam <- function(x_fit, x_sum) {
+  if (!identical(dim(x_fit), dim(x_sum))) {
+    return(NULL)
+  }
+  m <- tryCatch(qr.solve(x_sum, unclass(x_fit)), error = function(e) NULL)
+  if (is.null(m)) {
+    return(NULL)
+  }
+  err <- max(abs(x_sum %*% m - x_fit))
+  if (!is.finite(err) || err > 1e-7 * max(1, abs(x_fit))) {
+    return(NULL)
+  }
+  m
+}
+
+# The Type III Wald statistic of term `k`: the block of its own
+# coefficients in the sum-to-zero parametrization, b = M b_fit with
+# variance M V M', every other coefficient (its higher-order relatives
+# included) left free. This is the test `car::Anova(type = 3)` reports on a
+# `contr.sum` refit (`linearHypothesis()` on the term's rows).
+.type3_wald <- function(b, V, asgn, k) {
+  i <- which(asgn == k)
+  if (length(i) == 0L) {
+    return(NULL)
+  }
+  bb <- b[i]
+  list(
+    stat = drop(crossprod(bb, solve(V[i, i, drop = FALSE], bb))),
+    df = length(i)
+  )
+}
+
+# The coefficients and variance of a fit in the sum-to-zero
+# parametrization, with the assignment of their columns to the terms of
+# `trm`. `x_fit` is the design the coefficients `b` belong to.
+.type3_coefs <- function(b, V, x_fit, trm, data) {
+  x_sum <- .type3_sum_design(trm, data)
+  m <- .type3_reparam(x_fit, x_sum)
+  if (is.null(m)) {
+    return(NULL)
+  }
+  list(
+    b = drop(m %*% b),
+    V = m %*% V %*% t(m),
+    assign = attr(x_sum, "assign")
+  )
+}
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_partial_effect_rows <- function(
@@ -129,7 +245,8 @@ extract_partial_effect_rows <- function(
       fit = fit,
       term_label = term_labels[k],
       ci_level = ci_level,
-      with_ci = with_ci
+      with_ci = with_ci,
+      type = .partial_type_in_force()
     )
   }
 
@@ -185,19 +302,20 @@ extract_partial_effect_rows <- function(
 
 # ---- Per-term computation -------------------------------------------------
 
-# Compute the Type-II partial F + the three effect-size estimands and
-# their CIs for one model term. Returns NULL on any failure (nested
-# refit failure, non-finite F, etc.) -- the caller skips the term and
-# the renderer en-dashes the corresponding cells. `with_ci = FALSE`
-# skips the noncentral-F inversions (the CIs come back NA), for a table
-# that asks for the partial F alone.
+# Compute the partial F (Type II, or Type III under `type = "III"`) + the
+# three effect-size estimands and their CIs for one model term. Returns
+# NULL on any failure (nested refit failure, non-finite F, etc.) -- the
+# caller skips the term and the renderer en-dashes the corresponding
+# cells. `with_ci = FALSE` skips the noncentral-F inversions (the CIs
+# come back NA), for a table that asks for the partial F alone.
 compute_partial_effects_for_term <- function(
   fit,
   term_label,
   ci_level,
-  with_ci = TRUE
+  with_ci = TRUE,
+  type = "II"
 ) {
-  fs <- extract_lm_focal_f_stat(fit, term_label)
+  fs <- extract_lm_focal_f_stat(fit, term_label, type = type)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs < 0) {
     return(NULL)
   }
@@ -229,8 +347,8 @@ compute_partial_effects_for_term <- function(
   # CIs -- Steiger 2004 noncentral-F inversion. omega^2 CI uses eta^2 scale
   # bounds (matches effectsize / MBESS convention).
   if (with_ci) {
-    ci_eta2 <- compute_omega2_ci_lm(fit, ci_level, focal_term = term_label)
-    ci_f2 <- compute_f2_ci_lm(fit, ci_level, focal_term = term_label)
+    ci_eta2 <- compute_omega2_ci_lm(fit, ci_level, term_label, type)
+    ci_f2 <- compute_f2_ci_lm(fit, ci_level, term_label, type)
   } else {
     ci_eta2 <- ci_f2 <- c(NA_real_, NA_real_)
   }
@@ -282,14 +400,17 @@ extract_partial_test_rows_glm <- function(
   token = "partial_chi2"
 ) {
   is_f <- identical(token, "partial_f")
+  type <- .partial_type_in_force()
   compute <- if (is_f) {
     # The dispersion of the full model, read once for every term.
     phi <- .glm_dispersion_quiet(fit)
     function(fit, term_label) {
-      compute_partial_f_for_term(fit, term_label, phi = phi)
+      compute_partial_f_for_term(fit, term_label, phi = phi, type = type)
     }
   } else {
-    compute_partial_chi2_for_term
+    function(fit, term_label) {
+      compute_partial_chi2_for_term(fit, term_label, type = type)
+    }
   }
   cf <- stats::coef(fit)
   cf_names <- names(cf)
@@ -519,6 +640,46 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     list()
   })
 
+  # Type III: the coefficients carried to the sum-to-zero design, from the
+  # design the fit estimated them on. The design of an `lme` is rebuilt
+  # with its contrasts and checked against its population-level fitted
+  # values.
+  type3 <- identical(.partial_type_in_force(), "III")
+  if (type3) {
+    sum3 <- tryCatch(
+      {
+        td <- .type3_terms_data(fit)
+        x_fit <- if (inherits(fit, "lme")) {
+          x <- stats::model.matrix(
+            td$terms,
+            td$data,
+            contrasts.arg = fit$contrasts
+          )
+          fx <- stats::fitted(fit, level = 0)
+          if (
+            length(fx) != nrow(x) ||
+              max(abs(drop(x %*% bhat) - fx)) > 1e-6 * max(1, abs(fx))
+          ) {
+            NULL
+          } else {
+            x
+          }
+        } else {
+          lme4::getME(fit, "X")
+        }
+        if (is.null(x_fit)) {
+          NULL
+        } else {
+          .type3_coefs(bhat, V, x_fit, td$terms, td$data)
+        }
+      },
+      error = function(e) NULL
+    )
+    if (is.null(sum3)) {
+      return(NULL)
+    }
+  }
+
   unique_terms <- unique(assign_idx[assign_idx != 0L])
   chi2_cache <- list()
   for (k in unique_terms) {
@@ -531,7 +692,10 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     masks <- type2_nested_column_masks(trm, assign_idx, term_labels[k])
     rel_cols <- which(!masks$keep_with)
     res <- tryCatch(
-      {
+      if (type3) {
+        w <- .type3_wald(sum3$b, sum3$V, sum3$assign, k)
+        list(chi2 = w$stat %||% NA_real_, df = w$df %||% length(cols))
+      } else {
         L <- type2_wald_hypothesis_matrix(length(bhat), rel_cols, cols, V)
         Lb <- as.numeric(L %*% bhat)
         M <- L %*% V %*% t(L)

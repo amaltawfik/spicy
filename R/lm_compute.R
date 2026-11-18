@@ -367,14 +367,55 @@ type2_nested_column_masks <- function(trm, asgn, focal_term) {
 # terms from BOTH nested models instead of holding their columns fixed
 # (a forced-scope `drop1`, i.e. a contrast-dependent Type-III-style
 # test).
-extract_lm_focal_f_stat <- function(fit, focal_term = NULL) {
+extract_lm_focal_f_stat <- function(fit, focal_term = NULL, type = "II") {
   if (is.null(focal_term)) {
     return(extract_lm_f_stat(fit))
   }
+  compute <- if (identical(type, "III")) {
+    compute_lm_type3_f_stat
+  } else {
+    compute_lm_type2_f_stat
+  }
   tryCatch(
-    suppressWarnings(compute_lm_type2_f_stat(fit, focal_term)),
+    suppressWarnings(compute(fit, focal_term)),
     error = function(e) NULL
   )
+}
+
+# Internal: Type-III partial F for `focal_term`, the F of
+# `car::Anova(type = 3)` on the model refitted with sum-to-zero contrasts
+# (SPSS UNIANOVA, SAS PROC GLM): the Wald test of the term's own
+# coefficients in that parametrization, its higher-order relatives kept,
+# over q. With the model's own variance sigma^2 (X'WX)^-1 it is
+# (SS_III / q) / MSE. No refit: the coefficients are carried to the
+# sum-to-zero design (`.type3_coefs()`, R/regression_partial.R). NULL for
+# a fit with an aliased coefficient (table_regression() refuses it).
+compute_lm_type3_f_stat <- function(fit, focal_term) {
+  b <- stats::coef(fit)
+  if (anyNA(b)) {
+    return(NULL)
+  }
+  td <- .type3_terms_data(fit)
+  k <- match(focal_term, attr(td$terms, "term.labels"))
+  if (is.na(k)) {
+    return(NULL)
+  }
+  s3 <- .type3_coefs(
+    b,
+    stats::vcov(fit),
+    stats::model.matrix(fit),
+    td$terms,
+    td$data
+  )
+  if (is.null(s3)) {
+    return(NULL)
+  }
+  w <- .type3_wald(s3$b, s3$V, s3$assign, k)
+  df2 <- stats::df.residual(fit)
+  if (is.null(w) || !is.finite(df2) || df2 <= 0) {
+    return(NULL)
+  }
+  list(f_obs = w$stat / w$df, df1 = w$df, df2 = df2)
 }
 
 # Internal: Type-II partial F for `focal_term` by nested refits on the
@@ -458,8 +499,13 @@ compute_lm_type2_f_stat <- function(fit, focal_term) {
 #     which is systematically wider to the right than the omega^2 CI
 #     because omega^2 shrinks the point estimate (audit phase 2,
 #     finding 24).
-compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
-  fs <- extract_lm_focal_f_stat(fit, focal_term)
+compute_omega2_ci_lm <- function(
+  fit,
+  ci_level,
+  focal_term = NULL,
+  type = "II"
+) {
+  fs <- extract_lm_focal_f_stat(fit, focal_term, type)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
     return(c(NA_real_, NA_real_))
   }
@@ -493,8 +539,13 @@ compute_omega2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
 #   * model-level: f^2 = ncp / N         (N = df1 + df2 + 1)
 #   * partial    : f^2 = ncp / df_error  (= eta^2 / (1 - eta^2) under the
 #                  partial eta^2 mapping above)
-compute_f2_ci_lm <- function(fit, ci_level, focal_term = NULL) {
-  fs <- extract_lm_focal_f_stat(fit, focal_term)
+compute_f2_ci_lm <- function(
+  fit,
+  ci_level,
+  focal_term = NULL,
+  type = "II"
+) {
+  fs <- extract_lm_focal_f_stat(fit, focal_term, type)
   if (is.null(fs) || !is.finite(fs$f_obs) || fs$f_obs <= 0) {
     return(c(NA_real_, NA_real_))
   }

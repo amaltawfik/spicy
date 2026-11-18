@@ -267,7 +267,8 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "test_type",
       "is_intercept",
       "factor_term",
-      "factor_level"
+      "factor_level",
+      "partial_type"
     )
   )
   expect_identical(
@@ -385,7 +386,8 @@ test_that("tidy – exact documented column vector and tbl_df return", {
       "test_type",
       "is_intercept",
       "factor_term",
-      "factor_level"
+      "factor_level",
+      "partial_type"
     )
   )
   expect_s3_class(td, "tbl_df")

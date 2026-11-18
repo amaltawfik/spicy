@@ -16,6 +16,7 @@ table_regression(
   standardized = c("none", "refit", "posthoc", "basic", "smart", "pseudo"),
   exponentiate = FALSE,
   ame_type = c("slope", "unit", "sd"),
+  partial_type = c("II", "III"),
   p_adjust = "none",
   show_columns = NULL,
   keep = NULL,
@@ -290,6 +291,44 @@ same weights under every value, per-category models (ordinal,
 multinomial) report the quantity for each category probability, and
 Bayesian fits summarize its draws. The table note names the quantity.
 Ignored, with a warning, when no AME column is shown.}
+
+\item{partial_type}{The hypothesis of the term-level tests and of the
+partial effect sizes built on them: every \verb{partial_*} column
+(\code{"partial_f"}, \code{"partial_chi2"}, \code{"partial_f2"}, \code{"partial_eta2"},
+\code{"partial_omega2"} and their intervals), for the models that have a
+term-level test (\code{lm}, \code{glm}, \code{MASS::glm.nb}, \code{lmer} / \code{glmer},
+\code{glmmTMB}, \code{nlme::lme}). \code{"II"} (default) tests a term against the
+model without it and without the interactions that contain it, the
+convention of \code{car::Anova(type = 2)} that respects marginality: a
+main effect is tested as if its interactions were absent. \code{"III"}
+tests a term's own coefficients with every other term kept, its
+interactions included, the default of SPSS UNIANOVA, SAS PROC GLM
+and \code{afex}: a main effect is tested at the average of the levels of
+the factors it interacts with. The two give the same test for a term
+contained in no interaction. The numbers \code{2} and \code{3} (or \code{"2"} and
+\code{"3"}), as \code{car::Anova()}, \code{afex} and \code{lmerTest} take them, name the
+same two types.
+
+A Type III test depends on how the factors are coded, so it is
+computed with every unordered factor (character and logical
+variables included) coded to sum to zero and every ordered factor
+by orthogonal polynomials, whatever contrasts the model was fitted
+with: the table shows the coefficients as fitted, and the test is
+that of \code{car::Anova(type = 3)} on the model refitted with
+\code{contrasts = list(A = "contr.sum", ...)}. For \code{lm} and the mixed
+models it is the Wald test of the term's coefficients in that coding
+(the F over its df for \code{lm}, the chi-square for the mixed models,
+under a robust \code{vcov} too); for \code{glm}, the likelihood-ratio
+chi-square or the F of the refit without the term's columns. A model
+with an aliased coefficient (an empty cell of an interaction) has no
+Type III test and is refused. A numeric covariate that interacts
+with a factor makes the Type III test of that factor a test where
+the covariate is 0, as in SPSS and SAS: a warning says so, and
+centering the covariate tests the factor at its mean. Nothing is
+centered for you. The note ends the definition of each partial
+statistic with "(Type II)" or "(Type III)", and \code{tidy()} and
+\code{output = "long"} carry the type in a \code{partial_type} column. Ignored,
+with a warning, when no partial column is shown.}
 
 \item{p_adjust}{Multiple-comparison adjustment method applied
 to the family of estimated coefficient p-values within each
@@ -984,8 +1023,9 @@ format-specific object: \code{gt_tbl}, \code{flextable}, \code{tinytable}; for
 (\code{model_id}, \code{outcome}, \code{term}, \code{estimate_type}, \code{estimate},
 \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic}, \code{df},
 \code{df.residual} (the second df of an F test, \code{NA} elsewhere),
-\code{p.value}, \code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...);
-the file
+\code{p.value}, \code{test_type}, \code{partial_type} (the hypothesis of a partial
+row's test, \code{"II"} or \code{"III"}, \code{NA} elsewhere), \code{nobs},
+\code{r.squared}, \code{adj.r.squared}, ...); the file
 path, invisibly, for \code{"excel"} and \code{"word"}; the table, invisibly,
 for \code{"clipboard"}. The two data frames carry the note as printed in
 \code{attr(x, "note")}. With \code{layout = "stacked"}, the stacked table of
@@ -1026,11 +1066,13 @@ p-value; for the AME-specific p-value use \code{"ame_p"}.
 \verb{_ci} companion (\code{"partial_f2_ci"}, ...).
 \item Term-level test -- \code{lm}, \code{glm} and mixed-effects models:
 \code{"partial_chi2"} and its twin \code{"partial_f"}, the term-level
-Type-II test. Each term is tested under the
-marginality-respecting hypothesis that excludes any
+test. By default (\code{partial_type = "II"}) each term is tested
+under the marginality-respecting hypothesis that excludes any
 higher-order interaction containing it (the
 \code{car::Anova(type = 2)} convention), so the value does not
-depend on the factor coding. For \code{glm} the term-level test is
+depend on the factor coding. \code{partial_type = "III"} keeps the
+interactions and tests the term in a sum-to-zero coding (see
+\code{partial_type}). For \code{glm} the term-level test is
 the F that \code{anova(reduced, full, test = "F")} reports when the
 dispersion is estimated, the likelihood-ratio chi-square
 otherwise: \code{"partial_f"},
@@ -1045,9 +1087,9 @@ estimate differs by the IRLS convergence error only, and
 \code{drop1(test = "F")} divides by the deviance dispersion instead);
 \code{"partial_chi2"}, the likelihood-ratio chi-square (Long & Freese
 2014 Sections 3.2.2, 3.2.4), for binomial, Poisson and
-\code{MASS::glm.nb}. For \code{lm}, \code{"partial_f"} is the Type II F of
-\code{car::Anova(type = 2)}, the F the variance-explained partials are
-built on, so a gaussian \code{glm} and its \code{lm()} twin print the same
+\code{MASS::glm.nb}. For \code{lm}, \code{"partial_f"} is the F of
+\code{car::Anova(type = 2)} (\code{type = 3} under \code{partial_type = "III"}),
+the F the variance-explained partials are built on, so a gaussian \code{glm} and its \code{lm()} twin print the same
 value. A token is refused when no model of the table carries it,
 and when a model carries the other one while that one is not
 requested (each test has its own column: ask for both). Both come
@@ -1055,10 +1097,10 @@ from the refits and the model's own dispersion (the residual
 variance of an \code{lm}) whatever \code{vcov}.
 For \code{lmer} / \code{glmer} /
 \code{glmmTMB} / \code{nlme::lme}, \code{"partial_chi2"} is the Wald
-chi-square built from the same Type-II hypothesis -- a
-deliberate departure from the Type-III default of SAS PROC
-MIXED and \code{lmerTest} (the two conventions coincide for models
-without interactions). Rendered as \code{value (df)} to
+chi-square built from the same hypothesis: Type II by default,
+where SAS PROC MIXED and \code{lmerTest} test Type III, which
+\code{partial_type = "III"} gives (the two conventions coincide for
+models without interactions). Rendered as \code{value (df)} to
 disambiguate factor terms (k-1 df) from numeric terms (1 df),
 and the partial F as \code{F (q, df)} with both of its degrees of
 freedom, \code{3.45 (2, 28)}, as Stata and SAS report them: each cell

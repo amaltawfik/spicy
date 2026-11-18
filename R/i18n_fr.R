@@ -364,6 +364,7 @@
   abbrev_chi2_lrt = "khi-deux partiel du rapport de vraisemblance",
   abbrev_chi2_wald = "khi-deux partiel de Wald",
   abbrev_f_partial = "statistique F partielle",
+  abbrev_partial_type = "%s (type %s)",
   abbrev_ame_category = "effet marginal moyen sur la probabilit\u00E9 d'une modalit\u00E9 de r\u00E9ponse",
   abbrev_pd = "probabilit\u00E9 de direction",
   abbrev_mcse = "erreur standard de Monte-Carlo de la m\u00E9diane a posteriori",

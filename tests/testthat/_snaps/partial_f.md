@@ -18,5 +18,5 @@
        R² (deviance) │   0.86                             
        AIC           │ 149.2                              
       
-      Note. Gamma regression. Std. errors: classical (Fisher information). F = partial F statistic; AIC = Akaike information criterion.
+      Note. Gamma regression. Std. errors: classical (Fisher information). F = partial F statistic (Type II); AIC = Akaike information criterion.
 
