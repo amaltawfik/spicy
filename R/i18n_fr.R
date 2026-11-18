@@ -861,6 +861,8 @@
 # Les entrees d'un gabarit pour une liste de familles : `en` recoit la
 # tete (forme `form`), `fr` le qualificatif. Une tete inconnue arrete
 # l'installation du package : la table ci-dessus est sa seule source.
+# nocov start: runs only while the namespace is built (it fills
+# .FR_TITLE_PREFIXES), before covr traces anything.
 .fr_title_set <- function(heads, en, fr, form = "en") {
   idx <- match(heads, .FR_TITLE_FAMILIES[, "en"])
   if (anyNA(idx)) {
@@ -874,6 +876,7 @@
   names(out) <- sprintf(en, .FR_TITLE_FAMILIES[idx, form])
   out
 }
+# nocov end
 
 # Les titres des modeles a deux parties portent deja une parenthese
 # ("(inflation de zeros)", "(modele hurdle)") : la variante NB1 de la loi
@@ -887,6 +890,7 @@
 # Les titres ordinaux : lien cumulatif et hypothese, en anglais et en
 # francais, sous les quatre formes des moteurs (polr et clm, clm avec
 # `nominal =`, clmm et glmmTMB, svyolr).
+# nocov start: runs only while the namespace is built, like .fr_title_set().
 .fr_ordinal_set <- function(en, fr, partial = FALSE) {
   link_en <- c("logit", "probit", "complementary log-log", "log-log", "cauchit")
   link_fr <- c(
@@ -927,6 +931,7 @@
   names(out) <- sprintf(en, link_en, hyp_en)
   out
 }
+# nocov end
 
 # Les familles de glm (spicy_glm_title_prefix()) et celles des modeles
 # mixtes : lme4 (sans les quasi) et glmmTMB (.GLMMTMB_FAMILY_LABELS).
