@@ -1150,22 +1150,13 @@ output_gt <- function(rendered) {
   # The APA title layout lives in `.spicy_gt_apa_title()` (one recipe
   # for every family that draws a gt table).
   tbl <- .spicy_gt_apa_title(tbl, title)
-  # The note is attached TWICE, on purpose.
-  #
-  # 1. `gt::tab_source_note()` puts it on the gt object itself, so it
-  #    survives every route to a rendered table: `gt::gtsave()`,
-  #    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a
-  #    non-interactive `print()`. Without it those deliverables shipped
-  #    a table stripped of the disclosure the console prints (model
-  #    family, standard errors, star legend). In HTML, the rules
-  #    `.spicy_gt()` set keep it out of the width of the table.
-  # 2. `attr(tbl, "spicy_note")` + the `spicy_gt` sub-class drive the
-  #    HTML display path below, which RE-STYLES the note: gt renders a
-  #    source note inside `<tfoot>` as a `<td colspan="N">` cell whose
-  #    max-content widens the whole table in narrow viewports (as in
-  #    `output_flextable`), so
-  #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
-  #    `<div>` sibling outside the table.
+  # The note goes on the gt object as its native source notes, so every
+  # route to a rendered table prints it: `gt::gtsave()`,
+  # `gt::as_raw_html()`, `as_latex()`, `as_word()`, `print()`,
+  # `knit_print()`. In HTML, the rules `.spicy_gt()` set keep it out of
+  # the width of the table. `attr(tbl, "spicy_note")` keeps it for the
+  # knit to a non-HTML target of a table that lost its source notes
+  # (`knit_print.spicy_gt()`).
   # Its numbers take the minus sign of the style in force, as the cells.
   note <- .apply_minus_sign(
     note,
@@ -1187,79 +1178,13 @@ output_gt <- function(rendered) {
   tbl
 }
 
-# Remove the `<tfoot>` rows that carry OUR source notes, one per line of
-# the note (`note_lines`; matched on their text, so a source note the
-# user added with their own `gt::tab_source_note()` call survives),
-# leaving an emptied `<tfoot>` behind only if it had nothing else in it.
-# Used by the HTML display path, which renders the same note as a styled
-# `<div>` outside the table.
-.spicy_gt_drop_source_note <- function(html_str, note_lines) {
-  # (?s): the row spans several lines in gt's rendered HTML.
-  pat <- "(?s)<tr class=\"gt_sourcenotes\">.*?</tr>"
-  m <- gregexpr(pat, html_str, perl = TRUE)
-  blocks <- regmatches(html_str, m)[[1L]]
-  if (length(blocks) == 0L) {
-    return(html_str)
-  }
-  # The row is rendered from markdown (`.spicy_gt_note_md()`), which
-  # writes the double quote as an entity as well, and the comparison is
-  # made on the text with its whitespace runs collapsed.
-  unescape <- function(s) {
-    s <- gsub("&lt;", "<", s, fixed = TRUE)
-    s <- gsub("&gt;", ">", s, fixed = TRUE)
-    s <- gsub("&quot;", "\"", s, fixed = TRUE)
-    s <- gsub("&#39;", "'", s, fixed = TRUE)
-    gsub("&amp;", "&", s, fixed = TRUE)
-  }
-  squish <- function(s) gsub("\\s+", " ", trimws(s))
-  targets <- squish(note_lines)
-  for (b in blocks) {
-    txt <- squish(unescape(gsub("<[^>]*>", "", b)))
-    if (txt %in% targets) {
-      html_str <- sub(b, "", html_str, fixed = TRUE)
-    }
-  }
-  sub("<tfoot>\\s*</tfoot>", "", html_str)
-}
-
-# Wrap rendered gt HTML so the title (already inside the `<table>`
-# as a heading row) is preserved but the source note is injected as
-# a `<div>` sibling immediately after `</table>`. The note's
-# `width: min-content; min-width: 100%` keeps it from widening the
-# wrapper, then fills it, so it wraps at the table's width.
-.spicy_gt_html_postprocess <- function(html_str, note, lead = .note_lead()) {
-  # A table without a note takes the wrapper and its rules too, as it
-  # takes the `spicy_gt` class (section 19 of
-  # dev/decisions/2026-10-23-sorties-publiables-fr.md): one design for
-  # every table of the family; only the note `<div>` needs a note.
-  has_note <- !is.null(note) && nzchar(note)
-  note_div <- ""
-  if (has_note) {
-    note_lines <- .note_lines(note)
-    # The same note also sits on the gt object as native source notes
-    # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
-    # it); this display path moves it OUT of the table, so drop the
-    # `<tfoot>` rows carrying it. Source notes the user added themselves
-    # are left alone -- only the rows whose text is ours are removed.
-    html_str <- .spicy_gt_drop_source_note(html_str, note_lines)
-    note_html <- .spicy_note_html(note_lines, lead)
-    note_div <- paste0(
-      "<div class=\"spicy-gt-note\" style=\"",
-      "width: min-content; min-width: 100%; box-sizing: border-box; ",
-      "padding: 0.5rem 0.5rem 0.2rem 0.5rem; ",
-      # Match gt's `#<id> table { font-family: ... }` rule by listing
-      # the same fallback stack. gt scopes the rule to `table`
-      # elements only, so a `<div>` sibling otherwise picks up the
-      # page default and reads in a different typeface.
-      "font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, ",
-      "sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', ",
-      "'Segoe UI Symbol', 'Noto Color Emoji'; ",
-      "font-size: 0.9em; line-height: 1.25; ",
-      "color: #333333; text-align: left;\">",
-      note_html,
-      "</div>"
-    )
-  }
+# Wrap rendered gt HTML in the two `<div>` of the display methods and
+# their header rules. The note stays in the table, as its native source
+# notes (`.spicy_gt_note_css()`). A table without a note takes the
+# wrapper and its rules too, as it takes the `spicy_gt` class (section 19
+# of dev/decisions/2026-10-23-sorties-publiables-fr.md): one design for
+# every table of the family.
+.spicy_gt_html_postprocess <- function(html_str) {
   open_outer <- paste0(
     "<div class=\"spicy-gt-outer\" ",
     "style=\"text-align: center;\">"
@@ -1346,7 +1271,7 @@ output_gt <- function(rendered) {
   )
   html_str <- sub(
     "</table>",
-    paste0("</table>", note_div, close_both),
+    paste0("</table>", close_both),
     html_str,
     fixed = TRUE
   )
@@ -1357,9 +1282,9 @@ output_gt <- function(rendered) {
 #'
 #' @description
 #' Prints a `spicy_gt` object -- the [gt::gt()] table returned by
-#' `output = "gt"`, tagged so the table note keeps its styling in
-#' interactive HTML display. Every gt verb works on the tagged object
-#' directly; printing delegates to gt's own rendering.
+#' `output = "gt"`, tagged so its header keeps its rules in interactive
+#' HTML display. Every gt verb works on the tagged object directly;
+#' printing delegates to gt's own rendering.
 #'
 #' @param x A `spicy_gt` object.
 #' @param ... Additional arguments (currently ignored).
@@ -1371,10 +1296,6 @@ output_gt <- function(rendered) {
 #' @keywords internal
 #' @exportS3Method print spicy_gt
 print.spicy_gt <- function(x, ...) {
-  note <- attr(x, "spicy_note")
-  # The lead-in the note was built with; an object without it is read with
-  # the default of the session.
-  lead <- attr(x, "spicy_note_lead") %||% .note_lead()
   class(x) <- setdiff(class(x), "spicy_gt")
   if (
     interactive() &&
@@ -1382,7 +1303,7 @@ print.spicy_gt <- function(x, ...) {
       requireNamespace("htmltools", quietly = TRUE)
   ) {
     h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-    h_str <- .spicy_gt_html_postprocess(h_str, note, lead)
+    h_str <- .spicy_gt_html_postprocess(h_str)
     print(htmltools::browsable(htmltools::HTML(h_str)))
     return(invisible(NULL))
   }
@@ -1568,8 +1489,11 @@ knit_print.spicy_gt <- function(x, ...) {
     return(out)
   }
   h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-  h_str <- .spicy_gt_html_postprocess(h_str, note, lead)
-  knitr::asis_output(h_str)
+  h_str <- .spicy_gt_html_postprocess(h_str)
+  # A raw HTML block: pandoc read bare HTML as markdown, and in an R
+  # Markdown `html_document` it turned the style sheet of the table into
+  # paragraphs of text (its rules, the note's among them, were lost).
+  knitr::raw_html(h_str)
 }
 
 # ---- flextable -----------------------------------------------------------

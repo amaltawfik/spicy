@@ -393,14 +393,14 @@ test_that("the gt note survives every route to a rendered table", {
   )))
 })
 
-test_that("the HTML display path moves the note out of the table, once", {
+test_that("the HTML display path prints the note in the table, once", {
   skip_if_not_installed("gt")
   fit <- stats::lm(wellbeing_score ~ age + sex, data = .ep_data())
   g <- table_regression(fit, output = "gt")
   html <- as.character(gt::as_raw_html(g, inline_css = FALSE))
-  out <- spicy:::.spicy_gt_html_postprocess(html, attr(g, "spicy_note"))
-  expect_true(grepl("spicy-gt-note", out, fixed = TRUE))
-  expect_false(grepl("<tfoot", out, fixed = TRUE))
+  out <- spicy:::.spicy_gt_html_postprocess(html)
+  expect_false(grepl("spicy-gt-note", out, fixed = TRUE))
+  expect_true(grepl("<tfoot", out, fixed = TRUE))
   n_note <- lengths(regmatches(
     out,
     gregexpr("Std. errors", out, fixed = TRUE)
@@ -409,24 +409,17 @@ test_that("the HTML display path moves the note out of the table, once", {
   # A source note the user added themselves is left alone.
   g2 <- gt::tab_source_note(g, "My own note")
   html2 <- as.character(gt::as_raw_html(g2, inline_css = FALSE))
-  out2 <- spicy:::.spicy_gt_html_postprocess(html2, attr(g, "spicy_note"))
+  out2 <- spicy:::.spicy_gt_html_postprocess(html2)
   expect_true(grepl("My own note", out2, fixed = TRUE))
-  # Nothing to strip when the table has no note: unchanged HTML.
-  expect_identical(
-    spicy:::.spicy_gt_drop_source_note("<table></table>", "x"),
-    "<table></table>"
-  )
-  # The native note is markdown, rendered with entities a plain-text
-  # note never had (the double quote): it is still recognized as ours.
+  # The native note is markdown: the characters of a note print as typed.
   g3 <- table_regression(
     fit,
     note = "Note. \"Quoted\" & <tagged> *starred*.",
     output = "gt"
   )
   html3 <- as.character(gt::as_raw_html(g3, inline_css = FALSE))
-  out3 <- spicy:::.spicy_gt_html_postprocess(html3, attr(g3, "spicy_note"))
-  expect_false(grepl("<tfoot", out3, fixed = TRUE))
-  expect_true(grepl("&lt;tagged&gt; *starred*.</div>", out3, fixed = TRUE))
+  out3 <- spicy:::.spicy_gt_html_postprocess(html3)
+  expect_true(grepl("&lt;tagged&gt; *starred*.</span>", out3, fixed = TRUE))
 })
 
 test_that("the linear-model family carries its note on the gt object", {

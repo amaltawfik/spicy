@@ -4534,19 +4534,17 @@ test_that("every engine sets the stars legend on a line of its own", {
   # gt: one source note per line, the legend a row of its own.
   g <- build("gt")
   expect_length(g[["_source_notes"]], 2L)
-  # The HTML display path lifts the note out of the table: one line break,
-  # before the legend, and the two source-note rows gone from the table.
+  # The HTML display path prints them as two rows of the table, the
+  # legend opening the second.
   html <- .spicy_gt_html_postprocess(
-    as.character(gt::as_raw_html(g, inline_css = FALSE)),
-    attr(g, "spicy_note")
+    as.character(gt::as_raw_html(g, inline_css = FALSE))
   )
-  div <- regmatches(
+  cells <- regmatches(
     html,
-    regexpr("<div class=\"spicy-gt-note\".*?</div>", html, perl = TRUE)
-  )
-  expect_identical(lengths(gregexpr("<br>", div, fixed = TRUE)), 1L)
-  expect_match(div, "<br>*** p &lt; .001", fixed = TRUE)
-  expect_no_match(html, "<tr class=\"gt_sourcenotes\">", fixed = TRUE)
+    gregexpr("<td class=\"gt_sourcenote\".*?</td>", html, perl = TRUE)
+  )[[1L]]
+  expect_length(cells, 2L)
+  expect_match(cells[[2L]], "'gt_from_md'>*** p &lt; .001", fixed = TRUE)
   # flextable, and the Word file it feeds: one footer line per line.
   ft <- build("flextable")
   expect_identical(nrow(ft$footer$dataset), 2L)

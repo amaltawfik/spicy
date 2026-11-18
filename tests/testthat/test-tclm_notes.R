@@ -297,7 +297,7 @@ test_that("cluster_name attr resolves string and bare-column forms", {
 
 # ---- gt ----
 
-test_that("gt output stashes the note and injects it in rendered HTML", {
+test_that("gt output stashes the note and prints it in rendered HTML", {
   skip_if_not_installed("gt")
   skip_if_not_installed("knitr")
   g <- table_continuous_lm(
@@ -312,11 +312,9 @@ test_that("gt output stashes the note and injects it in rendered HTML", {
   note <- attr(g, "spicy_note")
   expect_match(note, "Adjusted for age, sex (proportional).", fixed = TRUE)
   expect_match(note, "heteroskedasticity-robust (HC3)", fixed = TRUE)
-  # The note div is injected at render time by the shared spicy_gt
-  # knit_print / print methods (gt::as_raw_html() alone renders the
-  # bare table; the note deliberately lives OUTSIDE the table grid).
+  # The display methods print the note in the table, as its source notes.
   html <- as.character(knit_print.spicy_gt(g))
-  expect_match(html, "spicy-gt-note", fixed = TRUE)
+  expect_match(html, "<td class=\"gt_sourcenote\"", fixed = TRUE)
   expect_match(html, "Adjusted for age, sex (proportional).", fixed = TRUE)
   expect_match(
     html,
@@ -361,7 +359,7 @@ test_that("an effect size shown alone names its test, a comparison or a slope", 
   )
 })
 
-test_that("gt HTML without a note takes the spicy wrapper, without a note div", {
+test_that("gt HTML without a note takes the spicy wrapper, without a note", {
   skip_if_not_installed("gt")
   g <- table_continuous_lm(
     sochealth,
@@ -373,7 +371,7 @@ test_that("gt HTML without a note takes the spicy wrapper, without a note div", 
   html <- as.character(knit_print.spicy_gt(g))
   expect_match(html, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
   expect_match(html, "</table></div></div>", fixed = TRUE)
-  expect_no_match(html, "spicy-gt-note", fixed = TRUE)
+  expect_no_match(html, "<td class=\"gt_sourcenote\"", fixed = TRUE)
 })
 
 test_that("gt output without a note keeps the spicy_gt class", {

@@ -119,8 +119,8 @@ test_that("print.spicy_gt interactive arm displays post-processed browsable HTML
   expect_null(res)
 
   # The viewer received a real HTML file containing the POST-PROCESSED
-  # markup: the .spicy-gt-outer wrapper and the escaped note div are
-  # injected by .spicy_gt_html_postprocess(), so their presence proves
+  # markup: the .spicy-gt-outer wrapper is injected by
+  # .spicy_gt_html_postprocess(), so its presence proves
   # the interactive branch ran end-to-end (as_raw_html -> postprocess ->
   # browsable print).
   expect_false(is.null(viewed))

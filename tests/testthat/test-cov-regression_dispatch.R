@@ -113,44 +113,35 @@ test_that(".fit_stat_merge_ranges single-model spans cols 2..n per fit-stat row"
 # gt: HTML note post-processor + print / knit_print methods
 # ============================================================================
 
-test_that(".spicy_gt_html_postprocess injects an escaped note div, and wraps a table without one", {
-  h <- "<table border=\"1\"><tr><td>x</td></tr></table>"
-  out <- spicy:::.spicy_gt_html_postprocess(h, "Note. a < b & c > d")
-  expect_match(out, "spicy-gt-note", fixed = TRUE)
-  expect_match(out, "<em>Note.</em>", fixed = TRUE)
-  expect_match(out, "&amp;", fixed = TRUE) # & escaped
-  expect_match(out, "&lt;", fixed = TRUE) # < escaped
-  expect_match(out, "&gt;", fixed = TRUE) # > escaped
-  # Pin the complete rendered note (em-split label + escaped remainder, up to
-  # the closing div) -- the entity checks above alone would pass on scrambled
-  # or truncated note text.
-  expect_match(
-    out,
-    "<em>Note.</em> a &lt; b &amp; c &gt; d</div>",
-    fixed = TRUE
+test_that(".spicy_gt_html_postprocess wraps the table and leaves its note in it", {
+  h <- paste0(
+    "<table border=\"1\"><tr><td>x</td></tr><tfoot><tr ",
+    "class=\"gt_sourcenotes\"><td class=\"gt_sourcenote\">n</td></tr>",
+    "</tfoot></table>"
   )
-  # NULL / empty note -> the wrapper and its rules, no note div (one design
-  # for every table of the family, note or no note).
-  for (empty in list(NULL, "")) {
-    bare <- spicy:::.spicy_gt_html_postprocess(h, empty)
-    expect_match(bare, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
-    expect_match(bare, ".spicy-gt-outer .gt_col_heading", fixed = TRUE)
-    expect_match(bare, "</table></div></div>", fixed = TRUE)
-    expect_no_match(bare, "spicy-gt-note", fixed = TRUE)
-  }
+  out <- spicy:::.spicy_gt_html_postprocess(h)
+  expect_match(out, "<div class=\"spicy-gt-outer\"", fixed = TRUE)
+  expect_match(out, ".spicy-gt-outer .gt_col_heading", fixed = TRUE)
+  expect_match(out, "</tfoot></table></div></div>", fixed = TRUE)
+  expect_no_match(out, "spicy-gt-note", fixed = TRUE)
 })
 
-test_that("knit_print.spicy_gt embeds the note via the post-processor", {
+test_that("knit_print.spicy_gt writes the table, its note inside, as raw HTML", {
   skip_if_not_installed("gt")
   fit <- lm(mpg ~ wt + cyl, data = mt)
   g <- table_regression(fit, output = "gt", note = "Note. knit gt.")
   expect_identical(attr(g, "spicy_note"), "Note. knit gt.")
   ko <- knit_print.spicy_gt(g)
   expect_s3_class(ko, "knit_asis")
-  expect_match(as.character(ko), "spicy-gt-note", fixed = TRUE)
-  # The full note TEXT made it into the payload (the post-processor italicizes
-  # the leading "Note." so the rendered form is em-split, not verbatim).
-  expect_match(as.character(ko), "<em>Note.</em> knit gt.</div>", fixed = TRUE)
+  s <- as.character(ko)
+  # A raw block, which pandoc passes through untouched.
+  expect_match(s, "```{=html}", fixed = TRUE)
+  expect_no_match(s, "spicy-gt-note", fixed = TRUE)
+  expect_match(
+    s,
+    "<span class='gt_from_md'><em>Note.</em> knit gt.</span></td>",
+    fixed = TRUE
+  )
 })
 
 test_that("print.spicy_gt non-interactive delegates to NextMethod()", {

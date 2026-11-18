@@ -84,22 +84,13 @@
 }
 
 # Attach a table note to a gt table built by `table_categorical()` /
-# `table_continuous()`. The note is attached TWICE, on purpose -- the
-# same reasoning `output_gt()` records for the regression family.
-#
-# 1. `gt::tab_source_note()` puts it on the gt object itself, so it
-#    survives every route to a rendered table: `gt::gtsave()`,
-#    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a non-interactive
-#    `print()`. Without it those deliverables shipped a TITLED table
-#    stripped of the disclosure the console prints -- which missing
-#    values were removed, which test each block ran, that no block
-#    controls for the other variables. The twin of the title hole, on
-#    the same engine. In HTML, the rules `.spicy_gt()` set keep it out
-#    of the width of the table.
-# 2. The `spicy_gt` tag routes it through `print.spicy_gt()` /
-#    `knit_print.spicy_gt()`, which inject it as a `<div>` OUTSIDE the
-#    table in HTML. Those methods drop the native note when they take
-#    over, so the two never print together.
+# `table_continuous()`, as the native source notes of the table
+# (`.spicy_gt_add_source_notes()`): every route to a rendered table
+# (`gt::gtsave()`, `gt::as_raw_html()`, `as_latex()`, `as_word()`,
+# `print()`, `knit_print()`) prints it, kept out of the width of the
+# table in HTML by the rules `.spicy_gt()` set. The note is also kept in
+# an attribute, for the knit to a non-HTML target of a table that lost
+# its source notes (`knit_print.spicy_gt()`).
 #
 # `stub` and `decimal_mark` are the label columns and the mark of the
 # table, for the minus sign of its LaTeX (`.spicy_gt_minus_attr()`).
@@ -229,11 +220,10 @@
 # One line of a note as a native gt source note, in markdown: `md()` is
 # the one text form gt renders in every output it writes (HTML, LaTeX,
 # RTF, Word), so the lead-in `lead` is set in italics there (APA Manual 7
-# Section 7.14) as in the HTML display path. Every ASCII punctuation
+# Section 7.14). Every ASCII punctuation
 # character is backslash-escaped, which CommonMark reads as that
 # character, so the rest prints exactly as typed: the stars of a
 # significance legend, the underscore of a variable name.
-# `.spicy_gt_drop_source_note()` matches each of these rows on its TEXT.
 .spicy_gt_note_md <- function(note, lead = .note_lead()) {
   escape <- function(x) {
     gsub(

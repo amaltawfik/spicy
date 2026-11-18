@@ -17,9 +17,9 @@ of gt's own print method.
 }
 \description{
 Prints a \code{spicy_gt} object -- the \code{\link[gt:gt]{gt::gt()}} table returned by
-\code{output = "gt"}, tagged so the table note keeps its styling in
-interactive HTML display. Every gt verb works on the tagged object
-directly; printing delegates to gt's own rendering.
+\code{output = "gt"}, tagged so its header keeps its rules in interactive
+HTML display. Every gt verb works on the tagged object directly;
+printing delegates to gt's own rendering.
 }
 \seealso{
 \code{\link[=table_regression]{table_regression()}}

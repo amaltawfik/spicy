@@ -233,10 +233,7 @@ test_that("the saved gt file carries the note, not only the title", {
 })
 
 test_that("the HTML display path still prints the note once", {
-  # The native source note and the out-of-grid `<div>` must never
-  # print together: `.spicy_gt_drop_source_note()` removes the
-  # `<tfoot>` row by matching its TEXT, which is why the note is
-  # written there as a single line.
+  # The display methods print the native source note, and nothing else.
   skip_if_no_gt()
   tbl <- suppressWarnings(table_outcome(
     spicy::sochealth,
@@ -244,10 +241,8 @@ test_that("the HTML display path still prints the note once", {
     select = sex,
     output = "gt"
   ))
-  note <- attr(tbl, "spicy_note", exact = TRUE)
   html <- spicy:::.spicy_gt_html_postprocess(
-    as.character(gt::as_raw_html(tbl, inline_css = FALSE)),
-    note
+    as.character(gt::as_raw_html(tbl, inline_css = FALSE))
   )
   expect_identical(
     lengths(gregexpr("Missing values removed", html, fixed = TRUE)),
