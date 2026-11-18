@@ -1577,6 +1577,10 @@
 #'   on the decimal mark with its coefficients. In `"merged"` mode the
 #'   fit-stat values move out of the `B` column, which aligns its
 #'   coefficients alone, and each merged value is centered as typed.
+#'   Under `nested = TRUE` the change rows carry their degrees of
+#'   freedom (`F-change` prints `7.29 (2, 28)`), which widens the `B`
+#'   column in the `"first_col"` layout; `"merged"` spans them over
+#'   the model's columns in the engines that merge.
 #' @param layout How several models are laid out. `"columns"` (default)
 #'   sets them side by side, one group of columns per model. `"stacked"`
 #'   sets them one under the other, one panel per model: each panel is
