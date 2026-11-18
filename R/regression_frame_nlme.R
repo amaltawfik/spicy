@@ -1014,6 +1014,29 @@ as_regression_frame.gls <- function(
 }
 
 
+# The data of an lme or gls. nlme::getData() evaluates the call's `data`
+# from its own frame, so it fails for a gls (or an lme fitted with
+# keep.data = FALSE) whose data exists only where the fit was made, as
+# inside a function. The terms keep the environment of that formula:
+# evaluate `data` there, and let getData() apply na.action and subset.
+.nlme_get_data <- function(fit) {
+  # A call with `data = data` can make getData() find utils::data().
+  d <- tryCatch(nlme::getData(fit), error = function(e) NULL)
+  if (is.data.frame(d)) {
+    return(d)
+  }
+  env <- environment(fit$terms)
+  if (is.null(env) || is.null(fit$call$data)) {
+    return(NULL)
+  }
+  fit$data <- tryCatch(eval(fit$call$data, env), error = function(e) NULL)
+  if (!is.data.frame(fit$data)) {
+    return(NULL)
+  }
+  tryCatch(nlme::getData(fit), error = function(e) NULL)
+}
+
+
 # DV label extractor for nlme fits. stats::model.frame() is broken
 # for lme / gls (returns reStruct / corStruct), so we go through
 # nlme::getData() to find the response column.

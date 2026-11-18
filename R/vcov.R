@@ -73,6 +73,56 @@
   )
 }
 
+# An lme whose design clubSandwich would rebuild with other contrasts than
+# the fit's. clubSandwich 0.7.0 builds it as model.matrix(formula(fit),
+# droplevels(data)): the contrasts of the session, never fit$contrasts, and
+# droplevels() also strips those set on the data. With contrasts =
+# list(A = contr.sum), its CR2 matrix mixes the treatment design with the
+# sum-coded bread: the variance of neither parametrization, and
+# coef_test() takes its df from the same design. Measured on a 30-cluster
+# lme: SE(A1) 0.102 against 0.127 for the equivalent lmer fit, whose
+# design clubSandwich reads from the fit. (gls has the same route but no
+# robust vcov in spicy.)
+.refuse_cr_nlme_contrasts <- function(fit, type) {
+  if (!inherits(fit, "lme")) {
+    return(invisible(NULL))
+  }
+  dat <- .nlme_get_data(fit)
+  same <- is.null(dat) ||
+    tryCatch(
+      {
+        fml <- stats::formula(fit)
+        x_fit <- stats::model.matrix(fml, dat, contrasts.arg = fit$contrasts)
+        x_cs <- stats::model.matrix(fml, droplevels(dat))
+        identical(dim(x_fit), dim(x_cs)) &&
+          isTRUE(all.equal(x_fit, x_cs, check.attributes = FALSE))
+      },
+      error = function(e) TRUE
+    )
+  if (same) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "`vcov = \"%s\"` is not available for this `%s` fit.",
+        type,
+        class(fit)[1L]
+      ),
+      "x" = paste0(
+        "The fit uses other contrasts than the session default, and ",
+        "`clubSandwich::vcovCR()` rebuilds its design with the default ",
+        "ones: the variance would not match the coefficients."
+      ),
+      "i" = paste0(
+        "Refit with the default contrasts, or set the same contrasts with ",
+        "`options(contrasts = )` before calling."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 # An lm or glm with zero prior weights under an HC* estimator.
 # sandwich::vcovHC() counts the zero-weight rows in n, while the fit's
 # bread and lm.influence() leave them out: every HC* matrix is wrong.
@@ -397,6 +447,7 @@ compute_model_vcov <- function(
         class = "spicy_invalid_input"
       )
     }
+    .refuse_cr_nlme_contrasts(fit, type)
     return(tryCatch(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
       error = function(e) .abort_vcov_failed(type, e, "clubSandwich::vcovCR()")

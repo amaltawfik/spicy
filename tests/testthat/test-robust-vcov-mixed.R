@@ -54,6 +54,58 @@ test_that("nlme::lme CR2 SE matches clubSandwich", {
   expect_equal(unname(.mixed_b_se(fr)), unname(ct$SE), tolerance = 1e-6)
 })
 
+test_that("lme CR2 is refused when the fit's contrasts are not the session's", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("clubSandwich")
+  # clubSandwich rebuilds the design of an lme with the session contrasts,
+  # not the fit's: its matrix would not match the coefficients.
+  d <- as.data.frame(nlme::BodyWeight)
+  d$Diet <- factor(d$Diet, ordered = FALSE)
+  cr2 <- function(fit) {
+    as_regression_frame(fit, vcov = "CR2", cluster = d$Rat)
+  }
+  sum_opt <- list(contrasts = c("contr.sum", "contr.poly"))
+  # 1. the contrasts argument
+  fit1 <- nlme::lme(
+    weight ~ Time + Diet,
+    random = ~ 1 | Rat,
+    data = d,
+    contrasts = list(Diet = "contr.sum")
+  )
+  expect_error(cr2(fit1), class = "spicy_invalid_input")
+  # 2. contrasts set on the data, which droplevels() strips
+  d2 <- d
+  stats::contrasts(d2$Diet) <- stats::contr.sum(3)
+  fit2 <- nlme::lme(weight ~ Time + Diet, random = ~ 1 | Rat, data = d2)
+  expect_error(cr2(fit2), class = "spicy_invalid_input")
+  # 3. options(contrasts = ) at fit time, reset before the table
+  withr::with_options(sum_opt, {
+    fit3 <- nlme::lme(weight ~ Time + Diet, random = ~ 1 | Rat, data = d)
+  })
+  expect_error(cr2(fit3), class = "spicy_invalid_input")
+  # The reverse: a default fit read under another session option.
+  fit0 <- nlme::lme(weight ~ Time + Diet, random = ~ 1 | Rat, data = d)
+  withr::with_options(sum_opt, {
+    expect_error(cr2(fit0), class = "spicy_invalid_input")
+  })
+  # Oracle: the equivalent sum-coded lmer fit, whose design clubSandwich
+  # reads from the fit. With the option still set, the designs agree and
+  # the lme is accepted.
+  fl <- lme4::lmer(
+    weight ~ Time + Diet + (1 | Rat),
+    data = d,
+    contrasts = list(Diet = "contr.sum")
+  )
+  oracle <- sqrt(diag(as.matrix(
+    clubSandwich::vcovCR(fl, cluster = d$Rat, type = "CR2")
+  )))
+  withr::with_options(sum_opt, {
+    se3 <- .mixed_b_se(cr2(fit3))
+  })
+  expect_equal(unname(se3), unname(oracle), tolerance = 1e-6)
+})
+
 test_that("lmer / lme CR2: factor joint tests and betas use the robust matrix", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("nlme")
