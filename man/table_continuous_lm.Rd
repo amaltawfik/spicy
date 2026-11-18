@@ -308,7 +308,10 @@ levels. The reference level is the \strong{first level of the factor}
 (R's default treatment-contrast convention,
 \code{getOption("contrasts")[1]}). To change which level acts as the
 reference, re-level \code{by} upstream (for example with
-\code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or \code{\link[stats:relevel]{stats::relevel()}}).
+\code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or \code{\link[stats:relevel]{stats::relevel()}}). The table note
+states the direction. The SMD of \code{\link[=table_continuous]{table_continuous()}} and
+\code{\link[=table_categorical]{table_categorical()}} runs the other way round, first group
+minus second.
 \item \code{"none"}: suppress the contrast column for categorical predictors.
 Level-specific means are still displayed.
 }}

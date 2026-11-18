@@ -265,7 +265,10 @@
 #'     (R's default treatment-contrast convention,
 #'     `getOption("contrasts")[1]`). To change which level acts as the
 #'     reference, re-level `by` upstream (for example with
-#'     [forcats::fct_relevel()] or [stats::relevel()]).
+#'     [forcats::fct_relevel()] or [stats::relevel()]). The table note
+#'     states the direction. The SMD of [table_continuous()] and
+#'     [table_categorical()] runs the other way round, first group
+#'     minus second.
 #'   - `"none"`: suppress the contrast column for categorical predictors.
 #'     Level-specific means are still displayed.
 #' @param statistic Logical. If `TRUE`, includes a test-statistic column in the

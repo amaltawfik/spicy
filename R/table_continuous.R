@@ -195,8 +195,10 @@
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
 #'   exactly two groups; signed, group 1 minus group 2 in the order
-#'   the table displays them; no confidence interval and no p-value,
-#'   by design. It is independent of `p_value` and of
+#'   the table displays them, as the table note states;
+#'   [table_continuous_lm()] reports its difference and its d the
+#'   other way round, second level minus first, as a linear model
+#'   does. No confidence interval and no p-value, by design. It is independent of `p_value` and of
 #'   `effect_size`: turning it on turns nothing else off. Rounded
 #'   with `effect_size_digits`. See the "Standardized mean
 #'   difference" section below. Defaults to `FALSE`.

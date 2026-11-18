@@ -1386,7 +1386,10 @@
 #'   exactly two groups; the value sits on the variable row beside
 #'   `p`, never on a level row. Signed for a two-category variable
 #'   (group 1 minus group 2 on the second category), unsigned for
-#'   three or more, where it is a distance. No confidence interval
+#'   three or more, where it is a distance. The table note states the
+#'   direction. [table_continuous_lm()] reports its difference and its
+#'   d the other way round, second level minus first, as a linear
+#'   model does. No confidence interval
 #'   and no p-value, by design. Rounded with `effect_size_digits`. See the
 #'   "Standardized mean difference" section below. Defaults to
 #'   `FALSE`.
