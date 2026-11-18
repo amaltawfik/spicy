@@ -24,6 +24,7 @@ build_ascii_table(
   display_labels = NULL,
   body_spanners = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 )
 ```
@@ -153,6 +154,17 @@ build_ascii_table(
   Logical. When `TRUE`, the columns of each spanner widen until its
   label fits over them, instead of the label being truncated. Defaults
   to `FALSE`.
+
+- width_groups:
+
+  Optional list of integer vectors of row indices, one per group of rows
+  that takes its own column widths: each row is laid out in the widths
+  its group needs, the header with the first group, and the columns of
+  `align_left_cols` take the widest of all groups. The rules run the
+  width of the widest group. Used by
+  [`print.spicy_stack_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_stack_table.md)
+  for the panels that open on their own header. Defaults to `NULL` (one
+  group, every row).
 
 - ...:
 

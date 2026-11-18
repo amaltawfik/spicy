@@ -545,10 +545,6 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Percentages are row percentages. Base: respondents who answered
-the item. Item p-values: Pearson chi-squared test of each item by group.
-Adjusted for 4 tests (Holm method).
-
 ## See also
 
 - [*Categorical summary

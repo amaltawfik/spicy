@@ -987,10 +987,6 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
-Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramér’s V.
-
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
 
@@ -1006,7 +1002,7 @@ table_categorical(
 
 [TABLE]
 
-Categorical table by sex {#tinytable_h5g5otcdpr8wv2gflshj .table
+Categorical table by sex {#tinytable_80yg19axbut01qpvcion .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1027,10 +1023,6 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
-
-*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
-Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramér’s V; CI = confidence interval.
 
 For Excel export, provide a file path:
 

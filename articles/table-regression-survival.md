@@ -629,12 +629,6 @@ pkgdown_dark_gt(table_regression(cx, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Cox proportional hazards regression. Concordance C = 0.64 (SE =
-0.03). Coefficients exponentiated and displayed as HR; SE on the HR
-scale (delta method); CI bounds exponentiated (asymmetric). Std. errors:
-Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; LL =
-lower limit; UL = upper limit; AIC = Akaike information criterion.
-
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame;
 with `exponentiate = TRUE` the estimates and CI bounds are on the ratio
 scale, as displayed:

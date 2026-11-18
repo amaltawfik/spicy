@@ -367,9 +367,11 @@
   opening with their names. When the panels have different outcomes that
   their labels do not name, a panel of one outcome opens on an “Outcome”
   row, as with `layout = "stacked"`; a table built with
-  `outcome_labels = FALSE` takes none. Tables built in different
-  languages, with different decimal marks or alignments, or under styles
-  that format a cell differently are refused.
+  `outcome_labels = FALSE` takes none. In the console, a panel with its
+  own header keeps the column widths of its table alone, as do the
+  panels of `layout = "stacked"`. Tables built in different languages,
+  with different decimal marks or alignments, or under styles that
+  format a cell differently are refused.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gains `layout = "stacked"`: one panel per model, each with the columns
@@ -537,6 +539,30 @@
   `tinytable::style_tt(fontsize = )`: it takes 0.9 of the size of the
   cells, in HTML, LaTeX and Typst. It kept 0.9 of the size of the
   document and came out larger than the body.
+
+- In HTML, the note of a gt table no longer widens the table:
+  [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html) to HTML
+  or PNG and
+  [`gt::as_raw_html()`](https://gt.rstudio.com/reference/as_raw_html.html)
+  stretched a table to the width of a long note. The note is now the
+  source note of the table in every output and wraps at the width of the
+  body, at 0.9 of the size of the table.
+  [`gt::rm_source_notes()`](https://gt.rstudio.com/reference/rm_source_notes.html)
+  also removes it from the HTML display.
+
+- In an R Markdown `html_document`, a gt table keeps its style: Pandoc
+  read the style sheet of the table as text, and the table lost the look
+  gt gives it.
+
+- `table_regression(fit_stats_layout = "merged")` merges the cells of
+  the fit statistics in tinytable tables, in HTML, LaTeX and Typst. It
+  fell back to `"first_col"` with a warning. The markdown output keeps
+  `"first_col"`.
+
+- Under `fit_stats_layout = "merged"`, the B column of a flextable or
+  Word table aligns its coefficients alone, as the help says: a sample
+  size with more digits no longer widens the column and shifts them. The
+  merged values are centered as typed.
 
 - The model-change rows of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -989,7 +1015,10 @@
   were padded to its width, off center. flextable, Word, tinytable
   (HTML, LaTeX, Typst) and Excel merge each label over the columns of
   its model, centered, where it widened the first of them. In Excel, a
-  label wider than those columns widens them together.
+  label wider than those columns widens them together. gt, which merges
+  no cells of the body, sets the labels of models side by side in a row
+  of the header, each over the columns of its model. A stacked gt table
+  keeps each label in the first column of its model.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   in French: a table of models of several families words its title and

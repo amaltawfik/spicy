@@ -555,17 +555,17 @@ table_stack(
 #>  Adj. R²         │    0.02                              
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Dentist:        │                                      
-#>                  │   OR      SE       95% CI        p   
+#>                  │   OR      SE      95% CI       p     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Outcome         │             dentist_12m              
-#>  (Intercept)     │    1.66  0.39  [ 1.05,  2.62]   .030 
-#>  age             │    1.01  0.00  [ 1.00,  1.02]   .064 
+#>  Outcome         │            dentist_12m               
+#>  (Intercept)     │    1.66  0.39  [1.05, 2.62]   .030   
+#>  age             │    1.01  0.00  [1.00, 1.02]   .064   
 #>  sex:            │                                      
-#>    Female (ref.) │     –     –          –          –    
-#>    Male          │    1.00  0.13  [ 0.77,  1.28]   .975 
+#>    Female (ref.) │     –     –         –         –      
+#>    Male          │    1.00  0.13  [0.77, 1.28]   .975   
 #>  smoking:        │                                      
-#>    No (ref.)     │     –     –          –          –    
-#>    Yes           │    0.95  0.15  [ 0.70,  1.30]   .767 
+#>    No (ref.)     │     –     –         –         –      
+#>    Yes           │    0.95  0.15  [0.70, 1.30]   .767   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1175                                 
 #>  R² (Tjur)       │    0.00                              
@@ -1916,9 +1916,6 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
-
-*Note.* Linear regression. Std. errors: classical (OLS). CI = confidence
-interval; LL = lower limit; UL = upper limit.
 
 ## broom integration
 

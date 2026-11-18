@@ -35,6 +35,7 @@ spicy_print_table(
   body_spanners = NULL,
   blank_row_groups = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 )
 ```
@@ -183,6 +184,15 @@ spicy_print_table(
   its labels are truncated as under `FALSE`. Used by
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   whose spanners are the models.
+
+- width_groups:
+
+  Optional list of integer vectors of rows, each a group of rows laid
+  out in its own column widths (see
+  [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)).
+  The split by width measures each group in its own widths, and a
+  continuation keeps the groups of the rows it keeps. Defaults to `NULL`
+  (one group, every row).
 
 - ...:
 

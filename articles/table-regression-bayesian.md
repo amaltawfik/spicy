@@ -718,13 +718,6 @@ pkgdown_dark_gt(table_regression(fit, exponentiate = TRUE, output = "gt"))
 
 [TABLE]
 
-*Note.* Bayesian logistic regression. Coefficients exponentiated and
-displayed as OR; SE on the OR scale (posterior MAD SD of the
-exponentiated draws); CI bounds exponentiated (asymmetric). The
-(Intercept) row estimates the baseline odds. Std. errors: posterior MAD
-SD (scaled median absolute deviation). CrI = credible interval; LL =
-lower limit; UL = upper limit.
-
 ## See also
 
 - [*Publication-ready regression

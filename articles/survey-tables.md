@@ -727,13 +727,6 @@ table_continuous_svy(
 
 [TABLE]
 
-*Note.* N = 200 (weighted 6194). Design: stratified (stype), with finite
-population correction; degrees of freedom vary by group (49–99). Std.
-errors: Design-based (Taylor linearization). Confidence intervals and
-tests use the design degrees of freedom. P-values: design-based Wald
-test. The group comparison uses 195 degrees of freedom (observed groups
-only). CI = confidence interval; LL = lower limit; UL = upper limit.
-
 ## What is not here yet
 
 Two-phase, pps, database-backed and multiframe designs are refused with

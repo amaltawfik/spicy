@@ -216,14 +216,18 @@ of a panel has the rows of the header of its table: its column groups,
 ruled under, its labels, and the bounds of its interval ("LL", "UL"),
 which the console leaves out since it prints an interval in one column.
 
-In the console, the columns are matched by position and every panel
-shares their widths: a panel with other columns can widen a column of
-the first. When the panels have the same columns and decimals, the
-decimals line up from one panel to the next, only the padding of a cell
-changing; otherwise each panel keeps the padding of its table. When the
-console splits a wide stack by width, a column group cut by the split
-keeps its label over each part, and a continuation leaves out the panels
-with no cell in it. The other engines write each cell as its table does.
+In the console, panels under one header share the widths of its columns.
+When they also have the same decimals, the decimals line up from one
+panel to the next, only the padding of a cell changing; otherwise each
+panel keeps the padding of its table. A panel that opens on its own
+header takes the widths its columns need and the padding of its table,
+as if printed alone: no panel widens a column of another. The label
+column is common to the whole stack, so the labels line up, and the
+rules run the width of the widest panel. When the console splits a wide
+stack by width, each panel is cut in its own widths, a column group cut
+by the split keeps its label over each part, and a continuation leaves
+out the panels with no cell in it. The other engines write each cell as
+its table does.
 
 A table of
 [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -343,14 +347,14 @@ table_stack(
 #>  Adj. R²         │    0.02                              
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Dentist:        │                                      
-#>                  │   OR      SE       95% CI        p   
+#>                  │   OR      SE      95% CI       p     
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Outcome         │             dentist_12m              
-#>  (Intercept)     │    1.56  0.36  [ 1.00,  2.44]   .052 
-#>  age             │    1.01  0.00  [ 1.00,  1.02]   .044 
+#>  Outcome         │            dentist_12m               
+#>  (Intercept)     │    1.56  0.36  [1.00, 2.44]   .052   
+#>  age             │    1.01  0.00  [1.00, 1.02]   .044   
 #>  sex:            │                                      
-#>    Female (ref.) │     –     –          –          –    
-#>    Male          │    1.00  0.13  [ 0.78,  1.29]   .978 
+#>    Female (ref.) │     –     –         –         –      
+#>    Male          │    1.00  0.13  [0.78, 1.29]   .978   
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 1200                                 
 #>  R² (Tjur)       │    0.00                              

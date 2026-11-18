@@ -729,11 +729,6 @@ pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt
 
 [TABLE]
 
-*Note.* Multinomial logistic regression. Reference outcome: Employed.
-Std. errors: Wald asymptotic (z). AME of a continuous predictor: average
-slope (dY/dX). AME = average marginal effect on a response-category
-probability; AIC = Akaike information criterion.
-
 [`broom::tidy()`](https://broom.tidymodels.org) always returns the long
 frame, one row per `(term, estimate_type)`, whatever the display layout
 — the per-outcome structure is carried in the term labels

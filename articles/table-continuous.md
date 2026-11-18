@@ -1006,11 +1006,6 @@ table_continuous(
 
 [TABLE]
 
-*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
-Tertiary (n = 400). Missing values removed: bmi (12), life_sat_health
-(8). P-values: Welch one-way ANOVA. CI = confidence interval; LL = lower
-limit; UL = upper limit.
-
 `output = "tinytable"` works well in Quarto and R Markdown documents:
 
 ``` r
@@ -1025,7 +1020,7 @@ table_continuous(
 
 [TABLE]
 
-Descriptive statistics by education {#tinytable_wt3hq8xzeduippuwy8pi
+Descriptive statistics by education {#tinytable_p978wnd990awxtkawzno
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

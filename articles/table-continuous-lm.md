@@ -625,11 +625,6 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* N = 1200: Female (n = 620), Male (n = 580). Missing values
-removed: bmi (12), life_sat_health (8). P-values: t-test from the linear
-model. Std. errors: heteroskedasticity-robust (HC3). Δ = Male − Female.
-CI = confidence interval; LL = lower limit; UL = upper limit.
-
 ## Tidying for downstream pipelines
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)

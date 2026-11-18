@@ -120,6 +120,7 @@ arguments can change without notice.</p>
 <span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  blank_row_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  whole_spanners <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  width_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -264,6 +265,14 @@ a group. <code>"fit"</code> keeps the split of <code>FALSE</code> and widens the
 the groups of a panel to their labels when the panel, so widened,
 still fits the console; otherwise its labels are truncated as under
 <code>FALSE</code>. Used by <code><a href="table_regression.html">table_regression()</a></code>, whose spanners are the models.</p></dd>
+
+
+<dt id="arg-width-groups">width_groups<a class="anchor" aria-label="anchor" href="#arg-width-groups"></a></dt>
+<dd><p>Optional list of integer vectors of rows, each a
+group of rows laid out in its own column widths (see
+<code><a href="build_ascii_table.html">build_ascii_table()</a></code>). The split by width measures each group in its
+own widths, and a continuation keeps the groups of the rows it keeps.
+Defaults to <code>NULL</code> (one group, every row).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

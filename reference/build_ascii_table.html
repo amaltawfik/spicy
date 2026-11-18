@@ -106,6 +106,7 @@ per-column alignment.</p>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  body_spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  whole_spanners <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  width_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -233,6 +234,16 @@ character vector named like <code>spans</code> printed in place of their names
 <dd><p>Logical. When <code>TRUE</code>, the columns of each
 spanner widen until its label fits over them, instead of the label
 being truncated. Defaults to <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-width-groups">width_groups<a class="anchor" aria-label="anchor" href="#arg-width-groups"></a></dt>
+<dd><p>Optional list of integer vectors of row indices,
+one per group of rows that takes its own column widths: each row is
+laid out in the widths its group needs, the header with the first
+group, and the columns of <code>align_left_cols</code> take the widest of all
+groups. The rules run the width of the widest group. Used by
+<code><a href="print.spicy_stack_table.html">print.spicy_stack_table()</a></code> for the panels that open on their own
+header. Defaults to <code>NULL</code> (one group, every row).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

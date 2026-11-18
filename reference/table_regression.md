@@ -578,24 +578,13 @@ table_regression(
     convention. Resolves the mixed-precision look of `"first_col"` (an
     integer `n` row sharing the B column with two-decimal coefficients).
 
-  Cell merging is supported by `excel`, `flextable`, and `word` (via
-  flextable). `gt`, `tinytable`, `clipboard`, and `default` (console)
-  always render in `"first_col"` mode regardless of this setting:
-
-  - `gt` merges no cells of the body (`tab_spanner()` spans column
-    labels).
-
-  - `tinytable`: the merged layout is not implemented for this engine.
-
-  - `clipboard` ships TSV plaintext.
-
-  - `default` ships fixed-width ASCII.
-
-  Decimal alignment of every numeric column is preserved in both modes:
-  the `B` column decimal-aligns its coefficient values plus any fit-stat
-  value(s) in `"first_col"` mode (native primitives handle the
-  mixed-precision case), and trivially decimal-aligns in `"merged"` mode
-  (the fit-stat values move out of the B column into the merged cell).
+  `excel`, `flextable`, `word` and `tinytable` (in HTML, LaTeX and
+  Typst) merge the cells. The markdown output of `tinytable`, `gt` (with
+  a warning), `clipboard` and `default` (console) keep the `"first_col"`
+  layout. In `"first_col"` mode the `B` column aligns the fit-stat
+  values on the decimal mark with its coefficients. In `"merged"` mode
+  the fit-stat values move out of the `B` column, which aligns its
+  coefficients alone, and each merged value is centered as typed.
 
 - layout:
 
@@ -771,9 +760,11 @@ table_regression(
   its title naming the outcome; in a stack, its panel takes one by this
   rule, the label once, across its columns. The console, flextable,
   Word, Excel and tinytable (HTML, LaTeX, Typst) print each label across
-  the columns of its model; gt, which merges no cells of the body, and
-  the markdown grid of tinytable print it in the first column of the
-  model. A long label widens that column. **Single multinomial model**
+  the columns of its model. gt, which merges no cells of the body, moves
+  the row into the header: each label spans the columns of its model,
+  under the model's name. A stacked gt table and the markdown grid of
+  tinytable keep the label in the first column of the model, so a long
+  label widens that column. **Single multinomial model**
   (outcome-as-columns layout): repurposed as the category spanner
   override – a character vector with one label per non-reference outcome
   category (unique, in model order), e.g.

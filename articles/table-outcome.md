@@ -682,12 +682,6 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* N = 1200. Missing values removed: bmi (12). P-values: Welch
-t-test (sex); Welch one-way ANOVA (education). Each block compares bmi
-across the levels of one variable, without controlling for the other
-variables. Overall = the whole analytic sample. CI = confidence
-interval; LL = lower limit; UL = upper limit; ES = effect size.
-
 ``` r
 
 table_outcome(
@@ -702,7 +696,7 @@ table_outcome(
 [TABLE]
 
 Descriptive statistics of wellbeing_score
-{#tinytable_87o1yjn0ckfmag84yaz7 .table .tinytable
+{#tinytable_7pj6vldf5l6gtrbhwkfo .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

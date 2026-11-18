@@ -965,13 +965,6 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Multiple answers possible: percentages can sum to more than
-100%. Base: respondents who answered the question (excluded: 36 with no
-answer to the question). Item p-values: Pearson chi-squared test of each
-item by group. Adjusted for 5 tests (Holm method). Overall group
-comparison: Rao-Scott second-order corrected chi-squared test of
-multiple marginal independence, χ²(4.61) = 18.78, p = .002.
-
 ``` r
 
 table_multiresponse(
@@ -987,7 +980,7 @@ table_multiresponse(
 
 [TABLE]
 
-Multiple responses by Sex {#tinytable_7159bwnebpuuhqxmi4ky .table
+Multiple responses by Sex {#tinytable_l6g2rd61e398bm4h90oe .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -976,10 +976,6 @@ tab |>
 
 [TABLE]
 
-*Note.* N = 1200: Lower secondary (n = 261), Upper secondary (n = 539),
-Tertiary (n = 400). Percentages are column percentages. P-values:
-Pearson chi-squared test. V = Cramér’s V.
-
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
@@ -1008,7 +1004,7 @@ tab |>
 
 [TABLE]
 
-Categorical table by education {#tinytable_xnpjiys3o438i00tord7 .table
+Categorical table by education {#tinytable_6t2blvn3i4sf83x4g1v0 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
