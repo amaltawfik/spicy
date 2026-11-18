@@ -390,3 +390,149 @@ test_that("a glmmTMB cbind() binomial AME is weighted by the trials", {
   mb <- glmmTMB::glmmTMB(yb ~ x, family = binomial, data = d)
   expect_null(.glmmTMB_binomial_trials(mb))
 })
+
+# An ordinal outcome, an offset, and four kinds of predictor: numeric,
+# factor, numeric 0/1 (avg_slopes() contrast "1 - 0") and logical
+# ("TRUE - FALSE").
+make_offset_ord_d <- function() {
+  set.seed(3)
+  n <- 300
+  d <- data.frame(
+    x = rnorm(n),
+    z = rnorm(n),
+    f = factor(sample(c("a", "b", "c"), n, TRUE)),
+    o = rnorm(n, 0, 0.5),
+    b01 = rbinom(n, 1, 0.5)
+  )
+  d$lg <- d$z > 0
+  d$yo <- cut(
+    0.8 * d$x + 0.4 * (d$f == "b") + 0.5 * d$b01 + rlogis(n),
+    c(-Inf, -0.5, 0.7, Inf),
+    labels = c("lo", "mid", "hi"),
+    ordered_result = TRUE
+  )
+  d
+}
+
+test_that("the AME of a polr with an offset is right under every link", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("ordinal")
+  d <- make_offset_ord_d()
+  vars <- c("x", "f", "b01", "lg")
+  for (lk in c("probit", "cloglog", "loglog", "cauchit")) {
+    m <- MASS::polr(
+      yo ~ x + f + b01 + lg + offset(o),
+      data = d,
+      Hess = TRUE,
+      method = lk
+    )
+    # The oracle: avg_slopes() on the clm twin, whose predictions on new
+    # data keep the offset, given polr's coefficients and variance so the
+    # two fits' optimizers do not differ.
+    cl <- ordinal::clm(
+      yo ~ x + f + b01 + lg + offset(o),
+      data = d,
+      link = lk
+    )
+    th <- c(m$zeta, coef(m))
+    expect_setequal(names(th), names(coef(cl)))
+    cl$coefficients <- th[names(coef(cl))]
+    cl$alpha <- m$zeta
+    cl$beta <- coef(m)
+    cl$vcov <- vcov(m)[names(coef(cl)), names(coef(cl))]
+    ref <- as.data.frame(marginaleffects::avg_slopes(cl, variables = vars))
+    ref_term <- ifelse(
+      ref$term == "f",
+      paste0("f", sub(" - a", "", ref$contrast, fixed = TRUE)),
+      ifelse(ref$term == "lg", "lgTRUE", ref$term)
+    )
+    co <- as_regression_frame(m, show_columns = c("b", "ame"))$coefs
+    co <- co[co$estimate_type == "ame" & !co$is_ref, ]
+    i <- match(
+      paste(co$term, co$outcome_level),
+      paste(ref_term, ref$group)
+    )
+    expect_false(anyNA(i), info = lk)
+    expect_identical(nrow(co), nrow(ref), info = lk)
+    expect_lt(max(abs(co$estimate - ref$estimate[i])), 1e-8)
+    expect_lt(max(abs(co$std_error - ref$std.error[i])), 1e-5)
+  }
+})
+
+test_that("the offset AME of a predictor with no range steps by 1e-4", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("MASS")
+  d <- make_offset_ord_d()
+  # `two` is constant: it enters only through two:z, whose column is
+  # 2 * z, and its numeric step cannot be a share of its range.
+  d$two <- 2
+  m <- MASS::polr(yo ~ two:z + offset(o), data = d, Hess = TRUE)
+  a <- ame_long(m, "slope")
+  a <- a[a$term == "two", ]
+  # By hand: P(Y <= k) = plogis(zeta_k - b * two * z - o), whose
+  # derivative in `two` is -b * z * dlogis(zeta_k - eta).
+  b <- unname(coef(m))
+  eta <- b * 2 * d$z + d$o
+  dens <- dlogis(outer(m$zeta, eta, "-"))
+  dp <- -b * d$z * t(rbind(dens, 0) - rbind(0, dens))
+  expect_identical(a$outcome_level, levels(d$yo))
+  expect_equal(a$estimate, unname(colMeans(dp)), tolerance = 1e-7)
+})
+
+test_that("an offset AME with a contrast it cannot rebuild warns", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("MASS")
+  d <- make_offset_ord_d()
+  # avg_slopes() reads a constant 1 as a 0/1 variable and reports a
+  # "1 - 0" contrast, which no level of the data gives.
+  d$one <- 1
+  m <- MASS::polr(yo ~ one:z + offset(o), data = d, Hess = TRUE)
+  w <- expect_warning(
+    co <- as_regression_frame(m, show_columns = c("b", "ame"))$coefs,
+    class = "spicy_fallback"
+  )
+  expect_match(conditionMessage(w), "with an offset cannot be computed")
+  expect_match(conditionMessage(w), "no contrast \"1 - 0\" of `one`")
+  expect_false(any(co$estimate_type == "ame"))
+})
+
+test_that("the offset AME takes t at finite df and checks its variance", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("MASS")
+  d <- make_offset_ord_d()
+  m <- MASS::polr(yo ~ x + f + offset(o), data = d, Hess = TRUE)
+  tab <- as.data.frame(marginaleffects::avg_slopes(m, variables = c("x", "f")))
+  z <- .ordinal_offset_ame(tab, m, NULL, 0.9)
+  t20 <- .ordinal_offset_ame(tab, m, NULL, 0.9, df = 20)
+  expect_identical(t20$estimate, z$estimate)
+  expect_identical(t20$std.error, z$std.error)
+  expect_equal(
+    t20$p.value,
+    2 * stats::pt(-abs(z$estimate / z$std.error), 20),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    t20$conf.high - t20$estimate,
+    stats::qt(0.95, 20) * z$std.error,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    z$conf.high - z$estimate,
+    stats::qnorm(0.95) * z$std.error,
+    tolerance = 1e-12
+  )
+  # An unnamed variance of the right size is taken in the coefficients'
+  # order; one of another size is an error.
+  th <- c(names(coef(m)), names(m$zeta))
+  v <- unname(vcov(m)[th, th])
+  expect_equal(
+    .ordinal_offset_ame(tab, m, v, 0.9)$std.error,
+    z$std.error,
+    tolerance = 1e-12
+  )
+  expect_error(
+    .ordinal_offset_ame(tab, m, diag(2), 0.9),
+    "variance matrix does not match"
+  )
+})

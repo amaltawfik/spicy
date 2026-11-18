@@ -998,8 +998,11 @@ extract_ame_glm <- function(
   off <- rest <- character(0)
   for (f in Filter(function(x) inherits(x, "formula"), unlist(fo))) {
     tt <- tryCatch(stats::terms(f), error = function(e) NULL)
+    # Defensive: find_formula() returns formulas already expanded (a
+    # `.` or a `~.` zero-inflation formula is spelled out), which
+    # terms() reads.
     if (is.null(tt)) {
-      next
+      next # nocov
     }
     v <- as.list(attr(tt, "variables"))[-1L]
     i <- attr(tt, "offset")
@@ -1087,8 +1090,10 @@ extract_ame_glm <- function(
     } else {
       stats::predict(fit, nd, type = "x")
     }
+    # Defensive: lrm refuses a singular design, and avg_slopes() fails
+    # before this point on a polr that dropped an aliased column.
     if (NCOL(X) != n_slope) {
-      stop("the design of the data does not match the coefficients.")
+      stop("the design of the data does not match the coefficients.") # nocov
     }
     off <- lapply(off_terms, function(o) {
       eval(str2lang(o), nd, environment(tt))
@@ -1108,8 +1113,10 @@ extract_ame_glm <- function(
     if (n_cut == 1L) up else cbind(1, up) - cbind(up, 0)
   }
   w <- .spicy_ame_fit_wts(fit) %||% rep(1, nrow(dat))
+  # Defensive: get_data() returns the rows the fit used (its subset, its
+  # complete cases, a missing weight included), those its weights carry.
   if (length(w) != nrow(dat)) {
-    stop("the weights do not match the data.")
+    stop("the weights do not match the data.") # nocov
   }
   block <- unique(as.data.frame(ame_table)[c("term", "contrast")])
   setups <- lapply(seq_len(nrow(block)), function(i) {

@@ -577,3 +577,38 @@ test_that("a variable that enters only through offset() gets no AME row", {
   skip_if_not_installed("fixest")
   check(fixest::fepois(cnt ~ x1 + f + offset(log(exposure)), data = d))
 })
+
+test_that("a model whose only variable is an offset has no AME row", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("MASS")
+  set.seed(4)
+  d <- make_d()
+  d$exposure <- runif(nrow(d), 1, 5)
+  d$cnt <- rpois(nrow(d), d$exposure)
+  d$yo <- cut(d$x1, 3, labels = c("lo", "mid", "hi"), ordered_result = TRUE)
+  d$o <- rnorm(nrow(d), 0, 0.5)
+  fits <- list(
+    lm = stats::lm(x1 ~ offset(log(exposure)), data = d),
+    glm = stats::glm(cnt ~ offset(log(exposure)), poisson, data = d),
+    polr = MASS::polr(yo ~ offset(o), data = d, Hess = TRUE)
+  )
+  for (nm in names(fits)) {
+    # avg_slopes() has rows, all of them for the offset variable.
+    orc <- suppressWarnings(suppressMessages(
+      marginaleffects::avg_slopes(fits[[nm]])
+    ))
+    expect_gt(nrow(orc), 0L)
+    expect_true(all(orc$term %in% c("exposure", "o")), info = nm)
+    expect_no_warning(
+      x <- table_regression(
+        fits[[nm]],
+        show_columns = c("b", "ame"),
+        output = "long"
+      )
+    )
+    expect_false(
+      any(x$estimate_type == "ame" & !is.na(x$estimate)),
+      info = nm
+    )
+  }
+})
