@@ -116,11 +116,14 @@ test_that("the Typst source of two models with their CI", {
     ),
     "Model B" = stats::lm(bmi ~ age + sex + education, data = sochealth)
   )
-  expect_snapshot(cat(.tw_typst(table_regression(
+  # `education` is an ordered factor: the message on its contrasts is
+  # shown once per session, so it depends on the files run before this one.
+  typ <- suppressMessages(.tw_typst(table_regression(
     m,
     show_columns = c("b", "ci", "p"),
     output = "tinytable"
-  ))))
+  )))
+  expect_snapshot(cat(typ))
 })
 
 test_that("the Typst source of a continuous table by a group (two label columns)", {

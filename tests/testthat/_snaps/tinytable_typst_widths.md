@@ -754,11 +754,7 @@
 # the Typst source of two models with their CI
 
     Code
-      cat(.tw_typst(table_regression(m, show_columns = c("b", "ci", "p"), output = "tinytable")))
-    Message
-      Ordered factor(s) detected. Polynomial contrasts (the R default for `ordered()`) decompose the factor into orthogonal trend components: `.L` = linear, `.Q` = quadratic, `.C` = cubic, `^k` = degree k. Coefficients are trends across the ordered levels, NOT per-level effects against a reference.
-      i To display per-level (treatment) effects, refit with `factor(x, ordered = FALSE)` or set `options(contrasts = c("contr.treatment", "contr.treatment"))`.
-      This message is displayed once per session.
+      cat(typ)
     Output
       #show figure: set block(breakable: false)
       #figure( // start preamble figure
