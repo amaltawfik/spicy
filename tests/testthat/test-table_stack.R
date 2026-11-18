@@ -1251,7 +1251,13 @@ test_that("a stack split by width repeats a group and drops empty rows", {
     rule[i, "start"]:rule[i, "end"]
   }))
   expect_true(all(filled %in% covered))
-  expect_true(any(grepl(cats[[2L]], second[[at]], fixed = TRUE)))
+  # The cut group keeps its label, shortened to its one column here.
+  expect_true(grepl(
+    paste0(substr(cats[[2L]], 1L, 4L), intToUtf8(0x2026L)),
+    second[[at]],
+    fixed = TRUE
+  ))
+  expect_true(any(grepl(cats[[2L]], chunks[[1L]], fixed = TRUE)))
   expect_true(any(grepl(cats[[3L]], second[[at]], fixed = TRUE)))
 })
 
@@ -2859,6 +2865,175 @@ test_that("a panel named Total is ruled as a section, not as a total", {
   # The light rule that opens a panel, not the solid rule of a total.
   expect_true(grepl(intToUtf8(0x254CL), above, fixed = TRUE))
   expect_false(grepl(intToUtf8(0x2500L), above, fixed = TRUE))
+})
+
+
+# ---- 12b. console widths of the panels ---------------------------------------
+
+# The lines of a printed table right of its vertical bar, trailing blanks
+# removed.
+.st_right <- function(out) {
+  bar <- intToUtf8(0x2502L)
+  out <- out[grepl(bar, out, fixed = TRUE)]
+  sub(" +$", "", sub(paste0("^[^", bar, "]*", bar), "", out))
+}
+
+test_that("a panel with its own header takes the widths of its table", {
+  skip_on_cran()
+  skip_if_not_installed("nnet")
+  withr::local_options(width = 200)
+  bar <- intToUtf8(0x2502L)
+  for (st in list(
+    table_stack(
+      BMI = table_regression(.st_lm()),
+      Dentist = table_regression(.st_glm(), exponentiate = TRUE)
+    ),
+    table_stack(
+      Employment = table_regression(.st_mn()),
+      BMI = table_regression(.st_lm())
+    ),
+    table_stack(
+      BMI = table_regression(.st_lm()),
+      Models = table_regression(
+        list(Dentist = .st_glm(), Bare = stats::update(.st_glm(), . ~ age)),
+        exponentiate = TRUE
+      )
+    )
+  )) {
+    out <- capture.output(print(st))
+    right <- .st_right(out)
+    cut <- regexpr(bar, out[grep(bar, out, fixed = TRUE)[[1L]]])
+    widest <- 0L
+    # Each panel prints as its table alone: header, rows, column groups.
+    for (p in attr(st, "panels")) {
+      alone <- capture.output(print(p))
+      at <- grep(bar, alone, fixed = TRUE)[[1L]]
+      widest <- max(
+        widest,
+        nchar(alone[[at]], type = "width") - regexpr(bar, alone[[at]])
+      )
+      expect_true(all(.st_right(alone) %in% right))
+      # The column groups over its own header, the label column aside.
+      groups <- alone[seq_len(at - 1L)]
+      groups <- groups[grepl(intToUtf8(0x2500L), groups, fixed = TRUE)]
+      shown <- sub(" +$", "", substring(out, cut + 1L))
+      for (g in groups) {
+        alone_cut <- regexpr(bar, alone[[at]])
+        expect_true(sub(" +$", "", substring(g, alone_cut + 1L)) %in% shown)
+      }
+    }
+    # One label column: the bar at the same place on every line; the rules
+    # as wide as the widest panel.
+    lines <- out[grepl(bar, out, fixed = TRUE)]
+    expect_length(unique(as.integer(regexpr(bar, lines, fixed = TRUE))), 1L)
+    rules <- out[grepl(paste0("^", intToUtf8(0x2500L)), out)]
+    expect_identical(
+      unique(nchar(rules, type = "width")),
+      as.integer(cut + widest)
+    )
+  }
+})
+
+test_that("panels under one header keep the widths they share", {
+  skip_on_cran()
+  withr::local_options(width = 200)
+  st <- table_regression(
+    list(All = .st_lm(), Smoking = stats::update(.st_lm(), . ~ . + smoking)),
+    layout = "stacked"
+  )
+  expect_length(attr(st, "header_rows"), 0L)
+  out <- capture.output(print(st))
+  lines <- out[grepl(intToUtf8(0x2502L), out, fixed = TRUE)]
+  # Every line as wide as the header, the brackets of the intervals and the
+  # decimal marks of the estimates in one column from panel to panel.
+  expect_length(unique(nchar(lines, type = "width")), 1L)
+  ci <- lines[grepl("[", lines, fixed = TRUE)]
+  expect_length(unique(regexpr("[", ci, fixed = TRUE)), 1L)
+  expect_length(unique(regexpr(",", ci, fixed = TRUE)), 1L)
+})
+
+test_that("a stack split by width cuts each panel in its own widths", {
+  skip_on_cran()
+  skip_if_not_installed("nnet")
+  st <- table_stack(
+    BMI = table_regression(.st_lm()),
+    Employment = table_regression(.st_mn())
+  )
+  withr::local_options(width = 60)
+  chunks <- .st_chunks(capture.output(print(st)))
+  expect_length(chunks, 2L)
+  for (ch in chunks) {
+    expect_lte(max(nchar(ch, type = "width")), 60L)
+  }
+  # The lm panel is whole in the first chunk, as printed alone; the second
+  # leaves it out.
+  withr::local_options(width = 200)
+  bmi <- .st_right(capture.output(print(attr(st, "panels")$BMI)))
+  expect_true(all(bmi %in% .st_right(chunks[[1L]])))
+  expect_false(any(grepl("BMI:", chunks[[2L]], fixed = TRUE)))
+  # The multinomial panel, cut across the two, has the widths of its table:
+  # a row of it opens the row of its table alone in the first chunk and
+  # closes it in the second.
+  alone <- capture.output(print(attr(st, "panels")$Employment))
+  row_of <- function(lines) {
+    .st_right(lines[startsWith(lines, " (Intercept)")])
+  }
+  whole <- row_of(alone)
+  expect_true(startsWith(whole, row_of(chunks[[1L]])[[2L]]))
+  expect_true(endsWith(whole, row_of(chunks[[2L]])))
+  expect_gt(nchar(whole), nchar(row_of(chunks[[1L]])[[2L]]))
+})
+
+test_that("width groups lay out each group of rows in its own widths", {
+  df <- data.frame(
+    a = c("x", "a long label", "y"),
+    b = c("1", "", "123456"),
+    stringsAsFactors = FALSE
+  )
+  one <- build_ascii_table(df, align_left_cols = 1L)
+  # One group of every row is the table without groups.
+  expect_identical(
+    build_ascii_table(df, align_left_cols = 1L, width_groups = list(1:3)),
+    one
+  )
+  two <- strsplit(
+    build_ascii_table(df, align_left_cols = 1L, width_groups = list(1:2, 3L)),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  lines <- two[grepl(intToUtf8(0x2502L), two, fixed = TRUE)]
+  # The first column is shared (14 wide, its bar at 17); the second is 3
+  # wide in the first group, header included, and 8 in the second. Every
+  # line and rule runs the width of the widest group.
+  expect_identical(
+    as.integer(regexpr(intToUtf8(0x2502L), lines, fixed = TRUE)),
+    rep(17L, 4L)
+  )
+  expect_identical(nchar(sub(" +$", "", lines)), c(21L, 21L, 17L, 26L))
+  expect_identical(unique(nchar(two)), 27L)
+})
+
+test_that("a console table outside a stack prints as before", {
+  skip_on_cran()
+  withr::local_options(width = 200)
+  t1 <- table_regression(.st_lm())
+  body <- structure(t1, class = "data.frame")
+  struct <- attr(t1, "structured")
+  labels <- vapply(
+    names(t1),
+    .lookup_display_label,
+    character(1),
+    col_meta = struct$col_meta
+  )
+  # Rows measured in one group or all together give the same table.
+  expect_identical(
+    capture.output(spicy_print_table(body, display_labels = labels)),
+    capture.output(spicy_print_table(
+      body,
+      display_labels = labels,
+      width_groups = list(seq_len(nrow(body)))
+    ))
+  )
 })
 
 

@@ -20,6 +20,7 @@ build_ascii_table(
   display_labels = NULL,
   body_spanners = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 )
 }
@@ -115,6 +116,14 @@ character vector named like \code{spans} printed in place of their names
 \item{whole_spanners}{Logical. When \code{TRUE}, the columns of each
 spanner widen until its label fits over them, instead of the label
 being truncated. Defaults to \code{FALSE}.}
+
+\item{width_groups}{Optional list of integer vectors of row indices,
+one per group of rows that takes its own column widths: each row is
+laid out in the widths its group needs, the header with the first
+group, and the columns of \code{align_left_cols} take the widest of all
+groups. The rules run the width of the widest group. Used by
+\code{print.spicy_stack_table()} for the panels that open on their own
+header. Defaults to \code{NULL} (one group, every row).}
 
 \item{...}{Additional arguments (currently ignored).}
 }

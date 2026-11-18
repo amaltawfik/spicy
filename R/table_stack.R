@@ -69,15 +69,18 @@
 #' ("LL", "UL"), which the console leaves out since it prints an interval
 #' in one column.
 #'
-#' In the console, the columns are matched by position and every panel
-#' shares their widths: a panel with other columns can widen a column of
-#' the first. When the panels have the same columns and decimals, the
-#' decimals line up from one panel to the next, only the padding of a
-#' cell changing; otherwise each panel keeps the padding of its table.
-#' When the console splits a wide stack by width, a column group cut by
-#' the split keeps its label over each part, and a continuation leaves
-#' out the panels with no cell in it. The other engines write each cell
-#' as its table does.
+#' In the console, panels under one header share the widths of its
+#' columns. When they also have the same decimals, the decimals line up
+#' from one panel to the next, only the padding of a cell changing;
+#' otherwise each panel keeps the padding of its table. A panel that opens
+#' on its own header takes the widths its columns need and the padding of
+#' its table, as if printed alone: no panel widens a column of another.
+#' The label column is common to the whole stack, so the labels line up,
+#' and the rules run the width of the widest panel. When the console
+#' splits a wide stack by width, each panel is cut in its own widths, a
+#' column group cut by the split keeps its label over each part, and a
+#' continuation leaves out the panels with no cell in it. The other
+#' engines write each cell as its table does.
 #'
 #' A table of [table_regression_uv()] is a panel like any other, its
 #' univariable models and their own sample sizes included.
@@ -1142,17 +1145,27 @@ print.spicy_stack_table <- function(x, ...) {
     logical(1)
   )]
   blank <- setdiff(blank, bs_rows)
-  # The other header rows are centered over their columns, as the top
-  # header is, rather than right-aligned like the numbers under them.
+  # A panel that opens on its own header (`hr`) is laid out in its own
+  # column widths, the label column aside: the rows of each panel, its
+  # label row first, are one group of widths.
+  spans <- Map(
+    function(s, own) seq.int(s, max(own)),
+    attr(x, "section_rows", exact = TRUE),
+    attr(x, "panel_rows", exact = TRUE)
+  )
+  # The other header rows are centered over the columns of their panel,
+  # as the top header is, rather than right-aligned like the numbers
+  # under them.
   lr <- setdiff(hr, c(bs_rows, blank))
-  if (length(lr)) {
+  for (g in spans[vapply(spans, function(s) any(lr %in% s), logical(1))]) {
+    r <- intersect(lr, g)
     for (j in seq_along(shown)[-1L]) {
       v <- shown[[j]]
-      w <- max(0L, nchar(v, type = "width"))
-      pad <- pmax(0L, w - nchar(v[lr], type = "width"))
-      v[lr] <- paste0(
+      w <- max(0L, nchar(v[g], type = "width"))
+      pad <- pmax(0L, w - nchar(v[r], type = "width"))
+      v[r] <- paste0(
         strrep(" ", pad %/% 2L),
-        v[lr],
+        v[r],
         strrep(" ", pad - pad %/% 2L)
       )
       shown[[j]] <- v
@@ -1176,14 +1189,7 @@ print.spicy_stack_table <- function(x, ...) {
   # out each panel that has no cell in it, and each fit statistic whose
   # value sits in an earlier one, as a table split alone does.
   role <- attr(x, "structured", exact = TRUE)$body$.row_role
-  groups <- c(
-    Map(
-      function(s, own) seq.int(s, max(own)),
-      attr(x, "section_rows", exact = TRUE),
-      attr(x, "panel_rows", exact = TRUE)
-    ),
-    as.list(which(role == "fit_stat"))
-  )
+  groups <- c(spans, as.list(which(role == "fit_stat")))
   .print_regression_like(
     body,
     display_labels = attr(x, "display_labels", exact = TRUE),
@@ -1193,6 +1199,7 @@ print.spicy_stack_table <- function(x, ...) {
       b
     }),
     blank_row_groups = unname(lapply(groups, at)),
+    width_groups = if (length(hr)) unname(lapply(spans, at)),
     ...
   )
   invisible(x)

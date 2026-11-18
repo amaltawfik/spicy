@@ -25,6 +25,7 @@ spicy_print_table(
   body_spanners = NULL,
   blank_row_groups = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 )
 }
@@ -130,6 +131,12 @@ a group. \code{"fit"} keeps the split of \code{FALSE} and widens the columns of
 the groups of a panel to their labels when the panel, so widened,
 still fits the console; otherwise its labels are truncated as under
 \code{FALSE}. Used by \code{\link[=table_regression]{table_regression()}}, whose spanners are the models.}
+
+\item{width_groups}{Optional list of integer vectors of rows, each a
+group of rows laid out in its own column widths (see
+\code{\link[=build_ascii_table]{build_ascii_table()}}). The split by width measures each group in its
+own widths, and a continuation keeps the groups of the rows it keeps.
+Defaults to \code{NULL} (one group, every row).}
 
 \item{...}{Additional arguments passed to \code{\link[=build_ascii_table]{build_ascii_table()}}.}
 }

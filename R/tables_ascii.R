@@ -179,6 +179,13 @@
 #' @param whole_spanners Logical. When `TRUE`, the columns of each
 #'   spanner widen until its label fits over them, instead of the label
 #'   being truncated. Defaults to `FALSE`.
+#' @param width_groups Optional list of integer vectors of row indices,
+#'   one per group of rows that takes its own column widths: each row is
+#'   laid out in the widths its group needs, the header with the first
+#'   group, and the columns of `align_left_cols` take the widest of all
+#'   groups. The rules run the width of the widest group. Used by
+#'   `print.spicy_stack_table()` for the panels that open on their own
+#'   header. Defaults to `NULL` (one group, every row).
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return
@@ -206,6 +213,7 @@ build_ascii_table <- function(
   display_labels = NULL,
   body_spanners = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -271,7 +279,14 @@ build_ascii_table <- function(
   # display frames.
   names(df)[is.na(names(df))] <- ""
 
-  w <- ascii_table_widths(df, padding)
+  # The rows measured together (`width_groups`): one group, every row,
+  # unless the caller gives several. Each row is laid out in the widths of
+  # its group, the header in those of the first.
+  groups <- ascii_width_groups(width_groups, nrow(df))
+  row_group <- integer(nrow(df))
+  for (k in seq_along(groups)) {
+    row_group[groups[[k]]] <- k
+  }
 
   # Per-column data content width (max nchar across DATA cells only,
   # excluding the header). Used by the header-centering branch below
@@ -282,10 +297,13 @@ build_ascii_table <- function(
   data_widths <- vapply(
     seq_along(df),
     function(i) {
-      if (nrow(df) == 0L) {
+      if (!length(groups[[1L]])) {
         return(0L)
       }
-      max(crayon::col_nchar(df[[i]], type = "width"), na.rm = TRUE)
+      max(
+        crayon::col_nchar(df[[i]][groups[[1L]]], type = "width"),
+        na.rm = TRUE
+      )
     },
     integer(1)
   )
@@ -297,13 +315,17 @@ build_ascii_table <- function(
   }
 
   sep_after <- ascii_table_separators(df, first_column_line, row_total_line)
-  if (isTRUE(whole_spanners)) {
-    w <- ascii_spanner_widths(
-      w,
-      c(spanners, ascii_text_spans(body_spanners)),
-      sep_after
-    )
-  }
+  ws <- ascii_group_widths(
+    df,
+    padding,
+    groups,
+    shared = align_left_cols,
+    spans = if (isTRUE(whole_spanners)) {
+      ascii_group_spans(spanners, body_spanners, groups)
+    },
+    sep_after = sep_after
+  )
+  w <- ws[[1L]]
 
   # Build line for header or data row. `is_header = TRUE` activates
   # `center_headers`: a column that would otherwise right-align its
@@ -368,15 +390,21 @@ build_ascii_table <- function(
   }
 
   header_line <- build_line(colnames(df), w, is_header = TRUE)
-  data_lines <- lapply(seq_len(nrow(df)), function(i) build_line(df[i, ], w))
+  data_lines <- lapply(seq_len(nrow(df)), function(i) {
+    build_line(df[i, ], ws[[row_group[[i]]]])
+  })
 
   full_width <- max(c(
     header_line$width,
     vapply(data_lines, `[[`, integer(1), "width")
   ))
-  normalize <- function(s) stringr::str_pad(s, full_width, side = "right")
-  header_txt <- normalize(header_line$text)
-  rows_txt <- vapply(data_lines, function(z) normalize(z$text), character(1))
+  # Each line padded to the widest, by the width its builder counted (the
+  # vertical bar one column, as in the rules).
+  normalize <- function(z) {
+    paste0(z$text, strrep(" ", full_width - z$width))
+  }
+  header_txt <- normalize(header_line)
+  rows_txt <- vapply(data_lines, normalize, character(1))
 
   # Determine bar positions for horizontal rules
   bar_positions <- sort(unique(c(
@@ -424,26 +452,31 @@ build_ascii_table <- function(
   # spanner row itself contains no vertical bars; a row of the body keeps
   # those of its line (`base`).
   # 1-based char-position ranges of each column's cell (the widths[i]-wide
-  # region, excluding its left/right gutters and any separator).
-  col_starts <- integer(length(w))
-  col_ends <- integer(length(w))
-  pos <- 0L
-  for (i in seq_along(w)) {
-    pos <- pos + 1L # left gutter
-    col_starts[i] <- pos + 1L # next char is the first cell char
-    pos <- pos + w[i] # cell content
-    col_ends[i] <- pos
-    pos <- pos + 1L # right gutter
-    if (i %in% sep_after) pos <- pos + 1L
+  # region, excluding its left/right gutters and any separator), in the
+  # widths of each group of rows.
+  col_bounds <- function(w) {
+    col_starts <- integer(length(w))
+    col_ends <- integer(length(w))
+    pos <- 0L
+    for (i in seq_along(w)) {
+      pos <- pos + 1L # left gutter
+      col_starts[i] <- pos + 1L # next char is the first cell char
+      pos <- pos + w[i] # cell content
+      col_ends[i] <- pos
+      pos <- pos + 1L # right gutter
+      if (i %in% sep_after) pos <- pos + 1L
+    }
+    list(starts = col_starts, ends = col_ends)
   }
-  span_lines <- function(base, spans, text = NULL) {
+  bounds <- lapply(ws, col_bounds)
+  span_lines <- function(base, spans, text = NULL, group = 1L) {
     spanner_chars <- strsplit(base, "", fixed = TRUE)[[1]]
     underline_chars <- spanner_chars
     for (key in names(spans)) {
       cols <- spans[[key]]
       lbl <- if (is.null(text)) key else text[[key]]
-      span_start <- col_starts[min(cols)]
-      span_end <- col_ends[max(cols)]
+      span_start <- bounds[[group]]$starts[min(cols)]
+      span_end <- bounds[[group]]$ends[max(cols)]
       span_width <- span_end - span_start + 1L
       if (span_width <= 0L) {
         next
@@ -495,7 +528,12 @@ build_ascii_table <- function(
   }
   for (b in body_spanners) {
     if (length(b$spans) && b$row >= 1L && b$row <= length(rows_txt)) {
-      lines <- span_lines(rows_txt[b$row], b$spans, b$text)
+      lines <- span_lines(
+        rows_txt[b$row],
+        b$spans,
+        b$text,
+        group = row_group[[b$row]]
+      )
       rows_txt[b$row] <- paste(
         lines[seq_len(1L + !isFALSE(b$rule))],
         collapse = "\n"
@@ -586,6 +624,62 @@ ascii_table_widths <- function(df, padding) {
   widths + as.integer(padding)
 }
 
+# The groups of rows measured together (`width_groups` of
+# build_ascii_table()): NULL is one group of every row.
+ascii_width_groups <- function(width_groups, n_rows) {
+  if (is.null(width_groups)) list(seq_len(n_rows)) else width_groups
+}
+
+# The column widths of each group of rows: a group measures its own rows,
+# the first its header too, and its column groups (`spans`, one list per
+# group) widen its columns to their labels. The columns of `shared` take
+# the widest of all groups.
+ascii_group_widths <- function(
+  df,
+  padding,
+  groups,
+  shared = integer(0),
+  spans = NULL,
+  sep_after = integer(0)
+) {
+  ws <- lapply(seq_along(groups), function(k) {
+    sub <- df
+    if (length(groups) > 1L) {
+      sub <- df[groups[[k]], , drop = FALSE]
+      names(sub) <- if (k == 1L) names(df) else rep("", ncol(df))
+    }
+    ascii_spanner_widths(
+      ascii_table_widths(sub, padding),
+      spans[[k]],
+      sep_after
+    )
+  })
+  shared <- intersect(shared, seq_along(df))
+  for (j in shared) {
+    top <- max(vapply(ws, `[[`, numeric(1), j))
+    for (k in seq_along(ws)) {
+      ws[[k]][[j]] <- top
+    }
+  }
+  ws
+}
+
+# The column groups that widen the columns of each group of rows: the top
+# `spanners` those of the first, and each row of `body_spanners` those of
+# its group, named by its `text` when it has one (an Outcome row).
+ascii_group_spans <- function(spanners, body_spanners, groups) {
+  lapply(seq_along(groups), function(k) {
+    out <- if (k == 1L) spanners else list()
+    for (b in body_spanners) {
+      if (length(b$spans) && b$row %in% groups[[k]]) {
+        nm <- if (length(b$text)) b$text[names(b$spans)] else names(b$spans)
+        out <- c(out, stats::setNames(b$spans, nm))
+      }
+    }
+    out
+  })
+}
+
 # The column widths with each spanner label fitting over its columns
 # (`whole_spanners`): a group narrower than its label shares the missing
 # width out over its columns, the first ones taking the remainder. A span
@@ -602,18 +696,6 @@ ascii_spanner_widths <- function(widths, spanners, sep_after = integer(0)) {
     }
   }
   widths
-}
-
-# The spans of the rows of `body_spanners` that print a `text` over each
-# group (the Outcome row of a regression table), keyed by that text.
-ascii_text_spans <- function(body_spanners) {
-  out <- list()
-  for (b in body_spanners) {
-    if (length(b$text) && length(b$spans)) {
-      out <- c(out, stats::setNames(b$spans, b$text[names(b$spans)]))
-    }
-  }
-  out
 }
 
 # The leading characters of `x` that fill at most `width` console columns:
@@ -663,16 +745,23 @@ ascii_table_total_width <- function(
   padding,
   first_column_line,
   row_total_line,
-  spanners = NULL
+  spanners = NULL,
+  body_spanners = NULL,
+  width_groups = NULL,
+  shared = 1L
 ) {
   separators <- ascii_table_separators(df, first_column_line, row_total_line)
-  widths <- ascii_spanner_widths(
-    ascii_table_widths(df, padding),
-    spanners,
-    separators
+  groups <- ascii_width_groups(width_groups, nrow(df))
+  ws <- ascii_group_widths(
+    df,
+    padding,
+    groups,
+    shared = shared,
+    spans = ascii_group_spans(spanners, body_spanners, groups),
+    sep_after = separators
   )
 
-  sum(widths + 2L) + length(separators)
+  max(vapply(ws, function(w) sum(w + 2L), numeric(1))) + length(separators)
 }
 
 # `groups` (label -> columns, the spanners of `whole_spanners`) are laid
@@ -686,7 +775,8 @@ ascii_table_panels <- function(
   first_column_line,
   row_total_line,
   sticky_cols,
-  groups = NULL
+  groups = NULL,
+  width_groups = NULL
 ) {
   cols <- seq_len(ncol(df))
   if (length(cols) <= 1L) {
@@ -712,7 +802,9 @@ ascii_table_panels <- function(
       padding = padding,
       first_column_line = first_column_line,
       row_total_line = row_total_line,
-      spanners = ascii_panel_spans(groups, candidate)
+      spanners = ascii_panel_spans(groups, candidate),
+      width_groups = width_groups,
+      shared = which(candidate %in% sticky_cols)
     )
   }
 
@@ -722,7 +814,9 @@ ascii_table_panels <- function(
       padding = padding,
       first_column_line = first_column_line,
       row_total_line = row_total_line,
-      spanners = groups
+      spanners = groups,
+      width_groups = width_groups,
+      shared = sticky_cols
     ) <=
       console_width
   ) {
@@ -888,6 +982,11 @@ ascii_table_panels <- function(
 #'   the groups of a panel to their labels when the panel, so widened,
 #'   still fits the console; otherwise its labels are truncated as under
 #'   `FALSE`. Used by [table_regression()], whose spanners are the models.
+#' @param width_groups Optional list of integer vectors of rows, each a
+#'   group of rows laid out in its own column widths (see
+#'   [build_ascii_table()]). The split by width measures each group in its
+#'   own widths, and a continuation keeps the groups of the rows it keeps.
+#'   Defaults to `NULL` (one group, every row).
 #' @param ... Additional arguments passed to [build_ascii_table()].
 #'
 #' @return
@@ -935,6 +1034,7 @@ spicy_print_table <- function(
   body_spanners = NULL,
   blank_row_groups = NULL,
   whole_spanners = FALSE,
+  width_groups = NULL,
   ...
 ) {
   if (!is.data.frame(x)) {
@@ -989,7 +1089,8 @@ spicy_print_table <- function(
     first_column_line = first_column_line,
     row_total_line = row_total_line,
     sticky_cols = align_left_cols,
-    groups = if (isTRUE(whole_spanners)) spanners
+    groups = if (isTRUE(whole_spanners)) spanners,
+    width_groups = width_groups
   )
 
   txt <- vapply(
@@ -1125,6 +1226,7 @@ spicy_print_table <- function(
       # columns all sit in an earlier panel, a fit statistic whose value
       # does. A rule above a row left out passes to the next row kept.
       panel_total <- total_row_idx
+      panel_width_groups <- width_groups
       if (panel_i > 1L && length(blank_row_groups)) {
         data_cols_local <- which(!(cols %in% align_left_cols))
         has_cell <- vapply(
@@ -1154,6 +1256,9 @@ spicy_print_table <- function(
           if (length(panel_total)) {
             panel_total <- at(panel_total)
           }
+          if (length(panel_width_groups)) {
+            panel_width_groups <- Filter(length, lapply(panel_width_groups, at))
+          }
           panel_body_spanners <- lapply(
             Filter(function(b) b$row %in% kept, panel_body_spanners),
             function(b) {
@@ -1178,7 +1283,10 @@ spicy_print_table <- function(
           padding = padding,
           first_column_line = first_column_line,
           row_total_line = row_total_line,
-          spanners = c(panel_spanners, ascii_text_spans(panel_body_spanners))
+          spanners = panel_spanners,
+          body_spanners = panel_body_spanners,
+          width_groups = panel_width_groups,
+          shared = which(cols %in% align_left_cols)
         ) <=
           getOption("width", 80L)
       } else {
@@ -1200,6 +1308,7 @@ spicy_print_table <- function(
         display_labels = panel_display_labels,
         body_spanners = panel_body_spanners,
         whole_spanners = panel_whole,
+        width_groups = panel_width_groups,
         ...
       )
     },

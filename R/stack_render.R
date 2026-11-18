@@ -400,11 +400,13 @@
   )
   align <- attr(tables[[1L]], "align", exact = TRUE) %||% "decimal"
   decimal_mark <- attr(tables[[1L]], "decimal_mark", exact = TRUE) %||% "."
-  # Panels with the same columns are decimal-aligned as one column, so the
-  # decimal marks (and the brackets of an interval) line up from the first
-  # panel to the last: only the padding of a cell changes. Panels with
-  # columns of their own keep the alignment of their table.
-  if (same_structure && identical(align, "decimal")) {
+  # Panels under one header with the same columns are decimal-aligned as
+  # one column, so the decimal marks (and the brackets of an interval)
+  # line up from the first panel to the last: only the padding of a cell
+  # changes. A panel with a header of its own is laid out in its own
+  # widths (`print.spicy_stack_table()`) and keeps the alignment of its
+  # table.
+  if (shared && same_structure && identical(align, "decimal")) {
     rows <- setdiff(seq_len(n_rows), c(header_rows, outcome_rows))
     for (dk in dkeys) {
       dbody[[dk]][rows] <- trimws(dbody[[dk]][rows])
