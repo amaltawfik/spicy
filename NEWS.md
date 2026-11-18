@@ -244,9 +244,10 @@
   with sum-to-zero contrasts whatever contrasts it was fitted with, so
   the test does not depend on them. It covers `lm()`, `glm()`,
   `MASS::glm.nb()` and the mixed models, and `2` and `3` are accepted.
-  Under `"III"` a design with an empty cell is refused, and a factor in
-  an interaction with a numeric covariate gives a warning: its test is
-  taken where the covariate is 0. The note names the type of every
+  Under `"III"` a design with an empty cell is refused, as is a factor
+  fitted with a contrast of fewer columns than its levels minus one. A
+  factor in an interaction with a numeric covariate gives a warning: its
+  test is taken where the covariate is 0. The note names the type of every
   partial statistic, "(Type II)" by default, and `tidy()` and the long
   output gain a `partial_type` column.
 

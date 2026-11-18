@@ -1409,7 +1409,9 @@
 #'   under a robust `vcov` too); for `glm`, the likelihood-ratio
 #'   chi-square or the F of the refit without the term's columns. A model
 #'   with an aliased coefficient (an empty cell of an interaction) has no
-#'   Type III test and is refused. A numeric covariate that interacts
+#'   Type III test and is refused. So is a factor fitted with a contrast
+#'   matrix of fewer columns than its levels minus one, a model that does
+#'   not hold the whole factor. A numeric covariate that interacts
 #'   with a factor makes the Type III test of that factor a test where
 #'   the covariate is 0, as in SPSS and SAS: a warning says so, and
 #'   centering the covariate tests the factor at its mean. Nothing is
@@ -3916,12 +3918,12 @@ table_regression <- function(
     msg <- function(it) {
       c(
         sprintf(
-          "The data of %s cannot be found: the model was fitted without `data`, or that object no longer exists where it was fitted.",
+          "The data of %s cannot be found: the call has no `data`, or that object no longer exists where the model was fitted.",
           paste(it$names, collapse = ", ")
         ),
         "i" = paste0(
           "The table leaves out what is computed from the data: the ",
-          "reference rows of the factors, the conditional R2, the test of ",
+          "reference rows of the factors, the conditional R\u00B2, the test of ",
           "the random effects, the partial tests and the standardized ",
           "coefficients."
         ),

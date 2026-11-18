@@ -14,7 +14,7 @@ Sans interaction dans le modèle, les deux types coïncident. Avec une interacti
 2. **Un argument, `partial_type = c("II", "III")`**, qui règle toutes les colonnes `partial_*`, comme `ame_type` règle les colonnes `ame`. Le nom évite `anova_type`, qui se lirait comme touchant aussi les lignes de changement de modèle. Les valeurs `2` et `3` sont acceptées, comme dans car, afex et lmerTest.
 3. **Le type III est calculé sous contrastes à somme nulle, quel que soit le codage de l'ajustement.** Fox et Weisberg (p. 265) : « we should not use the default contr.treatment with Type III tests ». Sous `contr.treatment`, la table de type III « is different (and incorrect) » (p. 268). Le test d'un facteur A porte alors sur l'égalité de ses moyennes marginales non pondérées (p. 266). Les facteurs ordonnés gardent `contr.poly`. Pour un `lm` et un modèle mixte, une reparamétrisation suffit (`M = qr.solve(X_sum, X_fit)`, puis le Wald par bloc), sans réajustement. Pour un `glm`, le réajustement se fait sur le plan recodé.
 4. **Périmètre** : toutes les classes qui ont un test par terme (lm, glm à dispersion estimée ou fixée, glm.nb, merMod, glmmTMB, lme). Les tailles d'effet partielles du `lm` suivent le type, comme dans SPSS et afex.
-5. **Deux garde-fous.** Un coefficient aliasé (cellule vide) est une erreur sous le type III, comme dans car. Un facteur en interaction avec une covariable numérique donne un avertissement par tableau : son test de type III est pris là où la covariable vaut 0. Pas de centrage automatique, pour rester égal à SPSS et à SAS.
+5. **Trois garde-fous.** Un coefficient aliasé (cellule vide) est une erreur sous le type III, comme dans car. Un facteur en interaction avec une covariable numérique donne un avertissement par tableau : son test de type III est pris là où la covariable vaut 0. Pas de centrage automatique, pour rester égal à SPSS et à SAS. Le troisième date du lot de couverture du même jour. Un facteur codé par un contraste d'utilisateur de moins de k − 1 colonnes est une erreur sous le type III (`spicy_invalid_input`, pour lm, glm, glm.nb, merMod et glmmTMB). Un tel modèle ne contient pas le facteur entier, et l'égalité de toutes ses moyennes marginales n'y est pas testable. Avant, les cellules restaient vides sous une note qui disait « (Type III) ». Un `lme` n'est pas refusé : nlme complète un contraste trop court avant d'ajuster. Le type II n'est pas touché et égale `car::Anova(type = 2)` sous un contraste réduit.
 6. **La note nomme le type dans les deux cas** : « F = partial F statistic (Type II) ». `tidy()` et la sortie longue portent une colonne `partial_type`.
 
 ## Ce qui a été mesuré
@@ -31,6 +31,7 @@ Plan déséquilibré à deux facteurs avec interaction et une covariable (90 obs
 - PSPP 2.0, `GLM /METHOD=SSTYPE(3)`, sans covariable : F = 6,17, 21,81 et 5,13, égaux à deux décimales. PSPP refuse les covariables et `ETASQ` dans cette commande.
 - Sous une variance robuste (CR2), le type III d'un lmer égale `car::Anova(type = 3, vcov. = )`. Celui d'un lme égale la matrice portée par une reparamétrisation calculée à part.
 - Invariance au codage : les ajustements en contrastes de traitement, à somme nulle et de Helmert donnent les mêmes cellules à 1e-10.
+- Lot de couverture du même jour : sous `na.action = na.exclude`, le type III d'un `lme` laissait ses cellules vides (`fitted()` rend alors un vecteur de la longueur des données). C'est corrigé. Les statistiques égalent celles du même modèle sous `na.omit`.
 
 ## Alternatives écartées
 
@@ -55,4 +56,4 @@ Plan déséquilibré à deux facteurs avec interaction et une covariable (90 obs
 
 ## Garde
 
-`tests/testthat/test-partial_type.R` : les oracles ci-dessus classe par classe, l'invariance au codage, les valeurs de PSPP épinglées, les deux garde-fous, les formes `2` et `3`, les sorties riches en anglais et en français, le criblage univarié, la variance robuste des modèles mixtes.
+`tests/testthat/test-partial_type.R` : les oracles ci-dessus classe par classe, l'invariance au codage, les valeurs de PSPP épinglées, les trois garde-fous, `na.exclude` pour un `lme`, les formes `2` et `3`, les sorties riches en anglais et en français, le criblage univarié, la variance robuste des modèles mixtes.
