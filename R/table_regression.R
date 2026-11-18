@@ -1730,9 +1730,11 @@
 #'   Outcome row, its title naming the outcome; in a stack, its panel
 #'   takes one by this rule, the label once, across its columns. The
 #'   console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
-#'   print each label across the columns of its model; gt, which merges no
-#'   cells of the body, and the markdown grid of tinytable print it in
-#'   the first column of the model. A long label widens that column.
+#'   print each label across the columns of its model. gt, which merges
+#'   no cells of the body, moves the row into the header: each label
+#'   spans the columns of its model, under the model's name. A stacked gt
+#'   table and the markdown grid of tinytable keep the label in the first
+#'   column of the model, so a long label widens that column.
 #'   **Single multinomial model**
 #'   (outcome-as-columns layout): repurposed as the category
 #'   spanner override -- a character vector with one label per

@@ -812,9 +812,54 @@ output_gt <- function(rendered) {
   spanners <- struct$spanners
   ci_spanners <- struct$ci_pairs
   level_rows <- .struct_indent_rows(struct)
+  section_sep <- attr(rendered, "section_sep_rows")
+
+  # The Outcome row of models side by side: gt merges no body cells, so a
+  # label left in the body widens the first column of its model. It goes
+  # up into the header instead, as a spanner over the columns of its
+  # model, between the per-column spanners and the model spanners; the
+  # row's own label ("Outcome") heads column 1 at that level. A stacked
+  # table keeps its Outcome rows in the body: they open its panels.
+  outcome_spanners <- list()
+  outcome_stub <- NULL
+  orow <- .struct_outcome_row(struct)
+  if (
+    length(orow) == 1L &&
+      is.null(attr(rendered, "outcome_spans", exact = TRUE)) &&
+      is.null(attr(rendered, "header_spans", exact = TRUE))
+  ) {
+    ranges <- if (length(spanners)) {
+      spanners
+    } else {
+      list(seq_along(body)[-1L])
+    }
+    lab <- struct$outcome_labels_by_col
+    lab <- lab[nzchar(lab)]
+    for (r in ranges) {
+      l <- lab[names(lab) %in% names(body)[r]]
+      if (length(l)) {
+        outcome_spanners[[length(outcome_spanners) + 1L]] <-
+          list(label = unname(l[[1L]]), cols = r)
+      }
+    }
+    if (length(outcome_spanners)) {
+      outcome_stub <- body[[1L]][orow]
+      body <- body[-orow, , drop = FALSE]
+      rownames(body) <- NULL
+      drop_orow <- function(i) {
+        i <- as.integer(i %||% integer(0))
+        i <- i[i != orow]
+        i - (i > orow)
+      }
+      level_rows <- drop_orow(level_rows)
+      group_sep <- drop_orow(group_sep)
+      section_sep <- drop_orow(section_sep)
+    }
+  }
 
   has_model_spanner <- !is.null(spanners) && length(spanners) > 0L
   has_ci_spanner <- length(ci_spanners) > 0L
+  has_outcome_spanner <- length(outcome_spanners) > 0L
   orig_names <- names(body)
   n_cols <- ncol(body)
   n_rows <- nrow(body)
@@ -830,7 +875,15 @@ output_gt <- function(rendered) {
   gt_names <- unname(gt_ids)
   names(body) <- gt_names
 
-  tbl <- .spicy_gt(body)
+  # gt 1.4.0 gives every cell of a spanner row above the lowest the styles
+  # of all the spanners of that row, so the label over column 1 is set
+  # flush left by a rule of the table's own.
+  tbl <- .spicy_gt(
+    body,
+    css = if (has_outcome_spanner) {
+      "th#outcome_span_stub { text-align: left !important; }"
+    }
+  )
 
   # Match table_continuous_lm header structure: actual column
   # labels are blank for non-CI columns ("LL" / "UL" for CI
@@ -922,6 +975,29 @@ output_gt <- function(rendered) {
         id = paste0("ci_span_", paste(cs$cols, collapse = "_"))
       )
     }
+  }
+  # The Outcome level, over the per-column spanners. Ids by position, as
+  # the model spanners below; column 1 carries the row's label.
+  outcome_span_ids <- character(0)
+  if (has_outcome_spanner) {
+    for (k in seq_along(outcome_spanners)) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = outcome_spanners[[k]]$label,
+        columns = gt_names[outcome_spanners[[k]]$cols],
+        id = paste0("outcome_span_", k)
+      )
+    }
+    tbl <- gt::tab_spanner(
+      tbl,
+      label = outcome_stub,
+      columns = gt_names[1L],
+      id = "outcome_span_stub"
+    )
+    outcome_span_ids <- c(
+      paste0("outcome_span_", seq_along(outcome_spanners)),
+      "outcome_span_stub"
+    )
   }
   # Outer Model spanner level (multi-model only). The id uses the spanner's
   # POSITION, not make.names(label): distinct labels like "Step 1" and
@@ -1022,6 +1098,13 @@ output_gt <- function(rendered) {
     # the line under each Model spanner is drawn via a CSS rule
     # injected in `.spicy_gt_html_postprocess` that targets only
     # `th[id^="model_span_"]`.
+  } else if (has_outcome_spanner) {
+    # Single model with its Outcome level: that level is the outermost.
+    tbl <- gt::tab_style(
+      tbl,
+      style = rule_top,
+      locations = gt::cells_column_spanners(spanners = outcome_span_ids)
+    )
   } else {
     # Single-model: the col_span_*'s ARE the outermost level.
     tbl <- gt::tab_style(
@@ -1070,7 +1153,7 @@ output_gt <- function(rendered) {
   # (`section_sep_rows`), as the other engines draw them.
   rule_rows <- sort(unique(c(
     as.integer(group_sep %||% integer(0)),
-    as.integer(attr(rendered, "section_sep_rows") %||% integer(0))
+    as.integer(section_sep %||% integer(0))
   )))
   rule_rows <- rule_rows[rule_rows >= 2L & rule_rows <= n_rows]
   if (length(rule_rows)) {
@@ -1110,7 +1193,9 @@ output_gt <- function(rendered) {
   tbl <- gt::tab_style(
     tbl,
     style = gt::cell_text(align = "left", weight = "normal"),
-    locations = gt::cells_column_spanners(spanners = col1_span_id)
+    locations = gt::cells_column_spanners(
+      spanners = c(col1_span_id, "outcome_span_stub"[has_outcome_spanner])
+    )
   )
   # Belt-and-braces CI bracket: in addition to the inline
   # `border-top: 1px #333333` applied to the LL / UL column-labels
@@ -1345,7 +1430,9 @@ print.spicy_gt <- function(x, ...) {
 #   hides those rules. They are dropped from the lowest spanner row, the
 #   one those labels sit in. The rules under a real spanner -- "95% CI"
 #   over LL and UL, a group over its n and %, and any model spanner in
-#   the row above -- stay.
+#   the row above -- stay. With `outcome_level`, the rules under the
+#   Outcome spanners of a regression table (the row of rules above that
+#   lowest one) go too.
 # * The title. gt writes it as `\caption*{}`, which the caption package
 #   gt loads centers; APA sets a title flush left, as the HTML does. A
 #   `\captionsetup` local to the table sets it flush left.
@@ -1360,7 +1447,7 @@ print.spicy_gt <- function(x, ...) {
 #
 # A string gt wrote differently (longtable, a set `table.width`) keeps
 # the parts that do not match.
-.spicy_gt_latex_layout <- function(s) {
+.spicy_gt_latex_layout <- function(s, outcome_level = FALSE) {
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   rule_one <- "\\\\cmidrule\\(lr\\)\\{([0-9]+)-([0-9]+)\\}"
   mid <- grep("^\\\\midrule", lines)[1L]
@@ -1373,10 +1460,18 @@ print.spicy_gt <- function(x, ...) {
       k <- rows[[length(rows)]]
       rules <- regmatches(lines[k], gregexpr(rule_one, lines[k]))[[1L]]
       single <- sub(rule_one, "\\1", rules) == sub(rule_one, "\\2", rules)
+      # The Outcome level, just above: the model rules already group
+      # those columns, and the HTML draws none under it.
+      drop <- if (outcome_level && length(rows) > 1L) {
+        rows[[length(rows) - 1L]]
+      }
       if (all(single)) {
-        lines <- lines[-k]
+        drop <- c(drop, k)
       } else {
         lines[k] <- paste(rules[!single], collapse = " ")
+      }
+      if (length(drop)) {
+        lines <- lines[-drop]
       }
     }
   }
@@ -1497,7 +1592,11 @@ knit_print.spicy_gt <- function(x, ...) {
       # `\textquotesingle{}`. A bare `'` is LaTeX's typographic
       # apostrophe, the one the tinytable and flextable outputs print.
       out[] <- gsub("\\textquotesingle{}", "'", out, fixed = TRUE)
-      out[] <- .spicy_gt_latex_layout(out)
+      out[] <- .spicy_gt_latex_layout(
+        out,
+        outcome_level = "outcome_span_stub" %in%
+          x[["_spanners"]][["spanner_id"]]
+      )
       # The scaling box is graphicx's, which gt does not load itself: it
       # joins gt's packages in the document's preamble.
       if (

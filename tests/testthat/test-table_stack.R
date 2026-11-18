@@ -49,6 +49,25 @@
 .st_gt <- function(g) {
   .st_df(as.data.frame(g[["_data"]], stringsAsFactors = FALSE))
 }
+# A table alone carries its Outcome row in gt as a header level (the
+# `outcome_span_*` spanners); the stack keeps it in the body, where it
+# opens the panel. Put back as the row it was, to compare the bodies.
+.st_gt_alone <- function(g) {
+  out <- .st_gt(g)
+  sp <- g[["_spanners"]]
+  at <- startsWith(sp$spanner_id, "outcome_span_")
+  if (!any(at)) {
+    return(out)
+  }
+  row <- rep("", ncol(out))
+  cols <- names(g[["_data"]])
+  for (i in which(at)) {
+    row[match(sp$vars[[i]][[1L]], cols)] <- sp$spanner_label[[i]][[1L]]
+  }
+  out <- rbind(stats::setNames(as.data.frame(as.list(row)), names(out)), out)
+  rownames(out) <- NULL
+  out
+}
 .st_tt <- function(tt) .st_df(as.data.frame(tt@data, stringsAsFactors = FALSE))
 .st_ft <- function(ft) {
   .st_df(as.data.frame(ft$body$dataset, stringsAsFactors = FALSE))
@@ -428,9 +447,10 @@
       if (k == 1L) {
         expect_identical(class(obj), class(obj_k), info = eng)
       }
+      read_k <- if (eng == "gt") .st_gt_alone else readers[[eng]]
       .st_expect_panel(
         whole,
-        readers[[eng]](obj_k),
+        read_k(obj_k),
         own[[k]],
         sprintf("%s, panel %d", eng, k)
       )

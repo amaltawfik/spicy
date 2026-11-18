@@ -55,13 +55,18 @@
 .spicy_gt_ids <- new.env(parent = emptyenv())
 .spicy_gt_ids$n <- 0L
 
-.spicy_gt <- function(data) {
+.spicy_gt <- function(data, css = NULL) {
   if (is.null(.spicy_gt_ids$session)) {
     .spicy_gt_ids$session <- gsub("[^A-Za-z0-9]", "", basename(tempdir()))
   }
   .spicy_gt_ids$n <- .spicy_gt_ids$n + 1L
   id <- paste0("spicy-gt-", .spicy_gt_ids$session, "-", .spicy_gt_ids$n)
-  gt::opt_css(gt::gt(data, id = id), .spicy_gt_note_css(id))
+  # `css`: further rules, each scoped to the table by its id.
+  rules <- .spicy_gt_note_css(id)
+  if (length(css)) {
+    rules <- paste(c(rules, paste0("#", id, " ", css)), collapse = "\n")
+  }
+  gt::opt_css(gt::gt(data, id = id), rules)
 }
 
 # A source note is a `<td colspan="N">` in the `<tfoot>` gt writes, and a
