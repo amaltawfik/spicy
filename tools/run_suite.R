@@ -88,7 +88,26 @@ if (nrow(sentinel) > 0L) {
   quit(status = 1L)
 }
 
-res <- as.data.frame(devtools::test(reporter = "silent"))
+# The package is loaded WITHOUT its test helpers and testthat sources
+# them into the test environment, as R CMD check and covr do.
+# devtools::test() and a plain load_all() source them into the global
+# environment instead: a test that evaluated fixture code in globalenv()
+# passed here and failed on the five CI platforms (2026-11-19). The
+# environment variables are the ones devtools::test() sets.
+Sys.setenv(
+  NOT_CRAN = Sys.getenv("NOT_CRAN", "true"),
+  R_BROWSER = "false",
+  R_PDFVIEWER = "false",
+  R_TESTS = ""
+)
+pkgload::load_all(".", helpers = FALSE, quiet = TRUE)
+res <- as.data.frame(testthat::test_local(
+  ".",
+  reporter = "silent",
+  load_package = "none",
+  stop_on_failure = FALSE,
+  stop_on_warning = FALSE
+))
 csv <- file.path(out_dir, "suite_results.csv")
 utils::write.csv(
   res[, c("file", "test", "passed", "failed", "error", "warning", "skipped")],
