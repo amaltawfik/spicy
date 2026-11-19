@@ -3802,7 +3802,16 @@ table_regression <- function(
             "compares adjacent PAIRS -- one model that cannot be compared ",
             "removes the comparison, it does not blank one column."
           ),
-          "i" = "Render the models side by side with `nested = FALSE`."
+          "i" = "Render the models side by side with `nested = FALSE`.",
+          # survey's own tests, where a design fit is the refused one:
+          # anova() has methods for svyglm and svycoxph, not svyolr.
+          "i" = if (any(classes %in% c("svyglm", "svyolr", "svycoxph"))) {
+            paste0(
+              "For a design-based fit, test a term with ",
+              "`survey::regTermTest(fit, ~term)`. Two nested `svyglm()` or ",
+              "`svycoxph()` fits are compared by `anova(fit0, fit)`."
+            )
+          }
         ),
         class = "spicy_invalid_input"
       )

@@ -121,3 +121,23 @@ test_that("the note says the AIC of a design-based fit is the design-based AIC",
     fixed = TRUE
   )
 })
+
+# ---- nested = TRUE on a design fit points at survey's tests ----------------
+
+test_that("the nested refusal for a design fit names regTermTest() and anova()", {
+  m <- .api_fits()
+  err <- expect_error(
+    table_regression(list(m$fit0, m$fit), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "nested = FALSE", fixed = TRUE)
+  expect_match(msg, "survey::regTermTest(fit, ~term)", fixed = TRUE)
+  expect_match(msg, "anova(fit0, fit)", fixed = TRUE)
+  # The calls the message names run on these fits.
+  expect_s3_class(survey::regTermTest(m$fit, ~meals), "regTermTest")
+  # anova() refits through the stored call, a bare `svyglm(...)` that
+  # finds the function only with survey attached: qualified here instead.
+  m$fit0$call[[1L]] <- m$fit$call[[1L]] <- quote(survey::svyglm)
+  expect_s3_class(anova(m$fit0, m$fit), "regTermTestLRT")
+})
