@@ -1069,6 +1069,15 @@ as_regression_frame.gls <- function(
         next # nocov
       }
       target <- paste0("sd(", t, ")")
+      # A pdCompSymm block has one standard deviation, shared by its
+      # terms: intervals() names its row "std. dev", a Wald interval on
+      # log(sd) from fit$apVar, as for the "sd(" rows.
+      if (
+        !target %in% rownames(group_ci) &&
+          inherits(fit$modelStruct$reStruct[[bare(g)]], "pdCompSymm")
+      ) {
+        target <- "std. dev"
+      }
       row_idx <- match(target, rownames(group_ci))
       if (is.na(row_idx)) {
         next # nocov
