@@ -41,7 +41,7 @@ test_that("the frame of every class keeps a transformed dependent variable", {
       next # a Surv() outcome, already deparsed whole
     }
     fit <- suppressWarnings(suppressMessages(
-      eval(parse(text = src2), envir = globalenv())(d)
+      eval(parse(text = src2), envir = environment(fx$fit))(d)
     ))
     dv <- suppressWarnings(suppressMessages(
       as_regression_frame(fit, model_id = "M1")
