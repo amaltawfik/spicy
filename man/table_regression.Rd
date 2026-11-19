@@ -2083,6 +2083,10 @@ logistic regression} (3rd ed.). Wiley. \doi{10.1002/9781118548387}
 Long, J.S. & Freese, J. (2014). \emph{Regression models for categorical
 dependent variables using Stata} (3rd ed.). Stata Press.
 
+Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex
+survey data. \emph{Journal of Survey Statistics and Methodology}, 3(1),
+1-18. \doi{10.1093/jssam/smu021}
+
 McFadden, D. (1974). Conditional logit analysis of qualitative
 choice behavior. In P. Zarembka (Ed.), \emph{Frontiers in econometrics}
 (pp. 105-142). Academic Press.

@@ -150,6 +150,11 @@ if (requireNamespace("survey", quietly = TRUE)) {
 }
 
 }
+\references{
+Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex
+survey data. \emph{Journal of Survey Statistics and Methodology}, 3(1),
+1-18. \doi{10.1093/jssam/smu021}
+}
 \seealso{
 \code{\link[=table_regression]{table_regression()}} for the arguments shared by all classes;
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported classes and

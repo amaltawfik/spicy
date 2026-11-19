@@ -1073,6 +1073,16 @@ American Psychological Association. (2020). \emph{Publication manual of the
 American Psychological Association} (7th ed.).
 \doi{10.1037/0000165-000}
 
+Austin, P. C. (2009). Balance diagnostics for comparing the
+distribution of baseline covariates between treatment groups in
+propensity-score matched samples. \emph{Statistics in Medicine}, 28(25),
+3083-3107. \doi{10.1002/sim.3697}
+
+Austin, P. C. (2011). An introduction to propensity score methods for
+reducing the effects of confounding in observational studies.
+\emph{Multivariate Behavioral Research}, 46(3), 399-424.
+\doi{10.1080/00273171.2011.568786}
+
 Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
 Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
 Egger, M. (2007). Strengthening the reporting of observational studies

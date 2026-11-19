@@ -173,8 +173,8 @@
 #' Gelman, A., Hill, J. & Vehtari, A. (2020). *Regression and other
 #' stories*. Cambridge University Press. \doi{10.1017/9781139161879}
 #'
-#' Gelman, A., Vehtari, A. & McElreath, R. (2026). *Bayesian workflow*.
-#' Chapman and Hall/CRC.
+#' Gelman, A., Vehtari, A., McElreath, R., et al. (2026). *Bayesian
+#' workflow*. Chapman and Hall/CRC. \doi{10.1201/9781003044024}
 #'
 #' Kruschke, J.K. (2015). *Doing Bayesian data analysis: A tutorial with
 #' R, JAGS, and Stan* (2nd ed.). Academic Press.

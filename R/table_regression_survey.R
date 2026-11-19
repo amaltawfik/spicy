@@ -117,6 +117,11 @@
 #'   [Summary tables from a survey design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
 #'   article.
 #'
+#' @references
+#' Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex
+#' survey data. *Journal of Survey Statistics and Methodology*, 3(1),
+#' 1-18. \doi{10.1093/jssam/smu021}
+#'
 #' @examples
 #' if (requireNamespace("survey", quietly = TRUE)) {
 #'   data("api", package = "survey")
