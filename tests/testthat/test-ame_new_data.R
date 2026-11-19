@@ -57,6 +57,16 @@ test_that("the AME SE of a svyolr pairs each coefficient with its own variance",
   expect_ame_matches(ame_spicy(f), svyolr_oracle(f, ~ x + grp + z, d))
 })
 
+test_that("the AME SE of a svyolr on a replicate design is aligned by name", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  rd <- survey::as.svrepdesign(des, type = "JK1")
+  f <- survey::svyolr(ord ~ x + grp + z, design = rd)
+  expect_ame_matches(ame_spicy(f), svyolr_oracle(f, ~ x + grp + z, d))
+})
+
+
 test_that("a svyolr whose variance names miss a coefficient gets no AME", {
   skip_if_no_ame_survey()
   d <- ame_test_data()

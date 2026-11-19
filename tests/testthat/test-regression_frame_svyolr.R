@@ -410,7 +410,7 @@ test_that("a replicate-design svyolr still counts and weights correctly", {
   expect_length(.spicy_ame_fit_wts(fit), 200L)
 })
 
-test_that("an AME request on a replicate-design svyolr degrades, it does not lie", {
+test_that("an AME request on a replicate-design svyolr reads the design's data", {
   skip_if_not_installed("marginaleffects")
   d <- .olr_data()
   rep_design <- survey::as.svrepdesign(.olr_design(d), type = "JKn")
@@ -418,14 +418,14 @@ test_that("an AME request on a replicate-design svyolr degrades, it does not lie
     grade ~ ell + stype,
     design = rep_design
   ))
-  # marginaleffects cannot recover the data for this engine either. The
-  # column en-dashes with a classed warning rather than reporting an
-  # unweighted or model-based effect.
-  expect_warning(
-    fr <- as_regression_frame(fit, show_columns = c("b", "ame")),
-    class = "spicy_fallback"
-  )
-  expect_false(any(fr$coefs$estimate_type == "ame"))
+  # marginaleffects cannot recover the data of this engine, where survey
+  # cannot rebuild the model frame: the design's own data are passed,
+  # one AME row per predictor contrast and category (checked against
+  # the hand oracle in test-ame_new_data.R).
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  a <- fr$coefs[fr$coefs$estimate_type == "ame" & !fr$coefs$is_ref, ]
+  expect_setequal(unique(a$term), c("ell", "stypeH", "stypeM"))
+  expect_true(all(is.finite(a$estimate) & is.finite(a$std_error)))
   expect_invisible(spicy:::validate_regression_frame(fr))
 })
 

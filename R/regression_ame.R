@@ -1610,7 +1610,12 @@ extract_ame_glm <- function(
   } else if (inherits(fit, "fixest")) {
     .fixest_model_data(fit)
   } else {
-    tryCatch(stats::model.frame(fit), error = function(e) NULL)
+    # model.frame() of a svyolr on a replicate design fails (survey
+    # evaluates the `design` argument in its own environment): the
+    # design's data, which avg_slopes() was given, stand in for it, or
+    # every factor contrast collapsed onto one row named after the factor.
+    tryCatch(stats::model.frame(fit), error = function(e) NULL) %||%
+      design_in$newdata
   }
   mf_names <- if (!is.null(mf)) names(mf) else character(0)
 
