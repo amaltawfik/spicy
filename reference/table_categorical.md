@@ -832,13 +832,13 @@ p. 49), coincides with this one when the row totals or the column totals
 are equal, except that it gives 1 for the most probable table; it
 differs otherwise and is not computed.
 
-`test = "n1"` applies the rule of Campbell (2007, pp. 18-19) to a 2x2
-table. When every expected count is at least 1, the table takes the N-1
-chi-squared test: Pearson's statistic, with no continuity correction,
-multiplied by (N - 1)/N and referred to a chi-squared distribution with
-1 degree of freedom, which is the Mantel-Haenszel statistic of a single
-2x2 table; `statistic` and `df` hold that statistic in the long output.
-Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
+`test = "n1"` applies the rule of Campbell (2007) to a 2x2 table. When
+every expected count is at least 1, the table takes the N-1 chi-squared
+test: Pearson's statistic, with no continuity correction, multiplied by
+(N - 1)/N and referred to a chi-squared distribution with 1 degree of
+freedom, which is the Mantel-Haenszel statistic of a single 2x2 table;
+`statistic` and `df` hold that statistic in the long output. Otherwise
+it takes Fisher's exact test, two-sided by Irwin's rule as
 [`stats::fisher.test()`](https://rdrr.io/r/stats/fisher.test.html)
 computes it. Campbell found the N-1 test close to its nominal level
 under that restriction, not without it. A variable whose table is not

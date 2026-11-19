@@ -232,10 +232,23 @@ practice.
   `flexsurvreg`.
 
 - The RMST and risk-difference columns for `cph` and `flexsurvreg`, for
-  a `coxph` fit with time-transform `tt()` terms, and for a stratified
+  a `coxph` fit with time-transform `tt()` terms, for a stratified
   `survreg` fit, whose per-stratum scale parameters are not standardized
   (refit without
-  [`strata()`](https://rdrr.io/pkg/survival/man/strata.html)).
+  [`strata()`](https://rdrr.io/pkg/survival/man/strata.html)), and for a
+  `coxph` fit with a
+  [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term,
+  whose random effect the estimand would ignore.
+
+- The objects that inherit from `coxph` or `survreg` without being that
+  model:
+  [`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html)
+  fits, multi-state `coxph` fits, `coxph` fits with a
+  [`pspline()`](https://rdrr.io/pkg/survival/man/pspline.html) or a
+  non-sparse
+  [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term, and
+  [`survey::svysurvreg()`](https://rdrr.io/pkg/survey/man/svysurvreg.html)
+  fits.
 
 - `"rmst"` columns without `tau`, and `"risk_diff"` columns without
   `at_time`.

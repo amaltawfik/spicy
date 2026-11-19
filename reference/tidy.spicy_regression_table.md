@@ -60,7 +60,17 @@ estimates) are dropped. Columns:
 `glance()` returns one row per `(model_id, outcome)` with model-level
 statistics. Columns:
 `model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual`
-(numeric – Satterthwaite-safe).
+(numeric – Satterthwaite-safe),
+`logLik, concordance, std.error.concordance`. `logLik` is the value of
+[`stats::logLik()`](https://rdrr.io/r/stats/logLik.html), the number of
+the `log_lik` row of
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+and `NA` for a model without a likelihood (quasi families, survey
+designs, GEE, Bayesian fits). `concordance` is Harrell's C of a
+[`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) or
+[`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html)
+model and `std.error.concordance` its standard error, as in the note of
+the table; both are `NA` for other models.
 
 ## See also
 

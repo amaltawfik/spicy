@@ -18,6 +18,15 @@ If a class is not listed: fit the model and call `table_regression(fit)`
 anyway – unsupported classes error with a clear message naming the
 supported set. Feature requests are welcome on the issue tracker.
 
+A class listed here does not cover the objects that inherit from it
+without being that model. These are refused by name: `clogit`,
+multi-state `coxph`, `coxph` with a `pspline()` or a non-sparse
+`frailty()` term, `svysurvreg`, `mlm` (an
+[`lm()`](https://rdrr.io/r/stats/lm.html) with a matrix response),
+`aov`, `nlme`, `gnls`, and the
+[`rms::Rq()`](https://rdrr.io/pkg/rms/man/Rq.html) and
+[`rms::Gls()`](https://rdrr.io/pkg/rms/man/Gls.html) wrappers.
+
 ## Usage
 
 ``` r
@@ -458,7 +467,7 @@ table_regression_models()
 #> 29                                                                                                                                                                                                          nobs, weighted_nobs
 #> 30                                                                                                                                                                                                nobs, weighted_nobs, n_events
 #> 31                                                                                                                                                                                             nobs, n_groups, max_cluster_size
-#> 32                                                                                                                                                                                                                    nobs, aic
+#> 32                                                    nobs, pseudo_r2_tjur (binomial logit, binary outcome), pseudo_r2_mcfadden (binomial, Poisson, negative binomial), r2_deviance (Gaussian, Gamma, Tweedie), aic (not quasi)
 #> 33                                                                                                                                                                                                                    nobs, aic
 #> 34                                                                                                                                                                                                                    nobs, aic
 #> 35                                                                                                                                                                                                                     nobs, r2
@@ -498,7 +507,7 @@ table_regression_models()
 #> 29                                                                                                                                                                                                                                                                                                                     nobs, weighted_nobs
 #> 30                                                                                                                                                                                                                                                                                              nobs, weighted_nobs, n_events, concordance
 #> 31                                                                                                                                                                                                                                                                                      nobs, qic, qicu, scale, max_cluster_size, n_groups
-#> 32                                                                                                                                                                                                                                                                     nobs, adj_r2, r2_deviance, sigma, aic, aicc, bic, deviance, log_lik
+#> 32                                                                                                   nobs, adj_r2, pseudo_r2_mcfadden (binomial, Poisson, negative binomial), pseudo_r2_nagelkerke (binomial, Poisson, negative binomial), pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, aic, aicc, bic, deviance, log_lik
 #> 33                                                                                                                                                                                                                                                                                                      nobs, phi, aic, aicc, bic, log_lik
 #> 34                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik
 #> 35                                                                                                                                                                                                                                                                                      nobs, r2, sigma, aic, aicc, bic, deviance, log_lik

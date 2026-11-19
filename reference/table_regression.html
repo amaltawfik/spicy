@@ -691,7 +691,9 @@ rows that are displayed, a subset of <code>c("est", "se", "ci")</code>. See
 <dt id="arg-re-ci">re_ci<a class="anchor" aria-label="anchor" href="#arg-re-ci"></a></dt>
 <dd><p>Mixed models only: <code>"wald"</code> (default) or <code>"profile"</code>,
 the intervals of the random-effects rows of <code>lmer</code> and <code>glmer</code> fits.
-See <a href="table_regression_mixed.html">table_regression_mixed</a>.</p></dd>
+See <a href="table_regression_mixed.html">table_regression_mixed</a>. <code>re_scale</code>, <code>re_columns</code>, <code>re_test</code>
+or <code>re_ci</code> set to other than its default on a table where no model
+has random effects raises one <code>spicy_ignored_arg</code> warning.</p></dd>
 
 
 <dt id="arg-model-labels">model_labels<a class="anchor" aria-label="anchor" href="#arg-model-labels"></a></dt>
@@ -1410,8 +1412,8 @@ is the drop in deviance (previous minus current), positive when
 the larger model fits better, and is not signed either.</p></li>
 </ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm and
 <code>lm_robust</code> fits get
-<code>c("nobs", "r2", "adj_r2")</code>; glm, <code>polr</code>, <code>clm</code>, <code>multinom</code> and
-<code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> fits get <code>"nobs"</code>, the \(R^2\) rows of their family
+<code>c("nobs", "r2", "adj_r2")</code>; glm, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>, <code>polr</code>, <code>clm</code>,
+<code>multinom</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> fits get <code>"nobs"</code>, the \(R^2\) rows of their family
 (see <em>R-squared of glm and categorical models</em>) and <code>"aic"</code>;
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
@@ -1455,13 +1457,26 @@ decrease when a predictor is added. For a gaussian <code><a href="https://rdrr.i
 identity link it is the \(R^2\) of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. For <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>
 and <code>bam</code> fits of the same families (and of mgcv's <code>nb()</code> and
 <code>tw()</code>), it is the deviance explained of their <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, as a
-proportion. A binomial or quasi-binomial GAM, and those of mgcv's
-other extended families, have none.</p></li>
-</ul><p>A GAM shows none of the other \(R^2\) rows of this section, and
-they are refused for a table of GAMs. mgcv reports only an adjusted
-\(R^2\): it is the <code>"adj_r2"</code> row of a GAM, in a table of GAMs
-or beside an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. The <code>"r2"</code> row of a GAM is dashed beside other
-models, and refused for a table of GAMs.</p>
+proportion. Two exceptions follow the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>: a quasi-binomial
+GAM is measured on its trials, and the null model of a <code>bam()</code>
+keeps its offset, which the null deviance of its <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>
+leaves out.</p></li>
+</ul><p>A GAM (<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> or <code>bam</code>) shows the \(R^2\) rows of the
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> of its family and link, computed by the same rules and with the
+same defaults: Tjur's then McFadden's for a logit on a binary outcome,
+McFadden's for the other binomial, Poisson and <code>nb()</code> GAMs, the
+deviance \(R^2\) for the continuous families. The likelihood
+is that of the fitted GAM, smooth terms included, and a GAM without
+smooth terms gives the numbers of its <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>. For <code>nb()</code>, the
+intercept-only model re-estimates theta, as for <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code>.
+Under mgcv's default REML, the theta of an <code>nb()</code> GAM is not the
+maximum-likelihood one of <code>glm.nb()</code>: <code>method = "ML"</code> gives its
+numbers.
+mgcv's other extended families (<code>betar()</code>, <code>ocat()</code>, <code>scat()</code>,
+<code>ziP()</code>, <code>cox.ph()</code> and the like) have no such row. mgcv reports only
+an adjusted \(R^2\): it is the <code>"adj_r2"</code> row of a GAM, shown
+on request, in a table of GAMs or beside an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. The <code>"r2"</code> row of
+a GAM is dashed beside other models, and refused for a table of GAMs.</p>
 <p>The intercept-only model keeps the offset and the weights of the
 fitted model. For a <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fit it re-estimates theta in
 McFadden's and Nagelkerke's \(R^2\), as Stata's <code>nbreg</code> does,
@@ -2035,6 +2050,9 @@ Methods &amp; Research</em>, 47(3), 507-531. <a href="https://doi.org/10.1177/00
 logistic regression</em> (3rd ed.). Wiley. <a href="https://doi.org/10.1002/9781118548387" class="external-link">doi:10.1002/9781118548387</a></p>
 <p>Long, J.S. &amp; Freese, J. (2014). <em>Regression models for categorical
 dependent variables using Stata</em> (3rd ed.). Stata Press.</p>
+<p>Lumley, T. &amp; Scott, A. (2015). AIC and BIC for modeling with complex
+survey data. <em>Journal of Survey Statistics and Methodology</em>, 3(1),
+1-18. <a href="https://doi.org/10.1093/jssam/smu021" class="external-link">doi:10.1093/jssam/smu021</a></p>
 <p>McFadden, D. (1974). Conditional logit analysis of qualitative
 choice behavior. In P. Zarembka (Ed.), <em>Frontiers in econometrics</em>
 (pp. 105-142). Academic Press.</p>

@@ -132,7 +132,13 @@ levels) and singular coefficients (NA estimates) are dropped. Columns:
 <code>model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, df.residual, p.value, test_type, is_intercept, factor_term, factor_level, partial_type</code>.</p>
 <p><code>glance()</code> returns one row per <code>(model_id, outcome)</code> with
 model-level statistics. Columns: <code>model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual</code> (numeric –
-Satterthwaite-safe).</p>
+Satterthwaite-safe), <code>logLik, concordance, std.error.concordance</code>.
+<code>logLik</code> is the value of <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">stats::logLik()</a></code>, the number of the
+<code>log_lik</code> row of <code><a href="table_regression.html">table_regression()</a></code>, and <code>NA</code> for a model without a
+likelihood (quasi families, survey designs, GEE, Bayesian fits).
+<code>concordance</code> is Harrell's C of a <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code> or
+<code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code> model and <code>std.error.concordance</code> its standard
+error, as in the note of the table; both are <code>NA</code> for other models.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

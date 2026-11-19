@@ -613,6 +613,9 @@ table_regression(
   Mixed models only: `"wald"` (default) or `"profile"`, the intervals of
   the random-effects rows of `lmer` and `glmer` fits. See
   [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
+  `re_scale`, `re_columns`, `re_test` or `re_ci` set to other than its
+  default on a table where no model has random effects raises one
+  `spicy_ignored_arg` warning.
 
 - model_labels:
 
@@ -1386,12 +1389,13 @@ refuses the token.
   positive when the larger model fits better, and is not signed either.
 
 Default (resolved when `NULL`) is class-aware: lm and `lm_robust` fits
-get `c("nobs", "r2", "adj_r2")`; glm, `polr`, `clm`, `multinom` and
-[`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) fits get `"nobs"`,
-the \\R^2\\ rows of their family (see *R-squared of glm and categorical
-models*) and `"aic"`; mixed lm + glm sets union both groups (the
-renderer per-row en-dashes the inappropriate cell); Cox fits get
-`c("nobs", "n_events", "aic")`; GEE fits get
+get `c("nobs", "r2", "adj_r2")`; glm,
+[`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html), `polr`, `clm`,
+`multinom` and [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) fits
+get `"nobs"`, the \\R^2\\ rows of their family (see *R-squared of glm
+and categorical models*) and `"aic"`; mixed lm + glm sets union both
+groups (the renderer per-row en-dashes the inappropriate cell); Cox fits
+get `c("nobs", "n_events", "aic")`; GEE fits get
 `c("nobs", "n_groups", "max_cluster_size")` (the cluster structure,
 Stata `xtgee`-header style). When `nested = TRUE`, the class-aware
 default is extended with change tokens
@@ -1431,15 +1435,31 @@ to another (Hemmert et al. 2018).
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam` fits of
   the same families (and of mgcv's `nb()` and `tw()`), it is the
   deviance explained of their
-  [`summary()`](https://rdrr.io/r/base/summary.html), as a proportion. A
-  binomial or quasi-binomial GAM, and those of mgcv's other extended
-  families, have none.
+  [`summary()`](https://rdrr.io/r/base/summary.html), as a proportion.
+  Two exceptions follow the [`glm()`](https://rdrr.io/r/stats/glm.html):
+  a quasi-binomial GAM is measured on its trials, and the null model of
+  a `bam()` keeps its offset, which the null deviance of its
+  [`summary()`](https://rdrr.io/r/base/summary.html) leaves out.
 
-A GAM shows none of the other \\R^2\\ rows of this section, and they are
-refused for a table of GAMs. mgcv reports only an adjusted \\R^2\\: it
-is the `"adj_r2"` row of a GAM, in a table of GAMs or beside an
-[`lm()`](https://rdrr.io/r/stats/lm.html). The `"r2"` row of a GAM is
-dashed beside other models, and refused for a table of GAMs.
+A GAM ([`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam`)
+shows the \\R^2\\ rows of the
+[`glm()`](https://rdrr.io/r/stats/glm.html) of its family and link,
+computed by the same rules and with the same defaults: Tjur's then
+McFadden's for a logit on a binary outcome, McFadden's for the other
+binomial, Poisson and `nb()` GAMs, the deviance \\R^2\\ for the
+continuous families. The likelihood is that of the fitted GAM, smooth
+terms included, and a GAM without smooth terms gives the numbers of its
+[`glm()`](https://rdrr.io/r/stats/glm.html). For `nb()`, the
+intercept-only model re-estimates theta, as for
+[`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html). Under
+mgcv's default REML, the theta of an `nb()` GAM is not the
+maximum-likelihood one of `glm.nb()`: `method = "ML"` gives its numbers.
+mgcv's other extended families (`betar()`, `ocat()`, `scat()`, `ziP()`,
+`cox.ph()` and the like) have no such row. mgcv reports only an adjusted
+\\R^2\\: it is the `"adj_r2"` row of a GAM, shown on request, in a table
+of GAMs or beside an [`lm()`](https://rdrr.io/r/stats/lm.html). The
+`"r2"` row of a GAM is dashed beside other models, and refused for a
+table of GAMs.
 
 The intercept-only model keeps the offset and the weights of the fitted
 model. For a
@@ -2171,6 +2191,10 @@ regression* (3rd ed.). Wiley.
 
 Long, J.S. & Freese, J. (2014). *Regression models for categorical
 dependent variables using Stata* (3rd ed.). Stata Press.
+
+Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex
+survey data. *Journal of Survey Statistics and Methodology*, 3(1), 1-18.
+[doi:10.1093/jssam/smu021](https://doi.org/10.1093/jssam/smu021)
 
 McFadden, D. (1974). Conditional logit analysis of qualitative choice
 behavior. In P. Zarembka (Ed.), *Frontiers in econometrics* (pp.

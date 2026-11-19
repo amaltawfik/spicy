@@ -742,7 +742,7 @@ fastest way to move it up the roadmap.
 ## References
 
 - Lumley, T. (2004). Analysis of complex survey samples. *Journal of
-  Statistical Software*, 9(1), 1–19.
+  Statistical Software*, 9(8), 1–19.
 - Lumley, T. (2010). *Complex surveys: A guide to analysis using R*.
   John Wiley & Sons.
 - Lumley, T., & Scott, A. (2015). AIC and BIC for modeling with complex

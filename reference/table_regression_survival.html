@@ -289,8 +289,14 @@ practice.</p>
 <code>flexsurvreg</code>.</p></li>
 <li><p>The RMST and risk-difference columns for <code>cph</code> and
 <code>flexsurvreg</code>, for a <code>coxph</code> fit with time-transform <code>tt()</code> terms,
-and for a stratified <code>survreg</code> fit, whose per-stratum scale
-parameters are not standardized (refit without <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code>).</p></li>
+for a stratified <code>survreg</code> fit, whose per-stratum scale
+parameters are not standardized (refit without <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code>), and
+for a <code>coxph</code> fit with a <code><a href="https://rdrr.io/pkg/survival/man/frailty.html" class="external-link">frailty()</a></code> term, whose random effect the
+estimand would ignore.</p></li>
+<li><p>The objects that inherit from <code>coxph</code> or <code>survreg</code> without
+being that model: <code><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">survival::clogit()</a></code> fits, multi-state <code>coxph</code>
+fits, <code>coxph</code> fits with a <code><a href="https://rdrr.io/pkg/survival/man/pspline.html" class="external-link">pspline()</a></code> or a non-sparse <code><a href="https://rdrr.io/pkg/survival/man/frailty.html" class="external-link">frailty()</a></code>
+term, and <code><a href="https://rdrr.io/pkg/survey/man/svysurvreg.html" class="external-link">survey::svysurvreg()</a></code> fits.</p></li>
 <li><p><code>"rmst"</code> columns without <code>tau</code>, and <code>"risk_diff"</code> columns
 without <code>at_time</code>.</p></li>
 <li><p><code>HC*</code>, <code>"bootstrap"</code> and <code>"jackknife"</code> for every class, and

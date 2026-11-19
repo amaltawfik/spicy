@@ -1953,12 +1953,13 @@ broom::tidy(out)
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
 #> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
 broom::glance(out)
-#> # A tibble: 1 × 15
+#> # A tibble: 1 × 18
 #>   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma
 #>   <chr>    <chr>        <int>         <dbl>     <dbl>         <dbl>  <dbl> <dbl>
 #> 1 M1       wellbeing_s…  1175            NA    0.0190        0.0165 0.0165  15.5
-#> # ℹ 7 more variables: rmse <dbl>, f2 <dbl>, AIC <dbl>, AICc <dbl>, BIC <dbl>,
-#> #   deviance <dbl>, df.residual <dbl>
+#> # ℹ 10 more variables: rmse <dbl>, f2 <dbl>, AIC <dbl>, AICc <dbl>, BIC <dbl>,
+#> #   deviance <dbl>, df.residual <dbl>, logLik <dbl>, concordance <dbl>,
+#> #   std.error.concordance <dbl>
 ```
 
 The long format is the right entry point when the table is one step in a

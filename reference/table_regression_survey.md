@@ -152,6 +152,12 @@ uses the same distribution, and so do the average marginal effects.
 
 - `standardized`.
 
+## References
+
+Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex
+survey data. *Journal of Survey Statistics and Methodology*, 3(1), 1-18.
+[doi:10.1093/jssam/smu021](https://doi.org/10.1093/jssam/smu021)
+
 ## See also
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

@@ -120,7 +120,14 @@ on fits without random effects.
   \\\mathrm{atanh}(\rho)\\ for `lme`, and from glmmTMB's \\\rho /
   \sqrt{1 - \rho^2}\\ in a two-term block, with the engine's CI. In a
   `glmmTMB` block of three terms or more it is the width of glmmTMB's
-  interval divided by \\2z\\.
+  interval divided by \\2z\\. nlme computes the covariance matrix behind
+  the SE of an `lme` fit by finite differences. With nlme's default step
+  and a random-effect correlation close to zero, the SE can be off by
+  several percent and differ from one platform to another, or the matrix
+  is not positive definite and the rows have no SE and no CI, which a
+  note under the table says. A larger step,
+  `control = nlme::lmeControl(.relStep = 1e-4)`, gives a stable matrix.
+  spicy displays what nlme estimates.
 
 - `re_columns`:
 

@@ -389,7 +389,9 @@ design-based inference; the unweighted n and the sum of the design
 weights (`Weighted n`) are default fit statistics.
 
 **Additive, proportions, selection.**
-[`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()`,
+[`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` (a GAM
+shows the R² rows of the [`glm()`](https://rdrr.io/r/stats/glm.html) of
+its family and link),
 [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
 (odds ratios on the logit mean link under `exponentiate`; the precision
 is the opt-in `phi` fit statistic), and

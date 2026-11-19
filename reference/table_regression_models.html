@@ -18,7 +18,13 @@ arguments, the values the shared arguments take for it, and what it
 refuses.
 If a class is not listed: fit the model and call table_regression(fit)
 anyway – unsupported classes error with a clear message naming the
-supported set. Feature requests are welcome on the issue tracker."><meta property="og:description" content="table_regression_models() returns the registry of model classes
+supported set. Feature requests are welcome on the issue tracker.
+A class listed here does not cover the objects that inherit from it
+without being that model. These are refused by name: clogit,
+multi-state coxph, coxph with a pspline() or a non-sparse
+frailty() term, svysurvreg, mlm (an lm() with a matrix
+response), aov, nlme, gnls, and the rms::Rq() and rms::Gls()
+wrappers."><meta property="og:description" content="table_regression_models() returns the registry of model classes
 supported by table_regression(), one row per engine, with each class's
 family, average-marginal-effects estimand, exponentiate semantics,
 labeled table blocks, accepted vcov values and fit statistics. The
@@ -31,7 +37,13 @@ arguments, the values the shared arguments take for it, and what it
 refuses.
 If a class is not listed: fit the model and call table_regression(fit)
 anyway – unsupported classes error with a clear message naming the
-supported set. Feature requests are welcome on the issue tracker."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+supported set. Feature requests are welcome on the issue tracker.
+A class listed here does not cover the objects that inherit from it
+without being that model. These are refused by name: clogit,
+multi-state coxph, coxph with a pspline() or a non-sparse
+frailty() term, svysurvreg, mlm (an lm() with a matrix
+response), aov, nlme, gnls, and the rms::Rq() and rms::Gls()
+wrappers."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -113,6 +125,12 @@ refuses.</p>
 <p>If a class is not listed: fit the model and call <code>table_regression(fit)</code>
 anyway – unsupported classes error with a clear message naming the
 supported set. Feature requests are welcome on the issue tracker.</p>
+<p>A class listed here does not cover the objects that inherit from it
+without being that model. These are refused by name: <code>clogit</code>,
+multi-state <code>coxph</code>, <code>coxph</code> with a <code>pspline()</code> or a non-sparse
+<code>frailty()</code> term, <code>svysurvreg</code>, <code>mlm</code> (an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> with a matrix
+response), <code>aov</code>, <code>nlme</code>, <code>gnls</code>, and the <code><a href="https://rdrr.io/pkg/rms/man/Rq.html" class="external-link">rms::Rq()</a></code> and <code><a href="https://rdrr.io/pkg/rms/man/Gls.html" class="external-link">rms::Gls()</a></code>
+wrappers.</p>
     </div>
 
     <div class="section level2">
@@ -497,7 +515,7 @@ articles.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 29                                                                                                                                                                                                          nobs, weighted_nobs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                                                                                                                                                                nobs, weighted_nobs, n_events</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 31                                                                                                                                                                                             nobs, n_groups, max_cluster_size</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                                                                                                                                                                                    nobs, aic</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                    nobs, pseudo_r2_tjur (binomial logit, binary outcome), pseudo_r2_mcfadden (binomial, Poisson, negative binomial), r2_deviance (Gaussian, Gamma, Tweedie), aic (not quasi)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 33                                                                                                                                                                                                                    nobs, aic</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                                                                                                                                                                                    nobs, aic</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 35                                                                                                                                                                                                                     nobs, r2</span>
@@ -537,7 +555,7 @@ articles.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 29                                                                                                                                                                                                                                                                                                                     nobs, weighted_nobs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 30                                                                                                                                                                                                                                                                                              nobs, weighted_nobs, n_events, concordance</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 31                                                                                                                                                                                                                                                                                      nobs, qic, qicu, scale, max_cluster_size, n_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                                                                                                                                                                                                                                     nobs, adj_r2, r2_deviance, sigma, aic, aicc, bic, deviance, log_lik</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                                                                                                   nobs, adj_r2, pseudo_r2_mcfadden (binomial, Poisson, negative binomial), pseudo_r2_nagelkerke (binomial, Poisson, negative binomial), pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, aic, aicc, bic, deviance, log_lik</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 33                                                                                                                                                                                                                                                                                                      nobs, phi, aic, aicc, bic, log_lik</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 34                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 35                                                                                                                                                                                                                                                                                      nobs, r2, sigma, aic, aicc, bic, deviance, log_lik</span>

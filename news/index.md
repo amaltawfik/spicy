@@ -4,6 +4,25 @@
 
 ### Breaking changes
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses, with an error that names the class, the objects that inherit
+  from a supported class without being that model:
+  [`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html)
+  fits, which were tabulated as a Cox model, multi-state `coxph` fits,
+  `coxph` fits with a
+  [`pspline()`](https://rdrr.io/pkg/survival/man/pspline.html) or a
+  non-sparse
+  [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term,
+  which showed one row per spline basis or per cluster,
+  [`survey::svysurvreg()`](https://rdrr.io/pkg/survey/man/svysurvreg.html)
+  fits, whose design went unmentioned, and
+  [`nlme::nlme()`](https://rdrr.io/pkg/nlme/man/nlme.html) and
+  [`nlme::gnls()`](https://rdrr.io/pkg/nlme/man/gnls.html) fits,
+  tabulated as linear models. A `coxph` fit with a sparse
+  [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term
+  keeps its table but refuses the RMST and risk-difference columns,
+  which would ignore the random effect.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the random-effects rows follow one convention whatever the engine, so
   the same model fitted with
@@ -284,6 +303,17 @@
   [`lm()`](https://rdrr.io/r/stats/lm.html).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  an [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam()`
+  model shows the R-squared rows of the
+  [`glm()`](https://rdrr.io/r/stats/glm.html) of its family and link,
+  computed the same way and with the same defaults: Tjur’s then
+  McFadden’s for a logit on a binary outcome, McFadden’s for the other
+  binomial, Poisson and `nb()` models, the deviance R-squared for the
+  gaussian, Gamma, inverse Gaussian and Tweedie families. The default
+  table of a GAM showed no R-squared, and `pseudo_r2_mcfadden`,
+  `pseudo_r2_nagelkerke` and `pseudo_r2_tjur` gave no row.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the partial chi-square (`partial_chi2`) takes its decimals from
   `digits`, as the other test statistics of the table do, and no longer
   from `effect_size_digits`, which now sets the effect sizes alone.
@@ -333,14 +363,21 @@
   [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html)
   model as a row, and takes it out of the note.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  warn when `re_scale`, `re_columns`, `re_test` or `re_ci` is set but no
+  model of the table has random effects. These arguments were ignored
+  silently.
+
+- `glance()` of a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  table gains `logLik` for each model, and `concordance` and
+  `std.error.concordance` for a Cox model, under broom’s names. They are
+  `NA` where the model has none.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  `show_fit_stats = "r2_deviance"` also covers
-  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam()`
-  models of the gaussian, Gamma, inverse Gaussian, Tweedie, Poisson,
-  negative binomial and quasi families, where it is the deviance
-  explained that [`summary()`](https://rdrr.io/r/base/summary.html)
-  reports. `"adj_r2"`, mgcv’s adjusted R², is accepted for a table of
-  GAMs.
+  `"adj_r2"`, mgcv’s adjusted R², is accepted for a table of GAMs.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -582,6 +619,20 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses by name an [`lm()`](https://rdrr.io/r/stats/lm.html) fit with
+  a matrix response (`mlm`), an
+  [`aov()`](https://rdrr.io/r/stats/aov.html) fit and the
+  [`rms::Rq()`](https://rdrr.io/pkg/rms/man/Rq.html) and
+  [`rms::Gls()`](https://rdrr.io/pkg/rms/man/Gls.html) wrappers. They
+  stopped on an internal error.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  keeps the random-effect correlation row of an `lme()` model whose
+  approximate covariance matrix of the variance parameters is not
+  positive definite, and a note under the table says why the block has
+  no standard error and no interval. The row was dropped without a word.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   renders an intercept-only `glmmTMB()` model of the `ordinal()` family,
