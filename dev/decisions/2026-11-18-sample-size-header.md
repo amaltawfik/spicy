@@ -44,3 +44,13 @@ Le tableau tient dans la page sans réduction et chaque chapeau reste sur une li
 ## Garde
 
 `tests/testthat/test-sample_size_style.R` : les trois valeurs pour chacune des trois familles, chaque moteur (console, tinytable en HTML, LaTeX, Typst et markdown, gt, flextable, Word, Excel, presse-papiers), le français, `drop_na`, un niveau de `by` manquant, les poids, l'absence de `by`, la validation d'une valeur fausse.
+
+## Amendement du 2026-11-19
+
+Décision d'Amal : les thèmes `"jama"` et `"lancet"` posent `sample_size = "header"`. Cela lève la deuxième limite ci-dessus. Les autres thèmes gardent la note : le gabarit de l'APA met l'effectif dans la note (« Note. N = 150 (n = 50 for each condition). »), les documents des Annals et de l'AER ne montrent pas d'effectif de groupe et `dev/journal_styles/` n'a aucun document de NEJM.
+
+L'effectif s'écrit « (n = 620) », avec les espaces de spicy, et non « (n=200) » comme les gabarits. Aucun réglage de thème ne règle l'espace autour du signe égal. Le seul « = » sans espaces du Lancet est celui des définitions d'abréviations (`note_abbrev_pair_lancet`, « HR=hazard ratio. »). Ses notes écrivent « Δ = Male − Female » et « χ²(2·00) = 1·07, p = 0·58 », et ses cellules « <0·0001 ».
+
+Les thèmes étant publiés depuis la 0.13.0, le changement figure dans les « Breaking changes » de NEWS. Un `sample_size` composé sur le thème l'emporte (`spicy_style("jama", sample_size = "note")`), de même qu'un argument `style` sur `options(spicy.style = "jama")`, qu'il remplace en entier.
+
+Vérifié dans `test-sample_size_style.R` pour les deux thèmes et les trois familles : les chapeaux portent l'effectif sur chaque moteur, la note garde « N = … », le réglage de l'utilisateur l'emporte, les sorties de données (`as.data.frame()`, sortie longue, `as_structured()`, `tidy()`, `glance()`) sont identiques à celles du thème réglé sur `"note"`.

@@ -122,6 +122,13 @@
   string. `table_categorical()` showed 0 for that group, and the survey
   tables failed.
 
+* The `jama` and `lancet` themes put the size of each group in its
+  column header, "Female (n = 620)", as the journals' model tables do,
+  in `table_categorical()`, `table_categorical_svy()` and
+  `table_continuous_lm()` under `by`. The note keeps the overall N.
+  `spicy_style("jama", sample_size = "note")` gives back the previous
+  table.
+
 * `table_regression()`: a `glmmTMB` beta, ordered beta or beta-binomial
   mixed model no longer reports the Nakagawa R2. The residual variance
   it relied on for these families is that of a log link, not of their
