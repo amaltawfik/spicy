@@ -445,6 +445,11 @@
   `"partial_chi2"` as a Wald chi-square test, which it is for these
   models. It called it a likelihood-ratio test.
 
+* `table_regression()` accepts `vcov = "CR1"` for `AER::tobit()`
+  models, as for the `survreg()` models they are: the cluster-robust
+  standard errors of `sandwich::vcovCL()`, and under `nested = TRUE` a
+  Wald test of the added terms.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.

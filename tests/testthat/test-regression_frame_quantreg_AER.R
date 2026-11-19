@@ -290,6 +290,71 @@ test_that("tobit: censoring boundaries surfaced (defaults: 0 / Inf)", {
 
 # ---- 4. Oracle: parameters::model_parameters() --------------------------
 
+test_that("tobit takes CR1 as its survreg twin does (oracle sandwich::vcovCL)", {
+  skip_if_not_installed("AER")
+  skip_if_not_installed("survival")
+  data(Affairs, package = "AER", envir = environment())
+  set.seed(7)
+  Affairs$g <- sample(1:40, nrow(Affairs), TRUE)
+  f_small <- affairs ~ age + yearsmarried
+  f_big <- affairs ~ age + yearsmarried + religiousness + rating
+  t1 <- AER::tobit(f_small, data = Affairs)
+  t2 <- AER::tobit(f_big, data = Affairs)
+  s2 <- survival::survreg(
+    survival::Surv(affairs, affairs > 0, type = "left") ~
+      age + yearsmarried + religiousness + rating,
+    data = Affairs,
+    dist = "gaussian"
+  )
+  expect_equal(unname(coef(t2)), unname(coef(s2)), tolerance = 1e-12)
+  # Oracle: vcovCL(type = "HC0"), whose cluster adjustment is G/(G - 1).
+  v_t <- sandwich::vcovCL(t2, cluster = Affairs$g, type = "HC0")
+  v_s <- sandwich::vcovCL(s2, cluster = Affairs$g, type = "HC0")
+  v_0 <- sandwich::vcovCL(
+    s2,
+    cluster = Affairs$g,
+    type = "HC0",
+    cadjust = FALSE
+  )
+  expect_equal(unname(v_t), unname(v_s), tolerance = 1e-12)
+  expect_equal(v_s[2, 2] / v_0[2, 2], 40 / 39, tolerance = 1e-12)
+  fr <- as_regression_frame(t2, vcov = "CR1", cluster = Affairs$g)
+  b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  k <- length(coef(t2))
+  expect_equal(b$estimate, unname(coef(s2)), tolerance = 1e-12)
+  expect_equal(b$std_error, sqrt(diag(v_s))[seq_len(k)], tolerance = 1e-10)
+  expect_s3_class(
+    table_regression(t2, vcov = "CR1", cluster = ~g),
+    "spicy_regression_table"
+  )
+  # nested = TRUE under CR1: the Wald chi-square of the added block on
+  # the robust matrix, as for survreg (65.99119 on this draw).
+  tb <- table_regression(
+    list(t1, t2),
+    nested = TRUE,
+    vcov = "CR1",
+    cluster = ~g,
+    output = "data.frame"
+  )
+  w <- tb[tb$variable == "wald_chi2_change", "Model 2: B"]
+  i <- c("religiousness", "rating")
+  oracle <- drop(t(coef(s2)[i]) %*% solve(v_s[4:5, 4:5]) %*% coef(s2)[i])
+  expect_equal(w, oracle, tolerance = 1e-8)
+  expect_equal(w, 65.99119, tolerance = 1e-6)
+  # Every other robust token stays refused, as for survreg.
+  for (v in c("HC3", "CR2", "bootstrap", "jackknife")) {
+    expect_error(
+      table_regression(t2, vcov = v, cluster = ~g),
+      class = "spicy_unsupported_vcov",
+      info = v
+    )
+  }
+  expect_identical(
+    spicy:::.robust_vcov_support(t2),
+    spicy:::.robust_vcov_support(s2)
+  )
+})
+
 test_that("rq coefficients match parameters::model_parameters() (oracle, point estimates only)", {
   skip_if_not_installed("parameters")
   fit <- .fit_rq_median()

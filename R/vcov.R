@@ -1183,6 +1183,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
     coxph = cr0_only,
     survreg = cl_only,
+    # AER::tobit is a survreg (its vcovCL equals the survreg twin's).
+    tobit = cl_only,
     # Inc 4: cluster sandwich via sandwich::vcovCL. clm is structure-aware:
     # scale/nominal (partial-PO) fits have no sandwich estfun method, so CR*
     # is refused for them (-> spicy_unsupported_vcov up front).
