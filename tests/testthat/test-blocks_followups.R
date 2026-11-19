@@ -237,3 +237,36 @@ test_that("the not-exponentiated sentence names the component rows", {
     expect_match(out, fr, fixed = TRUE)
   }
 })
+
+# ---- 5. A GAM under a robust variance: no test promised -------------------
+
+test_that("the smooth-terms sentence promises no test under a robust variance", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("sandwich")
+  fit <- fu_gam()
+  edf_only <- "Smooth terms: effective degrees of freedom (edf). The test"
+  full <- "Smooth terms: effective degrees of freedom (edf) and approximate test of each term."
+  out <- fu_print(table_regression(fit, vcov = "CR1", cluster = ~npreg))
+  expect_match(out, edf_only, fixed = TRUE)
+  expect_no_match(out, "approximate test", fixed = TRUE)
+  # A model-based variance keeps the test and the sentence.
+  expect_match(fu_print(table_regression(fit)), full, fixed = TRUE)
+  # One GAM with its test, one without: the full sentence holds for the
+  # first, and the second is named.
+  # (The cluster is ignored by the classical model, which warns.)
+  out <- fu_print(suppressWarnings(table_regression(
+    list(A = fit, B = fit),
+    vcov = list("classical", "CR1"),
+    cluster = ~npreg
+  )))
+  expect_match(out, full, fixed = TRUE)
+  expect_match(out, "B: The test of the smooth terms", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  out <- fu_print(table_regression(fit, vcov = "CR1", cluster = ~npreg))
+  expect_match(
+    out,
+    "Termes lissés : degrés de liberté effectifs.",
+    fixed = TRUE
+  )
+})

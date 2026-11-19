@@ -231,6 +231,7 @@
   note_error_two_step = "En deux \u00E9tapes, %s et %s sont d\u00E9duits des estimations et n'ont pas d'erreur standard.",
   note_outcome_observed = "R\u00E9sultat observ\u00E9 pour %s sur %s.",
   note_smooth_terms_gloss = "Termes liss\u00E9s\u00A0: degr\u00E9s de libert\u00E9 effectifs et test approch\u00E9 de chaque terme.",
+  note_smooth_terms_gloss_edf = "Termes liss\u00E9s\u00A0: degr\u00E9s de libert\u00E9 effectifs.",
   note_smooth_terms_robust = "Le test des termes liss\u00E9s n'est pas calcul\u00E9 sous une variance robuste.",
   note_re_line_lrt = "%s\u00A0: %s.",
   note_re_lrt = "test du rapport de vraisemblance contre la %s, \u03C7\u0304\u00B2(%d) = %s, p %s",

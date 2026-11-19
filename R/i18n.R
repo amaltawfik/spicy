@@ -456,6 +456,9 @@
   # The smooth terms of a GAM. No hole: the caption already carries
   # "(edf)", which the gloss spells out.
   note_smooth_terms_gloss = "Smooth terms: effective degrees of freedom (edf) and approximate test of each term.",
+  # The same, when no smooth term of the table has its test (a robust
+  # variance on every GAM).
+  note_smooth_terms_gloss_edf = "Smooth terms: effective degrees of freedom (edf).",
   # Under a robust variance the smooth-term rows keep their edf and lose
   # their test, which rests on the model-based covariance.
   note_smooth_terms_robust = "The test of the smooth terms is not computed under a robust variance.",

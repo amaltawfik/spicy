@@ -570,13 +570,22 @@ build_smooth_terms_footer_block_from_frames <- function(
   if (!any(has_rows)) {
     return(NULL)
   }
-  out <- spicy_str("note_smooth_terms_gloss")
   robust <- has_rows &
     vapply(
       frames,
       function(f) !.is_model_vcov(f$info$vcov_kind %||% "model"),
       logical(1)
     )
+  # The gloss promises the test only where one GAM at least has it; where
+  # some have it and others not, the full gloss holds for the first, and
+  # the sentence below names the others.
+  out <- spicy_str(
+    if (all(robust[has_rows])) {
+      "note_smooth_terms_gloss_edf"
+    } else {
+      "note_smooth_terms_gloss"
+    }
+  )
   if (any(robust)) {
     msg <- spicy_str("note_smooth_terms_robust")
     # Said once when every GAM of the table is robust, attributed to its
