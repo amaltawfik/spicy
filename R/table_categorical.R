@@ -844,7 +844,7 @@
 # gtsummary's `table()` keeps as an empty row, has no expected count to be
 # small), and they are `chisq.test()`'s own, `outer(sr, sc) / n`.
 # `"midp"` and `"n1"` are tests of a 2 x 2 table: any other table follows
-# `"auto"`. `"n1"` is the rule of Campbell (2007, pp. 18-19): the N-1
+# `"auto"`. `"n1"` is the rule of Campbell (2007): the N-1
 # chi-squared when every expected count is at least 1, Fisher's exact test
 # otherwise.
 .cat_resolve_test <- function(tab, test) {
@@ -909,7 +909,7 @@
   sum(d[less]) + 0.5 * sum(d[tie])
 }
 
-# The N-1 chi-squared of a 2 x 2 table (Campbell 2007, test 3 p. 8):
+# The N-1 chi-squared of a 2 x 2 table (Campbell 2007, test 3):
 # Pearson's statistic, with no continuity correction, times (N - 1) / N,
 # referred to a chi-squared with 1 degree of freedom. It equals the
 # Mantel-Haenszel statistic of a single 2 x 2 table.
@@ -1691,7 +1691,7 @@
 #' gives 1 for the most probable table; it differs otherwise and is not
 #' computed.
 #'
-#' `test = "n1"` applies the rule of Campbell (2007, pp. 18-19) to a 2x2
+#' `test = "n1"` applies the rule of Campbell (2007) to a 2x2
 #' table. When every expected count is at least 1, the table takes the
 #' N-1 chi-squared test: Pearson's statistic, with no continuity
 #' correction, multiplied by (N - 1)/N and referred to a chi-squared

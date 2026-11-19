@@ -701,7 +701,7 @@ when the row totals or the column totals are equal, except that it
 gives 1 for the most probable table; it differs otherwise and is not
 computed.
 
-\code{test = "n1"} applies the rule of Campbell (2007, pp. 18-19) to a 2x2
+\code{test = "n1"} applies the rule of Campbell (2007) to a 2x2
 table. When every expected count is at least 1, the table takes the
 N-1 chi-squared test: Pearson's statistic, with no continuity
 correction, multiplied by (N - 1)/N and referred to a chi-squared
