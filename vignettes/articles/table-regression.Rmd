@@ -607,9 +607,12 @@ Kolesár 2016). Coefficient inference uses
 `clubSandwich::coef_test()` with
 Satterthwaite-corrected degrees of freedom. When AME columns are
 requested, the same Satterthwaite framework is applied to the
-AME contrast via `clubSandwich::linear_contrast()`, so `B` and
-AME share the same t-distribution with the same df — visible in
-the footer.
+AME contrast via `clubSandwich::linear_contrast()`, whatever the
+formula (`I(x^2)`, `poly()`, `log()` and interactions included), so
+`B` and AME rows are both t-tests with Satterthwaite df. The note
+names the method; the df of each row, `B` and AME, are in the `df`
+column of `broom::tidy()` on the table, or of
+`table_regression(..., output = "long")`.
 
 ## Multiple-comparison adjustment
 
