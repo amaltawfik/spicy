@@ -2514,7 +2514,21 @@ format_fit_stat_value <- function(
     # every output signs the same rows.
     return(format_signed(val, prec, decimal_mark))
   }
-  format_number(val, prec, decimal_mark)
+  format_fixed(val, prec, decimal_mark)
+}
+
+# A fit statistic or a count in fixed notation at every size.
+# `format_number()` turns to scientific notation from 1e7 on, which suits
+# a coefficient such as an exponentiated intercept, but a national
+# survey's weighted n of 255345910 then printed "3e+08", and an AIC over
+# 1e7 lost its decimals. Below 1e7 this prints what `format_number()`
+# prints. Shared by the console and the string engines (`.cell_to_string()`).
+format_fixed <- function(x, digits, decimal_mark = ".") {
+  out <- formatC(x, format = "f", digits = digits, decimal.mark = ".")
+  if (!identical(decimal_mark, ".")) {
+    out <- chartr(".", decimal_mark, out)
+  }
+  out
 }
 
 

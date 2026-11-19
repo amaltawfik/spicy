@@ -1990,6 +1990,12 @@ build_structured_body <- function(
   # its sign, as in the console: the token set is the shared one.
   s <- if (isTRUE(cfmt$fit_stat %in% .NESTED_SIGNED_TOKENS)) {
     format_signed(val, precision, decimal_mark)
+  } else if (
+    !is.null(cfmt$fit_stat) ||
+      isTRUE(col_meta_entry$token %in% c("n", "n_events"))
+  ) {
+    # Fit statistics and counts never turn scientific (format_fixed()).
+    format_fixed(val, precision, decimal_mark)
   } else {
     format_number(val, precision, decimal_mark)
   }
