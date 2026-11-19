@@ -435,20 +435,26 @@ as_regression_frame.selection <- function(
 
   selection_idx <- seq_len(n_sel)
   outcome_idx <- seq_len(n_out) + n_sel
+  # summary() tests every row against a t on the residual df of the fit
+  # (coefTable(est, se, param$df)), in ML and in two-step alike; the
+  # intervals use the same distribution.
+  df <- .selection_df(fit)
 
   blocks <- list()
   if (length(selection_idx) > 0L) {
     blocks[[length(blocks) + 1L]] <- .selection_block(
       est_mat[selection_idx, , drop = FALSE],
       outcome_label = "selection",
-      ci_level = ci_level
+      ci_level = ci_level,
+      df = df
     )
   }
   if (length(outcome_idx) > 0L) {
     blocks[[length(blocks) + 1L]] <- .selection_block(
       est_mat[outcome_idx, , drop = FALSE],
       outcome_label = "outcome",
-      ci_level = ci_level
+      ci_level = ci_level,
+      df = df
     )
   }
   if (length(blocks) == 0L) {
@@ -458,18 +464,24 @@ as_regression_frame.selection <- function(
 }
 
 
-# Helper: build a coefs block from a slice of summary$estimate. Wald z
-# (the engine returns t-style columns but they are asymptotic z).
-.selection_block <- function(mat, outcome_label, ci_level) {
+# The residual df summary() tests against: nObs - number of parameters.
+.selection_df <- function(fit) {
+  as.numeric(fit$param$df %||% Inf)
+}
+
+
+# Helper: build a coefs block from a slice of summary$estimate. The test
+# is summary()'s own t on `df`, and the interval uses the same t.
+.selection_block <- function(mat, outcome_label, ci_level, df) {
   nm <- rownames(mat)
   est <- unname(mat[, "Estimate"])
   se <- unname(mat[, "Std. Error"])
   stat <- unname(mat[, "t value"])
   p_value <- unname(mat[, "Pr(>|t|)"])
-  df <- rep(Inf, length(est))
-  z_crit <- stats::qnorm(0.5 + ci_level / 2)
-  ci_lower <- est - z_crit * se
-  ci_upper <- est + z_crit * se
+  df <- rep(df, length(est))
+  t_crit <- stats::qt(0.5 + ci_level / 2, df)
+  ci_lower <- est - t_crit * se
+  ci_upper <- est + t_crit * se
 
   # Phase 7c5: prefix the term + label with the block name ("selection"
   # or "outcome") so the body renders each row distinctly. Without the
@@ -493,7 +505,7 @@ as_regression_frame.selection <- function(
     p_value = p_value,
     ci_lower = ci_lower,
     ci_upper = ci_upper,
-    test_type = rep("z", length(nm)),
+    test_type = rep("t", length(nm)),
     outcome_level = rep(outcome_label, length(nm)),
     # The prefixed "selection: (Intercept)" and "outcome: (Intercept)"
     # rows are the intercepts of the two equations: `show_intercept` and
@@ -574,6 +586,16 @@ as_regression_frame.selection <- function(
     fit$method %||% "ml"
   )
 
+  is_ml <- identical(fit$method %||% "ml", "ml")
+  # The outcome of a tobit-2 model is observed for the selected cases only
+  # (summary(): "753 observations (325 censored and 428 observed)"); a
+  # treatment-effects model observes it for every case.
+  n_outcome_observed <- if (identical(as.character(fit$tobitType), "2")) {
+    as.numeric(fit$param$N1 %||% NA_real_)
+  } else {
+    NA_real_
+  }
+
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
@@ -581,12 +603,28 @@ as_regression_frame.selection <- function(
     singular_terms = character(0),
     has_weights = FALSE,
     weighted_n = NA_real_,
-    title_prefix = "Heckman selection model",
+    # The model summary() announces: the treatment-effects model of
+    # treatReg() ("Tobit treatment model"), or a tobit-2 sample-selection
+    # model, "with binary outcome" when the outcome equation is a probit.
+    # Literals, so the title bridge test reads every branch.
+    title_prefix = if (identical(as.character(fit$tobitType), "treatment")) {
+      "Treatment-effects model"
+    } else if (identical(fit$outcomeVar, "binary")) {
+      "Heckman selection model (binary outcome)"
+    } else {
+      "Heckman selection model"
+    },
     exp_applied = FALSE,
     exp_header = NA_character_,
     selection_sigma = as.numeric(sigma_val),
     selection_rho = as.numeric(rho_val),
-    estimation_method = method_label
+    estimation_method = method_label,
+    selection_two_step = !is_ml,
+    selection_df = .selection_df(fit),
+    n_outcome_observed = n_outcome_observed,
+    # The "Error terms" block, appended by table_regression() after
+    # exponentiate and p_adjust (as the Scale effects of a clm).
+    error_terms = .selection_error_rows(est_mat, fit, ci_level)
   )
 
   list(
@@ -600,10 +638,198 @@ as_regression_frame.selection <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% spicy_str("note_vcov_wald_asymptotic"),
+    # The note names the estimation method, which sets the standard
+    # errors: the inverse Hessian of the likelihood, or Heckman's
+    # corrected two-step formula.
+    vcov_label = vcov_label %||%
+      spicy_str(
+        if (is_ml) "note_vcov_selection_ml" else "note_vcov_selection_two_step"
+      ),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
     extras = extras
+  )
+}
+
+
+# The rows of the "Error terms" block, read from summary(fit)$estimate at
+# the indices sampleSelection gives them (param$index$errTerms):
+#   * ML: sigma and rho (rho alone for a binary outcome, whose error
+#     variance is fixed at 1). sigma has no test (sigma = 0 is not a
+#     hypothesis anyone tests): its p and statistic are left empty.
+#   * two-step: invMillsRatio, a coefficient of the outcome equation with
+#     its own test, then sigma and rho, which summary() reports without a
+#     standard error.
+# Tests and intervals use summary()'s t on the residual df, like the rows
+# of the two equations. NULL when the fit reports no error term.
+.selection_error_rows <- function(est_mat, fit, ci_level) {
+  idx <- fit$param$index$errTerms
+  if (is.null(idx) || length(idx) == 0L || is.null(est_mat)) {
+    return(NULL) # nocov
+  }
+  mat <- est_mat[idx, , drop = FALSE]
+  nm <- rownames(mat)
+  est <- unname(mat[, "Estimate"])
+  se <- unname(mat[, "Std. Error"])
+  stat <- unname(mat[, "t value"])
+  p <- unname(mat[, "Pr(>|t|)"])
+  untested <- nm == "sigma"
+  stat[untested] <- NA_real_
+  p[untested] <- NA_real_
+  df <- .selection_df(fit)
+  t_crit <- stats::qt(0.5 + ci_level / 2, df)
+  data.frame(
+    term = paste0(.REG_BLOCK_ERROR, "::", nm),
+    parent_var = .REG_BLOCK_ERROR,
+    label = .selection_error_label(nm),
+    factor_level_pos = seq_along(nm),
+    is_ref = FALSE,
+    estimate_type = "B",
+    estimate = est,
+    std_error = se,
+    df = df,
+    statistic = stat,
+    p_value = p,
+    ci_lower = est - t_crit * se,
+    ci_upper = est + t_crit * se,
+    test_type = "t",
+    stringsAsFactors = FALSE
+  )
+}
+
+
+# Row labels of the error terms: the symbol first, as the rows of the
+# random-effects block write it, then what it estimates.
+.selection_error_label <- function(nm) {
+  sym <- c(
+    sigma = spicy_str("symbol_sigma"),
+    rho = spicy_str("symbol_rho"),
+    invMillsRatio = spicy_str("symbol_lambda")
+  )
+  word <- c(
+    sigma = spicy_str("label_error_sigma"),
+    rho = spicy_str("label_error_rho"),
+    invMillsRatio = spicy_str("label_error_lambda")
+  )
+  unname(ifelse(
+    nm %in% names(sym),
+    sprintf("%s (%s)", sym[nm], word[nm]),
+    nm
+  ))
+}
+
+
+# "Outcome observed for 428 of 753.": the cases of the outcome equation,
+# beside the n row that counts every case.
+build_selection_outcome_n_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = "."
+) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  idx <- integer(0)
+  texts <- character(0)
+  for (i in seq_along(frames)) {
+    n1 <- frames[[i]]$info$extras$n_outcome_observed
+    n <- frames[[i]]$info$n_obs
+    if (!isTRUE(is.finite(n1)) || !isTRUE(is.finite(n))) {
+      next
+    }
+    idx <- c(idx, i)
+    texts <- c(
+      texts,
+      spicy_fmt(
+        "note_outcome_observed",
+        format_number(n1, digits = 0L, decimal_mark = decimal_mark),
+        format_number(n, digits = 0L, decimal_mark = decimal_mark)
+      )
+    )
+  }
+  .selection_note_lines(frames, idx, texts)
+}
+
+
+# "Error terms: sigma, ...; rho, ...": the definitions of the rows the
+# block shows, and in a two-step fit why sigma and rho have no standard
+# error. Gated on the rows present in the table, so `keep`, `drop` and
+# `show_components = FALSE` remove the sentence with the rows.
+build_selection_error_terms_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  shown <- character(0)
+  two_step_aux <- FALSE
+  for (f in frames) {
+    cf <- f$coefs
+    if (is.null(cf$parent_var)) {
+      next
+    }
+    # The rows left by `keep` / `drop` (recorded by table_regression()),
+    # else every row of the block.
+    nm <- f$info$extras$error_terms_shown %||%
+      sub(
+        paste0("^", .REG_BLOCK_ERROR, "::"),
+        "",
+        cf$term[cf$parent_var %in% .REG_BLOCK_ERROR]
+      )
+    if (!any(cf$parent_var %in% .REG_BLOCK_ERROR)) {
+      nm <- character(0)
+    }
+    shown <- union(shown, nm)
+    if (isTRUE(f$info$extras$selection_two_step)) {
+      two_step_aux <- two_step_aux || any(c("sigma", "rho") %in% nm)
+    }
+  }
+  if (length(shown) == 0L) {
+    return(NULL)
+  }
+  sigma <- spicy_str("symbol_sigma")
+  rho <- spicy_str("symbol_rho")
+  defs <- c(
+    invMillsRatio = spicy_fmt(
+      "note_error_lambda_def",
+      spicy_str("symbol_lambda"),
+      paste0(rho, sigma)
+    ),
+    sigma = spicy_fmt("note_error_sigma_def", sigma),
+    rho = spicy_fmt("note_error_rho_def", rho)
+  )
+  out <- spicy_fmt(
+    "note_error_terms_gloss",
+    spicy_str("label_block_error_terms"),
+    # Definitions joined as those of the abbreviations are.
+    paste(
+      defs[intersect(names(defs), shown)],
+      collapse = spicy_str("note_abbrev_sep")
+    )
+  )
+  if (two_step_aux) {
+    out <- paste(out, spicy_fmt("note_error_two_step", sigma, rho))
+  }
+  out
+}
+
+
+# One sentence when every model of the table says the same, one line per
+# model (named as the other per-model lines) otherwise.
+.selection_note_lines <- function(frames, idx, texts) {
+  if (length(idx) == 0L) {
+    return(NULL)
+  }
+  if (
+    length(frames) == 1L ||
+      (length(unique(texts)) == 1L && length(idx) == length(frames))
+  ) {
+    return(texts[1L])
+  }
+  paste(
+    vapply(
+      seq_along(idx),
+      function(j) .model_line(frames, idx[j], texts[j]),
+      character(1)
+    ),
+    collapse = "\n"
   )
 }

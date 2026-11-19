@@ -231,7 +231,7 @@
       "sampleSelection::selection()",
       "no",
       "-",
-      "selection component"
+      .REG_BLOCK_ERROR
     ),
     c("rms", "ols", "rms::ols()", "yes", "-", "-"),
     c(
@@ -886,6 +886,17 @@
 #' [table_regression()] itself. GEE fits are described below. The
 #' additive, beta-regression, sample-selection and `rms` fits follow the
 #' rules of [table_regression()] and the table above.
+#'
+#' A sample-selection fit (`sampleSelection::selection()`, `heckit()`,
+#' `treatReg()`) shows each variable with its `selection` and `outcome`
+#' sub-rows, then an `Error terms` block: \eqn{\sigma}{sigma} and
+#' \eqn{\rho}{rho} for a maximum-likelihood fit (\eqn{\rho}{rho} alone for a
+#' binary outcome), the inverse Mills ratio \eqn{\lambda}{lambda} followed by
+#' \eqn{\sigma}{sigma} and \eqn{\rho}{rho} without standard errors for a
+#' two-step fit. Tests and intervals use the t distribution with the
+#' residual df that `summary()` uses, and the note names the estimation
+#' method and the number of cases with an observed outcome. A tobit-5
+#' (switching regression) fit is refused.
 #'
 #' @section Shared semantics (all classes):
 #' \itemize{

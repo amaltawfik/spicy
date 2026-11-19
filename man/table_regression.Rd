@@ -336,7 +336,9 @@ for \code{"wt * cyl=6"}) matches at
 least one pattern are kept. The intercept and the subordinate
 blocks (thresholds, random effects) are exempt from \code{keep} and
 \code{drop}: \code{show_intercept}, \code{show_thresholds} and \code{show_re} govern
-them.
+them. The \verb{Error terms} of a sample-selection model are coefficients
+of \code{coef()} and follow \code{keep} and \code{drop} under those names
+(\code{"sigma"}, \code{"rho"}, \code{"invMillsRatio"}).
 Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
@@ -354,9 +356,10 @@ in the note. See \link{table_regression_ordinal}.}
 
 \item{show_components}{Models with secondary components only (the
 \code{pscl} and \code{glmmTMB} two-part and dispersion models, \code{clm} with
-\verb{scale =}): \code{TRUE} (default) shows the components as labeled blocks
-of rows, \code{FALSE} omits them. See \link{table_regression_counts} and
-\link{table_regression_ordinal}.}
+\verb{scale =}, the error terms of a sample-selection model): \code{TRUE}
+(default) shows the components as labeled blocks of rows, \code{FALSE}
+omits them. See \link{table_regression_counts},
+\link{table_regression_ordinal} and \link{table_regression_models}.}
 
 \item{intercept_position}{Where to place the intercept when
 shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,

@@ -77,7 +77,7 @@ wrappers.
    Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \tab classical (the fit's own) \cr
    Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \tab classical, CR1 \cr
-   Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \tab classical \cr
+   Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab Error terms \tab classical \cr
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes (per category for an ordinal outcome) \tab OR \tab Thresholds (ordinal outcome) \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
@@ -116,6 +116,17 @@ The linear and generalized linear models are documented on
 \code{\link[=table_regression]{table_regression()}} itself. GEE fits are described below. The
 additive, beta-regression, sample-selection and \code{rms} fits follow the
 rules of \code{\link[=table_regression]{table_regression()}} and the table above.
+
+A sample-selection fit (\code{sampleSelection::selection()}, \code{heckit()},
+\code{treatReg()}) shows each variable with its \code{selection} and \code{outcome}
+sub-rows, then an \verb{Error terms} block: \eqn{\sigma}{sigma} and
+\eqn{\rho}{rho} for a maximum-likelihood fit (\eqn{\rho}{rho} alone for a
+binary outcome), the inverse Mills ratio \eqn{\lambda}{lambda} followed by
+\eqn{\sigma}{sigma} and \eqn{\rho}{rho} without standard errors for a
+two-step fit. Tests and intervals use the t distribution with the
+residual df that \code{summary()} uses, and the note names the estimation
+method and the number of cases with an observed outcome. A tobit-5
+(switching regression) fit is refused.
 }
 
 \section{Shared semantics (all classes)}{

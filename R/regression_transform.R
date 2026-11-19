@@ -48,6 +48,18 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 
 # ---- keep / drop filter ---------------------------------------------------
 
+# The names `keep` and `drop` match, one per row of the aligned
+# coefficients: the term, except for the error terms of a selection
+# model, which are coefficients of `coef(fit)` ("sigma", "rho",
+# "invMillsRatio") and are matched under that name, without the block key
+# their row carries ("Error terms::rho").
+.reg_filter_terms <- function(ca) {
+  terms <- ca$term
+  err <- ca$factor_term %in% .REG_BLOCK_ERROR
+  terms[err] <- sub(paste0("^", .REG_BLOCK_ERROR, "::"), "", terms[err])
+  terms
+}
+
 # "The terms of this table: ...", the first twelve: the names a regression
 # table builds from its models, listed where a pattern of `keep` / `drop`
 # or a name of `labels` matches none of them.
@@ -95,7 +107,10 @@ apply_keep_drop_filter <- function(
     return(aligned)
   }
 
-  terms <- aligned$coefs_aligned$term
+  terms <- .reg_filter_terms(aligned$coefs_aligned)
+  # The error terms of a selection model follow `keep` / `drop`; the
+  # other blocks are exempt (below).
+  err <- aligned$coefs_aligned$factor_term %in% .REG_BLOCK_ERROR
   matches_any <- function(term, patterns) {
     vapply(
       term,
@@ -128,7 +143,7 @@ apply_keep_drop_filter <- function(
   # into a statistically incoherent subset (e.g. a correlation without its
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
   ca <- aligned$coefs_aligned
-  subordinate <- .reg_is_block(ca$factor_term) |
+  subordinate <- (.reg_is_block(ca$factor_term) & !err) |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
   # Intercepts are exempt from keep / drop matching: `show_intercept`

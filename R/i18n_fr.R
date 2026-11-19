@@ -185,6 +185,10 @@
   label_block_zero_inflation = "Inflation de z\u00E9ros",
   label_block_zero_hurdle = "Hurdle (z\u00E9ro), Pr(y > 0)",
   label_block_zero_hurdle_zero = "Hurdle (z\u00E9ro), Pr(y = 0)",
+  label_block_error_terms = "Termes d'erreur",
+  label_error_sigma = "erreur du r\u00E9sultat",
+  label_error_rho = "corr\u00E9lation des erreurs",
+  label_error_lambda = "ratio de Mills inverse",
   label_block_alternative_invariant = "Invariant entre alternatives",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
@@ -216,6 +220,12 @@
   note_thresholds_compact = "%s\u00A0: %s.",
   note_scale_effects_gloss = "%s\u00A0: effets des covariables sur le logarithme de l'\u00E9cart-type de la r\u00E9ponse latente",
   note_scale_effects_not_exp = " (\u00E9chelle logarithmique, non exponenti\u00E9s\u00A0: leur exponentielle est un rapport d'\u00E9carts-types latents, pas un rapport de cotes)",
+  note_error_terms_gloss = "%s\u00A0: %s.",
+  note_error_sigma_def = "%s, \u00E9cart-type de l'erreur du r\u00E9sultat",
+  note_error_rho_def = "%s, corr\u00E9lation des erreurs de la s\u00E9lection et du r\u00E9sultat",
+  note_error_lambda_def = "%s, coefficient du ratio de Mills inverse, qui estime %s",
+  note_error_two_step = "En deux \u00E9tapes, %s et %s sont d\u00E9duits des estimations et n'ont pas d'erreur standard.",
+  note_outcome_observed = "R\u00E9sultat observ\u00E9 pour %s sur %s.",
   note_re_line_lrt = "%s\u00A0: %s.",
   note_re_lrt = "test du rapport de vraisemblance contre la %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
   note_re_lrt_unnamed = "test du rapport de vraisemblance, \u03C7\u0304\u00B2(%d) = %s, p %s",
@@ -628,6 +638,8 @@
   note_vcov_jackknife = "jackknife (suppression d'une observation)",
   note_vcov_jackknife_cluster = "jackknife (suppression d'une grappe), grappes d\u00E9finies par %s",
   note_vcov_wald_asymptotic = "Wald asymptotique (z)",
+  note_vcov_selection_ml = "maximum de vraisemblance",
+  note_vcov_selection_two_step = "deux \u00E9tapes",
   note_vcov_wald_model = "Wald (fond\u00E9es sur le mod\u00E8le)",
   note_vcov_wald_model_corr = "Wald (fond\u00E9es sur le mod\u00E8le, %s)",
   note_vcov_design_taylor = "fond\u00E9es sur le plan de sondage (lin\u00E9arisation de Taylor)",
@@ -650,6 +662,7 @@
   note_pvalues_satterthwaite = "Valeurs p\u00A0: test t de Satterthwaite.",
   note_pvalues_wald = "Valeurs p\u00A0: test z de Wald, approximation pour grands \u00E9chantillons.",
   note_pvalues_containment = "Valeurs p\u00A0: test t, degr\u00E9s de libert\u00E9 \u00AB\u00A0containment\u00A0\u00BB.",
+  note_pvalues_t_df = "Valeurs p et IC\u00A0: loi t \u00E0 %s degr\u00E9s de libert\u00E9.",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "L'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
@@ -1206,6 +1219,8 @@
   "Quantile regression" = "R\u00E9gression quantile",
   "Non-linear least squares regression" = "R\u00E9gression par moindres carr\u00E9s non lin\u00E9aires",
   "Heckman selection model" = "Mod\u00E8le de s\u00E9lection de Heckman",
+  "Heckman selection model (binary outcome)" = "Mod\u00E8le de s\u00E9lection de Heckman (r\u00E9sultat binaire)",
+  "Treatment-effects model" = "Mod\u00E8le \u00E0 effet de traitement",
   "Generalized least squares" = "Moindres carr\u00E9s g\u00E9n\u00E9ralis\u00E9s",
   "Discrete-choice multinomial logit" = "Logit multinomial de choix discret",
   "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
@@ -1214,7 +1229,9 @@
 # Les titres qui nomment deja un modele, et leur pluriel : la note de type
 # ("Modeles de %s.") les nommerait deux fois.
 .FR_TITLE_PLURALS <- c(
-  "Heckman selection model" = "Mod\u00E8les de s\u00E9lection de Heckman"
+  "Heckman selection model" = "Mod\u00E8les de s\u00E9lection de Heckman",
+  "Heckman selection model (binary outcome)" = "Mod\u00E8les de s\u00E9lection de Heckman (r\u00E9sultat binaire)",
+  "Treatment-effects model" = "Mod\u00E8les \u00E0 effet de traitement"
 )
 
 # ---- Les lois des notes de survie ------------------------------------------

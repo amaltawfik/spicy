@@ -1274,7 +1274,9 @@
 #'   least one pattern are kept. The intercept and the subordinate
 #'   blocks (thresholds, random effects) are exempt from `keep` and
 #'   `drop`: `show_intercept`, `show_thresholds` and `show_re` govern
-#'   them.
+#'   them. The `Error terms` of a sample-selection model are coefficients
+#'   of `coef()` and follow `keep` and `drop` under those names
+#'   (`"sigma"`, `"rho"`, `"invMillsRatio"`).
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -1288,9 +1290,10 @@
 #'   in the note. See [table_regression_ordinal].
 #' @param show_components Models with secondary components only (the
 #'   `pscl` and `glmmTMB` two-part and dispersion models, `clm` with
-#'   `scale =`): `TRUE` (default) shows the components as labeled blocks
-#'   of rows, `FALSE` omits them. See [table_regression_counts] and
-#'   [table_regression_ordinal].
+#'   `scale =`, the error terms of a sample-selection model): `TRUE`
+#'   (default) shows the components as labeled blocks of rows, `FALSE`
+#'   omits them. See [table_regression_counts],
+#'   [table_regression_ordinal] and [table_regression_models].
 #' @param intercept_position Where to place the intercept when
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,
 #'   intercept just above the fit-stats footer). Ignored when
@@ -3396,6 +3399,19 @@ table_regression <- function(
     ) {
       frames[[i]]$coefs <- .rbind_union(frames[[i]]$coefs, sc_i)
     }
+    # The error terms of a selection model (sigma, rho, and the inverse
+    # Mills ratio of a two-step fit), its "Error terms" block, materialized
+    # at the same point and for the same reasons: they are no slope, so
+    # they stay out of the exponentiation and of the p-adjust family.
+    et_i <- frames[[i]]$info$extras$error_terms
+    if (
+      isTRUE(show_components) &&
+        "b" %in% show_columns &&
+        is.data.frame(et_i) &&
+        nrow(et_i) > 0L
+    ) {
+      frames[[i]]$coefs <- .rbind_union(frames[[i]]$coefs, et_i)
+    }
 
     # Random effects as a subordinate "Random effects" block of rows (show_re =
     # TRUE, the default). Materialized HERE -- after exp + p_adjust, so variance
@@ -3986,7 +4002,7 @@ table_regression <- function(
   if (!is.null(panel_req)) {
     .reg_panel$terms <- c(
       .reg_panel$terms,
-      list(unique(aligned$coefs_aligned$term))
+      list(unique(.reg_filter_terms(aligned$coefs_aligned)))
     )
   }
   aligned <- apply_keep_drop_filter(
@@ -3995,6 +4011,16 @@ table_regression <- function(
     drop = drop,
     warn = is.null(panel_req)
   )
+  # The error terms each selection model still shows, for the note that
+  # defines them.
+  ca_err <- aligned$coefs_aligned$factor_term %in% .REG_BLOCK_ERROR
+  for (i in seq_along(frames)) {
+    if (is.data.frame(frames[[i]]$info$extras$error_terms)) {
+      frames[[i]]$info$extras$error_terms_shown <- .reg_filter_terms(
+        aligned$coefs_aligned
+      )[ca_err & aligned$coefs_aligned$model_id %in% model_ids[[i]]]
+    }
+  }
   # A table whose row selection (`keep`, `drop`, `show_intercept =
   # FALSE`) leaves no coefficient row of any model has nothing to show:
   # the renderer would return a bare header without fit statistics, note

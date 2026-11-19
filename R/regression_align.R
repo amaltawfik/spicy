@@ -30,6 +30,8 @@
   "Zero hurdle",
   "Zero hurdle, Pr(y = 0)",
   "Dispersion",
+  # The sigma, rho (and two-step inverse Mills ratio) of a selection model.
+  "Error terms",
   "Scale effects",
   # Before Thresholds, matching the single-model layout.
   "Non-proportional effects",
@@ -47,6 +49,9 @@
 .REG_BLOCK_HURDLE <- "Zero hurdle"
 .REG_BLOCK_HURDLE_ZERO <- "Zero hurdle, Pr(y = 0)"
 .REG_BLOCK_DISP <- "Dispersion"
+# Unlike the other blocks, its rows follow `keep` / `drop` by their
+# coefficient name (`apply_keep_drop_filter()`).
+.REG_BLOCK_ERROR <- "Error terms"
 .REG_BLOCK_SCALE <- "Scale effects"
 .REG_BLOCK_NPO <- "Non-proportional effects"
 .REG_BLOCK_THRESH <- "Thresholds"
@@ -78,6 +83,7 @@
   "Zero hurdle" = "label_block_zero_hurdle",
   "Zero hurdle, Pr(y = 0)" = "label_block_zero_hurdle_zero",
   "Dispersion" = "label_block_dispersion",
+  "Error terms" = "label_block_error_terms",
   "Scale effects" = "label_block_scale_effects",
   "Non-proportional effects" = "label_block_non_proportional",
   "Thresholds" = "label_block_thresholds",

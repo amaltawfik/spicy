@@ -247,6 +247,9 @@
   symbol_sigma = "\u03C3",
   symbol_sigma_sq = "\u03C3\u00B2",
   symbol_rho = "\u03C1",
+  # The coefficient of the inverse Mills ratio, a row of the error terms
+  # of a two-step selection model.
+  symbol_lambda = "\u03BB",
 
   # -- table_regression(): column headers -----------------------------------
   header_n_upper = "N",
@@ -349,6 +352,13 @@
   label_block_zero_hurdle = "Zero hurdle, Pr(y > 0)",
   label_block_zero_hurdle_zero = "Zero hurdle, Pr(y = 0)",
   label_block_dispersion = "Dispersion",
+  # The auxiliary parameters of a sample-selection model, under the
+  # heading summary() gives them. The three row words follow the symbol
+  # ("\u03C3 (outcome error)"), as the random-effects rows do.
+  label_block_error_terms = "Error terms",
+  label_error_sigma = "outcome error",
+  label_error_rho = "error correlation",
+  label_error_lambda = "inverse Mills ratio",
   # Not a subordinate block: the leading section of a conditional-logit
   # (mlogit) table, the coefficients shared by every alternative. Same
   # split between a frozen identity and a translated caption, resolved
@@ -421,6 +431,19 @@
   # Appended to the gloss above under exponentiate, hence the leading
   # space.
   note_scale_effects_not_exp = " (log scale, not exponentiated: their exponential is a ratio of latent SDs, not an odds ratio)",
+  # The definitions of the error terms of a selection model. The gloss
+  # has two holes: the block caption, then the definitions of the rows
+  # shown, joined by "; ". Each definition opens on its symbol; the
+  # inverse Mills ratio has a second hole, the product rho sigma it
+  # estimates. The two-step sentence has two holes, sigma and rho.
+  note_error_terms_gloss = "%s: %s.",
+  note_error_sigma_def = "%s, standard deviation of the outcome error",
+  note_error_rho_def = "%s, correlation of the selection and outcome errors",
+  note_error_lambda_def = "%s, coefficient of the inverse Mills ratio, an estimate of %s",
+  note_error_two_step = "In a two-step fit, %s and %s are derived from the estimates and have no standard error.",
+  # The cases of the outcome equation of a selection model, then all the
+  # cases (the n row).
+  note_outcome_observed = "Outcome observed for %s of %s.",
   # Two holes: the block caption and the estimation method (REML / ML,
   # an identifier). Deliberately NOT `header_companion_qualified`, which
   # carries the same value for an unrelated role -- the console header
@@ -1489,6 +1512,10 @@
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
   note_vcov_wald_asymptotic = "Wald asymptotic (z)",
+  # The standard errors of a selection model, named by the estimation
+  # method that sets them.
+  note_vcov_selection_ml = "maximum likelihood",
+  note_vcov_selection_two_step = "two-step",
   # The model-based default of lmer, lme and gls. One hole in `_corr`:
   # the correlation structure of a gls fit, its class name (an
   # identifier).
@@ -1537,6 +1564,9 @@
   note_pvalues_satterthwaite = "P-values: Satterthwaite t-test.",
   note_pvalues_wald = "P-values: Wald z-test, large-sample approximation.",
   note_pvalues_containment = "P-values: t-test with containment df.",
+  # A selection model: summary() tests on a t with the residual df of the
+  # fit, and the intervals use the same t. One hole: the df.
+  note_pvalues_t_df = "P-values and CIs: t distribution with %s df.",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
   # The interval of a Bayesian model in a table that also holds
@@ -1892,7 +1922,9 @@ spicy_fmt <- function(key, ...) {
   switch(
     lang,
     en = c(
-      "Heckman selection model" = "Heckman selection models"
+      "Heckman selection model" = "Heckman selection models",
+      "Heckman selection model (binary outcome)" = "Heckman selection models (binary outcome)",
+      "Treatment-effects model" = "Treatment-effects models"
     ),
     fr = .FR_TITLE_PLURALS
   )

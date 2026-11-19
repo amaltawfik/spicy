@@ -454,7 +454,8 @@ build_regression_footer_from_frames <- function(
     ),
     # (b) The missing data: the cases the univariable models are fit on.
     missing = .footer_paragraph(
-      build_uv_disclosure_footer_block_from_frames(frames)
+      build_uv_disclosure_footer_block_from_frames(frames),
+      build_selection_outcome_n_footer_block_from_frames(frames, decimal_mark)
     ),
     # (c) The inference: the standard errors, the intervals, the tests,
     # the adjustment, the predictive accuracy.
@@ -500,6 +501,7 @@ build_regression_footer_from_frames <- function(
         build_survival_estimand_footer_block_from_frames(frames),
         if (thresholds_as_rows) thresholds,
         build_scale_effects_footer_block_from_frames(frames),
+        build_selection_error_terms_footer_block_from_frames(frames),
         build_component_blocks_footer_block_from_frames(frames),
         build_standardized_caveat_footer_block_from_frames(
           frames,
@@ -2253,7 +2255,15 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     return(NULL)
   }
 
-  if (length(per_model) == 1L) {
+  # The t of a selection model beside models without this line is named
+  # by its model: the line holds for its rows only.
+  sel_among_others <- length(per_model) < length(frames) &&
+    any(vapply(
+      per_model,
+      function(pm) identical(frames[[pm$idx]]$info$class, "selection"),
+      logical(1)
+    ))
+  if (length(per_model) == 1L && !sel_among_others) {
     return(per_model[[1L]]$text)
   }
   # Consolidate when every model produced the SAME annotation -- avoids
@@ -2261,7 +2271,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   # whole list is, say, lme4::lmer without lmerTest. Mirrors the
   # consolidation done by build_regression_type_footer_block_from_frames().
   texts <- vapply(per_model, function(pm) pm$text, character(1))
-  if (length(unique(texts)) == 1L) {
+  if (length(unique(texts)) == 1L && !sel_among_others) {
     return(texts[1L])
   }
   lines <- vapply(
@@ -2380,6 +2390,13 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return(spicy_str("note_pvalues_satterthwaite"))
+  }
+  # A selection model tests on summary()'s t with the residual df.
+  if (cls == "selection" && isTRUE(is.finite(frame$info$extras$selection_df))) {
+    return(spicy_fmt(
+      "note_pvalues_t_df",
+      format(frame$info$extras$selection_df, scientific = FALSE)
+    ))
   }
   switch(
     cls,
@@ -3647,8 +3664,9 @@ build_p_adjust_footer_block_from_frames <- function(
     # from the family by their display LABEL -- counting them here made
     # the footer's m overstate the adjustment actually performed.
     # (label may be absent on synthetic frames; treat as non-intercept.)
-    # The cut-points of an ordinal model and the scale effects of a clm
-    # join the rows after the adjustment, outside its family.
+    # The cut-points of an ordinal model, the scale effects of a clm and
+    # the error terms of a selection model join the rows after the
+    # adjustment, outside its family.
     lbl <- cf$label %||% rep(NA_character_, nrow(cf))
     thr <- cf$is_threshold %||% rep(FALSE, nrow(cf))
     pv <- cf$parent_var %||% rep(NA_character_, nrow(cf))
@@ -3659,7 +3677,7 @@ build_p_adjust_footer_block_from_frames <- function(
         !((cf$is_intercept %||% FALSE) %in% TRUE) &
         !cf$is_ref &
         !(thr %in% TRUE) &
-        !(pv %in% .REG_BLOCK_SCALE) &
+        !(pv %in% c(.REG_BLOCK_SCALE, .REG_BLOCK_ERROR)) &
         !is.na(cf$p_value)
     )
   }
