@@ -549,7 +549,7 @@ as_regression_frame.clmm <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   link <- fit$method %||% "logistic"
@@ -1010,7 +1010,7 @@ as_regression_frame.clmm <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   link <- fit$link %||% "logit"
@@ -1340,7 +1340,7 @@ as_regression_frame.clmm <- function(
 # pseudo-R^2: groups, variance components, the chi-bar-squared LR test
 # against the clm without random effects.
 .clmm_info <- function(fit, vcov_kind, vcov_label, ci_level, model_id) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   link <- fit$link %||% "logit"
   ng <- fit$dims$nlev.gf
   fit_stats <- list(

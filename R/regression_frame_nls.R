@@ -114,9 +114,9 @@ as_regression_frame.nls <- function(
   ci_method,
   model_id
 ) {
-  # The response variable name is the first var in the formula -- safe
-  # for nls since formula(fit) returns the formula as the user wrote it.
-  dv <- tryCatch(all.vars(stats::formula(fit))[1L], error = function(e) {
+  # The left-hand side of the formula -- safe for nls since formula(fit)
+  # returns the formula as the user wrote it.
+  dv <- tryCatch(.fit_dv(fit), error = function(e) {
     "response"
   })
   dv_label <- dv

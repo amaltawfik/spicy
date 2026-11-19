@@ -303,7 +303,7 @@ as_regression_frame.gam <- function(
   is_gaussian_identity,
   fam
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam_list <- list(family = fam$family, link = fam$link)

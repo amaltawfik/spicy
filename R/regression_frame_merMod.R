@@ -474,7 +474,7 @@ inform_lmertest_hint <- function() {
   re_ci = "wald"
 ) {
   fam <- .merMod_family_info(fit, is_glm)
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   # The class field strips the lmerTest decoration so cross-class
@@ -1503,6 +1503,25 @@ inform_lmertest_hint <- function() {
     return(log1p(1 / lambda))
   }
   NA_real_
+}
+
+
+# The dependent variable as the fit's formula writes it, transformation
+# included (`log(wage)`, `I(parttime == "yes")`), as the lm/glm method
+# reads it. A multi-part formula keeps its left-hand side only: fixest's
+# `y ~ x | fe | endo ~ inst` nests a second `~`, whose left side is the
+# rest of the formula. `all.vars()` stays the fallback of a formula with
+# no left-hand side. `unclass()` keeps the call and drops the methods of
+# a `Formula` (mlogit, betareg), whose length() counts its parts.
+.fit_dv <- function(fit, f = stats::formula(fit)) {
+  lhs <- unclass(f)
+  while (is.call(lhs) && identical(lhs[[1L]], as.name("~"))) {
+    if (length(lhs) < 3L) {
+      return(all.vars(f)[1L])
+    }
+    lhs <- lhs[[2L]]
+  }
+  deparse1(lhs)
 }
 
 

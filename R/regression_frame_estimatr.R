@@ -254,7 +254,7 @@ as_regression_frame.iv_robust <- function(
   model_id,
   is_iv
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- list(family = "gaussian", link = "identity")

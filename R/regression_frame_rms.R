@@ -606,7 +606,7 @@ as_regression_frame.Glm <- function(
       all.vars(stats::formula(fit))[1L]
     })
   } else {
-    all.vars(stats::formula(fit))[1L]
+    .fit_dv(fit)
   }
   dv_label <- if (rms_class == "cph") dv else .extract_dv_label(fit, dv)
 

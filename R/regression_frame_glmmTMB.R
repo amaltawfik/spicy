@@ -380,7 +380,7 @@ as_regression_frame.glmmTMB <- function(
     identical(fam$link, "identity")
   is_ordinal <- identical(fam$family, "ordinal")
 
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   # A fit that stopped before converging holds its starting values, not

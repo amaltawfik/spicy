@@ -378,7 +378,7 @@ as_regression_frame.gee <- function(fit, ...) {
 ) {
   fam <- stats::family(fit)
   family_info <- list(family = fam$family, link = fam$link)
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
   has_identity_link <- identical(fam$link, "identity")
 

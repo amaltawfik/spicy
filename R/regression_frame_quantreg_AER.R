@@ -299,7 +299,7 @@ as_regression_frame.rq <- function(
   boot_n = 1000L,
   clustered = FALSE
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- list(family = "gaussian", link = "identity")
@@ -531,7 +531,7 @@ as_regression_frame.ivreg <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- list(family = "gaussian", link = "identity")
@@ -649,7 +649,7 @@ as_regression_frame.tobit <- function(
     error = function(e) NULL
   )
   if (inherits(f_orig, "formula") && length(f_orig) == 3L) {
-    dv_orig <- all.vars(f_orig[[2L]])[1L]
+    dv_orig <- .fit_dv(fit, f_orig)
     if (length(dv_orig) == 1L && !is.na(dv_orig) && nzchar(dv_orig)) {
       frame$info$dv <- dv_orig
       frame$info$dv_label <- dv_orig

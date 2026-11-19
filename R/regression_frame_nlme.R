@@ -343,7 +343,7 @@ as_regression_frame.gls <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label_nlme(fit, dv)
 
   # Group counts, one entry per grouping factor. fit$dims$ngrps is a
@@ -447,7 +447,7 @@ as_regression_frame.gls <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label_nlme(fit, dv)
 
   fit_stats <- .nlme_fit_stats(fit)

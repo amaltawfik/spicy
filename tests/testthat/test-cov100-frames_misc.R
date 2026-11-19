@@ -224,25 +224,41 @@ test_that(".flexsurv_has_anc_covariates is FALSE when the fit has no mx slot", {
 
 # ---- sampleSelection: outcome DV name --------------------------------------
 
-test_that("selection frame reads the DV from fit$outcome$formula when present", {
+test_that("selection frame names the outcome of the outcome equation", {
   skip_if_not_installed("sampleSelection")
   data("Mroz87", package = "sampleSelection", envir = environment())
   Mroz87$kids <- Mroz87$kids5 + Mroz87$kids618 > 0
+  # Two-step (heckit): no terms on the fit, the name is read off the call.
   fit <- sampleSelection::selection(
     lfp ~ age + I(age^2) + faminc + kids + educ,
-    wage ~ exper + I(exper^2) + educ + city,
+    log(wage) ~ exper + I(exper^2) + educ + city,
     data = Mroz87,
     method = "2step"
   )
-  # Real selection objects carry no $outcome component, so the dv falls
-  # back to the generic "outcome" label.
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$dv, "outcome")
-  # When $outcome$formula is present (the state .selection_info() reads),
-  # the outcome-equation response name is surfaced as the dv.
-  fit2 <- fit
-  fit2$outcome <- list(formula = wage ~ exper + educ)
-  fr2 <- as_regression_frame(fit2, model_id = "M1")
-  expect_identical(fr2$info$dv, "wage")
-  expect_identical(fr2$info$dv_label, "wage")
+  expect_identical(fr$info$dv, "log(wage)")
+  expect_identical(fr$info$dv_label, "log(wage)")
+  # Maximum likelihood: read off the terms of the outcome equation.
+  fit_ml <- sampleSelection::selection(
+    lfp ~ age + I(age^2) + faminc + kids + educ,
+    log(wage) ~ exper + I(exper^2) + educ + city,
+    data = Mroz87
+  )
+  expect_identical(
+    as_regression_frame(fit_ml, model_id = "M1")$info$dv,
+    "log(wage)"
+  )
+  # A formula passed as a variable leaves the call no formula to read:
+  # the generic label.
+  fo <- wage ~ exper + educ
+  fit_var <- sampleSelection::selection(
+    lfp ~ age + faminc + kids + educ,
+    fo,
+    data = Mroz87,
+    method = "2step"
+  )
+  expect_identical(
+    as_regression_frame(fit_var, model_id = "M1")$info$dv,
+    "outcome"
+  )
 })

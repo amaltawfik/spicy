@@ -165,7 +165,7 @@ as_regression_frame.svyolr <- function(
   model_id,
   df
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
   link <- fit$method %||% "logistic"
 

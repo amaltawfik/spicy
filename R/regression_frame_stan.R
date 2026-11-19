@@ -1501,8 +1501,16 @@ as_regression_frame.brmsfit <- function(
   }
   if (inherits(f, "brmsformula")) {
     f <- f$formula
+    # brms writes its addition terms on the left (`y | weights(w) ~ x`).
+    if (
+      length(f) == 3L &&
+        is.call(f[[2L]]) &&
+        identical(f[[2L]][[1L]], as.name("|"))
+    ) {
+      f[[2L]] <- f[[2L]][[2L]]
+    }
   }
-  all.vars(f)[1L]
+  .fit_dv(fit, f)
 }
 
 

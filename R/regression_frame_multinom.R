@@ -314,7 +314,7 @@ as_regression_frame.multinom <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- list(family = "multinomial", link = "logit")

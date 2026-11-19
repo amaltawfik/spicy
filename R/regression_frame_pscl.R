@@ -307,7 +307,7 @@ as_regression_frame.zeroinfl <- function(
   vcov_type = "model",
   cluster = NULL
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   # Family is determined by the count distribution.

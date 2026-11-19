@@ -336,7 +336,7 @@ as_regression_frame.fixest <- function(
   model_id,
   is_glm
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   fam <- .fixest_family_info(fit, is_glm = is_glm)

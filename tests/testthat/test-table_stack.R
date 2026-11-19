@@ -2252,10 +2252,10 @@ test_that("panels of models with different outcomes open on an Outcome row", {
 test_that("a stack builds each panel once, its messages given once", {
   skip_on_cran()
   skip_if_not_installed("MASS")
-  # The formulas name two outcomes, the frames one: no row. Each call of
-  # table_regression() takes its request once: the list, then each panel.
+  # One outcome: no row. Each call of table_regression() takes its
+  # request once: the list, then each panel.
   a <- MASS::polr(education ~ age, data = sochealth)
-  b <- MASS::polr(ordered(education) ~ sex, data = sochealth)
+  b <- MASS::polr(education ~ sex, data = sochealth)
   calls <- 0L
   req <- spicy:::.reg_panel
   local_mocked_bindings(.reg_panel_take = function() {

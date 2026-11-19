@@ -525,10 +525,22 @@ as_regression_frame.selection <- function(
   model_id
 ) {
   # Heckman has two response variables (selection indicator + outcome).
-  # We surface the outcome variable name as the primary DV.
-  out_formula <- tryCatch(fit$outcome$formula, error = function(e) NULL)
+  # We surface the outcome variable name as the primary DV, read off the
+  # terms of the outcome equation (`fit$outcome` is a vector of indices).
+  # A two-step fit (heckit()) has no terms: its call holds the formula.
+  out_formula <- fit$termsO
+  if (is.null(out_formula)) {
+    out_formula <- tryCatch(fit$call$outcome[[2L]], error = function(e) NULL)
+  }
   dv <- if (!is.null(out_formula)) {
-    tryCatch(all.vars(out_formula)[1L], error = function(e) "outcome")
+    tryCatch(
+      if (inherits(out_formula, "formula")) {
+        .fit_dv(fit, out_formula)
+      } else {
+        deparse1(out_formula)
+      },
+      error = function(e) "outcome"
+    )
   } else {
     "outcome"
   }

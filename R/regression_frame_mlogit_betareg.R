@@ -219,7 +219,7 @@ as_regression_frame.mlogit <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- dv # mlogit's model.frame is non-standard; skip lookup.
 
   fam <- list(family = "multinomial", link = "logit")
@@ -640,7 +640,7 @@ as_regression_frame.betareg <- function(
   ci_method,
   model_id
 ) {
-  dv <- all.vars(stats::formula(fit))[1L]
+  dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
 
   link_name <- fit$link$mean$name %||% "logit"
