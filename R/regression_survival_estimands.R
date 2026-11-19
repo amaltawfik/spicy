@@ -86,6 +86,26 @@
 # ---- Structural gates ------------------------------------------------------
 
 .coxph_estimand_gates <- function(fit, model_id) {
+  # A frailty is a random effect: the standardized curves are built from
+  # the baseline hazard and the fixed coefficients alone, so the estimand
+  # would ignore it. (A non-sparse frailty is refused as a class before
+  # this runs; see .inherited_subclass_reason().)
+  pt <- fit$pterms %||% numeric(0)
+  if (any(pt == 2) || any(grepl("^frailty", names(pt)))) {
+    spicy_abort(
+      c(
+        sprintf(
+          "RMST / risk-difference columns are not available for a `coxph` fit with a frailty term (%s).",
+          model_id
+        ),
+        "i" = paste0(
+          "The g-computation standardizes over the fixed coefficients and ",
+          "the baseline hazard: the estimand would ignore the random effect."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   specials <- attr(fit$terms, "specials")
   if (!is.null(specials$tt)) {
     spicy_abort(

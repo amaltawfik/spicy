@@ -39,6 +39,7 @@ as_regression_frame.lm <- function(
   model_id = "M1",
   ...
 ) {
+  .refuse_inherited_subclass(fit)
   # Profile CIs are model-based likelihood quantities (MASS::confint.glm);
   # a robust / resampling vcov takes precedence -- its Wald CIs are used --
   # so only profile under a model-based vcov. Mirrors the polr / clm

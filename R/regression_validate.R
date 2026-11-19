@@ -379,7 +379,146 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
   if (inherits(fit, "gam")) {
     .gam_refuse_multi_formula(fit)
   }
+  .refuse_inherited_subclass(fit)
   invisible(NULL)
+}
+
+# Objects that reach a frame method by inheriting from a supported class
+# without being that model. Measured on 2026-11-19
+# (dev/decisions/2026-11-19-inherited-subclasses.md): each one was either
+# rendered under the parent's title, rows and note, or failed with an
+# error from deep inside the parent's code. Each is refused by name, with
+# one sentence on what it is. Run by table_regression() before any
+# argument is resolved, and by the frame methods of the parent classes.
+.refuse_inherited_subclass <- function(fit) {
+  what <- .inherited_subclass_reason(fit)
+  if (is.null(what)) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "`%s` fits are not supported by `table_regression()`.",
+        what[["class"]]
+      ),
+      "i" = what[["is"]],
+      if (!is.na(what[["do"]])) c("i" = what[["do"]])
+    ),
+    class = "spicy_unsupported_class"
+  )
+}
+
+# NULL for a fit that is the model its frame method describes; otherwise
+# the class to name, what the object is and, when there is one, the
+# supported way to fit it.
+.inherited_subclass_reason <- function(fit) {
+  out <- function(class, is, do = NA_character_) {
+    c(class = class, is = is, do = do)
+  }
+  if (inherits(fit, "clogit")) {
+    return(out(
+      "clogit",
+      paste0(
+        "A `survival::clogit()` fit is a conditional logistic regression, ",
+        "estimated as a stratified Cox model: the Cox title, event count ",
+        "and concordance would describe the wrong model."
+      )
+    ))
+  }
+  if (inherits(fit, "coxphms")) {
+    return(out(
+      "coxphms",
+      paste0(
+        "A multi-state `coxph` fit has one coefficient per transition and ",
+        "no single survival curve."
+      )
+    ))
+  }
+  if (inherits(fit, "coxph.penal")) {
+    pt <- fit$pterms %||% numeric(0)
+    # A sparse frailty (pterms 2) and a ridge() term leave one coefficient
+    # per covariate, the rows of summary(). A pspline() term or a
+    # non-sparse frailty puts its basis or per-cluster coefficients in
+    # coef(), where summary() gives one test per term.
+    expanded <- pt == 1 & !grepl("^ridge\\(", names(pt))
+    if (any(expanded)) {
+      term <- names(pt)[expanded][1L]
+      return(out(
+        "coxph.penal",
+        sprintf(
+          paste0(
+            "A `coxph` fit with the term `%s` has one coefficient per %s, ",
+            "where `summary()` reports one test for the term."
+          ),
+          term,
+          if (grepl("^frailty", term)) "cluster" else "spline basis"
+        )
+      ))
+    }
+  }
+  if (inherits(fit, "svysurvreg")) {
+    return(out(
+      "svysurvreg",
+      paste0(
+        "A `survey::svysurvreg()` fit is a survey-weighted parametric ",
+        "survival model: the `survreg` table would give neither its ",
+        "design nor the design-based nature of its standard errors."
+      )
+    ))
+  }
+  if (inherits(fit, "mlm")) {
+    return(out(
+      "mlm",
+      paste0(
+        "An `lm()` fit with a matrix response is a multivariate linear ",
+        "model, with one set of coefficients per response."
+      ),
+      "Fit one `lm()` per response."
+    ))
+  }
+  if (inherits(fit, "aov")) {
+    return(out(
+      "aov",
+      paste0(
+        "An `aov()` fit is an analysis of variance: its `summary()` is an ",
+        "ANOVA table, not a table of coefficients."
+      ),
+      "Fit the same model with `lm()` for a table of coefficients."
+    ))
+  }
+  if (inherits(fit, "nlme")) {
+    return(out(
+      "nlme",
+      paste0(
+        "An `nlme::nlme()` fit is a nonlinear mixed-effects model, not the ",
+        "linear one the `lme` table describes."
+      )
+    ))
+  }
+  if (inherits(fit, "gnls")) {
+    return(out(
+      "gnls",
+      paste0(
+        "An `nlme::gnls()` fit is a nonlinear model fitted by generalized ",
+        "least squares, not the linear one the `gls` table describes."
+      )
+    ))
+  }
+  if (inherits(fit, "Rq")) {
+    return(out(
+      "Rq",
+      "An `rms::Rq()` fit is a quantile regression wrapped by rms.",
+      "Fit the model with `quantreg::rq()`, which is supported."
+    ))
+  }
+  if (inherits(fit, "Gls")) {
+    return(out(
+      "Gls",
+      "An `rms::Gls()` fit is a generalized least squares model wrapped by rms.",
+      "Fit the model with `nlme::gls()`, which is supported."
+    ))
+  }
+  NULL
 }
 
 # Per-fit class classifier: NULL if OK, message string otherwise.

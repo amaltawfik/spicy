@@ -45,6 +45,7 @@ as_regression_frame.lme <- function(
   ...
 ) {
   .check_nlme_available()
+  .refuse_inherited_subclass(fit)
 
   coefs <- .lme_coefs(fit, ci_level = ci_level)
   # One matrix for the coefficient rows and the joint tests of the terms.
@@ -120,6 +121,7 @@ as_regression_frame.gls <- function(
   ...
 ) {
   .check_nlme_available()
+  .refuse_inherited_subclass(fit)
 
   coefs <- .gls_coefs(fit, ci_level = ci_level)
   # AME rows when requested: the registry advertises supports$ame for

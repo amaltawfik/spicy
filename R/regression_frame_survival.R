@@ -67,6 +67,7 @@ as_regression_frame.coxph <- function(
   ...
 ) {
   .check_survival_available()
+  .refuse_inherited_subclass(fit)
 
   coefs <- .coxph_coefs(fit, ci_level = ci_level)
   # CR* -> Lin-Wei grouped-dfbeta robust SE (Wald z); a no-op for the default.
@@ -172,6 +173,7 @@ as_regression_frame.survreg <- function(
       class = "spicy_unsupported_class"
     )
   }
+  .refuse_inherited_subclass(fit)
 
   coefs <- .survreg_coefs(fit, ci_level = ci_level)
   # CR* -> sandwich::vcovCL cluster sandwich (Wald z); a no-op for the default.

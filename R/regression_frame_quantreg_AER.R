@@ -35,6 +35,7 @@ as_regression_frame.rq <- function(
   ...
 ) {
   .check_quantreg_available()
+  .refuse_inherited_subclass(fit)
   .check_rq_method_supported(fit)
 
   # `se` is the internal method-level override (tests, direct callers);
