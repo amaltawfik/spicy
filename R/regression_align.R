@@ -30,6 +30,7 @@
   "Zero hurdle",
   "Zero hurdle, Pr(y = 0)",
   "Dispersion",
+  "Precision",
   # The sigma, rho (and two-step inverse Mills ratio) of a selection model.
   "Error terms",
   "Scale effects",
@@ -49,6 +50,10 @@
 .REG_BLOCK_HURDLE <- "Zero hurdle"
 .REG_BLOCK_HURDLE_ZERO <- "Zero hurdle, Pr(y = 0)"
 .REG_BLOCK_DISP <- "Dispersion"
+# The precision sub-model of a beta regression (betareg `y ~ x | z`, and
+# the dispersion formula of a glmmTMB beta_family fit, whose dispersion
+# parameter is the precision phi).
+.REG_BLOCK_PREC <- "Precision"
 # Unlike the other blocks, its rows follow `keep` / `drop` by their
 # coefficient name (`apply_keep_drop_filter()`).
 .REG_BLOCK_ERROR <- "Error terms"
@@ -83,6 +88,7 @@
   "Zero hurdle" = "label_block_zero_hurdle",
   "Zero hurdle, Pr(y = 0)" = "label_block_zero_hurdle_zero",
   "Dispersion" = "label_block_dispersion",
+  "Precision" = "label_block_precision",
   "Error terms" = "label_block_error_terms",
   "Scale effects" = "label_block_scale_effects",
   "Non-proportional effects" = "label_block_non_proportional",

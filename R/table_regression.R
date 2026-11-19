@@ -295,7 +295,10 @@
 #'     A token is refused only when no model in the table has the
 #'     parameter, or when a model of that family has dispersion
 #'     covariates (a `glmmTMB` `dispformula`, or a betareg `y ~ x | z`),
-#'     so the parameter is not a single number.
+#'     so the parameter is not a single number. Those covariates are
+#'     shown as a block of rows instead (`show_components`): `Precision`
+#'     for a betareg `y ~ x | z` and a `beta_family()` `dispformula`,
+#'     `Dispersion` for the other `glmmTMB` families.
 #'   \item GEE (`geepack::geeglm` only): `"qic"` and `"qicu"` -- the
 #'     quasi-likelihood information criteria (Pan 2001; QIC for
 #'     working-correlation choice, QICu for covariate choice) via
@@ -1290,9 +1293,11 @@
 #'   in the note. See [table_regression_ordinal].
 #' @param show_components Models with secondary components only (the
 #'   `pscl` and `glmmTMB` two-part and dispersion models, `clm` with
-#'   `scale =`, the error terms of a sample-selection model): `TRUE`
-#'   (default) shows the components as labeled blocks of rows, `FALSE`
-#'   omits them. See [table_regression_counts],
+#'   `scale =`, the precision sub-model of a `betareg` `y ~ x | z`, the
+#'   error terms of a sample-selection model): `TRUE` (default) shows
+#'   the components as labeled blocks of rows, `FALSE` omits them. A
+#'   `Precision` block stays on the scale of its link (log by default),
+#'   under `exponentiate = TRUE` too. See [table_regression_counts],
 #'   [table_regression_ordinal] and [table_regression_models].
 #' @param intercept_position Where to place the intercept when
 #'   shown. `"first"` (default, APA) or `"last"` (Stata-style,

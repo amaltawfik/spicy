@@ -1687,7 +1687,8 @@ format_term_label <- function(
     .REG_BLOCK_ZI,
     .REG_BLOCK_HURDLE,
     .REG_BLOCK_HURDLE_ZERO,
-    .REG_BLOCK_DISP
+    .REG_BLOCK_DISP,
+    .REG_BLOCK_PREC
   )
   if (!isTRUE(block %in% component)) {
     return(lvl)

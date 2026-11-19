@@ -352,6 +352,7 @@
   label_block_zero_hurdle = "Zero hurdle, Pr(y > 0)",
   label_block_zero_hurdle_zero = "Zero hurdle, Pr(y = 0)",
   label_block_dispersion = "Dispersion",
+  label_block_precision = "Precision",
   # The auxiliary parameters of a sample-selection model, under the
   # heading summary() gives them. The three row words follow the symbol
   # ("\u03C3 (outcome error)"), as the random-effects rows do.
@@ -548,6 +549,13 @@
   # one sentence.
   note_component_gloss_zero_inflation = "%s component: log-odds of a structural (excess) zero.",
   note_component_gloss_dispersion = "%s component: log scale.",
+  # The precision sub-model of a beta regression, on the scale of its
+  # precision link. Two holes: the block caption, then one of the
+  # `note_component_scale_*` words below.
+  note_component_gloss_precision = "%s component: %s scale.",
+  note_component_scale_log = "log",
+  note_component_scale_identity = "identity",
+  note_component_scale_sqrt = "square-root",
   note_component_gloss_hurdle_binomial = "%s component: log-odds of a nonzero count.",
   # glmmTMB hurdle (zero-truncated family + zi formula): its zi part
   # models Pr(y = 0), the opposite event of pscl's zero hurdle.

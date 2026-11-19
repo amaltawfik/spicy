@@ -223,7 +223,7 @@
       "betareg::betareg()",
       "yes",
       "OR (mean link)",
-      "-"
+      paste0(.REG_BLOCK_PREC, " (y ~ x | z)")
     ),
     c(
       "Additive, proportions, selection",

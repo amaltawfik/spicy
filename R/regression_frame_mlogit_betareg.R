@@ -358,7 +358,143 @@ as_regression_frame.betareg <- function(
     )
   }
 
+  # The precision sub-model (`y ~ x | z`) as a component block, on the
+  # rail of the pscl / glmmTMB components (dev/component_blocks_spec.md).
+  info$extras$component_blocks <- Filter(
+    Negate(is.null),
+    list(
+      .betareg_precision_block(
+        fit,
+        ci_level,
+        vcov_type = vcov,
+        cluster = cluster
+      )
+    )
+  )
+
   new_regression_frame(coefs, info, fit)
+}
+
+
+# The precision sub-model of a betareg fit as a component block (label /
+# link / exp_ok / gloss / coefs), which the orchestrator promotes to a
+# labeled `Precision` block of rows. NULL for a constant precision (`y ~ x`
+# or `y ~ x | 1`): its single phi stays the `phi` fit-statistic token.
+# Wald inference straight from summary(fit)$coefficients$precision; under
+# CR1 the SEs come from the "(phi)_" rows of the same whole-model
+# sandwich::vcovCL matrix as the mean rows. Never exponentiated: the
+# block is on the scale of the precision link (log by default), the rule
+# of the glmmTMB Dispersion block.
+.betareg_precision_block <- function(
+  fit,
+  ci_level,
+  vcov_type = "model",
+  cluster = NULL
+) {
+  prec_vars <- tryCatch(
+    all.vars(stats::delete.response(fit$terms$precision)),
+    error = function(e) character(0)
+  )
+  if (length(prec_vars) == 0L) {
+    return(NULL)
+  }
+  smp <- summary(fit)$coefficients$precision
+  if (is.null(smp) || nrow(smp) == 0L) {
+    return(NULL) # nocov
+  }
+  nm <- rownames(smp)
+  est <- unname(smp[, "Estimate"])
+  se <- unname(smp[, "Std. Error"])
+  if (!.is_model_vcov(vcov_type)) {
+    vc_full <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
+    pref <- paste0("(phi)_", nm)
+    if (all(pref %in% rownames(vc_full))) {
+      se <- unname(sqrt(diag(as.matrix(vc_full))[pref]))
+    }
+  }
+  stat <- est / se
+  p <- 2 * stats::pnorm(-abs(stat))
+  z <- stats::qnorm(0.5 + ci_level / 2)
+
+  xlev <- fit$levels$precision %||% list()
+  ft <- rep(NA_character_, length(nm))
+  lvl <- rep(NA_character_, length(nm))
+  pos <- rep(NA_integer_, length(nm))
+  for (i in seq_along(nm)) {
+    meta <- match_coef_to_factor(nm[i], xlev)
+    if (!is.null(meta)) {
+      ft[i] <- meta$factor_term
+      lvl[i] <- meta$factor_level
+      pos[i] <- meta$factor_level_pos %||% NA_integer_
+    }
+  }
+  rows <- data.frame(
+    term = nm,
+    label = ifelse(is.na(lvl), nm, paste0(ft, ": ", lvl)),
+    factor_level_pos = as.integer(pos),
+    is_ref = FALSE,
+    estimate = est,
+    std_error = se,
+    statistic = stat,
+    p_value = p,
+    ci_lower = est - z * se,
+    ci_upper = est + z * se,
+    stringsAsFactors = FALSE
+  )
+  # Reference rows for the factors of the precision formula, independent
+  # of the mean side, as for a pscl zero component.
+  for (v in names(xlev)) {
+    lvls <- xlev[[v]]
+    ref <- setdiff(lvls, lvls[paste0(v, lvls) %in% nm])
+    if (length(ref) == 0L || length(ref) == length(lvls)) {
+      next
+    }
+    rows <- rbind(
+      rows,
+      data.frame(
+        term = paste0(v, ref[1L]),
+        label = paste0(v, ": ", ref[1L]),
+        factor_level_pos = as.integer(match(ref[1L], lvls)),
+        is_ref = TRUE,
+        estimate = NA_real_,
+        std_error = NA_real_,
+        statistic = NA_real_,
+        p_value = NA_real_,
+        ci_lower = NA_real_,
+        ci_upper = NA_real_,
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+  rows <- .order_component_rows(rows, xlev)
+
+  link <- fit$link$precision$name %||% "log"
+  list(
+    label = .REG_BLOCK_PREC,
+    link = link,
+    exp_ok = FALSE,
+    gloss = .precision_gloss(link),
+    coefs = rows
+  )
+}
+
+
+# The note of a Precision block: the scale of its link, in the table
+# language ("Precision component: log scale."). An unknown link prints
+# its own name.
+.precision_gloss <- function(link) {
+  word <- switch(
+    link,
+    log = spicy_str("note_component_scale_log"),
+    identity = spicy_str("note_component_scale_identity"),
+    sqrt = spicy_str("note_component_scale_sqrt"),
+    link
+  )
+  spicy_fmt(
+    "note_component_gloss_precision",
+    spicy_str("label_block_precision"),
+    word
+  )
 }
 
 

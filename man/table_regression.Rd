@@ -356,9 +356,11 @@ in the note. See \link{table_regression_ordinal}.}
 
 \item{show_components}{Models with secondary components only (the
 \code{pscl} and \code{glmmTMB} two-part and dispersion models, \code{clm} with
-\verb{scale =}, the error terms of a sample-selection model): \code{TRUE}
-(default) shows the components as labeled blocks of rows, \code{FALSE}
-omits them. See \link{table_regression_counts},
+\verb{scale =}, the precision sub-model of a \code{betareg} \code{y ~ x | z}, the
+error terms of a sample-selection model): \code{TRUE} (default) shows
+the components as labeled blocks of rows, \code{FALSE} omits them. A
+\code{Precision} block stays on the scale of its link (log by default),
+under \code{exponentiate = TRUE} too. See \link{table_regression_counts},
 \link{table_regression_ordinal} and \link{table_regression_models}.}
 
 \item{intercept_position}{Where to place the intercept when
@@ -1148,7 +1150,10 @@ maximum-likelihood values of \code{glm.nb()}, betareg or \code{glmmTMB}.
 A token is refused only when no model in the table has the
 parameter, or when a model of that family has dispersion
 covariates (a \code{glmmTMB} \code{dispformula}, or a betareg \code{y ~ x | z}),
-so the parameter is not a single number.
+so the parameter is not a single number. Those covariates are
+shown as a block of rows instead (\code{show_components}): \code{Precision}
+for a betareg \code{y ~ x | z} and a \code{beta_family()} \code{dispformula},
+\code{Dispersion} for the other \code{glmmTMB} families.
 \item GEE (\code{geepack::geeglm} only): \code{"qic"} and \code{"qicu"} -- the
 quasi-likelihood information criteria (Pan 2001; QIC for
 working-correlation choice, QICu for covariate choice) via
