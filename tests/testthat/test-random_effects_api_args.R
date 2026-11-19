@@ -241,3 +241,195 @@ test_that(".re_components_on_scale('variance') is a no-op", {
   expect_equal(out$variance, vc$variance)
   expect_equal(out$std_error, vc$std_error)
 })
+
+
+# ---- re_* on a table with no random effects --------------------------------
+# dev/decisions/2026-11-19-capability-registry.md, point 5: one
+# spicy_ignored_arg warning per table, naming the arguments set away from
+# their default, when no model has random-effects rows.
+
+# The spicy_ignored_arg warnings of `expr` about the `re_*` arguments.
+.re_noop_warnings <- function(expr) {
+  msgs <- character(0)
+  withCallingHandlers(
+    expr,
+    spicy_ignored_arg = function(w) {
+      msgs <<- c(msgs, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  grep("random effects", msgs, value = TRUE, fixed = TRUE)
+}
+
+test_that("a re_* argument on a table without random effects warns once", {
+  m <- lm(mpg ~ wt, data = mtcars)
+  w <- expect_warning(
+    table_regression(m, re_scale = "variance", output = "data.frame"),
+    class = "spicy_ignored_arg"
+  )
+  expect_match(
+    conditionMessage(w),
+    paste0(
+      "`re_scale = \"variance\"` has no effect: no model in the table has ",
+      "random effects."
+    ),
+    fixed = TRUE
+  )
+  msgs <- .re_noop_warnings(table_regression(
+    list(m, lm(mpg ~ wt + hp, data = mtcars)),
+    re_scale = "variance",
+    re_columns = "est",
+    re_test = "lrt",
+    re_ci = "profile",
+    output = "data.frame"
+  ))
+  expect_length(msgs, 1L)
+  expect_match(
+    msgs,
+    paste0(
+      "`re_scale = \"variance\"`, `re_columns = \"est\"`, ",
+      "`re_test = \"lrt\"` and `re_ci = \"profile\"` have no effect"
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("re_* at their defaults, or show_* = FALSE, do not warn", {
+  m <- lm(mpg ~ wt, data = mtcars)
+  expect_length(
+    .re_noop_warnings(table_regression(
+      m,
+      re_scale = "sd",
+      re_columns = c("se", "est", "ci"),
+      re_test = "none",
+      re_ci = "wald",
+      show_re = FALSE,
+      show_thresholds = FALSE,
+      show_components = FALSE,
+      output = "data.frame"
+    )),
+    0L
+  )
+})
+
+test_that("one mixed model in the table silences the warning", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  mm <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  m <- lm(Reaction ~ Days, data = lme4::sleepstudy)
+  expect_length(
+    .re_noop_warnings(table_regression(
+      list(m, mm),
+      re_scale = "variance",
+      output = "data.frame"
+    )),
+    0L
+  )
+  expect_length(
+    .re_noop_warnings(table_regression(
+      list(m, mm),
+      re_scale = "variance",
+      layout = "stacked",
+      output = "data.frame"
+    )),
+    0L
+  )
+})
+
+test_that("a stacked table warns once for all its panels", {
+  msgs <- .re_noop_warnings(table_regression(
+    list(lm(mpg ~ wt, data = mtcars), lm(mpg ~ wt + hp, data = mtcars)),
+    re_test = "lrt",
+    layout = "stacked",
+    output = "data.frame"
+  ))
+  expect_length(msgs, 1L)
+  expect_match(msgs, "`re_test = \"lrt\"` has no effect", fixed = TRUE)
+})
+
+test_that("table_regression_uv() passes the warning on", {
+  msgs <- .re_noop_warnings(table_regression_uv(
+    mtcars,
+    outcome = "mpg",
+    predictors = c("wt", "hp"),
+    method = "lm",
+    re_columns = c("est", "ci"),
+    output = "data.frame"
+  ))
+  expect_length(msgs, 1L)
+  expect_match(
+    msgs,
+    "`re_columns = c(\"est\", \"ci\")` has no effect",
+    fixed = TRUE
+  )
+})
+
+test_that("the refusals of re_test and re_ci without show_re still come first", {
+  m <- lm(mpg ~ wt, data = mtcars)
+  expect_error(
+    table_regression(m, re_test = "lrt", show_re = FALSE),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(m, re_ci = "profile", show_re = FALSE),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("show_columns = \"none\" names the re_* arguments in its own warning only", {
+  msgs <- character(0)
+  withCallingHandlers(
+    table_regression(
+      lm(mpg ~ wt, data = mtcars),
+      show_columns = "none",
+      re_scale = "variance",
+      output = "data.frame"
+    ),
+    spicy_ignored_arg = function(w) {
+      msgs <<- c(msgs, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(msgs, 1L)
+  expect_match(
+    msgs,
+    "`show_columns = \"none\"` shows no coefficient",
+    fixed = TRUE
+  )
+})
+
+# The criterion is the structure of each fit: the fixtures whose fit has
+# random effects (lme4, glmmTMB, nlme, and clmm and the ordinal glmmTMB
+# outside that family) are silent, every other one warns.
+re_fixtures <- c(
+  "lmer",
+  "lmer_ml",
+  "glmer",
+  "glmmTMB",
+  "glmmTMB_reml",
+  "glmmTMB_ordinal",
+  "glmmTMB_zi",
+  "glmmTMB_hurdle",
+  "glmmTMB_disp",
+  "lme",
+  "lme_contrasts",
+  "clmm"
+)
+for (id in names(.CLASS_FIXTURES)) {
+  local({
+    id <- id
+    test_that(
+      paste0("re_scale = \"variance\" warns iff no random effects: ", id),
+      {
+        skip_on_cran()
+        fit <- .class_fixture(id)
+        # The other warnings of a fixture (singular fit, sampler) are not
+        # the subject here.
+        msgs <- suppressWarnings(.re_noop_warnings(suppressMessages(
+          table_regression(fit, re_scale = "variance", output = "data.frame")
+        )))
+        expect_length(msgs, if (id %in% re_fixtures) 0L else 1L)
+      }
+    )
+  })
+}

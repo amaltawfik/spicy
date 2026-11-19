@@ -513,7 +513,9 @@ rows that are displayed, a subset of \code{c("est", "se", "ci")}. See
 
 \item{re_ci}{Mixed models only: \code{"wald"} (default) or \code{"profile"},
 the intervals of the random-effects rows of \code{lmer} and \code{glmer} fits.
-See \link{table_regression_mixed}.}
+See \link{table_regression_mixed}. \code{re_scale}, \code{re_columns}, \code{re_test}
+or \code{re_ci} set to other than its default on a table where no model
+has random effects raises one \code{spicy_ignored_arg} warning.}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /

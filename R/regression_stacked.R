@@ -284,6 +284,13 @@
   }
   .reg_warn_label_names(models, frames, arg("labels"), arg("note_labels"))
   .reg_warn_exponentiate_noop(frames, arg("exponentiate"))
+  .reg_warn_re_args_noop(
+    frames,
+    arg("re_scale"),
+    arg("re_columns"),
+    arg("re_test"),
+    arg("re_ci")
+  )
 
   panel_labels <- .reg_stacked_panel_labels(models, model_labels, frames)
   if (nested_on) {

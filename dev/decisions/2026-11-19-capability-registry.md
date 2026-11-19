@@ -55,3 +55,18 @@ Des colonnes de plus ne suffiraient pas : il en faudrait une par propriété et 
 - Les conditions entre parenthèses décrivent ce que les ajustements du balayage montrent. Une variante non balayée (un `glm` binomial pondéré, un `Glm` binomial de `rms`, un `feols` instrumental avec effets fixes) peut s'en écarter. Le test ne le verrait pas.
 - Le balayage porte sur des tableaux d'un seul modèle, avec des données simulées pour lesquelles chaque valeur existe. Les cas où les données retirent une valeur restent couverts par les tests ciblés.
 - Les registres de `vcov` et de statistiques restent écrits à la main. Les tests en vérifient le contenu, pas la rédaction des conditions.
+
+## Amendement du 2026-11-19 : décision sur le point 5
+
+**Statut** : approuvé par Amal le 2026-11-19, mis en œuvre le même jour, branche `lot-family-arg-warning`.
+
+La mesure 1 montrait que `re_scale`, `re_columns`, `re_test` et `re_ci` étaient ignorés sans un mot sur 58 ajustements sans effets aléatoires. `table_regression()` émet désormais un avertissement `spicy_ignored_arg` quand l'un de ces quatre arguments a une valeur autre que son défaut et qu'aucun modèle du tableau n'a de composantes de variance. Il y en a un seul par tableau. Il nomme les arguments avec leur valeur et dit qu'aucun modèle n'a d'effets aléatoires (`.reg_warn_re_args_noop()`, à côté de `.reg_warn_exponentiate_noop()`).
+
+- Le critère est la structure de l'ajustement, lue dans les cadres (`info$random_effects$variance_components`), et non la famille du registre. `clmm` et le `glmmTMB` ordinal, rangés hors des modèles mixtes, ne déclenchent rien.
+- Un seul modèle à effets aléatoires dans le tableau suffit à taire l'avertissement. Une disposition empilée le donne une fois pour tous ses panneaux, par son pilote, comme l'avertissement d'`exponentiate`.
+- `table_regression_uv()` transmet ces arguments par `...` et reçoit le même avertissement.
+- Rien pour `show_re`, `show_thresholds` et `show_components` à `FALSE` : masquer ce qui n'existe pas est déjà satisfait. Les refus existants (`re_test` ou `re_ci = "profile"` avec `show_re = FALSE`, `re_ci = "profile"` hors lme4) passent avant et ne changent pas. Avec `show_columns = "none"`, ces arguments sont déjà nommés par l'avertissement du tableau sans coefficients et remis à leur défaut, si bien qu'il n'y a pas de second avertissement.
+
+Un avertissement plutôt qu'une erreur, parce qu'une erreur casserait les scripts qui passent les mêmes arguments à plusieurs tableaux, dont certains ont des modèles mixtes et d'autres non.
+
+Garde : `tests/testthat/test-random_effects_api_args.R`. Sur les 71 ajustements de `helper-class-fixtures.R`, les 12 qui ont des effets aléatoires (deux `lmer`, `glmer`, six `glmmTMB`, deux `lme`, `clmm`) ne donnent rien, les 59 autres un avertissement.

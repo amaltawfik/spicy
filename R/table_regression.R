@@ -1434,7 +1434,9 @@
 #'   [table_regression_mixed].
 #' @param re_ci Mixed models only: `"wald"` (default) or `"profile"`,
 #'   the intervals of the random-effects rows of `lmer` and `glmer` fits.
-#'   See [table_regression_mixed].
+#'   See [table_regression_mixed]. `re_scale`, `re_columns`, `re_test`
+#'   or `re_ci` set to other than its default on a table where no model
+#'   has random effects raises one `spicy_ignored_arg` warning.
 #' @param model_labels Per-model labels used as the **column-group
 #'   spanner** above each model's sub-columns (console + gt /
 #'   flextable / tinytable / Excel / Word renderers). `NULL`
@@ -3807,10 +3809,12 @@ table_regression <- function(
     }
   }
 
-  # `exponentiate = TRUE` no-op detection, once every frame is built. The
-  # panel of a stack leaves it to the driver, which asks every model.
+  # `exponentiate = TRUE` and `re_*` no-op detection, once every frame is
+  # built. The panel of a stack leaves it to the driver, which asks every
+  # model.
   if (is.null(panel_req)) {
     .reg_warn_exponentiate_noop(frames, exponentiate)
+    .reg_warn_re_args_noop(frames, re_scale, re_columns, re_test, re_ci)
   }
 
   # Standardized-on-non-additive caveat (Q15, Phase E)
@@ -4570,6 +4574,76 @@ table_regression <- function(
       class = "spicy_ignored_arg"
     )
   }
+  invisible(NULL)
+}
+
+# `re_scale`, `re_columns`, `re_test` or `re_ci` set away from its default
+# on a table where no model has random effects: they act on the
+# random-effects rows only, and none exists. Keyed on the frames' own
+# variance components, not on the class, so clmm and the ordinal glmmTMB
+# count. Asked once the frames are built: by table_regression(), or for
+# all the panels of a stack by its driver. The values reach it raw and
+# have already passed their validators.
+.reg_warn_re_args_noop <- function(
+  frames,
+  re_scale,
+  re_columns,
+  re_test,
+  re_ci
+) {
+  vals <- list(
+    re_scale = .validate_re_scale(re_scale),
+    re_columns = .validate_re_columns(re_columns),
+    re_test = .validate_re_test(re_test),
+    re_ci = .validate_re_ci(re_ci, list())
+  )
+  set <- c(
+    re_scale = !identical(vals$re_scale, "sd"),
+    re_columns = !setequal(vals$re_columns, c("est", "se", "ci")),
+    re_test = !identical(vals$re_test, "none"),
+    re_ci = !identical(vals$re_ci, "wald")
+  )
+  if (!any(set)) {
+    return(invisible(NULL))
+  }
+  has_re <- vapply(
+    frames,
+    function(fr) {
+      vc <- fr$info$random_effects$variance_components
+      is.data.frame(vc) && nrow(vc) > 0L
+    },
+    logical(1)
+  )
+  if (any(has_re)) {
+    return(invisible(NULL))
+  }
+  args <- vapply(
+    names(vals)[set],
+    function(a) paste0("`", a, " = ", deparse(vals[[a]]), "`"),
+    character(1)
+  )
+  n <- length(args)
+  args_txt <- if (n == 1L) {
+    args
+  } else {
+    paste0(paste(args[-n], collapse = ", "), " and ", args[n])
+  }
+  spicy_warn(
+    c(
+      paste0(
+        args_txt,
+        if (n == 1L) " has" else " have",
+        " no effect: no model in the table has random effects."
+      ),
+      "i" = paste0(
+        "The `re_*` arguments act on the random-effects rows of mixed ",
+        "models. Drop ",
+        if (n == 1L) "it" else "them",
+        " for this table."
+      )
+    ),
+    class = "spicy_ignored_arg"
+  )
   invisible(NULL)
 }
 

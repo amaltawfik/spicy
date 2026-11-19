@@ -270,6 +270,10 @@
   concordance C of a `survival::coxph()` or `survey::svycoxph()` model
   as a row, and takes it out of the note.
 
+* `table_regression()` and `table_regression_uv()` warn when
+  `re_scale`, `re_columns`, `re_test` or `re_ci` is set but no model of
+  the table has random effects. These arguments were ignored silently.
+
 * `table_regression()`: `"adj_r2"`, mgcv's adjusted R², is accepted
   for a table of GAMs.
 
