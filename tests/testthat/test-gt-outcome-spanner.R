@@ -172,6 +172,31 @@ test_that("the knitted LaTeX drops the empty row of column labels", {
   expect_false(.spicy_latex_row_empty("\\toprule"))
 })
 
+test_that("the knitted LaTeX sets the header of column 1 flush left", {
+  skip_if_not_installed("gt")
+  f <- gt_outcome_fits()
+  # A `\multicolumn{1}{l}` keeps the `\tabcolsep` that the `@{...}` of the
+  # preamble drops before the body of column 1: 6pt to the right.
+  for (g in list(
+    table_regression(list(A = f$m1, B = f$m2), output = "gt"),
+    table_categorical(sochealth, select = smoking, by = sex, output = "gt")
+  )) {
+    class(g) <- setdiff(class(g), "spicy_gt")
+    raw <- as.character(gt::as_latex(g))
+    expect_match(raw, "\\multicolumn{1}{l}{{", fixed = TRUE)
+    tex <- .spicy_gt_latex_layout(raw)
+    lines <- strsplit(tex, "\n", fixed = TRUE)[[1L]]
+    head <- lines[seq_len(grep("^\\\\midrule", lines)[1L] - 1L)]
+    expect_false(any(startsWith(head, "\\multicolumn{1}{l}")))
+    expect_true(any(grepl(
+      "^\\\\multicolumn\\{1\\}\\{@\\{\\}l\\}\\{\\{(\\\\mdseries )?Variable\\}\\}",
+      head
+    )))
+    # The labels of the other columns keep the cells gt writes.
+    expect_match(tex, "\\multicolumn{1}{c}{{", fixed = TRUE)
+  }
+})
+
 test_that("stacked tables keep their Outcome rows in the body", {
   skip_if_not_installed("gt")
   f <- gt_outcome_fits()

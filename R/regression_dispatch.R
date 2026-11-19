@@ -1319,6 +1319,11 @@ output_gt <- function(rendered) {
 #   writes its row of column labels, every cell empty: a blank line of
 #   about 14pt above `\midrule`. That row goes when every cell of it is
 #   empty; the LL and UL of a CI keep it.
+# * The left edge of the first column. Its preamble opens with `@{...}`,
+#   which drops the `\tabcolsep` before the column, but gt writes a
+#   header label of that column (a spanner) as `\multicolumn{1}{l}`,
+#   whose own preamble keeps it: the label sat 6pt right of the labels
+#   under it. The header cell takes `@{}l`.
 #
 # A string gt wrote differently (longtable, a set `table.width`) keeps
 # the parts that do not match.
@@ -1329,6 +1334,15 @@ output_gt <- function(rendered) {
   if (!is.na(mid) && mid > 1L && .spicy_latex_row_empty(lines[[mid - 1L]])) {
     lines <- lines[-(mid - 1L)]
     mid <- mid - 1L
+  }
+  flush <- any(grepl("^\\\\begin\\{(tabular\\*?|longtable)\\}.*\\{@\\{", lines))
+  if (flush && !is.na(mid) && mid > 1L) {
+    head <- seq_len(mid - 1L)
+    lines[head] <- sub(
+      "^\\\\multicolumn\\{1\\}\\{l\\}",
+      "\\\\multicolumn{1}{@{}l}",
+      lines[head]
+    )
   }
   if (!is.na(mid) && mid > 1L) {
     rows <- grep(

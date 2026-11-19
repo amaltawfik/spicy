@@ -38,6 +38,7 @@ Largeur du tableau en px (régression, catégoriel, continu), Chromium :
 
 - Mesuré dans Chromium seulement pour ce lot. Les cibles rtf et pptx n'ont pas été rendues.
 - En LaTeX, les libellés d'en-tête de gt commencent 6 pt à droite de ceux du corps. En Typst par Quarto, la ligne vide des intitulés subsiste.
+- Levée le 2026-11-19 pour LaTeX : gt écrit le libellé de la première colonne dans un `\multicolumn{1}{l}`, qui garde le `\tabcolsep` que le `@{...}` du préambule retire au corps. `.spicy_gt_latex_layout()` lui donne `@{}l`. Écart mesuré sur sept tableaux compilés : 6,0 pt avant, 0,0 pt après. Les écarts verticaux ne changent pas.
 
 ## Garde
 
