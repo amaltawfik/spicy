@@ -3399,8 +3399,9 @@ table_regression <- function(
         logical(1)
       )
       # Each refused fixest fit is named with its own reason. The ones
-      # that are not lean feols fits with fixed effects are GLMs with
-      # fixed effects (supports$ame of the fixest frame).
+      # that are neither IV fits without exogenous regressor nor lean
+      # feols fits with fixed effects are GLMs with fixed effects
+      # (supports$ame of the fixest frame).
       fixest_names <- function(which) {
         paste(.model_display_names(models, panel_req)[which], collapse = ", ")
       }
@@ -3414,8 +3415,23 @@ table_regression <- function(
       named <- function(which, txt) {
         if (length(frames) > 1L) paste0(fixest_names(which), ": ", txt) else txt
       }
+      # An IV fixest fit without exogenous regressor
+      # (.fixest_iv_without_exogenous()).
+      iv <- vapply(
+        frames,
+        function(fr) {
+          f <- attr(fr, "fit")
+          inherits(f, "fixest") && .fixest_iv_without_exogenous(f)
+        },
+        logical(1)
+      )
       headline <- if (all(reml)) {
         "AME columns are not available for a `glmmTMB` fit estimated by REML."
+      } else if (all(iv)) {
+        paste0(
+          "AME columns are not available for an instrumental-variables ",
+          "`fixest` fit without an exogenous regressor."
+        )
       } else {
         sprintf(
           "AME columns are not available for %s.",
@@ -3445,18 +3461,40 @@ table_regression <- function(
         )
       } else if (any(is_fixest)) {
         c(
-          if (any(lean_fe)) {
+          if (any(iv)) {
+            c(
+              named(
+                iv,
+                paste0(
+                  "fixest's `predict()` leaves the endogenous regressors ",
+                  "out of a prediction on new data when the second stage ",
+                  "has no exogenous regressor (`y ~ 1 | x ~ z`), so the ",
+                  "AME of each would be 0."
+                )
+              ),
+              paste0(
+                "In a linear IV model the AME of a regressor that enters ",
+                "linearly is its coefficient. `AER::ivreg()` and ",
+                "`estimatr::iv_robust()` fits have the AME columns."
+              )
+            )
+          },
+          if (any(lean_fe & !iv)) {
             sprintf(
               paste0(
                 "%s: a fixest fit with fixed effects and `lean = TRUE` ",
                 "keeps too little for marginaleffects to predict from it. ",
                 "Re-estimate it with `lean = FALSE`."
               ),
-              fixest_names(lean_fe)
+              fixest_names(lean_fe & !iv)
             )
           },
-          if (any(is_fixest & !lean_fe)) {
-            paste0(fixest_names(is_fixest & !lean_fe), ": ", fixest_glm_hint)
+          if (any(is_fixest & !lean_fe & !iv)) {
+            paste0(
+              fixest_names(is_fixest & !lean_fe & !iv),
+              ": ",
+              fixest_glm_hint
+            )
           }
         )
       } else {

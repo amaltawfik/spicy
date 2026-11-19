@@ -40,7 +40,7 @@ models are listed below.
    \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
    \code{tobit} \tab \code{AER::tobit()} \tab yes (latent outcome) \tab - \tab - \tab classical, CR1 \cr
    \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
-   \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
+   \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects or an IV fit without exogenous regressor) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
 }
 
 
@@ -56,8 +56,11 @@ The AME is refused for a \code{fixest} GLM with fixed effects (\code{feglm()},
 marginaleffects, which computes it, cannot take into account the
 uncertainty of the fixed effects. It is refused too for a \code{feols()}
 with fixed effects fitted with \code{lean = TRUE}, which marginaleffects
-cannot predict from (re-estimate it with \code{lean = FALSE}). Other
-\code{feols()} fits and a GLM without fixed effects have it. The AME of a
+cannot predict from (re-estimate it with \code{lean = FALSE}), and for an
+instrumental-variables \code{feols()} without exogenous regressor
+(\code{y ~ 1 | x ~ z}), whose endogenous regressors fixest's \code{predict()}
+leaves out of a prediction on new data. Other \code{feols()} fits and a GLM
+without fixed effects have it. The AME of a
 factor in \code{i()} sits on the rows of its coefficients, against the
 reference \code{i()} gives them (\verb{ref =}). A level of a factor in \code{i()}, or
 a numeric variable that \code{i()} enters as categories, with no coefficient
@@ -205,8 +208,10 @@ estimated parameter, so a test across two \verb{| fe} structures
 measures the change in the absorbed effects together with the
 change in the coefficients, and the two cannot be separated. Hold
 the \verb{| fe} part fixed across the hierarchy.
-\item The AME of a \code{fixest} GLM with fixed effects, and of a \code{feols()}
-with fixed effects fitted with \code{lean = TRUE} (see \emph{Engines}).
+\item The AME of a \code{fixest} GLM with fixed effects, of a \code{feols()}
+with fixed effects fitted with \code{lean = TRUE}, and of an
+instrumental-variables \code{feols()} without exogenous regressor (see
+\emph{Engines}).
 \item A \code{fixest} fit with fixed effects only: it has no coefficient
 row to show.
 }

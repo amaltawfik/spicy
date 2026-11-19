@@ -33,6 +33,11 @@ ag_conditional <- list(
     cell = "or a REML fit",
     why = "the delta method cannot perturb the fixed effects of a REML fit"
   ),
+  feols_iv = list(
+    expect = "refused",
+    cell = "or an IV fit without exogenous regressor",
+    why = "fixest's predict() leaves the endogenous regressor out"
+  ),
   lrm_ordinal = list(
     expect = "per",
     cell = "per category for an ordinal outcome",
@@ -56,14 +61,14 @@ ag_refusal <- c(
   selection = "error",
   fepois = "error",
   glmmTMB_ordinal = "error",
-  glmmTMB_reml = "error"
+  glmmTMB_reml = "error",
+  feols_iv = "error"
 )
 
 # The predictors of a fixture when they are not `x` alone.
 ag_terms <- list(
   iv_robust = "xen",
   ivreg = "xen",
-  feols_iv = "xen",
   lme_contrasts = c("x", "mnB", "mnC"),
   clm_scale = c("x", "z"),
   gam = c("x", "z"),
@@ -78,13 +83,6 @@ ag_terms <- list(
 # Found on 2026-11-19; the test fails once a row is mended, so that the
 # entry is removed with the fix.
 ag_known_rows <- list(
-  feols_iv = list(
-    rows = list("xen|NA" = c(est = 0, se = NA)),
-    why = paste(
-      "fixest's predict() of an IV fit does not move with the endogenous",
-      "regressor: marginaleffects returns a slope of 0 without SE"
-    )
-  ),
   survreg_strata = list(
     rows = list(
       "strata(mn)B|NA" = c(est = 0, se = NA),
@@ -441,7 +439,6 @@ ag_oracles <- list(
 
 # The fixtures of a "yes" or "per" cell checked for presence only.
 ag_no_oracle <- list(
-  feols_iv = "its AME is a known defect (ag_known_rows)",
   survreg_strata = "the strata rows are a known defect; x is checked on survreg",
   stanreg = "posterior draws, local only",
   brmsfit = "posterior draws, local only"
@@ -536,7 +533,7 @@ test_that("every fixture of an AME cell is checked against the oracle or named",
   expect_setequal(c(names(ag_oracles), names(ag_no_oracle)), offered)
   expect_length(intersect(names(ag_oracles), names(ag_no_oracle)), 0L)
   # The list of fixtures without a value oracle may not grow.
-  expect_lte(length(ag_no_oracle), 4L)
+  expect_lte(length(ag_no_oracle), 3L)
   # A conditional expectation names a fixture whose cell has a condition.
   for (id in names(ag_conditional)) {
     cell <- reg$ame[reg$class == fx_class[[id]]]
@@ -671,4 +668,31 @@ test_that("a glmmTMB fit estimated by REML refuses the AME with its reason", {
   )))
   a <- lo[lo$estimate_type == "ame" & is.finite(lo$estimate), ]
   expect_identical(unique(a$model_id), "M1")
+})
+
+test_that("an IV fixest fit refuses the AME only without an exogenous regressor", {
+  skip_if_no_ame_guard()
+  skip_if_not_installed("fixest")
+  e <- expect_error(
+    table_regression(.class_fixture("feols_iv"), show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  m <- conditionMessage(e)
+  expect_match(m, "instrumental-variables `fixest` fit without", fixed = TRUE)
+  expect_match(m, "leaves the endogenous regressors", fixed = TRUE)
+  expect_match(m, "`AER::ivreg()`", fixed = TRUE)
+  # With an exogenous regressor, fixest predicts from the second-stage
+  # coefficients: the AME of each regressor is its coefficient.
+  d <- .class_fixture_data()
+  for (fit in list(
+    fixest::feols(yiv ~ x | xen ~ inst, d),
+    fixest::feols(yiv ~ x | g | xen ~ inst, d)
+  )) {
+    sp <- ag_run(fit)$rows
+    b <- stats::coef(fit)
+    se <- sqrt(diag(stats::vcov(fit)))
+    i <- match(c("xen|NA", "x|NA"), sp$key)
+    expect_equal(sp$est[i], unname(b[c("fit_xen", "x")]), tolerance = 1e-6)
+    expect_equal(sp$se[i], unname(se[c("fit_xen", "x")]), tolerance = 1e-4)
+  }
 })

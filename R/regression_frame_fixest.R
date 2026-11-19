@@ -548,7 +548,8 @@ as_regression_frame.fixest <- function(
 }
 
 
-# TRUE when the fit has an average marginal effect: feols, or a GLM
+# TRUE when the fit has an average marginal effect: feols (but an IV fit
+# without exogenous regressor, .fixest_iv_without_exogenous()), or a GLM
 # (feglm, fepois, femlm, fenegbin) without fixed effects. marginaleffects
 # refuses a GLM with fixed effects, whatever its family, the gaussian
 # included: it "cannot take into account the uncertainty in fixed-effects
@@ -558,7 +559,23 @@ as_regression_frame.fixest <- function(
 # a column of dashes. A `lean = TRUE` fit with fixed effects is refused
 # too: marginaleffects cannot predict from it (marginaleffects 1.0.0).
 .fixest_ame_ok <- function(fit, is_glm) {
-  length(fit$fixef_vars) == 0L || (!is_glm && !isTRUE(fit$lean))
+  (length(fit$fixef_vars) == 0L || (!is_glm && !isTRUE(fit$lean))) &&
+    !.fixest_iv_without_exogenous(fit)
+}
+
+# TRUE for the second stage of an IV fit with no exogenous regressor
+# (`y ~ 1 | x ~ z`, with or without fixed effects). fixest's predict()
+# then leaves the endogenous regressors out of a prediction on new data,
+# so marginaleffects finds a slope of 0 for each; with an exogenous
+# regressor it predicts from the second-stage coefficients of both
+# (checked with fixest 0.14.2).
+.fixest_iv_without_exogenous <- function(fit) {
+  .fixest_is_iv_second_stage(fit) &&
+    length(setdiff(
+      c(names(stats::coef(fit)), as.character(fit[["collin.var"]])),
+      c("(Intercept)", as.character(fit[["iv_endo_names_fit"]]))
+    )) ==
+      0L
 }
 
 # TRUE for the frame of a `lean = TRUE` feols fit with fixed effects,

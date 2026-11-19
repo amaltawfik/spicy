@@ -68,7 +68,7 @@
       "Robust, IV, quantile, panel",
       "fixest",
       "fixest::feols(), fixest::feglm(), fixest::fepois(), fixest::femlm(), fixest::fenegbin()",
-      "yes (no for a GLM with fixed effects)",
+      "yes (no for a GLM with fixed effects or an IV fit without exogenous regressor)",
       "OR / IRR (link)",
       "-"
     ),

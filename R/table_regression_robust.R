@@ -34,8 +34,11 @@
 #' marginaleffects, which computes it, cannot take into account the
 #' uncertainty of the fixed effects. It is refused too for a `feols()`
 #' with fixed effects fitted with `lean = TRUE`, which marginaleffects
-#' cannot predict from (re-estimate it with `lean = FALSE`). Other
-#' `feols()` fits and a GLM without fixed effects have it. The AME of a
+#' cannot predict from (re-estimate it with `lean = FALSE`), and for an
+#' instrumental-variables `feols()` without exogenous regressor
+#' (`y ~ 1 | x ~ z`), whose endogenous regressors fixest's `predict()`
+#' leaves out of a prediction on new data. Other `feols()` fits and a GLM
+#' without fixed effects have it. The AME of a
 #' factor in `i()` sits on the rows of its coefficients, against the
 #' reference `i()` gives them (`ref =`). A level of a factor in `i()`, or
 #' a numeric variable that `i()` enters as categories, with no coefficient
@@ -174,8 +177,10 @@
 #'     measures the change in the absorbed effects together with the
 #'     change in the coefficients, and the two cannot be separated. Hold
 #'     the `| fe` part fixed across the hierarchy.
-#'   \item The AME of a `fixest` GLM with fixed effects, and of a `feols()`
-#'     with fixed effects fitted with `lean = TRUE` (see *Engines*).
+#'   \item The AME of a `fixest` GLM with fixed effects, of a `feols()`
+#'     with fixed effects fitted with `lean = TRUE`, and of an
+#'     instrumental-variables `feols()` without exogenous regressor (see
+#'     *Engines*).
 #'   \item A `fixest` fit with fixed effects only: it has no coefficient
 #'     row to show.
 #' }
