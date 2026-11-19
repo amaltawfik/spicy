@@ -1,42 +1,12 @@
 # A `show_fit_stats` token named in the call gives a row for one model of
 # the table at least, or the call is refused (`spicy_invalid_input`).
 # dev/decisions/2026-11-19-fit-stats-requested-rows.md has the sweep.
-
-rr_data <- function(n = 240, seed = 20261118) {
-  set.seed(seed)
-  d <- data.frame(
-    x = rnorm(n),
-    z = runif(n),
-    g = factor(sample(letters[1:6], n, TRUE)),
-    w = runif(n, 0.5, 2)
-  )
-  d$id <- rep(seq_len(n / 4), each = 4)
-  d$y <- 1 + 0.5 * d$x + as.numeric(d$g) / 3 + rnorm(n)
-  d$pos <- exp(0.3 + 0.2 * d$x + rnorm(n, 0, 0.3))
-  d$yb <- rbinom(n, 1, plogis(0.6 * d$x))
-  d$cnt <- rpois(n, exp(0.4 + 0.3 * d$x))
-  d$cnb <- rnbinom(n, mu = exp(0.4 + 0.3 * d$x), size = 1.5)
-  d$zcnt <- ifelse(runif(n) < 0.3, 0L, d$cnt)
-  d$ord <- cut(
-    d$y + rnorm(n),
-    3,
-    labels = c("lo", "mid", "hi"),
-    ordered_result = TRUE
-  )
-  d$mn <- factor(sample(c("A", "B", "C"), n, TRUE))
-  d$prop <- pmin(pmax(plogis(0.3 * d$x + rnorm(n, 0, 0.5)), 0.01), 0.99)
-  d$time <- rexp(n, exp(0.2 * d$x))
-  d$status <- rbinom(n, 1, 0.75)
-  d$cens <- pmax(d$y, 0.5)
-  d$sel <- rbinom(n, 1, plogis(0.5 + 0.5 * d$z))
-  d$ysel <- ifelse(d$sel == 1, d$y, NA)
-  d$xnl <- runif(n, 1, 5)
-  d$ynl <- 3 * exp(-0.4 * d$xnl) + rnorm(n, 0, 0.05)
-  d$inst <- d$x + rnorm(n)
-  d$xen <- d$inst + rnorm(n, 0, 0.5)
-  d$yiv <- 1 + 0.5 * d$xen + rnorm(n)
-  d
-}
+#
+# The sweep runs on the fixtures of helper-class-fixtures.R and holds the
+# rows to the registry: a token gives a row if and only if the column
+# `fit_stats` of its class lists it, and the default table shows the rows
+# of the column `fit_stats_default`, in their order
+# (dev/decisions/2026-11-19-capability-registry.md).
 
 rr_rows <- function(fit, tokens) {
   nrow(suppressWarnings(suppressMessages(
@@ -44,179 +14,204 @@ rr_rows <- function(fit, tokens) {
   )))
 }
 
+# The registry tokens a fixture does not show, each with its reason. An
+# item of a registry cell with a parenthesis holds for some fits of the
+# class only: every fixture outside those fits is named here. `rows` is
+# for the column `fit_stats`, `default` for `fit_stats_default`.
+rr_absent <- list(
+  lm = list(
+    rows = "weighted_nobs",
+    why = "the fit has no weights"
+  ),
+  glm_gaussian = list(
+    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
+    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
+    why = "the pseudo-R-squared are for binomial and Poisson families"
+  ),
+  glm_logit = list(
+    rows = "r2_deviance",
+    default = "r2_deviance",
+    why = "a binomial glm has the pseudo-R-squared instead"
+  ),
+  glm_probit = list(
+    rows = "r2_deviance",
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "a binomial glm has the pseudo-R-squared instead; Tjur's is a default of the logit only"
+  ),
+  glm_poisson = list(
+    rows = "pseudo_r2_tjur",
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "Tjur's R-squared needs a binary outcome; a count glm defaults to McFadden's"
+  ),
+  glm_gamma = list(
+    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
+    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
+    why = "the pseudo-R-squared are for binomial and Poisson families"
+  ),
+  glm_quasi = list(
+    rows = c(
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "aic",
+      "aicc",
+      "bic",
+      "log_lik"
+    ),
+    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance", "aic"),
+    why = "a quasi family has no likelihood, and no R-squared by default"
+  ),
+  lm_robust = list(
+    rows = c("fixed_effects", "within_r2", "n_groups"),
+    default = "fixed_effects",
+    why = "the fit absorbs no fixed effects"
+  ),
+  feols = list(
+    rows = "pseudo_r2_mcfadden",
+    default = "pseudo_r2_mcfadden",
+    why = "McFadden's R-squared is for the GLM families of fixest"
+  ),
+  feols_nofe = list(
+    rows = c("pseudo_r2_mcfadden", "fixed_effects", "within_r2", "n_groups"),
+    default = c("fixed_effects", "within_r2", "pseudo_r2_mcfadden"),
+    why = "a linear fit without fixed effects"
+  ),
+  feols_iv = list(
+    rows = c("pseudo_r2_mcfadden", "fixed_effects", "within_r2", "n_groups"),
+    default = c(
+      "fixed_effects",
+      "r2",
+      "within_r2",
+      "pseudo_r2_mcfadden",
+      "aic"
+    ),
+    why = "an IV fit without fixed effects: no R-squared or AIC by default"
+  ),
+  fepois = list(
+    rows = c("r2", "adj_r2", "within_r2"),
+    default = c("r2", "within_r2"),
+    why = "a GLM-family fit has McFadden's R-squared instead"
+  ),
+  fepois_nofe = list(
+    rows = c("r2", "adj_r2", "fixed_effects", "within_r2", "n_groups"),
+    default = c("fixed_effects", "r2", "within_r2"),
+    why = "a GLM-family fit without fixed effects"
+  ),
+  glmmTMB_ordinal = list(
+    rows = c("r2_marginal", "r2_conditional", "icc", "sigma", "deviance"),
+    default = c("icc", "r2_marginal", "r2_conditional"),
+    why = "the ordinal family has no residual variance and no deviance"
+  ),
+  glmmTMB_zi = list(
+    rows = c("r2_marginal", "r2_conditional", "icc"),
+    default = c("icc", "r2_marginal", "r2_conditional"),
+    why = "a zero-inflated fit has no R-squared or ICC"
+  ),
+  glmmTMB_hurdle = list(
+    rows = c("r2_conditional", "icc", "deviance"),
+    default = c("icc", "r2_conditional"),
+    why = "a truncated family has a marginal R-squared only, and no deviance"
+  ),
+  glmmTMB_disp = list(
+    rows = c("r2_marginal", "r2_conditional", "icc", "sigma"),
+    default = c("icc", "r2_marginal", "r2_conditional"),
+    why = "a dispersion formula gives no single residual variance"
+  ),
+  zeroinfl = list(
+    rows = c("theta", "alpha"),
+    why = "a Poisson count part has no dispersion"
+  ),
+  hurdle = list(
+    rows = c("theta", "alpha"),
+    why = "a Poisson count part has no dispersion"
+  ),
+  survreg_strata = list(
+    rows = "sigma",
+    why = "strata give one scale per stratum"
+  ),
+  lrm_ordinal = list(
+    rows = "pseudo_r2_tjur",
+    default = "pseudo_r2_tjur",
+    why = "Tjur's R-squared needs a binary outcome"
+  )
+)
+
+rr_expected <- function(id, column) {
+  reg <- .supported_models_registry()
+  cl <- .CLASS_FIXTURES[[id]]$class
+  toks <- .reg_cell_tokens(reg[[column]][reg$class == cl])
+  key <- if (column == "fit_stats") "rows" else "default"
+  setdiff(toks, rr_absent[[id]][[key]])
+}
+
 # Every token of the vocabulary, read from the package so that a token
-# added later is swept as well: refused, or one row more than "nobs".
-rr_sweep <- function(fit, label) {
+# added later is swept as well: refused, or one row more than "nobs", and
+# a row if and only if the registry lists it for the fixture.
+rr_sweep <- function(fit, id) {
   base <- rr_rows(fit, "nobs")
+  rows <- rr_expected(id, "fit_stats")
   for (tk in setdiff(.regression_tokens$show_fit_stats, "nobs")) {
     k <- tryCatch(
       rr_rows(fit, c("nobs", tk)),
       spicy_invalid_input = function(e) NA_integer_
     )
+    label <- paste0(id, " / ", tk)
     if (is.na(k)) {
-      succeed()
+      expect_false(tk %in% rows, label = paste(label, "refused"))
     } else {
-      expect_gt(k, base, label = paste0(label, " / ", tk, " rows"))
+      expect_gt(k, base, label = paste(label, "rows"))
+      expect_true(tk %in% rows, label = paste(label, "rendered"))
     }
   }
+  tbl <- suppressWarnings(suppressMessages(
+    table_regression(fit, output = "data.frame")
+  ))
+  shown <- unique(tbl$variable[
+    tbl$.row_role == "fit_stat" | tbl$variable == "fixed_effects"
+  ])
+  expect_identical(
+    shown,
+    rr_expected(id, "fit_stats_default"),
+    label = paste(id, "default rows")
+  )
 }
 
-# One light fit per class; each entry names the packages it needs.
-rr_fixtures <- list(
-  lm = list(NULL, function(d) lm(y ~ x, d)),
-  glm_logit = list(NULL, function(d) glm(yb ~ x, binomial, d)),
-  glm_poisson = list(NULL, function(d) glm(cnt ~ x, poisson, d)),
-  glm_gamma = list(NULL, function(d) glm(pos ~ x, Gamma("log"), d)),
-  glm_quasi = list(NULL, function(d) glm(cnt ~ x, quasipoisson, d)),
-  nls = list(NULL, function(d) {
-    nls(ynl ~ a * exp(-b * xnl), d, start = list(a = 3, b = 0.4))
-  }),
-  glm.nb = list("MASS", function(d) MASS::glm.nb(cnb ~ x, d)),
-  polr = list("MASS", function(d) MASS::polr(ord ~ x, d, Hess = TRUE)),
-  rlm = list("MASS", function(d) MASS::rlm(y ~ x, d)),
-  clm = list("ordinal", function(d) ordinal::clm(ord ~ x, data = d)),
-  clmm = list("ordinal", function(d) {
-    ordinal::clmm(ord ~ x + (1 | g), data = d)
-  }),
-  multinom = list("nnet", function(d) {
-    nnet::multinom(mn ~ x, d, trace = FALSE)
-  }),
-  lmer = list("lme4", function(d) lme4::lmer(y ~ x + (1 | g), d)),
-  glmer = list("lme4", function(d) {
-    lme4::glmer(yb ~ x + (1 | g), family = binomial, data = d)
-  }),
-  glmmTMB = list("glmmTMB", function(d) glmmTMB::glmmTMB(y ~ x + (1 | g), d)),
-  lme = list("nlme", function(d) nlme::lme(y ~ x, random = ~ 1 | g, data = d)),
-  gls = list("nlme", function(d) nlme::gls(y ~ x, data = d)),
-  coxph = list("survival", function(d) {
-    survival::coxph(survival::Surv(time, status) ~ x, d)
-  }),
-  survreg = list("survival", function(d) {
-    survival::survreg(survival::Surv(time, status) ~ x, d)
-  }),
-  flexsurvreg = list(c("flexsurv", "survival"), function(d) {
-    flexsurv::flexsurvreg(
-      survival::Surv(time, status) ~ x,
-      data = d,
-      dist = "weibull"
-    )
-  }),
-  gam = list("mgcv", function(d) mgcv::gam(y ~ x + s(z), data = d)),
-  bam = list("mgcv", function(d) {
-    mgcv::bam(cnt ~ x + s(z), family = poisson, data = d)
-  }),
-  betareg = list("betareg", function(d) betareg::betareg(prop ~ x, data = d)),
-  zeroinfl = list("pscl", function(d) pscl::zeroinfl(zcnt ~ x | 1, data = d)),
-  hurdle = list("pscl", function(d) pscl::hurdle(zcnt ~ x | 1, data = d)),
-  rq = list("quantreg", function(d) quantreg::rq(y ~ x, data = d)),
-  ivreg = list("AER", function(d) AER::ivreg(yiv ~ xen | inst, data = d)),
-  tobit = list("AER", function(d) AER::tobit(cens ~ x, left = 0.5, data = d)),
-  lm_robust = list("estimatr", function(d) {
-    estimatr::lm_robust(y ~ x, data = d)
-  }),
-  iv_robust = list("estimatr", function(d) {
-    estimatr::iv_robust(yiv ~ xen | inst, data = d)
-  }),
-  feols = list("fixest", function(d) fixest::feols(y ~ x | g, d)),
-  fepois = list("fixest", function(d) fixest::fepois(cnt ~ x | g, d)),
-  geeglm = list("geepack", function(d) {
-    geepack::geeglm(cnt ~ x, poisson, d, id = id)
-  }),
-  mlogit = list("mlogit", function(d) {
-    data("Fishing", package = "mlogit", envir = environment())
-    fd <- mlogit::mlogit.data(
-      Fishing,
-      varying = 2:9,
-      shape = "wide",
-      choice = "mode"
-    )
-    mlogit::mlogit(mode ~ price + catch, data = fd)
-  }),
-  selection = list("sampleSelection", function(d) {
-    sampleSelection::selection(sel ~ z, ysel ~ x, data = d)
-  }),
-  ols = list("rms", function(d) rms::ols(y ~ x, data = d)),
-  lrm = list("rms", function(d) rms::lrm(yb ~ x, data = d)),
-  rms_Glm = list("rms", function(d) {
-    rms::Glm(cnt ~ x, family = poisson, data = d)
-  }),
-  cph = list(c("rms", "survival"), function(d) {
-    rms::cph(survival::Surv(time, status) ~ x, data = d)
-  }),
-  svyglm = list("survey", function(d) {
-    des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-    survey::svyglm(y ~ x, design = des)
-  }),
-  svycoxph = list(c("survey", "survival"), function(d) {
-    des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-    survey::svycoxph(survival::Surv(time, status) ~ x, design = des)
-  }),
-  svyolr = list("survey", function(d) {
-    des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-    survey::svyolr(ord ~ x, design = des)
-  })
-)
+test_that("every class of the registry has a fixture, and every exception names one", {
+  reg <- .supported_models_registry()
+  fx_classes <- vapply(.CLASS_FIXTURES, `[[`, character(1), "class")
+  expect_setequal(unique(fx_classes), reg$class)
+  expect_true(all(names(rr_absent) %in% names(.CLASS_FIXTURES)))
+  for (id in names(rr_absent)) {
+    cl <- fx_classes[[id]]
+    # An exception names tokens of the class cell, never others.
+    expect_true(all(
+      rr_absent[[id]]$rows %in%
+        .reg_cell_tokens(reg$fit_stats[reg$class == cl])
+    ))
+    expect_true(all(
+      rr_absent[[id]]$default %in%
+        .reg_cell_tokens(reg$fit_stats_default[reg$class == cl])
+    ))
+    expect_true(nzchar(rr_absent[[id]]$why))
+  }
+  vocab <- .regression_tokens$show_fit_stats
+  for (cell in c(reg$fit_stats, reg$fit_stats_default)) {
+    expect_true(all(.reg_cell_tokens(cell) %in% vocab), label = cell)
+  }
+})
 
-for (cl in names(rr_fixtures)) {
+for (id in names(.CLASS_FIXTURES)) {
   local({
-    cl <- cl
+    id <- id
     test_that(
-      paste0("every show_fit_stats token renders or is refused: ", cl),
+      paste0("every show_fit_stats token renders or is refused: ", id),
       {
         skip_on_cran()
-        for (p in rr_fixtures[[cl]][[1L]]) {
-          skip_if_not_installed(p)
-        }
-        fit <- suppressWarnings(rr_fixtures[[cl]][[2L]](rr_data()))
-        rr_sweep(fit, cl)
+        rr_sweep(.class_fixture(id), id)
       }
     )
   })
 }
-
-# The Stan fixtures of test-regression_frame_stan.R, read from the same
-# cache (the bodies match it character for character).
-test_that("every show_fit_stats token renders or is refused: stanreg", {
-  .skip_unless_local_stan()
-  skip_if_not_installed("rstanarm")
-  skip_if_not_installed("posterior")
-  skip_if_not_installed("lme4")
-  fit <- .stan_cached_fit(
-    "rstanarm_basic",
-    .STAN_CACHE_PKGS_RSTANARM,
-    function() {
-      set.seed(4)
-      rstanarm::stan_glm(
-        Reaction ~ Days,
-        data = lme4::sleepstudy,
-        chains = 1,
-        iter = 400,
-        refresh = 0
-      )
-    }
-  )
-  rr_sweep(fit, "stanreg")
-})
-
-test_that("every show_fit_stats token renders or is refused: brmsfit", {
-  .skip_unless_local_stan()
-  skip_if_not_installed("brms")
-  skip_if_not_installed("posterior")
-  skip_if_not_installed("lme4")
-  fit <- .stan_cached_fit("brms_basic", .STAN_CACHE_PKGS_BRMS, function() {
-    set.seed(1)
-    brms::brm(
-      Reaction ~ Days,
-      data = lme4::sleepstudy,
-      chains = 1,
-      iter = 400,
-      refresh = 0,
-      silent = 2,
-      backend = "rstan"
-    )
-  })
-  rr_sweep(fit, "brmsfit")
-})
 
 
 # ---- The rule --------------------------------------------------------------
@@ -260,7 +255,7 @@ test_that("several tokens are named in one message, with their reasons", {
 
 test_that("a token without a domain reason points to the help", {
   skip_if_not_installed("MASS")
-  d <- rr_data()
+  d <- .class_fixture_data()
   fit <- MASS::polr(ord ~ x, d, Hess = TRUE)
   err <- expect_error(
     table_regression(fit, show_fit_stats = c("nobs", "sigma")),
@@ -274,7 +269,7 @@ test_that("a token without a domain reason points to the help", {
 })
 
 test_that("a model of the domain without a value gets no domain reason", {
-  d <- rr_data()
+  d <- .class_fixture_data()
   fit <- lm(y ~ x, d)
   err <- expect_error(
     table_regression(fit, show_fit_stats = c("nobs", "weighted_nobs")),
@@ -291,7 +286,7 @@ test_that("a model of the domain without a value gets no domain reason", {
 })
 
 test_that("the defaults stay tolerant of a token without a value", {
-  d <- rr_data()
+  d <- .class_fixture_data()
   # The glm default asks for the AIC, which a quasi family has not.
   q <- glm(cnt ~ x, quasipoisson, d)
   expect_no_error(suppressWarnings(table_regression(q)))
@@ -383,7 +378,7 @@ test_that("the stacked layout checks the stack as one table", {
 })
 
 test_that("table_regression_uv() refuses a token, naming the screen", {
-  d <- rr_data()
+  d <- .class_fixture_data()
   err <- expect_error(
     table_regression_uv(
       d,
