@@ -1679,7 +1679,10 @@ format_term_label <- function(
     ol <- term_row$outcome_prefix %||% NA_character_
     if ((is.na(lvl) || !nzchar(lvl)) && !is.na(ol)) {
       lbl <- resolve_label(term, labels)
-      return(paste0("  ", if (identical(lbl, term)) ol else lbl))
+      return(paste0(
+        "  ",
+        if (identical(lbl, term)) .reg_equation_display(ol) else lbl
+      ))
     }
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
@@ -1693,6 +1696,20 @@ format_term_label <- function(
     return(paste0("  ", lbl))
   }
   resolve_label(term, labels)
+}
+
+# The equation of a selection-model row under the header of its term,
+# "selection" or "outcome", in the table language. Display only: the term
+# keeps its prefix ("selection: educ") for keep, drop and tidy(). Any
+# other prefix is a multinomial category, data shown as is; one literally
+# named "selection" or "outcome" would be translated too, the prefix being
+# a string, as the block identities are (`.reg_is_block()`).
+.reg_equation_display <- function(ol) {
+  key <- c(
+    selection = "label_equation_selection",
+    outcome = "label_equation_outcome"
+  )[ol]
+  if (is.na(key)) ol else spicy_str(key)
 }
 
 # The level of a component row ("mined: no") is an identifier, the same

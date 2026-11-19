@@ -168,3 +168,24 @@ test_that("labels renames the Precision and Error terms rows", {
     expect_true(all(unname(lab) %in% fu_rows(tb)))
   }
 })
+
+# ---- 3. The equations of a selection model in French ---------------------
+
+test_that("the selection and outcome sub-rows follow the table language", {
+  skip_if_not_installed("sampleSelection")
+  skip_if_not_installed("broom")
+  fit <- fu_selection()
+  withr::local_options(spicy.language = "fr")
+  rows <- fu_rows(table_regression(fit))
+  expect_true(all(c("sélection", "résultat") %in% rows))
+  expect_false(any(c("selection", "outcome") %in% rows))
+  # The terms stay the names of coef(): keep, drop and tidy() read them.
+  td <- broom::tidy(table_regression(fit))
+  expect_true(all(c("selection: age", "outcome: exper") %in% td$term))
+  kept <- table_regression(fit, keep = "selection: age", output = "long")
+  expect_true("selection: age" %in% fu_terms(kept))
+  expect_false("outcome: exper" %in% fu_terms(kept))
+  withr::local_options(spicy.language = NULL)
+  rows <- fu_rows(table_regression(fit))
+  expect_true(all(c("selection", "outcome") %in% rows))
+})

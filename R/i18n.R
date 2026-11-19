@@ -363,6 +363,11 @@
   label_error_sigma = "outcome error",
   label_error_rho = "error correlation",
   label_error_lambda = "inverse Mills ratio",
+  # The two equations of a selection model, each row under the header of
+  # its term ("educ:"). Display only: the terms stay "selection: educ"
+  # in `keep`, `drop` and tidy().
+  label_equation_selection = "selection",
+  label_equation_outcome = "outcome",
   # Not a subordinate block: the leading section of a conditional-logit
   # (mlogit) table, the coefficients shared by every alternative. Same
   # split between a frozen identity and a translated caption, resolved

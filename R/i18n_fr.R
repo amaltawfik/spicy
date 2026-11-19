@@ -191,6 +191,8 @@
   label_error_sigma = "erreur du r\u00E9sultat",
   label_error_rho = "corr\u00E9lation des erreurs",
   label_error_lambda = "ratio de Mills inverse",
+  label_equation_selection = "s\u00E9lection",
+  label_equation_outcome = "r\u00E9sultat",
   label_block_alternative_invariant = "Invariant entre alternatives",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
