@@ -101,10 +101,9 @@ test_that("coxph: info$family is cox/log (hardcoded; no family slot)", {
 test_that("coxph: info$dv is the full Surv(...) LHS expression", {
   fit <- .fit_coxph_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  # dv echoes the formula LHS exactly, including any namespace prefix
-  # the user wrote.
-  expect_identical(fr$info$dv, deparse1(stats::formula(fit)[[2L]]))
-  expect_match(fr$info$dv, "Surv(time, status)", fixed = TRUE)
+  # dv echoes the formula LHS without the namespace prefix the user
+  # wrote (`survival::Surv(...)` reads `Surv(...)`).
+  expect_identical(fr$info$dv, "Surv(time, status)")
 })
 
 test_that("coxph: n_obs = fit$n; n_events = fit$nevent (distinct)", {
@@ -303,8 +302,7 @@ test_that("survreg Gaussian: info$family$link = 'identity'", {
 test_that("survreg: info$dv is the full Surv(...) LHS expression", {
   fit <- .fit_survreg_weibull()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$dv, deparse1(stats::formula(fit)[[2L]]))
-  expect_match(fr$info$dv, "Surv(time, status)", fixed = TRUE)
+  expect_identical(fr$info$dv, "Surv(time, status)")
 })
 
 

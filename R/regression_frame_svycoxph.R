@@ -253,7 +253,7 @@ as_regression_frame.svycoxph <- function(
   model_id,
   df
 ) {
-  dv <- tryCatch(deparse1(stats::formula(fit)[[2L]]), error = function(e) {
+  dv <- tryCatch(.fit_dv(fit), error = function(e) {
     all.vars(stats::formula(fit))[1L] # nocov
   })
 

@@ -249,7 +249,7 @@ as_regression_frame.flexsurvreg <- function(
   ci_method,
   model_id
 ) {
-  dv <- tryCatch(deparse1(stats::formula(fit)[[2L]]), error = function(e) {
+  dv <- tryCatch(.fit_dv(fit), error = function(e) {
     all.vars(stats::formula(fit))[1L]
   })
   dv_label <- dv

@@ -257,7 +257,7 @@ test_that("an extreme-value survreg keeps its coefficients under exponentiate = 
   expect_identical(w_fr, w)
   expect_identical(
     attr(tbl, "title"),
-    "Censored regression (extreme value): survival::Surv(time, status)"
+    "Censored regression (extreme value): Surv(time, status)"
   )
   expect_no_match(attr(tbl, "note"), "time ratio", fixed = TRUE)
   td <- broom::tidy(tbl)

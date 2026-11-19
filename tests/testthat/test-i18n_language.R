@@ -1990,7 +1990,7 @@ test_that("the survival notes name the distribution in the language", {
   out <- table_regression(ext)
   expect_identical(
     attr(out, "title"),
-    "R\u00E9gression censur\u00E9e (valeurs extr\u00EAmes)\u00A0: survival::Surv(time, status)"
+    "R\u00E9gression censur\u00E9e (valeurs extr\u00EAmes)\u00A0: Surv(time, status)"
   )
   expect_identical(
     .note_line(out, "Distribution"),
@@ -2026,7 +2026,7 @@ test_that("the survival notes name the distribution in the language", {
     attr(ph, "title"),
     paste0(
       "R\u00E9gression de survie param\u00E9trique de Weibull ",
-      "(risques proportionnels)\u00A0: survival::Surv(time, status)"
+      "(risques proportionnels)\u00A0: Surv(time, status)"
     )
   )
   expect_match(

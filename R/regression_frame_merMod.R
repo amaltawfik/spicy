@@ -1601,7 +1601,27 @@ inform_lmertest_hint <- function() {
     }
     lhs <- lhs[[2L]]
   }
-  deparse1(lhs)
+  deparse1(.drop_ns_prefix(lhs))
+}
+
+
+# An expression without its namespace prefixes, at any depth:
+# `survival::Surv(time, status)` reads `Surv(time, status)` and
+# `base::log(y)` reads `log(y)` in the title and the Outcome row.
+.drop_ns_prefix <- function(e) {
+  if (!is.call(e)) {
+    return(e)
+  }
+  head <- e[[1L]]
+  if (is.name(head) && as.character(head) %in% c("::", ":::")) {
+    return(e[[3L]])
+  }
+  for (i in seq_along(e)) {
+    if (is.call(e[[i]])) {
+      e[[i]] <- .drop_ns_prefix(e[[i]])
+    }
+  }
+  e
 }
 
 

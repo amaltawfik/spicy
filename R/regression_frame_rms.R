@@ -602,7 +602,7 @@ as_regression_frame.Glm <- function(
   # DV: for cph the LHS is "Surv(time, status)"; otherwise just the
   # response variable name.
   dv <- if (rms_class == "cph") {
-    tryCatch(deparse1(stats::formula(fit)[[2L]]), error = function(e) {
+    tryCatch(.fit_dv(fit), error = function(e) {
       all.vars(stats::formula(fit))[1L]
     })
   } else {

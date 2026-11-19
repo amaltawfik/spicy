@@ -70,7 +70,7 @@ extract_lm_phase1 <- function(
   use_ame_satterthwaite = FALSE,
   cluster_name = NULL
 ) {
-  outcome <- deparse1(stats::formula(fit)[[2]])
+  outcome <- .fit_dv(fit)
   # The outcome's `label` attribute, set by `labelled::var_label()` /
   # haven import / SPSS labels, else the variable name. The table shows
   # it only when `labels` reads the attributes (decision 54,
