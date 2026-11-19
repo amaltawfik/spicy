@@ -4761,7 +4761,8 @@ table_regression <- function(
 # Why a token has no value, where the code fixes its domain: a sentence
 # when no model of the table is of a class the token is computed for,
 # NULL otherwise (a model of the domain without a value, or a token
-# whose domain is not one list of classes).
+# whose domain is not one list of classes). `fixed_effects` is the one
+# token whose class gate runs before: its sentence is about the fit.
 .reg_token_domain_reason <- function(tk, models) {
   any_of <- function(cls) any(vapply(models, inherits, logical(1), cls))
   mixed <- c("merMod", "glmmTMB", "lme")
@@ -4807,14 +4808,14 @@ table_regression <- function(
         "fixed effects a fixest model absorbs."
       )
     },
-    fixed_effects = if (
-      !any(vapply(models, absorbs_fixed_effects, logical(1)))
-    ) {
-      paste0(
-        "`fixed_effects` lists the fixed effects a fixest model, or an ",
-        "estimatr model with `fixed_effects =`, absorbs."
-      )
-    },
+    # validate_class_appropriate_tokens() has refused a table without a
+    # fixest model or an estimatr model with `fixed_effects =` before the
+    # frames were built. The token is without a row here only when such a
+    # model was fitted without fixed effects.
+    fixed_effects = paste0(
+      "`fixed_effects` lists the fixed effects a model absorbs, and no ",
+      "model in the table absorbs any."
+    ),
     eff_p = if (!any_of("svyglm")) {
       "`eff_p` is the effective number of parameters of a `svyglm()` design."
     },

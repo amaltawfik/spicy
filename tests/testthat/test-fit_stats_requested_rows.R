@@ -431,3 +431,21 @@ test_that("a fit-only table that shows the absorbed fixed effects alone is not a
     grepl("cyl", out, fixed = TRUE) & grepl("Yes", out, fixed = TRUE)
   ))
 })
+
+test_that("`fixed_effects` asked of a fixest model fitted without fixed effects is refused with the reason", {
+  skip_if_not_installed("fixest")
+  fit <- fixest::feols(mpg ~ wt, data = mtcars)
+  err <- expect_error(
+    table_regression(fit, show_fit_stats = c("nobs", "fixed_effects")),
+    class = "spicy_invalid_input"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "no model in the table absorbs any", fixed = TRUE)
+  # A reason that is given replaces the pointer to the help page.
+  expect_false(grepl("lists the models each token", msg, fixed = TRUE))
+  # With a fixed effect the same call gives the block.
+  with_fe <- fixest::feols(mpg ~ wt | cyl, data = mtcars)
+  expect_no_error(
+    table_regression(with_fe, show_fit_stats = c("nobs", "fixed_effects"))
+  )
+})
