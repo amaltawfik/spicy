@@ -51,10 +51,10 @@
     data = pbc,
     family = stats::binomial
   )
-  pbc$sw <- 1 / stats::predict(bias, type = "response")
+  pbc$randprob <- stats::fitted(bias)
   des <- survey::svydesign(
     id = ~1,
-    prob = ~sw,
+    prob = ~randprob,
     strata = ~edema,
     data = subset(pbc, randomized)
   )

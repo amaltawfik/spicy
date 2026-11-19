@@ -365,9 +365,9 @@ concordance:
 data(pbc, package = "survival")
 pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
 bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
-pbc$sw <- 1 / predict(bias, type = "response")
+pbc$randprob <- fitted(bias)
 dpbc <- svydesign(
-  id = ~1, prob = ~sw, strata = ~edema, data = subset(pbc, randomized)
+  id = ~1, prob = ~randprob, strata = ~edema, data = subset(pbc, randomized)
 )
 cx <- svycoxph(
   survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,

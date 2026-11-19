@@ -102,10 +102,10 @@ test_that("a svycoxph reports the events too, and no Cox AIC", {
     data = pbc,
     family = stats::binomial
   )
-  pbc$sw <- 1 / stats::predict(bias, type = "response")
+  pbc$randprob <- stats::fitted(bias)
   des <- survey::svydesign(
     id = ~1,
-    prob = ~sw,
+    prob = ~randprob,
     strata = ~edema,
     data = subset(pbc, randomized)
   )
@@ -479,10 +479,10 @@ test_that("a design Cox beside an lm does not drag in the Cox AIC", {
     data = pbc,
     family = stats::binomial
   )
-  pbc$sw <- 1 / stats::predict(bias, type = "response")
+  pbc$randprob <- stats::fitted(bias)
   des <- survey::svydesign(
     id = ~1,
-    prob = ~sw,
+    prob = ~randprob,
     strata = ~edema,
     data = subset(pbc, randomized)
   )

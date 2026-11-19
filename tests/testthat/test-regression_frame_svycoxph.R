@@ -19,8 +19,9 @@
 
 # ---- Fixtures -------------------------------------------------------------
 
-# survey's own vignette example: pbc restricted to the randomized
-# patients, inverse-probability weights from a bias model.
+# The example of ?svycoxph: pbc restricted to the randomized patients,
+# the probability of being randomized from a bias model passed as `prob`
+# (the weights are its inverse, and sum to the 418 rows of pbc).
 .scox_design <- function() {
   skip_if_not_installed("survey")
   skip_if_not_installed("survival")
@@ -31,10 +32,10 @@
     data = pbc,
     family = stats::binomial
   )
-  pbc$sw <- 1 / stats::predict(bias, type = "response")
+  pbc$randprob <- stats::fitted(bias)
   survey::svydesign(
     id = ~1,
-    prob = ~sw,
+    prob = ~randprob,
     strata = ~edema,
     data = subset(pbc, randomized)
   )
@@ -96,16 +97,17 @@ test_that("coefficients and design standard errors match survey, pinned", {
   fr <- as_regression_frame(.scox_fit())
   b <- .scox_b(fr)
   expect_identical(b$term, c("log(bili)", "protime", "albumin"))
+  expect_equal(sum(stats::weights(.scox_design())), 418.40148620358337)
   expect_equal(
     b$estimate,
-    c(0.88976550380432229, 0.25992232676154414, -1.07947760097235812),
+    c(0.88592430123050747, 0.24486614446398539, -1.04298130216694318),
     tolerance = 1e-12
   )
   # The `robust se` column of summary(), i.e. sqrt(diag(vcov(fit))) --
   # NOT the naive `se(coef)` of the partial likelihood.
   expect_equal(
     b$std_error,
-    c(0.088837962909104257, 0.081408806085693439, 0.214312163683408996),
+    c(0.090483642457587971, 0.081218570883784563, 0.204542815702668496),
     tolerance = 1e-12
   )
 })
@@ -117,12 +119,12 @@ test_that("the replicate engine carries its own variance", {
   # different variance (replicate weights, no linearization).
   expect_equal(
     b$estimate,
-    c(0.88976550380432229, 0.25992232676154414, -1.07947760097235812),
+    c(0.88592430123050747, 0.24486614446398539, -1.04298130216694318),
     tolerance = 1e-12
   )
   expect_equal(
     b$std_error,
-    c(0.094502526074347518, 0.089508293885211337, 0.231085028862318242),
+    c(0.098378655047261149, 0.093730036737043512, 0.219664419691177781),
     tolerance = 1e-12
   )
   expect_identical(fr$info$vcov_label, "Design-based (replicate weights, JKn)")
@@ -190,13 +192,13 @@ test_that("the rows are t at that df, with the p recomputed", {
   expect_true(all(b$df == 307))
   expect_equal(
     b$p_value,
-    c(1.2881848911625273e-20, 0.0015551269635508738, 8.0852680153444051e-07),
+    c(7.06945478801877e-20, 0.00278514098939745, 5.98285189322854e-07),
     tolerance = 1e-12
   )
   # summary.svycoxph reports a z and its own p; reading that column would
   # have put a normal p under a t label. The first coefficient differs by
-  # three orders of magnitude.
-  expect_gt(b$p_value[1L] / 1.3016960903118669e-23, 500)
+  # more than two orders of magnitude.
+  expect_gt(b$p_value[1L] / 1.2308660466676987e-22, 500)
   expect_equal(
     b$ci_lower,
     b$estimate - stats::qt(0.975, df = 307) * b$std_error,
@@ -204,7 +206,7 @@ test_that("the rows are t at that df, with the p recomputed", {
   )
   expect_equal(
     b$ci_lower[1L],
-    0.71495715299170992,
+    0.707877711736862,
     tolerance = 1e-12
   )
 })
@@ -368,8 +370,8 @@ test_that("exponentiate gives hazard ratios and the footer names concordance", {
   fit <- .scox_fit()
   fr <- as_regression_frame(fit)
   conc <- fr$info$extras$concordance
-  expect_equal(conc$c, 0.814019575962434683, tolerance = 1e-12)
-  expect_equal(conc$se, 0.018377926900599289, tolerance = 1e-12)
+  expect_equal(conc$c, 0.80824957745999, tolerance = 1e-12)
+  expect_equal(conc$se, 0.0187263078698131, tolerance = 1e-12)
   out <- paste(
     utils::capture.output(print(table_regression(fit, exponentiate = TRUE))),
     collapse = "\n"
@@ -507,7 +509,7 @@ test_that("marginaleffects still cannot compute an AME for this class", {
   # The session is intact afterwards.
   expect_equal(
     unname(stats::coef(fit))[1L],
-    0.88976550380432229,
+    0.88592430123050747,
     tolerance = 1e-12
   )
 })
