@@ -197,6 +197,29 @@ test_that("the knitted LaTeX sets the header of column 1 flush left", {
   }
 })
 
+test_that("the LaTeX edit of column 1 leaves LaTeX of another shape alone", {
+  # No `@{` in the preamble: the `\multicolumn{1}{l}` stays.
+  plain <- paste(
+    "\\begin{tabular}{lc}",
+    "\\multicolumn{1}{l}{{Variable}} & B \\\\ ",
+    "\\midrule",
+    "a & 1 \\\\ ",
+    "\\end{tabular}",
+    sep = "\n"
+  )
+  expect_identical(.spicy_gt_latex_layout(plain), plain)
+  # A preamble with `@{` and no `\multicolumn{1}{l}` row.
+  bare <- paste(
+    "\\begin{tabular}{@{}lc}",
+    "Variable & B \\\\ ",
+    "\\midrule",
+    "a & 1 \\\\ ",
+    "\\end{tabular}",
+    sep = "\n"
+  )
+  expect_identical(.spicy_gt_latex_layout(bare), bare)
+})
+
 test_that("stacked tables keep their Outcome rows in the body", {
   skip_if_not_installed("gt")
   f <- gt_outcome_fits()

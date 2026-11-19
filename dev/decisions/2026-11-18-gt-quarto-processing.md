@@ -40,6 +40,8 @@ Largeur du tableau en px (régression, catégoriel, continu), Chromium :
 - En LaTeX, les libellés d'en-tête de gt commencent 6 pt à droite de ceux du corps. En Typst par Quarto, la ligne vide des intitulés subsiste.
 - Levée le 2026-11-19 pour LaTeX : gt écrit le libellé de la première colonne dans un `\multicolumn{1}{l}`, qui garde le `\tabcolsep` que le `@{...}` du préambule retire au corps. `.spicy_gt_latex_layout()` lui donne `@{}l`. Écart mesuré sur sept tableaux compilés : 6,0 pt avant, 0,0 pt après. Les écarts verticaux ne changent pas.
 - Levée le 2026-11-19 pour Typst : quand chaque colonne a son intitulé d'une colonne et qu'aucun libellé de colonne ne reste dessous, `knit_print()` remet ces intitulés en libellés de colonne pour la seule cible Typst (`.spicy_gt_typst_labels()`, par l'API de gt). Quarto n'écrit aucune marge intérieure en Typst, si bien qu'une rangée vide y gardait 12 pt d'encarts. Entre « Variable » et la première ligne du corps : 32 pt avant, 20 pt après (19 pt en LaTeX). Les tableaux avec IC gardent leur rangée LL et UL.
+- Relevé le 2026-11-19 : en Typst par Quarto, le filet sous le nom de chaque modèle n'apparaît pas. En HTML, c'est une règle CSS, que Quarto ne reprend pas.
+- Relevé le 2026-11-19 : un tableau flextable de spicy déborde en revealjs (1081 × 1126 pour une diapositive de 1050 × 700) et sous R Markdown dans une fenêtre de 420 px. Revealjs a été mesuré dans le DOM, sans capture.
 
 ## Garde
 

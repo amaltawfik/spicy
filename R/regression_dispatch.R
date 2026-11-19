@@ -1413,15 +1413,40 @@ output_gt <- function(rendered) {
 # under them, the labels go back to the column labels, which carry the
 # rule, and a label at the top of the header takes the top rule its
 # spanner carried. `.spicy_gt_latex_layout()` drops the same row in LaTeX.
+#
+# It reads gt's internal tables `_boxhead` and `_spanners`, as gt 1.4.0
+# writes them. The edit is cosmetic: a table of another shape, or a call
+# of gt that fails or warns, gives the table back as it came, blank row
+# included.
 .spicy_gt_typst_labels <- function(x) {
+  out <- tryCatch(
+    .spicy_gt_typst_relabel(x),
+    error = function(e) NULL,
+    warning = function(w) NULL
+  )
+  if (inherits(out, "gt_tbl")) out else x
+}
+
+.spicy_gt_typst_relabel <- function(x) {
   bh <- x[["_boxhead"]]
+  sp <- x[["_spanners"]]
+  if (
+    !is.data.frame(bh) ||
+      !all(c("var", "type", "column_label") %in% names(bh)) ||
+      !is.data.frame(sp) ||
+      !all(
+        c("spanner_id", "spanner_label", "spanner_level", "vars") %in%
+          names(sp)
+      )
+  ) {
+    return(x)
+  }
   vars <- bh$var[bh$type %in% c("default", "stub")]
   labels <- vapply(
     bh$column_label[match(vars, bh$var)],
     function(l) paste(as.character(l), collapse = ""),
     character(1)
   )
-  sp <- x[["_spanners"]]
   low <- sp[sp$spanner_level == 1L, , drop = FALSE]
   if (
     any(nzchar(trimws(labels))) ||

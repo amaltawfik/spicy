@@ -128,6 +128,38 @@ test_that("a knit to Typst writes no row of empty column labels", {
   expect_match(html, "id=\"col_span_1_Variable\"", fixed = TRUE)
 })
 
+test_that("the Typst header edit gives back a table of another shape", {
+  skip_if_not_installed("gt")
+  g <- table_regression(
+    stats::lm(bmi ~ age, data = sochealth),
+    output = "gt",
+    show_columns = c("b", "se", "p")
+  )
+  no_spanners <- g
+  no_spanners[["_spanners"]] <- NULL
+  expect_identical(.spicy_gt_typst_labels(no_spanners), no_spanners)
+  renamed <- g
+  names(renamed)[names(renamed) == "_spanners"] <- "_spanners_x"
+  expect_identical(.spicy_gt_typst_labels(renamed), renamed)
+  no_boxhead <- g
+  no_boxhead[["_boxhead"]] <- NULL
+  expect_identical(.spicy_gt_typst_labels(no_boxhead), no_boxhead)
+  renamed <- g
+  names(renamed)[names(renamed) == "_boxhead"] <- "_boxhead_x"
+  expect_identical(.spicy_gt_typst_labels(renamed), renamed)
+  # A table whose spanners lack a column.
+  odd <- g
+  odd[["_spanners"]][["spanner_level"]] <- NULL
+  expect_identical(.spicy_gt_typst_labels(odd), odd)
+  # A call of gt that fails or warns: the table as it came, silently.
+  local_mocked_bindings(.spicy_gt_typst_relabel = function(x) stop("gt"))
+  expect_no_condition(out <- .spicy_gt_typst_labels(g))
+  expect_identical(out, g)
+  local_mocked_bindings(.spicy_gt_typst_relabel = function(x) warning("gt"))
+  expect_no_condition(out <- .spicy_gt_typst_labels(g))
+  expect_identical(out, g)
+})
+
 test_that("a knit to Typst leaves the table to Quarto's processing", {
   skip_if_not_installed("gt")
   for (g in .gtq_tables()) {
