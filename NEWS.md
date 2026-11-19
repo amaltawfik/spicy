@@ -16,6 +16,20 @@
   but refuses the RMST and risk-difference columns, which would ignore
   the random effect.
 
+* `table_regression()` names a transformed outcome as the formula writes
+  it, for every model class and no longer for `lm()` and `glm()` only:
+  the title, the Outcome row and the `outcome` column of `tidy()` and
+  `glance()` read `log(wage)`, `I(parttime == "yes")` or
+  `cbind(succ, fail)` where they read `wage`, `parttime` or `succ`. A
+  `sampleSelection::selection()` model is titled by its outcome variable
+  instead of "outcome".
+
+* `table_regression()` names the rows of a fixest model as `lm()` and
+  `ivreg()` name them: `education` for the endogenous regressor of an IV
+  `feols()` model, not fixest's `fit_education`, and `I(x^2)` where
+  fixest writes `I(I(x^2))`. The rows align with those of `ivreg()` and
+  `iv_robust()`, and `keep`, `drop` and `labels` take these names.
+
 * `table_regression()`: the block of the `dispformula` of a `glmmTMB`
   `beta_family()` model is labeled "Precision" instead of "Dispersion",
   since that parameter is the precision, and its terms are keyed
@@ -500,6 +514,11 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression()`: `tau` passed with a `quantreg::rq()` model and
+  no survival column says that the quantile of the fit is set in `rq()`.
+  The refusal of a robust or clustered `vcov` for an `ivreg()` model
+  names `estimatr::iv_robust()` and `fixest::feols()`, which compute it.
 
 * `table_regression()`: the p-values and intervals of a sample-selection
   model use the t distribution on the residual degrees of freedom, as
