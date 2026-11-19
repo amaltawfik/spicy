@@ -243,3 +243,56 @@ test_that("the lme part of a gamm() fit is refused", {
     data = d
   )))
 })
+
+
+# ---- 4. A pdSymm block inside a pdBlocked one ----------------------------
+
+test_that("a pdSymm block inside pdBlocked keeps its rho row, apVar sound or not", {
+  skip_if_not_installed("nlme")
+  set.seed(11)
+  ng <- 40
+  ni <- 12
+  d <- data.frame(
+    g = factor(rep(seq_len(ng), each = ni)),
+    x = stats::rnorm(ng * ni),
+    z = stats::rnorm(ng * ni)
+  )
+  b0 <- stats::rnorm(ng)
+  b1 <- 0.5 * b0 + stats::rnorm(ng, sd = 0.6)
+  bz <- stats::rnorm(ng, sd = 0.7)
+  d$y <- 1 +
+    b0[d$g] +
+    (0.5 + b1[d$g]) * d$x +
+    (0.3 + bz[d$g]) * d$z +
+    stats::rnorm(nrow(d), sd = 0.8)
+  fit <- nlme::lme(
+    y ~ x + z,
+    data = d,
+    random = list(
+      g = nlme::pdBlocked(list(nlme::pdSymm(~ 1 + x), nlme::pdIdent(~ z - 1)))
+    )
+  )
+  expect_true(is.matrix(fit$apVar))
+  # Oracle: the correlation of the fitted random-effect covariance matrix.
+  r_fit <- stats::cov2cor(unclass(nlme::getVarCov(fit)))["x", "(Intercept)"]
+  ci <- nlme::intervals(fit, which = "var-cov")$reStruct$g
+
+  rho <- .msf_rho_rows(fit)
+  expect_identical(nrow(rho), 1L)
+  expect_identical(rho$term, "(Intercept), x")
+  expect_equal(rho$corr, r_fit, tolerance = 1e-10)
+  expect_equal(rho$corr, ci["cor((Intercept),x)", "est."], tolerance = 1e-10)
+  expect_equal(
+    rho$ci_lower,
+    ci["cor((Intercept),x)", "lower"],
+    tolerance = 1e-10
+  )
+  expect_true(is.finite(rho$std_error))
+
+  fit$apVar <- "Non-positive definite approximate variance-covariance"
+  rho_bad <- .msf_rho_rows(fit)
+  expect_identical(nrow(rho_bad), 1L)
+  expect_equal(rho_bad$corr, r_fit, tolerance = 1e-10)
+  expect_true(is.na(rho_bad$std_error))
+  expect_true(is.na(rho_bad$ci_lower))
+})
