@@ -3012,7 +3012,9 @@ validate_class_appropriate_tokens <- function(
   # the BIC and the AICc as NA (survey's own deviance() is a sign-flipped
   # LRT on one engine and 0 on the other), and the AIC too outside
   # svyglm, so the rows used to render nothing. Refused when every model
-  # is a design fit.
+  # is a design fit. The pseudo-R^2 and the deviance R^2 likewise: the
+  # frame computes none, and the glm path would treat the design weights
+  # as frequency weights.
   if (
     length(eff_models) > 0L &&
       all(vapply(eff_models, .is_design_fit, logical(1)))
@@ -3022,7 +3024,16 @@ validate_class_appropriate_tokens <- function(
     any_svyglm <- any(vapply(eff_models, inherits, logical(1), "svyglm"))
     bad_fit <- intersect(
       show_fit_stats,
-      c("deviance", "bic", "aicc", if (!any_svyglm) "aic")
+      c(
+        "deviance",
+        "bic",
+        "aicc",
+        if (!any_svyglm) "aic",
+        "pseudo_r2_mcfadden",
+        "pseudo_r2_nagelkerke",
+        "pseudo_r2_tjur",
+        "r2_deviance"
+      )
     )
     if (length(bad_fit) > 0L) {
       spicy_abort(

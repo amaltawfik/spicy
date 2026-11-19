@@ -380,3 +380,19 @@ Tweedie, gaussienne égale au R² de `lm()`), refus classés.
 `tests/testthat/test-fit-stats-defaults.R` : les lignes par défaut de
 chaque classe, les tableaux mixtes, `nested = TRUE`,
 `show_columns = "none"` et le français.
+
+## Amendement du 2026-11-19
+
+Décidé sur délégation du mainteneur. Le cadre d'un `svyglm` ne calcule
+aucun pseudo-R² (`pseudo_r2 = NULL`) ni R² de déviance : avec un des
+quatre jetons nommé, la 0.14.1 omettait la ligne sans rien dire, et la
+version de développement la refusait par le message générique « no
+value for any model ». Aucun nombre ne venait donc du chemin des `glm`.
+Ce chemin, appelé sur un `svyglm` binomial, aurait traité les poids du
+plan comme des effectifs : sur `apistrat`, McFadden 0,00145 comme le
+`glm` pondéré par `pw`, contre 0,00206 pour le `glm` non pondéré.
+`pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke`, `pseudo_r2_tjur` et
+`r2_deviance` rejoignent `deviance`, `bic` et `aicc` dans le refus des
+ajustements de plan, avec la même raison (pas de vraisemblance). À côté
+d'un modèle qui a la valeur, la cellule du plan reste un tiret. Garde :
+`tests/testthat/test-survey_fit_stats_footer.R`.

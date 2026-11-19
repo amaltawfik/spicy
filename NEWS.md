@@ -233,6 +233,12 @@
   others shows a dash, and a token of the default without a value is
   still left out.
 
+* `table_regression()` refuses `"pseudo_r2_mcfadden"`,
+  `"pseudo_r2_nagelkerke"`, `"pseudo_r2_tjur"` and `"r2_deviance"` for
+  a table of survey-design models, as it refuses `"deviance"`, `"bic"`
+  and `"aicc"`: a design-based fit has no likelihood. The row was left
+  out. Beside another model, the cell of the design model is a dash.
+
 ## New features
 
 * `table_regression()`: `show_fit_stats = "log_lik"` shows the

@@ -163,6 +163,48 @@ test_that("a design fit alone never carries a statistic it cannot compute", {
   )
 })
 
+test_that("the pseudo-R² of a design fit are refused for the design", {
+  d <- .fsf_designs()
+  toks <- c(
+    "pseudo_r2_mcfadden",
+    "pseudo_r2_nagelkerke",
+    "pseudo_r2_tjur",
+    "r2_deviance"
+  )
+  for (fam in list(stats::binomial(), stats::quasibinomial())) {
+    fit <- suppressWarnings(
+      survey::svyglm(sch.wide ~ ell + meals, design = d$strat, family = fam)
+    )
+    # The default table computes none of them and stays accepted.
+    expect_no_error(.fsf_render(fit))
+    for (tk in toks) {
+      err <- expect_error(
+        .fsf_render(fit, show_fit_stats = c("nobs", tk)),
+        class = "spicy_invalid_input",
+        info = paste(fam$family, tk)
+      )
+      expect_match(
+        conditionMessage(err),
+        "not defined for survey-design fits",
+        fixed = TRUE
+      )
+    }
+  }
+  # Beside a plain glm, the design column is dashed.
+  plain <- stats::glm(sch.wide ~ ell + meals, binomial, d$apistrat)
+  fit <- suppressWarnings(
+    survey::svyglm(sch.wide ~ ell + meals, design = d$strat, family = binomial)
+  )
+  tb <- table_regression(
+    list(plain, fit),
+    show_fit_stats = c("nobs", "pseudo_r2_mcfadden"),
+    output = "data.frame"
+  )
+  row <- tb[tb$variable == "pseudo_r2_mcfadden", ]
+  expect_true(is.finite(row[["Model 1: B"]]))
+  expect_true(is.na(row[["Model 2: B"]]))
+})
+
 
 # ---- 2. The effective number of design parameters, opt-in ----------------
 
