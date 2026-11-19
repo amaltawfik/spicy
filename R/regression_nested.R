@@ -819,7 +819,7 @@ nested_own_robust_vcov <- function(fit) {
     return(!is.null(vt) && !identical(toupper(vt), "IID"))
   }
   if (inherits(fit, "rms")) {
-    return(!is.null(fit$orig.var))
+    return(.rms_has_own_vcov(fit))
   }
   inherits(fit, "survreg") && !is.null(fit$naive.var)
 }

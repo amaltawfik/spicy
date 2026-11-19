@@ -675,6 +675,7 @@ as_regression_frame.Glm <- function(
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
     vcov_label = vcov_label %||%
+      .rms_own_vcov_label(fit, rms_class) %||%
       (if (rms_class == "ols") {
         spicy_str("note_vcov_classical_plain")
       } else {
@@ -685,6 +686,41 @@ as_regression_frame.Glm <- function(
     supports = supports,
     extras = extras
   )
+}
+
+
+# TRUE for a fit passed through rms::robcov() or rms::bootcov(), whose
+# variance replaces the model's. robcov() keeps the model's in
+# fit$orig.var; bootcov() copies fit$var there, which an lrm or a Glm
+# does not hold (their variance comes from the information matrix, which
+# bootcov() drops), but always stores the number of resamples that
+# converged in fit$B. `[[` and not `$`, which would match "B" partially.
+.rms_has_own_vcov <- function(fit) {
+  !is.null(fit[["orig.var"]]) || !is.null(fit[["B"]])
+}
+
+
+# The label of that variance; NULL for a fit that kept the model's. Both
+# functions store the cluster in fit$clusterInfo (NULL when each
+# observation is its own). The sandwich is named as `vcov = "CR0"` names
+# it on the same class.
+.rms_own_vcov_label <- function(fit, rms_class) {
+  if (!.rms_has_own_vcov(fit)) {
+    return(NULL)
+  }
+  cl <- fit$clusterInfo$name
+  if (!is.null(fit[["B"]])) {
+    reps <- spicy_fmt("note_vcov_bootstrap_reps", as.integer(fit[["B"]]))
+    if (is.null(cl)) {
+      return(spicy_fmt("note_vcov_bootstrap", reps))
+    }
+    return(spicy_fmt("note_vcov_bootstrap_cluster", reps, cl))
+  }
+  est <- if (rms_class == "cph") "Lin-Wei" else "Huber"
+  if (is.null(cl)) {
+    return(spicy_fmt("note_vcov_robust_plain", est))
+  }
+  spicy_fmt("note_vcov_cr", est, spicy_fmt("note_vcov_cluster_named", cl))
 }
 
 
