@@ -1285,6 +1285,46 @@ inform_lmertest_hint <- function() {
 }
 
 
+# Delta-method SE of a random-effect SD or correlation from an engine's
+# Wald interval, read on the scale the engine estimates on: `scale` is
+# "log" for an SD (nlme, glmmTMB), "atanh" for an nlme correlation (its
+# natural parametrization, log((1 + rho) / (1 - rho))), "theta" for a
+# glmmTMB correlation (theta = rho / sqrt(1 - rho^2)). The interval is
+# f(est) +/- z s on that scale, so s = (f(upper) - f(lower)) / (2 z) and
+# SE = s / f'(est), which is what lme4 gets from merDeriv on the same
+# model. Halving the interval on the displayed scale instead overstates
+# the SE, because the back-transformed interval is skewed.
+#
+# The scale is checked, not assumed: the interval must be centred on
+# f(est). When it is not (a glmmTMB correlation in a block of three or
+# more terms, whose bounds come from shifting every parameter at once),
+# the half-width on the displayed scale is returned, as before.
+.re_delta_se <- function(est, lower, upper, z, scale = "log") {
+  f <- switch(
+    scale,
+    log = log,
+    atanh = atanh,
+    theta = function(r) r / sqrt(1 - r^2)
+  )
+  df <- switch(
+    scale,
+    log = function(x) 1 / x,
+    atanh = function(r) 1 / (1 - r^2),
+    theta = function(r) (1 - r^2)^(-3 / 2)
+  )
+  fl <- suppressWarnings(f(lower))
+  fu <- suppressWarnings(f(upper))
+  fe <- suppressWarnings(f(est))
+  centred <- all(is.finite(c(fl, fu, fe))) &&
+    fu > fl &&
+    abs((fl + fu) / 2 - fe) <= 1e-6 * (fu - fl)
+  if (!centred) {
+    return((upper - lower) / (2 * z))
+  }
+  (fu - fl) / (2 * z) / df(est)
+}
+
+
 # Compute the indices of the DIAGONAL entries (= variances) in the
 # random-effects block of merDeriv's full vcov, in the same row order
 # as vc_df (per group: variance(term_1), variance(term_2), ..., then

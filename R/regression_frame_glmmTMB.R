@@ -1244,8 +1244,8 @@ as_regression_frame.glmmTMB <- function(
 
   # Phase 7c7a: extend with Wald SE + 95% CI on the variance scale.
   # glmmTMB's confint(method = "Wald") returns intervals on the SD
-  # scale; we square to convert to variance scale and Delta-method for
-  # SE.
+  # scale; we square to convert to variance scale and take the SE by
+  # the delta method on log(sd).
   vc_df <- .glmmTMB_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
 
   # Last, so every row above carries its final values: put each grouping
@@ -1366,9 +1366,9 @@ as_regression_frame.glmmTMB <- function(
 
 # Attach Wald SE + CI (at ci_level) on variance scale via glmmTMB's
 # native confint(method = "Wald"). The confint returns CIs on the SD
-# scale, which we square to obtain variance-scale CIs; SE on the
-# variance scale is obtained via the Delta-method
-# (SE(sd^2) = 2 * sd * SE(sd)).
+# scale, which we square to obtain variance-scale CIs; the SE comes
+# from the delta method on the log scale glmmTMB estimates on
+# (SE(sd) = sd * SE(log sd), SE(sd^2) = 2 * sd * SE(sd)).
 .glmmTMB_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
   na_block <- function(df) {
     df$std_error <- NA_real_
@@ -1412,7 +1412,7 @@ as_regression_frame.glmmTMB <- function(
   #   "Cor.Days.(Intercept)|Subject" (correlation -- not in vc_df rows)
   # We need to match rownames to vc_df rows where group != "Residual"
   # and term matches the parenthesized content. z at the SAME level as
-  # the confint call: the SE is derived from the interval half-width.
+  # the confint call: the SE is read off the interval (.re_delta_se).
   z <- stats::qnorm(0.5 + ci_level / 2)
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
@@ -1425,7 +1425,7 @@ as_regression_frame.glmmTMB <- function(
 
     if (isTRUE(is_corr[i])) {
       # Correlation row: confint exposes "Cor.<t2>.<t1>|<g>" with CI on rho
-      # in (-1, 1), Wald-symmetric on rho scale. vc_df stores the pair in
+      # in (-1, 1), back-transformed from theta. vc_df stores the pair in
       # the canonical "<t1>, <t2>" form (engine-aligned, see the appender):
       # rebuild BOTH possible rowname orders and match exactly.
       comps <- strsplit(t, ", ", fixed = TRUE)[[1L]]
@@ -1445,7 +1445,15 @@ as_regression_frame.glmmTMB <- function(
       }
       cor_lower <- ci_sd[idx, 1L]
       cor_upper <- ci_sd[idx, 2L]
-      vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
+      # Wald on glmmTMB's theta = rho / sqrt(1 - rho^2) in a two-term
+      # block: delta method there (see .re_delta_se for larger blocks).
+      vc_df$std_error[i] <- .re_delta_se(
+        ci_sd[idx, "Estimate"],
+        cor_lower,
+        cor_upper,
+        z,
+        scale = "theta"
+      )
       vc_df$ci_lower[i] <- cor_lower
       vc_df$ci_upper[i] <- cor_upper
       vc_df$ci_method[i] <- "wald"
@@ -1453,19 +1461,43 @@ as_regression_frame.glmmTMB <- function(
     }
 
     if (identical(g, "Residual")) {
-      next
-    } # glmmTMB confint doesn't include residual
-    pattern <- paste0("^Std.Dev.", gsub("([()])", "\\\\\\1", t), "\\|", g, "$")
-    idx <- grep(pattern, rownames(ci_sd))
-    if (length(idx) != 1L) {
-      next # nocov
+      # The residual SD is the dispersion parameter of a Gaussian fit:
+      # confint(parm = "sigma") gives its Wald interval, on the log scale
+      # glmmTMB estimates it on.
+      sig_ci <- tryCatch(
+        suppressWarnings(stats::confint(
+          fit,
+          parm = "sigma",
+          method = "Wald",
+          level = ci_level
+        )),
+        error = function(e) NULL
+      )
+      if (is.null(sig_ci) || nrow(sig_ci) != 1L || ncol(sig_ci) < 3L) {
+        next # nocov
+      }
+      sd_est <- sig_ci[1L, 3L]
+      sd_lower <- sig_ci[1L, 1L]
+      sd_upper <- sig_ci[1L, 2L]
+    } else {
+      pattern <- paste0(
+        "^Std.Dev.",
+        gsub("([()])", "\\\\\\1", t),
+        "\\|",
+        g,
+        "$"
+      )
+      idx <- grep(pattern, rownames(ci_sd))
+      if (length(idx) != 1L) {
+        next # nocov
+      }
+      sd_est <- ci_sd[idx, "Estimate"]
+      sd_lower <- ci_sd[idx, 1L]
+      sd_upper <- ci_sd[idx, 2L]
     }
-    sd_est <- ci_sd[idx, "Estimate"]
-    sd_lower <- ci_sd[idx, 1L]
-    sd_upper <- ci_sd[idx, 2L]
-    # Delta-method: SE(sigma^2) = 2 * sigma * SE(sigma)
-    # SE(sigma) from CI: (upper - lower) / (2 * z)
-    se_sd <- (sd_upper - sd_lower) / (2 * z)
+    # Wald on log(sd), glmmTMB's parameter: SE(sd) = sd * SE(log sd),
+    # and SE(sd^2) = 2 * sd * SE(sd).
+    se_sd <- .re_delta_se(sd_est, sd_lower, sd_upper, z, scale = "log")
     vc_df$std_error[i] <- 2 * sd_est * se_sd
     # Variance-scale CI from squaring SD-scale CI (monotonic for sd>=0)
     vc_df$ci_lower[i] <- max(0, sd_lower)^2

@@ -747,8 +747,8 @@ as_regression_frame.gls <- function(
   # Phase 7c7a: extend with Wald SE + CI (at ci_level) via
   # nlme::intervals(). intervals() returns CIs on the SD scale (the
   # natural log-SD parametrization backtransformed); we square to
-  # convert to variance scale, and Delta-method for SE
-  # (SE(sd^2) = 2*sd*SE(sd)).
+  # convert to variance scale, and take the SE by the delta method on
+  # the log scale (SE(sd) = sd * SE(log sd), SE(sd^2) = 2*sd*SE(sd)).
   vc_df <- .lme_attach_wald_se_ci(
     vc_df,
     fit,
@@ -903,8 +903,8 @@ as_regression_frame.gls <- function(
   vc_df$ci_upper <- NA_real_
   vc_df$ci_method <- NA_character_
 
-  # z at the SAME level as the intervals() call: the SE is derived from
-  # the interval half-width, so the two must stay coupled.
+  # z at the SAME level as the intervals() call: the SE is read off the
+  # interval (see .re_delta_se), so the two must stay coupled.
   z <- stats::qnorm(0.5 + ci_level / 2)
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation %in% TRUE
@@ -916,9 +916,8 @@ as_regression_frame.gls <- function(
     t <- vc_df$term[i]
 
     if (isTRUE(is_corr[i])) {
-      # Correlation row: intervals reStruct exposes "cor(<pair>)" rows
-      # on the natural rho scale (not transformed). Wald CI symmetric.
-      # vc_df stores the pair canonically as "<t1>, <t2>" (engine-aligned);
+      # Correlation row: intervals reStruct exposes "cor(<pair>)" rows,
+      # a Wald interval on atanh(rho) back-transformed to rho. vc_df stores the pair canonically as "<t1>, <t2>" (engine-aligned);
       # nlme's rowname joins with a bare comma -- try both orders and both
       # separators via exact-string matching.
       group_ci <- ci_obj$reStruct[[bare(g)]]
@@ -946,7 +945,14 @@ as_regression_frame.gls <- function(
       }
       cor_lower <- group_ci[row_idx, "lower"]
       cor_upper <- group_ci[row_idx, "upper"]
-      vc_df$std_error[i] <- (cor_upper - cor_lower) / (2 * z)
+      # nlme's interval is Wald on atanh(rho): delta method there.
+      vc_df$std_error[i] <- .re_delta_se(
+        group_ci[row_idx, "est."],
+        cor_lower,
+        cor_upper,
+        z,
+        scale = "atanh"
+      )
       vc_df$ci_lower[i] <- cor_lower
       vc_df$ci_upper[i] <- cor_upper
       vc_df$ci_method[i] <- "wald"
@@ -975,7 +981,9 @@ as_regression_frame.gls <- function(
       sd_lower <- group_ci[row_idx, "lower"]
       sd_upper <- group_ci[row_idx, "upper"]
     }
-    se_sd <- (sd_upper - sd_lower) / (2 * z)
+    # nlme's interval is Wald on log(sd): SE(sd) = sd * SE(log sd), and
+    # SE(sd^2) = 2 * sd * SE(sd).
+    se_sd <- .re_delta_se(sd_est, sd_lower, sd_upper, z, scale = "log")
     vc_df$std_error[i] <- 2 * sd_est * se_sd
     vc_df$ci_lower[i] <- max(0, sd_lower)^2
     vc_df$ci_upper[i] <- sd_upper^2

@@ -100,20 +100,21 @@ test_that("glmmTMB panel includes σ + ρ with SE/CI", {
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
   # Pin the complete panel header, σ / ρ rows, and LRT footer (glmmTMB is ML).
+  # The SEs are lmer's on the same ML model (delta method, 2026-11-19).
   expect_match(combined, " Random effects:                 │", fixed = TRUE)
   expect_match(
     combined,
-    "   σ Subject (Intercept)         │   23.78  5.78  [ 15.02,  37.66]   –",
+    "   σ Subject (Intercept)         │   23.78  5.58  [ 15.02,  37.66]   –",
     fixed = TRUE
   )
   expect_match(
     combined,
-    "   σ Subject Days                │    5.72  1.22  [  3.81,   8.59]   –",
+    "   σ Subject Days                │    5.72  1.19  [  3.81,   8.59]   –",
     fixed = TRUE
   )
   expect_match(
     combined,
-    "   ρ Subject ((Intercept), Days) │    0.08  0.27  [ -0.49,   0.59]   –",
+    "   ρ Subject ((Intercept), Days) │    0.08  0.32  [ -0.49,   0.59]   –",
     fixed = TRUE
   )
   chibar2 <- intToUtf8(c(0x03c7, 0x0304, 0x00b2))

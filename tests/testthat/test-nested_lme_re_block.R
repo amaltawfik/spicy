@@ -93,9 +93,10 @@ test_that("a nested lme gives each level its own Wald SE and CI", {
   expect_false(isTRUE(all.equal(vc$ci_upper[1L], vc$ci_upper[2L])))
 
   # Oracle: intervals() bounds on the SD scale, squared to the variance
-  # scale the frame stores, and the Delta-method SE derived from the
-  # same half-width (SE(sd^2) = 2 * sd * SE(sd)). intervals() is keyed on
-  # nlme's BARE name, which is what the composite label maps back to.
+  # scale the frame stores, and the delta-method SE on log(sd), read off
+  # the same interval (SE(sd) = sd * SE(log sd), SE(sd^2) = 2 * sd *
+  # SE(sd)). intervals() is keyed on nlme's BARE name, which is what the
+  # composite label maps back to.
   iv <- nlme::intervals(fit, which = "var-cov")
   bare <- c("Side:Dog" = "Side", "Dog" = "Dog")
   z <- stats::qnorm(0.975)
@@ -103,7 +104,9 @@ test_that("a nested lme gives each level its own Wald SE and CI", {
     row <- iv$reStruct[[bare[[vc$group[k]]]]]["sd((Intercept))", ]
     expect_equal(vc$ci_lower[k], unname(row[["lower"]])^2, tolerance = 1e-8)
     expect_equal(vc$ci_upper[k], unname(row[["upper"]])^2, tolerance = 1e-8)
-    se_sd <- (row[["upper"]] - row[["lower"]]) / (2 * z)
+    se_sd <- row[["est."]] *
+      (log(row[["upper"]]) - log(row[["lower"]])) /
+      (2 * z)
     expect_equal(
       vc$std_error[k],
       unname(2 * row[["est."]] * se_sd),

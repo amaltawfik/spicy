@@ -1500,7 +1500,8 @@ as_regression_frame.clmm <- function(
     }
     sd_lower <- sd_est * exp(-z * se_log)
     sd_upper <- sd_est * exp(z * se_log)
-    vc_df$std_error <- 2 * sd_est * (sd_upper - sd_lower) / (2 * z)
+    # Delta method on log(SD): SE(SD^2) = 2 * SD^2 * SE(log SD).
+    vc_df$std_error <- 2 * sd_est^2 * se_log
     vc_df$ci_lower <- sd_lower^2
     vc_df$ci_upper <- sd_upper^2
     vc_df$ci_method <- "wald"

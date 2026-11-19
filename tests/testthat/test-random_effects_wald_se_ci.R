@@ -225,24 +225,37 @@ test_that("glmmTMB (random intercept): SE + CI populated for group row", {
   group_row <- vc[vc$group != "Residual", ]
   expect_true(is.finite(group_row$std_error))
   expect_identical(group_row$ci_method, "wald")
-  # Pin SE to the Delta-method oracle from glmmTMB's native Wald CI:
-  # SE(sd^2) = 2 * sd * SE(sd), with SE(sd) = (upper - lower) / (2 * z).
-  ci_sd <- as.matrix(confint(fit, method = "Wald", parm = "theta_"))
-  z <- qnorm(0.975)
-  se_sd <- (ci_sd[1L, "97.5 %"] - ci_sd[1L, "2.5 %"]) / (2 * z)
+  # Pin SE to the delta method on glmmTMB's own parameter, log(sd):
+  # SE(sd^2) = 2 * sd^2 * SE(theta), SE(theta) read from sdreport.
+  sr <- summary(fit$sdr, "fixed")
+  th <- sr[rownames(sr) == "theta", , drop = FALSE]
+  sd_est <- exp(th[1L, "Estimate"])
   expect_equal(
     group_row$std_error,
-    unname(2 * ci_sd[1L, "Estimate"] * se_sd),
-    tolerance = 1e-10
+    unname(2 * sd_est^2 * th[1L, "Std. Error"]),
+    tolerance = 1e-6
   )
 })
 
-test_that("glmmTMB residual SE = NA (confint doesn't include residual)", {
+test_that("glmmTMB residual SE: delta method on its dispersion parameter", {
   fit <- .fit_glmmTMB_int()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
   resid_row <- vc[vc$group == "Residual", ]
-  expect_true(is.na(resid_row$std_error))
+  # Gaussian glmmTMB 1.1.15: betadisp = log(sigma).
+  sr <- summary(fit$sdr, "fixed")
+  bd <- sr[rownames(sr) == "betadisp", , drop = FALSE]
+  sig <- exp(bd[1L, "Estimate"])
+  expect_equal(resid_row$variance, sig^2, tolerance = 1e-8)
+  expect_equal(
+    resid_row$std_error,
+    unname(2 * sig^2 * bd[1L, "Std. Error"]),
+    tolerance = 1e-6
+  )
+  ci <- confint(fit, parm = "sigma", method = "Wald")
+  expect_equal(resid_row$ci_lower, ci[1L, 1L]^2, tolerance = 1e-10)
+  expect_equal(resid_row$ci_upper, ci[1L, 2L]^2, tolerance = 1e-10)
+  expect_identical(resid_row$ci_method, "wald")
 })
 
 test_that("glmmTMB CI on variance = (SD CI)^2 (Delta-method roundtrip)", {
@@ -278,21 +291,21 @@ test_that("lme (random intercept): SE + CI populated for all rows", {
   expect_true(all(is.finite(vc$ci_lower)))
   expect_true(all(is.finite(vc$ci_upper)))
   expect_true(all(vc$ci_method == "wald"))
-  # Pin SEs to the nlme::intervals() Delta-method oracle:
-  # SE(sd^2) = 2 * sd * SE(sd), with SE(sd) = (upper - lower) / (2 * z).
-  ci <- nlme::intervals(fit, which = "var-cov")
-  z <- qnorm(0.975)
-  subj_ci <- ci$reStruct$Subject["sd((Intercept))", ]
-  se_subj <- 2 *
-    subj_ci[["est."]] *
-    (subj_ci[["upper"]] - subj_ci[["lower"]]) /
-    (2 * z)
-  expect_equal(vc$std_error[vc$group == "Subject"], se_subj, tolerance = 1e-10)
-  se_res <- 2 *
-    unname(ci$sigma["est."]) *
-    (unname(ci$sigma["upper"]) - unname(ci$sigma["lower"])) /
-    (2 * z)
-  expect_equal(vc$std_error[vc$group == "Residual"], se_res, tolerance = 1e-10)
+  # Pin SEs to the delta method on nlme's own scale, read from apVar
+  # (the covariance of log(sd) and log(sigma)), a route independent of
+  # the intervals() the code reads: SE(sd^2) = 2 * sd^2 * SE(log sd).
+  s <- sqrt(diag(fit$apVar))
+  sds <- exp(attr(fit$apVar, "Pars"))
+  expect_equal(
+    vc$std_error[vc$group == "Subject"],
+    unname(2 * sds[1L]^2 * s[1L]),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    vc$std_error[vc$group == "Residual"],
+    unname(2 * sds[2L]^2 * s[2L]),
+    tolerance = 1e-8
+  )
 })
 
 test_that("lme (random slope): SE/CI populated for both group rows + residual", {
@@ -302,22 +315,17 @@ test_that("lme (random slope): SE/CI populated for both group rows + residual", 
   # Phase 7c7b: 2 group variance rows + 1 correlation row + 1 residual = 4
   expect_identical(nrow(vc), 4L)
   expect_true(all(is.finite(vc$std_error)))
-  # Pin every row to the nlme::intervals() oracle. Variance rows use
-  # the Delta method SE(sd^2) = 2 * sd * SE(sd); the correlation row is
-  # on the natural rho scale, so SE = (upper - lower) / (2 * z) and the
-  # CI is intervals()' cor row verbatim.
+  # Pin every row to the delta method on nlme's natural parameters,
+  # read from apVar: log(sd) for the SDs and sigma, log((1 + rho) /
+  # (1 - rho)) for the correlation. The CI is intervals()' row verbatim.
   ci <- nlme::intervals(fit, which = "var-cov")
-  z <- qnorm(0.975)
   subj <- ci$reStruct$Subject
-  se_int <- 2 *
-    subj["sd((Intercept))", "est."] *
-    (subj["sd((Intercept))", "upper"] -
-      subj["sd((Intercept))", "lower"]) /
-    (2 * z)
-  se_age <- 2 *
-    subj["sd(age)", "est."] *
-    (subj["sd(age)", "upper"] - subj["sd(age)", "lower"]) /
-    (2 * z)
+  s <- unname(sqrt(diag(fit$apVar)))
+  pars <- unname(attr(fit$apVar, "Pars"))
+  se_int <- 2 * exp(pars[1L])^2 * s[1L]
+  se_age <- 2 * exp(pars[2L])^2 * s[2L]
+  rho <- tanh(pars[3L] / 2)
+  se_rho <- (1 - rho^2) * s[3L] / 2
   expect_equal(
     vc$std_error[
       vc$group == "Subject" &
@@ -337,13 +345,7 @@ test_that("lme (random slope): SE/CI populated for both group rows + residual", 
     subj["cor((Intercept),age)", "est."],
     tolerance = 1e-10
   )
-  expect_equal(
-    corr_row$std_error,
-    (subj["cor((Intercept),age)", "upper"] -
-      subj["cor((Intercept),age)", "lower"]) /
-      (2 * z),
-    tolerance = 1e-10
-  )
+  expect_equal(corr_row$std_error, se_rho, tolerance = 1e-8)
   expect_equal(
     corr_row$ci_lower,
     subj["cor((Intercept),age)", "lower"],
@@ -354,11 +356,8 @@ test_that("lme (random slope): SE/CI populated for both group rows + residual", 
     subj["cor((Intercept),age)", "upper"],
     tolerance = 1e-10
   )
-  se_res <- 2 *
-    unname(ci$sigma["est."]) *
-    (unname(ci$sigma["upper"]) - unname(ci$sigma["lower"])) /
-    (2 * z)
-  expect_equal(vc$std_error[vc$group == "Residual"], se_res, tolerance = 1e-10)
+  se_res <- 2 * exp(pars[4L])^2 * s[4L]
+  expect_equal(vc$std_error[vc$group == "Residual"], se_res, tolerance = 1e-8)
 })
 
 test_that("lme CI matches intervals() output squared", {
