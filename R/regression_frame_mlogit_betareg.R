@@ -525,9 +525,15 @@ as_regression_frame.betareg <- function(
     NA_real_
   }
 
+  # Case weights (`weights =`), read as a glm's are: betareg stores them
+  # on fit$weights, all 1 when unset.
+  wts <- tryCatch(stats::weights(fit), error = function(e) NULL)
+  has_weights <- .has_real_weights(wts)
+
   fit_stats <- list(
     r_squared = NA_real_,
     adj_r_squared = NA_real_,
+    weighted_nobs = .weighted_n_or_na(wts),
     pseudo_r2 = if (!is.null(fit$pseudo.r.squared)) {
       list(pseudo = as.numeric(fit$pseudo.r.squared))
     } else {
@@ -560,8 +566,8 @@ as_regression_frame.betareg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
-    weighted_n = NA_real_,
+    has_weights = has_weights,
+    weighted_n = .weighted_n_or_na(wts),
     title_prefix = "Beta regression",
     exp_applied = FALSE,
     exp_header = NA_character_,
@@ -576,7 +582,7 @@ as_regression_frame.betareg <- function(
     dv_label = dv_label,
     n_obs = as.integer(stats::nobs(fit)),
     n_groups = NULL,
-    weights_kind = "none",
+    weights_kind = .weights_kind_from_fit(fit),
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
