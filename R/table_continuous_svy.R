@@ -814,6 +814,17 @@ order_continuous_svy_tokens <- function(tokens) {
 #' printed, its lead-in included, in `attr(x, "note")`. The default object
 #' also keeps the title it prints in `attr(x, "title")`.
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
+#' Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+#' Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+#' Egger, M. (2007). Strengthening the reporting of observational studies
+#' in epidemiology (STROBE): Explanation and elaboration. *PLoS
+#' Medicine*, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
+#'
 #' @seealso [table_continuous()] for the data-frame sibling,
 #'   [table_categorical_svy()] for categorical variables,
 #'   [table_regression()] on a `survey::svyglm()` fit for a model.

@@ -281,6 +281,11 @@
 #' of [as_structured()]. The note names the method and the number of
 #' items adjusted together.
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
 #' @seealso [table_categorical()] for one block of rows per variable,
 #'   [table_multiresponse()] for a "check all that apply" question,
 #'   [table_battery_svy()] for a survey design; the

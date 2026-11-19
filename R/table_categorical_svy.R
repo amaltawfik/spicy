@@ -682,6 +682,10 @@
 #' between 0 and 1.
 #'
 #' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
 #' Korn, E. L., & Graubard, B. I. (1998). Confidence intervals for
 #' proportions with small expected number of positive counts estimated
 #' from survey data. *Survey Methodology*, 24(2), 193-201.
@@ -689,6 +693,12 @@
 #' Parker, J. D., Talih, M., Malec, D. J., et al. (2017). *National Center
 #' for Health Statistics data presentation standards for proportions*.
 #' Vital and Health Statistics, Series 2, No. 175.
+#'
+#' Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+#' Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+#' Egger, M. (2007). Strengthening the reporting of observational studies
+#' in epidemiology (STROBE): Explanation and elaboration. *PLoS
+#' Medicine*, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
 #'
 #' @seealso [table_categorical()] for the data-frame sibling,
 #'   [table_continuous_svy()] for continuous variables.

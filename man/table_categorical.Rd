@@ -499,8 +499,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -766,9 +768,9 @@ keeps its zero column.
 
 \section{Multiple-comparison adjustment}{
 The p-values of a descriptive table describe: they test no
-prespecified hypothesis. STROBE (explanation of item 14) and the
-SAMPL guidelines advise against significance tests in descriptive and
-baseline tables, hence the default \code{p_adjust = "none"}.
+prespecified hypothesis. STROBE (explanation of item 14) advises
+against significance tests in descriptive tables, hence the default
+\code{p_adjust = "none"}.
 
 When a journal or a protocol asks for adjusted p-values anyway,
 \code{p_adjust} applies \code{\link[stats:p.adjust]{stats::p.adjust()}} to the family of every test in
@@ -1082,6 +1084,10 @@ table_categorical(
 Agresti, A. (2019). \emph{An Introduction to Categorical Data Analysis} (3rd
 ed.). Wiley.
 
+American Psychological Association. (2020). \emph{Publication manual of the
+American Psychological Association} (7th ed.).
+\doi{10.1037/0000165-000}
+
 Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
 tables with small sample recommendations. \emph{Statistics in Medicine},
 26(19), 3661-3675. \doi{10.1002/sim.2832}
@@ -1093,6 +1099,12 @@ Analysis of Contingency Tables}. Chapman and Hall/CRC.
 Lydersen, S., Fagerland, M. W., & Laake, P. (2009). Recommended tests
 for association in 2 x 2 tables. \emph{Statistics in Medicine}, 28(7),
 1159-1175. \doi{10.1002/sim.3531}
+
+Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+Egger, M. (2007). Strengthening the reporting of observational studies
+in epidemiology (STROBE): Explanation and elaboration. \emph{PLoS
+Medicine}, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
 }
 \seealso{
 \code{\link[=table_continuous]{table_continuous()}} for empirical comparisons on

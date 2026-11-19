@@ -115,9 +115,10 @@
 #'     and one who skipped the question does not, as `expss` counts its
 #'     valid cases.
 #'   * `"answered"`: the respondents who chose at least one item, the
-#'     default of SPSS `MULT RESPONSE` (`MISSING = TABLE`) and of Stata's
-#'     `mrtab`, whose `include` option gives `"valid"` (Jann, 2005, pp. 98
-#'     and 107-108), where choosing nothing cannot be told from skipping.
+#'     default of Stata's `mrtab`, whose `include` option gives `"valid"`
+#'     (Jann, 2005, pp. 98-99 and 107-108), and of SPSS `MULT RESPONSE`
+#'     (`MISSING = TABLE`), where choosing nothing cannot be told from
+#'     skipping.
 #'   * `"all"`: every row of the group, as `questionr::multi.table()`
 #'     counts.
 #'
@@ -347,7 +348,7 @@
 #' `global_test = "bootstrap"` refers \eqn{X^2_S} to its distribution over
 #' `boot_n` resamples of whole response vectors, drawn with replacement
 #' from the pooled respondents with the group sizes held fixed (Loughin
-#' and Scherer, 1998). The p-value is the share of resamples whose
+#' and Scherer, 1998, p. 636). The p-value is the share of resamples whose
 #' statistic is at least the observed one. A resample in which an item is
 #' chosen by every respondent or by none gives that item no statistic: it
 #' is discarded and drawn again, the practice of Bilder, Loughin and
@@ -432,6 +433,10 @@
 #' American Medical Association. (2020). *AMA Manual of Style: A Guide for
 #' Authors and Editors* (11th ed.). Oxford University Press.
 #' \doi{10.1093/jama/9780190246556.001.0001}
+#'
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
 #'
 #' Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 #' independence between two categorical variables with multiple

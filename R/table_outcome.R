@@ -794,6 +794,17 @@ abort_outcome_by_renamed <- function() {
 #' is nothing to say). The default object also keeps the title it prints in
 #' `attr(x, "title")`.
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
+#' Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+#' Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+#' Egger, M. (2007). Strengthening the reporting of observational studies
+#' in epidemiology (STROBE): Explanation and elaboration. *PLoS
+#' Medicine*, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
+#'
 #' @seealso [table_continuous()] for the transposed shape,
 #'   [table_categorical()] for categorical outcomes.
 #' @export

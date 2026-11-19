@@ -233,7 +233,7 @@ observations (Cribari-Neto 2004).
 leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).
 \item \code{"CR0"}, \code{"CR1"}, \code{"CR2"}, \code{"CR3"}: cluster-robust sandwich
 estimators for non-independent observations (Liang and Zeger
-1986); requires \code{cluster}. \code{"CR2"} is the modern default
+1986); requires \code{cluster}. \code{"CR2"} is the bias-reduced estimator
 (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 Satterthwaite degrees of freedom for inference; the
 fractional df is reported in the long output (in \code{df} beside a
@@ -587,8 +587,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -802,11 +804,11 @@ software (Stata \code{esize} / \verb{estat esize}, SAS \verb{PROC TTEST} and
 \itemize{
 \item \code{"cohens_d"}, \code{"hedges_g"}: noncentral \emph{t} inversion (Steiger
 and Fouladi 1997;
-Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
-across sample sizes (Fitts 2021), unlike the
-older Hedges-Olkin normal approximation which is biased for small
-samples. For Hedges's \emph{g} the bounds inherit the \emph{J} small-sample
-correction.
+Goulet-Pelletier and Cousineau 2018). With \emph{d}, the coverage of
+this interval stays close to 95\% at all effect sizes and sample
+sizes; with \emph{g}, it ranges from 93\% to 97\% in small samples (Fitts
+2021, p. 2412). For Hedges's \emph{g} the bounds inherit the \emph{J}
+small-sample correction.
 \item \code{"omega2"}, \code{"f2"}: noncentral \emph{F} inversion (Steiger 2004).
 Without covariates (model-level effect sizes), bounds are
 converted from the noncentrality parameter using
@@ -821,8 +823,7 @@ which is narrower than the partial eta squared CI because
 omega squared shrinks the point estimate.
 }
 For the weighted case, the CI uses raw (unweighted) group counts and
-\code{df.residual(fit) = n - p}, consistent with the WLS reporting convention
-(DuMouchel and Duncan 1983). For propensity-score balance assessment or
+\code{df.residual(fit) = n - p}. For propensity-score balance assessment or
 complex-survey designs, dedicated packages (\code{\link[cobalt:bal.tab]{cobalt::bal.tab()}} for the
 Austin and Stuart 2015 formulation; \code{survey} for design-based effect
 sizes) are more appropriate.
@@ -856,8 +857,10 @@ implementation dispatches to \code{\link[clubSandwich:vcovCR]{clubSandwich::vcov
 variance and to \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}} (single-coefficient,
 Satterthwaite \emph{t}) and \code{\link[clubSandwich:Wald_test]{clubSandwich::Wald_test()}} (multi-coefficient
 Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
-\code{"CR2"} (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
-modern recommended default; it generally produces fractional
+\code{"CR2"} is the bias-reduced estimator of Bell and McCaffrey (2002),
+whose small-sample tests keep the Type I error near the nominal level
+even with few clusters (Pustejovsky and Tipton 2018); it generally
+produces fractional
 Satterthwaite degrees of freedom (in \code{df} beside a \emph{t}, in
 \code{df.residual} beside an \emph{F}), which the displayed \code{t(df)} /
 \code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
@@ -902,9 +905,7 @@ fit statistics \eqn{R^2}{R^2} and adjusted \eqn{R^2}{R^2}, as well as Hays's \co
 and Cohen's \eqn{f^2}{f^2}, use the corresponding \strong{weighted sums of squares}
 from the WLS fit. Cohen's \code{d} and Hedges's \code{g} use the \strong{WLS
 coefficient and the model's weighted residual standard deviation}
-(\code{summary(fit)$sigma}), which is the standard convention for
-case-weighted regression-style reporting (DuMouchel and Duncan
-1983); the noncentral \emph{t} CI for \code{d} / \code{g} uses the raw (unweighted)
+(\code{summary(fit)$sigma}); the noncentral \emph{t} CI for \code{d} / \code{g} uses the raw (unweighted)
 group counts and the residual degrees of freedom of the WLS fit
 (\code{n - p}). This case-weighted workflow is appropriate for weighted
 article tables, but is \strong{not} a substitute for a full complex-survey
@@ -1236,6 +1237,10 @@ table_continuous_lm(
 
 }
 \references{
+American Psychological Association. (2020).
+\emph{Publication Manual of the American Psychological Association}
+(7th ed.). \doi{10.1037/0000165-000}
+
 Austin, P. C., & Stuart, E. A. (2015).
 Moving towards best practice when using inverse probability of
 treatment weighting (IPTW) using the propensity score to estimate
@@ -1277,12 +1282,6 @@ Davison, A. C., & Hinkley, D. V. (1997).
 \emph{Bootstrap Methods and Their Application}.
 Cambridge: Cambridge University Press.
 \doi{10.1017/CBO9780511802843}
-
-DuMouchel, W. H., & Duncan, G. J. (1983).
-Using sample survey weights in multiple regression analyses of
-stratified samples. \emph{Journal of the American Statistical
-Association}, \strong{78}(383), 535--543.
-\doi{10.1080/01621459.1983.10478006}
 
 Fitts, D. A. (2021).
 Expected and empirical coverages of different methods for generating

@@ -700,6 +700,17 @@
 #' CI degenerates to `[m, m]`. An en-dash cell appears only when a
 #' statistic is undefined (fewer than two valid observations).
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
+#' Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+#' Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+#' Egger, M. (2007). Strengthening the reporting of observational studies
+#' in epidemiology (STROBE): Explanation and elaboration. *PLoS
+#' Medicine*, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
+#'
 #' @family spicy tables
 #' @seealso [table_outcome()] for the transposed shape -- ONE
 #'   continuous outcome across the levels of SEVERAL groupings, one

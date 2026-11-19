@@ -167,6 +167,11 @@
 #' that of [table_battery()]: `inline(x, item, "Yes", "pct")`, with
 #' `model = "<group>"` under `by`.
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
 #' @seealso [table_battery()] for the data-frame sibling,
 #'   [table_categorical_svy()] for one block of rows per variable.
 #' @export

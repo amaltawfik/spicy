@@ -89,9 +89,10 @@ non-missing indicator, so that a respondent who chose nothing counts
 and one who skipped the question does not, as \code{expss} counts its
 valid cases.
 \item \code{"answered"}: the respondents who chose at least one item, the
-default of SPSS \verb{MULT RESPONSE} (\code{MISSING = TABLE}) and of Stata's
-\code{mrtab}, whose \code{include} option gives \code{"valid"} (Jann, 2005, pp. 98
-and 107-108), where choosing nothing cannot be told from skipping.
+default of Stata's \code{mrtab}, whose \code{include} option gives \code{"valid"}
+(Jann, 2005, pp. 98-99 and 107-108), and of SPSS \verb{MULT RESPONSE}
+(\code{MISSING = TABLE}), where choosing nothing cannot be told from
+skipping.
 \item \code{"all"}: every row of the group, as \code{questionr::multi.table()}
 counts.
 }
@@ -311,8 +312,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -476,7 +479,7 @@ that ratio falls below 1.
 \code{global_test = "bootstrap"} refers \eqn{X^2_S} to its distribution over
 \code{boot_n} resamples of whole response vectors, drawn with replacement
 from the pooled respondents with the group sizes held fixed (Loughin
-and Scherer, 1998). The p-value is the share of resamples whose
+and Scherer, 1998, p. 636). The p-value is the share of resamples whose
 statistic is at least the observed one. A resample in which an item is
 chosen by every respondent or by none gives that item no statistic: it
 is discarded and drawn again, the practice of Bilder, Loughin and
@@ -631,6 +634,10 @@ allowing arbitrarily many category choices. \emph{Biometrics}, 55(3),
 American Medical Association. (2020). \emph{AMA Manual of Style: A Guide for
 Authors and Editors} (11th ed.). Oxford University Press.
 \doi{10.1093/jama/9780190246556.001.0001}
+
+American Psychological Association. (2020). \emph{Publication manual of the
+American Psychological Association} (7th ed.).
+\doi{10.1037/0000165-000}
 
 Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple

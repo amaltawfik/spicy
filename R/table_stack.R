@@ -153,6 +153,11 @@
 #' `spicy_ignored_arg` (an entry of `panel_labels` overridden by a name in
 #' `...`).
 #'
+#' @references
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
 #' @seealso [table_regression()], whose `layout = "stacked"` stacks one
 #'   panel per model; [as_structured()].
 #'

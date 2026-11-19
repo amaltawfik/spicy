@@ -280,8 +280,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -497,6 +499,11 @@ if (requireNamespace("tinytable", quietly = TRUE)) {
 }
 }
 
+}
+\references{
+American Psychological Association. (2020). \emph{Publication manual of the
+American Psychological Association} (7th ed.).
+\doi{10.1037/0000165-000}
 }
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}} for one block of rows per variable,

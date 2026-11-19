@@ -292,8 +292,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -493,9 +495,9 @@ the \code{p} column; for an effect size, model it with
 
 \section{Multiple-comparison adjustment}{
 The p-values of a descriptive table describe: they test no
-prespecified hypothesis. STROBE (explanation of item 14) and the
-SAMPL guidelines advise against significance tests in descriptive and
-baseline tables, hence the default \code{p_adjust = "none"}.
+prespecified hypothesis. STROBE (explanation of item 14) advises
+against significance tests in descriptive tables, hence the default
+\code{p_adjust = "none"}.
 
 When a journal or a protocol asks for adjusted p-values anyway,
 \code{p_adjust} applies \code{\link[stats:p.adjust]{stats::p.adjust()}} to the family of every test in
@@ -533,6 +535,10 @@ table_categorical_svy(
 \dontshow{\}) # examplesIf}
 }
 \references{
+American Psychological Association. (2020). \emph{Publication manual of the
+American Psychological Association} (7th ed.).
+\doi{10.1037/0000165-000}
+
 Korn, E. L., & Graubard, B. I. (1998). Confidence intervals for
 proportions with small expected number of positive counts estimated
 from survey data. \emph{Survey Methodology}, 24(2), 193-201.
@@ -540,6 +546,12 @@ from survey data. \emph{Survey Methodology}, 24(2), 193-201.
 Parker, J. D., Talih, M., Malec, D. J., et al. (2017). \emph{National Center
 for Health Statistics data presentation standards for proportions}.
 Vital and Health Statistics, Series 2, No. 175.
+
+Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., &
+Egger, M. (2007). Strengthening the reporting of observational studies
+in epidemiology (STROBE): Explanation and elaboration. \emph{PLoS
+Medicine}, 4(10), e297. \doi{10.1371/journal.pmed.0040297}
 }
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}} for the data-frame sibling,
