@@ -311,7 +311,6 @@ as_regression_frame.svycoxph <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = TRUE,
     weighted_n = fit_stats$weighted_nobs,
     title_prefix = "Survey-weighted Cox proportional hazards regression",
     exp_applied = FALSE,

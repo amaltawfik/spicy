@@ -128,7 +128,6 @@ test_that("weighted lm_robust surfaces weighted_n = sum(weights)", {
   d$w <- stats::runif(nrow(d), 0.5, 2)
   fit <- estimatr::lm_robust(mpg ~ wt, data = d, weights = w)
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_true(fr$info$extras$has_weights)
   expect_equal(fr$info$extras$weighted_n, sum(d$w))
 })
 

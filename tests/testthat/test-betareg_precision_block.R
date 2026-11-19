@@ -21,7 +21,6 @@ test_that("a weighted betareg reports its weighted count as a weighted glm does"
 
   fb <- as_regression_frame(bw)
   fg <- as_regression_frame(gw)
-  expect_true(fb$info$extras$has_weights)
   expect_identical(fb$info$weights_kind, fg$info$weights_kind)
   expect_equal(fb$info$extras$weighted_n, fg$info$extras$weighted_n)
   expect_equal(fb$info$fit_stats$weighted_nobs, sum(d$w))
@@ -44,7 +43,6 @@ test_that("a weighted betareg reports its weighted count as a weighted glm does"
 
   b0 <- betareg::betareg(share ~ income + persons, data = d)
   f0 <- as_regression_frame(b0)
-  expect_false(f0$info$extras$has_weights)
   expect_identical(f0$info$weights_kind, "none")
   expect_true(is.na(f0$info$fit_stats$weighted_nobs))
 })

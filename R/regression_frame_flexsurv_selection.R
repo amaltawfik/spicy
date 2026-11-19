@@ -309,7 +309,6 @@ as_regression_frame.flexsurvreg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .flexsurv_title_prefix(dist_clean),
     exp_applied = FALSE,
@@ -613,7 +612,6 @@ as_regression_frame.selection <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     # The model summary() announces: the treatment-effects model of
     # treatReg() ("Tobit treatment model"), or a tobit-2 sample-selection

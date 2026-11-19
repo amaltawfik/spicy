@@ -421,7 +421,6 @@ as_regression_frame.fixest <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .fixest_title_prefix(
       fam,

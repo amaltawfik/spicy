@@ -151,7 +151,6 @@ test_that("weighted rq fits: disclosed, bootstrap refused", {
   fit <- quantreg::rq(foodexp ~ income, data = engel, tau = 0.5, weights = w)
   fr <- as_regression_frame(fit)
   expect_identical(fr$info$weights_kind, "case")
-  expect_true(fr$info$extras$has_weights)
   expect_error(
     table_regression(fit, vcov = "bootstrap"),
     "weighted",

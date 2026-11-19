@@ -594,7 +594,6 @@ as_regression_frame.clmm <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = .ordinal_has_weights(fit),
     weighted_n = NA_real_,
     title_prefix = .ordinal_title_prefix(link),
     exp_applied = FALSE,
@@ -1055,7 +1054,6 @@ as_regression_frame.clmm <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = .ordinal_has_weights(fit),
     weighted_n = NA_real_,
     title_prefix = .ordinal_title_prefix(
       link,
@@ -1381,7 +1379,6 @@ as_regression_frame.clmm <- function(
     ),
     extras = list(
       has_singular = .clmm_is_singular(fit),
-      has_weights = .ordinal_has_weights(fit),
       # The title names the link the call asked for. A cloglog title
       # claims proportional hazards, as clm's and glmmTMB's do, only
       # when clmm fitted that link: on the single-random-intercept
@@ -1558,25 +1555,4 @@ as_regression_frame.clmm <- function(
     return(.empty_coefs_frame())
   }
   do.call(rbind, rows)
-}
-
-
-# Prior weights for polr / clm. Neither class stores a `$weights`
-# component (the previous polr check `!is.null(fit$weights)` was
-# therefore always FALSE, and clm hardcoded FALSE); the weights live in
-# the model frame's "(weights)" column.
-#
-# The question `extras$has_weights` asks is "did the user supply
-# weights", so the answer is `.has_real_weights()`'s, the one every
-# other frame gives -- and NOT "are the weights non-uniform", which was
-# the rule here and reported a fit weighted by a constant 3 as
-# unweighted. That other rule is right for exactly one thing, the
-# variance LABEL (`.weights_kind_from_fit()`), because a constant
-# factor does not change the fit.
-.ordinal_has_weights <- function(fit) {
-  w <- tryCatch(
-    stats::model.weights(stats::model.frame(fit)),
-    error = function(e) NULL
-  )
-  .has_real_weights(w)
 }

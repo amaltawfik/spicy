@@ -340,7 +340,6 @@ as_regression_frame.rq <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = !identical(wk, "none"),
     weighted_n = NA_real_,
     # The one title prefix with a number in it -- and it stays at the
     # point, alone among the footer numbers of the same lot. A prefix
@@ -566,7 +565,6 @@ as_regression_frame.ivreg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "IV regression (2SLS)",
     exp_applied = FALSE,

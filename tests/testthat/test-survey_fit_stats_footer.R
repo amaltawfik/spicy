@@ -385,7 +385,10 @@ test_that("an unweighted fit has no weighted count, and does not invent one", {
       fr$info$fit_stats$weighted_nobs,
       as.numeric(fr$info$extras$weighted_n)
     )
-    list(n = fr$info$fit_stats$weighted_nobs, has = fr$info$extras$has_weights)
+    list(
+      n = fr$info$fit_stats$weighted_nobs,
+      has = !is.na(fr$info$extras$weighted_n)
+    )
   }
 
   d <- mtcars

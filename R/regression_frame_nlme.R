@@ -410,7 +410,6 @@ as_regression_frame.gls <- function(
     # Data that .nlme_get_data() cannot find: table_regression() warns
     # once per table of what it leaves out.
     data_not_found = is.null(.nlme_get_data(fit)),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Linear mixed-effects regression",
     exp_applied = FALSE,
@@ -481,7 +480,6 @@ as_regression_frame.gls <- function(
     has_singular = FALSE,
     singular_terms = character(0),
     data_not_found = is.null(.nlme_get_data(fit)),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Generalized least squares",
     exp_applied = FALSE,

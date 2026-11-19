@@ -165,7 +165,6 @@ as_regression_frame.nls <- function(
     # The supplied-weights rule, in one place for every frame: a vector
     # of ones is what `nls()` fits with when nobody asked for weights,
     # and reporting it as weighted would be reporting the default.
-    has_weights = .has_real_weights(stats::weights(fit)),
     weighted_n = NA_real_,
     title_prefix = "Non-linear least squares regression",
     exp_applied = FALSE,

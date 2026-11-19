@@ -322,7 +322,6 @@ as_regression_frame.glm <- function(fit, ...) {
     use_ame_satterthwaite = isTRUE(legacy$use_ame_satterthwaite),
     has_singular = isTRUE(legacy$has_singular),
     singular_terms = legacy$singular_terms %||% character(0),
-    has_weights = isTRUE(legacy$has_weights),
     weighted_n = legacy$weighted_n %||% NA_real_,
     # extract_lm_phase1() always sets it: "Linear regression" or the glm
     # title of the family (spicy_glm_title_prefix(), never NULL).

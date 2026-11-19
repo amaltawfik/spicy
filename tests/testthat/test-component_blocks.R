@@ -260,7 +260,7 @@ test_that("hurdle with a count-type zero.dist keeps its block un-exponentiated",
   expect_equal(zx$estimate, z0$estimate, tolerance = 1e-12)
 })
 
-test_that("weighted pscl fits report has_weights", {
+test_that("weighted pscl fits report their weighted count", {
   skip_if_not_installed("pscl")
   data("bioChemists", package = "pscl", envir = environment())
   w <- rep(c(1, 2), length.out = nrow(bioChemists))
@@ -270,7 +270,7 @@ test_that("weighted pscl fits report has_weights", {
     weights = w
   ))
   fr <- as_regression_frame(m)
-  expect_true(isTRUE(fr$info$extras$has_weights))
+  expect_equal(fr$info$extras$weighted_n, sum(w))
 })
 
 test_that("glmmTMB nbinom2 exp header reads IRR", {

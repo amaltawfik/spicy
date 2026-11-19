@@ -271,7 +271,6 @@ as_regression_frame.mlogit <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Discrete-choice multinomial logit",
     exp_applied = FALSE,
@@ -682,7 +681,6 @@ as_regression_frame.betareg <- function(
   # Case weights (`weights =`), read as a glm's are: betareg stores them
   # on fit$weights, all 1 when unset.
   wts <- tryCatch(stats::weights(fit), error = function(e) NULL)
-  has_weights <- .has_real_weights(wts)
 
   fit_stats <- list(
     r_squared = NA_real_,
@@ -720,7 +718,6 @@ as_regression_frame.betareg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = has_weights,
     weighted_n = .weighted_n_or_na(wts),
     title_prefix = .betareg_title_prefix(link_name),
     exp_applied = FALSE,

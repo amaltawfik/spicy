@@ -546,7 +546,6 @@ as_regression_frame.survreg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Cox proportional hazards regression",
     # A null model (`~ 1`, strata() alone): read by the empty-table guard
@@ -652,7 +651,6 @@ as_regression_frame.survreg <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .survreg_title_prefix(dist, surv_dist$raw_time),
     exp_applied = FALSE,

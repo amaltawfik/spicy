@@ -598,7 +598,6 @@ inform_lmertest_hint <- function() {
     singular_terms = character(0),
     re_ci = re_ci,
     re_se_unavailable = re$re_se_unavailable %||% NA_character_,
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = if (is_glm) {
       paste0(.merMod_glm_family_title(fit), " mixed-effects regression")

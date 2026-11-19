@@ -244,7 +244,6 @@ extract_lm_phase1 <- function(
     } else {
       character(0)
     },
-    has_weights = .has_real_weights(weights),
     weighted_n = .weighted_n_or_na(weights),
     nobs = stats::nobs(fit),
     is_glm = is_glm,

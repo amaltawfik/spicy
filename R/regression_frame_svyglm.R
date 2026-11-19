@@ -308,7 +308,6 @@ as_regression_frame.svyglm <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = TRUE,
     weighted_n = fit_stats$weighted_nobs,
     title_prefix = title_prefix,
     exp_applied = FALSE,

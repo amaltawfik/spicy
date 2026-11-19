@@ -212,7 +212,6 @@ as_regression_frame.svyolr <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = TRUE,
     weighted_n = fit_stats$weighted_nobs,
     title_prefix = .svyolr_title_prefix(link),
     exp_applied = FALSE,

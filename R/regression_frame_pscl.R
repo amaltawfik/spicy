@@ -382,7 +382,7 @@ as_regression_frame.zeroinfl <- function(
 
   title_prefix <- .pscl_title_prefix(count_dist, is_hurdle)
 
-  # has_weights: pscl stores case weights on fit$weights (all-1 when unset).
+  # pscl stores case weights on fit$weights (all-1 when unset).
   wts <- fit$weights
   has_weights <- !is.null(wts) && length(wts) > 0L && any(wts != 1)
 
@@ -391,7 +391,6 @@ as_regression_frame.zeroinfl <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = has_weights,
     weighted_n = if (has_weights) sum(wts) else NA_real_,
     title_prefix = title_prefix,
     exp_applied = FALSE,

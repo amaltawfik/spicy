@@ -95,11 +95,10 @@ test_that("svyglm: vcov_kind = 'survey-Taylor' + design-based label", {
   expect_match(fr$info$vcov_label, "Taylor", fixed = TRUE)
 })
 
-test_that("svyglm: weights_kind = 'sampling' + has_weights = TRUE", {
+test_that("svyglm: weights_kind = 'sampling'", {
   fit <- .fit_svyglm_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$weights_kind, "sampling")
-  expect_true(fr$info$extras$has_weights)
 })
 
 test_that("svyglm: weighted_n = sum(weights(design))", {

@@ -404,7 +404,6 @@ as_regression_frame.gam <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .gam_title_prefix(fam, is_gaussian_identity),
     exp_applied = FALSE,

@@ -483,7 +483,6 @@ as_regression_frame.gee <- function(fit, ...) {
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = !identical(wk, "none"),
     weighted_n = w_n,
     title_prefix = title_prefix,
     exp_applied = FALSE,

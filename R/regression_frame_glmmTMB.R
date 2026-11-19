@@ -573,7 +573,6 @@ as_regression_frame.glmmTMB <- function(
     # builder -- as the Bayesian sampler-diagnostics note. Computed once
     # above (the warning is raised there); reused here.
     convergence_note = convergence_note,
-    has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = .glmmTMB_title_prefix(
       fam,

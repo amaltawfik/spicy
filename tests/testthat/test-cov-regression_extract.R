@@ -476,7 +476,7 @@ test_that("AICc for lm and gaussian glm uses k = length(coef) + 1 (estimated dis
 
 test_that("the two weight predicates answer two different questions", {
   # `.has_real_weights()` asks whether the user SUPPLIED weights, and
-  # is what `extras$has_weights` and `weighted_n` are built on: a fit
+  # is what `weighted_n` and the Weighted n row are built on: a fit
   # weighted by a constant 3 counts three times as many observations,
   # and losing that would be losing a true number.
   #

@@ -312,7 +312,6 @@ as_regression_frame.iv_robust <- function(
     use_ame_satterthwaite = FALSE,
     has_singular = FALSE,
     singular_terms = character(0),
-    has_weights = isTRUE(fit$weighted),
     weighted_n = if (isTRUE(fit$weighted)) {
       sum(stats::weights(fit))
     } else {
