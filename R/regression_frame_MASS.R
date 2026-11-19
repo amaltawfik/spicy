@@ -88,12 +88,22 @@ as_regression_frame.rlm <- function(
   vcov_label = NULL,
   ci_level = 0.95,
   ci_method = NULL,
+  show_columns = character(0),
   model_id = "M1",
   ...
 ) {
   .check_MASS_available()
 
   coefs <- .rlm_coefs(fit, ci_level = ci_level)
+  # AME rows when requested: avg_slopes() on the fit's own variance
+  # (vcov.rlm), z like the coefficient rows.
+  coefs <- .attach_ame_to_frame_coefs(
+    coefs,
+    fit,
+    ci_level,
+    show_columns,
+    vcov_type = vcov
+  )
   info <- .rlm_info(
     fit,
     vcov_kind = vcov,
