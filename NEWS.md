@@ -8,10 +8,25 @@
   multi-state `coxph` fits, `coxph` fits with a `pspline()` or a
   non-sparse `frailty()` term, which showed one row per spline basis or
   per cluster, `survey::svysurvreg()` fits, whose design went unmentioned,
-  and `nlme::nlme()` and `nlme::gnls()` fits, tabulated as linear
-  models. A `coxph` fit with a sparse `frailty()` term keeps its table
-  but refuses the RMST and risk-difference columns, which would ignore
-  the random effect.
+  `nlme::nlme()` and `nlme::gnls()` fits, tabulated as linear models,
+  and the `lme` part of an `mgcv::gamm()` fit, whose random-effect rows
+  were the smooth terms of the GAM. A `coxph` fit with a sparse
+  `frailty()` term keeps its table but refuses the RMST and
+  risk-difference columns, which would ignore the random effect.
+
+* `table_regression()`: a transformed term of an rms model reads as in
+  the formula, `log(bili)` and not rms's `bili`, like the same term of a
+  `glm()` or `coxph()` model. This is the name of the row and the name
+  `keep`, `drop` and `labels` take. The terms of `rcs()`, `pol()` and
+  `lsp()` keep rms's names (`age`, `age'`).
+
+* `table_regression(nested = TRUE)` compares two `rms::ols()` models as
+  their `lm()` twins: the change in R-squared and the F test of the
+  change, the F that `anova()` reports, instead of a likelihood-ratio
+  chi-square. `f_change` and `r2_change` are accepted for them. A
+  hierarchy that holds an `ols()` or `lrm()` model fitted with
+  `penalty =` is rendered without change statistics, with a warning:
+  neither test is valid for penalized estimates.
 
 * `table_regression()`: the random-effects rows follow one convention
   whatever the engine, so the same model fitted with `lmer()`, `lme()`
@@ -453,6 +468,50 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression()` shows the average marginal effects of a
+  `MASS::rlm()` model. The columns were left empty.
+
+* `table_regression()`: under a `CR*` variance, the AME of an `lm()`
+  keeps its Satterthwaite degrees of freedom whatever the formula
+  (`I()`, `poly()`, `log()`, splines, interactions). A formula with a
+  function call fell back to a z test while the note still named
+  Satterthwaite. The note names it only for the models whose AME uses
+  it.
+
+* `table_regression()`: a note says that the AME of a tobit model is
+  computed on the latent outcome.
+
+* `table_regression()` prints counts and fit statistics in full from 1e7
+  on: a weighted n of 255345910 read "3e+08".
+
+* `table_regression()`: a note says that the AIC of a survey-design
+  model is the design-based AIC, and that it does not compare with the
+  likelihood AIC of a model without a design in the same table.
+
+* `table_regression()`: the refusal of `nested = TRUE` for a
+  survey-design model points to `survey::regTermTest()` and `anova()`.
+  RMST and risk-difference columns asked of a `svycoxph()` model are
+  refused for the design before a horizon is asked for.
+
+* `table_regression()`: the note of an rms model passed through
+  `robcov()` or `bootcov()` names that variance, where it said "Wald
+  asymptotic". `vcov = "CR0"` on such a model starts again from the
+  model-based variance instead of building a sandwich on a sandwich.
+
+* `table_regression()`: a note says that an `lrm()` or `ols()` model
+  fitted with `penalty =` is penalized, and gives the penalty.
+
+* `table_regression()`: in a table of several models, the concordance
+  note of a Cox model names its model.
+
+* `table_regression()`: the notes on the standard errors and intervals
+  of the random-effect rows appear only when the table shows those
+  cells.
+
+* `table_regression()` shows the correlation row of an `lme()` model
+  fitted under `lmeControl(natural = FALSE)` or with a `pdCompSymm`
+  block.
 
 * `table_regression()` refuses by name an `lm()` fit with a matrix
   response (`mlm`), an `aov()` fit and the `rms::Rq()` and `rms::Gls()`
