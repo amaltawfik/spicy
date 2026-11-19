@@ -348,7 +348,12 @@ test_that("options(spicy.note_style) opts out or adds Typst styling", {
     expect_match(.pt_typst(tt), "text([#emph[Note.]", fixed = TRUE)
     expect_match(.pt_latex(tt), "note{}={\\emph{Note.}", fixed = TRUE)
     cat_tt <- table_categorical(d, sex, drop_na = TRUE, output = "tinytable")
-    expect_no_match(.pt_html(cat_tt), "font-size", fixed = TRUE)
+    cat_html <- .pt_html(cat_tt)
+    expect_no_match(
+      regmatches(cat_html, regexpr("<tfoot>.*?</tfoot>", cat_html)),
+      "font-size",
+      fixed = TRUE
+    )
   })
 
   withr::with_options(list(spicy.note_style = "fill: luma(89)"), {
@@ -2174,6 +2179,35 @@ test_that("a table without a note has no <tfoot> and no note div", {
     html <- .pt_html(tt)
     expect_no_match(html, "<tfoot>", fixed = TRUE)
     expect_no_match(html, "spicy-tt-note", fixed = TRUE)
+  }
+})
+
+test_that("the HTML frame of a table scrolls, and a slide sets it at 16px", {
+  skip_if_not_installed("tinytable")
+  tts <- c(
+    .pt_note_routes(),
+    list(table_categorical(.pt_data(), sex, note = FALSE, output = "tinytable"))
+  )
+  for (tt in tts) {
+    html <- .pt_html(tt)
+    expect_match(
+      html,
+      "<div class=\"container\" style=\"overflow-x: auto; max-width: 100%;\">",
+      fixed = TRUE
+    )
+    id <- regmatches(html, regexpr("id=\"tinytable_[^\"]+\"", html))
+    id <- sub("^id=\"(.*)\"$", "\\1", id)
+    expect_match(
+      html,
+      paste0(".reveal #", id, " { font-size: 16px; }"),
+      fixed = TRUE
+    )
+  }
+  # The other outputs carry neither.
+  tt <- .pt_note_routes()$regression
+  for (s in c(.pt_typst(tt), .pt_latex(tt))) {
+    expect_no_match(s, "font-size: 16px", fixed = TRUE)
+    expect_no_match(s, "overflow-x", fixed = TRUE)
   }
 })
 

@@ -70,6 +70,7 @@ Trois tableaux (régression à deux modèles, `table_continuous_lm()`, `table_mu
 ## Limites
 
 - Non vérifié : Safari, revealjs, le viewer de RStudio et celui de Positron.
+- Levée le 2026-11-19 pour revealjs et les fenêtres étroites. tinytable place le tableau dans un `<div class="container">` sans règle : sa feuille de style fait défiler `.tinytable-container`, classe que son gabarit n'écrit pas (tinytable 0.19.0). Dans un `html_document` de R Markdown à 420 px, le tableau de régression sortait de la page. Le cadre reçoit `overflow-x: auto; max-width: 100%` (`.spicy_tt_html_frame()`) et défile seul, comme celui de gt. Quarto HTML n'en voit rien : son `.cell-output-display` défilait déjà. En revealjs, le tableau prenait les 40 px du texte des diapositives : un tableau de régression à trois modèles mesurait 1647 × 787 px pour une diapositive de 1050 × 700. Il prend les 16 px d'un tableau gt et mesure 659 × 363. Un `tinytable::tt()` nu garde les deux comportements, de même que le flextable de spicy en revealjs.
 - La feuille de style de tinytable est servie par son CDN depuis sa branche principale. Les mesures valent pour celle du 2026-11-15.
 - Les routes de gt qui gardent la note native (`gtsave()`, `as_raw_html()`) étirent encore le tableau. Elles ne sont pas traitées ici.
 

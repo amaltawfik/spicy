@@ -84,12 +84,9 @@
       s <- .spicy_tt_typst_layout(s, groups, spans, stub)
       tbl@table_string <- .spicy_tt_note_typst(s, notes, lead, minus, scale)
     } else if (identical(tbl@output, "html")) {
-      tbl@table_string <- .spicy_tt_note_tfoot(
-        tbl@table_string,
-        notes,
-        lead,
-        minus,
-        scale
+      tbl@table_string <- .spicy_tt_html_frame(
+        .spicy_tt_note_tfoot(tbl@table_string, notes, lead, minus, scale),
+        tbl@id
       )
     } else if (identical(tbl@output, "latex")) {
       tbl@table_string <- .spicy_tt_note_latex(
@@ -1198,6 +1195,31 @@
   }
   regmatches(s, m) <- paste(pieces, collapse = "</td>")
   s
+}
+
+# HTML: the frame of the table, as gt sets its own. tinytable writes the
+# table in a `<div class="container">` that its style sheet gives no
+# rule (its scrolling rule is for `.tinytable-container`, a class its
+# template does not write): in an R Markdown page, a table wider than
+# the page ran off it, and Bootstrap 3 gives `.container` 970px, wider
+# than the text at a 992px window. The frame scrolls and keeps to the
+# width of its parent. In a reveal.js slide, the table took the 40px of
+# the slide's text: it takes the 16px of a gt table. `id` is the id of
+# the tinytable (`tbl@id`).
+.spicy_tt_html_frame <- function(s, id) {
+  s <- sub(
+    "<div class=\"container\">",
+    "<div class=\"container\" style=\"overflow-x: auto; max-width: 100%;\">",
+    s,
+    fixed = TRUE
+  )
+  mark <- "/* tinytable css entries after */"
+  sub(
+    mark,
+    paste0(mark, "\n    .reveal #tinytable_", id, " { font-size: 16px; }"),
+    s,
+    fixed = TRUE
+  )
 }
 
 # Typst: tinytable emits the note as
