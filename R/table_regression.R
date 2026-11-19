@@ -3656,13 +3656,8 @@ table_regression <- function(
   # its `labels`. Before the explode, which copies each frame's info.
   # A name of `labels` or `note_labels` that is no outcome, term label or
   # coefficient name of the table warns, and is left out, as in the
-  # descriptive tables (`.warn_unknown_label_names()`). The warning lists
-  # the terms, which the models name and the reader may not know. The
-  # panel of a stack names one model only: its driver checks the names
-  # against all.
-  if (is.null(panel_req)) {
-    .reg_warn_label_names(models, frames, labels, note_labels)
-  }
+  # descriptive tables (`.warn_unknown_label_names()`), once the rows are
+  # aligned (below).
   var_labs <- .reg_variable_labels(labels, models, frames)
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
@@ -3733,11 +3728,16 @@ table_regression <- function(
   # stacked table matches the patterns against its own model only: it
   # leaves the terms it saw to its driver, which warns once about a
   # pattern no model matches.
+  filter_terms <- unique(.reg_filter_terms(aligned$coefs_aligned))
   if (!is.null(panel_req)) {
-    .reg_panel$terms <- c(
-      .reg_panel$terms,
-      list(unique(.reg_filter_terms(aligned$coefs_aligned)))
-    )
+    .reg_panel$terms <- c(.reg_panel$terms, list(filter_terms))
+  }
+  # The warning on a name of `labels` that names nothing lists the terms
+  # the warning of `keep` lists, which the models name and the reader may
+  # not know. The panel of a stack names one model only: its driver
+  # checks the names against all.
+  if (is.null(panel_req)) {
+    .reg_warn_label_names(models, frames, labels, note_labels, filter_terms)
   }
   aligned <- apply_keep_drop_filter(
     aligned,
@@ -4117,9 +4117,11 @@ table_regression <- function(
 # interaction term label that names several rows ("wc:g3" for
 # "wcyes:g3b" and "wcyes:g3c") labels none of them: it warns too, with
 # its rows. The side-by-side table and the driver of a stack check the
-# names of all the models here.
-.reg_warn_label_names <- function(models, frames, labels, note_labels) {
-  label_keys <- .reg_label_keys(models)
+# names of all the models here. `terms`: the names `keep` and `drop` match
+# (`.reg_filter_terms()`), which the warning lists, as theirs does; the
+# rows of a block ("s(age)", "rho") are labeled under them.
+.reg_warn_label_names <- function(models, frames, labels, note_labels, terms) {
+  label_keys <- c(.reg_label_keys(models), .reg_block_label_keys(frames))
   several <- if (is.character(labels)) {
     Filter(
       function(r) length(r) > 1L,
@@ -4169,7 +4171,7 @@ table_regression <- function(
     ),
     labels,
     note_labels,
-    hint = .reg_terms_sentence(setdiff(label_keys, names(several)))
+    hint = .reg_terms_sentence(terms)
   )
 }
 

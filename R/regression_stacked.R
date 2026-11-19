@@ -273,14 +273,10 @@
   # A `keep` or `drop` pattern that matches no term of any model, once
   # every panel has met the patterns (one stopped before them stops the
   # table, as the side-by-side table stops before its own check).
+  seen <- unique(unlist(.reg_panel$terms, use.names = FALSE))
+  seen <- c(intersect(term_order, seen), setdiff(seen, term_order))
   if (length(.reg_panel$terms) == n) {
-    seen <- unique(unlist(.reg_panel$terms, use.names = FALSE))
-    .reg_warn_dead_patterns(
-      c(intersect(term_order, seen), setdiff(seen, term_order)),
-      arg("keep"),
-      arg("drop"),
-      call = env
-    )
+    .reg_warn_dead_patterns(seen, arg("keep"), arg("drop"), call = env)
   }
   .reg_emit_gathered(gathered, n, public_call)
   # A token the call names must give a row in one panel at least: the
@@ -295,7 +291,13 @@
       call = env
     )
   }
-  .reg_warn_label_names(models, frames, arg("labels"), arg("note_labels"))
+  .reg_warn_label_names(
+    models,
+    frames,
+    arg("labels"),
+    arg("note_labels"),
+    seen
+  )
   .reg_warn_exponentiate_noop(frames, arg("exponentiate"))
   .reg_warn_re_args_noop(
     frames,

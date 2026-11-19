@@ -1654,7 +1654,16 @@ format_term_label <- function(
   # effects, random-effect variance components) always render their display
   # label, even in the flat layout: their `term` is an internal key (e.g.
   # "re::Subject::Days") or a bare cut-point, not a coefficient name.
+  # `labels` renames one under the name `keep` and `drop` know it by
+  # (`.reg_filter_terms()`: "s(age)", "rho", "Precision::persons").
   if (.reg_is_block(term_row$factor_term)) {
+    key <- .reg_filter_terms(term_row)
+    if (key %in% names(labels)) {
+      return(paste0(
+        if (isTRUE(group_factor_levels)) "  " else "",
+        labels[[key]]
+      ))
+    }
     lvl <- term_row$factor_level
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term
@@ -1775,7 +1784,10 @@ resolve_label <- function(term, labels) {
   }
   terms <- c(user, attrs[setdiff(names(attrs), names(user))])
   if (length(terms) > 0L) {
-    terms <- terms[names(terms) %in% .reg_label_keys(models)]
+    terms <- terms[
+      names(terms) %in%
+        c(.reg_label_keys(models), .reg_block_label_keys(frames))
+    ]
   }
   # An interaction keyed by its term label ("age:wc") labels its row
   # ("age:wcyes") when it names one row; the coefficient name, when given

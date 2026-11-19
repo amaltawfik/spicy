@@ -104,3 +104,67 @@ test_that("a term name that is no regular expression selects its term", {
   )
   expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
 })
+
+# ---- 2. `labels` renames the rows of a block -----------------------------
+
+# The row names of the console table.
+fu_rows <- function(tb) {
+  out <- utils::capture.output(print(tb))
+  trimws(sub("│.*$", "", out))
+}
+
+# The "The terms of this table: ..." sentence of a warning.
+fu_terms_sentence <- function(w) {
+  sub(".*(The terms of this table: .*)$", "\\1", conditionMessage(w))
+}
+
+test_that("labels renames a smooth term, and its warning lists keep's terms", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("MASS")
+  fit <- fu_gam()
+  tb <- expect_no_warning(table_regression(
+    fit,
+    labels = c("s(age)" = "Age (smooth)")
+  ))
+  expect_true("Age (smooth)" %in% fu_rows(tb))
+  expect_false("s(age)" %in% fu_rows(tb))
+  # One list of terms for the two warnings.
+  w_lab <- expect_warning(
+    table_regression(fit, labels = c(nope = "x")),
+    class = "spicy_unknown_name"
+  )
+  w_keep <- expect_warning(
+    table_regression(fit, keep = "nope"),
+    class = "spicy_no_match"
+  )
+  expect_identical(fu_terms_sentence(w_lab), fu_terms_sentence(w_keep))
+  expect_match(conditionMessage(w_lab), "\"s(age)\"", fixed = TRUE)
+  expect_no_match(conditionMessage(w_lab), "s(age).1", fixed = TRUE)
+})
+
+test_that("labels renames the Precision and Error terms rows", {
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("sampleSelection")
+  e <- new.env()
+  utils::data("FoodExpenditure", package = "betareg", envir = e)
+  fe <- e$FoodExpenditure
+  fe$share <- fe$food / fe$income
+  beta <- betareg::betareg(share ~ income + persons | persons, data = fe)
+  tb <- expect_no_warning(table_regression(
+    beta,
+    labels = c("Precision::persons" = "Household size", persons = "Persons")
+  ))
+  expect_true(all(c("Household size", "Persons") %in% fu_rows(tb)))
+  for (two_step in c(FALSE, TRUE)) {
+    fit <- fu_selection(two_step)
+    lab <- c(rho = "Rho", sigma = "Sigma", invMillsRatio = "Lambda")
+    if (!two_step) {
+      lab <- lab[1:2]
+    }
+    tb <- expect_no_warning(table_regression(
+      fit,
+      labels = lab
+    ))
+    expect_true(all(unname(lab) %in% fu_rows(tb)))
+  }
+})

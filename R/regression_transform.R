@@ -63,6 +63,20 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   terms
 }
 
+# The names of the rows of the subordinate blocks of `frames`, as `keep`
+# and `drop` list them ("s(age)", "rho", "Precision::persons"): `labels`
+# renames a block row under that name (`format_term_label()`).
+.reg_block_label_keys <- function(frames) {
+  unique(unlist(lapply(frames, function(f) {
+    cf <- f$coefs
+    blk <- .reg_is_block(cf$parent_var %||% rep(NA_character_, nrow(cf)))
+    .reg_filter_terms(list(
+      term = cf$term[blk],
+      factor_term = cf$parent_var[blk]
+    ))
+  })))
+}
+
 # "The terms of this table: ...", the first twelve: the names a regression
 # table builds from its models, listed where a pattern of `keep` / `drop`
 # or a name of `labels` matches none of them.
