@@ -4329,6 +4329,10 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
       .rms_transformed_terms(fit)
     )
   }
+  # A fixest fit names its rows as lm and ivreg do (.fixest_row_terms()).
+  if (inherits(fit, "fixest")) {
+    nm <- .fixest_row_terms(nm, fit)
+  }
   nm
 }
 

@@ -119,3 +119,108 @@ test_that("a tobit fit names its transformed outcome", {
   fit <- AER::tobit(sqrt(h) ~ education, data = d)
   expect_identical(as_regression_frame(fit, model_id = "M1")$info$dv, "sqrt(h)")
 })
+
+
+# ---- Rows of a fixest IV fit take the variable's name --------------------
+
+test_that("an IV feols names its endogenous regressor as ivreg does", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("AER")
+  skip_if_not_installed("estimatr")
+  d <- .rf_wage_data()
+  iv <- AER::ivreg(
+    log(wage) ~
+      education +
+        experience +
+        I(experience^2) |
+        feducation + experience + I(experience^2),
+    data = d
+  )
+  ivr <- estimatr::iv_robust(
+    log(wage) ~
+      education +
+        experience +
+        I(experience^2) |
+        feducation + experience + I(experience^2),
+    data = d
+  )
+  ivf <- fixest::feols(
+    log(wage) ~ experience + I(experience^2) | education ~ feducation,
+    d
+  )
+  terms <- as_regression_frame(ivf, model_id = "M1")$coefs$term
+  expect_setequal(
+    terms,
+    c("(Intercept)", "education", "experience", "I(experience^2)")
+  )
+  tbl <- as.data.frame(table_regression(list(iv, ivr, ivf), digits = 3))
+  rows <- trimws(tbl[[1L]])
+  expect_false(any(grepl("fit_|I\\(I\\(", rows)))
+  expect_identical(sum(rows == "education"), 1L)
+  expect_identical(sum(rows == "I(experience^2)"), 1L)
+  # The three estimates of education sit on one row.
+  b <- unlist(tbl[rows == "education", grepl(": B$", names(tbl))])
+  expect_length(b, 3L)
+  expect_false(anyNA(b))
+  expect_equal(unname(b), rep(b[[1L]], 3L), tolerance = 1e-8)
+})
+
+test_that("labels, keep and drop take the variable's name on an IV feols", {
+  skip_if_not_installed("fixest")
+  d <- .rf_wage_data()
+  ivf <- fixest::feols(
+    log(wage) ~ experience + I(experience^2) | education ~ feducation,
+    d
+  )
+  # `keep` and `drop` are regular expressions over the row names.
+  kept <- as.data.frame(table_regression(ivf, keep = "^education$"))
+  kept <- setdiff(kept$variable[kept$.row_role == "coef"], "(Intercept)")
+  expect_identical(kept, "education")
+  dropped <- as.data.frame(table_regression(
+    ivf,
+    drop = c("^education$", "^I\\(experience\\^2\\)$")
+  ))
+  expect_identical(
+    dropped$variable[dropped$.row_role == "coef"],
+    c("(Intercept)", "experience")
+  )
+  lab <- as.data.frame(expect_no_warning(table_regression(
+    ivf,
+    labels = c(education = "Years of schooling", "I(experience^2)" = "Sq.")
+  )))
+  expect_true(all(c("Years of schooling", "Sq.") %in% lab$label))
+})
+
+test_that("the AME of an IV feols sits on the endogenous regressor's row", {
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("marginaleffects")
+  d <- .rf_wage_data()
+  ivf <- fixest::feols(
+    log(wage) ~ experience + I(experience^2) | education ~ feducation,
+    d
+  )
+  co <- as_regression_frame(
+    ivf,
+    model_id = "M1",
+    show_columns = c("b", "se", "p", "ame", "ame_p")
+  )$coefs
+  ame <- co[co$estimate_type == "ame", ]
+  expect_true("education" %in% ame$term)
+  expect_false(any(grepl("fit_", co$term)))
+  expect_equal(
+    ame$estimate[ame$term == "education"],
+    unname(stats::coef(ivf)[["fit_education"]]),
+    tolerance = 1e-6
+  )
+})
+
+test_that("a feols regressor really called fit_x keeps its name", {
+  skip_if_not_installed("fixest")
+  d <- .rf_wage_data()
+  d$fit_x <- d$experience
+  fit <- fixest::feols(log(wage) ~ fit_x + I(fit_x^2), d)
+  expect_setequal(
+    as_regression_frame(fit, model_id = "M1")$coefs$term,
+    c("(Intercept)", "fit_x", "I(fit_x^2)")
+  )
+})

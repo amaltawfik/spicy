@@ -119,6 +119,7 @@ as_regression_frame.fixest <- function(
     )
     coefs <- .fixest_align_ame_rows(coefs, fit)
   }
+  coefs <- .fixest_display_terms(coefs, fit)
   info <- .fixest_info(
     fit,
     vcov_kind = vcov,
@@ -134,6 +135,51 @@ as_regression_frame.fixest <- function(
 
 
 # ---- Internal helpers -----------------------------------------------------
+
+# The rows take the names lm(), ivreg() and iv_robust() give the same
+# terms, so that the fits align in one table and `labels`, `keep` and
+# `drop` take the variable's name. fixest names the second-stage
+# coefficient of an endogenous regressor "fit_<x>" (etable() prints
+# "<x>") and writes `I(x^2)` as `I(I(x^2))`. A variable that is really
+# called "fit_x" keeps its name: only fit$iv_endo_names_fit is renamed.
+.fixest_display_terms <- function(coefs, fit) {
+  own_label <- coefs$label == coefs$term
+  coefs$term <- .fixest_row_terms(coefs$term, fit)
+  coefs$parent_var <- .fixest_row_terms(coefs$parent_var, fit)
+  coefs$label[own_label] <- coefs$term[own_label]
+  coefs
+}
+
+# The row name of each fixest coefficient name `x` (see above), also the
+# key `labels` reads (.reg_coef_keys_of()).
+.fixest_row_terms <- function(x, fit) {
+  if (.fixest_is_iv_second_stage(fit)) {
+    i <- match(x, as.character(fit[["iv_endo_names_fit"]]))
+    x[!is.na(i)] <- as.character(fit[["iv_endo_names"]])[i[!is.na(i)]]
+  }
+  ii <- !is.na(x) & grepl("I(I(", x, fixed = TRUE)
+  x[ii] <- vapply(x[ii], .unwrap_double_I, character(1), USE.NAMES = FALSE)
+  x
+}
+
+# "I(I(x^2))" -> "I(x^2)", inside an interaction too; a name that does
+# not parse is kept.
+.unwrap_double_I <- function(name) {
+  unwrap <- function(e) {
+    if (!is.call(e)) {
+      return(e)
+    }
+    is_I <- function(z) is.call(z) && identical(z[[1L]], as.name("I"))
+    if (is_I(e) && length(e) == 2L && is_I(e[[2L]])) {
+      return(unwrap(e[[2L]]))
+    }
+    for (k in seq_along(e)[-1L]) {
+      e[[k]] <- unwrap(e[[k]])
+    }
+    e
+  }
+  tryCatch(deparse1(unwrap(str2lang(name))), error = function(e) name)
+}
 
 .check_fixest_available <- function() {
   if (!spicy_pkg_available("fixest")) {

@@ -939,11 +939,11 @@ test_that("an IV feols is titled as ivreg titles two-stage least squares", {
   # The pooled and fixed-effects IV fits share the family title.
   out <- utils::capture.output(print(table_regression(list(iv, iv_fe))))
   expect_identical(out[1L], "IV regression (2SLS) comparison: y")
-  # The AME of the endogenous regressor sits on its B row, which the
-  # second stage names "fit_x_endo".
+  # The AME of the endogenous regressor sits on its B row, named
+  # "x_endo" as ivreg names it (fixest's second stage says "fit_x_endo").
   df <- as.data.frame(table_regression(iv, show_columns = c("b", "ame")))
-  expect_false(any(df$variable == "x_endo"))
-  row <- df[df$variable == "fit_x_endo", ]
+  expect_false(any(df$variable == "fit_x_endo"))
+  row <- df[df$variable == "x_endo", ]
   expect_identical(nrow(row), 1L)
   orc <- as.data.frame(suppressWarnings(marginaleffects::avg_slopes(iv)))
   expect_equal(
@@ -1419,7 +1419,7 @@ test_that("a transformed variable of a fixest fit takes its AME on its coefficie
   # An IV fit with a transformed endogenous regressor: marginaleffects
   # reports the response as a regressor (a slope of 0), which is not
   # one; with fixed effects it reports a slope of Temp, which goes on
-  # the row of fit_log(Temp).
+  # the row of log(Temp) (fixest's fit_log(Temp)).
   iv <- fixest::feols(Ozone ~ Solar.R | log(Temp) ~ Wind, data = aq)
   orc <- as.data.frame(marginaleffects::avg_slopes(iv))
   expect_true("Ozone" %in% orc$term)
@@ -1433,7 +1433,7 @@ test_that("a transformed variable of a fixest fit takes its AME on its coefficie
   ))
   got <- am(iv)
   expect_equal(
-    got$AME[got$variable == "fit_log(Temp)"],
+    got$AME[got$variable == "log(Temp)"],
     orc$estimate[orc$term == "Temp"],
     tolerance = 1e-8
   )
