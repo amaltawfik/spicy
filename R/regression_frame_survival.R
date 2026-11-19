@@ -279,7 +279,14 @@ as_regression_frame.survreg <- function(
 # Build the coefs tibble for a coxph fit. Wald z-asymptotic; no intercept.
 .coxph_coefs <- function(fit, ci_level) {
   cf <- stats::coef(fit)
-  V <- as.matrix(stats::vcov(fit))
+  # A null model (`~ 1`, or strata() alone) has no coefficient, and
+  # vcov.coxph() fails on it ("attempt to set an attribute on NULL").
+  if (length(cf) == 0L) {
+    cf <- stats::setNames(numeric(0), character(0))
+    V <- matrix(numeric(0), 0L, 0L)
+  } else {
+    V <- as.matrix(stats::vcov(fit))
+  }
   est <- unname(cf)
   se <- sqrt(diag(V))
   nm <- names(cf)
@@ -317,8 +324,8 @@ as_regression_frame.survreg <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
     term = nm,
@@ -534,6 +541,9 @@ as_regression_frame.survreg <- function(
     has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = "Cox proportional hazards regression",
+    # A null model (`~ 1`, strata() alone): read by the empty-table guard
+    # of table_regression().
+    no_coefficients = length(stats::coef(fit)) == 0L,
     exp_applied = FALSE,
     exp_header = NA_character_,
     n_events = as.integer(fit$nevent %||% NA_integer_),

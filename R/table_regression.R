@@ -3775,6 +3775,29 @@ table_regression <- function(
     function(fr) nrow(fr$coefs) == 0L && !fit_only,
     logical(1)
   )
+  # A Cox null model (`~ 1`, strata() alone) has no coefficient to show,
+  # and is the legitimate first model of a hierarchy: beside a model with
+  # rows, its column carries the fit statistics alone.
+  null_cox <- vapply(
+    frames,
+    function(fr) isTRUE(fr$info$extras$no_coefficients),
+    logical(1)
+  )
+  if (!all(empty_frames)) {
+    empty_frames <- empty_frames & !null_cox
+  } else if (all(null_cox)) {
+    spicy_abort(
+      c(
+        "A Cox model without a coefficient has no row to show on its own.",
+        "i" = paste0(
+          "Give it as the first model of `nested = TRUE`, before a model ",
+          "with predictors: its column then shows the fit statistics and ",
+          "the next model its likelihood-ratio test against it."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   if (any(empty_frames)) {
     mod_labels <- .model_display_names(models, panel_req)
     hid_thresholds <- !isTRUE(show_thresholds) &&

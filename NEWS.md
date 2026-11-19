@@ -423,6 +423,12 @@
   the `ordinal()` family, alone or as the first model of `nested =
   TRUE`. It stopped on an internal error.
 
+* `table_regression()` takes a `coxph()` model without a coefficient
+  (`~ 1`, or `strata()` alone) as the first model of a hierarchy: its
+  column shows the fit statistics, and the next model its
+  likelihood-ratio test against it. Alone, such a model is refused with
+  a message that says why. Both stopped on a base R error.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.

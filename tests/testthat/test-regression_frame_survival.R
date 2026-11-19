@@ -220,6 +220,42 @@ test_that("coxph: AIC/BIC/logLik match stats:: helpers", {
   )
 })
 
+test_that("coxph null model: the first model of a hierarchy, refused alone", {
+  d <- survival::lung
+  f0 <- survival::coxph(survival::Surv(time, status) ~ 1, data = d)
+  f1 <- survival::coxph(survival::Surv(time, status) ~ age, data = d)
+  f2 <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  fr <- as_regression_frame(f0)
+  expect_identical(nrow(fr$coefs), 0L)
+  expect_equal(fr$info$fit_stats$aic, stats::AIC(f0), tolerance = 1e-10)
+  expect_s3_class(
+    table_regression(list(f0, f1, f2), nested = TRUE),
+    "spicy_regression_table"
+  )
+  # Oracle: anova.coxph, chi-square 4.2409 then 9.8822 on lung.
+  nested <- spicy:::compute_nested_comparisons(list(f0, f1, f2))
+  oracle <- stats::anova(f0, f1, f2)
+  expect_equal(nested$lrt_change, oracle[["Chisq"]][2:3], tolerance = 1e-8)
+  expect_equal(nested$p_change, oracle[["Pr(>|Chi|)"]][2:3], tolerance = 1e-8)
+
+  s0 <- survival::coxph(survival::Surv(time, status) ~ strata(sex), data = d)
+  s1 <- survival::coxph(
+    survival::Surv(time, status) ~ age + strata(sex),
+    data = d
+  )
+  expect_s3_class(
+    table_regression(list(s0, s1), nested = TRUE),
+    "spicy_regression_table"
+  )
+  nested <- spicy:::compute_nested_comparisons(list(s0, s1))
+  oracle <- stats::anova(s0, s1)
+  expect_equal(nested$lrt_change, oracle[["Chisq"]][2], tolerance = 1e-8)
+
+  err <- expect_error(table_regression(f0), class = "spicy_invalid_input")
+  expect_match(conditionMessage(err), "without a coefficient", fixed = TRUE)
+  expect_error(table_regression(s0), class = "spicy_invalid_input")
+})
+
 
 # ---- 6. coxph: factor predictor reference rows ---------------------------
 
