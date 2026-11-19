@@ -60,6 +60,8 @@ vc_refused <- list(
   )
 )
 
+.refusal_reset("vcov")
+
 vc_call <- function(fit, id, mode) {
   args <- list(fit, vcov = mode, output = "data.frame")
   clu <- .CLASS_FIXTURES[[id]]$cluster
@@ -106,7 +108,10 @@ for (id in names(.CLASS_FIXTURES)) {
             vc_call(fit, id, m)
             "accepted"
           },
-          spicy_error = function(e) "refused"
+          spicy_error = function(e) {
+            .refusal_note("vcov", id, paste0("vcov = \"", m, "\""), e)
+            "refused"
+          }
         )
         expect_identical(
           res,
@@ -114,6 +119,20 @@ for (id in names(.CLASS_FIXTURES)) {
           label = paste(id, m)
         )
       }
+      .refusal_ran("vcov", id)
     })
   })
 }
+
+# The text and the class of every refusal above, frozen
+# (helper-refusal-log.R). The Stan fixtures, swept on local runs only,
+# have a snapshot of their own.
+test_that("the refusals of the vcov sweep keep their text and class", {
+  skip_on_cran()
+  .refusal_snapshot("vcov", .refusal_ids())
+})
+
+test_that("the refusals of the vcov sweep keep their text and class: Stan", {
+  .skip_unless_local_stan()
+  .refusal_snapshot("vcov", .refusal_ids(stan = TRUE))
+})

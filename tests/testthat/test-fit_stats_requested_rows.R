@@ -8,6 +8,8 @@
 # of the column `fit_stats_default`, in their order
 # (dev/decisions/2026-11-19-capability-registry.md).
 
+.refusal_reset("fit_stats")
+
 rr_rows <- function(fit, tokens) {
   nrow(suppressWarnings(suppressMessages(
     table_regression(fit, show_fit_stats = tokens, output = "data.frame")
@@ -183,7 +185,10 @@ rr_sweep <- function(fit, id) {
   for (tk in setdiff(.regression_tokens$show_fit_stats, "nobs")) {
     k <- tryCatch(
       rr_rows(fit, c("nobs", tk)),
-      spicy_invalid_input = function(e) NA_integer_
+      spicy_invalid_input = function(e) {
+        .refusal_note("fit_stats", id, paste0("\"", tk, "\""), e)
+        NA_integer_
+      }
     )
     label <- paste0(id, " / ", tk)
     if (is.na(k)) {
@@ -238,10 +243,24 @@ for (id in names(.CLASS_FIXTURES)) {
       {
         skip_on_cran()
         rr_sweep(.class_fixture(id), id)
+        .refusal_ran("fit_stats", id)
       }
     )
   })
 }
+
+# The text and the class of every refusal of the sweep, frozen
+# (helper-refusal-log.R). The Stan fixtures, swept on local runs only,
+# have a snapshot of their own.
+test_that("the refusals of the show_fit_stats sweep keep their text and class", {
+  skip_on_cran()
+  .refusal_snapshot("fit_stats", .refusal_ids())
+})
+
+test_that("the refusals of the show_fit_stats sweep keep their text and class: Stan", {
+  .skip_unless_local_stan()
+  .refusal_snapshot("fit_stats", .refusal_ids(stan = TRUE))
+})
 
 
 # ---- The rule --------------------------------------------------------------
