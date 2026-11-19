@@ -312,6 +312,13 @@
   of the others shows a dash, and a token of the default without a value
   is still left out.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`,
+  `"pseudo_r2_tjur"` and `"r2_deviance"` for a table of survey-design
+  models, as it refuses `"deviance"`, `"bic"` and `"aicc"`: a
+  design-based fit has no likelihood. The row was left out. Beside
+  another model, the cell of the design model is a dash.
+
 ### New features
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
@@ -570,6 +577,40 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  renders an intercept-only `glmmTMB()` model of the `ordinal()` family,
+  alone or as the first model of `nested = TRUE`. It stopped on an
+  internal error.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  takes a [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model
+  without a coefficient (`~ 1`, or
+  [`strata()`](https://rdrr.io/pkg/survival/man/strata.html) alone) as
+  the first model of a hierarchy: its column shows the fit statistics,
+  and the next model its likelihood-ratio test against it. Alone, such a
+  model is refused with a message that says why. Both stopped on a base
+  R error.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a robust `vcov` with `cluster` on a survey-design, `selection()`,
+  `stanreg` or `brmsfit` model is refused with the reason of the class
+  (the variance comes from the design or the posterior). An error about
+  the cluster variable came first.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  when it refuses `partial_f2`, `partial_eta2` or `partial_omega2` for a
+  mixed model, the error points at `"partial_chi2"` as a Wald chi-square
+  test, which it is for these models. It called it a likelihood-ratio
+  test.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  accepts `vcov = "CR1"` for
+  [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) models, as
+  for the [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
+  models they are: the cluster-robust standard errors of
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
+  and under `nested = TRUE` a Wald test of the added terms.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   beside an [`lm()`](https://rdrr.io/r/stats/lm.html) model, the R² row
