@@ -94,8 +94,9 @@
 #' # What a theme claims, and what it does not
 #'
 #' A theme covers **numeric formatting conformity**, the word that opens
-#' the table note, the abbreviations that note defines and, in English,
-#' how the mean and the median are headed, **only** --
+#' the table note, the abbreviations that note defines, where the sample
+#' size goes and, in English, how the mean and the median are headed,
+#' **only** --
 #' not full editorial conformity. It does not check reporting
 #' guidelines, table structure, footnote symbols, units, or anything else
 #' a journal's instructions ask of a manuscript. Each theme below
@@ -206,6 +207,10 @@
 #'     "without expansion except where noted".
 #'   \item the mean and the median headed `Mean` and `Median`, not `M` and
 #'     `Mdn` -- section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.
+#'   \item the n of each group in its column header
+#'     (`sample_size = "header"`), as the model Table 1 of the document
+#'     heads its groups: "Intervention (n=200)", "Control (n=201)". spicy
+#'     writes "(n = 200)", with its own spaces.
 #' }
 #'
 #' Not encoded: everything else in that document (percentages carrying
@@ -289,6 +294,10 @@
 #'   \item the mean and the median headed `Mean` and `Median`, not `M` and
 #'     `Mdn`, as the "median (IQR), mean (SD)" of the same model tables
 #'     (not a written rule).
+#'   \item the n of each group in its column header
+#'     (`sample_size = "header"`), as the same model tables head their
+#'     groups, "Drug A (n=500)" (not a written rule). spicy writes
+#'     "(n = 500)", with its own spaces.
 #' }
 #'
 #' Not encoded: the empty-cell filler, the ban on p-values in a
@@ -523,7 +532,9 @@
 #'   are rows, `"header"` is `"note"`. `"none"` leaves the sentence out of
 #'   the note of every table that writes one, the survey tables included;
 #'   the Base row of [table_multiresponse()] stays. The data frames,
-#'   `tidy()` and `glance()` do not change. No theme sets it.
+#'   `tidy()` and `glance()` do not change. The `"jama"` and `"lancet"`
+#'   themes set `"header"`; `spicy_style("jama", sample_size = "note")`
+#'   restores the note.
 #' @param minus_sign The sign of a negative number in the outputs that are
 #'   printed: `output = "flextable"` and `"word"` (a flextable knitted into
 #'   Word too), `output = "gt"` in HTML, Word, RTF and LaTeX, the HTML, Typst
@@ -964,6 +975,10 @@ spicy_style <- function(
           "Manual of Style writes \"mean (SD)\" and \"median (IQR)\" in full ",
           "(11th edition, section 4.1.5)"
         ),
+        paste0(
+          "sample size: the n of each group in its column header, as the ",
+          "model Table 1 of the source, \"Intervention (n=200)\""
+        ),
         "everything else in the source is table construction, not number format"
       ),
       # The abbreviations of the note (R/table_helpers.R,
@@ -994,12 +1009,17 @@ spicy_style <- function(
       # 4.1.4.10, p. 124-127, gives the table footnote no lead-in word; a
       # note on the whole table takes a letter placed after the title
       # (dev/journal_styles_sources.md, section 5 bis).
+      # sample_size: the model Table 1 of the source (p. 1) heads its two
+      # groups "Intervention (n=200)" and "Control (n=201)" (decision of
+      # Amal, 2026-11-19, dev/decisions/2026-11-18-sample-size-header.md).
+      # The n keeps spicy's spaces: no theme lever spaces an equals sign.
       style = spicy_style(
         p_style = "apa",
         p_digits = 2L,
         p_bands = list(c(0.01, 3), c(Inf, 2)),
         p_floor = 0.001,
-        note_label = ""
+        note_label = "",
+        sample_size = "header"
       )
     ),
     nejm = list(
@@ -1076,6 +1096,10 @@ spicy_style <- function(
           "the mean and the median headed \"Mean\" and \"Median\" (matches ",
           "the journal's model tables, \"median (IQR), mean (SD)\"; not a ",
           "written rule)"
+        ),
+        paste0(
+          "sample size: the n of each group in its column header (matches ",
+          "the journal's model tables, \"Drug A (n=500)\"; not a written rule)"
         )
       ),
       # The abbreviations of the note: "please list and spell out all
@@ -1104,6 +1128,12 @@ spicy_style <- function(
       # n (%) ...", and none of the 38 table notes of 15 research articles
       # of 2025-2026 checked on 2026-10-20 opens with "Note" or "Notes"
       # (dev/journal_styles_sources.md, section 5 bis).
+      # sample_size: OBSERVED too. The model tables of the two formatting
+      # guidelines (2025, p. 3) head their groups "Drug A (n=500)", "Drug B
+      # (n=502)" and "(n=500)", "(n=481)" (decision of Amal, 2026-11-19,
+      # dev/decisions/2026-11-18-sample-size-header.md). The n keeps
+      # spicy's spaces: the journal's "=" without spaces is encoded for the
+      # definitions of the note only (`note_abbrev_pair_lancet`).
       style = spicy_style(
         decimal_mark = "\u00b7",
         p_style = "standard",
@@ -1111,7 +1141,8 @@ spicy_style <- function(
         p_digits = 4L,
         p_floor = 0.0001,
         ci_sep = "\u2013",
-        note_label = ""
+        note_label = "",
+        sample_size = "header"
       )
     ),
     annals = list(

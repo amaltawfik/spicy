@@ -408,12 +408,15 @@ the journal's published author guidelines:
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 ```
 
-Three things change here. JAMA rounds *p* values to two decimals (`.71`),
+Four things change here. JAMA rounds *p* values to two decimals (`.71`),
 where the default reports three (`.713`), and the note opens without
 the word "Note.", as the AMA manual sets table notes. Its first line
 defines the φ of the header, which the APA default leaves undefined.
 `spicy_style(note_label = )` chooses that word for any style: "Note."
-(APA), "Note:" (Chicago), or none.
+(APA), "Note:" (Chicago), or none. The n of each group heads its
+column, "Female (n = 620)", as in JAMA's model tables, and the note
+keeps the overall N; `spicy_style(sample_size = )` sets that place for
+any style.
 
 Two properties make styles safe to adopt. A style only moves
 *display* defaults — decimals, *p* notation, interval punctuation, the
