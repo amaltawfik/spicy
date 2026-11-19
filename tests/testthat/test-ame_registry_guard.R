@@ -449,9 +449,16 @@ ag_no_oracle <- list(
 # ---- Running spicy ----------------------------------------------------------
 
 # spicy's AME rows keyed as ame_spicy() keys them, every row kept (a blank
-# cell has est NA), and the classes of the warnings raised.
+# cell has est NA), and the classes of the warnings raised. The Jacobian is
+# Richardson's, as in ame_spicy(), except for glmmTMB: each of its
+# predictions is slow, and the forward difference of marginaleffects stays
+# within 1e-5 of the oracle SE on these fixtures (measured 2026-11-19).
 ag_run <- function(fit) {
-  op <- options(marginaleffects_numDeriv = list(method = "Richardson"))
+  op <- options(
+    marginaleffects_numDeriv = if (!inherits(fit, "glmmTMB")) {
+      list(method = "Richardson")
+    }
+  )
   on.exit(options(op), add = TRUE)
   warns <- character()
   lo <- withCallingHandlers(
