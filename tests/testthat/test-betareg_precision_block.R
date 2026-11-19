@@ -47,3 +47,35 @@ test_that("a weighted betareg reports its weighted count as a weighted glm does"
   expect_identical(f0$info$weights_kind, "none")
   expect_true(is.na(f0$info$fit_stats$weighted_nobs))
 })
+
+
+# ---- Mean link in the title --------------------------------------------------
+
+test_that("a mean link other than logit is named in the title", {
+  d <- food_data()
+  fit_link <- function(link) {
+    betareg::betareg(share ~ income + persons, data = d, link = link)
+  }
+  title_of <- function(fit) {
+    strsplit(attr(table_regression(fit), "title"), ":", fixed = TRUE)[[1L]][1L]
+  }
+  expect_identical(title_of(fit_link("logit")), "Beta regression")
+  expect_identical(title_of(fit_link("probit")), "Probit beta regression")
+  expect_identical(title_of(fit_link("loglog")), "Log-log beta regression")
+  expect_identical(
+    title_of(fit_link("cloglog")),
+    "Complementary log-log beta regression"
+  )
+  expect_identical(title_of(fit_link("cauchit")), "Cauchit beta regression")
+
+  links <- c("logit", "probit", "cloglog", "loglog", "cauchit", "log")
+  prefixes <- vapply(links, spicy:::.betareg_title_prefix, character(1))
+  expect_identical(anyDuplicated(prefixes), 0L)
+  expect_true(all(prefixes %in% names(spicy:::.FR_TITLE_PREFIXES)))
+
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_regression(fit_link("probit")), "title"),
+    "^R\u00E9gression b\u00EAta probit"
+  )
+})

@@ -478,6 +478,24 @@ as_regression_frame.betareg <- function(
 }
 
 
+# The title of a beta regression names its mean link when it is not the
+# default logit, as a glm or a GAM title names a probit link ("Probit
+# regression", "Probit GAM"). "Log-link" spells out the log link, which a
+# bare "Log beta regression" would read as a log-transformed response.
+.betareg_title_prefix <- function(link) {
+  switch(
+    link,
+    logit = "Beta regression",
+    probit = "Probit beta regression",
+    cloglog = "Complementary log-log beta regression",
+    loglog = "Log-log beta regression",
+    cauchit = "Cauchit beta regression",
+    log = "Log-link beta regression",
+    "Beta regression"
+  )
+}
+
+
 .betareg_info <- function(
   fit,
   vcov_kind,
@@ -568,7 +586,7 @@ as_regression_frame.betareg <- function(
     singular_terms = character(0),
     has_weights = has_weights,
     weighted_n = .weighted_n_or_na(wts),
-    title_prefix = "Beta regression",
+    title_prefix = .betareg_title_prefix(link_name),
     exp_applied = FALSE,
     exp_header = NA_character_,
     precision_phi = precision_phi,
