@@ -1008,6 +1008,30 @@ test_that("glmmTMB ordinal: the partial chi-square skips the fixed intercept", {
   expect_equal(pc$estimate, unname(z^2), tolerance = 1e-8)
 })
 
+test_that("glmmTMB ordinal: an intercept-only fit renders, alone and as Model 1 of a hierarchy", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("ordinal")
+  # Without a predictor the dropped fixed intercept left a zero-row
+  # coefficient frame whose parent_var was logical: spicy_invalid_frame.
+  fit0 <- glmmTMB::glmmTMB(
+    rating ~ 1 + (1 | judge),
+    data = ordinal::wine,
+    family = glmmTMB::ordinal()
+  )
+  fit1 <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit0)
+  expect_identical(nrow(fr$coefs), 0L)
+  expect_identical(nrow(fr$info$extras$thresholds), 4L)
+  expect_s3_class(
+    table_regression(list(fit0, fit1), nested = TRUE),
+    "spicy_regression_table"
+  )
+  nested <- spicy:::compute_nested_comparisons(list(fit0, fit1))
+  oracle <- stats::anova(fit0, fit1)
+  expect_equal(nested$lrt_change[1], oracle[["Chisq"]][2], tolerance = 1e-8)
+  expect_equal(nested$p_change[1], oracle[["Pr(>Chisq)"]][2], tolerance = 1e-8)
+})
+
 test_that("snapshot: glmmTMB ordinal table", {
   fit <- .fit_glmmTMB_ordinal()
   txt <- capture.output(print(table_regression(fit)))

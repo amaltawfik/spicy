@@ -419,6 +419,10 @@
 
 ## Improvements and bug fixes
 
+* `table_regression()` renders an intercept-only `glmmTMB()` model of
+  the `ordinal()` family, alone or as the first model of `nested =
+  TRUE`. It stopped on an internal error.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.

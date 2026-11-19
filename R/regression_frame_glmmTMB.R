@@ -292,11 +292,13 @@ as_regression_frame.glmmTMB <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  # as.character(): an intercept-only ordinal fit has no row left, and
+  # ifelse() on a zero-length logical returns a logical.
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
-    term = nm,
+    term = as.character(nm),
     parent_var = parent_var,
     label = label,
     factor_level_pos = as.integer(pos),
