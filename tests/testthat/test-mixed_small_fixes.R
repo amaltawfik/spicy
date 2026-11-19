@@ -115,3 +115,96 @@ test_that("the singular note drops its SE and CI clause when no cell shows", {
     expect_false(grepl(clause, out, fixed = TRUE))
   }
 })
+
+
+# ---- 2. The rho row under natural = FALSE and with pdCompSymm ------------
+
+test_that("lmeControl(natural = FALSE) keeps the rho row, without SE or CI", {
+  skip_if_not_installed("nlme")
+  fit <- nlme::lme(
+    distance ~ age,
+    data = nlme::Orthodont,
+    random = ~ age | Subject,
+    control = nlme::lmeControl(natural = FALSE)
+  )
+  # intervals() gives the covariance, not the correlation.
+  ci <- nlme::intervals(fit, which = "var-cov")$reStruct$Subject
+  expect_false(any(grepl("^cor\\(", rownames(ci))))
+
+  rho <- .msf_rho_rows(fit)
+  expect_identical(nrow(rho), 1L)
+  expect_identical(rho$term, "(Intercept), age")
+  expect_equal(
+    rho$corr,
+    stats::cov2cor(unclass(nlme::getVarCov(fit)))[1L, 2L],
+    tolerance = 1e-10
+  )
+  expect_equal(
+    rho$corr,
+    as.numeric(unclass(nlme::VarCorr(fit))["age", "Corr"]),
+    tolerance = 1e-3
+  )
+  expect_true(is.na(rho$std_error))
+  expect_true(is.na(rho$ci_lower))
+  expect_true(is.na(rho$ci_upper))
+  expect_match(
+    .msf_printed(table_regression(fit)),
+    paste0(.msf_rho, " Subject ((Intercept), age)"),
+    fixed = TRUE
+  )
+})
+
+test_that("a pdCompSymm block shows one rho row per pair, with nlme's interval", {
+  skip_if_not_installed("nlme")
+  fit <- nlme::lme(
+    yield ~ nitro,
+    data = nlme::Oats,
+    random = list(Block = nlme::pdCompSymm(~ Variety - 1))
+  )
+  expect_false(spicy:::.lme_is_singular(fit))
+  rho <- .msf_rho_rows(fit)
+  lv <- paste0("Variety", levels(nlme::Oats$Variety))
+  expect_identical(
+    rho$term,
+    c(
+      paste(lv[1:2], collapse = ", "),
+      paste(lv[c(1, 3)], collapse = ", "),
+      paste(lv[2:3], collapse = ", ")
+    )
+  )
+  # Oracle for the estimate: the off-diagonal of the fitted matrix, the
+  # value VarCorr() prints.
+  r_fit <- stats::cov2cor(unclass(nlme::getVarCov(fit)))
+  expect_equal(rho$corr, rep(r_fit[2L, 1L], 3L), tolerance = 1e-10)
+  expect_equal(
+    rho$corr[1L],
+    as.numeric(unclass(nlme::VarCorr(fit))[2L, "Corr"]),
+    tolerance = 1e-3
+  )
+  # The interval is nlme's "corr." row, the same for every pair.
+  ci <- nlme::intervals(fit, which = "var-cov")$reStruct$Block
+  expect_equal(rho$ci_lower, rep(ci["corr.", "lower"], 3L), tolerance = 1e-10)
+  expect_equal(rho$ci_upper, rep(ci["corr.", "upper"], 3L), tolerance = 1e-10)
+  # The SE: the delta method on nlme's scale for this correlation,
+  # g(r) = log((r + 1 / (n - 1)) / (1 - r)), n = 3, with the SE on g
+  # taken from the approximate covariance matrix nlme stores.
+  n <- 3
+  r <- r_fit[2L, 1L]
+  se_g <- sqrt(diag(fit$apVar))[2L]
+  expect_equal(
+    rho$std_error,
+    rep(unname(se_g / (1 / (r + 1 / (n - 1)) + 1 / (1 - r))), 3L),
+    tolerance = 1e-6
+  )
+})
+
+test_that("a pdCompSymm interval off nlme's scale leaves the cells empty", {
+  expect_true(is.na(spicy:::.lme_cs_corr_se(0.5, 0.1, 0.6, 1.96, 3)))
+  # Centred on g(0.5) = log(2), n = 3: SE = (1 / 1.96) / g'(0.5) = ... / 3.
+  g_inv <- function(g) (exp(g) - 0.5) / (1 + exp(g))
+  expect_equal(
+    spicy:::.lme_cs_corr_se(0.5, g_inv(log(2) - 1), g_inv(log(2) + 1), 1.96, 3),
+    (1 / 1.96) / 3,
+    tolerance = 1e-12
+  )
+})

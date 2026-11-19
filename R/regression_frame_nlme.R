@@ -790,21 +790,15 @@ as_regression_frame.gls <- function(
 # .lme_group_labels), because reStruct is keyed on the bare one.
 #
 # The ESTIMATE comes from the fit (.lme_re_natural_coefs), not from
-# intervals(): intervals() errors whenever fit$apVar is not a matrix,
-# which used to drop the correlation row of a fit whose approximate
-# covariance matrix is not positive definite. When intervals() answers,
-# it still decides WHICH rows exist (it lists no "cor(" row under
-# lmeControl(natural = FALSE)), so the table is unchanged there.
+# intervals(), and the fit alone decides which rows exist: intervals()
+# errors whenever fit$apVar is not a matrix, lists no "cor(" row under
+# lmeControl(natural = FALSE), and gives one "corr." row for a
+# pdCompSymm block. The rows are the correlations VarCorr() prints.
 .lme_append_correlation_rows <- function(vc_df, fit, groups) {
   # Ensure schema columns even if no correlations are appended.
   if (!"is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation <- FALSE
   }
-  ci_obj <- tryCatch(
-    nlme::intervals(fit, which = "var-cov"),
-    error = function(e) NULL
-  )
-  ci_re <- if (is.null(ci_obj)) NULL else ci_obj$reStruct
   natural <- .lme_re_natural_coefs(fit)
 
   rows_extra <- list()
@@ -815,12 +809,6 @@ as_regression_frame.gls <- function(
       next # nocov
     }
     cor_rows <- grep("^cor\\(", names(group_est), value = TRUE)
-    if (!is.null(ci_re)) {
-      cor_rows <- intersect(
-        cor_rows,
-        rownames(ci_re[[unname(groups[k])]])
-      )
-    }
     if (length(cor_rows) == 0L) {
       next
     }
@@ -880,23 +868,45 @@ as_regression_frame.gls <- function(
 # "cor(<t1>,<t2>)", the rownames intervals() gives the same block: this
 # is the conversion nlme:::intervals.lme() applies. The blocks hold the
 # covariance relative to sigma^2, so only the correlations are on their
-# final scale, and only they are read here.
+# final scale, and only they are read here. A pdCompSymm block has one
+# correlation, "corr.", shared by every pair of its terms: it is spelled
+# out as one "cor(<t1>,<t2>)" per pair, the cells VarCorr() prints.
 .lme_re_natural_coefs <- function(fit) {
   re <- fit$modelStruct$reStruct
+  cs_pairs <- function(b) {
+    if (!inherits(b, "pdCompSymm")) {
+      return(NULL)
+    }
+    tm <- nlme::Names(b)
+    rho <- stats::coef(b, unconstrained = FALSE)[["corr."]]
+    if (length(tm) < 2L || !is.finite(rho)) {
+      return(NULL) # nocov
+    }
+    pr <- utils::combn(tm, 2L)
+    stats::setNames(
+      rep(rho, ncol(pr)),
+      sprintf("cor(%s,%s)", pr[1L, ], pr[2L, ])
+    )
+  }
   out <- lapply(names(re), function(nm) {
     b <- re[[nm]]
+    extra <- cs_pairs(b)
     if (inherits(b, "pdSymm")) {
       b <- nlme::pdNatural(b)
     } else if (inherits(b, "pdBlocked")) {
       for (j in seq_along(b)) {
+        extra <- c(extra, cs_pairs(b[[j]]))
         if (inherits(b[[j]], "pdSymm")) {
           b[[j]] <- nlme::pdNatural(b[[j]])
         }
       }
     }
-    tryCatch(
-      stats::coef(b, unconstrained = FALSE),
-      error = function(e) NULL # nocov
+    c(
+      tryCatch(
+        stats::coef(b, unconstrained = FALSE),
+        error = function(e) NULL # nocov
+      ),
+      extra
     )
   })
   setNames(out, names(re))
@@ -1009,7 +1019,27 @@ as_regression_frame.gls <- function(
       }
       row_idx <- which(rownames(group_ci) %in% targets)[1L]
       if (is.na(row_idx)) {
-        next # nocov
+        # No "cor(" row: a pdCompSymm block (its one "corr." row), or
+        # lmeControl(natural = FALSE), whose rows are covariances on a
+        # scale the delta method here does not know: the cells stay empty.
+        blk <- fit$modelStruct$reStruct[[bare(g)]]
+        if (inherits(blk, "pdCompSymm") && "corr." %in% rownames(group_ci)) {
+          r <- group_ci["corr.", ]
+          se <- .lme_cs_corr_se(
+            r[["est."]],
+            r[["lower"]],
+            r[["upper"]],
+            z,
+            length(nlme::Names(blk))
+          )
+          if (!is.na(se)) {
+            vc_df$std_error[i] <- se
+            vc_df$ci_lower[i] <- r[["lower"]]
+            vc_df$ci_upper[i] <- r[["upper"]]
+            vc_df$ci_method[i] <- "wald"
+          }
+        }
+        next
       }
       cor_lower <- group_ci[row_idx, "lower"]
       cor_upper <- group_ci[row_idx, "upper"]
@@ -1058,6 +1088,27 @@ as_regression_frame.gls <- function(
     vc_df$ci_method[i] <- "wald"
   }
   .lme_blank_degenerate_vc(vc_df)
+}
+
+
+# SE of the correlation of a pdCompSymm block of n terms, read off the
+# interval nlme gives for it. nlme estimates that correlation on the scale
+# g(r) = log((r + 1/(n - 1)) / (1 - r)) (pdConstruct.pdCompSymm) and its
+# interval is Wald there: the SE is the delta method on g when the
+# interval is centred on g(est), as .re_delta_se() checks for its scales.
+# NA otherwise, so the row shows no SE and no CI rather than a guess.
+.lme_cs_corr_se <- function(est, lower, upper, z, n) {
+  g <- function(r) suppressWarnings(log((r + 1 / (n - 1)) / (1 - r)))
+  gl <- g(lower)
+  gu <- g(upper)
+  ge <- g(est)
+  centred <- all(is.finite(c(gl, gu, ge))) &&
+    gu > gl &&
+    abs((gl + gu) / 2 - ge) <= 1e-6 * (gu - gl)
+  if (!centred) {
+    return(NA_real_)
+  }
+  (gu - gl) / (2 * z) / (1 / (est + 1 / (n - 1)) + 1 / (1 - est))
 }
 
 
