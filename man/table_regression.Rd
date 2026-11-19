@@ -1235,7 +1235,7 @@ the larger model fits better, and is not signed either.
 Default (resolved when \code{NULL}) is class-aware: lm and
 \code{lm_robust} fits get
 \code{c("nobs", "r2", "adj_r2")}; glm, \code{mgcv::gam}, \code{polr}, \code{clm},
-\code{multinom} and \code{rms::lrm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
+\code{multinom}, \code{rms::lrm} and \code{rms::Glm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
 (see \emph{R-squared of glm and categorical models}) and \code{"aic"};
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
@@ -1312,7 +1312,7 @@ shows the rows of its family:
 
 \itemize{
 \item A logit on a binary outcome (0/1, a factor or a logical), a
-\code{glm()} or a binary \code{rms::lrm()}: Tjur's \eqn{R^2}{R^2}, then
+\code{glm()} or \code{rms::Glm()}, or a binary \code{rms::lrm()}: Tjur's \eqn{R^2}{R^2}, then
 McFadden's. Tjur's reads on the scale of the predicted
 probabilities; McFadden's cannot decrease when a predictor is
 added. An \code{lrm} fitted without \code{y = TRUE} reads its outcome from
@@ -1652,12 +1652,15 @@ request. Compare the least-squares fits (\code{lm()}) if the
 hierarchy itself is the question.
 }
 In the first three, \code{nested = FALSE} renders the models side by
-side instead.
+side instead. A hierarchy holding an \code{rms::ols()} or \code{rms::lrm()}
+fit estimated with \verb{penalty =} is rendered side by side, without
+change statistics and with a warning: neither the partial F nor the
+likelihood-ratio test is valid for penalized estimates.
 
 Default change tokens auto-injected when \code{show_fit_stats} is
 \code{NULL}:
 \itemize{
-\item All-lm (and \code{nls}): \code{c("r2_change", "f_change", "p_change")} -- APA hierarchical regression standard.
+\item All-lm (\code{rms::ols} and \code{nls} included): \code{c("r2_change", "f_change", "p_change")} -- APA hierarchical regression standard.
 \item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer,
 Lemeshow & Sturdivant 2013 Section 2.4; Long & Freese 2014
 Section 3.2.4.
@@ -1688,8 +1691,8 @@ mixed-effects families: that comparison reports a chi-square,
 not a variance-explained change, and the message points at
 \code{"lrt_change"} + \code{"p_change"}. A quantile hierarchy refuses
 them too, and \code{"lrt_change"} with them, pointing at
-\code{"f_change"} + \code{"p_change"} instead. \code{lm} and \code{nls} keep the
-least-squares tokens.
+\code{"f_change"} + \code{"p_change"} instead. \code{lm}, \code{rms::ols} and \code{nls}
+keep the least-squares tokens.
 
 \strong{The change test follows \code{vcov}.} Under the classical \code{vcov} the
 change test is the partial F, the likelihood-ratio test, the F test
