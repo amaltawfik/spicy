@@ -83,3 +83,61 @@ test_that("the bootstrap variance of an lrm marks its nested test as a Wald test
   b <- rms::bootcov(m, B = 20)
   expect_true(nested_own_robust_vcov(b))
 })
+
+
+# ---- F2: vcov = "CR0" on such a fit starts from the model's variance --------
+
+test_that("vcov = 'CR0' on a robcov() fit equals robcov() on the fit itself", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  g <- d$g
+  m <- rms::lrm(yb ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  o <- rms::ols(y ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  gl <- rms::Glm(yb ~ x1 + x2, family = binomial, data = d, x = TRUE, y = TRUE)
+  ph <- rms::cph(
+    survival::Surv(time, status) ~ x1 + x2,
+    data = d,
+    x = TRUE,
+    y = TRUE
+  )
+  for (fit in list(m, o, gl, ph)) {
+    want <- sqrt(diag(stats::vcov(rms::robcov(fit, cluster = g))))[["x1"]]
+    for (fit_in in list(rms::robcov(fit), rms::robcov(fit, cluster = g))) {
+      tbl <- table_regression(
+        fit_in,
+        vcov = "CR0",
+        cluster = g,
+        show_columns = "se",
+        digits = 12,
+        output = "data.frame"
+      )
+      expect_equal(rmsfx_se(tbl, "x1"), want, tolerance = 1e-10)
+    }
+  }
+  # An ols bootstrap fit keeps the model's variance in orig.var.
+  set.seed(3)
+  ob <- rms::bootcov(o, B = 10)
+  tbl <- table_regression(
+    ob,
+    vcov = "CR0",
+    cluster = g,
+    show_columns = "se",
+    digits = 12,
+    output = "data.frame"
+  )
+  want <- sqrt(diag(stats::vcov(rms::robcov(o, cluster = g))))[["x1"]]
+  expect_equal(rmsfx_se(tbl, "x1"), want, tolerance = 1e-10)
+})
+
+test_that("vcov = 'CR0' on an lrm bootstrap fit, which lost the model's variance, is refused", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  m <- rms::lrm(yb ~ x1, data = d, x = TRUE, y = TRUE)
+  set.seed(3)
+  b <- rms::bootcov(m, B = 10)
+  expect_error(
+    table_regression(b, vcov = "CR0", cluster = d$g),
+    "did not keep",
+    class = "spicy_unsupported_vcov"
+  )
+})

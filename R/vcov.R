@@ -1837,6 +1837,37 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
       class = "spicy_invalid_input"
     )
   }
+  # robcov() takes vcov(fit) as the bread of its sandwich. On a fit already
+  # passed through robcov() or bootcov() that is their variance, and the
+  # sandwich would be built on a sandwich: the bread is the model's
+  # variance, which they keep in fit$orig.var. bootcov() keeps none on an
+  # lrm or a Glm (.rms_has_own_vcov()). robcov() stores the bread of an
+  # ols divided by the residual variance, (X'X)^-1, and divides vcov(fit)
+  # by it again: the model's variance is that matrix times RSS / df.
+  if (.rms_has_own_vcov(fit)) {
+    if (is.null(fit[["orig.var"]])) {
+      spicy_abort(
+        c(
+          sprintf(
+            paste0(
+              "`vcov = \"CR0\"` needs the model-based variance of this ",
+              "`%s` fit, which rms::bootcov() did not keep."
+            ),
+            class(fit)[1L]
+          ),
+          "i" = paste0(
+            "Pass the fit as it was before bootcov(), or keep its ",
+            "bootstrap variance with the default `vcov`."
+          )
+        ),
+        class = "spicy_unsupported_vcov"
+      )
+    }
+    fit$var <- fit[["orig.var"]]
+    if (inherits(fit, "ols") && is.null(fit[["B"]])) {
+      fit$var <- fit$var * sum(fit$residuals^2) / fit$df.residual
+    }
+  }
   V <- as.matrix(rms::robcov(fit, cluster = cluster)$var)
   nm <- .rms_normalise_names(names(stats::coef(fit)))
   if (length(nm) == nrow(V)) {
