@@ -1314,7 +1314,7 @@ inform_lmertest_hint <- function() {
     atanh = atanh,
     theta = function(r) r / sqrt(1 - r^2)
   )
-  df <- switch(
+  f_prime <- switch(
     scale,
     log = function(x) 1 / x,
     atanh = function(r) 1 / (1 - r^2),
@@ -1329,7 +1329,7 @@ inform_lmertest_hint <- function() {
   if (!centred) {
     return((upper - lower) / (2 * z))
   }
-  (fu - fl) / (2 * z) / df(est)
+  (fu - fl) / (2 * z) / f_prime(est)
 }
 
 
