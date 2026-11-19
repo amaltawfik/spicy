@@ -31,6 +31,12 @@ ame_oracle <- function(prep, pfun, beta, V, d, vars, w = NULL) {
         hi[[v]] <- factor(rep(l, nrow(d)), levels = lv)
         setups[[paste0(v, l)]] <- list(lo = prep(lo), hi = prep(hi), h = 1)
       }
+    } else if (all(x %in% c(0, 1))) {
+      # A 0/1 numeric predictor: the contrast of 1 with 0, as spicy reports it.
+      lo <- hi <- d
+      lo[[v]] <- 0
+      hi[[v]] <- 1
+      setups[[v]] <- list(lo = prep(lo), hi = prep(hi), h = 1)
     } else {
       h <- 1e-4 * diff(range(x))
       lo <- hi <- d

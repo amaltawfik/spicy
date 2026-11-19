@@ -1367,6 +1367,155 @@ extract_ame_glm <- function(
 }
 
 
+# ---- Guard: the model must predict its own fitted values --------------------
+
+# Before an AME, the model avg_slopes() will predict from is asked for
+# its predictions on a subset of its own data, and they must give back
+# its fitted values on those rows. The subset keeps one row in two and
+# leaves out the extremes of the numeric predictors, so a basis
+# rebuilt from the data it is evaluated on (the boundary knots of ns(),
+# the coefficients of poly(), the centre of scale(), the knots rcs()
+# places) comes out different, and so does a prediction that leaves the
+# offset out. Returns NULL when the predictions agree, or when the class
+# has no fitted values to compare with or the rows cannot be aligned
+# (nothing is known to be wrong); otherwise the reason of the refusal.
+# Wired for the survey and rms classes, the two families whose predict()
+# on new data was found to leave part of the fit out.
+.ame_prediction_check <- function(model, data) {
+  if (!is.data.frame(data) || nrow(data) == 0L) {
+    return(NULL)
+  }
+  pf <- .ame_fitted_and_predict(model, data)
+  if (is.null(pf)) {
+    return(NULL)
+  }
+  fitted <- as.matrix(pf$fitted)
+  keys <- if (is.matrix(pf$fitted)) rownames(pf$fitted) else names(pf$fitted)
+  pos <- if (!is.null(keys) && all(keys %in% rownames(data))) {
+    match(keys, rownames(data))
+  } else if (nrow(fitted) == nrow(data)) {
+    seq_len(nrow(data))
+  }
+  if (is.null(pos)) {
+    return(NULL) # nocov
+  }
+  rhs <- tryCatch(
+    all.vars(stats::delete.response(stats::terms(model))),
+    error = function(e) names(data) # nocov: every guarded class has terms
+  )
+  # One row in two, so the quantiles, the mean and the SD always move,
+  # and without the rows of the minimum and the maximum of a numeric
+  # predictor with more than two values (a 0/1 indicator holds one or
+  # the other on every row). A correct prediction gives back its fitted
+  # values on any subset, so a smaller one never refuses a sound fit.
+  half <- seq_along(pos) %% 2L == 1L
+  keep <- half
+  for (v in intersect(rhs, names(data))) {
+    x <- data[[v]][pos]
+    if (is.numeric(x) && length(unique(x[is.finite(x)])) > 2L) {
+      keep <- keep & !(x %in% range(x, na.rm = TRUE))
+    }
+  }
+  if (sum(keep) < 2L) {
+    keep <- half
+  }
+  if (sum(keep) < 2L) {
+    keep <- seq_along(pos) > 1L
+  }
+  if (!any(keep)) {
+    return(NULL)
+  }
+  p <- tryCatch(
+    as.matrix(pf$predict(data[pos[keep], , drop = FALSE])),
+    error = function(e) NULL
+  )
+  f <- fitted[keep, , drop = FALSE]
+  ok <- !is.null(p) &&
+    identical(dim(unname(p)), dim(unname(f))) &&
+    isTRUE(
+      max(abs(p - f), na.rm = TRUE) <= 1e-7 * (1 + max(abs(f), na.rm = TRUE))
+    )
+  if (ok) {
+    return(NULL)
+  }
+  paste0(
+    "predicted on a subset of its own data, the model does not give back ",
+    "its fitted values: a term of the formula is rebuilt from the data it ",
+    "is evaluated on (as `ns()`, `poly()` or `scale()` are), or the ",
+    "prediction leaves part of the model out."
+  )
+}
+
+# The prediction function of a guarded model on new data and the fitted
+# values it must reproduce, on the same scale; NULL for any other class.
+# The glm branch serves the glm twins of a svyglm and of an rms::Glm
+# (whose linear predictor includes the offset, as predict.glm() does).
+# predict() of an ols or lrm leaves the offset out, and so does the
+# linear.predictors of an lrm, but an ols stores it with the offset
+# counted twice (rms 8.2-1): with an offset, the values to reproduce
+# are the prediction on the whole model data, the offset of these two
+# classes being handled elsewhere (.ordinal_offset_ame(); an ols is
+# linear).
+.ame_fitted_and_predict <- function(model, data) {
+  if (inherits(model, "svyolr")) {
+    return(list(
+      fitted = model$fitted.values,
+      predict = function(nd) stats::predict(model, nd, type = "probs")
+    ))
+  }
+  if (inherits(model, c("ols", "lrm"))) {
+    if (is.null(model$linear.predictors)) {
+      return(NULL)
+    }
+    fitted <- model$linear.predictors
+    if (!is.null(attr(stats::terms(model), "offset"))) {
+      fitted <- stats::predict(model, data)
+    }
+    return(list(
+      fitted = fitted,
+      predict = function(nd) stats::predict(model, nd)
+    ))
+  }
+  if (inherits(model, "glm") && !is.null(model$linear.predictors)) {
+    return(list(
+      fitted = model$linear.predictors,
+      predict = function(nd) stats::predict(model, nd)
+    ))
+  }
+  NULL
+}
+
+# Which fits the guard is wired for: the design fits and the rms fits,
+# an rms::Glm reaching here as its glm twin, which keeps its `Design`.
+.ame_guarded <- function(fit) {
+  inherits(fit, c("svyglm", "svyolr", "ols", "lrm")) ||
+    (inherits(fit, "glm") && !is.null(fit$Design))
+}
+
+.warn_ame_prediction_check <- function(fit, reason) {
+  hint <- if (inherits(fit, c("svyglm", "svyolr"))) {
+    paste0(
+      "Build the column in the design with `update()` and use it in the ",
+      "formula."
+    )
+  } else {
+    paste0(
+      "Use the transformations of rms, `rcs()` or `pol()`, in place of ",
+      "those of stats or splines."
+    )
+  }
+  spicy_warn(
+    c(
+      "The AME of this model cannot be computed.",
+      "x" = paste0("Reason: ", reason),
+      "i" = hint,
+      "i" = "AME column will be en-dashed in the displayed table."
+    ),
+    class = "spicy_fallback"
+  )
+}
+
+
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
 # Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
@@ -1472,6 +1621,22 @@ extract_ame_glm <- function(
       fit_ame <- design_in$model
       newdata <- design_in$newdata
       vc_fit <- design_in$vcov
+    }
+    # The predictions the AME rests on must reproduce the fit
+    # (.ame_prediction_check()).
+    if (.ame_guarded(fit)) {
+      why <- .ame_prediction_check(
+        fit_ame,
+        newdata %||%
+          tryCatch(
+            marginaleffects::get_modeldata(fit_ame),
+            error = function(e) NULL
+          )
+      )
+      if (!is.null(why)) {
+        .warn_ame_prediction_check(fit, why)
+        return(NULL)
+      }
     }
     do_slopes <- function(vcarg) {
       suppressWarnings(suppressMessages(
