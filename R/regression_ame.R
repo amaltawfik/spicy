@@ -1303,30 +1303,69 @@ extract_ame_glm <- function(
 
 # ---- AME of a design fit, on predictions spicy controls --------------------
 
-# What avg_slopes() is given for a svyolr: the model, the data and the
-# variance, or NULL for any other class.
+# What avg_slopes() is given for a svyglm or a svyolr: the model, the
+# data and the variance, or NULL for any other class.
 #
+# * survey's predict.svyglm() rebuilds the terms from the formula, which
+#   drops the predvars (the knots of ns(), the centre of scale()) and the
+#   offset. A svyglm is a glm, and stats::predict.glm() reads both from
+#   the terms of the fit: the AME is taken on that glm twin, with the
+#   design's variance passed as a matrix, since vcov() of the twin would
+#   be summary.glm()'s.
+# * marginaleffects reads the model data of a design fit off its model
+#   frame, where a ns(z) column stands for z: the data are the design's
+#   own variables, the rows the fit used, in the order of its fitted
+#   values.
 # * get_coef() of a svyolr puts the cut-points first ("Intercept: a|b")
 #   and vcov() puts them last ("a|b"), and marginaleffects pairs them by
 #   position when the names differ: the matrix is aligned by name on the
 #   order of get_coef().
 .design_ame_inputs <- function(fit) {
-  if (!inherits(fit, "svyolr")) {
+  if (!inherits(fit, c("svyglm", "svyolr"))) {
     return(NULL)
   }
   V <- as.matrix(stats::vcov(fit))
-  b <- names(marginaleffects::get_coef(fit))
-  key <- ifelse(b %in% colnames(V), b, sub("^Intercept: ", "", b))
-  if (anyNA(match(key, colnames(V)))) {
-    stop(
-      "the variance of the cut-points cannot be matched to the coefficients by name.",
-      call. = FALSE
-    )
+  model <- fit
+  if (inherits(fit, "svyolr")) {
+    b <- names(marginaleffects::get_coef(fit))
+    key <- ifelse(b %in% colnames(V), b, sub("^Intercept: ", "", b))
+    if (anyNA(match(key, colnames(V)))) {
+      stop(
+        "the variance of the cut-points cannot be matched to the coefficients by name.",
+        call. = FALSE
+      )
+    }
+    V <- V[key, key, drop = FALSE]
+    dimnames(V) <- list(b, b)
+  } else {
+    class(model) <- setdiff(class(fit), c("svrepglm", "svyglm"))
   }
-  V <- V[key, key, drop = FALSE]
-  dimnames(V) <- list(b, b)
-  list(model = fit, newdata = NULL, vcov = V)
+  data <- .design_ame_data(fit)
+  if (!is.null(data) && utils::packageVersion("marginaleffects") >= "1.0.0") {
+    model <- marginaleffects::set_modeldata(model, data)
+  }
+  list(model = model, newdata = data, vcov = V)
 }
+
+# The design variables of the rows a svyglm or svyolr used, in the order
+# of its fitted values; NULL when the two cannot be matched by row name.
+.design_ame_data <- function(fit) {
+  dat <- tryCatch(fit$survey.design$variables, error = function(e) NULL)
+  rn <- if (inherits(fit, "svyolr")) {
+    rownames(fit$fitted.values)
+  } else {
+    names(fit$fitted.values)
+  }
+  if (!is.data.frame(dat) || is.null(rn)) {
+    return(NULL) # nocov
+  }
+  idx <- match(rn, rownames(dat))
+  if (anyNA(idx)) {
+    return(NULL) # nocov
+  }
+  dat[idx, , drop = FALSE]
+}
+
 
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
@@ -1413,9 +1452,9 @@ extract_ame_glm <- function(
     # NULL (marginaleffects' own data) but for a fixest fit whose i()
     # factors take another reference than their first level.
     newdata <- if (inherits(fit, "fixest")) .fixest_ame_newdata(fit)
-    # A svyolr: its variance aligned by name (.design_ame_inputs()).
-    # `vc_fit` stands for the fit's own variance (`TRUE`) wherever it is
-    # not `vc`.
+    # A design fit: its glm twin or itself, the design's own data, its
+    # variance aligned by name (.design_ame_inputs()). `vc_fit` stands
+    # for the fit's own variance (`TRUE`) wherever it is not `vc`.
     vc_fit <- TRUE
     design_in <- tryCatch(.design_ame_inputs(fit), error = function(e) e)
     if (inherits(design_in, "error")) {

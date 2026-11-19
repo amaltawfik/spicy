@@ -72,3 +72,76 @@ test_that("a svyolr whose variance names miss a coefficient gets no AME", {
   )
   expect_identical(nrow(sp), 0L)
 })
+
+
+# ---- D2: a data-dependent basis in a design fit --------------------------
+
+test_that("the AME of a svyolr with poly() is taken on the fitted basis", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  f <- survey::svyolr(ord ~ x + grp + poly(z, 2), design = des)
+  expect_ame_matches(ame_spicy(f), svyolr_oracle(f, ~ x + grp + poly(z, 2), d))
+})
+
+test_that("the AME of a gaussian svyglm with poly() is taken on the fitted basis", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  rhs <- ~ x + grp + poly(z, 2)
+  f <- survey::svyglm(y ~ x + grp + poly(z, 2), design = des)
+  expect_ame_matches(ame_spicy(f), svyglm_oracle(f, rhs, d, identity))
+  # The same on a replicate design.
+  rd <- survey::as.svrepdesign(des, type = "JK1")
+  f <- survey::svyglm(y ~ x + grp + poly(z, 2), design = rd)
+  expect_ame_matches(ame_spicy(f), svyglm_oracle(f, rhs, d, identity))
+})
+
+test_that("the AME of a quasibinomial svyglm on a subpopulation keeps its basis", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  f <- survey::svyglm(
+    yb ~ x + grp + poly(z, 2),
+    design = subset(des, x > -1),
+    family = stats::quasibinomial()
+  )
+  ds <- d[d$x > -1, ]
+  expect_ame_matches(
+    ame_spicy(f),
+    svyglm_oracle(f, ~ x + grp + poly(z, 2), ds, stats::plogis, w = ds$sw)
+  )
+})
+
+test_that("the AME of a quasipoisson svyglm with scale() keeps the fitted centre", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  f <- survey::svyglm(
+    cnt ~ x + grp + scale(z),
+    design = des,
+    family = stats::quasipoisson()
+  )
+  # The AME row of z sits under its coefficient, `scale(z)`.
+  or <- svyglm_oracle(f, ~ x + grp + scale(z), d, exp)
+  or$key[or$key == "z|NA"] <- "scale(z)|NA"
+  expect_ame_matches(ame_spicy(f), or)
+})
+
+
+# ---- D3: the offset of a svyglm --------------------------------------------
+
+test_that("the AME of a svyglm with an offset includes the offset", {
+  skip_if_no_ame_survey()
+  d <- ame_test_data()
+  des <- survey::svydesign(id = ~id, weights = ~sw, data = d)
+  f <- survey::svyglm(
+    cnt ~ x + grp + z + offset(log(expo)),
+    design = des,
+    family = stats::quasipoisson()
+  )
+  expect_ame_matches(
+    ame_spicy(f),
+    svyglm_oracle(f, ~ x + grp + z + offset(log(expo)), d, exp)
+  )
+})
