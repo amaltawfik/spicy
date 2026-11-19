@@ -35,7 +35,7 @@ they take for ordinal models are listed below.
 \tabular{llllll}{
    Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \tab vcov \cr
    \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \tab classical, CR1 \cr
-   \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \tab classical, CR1 (classical only with scale or nominal terms) \cr
+   \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects (nominal =); Scale effects (scale =) \tab classical, CR1 (classical only with scale or nominal terms) \cr
    \code{clmm} \tab \code{ordinal::clmm()} \tab no \tab OR (logit) \tab Thresholds; Random effects \tab classical \cr
 }
 

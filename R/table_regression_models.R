@@ -90,12 +90,12 @@
       paste(
         c(
           .REG_BLOCK_RE,
-          .REG_BLOCK_ZI,
+          paste0(.REG_BLOCK_ZI, " (ziformula)"),
           paste0(
             .REG_BLOCK_HURDLE_ZERO,
             " for a zero-truncated family, ziGamma, lognormal or beta_family"
           ),
-          .REG_BLOCK_DISP,
+          paste0(.REG_BLOCK_DISP, " (dispformula)"),
           paste0(.REG_BLOCK_PREC, " (dispformula of beta_family)"),
           paste0(.REG_BLOCK_THRESH, " (ordinal family)")
         ),
@@ -118,7 +118,14 @@
       "ordinal::clm()",
       "per category",
       "OR (logit)",
-      paste(c(.REG_BLOCK_THRESH, .REG_BLOCK_NPO), collapse = "; ")
+      paste(
+        c(
+          .REG_BLOCK_THRESH,
+          paste0(.REG_BLOCK_NPO, " (nominal =)"),
+          paste0(.REG_BLOCK_SCALE, " (scale =)")
+        ),
+        collapse = "; "
+      )
     ),
     c(
       "Ordinal",
