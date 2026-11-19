@@ -503,6 +503,10 @@ build_regression_footer_from_frames <- function(
         build_scale_effects_footer_block_from_frames(frames),
         build_selection_error_terms_footer_block_from_frames(frames),
         build_component_blocks_footer_block_from_frames(frames),
+        build_smooth_terms_footer_block_from_frames(
+          frames,
+          displayed_parent_vars
+        ),
         build_standardized_caveat_footer_block_from_frames(
           frames,
           standardized

@@ -75,7 +75,7 @@ wrappers.
    Survey-weighted \tab \code{svyolr} \tab \code{survey::svyolr()} \tab per category (design-based) \tab OR (logit) \tab Thresholds \tab classical (design-based) \cr
    Survey-weighted \tab \code{svycoxph} \tab \code{survey::svycoxph()} \tab no \tab HR \tab - \tab classical (design-based) \cr
    Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \tab classical (the fit's own) \cr
-   Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \tab classical, CR1 \cr
+   Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab Smooth terms \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab Precision (y ~ x \tab z) \cr
    Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab Error terms \tab classical \cr
    rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr

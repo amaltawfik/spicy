@@ -496,6 +496,111 @@ as_regression_frame.gam <- function(
 }
 
 
+# The smooth terms of a GAM as a subordinate "Smooth terms" block of rows,
+# one per row of summary(fit)$s.table, labeled as mgcv labels it ("s(age)",
+# "te(bmi,ped)", "s(age):sexF", "s(g)"). Called by the table_regression()
+# orchestrator after the central exponentiate, so the edf is never
+# exponentiated, and before p_adjust, whose family the smooth-term tests
+# join (`apply_p_adjust_to_frame_coefs()`).
+#
+# estimate_type = "edf" is a token of its own, like "vc": the edf is not a
+# coefficient, so the exp / standardize / AME paths never see it, and the
+# renderers show it in the B column (dev/decisions/
+# 2026-11-19-gam-smooth-terms-block.md). `df` carries the reference df of
+# the test, `statistic` its F or chi-square (`test_type` "F" / "X2", the
+# tokens of the partial tests), for `tidy()` and `output = "long"`: the
+# table leaves the statistic cell undefined, a chi-square or F having no
+# place under a t / z header (`.vc_cell_undefined()`). SE and CI are NA:
+# the cells read as undefined, as in the other blocks. Under a robust variance mgcv's test
+# still rests on its own covariance matrix (Vp), so the row keeps its edf
+# and loses the test; the note says so.
+.append_smooth_term_rows <- function(coefs, st, robust = FALSE) {
+  if (!is.data.frame(st) || nrow(st) == 0L) {
+    return(coefs)
+  }
+  test_type <- ifelse(st$stat_type == "F", "F", "X2")
+  stat <- st$statistic
+  p <- st$p_value
+  if (isTRUE(robust)) {
+    stat <- rep(NA_real_, nrow(st))
+    p <- rep(NA_real_, nrow(st))
+    test_type <- rep(NA_character_, nrow(st))
+  }
+  new <- data.frame(
+    term = st$term,
+    parent_var = .REG_BLOCK_SMOOTH,
+    label = st$term,
+    factor_level_pos = seq_len(nrow(st)),
+    is_ref = FALSE,
+    estimate_type = "edf",
+    estimate = as.numeric(st$edf),
+    std_error = NA_real_,
+    df = as.numeric(st$ref_df),
+    statistic = as.numeric(stat),
+    p_value = as.numeric(p),
+    ci_lower = NA_real_,
+    ci_upper = NA_real_,
+    test_type = test_type,
+    outcome_level = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  .rbind_union(coefs, new)
+}
+
+
+# The note of the "Smooth terms" block: what its numbers are, and, for a
+# model fitted under a robust variance, why its test cells are empty.
+# Gated on edf rows present in the table and, when the caller passes the
+# displayed parent variables, on the block surviving `keep` / `drop`.
+build_smooth_terms_footer_block_from_frames <- function(
+  frames,
+  displayed_parent_vars = NULL
+) {
+  if (
+    !is.null(displayed_parent_vars) &&
+      !.REG_BLOCK_SMOOTH %in% displayed_parent_vars
+  ) {
+    return(NULL)
+  }
+  has_rows <- vapply(
+    frames,
+    function(f) any(f$coefs$estimate_type %in% "edf"),
+    logical(1)
+  )
+  if (!any(has_rows)) {
+    return(NULL)
+  }
+  out <- spicy_str("note_smooth_terms_gloss")
+  robust <- has_rows &
+    vapply(
+      frames,
+      function(f) !.is_model_vcov(f$info$vcov_kind %||% "model"),
+      logical(1)
+    )
+  if (any(robust)) {
+    msg <- spicy_str("note_smooth_terms_robust")
+    # Said once when every GAM of the table is robust, attributed to its
+    # model otherwise.
+    out <- if (all(robust[has_rows])) {
+      paste(out, msg)
+    } else {
+      paste(
+        c(
+          out,
+          vapply(
+            which(robust),
+            function(i) .model_line(frames, i, msg),
+            character(1)
+          )
+        ),
+        collapse = " "
+      )
+    }
+  }
+  out
+}
+
+
 # TRUE for a GAM with mgcv's nb() extended family. negbin(theta) is a
 # plain family with theta fixed by the call, like glm's
 # negative.binomial(theta).

@@ -32,8 +32,11 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
     return(coefs)
   }
 
-  for (et in unique(coefs$estimate_type[family_mask])) {
-    rows <- which(family_mask & coefs$estimate_type == et)
+  # The test of a GAM's smooth term ("edf" row) is a hypothesis on the
+  # model's mean, like a coefficient's: it joins the B family.
+  fam_type <- ifelse(coefs$estimate_type == "edf", "B", coefs$estimate_type)
+  for (et in unique(fam_type[family_mask])) {
+    rows <- which(family_mask & fam_type == et)
     if (length(rows) == 0L) {
       next
     }
@@ -142,8 +145,13 @@ apply_keep_drop_filter <- function(
   # synthetic random-effect key ("re::Subject::Days") would mutilate the block
   # into a statistically incoherent subset (e.g. a correlation without its
   # variances). The whole-block switches are `show_thresholds` / `show_re`.
+  # The one exception: the smooth terms of a GAM are predictors of the
+  # model, so their rows obey `keep` / `drop` like the coefficients, and
+  # `drop = "^s\\("` removes the block with its header and its note.
   ca <- aligned$coefs_aligned
-  subordinate <- (.reg_is_block(ca$factor_term) & !err) |
+  subordinate <- (.reg_is_block(ca$factor_term) &
+    !err &
+    !ca$factor_term %in% .REG_BLOCK_SMOOTH) |
     (!is.null(ca$estimate_type) & ca$estimate_type == "vc")
   final_mask <- final_mask | subordinate
   # Intercepts are exempt from keep / drop matching: `show_intercept`

@@ -297,7 +297,8 @@ model (intercept and reference rows excluded). One of
 \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}. Delegated to
 \code{\link[stats:p.adjust]{stats::p.adjust()}}; applied per-model and per \code{estimate_type}
 (B and AME p-values are adjusted independently within their
-own families). Active adjustments are documented in the
+own families). The tests of the smooth terms of a GAM join the
+B family. Active adjustments are documented in the
 footer (method + family size). See the \emph{Multiple-comparison
 adjustment} section for when this is and is not appropriate.}
 
@@ -336,9 +337,12 @@ for \code{"wt * cyl=6"}) matches at
 least one pattern are kept. The intercept and the subordinate
 blocks (thresholds, random effects) are exempt from \code{keep} and
 \code{drop}: \code{show_intercept}, \code{show_thresholds} and \code{show_re} govern
-them. The \verb{Error terms} of a sample-selection model are coefficients
-of \code{coef()} and follow \code{keep} and \code{drop} under those names
-(\code{"sigma"}, \code{"rho"}, \code{"invMillsRatio"}).
+them. The smooth terms of a GAM are predictors and are not exempt:
+they match by their mgcv label (\code{"s(age)"}, \code{"te(bmi,ped)"}), and
+\code{drop = "^s\\\\("} removes the \verb{Smooth terms} block with its note.
+The \verb{Error terms} of a sample-selection model are coefficients of
+\code{coef()} and follow \code{keep} and \code{drop} under those names (\code{"sigma"},
+\code{"rho"}, \code{"invMillsRatio"}).
 Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
@@ -1310,6 +1314,19 @@ mgcv's other extended families (\code{betar()}, \code{ocat()}, \code{scat()},
 an adjusted \eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM, shown
 on request, in a table of GAMs or beside an \code{lm()}. The \code{"r2"} row of
 a GAM is dashed beside other models, and refused for a table of GAMs.
+
+The smooth terms of a GAM form a \verb{Smooth terms (edf)} block below its
+parametric coefficients, one row per term, labeled as
+\code{summary.gam()} labels it (\code{s(age)}, \code{te(bmi,ped)}, \code{s(age):sexF}).
+The B column carries the effective degrees of freedom and the p
+column the p-value of mgcv's approximate test of the term. The SE, CI
+and statistic cells are dashed: an edf has no standard error, and the
+chi-square or F of the test has no place under a t or z header.
+\code{exponentiate} leaves the edf as it is, and no star marks it. Under a
+robust \code{vcov} the p-value is dashed too, since mgcv's test rests on its
+own covariance matrix, and the note says so. \code{tidy()} and
+\code{output = "long"} carry the rows with \code{estimate_type = "edf"}, the
+reference df in \code{df} and the test in \code{statistic} and \code{p.value}.
 
 The intercept-only model keeps the offset and the weights of the
 fitted model. For a \code{MASS::glm.nb()} fit it re-estimates theta in

@@ -345,6 +345,9 @@
   label_block_thresholds = "Thresholds",
   label_block_non_proportional = "Non-proportional effects",
   label_block_scale_effects = "Scale effects",
+  # The B column of the block carries the effective degrees of freedom,
+  # which the caption says.
+  label_block_smooth_terms = "Smooth terms (edf)",
   label_block_random_effects = "Random effects",
   label_block_zero_inflation = "Zero-inflation",
   # The two zero hurdles model opposite events -- pscl's zero part
@@ -445,6 +448,12 @@
   # The cases of the outcome equation of a selection model, then all the
   # cases (the n row).
   note_outcome_observed = "Outcome observed for %s of %s.",
+  # The smooth terms of a GAM. No hole: the caption already carries
+  # "(edf)", which the gloss spells out.
+  note_smooth_terms_gloss = "Smooth terms: effective degrees of freedom (edf) and approximate test of each term.",
+  # Under a robust variance the smooth-term rows keep their edf and lose
+  # their test, which rests on the model-based covariance.
+  note_smooth_terms_robust = "The test of the smooth terms is not computed under a robust variance.",
   # Two holes: the block caption and the estimation method (REML / ML,
   # an identifier). Deliberately NOT `header_companion_qualified`, which
   # carries the same value for an unrelated role -- the console header

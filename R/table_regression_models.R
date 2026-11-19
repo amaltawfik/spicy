@@ -216,7 +216,7 @@
       "mgcv::gam(), mgcv::bam()",
       "yes",
       "OR / IRR (link)",
-      "-"
+      .REG_BLOCK_SMOOTH
     ),
     c(
       "Additive, proportions, selection",

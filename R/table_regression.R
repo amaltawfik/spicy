@@ -455,6 +455,19 @@
 #' on request, in a table of GAMs or beside an `lm()`. The `"r2"` row of
 #' a GAM is dashed beside other models, and refused for a table of GAMs.
 #'
+#' The smooth terms of a GAM form a `Smooth terms (edf)` block below its
+#' parametric coefficients, one row per term, labeled as
+#' `summary.gam()` labels it (`s(age)`, `te(bmi,ped)`, `s(age):sexF`).
+#' The B column carries the effective degrees of freedom and the p
+#' column the p-value of mgcv's approximate test of the term. The SE, CI
+#' and statistic cells are dashed: an edf has no standard error, and the
+#' chi-square or F of the test has no place under a t or z header.
+#' `exponentiate` leaves the edf as it is, and no star marks it. Under a
+#' robust `vcov` the p-value is dashed too, since mgcv's test rests on its
+#' own covariance matrix, and the note says so. `tidy()` and
+#' `output = "long"` carry the rows with `estimate_type = "edf"`, the
+#' reference df in `df` and the test in `statistic` and `p.value`.
+#'
 #' The intercept-only model keeps the offset and the weights of the
 #' fitted model. For a `MASS::glm.nb()` fit it re-estimates theta in
 #' McFadden's and Nagelkerke's \eqn{R^2}{R^2}, as Stata's `nbreg` does,
@@ -1234,7 +1247,8 @@
 #'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`. Delegated to
 #'   [stats::p.adjust()]; applied per-model and per `estimate_type`
 #'   (B and AME p-values are adjusted independently within their
-#'   own families). Active adjustments are documented in the
+#'   own families). The tests of the smooth terms of a GAM join the
+#'   B family. Active adjustments are documented in the
 #'   footer (method + family size). See the *Multiple-comparison
 #'   adjustment* section for when this is and is not appropriate.
 #' @param tau Survival models only: the RMST horizon of the `"rmst"`
@@ -1277,9 +1291,12 @@
 #'   least one pattern are kept. The intercept and the subordinate
 #'   blocks (thresholds, random effects) are exempt from `keep` and
 #'   `drop`: `show_intercept`, `show_thresholds` and `show_re` govern
-#'   them. The `Error terms` of a sample-selection model are coefficients
-#'   of `coef()` and follow `keep` and `drop` under those names
-#'   (`"sigma"`, `"rho"`, `"invMillsRatio"`).
+#'   them. The smooth terms of a GAM are predictors and are not exempt:
+#'   they match by their mgcv label (`"s(age)"`, `"te(bmi,ped)"`), and
+#'   `drop = "^s\\("` removes the `Smooth terms` block with its note.
+#'   The `Error terms` of a sample-selection model are coefficients of
+#'   `coef()` and follow `keep` and `drop` under those names (`"sigma"`,
+#'   `"rho"`, `"invMillsRatio"`).
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -3349,6 +3366,19 @@ table_regression <- function(
         b$exp_applied <- isTRUE(exponentiate) && isTRUE(b$exp_ok)
         b
       })
+    }
+
+    # The smooth terms of a GAM as a "Smooth terms" block (edf rows), after
+    # the exponentiate, which never touches them, and before p_adjust,
+    # whose family their tests join. Gated on the B column, which carries
+    # the edf.
+    st_i <- frames[[i]]$info$extras$smooth_terms
+    if ("b" %in% show_columns && is.data.frame(st_i) && nrow(st_i) > 0L) {
+      frames[[i]]$coefs <- .append_smooth_term_rows(
+        frames[[i]]$coefs,
+        st_i,
+        robust = !.is_model_vcov(frames[[i]]$info$vcov_kind %||% "model")
+      )
     }
 
     # p_adjust runs per model BEFORE alignment / keep-drop filtering

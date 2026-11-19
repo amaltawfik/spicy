@@ -26,6 +26,9 @@
 # order (`align_frames()` walks it, moving each block in turn to the end).
 # Every other consumer uses it as a SET, through `.reg_is_block()`.
 .REG_BLOCK_TERMS <- c(
+  # First: the smooth terms of a GAM complete its parametric coefficients
+  # (dev/decisions/2026-11-19-gam-smooth-terms-block.md).
+  "Smooth terms",
   "Zero-inflation",
   "Zero hurdle",
   "Zero hurdle, Pr(y = 0)",
@@ -39,6 +42,7 @@
   "Thresholds",
   "Random effects"
 )
+.REG_BLOCK_SMOOTH <- "Smooth terms"
 .REG_BLOCK_ZI <- "Zero-inflation"
 # The two zero hurdles model opposite events, so they are two blocks:
 # pscl::hurdle()'s zero part models Pr(y > 0), glmmTMB's (a hurdle family
@@ -84,6 +88,7 @@
 # mlogit section above: the CAPTION is a separate layer from the
 # identity, and only the caption is ever translated.
 .REG_BLOCK_STR_KEYS <- c(
+  "Smooth terms" = "label_block_smooth_terms",
   "Zero-inflation" = "label_block_zero_inflation",
   "Zero hurdle" = "label_block_zero_hurdle",
   "Zero hurdle, Pr(y = 0)" = "label_block_zero_hurdle_zero",

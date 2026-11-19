@@ -1169,9 +1169,10 @@ build_body_row <- function(
     # Random-effect variance rows (estimate_type = "vc") render in the primary
     # B (estimate / SE / CI) columns: a variance component is not a coefficient
     # (kept as its own token so exp / standardize skip it) but it displays on
-    # the same estimate/SE/CI axis. Alias "vc" to the "B" column here.
+    # the same estimate/SE/CI axis. Alias "vc" to the "B" column here, and
+    # the edf of a GAM's smooth term ("edf"), which the block caption names.
     et_match <- if (identical(cs$estimate_type, "B")) {
-      c("B", "vc")
+      c("B", "vc", "edf")
     } else {
       cs$estimate_type
     }
@@ -1294,6 +1295,12 @@ build_body_row <- function(
   cs,
   re_columns = c("est", "se", "ci")
 ) {
+  # The smooth-term row of a GAM: its chi-square or F has no place under
+  # a t / z header, so the statistic cell is undefined (the value stays in
+  # `tidy()`). Its other cells follow the generic NA rule.
+  if (identical(long_row$estimate_type[1L], "edf")) {
+    return(identical(cs$token, "t"))
+  }
   # An empty match yields NA here, which is not "vc": a cell whose term
   # is absent from the model is blank, never a dash.
   if (!identical(long_row$estimate_type[1L], "vc")) {
@@ -1567,8 +1574,9 @@ format_cell_value <- function(
       (tk == "ame"))
   # Never star a variance-component row: its optional p (re_test) is a
   # model-comparison chi-bar-squared test, not a coefficient test, and no
-  # convention stars the random part.
-  if (identical(long_row$estimate_type[1L], "vc")) {
+  # convention stars the random part. Nor an edf: it is no effect, and the
+  # p of its smooth term has its own column.
+  if (long_row$estimate_type[1L] %in% c("vc", "edf")) {
     apply_stars <- FALSE
   }
   if (apply_stars) {

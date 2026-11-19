@@ -757,6 +757,10 @@ build_structured_body <- function(
       variable = if (is.na(rt$factor_term)) rt$term else rt$factor_term,
       level = if (no_level && !is.na(rt$outcome_prefix)) {
         rt$outcome_prefix
+      } else if (no_level && .reg_is_block(rt$factor_term)) {
+        # A block row whose label is its term (the smooth term "s(age)"):
+        # the term names the row.
+        rt$term
       } else {
         rt$factor_level
       },
@@ -1296,9 +1300,9 @@ build_structured_body <- function(
     is_events <- identical(cs$fields, c("events", "events_n"))
     # Random-effect variance rows (estimate_type = "vc") display on the B
     # (estimate / SE / CI) axis: alias "vc" to the "B" column here, mirroring
-    # the char body's build_body_row().
+    # the char body's build_body_row(), and the edf of a smooth term too.
     et_match <- if (identical(cs$estimate_type, "B")) {
-      c("B", "vc")
+      c("B", "vc", "edf")
     } else {
       cs$estimate_type
     }
@@ -1399,7 +1403,7 @@ build_structured_body <- function(
         (identical(cs$token, "b") ||
           identical(cs$token, "ame") ||
           (identical(cs$token, "beta") && !"b" %in% show_columns)) &&
-        !identical(long_row$estimate_type[1L], "vc")
+        !long_row$estimate_type[1L] %in% c("vc", "edf")
     ) {
       marker <- format_stars(long_row$p_value[1L], stars_map)
       if (nzchar(marker)) {

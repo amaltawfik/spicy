@@ -32,9 +32,15 @@
 #'
 #' `tidy()` returns one row per `(model_id, term, estimate_type,
 #' outcome_level)` combination, with `estimate_type` in
-#' `c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2",
-#' "partial_chi2", "partial_f")`; the two term-level tests carry their
-#' term's df in `df` and their test in `test_type` (`"X2"`, `"F"`).
+#' `c("B", "beta", "ame", "vc", "edf", "partial_f2", "partial_eta2",
+#' "partial_omega2", "partial_chi2", "partial_f")`; the two term-level
+#' tests carry their term's df in `df` and their test in `test_type`
+#' (`"X2"`, `"F"`). `"vc"` rows are the variance components of a mixed
+#' model. `"edf"` rows are the smooth terms of a GAM: `estimate` is the
+#' effective degrees of freedom, `df` the reference df of mgcv's
+#' approximate test, `statistic` and `p.value` that test, and
+#' `test_type` `"X2"` or `"F"` as `summary.gam()` reports it (all three
+#' `NA` under a robust `vcov`).
 #' `df.residual` holds the residual df, the second df of the test, on the
 #' rows whose test is an F (the partial F and the effect sizes built on
 #' it), and is `NA` except on those rows. `partial_type` names the

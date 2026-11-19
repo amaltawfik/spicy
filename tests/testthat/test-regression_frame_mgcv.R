@@ -460,6 +460,8 @@ test_that("a Cox PH GAM reports hazard ratios under exponentiate = TRUE", {
     weights = ev
   )
   td1 <- broom::tidy(table_regression(g1, exponentiate = TRUE))
+  # The smooth term has its own "edf" row; the exp() is on the B rows.
+  td1 <- td1[td1$estimate_type == "B", ]
   expect_equal(td1$estimate, unname(exp(stats::coef(g1)["sexF"])))
   expect_equal(
     td1$std.error,

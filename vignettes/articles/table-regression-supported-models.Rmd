@@ -69,7 +69,7 @@ render whichever defensible model you fit.
 | Any of the above | clustered or repeated measures | `lme4::lmer()` / `glmer()` **or** `geepack::geeglm()` | *the distinction below matters* |
 | Any of the above | many absorbed fixed effects (panel) | `fixest::feols()` / `feglm()` | the absorbed factors render as a Yes/No block |
 | Any of the above | a complex survey design | `survey::svyglm()` | design-based SEs are the inference |
-| Any of the above | smooth non-linear terms | `mgcv::gam()` / `bam()` | |
+| Any of the above | smooth non-linear terms | `mgcv::gam()` / `bam()` | smooth terms render as a labeled block (edf and test) |
 | Any of the above | a Bayesian analysis | `rstanarm::stan_glm()` / `brms::brm()` | posterior medians, MAD SD, credible intervals -- no p-values |
 | Any of the above | an endogenous predictor, an instrument | `AER::ivreg()` / `estimatr::iv_robust()` | |
 
@@ -171,8 +171,8 @@ How to read the columns:
   odds, risk, rate or mean, or a quantile of the survival time for an
   AFT model.
 * **Blocks** -- labeled subordinate row blocks rendered inside the
-  same table (random effects, thresholds, zero components,
-  per-outcome segments), each explained by a footer line.
+  same table (smooth terms, random effects, thresholds, zero
+  components, per-outcome segments), each explained by a footer line.
 * **vcov** -- the values of `vcov` the class accepts; see the next
   section.
 
@@ -316,7 +316,9 @@ the unweighted n and the sum of the design weights (`Weighted n`) are
 default fit statistics.
 
 **Additive, proportions, selection.** `mgcv::gam()` / `bam()`
-(a GAM shows the R² rows of the `glm()` of its family and link),
+(a GAM shows the R² rows of the `glm()` of its family and link, and its
+smooth terms as a block: the effective degrees of freedom and the
+p-value of the approximate test of each term),
 `betareg::betareg()` (odds ratios on the logit mean link under
 `exponentiate`; the precision is the opt-in `phi` fit statistic),
 and `sampleSelection::selection()` with its selection component as

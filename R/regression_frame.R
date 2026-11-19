@@ -677,6 +677,8 @@ validate_regression_frame <- function(frame) {
     "beta",
     "ame",
     "vc",
+    # Smooth terms of a GAM: the edf, with mgcv's approximate test.
+    "edf",
     "partial_f2",
     "partial_eta2",
     "partial_omega2",

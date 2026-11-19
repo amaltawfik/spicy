@@ -28,8 +28,14 @@ pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(model_id, term, estimate_type, outcome_level)} combination, with \code{estimate_type} in
-\code{c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")}; the two term-level tests carry their
-term's df in \code{df} and their test in \code{test_type} (\code{"X2"}, \code{"F"}).
+\code{c("B", "beta", "ame", "vc", "edf", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")}; the two term-level
+tests carry their term's df in \code{df} and their test in \code{test_type}
+(\code{"X2"}, \code{"F"}). \code{"vc"} rows are the variance components of a mixed
+model. \code{"edf"} rows are the smooth terms of a GAM: \code{estimate} is the
+effective degrees of freedom, \code{df} the reference df of mgcv's
+approximate test, \code{statistic} and \code{p.value} that test, and
+\code{test_type} \code{"X2"} or \code{"F"} as \code{summary.gam()} reports it (all three
+\code{NA} under a robust \code{vcov}).
 \code{df.residual} holds the residual df, the second df of the test, on the
 rows whose test is an F (the partial F and the effect sizes built on
 it), and is \code{NA} except on those rows. \code{partial_type} names the

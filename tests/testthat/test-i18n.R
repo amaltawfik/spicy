@@ -500,7 +500,12 @@ test_that("every frozen block identity equals its English caption", {
   # One deliberate exception: the pscl zero hurdle keeps the identity it
   # was published under, "Zero hurdle", while its caption names the event
   # it models, as the glmmTMB zero hurdle's does.
-  renamed <- c("Zero hurdle" = "Zero hurdle, Pr(y > 0)")
+  # A second: the caption of the smooth terms of a GAM says what its B
+  # column carries, the edf.
+  renamed <- c(
+    "Zero hurdle" = "Zero hurdle, Pr(y > 0)",
+    "Smooth terms" = "Smooth terms (edf)"
+  )
   for (blk in names(.REG_BLOCK_STR_KEYS)) {
     expect_identical(
       .reg_block_label(blk),
