@@ -130,6 +130,44 @@ test_that("stratified survreg fits are refused", {
 })
 
 
+test_that("a tobit fit gets no RMST or risk-difference columns", {
+  skip_if_not_installed("AER")
+  skip_if_not_installed("survival")
+  d <- data.frame(x = seq(-2, 2, length.out = 60))
+  d$y <- pmax(0, 0.5 + d$x + rep(c(-0.6, 0.3, 0.8), 20))
+  fit <- AER::tobit(y ~ x, data = d)
+  err <- expect_error(
+    table_regression(fit, show_columns = c("b", "rmst"), tau = 1, boot_n = 10),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "tobit models a censored response, not a time to event",
+    fixed = TRUE
+  )
+  for (cols in list("risk_diff_ci", c("b", "rmst_p", "risk_diff"))) {
+    expect_error(
+      table_regression(
+        fit,
+        show_columns = cols,
+        tau = 1,
+        at_time = 1,
+        boot_n = 10
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  expect_error(
+    table_regression(fit, tau = 1),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, at_time = 1),
+    class = "spicy_invalid_input"
+  )
+})
+
+
 test_that("survreg data recovery fails loudly when the data is gone or stale", {
   skip_if_not_installed("survival")
   d <- .aft_lung()

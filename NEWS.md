@@ -433,6 +433,11 @@
   the `ordinal()` family, alone or as the first model of `nested =
   TRUE`. It stopped on an internal error.
 
+* `table_regression()` refuses the RMST and risk-difference columns
+  (`show_columns = "rmst"`, `"risk_diff"` and theirs) for an
+  `AER::tobit()` model: a tobit models a censored response, not a time
+  to event. They were computed as for a `survreg()` model.
+
 * `table_regression()` takes a `coxph()` model without a coefficient
   (`~ 1`, or `strata()` alone) as the first model of a hierarchy: its
   column shows the fit statistics, and the next model its

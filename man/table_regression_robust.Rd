@@ -140,7 +140,9 @@ same estimator: \code{"CR1"} from \code{\link[sandwich:vcovCL]{sandwich::vcovCL(
 scaled by \eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters. The other
 \verb{CR*} tokens and \verb{HC*} are refused. Under \code{"CR1"}, a nested hierarchy
 is tested by the Wald chi-square of the added coefficients on the
-robust matrix.
+robust matrix. The RMST and risk-difference columns of \code{survreg} are
+refused for it: a tobit models a censored response, not a time to
+event.
 
 \strong{Hierarchical comparison} (\code{nested = TRUE}). A quantile hierarchy
 gets \code{c("f_change", "p_change")}, the Wald-type test
