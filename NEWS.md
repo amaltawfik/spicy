@@ -727,7 +727,8 @@
   table to the width of a long note. The note is now the source note of
   the table in every output and wraps at the width of the body, at 0.9
   of the size of the table. `gt::rm_source_notes()` also removes it from
-  the HTML display.
+  the HTML display, and `gt::tab_options(source_notes.padding = )` sets
+  its padding.
 
 * In an R Markdown `html_document`, a gt table keeps its style: Pandoc
   read the style sheet of the table as text, and the table lost the
@@ -743,8 +744,13 @@
   columns of equal width, and the whole width of a slide.
 
 * gt tables: the label of the first column and the note start at the
-  left edge of the labels of the body. A table knitted to LaTeX loses
-  the empty line between its column labels and the rule under them.
+  left edge of the labels of the body, in a PDF too, where the label sat
+  6 pt to the right. A table knitted to LaTeX or to Typst loses the empty
+  line between its column labels and the rule under them.
+
+* In HTML, a tinytable table wider than the page scrolls within its
+  frame. In a reveal.js slide it takes 16 px, as a gt table does, and no
+  longer the size of the text of the slide.
 
 * In LaTeX, the note of a tinytable table takes the line spacing of its
   own size. It kept the spacing of the text around it, too loose for a
