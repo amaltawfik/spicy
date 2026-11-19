@@ -22,6 +22,17 @@
   `feols()` model without an exogenous regressor (`y ~ 1 | x ~ z`), whose
   AME came out as 0. The error says what to do.
 
+* `table_regression()` computes the standard errors of the random-effect
+  rows of `lmer()` and `glmer()` models from the Hessian of the deviance,
+  and no longer through merDeriv. Those of a `glmer()` model were wrong
+  and are corrected: for the `cbpp` example of lme4, the standard
+  deviation of the herd intercept has a standard error of 0.18, where
+  the table gave 0.22. Those of an `lmer()` model move by less than
+  0.01% on the usual models, and by up to 2.4% in a model with several
+  correlated random terms fitted by ML. The interval of a correlation is
+  computed on the atanh scale and stays within -1 and 1. The option
+  `spicy.re_se_max_n` is removed: the computation no longer needs a cap.
+
 * `table_regression()` names a transformed outcome as the formula writes
   it, for every model class and no longer for `lm()` and `glm()` only:
   the title, the Outcome row and the `outcome` column of `tidy()` and
@@ -598,6 +609,15 @@
 * `table_regression()`: the notes on the standard errors and intervals
   of the random-effect rows appear only when the table shows those
   cells.
+
+* `table_regression()`: when a random-effect row of an `lmer()` or
+  `glmer()` model has no standard error, a note gives the reason: an
+  estimated dispersion parameter, a Hessian that is not positive
+  definite, or a covariance structure the computation does not cover.
+
+* `table_regression(re_ci = "profile")`: the note of an `lmer()` model
+  fitted by REML says that the profile is that of the ML criterion, as
+  lme4 computes it.
 
 * `table_regression()` shows the correlation row of an `lme()` model
   fitted under `lmeControl(natural = FALSE)` or with a `pdCompSymm`
