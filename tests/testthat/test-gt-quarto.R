@@ -55,6 +55,79 @@ test_that("every gt table opts out of Quarto's processing in HTML", {
   }
 })
 
+test_that("a knit to Typst writes no row of empty column labels", {
+  skip_if_not_installed("gt")
+  # One outcome: no Outcome level over column 1.
+  fits <- list(
+    A = stats::lm(bmi ~ age, data = sochealth),
+    B = stats::lm(bmi ~ age + sex, data = sochealth)
+  )
+  head_rows <- function(html) {
+    thead <- regmatches(html, regexpr("<thead>.*?</thead>", html))
+    regmatches(
+      thead,
+      gregexpr("<tr class=\"gt_col_headings[^\"]*\">.*?</tr>", thead)
+    )[[1L]]
+  }
+  label_cells <- function(row) {
+    regmatches(
+      row,
+      gregexpr("<th class=\"gt_col_heading[^>]*>[^<]*</th>", row)
+    )[[1L]]
+  }
+  # Two models: the Model row, then Variable, B, SE, p as column labels.
+  html <- gsub(
+    "\n\\s*",
+    "",
+    .gtq_knit(
+      table_regression(fits, output = "gt", show_columns = c("b", "se", "p")),
+      "typst"
+    )
+  )
+  rows <- head_rows(html)
+  expect_length(rows, 2L)
+  labels <- label_cells(paste(rows, collapse = ""))
+  expect_identical(
+    sub(".*>([^<]*)</th>$", "\\1", labels),
+    c("Variable", "B", "SE", "p", "B", "SE", "p")
+  )
+  # Variable is at the top of the header: it takes the top rule.
+  expect_match(labels[[1L]], "border-top-width: 1px", fixed = TRUE)
+  expect_no_match(labels[[2L]], "border-top-width: 1px", fixed = TRUE)
+  # One model: one row, the top rule over every label.
+  html <- gsub(
+    "\n\\s*",
+    "",
+    .gtq_knit(
+      table_regression(
+        fits["A"],
+        output = "gt",
+        show_columns = c("b", "se", "p")
+      ),
+      "typst"
+    )
+  )
+  rows <- head_rows(html)
+  expect_length(rows, 1L)
+  labels <- label_cells(rows)
+  expect_length(labels, 4L)
+  expect_true(all(grepl("border-top-width: 1px", labels, fixed = TRUE)))
+  expect_true(all(grepl("border-bottom-width: 1px", labels, fixed = TRUE)))
+  # A CI keeps its LL and UL row, and the spanners above them.
+  ci <- .gtq_knit(table_regression(fits["A"], output = "gt"), "typst")
+  expect_match(ci, "id=\"col_span_1_Variable\"", fixed = TRUE)
+  # HTML is untouched.
+  html <- .gtq_knit(
+    table_regression(
+      fits["A"],
+      output = "gt",
+      show_columns = c("b", "se", "p")
+    ),
+    "html"
+  )
+  expect_match(html, "id=\"col_span_1_Variable\"", fixed = TRUE)
+})
+
 test_that("a knit to Typst leaves the table to Quarto's processing", {
   skip_if_not_installed("gt")
   for (g in .gtq_tables()) {

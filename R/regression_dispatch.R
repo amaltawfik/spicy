@@ -1404,6 +1404,53 @@ output_gt <- function(rendered) {
   paste(lines, collapse = "\n")
 }
 
+# The header of a gt table knitted to Typst. Quarto writes the table from
+# the HTML gt writes, and a row of empty column labels becomes a row of
+# empty cells, 12pt of insets high (Quarto writes no padding into Typst):
+# a blank line above the rule under the header. spicy lifts the label of
+# every column without a spanner of its own into a one-column spanner
+# (`output_gt()`); when every column has one and no column label is left
+# under them, the labels go back to the column labels, which carry the
+# rule, and a label at the top of the header takes the top rule its
+# spanner carried. `.spicy_gt_latex_layout()` drops the same row in LaTeX.
+.spicy_gt_typst_labels <- function(x) {
+  bh <- x[["_boxhead"]]
+  vars <- bh$var[bh$type %in% c("default", "stub")]
+  labels <- vapply(
+    bh$column_label[match(vars, bh$var)],
+    function(l) paste(as.character(l), collapse = ""),
+    character(1)
+  )
+  sp <- x[["_spanners"]]
+  low <- sp[sp$spanner_level == 1L, , drop = FALSE]
+  if (
+    any(nzchar(trimws(labels))) ||
+      nrow(low) == 0L ||
+      any(lengths(low$vars) != 1L) ||
+      !setequal(unlist(low$vars), vars)
+  ) {
+    return(x)
+  }
+  x <- gt::cols_label(
+    x,
+    .list = stats::setNames(low$spanner_label, unlist(low$vars))
+  )
+  x <- gt::rm_spanners(x, spanners = low$spanner_id)
+  top <- setdiff(vars, unlist(x[["_spanners"]]$vars))
+  if (length(top)) {
+    x <- gt::tab_style(
+      x,
+      style = gt::cell_borders(
+        sides = "top",
+        color = "#333333",
+        weight = gt::px(1)
+      ),
+      locations = gt::cells_column_labels(columns = tidyselect::all_of(top))
+    )
+  }
+  x
+}
+
 # A row of a LaTeX table with nothing in any cell: once the wrappers gt
 # puts around a header label (`\multicolumn{1}{c}{...}`, `\mdseries`) and
 # the braces are gone, only the cell separators and the line end remain.
@@ -1477,6 +1524,9 @@ knit_print.spicy_gt <- function(x, ...) {
     # reads that HTML to write the table, and dropped a table that opts
     # out of its processing (`.spicy_gt()`).
     x <- gt::tab_options(x, quarto.disable_processing = FALSE)
+    if (identical(pandoc_to, "typst")) {
+      x <- .spicy_gt_typst_labels(x)
+    }
     latex <- isTRUE(knitr::is_latex_output())
     if (latex) {
       # The title at the size of the table, as in HTML: gt's LaTeX writer
