@@ -83,16 +83,6 @@ ag_terms <- list(
 # Found on 2026-11-19; the test fails once a row is mended, so that the
 # entry is removed with the fix.
 ag_known_rows <- list(
-  survreg_strata = list(
-    rows = list(
-      "strata(mn)B|NA" = c(est = 0, se = NA),
-      "strata(mn)C|NA" = c(est = 0, se = NA)
-    ),
-    why = paste(
-      "marginaleffects takes strata(mn) for a predictor and gives a",
-      "contrast of 0 without SE, which spicy shows as an AME row"
-    )
-  ),
   clm_nominal = list(
     rows = list("z|lo" = c(est = NA, se = NA)),
     why = paste(
@@ -396,6 +386,9 @@ ag_oracles <- list(
   hurdle_negbin = ag_pscl(hurdle = TRUE),
   # The response scale of a survreg is exp(lp) for its Weibull default.
   survreg = function(fit, d, v) ag_link(~x, exp)(fit, d, v),
+  # strata() sets one scale per stratum; the mean exp(lp) does not
+  # depend on it.
+  survreg_strata = function(fit, d, v) ag_link(~x, exp)(fit, d, v),
   svyglm = function(fit, d, v) ag_link(~x, identity, w = d$w)(fit, d, v),
   svyglm_binomial = function(fit, d, v) {
     ag_link(~x, stats::plogis, w = d$w)(fit, d, v)
@@ -439,7 +432,6 @@ ag_oracles <- list(
 
 # The fixtures of a "yes" or "per" cell checked for presence only.
 ag_no_oracle <- list(
-  survreg_strata = "the strata rows are a known defect; x is checked on survreg",
   stanreg = "posterior draws, local only",
   brmsfit = "posterior draws, local only"
 )
@@ -533,7 +525,7 @@ test_that("every fixture of an AME cell is checked against the oracle or named",
   expect_setequal(c(names(ag_oracles), names(ag_no_oracle)), offered)
   expect_length(intersect(names(ag_oracles), names(ag_no_oracle)), 0L)
   # The list of fixtures without a value oracle may not grow.
-  expect_lte(length(ag_no_oracle), 3L)
+  expect_lte(length(ag_no_oracle), 2L)
   # A conditional expectation names a fixture whose cell has a condition.
   for (id in names(ag_conditional)) {
     cell <- reg$ame[reg$class == fx_class[[id]]]

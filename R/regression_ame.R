@@ -1075,8 +1075,10 @@ extract_ame_glm <- function(
 }
 
 
-# The variables of a fit that appear only inside offset() terms, in any
-# of its formulas (conditional, zero-inflation, dispersion, ...).
+# The variables of a fit that appear only inside offset() or strata()
+# terms, in any of its formulas (conditional, zero-inflation, dispersion,
+# ...). Neither has a fitted effect: strata() sets one scale (survreg) or
+# one baseline (coxph) per stratum.
 .offset_only_vars <- function(fit) {
   fo <- tryCatch(
     insight::find_formula(fit, verbose = FALSE),
@@ -1092,7 +1094,16 @@ extract_ame_glm <- function(
       next # nocov
     }
     v <- as.list(attr(tt, "variables"))[-1L]
-    i <- attr(tt, "offset")
+    is_strata <- vapply(
+      v,
+      function(e) {
+        is.call(e) &&
+          (identical(e[[1L]], as.name("strata")) ||
+            identical(e[[1L]], quote(survival::strata)))
+      },
+      logical(1)
+    )
+    i <- c(attr(tt, "offset"), which(is_strata))
     keep <- setdiff(seq_along(v), c(i, attr(tt, "response")))
     off <- c(off, all.vars(as.call(c(quote(list), v[i]))))
     rest <- c(rest, all.vars(as.call(c(quote(list), v[keep]))))
@@ -1100,8 +1111,9 @@ extract_ame_glm <- function(
   setdiff(off, rest)
 }
 
-# A variable that enters the model only through offset() has no fitted
-# effect, but avg_slopes() reports a slope for it: that row goes.
+# A variable that enters the model only through offset() or strata() has
+# no fitted effect, but avg_slopes() reports a slope or a contrast (0,
+# without SE) for it: that row goes.
 .drop_offset_ame_rows <- function(ame_table, fit) {
   off_only <- .offset_only_vars(fit)
   if (length(off_only) == 0L) {
