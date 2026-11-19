@@ -506,11 +506,9 @@ as_regression_frame.gam <- function(
 }
 
 # The theta of a GAM's nb() family, estimated or fixed, on its natural
-# scale; NULL for any other fit.
+# scale. Called only for such a GAM (.gam_is_nb() is checked by the
+# callers in glm_compute.R).
 .gam_nb_theta <- function(fit) {
-  if (!.gam_is_nb(fit)) {
-    return(NULL)
-  }
   as.numeric(fit$family$getTheta(TRUE))
 }
 
