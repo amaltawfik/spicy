@@ -242,7 +242,9 @@ comparison</em> in <code><a href="table_regression.html">table_regression()</a><
     <h2 id="fit-statistics">Fit statistics<a class="anchor" aria-label="anchor" href="#fit-statistics"></a></h2>
 
 
-<p><code>polr</code>, <code>clm</code> and an ordinal <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> default to <code>c("nobs", "pseudo_r2_mcfadden", "aic")</code>. <code>"nobs"</code> and the BIC follow the engine's
+<p><code>polr</code>, <code>clm</code> and an ordinal <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> default to
+<code>c("nobs", "pseudo_r2_mcfadden", "aic")</code>. <code>"nobs"</code> and the BIC
+follow the engine's
 <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">stats::nobs()</a></code>, which for a weighted <code>polr</code> or <code>clm</code> fit is the sum of
 the weights. The deviance R-squared is refused for ordinal models, where
 it equals McFadden's. Cumulative-link mixed models show the fit

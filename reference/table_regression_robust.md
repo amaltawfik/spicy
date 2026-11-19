@@ -152,7 +152,8 @@ fit is a `survreg` model, and takes the same estimator: `"CR1"` from
 the CR0 sandwich scaled by \\G/(G-1)\\, `G` the number of clusters. The
 other `CR*` tokens and `HC*` are refused. Under `"CR1"`, a nested
 hierarchy is tested by the Wald chi-square of the added coefficients on
-the robust matrix.
+the robust matrix. The RMST and risk-difference columns of `survreg` are
+refused for it: a tobit models a censored response, not a time to event.
 
 **Hierarchical comparison** (`nested = TRUE`). A quantile hierarchy gets
 `c("f_change", "p_change")`, the Wald-type test

@@ -4,9 +4,10 @@
 supported by
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
 one row per engine, with each class's family, average-marginal-effects
-estimand, `exponentiate` semantics, labeled table blocks and accepted
-`vcov` values. The same registry drives the table of this page and those
-of the family pages, so the published list cannot drift from the code.
+estimand, `exponentiate` semantics, labeled table blocks, accepted
+`vcov` values and fit statistics. The same registry drives the table of
+this page and those of the family pages, so the published list cannot
+drift from the code.
 
 This page is the overview: the table of every supported class, the rules
 all classes share, and the page of each family, which gives its
@@ -26,8 +27,12 @@ table_regression_models()
 ## Value
 
 A data frame with one row per supported engine and columns `family`,
-`class`, `engine`, `ame`, `exponentiate`, `blocks` and `vcov` (the
-values of `vcov` the class accepts).
+`class`, `engine`, `ame`, `exponentiate`, `blocks`, `vcov` (the values
+of `vcov` the class accepts), `fit_stats_default` (the fit-statistic
+rows of a one-model table under the default `show_fit_stats`, in their
+order) and `fit_stats` (the tokens of `show_fit_stats` that give a row
+for one model; the change tokens, which need `nested = TRUE`, are not
+listed). A parenthesis in a cell gives the fits an item is limited to.
 
 ## Supported classes
 
@@ -48,7 +53,7 @@ values of `vcov` the class accepts).
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 | Mixed effects | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
 | Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
-| Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 |
+| Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session's) |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
 | Ordinal | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects | classical, CR1 (classical only with scale or nominal terms) |
@@ -59,7 +64,7 @@ values of `vcov` the class accepts).
 | Counts, two-part | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle | classical, CR1 (classical only for a negative-binomial part) |
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
 | Survival | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
-| Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 |
+| Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- | classical (design-based) |
 | Survey-weighted | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
@@ -68,9 +73,9 @@ values of `vcov` the class accepts).
 | Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- | classical, CR1 |
 | Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- | classical, CR1 |
 | Additive, proportions, selection | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component | classical |
-| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 |
-| rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 |
-| rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 |
+| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+| rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+| rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
 | Bayesian | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
 
@@ -381,46 +386,126 @@ table_regression_models()
 #> 37                                                                                                                                                              -
 #> 38                                                                                                                                 Random effects (if multilevel)
 #> 39                                                                                                                                 Random effects (if multilevel)
-#>                                                                   vcov
-#> 1              classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife
-#> 2                    classical, HC0-HC5, CR0-CR3, bootstrap, jackknife
-#> 3                    classical, HC0-HC5, CR0-CR3, bootstrap, jackknife
-#> 4                                                            classical
-#> 5                                                            classical
-#> 6                                            classical (the fit's own)
-#> 7                                            classical (the fit's own)
-#> 8                                                            classical
-#> 9                                                       classical, CR1
-#> 10                   classical (= nid), nid, iid, ker, rank, bootstrap
-#> 11                                           classical (the fit's own)
-#> 12                                                  classical, CR0-CR3
-#> 13                                                           classical
-#> 14 classical, CR0, CR1 (classical only for REML or the ordinal family)
-#> 15                                                  classical, CR0-CR3
-#> 16                                                           classical
-#> 17                                                      classical, CR1
-#> 18         classical, CR1 (classical only with scale or nominal terms)
-#> 19                                                           classical
-#> 20                                                      classical, CR1
-#> 21                                                      classical, CR1
-#> 22        classical, CR1 (classical only for a negative-binomial part)
-#> 23        classical, CR1 (classical only for a negative-binomial part)
-#> 24                                                      classical, CR0
-#> 25                                                      classical, CR1
-#> 26                                                      classical, CR0
-#> 27                                                           classical
-#> 28                                            classical (design-based)
-#> 29                                            classical (design-based)
-#> 30                                            classical (design-based)
-#> 31                                           classical (the fit's own)
-#> 32                                                      classical, CR1
-#> 33                                                      classical, CR1
-#> 34                                                           classical
-#> 35                                                      classical, CR0
-#> 36                                                      classical, CR0
-#> 37                                                      classical, CR0
-#> 38                                           classical (the posterior)
-#> 39                                           classical (the posterior)
+#>                                                                           vcov
+#> 1                      classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife
+#> 2                            classical, HC0-HC5, CR0-CR3, bootstrap, jackknife
+#> 3                            classical, HC0-HC5, CR0-CR3, bootstrap, jackknife
+#> 4                                                                    classical
+#> 5                                                                    classical
+#> 6                                                    classical (the fit's own)
+#> 7                                                    classical (the fit's own)
+#> 8                                                                    classical
+#> 9                                                               classical, CR1
+#> 10                           classical (= nid), nid, iid, ker, rank, bootstrap
+#> 11                                                   classical (the fit's own)
+#> 12                                                          classical, CR0-CR3
+#> 13                                                                   classical
+#> 14         classical, CR0, CR1 (classical only for REML or the ordinal family)
+#> 15 classical, CR0-CR3 (classical only with contrasts other than the session's)
+#> 16                                                                   classical
+#> 17                                                              classical, CR1
+#> 18                 classical, CR1 (classical only with scale or nominal terms)
+#> 19                                                                   classical
+#> 20                                                              classical, CR1
+#> 21                                                              classical, CR1
+#> 22                classical, CR1 (classical only for a negative-binomial part)
+#> 23                classical, CR1 (classical only for a negative-binomial part)
+#> 24                                                              classical, CR0
+#> 25                                                              classical, CR1
+#> 26                  classical, CR0 (classical only without x = TRUE, y = TRUE)
+#> 27                                                                   classical
+#> 28                                                    classical (design-based)
+#> 29                                                    classical (design-based)
+#> 30                                                    classical (design-based)
+#> 31                                                   classical (the fit's own)
+#> 32                                                              classical, CR1
+#> 33                                                              classical, CR1
+#> 34                                                                   classical
+#> 35                  classical, CR0 (classical only without x = TRUE, y = TRUE)
+#> 36                  classical, CR0 (classical only without x = TRUE, y = TRUE)
+#> 37                  classical, CR0 (classical only without x = TRUE, y = TRUE)
+#> 38                                                   classical (the posterior)
+#> 39                                                   classical (the posterior)
+#>                                                                                                                                                                                                               fit_stats_default
+#> 1                                                                                                                                                                                                              nobs, r2, adj_r2
+#> 2                                                                                 nobs, pseudo_r2_tjur (binomial logit, binary outcome), pseudo_r2_mcfadden (binomial, Poisson), r2_deviance (Gaussian, Gamma), aic (not quasi)
+#> 3                                                                                                                                                                                                 nobs, pseudo_r2_mcfadden, aic
+#> 4                                                                                                                                                                                                                          nobs
+#> 5                                                                                                                                                                                                                     nobs, aic
+#> 6                                                                                                                                                                        fixed_effects (with fixed_effects =), nobs, r2, adj_r2
+#> 7                                                                                                                                                                                                                          nobs
+#> 8                                                                                                                                                                                                                          nobs
+#> 9                                                                                                                                                                                                                     nobs, aic
+#> 10                                                                                                                                                                                                                    nobs, aic
+#> 11                                                                    fixed_effects (with fixed effects), nobs, r2 (feols, not IV), within_r2 (feols with fixed effects, not IV), pseudo_r2_mcfadden (GLM family), aic (not IV)
+#> 12                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 13                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 14 nobs, n_groups, icc (Gaussian, no zero-inflation or dispersion formula), r2_marginal (no ordinal family, zero-inflation or dispersion formula), r2_conditional (Gaussian, no zero-inflation or dispersion formula), aic, bic
+#> 15                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 16                                                                                                                                                                                                                    nobs, aic
+#> 17                                                                                                                                                                                                nobs, pseudo_r2_mcfadden, aic
+#> 18                                                                                                                                                                                                nobs, pseudo_r2_mcfadden, aic
+#> 19                                                                                                                                                                                                     nobs, n_groups, aic, bic
+#> 20                                                                                                                                                                                                nobs, pseudo_r2_mcfadden, aic
+#> 21                                                                                                                                                                                                                    nobs, aic
+#> 22                                                                                                                                                                                                                    nobs, aic
+#> 23                                                                                                                                                                                                                    nobs, aic
+#> 24                                                                                                                                                                                                          nobs, n_events, aic
+#> 25                                                                                                                                                                                                                    nobs, aic
+#> 26                                                                                                                                                                                                          nobs, n_events, aic
+#> 27                                                                                                                                                                                                                    nobs, aic
+#> 28                                                                                                                                                                                                     nobs, weighted_nobs, aic
+#> 29                                                                                                                                                                                                          nobs, weighted_nobs
+#> 30                                                                                                                                                                                                nobs, weighted_nobs, n_events
+#> 31                                                                                                                                                                                             nobs, n_groups, max_cluster_size
+#> 32                                                                                                                                                                                                                    nobs, aic
+#> 33                                                                                                                                                                                                                    nobs, aic
+#> 34                                                                                                                                                                                                                    nobs, aic
+#> 35                                                                                                                                                                                                                     nobs, r2
+#> 36                                                                                                                                                               nobs, pseudo_r2_tjur (binary outcome), pseudo_r2_mcfadden, aic
+#> 37                                                                                                                                                                                                nobs, pseudo_r2_mcfadden, aic
+#> 38                                                                                                                                                                                                               nobs, r2_bayes
+#> 39                                                                                                                                                                                                               nobs, r2_bayes
+#>                                                                                                                                                                                                                                                                                                                                  fit_stats
+#> 1                                                                                                                                                                                                                               nobs, weighted_nobs (weighted fit), r2, adj_r2, omega2, sigma, rmse, f2, aic, aicc, bic, deviance, log_lik
+#> 2                                                                                            nobs, pseudo_r2_mcfadden (binomial, Poisson), pseudo_r2_nagelkerke (binomial, Poisson), pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, rmse, aic (not quasi), aicc (not quasi), bic (not quasi), deviance, log_lik (not quasi)
+#> 3                                                                                                                                                                                                                       nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, theta, alpha, rmse, aic, aicc, bic, deviance, log_lik
+#> 4                                                                                                                                                                                                                                                                                                     nobs, sigma, aic, aicc, bic, log_lik
+#> 5                                                                                                                                                                                                                                                                                           nobs, sigma, aic, aicc, bic, deviance, log_lik
+#> 6                                                                                                                                                                                                                nobs, r2, adj_r2, fixed_effects (with fixed_effects =), within_r2 (with fixed_effects =), n_groups (with fixed_effects =)
+#> 7                                                                                                                                                                                                                                                                                                                         nobs, r2, adj_r2
+#> 8                                                                                                                                                                                                                                                                                                                         nobs, r2, adj_r2
+#> 9                                                                                                                                                                                                                                                                                                     nobs, sigma, aic, aicc, bic, log_lik
+#> 10                                                                                                                                                                                                                                                                                                                nobs, aic, aicc, log_lik
+#> 11                                                                                                                    nobs, r2 (feols), adj_r2 (feols), pseudo_r2_mcfadden (GLM family), fixed_effects (with fixed effects), within_r2 (feols with fixed effects), n_groups (with fixed effects), sigma, aic, aicc, bic, deviance, log_lik
+#> 12                                                                                                                                                                                                                                              nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, deviance, log_lik
+#> 13                                                                                                                                                                                                                                              nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, deviance, log_lik
+#> 14 nobs, r2_marginal (no ordinal family, zero-inflation or dispersion formula), r2_conditional (Gaussian, no zero-inflation or dispersion formula), n_groups, icc (Gaussian, no zero-inflation or dispersion formula), sigma (no ordinal family or dispersion formula), aic, aicc, bic, deviance (no ordinal or truncated family), log_lik
+#> 15                                                                                                                                                                                                                                                        nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, log_lik
+#> 16                                                                                                                                                                                                                                                                                                    nobs, sigma, aic, aicc, bic, log_lik
+#> 17                                                                                                                                                                                                                                                       nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic, deviance, log_lik
+#> 18                                                                                                                                                                                                                                                                 nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic, log_lik
+#> 19                                                                                                                                                                                                                                                                                       nobs, n_groups, aic, aicc, bic, deviance, log_lik
+#> 20                                                                                                                                                                                                                                                       nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic, deviance, log_lik
+#> 21                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik
+#> 22                                                                                                                                                                                                                                                     nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc, bic, log_lik
+#> 23                                                                                                                                                                                                                                                     nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc, bic, log_lik
+#> 24                                                                                                                                                                                                                                                                                    nobs, n_events, aic, aicc, bic, log_lik, concordance
+#> 25                                                                                                                                                                                                                                                                                        nobs, sigma (no strata), aic, aicc, bic, log_lik
+#> 26                                                                                                                                                                                                                                                                                                 nobs, n_events, aic, aicc, bic, log_lik
+#> 27                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik
+#> 28                                                                                                                                                                                                                                                                                                         nobs, weighted_nobs, aic, eff_p
+#> 29                                                                                                                                                                                                                                                                                                                     nobs, weighted_nobs
+#> 30                                                                                                                                                                                                                                                                                              nobs, weighted_nobs, n_events, concordance
+#> 31                                                                                                                                                                                                                                                                                      nobs, qic, qicu, scale, max_cluster_size, n_groups
+#> 32                                                                                                                                                                                                                                                                     nobs, adj_r2, r2_deviance, sigma, aic, aicc, bic, deviance, log_lik
+#> 33                                                                                                                                                                                                                                                                                                      nobs, phi, aic, aicc, bic, log_lik
+#> 34                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik
+#> 35                                                                                                                                                                                                                                                                                      nobs, r2, sigma, aic, aicc, bic, deviance, log_lik
+#> 36                                                                                                                                                                                                                      nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, pseudo_r2_tjur (binary outcome), aic, aicc, bic, deviance, log_lik
+#> 37                                                                                                                                                                                                                                          nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, aic, aicc, bic, deviance, log_lik
+#> 38                                                                                                                                                                                                                                                                                                   nobs, r2_bayes, elpd_loo, looic, waic
+#> 39                                                                                                                                                                                                                                                                                                   nobs, r2_bayes, elpd_loo, looic, waic
 
 # All engines of one family:
 subset(table_regression_models(), family == "Mixed effects")
@@ -442,10 +527,22 @@ subset(table_regression_models(), family == "Mixed effects")
 #> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)
 #> 15                                                                                                                                                 Random effects
 #> 16                                                                                                                                                              -
-#>                                                                   vcov
-#> 12                                                  classical, CR0-CR3
-#> 13                                                           classical
-#> 14 classical, CR0, CR1 (classical only for REML or the ordinal family)
-#> 15                                                  classical, CR0-CR3
-#> 16                                                           classical
+#>                                                                           vcov
+#> 12                                                          classical, CR0-CR3
+#> 13                                                                   classical
+#> 14         classical, CR0, CR1 (classical only for REML or the ordinal family)
+#> 15 classical, CR0-CR3 (classical only with contrasts other than the session's)
+#> 16                                                                   classical
+#>                                                                                                                                                                                                               fit_stats_default
+#> 12                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 13                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 14 nobs, n_groups, icc (Gaussian, no zero-inflation or dispersion formula), r2_marginal (no ordinal family, zero-inflation or dispersion formula), r2_conditional (Gaussian, no zero-inflation or dispersion formula), aic, bic
+#> 15                                                                                                                                                                   nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic
+#> 16                                                                                                                                                                                                                    nobs, aic
+#>                                                                                                                                                                                                                                                                                                                                  fit_stats
+#> 12                                                                                                                                                                                                                                              nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, deviance, log_lik
+#> 13                                                                                                                                                                                                                                              nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, deviance, log_lik
+#> 14 nobs, r2_marginal (no ordinal family, zero-inflation or dispersion formula), r2_conditional (Gaussian, no zero-inflation or dispersion formula), n_groups, icc (Gaussian, no zero-inflation or dispersion formula), sigma (no ordinal family or dispersion formula), aic, aicc, bic, deviance (no ordinal or truncated family), log_lik
+#> 15                                                                                                                                                                                                                                                        nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc, bic, log_lik
+#> 16                                                                                                                                                                                                                                                                                                    nobs, sigma, aic, aicc, bic, log_lik
 ```

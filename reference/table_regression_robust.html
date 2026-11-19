@@ -221,7 +221,9 @@ same estimator: <code>"CR1"</code> from <code><a href="https://zeileis.codeberg.
 scaled by \(G/(G-1)\), <code>G</code> the number of clusters. The other
 <code>CR*</code> tokens and <code>HC*</code> are refused. Under <code>"CR1"</code>, a nested hierarchy
 is tested by the Wald chi-square of the added coefficients on the
-robust matrix.</p>
+robust matrix. The RMST and risk-difference columns of <code>survreg</code> are
+refused for it: a tobit models a censored response, not a time to
+event.</p>
 <p><strong>Hierarchical comparison</strong> (<code>nested = TRUE</code>). A quantile hierarchy
 gets <code>c("f_change", "p_change")</code>, the Wald-type test
 <code><a href="https://rdrr.io/pkg/quantreg/man/anova.rq.html" class="external-link">quantreg::anova.rq()</a></code> reports, under <code>"nid"</code> and <code>"rank"</code>; under
@@ -238,7 +240,8 @@ family). See <em>Hierarchical (nested) model comparison</em> in
     <h2 id="fit-statistics">Fit statistics<a class="anchor" aria-label="anchor" href="#fit-statistics"></a></h2>
 
 
-<p><code>lm_robust</code> defaults to <code>c("nobs", "r2", "adj_r2")</code>, <code>iv_robust</code> to
+<p><code>lm_robust</code> defaults to
+<code>c("nobs", "r2", "adj_r2")</code>, <code>iv_robust</code> to
 <code>"nobs"</code> alone, and an IV <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code> shows neither R-squared nor
 AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 R-squared of <code>ivreg()</code>, on the structural residuals. The AIC and BIC of

@@ -1661,7 +1661,7 @@ accepts, the `vcov` column of
 | Mixed effects | `lmerMod` | classical, CR0-CR3 |
 | Mixed effects | `glmerMod` | classical |
 | Mixed effects | `glmmTMB` | classical, CR0, CR1 (classical only for REML or the ordinal family) |
-| Mixed effects | `lme` | classical, CR0-CR3 |
+| Mixed effects | `lme` | classical, CR0-CR3 (classical only with contrasts other than the session's) |
 | Mixed effects | `gls` | classical |
 | Ordinal | `polr` | classical, CR1 |
 | Ordinal | `clm` | classical, CR1 (classical only with scale or nominal terms) |
@@ -1672,7 +1672,7 @@ accepts, the `vcov` column of
 | Counts, two-part | `hurdle` | classical, CR1 (classical only for a negative-binomial part) |
 | Survival | `coxph` | classical, CR0 |
 | Survival | `survreg` | classical, CR1 |
-| Survival | `cph` | classical, CR0 |
+| Survival | `cph` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Survival | `flexsurvreg` | classical |
 | Survey-weighted | `svyglm` | classical (design-based) |
 | Survey-weighted | `svyolr` | classical (design-based) |
@@ -1681,9 +1681,9 @@ accepts, the `vcov` column of
 | Additive, proportions, selection | `gam` | classical, CR1 |
 | Additive, proportions, selection | `betareg` | classical, CR1 |
 | Additive, proportions, selection | `selection` | classical |
-| rms | `ols` | classical, CR0 |
-| rms | `lrm` | classical, CR0 |
-| rms | `Glm` | classical, CR0 |
+| rms | `ols` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+| rms | `lrm` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+| rms | `Glm` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Bayesian | `stanreg` | classical (the posterior) |
 | Bayesian | `brmsfit` | classical (the posterior) |
 

@@ -121,7 +121,7 @@ they take for survival models are listed below.</p>
     <div class="section level2">
     <h2 id="engines">Engines<a class="anchor" aria-label="anchor" href="#engines"></a></h2>
 
-<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td><td>classical, CR0</td></tr><tr><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td><td>classical, CR1</td></tr><tr><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td><td>classical, CR0</td></tr><tr><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td><td>classical</td></tr></table><p>AME: whether the average-marginal-effects columns are available; for
+<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>coxph</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code></td><td>RMST / risk diff</td><td>HR</td><td>-</td><td>classical, CR0</td></tr><tr><td><code>survreg</code></td><td><code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code></td><td>yes + RMST / risk diff</td><td>TR (log-scale distributions)</td><td>-</td><td>classical, CR1</td></tr><tr><td><code>cph</code></td><td><code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph()</a></code></td><td>no</td><td>HR</td><td>-</td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td><code>flexsurvreg</code></td><td><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td><td>no</td><td>TR / HR (dist)</td><td>distribution parameters</td><td>classical</td></tr></table><p>AME: whether the average-marginal-effects columns are available; for
 <code>coxph</code>, the RMST and risk-difference columns stand in their place.
 Exponentiate: what <code>exponentiate = TRUE</code> gives. Blocks: the labeled
 blocks of rows the class adds below its coefficients. vcov: the values
@@ -243,9 +243,10 @@ comparison</em> in <code><a href="table_regression.html">table_regression()</a><
     <h2 id="fit-statistics">Fit statistics<a class="anchor" aria-label="anchor" href="#fit-statistics"></a></h2>
 
 
-<p>Cox fits default to <code>c("nobs", "n_events", "aic")</code>: the number of
-events is reported beside <code>n</code>. <code>survreg</code> and <code>flexsurvreg</code> fits default
-to <code>c("nobs", "aic")</code>. On request:</p><ul><li><p><code>"concordance"</code>: Harrell's C of a <code>coxph</code> fit, the value
+<p>Cox fits default to <code>c("nobs", "n_events", "aic")</code>: the
+number of events is reported beside <code>n</code>. <code>survreg</code> and <code>flexsurvreg</code>
+fits default to <code>c("nobs", "aic")</code>. On
+request:</p><ul><li><p><code>"concordance"</code>: Harrell's C of a <code>coxph</code> fit, the value
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports. When the row is shown, the concordance leaves
 the note, which otherwise gives it with its standard error. <code>cph</code>
 fits have no concordance row or note.</p></li>

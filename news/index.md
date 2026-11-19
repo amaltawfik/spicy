@@ -551,6 +551,11 @@
   the identity link, and is available for Poisson, negative binomial and
   quasi models.
 
+- [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+  gains two columns: `fit_stats_default`, the fit statistics a table
+  shows by default for each class, and `fit_stats`, the tokens of
+  `show_fit_stats` that give a row for it.
+
 - Word (flextable), gt (HTML, Word and RTF) and tinytable HTML tables
   now write a negative number with the minus sign (U+2212), in the cells
   and in the numbers of the note, as Typst and LaTeX already did. The
@@ -582,6 +587,14 @@
   renders an intercept-only `glmmTMB()` model of the `ordinal()` family,
   alone or as the first model of `nested = TRUE`. It stopped on an
   internal error.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses the RMST and risk-difference columns (`show_columns = "rmst"`,
+  `"risk_diff"` and theirs) for an
+  [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) model: a
+  tobit models a censored response, not a time to event. They were
+  computed as for a
+  [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) model.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   takes a [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model

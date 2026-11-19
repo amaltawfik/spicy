@@ -120,7 +120,7 @@ to get it as a data frame.
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 |  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
 |  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
-|  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 |
+|  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session’s) |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
 |  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects | classical, CR1 (classical only with scale or nominal terms) |
@@ -131,7 +131,7 @@ to get it as a data frame.
 |  | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle | classical, CR1 (classical only for a negative-binomial part) |
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
 |  | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
-|  | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 |
+|  | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 |  | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- | classical (design-based) |
 |  | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
@@ -140,9 +140,9 @@ to get it as a data frame.
 | Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- | classical, CR1 |
 |  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- | classical, CR1 |
 |  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component | classical |
-| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 |
-|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 |
-|  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 |
+| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+|  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
 |  | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
 
@@ -203,7 +203,7 @@ values of `vcov` each class accepts come from the same registry:
 | Mixed effects | `lmerMod` | classical, CR0-CR3 |
 |  | `glmerMod` | classical |
 |  | `glmmTMB` | classical, CR0, CR1 (classical only for REML or the ordinal family) |
-|  | `lme` | classical, CR0-CR3 |
+|  | `lme` | classical, CR0-CR3 (classical only with contrasts other than the session’s) |
 |  | `gls` | classical |
 | Ordinal | `polr` | classical, CR1 |
 |  | `clm` | classical, CR1 (classical only with scale or nominal terms) |
@@ -214,7 +214,7 @@ values of `vcov` each class accepts come from the same registry:
 |  | `hurdle` | classical, CR1 (classical only for a negative-binomial part) |
 | Survival | `coxph` | classical, CR0 |
 |  | `survreg` | classical, CR1 |
-|  | `cph` | classical, CR0 |
+|  | `cph` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 |  | `flexsurvreg` | classical |
 | Survey-weighted | `svyglm` | classical (design-based) |
 |  | `svyolr` | classical (design-based) |
@@ -223,9 +223,9 @@ values of `vcov` each class accepts come from the same registry:
 | Additive, proportions, selection | `gam` | classical, CR1 |
 |  | `betareg` | classical, CR1 |
 |  | `selection` | classical |
-| rms | `ols` | classical, CR0 |
-|  | `lrm` | classical, CR0 |
-|  | `Glm` | classical, CR0 |
+| rms | `ols` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+|  | `lrm` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
+|  | `Glm` | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | Bayesian | `stanreg` | classical (the posterior) |
 |  | `brmsfit` | classical (the posterior) |
 
@@ -440,11 +440,16 @@ subset(table_regression_models(), family == "Survival")
 #> 25 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
 #> 26 Survival         cph              rms::cph()                     no                           HR
 #> 27 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
-#>                     blocks           vcov
-#> 24                       - classical, CR0
-#> 25                       - classical, CR1
-#> 26                       - classical, CR0
-#> 27 distribution parameters      classical
+#>                     blocks                                                       vcov   fit_stats_default
+#> 24                       -                                             classical, CR0 nobs, n_events, aic
+#> 25                       -                                             classical, CR1           nobs, aic
+#> 26                       - classical, CR0 (classical only without x = TRUE, y = TRUE) nobs, n_events, aic
+#> 27 distribution parameters                                                  classical           nobs, aic
+#>                                               fit_stats
+#> 24 nobs, n_events, aic, aicc, bic, log_lik, concordance
+#> 25     nobs, sigma (no strata), aic, aicc, bic, log_lik
+#> 26              nobs, n_events, aic, aicc, bic, log_lik
+#> 27                        nobs, aic, aicc, bic, log_lik
 ```
 
 Each family has a help page of its own, listed on
