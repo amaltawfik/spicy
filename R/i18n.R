@@ -1286,6 +1286,12 @@
   # the degrees of freedom are the part that makes the table
   # reproducible.
   note_design_degf_resid_only = "Tests use %d residual degrees of freedom.",
+  # The AIC row of a design-based fit is the design-based AIC (survey's
+  # `AIC.svyglm`), which the abbreviation "Akaike information criterion"
+  # does not tell apart from a likelihood AIC. The second sentence when
+  # the table also shows the likelihood AIC of a fit without a design.
+  note_design_aic = "AIC of a design-based fit: design-based AIC (dAIC).",
+  note_design_aic_mixed = "AIC of a design-based fit: design-based AIC (dAIC), not comparable with the likelihood AIC of the other models.",
   # No key of its own for the variance sentence: the twins print the
   # regression footer's, `note_std_errors_single` filled with one of the
   # `note_vcov_design_*` labels below. Two spellings of one fact

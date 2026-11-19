@@ -413,6 +413,7 @@ build_regression_footer_from_frames <- function(
       # design is" then "where the standard errors come from" -- the
       # order the descriptive twins use.
       build_design_footer_block_from_frames(frames),
+      build_design_aic_footer_block_from_frames(frames, show_fit_stats),
       build_gee_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_survival_footer_block_from_frames(
         frames,
@@ -1002,6 +1003,44 @@ build_design_footer_block_from_frames <- function(frames) {
     return(spicy_fmt("note_design_degf_resid_only", as.integer(df)))
   }
   spicy_fmt("note_design_line", .design_scheme_parts(meta), df_clause)
+}
+
+
+# The AIC row of a design-based fit is survey's design-based AIC (Lumley
+# and Scott: the deviance plus twice the sum of the Rao-Scott
+# eigenvalues), not a likelihood AIC, while the row and the abbreviation
+# both say "AIC". The note says which it is, and, when the table also
+# shows the likelihood AIC of a fit without a design, that the two do
+# not compare.
+build_design_aic_footer_block_from_frames <- function(
+  frames,
+  show_fit_stats = NULL
+) {
+  if (!is.list(frames) || !"aic" %in% show_fit_stats) {
+    return(NULL)
+  }
+  has_aic <- vapply(
+    frames,
+    function(f) isTRUE(is.finite(f$info$fit_stats$aic)),
+    logical(1)
+  )
+  is_design <- vapply(
+    frames,
+    function(f) {
+      (f$info$class %||% "") %in% c("svyglm", "svyolr", "svycoxph")
+    },
+    logical(1)
+  )
+  if (!any(has_aic & is_design)) {
+    return(NULL)
+  }
+  spicy_str(
+    if (any(has_aic & !is_design)) {
+      "note_design_aic_mixed"
+    } else {
+      "note_design_aic"
+    }
+  )
 }
 
 

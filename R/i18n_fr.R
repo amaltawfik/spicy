@@ -553,6 +553,8 @@
   note_design_degf_varying = "les degr\u00E9s de libert\u00E9 varient selon le groupe (%d\u2013%d)",
   note_design_degf_resid = "%d degr\u00E9s de libert\u00E9 r\u00E9siduels",
   note_design_degf_resid_only = "Les tests utilisent %d degr\u00E9s de libert\u00E9 r\u00E9siduels.",
+  note_design_aic = "AIC d'un ajustement sous plan\u00A0: AIC de plan (dAIC).",
+  note_design_aic_mixed = "AIC d'un ajustement sous plan\u00A0: AIC de plan (dAIC), non comparable \u00E0 l'AIC de vraisemblance des autres mod\u00E8les.",
   note_design_df_used = "Les intervalles de confiance et les tests utilisent les degr\u00E9s de libert\u00E9 du plan de sondage.",
   note_design_n = "N = %s (N pond\u00E9r\u00E9 = %s).",
   note_design_df_supplied = "Les intervalles de confiance utilisent %d degr\u00E9s de libert\u00E9 (fournis dans `df`)\u00A0; les tests utilisent ceux du plan de sondage.",

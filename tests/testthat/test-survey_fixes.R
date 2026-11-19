@@ -64,3 +64,60 @@ test_that("fit statistics keep fixed decimals over 1e7 and below it", {
   # A coefficient keeps format_number()'s scientific switch.
   expect_identical(format_number(12345678.94, 2L), "1.23e+07")
 })
+
+# ---- The AIC of a design-based fit is named --------------------------------
+
+.api_fits <- function() {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dg <- survey::svydesign(
+    id = ~1,
+    strata = ~stype,
+    weights = ~pw,
+    data = apistrat,
+    fpc = ~fpc
+  )
+  list(
+    fit0 = survey::svyglm(api00 ~ ell, design = dg),
+    fit = survey::svyglm(api00 ~ ell + meals, design = dg),
+    plain = stats::lm(api00 ~ ell + meals, data = apistrat)
+  )
+}
+
+.flat <- function(x) {
+  gsub("\\s+", " ", paste(utils::capture.output(print(x)), collapse = " "))
+}
+
+test_that("the note says the AIC of a design-based fit is the design-based AIC", {
+  m <- .api_fits()
+  en <- "AIC of a design-based fit: design-based AIC (dAIC)."
+  out <- .flat(table_regression(m$fit))
+  expect_match(out, en, fixed = TRUE)
+  expect_no_match(out, "not comparable", fixed = TRUE)
+  # No AIC row, no sentence.
+  out <- .flat(table_regression(m$fit, show_fit_stats = "nobs"))
+  expect_no_match(out, "dAIC", fixed = TRUE)
+  # A table without a design fit never carries it.
+  expect_no_match(.flat(table_regression(m$plain)), "dAIC", fixed = TRUE)
+  # Beside the likelihood AIC of a fit without a design.
+  out <- .flat(table_regression(list(m$fit, m$plain), show_fit_stats = "aic"))
+  expect_match(
+    out,
+    "AIC of a design-based fit: design-based AIC (dAIC), not comparable with the likelihood AIC of the other models.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    .flat(table_regression(m$fit)),
+    "AIC d'un ajustement sous plan\u00A0: AIC de plan (dAIC).",
+    fixed = TRUE
+  )
+  expect_match(
+    .flat(table_regression(list(m$fit, m$plain), show_fit_stats = "aic")),
+    paste0(
+      "AIC d'un ajustement sous plan\u00A0: AIC de plan (dAIC), non ",
+      "comparable \u00E0 l'AIC de vraisemblance des autres mod\u00E8les."
+    ),
+    fixed = TRUE
+  )
+})

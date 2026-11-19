@@ -264,7 +264,7 @@ test_that("svyglm fit_stats$aic is the criterion, as a scalar", {
   expect_true(is.na(fr$info$fit_stats$bic))
 })
 
-test_that("a mixed svyglm + glm table prints two comparable AIC values", {
+test_that("a mixed svyglm + glm table prints both AIC values and says they do not compare", {
   d <- .wn_apiclus1_designs()
   fit <- survey::svyglm(api00 ~ ell + meals, design = d$linearized)
   plain <- stats::glm(api00 ~ ell + meals, data = d$data)
@@ -291,6 +291,12 @@ test_that("a mixed svyglm + glm table prints two comparable AIC values", {
   expect_match(aic_line, "2001.1", fixed = TRUE)
   # The effective number of design parameters is not an AIC.
   expect_false(grepl("4.6", aic_line, fixed = TRUE))
+  # The design-based AIC and the likelihood AIC are not on one scale.
+  expect_match(
+    gsub("\\s+", " ", out),
+    "AIC of a design-based fit: design-based AIC (dAIC), not comparable with the likelihood AIC of the other models.",
+    fixed = TRUE
+  )
 })
 
 test_that("an explicit aic token on a replicate design prints the criterion", {
