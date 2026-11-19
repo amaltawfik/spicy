@@ -208,6 +208,16 @@
   showed McFadden's and Nagelkerke's R-squared, not the R-squared of
   `lm()`.
 
+* `table_regression()`: an `mgcv::gam()` or `bam()` model shows the
+  R-squared rows of the `glm()` of its family and link, computed the
+  same way, with the same defaults: Tjur's then McFadden's for a logit
+  on a binary outcome, McFadden's for the other binomial, Poisson and
+  `nb()` models, the deviance R-squared for the gaussian, Gamma,
+  inverse Gaussian and Tweedie families. The default table of a GAM
+  showed no R-squared. `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke` and
+  `pseudo_r2_tjur` are no longer refused for these GAMs, and a
+  quasi-binomial GAM gets the deviance R-squared of its trials.
+
 * `table_regression()`: the partial chi-square (`partial_chi2`) takes
   its decimals from `digits`, as the other test statistics of the table
   do, and no longer from `effect_size_digits`, which now sets the effect
@@ -250,11 +260,8 @@
   concordance C of a `survival::coxph()` or `survey::svycoxph()` model
   as a row, and takes it out of the note.
 
-* `table_regression()`: `show_fit_stats = "r2_deviance"` also covers
-  `mgcv::gam()` and `bam()` models of the gaussian, Gamma, inverse
-  Gaussian, Tweedie, Poisson, negative binomial and quasi families,
-  where it is the deviance explained that `summary()` reports.
-  `"adj_r2"`, mgcv's adjusted R², is accepted for a table of GAMs.
+* `table_regression()`: `"adj_r2"`, mgcv's adjusted R², is accepted
+  for a table of GAMs.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_multiresponse()`, `table_battery()` and

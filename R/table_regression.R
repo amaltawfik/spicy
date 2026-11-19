@@ -384,8 +384,8 @@
 #'
 #' Default (resolved when `NULL`) is class-aware: lm and
 #' `lm_robust` fits get
-#' `c("nobs", "r2", "adj_r2")`; glm, `polr`, `clm`, `multinom` and
-#' `rms::lrm` fits get `"nobs"`, the \eqn{R^2}{R^2} rows of their family
+#' `c("nobs", "r2", "adj_r2")`; glm, `mgcv::gam`, `polr`, `clm`,
+#' `multinom` and `rms::lrm` fits get `"nobs"`, the \eqn{R^2}{R^2} rows of their family
 #' (see *R-squared of glm and categorical models*) and `"aic"`;
 #' mixed lm + glm sets union both groups (the renderer per-row
 #' en-dashes the inappropriate cell); Cox fits get
@@ -429,15 +429,28 @@
 #'     identity link it is the \eqn{R^2}{R^2} of `lm()`. For `mgcv::gam`
 #'     and `bam` fits of the same families (and of mgcv's `nb()` and
 #'     `tw()`), it is the deviance explained of their `summary()`, as a
-#'     proportion. A binomial or quasi-binomial GAM, and those of mgcv's
-#'     other extended families, have none.
+#'     proportion. Two exceptions follow the `glm()`: a quasi-binomial
+#'     GAM is measured on its trials, and the null model of a `bam()`
+#'     keeps its offset, which the null deviance of its `summary()`
+#'     leaves out.
 #' }
 #'
-#' A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
-#' they are refused for a table of GAMs. mgcv reports only an adjusted
-#' \eqn{R^2}{R^2}: it is the `"adj_r2"` row of a GAM, in a table of GAMs
-#' or beside an `lm()`. The `"r2"` row of a GAM is dashed beside other
-#' models, and refused for a table of GAMs.
+#' A GAM (`mgcv::gam` or `bam`) shows the \eqn{R^2}{R^2} rows of the
+#' `glm()` of its family and link, computed by the same rules and with the
+#' same defaults: Tjur's then McFadden's for a logit on a binary outcome,
+#' McFadden's for the other binomial, Poisson and `nb()` GAMs, the
+#' deviance \eqn{R^2}{R^2} for the continuous families. The likelihood
+#' is that of the fitted GAM, smooth terms included, and a GAM without
+#' smooth terms gives the numbers of its `glm()`. For `nb()`, the
+#' intercept-only model re-estimates theta, as for `MASS::glm.nb()`.
+#' Under mgcv's default REML, the theta of an `nb()` GAM is not the
+#' maximum-likelihood one of `glm.nb()`: `method = "ML"` gives its
+#' numbers.
+#' mgcv's other extended families (`betar()`, `ocat()`, `scat()`,
+#' `ziP()`, `cox.ph()` and the like) have no such row. mgcv reports only
+#' an adjusted \eqn{R^2}{R^2}: it is the `"adj_r2"` row of a GAM, shown
+#' on request, in a table of GAMs or beside an `lm()`. The `"r2"` row of
+#' a GAM is dashed beside other models, and refused for a table of GAMs.
 #'
 #' The intercept-only model keeps the offset and the weights of the
 #' fitted model. For a `MASS::glm.nb()` fit it re-estimates theta in

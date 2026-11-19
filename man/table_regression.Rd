@@ -1232,8 +1232,8 @@ the larger model fits better, and is not signed either.
 
 Default (resolved when \code{NULL}) is class-aware: lm and
 \code{lm_robust} fits get
-\code{c("nobs", "r2", "adj_r2")}; glm, \code{polr}, \code{clm}, \code{multinom} and
-\code{rms::lrm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
+\code{c("nobs", "r2", "adj_r2")}; glm, \code{mgcv::gam}, \code{polr}, \code{clm},
+\code{multinom} and \code{rms::lrm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
 (see \emph{R-squared of glm and categorical models}) and \code{"aic"};
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
@@ -1278,15 +1278,26 @@ decrease when a predictor is added. For a gaussian \code{glm()} with the
 identity link it is the \eqn{R^2}{R^2} of \code{lm()}. For \code{mgcv::gam}
 and \code{bam} fits of the same families (and of mgcv's \code{nb()} and
 \code{tw()}), it is the deviance explained of their \code{summary()}, as a
-proportion. A binomial or quasi-binomial GAM, and those of mgcv's
-other extended families, have none.
+proportion. A quasi-binomial GAM is measured on its trials, as a
+quasi-binomial \code{glm()} is.
 }
 
-A GAM shows none of the other \eqn{R^2}{R^2} rows of this section, and
-they are refused for a table of GAMs. mgcv reports only an adjusted
-\eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM, in a table of GAMs
-or beside an \code{lm()}. The \code{"r2"} row of a GAM is dashed beside other
-models, and refused for a table of GAMs.
+A GAM (\code{mgcv::gam} or \code{bam}) shows the \eqn{R^2}{R^2} rows of the
+\code{glm()} of its family and link, computed by the same rules and with the
+same defaults: Tjur's then McFadden's for a logit on a binary outcome,
+McFadden's for the other binomial, Poisson and \code{nb()} GAMs, the
+deviance \eqn{R^2}{R^2} for the continuous families. The likelihood
+is that of the fitted GAM, smooth terms included, and a GAM without
+smooth terms gives the numbers of its \code{glm()}. For \code{nb()}, the
+intercept-only model re-estimates theta, as for \code{MASS::glm.nb()}.
+Under mgcv's default REML, the theta of an \code{nb()} GAM is not the
+maximum-likelihood one of \code{glm.nb()}: \code{method = "ML"} gives its
+numbers.
+mgcv's other extended families (\code{betar()}, \code{ocat()}, \code{scat()},
+\code{ziP()}, \code{cox.ph()} and the like) have no such row. mgcv reports only
+an adjusted \eqn{R^2}{R^2}: it is the \code{"adj_r2"} row of a GAM, shown
+on request, in a table of GAMs or beside an \code{lm()}. The \code{"r2"} row of
+a GAM is dashed beside other models, and refused for a table of GAMs.
 
 The intercept-only model keeps the offset and the weights of the
 fitted model. For a \code{MASS::glm.nb()} fit it re-estimates theta in

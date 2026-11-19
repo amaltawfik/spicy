@@ -315,7 +315,8 @@ likelihood. See [*Survival regression tables*](table-regression-survival.html).
 the unweighted n and the sum of the design weights (`Weighted n`) are
 default fit statistics.
 
-**Additive, proportions, selection.** `mgcv::gam()` / `bam()`,
+**Additive, proportions, selection.** `mgcv::gam()` / `bam()`
+(a GAM shows the R² rows of the `glm()` of its family and link),
 `betareg::betareg()` (odds ratios on the logit mean link under
 `exponentiate`; the precision is the opt-in `phi` fit statistic),
 and `sampleSelection::selection()` with its selection component as
