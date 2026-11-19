@@ -65,7 +65,7 @@ the American Statistical Association}, 72(358), 309-315.
 Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
 
 Signorell, A. et al. (2024). \emph{DescTools: Tools for Descriptive
-Statistics}. R package.
+Statistics}. R package. \doi{10.32614/CRAN.package.DescTools}
 }
 \seealso{
 \code{\link[=phi]{phi()}}, \code{\link[=contingency_coef]{contingency_coef()}}, \code{\link[=assoc_measures]{assoc_measures()}}

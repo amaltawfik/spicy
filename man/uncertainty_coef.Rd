@@ -90,6 +90,9 @@ uncertainty_coef(tab, direction = "row", detail = TRUE)
 
 }
 \references{
+Cover, T. M., & Thomas, J. A. (2006). \emph{Elements of Information
+Theory} (2nd ed.). Wiley. \doi{10.1002/047174882X}
+
 Theil, H. (1970). On the estimation of relationships involving
 qualitative variables. \emph{American Journal of Sociology}, 76(1),
 103-154. \doi{10.1086/224909}

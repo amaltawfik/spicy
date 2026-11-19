@@ -57,6 +57,9 @@ yule_q(tab)
 Yule, G. U. (1900). On the association of attributes in
 statistics. \emph{Philosophical Transactions of the Royal Society of
 London, Series A}, 194, 257-319. \doi{10.1098/rsta.1900.0019}
+
+Signorell, A. et al. (2024). \emph{DescTools: Tools for Descriptive
+Statistics}. R package. \doi{10.32614/CRAN.package.DescTools}
 }
 \seealso{
 \code{\link[=phi]{phi()}}, \code{\link[=gamma_gk]{gamma_gk()}}, \code{\link[=assoc_measures]{assoc_measures()}}

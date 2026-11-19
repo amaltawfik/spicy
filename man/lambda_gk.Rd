@@ -70,6 +70,9 @@ lambda_gk(tab, direction = "column", detail = TRUE)
 Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
 for cross classifications. \emph{Journal of the American Statistical
 Association}, 49(268), 732-764. \doi{10.2307/2281536}
+
+Signorell, A. et al. (2024). \emph{DescTools: Tools for Descriptive
+Statistics}. R package. \doi{10.32614/CRAN.package.DescTools}
 }
 \seealso{
 \code{\link[=goodman_kruskal_tau]{goodman_kruskal_tau()}}, \code{\link[=uncertainty_coef]{uncertainty_coef()}},

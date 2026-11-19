@@ -55,6 +55,9 @@ phi(tab, detail = TRUE)
 }
 \references{
 Liebetrau, A. M. (1983). \emph{Measures of Association}. Sage.
+
+Signorell, A. et al. (2024). \emph{DescTools: Tools for Descriptive
+Statistics}. R package. \doi{10.32614/CRAN.package.DescTools}
 }
 \seealso{
 \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=yule_q]{yule_q()}}, \code{\link[=assoc_measures]{assoc_measures()}}

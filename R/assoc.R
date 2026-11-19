@@ -304,7 +304,7 @@ print.spicy_assoc_detail <- function(
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 #'
 #' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
-#' Statistics*. R package.
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -397,6 +397,9 @@ cramer_v <- function(
 #'
 #' @references
 #' Liebetrau, A. M. (1983). *Measures of Association*. Sage.
+#'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$sex)
@@ -559,6 +562,9 @@ contingency_coef <- function(
 #' statistics. *Philosophical Transactions of the Royal Society of
 #' London, Series A*, 194, 257-319. \doi{10.1098/rsta.1900.0019}
 #'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
+#'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$sex)
 #' yule_q(tab)
@@ -657,6 +663,9 @@ yule_q <- function(
 #' Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
 #' for cross classifications. *Journal of the American Statistical
 #' Association*, 49(268), 732-764. \doi{10.2307/2281536}
+#'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -833,6 +842,9 @@ lambda_gk <- function(
 #' Goodman, L. A., & Kruskal, W. H. (1954). Measures of association
 #' for cross classifications. *Journal of the American Statistical
 #' Association*, 49(268), 732-764. \doi{10.2307/2281536}
+#'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$smoking, sochealth$education)
@@ -1042,6 +1054,9 @@ goodman_kruskal_tau <- function(
 #' method; see [cramer_v()] for full references.
 #'
 #' @references
+#' Cover, T. M., & Thomas, J. A. (2006). *Elements of Information
+#' Theory* (2nd ed.). Wiley. \doi{10.1002/047174882X}
+#'
 #' Theil, H. (1970). On the estimation of relationships involving
 #' qualitative variables. *American Journal of Sociology*, 76(1),
 #' 103-154. \doi{10.1086/224909}
@@ -1215,6 +1230,9 @@ uncertainty_coef <- function(
 #' tests for correlation in two-way contingency tables. *Journal of
 #' the American Statistical Association*, 72(358), 309-315.
 #' \doi{10.1080/01621459.1977.10480995}
+#'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
@@ -1449,6 +1467,9 @@ kendall_tau_b <- function(
 #' the American Statistical Association*, 72(358), 309-315.
 #' \doi{10.1080/01621459.1977.10480995}
 #'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
+#'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
 #' kendall_tau_c(tab)
@@ -1581,6 +1602,9 @@ kendall_tau_c <- function(
 #' tests for correlation in two-way contingency tables. *Journal of
 #' the American Statistical Association*, 72(358), 309-315.
 #' \doi{10.1080/01621459.1977.10480995}
+#'
+#' Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+#' Statistics*. R package. \doi{10.32614/CRAN.package.DescTools}
 #'
 #' @examples
 #' tab <- table(sochealth$education, sochealth$self_rated_health)
