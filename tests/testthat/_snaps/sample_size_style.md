@@ -183,3 +183,93 @@
       
       Note. Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 
+# jama and lancet: the console tables under the theme
+
+    Code
+      print(table_categorical(d, c(smoking), by = sex, style = th))
+    Output
+      Categorical table by sex
+      
+                     Female (n = 619)  Male (n = 578)  (Missing) (n = 3) 
+                     ────────────────  ──────────────  ───────────────── 
+       Variable    │    n        %       n       %       n         %     
+      ─────────────┼─────────────────────────────────────────────────────
+       smoking     │                                                     
+         No        │   474     78.3     449     79.2     3       100.0   
+         Yes       │   131     21.7     118     20.8     0         0.0   
+         (Missing) │    14               11              0               
+      
+                     Total (n = 1200)           
+                     ────────────────           
+       Variable    │    n        %      p    φ  
+      ─────────────┼────────────────────────────
+       smoking     │                   .72  .01 
+         No        │   926     78.8             
+         Yes       │   249     21.2             
+         (Missing) │    25                      
+      
+      Abbreviation: φ, phi coefficient.
+      N = 1200. Percentages are column percentages. P-value: Pearson chi-squared test.
+
+---
+
+    Code
+      print(table_continuous_lm(d, c(bmi), by = sex, style = th))
+    Output
+      Continuous outcomes by sex
+      
+                                Mean                        95% CI                    
+                  ────────────────────────────────        ──────────                  
+       Variable │ Female (n = 619)  Male (n = 578)   Δ     LL    UL    p    R²    n   
+      ──────────┼─────────────────────────────────────────────────────────────────────
+       bmi      │      25.69            26.21       0.52  0.09  0.94  .02  0.00  1185 
+      
+      Abbreviations: LL, lower limit; UL, upper limit.
+      N = 1197. Missing values removed: bmi (12), sex (3). P-value: t-test from the linear model. Δ = Male − Female.
+
+---
+
+    Code
+      print(table_categorical(d, c(smoking), by = sex, style = th))
+    Output
+      Categorical table by sex
+      
+                     Female (n = 619)  Male (n = 578)  (Missing) (n = 3) 
+                     ────────────────  ──────────────  ───────────────── 
+       Variable    │    n        %       n       %       n         %     
+      ─────────────┼─────────────────────────────────────────────────────
+       smoking     │                                                     
+         No        │   474     78·3     449     79·2     3       100·0   
+         Yes       │   131     21·7     118     20·8     0         0·0   
+         (Missing) │    14               11              0               
+      
+                     Total (n = 1200)             
+                     ────────────────             
+       Variable    │    n        %      p     φ   
+      ─────────────┼──────────────────────────────
+       smoking     │                   0·72  0·01 
+         No        │   926     78·8               
+         Yes       │   249     21·2               
+         (Missing) │    25                        
+      
+      N = 1200. Percentages are column percentages. P-value: Pearson chi-squared test. φ=phi coefficient.
+
+---
+
+    Code
+      print(table_continuous_lm(d, c(bmi), by = sex, style = th))
+    Output
+      Continuous outcomes by sex
+      
+                                Mean                        95% CI                
+                  ────────────────────────────────        ──────────              
+       Variable │ Female (n = 619)  Male (n = 578)   Δ     LL    UL     p     R²  
+      ──────────┼─────────────────────────────────────────────────────────────────
+       bmi      │      25·69            26·21       0·52  0·09  0·94  0·017  0·00 
+      
+       Variable │  n   
+      ──────────┼──────
+       bmi      │ 1185 
+      
+      N = 1197. Missing values removed: bmi (12), sex (3). P-value: t-test from the linear model. Δ = Male − Female. LL=lower limit. R²=coefficient of determination. UL=upper limit.
+

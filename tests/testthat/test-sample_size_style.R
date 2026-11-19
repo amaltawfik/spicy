@@ -115,8 +115,8 @@ test_that("spicy_style() takes sample_size and refuses any other value", {
   expect_error(spicy_style(sample_size = NA), class = "spicy_invalid_input")
   expect_snapshot(spicy_style(sample_size = "top"), error = TRUE)
   # A theme with the lever keeps its other rules, and says it was changed.
-  st <- spicy_style("jama", sample_size = "header")
-  expect_identical(st$sample_size, "header")
+  st <- spicy_style("jama", sample_size = "note")
+  expect_identical(st$sample_size, "note")
   expect_identical(st$note_label, "")
   expect_true("sample_size" %in% attr(st, "provenance")$overrides)
 })
@@ -442,4 +442,212 @@ test_that("options(spicy.style) carries the lever to a print outside the call", 
     table_categorical(d, c(smoking), by = sex)
   )
   expect_true(grepl(hdr("Total", 1200), console(x), fixed = TRUE))
+})
+
+
+# ---- The themes that head the groups with n -----------------------------
+
+# JAMA and The Lancet head each group with its n, as their model tables do
+# ("Intervention (n=200)", "Drug A (n=500)"); the other themes keep the
+# note. A lever typed over the theme wins.
+
+test_that("jama and lancet set sample_size = \"header\", the others do not", {
+  expect_identical(spicy_style("jama")$sample_size, "header")
+  expect_identical(spicy_style("lancet")$sample_size, "header")
+  for (th in setdiff(spicy_style_names(), c("jama", "lancet"))) {
+    expect_null(spicy_style(th)$sample_size, info = th)
+  }
+  for (th in c("jama", "lancet")) {
+    rules <- attr(spicy_style(th), "provenance")$rules
+    expect_true(any(grepl("^sample size: ", rules)), info = th)
+  }
+})
+
+test_that("jama and lancet: the three families head the groups with n", {
+  d <- na_by_data()
+  groups <- c(hdr("Female", 619), hdr("Male", 578))
+  for (th in c("jama", "lancet")) {
+    x <- table_categorical(d, c(smoking), by = sex, style = th)
+    out <- console(x)
+    for (h in c(groups, hdr("(Missing)", 3), hdr("Total", 1200))) {
+      expect_true(grepl(h, out, fixed = TRUE), info = paste(th, h))
+    }
+    expect_match(attr(x, "note"), "N = 1200. Percentages", fixed = TRUE)
+    expect_false(grepl("Female (n", attr(x, "note"), fixed = TRUE))
+
+    y <- table_continuous_lm(d, c(bmi), by = sex, style = th)
+    out <- console(y)
+    for (h in groups) {
+      expect_true(grepl(h, out, fixed = TRUE), info = paste(th, h))
+    }
+    expect_match(attr(y, "note"), "N = 1197. Missing", fixed = TRUE)
+  }
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
+  for (th in c("jama", "lancet")) {
+    z <- table_categorical_svy(des, c(sch.wide), by = stype, style = th)
+    expect_identical(
+      attr(z, "header_n"),
+      c(E = 144L, H = 14L, M = 25L, Total = 183L),
+      info = th
+    )
+    out <- console(z)
+    for (h in c(hdr("E", 144), hdr("H", 14), hdr("Total", 183))) {
+      expect_true(grepl(h, out, fixed = TRUE), info = paste(th, h))
+    }
+    # The survey note keeps its own sentence.
+    z0 <- table_categorical_svy(
+      des,
+      c(sch.wide),
+      by = stype,
+      style = spicy_style(th, sample_size = "note")
+    )
+    expect_identical(attr(z, "note"), attr(z0, "note"), info = th)
+  }
+})
+
+test_that("jama and lancet: a sample_size typed over the theme wins", {
+  d <- na_by_data()
+  for (th in c("jama", "lancet")) {
+    # Composed on the theme: its other rules stay, the note keeps the n.
+    st <- spicy_style(th, sample_size = "note")
+    x <- table_categorical(d, c(smoking), by = sex, style = st)
+    expect_false(grepl(paste0("(n", nbsp), console(x), fixed = TRUE), info = th)
+    expect_match(
+      attr(x, "note"),
+      "N = 1200: Female (n = 619), Male (n = 578), (Missing) (n = 3).",
+      fixed = TRUE
+    )
+    expect_identical(attr(x, "style_fmt")$note_label, "", info = th)
+    y <- table_continuous_lm(d, c(bmi), by = sex, style = st)
+    expect_false(grepl(paste0("(n", nbsp), console(y), fixed = TRUE), info = th)
+    # "none" too.
+    none <- table_categorical(
+      d,
+      c(smoking),
+      by = sex,
+      style = spicy_style(th, sample_size = "none")
+    )
+    expect_false(grepl("N = ", attr(none, "note"), fixed = TRUE), info = th)
+    # A `style` argument replaces the theme of options(spicy.style).
+    withr::local_options(spicy.style = th)
+    expect_true(grepl(
+      hdr("Total", 1200),
+      console(table_categorical(d, c(smoking), by = sex)),
+      fixed = TRUE
+    ))
+    expect_identical(
+      console(table_categorical(
+        d,
+        c(smoking),
+        by = sex,
+        style = spicy_style(sample_size = "note")
+      )),
+      withr::with_options(
+        list(spicy.style = NULL),
+        console(table_categorical(d, c(smoking), by = sex))
+      )
+    )
+  }
+})
+
+test_that("jama and lancet: the machine outputs do not change", {
+  d <- na_by_data()
+  strip <- function(z) {
+    attr(z, "note") <- NULL
+    attr(z, "style_fmt") <- NULL
+    attr(z, "header_n") <- NULL
+    z
+  }
+  for (th in c("jama", "lancet")) {
+    st <- spicy_style(th, sample_size = "note")
+    for (o in c("data.frame", "long")) {
+      expect_identical(
+        strip(table_categorical(
+          d,
+          c(smoking),
+          by = sex,
+          output = o,
+          style = th
+        )),
+        strip(table_categorical(
+          d,
+          c(smoking),
+          by = sex,
+          output = o,
+          style = st
+        )),
+        info = paste(th, o)
+      )
+    }
+    x <- table_categorical(d, c(smoking), by = sex, style = th)
+    x0 <- table_categorical(d, c(smoking), by = sex, style = st)
+    expect_identical(strip(as.data.frame(x)), strip(as.data.frame(x0)))
+    expect_identical(as_structured(x), as_structured(x0), info = th)
+    y <- table_continuous_lm(d, c(bmi), by = sex, style = th)
+    y0 <- table_continuous_lm(d, c(bmi), by = sex, style = st)
+    expect_identical(strip(as.data.frame(y)), strip(as.data.frame(y0)))
+    expect_identical(as_structured(y), as_structured(y0), info = th)
+    skip_if_not_installed("broom")
+    expect_identical(broom::tidy(x), broom::tidy(x0), info = th)
+    expect_identical(broom::glance(x), broom::glance(x0), info = th)
+  }
+})
+
+test_that("jama and lancet: every engine heads the groups with n", {
+  skip_engines()
+  d <- na_by_data()
+  for (th in c("jama", "lancet")) {
+    texts <- engine_texts(function(o, ...) {
+      table_categorical(d, c(smoking), by = sex, style = th, output = o, ...)
+    })
+    expect_headers(
+      texts,
+      c(hdr("Female", 619), hdr("Male", 578), hdr("Total", 1200))
+    )
+    texts <- engine_texts(function(o, ...) {
+      table_continuous_lm(d, c(bmi), by = sex, style = th, output = o, ...)
+    })
+    expect_headers(texts, c(hdr("Female", 619), hdr("Male", 578)))
+  }
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
+  for (th in c("jama", "lancet")) {
+    texts <- engine_texts(function(o, ...) {
+      table_categorical_svy(
+        des,
+        c(sch.wide),
+        by = stype,
+        style = th,
+        output = o,
+        ...
+      )
+    })
+    expect_headers(texts, c(hdr("E", 144), hdr("Total", 183)))
+  }
+})
+
+test_that("jama and lancet: the console tables under the theme", {
+  d <- na_by_data()
+  for (th in c("jama", "lancet")) {
+    expect_snapshot(print(table_categorical(
+      d,
+      c(smoking),
+      by = sex,
+      style = th
+    )))
+    expect_snapshot(print(table_continuous_lm(d, c(bmi), by = sex, style = th)))
+  }
 })
