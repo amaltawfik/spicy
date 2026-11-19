@@ -168,8 +168,8 @@ family). See \emph{Hierarchical (nested) model comparison} in
 AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 R-squared of \code{ivreg()}, on the structural residuals. The AIC and BIC of
 a \code{fixest} model are those of its \code{lm()}, \code{glm()} or \code{MASS::glm.nb()}
-twin with the fixed effects as dummies; see \emph{Vocabulary tokens} in
-\code{\link[=table_regression]{table_regression()}}.
+twin with the fixed effects as dummies; see
+\link{table_regression_tokens}.
 \itemize{
 \item \code{"fixed_effects"}: the \verb{Fixed effects:} block, on by default.
 \item \code{"within_r2"}: the R-squared of the model with the fixed effects

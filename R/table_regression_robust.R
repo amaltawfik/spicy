@@ -139,8 +139,8 @@
 #' AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 #' R-squared of `ivreg()`, on the structural residuals. The AIC and BIC of
 #' a `fixest` model are those of its `lm()`, `glm()` or `MASS::glm.nb()`
-#' twin with the fixed effects as dummies; see *Vocabulary tokens* in
-#' [table_regression()].
+#' twin with the fixed effects as dummies; see
+#' [table_regression_tokens].
 #' \itemize{
 #'   \item `"fixed_effects"`: the `Fixed effects:` block, on by default.
 #'   \item `"within_r2"`: the R-squared of the model with the fixed effects

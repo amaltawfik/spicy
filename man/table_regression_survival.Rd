@@ -171,7 +171,7 @@ fits have no concordance row or note.
 \item \code{"sigma"}: for \code{survreg}, the scale \eqn{\sigma}{sigma} of the
 model, blank when strata give one scale per stratum. Asked for in a
 table where every \code{survreg} fit is stratified, it is refused. See
-\emph{Vocabulary tokens} in \code{\link[=table_regression]{table_regression()}}.
+\link{table_regression_tokens}.
 }
 }
 

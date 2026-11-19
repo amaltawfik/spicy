@@ -188,6 +188,7 @@ reference:
       - table_regression_uv
       - table_stack
       - table_regression_models
+      - table_regression_tokens
   - subtitle: Model families
     desc: >
       One page per family of models: its arguments, the values the

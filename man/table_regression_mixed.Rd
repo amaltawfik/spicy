@@ -328,8 +328,8 @@ Schielzeth (2013), the variance explained by the fixed effects
 alone and by the fixed and random effects together; the values
 match \code{performance::r2_nakagawa()}. Empty for \code{gls}.
 \item On request: \code{"deviance"}, \code{"log_lik"} (the restricted
-log-likelihood of a REML fit), \code{"sigma"} (see \emph{Vocabulary tokens} in
-\code{\link[=table_regression]{table_regression()}} for its \code{glmmTMB} families), and the dispersion
+log-likelihood of a REML fit), \code{"sigma"} (see
+\link{table_regression_tokens} for its \code{glmmTMB} families), and the dispersion
 rows of a negative-binomial or beta family (\code{"theta"}, \code{"alpha"},
 \code{"delta"}, \code{"phi"}).
 \item Refused when every model of the table is mixed: \code{"r2"},

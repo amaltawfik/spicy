@@ -319,7 +319,7 @@ median, all-Bayesian tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"
 (per-fit variance explained, \code{lm} screens)) and \strong{group tokens}
 (\code{"all_b"}, \code{"all_b_compact"}, \code{"all_b_full"}, \code{"all_beta"},
 \code{"all_ame"}, \code{"all_ame_compact"}, \code{"all_f2"}, \code{"all_eta2"},
-\code{"all_omega2"}). See \emph{Vocabulary tokens} in the details for
+\code{"all_omega2"}). See \link{table_regression_tokens} for
 the full enumeration. Default \code{NULL} selects a context-aware
 layout: \code{"all_b"} (single model) or \code{"all_b_compact"}
 (multi-model, and the single-multinomial outcome-as-columns
@@ -327,7 +327,8 @@ layout, which has the same width pressure -- restore CIs with
 atomic tokens, e.g. \code{c("b", "se", "ci", "p")}). The \code{"p"}
 token is always the B / beta p-value; for the AME-specific
 p-value use \code{"ame_p"}. \code{"none"} shows the fit statistics alone,
-one column per model (see \emph{Fit statistics alone} in the details).}
+one column per model (see \emph{Fit statistics alone} in
+\link{table_regression_tokens}).}
 
 \item{keep}{Character vector of regexes. Only coefficient rows
 whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
@@ -457,8 +458,8 @@ family}).
 }
 Under \code{nested = TRUE} the default is extended with the
 class-appropriate change-stat tokens (e.g. \code{"r2_change"},
-\code{"f_change"} for \code{lm}). See \emph{Vocabulary tokens}
-(\code{show_fit_stats} subsection) and \emph{Hierarchical (nested)
+\code{"f_change"} for \code{lm}). See \link{table_regression_tokens}
+(\code{show_fit_stats} section) and \emph{Hierarchical (nested)
 model comparison} in the details for the full vocabulary.
 A token you name must have a value for at least one model of the
 table, or the call is refused with an error that names it (a
@@ -909,357 +910,15 @@ fits.
 The other families (linear and generalized linear models, additive
 models, beta regression and sample selection, and the \code{rms} fits)
 follow the rules of this page. GEE fits are described in
-\code{\link[=table_regression_models]{table_regression_models()}}, which lists every supported class.
+\code{\link[=table_regression_models]{table_regression_models()}}, which lists every supported class. The
+tokens of \code{show_columns} and \code{show_fit_stats} are on
+\link{table_regression_tokens}.
 }
 
 \section{Vocabulary tokens}{
-Two vector arguments -- \code{show_columns} and \code{show_fit_stats} --
-accept named tokens that select \strong{what} to display and in
-\strong{what order}. All tokens are lowercase
-(snake_case for compound tokens). Group tokens
-(\code{"all_b"}, \code{"all_ame"}, ...) expand to a fixed vector of
-atomic tokens; see \code{show_columns} below.
-\subsection{\code{show_columns} -- per-coefficient columns}{
-
-Each token = one displayed column.
-
-\itemize{
-\item Coefficient family: \code{"b"}, \code{"beta"} (standardized),
-\code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"}.
-\item Marginal effects: \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
-\code{"ame_p"}. \code{"p"} always refers to the B-coefficient
-p-value; for the AME-specific p-value use \code{"ame_p"}.
-\item Partial effect sizes -- \code{lm} only: \code{"partial_f2"},
-\code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
-\verb{_ci} companion (\code{"partial_f2_ci"}, ...).
-\item Term-level test -- \code{lm}, \code{glm} and mixed-effects models:
-\code{"partial_chi2"} and its twin \code{"partial_f"}, the term-level
-test. By default (\code{partial_type = "II"}) each term is tested
-under the marginality-respecting hypothesis that excludes any
-higher-order interaction containing it (the
-\code{car::Anova(type = 2)} convention), so the value does not
-depend on the factor coding. \code{partial_type = "III"} keeps the
-interactions and tests the term in a sum-to-zero coding (see
-\code{partial_type}). For \code{glm} the term-level test is
-the F that \code{anova(reduced, full, test = "F")} reports when the
-dispersion is estimated, the likelihood-ratio chi-square
-otherwise: \code{"partial_f"},
-\eqn{F = (\Delta D / q) / \hat\phi}{F = (Delta D / q) / phi}
-on \eqn{(q, df)} degrees of freedom, \eqn{q} the term's and
-\eqn{df} the residual degrees of freedom of the model, with
-\eqn{\hat\phi}{phi} the dispersion \code{summary()} estimates, for
-gaussian, Gamma, inverse Gaussian, Tweedie,
-\code{MASS::negative.binomial(theta)} fitted by \code{glm()} and the quasi
-families (the value \code{car::Anova(type = 2, test.statistic = "F", error.estimate = "dispersion")} reports; car's default Pearson
-estimate differs by the IRLS convergence error only, and
-\code{drop1(test = "F")} divides by the deviance dispersion instead);
-\code{"partial_chi2"}, the likelihood-ratio chi-square (Long & Freese
-2014 Sections 3.2.2, 3.2.4), for binomial, Poisson and
-\code{MASS::glm.nb}. For \code{lm}, \code{"partial_f"} is the F of
-\code{car::Anova(type = 2)} (\code{type = 3} under \code{partial_type = "III"}),
-the F the variance-explained partials are built on, so a gaussian \code{glm} and its \code{lm()} twin print the same
-value. A token is refused when no model of the table carries it,
-and when a model carries the other one while that one is not
-requested (each test has its own column: ask for both). Both come
-from the refits and the model's own dispersion (the residual
-variance of an \code{lm}) whatever \code{vcov}.
-For the mixed models, \code{"partial_chi2"} is the Wald chi-square
-of the same hypothesis; see \link{table_regression_mixed}. Rendered as \code{value (df)} to
-disambiguate factor terms (k-1 df) from numeric terms (1 df),
-and the partial F as \code{F (q, df)} with both of its degrees of
-freedom, \code{3.45 (2, 28)}, as Stata and SAS report them: each cell
-carries the residual df of its own model, and the note defines
-the statistic only. The console and the rich outputs (tinytable,
-gt, flextable, Word, the clipboard) print the test in one column
-under the statistic's header, and Excel writes the statistic as a
-number with its df in the number format (\verb{0.00" (2, 28)"}).
-\code{output = "data.frame"} and \code{\link[=as_structured]{as_structured()}} keep the statistic
-and its df as numbers, in the statistic's column, then
-\code{"<column>: df"} and, for the F, \code{"<column>: residual df"}.
-\code{tidy()} has them in \code{df} and \code{df.residual}, and \code{inline()} cites
-the statistic alone.
-\item Variance explained per fit -- \code{lm} only: \code{"r2"},
-\code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
-populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each
-predictor block is its own model and the \eqn{R^2}{R^2}
-answers "how much of the outcome does this predictor explain
-on its own". A model whose \eqn{R^2}{R^2} is a single
-model-level number drops the column and reports it in the
-fit-statistics rows instead (the \code{"r2"} / \code{"adj_r2"} tokens of
-\code{show_fit_stats}, on by default for \code{lm}). Refused for classes
-with no least-squares variance partition (\code{glm}, \code{coxph},
-...), where only competing pseudo-\eqn{R^2}{R^2} measures
-exist: name the one you want in \code{show_fit_stats}.
-\item Sample columns: \code{"n"} -- per-row N, populated by
-\code{\link[=table_regression_uv]{table_regression_uv()}} screens (each predictor block is its
-own fit); models without per-row N data drop the column.
-\code{"n_events"} -- outcome event counts as \code{events/N}, per
-factor level (reference row included) and model totals on
-continuous rows, computed on each model's own estimation
-sample (STROBE item 16's "data behind the measures of association";
-NEJM-style \verb{no. of events/total no.}). Binary (binomial)
-outcomes and right-censored \code{coxph} fits -- other models
-raise \code{spicy_invalid_input}.
-\item Survival estimands -- \code{coxph} and \code{survreg}: \code{"rmst"},
-\code{"rmst_se"}, \code{"rmst_ci"}, \code{"rmst_p"} (restricted-mean-
-survival-time difference over \verb{[0, tau]}) and
-\code{"risk_diff"}, \code{"risk_diff_se"}, \code{"risk_diff_ci"},
-\code{"risk_diff_p"} (cumulative-incidence difference at
-\code{at_time}), by g-computation from the fitted model with
-bootstrap inference. The horizon arguments are required;
-see \code{tau} / \code{at_time} and \link{table_regression_survival}.
-}
-
-\strong{Group tokens} (presets) expand to a fixed atomic vector
-before validation:
-
-\itemize{
-\item \code{"all_b"}         -> \code{c("b", "se", "ci", "p")}
-\item \code{"all_b_compact"} -> \code{c("b", "se", "p")}
-\item \code{"all_b_full"}    -> \code{c("b", "se", "ci", "t", "p")}
-\item \code{"all_beta"}      -> \code{c("b", "beta", "se", "ci", "p")}
-\item \code{"all_ame"}       -> \code{c("ame", "ame_se", "ame_ci", "ame_p")}
-\item \code{"all_ame_compact"} -> \code{c("ame", "ame_p")}
-\item \code{"all_f2"} / \code{"all_eta2"} / \code{"all_omega2"} -> \verb{partial_*}
-+ its \verb{_ci} companion.
-}
-
-Mix groups and atomic tokens:
-\code{show_columns = c("all_b", "ame", "ame_p")}. Duplicates after
-expansion are deduplicated; the order of tokens controls the
-order of the displayed columns. If \code{standardized != "none"} and
-\code{"beta"} is not already requested, it is auto-injected after
-\code{"b"}. Asking for \code{"beta"} while \code{standardized = "none"} raises
-\code{spicy_invalid_input}.
-
-\strong{Default} (\code{show_columns = NULL}) is context-aware:
-\code{"all_b"} for a single model (the layout of the APA Manual 7
-sample regression tables, Tables 7.16 and 7.17, pp. 219-220),
-\code{"all_b_compact"} for two or more models (CI dropped to fit the
-side-by-side layout; restore it explicitly when needed).
-
-\strong{Fit statistics alone} (\code{show_columns = "none"}): no coefficient
-row or column. Each model has one column, headed by its label (the
-outcome, "Model 1", a name of the list or \code{model_labels}, as for the
-column groups of the full table; "Model 1" for a single model), and
-the rows are the fit statistics of \code{show_fit_stats}, in its order,
-the change rows of \code{nested = TRUE} included. The title is the one of
-the full table; the note keeps what describes the models and their
-fit, and leaves out what describes coefficients. Models with
-different outcomes get an Outcome row when the column headers do not
-name them (\code{outcome_labels = FALSE} removes it). \code{"none"} goes alone, and
-\code{show_fit_stats = FALSE} is refused with it, as is \code{layout = "stacked"}; an empty \code{show_columns} (\code{character(0)}, \code{FALSE}) is an
-error that points to \code{"none"}. The arguments that act on coefficients
-only are ignored, with one \code{spicy_ignored_arg} warning naming those
-set to other than their default: \code{ci_level}, \code{ci_method}, \code{tau},
-\code{at_time}, \code{standardized}, \code{exponentiate}, \code{ame_type}, \code{p_adjust},
-\code{keep}, \code{drop}, \code{show_intercept}, \code{show_thresholds},
-\code{show_components}, \code{intercept_position}, \code{factor_layout},
-\code{reference_style}, \code{reference_label}, \code{fit_stats_layout}, \code{show_re},
-\code{re_scale}, \code{re_columns}, \code{re_test}, \code{re_ci}, \code{stars},
-\code{effect_size_digits}, and \code{vcov}, \code{cluster} and \code{boot_n} unless
-\code{nested = TRUE} (where a robust \code{vcov} gives the Wald change rows).
-An information criterion (AIC, BIC, deviance, ...) shown for models
-fitted to different numbers of observations or to different outcomes
-raises a \code{spicy_caveat} warning: its differences compare nothing.
-\code{tidy()} returns no row, \code{glance()} one row per model, and
-\code{inline()} cites a statistic of a model: \code{inline(tbl, "aic", model = 2)}. \code{\link[=table_regression_uv]{table_regression_uv()}} refuses the token.
-}
-
-\subsection{\code{show_fit_stats} -- model-level rows below the coefficients}{
-
-\itemize{
-\item Counts: \code{"nobs"}, \code{"weighted_nobs"}, \code{"n_events"} (Cox
-models: number of events, reported alongside \code{n} per the
-field convention; blank for other classes). \code{"nobs"} and the
-BIC follow the engine's \code{\link[stats:nobs]{stats::nobs()}}, which for a weighted
-\code{polr} or \code{clm} fit is the sum of the weights.
-\item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
-\code{"omega2"}.
-\item \eqn{R^2}{R^2} outside least squares (\code{glm}, \code{polr}, \code{clm},
-\code{multinom} and \code{rms::lrm} fits): \code{"pseudo_r2_tjur"} (Tjur 2009;
-binomial models only), \code{"pseudo_r2_mcfadden"} (McFadden 1974),
-\code{"pseudo_r2_nagelkerke"} (Nagelkerke 1991) and \code{"r2_deviance"}
-(Cameron & Windmeijer 1997; \code{glm} families other than the
-binomial). What each one computes, and which a family shows by
-default, is in \emph{R-squared of glm and categorical models} below.
-\item Residual scale: \code{"sigma"}, \code{"rmse"}. \code{"sigma"} is the lm
-\eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like \code{fixest}
-fits, it is the square root of the dispersion (so a gaussian glm
-reads as lm), and 1 when the family fixes it (binomial, Poisson).
-For \code{survreg}, it is the scale \eqn{\sigma}{sigma} of
-\eqn{\log T = X'\beta + \sigma W}{log T = X'beta + sigma W} for the
-distributions fitted on \eqn{\log T}{log T} (the standard deviation
-of \eqn{\log T}{log T} for the log-normal), and of
-\eqn{T = X'\beta + \sigma W}{T = X'beta + sigma W} for those that
-model \eqn{T}{T} itself (gaussian, logistic, extreme value, t),
-blank when strata give one scale per stratum. For \code{glmmTMB}, it is
-the same square root for the gaussian, Gamma and Tweedie families,
-and the fixed 1 of Poisson and binomial. It is blank for the
-negative-binomial and beta fits below, whose dispersion has its
-own row, and for the other \code{glmmTMB} families, whose \code{sigma()} is
-a family-specific parameter. For \code{mgcv::gam} and \code{bam}, a glm
-family follows the glm rule; an extended family shows the square
-root of its scale only when the GAM estimates one (\code{tw()}), and is
-blank otherwise (an estimated \code{nb()}, \code{betar()}, \code{scat()}, \code{ziP()},
-\code{ocat()}):
-mgcv fixes their scale at 1.
-\item Survey designs (\code{survey::svyglm} only): \code{"eff_p"}, the
-effective number of parameters of the design (the first element
-of survey's \code{extractAIC}, the sum of the Rao-Scott eigenvalues).
-Opt-in and distinct from \code{"aic"}, which reports the design-based
-AIC of Lumley & Scott (2015). Blank for other classes.
-\item Bayesian fits only: \code{"r2_bayes"} (posterior-median
-Bayesian \eqn{R^2}{R^2}, Gelman et al. 2019 -- in the
-all-Bayesian default), \code{"elpd_loo"} and \code{"looic"} (PSIS-LOO
-expected log predictive density and its deviance-scale twin,
-Vehtari et al. 2017; opt-in, a few seconds per model; the
-footer discloses the elpd standard error), and \code{"waic"}
-(Watanabe-Akaike; PSIS-LOO is generally preferred). See
-\link{table_regression_bayesian}.
-\item Negative-binomial dispersion. NB2 fits (\code{MASS::glm.nb},
-\code{lme4::glmer.nb}, \code{fixest::fenegbin}, \code{mgcv::gam} with \code{nb()},
-\code{pscl::zeroinfl} and \code{pscl::hurdle} with \code{dist = "negbin"}, whose
-theta is that of the count part, and \code{glmmTMB} with \code{nbinom2} or
-\code{truncated_nbinom2}): \code{"theta"}
-(\eqn{V = \mu + \mu^2/\theta}{V = mu + mu^2/theta}) and \code{"alpha"}
-(\eqn{= 1/\theta}{= 1/theta}, the Stata \code{nbreg} convention).
-NB1 fits (\code{glmmTMB} with \code{nbinom1} or \code{truncated_nbinom1}):
-\code{"delta"} (\eqn{V = \mu(1 + \delta)}{V = mu(1 + delta)}, the
-\eqn{\delta}{delta} of Stata's \verb{nbreg, dispersion(constant)}).
-\item Beta precision: \code{"phi"}. In beta regression
-(\code{betareg::betareg}, \code{mgcv::gam} with \code{betar()}, and \code{glmmTMB}
-with \code{beta_family()}), \eqn{Var(y) = \mu(1-\mu)/(1+\phi)}{Var(y) =
-    mu(1-mu)/(1+phi)} (Ferrari & Cribari-Neto 2004; higher
-\eqn{\phi}{phi} = less dispersion). For \code{glmmTMB} with
-\code{betabinomial()} or \code{ordbeta()}, \eqn{\phi}{phi} is the precision
-parameter of the beta part. A constant precision is
-back-transformed from its link, so \code{y ~ x | 1} reports the
-same \eqn{\phi}{phi} as \code{y ~ x}.
-\item For these dispersion rows (\code{"theta"}, \code{"alpha"}, \code{"delta"},
-\code{"phi"}), a column whose model lacks the parameter is blank, so a
-Poisson model can stand beside an NB2 model, or NB1 beside NB2.
-A parameter fixed in the call is not an estimate and has no row:
-\code{MASS::negative.binomial(theta)} in \code{glm()}, mgcv's
-\code{negbin(theta)}, and \code{nb(theta)} or \code{betar(theta)} with
-\code{theta > 0}. Such a negative-binomial model keeps the glm rule for
-\code{"sigma"}. A negative-binomial \code{glmer()} always shows its theta,
-which lme4 counts in the degrees of freedom of the model: a
-\code{glmer.nb()} fit, its \code{update()} refits, and a \code{glmer()} with
-\code{negative.binomial(theta)}.
-For \code{mgcv::gam} and \code{bam}, theta and phi are estimated with the
-smoothing parameters (REML by default), so they differ from the
-maximum-likelihood values of \code{glm.nb()}, betareg or \code{glmmTMB}.
-\code{method = "ML"} gives those.
-A token is refused only when no model in the table has the
-parameter, or when a model of that family has dispersion
-covariates (a \code{glmmTMB} \code{dispformula}, or a betareg \code{y ~ x | z}),
-so the parameter is not a single number. Those covariates are
-shown as a block of rows instead (\code{show_components}): \code{Precision}
-for a betareg \code{y ~ x | z} and a \code{beta_family()} \code{dispformula},
-\code{Dispersion} for the other \code{glmmTMB} families.
-\item GEE (\code{geepack::geeglm} only): \code{"qic"} and \code{"qicu"} -- the
-quasi-likelihood information criteria (Pan 2001; QIC for
-working-correlation choice, QICu for covariate choice) via
-\code{\link[geepack:QIC]{geepack::QIC()}}, computed only when requested (QIC silently
-refits the independence working model); \code{"scale"} -- the
-estimated scale (dispersion) parameter, shown only when the
-fit estimated it (blank under \code{scale.fix = TRUE}, matching
-geepack's own summary); \code{"max_cluster_size"} -- the largest
-cluster in the estimation sample (on by default with
-\code{"n_groups"}, which renders the \verb{N (<id>)} cluster count).
-Cluster statistics count the clusters geepack itself used
-(\code{geese$clusz}, consecutive runs of \verb{id =} values), so they
-always describe the displayed sandwich inference.
-Refused when no model in the table is a geeglm fit; the
-likelihood-based tokens (\code{"aic"}, pseudo-\eqn{R^2}{R^2}, ...)
-are refused in return for all-GEE tables -- quasi-likelihood
-has no likelihood.
-\item Absorbed fixed effects (\code{fixest} fits, and \code{estimatr} fits
-built with \verb{fixed_effects =}): \code{"fixed_effects"} renders a
-\verb{Fixed effects:} block at the top of the fit statistics --
-one Yes / No row per absorbed factor (the \code{etable} / \code{esttab}
-convention), blank cells for models without the concept in
-mixed tables -- and is on by default for both.
-Varying-slope-only factors (\code{Origin[[x]]}) absorb no
-intercept: they read No when another model absorbs that
-factor, and contribute no row otherwise.
-\code{"within_r2"} is the FE-partialed within
-R-squared (a default for \code{feols}, except an IV one; opt-in
-for \code{estimatr};
-GLM-family fixest fits report fixest's McFadden \code{pr2}
-instead). Both tokens are refused when no model in the table
-absorbs fixed effects.
-\item Effect size: \code{"f2"}.
-\item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
-\code{"deviance"} (lowercase like every other token; the rendered
-row labels stay \code{AIC} / \code{AICc} / \code{BIC}). The AIC and BIC of a
-\code{fixest} model are those of its \code{lm()}, \code{glm()} or
-\code{MASS::glm.nb()} twin with the fixed effects as dummies: \code{glm()}'s
-log-likelihood for a Gaussian, Gamma or inverse-Gaussian \code{feglm()},
-with the residual variance, dispersion or theta counted, which
-fixest's \code{AIC()} leaves out. A Gaussian \code{femlm()} follows the same
-rule; Poisson, binomial and IV fits keep fixest's values. A lean
-fit (\code{lean = TRUE}) that lost what they need, its weights or the
-fitted values of a Gamma or inverse-Gaussian \code{feglm()}, shows no
-AIC, BIC or nested rows. A survey-design fit has no likelihood:
-\code{"deviance"}, \code{"bic"}, \code{"aicc"}, the pseudo-R-squared tokens and
-\code{"r2_deviance"} are refused for a table of design fits, and \code{"aic"}
-when no model of the table is a \code{svyglm}.
-\item Log-likelihood: \code{"log_lik"}, the value of \code{\link[stats:logLik]{stats::logLik()}},
-from which the AIC row is computed. It is the restricted
-log-likelihood of a model fitted by REML, and for a binomial \code{glm()}
-it is \code{logLik()}'s value whatever the layout of the data: it includes
-the binomial coefficients of a grouped response and rounds
-non-integer weights, unlike the pseudo-\eqn{R^2}{R^2} rows. A column
-whose model has no likelihood (a quasi family, a survey design, GEE,
-two-stage least squares) shows a dash; the token is refused when no
-model of the table has one, and for Bayesian fits.
-\item Cox models (\code{survival::coxph} and \code{survey::svycoxph}):
-\code{"concordance"}, Harrell's C, the value \code{summary()} reports. When
-the row is shown, the concordance leaves the note, which otherwise
-gives it with its standard error. \code{rms::cph} fits have no
-concordance row or note.
-\item Change-stats for hierarchical comparison
-(active under \code{nested = TRUE}; see \emph{Hierarchical
-comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
-\code{"f_change"}, \code{"f2_change"}, \code{"lrt_change"},
-\code{"aic_change"}, \code{"aicc_change"}, \code{"bic_change"},
-\code{"deviance_change"}, \code{"p_change"}. The differences, current
-model minus previous (\code{"r2_change"}, \code{"adj_r2_change"},
-\code{"f2_change"}, and the AIC, AICc and BIC changes), print with an
-explicit sign (\code{+0.07}, \code{-9.4}) in every output. The test
-statistics and \code{"p_change"} are never signed. The test statistics
-carry their degrees of freedom, as the partial F cell does:
-\code{12.38 (1, 29)} for an F, the number of added parameters and the
-residual df of the larger model (the denominator df for the Wald F
-of a robust \code{vcov}), \code{9.12 (1)} for a chi-square. A df that is not
-a whole number (the HTZ denominator under \code{"CR2"}, the df of a
-smooth term) prints with one decimal, \code{174.77 (2, 0.8)}.
-The rich outputs print the same cell, \code{inline()} cites the
-statistic alone, \code{output = "data.frame"} keeps it as a number,
-and Excel writes the number with the df in its number format.
-\code{"deviance_change"}
-is the drop in deviance (previous minus current), positive when
-the larger model fits better, and is not signed either.
-}
-
-Default (resolved when \code{NULL}) is class-aware: lm and
-\code{lm_robust} fits get
-\code{c("nobs", "r2", "adj_r2")}; glm, \code{mgcv::gam}, \code{polr}, \code{clm},
-\code{multinom}, \code{rms::lrm} and \code{rms::Glm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
-(see \emph{R-squared of glm and categorical models}) and \code{"aic"};
-mixed lm + glm sets union both groups (the renderer per-row
-en-dashes the inappropriate cell); Cox fits get
-\code{c("nobs", "n_events", "aic")}; GEE fits get
-\code{c("nobs", "n_groups", "max_cluster_size")} (the cluster
-structure, Stata \code{xtgee}-header style). When \code{nested = TRUE}, the
-class-aware default is extended with change tokens
-(\code{c("r2_change", "f_change", "p_change")} for lm,
-\code{c("lrt_change", "p_change")} for glm, \code{c("f_change", "p_change")}
-for a glm whose dispersion is estimated). The order of tokens in
-\code{show_fit_stats} controls the order of the rows.
-}
+\code{show_columns} and \code{show_fit_stats} take tokens that select what the
+table shows and in what order. Every token, and the fit statistics of
+each model class, are on \link{table_regression_tokens}.
 }
 
 \section{R-squared of glm and categorical models}{
@@ -2193,7 +1852,8 @@ S} (4th ed.). Springer. \doi{10.1007/978-0-387-21706-2}
 \seealso{
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported model
 classes; the pages of the model families listed under \emph{Pages by model
-family}. If a
+family}; \link{table_regression_tokens} for the tokens of \code{show_columns}
+and \code{show_fit_stats}. If a
 class is not listed there, try \code{table_regression(fit)} anyway --
 unsupported classes error with a clear message.
 Other regression-table functions:

@@ -110,7 +110,7 @@
 #' for NB2 fits, among them `zeroinfl` and `hurdle` with
 #' `dist = "negbin"`, whose theta is that of the count part; `"delta"` for
 #' NB1 fits (glmmTMB `nbinom1`). A Poisson column in the same table is
-#' blank on these rows. See *Vocabulary tokens* in [table_regression()]
+#' blank on these rows. See [table_regression_tokens]
 #' for the classes each token covers.
 #'
 #' @section What is refused, and why:

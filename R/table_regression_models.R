@@ -752,6 +752,48 @@
   paste(c(header, sep, rows), collapse = "\n")
 }
 
+# The fit statistics of every class, for ?table_regression_tokens: one
+# bold line per family of the registry, in its order, then one entry per
+# class with its default rows (column `fit_stats_default`, in their
+# order) and the tokens that give a row when named (column `fit_stats`).
+# Each token is a code span, its condition kept in parentheses after it.
+# A list rather than a table: a cell runs to a dozen tokens with their
+# conditions, too wide for the text and PDF help.
+.render_fit_stats_by_class_md <- function() {
+  reg <- .supported_models_registry()
+  cell <- function(x) {
+    items <- trimws(strsplit(x, ",(?![^()]*\\))", perl = TRUE)[[1L]])
+    tok <- sub("\\s*\\(.*$", "", items)
+    cond <- ifelse(
+      grepl("(", items, fixed = TRUE),
+      sub("^[^(]*\\(", " (", items),
+      ""
+    )
+    paste0("`\"", tok, "\"`", cond, collapse = ", ")
+  }
+  out <- unlist(lapply(unique(reg$family), function(f) {
+    rows <- reg[reg$family == f, , drop = FALSE]
+    c(
+      paste0("**", f, "**"),
+      "",
+      paste0(
+        "- `",
+        rows$class,
+        "`. Default: ",
+        vapply(rows$fit_stats_default, cell, character(1)),
+        ". Available: ",
+        vapply(rows$fit_stats, cell, character(1)),
+        "."
+      ),
+      ""
+    )
+  }))
+  # Ragged right in the PDF manual: a justified line cannot break inside
+  # a long token and would run into the margin.
+  out[1L] <- paste0("\\if{latex}{\\out{\\raggedright{}}}", out[1L])
+  paste(out[-length(out)], collapse = "\n")
+}
+
 
 # The Usage block of a family page (?table_regression_mixed, ...),
 # rendered at document() time: the call with `models`, the arguments that

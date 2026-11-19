@@ -135,7 +135,7 @@ row: \code{"theta"} and \code{"alpha"} (= 1/theta, the Stata \code{nbreg} conven
 for NB2 fits, among them \code{zeroinfl} and \code{hurdle} with
 \code{dist = "negbin"}, whose theta is that of the count part; \code{"delta"} for
 NB1 fits (glmmTMB \code{nbinom1}). A Poisson column in the same table is
-blank on these rows. See \emph{Vocabulary tokens} in \code{\link[=table_regression]{table_regression()}}
+blank on these rows. See \link{table_regression_tokens}
 for the classes each token covers.
 }
 

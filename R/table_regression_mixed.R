@@ -297,8 +297,8 @@
 #'     alone and by the fixed and random effects together; the values
 #'     match `performance::r2_nakagawa()`. Empty for `gls`.
 #'   \item On request: `"deviance"`, `"log_lik"` (the restricted
-#'     log-likelihood of a REML fit), `"sigma"` (see *Vocabulary tokens* in
-#'     [table_regression()] for its `glmmTMB` families), and the dispersion
+#'     log-likelihood of a REML fit), `"sigma"` (see
+#'     [table_regression_tokens] for its `glmmTMB` families), and the dispersion
 #'     rows of a negative-binomial or beta family (`"theta"`, `"alpha"`,
 #'     `"delta"`, `"phi"`).
 #'   \item Refused when every model of the table is mixed: `"r2"`,
