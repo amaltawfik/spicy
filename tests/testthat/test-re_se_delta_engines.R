@@ -61,9 +61,11 @@ test_that("random intercept, REML: the three engines give lmer's SE", {
     "re::Subject::(Intercept)" = 6.8119058,
     "re::Residual::" = 1.7270739
   )
-  # Measured: lme and glmmTMB within 2e-6 of lmer in relative terms.
+  # Measured on Windows: lme and glmmTMB within 2e-6 of lmer in relative
+  # terms. The optimizers and the finite-difference Hessian of nlme vary
+  # with the platform (2e-5 on Linux for the ML fit), hence 1e-4.
   for (nm in names(fits)) {
-    expect_equal(.re_se_rows(fits[[nm]]), oracle, tolerance = 1e-5, info = nm)
+    expect_equal(.re_se_rows(fits[[nm]]), oracle, tolerance = 1e-4, info = nm)
   }
   # Before 2026-11-19 lme and glmmTMB showed 6.9597 (the half-width of
   # the log-scale interval over z) and glmmTMB no residual SE.
@@ -76,7 +78,7 @@ test_that("random intercept, ML: the three engines give lmer's SE", {
     "re::Residual::" = 1.7164130
   )
   for (nm in names(fits)) {
-    expect_equal(.re_se_rows(fits[[nm]]), oracle, tolerance = 1e-5, info = nm)
+    expect_equal(.re_se_rows(fits[[nm]]), oracle, tolerance = 1e-4, info = nm)
   }
 })
 
@@ -113,14 +115,32 @@ test_that("random slope, REML: glmmTMB gives lmer's SE, correlation included", {
 test_that("random slope, REML: lme reaches lmer's SE once its Hessian is accurate", {
   fits <- .re_se_fits(slope = TRUE, reml = TRUE)
   # nlme's apVar is a finite-difference Hessian. With the default step
-  # (.relStep = eps^(1/3)) it is off on this model: 5.8880 for the
-  # intercept SD (+0.9 %), 0.36691 for the correlation (+13 %). spicy
-  # reports what nlme estimates, so those numbers are pinned as such.
+  # (.relStep = eps^(1/3)) it is off on this model, by an amount that
+  # depends on the platform: the correlation SE is 0.367 on Windows,
+  # 0.366 on macOS and 0.335 on Linux, against 0.325 for lmer. spicy
+  # reports what nlme estimates, so the rows are checked against the
+  # delta-method SEs of the fit's own apVar, not against pinned numbers.
+  iv <- nlme::intervals(fits$lme, which = "var-cov")
+  est <- iv$reStruct$Subject[, "est."]
+  s <- sqrt(diag(fits$lme$apVar))
   expect_equal(
     unname(.re_se_rows(fits$lme)),
-    c(5.88803809, 1.25891261, 0.36691166, 1.50997506),
+    unname(c(
+      est[1L] * s[1L],
+      est[2L] * s[2L],
+      s[3L] * (1 - est[3L]^2) / 2,
+      iv$sigma[["est."]] * s[["lSigma"]]
+    )),
     tolerance = 1e-6
   )
+  lmer_se <- c(
+    "re::Subject::(Intercept)" = 5.83626394,
+    "re::Subject::Days" = 1.24803549,
+    "re::Subject::(Intercept), Days::cor" = 0.32502323,
+    "re::Residual::" = 1.50801102
+  )
+  # Off from lmer, but the same quantity: within 15 % on every platform.
+  expect_equal(.re_se_rows(fits$lme), lmer_se, tolerance = 0.15)
   # A finer step gives lmer's numbers, which shows the delta method is
   # the same on both sides and the gap is the numerical Hessian.
   fit_fine <- nlme::lme(
@@ -129,16 +149,7 @@ test_that("random slope, REML: lme reaches lmer's SE once its Hessian is accurat
     data = lme4::sleepstudy,
     control = nlme::lmeControl(.relStep = 1e-4)
   )
-  expect_equal(
-    .re_se_rows(fit_fine),
-    c(
-      "re::Subject::(Intercept)" = 5.83626394,
-      "re::Subject::Days" = 1.24803549,
-      "re::Subject::(Intercept), Days::cor" = 0.32502323,
-      "re::Residual::" = 1.50801102
-    ),
-    tolerance = 1e-3
-  )
+  expect_equal(.re_se_rows(fit_fine), lmer_se, tolerance = 1e-2)
 })
 
 test_that("random slope, ML: glmmTMB gives lmer's SE", {
