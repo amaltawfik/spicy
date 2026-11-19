@@ -744,6 +744,41 @@ validate_nested_alignment <- function(
     }
   }
 
+  # Sample-selection models compare by their likelihoods, with one
+  # another only, and a two-step fit has none (logLik() refuses it).
+  is_sel <- vapply(models, inherits, logical(1), "selection")
+  if (any(is_sel)) {
+    two_step <- vapply(
+      models[is_sel],
+      function(m) !identical(m$method %||% "ml", "ml"),
+      logical(1)
+    )
+    if (any(two_step) || !all(is_sel)) {
+      spicy_abort(
+        c(
+          if (any(two_step)) {
+            paste0(
+              "`nested = TRUE` is not available for a two-step selection ",
+              "model (`heckit()`, `method = \"2step\"`)."
+            )
+          } else {
+            paste0(
+              "`nested = TRUE` cannot mix a selection model with other ",
+              "model classes."
+            )
+          },
+          "i" = paste0(
+            "The likelihood-ratio test compares two selection models ",
+            "estimated by maximum likelihood (`selection()`, the default ",
+            "`method = \"ml\"`); a two-step fit has no likelihood."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+  }
+
   # Step 4: nobs identical. numeric(1), not integer(1): nobs() returns a
   # double for some supported classes (e.g. coxph), which would make an
   # integer(1) vapply throw under `nested = TRUE`. .spicy_nobs() covers
@@ -793,6 +828,11 @@ validate_nested_alignment <- function(
   dvs <- vapply(
     models,
     function(fit) {
+      # A selection fit has no formula() method; the response of its
+      # outcome equation is in its outcome terms.
+      if (inherits(fit, "selection")) {
+        return(deparse1(fit$termsO[[2L]]))
+      }
       deparse1(stats::formula(fit)[[2]])
     },
     character(1)
