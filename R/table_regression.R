@@ -359,7 +359,10 @@
 #' needs the fit's `x = TRUE, y = TRUE`). The Lin-Wei and `robcov()`
 #' sandwiches have no small-sample factor: their one estimator is
 #' requested as `"CR0"`, and the other `CR*` tokens are refused rather
-#' than mapped. `glmmTMB` fits use
+#' than mapped. A fit already passed through `robcov()` keeps its
+#' variance, which the note names; for an `ols` it says "sandwich"
+#' rather than "Huber", because the fit does not record whether
+#' `robcov()` used Huber's or Efron's method. `glmmTMB` fits use
 #' `glmmTMB::sandwich()` (see [table_regression_mixed]). `cluster` length is one
 #' entry per observation, except `mlogit` (one per choice situation)
 #' and censored `coxph` (one per subject).

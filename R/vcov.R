@@ -1500,8 +1500,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 .single_cluster_refuse_vcov <- function(fit, type, call = rlang::caller_env()) {
   why <- if (inherits(fit, .RMS_CR_CLASSES)) {
     paste0(
-      "rms::robcov() computes one cluster-robust estimator, with no ",
-      "small-sample factor: CR0."
+      "spicy computes the cluster-robust variance of an rms fit with ",
+      "`rms::robcov()`, whose Huber estimator is CR0."
     )
   } else if (inherits(fit, "coxph")) {
     paste0(

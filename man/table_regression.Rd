@@ -1260,7 +1260,10 @@ refused rather than mapped. \code{rms} fits use
 needs the fit's \verb{x = TRUE, y = TRUE}). The Lin-Wei and \code{robcov()}
 sandwiches have no small-sample factor: their one estimator is
 requested as \code{"CR0"}, and the other \verb{CR*} tokens are refused rather
-than mapped. \code{glmmTMB} fits use
+than mapped. A fit already passed through \code{robcov()} keeps its
+variance, which the note names; for an \code{ols} it says "sandwich"
+rather than "Huber", because the fit does not record whether
+\code{robcov()} used Huber's or Efron's method. \code{glmmTMB} fits use
 \code{glmmTMB::sandwich()} (see \link{table_regression_mixed}). \code{cluster} length is one
 entry per observation, except \code{mlogit} (one per choice situation)
 and censored \code{coxph} (one per subject).

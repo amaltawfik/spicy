@@ -717,7 +717,9 @@ as_regression_frame.Glm <- function(
     }
     return(spicy_fmt("note_vcov_bootstrap_cluster", reps, cl))
   }
-  est <- if (rms_class == "cph") "Lin-Wei" else "Huber"
+  # robcov(method = "efron") exists for ols only and the fit does not
+  # keep the method, so an ols names the sandwich without its author.
+  est <- switch(rms_class, cph = "Lin-Wei", ols = "sandwich", "Huber")
   if (is.null(cl)) {
     return(spicy_fmt("note_vcov_robust_plain", est))
   }

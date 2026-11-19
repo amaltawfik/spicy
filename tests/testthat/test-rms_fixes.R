@@ -58,7 +58,7 @@ test_that("a fit passed through robcov() or bootcov() names that variance in the
   out <- capture.output(print(table_regression(rms::robcov(o))))
   expect_match(
     paste(out, collapse = " "),
-    "Std. errors: Robust (Huber).",
+    "Std. errors: Robust (sandwich).",
     fixed = TRUE
   )
   ph <- rms::cph(
