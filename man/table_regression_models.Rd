@@ -8,14 +8,20 @@ table_regression_models()
 }
 \value{
 A data frame with one row per supported engine and columns
-\code{family}, \code{class}, \code{engine}, \code{ame}, \code{exponentiate}, \code{blocks} and
-\code{vcov} (the values of \code{vcov} the class accepts).
+\code{family}, \code{class}, \code{engine}, \code{ame}, \code{exponentiate}, \code{blocks}, \code{vcov}
+(the values of \code{vcov} the class accepts), \code{fit_stats_default} (the
+fit-statistic rows of a one-model table under the default
+\code{show_fit_stats}, in their order) and \code{fit_stats} (the tokens of
+\code{show_fit_stats} that give a row for one model; the change tokens,
+which need \code{nested = TRUE}, are not listed). A parenthesis in a cell
+gives the fits an item is limited to.
 }
 \description{
 \code{table_regression_models()} returns the registry of model classes
 supported by \code{\link[=table_regression]{table_regression()}}, one row per engine, with each class's
 family, average-marginal-effects estimand, \code{exponentiate} semantics,
-labeled table blocks and accepted \code{vcov} values. The same registry
+labeled table blocks, accepted \code{vcov} values and fit statistics. The
+same registry
 drives the table of this page and those of the family pages, so the
 published list cannot drift from the code.
 
@@ -45,7 +51,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
    Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \tab classical \cr
    Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
-   Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
+   Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 (classical only with contrasts other than the session's) \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \tab classical \cr
    Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \tab classical, CR1 \cr
    Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \tab classical, CR1 (classical only with scale or nominal terms) \cr
@@ -56,7 +62,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Counts, two-part \tab \code{hurdle} \tab \code{pscl::hurdle()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero hurdle \tab classical, CR1 (classical only for a negative-binomial part) \cr
    Survival \tab \code{coxph} \tab \code{survival::coxph()} \tab RMST / risk diff \tab HR \tab - \tab classical, CR0 \cr
    Survival \tab \code{survreg} \tab \code{survival::survreg()} \tab yes + RMST / risk diff \tab TR (log-scale distributions) \tab - \tab classical, CR1 \cr
-   Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \tab classical, CR0 \cr
+   Survival \tab \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    Survival \tab \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab no \tab TR / HR (dist) \tab distribution parameters \tab classical \cr
    Survey-weighted \tab \code{svyglm} \tab \code{survey::svyglm()} \tab yes (design-based) \tab OR / IRR \tab - \tab classical (design-based) \cr
    Survey-weighted \tab \code{svyolr} \tab \code{survey::svyolr()} \tab per category (design-based) \tab OR (logit) \tab Thresholds \tab classical (design-based) \cr
@@ -65,9 +71,9 @@ supported set. Feature requests are welcome on the issue tracker.
    Additive, proportions, selection \tab \code{gam} \tab \code{mgcv::gam()}, \code{mgcv::bam()} \tab yes \tab OR / IRR (link) \tab - \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{betareg} \tab \code{betareg::betareg()} \tab yes \tab OR (mean link) \tab - \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{selection} \tab \code{sampleSelection::selection()} \tab no \tab - \tab selection component \tab classical \cr
-   rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \tab classical, CR0 \cr
-   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes (per category for an ordinal outcome) \tab OR \tab Thresholds (ordinal outcome) \tab classical, CR0 \cr
-   rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \tab classical, CR0 \cr
+   rms \tab \code{ols} \tab \code{rms::ols()} \tab yes \tab - \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
+   rms \tab \code{lrm} \tab \code{rms::lrm()} \tab yes (per category for an ordinal outcome) \tab OR \tab Thresholds (ordinal outcome) \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
+   rms \tab \code{Glm} \tab \code{rms::Glm()} \tab yes \tab link-dependent \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    Bayesian \tab \code{stanreg} \tab \code{rstanarm::stan_glm()}, \code{rstanarm::stan_glmer()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \tab classical (the posterior) \cr
    Bayesian \tab \code{brmsfit} \tab \code{brms::brm()} \tab yes (draws) \tab link-dependent \tab Random effects (if multilevel) \tab classical (the posterior) \cr
 }

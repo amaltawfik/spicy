@@ -13,7 +13,7 @@
 #' `survey::svycoxph()`, is described in [table_regression_survey].
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("tau", "at_time"))`
+#' `r spicy:::.render_family_usage("Survival")`
 #'
 #' The other arguments are documented in [table_regression()]; the values
 #' they take for survival models are listed below.
@@ -132,9 +132,10 @@
 #' comparison* in [table_regression()].
 #'
 #' @section Fit statistics:
-#' Cox fits default to `c("nobs", "n_events", "aic")`: the number of
-#' events is reported beside `n`. `survreg` and `flexsurvreg` fits default
-#' to `c("nobs", "aic")`. On request:
+#' Cox fits default to `r spicy:::.render_fit_stats_default("coxph")`: the
+#' number of events is reported beside `n`. `survreg` and `flexsurvreg`
+#' fits default to `r spicy:::.render_fit_stats_default("survreg")`. On
+#' request:
 #' \itemize{
 #'   \item `"concordance"`: Harrell's C of a `coxph` fit, the value
 #'     `summary()` reports. When the row is shown, the concordance leaves

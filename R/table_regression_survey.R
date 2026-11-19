@@ -10,7 +10,7 @@
 #' units and the residual degrees of freedom.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("vcov", "nested", "show_fit_stats"))`
+#' `r spicy:::.render_family_usage("Survey-weighted", c("vcov", "nested", "show_fit_stats"))`
 #'
 #' This family has no argument of its own. The other arguments are
 #' documented in [table_regression()]; the values they take for

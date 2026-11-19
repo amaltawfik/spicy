@@ -35,7 +35,7 @@ they take for survival models are listed below.
    Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \tab vcov \cr
    \code{coxph} \tab \code{survival::coxph()} \tab RMST / risk diff \tab HR \tab - \tab classical, CR0 \cr
    \code{survreg} \tab \code{survival::survreg()} \tab yes + RMST / risk diff \tab TR (log-scale distributions) \tab - \tab classical, CR1 \cr
-   \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \tab classical, CR0 \cr
+   \code{cph} \tab \code{rms::cph()} \tab no \tab HR \tab - \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    \code{flexsurvreg} \tab \code{flexsurv::flexsurvreg()} \tab no \tab TR / HR (dist) \tab distribution parameters \tab classical \cr
 }
 
@@ -159,9 +159,10 @@ comparison} in \code{\link[=table_regression]{table_regression()}}.
 
 \section{Fit statistics}{
 
-Cox fits default to \code{c("nobs", "n_events", "aic")}: the number of
-events is reported beside \code{n}. \code{survreg} and \code{flexsurvreg} fits default
-to \code{c("nobs", "aic")}. On request:
+Cox fits default to \code{c("nobs", "n_events", "aic")}: the
+number of events is reported beside \code{n}. \code{survreg} and \code{flexsurvreg}
+fits default to \code{c("nobs", "aic")}. On
+request:
 \itemize{
 \item \code{"concordance"}: Harrell's C of a \code{coxph} fit, the value
 \code{summary()} reports. When the row is shown, the concordance leaves

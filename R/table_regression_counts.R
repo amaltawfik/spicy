@@ -12,7 +12,7 @@
 #' their dispersion rows are described below.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("show_components", "exponentiate"))`
+#' `r spicy:::.render_family_usage("Counts, two-part", "exponentiate")`
 #'
 #' The other arguments are documented in [table_regression()]; the values
 #' they take for count models are listed below.

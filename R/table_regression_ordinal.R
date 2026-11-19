@@ -15,7 +15,7 @@
 #' `rms::lrm()` take the same `Thresholds` block.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("show_thresholds", "show_components"))`
+#' `r spicy:::.render_family_usage("Ordinal")`
 #'
 #' The other arguments are documented in [table_regression()]; the values
 #' they take for ordinal models are listed below.
@@ -125,8 +125,9 @@
 #' comparison* in [table_regression()].
 #'
 #' @section Fit statistics:
-#' `polr`, `clm` and an ordinal `rms::lrm` default to `c("nobs",
-#' "pseudo_r2_mcfadden", "aic")`. `"nobs"` and the BIC follow the engine's
+#' `polr`, `clm` and an ordinal `rms::lrm` default to
+#' `r spicy:::.render_fit_stats_default("polr")`. `"nobs"` and the BIC
+#' follow the engine's
 #' [stats::nobs()], which for a weighted `polr` or `clm` fit is the sum of
 #' the weights. The deviance R-squared is refused for ordinal models, where
 #' it equals McFadden's. Cumulative-link mixed models show the fit

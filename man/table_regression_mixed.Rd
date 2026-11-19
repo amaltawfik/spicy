@@ -40,7 +40,7 @@ they take for mixed models are listed below.
    \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
    \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \tab classical \cr
    \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
-   \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
+   \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 (classical only with contrasts other than the session's) \cr
    \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \tab classical \cr
 }
 
@@ -287,8 +287,8 @@ model comparison} in \code{\link[=table_regression]{table_regression()}}.
 
 \section{Fit statistics}{
 
-By default, \code{c("nobs", "n_groups", "icc", "r2_marginal", "r2_conditional", "aic", "bic")}, for \code{lmer}, \code{glmer}, \code{glmmTMB}, \code{lme}
-and \code{clmm} fits. A row of the default that no model of the table fills
+By default, \code{c("nobs", "n_groups", "icc", "r2_marginal", "r2_conditional", "aic", "bic")}, for
+\code{lmer}, \code{glmer}, \code{glmmTMB}, \code{lme} and \code{clmm} fits. A row of the default that no model of the table fills
 is left out. A token named in the call that no model fills is refused.
 A
 \code{gls} fit gets \code{n} and \code{AIC}.

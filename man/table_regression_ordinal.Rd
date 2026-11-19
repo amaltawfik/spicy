@@ -149,7 +149,9 @@ comparison} in \code{\link[=table_regression]{table_regression()}}.
 
 \section{Fit statistics}{
 
-\code{polr}, \code{clm} and an ordinal \code{rms::lrm} default to \code{c("nobs", "pseudo_r2_mcfadden", "aic")}. \code{"nobs"} and the BIC follow the engine's
+\code{polr}, \code{clm} and an ordinal \code{rms::lrm} default to
+\code{c("nobs", "pseudo_r2_mcfadden", "aic")}. \code{"nobs"} and the BIC
+follow the engine's
 \code{\link[stats:nobs]{stats::nobs()}}, which for a weighted \code{polr} or \code{clm} fit is the sum of
 the weights. The deviance R-squared is refused for ordinal models, where
 it equals McFadden's. Cumulative-link mixed models show the fit

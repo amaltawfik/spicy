@@ -256,8 +256,36 @@
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   names(out) <- c("family", "class", "engine", "ame", "exponentiate", "blocks")
   out$vcov <- unname(.REG_VCOV[out$class])
-  stopifnot(!anyNA(out$vcov))
+  out$fit_stats_default <- unname(.REG_FIT_STATS_DEFAULT[out$class])
+  out$fit_stats <- unname(.REG_FIT_STATS[out$class])
+  stopifnot(
+    !anyNA(out$vcov),
+    !anyNA(out$fit_stats_default),
+    !anyNA(out$fit_stats)
+  )
   out
+}
+
+# The tokens of a registry cell (`vcov`, `fit_stats_default`, `fit_stats`),
+# in their order. A cell is a comma-separated list; a parenthesis after an
+# item gives the condition under which it holds, and its own commas do not
+# split the cell. `conditional = FALSE` keeps the items without a
+# condition. A range such as "HC0-HC5" gives every token of it.
+.reg_cell_tokens <- function(cell, conditional = TRUE) {
+  items <- trimws(strsplit(cell, ",(?![^()]*\\))", perl = TRUE)[[1L]])
+  if (!conditional) {
+    items <- items[!grepl("(", items, fixed = TRUE)]
+  }
+  items <- trimws(sub("\\s*\\(.*$", "", items))
+  items <- items[nzchar(items)]
+  unlist(lapply(items, function(s) {
+    m <- regmatches(s, regexec("^([A-Z]+)([0-9])-([A-Z]+)([0-9])$", s))[[1L]]
+    if (length(m) == 5L && identical(m[2L], m[4L])) {
+      paste0(m[2L], seq(as.integer(m[3L]), as.integer(m[5L])))
+    } else {
+      s
+    }
+  }))
 }
 
 # The `vcov` values each class accepts, one string per registry class:
@@ -283,7 +311,7 @@
   lmerMod = "classical, CR0-CR3",
   glmerMod = "classical",
   glmmTMB = "classical, CR0, CR1 (classical only for REML or the ordinal family)",
-  lme = "classical, CR0-CR3",
+  lme = "classical, CR0-CR3 (classical only with contrasts other than the session's)",
   gls = "classical",
   geeglm = "classical (the fit's own)",
   polr = "classical, CR1",
@@ -295,7 +323,7 @@
   hurdle = "classical, CR1 (classical only for a negative-binomial part)",
   coxph = "classical, CR0",
   survreg = "classical, CR1",
-  cph = "classical, CR0",
+  cph = "classical, CR0 (classical only without x = TRUE, y = TRUE)",
   flexsurvreg = "classical",
   svyglm = "classical (design-based)",
   svyolr = "classical (design-based)",
@@ -303,11 +331,254 @@
   gam = "classical, CR1",
   betareg = "classical, CR1",
   selection = "classical",
-  ols = "classical, CR0",
-  lrm = "classical, CR0",
-  Glm = "classical, CR0",
+  ols = "classical, CR0 (classical only without x = TRUE, y = TRUE)",
+  lrm = "classical, CR0 (classical only without x = TRUE, y = TRUE)",
+  Glm = "classical, CR0 (classical only without x = TRUE, y = TRUE)",
   stanreg = "classical (the posterior)",
   brmsfit = "classical (the posterior)"
+)
+
+# The fit statistics of a one-model table, one string per registry class:
+# the columns `fit_stats_default` (the rows the default
+# `show_fit_stats = NULL` shows, in their order) and `fit_stats` (the
+# tokens that give a row when named in `show_fit_stats`, in the order of
+# the vocabulary; the change tokens, which need `nested = TRUE`, are left
+# out). Read from the behavior on 2026-11-19: one light fit per class and
+# the variants of tests/testthat/helper-class-fixtures.R, every token of
+# the vocabulary. A parenthesis gives the fits a token is limited to, as
+# measured on those fixtures; tests/testthat/test-fit_stats_requested_rows.R
+# names the fixture behind each one.
+.REG_FIT_STATS_DEFAULT <- c(
+  lm = "nobs, r2, adj_r2",
+  glm = paste(
+    "nobs, pseudo_r2_tjur (binomial logit, binary outcome),",
+    "pseudo_r2_mcfadden (binomial, Poisson), r2_deviance (Gaussian, Gamma),",
+    "aic (not quasi)"
+  ),
+  negbin = "nobs, pseudo_r2_mcfadden, aic",
+  rlm = "nobs",
+  nls = "nobs, aic",
+  lm_robust = "fixed_effects (with fixed_effects =), nobs, r2, adj_r2",
+  iv_robust = "nobs",
+  ivreg = "nobs",
+  tobit = "nobs, aic",
+  rq = "nobs, aic",
+  fixest = paste(
+    "fixed_effects (with fixed effects), nobs, r2 (feols, not IV),",
+    "within_r2 (feols with fixed effects, not IV),",
+    "pseudo_r2_mcfadden (GLM family), aic (not IV)"
+  ),
+  lmerMod = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
+  glmerMod = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
+  glmmTMB = paste(
+    "nobs, n_groups,",
+    "icc (Gaussian, no zero-inflation or dispersion formula),",
+    "r2_marginal (no ordinal family, zero-inflation or dispersion formula),",
+    "r2_conditional (Gaussian, no zero-inflation or dispersion formula),",
+    "aic, bic"
+  ),
+  lme = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
+  gls = "nobs, aic",
+  polr = "nobs, pseudo_r2_mcfadden, aic",
+  clm = "nobs, pseudo_r2_mcfadden, aic",
+  clmm = "nobs, n_groups, aic, bic",
+  multinom = "nobs, pseudo_r2_mcfadden, aic",
+  mlogit = "nobs, aic",
+  zeroinfl = "nobs, aic",
+  hurdle = "nobs, aic",
+  coxph = "nobs, n_events, aic",
+  survreg = "nobs, aic",
+  cph = "nobs, n_events, aic",
+  flexsurvreg = "nobs, aic",
+  svyglm = "nobs, weighted_nobs, aic",
+  svyolr = "nobs, weighted_nobs",
+  svycoxph = "nobs, weighted_nobs, n_events",
+  geeglm = "nobs, n_groups, max_cluster_size",
+  gam = "nobs, aic",
+  betareg = "nobs, aic",
+  selection = "nobs, aic",
+  ols = "nobs, r2",
+  lrm = paste(
+    "nobs, pseudo_r2_tjur (binary outcome), pseudo_r2_mcfadden, aic"
+  ),
+  Glm = "nobs, pseudo_r2_mcfadden, aic",
+  stanreg = "nobs, r2_bayes",
+  brmsfit = "nobs, r2_bayes"
+)
+
+.REG_FIT_STATS <- c(
+  lm = paste(
+    "nobs, weighted_nobs (weighted fit), r2, adj_r2, omega2, sigma, rmse,",
+    "f2, aic, aicc, bic, deviance, log_lik"
+  ),
+  glm = paste(
+    "nobs, pseudo_r2_mcfadden (binomial, Poisson),",
+    "pseudo_r2_nagelkerke (binomial, Poisson), pseudo_r2_tjur (binomial),",
+    "r2_deviance (not binomial), sigma, rmse, aic (not quasi),",
+    "aicc (not quasi), bic (not quasi), deviance, log_lik (not quasi)"
+  ),
+  negbin = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, theta,",
+    "alpha, rmse, aic, aicc, bic, deviance, log_lik"
+  ),
+  rlm = "nobs, sigma, aic, aicc, bic, log_lik",
+  nls = "nobs, sigma, aic, aicc, bic, deviance, log_lik",
+  lm_robust = paste(
+    "nobs, r2, adj_r2, fixed_effects (with fixed_effects =),",
+    "within_r2 (with fixed_effects =), n_groups (with fixed_effects =)"
+  ),
+  iv_robust = "nobs, r2, adj_r2",
+  ivreg = "nobs, r2, adj_r2",
+  tobit = "nobs, sigma, aic, aicc, bic, log_lik",
+  rq = "nobs, aic, aicc, log_lik",
+  fixest = paste(
+    "nobs, r2 (feols), adj_r2 (feols), pseudo_r2_mcfadden (GLM family),",
+    "fixed_effects (with fixed effects),",
+    "within_r2 (feols with fixed effects), n_groups (with fixed effects),",
+    "sigma, aic, aicc, bic, deviance, log_lik"
+  ),
+  lmerMod = paste(
+    "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
+    "bic, deviance, log_lik"
+  ),
+  glmerMod = paste(
+    "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
+    "bic, deviance, log_lik"
+  ),
+  glmmTMB = paste(
+    "nobs,",
+    "r2_marginal (no ordinal family, zero-inflation or dispersion formula),",
+    "r2_conditional (Gaussian, no zero-inflation or dispersion formula),",
+    "n_groups, icc (Gaussian, no zero-inflation or dispersion formula),",
+    "sigma (no ordinal family or dispersion formula), aic, aicc, bic,",
+    "deviance (no ordinal or truncated family), log_lik"
+  ),
+  lme = paste(
+    "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
+    "bic, log_lik"
+  ),
+  gls = "nobs, sigma, aic, aicc, bic, log_lik",
+  polr = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic,",
+    "deviance, log_lik"
+  ),
+  clm = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic,",
+    "log_lik"
+  ),
+  clmm = "nobs, n_groups, aic, aicc, bic, deviance, log_lik",
+  multinom = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, aic, aicc, bic,",
+    "deviance, log_lik"
+  ),
+  mlogit = "nobs, aic, aicc, bic, log_lik",
+  zeroinfl = paste(
+    "nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc,",
+    "bic, log_lik"
+  ),
+  hurdle = paste(
+    "nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc,",
+    "bic, log_lik"
+  ),
+  coxph = "nobs, n_events, aic, aicc, bic, log_lik, concordance",
+  survreg = "nobs, sigma (no strata), aic, aicc, bic, log_lik",
+  cph = "nobs, n_events, aic, aicc, bic, log_lik",
+  flexsurvreg = "nobs, aic, aicc, bic, log_lik",
+  svyglm = "nobs, weighted_nobs, aic, eff_p",
+  svyolr = "nobs, weighted_nobs",
+  svycoxph = "nobs, weighted_nobs, n_events, concordance",
+  geeglm = "nobs, qic, qicu, scale, max_cluster_size, n_groups",
+  gam = "nobs, adj_r2, r2_deviance, sigma, aic, aicc, bic, deviance, log_lik",
+  betareg = "nobs, phi, aic, aicc, bic, log_lik",
+  selection = "nobs, aic, aicc, bic, log_lik",
+  ols = "nobs, r2, sigma, aic, aicc, bic, deviance, log_lik",
+  lrm = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke,",
+    "pseudo_r2_tjur (binary outcome), aic, aicc, bic, deviance, log_lik"
+  ),
+  Glm = paste(
+    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, aic,",
+    "aicc, bic, deviance, log_lik"
+  ),
+  stanreg = "nobs, r2_bayes, elpd_loo, looic, waic",
+  brmsfit = "nobs, r2_bayes, elpd_loo, looic, waic"
+)
+
+# The arguments of table_regression() that belong to some families only,
+# each with the families whose page documents it. Every other argument is
+# common to all classes (.REG_COMMON_ARGS). The Usage block of a family
+# page lists these arguments first (.render_family_usage()).
+.REG_FAMILY_ARGS <- list(
+  tau = "Survival",
+  at_time = "Survival",
+  show_thresholds = "Ordinal",
+  show_components = c("Ordinal", "Counts, two-part"),
+  show_re = "Mixed effects",
+  re_scale = "Mixed effects",
+  re_columns = "Mixed effects",
+  re_test = "Mixed effects",
+  re_ci = "Mixed effects"
+)
+
+.REG_COMMON_ARGS <- c(
+  "models",
+  "vcov",
+  "cluster",
+  "ci_level",
+  "ci_method",
+  "boot_n",
+  "standardized",
+  "exponentiate",
+  "ame_type",
+  "partial_type",
+  "p_adjust",
+  "show_columns",
+  "keep",
+  "drop",
+  "show_intercept",
+  "intercept_position",
+  "factor_layout",
+  "reference_style",
+  "reference_label",
+  "show_fit_stats",
+  "fit_stats_layout",
+  "layout",
+  "model_labels",
+  "outcome_labels",
+  "stars",
+  "nested",
+  "digits",
+  "p_digits",
+  "effect_size_digits",
+  "fit_digits",
+  "ic_digits",
+  "decimal_mark",
+  "align",
+  "padding",
+  "labels",
+  "note_labels",
+  "title",
+  "note",
+  "note_add",
+  "output",
+  "excel_path",
+  "excel_sheet",
+  "clipboard_delim",
+  "word_path",
+  "word_template",
+  "style"
+)
+
+# The help page of each family that has one.
+.REG_FAMILY_PAGE <- c(
+  "Robust, IV, quantile, panel" = "table_regression_robust",
+  "Mixed effects" = "table_regression_mixed",
+  "Ordinal" = "table_regression_ordinal",
+  "Categorical" = "table_regression_categorical",
+  "Counts, two-part" = "table_regression_counts",
+  "Survival" = "table_regression_survival",
+  "Survey-weighted" = "table_regression_survey",
+  "Bayesian" = "table_regression_bayesian"
 )
 
 # The other families a class also serves, with what it brings to each:
@@ -393,8 +664,21 @@
 # `family` keeps the rows of one family and drops the Family column, for
 # the page of that family (?table_regression_mixed); a name that is not a
 # family of the registry stops document(). `columns` keeps those columns
-# only, for the table of the variance estimators on ?table_regression.
-.render_supported_models_md <- function(family = NULL, columns = NULL) {
+# only, for the table of the variance estimators on ?table_regression; by
+# default every column but the two of the fit statistics, too long for a
+# table.
+.render_supported_models_md <- function(
+  family = NULL,
+  columns = c(
+    "family",
+    "class",
+    "engine",
+    "ame",
+    "exponentiate",
+    "blocks",
+    "vcov"
+  )
+) {
   reg <- .supported_models_registry()
   if (!is.null(family)) {
     if (!family %in% reg$family) {
@@ -429,7 +713,9 @@
     ame = "AME",
     exponentiate = "Exponentiate",
     blocks = "Blocks",
-    vcov = "vcov"
+    vcov = "vcov",
+    fit_stats_default = "Default fit statistics",
+    fit_stats = "Fit statistics"
   )[names(reg)]
   header <- paste0("| ", paste(labels, collapse = " | "), " |")
   sep <- paste0("|", strrep("---|", length(labels)))
@@ -450,11 +736,22 @@
 # `...`. A family page carries no real \usage: codoc() compares a \usage
 # with the whole signature and reports every argument left out, and
 # checkDocFiles() asks for an alias of table_regression(), which belongs
-# to the page of the function. Every name is checked against formals(),
+# to the page of the function. The arguments of the family come from
+# .REG_FAMILY_ARGS, in the order of the signature; `also` adds the common
+# arguments the page discusses. Every name is checked against formals(),
 # so an argument renamed or removed stops document() here and the block
 # cannot drift from the signature.
-.render_family_usage <- function(args) {
+.render_family_usage <- function(family, also = character()) {
   f <- formals(table_regression)
+  if (!family %in% names(.REG_FAMILY_PAGE)) {
+    stop("Not a family with a page: ", family, call. = FALSE)
+  }
+  own <- names(.REG_FAMILY_ARGS)[vapply(
+    .REG_FAMILY_ARGS,
+    function(fams) family %in% fams,
+    logical(1)
+  )]
+  args <- c(intersect(names(f), own), also)
   unknown <- setdiff(args, names(f))
   if (length(unknown) > 0L) {
     stop(
@@ -486,6 +783,27 @@
   )
 }
 
+# The default fit statistics of a class as a code span for a family page,
+# from the registry column `fit_stats_default`: the tokens that hold for
+# every fit of the class (an item with a condition is left out), as
+# `c("nobs", "aic")`, or `"nobs"` alone.
+.render_fit_stats_default <- function(class) {
+  reg <- .supported_models_registry()
+  if (!class %in% reg$class) {
+    stop("Not a class of the registry: ", class, call. = FALSE)
+  }
+  toks <- .reg_cell_tokens(
+    reg$fit_stats_default[reg$class == class],
+    conditional = FALSE
+  )
+  q <- paste0("\"", toks, "\"")
+  if (length(q) == 1L) {
+    paste0("`", q, "`")
+  } else {
+    paste0("`c(", paste(q, collapse = ", "), ")`")
+  }
+}
+
 
 #' Supported models of table_regression()
 #'
@@ -493,7 +811,8 @@
 #' `table_regression_models()` returns the registry of model classes
 #' supported by [table_regression()], one row per engine, with each class's
 #' family, average-marginal-effects estimand, `exponentiate` semantics,
-#' labeled table blocks and accepted `vcov` values. The same registry
+#' labeled table blocks, accepted `vcov` values and fit statistics. The
+#' same registry
 #' drives the table of this page and those of the family pages, so the
 #' published list cannot drift from the code.
 #'
@@ -583,8 +902,13 @@
 #' \doi{10.1111/j.0006-341X.2001.00120.x}
 #'
 #' @return A data frame with one row per supported engine and columns
-#'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks` and
-#'   `vcov` (the values of `vcov` the class accepts).
+#'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks`, `vcov`
+#'   (the values of `vcov` the class accepts), `fit_stats_default` (the
+#'   fit-statistic rows of a one-model table under the default
+#'   `show_fit_stats`, in their order) and `fit_stats` (the tokens of
+#'   `show_fit_stats` that give a row for one model; the change tokens,
+#'   which need `nested = TRUE`, are not listed). A parenthesis in a cell
+#'   gives the fits an item is limited to.
 #'
 #' @seealso [table_regression()]; the family pages listed under *Pages by
 #'   model family*; the

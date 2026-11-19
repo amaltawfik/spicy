@@ -1488,7 +1488,7 @@ values each class accepts, the \code{vcov} column of
    Mixed effects \tab \code{lmerMod} \tab classical, CR0-CR3 \cr
    Mixed effects \tab \code{glmerMod} \tab classical \cr
    Mixed effects \tab \code{glmmTMB} \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
-   Mixed effects \tab \code{lme} \tab classical, CR0-CR3 \cr
+   Mixed effects \tab \code{lme} \tab classical, CR0-CR3 (classical only with contrasts other than the session's) \cr
    Mixed effects \tab \code{gls} \tab classical \cr
    Ordinal \tab \code{polr} \tab classical, CR1 \cr
    Ordinal \tab \code{clm} \tab classical, CR1 (classical only with scale or nominal terms) \cr
@@ -1499,7 +1499,7 @@ values each class accepts, the \code{vcov} column of
    Counts, two-part \tab \code{hurdle} \tab classical, CR1 (classical only for a negative-binomial part) \cr
    Survival \tab \code{coxph} \tab classical, CR0 \cr
    Survival \tab \code{survreg} \tab classical, CR1 \cr
-   Survival \tab \code{cph} \tab classical, CR0 \cr
+   Survival \tab \code{cph} \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    Survival \tab \code{flexsurvreg} \tab classical \cr
    Survey-weighted \tab \code{svyglm} \tab classical (design-based) \cr
    Survey-weighted \tab \code{svyolr} \tab classical (design-based) \cr
@@ -1508,9 +1508,9 @@ values each class accepts, the \code{vcov} column of
    Additive, proportions, selection \tab \code{gam} \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{betareg} \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{selection} \tab classical \cr
-   rms \tab \code{ols} \tab classical, CR0 \cr
-   rms \tab \code{lrm} \tab classical, CR0 \cr
-   rms \tab \code{Glm} \tab classical, CR0 \cr
+   rms \tab \code{ols} \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
+   rms \tab \code{lrm} \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
+   rms \tab \code{Glm} \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
    Bayesian \tab \code{stanreg} \tab classical (the posterior) \cr
    Bayesian \tab \code{brmsfit} \tab classical (the posterior) \cr
 }

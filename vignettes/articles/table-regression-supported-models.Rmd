@@ -126,7 +126,9 @@ package itself uses, so it cannot drift from the code. Call
 `table_regression_models()` to get it as a data frame.
 
 ```{r registry, echo = FALSE}
-reg <- table_regression_models()
+reg <- table_regression_models()[, c(
+  "family", "class", "engine", "ame", "exponentiate", "blocks", "vcov"
+)]
 reg$family[duplicated(reg$family)] <- ""
 reg$class <- paste0("`", reg$class, "`")
 reg$engine <- vapply(

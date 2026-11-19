@@ -12,7 +12,7 @@
 #' outcome or alternative.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("exponentiate", "show_columns", "outcome_labels"))`
+#' `r spicy:::.render_family_usage("Categorical", c("exponentiate", "show_columns", "outcome_labels"))`
 #'
 #' This family has no argument of its own. The other arguments are
 #' documented in [table_regression()]; the values they take for
@@ -96,8 +96,9 @@
 #' by the Wald chi-square of the added coefficients on the robust matrix.
 #'
 #' @section Fit statistics:
-#' A `multinom` fit defaults to `c("nobs", "pseudo_r2_mcfadden", "aic")`,
-#' an `mlogit` fit to `c("nobs", "aic")`, its `n` counting choice
+#' A `multinom` fit defaults to
+#' `r spicy:::.render_fit_stats_default("multinom")`, an `mlogit` fit to
+#' `r spicy:::.render_fit_stats_default("mlogit")`, its `n` counting choice
 #' situations. See *R-squared of glm and categorical models* in
 #' [table_regression()].
 #'

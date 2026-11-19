@@ -122,8 +122,9 @@ by the Wald chi-square of the added coefficients on the robust matrix.
 
 \section{Fit statistics}{
 
-A \code{multinom} fit defaults to \code{c("nobs", "pseudo_r2_mcfadden", "aic")},
-an \code{mlogit} fit to \code{c("nobs", "aic")}, its \code{n} counting choice
+A \code{multinom} fit defaults to
+\code{c("nobs", "pseudo_r2_mcfadden", "aic")}, an \code{mlogit} fit to
+\code{c("nobs", "aic")}, its \code{n} counting choice
 situations. See \emph{R-squared of glm and categorical models} in
 \code{\link[=table_regression]{table_regression()}}.
 }

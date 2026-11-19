@@ -10,7 +10,7 @@
 #' random effects as a block of rows, summarized from the draws.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("ci_method", "standardized", "exponentiate", "show_columns"))`
+#' `r spicy:::.render_family_usage("Bayesian", c("ci_method", "standardized", "exponentiate", "show_columns"))`
 #'
 #' This family has no argument of its own. The other arguments are
 #' documented in [table_regression()]; the values they take for Bayesian

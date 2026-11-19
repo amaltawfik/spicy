@@ -402,6 +402,10 @@
   the identity link, and is available for Poisson, negative binomial
   and quasi models.
 
+* `table_regression_models()` gains two columns: `fit_stats_default`,
+  the fit statistics a table shows by default for each class, and
+  `fit_stats`, the tokens of `show_fit_stats` that give a row for it.
+
 * Word (flextable), gt (HTML, Word and RTF) and tinytable HTML tables
   now write a negative number with the minus sign (U+2212), in the cells
   and in the numbers of the note, as Typst and LaTeX already did. The

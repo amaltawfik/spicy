@@ -13,7 +13,7 @@
 #' statistics.
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("vcov", "cluster", "show_fit_stats"))`
+#' `r spicy:::.render_family_usage("Robust, IV, quantile, panel", c("vcov", "cluster", "show_fit_stats"))`
 #'
 #' This family has no argument of its own. The other arguments are
 #' documented in [table_regression()]; the values they take for these
@@ -128,8 +128,9 @@
 #' [table_regression()].
 #'
 #' @section Fit statistics:
-#' `lm_robust` defaults to `c("nobs", "r2", "adj_r2")`, `iv_robust` to
-#' `"nobs"` alone, and an IV `fixest::feols()` shows neither R-squared nor
+#' `lm_robust` defaults to
+#' `r spicy:::.render_fit_stats_default("lm_robust")`, `iv_robust` to
+#' `r spicy:::.render_fit_stats_default("iv_robust")` alone, and an IV `fixest::feols()` shows neither R-squared nor
 #' AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 #' R-squared of `ivreg()`, on the structural residuals. The AIC and BIC of
 #' a `fixest` model are those of its `lm()`, `glm()` or `MASS::glm.nb()`

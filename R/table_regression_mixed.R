@@ -14,7 +14,7 @@
 #' [table_regression_ordinal].
 #'
 #' @section Usage:
-#' `r spicy:::.render_family_usage(c("show_re", "re_scale", "re_columns", "re_test", "re_ci"))`
+#' `r spicy:::.render_family_usage("Mixed effects")`
 #'
 #' The other arguments are documented in [table_regression()]; the values
 #' they take for mixed models are listed below.
@@ -256,9 +256,8 @@
 #' model comparison* in [table_regression()].
 #'
 #' @section Fit statistics:
-#' By default, `c("nobs", "n_groups", "icc", "r2_marginal",
-#' "r2_conditional", "aic", "bic")`, for `lmer`, `glmer`, `glmmTMB`, `lme`
-#' and `clmm` fits. A row of the default that no model of the table fills
+#' By default, `r spicy:::.render_fit_stats_default("lmerMod")`, for
+#' `lmer`, `glmer`, `glmmTMB`, `lme` and `clmm` fits. A row of the default that no model of the table fills
 #' is left out. A token named in the call that no model fills is refused.
 #' A
 #' `gls` fit gets `n` and `AIC`.

@@ -157,7 +157,8 @@ family). See \emph{Hierarchical (nested) model comparison} in
 
 \section{Fit statistics}{
 
-\code{lm_robust} defaults to \code{c("nobs", "r2", "adj_r2")}, \code{iv_robust} to
+\code{lm_robust} defaults to
+\code{c("nobs", "r2", "adj_r2")}, \code{iv_robust} to
 \code{"nobs"} alone, and an IV \code{fixest::feols()} shows neither R-squared nor
 AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 R-squared of \code{ivreg()}, on the structural residuals. The AIC and BIC of

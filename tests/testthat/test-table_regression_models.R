@@ -8,7 +8,17 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
   expect_s3_class(reg, "data.frame")
   expect_identical(
     names(reg),
-    c("family", "class", "engine", "ame", "exponentiate", "blocks", "vcov")
+    c(
+      "family",
+      "class",
+      "engine",
+      "ame",
+      "exponentiate",
+      "blocks",
+      "vcov",
+      "fit_stats_default",
+      "fit_stats"
+    )
   )
   expect_true(all(nzchar(reg$vcov)))
   expect_true(all(nzchar(reg$class)))
@@ -53,6 +63,89 @@ test_that("the rendered documentation table covers every registry row", {
   md <- spicy:::.render_supported_models_md()
   reg <- table_regression_models()
   expect_equal(length(strsplit(md, "\n")[[1]]), nrow(reg) + 2L)
+})
+
+test_that("every argument of table_regression() is common or of a family", {
+  args <- names(formals(table_regression))
+  fam <- names(.REG_FAMILY_ARGS)
+  expect_length(intersect(fam, .REG_COMMON_ARGS), 0L)
+  expect_setequal(c(fam, .REG_COMMON_ARGS), args)
+  expect_false(anyDuplicated(.REG_COMMON_ARGS) > 0L)
+  reg <- table_regression_models()
+  expect_true(all(names(.REG_FAMILY_PAGE) %in% reg$family))
+  expect_true(all(unlist(.REG_FAMILY_ARGS) %in% names(.REG_FAMILY_PAGE)))
+})
+
+test_that("an argument of a family is documented on the page of its family", {
+  # The Usage block is generated from .REG_FAMILY_ARGS: the argument must
+  # also be named in the rest of the page. Source tree when available, the
+  # built package's Rd database otherwise.
+  src <- testthat::test_path("..", "..", "man")
+  page_text <- function(tp) {
+    f <- file.path(src, paste0(tp, ".Rd"))
+    rd <- if (file.exists(f)) {
+      tools::parse_Rd(f)
+    } else {
+      tools::Rd_db("spicy")[[paste0(tp, ".Rd")]]
+    }
+    keep <- vapply(
+      rd,
+      function(x) {
+        !(identical(attr(x, "Rd_tag"), "\\section") &&
+          identical(paste(as.character(x[[1L]]), collapse = ""), "Usage"))
+      },
+      logical(1)
+    )
+    paste(unlist(lapply(rd[keep], as.character)), collapse = "")
+  }
+  for (a in names(.REG_FAMILY_ARGS)) {
+    for (fam in .REG_FAMILY_ARGS[[a]]) {
+      tp <- .REG_FAMILY_PAGE[[fam]]
+      expect_match(
+        page_text(tp),
+        paste0("\\b", a, "\\b"),
+        label = paste(a, "on", tp)
+      )
+      expect_match(
+        .render_family_usage(fam),
+        paste0("\n  ", a, " = "),
+        fixed = TRUE,
+        label = paste(a, "in the Usage of", tp)
+      )
+    }
+  }
+})
+
+test_that("the default fit statistics of a page come from the registry", {
+  expect_identical(
+    .render_fit_stats_default("coxph"),
+    "`c(\"nobs\", \"n_events\", \"aic\")`"
+  )
+  expect_identical(.render_fit_stats_default("iv_robust"), "`\"nobs\"`")
+  # A token with a condition is left out.
+  expect_identical(
+    .render_fit_stats_default("lm_robust"),
+    "`c(\"nobs\", \"r2\", \"adj_r2\")`"
+  )
+  expect_error(.render_fit_stats_default("nope"), "Not a class")
+  expect_error(.render_family_usage("Linear"), "Not a family with a page")
+  expect_error(
+    .render_family_usage("Survival", "nope"),
+    "Not an argument of table_regression"
+  )
+})
+
+test_that("a registry cell is split on its top-level commas", {
+  expect_identical(
+    .reg_cell_tokens(
+      "classical, HC0-HC2, CR1 (only without x = TRUE, y = TRUE)"
+    ),
+    c("classical", "HC0", "HC1", "HC2", "CR1")
+  )
+  expect_identical(
+    .reg_cell_tokens("nobs, r2 (a, b), aic", conditional = FALSE),
+    c("nobs", "aic")
+  )
 })
 
 ## ---- Phase 3 matrix (lot T2) ----------------------------------------------
