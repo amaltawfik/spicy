@@ -96,8 +96,12 @@
 #'     block, with the engine's CI. In a `glmmTMB` block of three terms or
 #'     more it is the width of glmmTMB's interval divided by \eqn{2z}{2z}.
 #'     nlme computes the covariance matrix behind the SE of an `lme` fit
-#'     by finite differences, and on a random-slope model the result
-#'     varies with the platform. spicy displays what nlme estimates.}
+#'     by finite differences. With nlme's default step and a
+#'     random-effect correlation close to zero, the SE can be off by
+#'     several percent and differ from one platform to another, or the
+#'     matrix is not positive definite and the rows have no SE and no CI.
+#'     A larger step, `control = nlme::lmeControl(.relStep = 1e-4)`,
+#'     gives a stable matrix. spicy displays what nlme estimates.}
 #'   \item{`re_columns`}{Subset of `c("est", "se", "ci")`: the cells of the
 #'     random-effects rows that are displayed (`"est"` is mandatory).
 #'     Deselected cells render as an en dash on those rows only:

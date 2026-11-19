@@ -155,10 +155,10 @@ the mixture weights depend on the model's geometry, so the footer falls
 back on a pragmatic halved chi-squared; Stata's `mixed` approaches the
 same case from the opposite side, printing the chi-squared without
 halving, under the note "LR test is conservative and provided only for
-reference" (Stata manual, [ME] mixed, Example 2, p. 18). The per-term tests below each constrain a single component
-and refer the statistic to the 50:50 mixture itself. Here
-chi-bar-squared(3) = 150.04, p < .001: the random structure earns its
-place.
+reference" (Stata manual, *[ME] mixed*, Example 2). The per-term tests
+below each constrain a single component and refer the statistic to the
+50:50 mixture itself. Here chi-bar-squared(3) = 150.04, p < .001: the
+random structure earns its place.
 
 ## From OLS to a multilevel model, step by step
 
