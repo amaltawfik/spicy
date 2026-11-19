@@ -486,8 +486,10 @@ build_regression_footer_from_frames <- function(
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
       build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
-      if (re_se_ci_shown) build_re_se_skipped_footer_block_from_frames(frames),
       if (re_se_ci_shown) build_re_apvar_footer_block_from_frames(frames),
+      if (re_se_ci_shown) {
+        build_re_se_unavailable_footer_block_from_frames(frames)
+      },
       if (re_se_ci_shown) build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_nested_footer_block(nested)
@@ -3026,41 +3028,47 @@ build_re_profile_footer_block_from_frames <- function(frames) {
 }
 
 
-# Variance-component SE / CI omitted for size (extras$re_se_skipped_n,
-# see .re_se_skipped_by_size): the note states the FACT about what the
-# table shows, in reader terms: the threshold, never the option name
-# (documented under `re_columns` of ?table_regression). The advice
-# (raise the cap, or use re_test) lives in the orchestrator's
-# spicy_caveat warning, per the singular-fit precedent.
-build_re_se_skipped_footer_block_from_frames <- function(frames) {
+# Variance-component SE / CI of an lmer / glmer fit missing for a
+# reason the reader cannot see in the table (extras$re_se_unavailable,
+# see .merMod_re_sdcor_vcov): an estimated dispersion, a Hessian that is
+# not positive definite, a covariance structure the Hessian route does
+# not cover. Same layout as the nlme twin below: one shared line when
+# every model is affected for the same reason, else one line per
+# affected model. A singular fit is not flagged: its own note says why.
+build_re_se_unavailable_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  skipped <- vapply(
+  reasons <- vapply(
     frames,
     function(f) {
-      !is.na(f$info$extras$re_se_skipped_n %||% NA_integer_)
+      as.character(f$info$extras$re_se_unavailable %||% NA_character_)
     },
-    logical(1)
+    character(1)
   )
-  if (!any(skipped)) {
+  affected <- which(!is.na(reasons))
+  if (length(affected) == 0L) {
     return(NULL)
   }
-  # The cap is one global option, so the sentence is the same for every
-  # model. Written like the N of the notes (.sample_size_sentence): no
-  # thousands separator, since an anglophone "," reads as a decimal
-  # under decimal_mark = ",".
-  msg <- spicy_fmt(
-    "note_re_se_skipped",
-    formatC(round(.re_se_size_cap()), format = "f", digits = 0)
-  )
-  # One model, or every model affected: one shared line.
-  if (length(frames) == 1L || all(skipped)) {
-    return(msg)
+  # Literal keys, so the registry check sees each one used.
+  msg <- function(reason) {
+    spicy_str(switch(
+      reason,
+      dispersion = "note_re_se_unavailable_dispersion",
+      hessian = "note_re_se_unavailable_hessian",
+      structure = "note_re_se_unavailable_structure"
+    ))
+  }
+  if (
+    length(frames) == 1L ||
+      (length(affected) == length(frames) &&
+        length(unique(reasons)) == 1L)
+  ) {
+    return(msg(reasons[affected[1L]]))
   }
   per <- vapply(
-    which(skipped),
-    function(k) .model_line(frames, k, msg),
+    affected,
+    function(k) .model_line(frames, k, msg(reasons[k])),
     character(1)
   )
   paste(per, collapse = "\n")
@@ -3301,7 +3309,7 @@ build_reference_outcome_footer_block_from_frames <- function(frames) {
   # One shared line only when EVERY model in the table is multinomial
   # and shares one reference -- in a mixed-class table an unqualified
   # line would read as applying to the non-multinomial models too
-  # (same all-affected bar as build_re_se_skipped above).
+  # (same all-affected bar as the other per-model notes).
   if (
     length(affected) == length(frames) &&
       length(unique(refs[affected])) == 1L

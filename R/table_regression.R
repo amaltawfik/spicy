@@ -3285,44 +3285,6 @@ table_regression <- function(
     )
   }
 
-  # Variance-component SE / CI skipped for size: the note states the fact;
-  # the advice (raise the cap or test the random terms) belongs here, to
-  # the analyst, once per table.
-  re_se_skipped <- vapply(
-    frames,
-    function(fr) {
-      !is.na(fr$info$extras$re_se_skipped_n %||% NA_integer_) && !fit_only
-    },
-    logical(1)
-  )
-  if (any(re_se_skipped)) {
-    mod_labels <- .model_display_names(models, panel_req)
-    msg <- function(it) {
-      c(
-        sprintf(
-          paste0(
-            "Variance-component SEs and CIs skipped for %s: n exceeds ",
-            "`options(\"spicy.re_se_max_n\")` = %s."
-          ),
-          paste(it$names, collapse = ", "),
-          format(.re_se_size_cap(), big.mark = ",")
-        ),
-        "i" = paste0(
-          "Their computation (merDeriv) grows superlinearly with n ",
-          "(roughly a minute at n \u2248 2,700). Raise the cap, e.g. ",
-          "`options(spicy.re_se_max_n = Inf)`, to compute them anyway, ",
-          "or test the random terms with `re_test = \"lrt\"`."
-        )
-      )
-    }
-    items <- list(names = mod_labels[re_se_skipped])
-    spicy_warn(
-      msg(items),
-      class = "spicy_caveat",
-      spicy_gather = .reg_gather(panel_req, "re_se_skipped", items, msg)
-    )
-  }
-
   # An lme or gls whose data cannot be found (fitted without `data`, or
   # that object no longer exists where the model was fitted): what is
   # computed from the data is left out, once per table.

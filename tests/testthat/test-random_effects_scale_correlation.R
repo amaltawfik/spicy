@@ -159,15 +159,15 @@ test_that("glmmTMB random slope: correlation row with SE/CI", {
 # ---- 4. Correlation rows: lme4 (point estimate only) -------------------
 
 test_that("lme4 random slope: correlation row appended with SE / CI", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_7c7b()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
   corr_rows <- vc[vc$is_correlation %in% TRUE, ]
   expect_identical(nrow(corr_rows), 1L)
   expect_true(is.finite(corr_rows$corr))
-  # Phase 7c17: multivariate Delta-method on merDeriv vcov populates
-  # SE + CI on the rho row -- the Phase 7c7b NA placeholder is gone.
+  # The Hessian of the deviance populates SE + CI on the rho row --
+  # the Phase 7c7b NA placeholder is gone.
   expect_true(is.finite(corr_rows$std_error))
   expect_true(is.finite(corr_rows$ci_lower))
   expect_true(is.finite(corr_rows$ci_upper))
@@ -177,8 +177,8 @@ test_that("lme4 random slope: correlation row appended with SE / CI", {
 
 # ---- 5. Variance row SE/CI still populated when correlation rows present
 
-test_that("lme4 random slope: variance rows still have SE/CI from merDeriv", {
-  skip_if_not_installed("merDeriv")
+test_that("lme4 random slope: variance rows still have SE/CI", {
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_7c7b()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components

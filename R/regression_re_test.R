@@ -405,8 +405,8 @@
 
 
 # `re_ci`: uncertainty route for the random-effect variance-component
-# rows. "wald" = merDeriv observed-information SE + CI (subject to the
-# spicy.re_se_max_n size cap); "profile" = lme4's profile-likelihood
+# rows. "wald" = SE from the Hessian of the deviance (observed
+# information) + Wald CI; "profile" = lme4's profile-likelihood
 # intervals (no SE, asymmetric CI -- lme4's own supported route).
 .validate_re_ci <- function(x, models, call = rlang::caller_env()) {
   choices <- c("wald", "profile")

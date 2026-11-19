@@ -1898,15 +1898,6 @@ test_that("the random-effects notes follow the language", {
       "asym\u00E9triques)."
     )
   )
-  expect_identical(
-    spicy:::build_re_se_skipped_footer_block_from_frames(
-      list(list(info = list(extras = list(re_se_skipped_n = 180L))))
-    ),
-    paste0(
-      "Erreur standard et IC des composantes de la variance des effets ",
-      "al\u00E9atoires non calcul\u00E9s pour n sup\u00E9rieur \u00E0 1000."
-    )
-  )
 })
 
 test_that("the reference-level, survival and AME notes follow the language", {

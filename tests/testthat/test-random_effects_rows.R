@@ -155,7 +155,7 @@ test_that("nlme::lme renders vc rows", {
 ## ---- 9. Audit fixes (2026-07-02) -------------------------------------------
 
 test_that("structured body carries the vc rows (backend parity)", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .rr_lmer_slope()
   s <- as_structured(table_regression(fit, show_columns = c("b", "se", "ci")))
   b <- s$body
@@ -343,107 +343,6 @@ test_that("n_groups: nested factor names pass verbatim, one row each", {
   expect_false(any(grepl("batchs", v, fixed = TRUE)))
 })
 
-## ---- 11. Variance-component SE size cap (spicy.re_se_max_n) ---------------
-
-test_that("variance-component SEs are skipped above the size cap", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-
-  old <- options(spicy.re_se_max_n = 50L) # sleepstudy has n = 180
-  on.exit(options(old), add = TRUE)
-
-  expect_warning(tr <- table_regression(fit), class = "spicy_caveat")
-  out <- paste(capture.output(print(tr)), collapse = "\n")
-  # Fact-only table note; the advice lives in the warning.
-  expect_match(out, "variance components not computed", fixed = TRUE)
-  expect_no_match(out, "spicy.re_se_max_n", fixed = TRUE)
-
-  # tidy: vc rows keep estimates but carry no SE.
-  tt <- suppressWarnings(broom::tidy(table_regression(fit)))
-  vc <- tt[tt$estimate_type == "vc", ]
-  expect_gt(nrow(vc), 0L)
-  expect_true(all(is.finite(vc$estimate)))
-  expect_true(all(is.na(vc$std.error)))
-
-  # The warning names the override and the re_test alternative.
-  w <- tryCatch(table_regression(fit), warning = function(w) w)
-  expect_match(conditionMessage(w), "spicy.re_se_max_n", fixed = TRUE)
-  expect_match(conditionMessage(w), "re_test", fixed = TRUE)
-})
-
-test_that("the size-cap note names the threshold, not the option", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  withr::local_options(spicy.re_se_max_n = 10)
-  flat <- function(tr) {
-    gsub("[[:space:]]+", " ", paste(capture.output(print(tr)), collapse = " "))
-  }
-
-  out <- flat(suppressWarnings(table_regression(fit)))
-  expect_match(
-    out,
-    paste(
-      "SE and CI of the random-effect variance components not computed",
-      "for n above 10."
-    ),
-    fixed = TRUE
-  )
-  expect_no_match(out, "spicy.re_se_max_n", fixed = TRUE)
-
-  withr::local_options(spicy.language = "fr")
-  out_fr <- flat(suppressWarnings(table_regression(fit)))
-  expect_match(
-    out_fr,
-    "pour n sup\u00E9rieur \u00E0 10.",
-    fixed = TRUE
-  )
-  expect_no_match(out_fr, "spicy.re_se_max_n", fixed = TRUE)
-})
-
-test_that("raising the size cap restores the variance-component SEs", {
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-
-  old <- options(spicy.re_se_max_n = Inf)
-  on.exit(options(old), add = TRUE)
-
-  expect_no_warning(tr <- table_regression(fit))
-  tt <- broom::tidy(tr)
-  vc <- tt[tt$estimate_type == "vc", ]
-  expect_true(any(is.finite(vc$std.error)))
-  out <- paste(capture.output(print(tr)), collapse = "\n")
-  expect_false(grepl("variance components not computed", out, fixed = TRUE))
-})
-
-test_that("the size-cap warning does not swallow `labels =` (register 55)", {
-  # Regression witness. The warning block used to build its per-model
-  # names into a local called `labels`, shadowing the user's
-  # per-coefficient label vector for the rest of the pipeline: every
-  # `labels =` override was silently dropped on any mixed fit large
-  # enough to trip the variance-component SE size cap.
-  skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-
-  withr::local_options(list(spicy.re_se_max_n = 50L)) # sleepstudy n = 180
-
-  expect_warning(
-    tr <- table_regression(fit, labels = c(Days = "Days of deprivation")),
-    class = "spicy_caveat"
-  )
-  expect_true("Days of deprivation" %in% tr$Variable)
-  expect_false("Days" %in% tr$Variable)
-  # The warning still names the model, not the coefficient label.
-  w <- tryCatch(
-    table_regression(fit, labels = c(Days = "Days of deprivation")),
-    warning = function(w) w
-  )
-  expect_match(conditionMessage(w), "Model 1", fixed = TRUE)
-})
-
 ## ---- 12. Profile-likelihood CIs for variance components (re_ci) -----------
 
 test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
@@ -511,15 +410,12 @@ test_that("re_ci = 'profile' matches the confint profile oracle exactly", {
   )
 })
 
-test_that("re_ci = 'profile' sidesteps the size cap without note or warning", {
+test_that("re_ci = 'profile' gives its note and no warning", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  old <- options(spicy.re_se_max_n = 50L) # sleepstudy has n = 180
-  on.exit(options(old), add = TRUE)
 
   expect_no_warning(tr <- table_regression(fit, re_ci = "profile"))
   out <- paste(capture.output(print(tr)), collapse = "\n")
-  expect_false(grepl("variance components not computed", out, fixed = TRUE))
   expect_match(out, "profile likelihood CIs", fixed = TRUE)
   tt <- broom::tidy(tr)
   vc <- tt[tt$estimate_type == "vc", ]
@@ -570,9 +466,9 @@ test_that("ci_level is honored by the vc CI paths of all mixed engines", {
   trm <- "re::Subject::(Intercept)"
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
 
-  # merDeriv Wald path: on log(sd) the interval is symmetric, so the
+  # Wald path: on log(sd) the interval is symmetric, so the
   # 90/95 ratio of log-widths must be exactly z_.95 / z_.975.
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   v95 <- log(vc_ci(table_regression(fit), trm))
   v90 <- log(vc_ci(table_regression(fit, ci_level = 0.90), trm))
   expect_equal(
@@ -634,7 +530,7 @@ test_that("ci_level reaches the nlme and glmmTMB vc CI paths", {
 
 test_that("re_ci default (wald) is unchanged and differs from profile", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   tw <- broom::tidy(table_regression(fit))
   tp <- broom::tidy(table_regression(fit, re_ci = "profile"))
@@ -652,18 +548,16 @@ test_that("re_ci default (wald) is unchanged and differs from profile", {
 })
 
 
-test_that("3-term random block SEs align slot-by-slot (merDeriv >= 0.2-6)", {
+test_that("3-term random block SEs align slot-by-slot with glmmTMB", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   skip_if_not_installed("glmmTMB")
-  # merDeriv < 0.2-6 returned the RE (co)variance results in an order
-  # that did not match their labels for 3x3+ blocks (merDeriv GH #2:
-  # index matrix built from Lambda instead of Lambdat), so positional
-  # extraction silently mislabeled the variance SEs -- and 2x2
-  # fixtures cannot catch it (both orders coincide). Pin the slot
-  # alignment with an INDEPENDENT engine: glmmTMB's sdreport SEs for
-  # the same ML fit must match term by term. The parametrizations
-  # differ, so a few percent of drift is expected; a slot permutation
+  # In a 3x3 block the SDs sit at positions 1, 4, 6 of the lower
+  # triangle taken column by column, and 2x2 fixtures cannot catch a
+  # row-major mix-up (both orders coincide). Pin the slot alignment
+  # with an INDEPENDENT engine: glmmTMB's SEs for the same ML fit must
+  # match term by term (both are the observed information; the
+  # residual drift comes from the two optima). A slot permutation
   # shows up as 50%+ discrepancies.
   set.seed(42)
   ng <- 40
@@ -703,7 +597,6 @@ test_that("3-term random block SEs align slot-by-slot (merDeriv >= 0.2-6)", {
   expect_true(all(is.finite(cmp$std_error_lmer)))
   # Same ML optimum: variances agree tightly.
   expect_equal(cmp$variance_lmer, cmp$variance_tmb, tolerance = 1e-3)
-  # SEs agree per SLOT (expected vs observed information: small drift
-  # only; a permuted slot would blow far past this tolerance).
-  expect_equal(cmp$std_error_lmer, cmp$std_error_tmb, tolerance = 0.05)
+  # SEs agree per SLOT (a permuted slot would blow far past this).
+  expect_equal(cmp$std_error_lmer, cmp$std_error_tmb, tolerance = 1e-3)
 })

@@ -61,23 +61,6 @@ test_that("the apVar note appears only with an SE or CI cell on the rows", {
   ))
 })
 
-test_that("the size note appears only with an SE or CI cell on the rows", {
-  skip_if_not_installed("lme4")
-  withr::local_options(spicy.re_se_max_n = 10)
-  fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  key <- "not computed for n above"
-  has_note <- function(...) {
-    grepl(
-      key,
-      .msf_printed(suppressWarnings(table_regression(fit, ...))),
-      fixed = TRUE
-    )
-  }
-  expect_true(has_note())
-  expect_false(has_note(show_re = FALSE))
-  expect_false(has_note(re_columns = "est"))
-})
-
 test_that("the profile note appears only with an SE or CI cell on the rows", {
   skip_if_not_installed("lme4")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)

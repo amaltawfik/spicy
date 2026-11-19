@@ -527,9 +527,12 @@
   note_re_test_rlrt = "Random-effect p-value: exact restricted LRT (simulated null distribution).",
   # `re_ci = "profile"`: what the interval cells of those rows are.
   note_re_profile_ci = "Random-effect variance components: profile likelihood CIs; no SE (asymmetric intervals).",
-  # Their SE and CI skipped for size. One hole: the sample size.
-  note_re_se_skipped = "SE and CI of the random-effect variance components not computed for n above %s.",
   note_re_apvar_not_pd = "SE and CI of the random-effect variance components unavailable: the approximate covariance matrix of the variance parameters is not positive definite.",
+  # The same cells of an lmer / glmer fit, by reason (see
+  # .merMod_re_sdcor_vcov).
+  note_re_se_unavailable_dispersion = "SE and CI of the random-effect variance components unavailable: the model has an estimated dispersion parameter.",
+  note_re_se_unavailable_hessian = "SE and CI of the random-effect variance components unavailable: the Hessian of the deviance is not positive definite.",
+  note_re_se_unavailable_structure = "SE and CI of the random-effect variance components unavailable: they are not computed for this covariance structure.",
   # A mixed fit on the boundary of its parameter space.
   note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11); the Wald SE and CI of the variance components are omitted.",
   # The same fact in a table of fit statistics, which shows no variance

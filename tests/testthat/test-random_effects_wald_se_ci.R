@@ -89,7 +89,7 @@ test_that("variance_components carries Wald SE + CI columns for lme", {
 # ---- 2. lmer: SE + CI populated (non-singular fit) -----------------------
 
 test_that("lmer (random intercept): SE + CI are finite for all rows", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
@@ -106,29 +106,22 @@ test_that("lmer (random intercept): SE + CI are finite for all rows", {
   expect_equal(vc$ci_lower, vc$variance * exp(-2 * z * s), tolerance = 1e-12)
 })
 
-test_that("lmer (random intercept): SE matches merDeriv direct output", {
-  skip_if_not_installed("merDeriv")
+test_that("lmer (random intercept): SE is the one lmer, lme and glmmTMB share", {
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  expected_se <- sqrt(diag(v))
-  n_fixed <- length(lme4::fixef(fit))
-  # For random intercept only: position 1 of RE block, then residual
+  # SE of the SD (decision 2026-11-19-re-se-delta.md): 6.811906 and
+  # 1.727074; the frame stores SE(sd^2) = 2 sd SE(sd).
   expect_equal(
-    vc$std_error[vc$group == "Subject"],
-    unname(expected_se[n_fixed + 1L]),
-    tolerance = 1e-10
-  )
-  expect_equal(
-    vc$std_error[vc$group == "Residual"],
-    unname(expected_se[n_fixed + 2L]),
-    tolerance = 1e-10
+    vc$std_error / (2 * sqrt(vc$variance)),
+    c(6.811906, 1.727074),
+    tolerance = 1e-6
   )
 })
 
 test_that("lmer (random slope): SE/CI populated for intercept + slope + residual", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
@@ -139,17 +132,13 @@ test_that("lmer (random slope): SE/CI populated for intercept + slope + residual
   expect_true(all(is.finite(var_rows$std_error)))
   expect_true(all(var_rows$ci_lower >= 0)) # variance >= 0 enforced
 
-  # Pin the 3 variance-row SEs to the merDeriv diagonal oracle.
-  # Column-major vech layout of the 2x2 Subject block puts
-  # var(Intercept) at position 1, cov at 2, var(Days) at 3; the
-  # residual variance follows at position 4.
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  n_fixed <- length(lme4::fixef(fit))
-  re_se <- unname(sqrt(diag(v))[-seq_len(n_fixed)])
+  # Pin the 3 SD-row SEs to the values lmer and glmmTMB share
+  # (decision 2026-11-19-re-se-delta.md): 5.8363, 1.2480, 1.5080.
   expect_identical(var_rows$term, c("(Intercept)", "Days", ""))
-  expect_equal(var_rows$std_error, re_se[c(1L, 3L, 4L)], tolerance = 1e-10)
+  sd_se <- var_rows$std_error / (2 * sqrt(var_rows$variance))
+  expect_equal(sd_se, c(5.8363, 1.2480, 1.5080), tolerance = 1e-4)
   z <- qnorm(0.975)
-  s_log <- re_se[c(1L, 3L, 4L)] / (2 * var_rows$variance)
+  s_log <- var_rows$std_error / (2 * var_rows$variance)
   expect_equal(
     var_rows$ci_lower,
     var_rows$variance * exp(-2 * z * s_log),
@@ -161,27 +150,19 @@ test_that("lmer (random slope): SE/CI populated for intercept + slope + residual
     tolerance = 1e-10
   )
 
-  # Correlation row: multivariate Delta-method oracle on the 3x3
-  # sub-vcov of (var(Int), cov, var(Days)). rho = cov / sqrt(v1 * v2),
-  # grad = (-rho/(2 v1), 1/sqrt(v1 v2), -rho/(2 v2)),
-  # Var(rho) = grad' Sigma_3 grad; CI = rho +/- z * SE in [-1, 1].
+  # Correlation row: SE 0.3250, CI Wald on atanh(rho).
   g_vc <- as.matrix(lme4::VarCorr(fit)$Subject)
-  var_i <- g_vc[1L, 1L]
-  var_j <- g_vc[2L, 2L]
-  cov_ij <- g_vc[1L, 2L]
-  rho <- cov_ij / sqrt(var_i * var_j)
-  Sigma3 <- v[n_fixed + 1:3, n_fixed + 1:3]
-  grad <- c(-rho / (2 * var_i), 1 / sqrt(var_i * var_j), -rho / (2 * var_j))
-  se_rho <- sqrt(as.numeric(t(grad) %*% Sigma3 %*% grad))
+  rho <- g_vc[1L, 2L] / sqrt(g_vc[1L, 1L] * g_vc[2L, 2L])
   corr_row <- vc[vc$is_correlation %in% TRUE, ]
   expect_equal(corr_row$corr, rho, tolerance = 1e-10)
-  expect_equal(corr_row$std_error, se_rho, tolerance = 1e-10)
-  expect_equal(corr_row$ci_lower, max(-1, rho - z * se_rho), tolerance = 1e-10)
-  expect_equal(corr_row$ci_upper, min(1, rho + z * se_rho), tolerance = 1e-10)
+  expect_equal(corr_row$std_error, 0.3250, tolerance = 1e-4)
+  half <- z * corr_row$std_error / (1 - rho^2)
+  expect_equal(corr_row$ci_lower, tanh(atanh(rho) - half), tolerance = 1e-10)
+  expect_equal(corr_row$ci_upper, tanh(atanh(rho) + half), tolerance = 1e-10)
 })
 
 test_that("lmer Wald CI brackets the point estimate", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
@@ -189,23 +170,21 @@ test_that("lmer Wald CI brackets the point estimate", {
   expect_true(all(vc$variance <= vc$ci_upper))
   # Pin the exact bounds on top of the bracket check: Wald CI on
   # log(sd), squared, variance * exp(+/- 2 z s), s = SE / (2 variance),
-  # with SE the merDeriv diagonal (RE variance then residual after the
-  # fixed effects). No clamp: the bounds stay above 0.
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  n_fixed <- length(lme4::fixef(fit))
-  se_or <- unname(sqrt(diag(v))[n_fixed + c(1L, 2L)])
+  # with SE(sd^2) = 2 sd SE(sd) and SE(sd) the values lmer, lme and
+  # glmmTMB share. No clamp: the bounds stay above 0.
+  se_or <- 2 * sqrt(vc$variance) * c(6.811906, 1.727074)
   z <- qnorm(0.975)
   s <- se_or / (2 * vc$variance)
   expect_identical(vc$group, c("Subject", "Residual"))
-  expect_equal(vc$ci_lower, vc$variance * exp(-2 * z * s), tolerance = 1e-10)
-  expect_equal(vc$ci_upper, vc$variance * exp(2 * z * s), tolerance = 1e-10)
+  expect_equal(vc$ci_lower, vc$variance * exp(-2 * z * s), tolerance = 1e-6)
+  expect_equal(vc$ci_upper, vc$variance * exp(2 * z * s), tolerance = 1e-6)
 })
 
 
 # ---- 3. glmer singular fit: SE/CI = NA (no crash) -----------------------
 
 test_that("glmer singular fit: SE/CI gracefully degrade to NA", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_singular()
   expect_true(lme4::isSingular(fit))
   fr <- as_regression_frame(fit)

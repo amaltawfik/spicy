@@ -33,7 +33,7 @@
 # ---- 1. Panel renders for lmer (random intercept) -----------------------
 
 test_that("lmer random-intercept output has structured 'Random effects' panel", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int_panel()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -70,7 +70,7 @@ test_that("lmer random-intercept output has structured 'Random effects' panel", 
 # ---- 2. Panel renders for lmer random slope ----------------------------
 
 test_that("lmer random-slope output includes ρ row", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_panel()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -87,7 +87,7 @@ test_that("lmer random-slope output includes ρ row", {
   )
   expect_match(
     combined,
-    "   ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –",
+    "   ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –",
     fixed = TRUE
   )
 })
@@ -198,7 +198,7 @@ test_that("lm output has no Random effects panel", {
 # ---- 6. Panel uses SD scale (Gelman default) ---------------------------
 
 test_that("panel values are on SD scale, not variance scale", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int_panel()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
@@ -239,7 +239,7 @@ test_that("panel values are on SD scale, not variance scale", {
 }
 
 test_that("panel header annotates lmer (REML default) with '(REML)'", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_int_panel()
   out <- capture.output(print(table_regression(fit)))
   # Pin the whole LRT footer sentence, not just its "(REML):" prefix: a
@@ -257,7 +257,7 @@ test_that("panel header annotates lmer (REML default) with '(REML)'", {
 })
 
 test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- lme4::lmer(
     Reaction ~ Days + (1 | Subject),
     data = lme4::sleepstudy,
@@ -281,7 +281,7 @@ test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
 # ---- 8. Correlation row shows rho with SE + CI in the rows layout -------
 
 test_that("lme4 correlation row shows rho with SE + CI (rows layout)", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_panel()
   df <- table_regression(fit, show_columns = c("b", "se", "ci"))
   # the correlation row's label ends in ", Days)"; unique to it

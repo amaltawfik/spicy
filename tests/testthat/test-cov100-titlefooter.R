@@ -10,7 +10,6 @@
 #     disclosure,
 #   * .append_component_rows / .append_random_effects_rows entry guards and
 #     the no-is_correlation-column / no-is_re-column initialization paths,
-#   * the re_se_skipped footer's multi-model consolidation branches,
 #   * the multi-family exponentiate sentence without a displayed SE column,
 #   * the polynomial-legend passthrough arms for non-canonical suffixes.
 #
@@ -299,41 +298,6 @@ test_that(".append_random_effects_rows initializes is_re; vc frame lacks is_corr
 test_that(".format_random_effects_for_frame is NULL without RE metadata", {
   expect_null(
     spicy:::.format_random_effects_for_frame(list(info = list(class = "lm")))
-  )
-})
-
-
-# ---- re_se_skipped footer: multi-model consolidation branches -------------
-
-test_that("re_se_skipped footer states the cap once when all models skip", {
-  # The sentence names the cap (one global option), not each model's n,
-  # so models with different n still share one line.
-  mkf <- function(n) list(info = list(extras = list(re_se_skipped_n = n)))
-  out <- spicy:::build_re_se_skipped_footer_block_from_frames(
-    list(mkf(15000L), mkf(20000L))
-  )
-  expect_identical(
-    out,
-    paste0(
-      "SE and CI of the random-effect variance components not computed ",
-      "for n above 1000."
-    )
-  )
-})
-
-test_that("re_se_skipped footer prefixes only the affected model", {
-  unaffected <- list(info = list(extras = list()))
-  affected <- list(info = list(extras = list(re_se_skipped_n = 20000L)))
-  withr::local_options(spicy.re_se_max_n = 12500)
-  out <- spicy:::build_re_se_skipped_footer_block_from_frames(
-    list(unaffected, affected)
-  )
-  expect_identical(
-    out,
-    paste0(
-      "Model 2: SE and CI of the random-effect variance components not ",
-      "computed for n above 12500."
-    )
   )
 })
 

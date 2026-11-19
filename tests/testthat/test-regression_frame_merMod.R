@@ -392,11 +392,11 @@ test_that("glmer poisson: ICC matches performance::icc() adjusted ICC (oracle)",
 })
 
 
-# ---- 4c. lmer random slope: correlation row pinned to merDeriv ----------
+# ---- 4c. lmer random slope: rows pinned to the shared reference --------
 
-test_that("lmer random slope: correlation SE matches the merDeriv Delta-method oracle", {
+test_that("lmer random slope: SD and correlation SEs match the reference values", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
@@ -408,42 +408,21 @@ test_that("lmer random slope: correlation SE matches the merDeriv Delta-method o
   expect_identical(nrow(corr_row), 1L)
   expect_equal(corr_row$corr, rho, tolerance = 1e-12)
 
-  # merDeriv full vcov on the variance scale. Layout for this fit:
-  # 2 fixed effects, then the column-major vech of the 2 x 2 Subject
-  # block -- var(Int), cov(Int, Days), var(Days) at 3:5 -- and the
-  # residual variance at 6 (colnames cov_Subject.*, residual).
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  se_full <- sqrt(diag(v))
-
-  # Variance rows (Subject Intercept, Subject Days, Residual) carry the
-  # diagonal SEs of the RE block.
+  # SD rows (Subject Intercept, Subject Days, Residual): SE of the SD
+  # 5.8363, 1.2480, 1.5080, the values glmmTMB gives on the same model
+  # (decision 2026-11-19-re-se-delta.md).
   var_rows <- vc[!(vc$is_correlation %in% TRUE), ]
   expect_equal(
-    var_rows$std_error,
-    unname(se_full[c(3L, 5L, 6L)]),
-    tolerance = 1e-10
+    var_rows$std_error / (2 * var_rows$sd),
+    c(5.8363, 1.2480, 1.5080),
+    tolerance = 1e-4
   )
 
-  # Delta method for rho = cov / sqrt(var_i * var_j):
-  #   d rho / d var_i = -rho / (2 var_i)
-  #   d rho / d cov   = 1 / sqrt(var_i * var_j)
-  #   d rho / d var_j = -rho / (2 var_j)
-  # Var(rho) = grad' Sigma_3 grad on the (var_i, cov, var_j) sub-vcov.
-  var_i <- g_vc["(Intercept)", "(Intercept)"]
-  var_j <- g_vc["Days", "Days"]
-  grad <- c(-rho / (2 * var_i), 1 / sqrt(var_i * var_j), -rho / (2 * var_j))
-  se_rho <- sqrt(as.numeric(t(grad) %*% v[3:5, 3:5] %*% grad))
-  expect_equal(corr_row$std_error, se_rho, tolerance = 1e-10)
-  expect_equal(
-    corr_row$ci_lower,
-    max(-1, rho - stats::qnorm(0.975) * se_rho),
-    tolerance = 1e-10
-  )
-  expect_equal(
-    corr_row$ci_upper,
-    min(1, rho + stats::qnorm(0.975) * se_rho),
-    tolerance = 1e-10
-  )
+  # Correlation: SE 0.3250, Wald CI on atanh(rho).
+  expect_equal(corr_row$std_error, 0.3250, tolerance = 1e-4)
+  half <- stats::qnorm(0.975) * corr_row$std_error / (1 - rho^2)
+  expect_equal(corr_row$ci_lower, tanh(atanh(rho) - half), tolerance = 1e-10)
+  expect_equal(corr_row$ci_upper, tanh(atanh(rho) + half), tolerance = 1e-10)
 })
 
 

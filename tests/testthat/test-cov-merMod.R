@@ -196,35 +196,35 @@ test_that(".extract_dv_label returns the response 'label' attribute", {
 
 # ---- 6. Random-slope fit: correlation-row Wald SE / CI Delta-method ------
 
-test_that("lmer random slope: correlation row gets a Wald SE + CI via merDeriv", {
+test_that("lmer random slope: correlation row gets a Wald SE + CI", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .cov_fit_lmer_slope()
   skip_if(
     lme4::isSingular(fit),
-    "random-slope fit is singular; merDeriv SE path is skipped"
+    "random-slope fit is singular; the Wald SE path is skipped"
   )
   re <- spicy:::.merMod_random_effects(fit)
   vc <- re$variance_components
   corr_rows <- vc[vc$is_correlation %in% TRUE, , drop = FALSE]
   expect_identical(nrow(corr_rows), 1L)
-  # The Phase 7c17 Delta-method populates SE + Wald CI on the rho row.
+  # The Hessian of the deviance populates SE + Wald CI on the rho row.
   expect_true(is.finite(corr_rows$std_error[1L]))
   expect_true(is.finite(corr_rows$ci_lower[1L]))
   expect_true(is.finite(corr_rows$ci_upper[1L]))
   expect_identical(corr_rows$ci_method[1L], "wald")
-  # CI is clamped to [-1, 1].
-  expect_gte(corr_rows$ci_lower[1L], -1)
-  expect_lte(corr_rows$ci_upper[1L], 1)
+  # CI built on atanh(rho): strictly inside (-1, 1).
+  expect_gt(corr_rows$ci_lower[1L], -1)
+  expect_lt(corr_rows$ci_upper[1L], 1)
 })
 
-test_that("lmer random slope: variance rows carry merDeriv Wald SE + CI", {
+test_that("lmer random slope: variance rows carry Wald SE + CI", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .cov_fit_lmer_slope()
   skip_if(
     lme4::isSingular(fit),
-    "random-slope fit is singular; merDeriv SE path is skipped"
+    "random-slope fit is singular; the Wald SE path is skipped"
   )
   re <- spicy:::.merMod_random_effects(fit)
   vc <- re$variance_components

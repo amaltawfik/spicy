@@ -258,7 +258,7 @@ as_regression_frame.glmerMod <- function(
 
 
 # lme4's own vcov() of a merMod fit, called by name. When merDeriv's
-# namespace loads -- spicy loads it for the variance-component SEs -- it
+# namespace loads -- the user, or another package, may load it -- it
 # registers vcov.lmerMod and vcov.glmerMod as S3 methods, and from then on
 # dispatch on a glmerMod finds merDeriv's method (class glmerMod) before
 # lme4's vcov.merMod (its superclass). merDeriv's method refuses every
@@ -591,24 +591,13 @@ inform_lmertest_hint <- function() {
     lme4::isSingular(fit),
     error = function(e) FALSE
   ))
-  # Variance-component SE / CI skipped for size (see .re_se_skipped_by_size):
-  # record n so the footer can state the fact and the orchestrator can
-  # advise once. Singular fits already carry their own omission note, and
-  # re_ci = "profile" sidesteps merDeriv entirely (no cap involved).
-  re_se_skipped_n <- if (
-    !identical(re_ci, "profile") && !is_singular && .re_se_skipped_by_size(fit)
-  ) {
-    as.integer(stats::nobs(fit))
-  } else {
-    NA_integer_
-  }
   extras <- list(
     cluster_name = NULL,
     use_ame_satterthwaite = FALSE,
     has_singular = is_singular,
     singular_terms = character(0),
-    re_se_skipped_n = re_se_skipped_n,
     re_ci = re_ci,
+    re_se_unavailable = re$re_se_unavailable %||% NA_character_,
     has_weights = FALSE,
     weighted_n = NA_real_,
     title_prefix = if (is_glm) {
@@ -710,9 +699,10 @@ inform_lmertest_hint <- function() {
 #     grouping factors, random slopes, or glmer where residual variance
 #     is fixed).
 # `re_ci` selects the uncertainty route for the variance-component rows:
-# "wald" (merDeriv observed information, subject to the size cap) or
-# "profile" (lme4's own confint profile-likelihood intervals -- no SE,
-# asymmetric CI; the route lme4 documents as the supported one).
+# "wald" (inverse of the numerical Hessian of the deviance, see
+# .merMod_re_sdcor_vcov) or "profile" (lme4's own confint
+# profile-likelihood intervals -- no SE, asymmetric CI; the route lme4
+# documents as the supported one).
 .merMod_random_effects <- function(fit, re_ci = "wald", ci_level = 0.95) {
   # lme4 estimates lmer by REML (default) or ML; glmer is always
   # Laplace / AGQ likelihood (REML is not defined for GLMM in the
@@ -788,25 +778,25 @@ inform_lmertest_hint <- function() {
   vc_df <- if (length(rows) > 0L) do.call(rbind, rows) else data.frame()
 
   # Phase 7c7b: append correlation rows from VarCorr's correlation
-  # attribute. Estimates only; SE/CI for the correlation parameter
-  # require a multivariate Delta-method from the cov / variance
-  # parameters and remain NA in this sub-phase (improvement deferred).
+  # attribute (estimates; their SE / CI are attached below).
   vc_df <- .merMod_append_correlation_rows(vc_df, fit)
 
   # Uncertainty for the variance-component rows, per `re_ci`:
   #   * "profile": lme4's own profile-likelihood intervals (no SE by
-  #     construction; asymmetric, boundary-respecting CIs). Skips
-  #     merDeriv entirely, so it also sidesteps the size cap.
-  #   * "wald" (default): Phase 7c7a merDeriv observed-information SE +
-  #     CI on the variance scale. Falls back to NA when (a) merDeriv is
-  #     not installed, (b) the fit is singular (merDeriv crashes on
-  #     var ~= 0), (c) n exceeds the size cap (.re_se_skipped_by_size),
-  #     or (d) merDeriv errors. The body renderer treats NAs as en-dash.
+  #     construction; asymmetric, boundary-respecting CIs).
+  #   * "wald" (default): SE from the numerical Hessian of the deviance
+  #     in (SD, correlation[, sigma]), Wald CI on log(SD) and atanh(rho).
+  #     Falls back to NA when numDeriv is not installed, the fit is
+  #     singular, or the Hessian cannot be used (see
+  #     .merMod_re_sdcor_vcov). The body renderer treats NAs as en-dash.
   vc_df <- if (identical(re_ci, "profile")) {
     .merMod_attach_profile_ci(vc_df, fit, ci_level = ci_level)
   } else {
     .merMod_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
   }
+  # Why the Wald cells are empty, for the table note (read before the
+  # reorder below, which drops the attribute).
+  re_se_unavailable <- attr(vc_df, "re_se_unavailable") %||% NA_character_
 
   # Last, so every row above carries its final values: put each
   # grouping factor's rows back together (see .merMod_order_blocks).
@@ -820,7 +810,8 @@ inform_lmertest_hint <- function() {
     icc = icc,
     icc_omitted = .merMod_icc_omitted_reason(vc_df, icc),
     method = method,
-    null_lrt = null_lrt
+    null_lrt = null_lrt,
+    re_se_unavailable = re_se_unavailable
   )
 }
 
@@ -828,9 +819,8 @@ inform_lmertest_hint <- function() {
 # Phase 7c7b: append correlation rows extracted from VarCorr's
 # correlation attribute. One row per off-diagonal pair within each
 # group's random-effects covariance block. Stores the point
-# estimate; the Wald SE + 95% CI are attached downstream by
-# `.merMod_attach_wald_se_ci()` via the Phase 7c17 multivariate
-# Delta-method on the 3 x 3 sub-vcov from merDeriv.
+# estimate; the Wald SE + CI are attached downstream by
+# `.merMod_attach_wald_se_ci()`.
 .merMod_append_correlation_rows <- function(vc_df, fit) {
   if (!"is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation <- FALSE
@@ -908,29 +898,6 @@ inform_lmertest_hint <- function() {
   out <- vc_df[ord, , drop = FALSE]
   rownames(out) <- NULL
   out
-}
-
-
-# Size guard for the merDeriv-based variance-component SE / CI.
-# merDeriv::vcov.*(full = TRUE) builds dense per-observation score
-# objects whose cost grows superlinearly with n (measured ~O(n^3.4):
-# ~1.4 s at n ~ 900, ~60 s at n ~ 2700, intractable at n ~ 7000;
-# information = "expected" is no cheaper). A default table must not
-# cost minutes, so above the cap the SE / CI columns are omitted
-# (en-dash), the footer states the fact, and the orchestrator surfaces
-# the advice (raise the option, or use re_test) as a spicy_caveat
-# warning. Override with options(spicy.re_se_max_n = ).
-.re_se_size_cap <- function() {
-  cap <- getOption("spicy.re_se_max_n", 1000L)
-  if (!is.numeric(cap) || length(cap) != 1L || is.na(cap)) {
-    return(1000L) # nocov
-  }
-  cap
-}
-
-.re_se_skipped_by_size <- function(fit) {
-  n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) NA_real_)
-  is.finite(n) && n > .re_se_size_cap()
 }
 
 
@@ -1078,9 +1045,19 @@ inform_lmertest_hint <- function() {
 
 
 # Attach Wald SE + CI columns (at `ci_level`) to the variance-components
-# data.frame via merDeriv. Always returns a data.frame with the columns
-# `std_error`, `ci_lower`, `ci_upper`, `ci_method`; NAs when the SE
-# could not be computed.
+# data.frame of an lmer / glmer fit. Always returns a data.frame with
+# the columns `std_error`, `ci_lower`, `ci_upper`, `ci_method`; NAs when
+# the SE could not be computed.
+#
+# The covariance matrix of the SDs and correlations comes from
+# .merMod_re_sdcor_vcov(). The frame keeps the variance-scale contract
+# of the other engines: SE(sigma^2) = 2 sigma SE(sigma), and the CI of a
+# variance is the square of sigma exp(+/- z SE(sigma) / sigma), a Wald
+# interval on log(sigma) like those of nlme and glmmTMB (decision
+# 2026-11-19, dev/decisions/2026-11-19-re-se-delta.md). A correlation
+# gets tanh(atanh(rho) +/- z SE(rho) / (1 - rho^2)), the Wald interval
+# of nlme's natural parametrization, which stays inside (-1, 1)
+# (dev/decisions/2026-11-19-lme4-re-se-hessian.md).
 .merMod_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
   na_block <- function(df) {
     df$std_error <- NA_real_
@@ -1092,202 +1069,349 @@ inform_lmertest_hint <- function() {
   if (nrow(vc_df) == 0L) {
     return(na_block(vc_df)) # nocov
   }
-  if (!spicy_pkg_available("merDeriv")) {
-    return(na_block(vc_df)) # nocov
-  }
   if (isTRUE(lme4::isSingular(fit))) {
     return(na_block(vc_df))
   }
-  if (.re_se_skipped_by_size(fit)) {
+  if (!spicy_pkg_available("numDeriv")) {
+    # nocov start -- numDeriv is installed wherever the tests run
+    spicy_warn(
+      c(
+        "The random-effect rows of an lme4 fit have no SE and no CI without `numDeriv`.",
+        "i" = paste0(
+          "Install it with `install.packages(\"numDeriv\")`, ",
+          "or use `re_ci = \"profile\"`."
+        )
+      ),
+      class = "spicy_fallback"
+    )
     return(na_block(vc_df))
+    # nocov end
   }
-
-  # merDeriv::vcov.lmerMod with ranpar = "var" returns the asymptotic
-  # covariance matrix of the FULL parameter vector (fixed effects +
-  # variance components + residual variance) on the variance scale.
-  # The diagonal gives variance-of-estimator; sqrt() gives SE.
-  v <- tryCatch(
-    {
-      if (inherits(fit, "glmerMod")) {
-        merDeriv::vcov.glmerMod(fit, full = TRUE, ranpar = "var")
-      } else {
-        merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")
-      }
-    },
-    error = function(e) NULL
-  )
-  if (is.null(v)) {
-    return(na_block(vc_df)) # nocov
+  vv <- .merMod_re_sdcor_vcov(fit)
+  if (!is.matrix(vv)) {
+    out <- na_block(vc_df)
+    attr(out, "re_se_unavailable") <- vv
+    return(out)
   }
-
-  # merDeriv returns a Matrix package object (dgeMatrix); coerce to a
-  # plain matrix so base::diag() dispatches correctly.
-  v <- as.matrix(v)
-  se_full <- sqrt(diag(v))
-  n_fixed <- length(lme4::fixef(fit))
-  re_se <- se_full[-seq_len(n_fixed)]
-
-  # Identify the variance rows (one per term per group + residual);
-  # correlation rows added by Phase 7c7b live INSIDE vc_df but their
-  # SE / CI are not from merDeriv (the full Delta-method on rho is
-  # deferred). Compute SE only for the variance rows; correlation rows
-  # stay at NA.
-  is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
-    vc_df$is_correlation %in% TRUE
-  } else {
-    rep(FALSE, nrow(vc_df)) # nocov
-  }
-  var_rows <- which(!is_corr)
-
-  # The ordering of the RE block in merDeriv with ranpar = "var" is:
-  #   for each grouping factor: variance(term_1), cov(term_1, term_2),
-  #   variance(term_2), cov(term_1, term_3), cov(term_2, term_3),
-  #   variance(term_3), ... -- i.e. lower-triangle by row including
-  #   diagonals. We extract the SE from the diagonal positions only,
-  #   matching the variance rows of vc_df.
-  diag_positions <- .merMod_re_diag_positions(fit)
-  if (
-    length(diag_positions) != length(var_rows) ||
-      max(diag_positions) > length(re_se)
-  ) {
-    return(na_block(vc_df)) # nocov
-  }
-  se_diag <- re_se[diag_positions]
+  se_par <- suppressWarnings(sqrt(diag(vv)))
+  pos <- .merMod_re_param_index(vc_df, fit)
 
   z <- stats::qnorm(0.5 + ci_level / 2)
-  vc_df$std_error <- NA_real_
-  vc_df$ci_lower <- NA_real_
-  vc_df$ci_upper <- NA_real_
-  vc_df$ci_method <- NA_character_
-  vc_df$std_error[var_rows] <- as.numeric(se_diag)
-  # Wald interval on log(sd), the scale nlme and glmmTMB build theirs on:
-  # sd * exp(+/- z s), s = SE(log sd) = SE(sd^2) / (2 sd^2), stored
-  # squared. A symmetric interval on sd^2 ran below 0 and was clamped
-  # there (decision 2026-11-19, dev/decisions/2026-11-19-re-se-delta.md).
-  var_est <- vc_df$variance[var_rows]
-  s_log <- as.numeric(se_diag) / (2 * var_est)
-  ok <- is.finite(s_log) & var_est > 0
-  vc_df$ci_lower[var_rows] <- ifelse(ok, var_est * exp(-2 * z * s_log), NA)
-  vc_df$ci_upper[var_rows] <- ifelse(ok, var_est * exp(2 * z * s_log), NA)
-  vc_df$std_error[var_rows][!ok] <- NA_real_
-  vc_df$ci_method[var_rows] <- ifelse(ok, "wald", NA_character_)
-
-  # Phase 7c17: Wald SE + 95% CI for the correlation rows via the
-  # multivariate Delta method on the 3 x 3 sub-vcov of
-  # (var(term_i), cov(term_i, term_j), var(term_j)) from merDeriv's
-  # full vcov on the variance scale. Matches the Stata `mixed` and
-  # SAS PROC MIXED panels which report SE and CI for `corr(_cons, slope)`.
-  #
-  # Gradient of rho = cov / sqrt(var_i * var_j):
-  #   d rho / d var_i = -rho / (2 * var_i)
-  #   d rho / d cov   = 1 / sqrt(var_i * var_j)
-  #   d rho / d var_j = -rho / (2 * var_j)
-  #
-  # Var(rho) = grad^T  Sigma_3  grad
-  # CI       = rho +/- z * SE,  clamped to [-1, 1] (boundary).
-  #
-  # The block-position formula for the COLUMN-MAJOR vech layout that
-  # merDeriv uses (within each grouping block of size n = nrow(g_vc)).
-  # merDeriv concatenates each group's variance/covariance block by
-  # walking lme4's Lambdat/Lind (column by column of the lower
-  # triangle), so the element at (row >= col) sits at
-  #   .vech_colmajor_pos(n, row, col).
-  # Diagonal var(term_k) = pos(k, k); off-diagonal cov(term_i, term_j)
-  # for i < j = pos(j, i) (lower triangle: row = j, col = i).
-  # NB: a ROW-MAJOR formula coincides with this only for n <= 2, which
-  # is why the n >= 3 mislocation slipped past the random-slope tests.
-  corr_rows <- which(is_corr)
-  if (length(corr_rows) > 0L) {
-    vc_list <- tryCatch(lme4::VarCorr(fit), error = function(e) NULL)
-    if (!is.null(vc_list)) {
-      # Absolute starting offset of each group's block in the RE block
-      # of merDeriv's vcov (which sits AFTER the n_fixed fixed-effect
-      # parameters in v).
-      group_offsets <- list()
-      cursor <- 0L
-      for (g in names(vc_list)) {
-        group_offsets[[g]] <- cursor
-        n_g <- nrow(vc_list[[g]])
-        cursor <- cursor + n_g * (n_g + 1L) / 2L
-      }
-
-      for (k in corr_rows) {
-        g_name <- vc_df$group[k]
-        pair_str <- vc_df$term[k]
-        parts <- strsplit(pair_str, ", ", fixed = TRUE)[[1L]]
-        if (length(parts) != 2L) {
-          next # nocov
-        }
-        if (!g_name %in% names(vc_list)) {
-          next # nocov
-        }
-        g_vc <- as.matrix(vc_list[[g_name]])
-        g_nms <- rownames(g_vc)
-        i_idx <- match(parts[1L], g_nms)
-        j_idx <- match(parts[2L], g_nms)
-        if (is.na(i_idx) || is.na(j_idx) || i_idx >= j_idx) {
-          next # nocov
-        }
-
-        n_g_block <- nrow(g_vc)
-        var_i_pos <- .vech_colmajor_pos(n_g_block, i_idx, i_idx)
-        var_j_pos <- .vech_colmajor_pos(n_g_block, j_idx, j_idx)
-        cov_pos <- .vech_colmajor_pos(n_g_block, j_idx, i_idx) # i < j
-        block_off <- group_offsets[[g_name]]
-        full_pos <- n_fixed + block_off + c(var_i_pos, cov_pos, var_j_pos)
-        if (max(full_pos) > nrow(v)) {
-          next # nocov
-        }
-
-        Sigma_3 <- v[full_pos, full_pos, drop = FALSE]
-        var_i <- g_vc[i_idx, i_idx]
-        var_j <- g_vc[j_idx, j_idx]
-        cov_ij <- g_vc[i_idx, j_idx]
-        if (
-          !is.finite(var_i) || !is.finite(var_j) || var_i <= 0 || var_j <= 0
-        ) {
-          next # nocov
-        }
-        rho <- cov_ij / sqrt(var_i * var_j)
-        if (!is.finite(rho)) {
-          next # nocov
-        }
-
-        grad <- c(
-          -rho / (2 * var_i),
-          1 / sqrt(var_i * var_j),
-          -rho / (2 * var_j)
-        )
-        var_rho <- as.numeric(t(grad) %*% Sigma_3 %*% grad)
-        if (!is.finite(var_rho) || var_rho < 0) {
-          next # nocov
-        }
-        se_rho <- sqrt(var_rho)
-
-        vc_df$std_error[k] <- se_rho
-        vc_df$ci_lower[k] <- max(-1, rho - z * se_rho)
-        vc_df$ci_upper[k] <- min(1, rho + z * se_rho)
-        vc_df$ci_method[k] <- "wald"
-      }
+  vc_df <- na_block(vc_df)
+  is_corr <- vc_df$is_correlation %in% TRUE
+  for (r in which(!is.na(pos))) {
+    s <- se_par[pos[r]]
+    if (!is.finite(s)) {
+      next
     }
+    if (is_corr[r]) {
+      rho <- vc_df$corr[r]
+      if (!is.finite(rho) || abs(rho) >= 1) {
+        next # nocov
+      }
+      half <- z * s / (1 - rho^2)
+      vc_df$std_error[r] <- s
+      vc_df$ci_lower[r] <- tanh(atanh(rho) - half)
+      vc_df$ci_upper[r] <- tanh(atanh(rho) + half)
+    } else {
+      sd <- vc_df$sd[r]
+      if (!is.finite(sd) || sd <= 0) {
+        next # nocov
+      }
+      vc_df$std_error[r] <- 2 * sd * s
+      vc_df$ci_lower[r] <- (sd * exp(-z * s / sd))^2
+      vc_df$ci_upper[r] <- (sd * exp(z * s / sd))^2
+    }
+    vc_df$ci_method[r] <- "wald"
   }
-
   vc_df
 }
 
 
+# Covariance matrix of the random-effect parameters of an lmer / glmer
+# fit, in the order: for each random-effect term (fit@cnms order, which
+# is the VarCorr order), the lower triangle of its matrix taken column
+# by column, with the SDs on the diagonal and the correlations below
+# it; then sigma for an lmer fit. It is the inverse of half the Hessian
+# of the deviance (REML criterion for a REML fit) in that
+# parametrization, i.e. the observed information. When it cannot be
+# computed, a single string says why, for the table note: "structure"
+# (a covariance structure other than lme4's unstructured one),
+# "dispersion" (a glmer family with an estimated scale, or a
+# negative-binomial dispersion, which lme4 holds fixed in the deviance),
+# "hessian" (a Hessian that is not positive definite). NA_character_
+# when the failure has no reader-facing reason (a deviance that does not
+# reproduce the fitted criterion).
+#
+# lmer: getME(fit, "devfun") is the deviance profiled over sigma. It is
+# de-profiled here, as lme4's devfun2() does for its profiles:
+#   d(theta, sigma) = ldL2 [+ ldRX2] + pwrss / sigma^2
+#                     + nmp log(2 pi sigma^2),
+# with nmp = n - p for REML and n for ML, and theta = SD / sigma
+# through the Cholesky factor. The devfun of an lmer shares the fit's
+# reference objects (pp, resp): evaluating it elsewhere than at the
+# optimum would move the fit itself, so it is built on copies.
+#
+# glmer: the Laplace / AGQ deviance in (theta, beta). lme4 stores its
+# Hessian at the optimum (fit@optinfo$derivs$Hessian, central
+# differences with an absolute step) unless calc.derivs = FALSE or n is
+# above check.conv.nobsmax; it is mapped to (SD, correlation) by the
+# Jacobian of theta. The deviance of a glmer goes through PIRLS, whose
+# noise swamps a step relative to a parameter close to 0, so the
+# fallback takes the same kind of step as lme4's: absolute, 1e-3 of a
+# floor scale (1 for an SD or a correlation, the larger of |beta| and
+# its SE for a fixed effect). nAGQ = 0 has a devfun of theta alone,
+# profiled over beta by PIRLS; its Hessian is taken in (SD, cor) only.
+#
+# Step: numDeriv's Richardson extrapolation from eps = 1e-3 of that
+# scale, two rounds (r = 2: half the deviance evaluations of the default
+# r = 4, the same SEs to 1e-6 against a dense likelihood and glmmTMB).
+# For lmer the scale is the larger of |SD| and sigma for an SD and
+# sigma, and the larger of |rho| and 1 for a correlation. A step of
+# 1e-4 of the parameter runs into the rounding of the deviance for an
+# lmer too (the SE of sleepstudy's random intercept moves in the 6th
+# digit).
+.merMod_re_sdcor_vcov <- function(fit) {
+  is_glmm <- inherits(fit, "glmerMod")
+  block_sizes <- lengths(fit@cnms)
+  if (
+    "getReCovs" %in%
+      getNamespaceExports("lme4") &&
+      !all(vapply(
+        lme4::getReCovs(fit),
+        function(x) inherits(x, "Covariance.us"),
+        logical(1)
+      ))
+  ) {
+    return("structure")
+  }
+  theta_hat <- lme4::getME(fit, "theta")
+  if (length(theta_hat) != sum(block_sizes * (block_sizes + 1L) / 2L)) {
+    return(NA_character_) # nocov
+  }
+  if (
+    is_glmm &&
+      (isTRUE(as.logical(fit@devcomp$dims[["useSc"]])) || .glmer_is_nb(fit))
+  ) {
+    return("dispersion")
+  }
+  vc <- lme4::VarCorr(fit)
+  p0 <- unlist(lapply(seq_along(vc), function(b) {
+    S <- as.matrix(vc[[b]])
+    s <- sqrt(diag(S))
+    M <- S / (s %o% s)
+    diag(M) <- s
+    M[lower.tri(M, diag = TRUE)]
+  }))
+  is_cor <- unlist(lapply(block_sizes, function(k) {
+    M <- matrix(TRUE, k, k)
+    diag(M) <- FALSE
+    M[lower.tri(M, diag = TRUE)]
+  }))
+  n_re <- length(p0)
+
+  if (is_glmm) {
+    n_agq <- fit@devcomp$dims[["nAGQ"]]
+    beta_hat <- lme4::fixef(fit)
+    H <- fit@optinfo$derivs$Hessian
+    if (
+      n_agq > 0L &&
+        is.matrix(H) &&
+        nrow(H) == length(theta_hat) + length(beta_hat) &&
+        all(is.finite(H))
+    ) {
+      V_tb <- .merMod_inverse_half_hessian(H)
+      if (is.null(V_tb)) {
+        return("hessian")
+      }
+      J <- numDeriv::jacobian(
+        function(th) .merMod_theta_to_sdcor(th, block_sizes),
+        theta_hat
+      )
+      i_th <- seq_along(theta_hat)
+      return(unname(J %*% V_tb[i_th, i_th, drop = FALSE] %*% t(J)))
+    }
+    dfun <- lme4::getME(fit, "devfun")
+    crit <- -2 * as.numeric(stats::logLik(fit))
+    if (n_agq == 0L) {
+      f <- function(par) dfun(.merMod_sdcor_to_theta(par, 1, block_sizes))
+      x0 <- p0
+      scale <- pmax(abs(p0), 1)
+    } else {
+      f <- function(par) {
+        dfun(c(
+          .merMod_sdcor_to_theta(par[seq_len(n_re)], 1, block_sizes),
+          par[-seq_len(n_re)]
+        ))
+      }
+      x0 <- c(p0, beta_hat)
+      se_beta <- sqrt(diag(.merMod_vcov(fit)))
+      scale <- c(pmax(abs(p0), 1), pmax(abs(beta_hat), se_beta))
+    }
+  } else {
+    fit_copy <- fit
+    fit_copy@pp <- fit@pp$copy()
+    fit_copy@resp <- fit@resp$copy()
+    dfun <- lme4::getME(fit_copy, "devfun")
+    env <- environment(dfun)
+    reml <- isTRUE(lme4::isREML(fit))
+    n <- fit@devcomp$dims[["n"]]
+    nmp <- if (reml) n - fit@devcomp$dims[["p"]] else n
+    f <- function(par) {
+      sig <- par[length(par)]
+      d <- dfun(.merMod_sdcor_to_theta(par[-length(par)], sig, block_sizes))
+      pwrss <- env$resp$wrss() + env$pp$sqrL(1)
+      d -
+        nmp * (1 + log(2 * pi * pwrss / nmp)) +
+        pwrss / sig^2 +
+        nmp * log(2 * pi * sig^2)
+    }
+    sigma_hat <- stats::sigma(fit)
+    x0 <- c(p0, sigma_hat)
+    scale <- c(
+      ifelse(is_cor, pmax(abs(p0), 1), pmax(abs(p0), sigma_hat)),
+      sigma_hat
+    )
+    crit <- if (reml) lme4::REMLcrit(fit) else stats::deviance(fit)
+  }
+
+  d0 <- tryCatch(f(x0), error = function(e) NA_real_)
+  if (!is.finite(d0) || abs(d0 - crit) > 1e-6 * max(1, abs(crit))) {
+    return(NA_character_) # nocov
+  }
+  H_u <- tryCatch(
+    numDeriv::hessian(
+      function(u) f(x0 + scale * u),
+      rep(0, length(x0)),
+      method.args = list(eps = 1e-3, d = 0, zero.tol = Inf, r = 2)
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(H_u)) {
+    return(NA_character_) # nocov
+  }
+  V_u <- .merMod_inverse_half_hessian(H_u)
+  if (is.null(V_u)) {
+    return("hessian")
+  }
+  V <- (scale %o% scale) * V_u
+  keep <- if (is_glmm) seq_len(n_re) else seq_along(x0)
+  unname(V[keep, keep, drop = FALSE])
+}
+
+
+# 2 H^-1 for the Hessian H of a deviance, or NULL when H is not
+# positive definite (a saddle or a flat direction has no Wald SE).
+.merMod_inverse_half_hessian <- function(H) {
+  H <- (H + t(H)) / 2
+  ev <- tryCatch(
+    eigen(H, symmetric = TRUE, only.values = TRUE)$values,
+    error = function(e) NA_real_
+  )
+  if (anyNA(ev) || min(ev) <= 0) {
+    return(NULL)
+  }
+  2 * solve(H)
+}
+
+
+# (SD, correlation) of each random-effect term, lower triangle column by
+# column -> lme4's theta (the lower triangle of the Cholesky factor of
+# the covariance matrix divided by sigma^2, same order).
+.merMod_sdcor_to_theta <- function(p, sigma, block_sizes) {
+  out <- numeric(0)
+  i <- 0L
+  for (k in block_sizes) {
+    m <- k * (k + 1L) / 2L
+    q <- p[i + seq_len(m)]
+    i <- i + m
+    if (k == 1L) {
+      out <- c(out, q / sigma)
+      next
+    }
+    M <- matrix(0, k, k)
+    M[lower.tri(M, diag = TRUE)] <- q
+    s <- diag(M)
+    R <- M
+    diag(R) <- 1
+    R[upper.tri(R)] <- t(R)[upper.tri(R)]
+    L <- t(chol((s %o% s) * R / sigma^2))
+    out <- c(out, L[lower.tri(L, diag = TRUE)])
+  }
+  out
+}
+
+
+# Inverse of .merMod_sdcor_to_theta() for sigma = 1 (glmer's theta).
+.merMod_theta_to_sdcor <- function(theta, block_sizes) {
+  out <- numeric(0)
+  i <- 0L
+  for (k in block_sizes) {
+    m <- k * (k + 1L) / 2L
+    L <- matrix(0, k, k)
+    L[lower.tri(L, diag = TRUE)] <- theta[i + seq_len(m)]
+    i <- i + m
+    S <- tcrossprod(L)
+    s <- sqrt(diag(S))
+    M <- S / (s %o% s)
+    diag(M) <- s
+    out <- c(out, M[lower.tri(M, diag = TRUE)])
+  }
+  out
+}
+
+
+# Index of each row of vc_df in the parameter vector of
+# .merMod_re_sdcor_vcov(): the SD of term i of a block at (i, i) of its
+# lower triangle, the correlation of terms i < j at (j, i), the
+# residual last. NA for a row that has no parameter.
+.merMod_re_param_index <- function(vc_df, fit) {
+  vc <- lme4::VarCorr(fit)
+  sizes <- vapply(vc, nrow, integer(1))
+  offsets <- c(0L, cumsum(sizes * (sizes + 1L) / 2L))
+  is_corr <- vc_df$is_correlation %in% TRUE
+  pos <- rep(NA_integer_, nrow(vc_df))
+  for (r in seq_len(nrow(vc_df))) {
+    g <- vc_df$group[r]
+    if (identical(g, "Residual")) {
+      pos[r] <- offsets[length(offsets)] + 1L
+      next
+    }
+    b <- match(g, names(vc))
+    if (is.na(b)) {
+      next # nocov
+    }
+    nms <- rownames(vc[[b]])
+    if (is_corr[r]) {
+      parts <- strsplit(vc_df$term[r], ", ", fixed = TRUE)[[1L]]
+      ij <- match(parts, nms)
+      if (length(ij) != 2L || anyNA(ij) || ij[1L] >= ij[2L]) {
+        next # nocov
+      }
+      pos[r] <- offsets[b] + .vech_colmajor_pos(sizes[b], ij[2L], ij[1L])
+    } else {
+      i <- match(vc_df$term[r], nms)
+      if (is.na(i)) {
+        next # nocov
+      }
+      pos[r] <- offsets[b] + .vech_colmajor_pos(sizes[b], i, i)
+    }
+  }
+  pos
+}
+
+
 # Position of element (row, col), row >= col, in the COLUMN-MAJOR vech
-# (lower-triangle, column-by-column) of an n x n symmetric block --
-# the layout merDeriv uses for each grouping factor's random-effects
-# variance/covariance block. Column c contributes (n - c + 1) entries;
-# within column c the element at row r sits at offset (r - c + 1).
+# (lower-triangle, column-by-column) of an n x n symmetric block -- the
+# order of lme4's theta and of .merMod_re_sdcor_vcov(). Column c
+# contributes (n - c + 1) entries; within column c the element at row r
+# sits at offset (r - c + 1).
 #
 #   pos(n, r, c) = sum_{j=1}^{c-1}(n - j + 1) + (r - c + 1)
 #                = (c-1)*n - (c-1)*(c-2)/2 + (r - c + 1)
 #
-# Verified against merDeriv::vcov.lmerMod(full = TRUE, ranpar = "var")
-# colnames for a 3-term random block (cov_g.(Intercept), cov_g.x1,
-# cov_g.x2 land at positions 1, 4, 6 -- not the row-major 1, 3, 6).
+# For a 3-term block the diagonal sits at 1, 4, 6 (not the row-major
+# 1, 3, 6).
 .vech_colmajor_pos <- function(n, row, col) {
   as.integer((col - 1L) * n - (col - 1L) * (col - 2L) / 2L + (row - col + 1L))
 }
@@ -1299,8 +1423,8 @@ inform_lmertest_hint <- function() {
 # natural parametrization, log((1 + rho) / (1 - rho))), "theta" for a
 # glmmTMB correlation (theta = rho / sqrt(1 - rho^2)). The interval is
 # f(est) +/- z s on that scale, so s = (f(upper) - f(lower)) / (2 z) and
-# SE = s / f'(est), which is what lme4 gets from merDeriv on the same
-# model. Halving the interval on the displayed scale instead overstates
+# SE = s / f'(est), which is what lme4 gets from the Hessian of its
+# deviance on the same model. Halving the interval on the displayed scale instead overstates
 # the SE, because the back-transformed interval is skewed.
 #
 # The scale is checked, not assumed: the interval must be centred on
@@ -1330,50 +1454,6 @@ inform_lmertest_hint <- function() {
     return((upper - lower) / (2 * z))
   }
   (fu - fl) / (2 * z) / f_prime(est)
-}
-
-
-# Compute the indices of the DIAGONAL entries (= variances) in the
-# random-effects block of merDeriv's full vcov, in the same row order
-# as vc_df (per group: variance(term_1), variance(term_2), ..., then
-# residual variance at the end).
-#
-# For a fit with grouping factor G_1, G_2, ... and within each group
-# n_g random terms, merDeriv concatenates the COLUMN-MAJOR vech (lower
-# triangle, column by column, including diagonals) of each group's
-# variance/covariance block, and appends the residual variance at the
-# very end.
-.merMod_re_diag_positions <- function(fit) {
-  vc <- lme4::VarCorr(fit)
-  pos <- integer(0)
-  cursor <- 0L
-  for (group in names(vc)) {
-    n <- nrow(vc[[group]])
-    block_size <- n * (n + 1L) / 2L
-    # Diagonal var(term_k) sits at the column-major vech position
-    # pos(n, k, k). For n = 3 these are 1, 4, 6 (NOT the row-major
-    # 1, 3, 6, which would mislabel cov(term_3, term_1) as var(term_2)).
-    diag_in_block <- vapply(
-      seq_len(n),
-      function(k) .vech_colmajor_pos(n, k, k),
-      integer(1)
-    )
-    pos <- c(pos, cursor + diag_in_block)
-    cursor <- cursor + block_size
-  }
-  # Residual variance follows the last group block -- ONLY for Gaussian.
-  # merDeriv's full vcov for glmer (binomial / poisson) excludes the
-  # residual since the dispersion is fixed; asking for a position there
-  # would walk off the end of the vector. Phase 7c10.
-  fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
-  if (is_gaussian) {
-    sigma_val <- tryCatch(stats::sigma(fit), error = function(e) NA_real_)
-    if (is.finite(sigma_val)) {
-      pos <- c(pos, cursor + 1L)
-    }
-  }
-  pos
 }
 
 

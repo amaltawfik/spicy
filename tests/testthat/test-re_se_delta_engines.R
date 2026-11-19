@@ -1,6 +1,6 @@
 # The SE of a random-effect row is a delta-method one on the scale the
 # engine estimates on (decision 2026-11-19, dev/decisions/
-# 2026-11-19-re-se-delta.md). On the same model lmer (merDeriv), lme
+# 2026-11-19-re-se-delta.md). On the same model lmer (Hessian), lme
 # (log sd, atanh rho) and glmmTMB (log sd, rho / sqrt(1 - rho^2)) then
 # give the same SE. The oracle numbers are lmer's, written here with the
 # call that gives them:
@@ -18,7 +18,7 @@
 
 .re_se_fits <- function(slope, reml) {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   skip_if_not_installed("nlme")
   skip_if_not_installed("glmmTMB")
   d <- lme4::sleepstudy
@@ -84,26 +84,29 @@ test_that("random intercept, ML: the three engines give lmer's SE", {
 
 test_that("random slope, REML: glmmTMB gives lmer's SE, correlation included", {
   fits <- .re_se_fits(slope = TRUE, reml = TRUE)
+  # lmer: Hessian of the deviance (decision 2026-11-19-lme4-re-se-hessian.md;
+  # merDeriv gave 5.83626394, 1.24803549, 0.32502323, 1.50801102).
   oracle <- c(
-    "re::Subject::(Intercept)" = 5.83626394,
-    "re::Subject::Days" = 1.24803549,
-    "re::Subject::(Intercept), Days::cor" = 0.32502323,
-    "re::Residual::" = 1.50801102
+    "re::Subject::(Intercept)" = 5.83631068,
+    "re::Subject::Days" = 1.24803683,
+    "re::Subject::(Intercept), Days::cor" = 0.32502545,
+    "re::Residual::" = 1.50800914
   )
-  # Measured: glmmTMB within 1e-5 of lmer (exact Hessian on both sides).
-  expect_equal(.re_se_rows(fits$lmer), oracle, tolerance = 1e-7)
+  # Measured: glmmTMB within 1e-5 of lmer (observed information on both
+  # sides; the residual gap is the two optima).
+  expect_equal(.re_se_rows(fits$lmer), oracle, tolerance = 1e-6)
   expect_equal(.re_se_rows(fits$glmmTMB), oracle, tolerance = 1e-4)
   # Same on the variance scale: SE(sigma^2) = 2 sigma^2 SE(log sigma).
   oracle_var <- c(
-    "re::Subject::(Intercept)" = 288.78602008,
-    "re::Subject::Days" = 14.78207595,
-    "re::Subject::(Intercept), Days::cor" = 0.32502323,
-    "re::Residual::" = 77.18542019
+    "re::Subject::(Intercept)" = 288.78833309,
+    "re::Subject::Days" = 14.78209185,
+    "re::Subject::(Intercept), Days::cor" = 0.32502545,
+    "re::Residual::" = 77.18532377
   )
   expect_equal(
     .re_se_rows(fits$lmer, re_scale = "variance"),
     oracle_var,
-    tolerance = 1e-7
+    tolerance = 1e-6
   )
   expect_equal(
     .re_se_rows(fits$glmmTMB, re_scale = "variance"),
@@ -134,10 +137,10 @@ test_that("random slope, REML: lme reaches lmer's SE once its Hessian is accurat
     tolerance = 1e-6
   )
   lmer_se <- c(
-    "re::Subject::(Intercept)" = 5.83626394,
-    "re::Subject::Days" = 1.24803549,
-    "re::Subject::(Intercept), Days::cor" = 0.32502323,
-    "re::Residual::" = 1.50801102
+    "re::Subject::(Intercept)" = 5.83631068,
+    "re::Subject::Days" = 1.24803683,
+    "re::Subject::(Intercept), Days::cor" = 0.32502545,
+    "re::Residual::" = 1.50800914
   )
   # Off from lmer, but the same quantity: within 15 % on every platform.
   expect_equal(.re_se_rows(fits$lme), lmer_se, tolerance = 0.15)
@@ -154,13 +157,14 @@ test_that("random slope, REML: lme reaches lmer's SE once its Hessian is accurat
 
 test_that("random slope, ML: glmmTMB gives lmer's SE", {
   fits <- .re_se_fits(slope = TRUE, reml = FALSE)
+  # merDeriv gave 5.57730430, 1.18706812, 0.32350744, 1.50801758.
   oracle <- c(
-    "re::Subject::(Intercept)" = 5.57730430,
-    "re::Subject::Days" = 1.18706812,
-    "re::Subject::(Intercept), Days::cor" = 0.32350744,
-    "re::Residual::" = 1.50801758
+    "re::Subject::(Intercept)" = 5.57712862,
+    "re::Subject::Days" = 1.18705879,
+    "re::Subject::(Intercept), Days::cor" = 0.32349790,
+    "re::Residual::" = 1.50802622
   )
-  expect_equal(.re_se_rows(fits$lmer), oracle, tolerance = 1e-7)
+  expect_equal(.re_se_rows(fits$lmer), oracle, tolerance = 1e-6)
   expect_equal(.re_se_rows(fits$glmmTMB), oracle, tolerance = 1e-4)
 })
 
@@ -238,9 +242,9 @@ test_that("random slope: lmer's Wald CI equals glmmTMB's, on both scales", {
   fits <- .re_se_fits(slope = TRUE, reml = TRUE)
   # lme4::lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
   oracle <- rbind(
-    c(15.581698, 39.283278),
-    c(3.918282, 8.950789),
-    c(22.800440, 28.724885)
+    c(15.581640, 39.283423),
+    c(3.918280, 8.950793),
+    c(22.800443, 28.724880)
   )
   expect_equal(unname(.re_ci_rows(fits$lmer)), oracle, tolerance = 1e-6)
   expect_equal(unname(.re_ci_rows(fits$glmmTMB)), oracle, tolerance = 1e-4)
@@ -253,7 +257,7 @@ test_that("random slope: lmer's Wald CI equals glmmTMB's, on both scales", {
 
 test_that("the log-scale Wald CI is the one closer to the profile CI", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   # Why the scale was chosen (dev/decisions/2026-11-19-re-se-delta.md).
   # Dyestuff, six batches, Batch SD: the interval symmetric on the
   # variance gave 0 to 67.62, the profile is 12.20 to 84.06.
@@ -266,7 +270,8 @@ test_that("the log-scale Wald CI is the one closer to the profile CI", {
   expect_equal(unname(prof[1L, ]), c(12.198, 84.063), tolerance = 1e-3)
   old <- c(0, 67.618)
   expect_lt(sum(abs(wald - prof[1L, ])), sum(abs(old - prof[1L, ])))
-  # A glmer logit, cbpp: 0 to 0.987 before, profile 0.346 to 1.100.
+  # A glmer logit, cbpp: 0 to 0.987 before, 0.325 to 1.268 with
+  # merDeriv's SE on log(sd), profile 0.346 to 1.100.
   gm <- lme4::glmer(
     cbind(incidence, size - incidence) ~ period + (1 | herd),
     lme4::cbpp,
@@ -274,14 +279,14 @@ test_that("the log-scale Wald CI is the one closer to the profile CI", {
   )
   expect_equal(
     unname(.re_ci_rows(gm)[1L, ]),
-    c(0.325406, 1.267680),
+    c(0.372448, 1.107566),
     tolerance = 1e-5
   )
 })
 
 test_that("a singular lmer keeps its SE and CI omitted, without NaN or Inf", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- suppressMessages(lme4::lmer(Yield ~ 1 + (1 | Batch), lme4::Dyestuff2))
   expect_true(lme4::isSingular(fit))
   vc <- as_regression_frame(fit)$info$random_effects$variance_components

@@ -1577,7 +1577,7 @@ as_regression_frame.brmsfit <- function(
 # like .merMod_random_effects()'s value so the shared Random-effects
 # block renderer applies unchanged. All quantities are computed from
 # the posterior draws on the SD / correlation scale directly (median,
-# posterior SD, equal-tailed CrI) -- no delta method, no merDeriv.
+# posterior SD, equal-tailed CrI) -- no delta method, no Hessian.
 # method = "MCMC" feeds the footer's estimator label; null_lrt stays
 # NULL (there is no likelihood-ratio test for a posterior), so no
 # chi-bar-squared line is printed.

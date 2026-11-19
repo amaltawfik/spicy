@@ -1,9 +1,11 @@
 # ---------------------------------------------------------------------------
-# Phase 7c17 tests: Wald SE + 95% CI for the random-effect correlation rows
-# (rho) of the random-effects panel via the multivariate Delta-method on
-# the merDeriv vcov for lme4 (lmer / glmer). glmmTMB and nlme::lme already
-# populated rho SE/CI via their native engines (confint(method="Wald"),
-# nlme::intervals()); the regression guards verify that path still works.
+# Wald SE + 95% CI for the random-effect correlation rows (rho) of the
+# random-effects panel. For lme4 (lmer / glmer) the SE comes from the
+# Hessian of the deviance in (SD, correlation) and the CI is the Wald
+# interval on atanh(rho); the oracle is glmmTMB on the same model.
+# glmmTMB and nlme::lme populate rho SE/CI via their native engines
+# (confint(method="Wald"), nlme::intervals()); the regression guards
+# verify that path still works.
 #
 # Matches Stata `mixed` / SAS `PROC MIXED` panels which report
 # `corr(_cons, slope) Subject | SE | 95% CI`.
@@ -39,109 +41,90 @@
 }
 
 
-# ---- 1. lmer: correlation row has finite SE + CI from Delta method ------
+# ---- 1. lmer: correlation row has finite SE + CI ------------------------
 
-test_that("lmer (Days | Subject): rho row has finite Wald SE + CI", {
-  skip_if_not_installed("merDeriv")
+# SE of a two-term glmmTMB correlation: theta = rho / sqrt(1 - rho^2), so
+# SE(rho) = SE(theta) (1 + theta^2)^(-3/2) (see test 4 below).
+.tmb_rho_se <- function(tm) {
+  sdr <- summary(tm$sdr, "fixed")
+  th <- sdr[rownames(sdr) == "theta", , drop = FALSE]
+  unname(th[3L, "Std. Error"] * (1 + th[3L, "Estimate"]^2)^(-3 / 2))
+}
+
+test_that("lmer (Days | Subject): rho row has the Wald SE + CI of glmmTMB", {
+  skip_if_not_installed("numDeriv")
+  skip_if_not_installed("glmmTMB")
   fit <- .fit_lmer_slope_corr()
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
   rho_rows <- vc[vc$is_correlation %in% TRUE, ]
   expect_identical(nrow(rho_rows), 1L)
   expect_true(is.finite(rho_rows$std_error))
-  expect_true(is.finite(rho_rows$ci_lower))
-  expect_true(is.finite(rho_rows$ci_upper))
   expect_identical(rho_rows$ci_method, "wald")
 
-  # Oracle: multivariate Delta method on the 3x3 (var_int, cov, var_slope)
-  # sub-vcov of merDeriv's full vcov on the variance scale (see test 2 for
-  # the gradient derivation); CI = rho +/- z * SE clamped to [-1, 1].
-  g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
-  var_int <- g_vc[1L, 1L]
-  var_slope <- g_vc[2L, 2L]
-  rho_est <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
-  v <- tryCatch(
-    as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var")),
-    error = function(e) NULL
+  # Oracle: glmmTMB on the same REML model. Both SEs are the observed
+  # information; the residual drift comes from the two optima.
+  tm <- glmmTMB::glmmTMB(
+    Reaction ~ Days + (Days | Subject),
+    data = lme4::sleepstudy,
+    REML = TRUE
   )
-  skip_if(is.null(v), "merDeriv::vcov.lmerMod failed on this platform")
-  n_fix <- length(lme4::fixef(fit))
-  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
-  grad <- c(
-    -rho_est / (2 * var_int),
-    1 / sqrt(var_int * var_slope),
-    -rho_est / (2 * var_slope)
-  )
-  se_oracle <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
-  z <- qnorm(0.975)
+  g_vc <- lme4::VarCorr(fit)[["Subject"]]
+  rho_est <- attr(g_vc, "correlation")[1L, 2L]
   expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
-  expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
+  expect_equal(rho_rows$std_error, .tmb_rho_se(tm), tolerance = 1e-4)
+  # CI: Wald on atanh(rho), back-transformed.
+  z <- qnorm(0.975)
+  half <- z * rho_rows$std_error / (1 - rho_est^2)
   expect_equal(
     rho_rows$ci_lower,
-    max(-1, rho_est - z * se_oracle),
-    tolerance = 1e-10
+    tanh(atanh(rho_est) - half),
+    tolerance = 1e-12
   )
   expect_equal(
     rho_rows$ci_upper,
-    min(1, rho_est + z * se_oracle),
-    tolerance = 1e-10
+    tanh(atanh(rho_est) + half),
+    tolerance = 1e-12
   )
 })
 
-test_that("lmer rho CI is clamped to [-1, 1] (boundary)", {
-  skip_if_not_installed("merDeriv")
+test_that("lmer rho CI stays inside (-1, 1)", {
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_corr()
   fr <- as_regression_frame(fit, model_id = "M1")
   rho <- fr$info$random_effects$variance_components
   rho <- rho[rho$is_correlation %in% TRUE, ]
-  expect_true(rho$ci_lower >= -1)
-  expect_true(rho$ci_upper <= 1)
+  expect_gt(rho$ci_lower, -1)
+  expect_lt(rho$ci_upper, 1)
 })
 
 
-# ---- 2. lmer SE matches a hand-coded Delta-method computation -----------
+# ---- 2. lmer SE pinned to the value lmer, lme and glmmTMB share ---------
 
-test_that("lmer rho SE matches the manual Delta-method formula to 1e-10", {
-  skip_if_not_installed("merDeriv")
+test_that("lmer rho SE is 0.3250 on sleepstudy (REML)", {
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_corr()
   fr <- as_regression_frame(fit, model_id = "M1")
   rho_row <- fr$info$random_effects$variance_components
   rho_row <- rho_row[rho_row$is_correlation %in% TRUE, ]
-
-  # Reference computation: pull the 3x3 vcov sub-matrix from merDeriv
-  # directly and apply the Delta-method formula in-line.
-  g_vc <- as.matrix(lme4::VarCorr(fit)[["Subject"]])
-  var_int <- g_vc[1L, 1L]
-  var_slope <- g_vc[2L, 2L]
-  cov_ij <- g_vc[1L, 2L]
-  rho_est <- cov_ij / sqrt(var_int * var_slope)
-
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  n_fix <- length(lme4::fixef(fit))
-  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
-  grad <- c(
-    -rho_est / (2 * var_int),
-    1 / sqrt(var_int * var_slope),
-    -rho_est / (2 * var_slope)
-  )
-  expected_se <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
-
-  expect_equal(rho_row$std_error, expected_se, tolerance = 1e-10)
+  # glmmTMB 0.325024, lme with .relStep = 1e-4 0.325098 (decision
+  # 2026-11-19-re-se-delta.md); the Hessian of lme4's deviance 0.325025.
+  expect_equal(rho_row$std_error, 0.3250, tolerance = 1e-4)
 })
 
 
-# ---- 2b. THREE-term random block: column-major vech positions ----------
-# Regression guard for the Phase 7c25 fix. merDeriv lays the random
-# block out COLUMN-MAJOR (vech); the original row-major position
-# formulas coincided with column-major only for n <= 2, so a 3-term
-# random block (n = 3) silently pulled SEs from the wrong vcov cells
-# (cov(term_3, term_1) mislabeled as var(term_2), etc.). Cross-
-# validate every variance-row SE against merDeriv-by-name and every
-# correlation-row SE against a numDeriv gradient on the 6x6 sub-vcov.
+# ---- 2b. THREE-term random block: column-major positions ----------------
+# Regression guard for the Phase 7c25 fix. lme4's theta, and the
+# parameter vector of the Hessian, lay each random block out COLUMN-MAJOR
+# (lower triangle, column by column). Row-major positions coincide with
+# column-major only for n <= 2, so a 3-term random block (n = 3) would
+# pull SEs from the wrong cells. Cross-validate every SD row and every
+# correlation row against glmmTMB, whose correlations are mapped by
+# glmmTMB::get_cor().
 
-test_that("lmer 3-term random block: variance + correlation SE are correct (column-major)", {
-  skip_if_not_installed("merDeriv")
+test_that("lmer 3-term random block: SD + correlation SE are correct (column-major)", {
   skip_if_not_installed("numDeriv")
+  skip_if_not_installed("glmmTMB")
   set.seed(123)
   n <- 600
   g <- factor(rep(1:30, length.out = n))
@@ -156,67 +139,41 @@ test_that("lmer 3-term random block: variance + correlation SE are correct (colu
     control = lme4::lmerControl(check.conv.singular = "ignore")
   )
   skip_if(lme4::isSingular(fit), "fit was singular this round")
+  tm <- glmmTMB::glmmTMB(y ~ x1 + x2 + (1 + x1 + x2 | g), REML = TRUE)
 
-  g_vc <- as.matrix(lme4::VarCorr(fit)$g)
-  v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
-  n_fix <- length(lme4::fixef(fit))
-  re_block <- v[(n_fix + 1L):nrow(v), (n_fix + 1L):nrow(v), drop = FALSE]
+  # glmmTMB: theta = (log SD x 3, correlation parameters x 3); delta
+  # method to (SD, correlation) in lower-triangle column-major order:
+  # sd1, cor21, cor31, sd2, cor32, sd3.
+  est <- tm$sdr$par.fixed
+  it <- which(names(est) == "theta")
+  h <- function(th) {
+    m <- glmmTMB::get_cor(th[4:6], return_val = "mat")
+    diag(m) <- exp(th[1:3])
+    m[lower.tri(m, diag = TRUE)]
+  }
+  J <- numDeriv::jacobian(h, est[it])
+  se_tmb <- sqrt(diag(J %*% tm$sdr$cov.fixed[it, it] %*% t(J)))
 
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
-
-  # Variance rows: SE must equal sqrt(diag(merDeriv vcov)) at the
-  # column-major diagonal positions (1, 4, 6 for n = 3), which are the
-  # entries merDeriv names cov_g.(Intercept) / cov_g.x1 / cov_g.x2.
-  # Pure algebraic mapping (sqrt of the same merDeriv diagonal entries,
-  # only the vech position lookup differs) -> tight 1e-10.
-  diag_names <- c("cov_g.(Intercept)", "cov_g.x1", "cov_g.x2")
-  truth_var_se <- sqrt(diag(re_block))[match(diag_names, colnames(re_block))]
-  var_rows <- vc[!(vc$is_correlation %in% TRUE) & vc$group == "g", ]
-  expect_equal(var_rows$std_error, unname(truth_var_se), tolerance = 1e-10)
-
-  # Correlation rows: SE must equal a numDeriv gradient of
-  # rho = cov / sqrt(var_i var_j) quadratic-formed with the 6x6
-  # sub-vcov of the column-major vech.
-  vech <- c(
-    g_vc[1, 1],
-    g_vc[2, 1],
-    g_vc[3, 1],
-    g_vc[2, 2],
-    g_vc[3, 2],
-    g_vc[3, 3]
+  sd_rows <- vc[!(vc$is_correlation %in% TRUE) & vc$group == "g", ]
+  expect_identical(sd_rows$term, c("(Intercept)", "x1", "x2"))
+  expect_equal(
+    sd_rows$std_error / (2 * sqrt(sd_rows$variance)),
+    se_tmb[c(1L, 4L, 6L)],
+    tolerance = 1e-3
   )
-  re_cov6 <- re_block[1:6, 1:6, drop = FALSE]
-  rho_fun <- function(vv, i, j) {
-    m <- matrix(0, 3, 3)
-    m[1, 1] <- vv[1]
-    m[2, 1] <- m[1, 2] <- vv[2]
-    m[3, 1] <- m[1, 3] <- vv[3]
-    m[2, 2] <- vv[4]
-    m[3, 2] <- m[2, 3] <- vv[5]
-    m[3, 3] <- vv[6]
-    m[i, j] / sqrt(m[i, i] * m[j, j])
-  }
   corr <- vc[vc$is_correlation %in% TRUE, ]
-  expect_identical(nrow(corr), 3L)
-  for (k in seq_len(nrow(corr))) {
-    pair <- strsplit(corr$term[k], ", ", fixed = TRUE)[[1L]]
-    i <- match(pair[1L], rownames(g_vc))
-    j <- match(pair[2L], rownames(g_vc))
-    gr <- numDeriv::grad(function(vv) rho_fun(vv, i, j), vech)
-    truth <- sqrt(as.numeric(t(gr) %*% re_cov6 %*% gr))
-    expect_equal(
-      corr$std_error[k],
-      truth,
-      tolerance = 1e-6,
-      info = paste("corr SE mismatch:", corr$term[k])
-    )
-  }
+  expect_identical(
+    corr$term,
+    c("(Intercept), x1", "(Intercept), x2", "x1, x2")
+  )
+  expect_equal(corr$std_error, se_tmb[c(2L, 3L, 5L)], tolerance = 1e-3)
 })
 
 test_that(".vech_colmajor_pos returns column-major lower-triangle positions", {
-  # n = 3 block: diagonal at 1, 4, 6; off-diag cov(2,1)=2, cov(3,1)=3,
-  # cov(3,2)=5 -- the layout merDeriv uses.
+  # n = 3 block: diagonal at 1, 4, 6; off-diag (2,1)=2, (3,1)=3,
+  # (3,2)=5 -- the layout of lme4's theta.
   expect_identical(spicy:::.vech_colmajor_pos(3L, 1L, 1L), 1L)
   expect_identical(spicy:::.vech_colmajor_pos(3L, 2L, 2L), 4L)
   expect_identical(spicy:::.vech_colmajor_pos(3L, 3L, 3L), 6L)
@@ -233,7 +190,7 @@ test_that(".vech_colmajor_pos returns column-major lower-triangle positions", {
 # ---- 3. glmer: rho row has finite SE + CI (no residual -> same path) ----
 
 test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_slope_corr()
   skip_if(lme4::isSingular(fit), "skip when glmer fit is singular")
   fr <- as_regression_frame(fit, model_id = "M1")
@@ -245,39 +202,31 @@ test_that("glmer (binomial logit) (x | g): rho row has finite Wald SE + CI", {
   expect_true(is.finite(rho_rows$ci_upper))
   expect_identical(rho_rows$ci_method, "wald")
 
-  # Oracle: same Delta method as the lmer tests, but on
-  # merDeriv::vcov.glmerMod (no residual variance in the glmer full
-  # vcov; the (x | g) block still sits right after the fixed effects
-  # as var(Int), cov, var(x) -- column-major vech).
-  g_vc <- as.matrix(lme4::VarCorr(fit)[["g"]])
-  var_int <- g_vc[1L, 1L]
-  var_slope <- g_vc[2L, 2L]
-  rho_est <- g_vc[1L, 2L] / sqrt(var_int * var_slope)
-  v <- tryCatch(
-    as.matrix(merDeriv::vcov.glmerMod(fit, full = TRUE, ranpar = "var")),
-    error = function(e) NULL
-  )
-  skip_if(is.null(v), "merDeriv::vcov.glmerMod failed on this platform")
-  n_fix <- length(lme4::fixef(fit))
-  sub <- v[(n_fix + 1L):(n_fix + 3L), (n_fix + 1L):(n_fix + 3L)]
-  grad <- c(
-    -rho_est / (2 * var_int),
-    1 / sqrt(var_int * var_slope),
-    -rho_est / (2 * var_slope)
-  )
-  se_oracle <- sqrt(as.numeric(t(grad) %*% sub %*% grad))
-  z <- qnorm(0.975)
+  # Oracle: glmmTMB on the same model (the glmer deviance has no
+  # residual, the (x | g) block is the whole parameter vector).
+  skip_if_not_installed("glmmTMB")
+  set.seed(42)
+  n <- 1000
+  g <- factor(rep(1:30, length.out = n))
+  x <- rnorm(n)
+  b0 <- rnorm(30)
+  b1 <- rnorm(30, 0, 0.5)
+  y <- rbinom(n, 1, plogis(0.5 + b0[g] + (0.8 + b1[g]) * x))
+  tm <- glmmTMB::glmmTMB(y ~ x + (x | g), family = binomial)
+  rho_est <- attr(lme4::VarCorr(fit)[["g"]], "correlation")[1L, 2L]
   expect_equal(rho_rows$corr, rho_est, tolerance = 1e-12)
-  expect_equal(rho_rows$std_error, se_oracle, tolerance = 1e-10)
+  expect_equal(rho_rows$std_error, .tmb_rho_se(tm), tolerance = 5e-4)
+  z <- qnorm(0.975)
+  half <- z * rho_rows$std_error / (1 - rho_est^2)
   expect_equal(
     rho_rows$ci_lower,
-    max(-1, rho_est - z * se_oracle),
-    tolerance = 1e-10
+    tanh(atanh(rho_est) - half),
+    tolerance = 1e-12
   )
   expect_equal(
     rho_rows$ci_upper,
-    min(1, rho_est + z * se_oracle),
-    tolerance = 1e-10
+    tanh(atanh(rho_est) + half),
+    tolerance = 1e-12
   )
 })
 
@@ -366,7 +315,7 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
 # ---- 5. End-to-end rendering: rho row carries SE + CI (rows layout) -----
 
 test_that("table_regression(lmer slope) renders the rho row with SE + CI", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_slope_corr()
   # The printed table: its columns are the displayed cells.
   df <- table_regression(fit, show_columns = c("b", "se", "ci"))

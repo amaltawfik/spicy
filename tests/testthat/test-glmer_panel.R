@@ -5,8 +5,8 @@
 #   (1) No "Residual" row in variance_components (lme4::sigma() returns
 #       a fixed dispersion of 1 for binomial/poisson; reporting it as
 #       a residual variance is misleading).
-#   (2) merDeriv positions exclude the residual when family is not
-#       Gaussian -- enables the panel to render with SE/CI populated.
+#   (2) the parameter vector of the Hessian has no residual when the
+#       family is not Gaussian -- the panel renders with SE/CI populated.
 #   (3) ICC uses link-scale distribution variance (Nakagawa 2017):
 #       pi^2/3 for logit, 1 for probit, pi^2/6 for cloglog, lognormal
 #       for Poisson(log).
@@ -85,18 +85,18 @@ test_that("lmer (Gaussian): variance_components STILL has a Residual row (regres
 # ---- 2. Panel renders with SE/CI for glmer ------------------------------
 
 test_that("glmer (Bernoulli) panel renders with SE/CI populated", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_bernoulli()
   fr <- as_regression_frame(fit, model_id = "M1")
   vc <- fr$info$random_effects$variance_components
-  # Variance row (intercept) should have finite SE/CI from merDeriv.
+  # Variance row (intercept) should have finite SE/CI.
   var_rows <- vc[!(vc$is_correlation %in% TRUE), ]
   expect_true(all(is.finite(var_rows$std_error)))
   expect_true(all(var_rows$ci_method == "wald"))
 })
 
 test_that("glmer (Bernoulli) table_regression output uses structured panel", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_bernoulli()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -108,7 +108,7 @@ test_that("glmer (Bernoulli) table_regression output uses structured panel", {
 })
 
 test_that("glmer (cbpp cbind binomial) table_regression output uses structured panel", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_cbpp()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -164,7 +164,7 @@ test_that("lmer (Gaussian) ICC unchanged: var_r / (var_r + sigma^2)", {
 # ---- 4. End-to-end: ICC row appears in the panel for non-Gaussian -------
 
 test_that("glmer (Bernoulli) panel shows the ICC row", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_bernoulli()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -172,7 +172,7 @@ test_that("glmer (Bernoulli) panel shows the ICC row", {
 })
 
 test_that("glmer (Poisson) panel shows the ICC row", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_glmer_poisson()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")

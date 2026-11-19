@@ -185,7 +185,7 @@ test_that("glance – a table saved before the columns existed gives NA", {
 
 test_that("glance – logLik matches stats::logLik() of lmer and polr", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   m1 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   m2 <- MASS::polr(factor(gear) ~ wt, data = mtcars, Hess = TRUE)
   g1 <- suppressMessages(broom::glance(table_regression(m1)))

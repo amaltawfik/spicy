@@ -232,29 +232,6 @@ test_that("singular-fit warning names the named mixed model", {
   expect_s3_class(res$value, "data.frame")
 })
 
-test_that("vc-SE-skipped-for-size warning names the named mixed model", {
-  skip_if_not_installed("lme4")
-  withr::local_options(list(spicy.re_se_max_n = 10))
-  data(sleepstudy, package = "lme4")
-  m_re <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = sleepstudy)
-  res <- collect_warnings_cov100(
-    table_regression(list(Beta = m_re), output = "data.frame")
-  )
-  expect_true(has_warning_cov100(
-    res$warnings,
-    "spicy_caveat",
-    "Variance-component SEs and CIs skipped for Beta"
-  ))
-  # the message states the active cap
-  expect_true(has_warning_cov100(
-    res$warnings,
-    "spicy_caveat",
-    "`options(\"spicy.re_se_max_n\")` = 10"
-  ))
-  expect_s3_class(res$value, "data.frame")
-})
-
-
 # ---- 6. regression_extract helpers ------------------------------------------
 
 test_that(".spicy_get_terms returns NULL when terms() fails on an odd class", {

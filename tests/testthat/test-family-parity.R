@@ -210,7 +210,6 @@ for (nm in names(parity_fams)) {
     for (pkg in fam$pkgs) {
       skip_if_not_installed(pkg)
     }
-    withr::local_options(list(spicy.re_se_max_n = 50L))
     out <- suppressWarnings(table_regression(fam$fit(), labels = fam$lbl))
     # Substring, not equality: a factor key renames the group HEADER
     # ("Contact:"), a numeric key renames a plain row.

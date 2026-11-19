@@ -16,7 +16,7 @@
 # ---- 1. show_re = FALSE suppresses the panel ----------------------------
 
 test_that("show_re = FALSE removes the Random effects panel from output", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   out <- capture.output(print(table_regression(fit, show_re = FALSE)))
   combined <- paste(out, collapse = "\n")
@@ -25,7 +25,7 @@ test_that("show_re = FALSE removes the Random effects panel from output", {
 })
 
 test_that("show_re = TRUE (default) keeps the Random effects panel", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   out <- capture.output(print(table_regression(fit)))
   combined <- paste(out, collapse = "\n")
@@ -40,7 +40,7 @@ test_that("show_re = FALSE is a no-op on non-mixed fits (no panel anyway)", {
 })
 
 test_that("build_random_effects_footer_block_from_frames(show_re=FALSE) -> NULL", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   fr <- as_regression_frame(fit, model_id = "M1")
   out <- spicy:::build_random_effects_footer_block_from_frames(
@@ -54,7 +54,7 @@ test_that("build_random_effects_footer_block_from_frames(show_re=FALSE) -> NULL"
 # ---- 2. re_scale = "variance" shows variance values ---------------------
 
 test_that("re_scale = 'variance' shows variance values, not SD", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
@@ -68,7 +68,7 @@ test_that("re_scale = 'variance' shows variance values, not SD", {
 })
 
 test_that("re_scale = 'sd' (default) shows SD values", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   fr <- as_regression_frame(fit)
   sd_value <- sqrt(fr$info$random_effects$variance_components$variance[
@@ -80,7 +80,7 @@ test_that("re_scale = 'sd' (default) shows SD values", {
 })
 
 test_that("invalid re_scale value triggers match.arg error", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   expect_error(table_regression(fit, re_scale = "nonsense"))
 })
@@ -101,7 +101,7 @@ test_that("invalid re_scale value triggers match.arg error", {
 }
 
 test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(
     fit,
@@ -117,7 +117,7 @@ test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
 })
 
 test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(
     fit,
@@ -131,7 +131,7 @@ test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
 })
 
 test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(
     fit,
@@ -145,7 +145,7 @@ test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
 })
 
 test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   df <- table_regression(fit, show_columns = c("b", "se", "ci"))
   se_col <- grep("SE", names(df), value = TRUE)[1]
@@ -156,7 +156,7 @@ test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", 
 
 # Phase 3 matrix – rd-core:re-columns-display-only
 test_that("re_columns deselection is display-only: tidy/as_structured keep SE + CI", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   skip_if_not_installed("broom")
   fit <- .fit_lmer_api()
   out <- table_regression(
@@ -187,7 +187,7 @@ test_that("re_columns deselection is display-only: tidy/as_structured keep SE + 
 # ---- 4. re_columns must include "est" -----------------------------------
 
 test_that("re_columns must include 'est' (the estimate is mandatory)", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   expect_error(
     table_regression(fit, re_columns = c("se", "ci")),
@@ -200,7 +200,7 @@ test_that("re_columns must include 'est' (the estimate is mandatory)", {
 })
 
 test_that("re_columns rejects unknown tokens", {
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   fit <- .fit_lmer_api()
   expect_error(table_regression(fit, re_columns = c("est", "pvalue")))
   expect_error(table_regression(fit, re_columns = c("est", "junk")))
@@ -314,7 +314,7 @@ test_that("re_* at their defaults, or show_* = FALSE, do not warn", {
 
 test_that("one mixed model in the table silences the warning", {
   skip_if_not_installed("lme4")
-  skip_if_not_installed("merDeriv")
+  skip_if_not_installed("numDeriv")
   mm <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
   m <- lm(Reaction ~ Days, data = lme4::sleepstudy)
   expect_length(
