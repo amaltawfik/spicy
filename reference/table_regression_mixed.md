@@ -41,7 +41,7 @@ the values they take for mixed models are listed below.
 | Class | Engine | AME | Exponentiate | Blocks | vcov |
 | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
-| `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+| `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
 | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session's) |
 | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 
@@ -277,6 +277,13 @@ model-based or robust, and are tested by Wald z. Beside the t rows of an
 `lmerTest` or `lme` fit, or of a `CR*` variance, an identity-link AME
 can therefore carry another p-value than the B of the same row; read it
 as a large-sample approximation.
+
+For a mixed model with a non-identity link, the AME averages the slopes
+of the conditional predictions: each observation is predicted with the
+estimated random effects of its groups. It is neither the effect for a
+typical group (random effects at zero) nor the population-averaged
+effect, which integrates over the distribution of the random effects. In
+a linear mixed model with random intercepts only, the three are equal.
 
 Cluster-robust variance. `lmer` and `lme` fits take `"CR0"` to `"CR3"`
 from

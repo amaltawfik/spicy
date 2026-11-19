@@ -972,8 +972,14 @@ with Satterthwaite-corrected degrees of freedom. When AME columns are
 requested, the same Satterthwaite framework is applied to the AME
 contrast via
 [`clubSandwich::linear_contrast()`](http://jepusto.github.io/clubSandwich/reference/linear_contrast.md),
-so `B` and AME share the same t-distribution with the same df — visible
-in the footer.
+whatever the formula (`I(x^2)`,
+[`poly()`](https://rdrr.io/r/stats/poly.html),
+[`log()`](https://rdrr.io/r/base/Log.html) and interactions included),
+so `B` and AME rows are both t-tests with Satterthwaite df. The note
+names the method; the df of each row, `B` and AME, are in the `df`
+column of
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) on the
+table, or of `table_regression(..., output = "long")`.
 
 ## Multiple-comparison adjustment
 

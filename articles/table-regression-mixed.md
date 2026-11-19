@@ -413,7 +413,7 @@ table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
 #>  AIC                            │ 46571.7         
 #>  BIC                            │ 46619.8         
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. SE and CI of the random-effect variance components not computed for n above 1000. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The slope SD is 0.83 achievement points around the average slope of
@@ -1014,7 +1014,7 @@ gfit <- glmer(
   data = cbpp, family = binomial()
 )
 table_regression(gfit, exponentiate = TRUE)
-#> Logistic mixed-effects regression: incidence
+#> Logistic mixed-effects regression: cbind(incidence, size - incidence)
 #> 
 #>  Variable             │   OR     SE      95% CI       p   
 #> ──────────────────────┼───────────────────────────────────
@@ -1120,6 +1120,13 @@ table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 #> 
 #> Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
+
+For a mixed model with a non-identity link, the AME averages the slopes
+of the conditional predictions: each observation is predicted with the
+estimated random effects of its groups. It is neither the effect for a
+typical group (random effects at zero) nor the population-averaged
+effect, which integrates over the distribution of the random effects. In
+a linear mixed model with random intercepts only, the three are equal.
 
 Factor predictors are handled level-by-level: AME rows align under the
 same factor header (`cat: A (ref.) / B / C`), each level sharing a row

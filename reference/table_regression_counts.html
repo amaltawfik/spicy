@@ -144,7 +144,9 @@ distinct label.</p></li>
 <code>lognormal()</code> or <code>beta_family()</code> with <code>ziformula</code>): a
 <code>Zero hurdle, Pr(y = 0)</code> block, the probability of a zero.</p></li>
 <li><p><code>glmmTMB</code> with covariates in <code>dispformula</code>: a <code>Dispersion</code>
-block, on the log scale, never exponentiated.</p></li>
+block, on the log scale, never exponentiated. Under <code>beta_family()</code>
+the dispersion parameter is the precision phi, and the block is a
+<code>Precision</code> block, as for a <code>betareg</code> <code>y ~ x | z</code>.</p></li>
 </ul><p>The component rows carry Wald inference (B, SE, z, p, CI), join the
 <code>p_adjust</code> family and take significance stars.</p>
 <p><strong>AME.</strong> The effect on the overall expected count E(Y), combining the

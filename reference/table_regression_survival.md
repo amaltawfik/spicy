@@ -7,7 +7,7 @@ reads the Cox models of
 accelerated failure time models of
 [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html),
 and the parametric models of
-[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
+[`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html).
 The coefficients fill the rows, as hazard ratios or time ratios under
 `exponentiate = TRUE`. For `coxph` and `survreg` fits, two families of
 columns give absolute effects: the difference in restricted mean
@@ -39,7 +39,7 @@ the values they take for survival models are listed below.
 | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
 | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
 | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
-| `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
+| `flexsurvreg` | [`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html) | no | TR / HR (dist) | distribution parameters | classical |
 
 AME: whether the average-marginal-effects columns are available; for
 `coxph`, the RMST and risk-difference columns stand in their place.

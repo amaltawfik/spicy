@@ -354,10 +354,10 @@ table_regression(
   Delegated to
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html); applied
   per-model and per `estimate_type` (B and AME p-values are adjusted
-  independently within their own families). Active adjustments are
-  documented in the footer (method + family size). See the
-  *Multiple-comparison adjustment* section for when this is and is not
-  appropriate.
+  independently within their own families). The tests of the smooth
+  terms of a GAM join the B family. Active adjustments are documented in
+  the footer (method + family size). See the *Multiple-comparison
+  adjustment* section for when this is and is not appropriate.
 
 - show_columns:
 
@@ -394,7 +394,13 @@ table_regression(
   `"cyl=6"` and `"wt:cyl6"` for `"wt * cyl=6"`) matches at least one
   pattern are kept. The intercept and the subordinate blocks
   (thresholds, random effects) are exempt from `keep` and `drop`:
-  `show_intercept`, `show_thresholds` and `show_re` govern them.
+  `show_intercept`, `show_thresholds` and `show_re` govern them. The
+  smooth terms of a GAM are predictors and are not exempt: they match by
+  their mgcv label (`"s(age)"`, `"te(bmi,ped)"`), and `drop = "^s\\("`
+  removes the `Smooth terms` block with its note. The `Error terms` of a
+  sample-selection model are coefficients of
+  [`coef()`](https://rdrr.io/r/stats/coef.html) and follow `keep` and
+  `drop` under those names (`"sigma"`, `"rho"`, `"invMillsRatio"`).
   Mutually exclusive with `drop`. Filtering is a display choice;
   `p_adjust` runs against the full coefficient family before filtering.
   Default `NULL` (no filter).
@@ -419,12 +425,16 @@ table_regression(
 - show_components:
 
   Models with secondary components only (the `pscl` and `glmmTMB`
-  two-part and dispersion models, `clm` with `scale =`): `TRUE`
-  (default) shows the components as labeled blocks of rows, `FALSE`
-  omits them. See
-  [table_regression_counts](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md)
+  two-part and dispersion models, `clm` with `scale =`, the precision
+  sub-model of a `betareg` `y ~ x | z`, the error terms of a
+  sample-selection model): `TRUE` (default) shows the components as
+  labeled blocks of rows, `FALSE` omits them. A `Precision` block stays
+  on the scale of its link (log by default), under `exponentiate = TRUE`
+  too. See
+  [table_regression_counts](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md),
+  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md)
   and
-  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md).
+  [table_regression_models](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
 
 - intercept_position:
 
@@ -1293,7 +1303,10 @@ refuses the token.
   betareg or `glmmTMB`. `method = "ML"` gives those. A token is refused
   only when no model in the table has the parameter, or when a model of
   that family has dispersion covariates (a `glmmTMB` `dispformula`, or a
-  betareg `y ~ x | z`), so the parameter is not a single number.
+  betareg `y ~ x | z`), so the parameter is not a single number. Those
+  covariates are shown as a block of rows instead (`show_components`):
+  `Precision` for a betareg `y ~ x | z` and a `beta_family()`
+  `dispformula`, `Dispersion` for the other `glmmTMB` families.
 
 - GEE ([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)
   only): `"qic"` and `"qicu"` – the quasi-likelihood information
@@ -1391,11 +1404,12 @@ refuses the token.
 Default (resolved when `NULL`) is class-aware: lm and `lm_robust` fits
 get `c("nobs", "r2", "adj_r2")`; glm,
 [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html), `polr`, `clm`,
-`multinom` and [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) fits
-get `"nobs"`, the \\R^2\\ rows of their family (see *R-squared of glm
-and categorical models*) and `"aic"`; mixed lm + glm sets union both
-groups (the renderer per-row en-dashes the inappropriate cell); Cox fits
-get `c("nobs", "n_events", "aic")`; GEE fits get
+`multinom`, [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) and
+[`rms::Glm`](https://rdrr.io/pkg/rms/man/Glm.html) fits get `"nobs"`,
+the \\R^2\\ rows of their family (see *R-squared of glm and categorical
+models*) and `"aic"`; mixed lm + glm sets union both groups (the
+renderer per-row en-dashes the inappropriate cell); Cox fits get
+`c("nobs", "n_events", "aic")`; GEE fits get
 `c("nobs", "n_groups", "max_cluster_size")` (the cluster structure,
 Stata `xtgee`-header style). When `nested = TRUE`, the class-aware
 default is extended with change tokens
@@ -1461,6 +1475,19 @@ of GAMs or beside an [`lm()`](https://rdrr.io/r/stats/lm.html). The
 `"r2"` row of a GAM is dashed beside other models, and refused for a
 table of GAMs.
 
+The smooth terms of a GAM form a `Smooth terms (edf)` block below its
+parametric coefficients, one row per term, labeled as `summary.gam()`
+labels it (`s(age)`, `te(bmi,ped)`, `s(age):sexF`). The B column carries
+the effective degrees of freedom and the p column the p-value of mgcv's
+approximate test of the term. The SE, CI and statistic cells are dashed:
+an edf has no standard error, and the chi-square or F of the test has no
+place under a t or z header. `exponentiate` leaves the edf as it is, and
+no star marks it. Under a robust `vcov` the p-value is dashed too, since
+mgcv's test rests on its own covariance matrix, and the note says so.
+`tidy()` and `output = "long"` carry the rows with
+`estimate_type = "edf"`, the reference df in `df` and the test in
+`statistic` and `p.value`.
+
 The intercept-only model keeps the offset and the weights of the fitted
 model. For a
 [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fit it
@@ -1470,7 +1497,8 @@ re-estimates theta in McFadden's and Nagelkerke's \\R^2\\, as Stata's
 rows of its family:
 
 - A logit on a binary outcome (0/1, a factor or a logical), a
-  [`glm()`](https://rdrr.io/r/stats/glm.html) or a binary
+  [`glm()`](https://rdrr.io/r/stats/glm.html) or
+  [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html), or a binary
   [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html): Tjur's \\R^2\\,
   then McFadden's. Tjur's reads on the scale of the predicted
   probabilities; McFadden's cannot decrease when a predictor is added.
@@ -1833,12 +1861,18 @@ cells:
   the question.
 
 In the first three, `nested = FALSE` renders the models side by side
-instead.
+instead. A hierarchy holding an
+[`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) or
+[`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) fit estimated with
+`penalty =` is rendered side by side, without change statistics and with
+a warning: neither the partial F nor the likelihood-ratio test is valid
+for penalized estimates.
 
 Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 
-- All-lm (and `nls`): `c("r2_change", "f_change", "p_change")` – APA
-  hierarchical regression standard.
+- All-lm ([`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) and `nls`
+  included): `c("r2_change", "f_change", "p_change")` – APA hierarchical
+  regression standard.
 
 - All-glm: `c("lrt_change", "p_change")` – Hosmer, Lemeshow & Sturdivant
   2013 Section 2.4; Long & Freese 2014 Section 3.2.4.
@@ -1870,7 +1904,8 @@ every other likelihood class and the mixed-effects families: that
 comparison reports a chi-square, not a variance-explained change, and
 the message points at `"lrt_change"` + `"p_change"`. A quantile
 hierarchy refuses them too, and `"lrt_change"` with them, pointing at
-`"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
+`"f_change"` + `"p_change"` instead. `lm`,
+[`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) and `nls` keep the
 least-squares tokens.
 
 **The change test follows `vcov`.** Under the classical `vcov` the

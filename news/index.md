@@ -15,13 +15,63 @@
   [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term,
   which showed one row per spline basis or per cluster,
   [`survey::svysurvreg()`](https://rdrr.io/pkg/survey/man/svysurvreg.html)
-  fits, whose design went unmentioned, and
+  fits, whose design went unmentioned,
   [`nlme::nlme()`](https://rdrr.io/pkg/nlme/man/nlme.html) and
   [`nlme::gnls()`](https://rdrr.io/pkg/nlme/man/gnls.html) fits,
-  tabulated as linear models. A `coxph` fit with a sparse
-  [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html) term
-  keeps its table but refuses the RMST and risk-difference columns,
+  tabulated as linear models, the `lme` part of an
+  [`mgcv::gamm()`](https://rdrr.io/pkg/mgcv/man/gamm.html) fit, whose
+  random-effect rows were the smooth terms of the GAM, and a tobit-5
+  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+  fit, whose second outcome equation was left out. A `coxph` fit with a
+  sparse [`frailty()`](https://rdrr.io/pkg/survival/man/frailty.html)
+  term keeps its table but refuses the RMST and risk-difference columns,
   which would ignore the random effect.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  names a transformed outcome as the formula writes it, for every model
+  class and no longer for [`lm()`](https://rdrr.io/r/stats/lm.html) and
+  [`glm()`](https://rdrr.io/r/stats/glm.html) only: the title, the
+  Outcome row and the `outcome` column of
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `glance()` read `log(wage)`, `I(parttime == "yes")` or
+  `cbind(succ, fail)` where they read `wage`, `parttime` or `succ`. A
+  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+  model is titled by its outcome variable instead of “outcome”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  names the rows of a fixest model as
+  [`lm()`](https://rdrr.io/r/stats/lm.html) and `ivreg()` name them:
+  `education` for the endogenous regressor of an IV `feols()` model, not
+  fixest’s `fit_education`, and `I(x^2)` where fixest writes
+  `I(I(x^2))`. The rows align with those of `ivreg()` and `iv_robust()`,
+  and `keep`, `drop` and `labels` take these names.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the block of the `dispformula` of a `glmmTMB` `beta_family()` model is
+  labeled “Precision” instead of “Dispersion”, since that parameter is
+  the precision, and its terms are keyed `"Precision::"` in
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"`. A `betareg()` and a `glmmTMB()` fit of the same
+  model share its rows.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a transformed term of an rms model reads as in the formula,
+  `log(bili)` and not rms’s `bili`, like the same term of a
+  [`glm()`](https://rdrr.io/r/stats/glm.html) or
+  [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model. This
+  is the name of the row and the name `keep`, `drop` and `labels` take.
+  The terms of `rcs()`, `pol()` and `lsp()` keep rms’s names (`age`,
+  `age'`).
+
+- `table_regression(nested = TRUE)` compares two
+  [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) models as their
+  [`lm()`](https://rdrr.io/r/stats/lm.html) twins: the change in
+  R-squared and the F test of the change, the F that
+  [`anova()`](https://rdrr.io/r/stats/anova.html) reports, instead of a
+  likelihood-ratio chi-square. `f_change` and `r2_change` are accepted
+  for them. A hierarchy that holds an `ols()` or `lrm()` model fitted
+  with `penalty =` is rendered without change statistics, with a
+  warning: neither test is valid for penalized estimates.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the random-effects rows follow one convention whatever the engine, so
@@ -351,6 +401,36 @@
 
 ### New features
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the smooth terms of an
+  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam()`
+  model in a “Smooth terms (edf)” block: one row per term, with its
+  effective degrees of freedom in the B column and the p-value of its
+  approximate test. A model made of smooth terms only showed its
+  intercept alone. The rows follow `keep` and `drop`, and their tests
+  count in `p_adjust`. In
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` they have `estimate_type = "edf"`, with the
+  reference degrees of freedom in `df` and the test in `statistic` and
+  `p.value`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the precision submodel of a
+  [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
+  model (`y ~ x | z`) in a “Precision” block, on the scale of its link,
+  which `show_components = FALSE` omits. The title names a mean link
+  other than the logit (“Probit beta regression”), and a weighted model
+  reports its weighted count (`"weighted_nobs"`, `glance()`).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the error terms of a sample-selection model (`selection()`,
+  `heckit()`, `treatReg()`) in an “Error terms” block: σ and ρ with
+  their standard error and interval, and the inverse Mills ratio of a
+  two-step fit. `keep` and `drop` select these rows by coefficient name,
+  and `show_components = FALSE` omits the block. The note names the
+  estimation method, maximum likelihood or two-step, and the number of
+  observations whose outcome is observed.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `show_fit_stats = "log_lik"` shows the log-likelihood of each model,
   the value of [`logLik()`](https://rdrr.io/r/stats/logLik.html) from
@@ -619,6 +699,114 @@
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
 ### Improvements and bug fixes
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `tau` passed with a
+  [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) model and
+  no survival column says that the quantile of the fit is set in `rq()`.
+  The refusal of a robust or clustered `vcov` for an `ivreg()` model
+  names
+  [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+  and
+  [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html),
+  which compute it.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the p-values and intervals of a sample-selection model use the t
+  distribution on the residual degrees of freedom, as
+  [`summary()`](https://rdrr.io/r/base/summary.html) does, and the note
+  says so. The note called them z tests.
+
+- `table_regression(nested = TRUE)` gives the likelihood-ratio test of
+  two selection models fitted by maximum likelihood, where it stopped on
+  an internal error. A two-step fit is refused with a message.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a selection model with a binary outcome and a `treatReg()` model have
+  titles of their own, and `exponentiate = TRUE` on a selection model no
+  longer mentions an identity link.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the standard errors of the average marginal effects of a
+  [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) model
+  are now correct. They paired each coefficient with the variance of
+  another and were several times too large or too small.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the average marginal effects of a
+  [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) model
+  with `ns()`, [`poly()`](https://rdrr.io/r/stats/poly.html),
+  [`scale()`](https://rdrr.io/r/base/scale.html) or an offset are
+  computed on the fitted basis and with the offset, and those of an
+  [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) model with
+  `rcs()` on the fitted knots. They were taken on a basis rebuilt from
+  the data, or without the offset.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  leaves the AME cells of a survey or rms model empty, with a warning,
+  when the model cannot reproduce its fitted values on new data, as an
+  `lrm()` or `ols()` model with `ns()` or
+  [`poly()`](https://rdrr.io/r/stats/poly.html): rms rebuilds such a
+  basis on the data it predicts from.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the average marginal effects of a
+  [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) model. The
+  columns were left empty.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  under a `CR*` variance, the AME of an
+  [`lm()`](https://rdrr.io/r/stats/lm.html) keeps its Satterthwaite
+  degrees of freedom whatever the formula
+  ([`I()`](https://rdrr.io/r/base/AsIs.html),
+  [`poly()`](https://rdrr.io/r/stats/poly.html),
+  [`log()`](https://rdrr.io/r/base/Log.html), splines, interactions). A
+  formula with a function call fell back to a z test while the note
+  still named Satterthwaite. The note names it only for the models whose
+  AME uses it.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a note says that the AME of a tobit model is computed on the latent
+  outcome.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  prints counts and fit statistics in full from 1e7 on: a weighted n of
+  255345910 read “3e+08”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a note says that the AIC of a survey-design model is the design-based
+  AIC, and that it does not compare with the likelihood AIC of a model
+  without a design in the same table.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the refusal of `nested = TRUE` for a survey-design model points to
+  [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
+  and [`anova()`](https://rdrr.io/r/stats/anova.html). RMST and
+  risk-difference columns asked of a
+  [`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) model are
+  refused for the design before a horizon is asked for.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the note of an rms model passed through `robcov()` or `bootcov()`
+  names that variance, where it said “Wald asymptotic”. `vcov = "CR0"`
+  on such a model starts again from the model-based variance instead of
+  building a sandwich on a sandwich.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a note says that an `lrm()` or `ols()` model fitted with `penalty =`
+  is penalized, and gives the penalty.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  beside another survival model, the concordance note of a Cox model
+  names its model.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the notes on the standard errors and intervals of the random-effect
+  rows appear only when the table shows those cells.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the correlation row of an `lme()` model fitted under
+  `lmeControl(natural = FALSE)` or with a `pdCompSymm` block.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses by name an [`lm()`](https://rdrr.io/r/stats/lm.html) fit with

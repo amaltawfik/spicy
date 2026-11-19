@@ -41,7 +41,7 @@ the values they take for these models are listed below.
 | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- | classical (the fit's own) |
 | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- | classical (the fit's own) |
 | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical |
-| `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- | classical, CR1 |
+| `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes (latent outcome) | \- | \- | classical, CR1 |
 | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- | classical (= nid), nid, iid, ker, rank, bootstrap |
 | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- | classical (the fit's own) |
 
@@ -141,8 +141,10 @@ estimator family, not the sandwich vocabulary:
 
 - `"bootstrap"`: quantreg's native `boot.rq` (`bsmethod = "xy"`). With
   `cluster =`, the wild gradient cluster bootstrap of Hagemann (2017),
-  the one cluster-robust route for `rq`. A weighted `rq` fit refuses it:
-  the resamplers do not carry the weights.
+  the route available for clustered data with `rq`. With very few
+  clusters, its standard errors read against normal critical values
+  reject too often (Hagemann 2017). A weighted `rq` fit refuses it: the
+  resamplers do not carry the weights.
 
 `cluster` with any other `rq` estimator is refused.
 
@@ -154,6 +156,8 @@ other `CR*` tokens and `HC*` are refused. Under `"CR1"`, a nested
 hierarchy is tested by the Wald chi-square of the added coefficients on
 the robust matrix. The RMST and risk-difference columns of `survreg` are
 refused for it: a tobit models a censored response, not a time to event.
+Its AME is computed on the latent (uncensored) outcome, whose mean is
+the linear predictor, and the note says so.
 
 **Hierarchical comparison** (`nested = TRUE`). A quantile hierarchy gets
 `c("f_change", "p_change")`, the Wald-type test

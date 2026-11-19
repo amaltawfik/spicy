@@ -29,7 +29,7 @@ supports four survival engines on a data frame:
   — parametric accelerated failure time (AFT) models;
 - **[`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html)** — the Cox
   model in the `rms` ecosystem;
-- **[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)**
+- **[`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html)**
   — fully parametric models over a wide family of distributions.
 
 The Cox model of a survey design,
@@ -560,7 +560,7 @@ table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
 
 ## Fully parametric: `flexsurv`
 
-[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)
+[`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html)
 (Jackson 2016) fits parametric survival models over a wide family of
 distributions (and the Royston–Parmar 2002 spline models). The location
 coefficients are exponentiated under a generic `exp(B)` header — the

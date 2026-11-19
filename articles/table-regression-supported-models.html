@@ -294,7 +294,7 @@ the SEs</td>
 <td>
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code>
 </td>
-<td></td>
+<td>smooth terms render as a labeled block (edf and test)</td>
 </tr>
 <tr class="odd">
 <td>Any of the above</td>
@@ -365,11 +365,11 @@ package itself uses, so it cannot drift from the code. Call
 <colgroup>
 <col width="6%">
 <col width="2%">
-<col width="20%">
+<col width="18%">
 <col width="8%">
-<col width="12%">
-<col width="32%">
-<col width="15%">
+<col width="11%">
+<col width="37%">
+<col width="14%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Family</th>
@@ -458,7 +458,7 @@ jackknife</td>
 <td align="left"></td>
 <td align="left"><code>tobit</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td>
-<td align="left">yes</td>
+<td align="left">yes (latent outcome)</td>
 <td align="left">-</td>
 <td align="left">-</td>
 <td align="left">classical, CR1</td>
@@ -512,7 +512,8 @@ jackknife</td>
 logit)</td>
 <td align="left">Random effects; Zero-inflation; Zero hurdle, Pr(y = 0)
 for a zero-truncated family, ziGamma, lognormal or beta_family;
-Dispersion; Thresholds (ordinal family)</td>
+Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal
+family)</td>
 <td align="left">classical, CR0, CR1 (classical only for REML or the
 ordinal family)</td>
 </tr>
@@ -632,7 +633,7 @@ TRUE)</td>
 <tr class="odd">
 <td align="left"></td>
 <td align="left"><code>flexsurvreg</code></td>
-<td align="left"><code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td>
+<td align="left"><code><a href="https://chjackson.github.io/flexsurv/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg()</a></code></td>
 <td align="left">no</td>
 <td align="left">TR / HR (dist)</td>
 <td align="left">distribution parameters</td>
@@ -682,7 +683,7 @@ TRUE)</td>
 </td>
 <td align="left">yes</td>
 <td align="left">OR / IRR (link)</td>
-<td align="left">-</td>
+<td align="left">Smooth terms</td>
 <td align="left">classical, CR1</td>
 </tr>
 <tr class="odd">
@@ -691,7 +692,7 @@ TRUE)</td>
 <td align="left"><code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code></td>
 <td align="left">yes</td>
 <td align="left">OR (mean link)</td>
-<td align="left">-</td>
+<td align="left">Precision (y ~ x | z)</td>
 <td align="left">classical, CR1</td>
 </tr>
 <tr class="even">
@@ -700,7 +701,7 @@ TRUE)</td>
 <td align="left"><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code></td>
 <td align="left">no</td>
 <td align="left">-</td>
-<td align="left">selection component</td>
+<td align="left">Error terms</td>
 <td align="left">classical</td>
 </tr>
 <tr class="odd">
@@ -788,8 +789,8 @@ either, and the note says what it estimates: the baseline odds, risk,
 rate or mean, or a quantile of the survival time for an AFT model.</li>
 <li>
 <strong>Blocks</strong> – labeled subordinate row blocks rendered
-inside the same table (random effects, thresholds, zero components,
-per-outcome segments), each explained by a footer line.</li>
+inside the same table (smooth terms, random effects, thresholds, zero
+components, per-outcome segments), each explained by a footer line.</li>
 <li>
 <strong>vcov</strong> – the values of <code>vcov</code> the class
 accepts; see the next section.</li>
@@ -1146,7 +1147,7 @@ tables</em></a>.</p>
 <p><strong>Survival.</strong> <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> and
 <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code> (hazard ratios, <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> supported),
 <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg</a></code> (time ratios) and
-<code><a href="http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg</a></code>. Absolute effects come as
+<code><a href="https://chjackson.github.io/flexsurv/reference/flexsurvreg.html" class="external-link">flexsurv::flexsurvreg</a></code>. Absolute effects come as
 covariate-adjusted RMST and risk differences by g-computation for
 <code>coxph</code> and <code>survreg</code> fits. The baseline hazard
 those estimands standardize follows the tie-handling convention of the
@@ -1160,10 +1161,11 @@ design-based inference; the unweighted n and the sum of the design
 weights (<code>Weighted n</code>) are default fit statistics.</p>
 <p><strong>Additive, proportions, selection.</strong>
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code> (a GAM shows the R² rows
-of the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> of its family and link),
-<code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code> (odds ratios on the logit mean link
-under <code>exponentiate</code>; the precision is the opt-in
-<code>phi</code> fit statistic), and
+of the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> of its family and link, and its smooth terms
+as a block: the effective degrees of freedom and the p-value of the
+approximate test of each term), <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code> (odds
+ratios on the logit mean link under <code>exponentiate</code>; the
+precision is the opt-in <code>phi</code> fit statistic), and
 <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code> with its selection component
 as a block.</p>
 <p><strong>rms.</strong> <code>ols</code>, <code>lrm</code>,

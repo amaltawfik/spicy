@@ -484,7 +484,7 @@ table_regression(gl)
 #>  Weighted n  │ 6194                                      
 #>  AIC         │ 2197.8                                    
 #> 
-#> Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Three things in that footer are worth naming.
@@ -526,7 +526,7 @@ table_regression(
 #>  Weighted n  │ 6194                             
 #>  AIC         │ 2150.5                           
 #> 
-#> Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: Design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 And the counts are both there: the observed `n` and the `Weighted n` the
@@ -575,9 +575,9 @@ reports hazard ratios, the events, and the concordance:
 data(pbc, package = "survival")
 pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
 bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
-pbc$sw <- 1 / predict(bias, type = "response")
+pbc$randprob <- fitted(bias)
 dpbc <- svydesign(
-  id = ~1, prob = ~sw, strata = ~edema, data = subset(pbc, randomized)
+  id = ~1, prob = ~randprob, strata = ~edema, data = subset(pbc, randomized)
 )
 cx <- svycoxph(
   survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,
@@ -588,12 +588,12 @@ table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #> 
 #>  Variable   │   HR       95% CI       p   
 #> ────────────┼─────────────────────────────
-#>  log(bili)  │   2.43  [2.04, 2.90]  <.001 
-#>  protime    │   1.30  [1.10, 1.52]   .002 
-#>  albumin    │   0.34  [0.22, 0.52]  <.001 
+#>  log(bili)  │   2.43  [2.03, 2.90]  <.001 
+#>  protime    │   1.28  [1.09, 1.50]   .003 
+#>  albumin    │   0.35  [0.24, 0.53]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n          │ 312                         
-#>  Weighted n │ 235                         
+#>  Weighted n │ 418                         
 #>  N events   │ 144                         
 #> 
 #> Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.
@@ -606,9 +606,9 @@ Statistics that need a likelihood are absent rather than approximated:
 [`BIC()`](https://rdrr.io/r/stats/AIC.html),
 [`logLik()`](https://rdrr.io/r/stats/logLik.html) and the
 pseudo-R-squared family are not defined for a design-weighted fit, and
-asking for them by token prints nothing rather than a number without an
-interpretation. The one exception is `svyglm`, whose `AIC` row is the
-design-based criterion of Lumley & Scott – and
+asking for them by token stops with an error rather than print a number
+without an interpretation. The one exception is `svyglm`, whose `AIC`
+row is the design-based criterion of Lumley & Scott – and
 `show_fit_stats = "eff_p"` reports the effective number of parameters of
 the design beside it.
 

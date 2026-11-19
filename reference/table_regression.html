@@ -450,7 +450,8 @@ model (intercept and reference rows excluded). One of
 <code>"bonferroni"</code>, <code>"BH"</code> / <code>"fdr"</code>, or <code>"BY"</code>. Delegated to
 <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>; applied per-model and per <code>estimate_type</code>
 (B and AME p-values are adjusted independently within their
-own families). Active adjustments are documented in the
+own families). The tests of the smooth terms of a GAM join the
+B family. Active adjustments are documented in the
 footer (method + family size). See the <em>Multiple-comparison
 adjustment</em> section for when this is and is not appropriate.</p></dd>
 
@@ -493,7 +494,12 @@ for <code>"wt * cyl=6"</code>) matches at
 least one pattern are kept. The intercept and the subordinate
 blocks (thresholds, random effects) are exempt from <code>keep</code> and
 <code>drop</code>: <code>show_intercept</code>, <code>show_thresholds</code> and <code>show_re</code> govern
-them.
+them. The smooth terms of a GAM are predictors and are not exempt:
+they match by their mgcv label (<code>"s(age)"</code>, <code>"te(bmi,ped)"</code>), and
+<code>drop = "^s\\("</code> removes the <code>Smooth terms</code> block with its note.
+The <code>Error terms</code> of a sample-selection model are coefficients of
+<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and follow <code>keep</code> and <code>drop</code> under those names (<code>"sigma"</code>,
+<code>"rho"</code>, <code>"invMillsRatio"</code>).
 Mutually exclusive with <code>drop</code>. Filtering is a display
 choice; <code>p_adjust</code> runs against the full coefficient family
 before filtering. Default <code>NULL</code> (no filter).</p></dd>
@@ -519,9 +525,12 @@ in the note. See <a href="table_regression_ordinal.html">table_regression_ordina
 <dt id="arg-show-components">show_components<a class="anchor" aria-label="anchor" href="#arg-show-components"></a></dt>
 <dd><p>Models with secondary components only (the
 <code>pscl</code> and <code>glmmTMB</code> two-part and dispersion models, <code>clm</code> with
-<code>scale =</code>): <code>TRUE</code> (default) shows the components as labeled blocks
-of rows, <code>FALSE</code> omits them. See <a href="table_regression_counts.html">table_regression_counts</a> and
-<a href="table_regression_ordinal.html">table_regression_ordinal</a>.</p></dd>
+<code>scale =</code>, the precision sub-model of a <code>betareg</code> <code>y ~ x | z</code>, the
+error terms of a sample-selection model): <code>TRUE</code> (default) shows
+the components as labeled blocks of rows, <code>FALSE</code> omits them. A
+<code>Precision</code> block stays on the scale of its link (log by default),
+under <code>exponentiate = TRUE</code> too. See <a href="table_regression_counts.html">table_regression_counts</a>,
+<a href="table_regression_ordinal.html">table_regression_ordinal</a> and <a href="table_regression_models.html">table_regression_models</a>.</p></dd>
 
 
 <dt id="arg-intercept-position">intercept_position<a class="anchor" aria-label="anchor" href="#arg-intercept-position"></a></dt>
@@ -1325,7 +1334,10 @@ maximum-likelihood values of <code>glm.nb()</code>, betareg or <code>glmmTMB</co
 A token is refused only when no model in the table has the
 parameter, or when a model of that family has dispersion
 covariates (a <code>glmmTMB</code> <code>dispformula</code>, or a betareg <code>y ~ x | z</code>),
-so the parameter is not a single number.</p></li>
+so the parameter is not a single number. Those covariates are
+shown as a block of rows instead (<code>show_components</code>): <code>Precision</code>
+for a betareg <code>y ~ x | z</code> and a <code>beta_family()</code> <code>dispformula</code>,
+<code>Dispersion</code> for the other <code>glmmTMB</code> families.</p></li>
 <li><p>GEE (<code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code> only): <code>"qic"</code> and <code>"qicu"</code> – the
 quasi-likelihood information criteria (Pan 2001; QIC for
 working-correlation choice, QICu for covariate choice) via
@@ -1413,7 +1425,7 @@ the larger model fits better, and is not signed either.</p></li>
 </ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm and
 <code>lm_robust</code> fits get
 <code>c("nobs", "r2", "adj_r2")</code>; glm, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>, <code>polr</code>, <code>clm</code>,
-<code>multinom</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> fits get <code>"nobs"</code>, the \(R^2\) rows of their family
+<code>multinom</code>, <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> and <code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm</a></code> fits get <code>"nobs"</code>, the \(R^2\) rows of their family
 (see <em>R-squared of glm and categorical models</em>) and <code>"aic"</code>;
 mixed lm + glm sets union both groups (the renderer per-row
 en-dashes the inappropriate cell); Cox fits get
@@ -1477,6 +1489,18 @@ mgcv's other extended families (<code>betar()</code>, <code>ocat()</code>, <code
 an adjusted \(R^2\): it is the <code>"adj_r2"</code> row of a GAM, shown
 on request, in a table of GAMs or beside an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>. The <code>"r2"</code> row of
 a GAM is dashed beside other models, and refused for a table of GAMs.</p>
+<p>The smooth terms of a GAM form a <code>Smooth terms (edf)</code> block below its
+parametric coefficients, one row per term, labeled as
+<code>summary.gam()</code> labels it (<code>s(age)</code>, <code>te(bmi,ped)</code>, <code>s(age):sexF</code>).
+The B column carries the effective degrees of freedom and the p
+column the p-value of mgcv's approximate test of the term. The SE, CI
+and statistic cells are dashed: an edf has no standard error, and the
+chi-square or F of the test has no place under a t or z header.
+<code>exponentiate</code> leaves the edf as it is, and no star marks it. Under a
+robust <code>vcov</code> the p-value is dashed too, since mgcv's test rests on its
+own covariance matrix, and the note says so. <code>tidy()</code> and
+<code>output = "long"</code> carry the rows with <code>estimate_type = "edf"</code>, the
+reference df in <code>df</code> and the test in <code>statistic</code> and <code>p.value</code>.</p>
 <p>The intercept-only model keeps the offset and the weights of the
 fitted model. For a <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code> fit it re-estimates theta in
 McFadden's and Nagelkerke's \(R^2\), as Stata's <code>nbreg</code> does,
@@ -1484,7 +1508,7 @@ and keeps the theta of the fitted model in the deviance
 \(R^2\) (Cameron &amp; Windmeijer 1997). By default each model
 shows the rows of its family:</p>
 <ul><li><p>A logit on a binary outcome (0/1, a factor or a logical), a
-<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> or a binary <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>: Tjur's \(R^2\), then
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> or <code><a href="https://rdrr.io/pkg/rms/man/Glm.html" class="external-link">rms::Glm()</a></code>, or a binary <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>: Tjur's \(R^2\), then
 McFadden's. Tjur's reads on the scale of the predicted
 probabilities; McFadden's cannot decrease when a predictor is
 added. An <code>lrm</code> fitted without <code>y = TRUE</code> reads its outcome from
@@ -1756,9 +1780,12 @@ token is refused – including on a single fit or a
 request. Compare the least-squares fits (<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>) if the
 hierarchy itself is the question.</p></li>
 </ul><p>In the first three, <code>nested = FALSE</code> renders the models side by
-side instead.</p>
+side instead. A hierarchy holding an <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols()</a></code> or <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm()</a></code>
+fit estimated with <code>penalty =</code> is rendered side by side, without
+change statistics and with a warning: neither the partial F nor the
+likelihood-ratio test is valid for penalized estimates.</p>
 <p>Default change tokens auto-injected when <code>show_fit_stats</code> is
-<code>NULL</code>:</p><ul><li><p>All-lm (and <code>nls</code>): <code>c("r2_change", "f_change", "p_change")</code> – APA hierarchical regression standard.</p></li>
+<code>NULL</code>:</p><ul><li><p>All-lm (<code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> and <code>nls</code> included): <code>c("r2_change", "f_change", "p_change")</code> – APA hierarchical regression standard.</p></li>
 <li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer,
 Lemeshow &amp; Sturdivant 2013 Section 2.4; Long &amp; Freese 2014
 Section 3.2.4.</p></li>
@@ -1788,8 +1815,8 @@ mixed-effects families: that comparison reports a chi-square,
 not a variance-explained change, and the message points at
 <code>"lrt_change"</code> + <code>"p_change"</code>. A quantile hierarchy refuses
 them too, and <code>"lrt_change"</code> with them, pointing at
-<code>"f_change"</code> + <code>"p_change"</code> instead. <code>lm</code> and <code>nls</code> keep the
-least-squares tokens.</p>
+<code>"f_change"</code> + <code>"p_change"</code> instead. <code>lm</code>, <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> and <code>nls</code>
+keep the least-squares tokens.</p>
 <p><strong>The change test follows <code>vcov</code>.</strong> Under the classical <code>vcov</code> the
 change test is the partial F, the likelihood-ratio test, the F test
 <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code> reports for a pair whose dispersion is estimated, or

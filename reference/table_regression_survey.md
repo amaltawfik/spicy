@@ -193,5 +193,5 @@ if (requireNamespace("survey", quietly = TRUE)) {
 #>  Weighted n  │ 6194                                    
 #>  AIC         │ 2002.2                                  
 #> 
-#> Note. Survey-weighted linear regression. Design: cluster (dnum), 15 PSU, with finite population correction; 12 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Survey-weighted linear regression. Design: cluster (dnum), 15 PSU, with finite population correction; 12 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.
 ```

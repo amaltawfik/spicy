@@ -118,8 +118,14 @@ pipeline.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per <code>(model_id, term, estimate_type, outcome_level)</code> combination, with <code>estimate_type</code> in
-<code>c("B", "beta", "ame", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")</code>; the two term-level tests carry their
-term's df in <code>df</code> and their test in <code>test_type</code> (<code>"X2"</code>, <code>"F"</code>).
+<code>c("B", "beta", "ame", "vc", "edf", "partial_f2", "partial_eta2", "partial_omega2", "partial_chi2", "partial_f")</code>; the two term-level
+tests carry their term's df in <code>df</code> and their test in <code>test_type</code>
+(<code>"X2"</code>, <code>"F"</code>). <code>"vc"</code> rows are the variance components of a mixed
+model. <code>"edf"</code> rows are the smooth terms of a GAM: <code>estimate</code> is the
+effective degrees of freedom, <code>df</code> the reference df of mgcv's
+approximate test, <code>statistic</code> and <code>p.value</code> that test, and
+<code>test_type</code> <code>"X2"</code> or <code>"F"</code> as <code>summary.gam()</code> reports it (all three
+<code>NA</code> under a robust <code>vcov</code>).
 <code>df.residual</code> holds the residual df, the second df of the test, on the
 rows whose test is an F (the partial F and the effect sizes built on
 it), and is <code>NA</code> except on those rows. <code>partial_type</code> names the

@@ -56,12 +56,12 @@ listed). A parenthesis in a cell gives the fits an item is limited to.
 | Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- | classical (the fit's own) |
 | Robust, IV, quantile, panel | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- | classical (the fit's own) |
 | Robust, IV, quantile, panel | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical |
-| Robust, IV, quantile, panel | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- | classical, CR1 |
+| Robust, IV, quantile, panel | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes (latent outcome) | \- | \- | classical, CR1 |
 | Robust, IV, quantile, panel | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- | classical (= nid), nid, iid, ker, rank, bootstrap |
 | Robust, IV, quantile, panel | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- | classical (the fit's own) |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 | Mixed effects | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
-| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
 | Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session's) |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
@@ -74,14 +74,14 @@ listed). A parenthesis in a cell gives the fits an item is limited to.
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
 | Survival | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
 | Survival | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
-| Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
+| Survival | `flexsurvreg` | [`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html) | no | TR / HR (dist) | distribution parameters | classical |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- | classical (design-based) |
 | Survey-weighted | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
 | Survey-weighted | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- | classical (design-based) |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- | classical (the fit's own) |
-| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- | classical, CR1 |
-| Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- | classical, CR1 |
-| Additive, proportions, selection | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component | classical |
+| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | Smooth terms | classical, CR1 |
+| Additive, proportions, selection | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | Precision (y ~ x | z\) |
+| Additive, proportions, selection | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | Error terms | classical |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | rms | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 | rms | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
@@ -129,6 +129,18 @@ itself. GEE fits are described below. The additive, beta-regression,
 sample-selection and `rms` fits follow the rules of
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 and the table above.
+
+A sample-selection fit
+([`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+`heckit()`, `treatReg()`) shows each variable with its `selection` and
+`outcome` sub-rows, then an `Error terms` block: \\\sigma\\ and \\\rho\\
+for a maximum-likelihood fit (\\\rho\\ alone for a binary outcome), the
+inverse Mills ratio \\\lambda\\ followed by \\\sigma\\ and \\\rho\\
+without standard errors for a two-step fit. Tests and intervals use the
+t distribution with the residual df that
+[`summary()`](https://rdrr.io/r/base/summary.html) uses, and the note
+names the estimation method and the number of cases with an observed
+outcome. A tobit-5 (switching regression) fit is refused.
 
 ## Shared semantics (all classes)
 
@@ -284,7 +296,7 @@ table_regression_models()
 #> 6                                        yes
 #> 7                                        yes
 #> 8                                        yes
-#> 9                                        yes
+#> 9                       yes (latent outcome)
 #> 10                                       yes
 #> 11     yes (no for a GLM with fixed effects)
 #> 12                                       yes
@@ -355,46 +367,46 @@ table_regression_models()
 #> 37                                                link-dependent
 #> 38                                                link-dependent
 #> 39                                                link-dependent
-#>                                                                                                                                                            blocks
-#> 1                                                                                                                                                               -
-#> 2                                                                                                                                                               -
-#> 3                                                                                                                                                               -
-#> 4                                                                                                                                                               -
-#> 5                                                                                                                                                               -
-#> 6                                                                                                                                                               -
-#> 7                                                                                                                                                               -
-#> 8                                                                                                                                                               -
-#> 9                                                                                                                                                               -
-#> 10                                                                                                                                                              -
-#> 11                                                                                                                                                              -
-#> 12                                                                                                                                                 Random effects
-#> 13                                                                                                                                                 Random effects
-#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)
-#> 15                                                                                                                                                 Random effects
-#> 16                                                                                                                                                              -
-#> 17                                                                                                                                                     Thresholds
-#> 18                                                                                                                           Thresholds; Non-proportional effects
-#> 19                                                                                                                                     Thresholds; Random effects
-#> 20                                                                                                                                             per-outcome blocks
-#> 21                                                                                                                                           per-alternative rows
-#> 22                                                                                                                                                 Zero-inflation
-#> 23                                                                                                                                                    Zero hurdle
-#> 24                                                                                                                                                              -
-#> 25                                                                                                                                                              -
-#> 26                                                                                                                                                              -
-#> 27                                                                                                                                        distribution parameters
-#> 28                                                                                                                                                              -
-#> 29                                                                                                                                                     Thresholds
-#> 30                                                                                                                                                              -
-#> 31                                                                                                                                                              -
-#> 32                                                                                                                                                              -
-#> 33                                                                                                                                                              -
-#> 34                                                                                                                                            selection component
-#> 35                                                                                                                                                              -
-#> 36                                                                                                                                   Thresholds (ordinal outcome)
-#> 37                                                                                                                                                              -
-#> 38                                                                                                                                 Random effects (if multilevel)
-#> 39                                                                                                                                 Random effects (if multilevel)
+#>                                                                                                                                                                                                    blocks
+#> 1                                                                                                                                                                                                       -
+#> 2                                                                                                                                                                                                       -
+#> 3                                                                                                                                                                                                       -
+#> 4                                                                                                                                                                                                       -
+#> 5                                                                                                                                                                                                       -
+#> 6                                                                                                                                                                                                       -
+#> 7                                                                                                                                                                                                       -
+#> 8                                                                                                                                                                                                       -
+#> 9                                                                                                                                                                                                       -
+#> 10                                                                                                                                                                                                      -
+#> 11                                                                                                                                                                                                      -
+#> 12                                                                                                                                                                                         Random effects
+#> 13                                                                                                                                                                                         Random effects
+#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family)
+#> 15                                                                                                                                                                                         Random effects
+#> 16                                                                                                                                                                                                      -
+#> 17                                                                                                                                                                                             Thresholds
+#> 18                                                                                                                                                                   Thresholds; Non-proportional effects
+#> 19                                                                                                                                                                             Thresholds; Random effects
+#> 20                                                                                                                                                                                     per-outcome blocks
+#> 21                                                                                                                                                                                   per-alternative rows
+#> 22                                                                                                                                                                                         Zero-inflation
+#> 23                                                                                                                                                                                            Zero hurdle
+#> 24                                                                                                                                                                                                      -
+#> 25                                                                                                                                                                                                      -
+#> 26                                                                                                                                                                                                      -
+#> 27                                                                                                                                                                                distribution parameters
+#> 28                                                                                                                                                                                                      -
+#> 29                                                                                                                                                                                             Thresholds
+#> 30                                                                                                                                                                                                      -
+#> 31                                                                                                                                                                                                      -
+#> 32                                                                                                                                                                                           Smooth terms
+#> 33                                                                                                                                                                                  Precision (y ~ x | z)
+#> 34                                                                                                                                                                                            Error terms
+#> 35                                                                                                                                                                                                      -
+#> 36                                                                                                                                                                           Thresholds (ordinal outcome)
+#> 37                                                                                                                                                                                                      -
+#> 38                                                                                                                                                                         Random effects (if multilevel)
+#> 39                                                                                                                                                                         Random effects (if multilevel)
 #>                                                                           vcov
 #> 1                      classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife
 #> 2                            classical, HC0-HC5, CR0-CR3, bootstrap, jackknife
@@ -472,7 +484,7 @@ table_regression_models()
 #> 34                                                                                                                                                                                                                    nobs, aic
 #> 35                                                                                                                                                                                                                     nobs, r2
 #> 36                                                                                                                                                               nobs, pseudo_r2_tjur (binary outcome), pseudo_r2_mcfadden, aic
-#> 37                                                                                                                                                                                                nobs, pseudo_r2_mcfadden, aic
+#> 37                                                                                            nobs, pseudo_r2_tjur (binomial logit, binary outcome), pseudo_r2_mcfadden (binomial, Poisson), r2_deviance (Gaussian, Gamma), aic
 #> 38                                                                                                                                                                                                               nobs, r2_bayes
 #> 39                                                                                                                                                                                                               nobs, r2_bayes
 #>                                                                                                                                                                                                                                                                                                                                  fit_stats
@@ -512,7 +524,7 @@ table_regression_models()
 #> 34                                                                                                                                                                                                                                                                                                           nobs, aic, aicc, bic, log_lik
 #> 35                                                                                                                                                                                                                                                                                      nobs, r2, sigma, aic, aicc, bic, deviance, log_lik
 #> 36                                                                                                                                                                                                                      nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, pseudo_r2_tjur (binary outcome), aic, aicc, bic, deviance, log_lik
-#> 37                                                                                                                                                                                                                                          nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, aic, aicc, bic, deviance, log_lik
+#> 37                                                                                                                                                        nobs, pseudo_r2_mcfadden (binomial, Poisson), pseudo_r2_nagelkerke (binomial, Poisson), pseudo_r2_tjur (binomial), r2_deviance (not binomial), aic, aicc, bic, deviance, log_lik
 #> 38                                                                                                                                                                                                                                                                                                   nobs, r2_bayes, elpd_loo, looic, waic
 #> 39                                                                                                                                                                                                                                                                                                   nobs, r2_bayes, elpd_loo, looic, waic
 
@@ -530,12 +542,12 @@ subset(table_regression_models(), family == "Mixed effects")
 #> 14 link-dependent (IRR for count families, OR for ordinal logit)
 #> 15                                                             -
 #> 16                                                             -
-#>                                                                                                                                                            blocks
-#> 12                                                                                                                                                 Random effects
-#> 13                                                                                                                                                 Random effects
-#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family)
-#> 15                                                                                                                                                 Random effects
-#> 16                                                                                                                                                              -
+#>                                                                                                                                                                                                    blocks
+#> 12                                                                                                                                                                                         Random effects
+#> 13                                                                                                                                                                                         Random effects
+#> 14 Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family)
+#> 15                                                                                                                                                                                         Random effects
+#> 16                                                                                                                                                                                                      -
 #>                                                                           vcov
 #> 12                                                          classical, CR0-CR3
 #> 13                                                                   classical

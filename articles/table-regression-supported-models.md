@@ -49,7 +49,7 @@ whichever defensible model you fit.
 | Any of the above | clustered or repeated measures | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) / [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) **or** [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | *the distinction below matters* |
 | Any of the above | many absorbed fixed effects (panel) | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) / `feglm()` | the absorbed factors render as a Yes/No block |
 | Any of the above | a complex survey design | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | design-based SEs are the inference |
-| Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` |  |
+| Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` | smooth terms render as a labeled block (edf and test) |
 | Any of the above | a Bayesian analysis | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html) / [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | posterior medians, MAD SD, credible intervals – no p-values |
 | Any of the above | an endogenous predictor, an instrument | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) / [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) |  |
 
@@ -114,12 +114,12 @@ to get it as a data frame.
 | Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- | classical (the fit’s own) |
 |  | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- | classical (the fit’s own) |
 |  | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical |
-|  | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- | classical, CR1 |
+|  | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes (latent outcome) | \- | \- | classical, CR1 |
 |  | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- | classical (= nid), nid, iid, ker, rank, bootstrap |
 |  | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- | classical (the fit’s own) |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 |  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
-|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
 |  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session’s) |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
@@ -132,14 +132,14 @@ to get it as a data frame.
 | Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
 |  | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
 |  | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
-|  | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
+|  | `flexsurvreg` | [`flexsurv::flexsurvreg()`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html) | no | TR / HR (dist) | distribution parameters | classical |
 | Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- | classical (design-based) |
 |  | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
 |  | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- | classical (design-based) |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- | classical (the fit’s own) |
-| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- | classical, CR1 |
-|  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- | classical, CR1 |
-|  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component | classical |
+| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | Smooth terms | classical, CR1 |
+|  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | Precision (y ~ x \| z) | classical, CR1 |
+|  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | Error terms | classical |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 |  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 (classical only without x = TRUE, y = TRUE) |
 |  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
@@ -174,8 +174,8 @@ How to read the columns:
   it estimates: the baseline odds, risk, rate or mean, or a quantile of
   the survival time for an AFT model.
 - **Blocks** – labeled subordinate row blocks rendered inside the same
-  table (random effects, thresholds, zero components, per-outcome
-  segments), each explained by a footer line.
+  table (smooth terms, random effects, thresholds, zero components,
+  per-outcome segments), each explained by a footer line.
 - **vcov** – the values of `vcov` the class accepts; see the next
   section.
 
@@ -372,7 +372,7 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
 [`strata()`](https://rdrr.io/pkg/survival/man/strata.html) supported),
 [`survival::survreg`](https://rdrr.io/pkg/survival/man/survreg.html)
 (time ratios) and
-[`flexsurv::flexsurvreg`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md).
+[`flexsurv::flexsurvreg`](https://chjackson.github.io/flexsurv/reference/flexsurvreg.html).
 Absolute effects come as covariate-adjusted RMST and risk differences by
 g-computation for `coxph` and `survreg` fits. The baseline hazard those
 estimands standardize follows the tie-handling convention of the fit,
@@ -391,7 +391,9 @@ weights (`Weighted n`) are default fit statistics.
 **Additive, proportions, selection.**
 [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` (a GAM
 shows the R² rows of the [`glm()`](https://rdrr.io/r/stats/glm.html) of
-its family and link),
+its family and link, and its smooth terms as a block: the effective
+degrees of freedom and the p-value of the approximate test of each
+term),
 [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
 (odds ratios on the logit mean link under `exponentiate`; the precision
 is the opt-in `phi` fit statistic), and

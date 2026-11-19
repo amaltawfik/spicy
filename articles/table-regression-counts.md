@@ -694,16 +694,16 @@ fp <- fixest::fepois(Euros ~ log(dist_km) | Origin + Destination,
 table_regression(fp, exponentiate = TRUE)
 #> Poisson regression (fixed effects): Euros
 #> 
-#>  Variable       │    IRR       SE      95% CI       p   
-#> ────────────────┼───────────────────────────────────────
-#>  log(dist_km)   │    0.22     0.00  [0.22, 0.22]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Fixed effects: │                                       
-#>    Origin       │    Yes                                
-#>    Destination  │    Yes                                
-#>  n              │ 7763                                  
-#>  R² (McFadden)  │    0.60                               
-#>  AIC            │    5.4e+11                            
+#>  Variable       │       IRR         SE      95% CI       p   
+#> ────────────────┼────────────────────────────────────────────
+#>  log(dist_km)   │            0.22  0.00  [0.22, 0.22]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Fixed effects: │                                            
+#>    Origin       │            Yes                             
+#>    Destination  │            Yes                             
+#>  n              │         7763                               
+#>  R² (McFadden)  │            0.60                            
+#>  AIC            │ 539817933271.0                             
 #> 
 #> Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Classical. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```
@@ -734,16 +734,16 @@ fp_cl <- fixest::fepois(Euros ~ log(dist_km) | Origin + Destination,
 table_regression(fp_cl, exponentiate = TRUE)
 #> Poisson regression (fixed effects): Euros
 #> 
-#>  Variable       │    IRR       SE      95% CI       p   
-#> ────────────────┼───────────────────────────────────────
-#>  log(dist_km)   │    0.22     0.03  [0.18, 0.28]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Fixed effects: │                                       
-#>    Origin       │    Yes                                
-#>    Destination  │    Yes                                
-#>  n              │ 7763                                  
-#>  R² (McFadden)  │    0.60                               
-#>  AIC            │    5.4e+11                            
+#>  Variable       │       IRR         SE      95% CI       p   
+#> ────────────────┼────────────────────────────────────────────
+#>  log(dist_km)   │            0.22  0.03  [0.18, 0.28]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Fixed effects: │                                            
+#>    Origin       │            Yes                             
+#>    Destination  │            Yes                             
+#>  n              │         7763                               
+#>  R² (McFadden)  │            0.60                            
+#>  AIC            │ 539817933271.0                             
 #> 
 #> Note. Poisson regression (fixed effects). Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Clustered (Origin). IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 ```

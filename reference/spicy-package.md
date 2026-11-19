@@ -350,11 +350,6 @@ parent class plus a leaf class describing the specific cause:
     marks or alignments, or under styles that format a cell differently.
     Signaled together with `spicy_invalid_input`.
 
-  - `spicy_ame_satt_unsupported_formula` – signaled together with
-    `spicy_unsupported` when AME Satterthwaite degrees of freedom are
-    unavailable for the model's formula structure; normally caught
-    internally and surfaced as a `spicy_fallback` warning.
-
   - `spicy_unsupported_class` – the model class has no regression-frame
     method, so
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
