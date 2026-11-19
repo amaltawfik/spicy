@@ -302,7 +302,7 @@
   note_component_gloss_zero_inflation_link = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: probabilit\u00E9 d'un z\u00E9ro structurel (exc\u00E9dentaire) sur l'\u00E9chelle %s.",
   note_component_gloss_hurdle_binomial_link = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: probabilit\u00E9 d'un effectif non nul sur l'\u00E9chelle %s.",
   note_component_exp_or = "Coefficients exponenti\u00E9s et affich\u00E9s en rapports de cotes.",
-  note_component_not_exp = "Laiss\u00E9s sur l'\u00E9chelle du lien (non exponenti\u00E9s).",
+  note_component_not_exp = "Les lignes des composantes restent sur l'\u00E9chelle du lien (non exponenti\u00E9es).",
   note_rank_deficient = "Mod\u00E8le de rang incomplet\u00A0: les coefficients \u00E9cart\u00E9s sont affich\u00E9s sous la forme %s.",
   note_nonconvergence = "Probl\u00E8me de convergence du mod\u00E8le\u00A0: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non celles d'un ajustement ayant converg\u00E9.",
   note_nonconvergence_hessian = "matrice hessienne non d\u00E9finie positive",

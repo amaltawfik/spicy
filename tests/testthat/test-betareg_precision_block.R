@@ -187,7 +187,7 @@ test_that("exponentiate leaves the Precision block on its link scale", {
   )
   expect_match(
     out,
-    "Precision component: log scale. Left on the link scale (not exponentiated).",
+    "Precision component: log scale. The component rows stay on the link scale (not exponentiated).",
     fixed = TRUE
   )
 })

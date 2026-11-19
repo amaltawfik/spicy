@@ -1670,8 +1670,8 @@ test_that("the component-block scale notes follow the language", {
   expect_match(
     zi_note("probit"),
     paste0(
-      "(exc\u00E9dentaire) sur l'\u00E9chelle probit. Laiss\u00E9s sur ",
-      "l'\u00E9chelle du lien (non exponenti\u00E9s)."
+      "(exc\u00E9dentaire) sur l'\u00E9chelle probit. Les lignes des ",
+      "composantes restent sur l'\u00E9chelle du lien (non exponenti\u00E9es)."
     ),
     fixed = TRUE
   )

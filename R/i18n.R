@@ -602,7 +602,7 @@
   # The scale of a component block under exponentiate, appended to its
   # gloss after a space.
   note_component_exp_or = "Coefficients exponentiated and displayed as odds ratios.",
-  note_component_not_exp = "Left on the link scale (not exponentiated).",
+  note_component_not_exp = "The component rows stay on the link scale (not exponentiated).",
   # One hole: the undefined-cell glyph the note is pointing at.
   note_rank_deficient = "Rank-deficient model: dropped coefficient(s) shown as %s.",
   # The fitting engine reports that its optimizer did not converge. One

@@ -189,3 +189,51 @@ test_that("the selection and outcome sub-rows follow the table language", {
   rows <- fu_rows(table_regression(fit))
   expect_true(all(c("selection", "outcome") %in% rows))
 })
+
+# ---- 4. The sentence on the components left on the link scale -----------
+
+# The printed table on one line, its line breaks read as spaces.
+fu_print <- function(tb) {
+  gsub(" +", " ", paste(utils::capture.output(print(tb)), collapse = " "))
+}
+
+test_that("the not-exponentiated sentence names the component rows", {
+  skip_if_not_installed("pscl")
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("betareg")
+  e <- new.env()
+  utils::data("bioChemists", package = "pscl", envir = e)
+  utils::data("FoodExpenditure", package = "betareg", envir = e)
+  fe <- e$FoodExpenditure
+  fe$share <- fe$food / fe$income
+  fits <- list(
+    # A probit zero part: a logit one is exponentiated, as odds ratios.
+    pscl::zeroinfl(
+      art ~ fem + ment | ment,
+      data = e$bioChemists,
+      link = "probit"
+    ),
+    glmmTMB::glmmTMB(
+      count ~ mined,
+      dispformula = ~DOY,
+      family = glmmTMB::nbinom2,
+      data = glmmTMB::Salamanders
+    ),
+    betareg::betareg(share ~ income + persons | persons, data = fe)
+  )
+  en <- "The component rows stay on the link scale (not exponentiated)."
+  fr <- paste0(
+    "Les lignes des composantes restent sur l'échelle du lien ",
+    "(non exponentiées)."
+  )
+  for (fit in fits) {
+    out <- fu_print(table_regression(fit, exponentiate = TRUE))
+    expect_match(out, en, fixed = TRUE)
+    expect_no_match(out, "Left on the link scale", fixed = TRUE)
+    out <- withr::with_options(
+      list(spicy.language = "fr"),
+      fu_print(table_regression(fit, exponentiate = TRUE))
+    )
+    expect_match(out, fr, fixed = TRUE)
+  }
+})
