@@ -94,7 +94,10 @@
 #'     for `lme`, and from glmmTMB's
 #'     \eqn{\rho / \sqrt{1 - \rho^2}}{rho / sqrt(1 - rho^2)} in a two-term
 #'     block, with the engine's CI. In a `glmmTMB` block of three terms or
-#'     more it is the width of glmmTMB's interval divided by \eqn{2z}{2z}.}
+#'     more it is the width of glmmTMB's interval divided by \eqn{2z}{2z}.
+#'     nlme computes the covariance matrix behind the SE of an `lme` fit
+#'     by finite differences, and on a random-slope model the result
+#'     varies with the platform. spicy displays what nlme estimates.}
 #'   \item{`re_columns`}{Subset of `c("est", "se", "ci")`: the cells of the
 #'     random-effects rows that are displayed (`"est"` is mandatory).
 #'     Deselected cells render as an en dash on those rows only:
