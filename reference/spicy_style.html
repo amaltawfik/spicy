@@ -357,12 +357,12 @@ order. <code>options(spicy.language = "fr")</code> is therefore one gesture
 for a coherent French report table – French words, and numbers
 written the French way: comma decimal mark, and the leading zero
 French typography keeps on a p-value (<code>0,003</code>). "La virgule est
-utilisee pour separer les unites des decimales" (European Union,
-<em>Code de redaction interinstitutionnel</em>, French edition 2022,
-point 6.5, <code>https://style-guide.europa.eu/fr</code>); "Si le nombre se
-situe entre +1 et -1, le separateur decimal est toujours precede
-d'un zero" (BIPM, <em>Le Systeme international d'unites</em>, 9th
-edition, 2019, section 5.4.4,
+utilisée pour séparer les unités des décimales" (European Union,
+<em>Code de rédaction interinstitutionnel</em>, French edition 2022,
+point 6.5, p. 110, <code>https://style-guide.europa.eu/fr</code>); "Si le nombre
+se situe entre +1 et -1, le séparateur décimal est toujours précédé
+d'un zéro" (BIPM, <em>Le Système international d'unités</em>, 9th
+edition, 2019, section 5.4.4, p. 38,
 <code>https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf</code>).
 <code>"en"</code> brings no locale, and nothing changes for anyone who sets
 no language. The locale reaches the exploration pair as well:
@@ -406,7 +406,7 @@ style lever with no argument of its own –
 
 
 <p>Source: <em>Instructions for Table Creation</em>, JAMA Network author
-document, 23 February 2016
+document, undated (PDF file created 23 February 2016)
 (<code>https://jamanetwork.com/DocumentLibrary/InstructionsForAuthors/InstructionsForTableCreation.pdf</code>),
 consulted 2026-08-14.</p>
 <p>Encoded:</p><ul><li><p>p-values on two decimals, three below <code>.01</code>, floored at
@@ -455,15 +455,13 @@ Reporting Guidelines</em>
 page; its full text was read in a browser by the package maintainer
 on 2026-08-14 – the site refuses automated retrieval, which is why
 earlier surveys reported these rules as unavailable.</p>
-<p>Encoded:</p><ul><li><p>tiered p-values, leading zero kept – "In general, P values
-larger than 0.01 should be reported to two decimal places, and
-those between 0.01 and 0.001 to three decimal places; P values
-smaller than 0.001 should be reported as P&lt;0.001." The
-guideline's own text writes <code>0.01</code> / <code>0.001</code>: unlike JAMA, the
-leading zero stays.</p></li>
-<li><p>measures of association on two decimals – "measures of
-association, such as odds ratios, should ordinarily be reported
-to two decimal places" (a pin of spicy's default).</p></li>
+<p>Encoded:</p><ul><li><p>tiered p-values, leading zero kept – the guidelines ask for
+two decimal places above 0.01, three between 0.01 and 0.001, and
+P&lt;0.001 below. The guideline's own text writes <code>0.01</code> / <code>0.001</code>:
+unlike JAMA, the leading zero stays.</p></li>
+<li><p>measures of association on two decimals – the guidelines
+ask for two decimal places for measures of association such as
+odds ratios (a pin of spicy's default).</p></li>
 </ul><p>Not encoded: the guideline's stated exceptions to the p rule
 (stopping-rule tests, genomewide studies) are analysis contexts the
 style layer cannot see; its inference policy (no p-values without a
@@ -490,8 +488,9 @@ period.</p>
 <p>Encoded:</p><ul><li><p>midline decimal mark, U+00B7, on every number in the table
 – "Type decimal points midline (ie, 23<code>[.]</code>4, not 23.4)."</p></li>
 <li><p>p-values on two significant figures, capped at four
-decimals, floored at <code>p&lt;0[.]0001</code>, leading zero kept –
-"Supply p values to two significant figures (capped at four
+decimals, floored at <code>p&lt;0[.]0001</code>, leading zero kept – the two
+formatting guidelines, p. 4 of each: "Supply p values to two
+significant figures (capped at four
 decimal places), or p&lt;0<code>[.]</code>0001."</p></li>
 <li><p>en dash between the bounds of a confidence interval. <strong>This
 one is not a written rule</strong>: the journal states none. It matches
@@ -579,8 +578,10 @@ level of statistical significance)."</p></li>
 means and standard deviations and correlations, proportions,
 and inferential statistics (t, F, chi-square) to two decimals."</p></li>
 <li><p>confidence intervals in square brackets, bounds separated by
-a comma – the <em>Sample tables</em> page gives
-<code>95% CI [LL, UL]</code> as one of the two official layouts.</p></li>
+a comma – the <em>Publication Manual</em>, 7th edition (2020), Table
+7.16 (p. 219), prints them <code>[LL, UL]</code> in a single column, the
+alternative the <em>Sample tables</em> page names to its separate <code>LL</code>
+and <code>UL</code> columns.</p></li>
 <li><p>the note under the table opens with "Note." in italics
 (<code>note_label = "Note."</code>) – the <em>Publication Manual</em>, 7th edition
 (2020), section 7.14: the general note is "designated by the word
@@ -656,6 +657,17 @@ not be read from any official source, and the widely repeated
 no numeric table rule), <strong>QJE</strong> (its instructions page could not be
 read), <strong>Epidemiology</strong> (see <em>Known gaps</em>). Naming any of them would
 mean inventing their rules.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>American Medical Association. (2020). <em>AMA Manual of Style: A Guide for
+Authors and Editors</em> (11th ed.). Oxford University Press.
+<a href="https://doi.org/10.1093/jama/9780190246556.001.0001" class="external-link">doi:10.1093/jama/9780190246556.001.0001</a></p>
+<p>American Psychological Association. (2020). <em>Publication manual of the
+American Psychological Association</em> (7th ed.).
+<a href="https://doi.org/10.1037/0000165-000" class="external-link">doi:10.1037/0000165-000</a></p>
+<p>University of Chicago Press. (2024). <em>The Chicago Manual of Style</em>
+(18th ed.). University of Chicago Press.</p>
     </div>
 
     <div class="section level2">

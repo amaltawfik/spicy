@@ -155,9 +155,9 @@ test for the random part as a whole. Across several parameters jointly
 the mixture weights depend on the model’s geometry, so the footer falls
 back on a pragmatic halved chi-squared; Stata’s `mixed` approaches the
 same case from the opposite side, printing the chi-squared without
-halving, noting that the test “is conservative and provided only for
-reference”. The per-term tests below each constrain a single component
-and refer the statistic to the 50:50 mixture itself. Here
+halving, with a note that the test is conservative and given for
+reference only. The per-term tests below each constrain a single
+component and refer the statistic to the 50:50 mixture itself. Here
 chi-bar-squared(3) = 150.04, p \< .001: the random structure earns its
 place.
 
@@ -1126,15 +1126,16 @@ same factor header (`cat: A (ref.) / B / C`), each level sharing a row
 with its `B` coefficient — for a factor level the AME is the average
 *discrete* change against the reference, not a derivative.
 
-Inference on the AME rows is Wald-z asymptotic (`df = Inf`) with the
-model-based vcov. That matches the B-row inference for `glmer` and
-`glmmTMB`, which are Wald-z themselves; it does *not* match the t-based
-B rows of `lmerTest` fits (Satterthwaite df) or
-[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) (containment df) —
-there the AME row keeps its large-sample z while the B row keeps its t,
-so under an identity link the same estimate can carry two different
-p-values in the same row. Treat the AME p as a large-sample
-approximation for those classes.
+Inference on the AME rows is Wald-z asymptotic (`df = Inf`), with the
+variance matrix of the coefficient rows: model-based by default, the
+cluster-robust one under a `CR*` `vcov`. That matches the B-row
+inference for `glmer` and `glmmTMB`, which are Wald-z themselves; it
+does *not* match the t-based B rows of `lmerTest` fits (Satterthwaite
+df), [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) (containment
+df) or a `CR*` variance (Satterthwaite df) — there the AME row keeps its
+large-sample z while the B row keeps its t, so under an identity link
+the same estimate can carry two different p-values in the same row.
+Treat the AME p as a large-sample approximation for those classes.
 
 ## `glmmTMB`: beyond `lme4`
 
@@ -1475,6 +1476,9 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 - Bates, D., Mächler, M., Bolker, B., & Walker, S. (2015). Fitting
   linear mixed-effects models using lme4. *Journal of Statistical
   Software*, 67(1).
+- Bell, A., & Jones, K. (2015). Explaining fixed effects: Random effects
+  modeling of time-series cross-sectional and panel data. *Political
+  Science Research and Methods*, 3(1), 133–153.
 - Bressoux, P. (2010). *Modélisation statistique appliquée aux sciences
   sociales* (2nd ed.). De Boeck.
 - Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). *Applied
@@ -1488,6 +1492,8 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
   *Psychological Methods*, 12(2), 121–138.
 - Gelman, A., & Hill, J. (2007). *Data Analysis Using Regression and
   Multilevel/Hierarchical Models*. Cambridge University Press.
+- Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and Other
+  Stories*. Cambridge University Press.
 - Hox, J. J., Moerbeek, M., & van de Schoot, R. (2018). *Multilevel
   Analysis: Techniques and Applications* (3rd ed.). Routledge.
 - Luke, S. G. (2017). Evaluating significance in linear mixed-effects
@@ -1500,9 +1506,16 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 - Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., & Bates, D.
   (2017). Balancing Type I error and power in linear mixed models.
   *Journal of Memory and Language*, 94, 305–315.
+- Mundlak, Y. (1978). On the pooling of time series and cross section
+  data. *Econometrica*, 46(1), 69–85.
 - Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
   obtaining R² from generalized linear mixed-effects models. *Methods in
   Ecology and Evolution*, 4(2), 133–142.
+- Nakagawa, S., Johnson, P. C. D., & Schielzeth, H. (2017). The
+  coefficient of determination R² and intra-class correlation
+  coefficient from generalized linear mixed-effects models revisited and
+  expanded. *Journal of the Royal Society Interface*, 14(134),
+  20170213. 
 - Raudenbush, S. W., & Bryk, A. S. (2002). *Hierarchical Linear Models:
   Applications and Data Analysis Methods* (2nd ed.). Sage.
 - Schielzeth, H., & Forstmeier, W. (2009). Conclusions beyond support:

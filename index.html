@@ -188,7 +188,7 @@
 <tr>
 <td>Robust, IV, quantile, panel</td>
 <td>
-<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>, <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
+<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>, <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code>, <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
 </td>
 </tr>
 <tr>
@@ -198,15 +198,20 @@
 </td>
 </tr>
 <tr>
-<td>Ordinal and categorical</td>
+<td>Ordinal</td>
 <td>
-<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code> (incl. partial proportional odds), <code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> (ordinal family), <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code>, <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code>
+<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code> (incl. partial proportional odds), <code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> (ordinal family)</td>
+</tr>
+<tr>
+<td>Categorical</td>
+<td>
+<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom()</a></code>, <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit()</a></code>
 </td>
 </tr>
 <tr>
-<td>Counts, two-part models</td>
+<td>Counts, two-part</td>
 <td>
-<code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> (zero-inflation and dispersion components)</td>
+<code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code>, <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> (zero-inflation, hurdle and dispersion components)</td>
 </tr>
 <tr>
 <td>Survival</td>
@@ -534,10 +539,10 @@
 <span><span class="co">#&gt;  Days                            │   10.47  1.55  [  7.44,  13.50]  &lt;.001 </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  Random effects:                 │                                        </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –    </span></span>
-<span><span class="co">#&gt;    σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –    </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    </span></span>
+<span><span class="co">#&gt;    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    </span></span>
 <span><span class="co">#&gt;    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)                  │   25.59  1.51  [ 22.44,  28.39]   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    </span></span>
 <span><span class="co">#&gt; ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span><span class="co">#&gt;  n                               │  180                                   </span></span>
 <span><span class="co">#&gt;  N (Subject)                     │   18                                   </span></span>

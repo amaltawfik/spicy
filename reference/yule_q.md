@@ -65,6 +65,10 @@ Yule, G. U. (1900). On the association of attributes in statistics.
 194, 257-319.
 [doi:10.1098/rsta.1900.0019](https://doi.org/10.1098/rsta.1900.0019)
 
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
+[doi:10.32614/CRAN.package.DescTools](https://doi.org/10.32614/CRAN.package.DescTools)
+
 ## See also
 
 [`phi()`](https://amaltawfik.github.io/spicy/reference/phi.md),

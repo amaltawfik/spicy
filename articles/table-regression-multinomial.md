@@ -56,9 +56,10 @@ table(d$employment_status)
 One recoding first. `education` is stored as an *ordered* factor, and R
 gives ordered factors polynomial contrasts by default — the model would
 estimate `.L` (linear) and `.Q` (quadratic) components that fit
-identically but are awkward to report. Applied tables conventionally
-show treatment dummies against a reference level (Fox & Weisberg 2019),
-so we convert to an unordered factor, preserving the level sequence:
+identically but are awkward to report. R’s default coding of an
+unordered factor, treatment dummies against a reference level, is the
+“easy to use and intuitive” one (Fox & Weisberg 2019, §4.7.1–4.7.2), so
+we convert to an unordered factor, preserving the level sequence:
 
 ``` r
 
@@ -127,9 +128,9 @@ table_regression(fit)
 This is the layout multinomial results are published in: predictors as
 rows, **one column group per non-reference outcome category**, so a
 predictor’s effects on the \\J-1\\ comparisons sit side by side on its
-row (Long & Freese 2014) — the arrangement most journals print. Raw
-`mlogit` and NOMREG output instead stack the same \\J-1\\ equations as
-row blocks; side by side is the publication convention. Reading it:
+row — the arrangement most journals print. Raw `mlogit` and NOMREG
+output instead stack the same \\J-1\\ equations as row blocks; side by
+side is the publication convention. Reading it:
 
 - Each column group is one **equation against the reference**: the
   `Tertiary` cell under `Unemployed` is the tertiary-education
@@ -177,9 +178,10 @@ c(full = logLik(fit), null = logLik(fit0))
 The likelihood-ratio chi-squared is 41.9 on 12 degrees of freedom (p \<
 .001). The two log-likelihoods also decompose the table’s
 `R² (McFadden)` row: 0.02 is precisely 1 − (−1242.9)/(−1263.8) = 0.017 —
-a comparative index, not a share of explained variance (Long & Freese
-2014); the contrast between the tiny value and the decisive test is
-exactly why it should not be read as one.
+a pseudo-R², which only resembles the R² of the linear model (Long &
+Freese 2014, p. 126) and is not a share of explained variance; the
+contrast between the tiny value and the decisive test is exactly why it
+should not be read as one.
 
 One scope note on inference: alongside the classical Wald-z default,
 `multinom` fits support **cluster-robust standard errors**

@@ -62,6 +62,10 @@ for the formula and full references.
 
 Liebetrau, A. M. (1983). *Measures of Association*. Sage.
 
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
+[doi:10.32614/CRAN.package.DescTools](https://doi.org/10.32614/CRAN.package.DescTools)
+
 ## See also
 
 [`cramer_v()`](https://amaltawfik.github.io/spicy/reference/cramer_v.md),

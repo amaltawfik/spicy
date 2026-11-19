@@ -9,9 +9,9 @@ library(spicy)
 produces a coefficient summary table from one or several fitted
 regression models. The output is publication-ready by default and
 follows APA Manual 7 (American Psychological Association 2020, Tables
-7.13–7.15) formatting conventions: paired estimate-and-CI columns, APA
-p-values without leading zero, factor levels grouped under their parent
-variable, fit statistics at the foot of the table, and a
+7.15–7.18, pp. 219–221) formatting conventions: paired estimate-and-CI
+columns, APA p-values without leading zero, factor levels grouped under
+their parent variable, fit statistics at the foot of the table, and a
 self-documenting note line that names the variance estimator and any
 methodological choice that affected the rendered values.
 
@@ -154,16 +154,16 @@ reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting
 
 Standardized coefficients (`β`) make predictors with different natural
 scales comparable: a one-standard-deviation increase in `X` predicts a
-`β`-standard-deviation change in `Y`. APA Manual 7 §7.13 recommends
-reporting both `B` and `β` so the unstandardized effect (natural units,
-interpretable) stays alongside the standardized effect (comparable
-across predictors).
+`β`-standard-deviation change in `Y`. The sample regression table of APA
+Manual 7 (Table 7.15, p. 219) reports `B` and `β` side by side, so the
+unstandardized effect (natural units, interpretable) stays alongside the
+standardized effect (comparable across predictors).
 
 `standardized` selects the method. Four apply to linear models — a
 fifth, glm-specific `"pseudo"`, is covered in the *Generalized linear
 models* section — and the choice is consequential and well-documented
-(Cohen, Cohen, West, and Aiken 2003 §3.4; Gelman 2008). The methods
-differ most visibly in how they treat factor dummies:
+(Cohen, Cohen, West, and Aiken 2003 §8.2.5, p. 316; Gelman 2008). The
+methods differ most visibly in how they treat factor dummies:
 
 - `"refit"` — refit the model on the z-scored outcome and z-scored
   *numeric* predictors; factors stay factors, so their dummies keep the
@@ -232,9 +232,10 @@ terms.** When the model contains a product term, an
 [`splines::ns()`](https://rdrr.io/r/splines/ns.html) wrapper, the
 standardized coefficient of the non-additive term has no closed-form
 “one-SD change in X” reading (Aiken and West 1991; Cohen et al. 2003
-§7.7). The function emits a classed `spicy_caveat` warning at runtime
-*and* prints a method-specific caveat line in the table footer, so the
-limitation is exposed at the point of use without blocking the table.
+§7.5, pp. 282–283). The function emits a classed `spicy_caveat` warning
+at runtime *and* prints a method-specific caveat line in the table
+footer, so the limitation is exposed at the point of use without
+blocking the table.
 
 ## Per-coefficient effect sizes
 
@@ -323,15 +324,16 @@ Methodology notes:
   Algina (2003) formula `((F − 1) × df1) / (F × df1 + N − df1)`,
   yielding a less-biased small-sample estimator than partial `η²`.
 - The CI bounds come from inverting the noncentrality parameter of the
-  F-distribution at the lower and upper confidence levels (Steiger 2004
-  §4), anchored at the bias-corrected `F` implied by `ω²` rather than at
-  the observed `F`. Population partial `η²` and partial `ω²` are the
-  same quantity — `ω²` is simply the less-biased small-sample estimator
-  — so both columns share that single interval, and it always brackets
-  the bias-corrected point estimate, even when the lower bound clips at
-  zero (common for near-null terms). Expect small differences from the
-  `effectsize` package on *both* columns: it inverts the observed `F`
-  for its `η²` bounds and its own implied `F` for `ω²`.
+  F-distribution at the lower and upper confidence levels (Steiger 2004,
+  pp. 167–168), anchored at the bias-corrected `F` implied by `ω²`
+  rather than at the observed `F`. Population partial `η²` and partial
+  `ω²` are the same quantity — `ω²` is simply the less-biased
+  small-sample estimator — so both columns share that single interval,
+  and it always brackets the bias-corrected point estimate, even when
+  the lower bound clips at zero (common for near-null terms). Expect
+  small differences from the `effectsize` package on *both* columns: it
+  inverts the observed `F` for its `η²` bounds and its own implied `F`
+  for `ω²`.
 - For factor predictors with `k` levels, the partial F-test is the joint
   `(k − 1)` df Wald test, so the same effect-size value is broadcast
   across all non-reference dummy rows; the reference row leaves the
@@ -655,10 +657,10 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.m
 ## Hierarchical / nested regression
 
 Set `nested = TRUE` to add **in-table change-statistic rows** (APA Table
-7.13 / Stata `esttab` / SPSS Model Summary convention). Each adjacent
-pair (M2 vs M1, M3 vs M2, …) contributes one column of change stats
-below `R² / Adj. R²`; the first model column gets en-dashes (no previous
-model to compare to).
+7.15, p. 219 / Stata `esttab` / SPSS Model Summary convention). Each
+adjacent pair (M2 vs M1, M3 vs M2, …) contributes one column of change
+stats below `R² / Adj. R²`; the first model column gets en-dashes (no
+previous model to compare to).
 
 Hierarchical regression requires every model in the sequence to share
 the same analytic sample: identical `nobs` and an identical response
@@ -741,9 +743,10 @@ supports retaining `bmi` and provides no incremental evidence for
 Default change tokens auto-injected:
 `c("r2_change", "f_change", "p_change")` for `lm` (APA
 hierarchical-regression standard), `c("lrt_change", "p_change")` for
-`glm` (Hosmer & Lemeshow §3.5), `c("f_change", "p_change")` for a `glm`
-whose dispersion is estimated (the F test `anova(test = "F")` reports
-for gaussian, Gamma, inverse Gaussian, Tweedie and quasi families),
+`glm` (Hosmer, Lemeshow & Sturdivant 2013 §2.4, pp. 39–41),
+`c("f_change", "p_change")` for a `glm` whose dispersion is estimated
+(the F test `anova(test = "F")` reports for gaussian, Gamma, inverse
+Gaussian, Tweedie and quasi families),
 `c("aic_change", "bic_change", "lrt_change", "p_change")` for
 mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) — Pinheiro & Bates
@@ -1024,11 +1027,10 @@ right denominator regardless of which subset is shown.
 A methodological note. Adjusting the p-values of every coefficient of a
 single regression model is *not* the standard convention in
 social-science or clinical reporting (Rothman 1990; Gelman, Hill, and
-Yajima 2012; Greenland 2017; Harrell 2015 §5.4; APA Manual 7 §6.46).
-Each coefficient tests a scientifically distinct hypothesis on a
-distinct predictor, which is not the situation that family-wise
-procedures were designed for. The default `"none"` reflects this
-consensus.
+Yajima 2012; Greenland 2017). Each coefficient tests a scientifically
+distinct hypothesis on a distinct predictor, which is not the situation
+that family-wise procedures were designed for. The default `"none"`
+reflects this consensus.
 
 Adjustment is nonetheless legitimate in three contexts:
 
@@ -1106,8 +1108,8 @@ the full model, display only the rows the reader cares about —
 
 ## Significance stars
 
-Stars are off by default. APA 7 §6.46 explicitly discourages
-asterisks-only reporting in favor of exact p-values, and ASA’s post-2019
+Stars are off by default. APA 7 §7.14 (p. 204) prefers exact p-values in
+a table and admits asterisks as an alternative, and ASA’s post-2019
 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the same
 point. Set `stars = TRUE` for the APA preset
 (`*** p < .001, ** p < .01, * p < .05`) or pass a named numeric vector
@@ -1278,7 +1280,7 @@ where `B = 0` and `OR = 1` are the same hypothesis and the Wald
 approximation is most accurate, so they match the unexponentiated table
 verbatim. (Wald tests are not invariant to reparameterization — a z
 rebuilt from `SE_OR` would give a different statistic and p-value, which
-is why the link-scale test is kept; Long & Freese 2014 §3.2.2.):
+is why the link-scale test is kept; Long & Freese 2014 §7.3.2, p. 323.):
 
 ``` r
 
@@ -1490,7 +1492,8 @@ tertiary education is 15 percentage points less likely to be a current
 smoker than one with lower secondary education”. This is almost always
 the quantity a substantive reader wants from a logistic regression, and
 it is the reason AME is increasingly recommended over odds ratios for
-communicating logistic effects (Mood 2010; Long and Freese 2014 §6.2.3).
+communicating logistic effects (Mood 2010; Long and Freese 2014,
+p. 227).
 
 ``` r
 
@@ -1638,9 +1641,9 @@ For `glm` you can also request `ci_method = "profile"`, which calls
 compute the profile-likelihood CI — asymmetric, obtained by inverting
 the likelihood-ratio statistic rather than the quadratic Wald
 approximation, and the preferred choice under sparse data or
-near-boundary estimates (Venables & Ripley *MASS* §7.2). The estimate,
-SE, statistic, and p-value all remain Wald; `"profile"` only refines the
-CI bounds:
+near-boundary estimates (Venables & Ripley *MASS* §7.2, p. 198, and
+§8.4, pp. 220–221). The estimate, SE, statistic, and p-value all remain
+Wald; `"profile"` only refines the CI bounds:
 
 ``` r
 
@@ -1679,13 +1682,14 @@ leaving the mismatch for a careful reader to discover.
 `nested = TRUE` on a list of nested glm fits appends `Δχ²` and
 `p (change)` rows to the fit-statistics block — default change tokens
 `c("lrt_change", "p_change")`, as in *Hierarchical / nested regression*
-above — the APA-conventional layout for hierarchical logistic regression
-(Hosmer & Lemeshow §3.5; Long & Freese 2014 §3.2.4). The chi-square
-statistic comes from `anova(test = "LRT")`. The variance-explained
-change tokens (`r2_change`, `f_change`) are not defined for glm —
-requesting them in `show_fit_stats` raises a `spicy_invalid_input` error
-that points to the pseudo-R² family and to `lrt_change` + `p_change`
-instead:
+above — the APA-conventional layout for hierarchical logistic
+regression, whose likelihood-ratio test of nested models is that of
+Hosmer, Lemeshow & Sturdivant (2013 §2.4, pp. 39–41) and Long & Freese
+(2014 §3.2.4). The chi-square statistic comes from
+`anova(test = "LRT")`. The variance-explained change tokens
+(`r2_change`, `f_change`) are not defined for glm — requesting them in
+`show_fit_stats` raises a `spicy_invalid_input` error that points to the
+pseudo-R² family and to `lrt_change` + `p_change` instead:
 
 ``` r
 
@@ -2037,7 +2041,7 @@ Aiken, L. S., and West, S. G. (1991). *Multiple Regression: Testing and
 Interpreting Interactions*. Sage.
 
 American Psychological Association (2020). *Publication Manual of the
-American Psychological Association* (7th ed.). Section 6.46.
+American Psychological Association* (7th ed.).
 
 Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003). *Applied
 Multiple Regression / Correlation Analysis for the Behavioral Sciences*
@@ -2063,9 +2067,6 @@ Effectiveness*, 5(2), 189–211.
 Greenland, S. (2017). For and against methodologies: Some perspectives
 on recent causal and statistical inference debates. *European Journal of
 Epidemiology*, 32(1), 3–20.
-
-Harrell, F. E. (2015). *Regression Modeling Strategies* (2nd ed.).
-Springer. Section 5.4 on multiplicity.
 
 Hemmert, G. A. J., Schons, L. M., Wieseke, J., and Schimmelpfennig, H.
 (2018). Log-likelihood-based pseudo-R² in logistic regression: Deriving
@@ -2145,7 +2146,7 @@ models — A new proposal: The coefficient of discrimination. *The
 American Statistician*, 63(4), 366–372.
 
 Venables, W. N., and Ripley, B. D. (2002). *Modern Applied Statistics
-with S* (4th ed.). Springer. Section 7.2 on profile likelihood.
+with S* (4th ed.). Springer.
 
 Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019). Moving to a
 world beyond “p \< 0.05”. *The American Statistician*, 73(sup1), 1–19.

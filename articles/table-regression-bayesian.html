@@ -194,7 +194,7 @@ robust pairing of <em>Regression and Other Stories</em> (§5.3) and of
 <code>rstanarm</code>’s own print: both members resist skewed
 posteriors, where a mean + SD pair can be dominated by one heavy tail.
 As Gelman, Hill &amp; Vehtari put it, “for convenience we sometimes call
-the posterior mad sd the ‘standard error’”.</li>
+the posterior mad sd the ‘standard error’” (§9.1, p. 113).</li>
 <li>
 <strong>The interval is a credible interval</strong>, and the header
 says so: <code>95% CrI</code>, the equal-tailed 2.5% and 97.5% posterior
@@ -279,17 +279,18 @@ table can additionally be wrong because the <em>sampler</em> has not
 converged — the draws then misrepresent the very posterior the columns
 summarize. spicy therefore checks every Bayesian fit before rendering:
 when any sampled parameter misses its target — R-hat at or above 1.01 or
-effective sample size below 100 per chain, never less than 400, so fewer
-chains do not weaken the bar (Vehtari et al. 2021); any divergent
-transition (Stan guidance); E-BFMI below 0.2 (Betancourt 2017) — the
-table gains a <code>Sampler diagnostics:</code> footer line naming the
-failure and a warning fires (classed
-<code>spicy_bayes_diagnostics</code>, so scripts can catch or mute this
-guard selectively with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code>). A clean fit
-prints nothing: the publication table stays lean, and silence means the
-checks passed. The guard reads <em>all</em> sampled parameters —
-including the group-level ones a multilevel table summarizes — not just
-the displayed coefficients.</p>
+a rank-normalized effective sample size below 400 (Vehtari et al. 2021,
+pp. 671–672), which spicy raises to 100 per chain when there are more
+than four chains; any divergent transition (Stan guidance); E-BFMI below
+0.2 (Betancourt 2017) — the table gains a
+<code>Sampler diagnostics:</code> footer line naming the failure and a
+warning fires (classed <code>spicy_bayes_diagnostics</code>, so scripts
+can catch or mute this guard selectively with
+<code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">withCallingHandlers()</a></code>). A clean fit prints nothing: the
+publication table stays lean, and silence means the checks passed. The
+guard reads <em>all</em> sampled parameters — including the group-level
+ones a multilevel table summarizes — not just the displayed
+coefficients.</p>
 <p>For parameter-level triage the same three diagnostics are available
 as opt-in columns in all-Bayesian tables, together with a fourth,
 <code>mcse</code> — the Monte Carlo standard error of the displayed
@@ -317,18 +318,20 @@ posterior median:</p>
 <p>The <code>mcse</code> column answers a question the other diagnostics
 do not: <em>how many of the printed digits are real?</em> MCMC output is
 stochastic — rerun the sampler with another seed and the third
-significant digit of most estimates will move. The working rule (Gelman,
-Vehtari, McElreath et al. 2026, §11.6): a displayed digit is Monte-Carlo
-stable when <strong>twice the MCSE stays below one unit of that
-digit</strong>. Here twice the MCSE of the coefficients is on the order
-of their second decimal: that digit sits near the stability edge —
-honest to report, and a reminder that a two-decimal table is close to
-the resolution limit of this deliberately short chain. Most of the time
-two <em>significant</em> digits are all a posterior summary can support,
-halving the MCSE costs four times the iterations, and tail quantities
-(the CrI bounds) are noisier than the median. When the displayed digits
-matter — a boundary against a clinical threshold, say — check
-<code>mcse</code> before trusting the last one.</p>
+significant digit of most estimates will move. Following the reasoning
+of Gelman, Vehtari, McElreath et al. (2026, §11.6, pp. 202–203), who
+multiply the MCSE by 2 to get the likely range of Monte Carlo variation,
+spicy treats a displayed digit as Monte-Carlo stable when <strong>twice
+the MCSE stays below one unit of that digit</strong>. Here twice the
+MCSE of the coefficients is on the order of their second decimal: that
+digit sits near the stability edge — honest to report, and a reminder
+that a two-decimal table is close to the resolution limit of this
+deliberately short chain. Most of the time two <em>significant</em>
+digits are all a posterior summary can support, halving the MCSE costs
+four times the iterations, and tail quantities (the CrI bounds) are
+noisier than the median. When the displayed digits matter — a boundary
+against a clinical threshold, say — check <code>mcse</code> before
+trusting the last one.</p>
 <p>Under the hood these are three numbers per parameter (Vehtari et al.
 2021): R-hat, which compares chains (at convergence, 1.00; worry above
 roughly 1.01), and two effective sample sizes that discount
@@ -580,11 +583,14 @@ folds (<code>k_threshold = 0.7</code>, brms <code>reloo = TRUE</code>),
 then K-fold cross-validation.</p>
 <p>Model <em>comparison</em> belongs to <code><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo::loo_compare()</a></code>
 outside the table: the comparison uncertainty is the standard error of
-the elpd <em>difference</em> — not the per-model SEs shown here — and
-differences smaller than about 4 carry no practical meaning (Gelman,
-Vehtari, McElreath et al. 2026, ch. 9). The canonical fit <em>check</em>
-is the graphical posterior predictive check (<code>pp_check(fit)</code>;
-Gelman et al. 2013, ch. 6) — Bayes factors stay out by design (Gelman et
+the elpd <em>difference</em> — not the per-model SEs shown here. Its
+normal approximation is well calibrated when the difference exceeds
+about 4; below that, the standard error is likely underestimated, and
+the authors read a difference that small as no practical predictive
+difference between the models (Gelman, Vehtari, McElreath et al. 2026,
+§9.4, p. 163, and p. 291). The canonical fit <em>check</em> is the
+graphical posterior predictive check (<code>pp_check(fit)</code>; Gelman
+et al. 2013, ch. 6) — Bayes factors stay out by design (Gelman et
 al. 2013, §7.4).</p>
 </div>
 <div class="section level2">
@@ -796,23 +802,23 @@ interval (or <code>pd</code>):</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> educationTertiary        -<span style="color: #BB0000;">0.909</span>     0.197   -<span style="color: #BB0000;">1.31</span>      -<span style="color: #BB0000;">0.559</span>       <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpT5YIkf-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpT5YIkf-1 table {
+<div id="spicy-gt-RtmpoOUEHU-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmpoOUEHU-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpT5YIkf-1 thead, #spicy-gt-RtmpT5YIkf-1 tbody, #spicy-gt-RtmpT5YIkf-1 tfoot, #spicy-gt-RtmpT5YIkf-1 tr, #spicy-gt-RtmpT5YIkf-1 td, #spicy-gt-RtmpT5YIkf-1 th {
+#spicy-gt-RtmpoOUEHU-1 thead, #spicy-gt-RtmpoOUEHU-1 tbody, #spicy-gt-RtmpoOUEHU-1 tfoot, #spicy-gt-RtmpoOUEHU-1 tr, #spicy-gt-RtmpoOUEHU-1 td, #spicy-gt-RtmpoOUEHU-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpT5YIkf-1 p {
+#spicy-gt-RtmpoOUEHU-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_table {
+#spicy-gt-RtmpoOUEHU-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -838,12 +844,12 @@ interval (or <code>pd</code>):</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_caption {
+#spicy-gt-RtmpoOUEHU-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_title {
+#spicy-gt-RtmpoOUEHU-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -855,7 +861,7 @@ interval (or <code>pd</code>):</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_subtitle {
+#spicy-gt-RtmpoOUEHU-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -867,7 +873,7 @@ interval (or <code>pd</code>):</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_heading {
+#spicy-gt-RtmpoOUEHU-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -879,13 +885,13 @@ interval (or <code>pd</code>):</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_bottom_border {
+#spicy-gt-RtmpoOUEHU-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_col_headings {
+#spicy-gt-RtmpoOUEHU-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -900,7 +906,7 @@ interval (or <code>pd</code>):</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_col_heading {
+#spicy-gt-RtmpoOUEHU-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -920,7 +926,7 @@ interval (or <code>pd</code>):</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner_outer {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -932,15 +938,15 @@ interval (or <code>pd</code>):</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -952,11 +958,11 @@ interval (or <code>pd</code>):</p>
   width: 100%;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_spanner_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_group_heading {
+#spicy-gt-RtmpoOUEHU-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -982,7 +988,7 @@ interval (or <code>pd</code>):</p>
   text-align: left;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_empty_group_heading {
+#spicy-gt-RtmpoOUEHU-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -997,15 +1003,15 @@ interval (or <code>pd</code>):</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_from_md > :first-child {
+#spicy-gt-RtmpoOUEHU-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_from_md > :last-child {
+#spicy-gt-RtmpoOUEHU-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1024,7 +1030,7 @@ interval (or <code>pd</code>):</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_stub {
+#spicy-gt-RtmpoOUEHU-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1037,7 +1043,7 @@ interval (or <code>pd</code>):</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_stub_row_group {
+#spicy-gt-RtmpoOUEHU-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1051,15 +1057,15 @@ interval (or <code>pd</code>):</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_row_group_first td {
+#spicy-gt-RtmpoOUEHU-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_row_group_first th {
+#spicy-gt-RtmpoOUEHU-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_summary_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1069,16 +1075,16 @@ interval (or <code>pd</code>):</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_first_summary_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmpoOUEHU-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_last_summary_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1088,7 +1094,7 @@ interval (or <code>pd</code>):</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_grand_summary_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1098,7 +1104,7 @@ interval (or <code>pd</code>):</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1108,7 +1114,7 @@ interval (or <code>pd</code>):</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmpoOUEHU-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1118,11 +1124,11 @@ interval (or <code>pd</code>):</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_striped {
+#spicy-gt-RtmpoOUEHU-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_table_body {
+#spicy-gt-RtmpoOUEHU-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1131,7 +1137,7 @@ interval (or <code>pd</code>):</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_footnotes {
+#spicy-gt-RtmpoOUEHU-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1145,7 +1151,7 @@ interval (or <code>pd</code>):</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_footnote {
+#spicy-gt-RtmpoOUEHU-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1154,7 +1160,7 @@ interval (or <code>pd</code>):</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_sourcenotes {
+#spicy-gt-RtmpoOUEHU-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1168,7 +1174,7 @@ interval (or <code>pd</code>):</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_sourcenote {
+#spicy-gt-RtmpoOUEHU-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1176,108 +1182,108 @@ interval (or <code>pd</code>):</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_left {
+#spicy-gt-RtmpoOUEHU-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_center {
+#spicy-gt-RtmpoOUEHU-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_right {
+#spicy-gt-RtmpoOUEHU-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_font_normal {
+#spicy-gt-RtmpoOUEHU-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_font_bold {
+#spicy-gt-RtmpoOUEHU-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_font_italic {
+#spicy-gt-RtmpoOUEHU-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_super {
+#spicy-gt-RtmpoOUEHU-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_footnote_marks {
+#spicy-gt-RtmpoOUEHU-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_asterisk {
+#spicy-gt-RtmpoOUEHU-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_indent_1 {
+#spicy-gt-RtmpoOUEHU-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_indent_2 {
+#spicy-gt-RtmpoOUEHU-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_indent_3 {
+#spicy-gt-RtmpoOUEHU-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_indent_4 {
+#spicy-gt-RtmpoOUEHU-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_indent_5 {
+#spicy-gt-RtmpoOUEHU-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .katex-display {
+#spicy-gt-RtmpoOUEHU-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmpoOUEHU-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_sourcenote {
+#spicy-gt-RtmpoOUEHU-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
   padding: 0 5px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmpoOUEHU-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmpoOUEHU-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpT5YIkf-1 .gt_spanner_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpoOUEHU-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_col_heading {
+#spicy-gt-RtmpoOUEHU-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmpoOUEHU-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmpoOUEHU-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1286,12 +1292,12 @@ interval (or <code>pd</code>):</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpT5YIkf-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmpoOUEHU-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpT5YIkf-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpoOUEHU-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 

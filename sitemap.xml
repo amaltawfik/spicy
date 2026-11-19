@@ -100,7 +100,15 @@
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_multiresponse.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_outcome.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_categorical.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_counts.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_mixed.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_models.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_robust.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_survey.html</loc></url>
+<url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_survival.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_regression_uv.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/table_stack.html</loc></url>
 <url><loc>https://amaltawfik.github.io/spicy/reference/terms.spicy_uv_screen.html</loc></url>

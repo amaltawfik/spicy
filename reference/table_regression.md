@@ -1,14 +1,22 @@
 # Regression coefficient summary table
 
-Publication-ready coefficient table from one or more fitted `lm` / `glm`
-models. Supports standardized coefficients (\\\beta\\), average marginal
-effects (AME), partial effect sizes (*\\f^2\\* / *\\\eta^2\\* /
-*\\\omega^2\\* and partial *F* for `lm`; partial *\\\chi^2\\* or partial
-*F* for `glm`), pseudo-\\R^2\\ and deviance \\R^2\\ (`glm`), and a full
-vocabulary of variance estimators (classical / HC\* / cluster-robust
-with Satterthwaite-corrected df / bootstrap / jackknife). `glm` covers
-binomial / poisson / Gamma / inverse.gaussian / quasi families with any
-link.
+Publication-ready coefficient table from one or more fitted regression
+models: linear and generalized linear models, robust,
+instrumental-variable, quantile and fixed-effects estimators,
+mixed-effects and GEE models, ordinal, multinomial, count and two-part
+models, survival models, survey-design fits, additive, beta-regression
+and sample-selection models, and Bayesian fits, 39 model classes listed
+by
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
+Several fits, of one class or of several, go side by side in one table.
+For `lm` and `glm`, it supports standardized coefficients (\\\beta\\),
+average marginal effects (AME), partial effect sizes (*\\f^2\\* /
+*\\\eta^2\\* / *\\\omega^2\\* and partial *F* for `lm`; partial
+*\\\chi^2\\* or partial *F* for `glm`), pseudo-\\R^2\\ and deviance
+\\R^2\\ (`glm`), and a full vocabulary of variance estimators (classical
+/ HC\* / cluster-robust with Satterthwaite-corrected df / bootstrap /
+jackknife). `glm` covers binomial / poisson / Gamma / inverse.gaussian /
+quasi families with any link.
 
 ## Usage
 
@@ -108,19 +116,12 @@ table_regression(
   rather than silently reporting a different estimator. Quantile
   regression
   ([`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html)) uses its
-  own estimator family instead: `"classical"` resolves to the
-  heteroskedasticity-robust `"nid"` sandwich (Hendricks-Koenker,
-  Hall-Sheather bandwidth – quantreg's own large-sample default and the
-  Stata `vce(robust)` analog), with `"iid"` (Koenker-Bassett
-  homoskedastic, Stata `vce(iid)` parity), `"ker"` (Powell kernel) and
-  `"rank"` (rank-score inversion: genuine CIs, no SE / t / p – those
-  cells render as dashes) as opt-ins, and `"bootstrap"` running
-  quantreg's native `boot.rq` (`bsmethod = "xy"`; with `cluster =`, the
-  Hagemann 2017 wild gradient cluster bootstrap – the one cluster-robust
-  route for `rq`; `CR*` and `HC*` are refused for `rq`, as is
-  `"jackknife"`, whose leave-one-out form is inconsistent for
-  quantiles). With `nested = TRUE`, the change test of each pair uses
-  the same estimator (a Wald test; see *Hierarchical (nested) model
+  own estimator family instead (`"nid"`, the default, `"iid"`, `"ker"`,
+  `"rank"` and `"bootstrap"`); see
+  [table_regression_robust](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md).
+  The values each class accepts are in *Robust SE availability by model
+  class*. With `nested = TRUE`, the change test of each pair uses the
+  same estimator (a Wald test; see *Hierarchical (nested) model
   comparison*). See *Inference and standard errors*.
 
 - cluster:
@@ -160,15 +161,14 @@ table_regression(
   [`MASS::confint.glm()`](https://rdrr.io/pkg/MASS/man/confint.html) for
   `glm`, `confint.polr()` / `confint.clm()` for ordinal fits –
   asymmetric, exact for likelihood-based inference (Venables & Ripley
-  *MASS* Section 7.2). Only the CI bounds change; estimate, SE,
-  statistic and p-value remain Wald. For ordinal fits the profile covers
-  the predictor coefficients (the cut-point thresholds stay Wald), and a
-  robust `vcov` takes precedence (its Wald-robust CIs are used instead,
-  with a consolidated warning). `"profile"` with `lm` raises
-  `spicy_invalid_input`. `"boot_percentile"` (requires
-  `vcov = "bootstrap"` for every model) replaces the coefficient CI
-  bounds with equal-tailed percentile intervals of the bootstrap
-  replicates (the
+  2002, Section 7.2, p. 198, and Section 8.4, pp. 220-221). Only the CI
+  bounds change; estimate, SE, statistic and p-value remain Wald. For
+  ordinal fits, see
+  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md).
+  `"profile"` with `lm` raises `spicy_invalid_input`.
+  `"boot_percentile"` (requires `vcov = "bootstrap"` for every model)
+  replaces the coefficient CI bounds with equal-tailed percentile
+  intervals of the bootstrap replicates (the
   [`boot::boot.ci()`](https://rdrr.io/pkg/boot/man/boot.ci.html)
   `type = "perc"` convention; Davison & Hinkley 1997, ch. 5), reusing
   the same resamples as the bootstrap SEs. Only the CI bounds change;
@@ -179,11 +179,8 @@ table_regression(
   percentile bounds are exponentiated (percentile intervals are
   transformation-respecting). `"hdi"` (Bayesian `stanreg` / `brmsfit`
   fits only) replaces the default equal-tailed credible interval with
-  the highest-density interval – the shortest interval containing
-  `ci_level` of the posterior draws (Kruschke 2015), relabeling the
-  column header `95% HDI`. Unlike the equal-tailed interval the HDI is
-  not transformation-invariant, so under `exponentiate = TRUE` it is
-  recomputed on the exponentiated draws rather than transformed.
+  the highest-density interval; see
+  [table_regression_bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md).
   Requesting `"hdi"` for a frequentist fit, or `"profile"` /
   `"boot_percentile"` for a Bayesian fit, raises `spicy_invalid_input`.
 
@@ -204,20 +201,15 @@ table_regression(
 
 - tau:
 
-  RMST horizon: the `"rmst"` column family reports the
-  restricted-mean-survival-time difference over `[0, tau]` (`coxph` and
-  `survreg` fits). A positive time on the outcome's scale, or `"minmax"`
-  for the smallest per-group maximum follow-up (the resolved value is
-  disclosed in the table note). No default: the horizon defines the
-  estimand. Stratified fits (`strata()`) are supported: standardization
-  keeps each subject's own stratum baseline, disclosed in the table
-  note.
+  Survival models only: the RMST horizon of the `"rmst"` columns, a
+  positive time or `"minmax"`, with no default. See
+  [table_regression_survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md).
 
 - at_time:
 
-  Landmark time for the `"risk_diff"` column family: the difference in
-  cumulative incidence at `at_time` (`coxph` and `survreg` fits). A
-  positive time on the outcome's scale; no default.
+  Survival models only: the landmark time of the `"risk_diff"` columns,
+  a positive time, with no default. See
+  [table_regression_survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md).
 
 - standardized:
 
@@ -227,27 +219,14 @@ table_regression(
   with [`lm()`](https://rdrr.io/r/stats/lm.html) raises
   `spicy_invalid_input`. Supported classes: `lm`, `glm` (incl.
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), the mixed
-  engines (`lmer` / `glmer` / `glmmTMB` /
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)), and
-  fixed-effects `stan_glm`-style `stanreg` fits for the algebraic
-  flavors `"posthoc"` / `"basic"` / `"smart"` – exact affine rescales of
-  the posterior draws (median, MAD SD and credible bounds all scale by
-  the same positive SD ratio; the beta stays on the link scale under
-  `exponentiate = TRUE`). Standard-formula fixed-effects `brmsfit`
-  models are supported too (their design matrix is recovered through
-  insight); the scale factors are engine-invariant, so the same model
-  fit with rstanarm or brms gets identical betas up to sampling noise.
-  Bayesian `"refit"` (would re-run the sampler) and `"pseudo"` (per-draw
-  latent variance; planned) are refused. Also refused: multilevel fits
-  (`stan_glmer` / `stan_lmer` and `brm()` with group-level terms; a
-  Bayesian beta would need an explicit sd(Y) decomposition that the
-  frequentist mixed engines resolve by refitting on z-scored data),
-  non-GLM `stanreg` subclasses (`stan_polr`, `stan_betareg`), and brms
-  formulas with distributional, multivariate or special terms (`mo()`,
-  `s()`, ...). In all refused Bayesian cases, standardize predictors
-  before fitting instead. Any other class raises
-  `spicy_unsupported_standardized` rather than rendering an empty beta
-  column. See the *Standardized coefficients* section.
+  engines (`"refit"` only; see
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md)),
+  and fixed-effects Bayesian fits (`"posthoc"`, `"basic"` and `"smart"`
+  only; see
+  [table_regression_bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md)).
+  Any other class raises `spicy_unsupported_standardized` rather than
+  rendering an empty beta column. See the *Standardized coefficients*
+  section.
 
 - exponentiate:
 
@@ -259,17 +238,13 @@ table_regression(
   of means), and binomial / ordinal cloglog (`HR`; grouped-time
   proportional hazards, Prentice & Gloeckler 1978). For the *ordinal*
   (cumulative) cloglog model the displayed `HR` is `exp(-B)`, not
-  `exp(B)`: the cumulative parametrization
-  `cloglog P(Y <= j) = zeta_j - xB` places the hazard of the grouped
-  event on `-B`, so `exp(B)` would be the reciprocal of the hazard ratio
-  (the CI endpoints are negated and swapped accordingly, and the table
-  note discloses the convention; a cloglog `clm` with `nominal =` terms
-  refuses `exponentiate` because threshold-side coefficients have no
-  covariate-HR reading). The statistic and p-value stay on the link
-  scale (invariant under monotone transformation). Identity-link fits
-  are left untouched (a `spicy_ignored_arg` warning fires when no model
-  in the table exponentiates), so mixed `lm` + logit tables keep
-  working. Any other link (probit, cauchit, inverse – the
+  `exp(B)`; see
+  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md).
+  The statistic and p-value stay on the link scale (invariant under
+  monotone transformation). Identity-link fits are left untouched (a
+  `spicy_ignored_arg` warning fires when no model in the table
+  exponentiates), so mixed `lm` + logit tables keep working. Any other
+  link (probit, cauchit, inverse – the
   [`Gamma()`](https://rdrr.io/r/stats/family.html) default –, `1/mu^2`,
   sqrt, ordinal `loglog`, ...) raises `spicy_invalid_input`: the
   exponential of such a coefficient has no ratio interpretation, and
@@ -437,66 +412,19 @@ table_regression(
 
 - show_thresholds:
 
-  For ordinal cumulative-link models
-  ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
-  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html),
-  [`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html),
-  [`survey::svyolr`](https://rdrr.io/pkg/survey/man/svyolr.html),
-  `glmmTMB` with the ordinal family,
-  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) with more than two
-  outcome levels), whether to display the estimated category thresholds
-  (cut-points) as a subordinate `"Thresholds"` block of rows below the
-  predictors, carrying B / SE / CI / p like the predictor rows. Default
-  `TRUE`. `FALSE` collapses them to a compact one-line footer note
-  instead. Thresholds are reported on the log-odds (B) scale and are
-  **never exponentiated** (under `exponentiate = TRUE` their rows stay
-  on the log-odds scale). They follow the `polr` convention, link(P(Y
-  \<= j)) = threshold - linear predictor: an
-  [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) fit, which models
-  P(Y \>= j), shows its intercepts with the sign reversed, named `"3|4"`
-  (displayed `"3 | 4"`) rather than `"y>=4"`. Has no effect on
-  non-ordinal models, and the rows are shown only when a coefficient
-  column (`"b"`/`"beta"`) is in `show_columns`.
+  Ordinal models only: `TRUE` (default) shows the cut-points as a
+  `Thresholds` block of rows, `FALSE` gives them in the note. See
+  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md).
 
 - show_components:
 
-  For models with secondary components, whether to display them as
-  labeled subordinate blocks of rows below the primary (count /
-  conditional / location) coefficients. Default `TRUE`:
-
-  - [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
-    `glmmTMB(ziformula = )`: a `Zero-inflation` block – the model for
-    the probability of a **structural (excess) zero**.
-
-  - [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html): a
-    `Zero hurdle, Pr(y > 0)` block – the model for the probability of a
-    **nonzero count** (note the opposite direction vs zero-inflation;
-    the footer names each block's meaning).
-
-  - A `glmmTMB` hurdle model (a zero-truncated family,
-    [`glmmTMB::ziGamma()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html),
-    [`glmmTMB::lognormal()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html)
-    or
-    [`glmmTMB::beta_family()`](https://rdrr.io/pkg/glmmTMB/man/nbinom2.html),
-    with `ziformula`): a `Zero hurdle, Pr(y = 0)` block – glmmTMB models
-    the probability of a **zero**, the opposite event of the
-    [`pscl::hurdle`](https://rdrr.io/pkg/pscl/man/hurdle.html) block.
-
-  - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
-    dispersion was actually modeled; log scale, never exponentiated).
-
-  - `ordinal::clm(scale = ~)`: a `Scale effects` block – the covariate
-    effects on the **log standard deviation of the latent response**.
-    Never exponentiated: their exponential is a ratio of latent standard
-    deviations, not an odds ratio.
-
-  Component rows carry full Wald inference (B / SE / z / p / CI), join
-  the `p_adjust` family, and take significance stars. Under
-  `exponentiate = TRUE` a component is exponentiated **only when its
-  link makes the result an odds ratio** (the logit zero components);
-  probit / cauchit / cloglog zero links and count-type hurdle zero parts
-  stay on the link scale, disclosed in the footer. `FALSE` omits the
-  blocks (the title still names the model type).
+  Models with secondary components only (the `pscl` and `glmmTMB`
+  two-part and dispersion models, `clm` with `scale =`): `TRUE`
+  (default) shows the components as labeled blocks of rows, `FALSE`
+  omits them. See
+  [table_regression_counts](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md)
+  and
+  [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md).
 
 - intercept_position:
 
@@ -602,6 +530,9 @@ table_regression(
   - mixed `lm` + `glm`: the union of the two (the renderer en-dashes per
     cell the stat not defined for a given model class).
 
+  - mixed-effects, survival, survey-design, Bayesian, robust and panel
+    models: see the page of the family (*Pages by model family*).
+
   Under `nested = TRUE` the default is extended with the
   class-appropriate change-stat tokens (e.g. `"r2_change"`, `"f_change"`
   for `lm`). See *Vocabulary tokens* (`show_fit_stats` subsection) and
@@ -619,7 +550,7 @@ table_regression(
   - `"first_col"` (default): the value is placed in the FIRST numeric
     sub-column of each model (typically `B`); the model's remaining
     sub-columns (`SE`, `LL`, `UL`, `p`, ...) are left empty for that
-    row. The APA Manual 7 Table 7.13 layout.
+    row. The APA Manual 7 Table 7.15 layout (p. 219).
 
   - `"merged"`: the model's numeric sub-columns are merged into a single
     wide cell containing the fit-stat value, centered under the model
@@ -655,147 +586,33 @@ table_regression(
 
 - show_re:
 
-  Logical. `TRUE` (default) renders the random-effects variance
-  components of a mixed-effects fit (`lmer`, `glmer`, `glmmTMB`, `lme`,
-  `clmm`) as a subordinate **"Random effects" block of table rows**
-  below the fixed effects: one row per standard deviation / correlation
-  per grouping factor, plus the residual, each with its estimate, SE,
-  and CI in the shared coefficient columns. The group sizes
-  (`N (groups)`) and the ICC render as fit-statistic rows; the footer
-  reports the estimation method (`REML` / `ML`) and the likelihood-ratio
-  test of the whole random part against the no-random-effects model,
-  with the boundary-corrected chi-bar-squared p-value (Self & Liang
-  1987; Stram & Lee 1994). Variance-component rows deliberately carry
-  **no per-row p-value**: a Wald test of a variance is invalid at the
-  boundary of the parameter space, and no reporting guideline requests
-  one (see the *Mixed-effects models* section of the [Publication-ready
-  regression
-  tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
-  article). `FALSE` suppresses the block. No effect on fits without
-  random effects (`lm`, `glm`, `coxph`, ...).
+  Mixed models only: `TRUE` (default) renders the variance components as
+  a `Random effects` block of rows, `FALSE` suppresses it. See
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - re_scale:
 
-  One of `"sd"` (default) or `"variance"`. Controls the display scale of
-  the random-effects rows:
-
-  - `"sd"`: report the random-effect standard deviation \\\sigma\\, in
-    the unit of the linear predictor (that of the response for a
-    Gaussian model).
-
-  - `"variance"`: report \\\sigma^2\\, in squared units.
-
-  The standard error is a delta-method one on the scale the engine
-  estimates on, and \\SE(\sigma) = SE(\sigma^2) / (2\sigma)\\. For
-  `lmer` and `glmer` it comes from the covariance matrix of the
-  variances (`merDeriv`). For `lme`, `glmmTMB` and `clmm` the engine
-  estimates \\\log\sigma\\ and the SE is \\\sigma\\SE(\log\sigma)\\. The
-  Wald CI of every engine is built on \\\log\sigma\\, \\\sigma\exp(\pm
-  z\\SE(\log\sigma))\\, and squared for \\\sigma^2\\: by spicy for
-  `lmer` and `glmer`, by the engine otherwise
-  ([`nlme::intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html),
-  `glmmTMB::confint()`). Correlation rows (\\\rho\\) are unitless and
-  pass through either way. Their SE is a delta-method one too: from the
-  variances for `lmer` (CI \\\rho \pm z\\SE\\, clamped to \\\[-1,
-  1\]\\), from \\\mathrm{atanh}(\rho)\\ for `lme` and from glmmTMB's
-  \\\rho / \sqrt{1 - \rho^2}\\ in a two-term block, with the
-  engine's CI. In a glmmTMB block of three terms or more it is the width
-  of glmmTMB's interval divided by \\2z\\.
+  Mixed models only: `"sd"` (default) or `"variance"`, the scale of the
+  random-effects rows. See
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - re_columns:
 
-  Character vector. Subset of `c("est", "se", "ci")` controlling which
-  cells of the random-effects rows are **displayed** (`"est"` is
-  mandatory); deselected SE / CI cells render as an en-dash on those
-  rows only. Useful for slimming output (`re_columns = "est"`) or for
-  journals that want only standard errors
-  (`re_columns = c("est", "se")`). Display-only: the underlying data
-  ([`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html),
-  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md))
-  always carries the full SE + CI.
-
-  Note. Under the default `re_ci = "wald"` the CI is Wald on the log of
-  the standard deviation (`sd * exp(± z * SE(log sd))`, see `re_scale`),
-  so it stays above 0, and on \\\rho\\ for `lmer` correlations. Wald can
-  be optimistic near the variance boundary (Self & Liang 1987
-  chi-bar-squared); request boundary-respecting profile-likelihood
-  intervals with `re_ci = "profile"` when robustness is critical. See
-  the *Mixed-effects models* section of the [Publication-ready
-  regression
-  tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
-  article.
-
-  For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose cost
-  grows superlinearly with the number of observations (about a minute at
-  n of roughly 2,700). Above `options("spicy.re_se_max_n")` (default
-  `1000`) they are skipped: the rows keep their estimates, the SE / CI
-  cells render as en-dashes, a table note states the omission, and a
-  `spicy_caveat` warning points here. Raise the cap (e.g.
-  `options(spicy.re_se_max_n = Inf)`) to force the computation, or test
-  the random terms with `re_test = "lrt"`.
+  Mixed models only: the cells of the random-effects rows that are
+  displayed, a subset of `c("est", "se", "ci")`. See
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - re_test:
 
-  One of `"none"` (default), `"lrt"`, or `"rlrt"`. Opt-in **per-term
-  significance test** for the random-effect variance components, filling
-  the otherwise-empty p column of the Random effects rows. Never a Wald
-  test (invalid at the boundary sigma = 0):
-
-  - `"lrt"`: likelihood-ratio test of each random term vs the model
-    refitted without it (the term's variance plus its covariances with
-    the other terms of its bar), referred to the boundary-corrected
-    chi-bar-squared mixture `0.5 chi2(q-1) + 0.5 chi2(q)` (Self & Liang
-    1987; Stram & Lee 1994). The reduction scheme matches
-    [`lmerTest::ranova()`](https://rdrr.io/pkg/lmerTest/man/ranova.html);
-    the mixture reference makes the p-value exact-asymptotic rather than
-    conservative. A bar's intercept is tested only when it is the bar's
-    single term. Supported: `lmer`, `glmer`, `glmmTMB`, and `lme` with a
-    simple `random = ~ terms | group` structure.
-
-  - `"rlrt"`: exact restricted likelihood-ratio test with a simulated
-    finite-sample null
-    ([`RLRsim::exactRLRT()`](https://rdrr.io/pkg/RLRsim/man/exactRLRT.html);
-    Crainiceanu & Ruppert 2004). Only defined for a Gaussian `lmer` /
-    `lme` fit with a single variance component.
-
-  The test statistic and df stay out of the displayed t/z column (they
-  are chi-square-scale, not t/z) but are carried in
-  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
-  (`test_type` `"chibar2"` / `"rlrt"`). The whole-block LR test in the
-  footer is unaffected. Correlation and residual rows are never tested
-  (a correlation is tested jointly with its slope; the residual has no
-  zero-variance null). Refits happen once per random term: expect a
-  noticeable cost on large models. For structures outside these two
-  routes (e.g. multiple variance components needing a finite-sample
-  null),
-  [`pbkrtest::PBmodcomp()`](https://rdrr.io/pkg/pbkrtest/man/pb__modcomp.html)
-  offers a parametric-bootstrap LR test on the same nested pair of fits
-  (Halekoh & Hojsgaard 2014) – run it directly and report its p-value
-  alongside the table.
+  Mixed models only: `"none"` (default), `"lrt"` or `"rlrt"`, a per-term
+  test of the variance components. See
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - re_ci:
 
-  One of `"wald"` (default) or `"profile"`. Uncertainty route for the
-  random-effect variance-component rows of `lmer` / `glmer` fits:
-
-  - `"wald"`: SE from the information matrix (`merDeriv`, expected
-    information by default) and a Wald CI symmetric on the log of the
-    standard deviation, which stays above 0 (see `re_scale`), subject to
-    the `options("spicy.re_se_max_n")` size cap (see `re_columns`).
-
-  - `"profile"`: **profile-likelihood CIs** via
-    `confint(fit, method = "profile")` – the route lme4 itself documents
-    and defaults to. The intervals are asymmetric and respect the
-    boundary at 0; no SE is shown (lme4's position: a symmetric SE
-    misdescribes the skewed sampling distribution of a variance).
-    Sidesteps the size cap entirely (roughly two seconds per variance
-    parameter even at n ~ 7,000; `glmer` profiles cost more). The footer
-    discloses the method, and likelihood intervals transform exactly, so
-    `re_scale = "variance"` shows the profile CI of the variance itself.
-
-  `glmmTMB` and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)
-  fits keep their engine-native CIs (TMB's `sdreport`; nlme's `apVar`)
-  and refuse `"profile"`.
+  Mixed models only: `"wald"` (default) or `"profile"`, the intervals of
+  the random-effects rows of `lmer` and `glmer` fits. See
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - model_labels:
 
@@ -805,7 +622,8 @@ table_regression(
   *Multi-model semantics* for the full rule. A character vector of
   length `length(models)` overrides. Refused (error) for a single
   multinomial model: there the column groups are outcome categories,
-  relabeled via `outcome_labels`.
+  relabeled via `outcome_labels`
+  ([table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md)).
 
 - outcome_labels:
 
@@ -832,18 +650,14 @@ table_regression(
   the row into the header: each label spans the columns of its model,
   under the model's name. A stacked gt table and the markdown grid of
   tinytable keep the label in the first column of the model, so a long
-  label widens that column. **Single multinomial model**
-  (outcome-as-columns layout): repurposed as the category spanner
-  override – a character vector with one label per non-reference outcome
-  category (unique, in model order), e.g.
-  `c("Student vs Employed", ...)`; the reference category's AME-only
-  group (when displayed) keeps its own name, and `FALSE` is a no-op
-  (there is no Outcome row to suppress).
+  label widens that column. For a single multinomial model, the labels
+  of the category spanners; see
+  [table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md).
 
 - stars:
 
-  Significance asterisks. `FALSE` (default, APA 7 Section 6.46) – no
-  stars. `TRUE` – APA cutoffs
+  Significance asterisks. `FALSE` (default; the APA Manual 7, Section
+  7.14, p. 204, prefers exact p-values) – no stars. `TRUE` – APA cutoffs
   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric vector
   specifies custom thresholds, e.g.
   `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`. With
@@ -1122,10 +936,12 @@ table_regression(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
-  convention. For a different appearance (Nature-style bold non-italic,
-  APA-strict 2-line bold-number / italic-title, etc.), edit the
-  `"Table Caption"` style in a docx template and pass it via
+  `"Table Caption"` in italic, the type of the APA table title (APA
+  Manual 7 section 7.11, p. 201), where the APA puts the bold table
+  number on its own line above it (section 7.10, p. 200). For a
+  different appearance (Nature-style bold non-italic, APA-strict 2-line
+  bold-number / italic-title, etc.), edit the `"Table Caption"` style in
+  a docx template and pass it via
   `word_template = "your_template.docx"`. Style-based delegation keeps
   the rendered caption consistent with the surrounding document and lets
   editorial conventions (Nature, APA-strict, journal-specific) be
@@ -1167,6 +983,44 @@ carry the note as printed in `attr(x, "note")`. With
 `layout = "stacked"`, the stacked table of
 [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
 whose value is described there.
+
+## Pages by model family
+
+This page documents every argument. What is specific to one family of
+models (its own arguments and the values the shared ones take for it) is
+on the page of that family:
+
+- [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md):
+  `lmer`, `glmer`, `glmmTMB`, `lme` and `gls` fits.
+
+- [table_regression_survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md):
+  `coxph`, `survreg`, `cph` and `flexsurvreg` fits, the RMST and
+  risk-difference columns.
+
+- [table_regression_ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md):
+  `polr`, `clm` and `clmm` fits.
+
+- [table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md):
+  `multinom` and `mlogit` fits.
+
+- [table_regression_counts](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md):
+  `zeroinfl` and `hurdle` fits, and the zero-inflation, hurdle and
+  dispersion blocks of `glmmTMB`.
+
+- [table_regression_survey](https://amaltawfik.github.io/spicy/reference/table_regression_survey.md):
+  `svyglm`, `svyolr` and `svycoxph` fits.
+
+- [table_regression_bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md):
+  `stanreg` and `brmsfit` fits.
+
+- [table_regression_robust](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md):
+  `lm_robust`, `iv_robust`, `ivreg`, `tobit`, `rq` and `fixest` fits.
+
+The other families (linear and generalized linear models, additive
+models, beta regression and sample selection, and the `rms` fits) follow
+the rules of this page. GEE fits are described in
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
+which lists every supported class.
 
 ## Vocabulary tokens
 
@@ -1224,20 +1078,18 @@ Each token = one displayed column.
   model carries the other one while that one is not requested (each test
   has its own column: ask for both). Both come from the refits and the
   model's own dispersion (the residual variance of an `lm`) whatever
-  `vcov`. For `lmer` / `glmer` / `glmmTMB` /
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html), `"partial_chi2"`
-  is the Wald chi-square built from the same hypothesis: Type II by
-  default, where SAS PROC MIXED and `lmerTest` test Type III, which
-  `partial_type = "III"` gives (the two conventions coincide for models
-  without interactions). Rendered as `value (df)` to disambiguate factor
-  terms (k-1 df) from numeric terms (1 df), and the partial F as
-  `F (q, df)` with both of its degrees of freedom, `3.45 (2, 28)`, as
-  Stata and SAS report them: each cell carries the residual df of its
-  own model, and the note defines the statistic only. The console and
-  the rich outputs (tinytable, gt, flextable, Word, the clipboard) print
-  the test in one column under the statistic's header, and Excel writes
-  the statistic as a number with its df in the number format
-  (`0.00" (2, 28)"`). `output = "data.frame"` and
+  `vcov`. For the mixed models, `"partial_chi2"` is the Wald chi-square
+  of the same hypothesis; see
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
+  Rendered as `value (df)` to disambiguate factor terms (k-1 df) from
+  numeric terms (1 df), and the partial F as `F (q, df)` with both of
+  its degrees of freedom, `3.45 (2, 28)`, as Stata and SAS report them:
+  each cell carries the residual df of its own model, and the note
+  defines the statistic only. The console and the rich outputs
+  (tinytable, gt, flextable, Word, the clipboard) print the test in one
+  column under the statistic's header, and Excel writes the statistic as
+  a number with its df in the number format (`0.00" (2, 28)"`).
+  `output = "data.frame"` and
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   keep the statistic and its df as numbers, in the statistic's column,
   then `"<column>: df"` and, for the F, `"<column>: residual df"`.
@@ -1263,8 +1115,8 @@ Each token = one displayed column.
   N data drop the column. `"n_events"` – outcome event counts as
   `events/N`, per factor level (reference row included) and model totals
   on continuous rows, computed on each model's own estimation sample
-  (STROBE item 16's "data behind the association"; NEJM-style
-  `no. of events/total no.`). Binary (binomial) outcomes and
+  (STROBE item 16's "data behind the measures of association";
+  NEJM-style `no. of events/total no.`). Binary (binomial) outcomes and
   right-censored `coxph` fits – other models raise
   `spicy_invalid_input`.
 
@@ -1273,7 +1125,9 @@ Each token = one displayed column.
   over `[0, tau]`) and `"risk_diff"`, `"risk_diff_se"`,
   `"risk_diff_ci"`, `"risk_diff_p"` (cumulative-incidence difference at
   `at_time`), by g-computation from the fitted model with bootstrap
-  inference. The horizon arguments are required; see `tau` / `at_time`.
+  inference. The horizon arguments are required; see `tau` / `at_time`
+  and
+  [table_regression_survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md).
 
 **Group tokens** (presets) expand to a fixed atomic vector before
 validation:
@@ -1301,9 +1155,10 @@ already requested, it is auto-injected after `"b"`. Asking for `"beta"`
 while `standardized = "none"` raises `spicy_invalid_input`.
 
 **Default** (`show_columns = NULL`) is context-aware: `"all_b"` for a
-single model (APA-7 Section 6.46 publication layout), `"all_b_compact"`
-for two or more models (CI dropped to fit the side-by-side layout;
-restore it explicitly when needed).
+single model (the layout of the APA Manual 7 sample regression tables,
+Tables 7.16 and 7.17, pp. 219-220), `"all_b_compact"` for two or more
+models (CI dropped to fit the side-by-side layout; restore it explicitly
+when needed).
 
 **Fit statistics alone** (`show_columns = "none"`): no coefficient row
 or column. Each model has one column, headed by its label (the outcome,
@@ -1387,7 +1242,8 @@ refuses the token.
   `"looic"` (PSIS-LOO expected log predictive density and its
   deviance-scale twin, Vehtari et al. 2017; opt-in, a few seconds per
   model; the footer discloses the elpd standard error), and `"waic"`
-  (Watanabe-Akaike; PSIS-LOO is generally preferred).
+  (Watanabe-Akaike; PSIS-LOO is generally preferred). See
+  [table_regression_bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md).
 
 - Negative-binomial dispersion. NB2 fits
   ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
@@ -1482,8 +1338,9 @@ refuses the token.
   fixest's values. A lean fit (`lean = TRUE`) that lost what they need,
   its weights or the fitted values of a Gamma or inverse-Gaussian
   `feglm()`, shows no AIC, BIC or nested rows. A survey-design fit has
-  no likelihood: `"deviance"` and `"bic"` are refused for a table of
-  design fits.
+  no likelihood: `"deviance"`, `"bic"`, `"aicc"`, the pseudo-R-squared
+  tokens and `"r2_deviance"` are refused for a table of design fits, and
+  `"aic"` when no model of the table is a `svyglm`.
 
 - Log-likelihood: `"log_lik"`, the value of
   [`stats::logLik()`](https://rdrr.io/r/stats/logLik.html), from which
@@ -1612,8 +1469,9 @@ rows of its family:
   (gaussian, Gamma, inverse Gaussian, Tweedie): the deviance \\R^2\\.
   McFadden's and Nagelkerke's are refused for them: the log-likelihood
   of a density changes with the unit of the outcome, so the same model
-  gets other values, even negative ones, when the outcome is rescaled
-  (Cameron & Windmeijer 1997).
+  gets other values, even negative ones, when the outcome is rescaled.
+  For a continuous outcome, the likelihood-ratio index can take large
+  values, positive or negative (Cameron & Windmeijer 1997, p. 333).
 
 - The quasi families have no likelihood and no default row.
 
@@ -1647,7 +1505,8 @@ It can decrease when a predictor is added (Tjur 2009, p. 370; Allison
 offset can make it negative, and it is shown with its sign. On request
 it is also computed for the other links, as the same difference of
 means, although the mean predicted probability equals the proportion of
-events only under the logit link (Tjur 2009).
+events for a logit with an intercept (Tjur 2009, p. 366), and not in
+general under the other links.
 
 ## Multi-model semantics
 
@@ -1773,179 +1632,96 @@ reference distribution (e.g. `glmmTMB`, survival, ordinal, `betareg`,
 `mlogit` use z; `lm`, `lme`, `lmer`,
 [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) use t).
 
-### Multinomial models: outcome categories as columns
-
 A single [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
-model renders the publication layout: predictors as rows, one column
-group per **non-reference outcome category** (spanner = category name),
-so a predictor's effect can be compared across equations along its row.
-The mandatory footer note `Reference outcome: <level>.` names the base
-category (Stata's "base outcome" line); `outcome_labels` relabels the
-spanners (e.g. `"Student vs Employed"`). Fit statistics print once,
-under the first group. When per-category AMEs are requested the
-reference category appears as a last, AME-only group (its coefficient
-cells are empty – the reference has no equation; its AMEs complete the
-zero-sum across categories). The default `show_columns` compacts to B /
-SE / p exactly like multi-model tables; request atomic tokens to restore
-CIs. Multi-model and `nested = TRUE` multinomial tables keep the
-one-row-per-(category, predictor) layout – categories-within-models
-would need two spanner levels. `tidy()` and `output = "long"` always
-return the long form (`"<category>: <term>"` rows), whatever the
-display;
-[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-and `output = "data.frame"` mirror the displayed table (one column set
-per category), as they do for every other layout.
+model sets its outcome categories as column groups; see
+[table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md).
 
 ### Robust SE availability by model class
 
 Not every estimator is defined for every class. A robust `vcov` the
-class cannot honor fails fast with `spicy_unsupported_vcov` – never a
-silent model-based result under a robust label:
+class cannot honor is refused with `spicy_unsupported_vcov`, instead of
+a model-based result under a robust label. The values each class
+accepts, the `vcov` column of
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
 
-- `lm`, `glm`,
-  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html):
+|  |  |  |
+|----|----|----|
+| Family | Class | vcov |
+| Linear and generalized linear | `lm` | classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife |
+| Linear and generalized linear | `glm` | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+| Linear and generalized linear | `negbin` | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+| Linear and generalized linear | `rlm` | classical |
+| Linear and generalized linear | `nls` | classical |
+| Robust, IV, quantile, panel | `lm_robust` | classical (the fit's own) |
+| Robust, IV, quantile, panel | `iv_robust` | classical (the fit's own) |
+| Robust, IV, quantile, panel | `ivreg` | classical |
+| Robust, IV, quantile, panel | `tobit` | classical, CR1 |
+| Robust, IV, quantile, panel | `rq` | classical (= nid), nid, iid, ker, rank, bootstrap |
+| Robust, IV, quantile, panel | `fixest` | classical (the fit's own) |
+| Mixed effects | `lmerMod` | classical, CR0-CR3 |
+| Mixed effects | `glmerMod` | classical |
+| Mixed effects | `glmmTMB` | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+| Mixed effects | `lme` | classical, CR0-CR3 |
+| Mixed effects | `gls` | classical |
+| Ordinal | `polr` | classical, CR1 |
+| Ordinal | `clm` | classical, CR1 (classical only with scale or nominal terms) |
+| Ordinal | `clmm` | classical |
+| Categorical | `multinom` | classical, CR1 |
+| Categorical | `mlogit` | classical, CR1 |
+| Counts, two-part | `zeroinfl` | classical, CR1 (classical only for a negative-binomial part) |
+| Counts, two-part | `hurdle` | classical, CR1 (classical only for a negative-binomial part) |
+| Survival | `coxph` | classical, CR0 |
+| Survival | `survreg` | classical, CR1 |
+| Survival | `cph` | classical, CR0 |
+| Survival | `flexsurvreg` | classical |
+| Survey-weighted | `svyglm` | classical (design-based) |
+| Survey-weighted | `svyolr` | classical (design-based) |
+| Survey-weighted | `svycoxph` | classical (design-based) |
+| Population-averaged (GEE) | `geeglm` | classical (the fit's own) |
+| Additive, proportions, selection | `gam` | classical, CR1 |
+| Additive, proportions, selection | `betareg` | classical, CR1 |
+| Additive, proportions, selection | `selection` | classical |
+| rms | `ols` | classical, CR0 |
+| rms | `lrm` | classical, CR0 |
+| rms | `Glm` | classical, CR0 |
+| Bayesian | `stanreg` | classical (the posterior) |
+| Bayesian | `brmsfit` | classical (the posterior) |
 
-  all of `classical`, `HC*`, `CR*`, `bootstrap`, `jackknife`. `lm`
-  additionally takes `"CR1S"` – the full Stata `regress, vce(cluster)`
-  convention: the CR1S small-sample scaling (equal to
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-  with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
-  clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
-  Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
-  refused for `glm` with an explanation: Stata's ML commands use a
-  different convention (`G/(G-1)` scaling, z), so the label would not
-  match Stata output there. For
-  [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), the
-  sandwich holds theta at its estimate, so robust standard errors can
-  differ by a few percent from software that includes the score of
-  theta.
+`"classical"` is the model-based variance, or the variance the fit
+carries for the classes marked so: `estimatr` and `fixest` fits keep the
+estimator they were computed with, a GEE fit its own sandwich, a survey
+fit its design-based variance, a Bayesian fit its posterior. Why the
+other tokens are refused, and the backend of each class, is on the page
+of its family (see *Pages by model family*); for `lm`, `glm`, GEE,
+`gam`, `betareg` and the `rms` fits, it is below.
 
-- `mlogit`:
+`lm` also takes `"CR1S"`, the full Stata `regress, vce(cluster)`
+convention: the CR1S small-sample scaling (equal to
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
+with `type = "HC1"`) with `t(G - 1)` inference, `G` the number of
+clusters. Use it to reproduce Stata tables; `"CR2"` (Bell-McCaffrey,
+Satterthwaite df) remains the recommended modern choice. `"CR1S"` is
+refused for `glm` with an explanation: Stata's ML commands use a
+different convention (`G/(G-1)` scaling, z), so the label would not
+match Stata output there. For
+[`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html), the sandwich
+holds theta at its estimate, so robust standard errors can differ by a
+few percent from software that includes the score of theta.
 
-  `classical` + `"CR1"` only (cluster at the choice-situation level) –
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
-  mis-scales the sandwich for mlogit's per-choice-situation scores, so
-  `HC*` is refused.
-
-- `lmer`, `lme`:
-
-  `classical` + `CR*` only – `HC*` and the resamplers (which refit
-  `lm`/`glm`) are not defined for these.
-
-- `coxph`, `rms` (`ols`/`lrm`/`cph`/`Glm`):
-
-  `classical` + `"CR0"` only: the Lin-Wei sandwich of
-  `coxph(cluster = )` and
-  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) are one
-  cluster estimator each, with no small-sample factor. `"CR1"` to
-  `"CR3"` are refused, as are `HC*` and the resamplers.
-
-- `survreg`, [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`,
-  `polr`, `clm`, `betareg`,
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
-  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`:
-
-  `classical` + `"CR1"` only:
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-  computes one cluster estimator for these, the CR0 sandwich scaled by
-  \\G/(G-1)\\, `G` the number of clusters (clubSandwich's CR1). `"CR0"`,
-  `"CR2"` and `"CR3"` are refused, as are `HC*` and the resamplers.
-  `clm` with a scale / nominal (partial-PO) component is `classical`
-  only. `multinom` needs sandwich \>= 3.1-2 (which added its `estfun()`
-  method); its `cluster` is one entry per observation. For the two-part
-  `pscl` fits the cluster sandwich covers both components (count and
-  zero) at once. A negative-binomial `zeroinfl` or `hurdle` is
-  `classical` only: the sandwich of these fits leaves out the score of
-  theta. When the count part is negative binomial, fit the model with
-  `glmmTMB` instead (family `nbinom2` with `ziformula`, or
-  `truncated_nbinom2` for a hurdle), whose sandwich includes it;
-  glmmTMB's zero hurdle is binomial, as with `zero.dist = "binomial"`.
-  When only the zero hurdle is negative binomial, the default
-  `zero.dist = "binomial"` keeps `"CR1"`.
-
-- [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html):
-
-  its own estimator family, not the sandwich vocabulary: `classical` (=
-  `"nid"`, quantreg's large-sample default), `"iid"`, `"ker"`, `"rank"`
-  (intervals only) and a native `"bootstrap"`, clustered via the wild
-  gradient bootstrap. `HC*`, `CR*` and `jackknife` are refused, each
-  with its own reason – see the `vcov` argument.
-
-- [`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html):
-
-  no spicy-side estimator at all: GEE inference is robust by
-  construction, so the fit's own sandwich (or jackknife) standard errors
-  – chosen by geeglm's `std.err =` option, clustered on its `id =` – are
-  the displayed inference. `HC*` / `CR*` and `cluster` are refused with
-  a pointer to those fit options.
-
-- [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html):
-
-  `classical` only, on principle: the design-based Taylor / replicate
-  variance is already the robust variance for the declared design, and
-  clustering belongs in the design itself (`survey::svydesign(ids = )`),
-  not in the table call.
-
-- `estimatr` (`lm_robust`/`iv_robust`) and `fixest`:
-
-  these fits carry the variance they were computed with – estimatr's
-  `se_type =`, and whatever fixest's own `vcov` interface produced – and
-  spicy never overwrites it. A `vcov` request is refused; set the
-  estimator through the fitting package instead (`se_type =` for
-  estimatr; `vcov =` at estimation or in
-  [`summary()`](https://rdrr.io/r/base/summary.html) for fixest). With
-  IID errors, fixest's default small-sample correction
-  ([`fixest::ssc()`](https://lrberge.github.io/fixest/reference/ssc.html))
-  multiplies the standard errors of a `feglm()` fit by sqrt((n - 1) /
-  (n - K)) over those of its [`glm()`](https://rdrr.io/r/stats/glm.html)
-  twin with the fixed effects as dummies (a `feols()` fit already
-  matches [`lm()`](https://rdrr.io/r/stats/lm.html)), and
-  `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
-  [`glm()`](https://rdrr.io/r/stats/glm.html) values.
-
-- `glmmTMB`:
-
-  `classical`, `"CR0"` and `"CR1"`, from glmmTMB's own sandwich (glmmTMB
-  \>= 1.1.15), which covers the coefficients, the zero-inflation and
-  dispersion blocks and the AME. `"CR0"` is the sandwich as glmmTMB
-  computes it; `"CR1"` scales it by \\G/(G-1)\\, `G` the number of
-  clusters, as for the
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)
-  classes. Both use Wald z. Without `cluster`, the cluster is the
-  top-level grouping factor of the random effects. The estimator needs
-  independent clusters that contain the random effects – every group
-  within one cluster – so crossed random effects need a `cluster` that
-  contains them all. It keeps the standard errors valid when the
-  random-effects distribution or the conditional variance is
-  misspecified, provided the estimates themselves stay consistent (Liang
-  & Zeger 1986; Verbeke & Lesaffre 1997); with few clusters it
-  understates the variance, which the factor of `"CR1"` offsets only in
-  part: this class has no bias-reduced correction (Cameron & Miller
-  2015). `"CR2"`, `"CR3"` and `HC*` are refused (the sandwich has one
-  score per cluster, with no residuals and no hat values), as are REML
-  fits and the ordinal family.
-
-- Other classes (`glmer`, `rstanarm`/`brms`, ...):
-
-  `classical` (model-based) only (clubSandwich has no working backend
-  for `glmer`).
-
-For the mixed-effects fits (`lmer`, `lme`, `glmmTMB`), the robust
-estimator covers the fixed effects: their coefficients, their joint
-tests (`"partial_chi2"`), the standardized coefficients and the AME. The
-random-effect variance components keep their model-based inference.
-glmmTMB's sandwich takes one likelihood score per cluster over the fixed
-and variance parameters, while the `CR*` estimators of `lmer` and `lme`
-come from clubSandwich over the fixed effects alone: on the same model
-the two agree as the clusters grow, but not exactly.
+A GEE fit
+([`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html)) is
+robust by construction: the fit's own sandwich (or jackknife) standard
+errors, chosen by geeglm's `std.err =` option and clustered on its
+`id =`, are the displayed inference. `HC*`, `CR*` and `cluster` are
+refused with a pointer to those fit options.
 
 Cluster-robust backends differ by class but are each cross-validated to
 the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 = Bell-McCaffrey, with Satterthwaite df for `lm`/`lme`/`lmer`);
 `coxph`/`cph` use the Lin-Wei grouped-dfbeta sandwich (identical to
 `coxph(..., cluster=)`);
-`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
-Poisson and geometric `pscl` two-part fits use
+`survreg`/`tobit`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and
+the Poisson and geometric `pscl` two-part fits use
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
 the penalized covariance of the fit, and lets `vcovCL()` do only the
@@ -1960,13 +1736,11 @@ the fit's `x = TRUE, y = TRUE`). The Lin-Wei and `robcov()` sandwiches
 have no small-sample factor: their one estimator is requested as
 `"CR0"`, and the other `CR*` tokens are refused rather than mapped.
 `glmmTMB` fits use
-[`glmmTMB::sandwich()`](https://rdrr.io/pkg/glmmTMB/man/sandwich.html),
-with one score per cluster (the gradient of the cluster's marginal
-log-likelihood) and no finite-sample factor: `"CR0"` requests it as
-computed, `"CR1"` scaled by \\G/(G-1)\\, and `"CR2"` and `"CR3"` are
-refused rather than mapped. `cluster` length is one entry per
-observation, except `mlogit` (one per choice situation) and censored
-`coxph` (one per subject).
+[`glmmTMB::sandwich()`](https://rdrr.io/pkg/glmmTMB/man/sandwich.html)
+(see
+[table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md)).
+`cluster` length is one entry per observation, except `mlogit` (one per
+choice situation) and censored `coxph` (one per subject).
 
 ### How to specify `cluster`
 
@@ -2003,69 +1777,14 @@ require non-standard evaluation magic that breaks under programmatic use
 For multi-model use, mix forms freely:
 `cluster = list(~region, "region", df$region)`.
 
-## Bayesian fits (rstanarm / brms)
-
-`stanreg` and `brmsfit` models are summarized from their posterior
-draws: `B` is the posterior median, `SE` the posterior MAD SD (the
-scaled median absolute deviation – the pairing of *Regression and Other
-Stories* and rstanarm's own print; equal to the posterior SD for a
-normal posterior), and the interval an equal-tailed credible interval
-(header `95% CrI`; `ci_method = "hdi"` opts into the highest-density
-interval, header `95% HDI`). There is no p-value or t-statistic; group
-presets (`"all_b"`, ...) expand without them, and the opt-in `"pd"`
-column reports the probability of direction (Makowski et al. 2019), with
-a footer definition. Under `exponentiate = TRUE` all quantities are
-computed from the exponentiated draws directly (the SE is the posterior
-MAD SD on the ratio scale, not a delta-method approximation). The AME
-columns are equally draws-native: `avg_slopes()` computes the marginal
-effects per posterior draw, and the table reports their posterior
-median, MAD SD and credible interval (equal-tailed or HDI per
-`ci_method`); `"ame_p"` has nothing to fill and follows the p-column
-policy (dropped from presets, refused as an atomic token, dashed in
-mixed tables). Standardized betas follow the same draws logic:
-`"posthoc"` / `"basic"` / `"smart"` are exact affine rescales of the
-link-scale summaries (the Gaussian family divides by SD(y); every other
-family standardizes predictors only, the frequentist glm convention);
-`"refit"` and `"pseudo"` are refused.
-
-Fit statistics: `"r2_bayes"` (in the Bayesian default) plus the opt-in
-`"elpd_loo"` / `"looic"` / `"waic"`, whose standard errors are disclosed
-in the footer; unreliable estimates (PSIS-LOO Pareto k above the
-sample-size-specific threshold \\\min(1 - 1/\log\_{10} S, 0.7)\\ of
-Vehtari et al. 2024 – the same bound
-[`loo::loo()`](https://mc-stan.org/loo/reference/loo.html) prints – and
-WAIC p_waic \> 0.4) add a footer caveat instead of being silenced. Every
-table is backed by an automatic sampler-diagnostics guard (R-hat \>=
-1.01, ESS below 100 per chain – floored at 400 so fewer chains never
-weaken the bar –, divergent transitions, E-BFMI \< 0.2, per Vehtari et
-al. 2021): problems add a footer line and raise a warning classed
-`spicy_bayes_diagnostics` (nested under `spicy_caveat`, so
-`withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the guard
-selectively); clean fits print nothing. Per-coefficient `"rhat"` /
-`"ess_bulk"` / `"ess_tail"` columns are available in all-Bayesian
-tables, as is `"mcse"` – the Monte Carlo standard error of the displayed
-posterior median, the criterion for how many digits a table can honestly
-show (a displayed digit is Monte-Carlo stable when twice the MCSE stays
-below it; Gelman, Vehtari, McElreath et al. 2026, sec. 11.6). Under
-`exponentiate = TRUE` the MCSE is recomputed on the exponentiated draws.
-
-Refused on principle (classed error, never a silent fallback):
-likelihood-based fit statistics (`"aic"`, pseudo-R², ...), `p_adjust`,
-robust / cluster `vcov` (model the clustering with group-level terms
-instead), `ci_method = "profile"` / `"boot_percentile"`, and non-MCMC
-fits (`algorithm = "meanfield"` / `"optimizing"` – refit with
-`algorithm = "sampling"`). See the [Bayesian regression
-tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
-article.
-
 ## Hierarchical (nested) model comparison
 
 `nested = TRUE` adds **per-pair change statistics as in-table rows**
-(APA Table 7.13 / Stata `esttab` / SPSS Model Summary convention). Each
-adjacent pair (M2 vs M1, M3 vs M2, ...) contributes one column of change
-stats; the FIRST model column gets en-dashes (no previous model to
-compare to). Validation requires identical `nobs` and identical response
-variable across all models.
+(APA Manual 7 Table 7.15, p. 219 / Stata `esttab` / SPSS Model Summary
+convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...) contributes
+one column of change stats; the FIRST model column gets en-dashes (no
+previous model to compare to). Validation requires identical `nobs` and
+identical response variable across all models.
 
 **Structural refusals.** Four hierarchies carry no valid change
 statistic whatever their `nobs` and response, and are refused with
@@ -2073,25 +1792,15 @@ statistic whatever their `nobs` and response, and are refused with
 cells:
 
 - *A REML pair whose fixed effects differ*
-  (`nlme::lme(method = "REML")`, `glmmTMB(REML = TRUE)`). The restricted
-  likelihood depends on the fixed-effects design matrix, so the two
-  criteria are not on a common scale and the likelihood-ratio test is
-  not valid (Pinheiro & Bates 2000 Section 2.4.2). Refit both by maximum
-  likelihood (`method = "ML"`, `REML = FALSE`). A REML pair that differs
-  only in its random structure stays valid and is accepted.
+  (`nlme::lme(method = "REML")`, `glmmTMB(REML = TRUE)`); see
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
-- *Two `fixest` fits that absorbed different fixed effects*. fixest
-  counts every absorbed level as an estimated parameter, so a test
-  across two `| fe` structures measures the change in the absorbed
-  effects together with the change in the coefficients, and the two
-  cannot be separated. Hold the `| fe` part fixed across the hierarchy.
+- *Two `fixest` fits that absorbed different fixed effects*; see
+  [table_regression_robust](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md).
 
 - *Mixed-effects fits from different engines* (`lme4`, `glmmTMB`,
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)). The change
-  statistics come from the engine's own two-model
-  [`anova()`](https://rdrr.io/r/stats/anova.html), and no engine's
-  method accepts a fit produced by another. Refit one of the two with
-  the other's engine.
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)); see
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - *A [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html) hierarchy*.
   M-estimation minimizes a bounded loss on the scaled residuals: it
@@ -2111,8 +1820,8 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 - All-lm (and `nls`): `c("r2_change", "f_change", "p_change")` – APA
   hierarchical regression standard.
 
-- All-glm: `c("lrt_change", "p_change")` – Hosmer & Lemeshow Section
-  3.5; Long & Freese 2014 Section 3.2.4.
+- All-glm: `c("lrt_change", "p_change")` – Hosmer, Lemeshow & Sturdivant
+  2013 Section 2.4; Long & Freese 2014 Section 3.2.4.
 
 - All-glm whose dispersion is estimated (gaussian, Gamma, inverse
   Gaussian, Tweedie, quasi families), and the `feglm` fits of these
@@ -2125,10 +1834,8 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
   `clm`, `coxph`, `gls`, `betareg`, `multinom`, `fixest`, ...): the same
   `c("lrt_change", "p_change")`.
 
-- Mixed-effects (`lmer` / `glmer` / `glmmTMB` /
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)):
-  `c("aic_change", "bic_change", "lrt_change", "p_change")` – Pinheiro &
-  Bates 2000 Section 2.4.1.
+- Mixed-effects: see
+  [table_regression_mixed](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md).
 
 - Quantile (`rq`): `c("f_change", "p_change")` – the Wald-type test
   [`quantreg::anova.rq()`](https://rdrr.io/pkg/quantreg/man/anova.rq.html)
@@ -2215,8 +1922,8 @@ classically and 9.06 as a Wald HC3 test. The HTZ correction under
 `standardized` controls the method when `"beta"` is in `show_columns`:
 
 - `"refit"` – refit on z-scored data. For `lm` both X and Y are z-scored
-  (Cohen et al. 2003 gold standard); for `glm` only numeric X (Long &
-  Freese 2014 Section 4.7.2 "x-standardization").
+  (Cohen et al. 2003); for `glm` only numeric X (Long & Freese 2014
+  Section 4.7.2 "x-standardization").
 
 - `"posthoc"` – post-hoc scaling. lm: \\\beta = B \times SD(X) /
   SD(Y)\\; glm: X-only \\\beta = B \times SD(X)\\ (Y is undefined on the
@@ -2241,7 +1948,7 @@ classically and 9.06 as a Wald HC3 test. The HTZ correction under
 **Interactions and transforms.** Under `"refit"`, an interaction's
 \\\beta\\ is the coefficient of the product of the z-scored components –
 the recommended treatment for such models (Cohen et al. 2003 Section
-7.7; Aiken & West 1991; Friedrich 1982). Under `"posthoc"`, `"basic"`,
+7.5; Aiken & West 1991; Friedrich 1982). Under `"posthoc"`, `"basic"`,
 and `"smart"`, the product / transformed design column is treated as a
 single numeric column and scaled by its own SD (under `"smart"`, by
 `2 * SD` when the product column is continuous; a binary product column
@@ -2265,8 +1972,7 @@ exact refit.
 Adjusting the p-values of all coefficients of a single regression model
 is **not** the standard convention. Each coefficient tests a distinct
 hypothesis on a distinct predictor – not the situation multiple-testing
-procedures were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-Section 6.46; Harrell *Regression Modeling Strategies* Section 5.4;
+procedures were designed for (Rothman 1990; Greenland 2017; see also
 Gelman, Hill & Yajima 2012). Hence the default `p_adjust = "none"`.
 
 Adjustment is appropriate for: mass screening with no prior hypothesis
@@ -2278,38 +1984,6 @@ The adjustment runs **before** any `keep` / `drop` filtering, so the
 family is the model's full coefficient set (intercept and reference rows
 excluded), not the displayed subset – filtering is a display choice and
 must not change the inferential family.
-
-## Tied event times and the survival estimands
-
-A Cox model has to decide what to do when several events share the same
-time, and
-[`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html)
-decides with `ties = "efron"` by default. The absolute estimands do not
-make a second decision:
-
-**The baseline hazard behind the RMST-difference and risk-difference
-columns follows the tie-handling convention of the fit, exactly as
-[`survival::survfit()`](https://rdrr.io/pkg/survival/man/survfit.html)
-and
-[`survival::basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html)
-do.** A `ties = "breslow"` fit gives a Breslow baseline; the default
-Efron fit gives an Efron baseline. One rule, so the hazard-ratio column
-and the dRMST column always come from the same likelihood. To change the
-convention, change the fit.
-
-When the choice matters is not simply "when there are many ties". What
-governs it is the fraction of tied events *within the risk set*,
-together with the effect size and the spread of the covariates: a large
-risk set dilutes a tied block, a small one – fine strata, matched or
-nested case-control designs – does not. A file with hundreds of tied
-days can be insensitive to the convention while a small stratified one
-with a handful of ties is not.
-
-And Efron is the better default, not the correct answer: the
-approximations are all biased at finite sample size and agree
-asymptotically, and Efron's virtue is a much smaller small-sample bias
-(Hertz-Picciotto & Rockhill 1997). Efron himself, quoting Peto, put it
-as "it probably doesn't make much difference" (Efron 1977).
 
 ## Output formats and broom integration
 
@@ -2432,17 +2106,16 @@ for the full taxonomy.
 
 ## References
 
-APA Manual 7 (American Psychological Association, 2020), Tables
-7.13-7.15.
+American Psychological Association (2020). *Publication manual of the
+American Psychological Association* (7th ed.). American Psychological
+Association.
+[doi:10.1037/0000165-000](https://doi.org/10.1037/0000165-000)
 
 Aiken, L.S. & West, S.G. (1991). *Multiple regression: Testing and
 interpreting interactions*.
 
 Allison, P.D. (2014). Measures of fit for logistic regression. *SAS
 Global Forum 2014*, Paper 1485-2014. SAS Institute.
-
-Cameron, A.C. & Miller, D.L. (2015). A practitioner's guide to
-cluster-robust inference. *Journal of Human Resources*, 50(2), 317-372.
 
 Cameron, A.C. & Windmeijer, F.A.G. (1997). An R-squared measure of
 goodness of fit for some common nonlinear regression models. *Journal of
@@ -2456,18 +2129,35 @@ multiple regression / correlation analysis for the behavioral sciences*
 Davison, A.C. & Hinkley, D.V. (1997). *Bootstrap methods and their
 application*. Cambridge University Press.
 
-Efron, B. (1977). The efficiency of Cox's likelihood function for
-censored data. *Journal of the American Statistical Association*,
-72(359), 557-565.
+Ferrari, S. & Cribari-Neto, F. (2004). Beta regression for modelling
+rates and proportions. *Journal of Applied Statistics*, 31(7), 799-815.
+[doi:10.1080/0266476042000214501](https://doi.org/10.1080/0266476042000214501)
 
 Friedrich, R.J. (1982). In defense of multiplicative terms in multiple
 regression equations. *American Journal of Political Science*, 26(4),
 797-833.
 
+Gelman, A. (2008). Scaling regression inputs by dividing by two standard
+deviations. *Statistics in Medicine*, 27(15), 2865-2873.
+[doi:10.1002/sim.3107](https://doi.org/10.1002/sim.3107)
+
+Gelman, A., Goodrich, B., Gabry, J. & Vehtari, A. (2019). R-squared for
+Bayesian regression models. *The American Statistician*, 73(3), 307-309.
+
+Gelman, A., Hill, J. & Yajima, M. (2012). Why we (usually) don't have to
+worry about multiple comparisons. *Journal of Research on Educational
+Effectiveness*, 5(2), 189-211.
+[doi:10.1080/19345747.2011.618213](https://doi.org/10.1080/19345747.2011.618213)
+
 Gelman, A. & Pardoe, I. (2007). Average predictive comparisons for
 models with nonlinearity, interactions, and variance components.
 *Sociological Methodology*, 37(1), 23-51.
 [doi:10.1111/j.1467-9531.2007.00181.x](https://doi.org/10.1111/j.1467-9531.2007.00181.x)
+
+Greenland, S. (2017). For and against methodologies: Some perspectives
+on recent causal and statistical inference debates. *European Journal of
+Epidemiology*, 32(1), 3-20.
+[doi:10.1007/s10654-017-0230-6](https://doi.org/10.1007/s10654-017-0230-6)
 
 Hemmert, G.A.J., Schons, L.M., Wieseke, J., & Schimmelpfennig, H.
 (2018). Log-likelihood-based pseudo-\\R^2\\ in logistic regression:
@@ -2475,12 +2165,9 @@ Deriving sample-sensitive benchmarks. *Sociological Methods & Research*,
 47(3), 507-531.
 [doi:10.1177/0049124116638107](https://doi.org/10.1177/0049124116638107)
 
-Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and efficiency of
-approximation methods for tied survival times in Cox regression.
-*Biometrics*, 53(3), 1151-1156.
-
-Liang, K.-Y. & Zeger, S.L. (1986). Longitudinal data analysis using
-generalized linear models. *Biometrika*, 73(1), 13-22.
+Hosmer, D.W., Lemeshow, S. & Sturdivant, R.X. (2013). *Applied logistic
+regression* (3rd ed.). Wiley.
+[doi:10.1002/9781118548387](https://doi.org/10.1002/9781118548387)
 
 Long, J.S. & Freese, J. (2014). *Regression models for categorical
 dependent variables using Stata* (3rd ed.). Stata Press.
@@ -2493,6 +2180,14 @@ Menard, S. (2000). Coefficients of determination for multiple logistic
 regression analysis. *The American Statistician*, 54(1), 17-24.
 [doi:10.1080/00031305.2000.10474502](https://doi.org/10.1080/00031305.2000.10474502)
 
+Menard, S. (2004). Six approaches to calculating standardized logistic
+regression coefficients. *The American Statistician*, 58(3), 218-223.
+[doi:10.1198/000313004x946](https://doi.org/10.1198/000313004x946)
+
+Menard, S. (2011). Standards for standardized logistic regression
+coefficients. *Social Forces*, 89(4), 1409-1428.
+[doi:10.1093/sf/89.4.1409](https://doi.org/10.1093/sf/89.4.1409)
+
 Mize, T.D., Doan, L., & Long, J.S. (2019). A general framework for
 comparing predictions and marginal effects across models. *Sociological
 Methodology*, 49(1), 152-189.
@@ -2502,33 +2197,50 @@ Nagelkerke, N.J.D. (1991). A note on a general definition of the
 coefficient of determination. *Biometrika*, 78(3), 691-692.
 [doi:10.1093/biomet/78.3.691](https://doi.org/10.1093/biomet/78.3.691)
 
+Pan, W. (2001). Akaike's information criterion in generalized estimating
+equations. *Biometrics*, 57(1), 120-125.
+[doi:10.1111/j.0006-341X.2001.00120.x](https://doi.org/10.1111/j.0006-341X.2001.00120.x)
+
+Prentice, R.L. & Gloeckler, L.A. (1978). Regression analysis of grouped
+survival data with application to breast cancer data. *Biometrics*,
+34(1), 57. [doi:10.2307/2529588](https://doi.org/10.2307/2529588)
+
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in fixed
 effects models. *Journal of Business & Economic Statistics*, 36(4),
 672-683.
+
+Rothman, K.J. (1990). No adjustments are needed for multiple
+comparisons. *Epidemiology*, 1(1), 43-46.
+[doi:10.1097/00001648-199001000-00010](https://doi.org/10.1097/00001648-199001000-00010)
 
 Tjur, T. (2009). Coefficients of determination in logistic regression
 models – A new proposal: The coefficient of discrimination. *The
 American Statistician*, 63(4), 366-372.
 [doi:10.1198/tast.2009.08210](https://doi.org/10.1198/tast.2009.08210)
 
-Verbeke, G. & Lesaffre, E. (1997). The effect of misspecifying the
-random-effects distribution in linear mixed models for longitudinal
-data. *Computational Statistics & Data Analysis*, 23(4), 541-556.
+Vandenbroucke, J.P., von Elm, E., Altman, D.G., Gøtzsche, P.C., Mulrow,
+C.D., Pocock, S.J., Poole, C., Schlesselman, J.J. & Egger, M. (2007).
+Strengthening the reporting of observational studies in epidemiology
+(STROBE): Explanation and elaboration. *PLoS Medicine*, 4(10), e297.
+[doi:10.1371/journal.pmed.0040297](https://doi.org/10.1371/journal.pmed.0040297)
 
-Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving to a world
-beyond "p \< 0.05". *The American Statistician*, 73(sup1), 1-19.
+Vehtari, A., Gelman, A. & Gabry, J. (2017). Practical Bayesian model
+evaluation using leave-one-out cross-validation and WAIC. *Statistics
+and Computing*, 27(5), 1413-1432.
+[doi:10.1007/s11222-016-9696-4](https://doi.org/10.1007/s11222-016-9696-4)
+
+Venables, W.N. & Ripley, B.D. (2002). *Modern applied statistics with S*
+(4th ed.). Springer.
+[doi:10.1007/978-0-387-21706-2](https://doi.org/10.1007/978-0-387-21706-2)
 
 ## See also
 
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-for the registry of supported model classes and the per-family behavior
-reference (also reachable as
-[`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
-[`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
-...). If a class is not listed there, try `table_regression(fit)` anyway
-– unsupported classes error with a clear message. Other regression-table
-functions:
+for the registry of supported model classes; the pages of the model
+families listed under *Pages by model family*. If a class is not listed
+there, try `table_regression(fit)` anyway – unsupported classes error
+with a clear message. Other regression-table functions:
 [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
 to stack regression tables one under the other;
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -2882,113 +2594,6 @@ if (requireNamespace("broom", quietly = TRUE)) {
 #> # ℹ 10 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
 #> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
-
-# \donttest{
-# ---- Mixed-effects models ----------------------------------------
-# Linear mixed-effects (lme4). The footer adds a random-effects
-# block with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
-# marginal / conditional R^2 fit-stats, and a per-class p-value
-# annotation line.
-if (requireNamespace("lme4", quietly = TRUE)) {
-  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
-                     data = lme4::sleepstudy)
-  table_regression(fit)
-
-  # Switch to the variance scale (sigma^2 instead of sigma).
-  table_regression(fit, re_scale = "variance")
-
-  # Minimal random-effects display: estimates only, no SE / CI.
-  table_regression(fit, re_columns = "est")
-
-  # Suppress the random-effects block entirely.
-  table_regression(fit, show_re = FALSE)
-}
-#> P-values of the `lme4::lmer()` model are Wald z-tests, a large-sample approximation.
-#> ℹ For Satterthwaite t-tests, which suit models with few groups, refit with `lmerTest::lmer()` (install lmerTest if needed).
-#> This message is displayed once per session.
-#> Registered S3 method overwritten by 'merDeriv':
-#>   method        from        
-#>   bread.lmerMod clubSandwich
-#> Linear mixed-effects regression: Reaction
-#> 
-#>  Variable         │    B      SE        95% CI         p   
-#> ──────────────────┼────────────────────────────────────────
-#>  (Intercept)      │  251.41  6.82  [238.03, 264.78]  <.001 
-#>  Days             │   10.47  1.55  [  7.44,  13.50]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                │  180                                   
-#>  N (Subject)      │   18                                   
-#>  R² (marginal)    │    0.28                                
-#>  R² (conditional) │    0.80                                
-#>  AIC              │ 1755.6                                 
-#>  BIC              │ 1774.8                                 
-#> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
-
-# Hierarchical mixed-effects comparison (nested LRT).
-if (requireNamespace("lme4", quietly = TRUE)) {
-  m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  table_regression(list(m1, m2, m3), nested = TRUE)
-}
-#> Hierarchical linear mixed-effects regression: Reaction
-#> 
-#>                                          Model 1              Model 2      
-#>                                    ────────────────────  ───────────────── 
-#>  Variable                        │    B      SE     p         B        SE  
-#> ─────────────────────────────────┼─────────────────────────────────────────
-#>  (Intercept)                     │  298.51  8.79  <.001   251.41      9.51 
-#>  Days                            │                         10.47      0.80 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                         
-#>    σ Subject (Intercept)         │   34.59  6.72   –       36.01      6.45 
-#>    σ Subject Days                │                                         
-#>    ρ Subject ((Intercept), Days) │                                         
-#>    σ (Residual)                  │   44.26  2.46   –       30.90      1.72 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │  180                   180              
-#>  N (Subject)                     │   18                    18              
-#>  ICC                             │    0.38                  0.58           
-#>  R² (marginal)                   │    0.00                  0.29           
-#>  R² (conditional)                │    0.38                  0.70           
-#>  AIC                             │ 1916.5                1802.1            
-#>  BIC                             │ 1926.1                1814.9            
-#>  ΔAIC                            │     –                 -114.5            
-#>  ΔBIC                            │     –                 -111.3            
-#>  Δχ²                             │     –                  116.46 (1)       
-#>  p (change)                      │     –                    <.001          
-#> 
-#>                                    Model 2          Model 3          
-#>                                    ───────  ──────────────────────── 
-#>  Variable                        │   p (B)       B        SE     p   
-#> ─────────────────────────────────┼───────────────────────────────────
-#>  (Intercept)                     │   <.001   251.41      6.63  <.001 
-#>  Days                            │   <.001    10.47      1.50  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Random effects:                 │                                   
-#>    σ Subject (Intercept)         │    –       23.78      5.58   –    
-#>    σ Subject Days                │             5.72      1.19   –    
-#>    ρ Subject ((Intercept), Days) │             0.08      0.32   –    
-#>    σ (Residual)                  │    –       25.59      1.51   –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                               │           180                     
-#>  N (Subject)                     │            18                     
-#>  ICC                             │              –                    
-#>  R² (marginal)                   │             0.29                  
-#>  R² (conditional)                │             0.79                  
-#>  AIC                             │          1763.9                   
-#>  BIC                             │          1783.1                   
-#>  ΔAIC                            │           -38.1                   
-#>  ΔBIC                            │           -31.8                   
-#>  Δχ²                             │            42.14 (2)              
-#>  p (change)                      │             <.001                 
-#> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
-# }
 
 if (FALSE) { # \dontrun{
 # ---- Rich-format outputs (require optional Suggests packages) ----

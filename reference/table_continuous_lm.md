@@ -299,7 +299,7 @@ table_continuous_lm(
 
   - `"CR0"`, `"CR1"`, `"CR2"`, `"CR3"`: cluster-robust sandwich
     estimators for non-independent observations (Liang and Zeger 1986);
-    requires `cluster`. `"CR2"` is the modern default (Bell and
+    requires `cluster`. `"CR2"` is the bias-reduced estimator (Bell and
     McCaffrey 2002; Pustejovsky and Tipton 2018), with Satterthwaite
     degrees of freedom for inference; the fractional df is reported in
     the long output (in `df` beside a *t*, in `df.residual` beside an
@@ -745,10 +745,12 @@ table_continuous_lm(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
-  convention. For a different appearance (Nature-style bold non-italic,
-  APA-strict 2-line bold-number / italic-title, etc.), edit the
-  `"Table Caption"` style in a docx template and pass it via
+  `"Table Caption"` in italic, the type of the APA table title (APA
+  Manual 7 section 7.11, p. 201), where the APA puts the bold table
+  number on its own line above it (section 7.10, p. 200). For a
+  different appearance (Nature-style bold non-italic, APA-strict 2-line
+  bold-number / italic-title, etc.), edit the `"Table Caption"` style in
+  a docx template and pass it via
   `word_template = "your_template.docx"`. Style-based delegation keeps
   the rendered caption consistent with the surrounding document and lets
   editorial conventions (Nature, APA-strict, journal-specific) be
@@ -940,10 +942,11 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `MOTE`, `TOSTER`, `effsize`):
 
 - `"cohens_d"`, `"hedges_g"`: noncentral *t* inversion (Steiger and
-  Fouladi 1997; Goulet-Pelletier and Cousineau 2018). Empirical coverage
-  is nominal across sample sizes (Fitts 2021), unlike the older
-  Hedges-Olkin normal approximation which is biased for small samples.
-  For Hedges's *g* the bounds inherit the *J* small-sample correction.
+  Fouladi 1997; Goulet-Pelletier and Cousineau 2018). With *d*, the
+  coverage of this interval stays close to 95% at all effect sizes and
+  sample sizes; with *g*, it ranges from 93% to 97% in small samples
+  (Fitts 2021, p. 2412). For Hedges's *g* the bounds inherit the *J*
+  small-sample correction.
 
 - `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Without
   covariates (model-level effect sizes), bounds are converted from the
@@ -958,8 +961,7 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
   squared CI because omega squared shrinks the point estimate.
 
 For the weighted case, the CI uses raw (unweighted) group counts and
-`df.residual(fit) = n - p`, consistent with the WLS reporting convention
-(DuMouchel and Duncan 1983). For propensity-score balance assessment or
+`df.residual(fit) = n - p`. For propensity-score balance assessment or
 complex-survey designs, dedicated packages (`cobalt::bal.tab()` for the
 Austin and Stuart 2015 formulation; `survey` for design-based effect
 sizes) are more appropriate.
@@ -998,10 +1000,11 @@ for the variance and to
 (single-coefficient, Satterthwaite *t*) and
 [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md)
 (multi-coefficient Hotelling-T-squared with Satterthwaite df, "HTZ") for
-inference. `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton
-2018) is the modern recommended default; it generally produces
-fractional Satterthwaite degrees of freedom (in `df` beside a *t*, in
-`df.residual` beside an *F*), which the displayed `t(df)` /
+inference. `"CR2"` is the bias-reduced estimator of Bell and McCaffrey
+(2002), whose small-sample tests keep the Type I error near the nominal
+level even with few clusters (Pustejovsky and Tipton 2018); it generally
+produces fractional Satterthwaite degrees of freedom (in `df` beside a
+*t*, in `df.residual` beside an *F*), which the displayed `t(df)` /
 `F(df1, df2)` header renders to one decimal. `"CR1"` applies the G/(G-1)
 correction only – Stata's `, vce(cluster id)` uses the larger
 G(N-1)/((G-1)(N-p)) factor with t(G-1) inference (clubSandwich's
@@ -1041,15 +1044,13 @@ estimates and contrasts and slopes are weighted. The fit statistics
 \\R^2\\ and adjusted \\R^2\\, as well as Hays's `omega^2` and Cohen's
 \\f^2\\, use the corresponding **weighted sums of squares** from the WLS
 fit. Cohen's `d` and Hedges's `g` use the **WLS coefficient and the
-model's weighted residual standard deviation** (`summary(fit)$sigma`),
-which is the standard convention for case-weighted regression-style
-reporting (DuMouchel and Duncan 1983); the noncentral *t* CI for `d` /
-`g` uses the raw (unweighted) group counts and the residual degrees of
-freedom of the WLS fit (`n - p`). This case-weighted workflow is
-appropriate for weighted article tables, but is **not** a substitute for
-a full complex-survey design (see e.g. the `survey` package), nor for
-propensity-score balance assessment under the Austin and Stuart (2015)
-convention (see e.g. `cobalt::bal.tab()`).
+model's weighted residual standard deviation** (`summary(fit)$sigma`);
+the noncentral *t* CI for `d` / `g` uses the raw (unweighted) group
+counts and the residual degrees of freedom of the WLS fit (`n - p`).
+This case-weighted workflow is appropriate for weighted article tables,
+but is **not** a substitute for a full complex-survey design (see e.g.
+the `survey` package), nor for propensity-score balance assessment under
+the Austin and Stuart (2015) convention (see e.g. `cobalt::bal.tab()`).
 
 The `n` column always reports the unweighted analytic sample size for
 each outcome, the rows of the fit: a row of zero weight is not one, as
@@ -1162,6 +1163,10 @@ collapses the per-tag breakdown back into the regular `NA` count.
 
 ## References
 
+American Psychological Association. (2020). *Publication Manual of the
+American Psychological Association* (7th ed.).
+[doi:10.1037/0000165-000](https://doi.org/10.1037/0000165-000)
+
 Austin, P. C., & Stuart, E. A. (2015). Moving towards best practice when
 using inverse probability of treatment weighting (IPTW) using the
 propensity score to estimate causal treatment effects in observational
@@ -1199,11 +1204,6 @@ regression model. *AStA Advances in Statistical Analysis*, **95**(2),
 Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap Methods and Their
 Application*. Cambridge: Cambridge University Press.
 [doi:10.1017/CBO9780511802843](https://doi.org/10.1017/CBO9780511802843)
-
-DuMouchel, W. H., & Duncan, G. J. (1983). Using sample survey weights in
-multiple regression analyses of stratified samples. *Journal of the
-American Statistical Association*, **78**(383), 535–543.
-[doi:10.1080/01621459.1983.10478006](https://doi.org/10.1080/01621459.1983.10478006)
 
 Fitts, D. A. (2021). Expected and empirical coverages of different
 methods for generating noncentral *t* confidence intervals for a

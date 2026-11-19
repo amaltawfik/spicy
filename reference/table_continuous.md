@@ -543,10 +543,12 @@ table_continuous(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
-  convention. For a different appearance (Nature-style bold non-italic,
-  APA-strict 2-line bold-number / italic-title, etc.), edit the
-  `"Table Caption"` style in a docx template and pass it via
+  `"Table Caption"` in italic, the type of the APA table title (APA
+  Manual 7 section 7.11, p. 201), where the APA puts the bold table
+  number on its own line above it (section 7.10, p. 200). For a
+  different appearance (Nature-style bold non-italic, APA-strict 2-line
+  bold-number / italic-title, etc.), edit the `"Table Caption"` style in
+  a docx template and pass it via
   `word_template = "your_template.docx"`. Style-based delegation keeps
   the rendered caption consistent with the surrounding document and lets
   editorial conventions (Nature, APA-strict, journal-specific) be
@@ -1006,9 +1008,8 @@ collapses the per-tag breakdown back into the regular `NA` count.
 ## Multiple-comparison adjustment
 
 The p-values of a descriptive table describe: they test no prespecified
-hypothesis. STROBE (explanation of item 14) and the SAMPL guidelines
-advise against significance tests in descriptive and baseline tables,
-hence the default `p_adjust = "none"`.
+hypothesis. STROBE (explanation of item 14) advises against significance
+tests in descriptive tables, hence the default `p_adjust = "none"`.
 
 When a journal or a protocol asks for adjusted p-values anyway,
 `p_adjust` applies
@@ -1031,6 +1032,19 @@ the family size in `p_adjust_m`) in
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 Without `by`, or with `p_value = FALSE`, the table shows no p-value to
 adjust, and a `p_adjust` other than `"none"` is an error.
+
+## References
+
+American Psychological Association. (2020). *Publication manual of the
+American Psychological Association* (7th ed.).
+[doi:10.1037/0000165-000](https://doi.org/10.1037/0000165-000)
+
+Vandenbroucke, J. P., von Elm, E., Altman, D. G., Gøtzsche, P. C.,
+Mulrow, C. D., Pocock, S. J., Poole, C., Schlesselman, J. J., & Egger,
+M. (2007). Strengthening the reporting of observational studies in
+epidemiology (STROBE): Explanation and elaboration. *PLoS Medicine*,
+4(10), e297.
+[doi:10.1371/journal.pmed.0040297](https://doi.org/10.1371/journal.pmed.0040297)
 
 ## See also
 

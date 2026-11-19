@@ -328,14 +328,15 @@ table_multiresponse(
 #> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with at least one item chosen (excluded: 36 with no answer to the question and 67 with no item chosen).
 ```
 
-This is the default of SPSS `MULT RESPONSE` and of `mrtab` (Jann, 2005,
-p. 98). Under this base, choosing nothing cannot be told from skipping,
-so the 67 respondents who chose no source leave with the 36 who skipped.
-The note counts the two groups apart, and every percentage rises: 65.7%
-chose a doctor, against 61.9% under `"valid"`. Jann states the dilemma:
-“it is often not clear a priori whether the respondent refused to answer
-the question (and thus should be excluded from analysis) or whether the
-correct response is simply ‘none’” (p. 107).
+This is the default of `mrtab` (Jann, 2005, p. 98), and SPSS
+`MULT RESPONSE` uses it too. Under this base, choosing nothing cannot be
+told from skipping, so the 67 respondents who chose no source leave with
+the 36 who skipped. The note counts the two groups apart, and every
+percentage rises: 65.7% chose a doctor, against 61.9% under `"valid"`.
+Jann states the dilemma: “it is often not clear a priori whether the
+respondent refused to answer the question (and thus should be excluded
+from analysis) or whether the correct response is simply ‘none’”
+(p. 107).
 
 `base = "all"` keeps every row, as `questionr::multi.table()` does:
 
@@ -430,8 +431,7 @@ question.
 Each item gets the Pearson chi-squared test of its table of groups by
 chosen or not, on *r* − 1 degrees of freedom for *r* groups. The
 arithmetic is that of `chisq.test(correct = FALSE)`: no continuity
-correction, and no constant added to an empty cell (Agresti and Liu,
-1999).
+correction, and no constant added to an empty cell.
 
 When an expected count of an item’s table is below 5, the chi-squared
 approximation is unreliable, and the item takes Fisher’s exact test
@@ -573,9 +573,10 @@ order is needed (pp. 53 and 57).
 `global_test = "bootstrap"` refers the same sum to its distribution over
 `boot_n` resamples, 1999 by default. Each resample draws whole response
 vectors with replacement from the pooled respondents, with the group
-sizes held fixed (Loughin and Scherer, 1998). The p-value is the share
-of resamples whose sum is at least the observed one. It is random, so
-set a seed to reproduce it:
+sizes held fixed, the variant Loughin and Scherer (1998, p. 636) give
+for fixed group counts and the scheme of Bilder, Loughin and Nettleton
+(2000, p. 1298). The p-value is the share of resamples whose sum is at
+least the observed one. It is random, so set a seed to reproduce it:
 
 ``` r
 
@@ -980,7 +981,7 @@ table_multiresponse(
 
 [TABLE]
 
-Multiple responses by Sex {#tinytable_nvh4in8xdom6oq23b8gq .table
+Multiple responses by Sex {#tinytable_oo6zbmsn1fsj28oz09f5 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

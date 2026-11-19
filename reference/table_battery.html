@@ -441,8 +441,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style <code>"Table Caption"</code>. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders <code>"Table Caption"</code> in italic – the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders <code>"Table Caption"</code> in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the <code>"Table Caption"</code> style in a docx template and
 pass it via <code>word_template = "your_template.docx"</code>. Style-based
@@ -572,6 +574,12 @@ rate whatever the dependence between the items. The raw p-values stay
 in the long output as <code>p_unadjusted</code>, and in <code>col_meta$p$p_unadjusted</code>
 of <code><a href="as_structured.html">as_structured()</a></code>. The note names the method and the number of
 items adjusted together.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>American Psychological Association. (2020). <em>Publication manual of the
+American Psychological Association</em> (7th ed.).
+<a href="https://doi.org/10.1037/0000165-000" class="external-link">doi:10.1037/0000165-000</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

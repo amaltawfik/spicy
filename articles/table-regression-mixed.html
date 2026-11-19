@@ -266,8 +266,8 @@ degrees of freedom. The footer reports such a test for the random part
 as a whole. Across several parameters jointly the mixture weights depend
 on the model’s geometry, so the footer falls back on a pragmatic halved
 chi-squared; Stata’s <code>mixed</code> approaches the same case from
-the opposite side, printing the chi-squared without halving, noting that
-the test “is conservative and provided only for reference”. The per-term
+the opposite side, printing the chi-squared without halving, with a note
+that the test is conservative and given for reference only. The per-term
 tests below each constrain a single component and refer the statistic to
 the 50:50 mixture itself. Here chi-bar-squared(3) = 150.04, p &lt; .001:
 the random structure earns its place.</p>
@@ -1191,14 +1191,17 @@ sharing a row with its <code>B</code> coefficient — for a factor level
 the AME is the average <em>discrete</em> change against the reference,
 not a derivative.</p>
 <p>Inference on the AME rows is Wald-z asymptotic
-(<code>df = Inf</code>) with the model-based vcov. That matches the
-B-row inference for <code>glmer</code> and <code>glmmTMB</code>, which
-are Wald-z themselves; it does <em>not</em> match the t-based B rows of
-<code>lmerTest</code> fits (Satterthwaite df) or <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>
-(containment df) — there the AME row keeps its large-sample z while the
-B row keeps its t, so under an identity link the same estimate can carry
-two different p-values in the same row. Treat the AME p as a
-large-sample approximation for those classes.</p>
+(<code>df = Inf</code>), with the variance matrix of the coefficient
+rows: model-based by default, the cluster-robust one under a
+<code>CR*</code> <code>vcov</code>. That matches the B-row inference for
+<code>glmer</code> and <code>glmmTMB</code>, which are Wald-z
+themselves; it does <em>not</em> match the t-based B rows of
+<code>lmerTest</code> fits (Satterthwaite df), <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>
+(containment df) or a <code>CR*</code> variance (Satterthwaite df) —
+there the AME row keeps its large-sample z while the B row keeps its t,
+so under an identity link the same estimate can carry two different
+p-values in the same row. Treat the AME p as a large-sample
+approximation for those classes.</p>
 </div>
 <div class="section level2">
 <h2 id="glmmtmb-beyond-lme4">
@@ -1480,23 +1483,23 @@ the random-effects block carries through to every format.</p>
 <span><span class="co">#&gt; 8          NA          NA           NA</span></span></code></pre></div>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-Rtmpwwdlnp-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-Rtmpwwdlnp-1 table {
+<div id="spicy-gt-Rtmpt1PDoM-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-Rtmpt1PDoM-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 thead, #spicy-gt-Rtmpwwdlnp-1 tbody, #spicy-gt-Rtmpwwdlnp-1 tfoot, #spicy-gt-Rtmpwwdlnp-1 tr, #spicy-gt-Rtmpwwdlnp-1 td, #spicy-gt-Rtmpwwdlnp-1 th {
+#spicy-gt-Rtmpt1PDoM-1 thead, #spicy-gt-Rtmpt1PDoM-1 tbody, #spicy-gt-Rtmpt1PDoM-1 tfoot, #spicy-gt-Rtmpt1PDoM-1 tr, #spicy-gt-Rtmpt1PDoM-1 td, #spicy-gt-Rtmpt1PDoM-1 th {
   border-style: none;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 p {
+#spicy-gt-Rtmpt1PDoM-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_table {
+#spicy-gt-Rtmpt1PDoM-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1522,12 +1525,12 @@ the random-effects block carries through to every format.</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_caption {
+#spicy-gt-Rtmpt1PDoM-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_title {
+#spicy-gt-Rtmpt1PDoM-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -1539,7 +1542,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_subtitle {
+#spicy-gt-Rtmpt1PDoM-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1551,7 +1554,7 @@ the random-effects block carries through to every format.</p>
   border-top-width: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_heading {
+#spicy-gt-Rtmpt1PDoM-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1563,13 +1566,13 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_bottom_border {
+#spicy-gt-Rtmpt1PDoM-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_col_headings {
+#spicy-gt-Rtmpt1PDoM-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1584,7 +1587,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_col_heading {
+#spicy-gt-Rtmpt1PDoM-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1604,7 +1607,7 @@ the random-effects block carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner_outer {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1616,15 +1619,15 @@ the random-effects block carries through to every format.</p>
   padding-right: 4px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -1636,11 +1639,11 @@ the random-effects block carries through to every format.</p>
   width: 100%;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_spanner_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_group_heading {
+#spicy-gt-Rtmpt1PDoM-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1666,7 +1669,7 @@ the random-effects block carries through to every format.</p>
   text-align: left;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_empty_group_heading {
+#spicy-gt-Rtmpt1PDoM-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1681,15 +1684,15 @@ the random-effects block carries through to every format.</p>
   vertical-align: middle;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_from_md > :first-child {
+#spicy-gt-Rtmpt1PDoM-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_from_md > :last-child {
+#spicy-gt-Rtmpt1PDoM-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1708,7 +1711,7 @@ the random-effects block carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_stub {
+#spicy-gt-Rtmpt1PDoM-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1721,7 +1724,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_stub_row_group {
+#spicy-gt-Rtmpt1PDoM-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1735,15 +1738,15 @@ the random-effects block carries through to every format.</p>
   vertical-align: top;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_row_group_first td {
+#spicy-gt-Rtmpt1PDoM-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_row_group_first th {
+#spicy-gt-Rtmpt1PDoM-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_summary_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1753,16 +1756,16 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_first_summary_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_first_summary_row.thick {
+#spicy-gt-Rtmpt1PDoM-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_last_summary_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1772,7 +1775,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_grand_summary_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1782,7 +1785,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_first_grand_summary_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1792,7 +1795,7 @@ the random-effects block carries through to every format.</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_last_grand_summary_row_top {
+#spicy-gt-Rtmpt1PDoM-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1802,11 +1805,11 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_striped {
+#spicy-gt-Rtmpt1PDoM-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_table_body {
+#spicy-gt-Rtmpt1PDoM-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1815,7 +1818,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_footnotes {
+#spicy-gt-Rtmpt1PDoM-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1829,7 +1832,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_footnote {
+#spicy-gt-Rtmpt1PDoM-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1838,7 +1841,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_sourcenotes {
+#spicy-gt-Rtmpt1PDoM-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1852,7 +1855,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_sourcenote {
+#spicy-gt-Rtmpt1PDoM-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1860,108 +1863,108 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_left {
+#spicy-gt-Rtmpt1PDoM-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_center {
+#spicy-gt-Rtmpt1PDoM-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_right {
+#spicy-gt-Rtmpt1PDoM-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_font_normal {
+#spicy-gt-Rtmpt1PDoM-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_font_bold {
+#spicy-gt-Rtmpt1PDoM-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_font_italic {
+#spicy-gt-Rtmpt1PDoM-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_super {
+#spicy-gt-Rtmpt1PDoM-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_footnote_marks {
+#spicy-gt-Rtmpt1PDoM-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_asterisk {
+#spicy-gt-Rtmpt1PDoM-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_indent_1 {
+#spicy-gt-Rtmpt1PDoM-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_indent_2 {
+#spicy-gt-Rtmpt1PDoM-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_indent_3 {
+#spicy-gt-Rtmpt1PDoM-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_indent_4 {
+#spicy-gt-Rtmpt1PDoM-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_indent_5 {
+#spicy-gt-Rtmpt1PDoM-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .katex-display {
+#spicy-gt-Rtmpt1PDoM-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-Rtmpt1PDoM-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_sourcenote {
+#spicy-gt-Rtmpt1PDoM-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
   padding: 0 5px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-Rtmpt1PDoM-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-Rtmpt1PDoM-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmpwwdlnp-1 .gt_spanner_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmpt1PDoM-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_col_heading {
+#spicy-gt-Rtmpt1PDoM-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_table tbody .gt_row {
+#spicy-gt-Rtmpt1PDoM-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-Rtmpt1PDoM-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1970,12 +1973,12 @@ the random-effects block carries through to every format.</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-Rtmpt1PDoM-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-Rtmpwwdlnp-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmpt1PDoM-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -2174,6 +2177,9 @@ maximal. <em>Journal of Memory and Language</em>, 68(3), 255–278.</li>
 <li>Bates, D., Mächler, M., Bolker, B., &amp; Walker, S. (2015). Fitting
 linear mixed-effects models using lme4. <em>Journal of Statistical
 Software</em>, 67(1).</li>
+<li>Bell, A., &amp; Jones, K. (2015). Explaining fixed effects: Random
+effects modeling of time-series cross-sectional and panel data.
+<em>Political Science Research and Methods</em>, 3(1), 133–153.</li>
 <li>Bressoux, P. (2010). <em>Modélisation statistique appliquée aux
 sciences sociales</em> (2nd ed.). De Boeck.</li>
 <li>Cohen, J., Cohen, P., West, S. G., &amp; Aiken, L. S. (2003).
@@ -2188,6 +2194,8 @@ issue. <em>Psychological Methods</em>, 12(2), 121–138.</li>
 <li>Gelman, A., &amp; Hill, J. (2007). <em>Data Analysis Using
 Regression and Multilevel/Hierarchical Models</em>. Cambridge University
 Press.</li>
+<li>Gelman, A., Hill, J., &amp; Vehtari, A. (2020). <em>Regression and
+Other Stories</em>. Cambridge University Press.</li>
 <li>Hox, J. J., Moerbeek, M., &amp; van de Schoot, R. (2018).
 <em>Multilevel Analysis: Techniques and Applications</em> (3rd ed.).
 Routledge.</li>
@@ -2201,9 +2209,19 @@ multilevel modeling. <em>Methodology</em>, 1(3), 86–92.</li>
 <li>Matuschek, H., Kliegl, R., Vasishth, S., Baayen, H., &amp; Bates, D.
 (2017). Balancing Type I error and power in linear mixed models.
 <em>Journal of Memory and Language</em>, 94, 305–315.</li>
+<li>Mundlak, Y. (1978). On the pooling of time series and cross section
+data. <em>Econometrica</em>, 46(1), 69–85.</li>
 <li>Nakagawa, S., &amp; Schielzeth, H. (2013). A general and simple
 method for obtaining R² from generalized linear mixed-effects models.
 <em>Methods in Ecology and Evolution</em>, 4(2), 133–142.</li>
+<li>Nakagawa, S., Johnson, P. C. D., &amp; Schielzeth, H. (2017). The
+coefficient of determination R² and intra-class correlation coefficient
+from generalized linear mixed-effects models revisited and expanded.
+<em>Journal of the Royal Society Interface</em>, 14(134),
+<ol start="20170213" style="list-style-type: decimal">
+<li></li>
+</ol>
+</li>
 <li>Raudenbush, S. W., &amp; Bryk, A. S. (2002). <em>Hierarchical Linear
 Models: Applications and Data Analysis Methods</em> (2nd ed.).
 Sage.</li>

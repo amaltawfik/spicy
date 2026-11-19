@@ -94,6 +94,10 @@ for full references.
 
 ## References
 
+Cover, T. M., & Thomas, J. A. (2006). *Elements of Information Theory*
+(2nd ed.). Wiley.
+[doi:10.1002/047174882X](https://doi.org/10.1002/047174882X)
+
 Theil, H. (1970). On the estimation of relationships involving
 qualitative variables. *American Journal of Sociology*, 76(1), 103-154.
 [doi:10.1086/224909](https://doi.org/10.1086/224909)

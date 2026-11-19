@@ -104,47 +104,47 @@ itself uses, so it cannot drift from the code. Call
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
 to get it as a data frame.
 
-| Family | Class | Engine | AME | Exponentiate | Blocks |
-|:---|:---|:---|:---|:---|:---|
-| Linear and generalized linear | `lm` | [`stats::lm()`](https://rdrr.io/r/stats/lm.html) | yes | \- | \- |
-|  | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
-|  | `negbin` | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | yes | IRR | \- |
-|  | `rlm` | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | yes | \- | \- |
-|  | `nls` | [`stats::nls()`](https://rdrr.io/r/stats/nls.html) | no | \- | \- |
-| Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- |
-|  | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- |
-|  | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- |
-|  | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- |
-|  | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- |
-|  | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- |
-| Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
-|  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
-|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) |
-|  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
-|  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
-| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
-| Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
-|  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
-|  | `clmm` | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) | no | OR (logit) | Thresholds; Random effects |
-| Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
-|  | `mlogit` | [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) | no | OR | per-alternative rows |
-| Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation |
-|  | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle |
-| Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- |
-|  | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- |
-|  | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- |
-|  | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters |
-| Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- |
-|  | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds |
-|  | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- |
-| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- |
-|  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- |
-|  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component |
-| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- |
-|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) |
-|  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- |
-| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
-|  | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) |
+| Family | Class | Engine | AME | Exponentiate | Blocks | vcov |
+|:---|:---|:---|:---|:---|:---|:---|
+| Linear and generalized linear | `lm` | [`stats::lm()`](https://rdrr.io/r/stats/lm.html) | yes | \- | \- | classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife |
+|  | `glm` | [`stats::glm()`](https://rdrr.io/r/stats/glm.html) | yes | OR / IRR / RR / MR / HR (link) | \- | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+|  | `negbin` | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | yes | IRR | \- | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+|  | `rlm` | [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) | yes | \- | \- | classical |
+|  | `nls` | [`stats::nls()`](https://rdrr.io/r/stats/nls.html) | no | \- | \- | classical |
+| Robust, IV, quantile, panel | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- | classical (the fit’s own) |
+|  | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- | classical (the fit’s own) |
+|  | `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical |
+|  | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes | \- | \- | classical, CR1 |
+|  | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- | classical (= nid), nid, iid, ker, rank, bootstrap |
+|  | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- | classical (the fit’s own) |
+| Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
+|  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
+|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+|  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 |
+|  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
+| Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
+|  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects | classical, CR1 (classical only with scale or nominal terms) |
+|  | `clmm` | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) | no | OR (logit) | Thresholds; Random effects | classical |
+| Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks | classical, CR1 |
+|  | `mlogit` | [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) | no | OR | per-alternative rows | classical, CR1 |
+| Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation | classical, CR1 (classical only for a negative-binomial part) |
+|  | `hurdle` | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero hurdle | classical, CR1 (classical only for a negative-binomial part) |
+| Survival | `coxph` | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | RMST / risk diff | HR | \- | classical, CR0 |
+|  | `survreg` | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | yes + RMST / risk diff | TR (log-scale distributions) | \- | classical, CR1 |
+|  | `cph` | [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) | no | HR | \- | classical, CR0 |
+|  | `flexsurvreg` | [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) | no | TR / HR (dist) | distribution parameters | classical |
+| Survey-weighted | `svyglm` | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | yes (design-based) | OR / IRR | \- | classical (design-based) |
+|  | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
+|  | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- | classical (design-based) |
+| Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- | classical (the fit’s own) |
+| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | \- | classical, CR1 |
+|  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | \- | classical, CR1 |
+|  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | selection component | classical |
+| rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 |
+|  | `lrm` | [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) | yes (per category for an ordinal outcome) | OR | Thresholds (ordinal outcome) | classical, CR0 |
+|  | `Glm` | [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) | yes | link-dependent | \- | classical, CR0 |
+| Bayesian | `stanreg` | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
+|  | `brmsfit` | [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | yes (draws) | link-dependent | Random effects (if multilevel) | classical (the posterior) |
 
 How to read the columns:
 
@@ -176,94 +176,78 @@ How to read the columns:
 - **Blocks** – labeled subordinate row blocks rendered inside the same
   table (random effects, thresholds, zero components, per-outcome
   segments), each explained by a footer line.
+- **vcov** – the values of `vcov` the class accepts; see the next
+  section.
 
 ## Cross-cutting arguments
 
 The same arguments work across families, each through the family’s
 field-standard backend – or a clear refusal.
 
-**Robust and cluster-robust standard errors** (`vcov`, `cluster`).
-Family by family:
+**Robust and cluster-robust standard errors** (`vcov`, `cluster`). The
+values of `vcov` each class accepts come from the same registry:
 
-- **`lm`, `glm`** – `HC0`–`HC5` (`sandwich`) and `CR0`–`CR3`
-  (`clubSandwich`, bias-reduced with Satterthwaite df), plus
-  `"bootstrap"` / `"jackknife"` resampling estimators.
-- **Mixed effects** – `lmer` and
-  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
-  `clubSandwich`. `glmmTMB` takes `CR0` from glmmTMB’s own sandwich
-  (glmmTMB \>= 1.1.15), and `CR1`, the same scaled by G/(G-1), for the
-  coefficients and the zero-inflation and dispersion blocks, clustered
-  by default on the top-level grouping factor of the random effects;
-  `CR2`, `CR3`, `HC*`, REML fits and the ordinal family are refused. The
-  estimator needs independent clusters that contain the random effects,
-  every group within one cluster, so crossed random effects need a
-  cluster that contains them all. It keeps the standard errors valid
-  when the random-effects distribution or the conditional variance is
-  misspecified, provided the estimates themselves stay consistent (Liang
-  & Zeger 1986; Verbeke & Lesaffre 1997), and with few clusters it
-  understates the variance, which the factor of `CR1` offsets only in
-  part (Cameron & Miller 2015). `glmer` and `gls` are model-based only
-  (`clubSandwich` has no working backend for `glmer`, and its `gls`
-  backend is not yet wired and validated in spicy).
-- **Ordinal (`polr`, `clm`)** – `CR1` via
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
-  no `HC*`; the cut-point thresholds are reweighted from the same
-  clustered vcov. A `clm` with a scale or nominal
-  partial-proportional-odds component is model-based only.
-- **Categorical** – `multinom` takes `CR1` (one cluster value per
-  observation), `mlogit` takes `CR1` (one per choice situation), both
-  via
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-  Both refuse `HC*`: `multinom` has no working-residual form for a
-  multi-equation model, and for `mlogit`,
-  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
-  computes a result but silently mis-scales the meat for its per-chooser
-  score structure.
-- **Quantile (`rq`)** – its own estimator family: `"classical"` resolves
-  to the robust `nid` sandwich, `iid` / `ker` / `rank` are opt-ins, and
-  clustering goes through the native wild gradient bootstrap
-  (`vcov = "bootstrap"` + `cluster`). `HC*` / `CR*` are refused.
-- **Survival** – Cox models take `CR0`, the Lin-Wei grouped-dfbeta
-  sandwich; the `rms` fits take `CR0` via
-  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
-  `x = TRUE, y = TRUE`). Neither has a small-sample factor, and `CR1` to
-  `CR3` are refused. `survreg` takes `CR1` via
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
-- **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR1` via
-  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-  zero-inflated and hurdle fits cluster both components. A
-  negative-binomial `zeroinfl` or `hurdle` is model-based only: the
-  sandwich of these fits leaves out the score of theta. With a
-  negative-binomial count part, the glmmTMB fit takes `CR0` and `CR1`
-  (its zero hurdle is binomial). With a negative-binomial zero hurdle
-  alone, the default `zero.dist = "binomial"` keeps `CR1`. For `gam` /
-  `bam`, spicy forms the sandwich itself, from the score and the
-  penalized covariance of the fit, and `vcovCL()` only does the
-  clustering arithmetic. For every `vcovCL()` class (these, the ordinal
-  and categorical fits and `survreg`), CR1 is the one estimator, the CR0
-  sandwich scaled by G/(G-1) with G clusters; `CR0`, `CR2` and `CR3` are
-  refused.
-- **Own-estimator classes** – `estimatr` fits keep the robust SEs they
-  were computed with; `fixest` fits keep their estimator (the footer
-  carries fixest’s own label – clustered, Newey-West, Conley, …;
-  fixest’s “IID” is normalized to “Classical”). spicy’s `HC*` / `CR*`
-  tokens are refused for both. With IID errors, fixest’s default
-  small-sample correction
-  ([`fixest::ssc()`](https://lrberge.github.io/fixest/reference/ssc.html))
-  multiplies the standard errors of a `feglm()` fit by sqrt((n - 1) /
-  (n - K)) over those of its [`glm()`](https://rdrr.io/r/stats/glm.html)
-  twin with the fixed effects as dummies (a `feols()` fit already
-  matches [`lm()`](https://rdrr.io/r/stats/lm.html)), and
-  `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
-  [`glm()`](https://rdrr.io/r/stats/glm.html) values.
-- **Robust by construction** – `svyglm` is design-based (Taylor /
-  replicate): the design variance *is* the robust variance, and
-  clustering belongs in the design itself (`survey::svydesign(ids = )`).
-  `geeglm` displays the sandwich SEs the fit computed over its own
-  `id =` clusters; change the estimator by refitting with `std.err =`.
-  Both refuse spicy’s `HC*` / `CR*` tokens and `cluster`.
-- **Bayesian** – `vcov` is refused: nothing standard plays the sandwich
-  role for a posterior.
+| Family | Class | vcov |
+|:---|:---|:---|
+| Linear and generalized linear | `lm` | classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife |
+|  | `glm` | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+|  | `negbin` | classical, HC0-HC5, CR0-CR3, bootstrap, jackknife |
+|  | `rlm` | classical |
+|  | `nls` | classical |
+| Robust, IV, quantile, panel | `lm_robust` | classical (the fit’s own) |
+|  | `iv_robust` | classical (the fit’s own) |
+|  | `ivreg` | classical |
+|  | `tobit` | classical, CR1 |
+|  | `rq` | classical (= nid), nid, iid, ker, rank, bootstrap |
+|  | `fixest` | classical (the fit’s own) |
+| Mixed effects | `lmerMod` | classical, CR0-CR3 |
+|  | `glmerMod` | classical |
+|  | `glmmTMB` | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+|  | `lme` | classical, CR0-CR3 |
+|  | `gls` | classical |
+| Ordinal | `polr` | classical, CR1 |
+|  | `clm` | classical, CR1 (classical only with scale or nominal terms) |
+|  | `clmm` | classical |
+| Categorical | `multinom` | classical, CR1 |
+|  | `mlogit` | classical, CR1 |
+| Counts, two-part | `zeroinfl` | classical, CR1 (classical only for a negative-binomial part) |
+|  | `hurdle` | classical, CR1 (classical only for a negative-binomial part) |
+| Survival | `coxph` | classical, CR0 |
+|  | `survreg` | classical, CR1 |
+|  | `cph` | classical, CR0 |
+|  | `flexsurvreg` | classical |
+| Survey-weighted | `svyglm` | classical (design-based) |
+|  | `svyolr` | classical (design-based) |
+|  | `svycoxph` | classical (design-based) |
+| Population-averaged (GEE) | `geeglm` | classical (the fit’s own) |
+| Additive, proportions, selection | `gam` | classical, CR1 |
+|  | `betareg` | classical, CR1 |
+|  | `selection` | classical |
+| rms | `ols` | classical, CR0 |
+|  | `lrm` | classical, CR0 |
+|  | `Glm` | classical, CR0 |
+| Bayesian | `stanreg` | classical (the posterior) |
+|  | `brmsfit` | classical (the posterior) |
+
+A request the class cannot honor is refused with a classed error that
+gives the reason and the estimators the class supports. The help page of
+each family gives the backend of each estimator and the reason of each
+refusal: [mixed
+effects](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md),
+[survival](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md),
+[ordinal](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md),
+[categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md),
+[counts and
+two-part](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md),
+[survey
+designs](https://amaltawfik.github.io/spicy/reference/table_regression_survey.md),
+[Bayesian](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md)
+and [robust, IV, quantile and
+panel](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md)
+models; `lm`, `glm` and the remaining classes are covered on
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+GEE on
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
 
 Whatever the backend, the footer names the estimator actually applied,
 and a robust vcov also flows into the AME uncertainty.
@@ -434,7 +418,7 @@ table_regression(fit)
 #> Error in `table_regression()`:
 #> ! Some `models` are not supported by `table_regression()`.
 #> Position 1: `loess` – not a supported model class. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues
-#> ℹ Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, geeglm, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.
+#> ℹ Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, geeglm, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.
 ```
 
 The same contract applies inside a family: a request a class cannot
@@ -452,32 +436,20 @@ or cite:
 
 subset(table_regression_models(), family == "Survival")
 #>      family       class                  engine                    ame                 exponentiate
-#> 25 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
-#> 26 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
-#> 27 Survival         cph              rms::cph()                     no                           HR
-#> 28 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
-#>                     blocks
-#> 25                       -
-#> 26                       -
-#> 27                       -
-#> 28 distribution parameters
+#> 24 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
+#> 25 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
+#> 26 Survival         cph              rms::cph()                     no                           HR
+#> 27 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
+#>                     blocks           vcov
+#> 24                       - classical, CR0
+#> 25                       - classical, CR1
+#> 26                       - classical, CR0
+#> 27 distribution parameters      classical
 ```
 
-The per-family reference sections live on its help page:
-[`?table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-(also reachable as
-[`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
-[`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
-[`?table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
-and the other family aliases).
-
-## References
-
-- Cameron, A. C., & Miller, D. L. (2015). A practitioner’s guide to
-  cluster-robust inference. *Journal of Human Resources*, 50(2),
-  317–372.
-- Liang, K.-Y., & Zeger, S. L. (1986). Longitudinal data analysis using
-  generalized linear models. *Biometrika*, 73(1), 13–22.
-- Verbeke, G., & Lesaffre, E. (1997). The effect of misspecifying the
-  random-effects distribution in linear mixed models for longitudinal
-  data. *Computational Statistics & Data Analysis*, 23(4), 541–556.
+Each family has a help page of its own, listed on
+[`?table_regression_models`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md):
+[`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md),
+[`?table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md),
+[`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md),
+and the others.

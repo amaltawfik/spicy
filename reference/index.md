@@ -91,9 +91,7 @@ degrees of freedom and tests, every number delegated to survey (Lumley).
 One or more fitted models side by side or one under the other, and the
 univariable screen.
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-returns the supported model classes; its page describes the behavior of
-each family (inference, robust-variance backends, exponentiation,
-marginal effects, labeled blocks).
+returns the supported model classes.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
@@ -102,7 +100,30 @@ marginal effects, labeled blocks).
 - [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
   : Stack tables one under the other
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-  : Supported models and per-family behavior of table_regression()
+  : Supported models of table_regression()
+
+### Model families
+
+One page per family of models: its arguments, the values the shared
+arguments take for it (inference, robust-variance backends,
+exponentiation, marginal effects, labeled blocks), and what it refuses.
+
+- [`table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md)
+  : Mixed-effects models in table_regression()
+- [`table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md)
+  : Survival models in table_regression()
+- [`table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md)
+  : Ordinal models in table_regression()
+- [`table_regression_categorical`](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md)
+  : Categorical (multinomial) models in table_regression()
+- [`table_regression_counts`](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md)
+  : Count and two-part models in table_regression()
+- [`table_regression_survey`](https://amaltawfik.github.io/spicy/reference/table_regression_survey.md)
+  : Survey-design models in table_regression()
+- [`table_regression_bayesian`](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md)
+  : Bayesian models in table_regression()
+- [`table_regression_robust`](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md)
+  : Robust, IV, quantile and panel models in table_regression()
 
 ## Working with tables
 

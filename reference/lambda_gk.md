@@ -78,6 +78,10 @@ cross classifications. *Journal of the American Statistical
 Association*, 49(268), 732-764.
 [doi:10.2307/2281536](https://doi.org/10.2307/2281536)
 
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
+[doi:10.32614/CRAN.package.DescTools](https://doi.org/10.32614/CRAN.package.DescTools)
+
 ## See also
 
 [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),

@@ -99,9 +99,10 @@ build_ascii_table(
 
   Optional named list defining a *column group row* drawn above the
   column headers (the "spanner" / "supra-header" convention; APA Manual
-  7 §7.13). Names are spanner labels; values are integer vectors of
-  1-based column indices the label spans (must be contiguous). A thin
-  underline rule is drawn below each spanner across its span. Used by
+  7 §7.12, pp. 201-202). Names are spanner labels; values are integer
+  vectors of 1-based column indices the label spans (must be
+  contiguous). A thin underline rule is drawn below each spanner across
+  its span. Used by
   [`print.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/print.spicy_regression_table.md)
   to display the model name above each model's block of sub-columns.
   Defaults to `NULL` (no spanner row).

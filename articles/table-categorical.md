@@ -510,10 +510,10 @@ A 2x2 table, a two-level variable by two groups, has two more tests.
 `test = "midp"` takes the Fisher mid-p test, which counts the tables as
 probable as the observed one at half their probability: it is less
 conservative than Fisher’s exact test, and Fagerland, Lydersen and Laake
-(2017) recommend it at every sample size. `test = "n1"` takes Campbell’s
-N-1 chi-squared test when every expected count is at least 1, and
-Fisher’s exact test otherwise. A larger table keeps the `"auto"` rule,
-and the note names the test of each variable:
+(2017, p. 173) recommend it at every sample size. `test = "n1"` takes
+the N-1 chi-squared test of Campbell (2007) when every expected count is
+at least 1, and Fisher’s exact test otherwise. A larger table keeps the
+`"auto"` rule, and the note names the test of each variable:
 
 ``` r
 
@@ -1002,7 +1002,7 @@ table_categorical(
 
 [TABLE]
 
-Categorical table by sex {#tinytable_hjdd6zq3ydej56dq2514 .table
+Categorical table by sex {#tinytable_f6jw3a5eaipyw2w7vcfy .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1079,3 +1079,11 @@ table_categorical(
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow that ties the summary-table
   functions together along the APA Table 1 / 2 / 3 sequence.
+
+## References
+
+- Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+  tables with small sample recommendations. *Statistics in Medicine*,
+  26(19), 3661–3675.
+- Fagerland, M. W., Lydersen, S., & Laake, P. (2017). *Statistical
+  Analysis of Contingency Tables*. Chapman and Hall/CRC.

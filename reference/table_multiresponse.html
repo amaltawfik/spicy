@@ -221,9 +221,10 @@ non-missing indicator, so that a respondent who chose nothing counts
 and one who skipped the question does not, as <code>expss</code> counts its
 valid cases.</p></li>
 <li><p><code>"answered"</code>: the respondents who chose at least one item, the
-default of SPSS <code>MULT RESPONSE</code> (<code>MISSING = TABLE</code>) and of Stata's
-<code>mrtab</code>, whose <code>include</code> option gives <code>"valid"</code> (Jann, 2005, pp. 98
-and 107-108), where choosing nothing cannot be told from skipping.</p></li>
+default of Stata's <code>mrtab</code>, whose <code>include</code> option gives <code>"valid"</code>
+(Jann, 2005, pp. 98-99 and 107-108), and of SPSS <code>MULT RESPONSE</code>
+(<code>MISSING = TABLE</code>), where choosing nothing cannot be told from
+skipping.</p></li>
 <li><p><code>"all"</code>: every row of the group, as <code>questionr::multi.table()</code>
 counts.</p></li>
 </ul><p>In a "check all that apply" question, an item left unchecked cannot
@@ -476,8 +477,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style <code>"Table Caption"</code>. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders <code>"Table Caption"</code> in italic – the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders <code>"Table Caption"</code> in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the <code>"Table Caption"</code> style in a docx template and
 pass it via <code>word_template = "your_template.docx"</code>. Style-based
@@ -616,7 +619,7 @@ that ratio falls below 1.</p>
 <p><code>global_test = "bootstrap"</code> refers \(X^2_S\) to its distribution over
 <code>boot_n</code> resamples of whole response vectors, drawn with replacement
 from the pooled respondents with the group sizes held fixed (Loughin
-and Scherer, 1998). The p-value is the share of resamples whose
+and Scherer, 1998, p. 636). The p-value is the share of resamples whose
 statistic is at least the observed one. A resample in which an item is
 chosen by every respondent or by none gives that item no statistic: it
 is discarded and drawn again, the practice of Bilder, Loughin and
@@ -698,6 +701,9 @@ allowing arbitrarily many category choices. <em>Biometrics</em>, 55(3),
 <p>American Medical Association. (2020). <em>AMA Manual of Style: A Guide for
 Authors and Editors</em> (11th ed.). Oxford University Press.
 <a href="https://doi.org/10.1093/jama/9780190246556.001.0001" class="external-link">doi:10.1093/jama/9780190246556.001.0001</a></p>
+<p>American Psychological Association. (2020). <em>Publication manual of the
+American Psychological Association</em> (7th ed.).
+<a href="https://doi.org/10.1037/0000165-000" class="external-link">doi:10.1037/0000165-000</a></p>
 <p>Bilder, C. R., &amp; Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple
 responses. <em>Biometrics</em>, 60(1), 241-248.

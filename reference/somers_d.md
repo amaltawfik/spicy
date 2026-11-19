@@ -96,6 +96,10 @@ correlation in two-way contingency tables. *Journal of the American
 Statistical Association*, 72(358), 309-315.
 [doi:10.1080/01621459.1977.10480995](https://doi.org/10.1080/01621459.1977.10480995)
 
+Signorell, A. et al. (2024). *DescTools: Tools for Descriptive
+Statistics*. R package.
+[doi:10.32614/CRAN.package.DescTools](https://doi.org/10.32614/CRAN.package.DescTools)
+
 ## See also
 
 [`kendall_tau_b()`](https://amaltawfik.github.io/spicy/reference/kendall_tau_b.md),

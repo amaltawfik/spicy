@@ -173,10 +173,11 @@ renders them with the conventions of each model family:
 | Family | Engines |
 |----|----|
 | Linear and generalized linear | [`stats::lm()`](https://rdrr.io/r/stats/lm.html), [`stats::glm()`](https://rdrr.io/r/stats/glm.html), [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html), [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html), [`stats::nls()`](https://rdrr.io/r/stats/nls.html) |
-| Robust, IV, quantile, panel | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html), [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html), [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html), [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html), [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html), [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) |
+| Robust, IV, quantile, panel | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html), [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html), [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html), [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html), [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html), [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) |
 | Mixed effects | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html), [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html), [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html), [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) |
-| Ordinal and categorical | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html), [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) (incl. partial proportional odds), [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) (ordinal family), [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html), [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) |
-| Counts, two-part models | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html), [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) (zero-inflation and dispersion components) |
+| Ordinal | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html), [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) (incl. partial proportional odds), [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) (ordinal family) |
+| Categorical | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html), [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) |
+| Counts, two-part | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html), [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) (zero-inflation, hurdle and dispersion components) |
 | Survival | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html), [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html), [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html), [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) |
 | Survey-weighted | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html), [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html), [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) (design-based SEs) |
 | Population-averaged (GEE) | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) (native sandwich SEs, working correlation disclosed) |
@@ -570,10 +571,10 @@ table_regression(fit_mixed)
 #>  Days                            │   10.47  1.55  [  7.44,  13.50]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:                 │                                        
-#>    σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –    
-#>    σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –    
+#>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
+#>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
 #>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
-#>    σ (Residual)                  │   25.59  1.51  [ 22.44,  28.39]   –    
+#>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
 #>  N (Subject)                     │   18                                   

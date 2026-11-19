@@ -90,7 +90,7 @@ Reading the columns against their frequentist counterparts:
   `rstanarm`’s own print: both members resist skewed posteriors, where a
   mean + SD pair can be dominated by one heavy tail. As Gelman, Hill &
   Vehtari put it, “for convenience we sometimes call the posterior mad
-  sd the ‘standard error’”.
+  sd the ‘standard error’” (§9.1, p. 113).
 - **The interval is a credible interval**, and the header says so:
   `95% CrI`, the equal-tailed 2.5% and 97.5% posterior quantiles. Its
   reading is the direct probability statement that confidence intervals
@@ -172,13 +172,14 @@ A frequentist table is wrong only if the model is wrong; a Bayesian
 table can additionally be wrong because the *sampler* has not converged
 — the draws then misrepresent the very posterior the columns summarize.
 spicy therefore checks every Bayesian fit before rendering: when any
-sampled parameter misses its target — R-hat at or above 1.01 or
-effective sample size below 100 per chain, never less than 400, so fewer
-chains do not weaken the bar (Vehtari et al. 2021); any divergent
-transition (Stan guidance); E-BFMI below 0.2 (Betancourt 2017) — the
-table gains a `Sampler diagnostics:` footer line naming the failure and
-a warning fires (classed `spicy_bayes_diagnostics`, so scripts can catch
-or mute this guard selectively with
+sampled parameter misses its target — R-hat at or above 1.01 or a
+rank-normalized effective sample size below 400 (Vehtari et al. 2021,
+pp. 671–672), which spicy raises to 100 per chain when there are more
+than four chains; any divergent transition (Stan guidance); E-BFMI below
+0.2 (Betancourt 2017) — the table gains a `Sampler diagnostics:` footer
+line naming the failure and a warning fires (classed
+`spicy_bayes_diagnostics`, so scripts can catch or mute this guard
+selectively with
 [`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html)). A
 clean fit prints nothing: the publication table stays lean, and silence
 means the checks passed. The guard reads *all* sampled parameters —
@@ -215,17 +216,19 @@ table_regression(fit, show_columns = c("b", "ci", "rhat", "mcse"))
 The `mcse` column answers a question the other diagnostics do not: *how
 many of the printed digits are real?* MCMC output is stochastic — rerun
 the sampler with another seed and the third significant digit of most
-estimates will move. The working rule (Gelman, Vehtari, McElreath et
-al. 2026, §11.6): a displayed digit is Monte-Carlo stable when **twice
-the MCSE stays below one unit of that digit**. Here twice the MCSE of
-the coefficients is on the order of their second decimal: that digit
-sits near the stability edge — honest to report, and a reminder that a
-two-decimal table is close to the resolution limit of this deliberately
-short chain. Most of the time two *significant* digits are all a
-posterior summary can support, halving the MCSE costs four times the
-iterations, and tail quantities (the CrI bounds) are noisier than the
-median. When the displayed digits matter — a boundary against a clinical
-threshold, say — check `mcse` before trusting the last one.
+estimates will move. Following the reasoning of Gelman, Vehtari,
+McElreath et al. (2026, §11.6, pp. 202–203), who multiply the MCSE by 2
+to get the likely range of Monte Carlo variation, spicy treats a
+displayed digit as Monte-Carlo stable when **twice the MCSE stays below
+one unit of that digit**. Here twice the MCSE of the coefficients is on
+the order of their second decimal: that digit sits near the stability
+edge — honest to report, and a reminder that a two-decimal table is
+close to the resolution limit of this deliberately short chain. Most of
+the time two *significant* digits are all a posterior summary can
+support, halving the MCSE costs four times the iterations, and tail
+quantities (the CrI bounds) are noisier than the median. When the
+displayed digits matter — a boundary against a clinical threshold, say —
+check `mcse` before trusting the last one.
 
 Under the hood these are three numbers per parameter (Vehtari et al.
 2021): R-hat, which compares chains (at convergence, 1.00; worry above
@@ -497,12 +500,14 @@ first, then refitting the flagged folds (`k_threshold = 0.7`, brms
 Model *comparison* belongs to
 [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html)
 outside the table: the comparison uncertainty is the standard error of
-the elpd *difference* — not the per-model SEs shown here — and
-differences smaller than about 4 carry no practical meaning (Gelman,
-Vehtari, McElreath et al. 2026, ch. 9). The canonical fit *check* is the
-graphical posterior predictive check (`pp_check(fit)`; Gelman et al.
-2013, ch. 6) — Bayes factors stay out by design (Gelman et al. 2013,
-§7.4).
+the elpd *difference* — not the per-model SEs shown here. Its normal
+approximation is well calibrated when the difference exceeds about 4;
+below that, the standard error is likely underestimated, and the authors
+read a difference that small as no practical predictive difference
+between the models (Gelman, Vehtari, McElreath et al. 2026, §9.4,
+p. 163, and p. 291). The canonical fit *check* is the graphical
+posterior predictive check (`pp_check(fit)`; Gelman et al. 2013, ch. 6)
+— Bayes factors stay out by design (Gelman et al. 2013, §7.4).
 
 ## Standardized coefficients from the draws
 

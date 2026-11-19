@@ -407,10 +407,10 @@ errors are too small, and the estimator itself becomes unstable
 geepack authors cite, following Paik, 1988) the jackknife variance
 estimators are the recommended alternative (Halekoh et al., 2006).
 <code>geeglm</code> offers three (<code>std.err = "jack"</code>,
-<code>"j1s"</code>, <code>"fij"</code>); the approximate and one-step
-versions are far cheaper than the fully iterated one and agree well with
-it in simulations (Halekoh et al., 2006). The estimator choice lives on
-the fit, and the table reads and names whatever the fit computed:</p>
+<code>"j1s"</code>, <code>"fij"</code>); the approximate version is less
+demanding to compute than the fully iterated one and agrees well with it
+in simulations (Halekoh et al., 2006, p. 6). The estimator choice lives
+on the fit, and the table reads and names whatever the fit computed:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_j1s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geeglm</a></span><span class="op">(</span></span>
 <span>  <span class="va">Weight</span> <span class="op">~</span> <span class="va">Time</span> <span class="op">+</span> <span class="va">Cu</span>,</span>

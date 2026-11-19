@@ -612,6 +612,31 @@
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html),
   and under `nested = TRUE` a Wald test of the added terms.
 
+- Each family of models read by
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  has its own help page:
+  [`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_mixed.md),
+  [`?table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_survival.md),
+  [`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_ordinal.md),
+  [`?table_regression_categorical`](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md),
+  [`?table_regression_counts`](https://amaltawfik.github.io/spicy/reference/table_regression_counts.md),
+  [`?table_regression_survey`](https://amaltawfik.github.io/spicy/reference/table_regression_survey.md),
+  [`?table_regression_bayesian`](https://amaltawfik.github.io/spicy/reference/table_regression_bayesian.md)
+  and
+  [`?table_regression_robust`](https://amaltawfik.github.io/spicy/reference/table_regression_robust.md).
+  Each opens on the call with the arguments of the family, and gives the
+  values the shared arguments take for it and what it refuses. The
+  `vcov` values each class accepts are a column of
+  [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
+  shown on
+  [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and on each family page.
+
+- The sources cited in the help pages and the articles were checked
+  against the documents, and their sections, pages and quotations
+  corrected where they were wrong. Each help page lists the references
+  it cites.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   beside an [`lm()`](https://rdrr.io/r/stats/lm.html) model, the R² row
   of an [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) model is

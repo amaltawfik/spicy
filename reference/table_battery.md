@@ -371,10 +371,12 @@ table_battery(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
-  convention. For a different appearance (Nature-style bold non-italic,
-  APA-strict 2-line bold-number / italic-title, etc.), edit the
-  `"Table Caption"` style in a docx template and pass it via
+  `"Table Caption"` in italic, the type of the APA table title (APA
+  Manual 7 section 7.11, p. 201), where the APA puts the bold table
+  number on its own line above it (section 7.10, p. 200). For a
+  different appearance (Nature-style bold non-italic, APA-strict 2-line
+  bold-number / italic-title, etc.), edit the `"Table Caption"` style in
+  a docx template and pass it via
   `word_template = "your_template.docx"`. Style-based delegation keeps
   the rendered caption consistent with the surrounding document and lets
   editorial conventions (Nature, APA-strict, journal-specific) be
@@ -525,6 +527,12 @@ dependence between the items. The raw p-values stay in the long output
 as `p_unadjusted`, and in `col_meta$p$p_unadjusted` of
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 The note names the method and the number of items adjusted together.
+
+## References
+
+American Psychological Association. (2020). *Publication manual of the
+American Psychological Association* (7th ed.).
+[doi:10.1037/0000165-000](https://doi.org/10.1037/0000165-000)
 
 ## See also
 

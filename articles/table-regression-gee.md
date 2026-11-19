@@ -306,10 +306,10 @@ small, and the estimator itself becomes unstable (Fitzmaurice et al.,
 2011). At 30 clusters or fewer (the threshold the geepack authors cite,
 following Paik, 1988) the jackknife variance estimators are the
 recommended alternative (Halekoh et al., 2006). `geeglm` offers three
-(`std.err = "jack"`, `"j1s"`, `"fij"`); the approximate and one-step
-versions are far cheaper than the fully iterated one and agree well with
-it in simulations (Halekoh et al., 2006). The estimator choice lives on
-the fit, and the table reads and names whatever the fit computed:
+(`std.err = "jack"`, `"j1s"`, `"fij"`); the approximate version is less
+demanding to compute than the fully iterated one and agrees well with it
+in simulations (Halekoh et al., 2006, p. 6). The estimator choice lives
+on the fit, and the table reads and names whatever the fit computed:
 
 ``` r
 

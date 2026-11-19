@@ -122,9 +122,10 @@ table_multiresponse(
     valid cases.
 
   - `"answered"`: the respondents who chose at least one item, the
-    default of SPSS `MULT RESPONSE` (`MISSING = TABLE`) and of Stata's
-    `mrtab`, whose `include` option gives `"valid"` (Jann, 2005, pp. 98
-    and 107-108), where choosing nothing cannot be told from skipping.
+    default of Stata's `mrtab`, whose `include` option gives `"valid"`
+    (Jann, 2005, pp. 98-99 and 107-108), and of SPSS `MULT RESPONSE`
+    (`MISSING = TABLE`), where choosing nothing cannot be told from
+    skipping.
 
   - `"all"`: every row of the group, as `questionr::multi.table()`
     counts.
@@ -411,10 +412,12 @@ table_multiresponse(
   with the Word named style `"Table Caption"`. The visual rendering
   (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
-  `"Table Caption"` in italic – the APA Manual 7 section 7.10 condensed
-  convention. For a different appearance (Nature-style bold non-italic,
-  APA-strict 2-line bold-number / italic-title, etc.), edit the
-  `"Table Caption"` style in a docx template and pass it via
+  `"Table Caption"` in italic, the type of the APA table title (APA
+  Manual 7 section 7.11, p. 201), where the APA puts the bold table
+  number on its own line above it (section 7.10, p. 200). For a
+  different appearance (Nature-style bold non-italic, APA-strict 2-line
+  bold-number / italic-title, etc.), edit the `"Table Caption"` style in
+  a docx template and pass it via
   `word_template = "your_template.docx"`. Style-based delegation keeps
   the rendered caption consistent with the surrounding document and lets
   editorial conventions (Nature, APA-strict, journal-specific) be
@@ -567,17 +570,18 @@ coefficient of variation of the \\\lambda_k\\ when their mean is 1, and
 `global_test = "bootstrap"` refers \\X^2_S\\ to its distribution over
 `boot_n` resamples of whole response vectors, drawn with replacement
 from the pooled respondents with the group sizes held fixed (Loughin and
-Scherer, 1998). The p-value is the share of resamples whose statistic is
-at least the observed one. A resample in which an item is chosen by
-every respondent or by none gives that item no statistic: it is
-discarded and drawn again, the practice of Bilder, Loughin and Nettleton
-(2000, p. 1298) for resamples whose marginal table has an empty row or
-column, and `attr(x, "global_test")$boot_redraws` counts the resamples
-drawn again. When 100 times `boot_n` draws do not yield `boot_n` usable
-resamples, the function stops with an error. The bootstrap held its
-level in most published settings, with exceptions reported by Bilder,
-Loughin and Nettleton (2000, p. 1305), and no study of multiple marginal
-independence compares it with the second-order test. It is random: call
+Scherer, 1998, p. 636). The p-value is the share of resamples whose
+statistic is at least the observed one. A resample in which an item is
+chosen by every respondent or by none gives that item no statistic: it
+is discarded and drawn again, the practice of Bilder, Loughin and
+Nettleton (2000, p. 1298) for resamples whose marginal table has an
+empty row or column, and `attr(x, "global_test")$boot_redraws` counts
+the resamples drawn again. When 100 times `boot_n` draws do not yield
+`boot_n` usable resamples, the function stops with an error. The
+bootstrap held its level in most published settings, with exceptions
+reported by Bilder, Loughin and Nettleton (2000, p. 1305), and no study
+of multiple marginal independence compares it with the second-order
+test. It is random: call
 [`set.seed()`](https://rdrr.io/r/base/Random.html) first to reproduce
 it.
 
@@ -657,6 +661,10 @@ allowing arbitrarily many category choices. *Biometrics*, 55(3),
 American Medical Association. (2020). *AMA Manual of Style: A Guide for
 Authors and Editors* (11th ed.). Oxford University Press.
 [doi:10.1093/jama/9780190246556.001.0001](https://doi.org/10.1093/jama/9780190246556.001.0001)
+
+American Psychological Association. (2020). *Publication manual of the
+American Psychological Association* (7th ed.).
+[doi:10.1037/0000165-000](https://doi.org/10.1037/0000165-000)
 
 Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple responses.

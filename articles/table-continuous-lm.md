@@ -117,15 +117,17 @@ table_continuous_lm(
 #> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
-`"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
-Tipton 2018). It generally produces fractional Satterthwaite degrees of
-freedom, rendered in the displayed test header as e.g. `t(8.7)` or
-`F(2, 12.4)`; in the balanced `sleep` design above (10 subjects, 2
-observations each) the Satterthwaite df is exactly 9, hence the `t(9)`
-header. `"CR1"` applies the G/(G − 1) small-sample correction only.
-Stata’s `vce(cluster id)` uses the larger G(N − 1)/((G − 1)(N − p))
-factor with t(G − 1) inference — clubSandwich’s `"CR1S"`, which spicy
-does not expose — so no `CR*` option here reproduces Stata’s
+`"CR2"` is the bias-reduced estimator of Bell & McCaffrey (2002), which
+with its Satterthwaite degrees of freedom keeps tests close to their
+nominal level when clusters are few (Pustejovsky & Tipton 2018, p. 25 of
+the accepted manuscript). It generally produces fractional Satterthwaite
+degrees of freedom, rendered in the displayed test header as
+e.g. `t(8.7)` or `F(2, 12.4)`; in the balanced `sleep` design above (10
+subjects, 2 observations each) the Satterthwaite df is exactly 9, hence
+the `t(9)` header. `"CR1"` applies the G/(G − 1) small-sample correction
+only. Stata’s `vce(cluster id)` uses the larger G(N − 1)/((G − 1)(N −
+p)) factor with t(G − 1) inference — clubSandwich’s `"CR1S"`, which
+spicy does not expose — so no `CR*` option here reproduces Stata’s
 cluster-robust output.
 
 ## Bootstrap and jackknife
@@ -488,9 +490,9 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `noncentral = TRUE`, its default being the central-*t* approximation):
 
 - Noncentral *t* inversion for `"cohens_d"` and `"hedges_g"` (Steiger
-  and Fouladi 1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021),
-  which has nominal coverage across sample sizes — unlike the older
-  Hedges-Olkin normal approximation that is biased for small samples.
+  and Fouladi 1997; Goulet-Pelletier and Cousineau 2018). Applied to
+  *d*, this interval keeps a coverage close to 95% at every effect size
+  and sample size (Fitts 2021, p. 2412).
 - Noncentral *F* inversion for `"omega2"` and `"f2"` (Steiger 2004;
   Smithson 2003).
 
@@ -561,11 +563,10 @@ out[, c("variable", "es_type", "es_value", "es_ci_lower", "es_ci_upper")]
 
 When `weights` is supplied, all four effect sizes (and their CIs) are
 computed from the weighted least-squares fit, keeping them consistent
-with the weighted contrast and its CI (DuMouchel and Duncan 1983). This
-is the right convention for case-weighted reporting; for
-propensity-score balance assessment (Austin and Stuart 2015) or
-complex-survey designs, dedicated packages (`cobalt::bal.tab()` and
-`survey`) are more appropriate.
+with the weighted contrast and its CI. This is the right convention for
+case-weighted reporting; for propensity-score balance assessment (Austin
+and Stuart 2015) or complex-survey designs, dedicated packages
+(`cobalt::bal.tab()` and `survey`) are more appropriate.
 
 ## Article-style polish
 
@@ -705,9 +706,6 @@ broom::glance(out)
   *Review of Economics and Statistics*, 90(3), 414–427.
 - Cohen, J. (1988). *Statistical Power Analysis for the Behavioral
   Sciences* (2nd ed.). Lawrence Erlbaum.
-- DuMouchel, W. H., & Duncan, G. J. (1983). Using sample survey weights
-  in multiple regression analyses of stratified samples. *Journal of the
-  American Statistical Association*, 78(383), 535–543.
 - Fitts, D. A. (2021). Expected and empirical coverages of different
   methods for generating noncentral *t* confidence intervals for a
   standardized mean difference. *Behavior Research Methods*, 53(6),

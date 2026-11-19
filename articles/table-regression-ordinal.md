@@ -62,7 +62,7 @@ silently fit a nonsensical scale. And reversing the order negates every
 coefficient and threshold; the per-category marginal effects keep their
 values, but the category columns — and every directional reading built
 on them — reverse. Every interpretation below hinges on knowing the
-direction of the scale — here worst to best (Long & Freese 2014).
+direction of the scale — here worst to best.
 
 ## The proportional-odds model
 
@@ -87,9 +87,9 @@ Pass a fitted [`polr()`](https://rdrr.io/pkg/MASS/man/polr.html) object.
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 renders the shared slope coefficients with a Wald-\\z\\ inference
 regime, followed by a subordinate **`Thresholds`** block listing the
-ordered cut-points with their own B / SE / CI / p (the field convention:
-`summary.polr()`, SPSS PLUM, SAS, Stata `ologit`, Bender & Grouven
-1997):
+ordered cut-points with their own B / SE / CI / p, as `summary.polr()`,
+SPSS PLUM, SAS and Stata `ologit` print them and as Bender & Grouven
+(1997) list them in their worked example:
 
 ``` r
 
@@ -506,13 +506,15 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 ### Testing proportional odds
 
 The shared-slope restriction is a testable hypothesis, and the workflow
-is: fit, **test**, then relax only what fails (Long & Freese 2014).
-`ordinal` provides a likelihood-ratio test per predictor:
-`nominal_test()` refits the model freeing each predictor across the
-cut-points and compares, and `scale_test()` does the same for a scale
-(dispersion) effect. For `polr` there is no built-in equivalent — the
-classic logit-specific check is Brant’s (1990) test (package `brant`);
-`clm`’s tests are the likelihood-based generalization.
+is: fit, **test**, then relax only what fails. Long & Freese (2014) give
+the tests (§7.6) and the partial proportional-odds model, which frees
+some coefficients and keeps the others equal (p. 374). `ordinal`
+provides a likelihood-ratio test per predictor: `nominal_test()` refits
+the model freeing each predictor across the cut-points and compares, and
+`scale_test()` does the same for a scale (dispersion) effect. For `polr`
+there is no built-in equivalent — the classic logit-specific check is
+Brant’s (1990) test (package `brant`); `clm`’s tests are the
+likelihood-based generalization.
 
 ``` r
 
@@ -868,6 +870,9 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 - Peterson, B., & Harrell, F. E. (1990). Partial proportional odds
   models for ordinal response variables. *Journal of the Royal
   Statistical Society: Series C (Applied Statistics)*, 39(2), 205–217.
+- Prentice, R. L., & Gloeckler, L. A. (1978). Regression analysis of
+  grouped survival data with application to breast cancer data.
+  *Biometrics*, 34(1), 57.
 - Williams, R. (2012). Using the margins command to estimate and
   interpret adjusted predictions and marginal effects. *The Stata
   Journal*, 12(2), 308–331.

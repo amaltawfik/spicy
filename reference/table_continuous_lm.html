@@ -376,7 +376,7 @@ observations (Cribari-Neto 2004).</p></li>
 leveraged data (Cribari-Neto, Souza and Vasconcellos 2007).</p></li>
 <li><p><code>"CR0"</code>, <code>"CR1"</code>, <code>"CR2"</code>, <code>"CR3"</code>: cluster-robust sandwich
 estimators for non-independent observations (Liang and Zeger
-1986); requires <code>cluster</code>. <code>"CR2"</code> is the modern default
+1986); requires <code>cluster</code>. <code>"CR2"</code> is the bias-reduced estimator
 (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 Satterthwaite degrees of freedom for inference; the
 fractional df is reported in the long output (in <code>df</code> beside a
@@ -756,8 +756,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style <code>"Table Caption"</code>. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders <code>"Table Caption"</code> in italic – the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders <code>"Table Caption"</code> in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the <code>"Table Caption"</code> style in a docx template and
 pass it via <code>word_template = "your_template.docx"</code>. Style-based
@@ -937,11 +939,11 @@ software (Stata <code>esize</code> / <code>estat esize</code>, SAS <code>PROC TT
 <code>PROC GLM EFFECTSIZE</code> 14.2+) and in mainstream R packages
 (<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>, <code>effsize</code>):</p><ul><li><p><code>"cohens_d"</code>, <code>"hedges_g"</code>: noncentral <em>t</em> inversion (Steiger
 and Fouladi 1997;
-Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
-across sample sizes (Fitts 2021), unlike the
-older Hedges-Olkin normal approximation which is biased for small
-samples. For Hedges's <em>g</em> the bounds inherit the <em>J</em> small-sample
-correction.</p></li>
+Goulet-Pelletier and Cousineau 2018). With <em>d</em>, the coverage of
+this interval stays close to 95% at all effect sizes and sample
+sizes; with <em>g</em>, it ranges from 93% to 97% in small samples (Fitts
+2021, p. 2412). For Hedges's <em>g</em> the bounds inherit the <em>J</em>
+small-sample correction.</p></li>
 <li><p><code>"omega2"</code>, <code>"f2"</code>: noncentral <em>F</em> inversion (Steiger 2004).
 Without covariates (model-level effect sizes), bounds are
 converted from the noncentrality parameter using
@@ -955,8 +957,7 @@ the <code><a href="https://easystats.github.io/effectsize/reference/eta_squared.
 which is narrower than the partial eta squared CI because
 omega squared shrinks the point estimate.</p></li>
 </ul><p>For the weighted case, the CI uses raw (unweighted) group counts and
-<code>df.residual(fit) = n - p</code>, consistent with the WLS reporting convention
-(DuMouchel and Duncan 1983). For propensity-score balance assessment or
+<code>df.residual(fit) = n - p</code>. For propensity-score balance assessment or
 complex-survey designs, dedicated packages (<code>cobalt::bal.tab()</code> for the
 Austin and Stuart 2015 formulation; <code>survey</code> for design-based effect
 sizes) are more appropriate.</p>
@@ -986,8 +987,10 @@ implementation dispatches to <code><a href="http://jepusto.github.io/clubSandwic
 variance and to <code><a href="http://jepusto.github.io/clubSandwich/reference/coef_test.html" class="external-link">clubSandwich::coef_test()</a></code> (single-coefficient,
 Satterthwaite <em>t</em>) and <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code> (multi-coefficient
 Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
-<code>"CR2"</code> (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
-modern recommended default; it generally produces fractional
+<code>"CR2"</code> is the bias-reduced estimator of Bell and McCaffrey (2002),
+whose small-sample tests keep the Type I error near the nominal level
+even with few clusters (Pustejovsky and Tipton 2018); it generally
+produces fractional
 Satterthwaite degrees of freedom (in <code>df</code> beside a <em>t</em>, in
 <code>df.residual</code> beside an <em>F</em>), which the displayed <code>t(df)</code> /
 <code>F(df1, df2)</code> header renders to one decimal. <code>"CR1"</code>
@@ -1030,9 +1033,7 @@ fit statistics \(R^2\) and adjusted \(R^2\), as well as Hays's <code>omega^2</co
 and Cohen's \(f^2\), use the corresponding <strong>weighted sums of squares</strong>
 from the WLS fit. Cohen's <code>d</code> and Hedges's <code>g</code> use the <strong>WLS
 coefficient and the model's weighted residual standard deviation</strong>
-(<code>summary(fit)$sigma</code>), which is the standard convention for
-case-weighted regression-style reporting (DuMouchel and Duncan
-1983); the noncentral <em>t</em> CI for <code>d</code> / <code>g</code> uses the raw (unweighted)
+(<code>summary(fit)$sigma</code>); the noncentral <em>t</em> CI for <code>d</code> / <code>g</code> uses the raw (unweighted)
 group counts and the residual degrees of freedom of the WLS fit
 (<code>n - p</code>). This case-weighted workflow is appropriate for weighted
 article tables, but is <strong>not</strong> a substitute for a full complex-survey
@@ -1130,7 +1131,10 @@ the regular <code>NA</code> count.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Austin, P. C., &amp; Stuart, E. A. (2015).
+    <p>American Psychological Association. (2020).
+<em>Publication Manual of the American Psychological Association</em>
+(7th ed.). <a href="https://doi.org/10.1037/0000165-000" class="external-link">doi:10.1037/0000165-000</a></p>
+<p>Austin, P. C., &amp; Stuart, E. A. (2015).
 Moving towards best practice when using inverse probability of
 treatment weighting (IPTW) using the propensity score to estimate
 causal treatment effects in observational studies.
@@ -1164,11 +1168,6 @@ for the linear regression model.
 <em>Bootstrap Methods and Their Application</em>.
 Cambridge: Cambridge University Press.
 <a href="https://doi.org/10.1017/CBO9780511802843" class="external-link">doi:10.1017/CBO9780511802843</a></p>
-<p>DuMouchel, W. H., &amp; Duncan, G. J. (1983).
-Using sample survey weights in multiple regression analyses of
-stratified samples. <em>Journal of the American Statistical
-Association</em>, <strong>78</strong>(383), 535–543.
-<a href="https://doi.org/10.1080/01621459.1983.10478006" class="external-link">doi:10.1080/01621459.1983.10478006</a></p>
 <p>Fitts, D. A. (2021).
 Expected and empirical coverages of different methods for generating
 noncentral <em>t</em> confidence intervals for a standardized mean

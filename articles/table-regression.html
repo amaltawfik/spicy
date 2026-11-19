@@ -119,12 +119,12 @@
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> produces a coefficient summary table
 from one or several fitted regression models. The output is
 publication-ready by default and follows APA Manual 7 (American
-Psychological Association 2020, Tables 7.13–7.15) formatting
-conventions: paired estimate-and-CI columns, APA p-values without
-leading zero, factor levels grouped under their parent variable, fit
-statistics at the foot of the table, and a self-documenting note line
-that names the variance estimator and any methodological choice that
-affected the rendered values.</p>
+Psychological Association 2020, Tables 7.15–7.18, pp. 219–221)
+formatting conventions: paired estimate-and-CI columns, APA p-values
+without leading zero, factor levels grouped under their parent variable,
+fit statistics at the foot of the table, and a self-documenting note
+line that names the variance estimator and any methodological choice
+that affected the rendered values.</p>
 <p>APA is the default, not a limit: <code>style = "nejm"</code> re-types
 every p-value to the New England Journal of Medicine’s statistical
 reporting guideline, <code>style = "lancet"</code> writes The Lancet’s
@@ -252,16 +252,16 @@ reporting</em></a>.</p>
 <p>Standardized coefficients (<code>β</code>) make predictors with
 different natural scales comparable: a one-standard-deviation increase
 in <code>X</code> predicts a <code>β</code>-standard-deviation change in
-<code>Y</code>. APA Manual 7 §7.13 recommends reporting both
-<code>B</code> and <code>β</code> so the unstandardized effect (natural
-units, interpretable) stays alongside the standardized effect
-(comparable across predictors).</p>
+<code>Y</code>. The sample regression table of APA Manual 7 (Table 7.15,
+p. 219) reports <code>B</code> and <code>β</code> side by side, so the
+unstandardized effect (natural units, interpretable) stays alongside the
+standardized effect (comparable across predictors).</p>
 <p><code>standardized</code> selects the method. Four apply to linear
 models — a fifth, glm-specific <code>"pseudo"</code>, is covered in the
 <em>Generalized linear models</em> section — and the choice is
 consequential and well-documented (Cohen, Cohen, West, and Aiken 2003
-§3.4; Gelman 2008). The methods differ most visibly in how they treat
-factor dummies:</p>
+§8.2.5, p. 316; Gelman 2008). The methods differ most visibly in how
+they treat factor dummies:</p>
 <ul>
 <li>
 <code>"refit"</code> — refit the model on the z-scored outcome and
@@ -333,10 +333,11 @@ transformed terms.</strong> When the model contains a product term, an
 <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, or
 <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code> wrapper, the standardized coefficient of the
 non-additive term has no closed-form “one-SD change in X” reading (Aiken
-and West 1991; Cohen et al. 2003 §7.7). The function emits a classed
-<code>spicy_caveat</code> warning at runtime <em>and</em> prints a
-method-specific caveat line in the table footer, so the limitation is
-exposed at the point of use without blocking the table.</p>
+and West 1991; Cohen et al. 2003 §7.5, pp. 282–283). The function emits
+a classed <code>spicy_caveat</code> warning at runtime <em>and</em>
+prints a method-specific caveat line in the table footer, so the
+limitation is exposed at the point of use without blocking the
+table.</p>
 </div>
 <div class="section level2">
 <h2 id="per-coefficient-effect-sizes">Per-coefficient effect sizes<a class="anchor" aria-label="anchor" href="#per-coefficient-effect-sizes"></a>
@@ -428,8 +429,8 @@ and Algina (2003) formula
 <code>((F − 1) × df1) / (F × df1 + N − df1)</code>, yielding a
 less-biased small-sample estimator than partial <code>η²</code>.</li>
 <li>The CI bounds come from inverting the noncentrality parameter of the
-F-distribution at the lower and upper confidence levels (Steiger 2004
-§4), anchored at the bias-corrected <code>F</code> implied by
+F-distribution at the lower and upper confidence levels (Steiger 2004,
+pp. 167–168), anchored at the bias-corrected <code>F</code> implied by
 <code>ω²</code> rather than at the observed <code>F</code>. Population
 partial <code>η²</code> and partial <code>ω²</code> are the same
 quantity — <code>ω²</code> is simply the less-biased small-sample
@@ -753,7 +754,7 @@ tables</em></a>.</p>
 <h2 id="hierarchical-nested-regression">Hierarchical / nested regression<a class="anchor" aria-label="anchor" href="#hierarchical-nested-regression"></a>
 </h2>
 <p>Set <code>nested = TRUE</code> to add <strong>in-table
-change-statistic rows</strong> (APA Table 7.13 / Stata
+change-statistic rows</strong> (APA Table 7.15, p. 219 / Stata
 <code>esttab</code> / SPSS Model Summary convention). Each adjacent pair
 (M2 vs M1, M3 vs M2, …) contributes one column of change stats below
 <code>R² / Adj. R²</code>; the first model column gets en-dashes (no
@@ -833,11 +834,12 @@ retaining <code>bmi</code> and provides no incremental evidence for
 <p>Default change tokens auto-injected:
 <code>c("r2_change", "f_change", "p_change")</code> for <code>lm</code>
 (APA hierarchical-regression standard),
-<code>c("lrt_change", "p_change")</code> for <code>glm</code> (Hosmer
-&amp; Lemeshow §3.5), <code>c("f_change", "p_change")</code> for a
-<code>glm</code> whose dispersion is estimated (the F test
-<code>anova(test = "F")</code> reports for gaussian, Gamma, inverse
-Gaussian, Tweedie and quasi families),
+<code>c("lrt_change", "p_change")</code> for <code>glm</code> (Hosmer,
+Lemeshow &amp; Sturdivant 2013 §2.4, pp. 39–41),
+<code>c("f_change", "p_change")</code> for a <code>glm</code> whose
+dispersion is estimated (the F test <code>anova(test = "F")</code>
+reports for gaussian, Gamma, inverse Gaussian, Tweedie and quasi
+families),
 <code>c("aic_change", "bic_change", "lrt_change", "p_change")</code> for
 mixed-effects fits (<code>lmer</code> / <code>glmer</code> /
 <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> — Pinheiro &amp; Bates
@@ -1116,11 +1118,10 @@ denominator regardless of which subset is shown.</p>
 <p>A methodological note. Adjusting the p-values of every coefficient of
 a single regression model is <em>not</em> the standard convention in
 social-science or clinical reporting (Rothman 1990; Gelman, Hill, and
-Yajima 2012; Greenland 2017; Harrell 2015 §5.4; APA Manual 7 §6.46).
-Each coefficient tests a scientifically distinct hypothesis on a
-distinct predictor, which is not the situation that family-wise
-procedures were designed for. The default <code>"none"</code> reflects
-this consensus.</p>
+Yajima 2012; Greenland 2017). Each coefficient tests a scientifically
+distinct hypothesis on a distinct predictor, which is not the situation
+that family-wise procedures were designed for. The default
+<code>"none"</code> reflects this consensus.</p>
 <p>Adjustment is nonetheless legitimate in three contexts:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -1199,8 +1200,8 @@ cares about —
 <div class="section level2">
 <h2 id="significance-stars">Significance stars<a class="anchor" aria-label="anchor" href="#significance-stars"></a>
 </h2>
-<p>Stars are off by default. APA 7 §6.46 explicitly discourages
-asterisks-only reporting in favor of exact p-values, and ASA’s post-2019
+<p>Stars are off by default. APA 7 §7.14 (p. 204) prefers exact p-values
+in a table and admits asterisks as an alternative, and ASA’s post-2019
 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the same
 point. Set <code>stars = TRUE</code> for the APA preset
 (<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
@@ -1370,7 +1371,7 @@ and the Wald approximation is most accurate, so they match the
 unexponentiated table verbatim. (Wald tests are not invariant to
 reparameterization — a z rebuilt from <code>SE_OR</code> would give a
 different statistic and p-value, which is why the link-scale test is
-kept; Long &amp; Freese 2014 §3.2.2.):</p>
+kept; Long &amp; Freese 2014 §7.3.2, p. 323.):</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -1574,8 +1575,8 @@ education is 15 percentage points less likely to be a current smoker
 than one with lower secondary education”. This is almost always the
 quantity a substantive reader wants from a logistic regression, and it
 is the reason AME is increasingly recommended over odds ratios for
-communicating logistic effects (Mood 2010; Long and Freese 2014
-§6.2.3).</p>
+communicating logistic effects (Mood 2010; Long and Freese 2014,
+p. 227).</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"p"</span>, <span class="st">"ame"</span>, <span class="st">"ame_ci"</span>, <span class="st">"ame_p"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -1719,8 +1720,9 @@ For <code>glm</code> you can also request
 asymmetric, obtained by inverting the likelihood-ratio statistic rather
 than the quadratic Wald approximation, and the preferred choice under
 sparse data or near-boundary estimates (Venables &amp; Ripley
-<em>MASS</em> §7.2). The estimate, SE, statistic, and p-value all remain
-Wald; <code>"profile"</code> only refines the CI bounds:</p>
+<em>MASS</em> §7.2, p. 198, and §8.4, pp. 220–221). The estimate, SE,
+statistic, and p-value all remain Wald; <code>"profile"</code> only
+refines the CI bounds:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, ci_method <span class="op">=</span> <span class="st">"profile"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -1758,10 +1760,11 @@ leaving the mismatch for a careful reader to discover.</p>
 <code>Δχ²</code> and <code>p (change)</code> rows to the fit-statistics
 block — default change tokens <code>c("lrt_change", "p_change")</code>,
 as in <em>Hierarchical / nested regression</em> above — the
-APA-conventional layout for hierarchical logistic regression (Hosmer
-&amp; Lemeshow §3.5; Long &amp; Freese 2014 §3.2.4). The chi-square
-statistic comes from <code>anova(test = "LRT")</code>. The
-variance-explained change tokens (<code>r2_change</code>,
+APA-conventional layout for hierarchical logistic regression, whose
+likelihood-ratio test of nested models is that of Hosmer, Lemeshow &amp;
+Sturdivant (2013 §2.4, pp. 39–41) and Long &amp; Freese (2014 §3.2.4).
+The chi-square statistic comes from <code>anova(test = "LRT")</code>.
+The variance-explained change tokens (<code>r2_change</code>,
 <code>f_change</code>) are not defined for glm — requesting them in
 <code>show_fit_stats</code> raises a <code>spicy_invalid_input</code>
 error that points to the pseudo-R² family and to <code>lrt_change</code>
@@ -1984,23 +1987,23 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpoXCAFh-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpoXCAFh-1 table {
+<div id="spicy-gt-Rtmp8BUBE1-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-Rtmp8BUBE1-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpoXCAFh-1 thead, #spicy-gt-RtmpoXCAFh-1 tbody, #spicy-gt-RtmpoXCAFh-1 tfoot, #spicy-gt-RtmpoXCAFh-1 tr, #spicy-gt-RtmpoXCAFh-1 td, #spicy-gt-RtmpoXCAFh-1 th {
+#spicy-gt-Rtmp8BUBE1-1 thead, #spicy-gt-Rtmp8BUBE1-1 tbody, #spicy-gt-Rtmp8BUBE1-1 tfoot, #spicy-gt-Rtmp8BUBE1-1 tr, #spicy-gt-Rtmp8BUBE1-1 td, #spicy-gt-Rtmp8BUBE1-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpoXCAFh-1 p {
+#spicy-gt-Rtmp8BUBE1-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_table {
+#spicy-gt-Rtmp8BUBE1-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2026,12 +2029,12 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_caption {
+#spicy-gt-Rtmp8BUBE1-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_title {
+#spicy-gt-Rtmp8BUBE1-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -2043,7 +2046,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_subtitle {
+#spicy-gt-Rtmp8BUBE1-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2055,7 +2058,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_heading {
+#spicy-gt-Rtmp8BUBE1-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2067,13 +2070,13 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_bottom_border {
+#spicy-gt-Rtmp8BUBE1-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_col_headings {
+#spicy-gt-Rtmp8BUBE1-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2088,7 +2091,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_col_heading {
+#spicy-gt-Rtmp8BUBE1-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2108,7 +2111,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner_outer {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2120,15 +2123,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -2140,11 +2143,11 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   width: 100%;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_spanner_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_group_heading {
+#spicy-gt-Rtmp8BUBE1-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2170,7 +2173,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   text-align: left;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_empty_group_heading {
+#spicy-gt-Rtmp8BUBE1-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2185,15 +2188,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_from_md > :first-child {
+#spicy-gt-Rtmp8BUBE1-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_from_md > :last-child {
+#spicy-gt-Rtmp8BUBE1-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2212,7 +2215,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_stub {
+#spicy-gt-Rtmp8BUBE1-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2225,7 +2228,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_stub_row_group {
+#spicy-gt-Rtmp8BUBE1-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2239,15 +2242,15 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   vertical-align: top;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_row_group_first td {
+#spicy-gt-Rtmp8BUBE1-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_row_group_first th {
+#spicy-gt-Rtmp8BUBE1-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_summary_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2257,16 +2260,16 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_first_summary_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_first_summary_row.thick {
+#spicy-gt-Rtmp8BUBE1-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_last_summary_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2276,7 +2279,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_grand_summary_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2286,7 +2289,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_first_grand_summary_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2296,7 +2299,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_last_grand_summary_row_top {
+#spicy-gt-Rtmp8BUBE1-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2306,11 +2309,11 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_striped {
+#spicy-gt-Rtmp8BUBE1-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_table_body {
+#spicy-gt-Rtmp8BUBE1-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2319,7 +2322,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_footnotes {
+#spicy-gt-Rtmp8BUBE1-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2333,7 +2336,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_footnote {
+#spicy-gt-Rtmp8BUBE1-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2342,7 +2345,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_sourcenotes {
+#spicy-gt-Rtmp8BUBE1-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2356,7 +2359,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_sourcenote {
+#spicy-gt-Rtmp8BUBE1-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2364,108 +2367,108 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_left {
+#spicy-gt-Rtmp8BUBE1-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_center {
+#spicy-gt-Rtmp8BUBE1-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_right {
+#spicy-gt-Rtmp8BUBE1-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_font_normal {
+#spicy-gt-Rtmp8BUBE1-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_font_bold {
+#spicy-gt-Rtmp8BUBE1-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_font_italic {
+#spicy-gt-Rtmp8BUBE1-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_super {
+#spicy-gt-Rtmp8BUBE1-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_footnote_marks {
+#spicy-gt-Rtmp8BUBE1-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_asterisk {
+#spicy-gt-Rtmp8BUBE1-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_indent_1 {
+#spicy-gt-Rtmp8BUBE1-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_indent_2 {
+#spicy-gt-Rtmp8BUBE1-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_indent_3 {
+#spicy-gt-Rtmp8BUBE1-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_indent_4 {
+#spicy-gt-Rtmp8BUBE1-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_indent_5 {
+#spicy-gt-Rtmp8BUBE1-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .katex-display {
+#spicy-gt-Rtmp8BUBE1-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-Rtmp8BUBE1-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_sourcenote {
+#spicy-gt-Rtmp8BUBE1-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
   padding: 0 5px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-Rtmp8BUBE1-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-Rtmp8BUBE1-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpoXCAFh-1 .gt_spanner_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmp8BUBE1-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_col_heading {
+#spicy-gt-Rtmp8BUBE1-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_table tbody .gt_row {
+#spicy-gt-Rtmp8BUBE1-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-Rtmp8BUBE1-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -2474,12 +2477,12 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpoXCAFh-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-Rtmp8BUBE1-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpoXCAFh-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmp8BUBE1-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -2740,7 +2743,7 @@ the spicy table functions along the APA Table 1 / 2 / 3 sequence.</li>
 <p>Aiken, L. S., and West, S. G. (1991). <em>Multiple Regression:
 Testing and Interpreting Interactions</em>. Sage.</p>
 <p>American Psychological Association (2020). <em>Publication Manual of
-the American Psychological Association</em> (7th ed.). Section 6.46.</p>
+the American Psychological Association</em> (7th ed.).</p>
 <p>Cohen, J., Cohen, P., West, S. G., and Aiken, L. S. (2003).
 <em>Applied Multiple Regression / Correlation Analysis for the
 Behavioral Sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
@@ -2760,8 +2763,6 @@ Educational Effectiveness</em>, 5(2), 189–211.</p>
 <p>Greenland, S. (2017). For and against methodologies: Some
 perspectives on recent causal and statistical inference debates.
 <em>European Journal of Epidemiology</em>, 32(1), 3–20.</p>
-<p>Harrell, F. E. (2015). <em>Regression Modeling Strategies</em> (2nd
-ed.). Springer. Section 5.4 on multiplicity.</p>
 <p>Hemmert, G. A. J., Schons, L. M., Wieseke, J., and Schimmelpfennig,
 H. (2018). Log-likelihood-based pseudo-R² in logistic regression:
 Deriving sample-sensitive benchmarks. <em>Sociological Methods &amp;
@@ -2822,8 +2823,7 @@ the longitudinal mixed effects model. <em>Biometrics</em>, 50(4),
 models — A new proposal: The coefficient of discrimination. <em>The
 American Statistician</em>, 63(4), 366–372.</p>
 <p>Venables, W. N., and Ripley, B. D. (2002). <em>Modern Applied
-Statistics with S</em> (4th ed.). Springer. Section 7.2 on profile
-likelihood.</p>
+Statistics with S</em> (4th ed.). Springer.</p>
 <p>Wasserstein, R. L., Schirm, A. L., and Lazar, N. A. (2019). Moving to
 a world beyond “p &lt; 0.05”. <em>The American Statistician</em>,
 73(sup1), 1–19.</p>
