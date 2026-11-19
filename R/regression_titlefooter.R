@@ -1963,11 +1963,20 @@ build_survival_footer_block_from_frames <- function(
     return(NULL)
   }
 
-  # The line is bare in a one-model table only. In a table of several
-  # models it names its model, even when the others are silent on this
-  # block: a coxph fit beside a cph fit, which carries no concordance,
-  # gave "Concordance C = 0.84" with nothing to say whose it was.
-  if (length(frames) == 1L) {
+  # The line is bare when one model has something to say and no other
+  # model of the table could: a one-model table, or a Cox fit beside an
+  # lm. Beside another survival model that is silent on this block (a cph
+  # fit, which carries no concordance), "Concordance C = 0.84" had
+  # nothing to say whose it was: the line then names its model.
+  n_survival <- sum(vapply(
+    frames,
+    function(f) {
+      (f$info$class %||% "") %in%
+        c("coxph", "cph", "svycoxph", "survreg", "flexsurvreg")
+    },
+    logical(1)
+  ))
+  if (length(per_model) == 1L && n_survival == 1L) {
     return(per_model[[1L]]$text)
   }
   lines <- vapply(
