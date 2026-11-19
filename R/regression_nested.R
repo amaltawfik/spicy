@@ -238,13 +238,13 @@ nested_without_penalized <- function(models, nested, show_fit_stats) {
     ),
     class = "spicy_ignored_arg"
   )
-  if (!is.null(show_fit_stats)) {
-    show_fit_stats <- setdiff(
+  kept <- if (!is.null(show_fit_stats)) {
+    setdiff(
       show_fit_stats,
       c(.NESTED_CHANGE_TOKENS, .NESTED_WALD_CHANGE_TOKENS)
     )
   }
-  list(nested = FALSE, show_fit_stats = show_fit_stats)
+  list(nested = FALSE, show_fit_stats = kept)
 }
 
 # TRUE when EVERY fit in a list rides the likelihood-ratio path, and so
