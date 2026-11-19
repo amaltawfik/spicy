@@ -1,6 +1,6 @@
 # ADR 2026-11-19 — Le sous-modèle de précision d'un `betareg` s'affiche en bloc
 
-Statut : principe approuvé par Amal le 2026-11-19. Mis en œuvre le même jour, branche `lot-betareg-precision-block`.
+**Statut** : principe approuvé par Amal le 2026-11-19. Mis en œuvre le même jour, branche `lot-betareg-precision-block`. Les décisions de détail (titres par lien, règle d'`exponentiate`, bloc d'un `glmmTMB` de famille bêta) ont été prises à la relecture du lot, sur délégation d'Amal pour les décisions techniques.
 
 ## Contexte
 

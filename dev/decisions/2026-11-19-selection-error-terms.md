@@ -1,6 +1,6 @@
 # ADR 2026-11-19 — Les termes d'erreur et la méthode d'un modèle de sélection
 
-**Statut** : principe de l'affichage approuvé par Amal le 2026-11-19, décisions de détail du même jour. Mis en œuvre dans la branche `lot-selection-error-terms`. Rupture assumée (version < 1).
+**Statut** : principe de l'affichage approuvé par Amal le 2026-11-19. Les décisions de détail ont été prises le même jour à la relecture du lot, sur délégation d'Amal pour les décisions techniques. Mis en œuvre dans la branche `lot-selection-error-terms`. Rupture assumée (version < 1).
 
 ## Contexte
 

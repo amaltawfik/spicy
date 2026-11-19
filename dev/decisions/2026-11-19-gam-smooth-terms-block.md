@@ -1,6 +1,6 @@
 # ADR 2026-11-19 — Les termes lissés d'un GAM forment un bloc du tableau
 
-**Statut** : principe approuvé par Amal le 2026-11-19. Mis en œuvre le même jour, branche `lot-gam-smooth-block`. Les points `keep` / `drop`, colonne de la statistique, `p_adjust` et étoiles ont été tranchés par Amal au cours du lot.
+**Statut** : principe approuvé par Amal le 2026-11-19. Mis en œuvre le même jour, branche `lot-gam-smooth-block`. Les points `keep` / `drop`, colonne de la statistique, `p_adjust` et étoiles ont été tranchés à la relecture du lot, sur délégation d'Amal pour les décisions techniques.
 
 ## Contexte
 
@@ -11,7 +11,7 @@
 1. Un bloc « Smooth terms (edf) », français « Termes lissés (ddl effectifs) », est affiché par défaut sous les coefficients paramétriques, avant tout autre bloc. Il compte une ligne par terme lissé, libellée comme mgcv la libelle : `s(age)`, `te(bmi,ped)`, `s(age):typeYes` pour un `by`, `s(agegrp)` pour un `bs = "re"`.
 2. La colonne B porte les degrés de liberté effectifs et la colonne p la valeur p du test approché de mgcv. L'erreur standard, l'intervalle et la statistique sont des cellules sans objet, rendues par un tiret comme dans les autres blocs. Un χ² ou un F n'a pas sa place sous un en-tête z ou t. Les colonnes standardisées, AME et partielles restent vides. La ligne AME d'une variable lissée ne bouge pas.
 3. Une phrase de note : « Smooth terms: effective degrees of freedom (edf) and approximate test of each term. », française « Termes lissés : degrés de liberté effectifs et test approché de chaque terme. ». Elle nomme la méthode, pas le package.
-4. `exponentiate = TRUE` ne touche pas ces lignes. Aucune étoile ne marque l'edf. Les étoiles du package ne se posent que sur l'estimation, jamais sur la colonne p, il n'y avait donc rien d'autre à aligner.
+4. `exponentiate = TRUE` ne touche pas ces lignes. Aucune étoile ne marque l'edf. Les étoiles du package ne se posent que sur l'estimation, jamais sur la colonne p. Il n'y avait donc rien d'autre à aligner.
 5. Sous une variance robuste, le test de mgcv repose toujours sur sa propre matrice de covariance (Vp). La ligne garde son edf, la valeur p devient un tiret, et la note ajoute « The test of the smooth terms is not computed under a robust variance. ». Dans un tableau où un seul modèle est robuste, la phrase nomme ce modèle.
 6. Les termes lissés sont des prédicteurs du modèle. Ils ne sont pas des paramètres de structure comme les seuils ou les effets aléatoires. Leurs lignes obéissent donc à `keep` et `drop` comme les coefficients, par leur libellé mgcv. `keep = "bmi"` retire `s(age)`, et `drop = "^s\\("` retire le bloc avec son en-tête et sa note. C'est la seule exception à l'exemption des blocs (`apply_keep_drop_filter()`). L'aide de `keep` le dit.
 7. Les tests des termes lissés entrent dans la famille de `p_adjust`, avec les coefficients, comme ceux des composantes. L'aide de `p_adjust` le dit.
