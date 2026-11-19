@@ -696,7 +696,7 @@ table_outcome(
 [TABLE]
 
 Descriptive statistics of wellbeing_score
-{#tinytable_utz99u62lmlgfdw07ww7 .table .tinytable
+{#tinytable_u61ob9k6owdddouyqeix .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
