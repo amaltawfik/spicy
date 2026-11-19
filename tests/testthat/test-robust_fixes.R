@@ -247,3 +247,68 @@ test_that("tau on an rq fit says where the quantile is set", {
   )
   expect_no_match(conditionMessage(err), "quantreg", fixed = TRUE)
 })
+
+
+# ---- Robust or clustered SE on an ivreg fit: the route --------------------
+
+test_that("the refusal of HC1 or CR1 on an ivreg fit names the routes", {
+  skip_if_not_installed("AER")
+  d <- .rf_wage_data()
+  iv <- AER::ivreg(
+    log(wage) ~ education + experience | feducation + experience,
+    data = d
+  )
+  for (args in list(
+    list(vcov = "HC1"),
+    list(vcov = "CR1", cluster = ~region)
+  )) {
+    err <- expect_error(
+      do.call(table_regression, c(list(iv), args)),
+      class = "spicy_unsupported_vcov"
+    )
+    msg <- conditionMessage(err)
+    expect_match(msg, "This class supports: classical.", fixed = TRUE)
+    expect_match(
+      msg,
+      "estimatr::iv_robust(..., se_type = \"HC1\")",
+      fixed = TRUE
+    )
+    expect_match(msg, "`clusters =`", fixed = TRUE)
+    expect_match(
+      msg,
+      "fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\")",
+      fixed = TRUE
+    )
+    expect_match(msg, "vcov = ~g", fixed = TRUE)
+  }
+})
+
+test_that("the routes the ivreg refusal names give a table", {
+  skip_if_not_installed("estimatr")
+  skip_if_not_installed("fixest")
+  d <- .rf_wage_data()
+  fits <- list(
+    estimatr::iv_robust(
+      log(wage) ~ education + experience | feducation + experience,
+      data = d,
+      se_type = "HC1"
+    ),
+    estimatr::iv_robust(
+      log(wage) ~ education + experience | feducation + experience,
+      data = d,
+      clusters = region
+    ),
+    fixest::feols(
+      log(wage) ~ experience | education ~ feducation,
+      d,
+      vcov = "hetero"
+    ),
+    fixest::feols(
+      log(wage) ~ experience | education ~ feducation,
+      d,
+      vcov = ~region
+    )
+  )
+  tbl <- as.data.frame(table_regression(fits))
+  expect_identical(sum(tbl$variable == "education"), 1L)
+})

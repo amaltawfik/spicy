@@ -1370,6 +1370,28 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
           call = call
         )
       }
+      # ivreg: classical only, with the two packages that fit the same
+      # 2SLS model with robust or clustered errors.
+      if (inherits(models[[i]], "ivreg")) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `ivreg` models.",
+              vt
+            ),
+            "i" = "This class supports: classical.",
+            "i" = paste0(
+              "For robust or clustered standard errors, refit the same ",
+              "model with estimatr::iv_robust(..., se_type = \"HC1\") or ",
+              "`clusters =`, or with ",
+              "fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\") or ",
+              "vcov = ~g."
+            )
+          ),
+          class = "spicy_unsupported_vcov",
+          call = call
+        )
+      }
       spicy_abort(
         c(
           sprintf(
