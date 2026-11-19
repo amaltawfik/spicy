@@ -130,8 +130,8 @@
 #' utilisée pour séparer les unités des décimales" (European Union,
 #' *Code de rédaction interinstitutionnel*, French edition 2022,
 #' point 6.5, p. 110, `https://style-guide.europa.eu/fr`); "Si le nombre
-#' se situe entre +1 et −1, le séparateur décimal est toujours précédé
-#' d’un zéro" (BIPM, *Le Système international d’unités*, 9th
+#' se situe entre +1 et -1, le séparateur décimal est toujours précédé
+#' d'un zéro" (BIPM, *Le Système international d'unités*, 9th
 #' edition, 2019, section 5.4.4, p. 38,
 #' `https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`).
 #' `"en"` brings no locale, and nothing changes for anyone who sets

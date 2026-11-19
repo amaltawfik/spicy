@@ -230,8 +230,8 @@ French typography keeps on a p-value (\verb{0,003}). "La virgule est
 utilisée pour séparer les unités des décimales" (European Union,
 \emph{Code de rédaction interinstitutionnel}, French edition 2022,
 point 6.5, p. 110, \verb{https://style-guide.europa.eu/fr}); "Si le nombre
-se situe entre +1 et −1, le séparateur décimal est toujours précédé
-d’un zéro" (BIPM, \emph{Le Système international d’unités}, 9th
+se situe entre +1 et -1, le séparateur décimal est toujours précédé
+d'un zéro" (BIPM, \emph{Le Système international d'unités}, 9th
 edition, 2019, section 5.4.4, p. 38,
 \verb{https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf}).
 \code{"en"} brings no locale, and nothing changes for anyone who sets
