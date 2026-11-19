@@ -292,9 +292,10 @@ test_that("glmmTMB (Days | Subject): rho row has finite SE + CI", {
   expect_identical(nrow(rho_rows), 1L)
   expect_true(all(is.finite(rho_rows$std_error)))
 
-  # Oracle: glmmTMB's native Wald confint on the natural rho scale;
-  # spicy's CI is the interval verbatim and the SE its half-width / z
-  # (pure algebraic mapping).
+  # Oracle: glmmTMB's native Wald confint on the natural rho scale is
+  # spicy's CI verbatim. The SE is the delta-method one from the scale
+  # glmmTMB estimates a two-term correlation on, theta = rho / sqrt(1 -
+  # rho^2): SE(theta) of its sdreport times d rho / d theta.
   ci_sd <- as.matrix(stats::confint(fit, method = "Wald", parm = "theta_"))
   cor_rn <- grep("^Cor\\.", rownames(ci_sd), value = TRUE)
   expect_identical(length(cor_rn), 1L)
@@ -306,11 +307,19 @@ test_that("glmmTMB (Days | Subject): rho row has finite SE + CI", {
   )
   expect_equal(rho_rows$ci_lower, unname(ci_sd[cor_rn, 1L]), tolerance = 1e-12)
   expect_equal(rho_rows$ci_upper, unname(ci_sd[cor_rn, 2L]), tolerance = 1e-12)
+  sdr <- summary(fit$sdr, "fixed")
+  th <- sdr[rownames(sdr) == "theta", , drop = FALSE]
+  expect_identical(nrow(th), 3L)
+  theta <- th[3L, "Estimate"]
+  expect_equal(theta / sqrt(1 + theta^2), rho_rows$corr, tolerance = 1e-8)
   expect_equal(
     rho_rows$std_error,
-    unname((ci_sd[cor_rn, 2L] - ci_sd[cor_rn, 1L]) / (2 * z)),
-    tolerance = 1e-12
+    unname(th[3L, "Std. Error"] * (1 + theta^2)^(-3 / 2)),
+    tolerance = 1e-5
   )
+  # No longer the half-width of the interval, which is skewed on rho.
+  half_width <- unname((ci_sd[cor_rn, 2L] - ci_sd[cor_rn, 1L]) / (2 * z))
+  expect_gt(abs(rho_rows$std_error - half_width), 1e-3)
 })
 
 test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
@@ -321,9 +330,10 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
   expect_identical(nrow(rho_rows), 1L)
   expect_true(all(is.finite(rho_rows$std_error)))
 
-  # Oracle: nlme::intervals() on the natural rho scale; spicy's CI is
-  # the interval verbatim and the SE its half-width / z (pure algebraic
-  # mapping).
+  # Oracle: nlme::intervals() on the natural rho scale is spicy's CI
+  # verbatim. The SE is the delta-method one from the scale nlme
+  # estimates a correlation on, log((1 + rho) / (1 - rho)): the SE of
+  # that parameter in `apVar` times d rho / d parameter.
   iv <- nlme::intervals(fit, level = 0.95, which = "var-cov")$reStruct$Subject
   cor_rn <- grep("^cor\\(", rownames(iv), value = TRUE)
   expect_identical(length(cor_rn), 1L)
@@ -339,11 +349,17 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
     unname(iv[cor_rn, "upper"]),
     tolerance = 1e-12
   )
+  rho <- rho_rows$corr
+  se_nat <- sqrt(diag(fit$apVar))
+  cor_par <- grep("^reStruct", names(se_nat), value = TRUE)[3L]
   expect_equal(
     rho_rows$std_error,
-    unname((iv[cor_rn, "upper"] - iv[cor_rn, "lower"]) / (2 * z)),
-    tolerance = 1e-12
+    unname(se_nat[cor_par] * (1 - rho^2) / 2),
+    tolerance = 1e-6
   )
+  # No longer the half-width of the interval, which is skewed on rho.
+  half_width <- unname((iv[cor_rn, "upper"] - iv[cor_rn, "lower"]) / (2 * z))
+  expect_gt(abs(rho_rows$std_error - half_width), 1e-3)
 })
 
 

@@ -122,19 +122,15 @@ rr_fixtures <- list(
   geeglm = list("geepack", function(d) {
     geepack::geeglm(cnt ~ x, poisson, d, id = id)
   }),
-  mlogit = list(c("mlogit", "dfidx"), function(d) {
-    set.seed(3)
-    dl <- data.frame(
-      id = rep(seq_len(80), each = 3),
-      alt = rep(c("a", "b", "c"), 80)
+  mlogit = list("mlogit", function(d) {
+    data("Fishing", package = "mlogit", envir = environment())
+    fd <- mlogit::mlogit.data(
+      Fishing,
+      varying = 2:9,
+      shape = "wide",
+      choice = "mode"
     )
-    dl$price <- runif(nrow(dl))
-    dl$choice <- FALSE
-    for (i in seq_len(80)) {
-      dl$choice[(i - 1) * 3 + sample(1:3, 1)] <- TRUE
-    }
-    mld <- dfidx::dfidx(dl, idx = c("id", "alt"), choice = "choice")
-    mlogit::mlogit(choice ~ price, data = mld)
+    mlogit::mlogit(mode ~ price + catch, data = fd)
   }),
   selection = list("sampleSelection", function(d) {
     sampleSelection::selection(sel ~ z, ysel ~ x, data = d)
