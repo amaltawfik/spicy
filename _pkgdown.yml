@@ -182,15 +182,27 @@ reference:
     desc: >
       One or more fitted models side by side or one under the other, and
       the univariable screen.
-      `table_regression_models()` returns the supported model classes;
-      its page describes the behavior of each family (inference,
-      robust-variance backends, exponentiation, marginal effects,
-      labeled blocks).
+      `table_regression_models()` returns the supported model classes.
     contents:
       - table_regression
       - table_regression_uv
       - table_stack
       - table_regression_models
+  - subtitle: Model families
+    desc: >
+      One page per family of models: its arguments, the values the
+      shared arguments take for it (inference, robust-variance backends,
+      exponentiation, marginal effects, labeled blocks), and what it
+      refuses.
+    contents:
+      - table_regression_mixed
+      - table_regression_survival
+      - table_regression_ordinal
+      - table_regression_categorical
+      - table_regression_counts
+      - table_regression_survey
+      - table_regression_bayesian
+      - table_regression_robust
   - title: Working with tables
     desc: >
       Helpers shared by the descriptive and regression tables: the

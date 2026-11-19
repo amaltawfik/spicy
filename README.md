@@ -150,10 +150,11 @@ family:
 | Family | Engines |
 |----|----|
 | Linear and generalized linear | `stats::lm()`, `stats::glm()`, `MASS::glm.nb()`, `MASS::rlm()`, `stats::nls()` |
-| Robust, IV, quantile, panel | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::fenegbin()` |
+| Robust, IV, quantile, panel | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::femlm()`, `fixest::fenegbin()` |
 | Mixed effects | `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`, `nlme::gls()` |
-| Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `ordinal::clmm()`, `glmmTMB::glmmTMB()` (ordinal family), `nnet::multinom()`, `mlogit::mlogit()` |
-| Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
+| Ordinal | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `ordinal::clmm()`, `glmmTMB::glmmTMB()` (ordinal family) |
+| Categorical | `nnet::multinom()`, `mlogit::mlogit()` |
+| Counts, two-part | `pscl::zeroinfl()`, `pscl::hurdle()`, `glmmTMB::glmmTMB()` (zero-inflation, hurdle and dispersion components) |
 | Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
 | Survey-weighted | `survey::svyglm()`, `survey::svyolr()`, `survey::svycoxph()` (design-based SEs) |
 | Population-averaged (GEE) | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed) |
@@ -517,10 +518,10 @@ table_regression(fit_mixed)
 #>  Days                            │   10.47  1.55  [  7.44,  13.50]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:                 │                                        
-#>    σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –    
-#>    σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –    
+#>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
+#>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
 #>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
-#>    σ (Residual)                  │   25.59  1.51  [ 22.44,  28.39]   –    
+#>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
 #>  N (Subject)                     │   18                                   

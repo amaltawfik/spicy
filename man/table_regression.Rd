@@ -91,21 +91,12 @@ conventions differ slightly). Resampling that fails on nearly
 every replicate raises \code{spicy_resampling_failed} rather than
 silently reporting a different estimator.
 Quantile regression (\code{quantreg::rq}) uses its own estimator
-family instead: \code{"classical"} resolves to the
-heteroskedasticity-robust \code{"nid"} sandwich (Hendricks-Koenker,
-Hall-Sheather bandwidth -- quantreg's own large-sample default
-and the Stata \code{vce(robust)} analog), with \code{"iid"}
-(Koenker-Bassett homoskedastic, Stata \code{vce(iid)} parity),
-\code{"ker"} (Powell kernel) and \code{"rank"} (rank-score inversion:
-genuine CIs, no SE / t / p -- those cells render as dashes) as
-opt-ins, and \code{"bootstrap"} running quantreg's native \code{boot.rq}
-(\code{bsmethod = "xy"}; with \verb{cluster =}, the Hagemann 2017 wild
-gradient cluster bootstrap -- the one cluster-robust route for
-\code{rq}; \verb{CR*} and \verb{HC*} are refused for \code{rq}, as is
-\code{"jackknife"}, whose leave-one-out form is inconsistent for
-quantiles). With \code{nested = TRUE}, the change test of each pair
-uses the same estimator (a Wald test; see \emph{Hierarchical (nested)
-model comparison}). See \emph{Inference and standard errors}.}
+family instead (\code{"nid"}, the default, \code{"iid"}, \code{"ker"}, \code{"rank"}
+and \code{"bootstrap"}); see \link{table_regression_robust}. The values each
+class accepts are in \emph{Robust SE availability by model class}. With
+\code{nested = TRUE}, the change test of each pair uses the same
+estimator (a Wald test; see \emph{Hierarchical (nested) model
+comparison}). See \emph{Inference and standard errors}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
 (used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /
@@ -135,11 +126,9 @@ AME, partial effect sizes). Default \code{0.95}.}
 profile-likelihood CI from \code{\link[stats:confint]{stats::confint()}} --
 \code{\link[MASS:confint.glm]{MASS::confint.glm()}} for \code{glm}, \code{confint.polr()} / \code{confint.clm()}
 for ordinal fits -- asymmetric, exact for likelihood-based
-inference (Venables & Ripley \emph{MASS} Section 7.2). Only the CI bounds
+inference (Venables & Ripley 2002, Section 7.2). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
-fits the profile covers the predictor coefficients (the cut-point
-thresholds stay Wald), and a robust \code{vcov} takes precedence (its
-Wald-robust CIs are used instead, with a consolidated warning).
+fits, see \link{table_regression_ordinal}.
 \code{"profile"} with \code{lm} raises \code{spicy_invalid_input}.
 \code{"boot_percentile"} (requires \code{vcov = "bootstrap"} for every
 model) replaces the coefficient CI bounds with equal-tailed
@@ -155,11 +144,7 @@ exponentiated (percentile intervals are
 transformation-respecting).
 \code{"hdi"} (Bayesian \code{stanreg} / \code{brmsfit} fits only) replaces the
 default equal-tailed credible interval with the highest-density
-interval -- the shortest interval containing \code{ci_level} of the
-posterior draws (Kruschke 2015), relabeling the column header
-\verb{95\% HDI}. Unlike the equal-tailed interval the HDI is not
-transformation-invariant, so under \code{exponentiate = TRUE} it is
-recomputed on the exponentiated draws rather than transformed.
+interval; see \link{table_regression_bayesian}.
 Requesting \code{"hdi"} for a frequentist fit, or \code{"profile"} /
 \code{"boot_percentile"} for a Bayesian fit, raises
 \code{spicy_invalid_input}.}
@@ -174,45 +159,23 @@ at least 10 valid replicates: a smaller \code{boot_n} is an error.
 Typed in a table that runs no bootstrap, it is ignored with a
 warning (class \code{spicy_ignored_arg}).}
 
-\item{tau}{RMST horizon: the \code{"rmst"} column family reports the
-restricted-mean-survival-time difference over \verb{[0, tau]}
-(\code{coxph} and \code{survreg} fits). A positive time on the outcome's scale, or
-\code{"minmax"} for the smallest per-group maximum follow-up (the
-resolved value is disclosed in the table note). No default: the
-horizon defines the estimand. Stratified fits (\code{strata()}) are
-supported: standardization keeps each subject's own stratum
-baseline, disclosed in the table note.}
+\item{tau}{Survival models only: the RMST horizon of the \code{"rmst"}
+columns, a positive time or \code{"minmax"}, with no default. See
+\link{table_regression_survival}.}
 
-\item{at_time}{Landmark time for the \code{"risk_diff"} column family:
-the difference in cumulative incidence at \code{at_time} (\code{coxph}
-and \code{survreg} fits). A positive time on the outcome's scale; no default.}
+\item{at_time}{Survival models only: the landmark time of the
+\code{"risk_diff"} columns, a positive time, with no default. See
+\link{table_regression_survival}.}
 
 \item{standardized}{Standardization method for the \code{"beta"}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}, \code{"pseudo"}. \code{"pseudo"} is \emph{glm only}
 (Menard 2011 fully-standardized); using it with \code{lm()} raises
 \code{spicy_invalid_input}. Supported classes: \code{lm}, \code{glm}
-(incl. \code{MASS::glm.nb}), the mixed engines (\code{lmer} /
-\code{glmer} / \code{glmmTMB} / \code{nlme::lme}), and fixed-effects
-\code{stan_glm}-style \code{stanreg} fits for the algebraic flavors
-\code{"posthoc"} / \code{"basic"} / \code{"smart"} -- exact affine rescales of
-the posterior draws (median, MAD SD and credible bounds all
-scale by the same positive SD ratio; the beta stays on the link
-scale under \code{exponentiate = TRUE}). Standard-formula
-fixed-effects \code{brmsfit} models are supported too (their design
-matrix is recovered through \pkg{insight}); the scale factors
-are engine-invariant, so the same model fit with rstanarm or
-brms gets identical betas up to sampling noise. Bayesian
-\code{"refit"} (would re-run the sampler) and \code{"pseudo"} (per-draw
-latent variance; planned) are refused. Also refused: multilevel
-fits (\code{stan_glmer} / \code{stan_lmer} and \code{brm()} with group-level
-terms; a Bayesian beta would need an explicit sd(Y)
-decomposition that the frequentist mixed engines resolve by
-refitting on z-scored data), non-GLM \code{stanreg} subclasses
-(\code{stan_polr}, \code{stan_betareg}), and brms formulas with
-distributional, multivariate or special terms (\code{mo()}, \code{s()},
-...). In all refused Bayesian cases, standardize predictors
-before fitting instead. Any other class
+(incl. \code{MASS::glm.nb}), the mixed engines (\code{"refit"} only; see
+\link{table_regression_mixed}), and fixed-effects Bayesian fits
+(\code{"posthoc"}, \code{"basic"} and \code{"smart"} only; see
+\link{table_regression_bayesian}). Any other class
 raises
 \code{spicy_unsupported_standardized} rather than rendering an
 empty beta column. See the \emph{Standardized coefficients}
@@ -226,14 +189,8 @@ logit (\code{OR}), log (\code{IRR} / \code{RR} / \code{MR} per family, generic
 means), and binomial / ordinal cloglog (\code{HR}; grouped-time
 proportional hazards, Prentice & Gloeckler 1978). For the
 \emph{ordinal} (cumulative) cloglog model the displayed \code{HR} is
-\code{exp(-B)}, not \code{exp(B)}: the cumulative parametrization
-\verb{cloglog P(Y <= j) = zeta_j - xB} places the hazard of the
-grouped event on \code{-B}, so \code{exp(B)} would be the reciprocal of
-the hazard ratio (the CI endpoints are negated and swapped
-accordingly, and the table note discloses the convention; a
-cloglog \code{clm} with \verb{nominal =} terms refuses \code{exponentiate}
-because threshold-side coefficients have no covariate-HR
-reading). The statistic
+\code{exp(-B)}, not \code{exp(B)}; see \link{table_regression_ordinal}. The
+statistic
 and p-value stay on the link scale (invariant under monotone
 transformation). Identity-link fits are left untouched (a
 \code{spicy_ignored_arg} warning fires when no model in the table
@@ -390,55 +347,15 @@ Mutually exclusive with \code{keep}. Default \code{NULL}.}
 \item{show_intercept}{Whether to display the intercept row.
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}
 
-\item{show_thresholds}{For ordinal cumulative-link models
-(\code{MASS::polr}, \code{ordinal::clm}, \code{ordinal::clmm}, \code{survey::svyolr},
-\code{glmmTMB} with the ordinal family, \code{rms::lrm} with more than two
-outcome levels), whether to display the estimated
-category thresholds (cut-points) as a subordinate \code{"Thresholds"}
-block of rows below the predictors, carrying B / SE / CI / p like
-the predictor rows. Default \code{TRUE}. \code{FALSE} collapses them to a
-compact one-line footer note instead. Thresholds are reported on
-the log-odds (B) scale and are \strong{never exponentiated} (under
-\code{exponentiate = TRUE} their rows stay on the log-odds scale).
-They follow the \code{polr} convention, link(P(Y <= j)) = threshold -
-linear predictor: an \code{rms::lrm} fit, which models P(Y >= j), shows
-its intercepts with the sign reversed, named \code{"3|4"} (displayed
-\code{"3 | 4"}) rather than \code{"y>=4"}.
-Has no effect on non-ordinal models, and the rows are shown only
-when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
+\item{show_thresholds}{Ordinal models only: \code{TRUE} (default) shows
+the cut-points as a \code{Thresholds} block of rows, \code{FALSE} gives them
+in the note. See \link{table_regression_ordinal}.}
 
-\item{show_components}{For models with secondary components,
-whether to display them as labeled subordinate blocks of rows
-below the primary (count / conditional / location) coefficients.
-Default \code{TRUE}:
-\itemize{
-\item \code{pscl::zeroinfl} and \code{glmmTMB(ziformula = )}: a
-\code{Zero-inflation} block -- the model for the probability of a
-\strong{structural (excess) zero}.
-\item \code{pscl::hurdle}: a \verb{Zero hurdle, Pr(y > 0)} block -- the model
-for the probability of a \strong{nonzero count} (note the opposite
-direction vs zero-inflation; the footer names each block's
-meaning).
-\item A \code{glmmTMB} hurdle model (a zero-truncated family,
-\code{glmmTMB::ziGamma()}, \code{glmmTMB::lognormal()} or
-\code{glmmTMB::beta_family()}, with \code{ziformula}): a
-\verb{Zero hurdle, Pr(y = 0)} block -- glmmTMB models the probability
-of a \strong{zero}, the opposite event of the \code{pscl::hurdle} block.
-\item \code{glmmTMB(dispformula = )}: a \code{Dispersion} block (only when
-dispersion was actually modeled; log scale, never
-exponentiated).
-\item \verb{ordinal::clm(scale = ~)}: a \verb{Scale effects} block -- the
-covariate effects on the \strong{log standard deviation of the
-latent response}. Never exponentiated: their exponential is a
-ratio of latent standard deviations, not an odds ratio.
-}
-Component rows carry full Wald inference (B / SE / z / p / CI),
-join the \code{p_adjust} family, and take significance stars. Under
-\code{exponentiate = TRUE} a component is exponentiated \strong{only when its
-link makes the result an odds ratio} (the logit zero components);
-probit / cauchit / cloglog zero links and count-type hurdle zero
-parts stay on the link scale, disclosed in the footer. \code{FALSE}
-omits the blocks (the title still names the model type).}
+\item{show_components}{Models with secondary components only (the
+\code{pscl} and \code{glmmTMB} two-part and dispersion models, \code{clm} with
+\verb{scale =}): \code{TRUE} (default) shows the components as labeled blocks
+of rows, \code{FALSE} omits them. See \link{table_regression_counts} and
+\link{table_regression_ordinal}.}
 
 \item{intercept_position}{Where to place the intercept when
 shown. \code{"first"} (default, APA) or \code{"last"} (Stata-style,
@@ -524,6 +441,9 @@ fits, \code{polr}, \code{clm}, \code{multinom}, ordinal \code{rms::lrm}: \code{c
 \item mixed \code{lm} + \code{glm}: the union of the two (the
 renderer en-dashes per cell the stat not defined for a
 given model class).
+\item mixed-effects, survival, survey-design, Bayesian, robust and
+panel models: see the page of the family (\emph{Pages by model
+family}).
 }
 Under \code{nested = TRUE} the default is extended with the
 class-appropriate change-stat tokens (e.g. \code{"r2_change"},
@@ -575,140 +495,24 @@ with its label, then by an Outcome row where \emph{Stacked layout} says.
 See \emph{Multi-model semantics} and \code{\link[=table_stack]{table_stack()}},
 which stacks tables built separately.}
 
-\item{show_re}{Logical. \code{TRUE} (default) renders the random-effects
-variance components of a mixed-effects fit (\code{lmer}, \code{glmer},
-\code{glmmTMB}, \code{lme}, \code{clmm}) as a subordinate \strong{"Random effects" block of
-table rows} below the fixed effects: one row per standard
-deviation / correlation per grouping factor, plus the residual,
-each with its estimate, SE, and CI in the shared coefficient
-columns. The group sizes (\code{N (groups)}) and the ICC render as
-fit-statistic rows; the footer reports the estimation method
-(\code{REML} / \code{ML}) and the likelihood-ratio test of the whole
-random part against the no-random-effects model, with the
-boundary-corrected chi-bar-squared p-value (Self & Liang 1987;
-Stram & Lee 1994). Variance-component rows deliberately carry
-\strong{no per-row p-value}: a Wald test of a variance is invalid at
-the boundary of the parameter space, and no reporting guideline
-requests one (see the \emph{Mixed-effects models} section of the
-\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
-article). \code{FALSE} suppresses the block.
-No effect on fits without random effects (\code{lm}, \code{glm},
-\code{coxph}, ...).}
+\item{show_re}{Mixed models only: \code{TRUE} (default) renders the
+variance components as a \verb{Random effects} block of rows, \code{FALSE}
+suppresses it. See \link{table_regression_mixed}.}
 
-\item{re_scale}{One of \code{"sd"} (default) or \code{"variance"}.
-Controls the display scale of the random-effects rows:
-\itemize{
-\item \code{"sd"}: report the random-effect standard
-deviation \eqn{\sigma}, in the unit of the linear predictor
-(that of the response for a Gaussian model).
-\item \code{"variance"}: report \eqn{\sigma^2}, in squared units.
-}
-The standard error is a delta-method one on the scale the engine
-estimates on, and \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)}. For \code{lmer}
-and \code{glmer} it comes from the covariance matrix of the variances
-(\code{merDeriv}). For \code{lme}, \code{glmmTMB} and \code{clmm} the engine estimates
-\eqn{\log\sigma} and the SE is \eqn{\sigma\,SE(\log\sigma)}. The Wald
-CI of every engine is built on \eqn{\log\sigma},
-\eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, and squared for
-\eqn{\sigma^2}: by spicy for \code{lmer} and \code{glmer}, by the engine
-otherwise (\code{nlme::intervals()}, \code{glmmTMB::confint()}).
-Correlation rows (\eqn{\rho}) are unitless and pass through
-either way. Their SE is a delta-method one too: from the variances
-for \code{lmer} (CI \eqn{\rho \pm z\,SE}, clamped to \eqn{[-1, 1]}), from
-\eqn{\mathrm{atanh}(\rho)} for \code{lme} and from glmmTMB's
-\eqn{\rho / \sqrt{1 - \rho^2}} in a two-term block, with the engine's
-CI. In a glmmTMB block of three terms or more it is the width of
-glmmTMB's interval divided by \eqn{2z}.}
+\item{re_scale}{Mixed models only: \code{"sd"} (default) or \code{"variance"},
+the scale of the random-effects rows. See \link{table_regression_mixed}.}
 
-\item{re_columns}{Character vector. Subset of
-\code{c("est", "se", "ci")} controlling which cells of the
-random-effects rows are \strong{displayed} (\code{"est"} is mandatory);
-deselected SE / CI cells render as an en-dash on those rows
-only. Useful for slimming output (\code{re_columns = "est"}) or
-for journals that want only standard errors
-(\code{re_columns = c("est", "se")}). Display-only: the underlying
-data (\code{broom::tidy()}, \code{\link[=as_structured]{as_structured()}}) always carries the
-full SE + CI.
+\item{re_columns}{Mixed models only: the cells of the random-effects
+rows that are displayed, a subset of \code{c("est", "se", "ci")}. See
+\link{table_regression_mixed}.}
 
-Note. Under the default \code{re_ci = "wald"} the CI is Wald on the log
-of the standard deviation (\verb{sd * exp(± z * SE(log sd))}, see
-\code{re_scale}), so it stays above 0, and on \eqn{\rho} for \code{lmer}
-correlations. Wald can be
-optimistic near the variance boundary (Self & Liang 1987
-chi-bar-squared); request boundary-respecting profile-likelihood
-intervals with \code{re_ci = "profile"} when robustness is critical.
-See the \emph{Mixed-effects models} section of the
-\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
-article.
+\item{re_test}{Mixed models only: \code{"none"} (default), \code{"lrt"} or
+\code{"rlrt"}, a per-term test of the variance components. See
+\link{table_regression_mixed}.}
 
-For \code{lmer} / \code{glmer} fits these SEs come from \code{merDeriv}, whose
-cost grows superlinearly with the number of observations (about a
-minute at n of roughly 2,700). Above \code{options("spicy.re_se_max_n")}
-(default \code{1000}) they are skipped: the rows keep their estimates,
-the SE / CI cells render as en-dashes, a table note states the
-omission, and a \code{spicy_caveat} warning points here. Raise the cap
-(e.g. \code{options(spicy.re_se_max_n = Inf)}) to force the
-computation, or test the random terms with \code{re_test = "lrt"}.}
-
-\item{re_test}{One of \code{"none"} (default), \code{"lrt"}, or \code{"rlrt"}.
-Opt-in \strong{per-term significance test} for the random-effect
-variance components, filling the otherwise-empty p column of
-the Random effects rows. Never a Wald test (invalid at the
-boundary sigma = 0):
-\itemize{
-\item \code{"lrt"}: likelihood-ratio test of each random term vs
-the model refitted without it (the term's variance plus its
-covariances with the other terms of its bar), referred to
-the boundary-corrected chi-bar-squared mixture
-\verb{0.5 chi2(q-1) + 0.5 chi2(q)} (Self & Liang 1987; Stram &
-Lee 1994). The reduction scheme matches
-\code{lmerTest::ranova()}; the mixture reference makes the
-p-value exact-asymptotic rather than conservative. A bar's
-intercept is tested only when it is the bar's single term.
-Supported: \code{lmer}, \code{glmer}, \code{glmmTMB}, and \code{lme} with a
-simple \code{random = ~ terms | group} structure.
-\item \code{"rlrt"}: exact restricted likelihood-ratio test with a
-simulated finite-sample null (\code{RLRsim::exactRLRT()};
-Crainiceanu & Ruppert 2004). Only defined for a Gaussian
-\code{lmer} / \code{lme} fit with a single variance component.
-}
-The test statistic and df stay out of the displayed t/z column
-(they are chi-square-scale, not t/z) but are carried in
-\code{broom::tidy()} (\code{test_type} \code{"chibar2"} / \code{"rlrt"}). The
-whole-block LR test in the footer is unaffected. Correlation
-and residual rows are never tested (a correlation is tested
-jointly with its slope; the residual has no zero-variance
-null). Refits happen once per random term: expect a
-noticeable cost on large models. For structures outside these
-two routes (e.g. multiple variance components needing a
-finite-sample null), \code{pbkrtest::PBmodcomp()} offers a
-parametric-bootstrap LR test on the same nested pair of fits
-(Halekoh & Hojsgaard 2014) -- run it directly and report its
-p-value alongside the table.}
-
-\item{re_ci}{One of \code{"wald"} (default) or \code{"profile"}. Uncertainty
-route for the random-effect variance-component rows of \code{lmer} /
-\code{glmer} fits:
-\itemize{
-\item \code{"wald"}: SE from the information matrix (\code{merDeriv},
-expected information by default) and a Wald CI symmetric on
-the log of the standard deviation, which stays above 0 (see
-\code{re_scale}), subject to the
-\code{options("spicy.re_se_max_n")} size cap (see \code{re_columns}).
-\item \code{"profile"}: \strong{profile-likelihood CIs} via
-\code{confint(fit, method = "profile")} -- the route lme4 itself
-documents and defaults to. The intervals are asymmetric and
-respect the boundary at 0; no SE is shown (lme4's position:
-a symmetric SE misdescribes the skewed sampling distribution
-of a variance). Sidesteps the size cap entirely (roughly two
-seconds per variance parameter even at n ~ 7,000; \code{glmer}
-profiles cost more). The footer discloses the method, and
-likelihood intervals transform exactly, so
-\code{re_scale = "variance"} shows the profile CI of the variance
-itself.
-}
-\code{glmmTMB} and \code{nlme::lme} fits keep their engine-native CIs
-(TMB's \code{sdreport}; nlme's \code{apVar}) and refuse \code{"profile"}.}
+\item{re_ci}{Mixed models only: \code{"wald"} (default) or \code{"profile"},
+the intervals of the random-effects rows of \code{lmer} and \code{glmer} fits.
+See \link{table_regression_mixed}.}
 
 \item{model_labels}{Per-model labels used as the \strong{column-group
 spanner} above each model's sub-columns (console + gt /
@@ -717,7 +521,8 @@ flextable / tinytable / Excel / Word renderers). \code{NULL}
 for the full rule. A character vector of length
 \code{length(models)} overrides. Refused (error) for a single
 multinomial model: there the column groups are outcome
-categories, relabeled via \code{outcome_labels}.}
+categories, relabeled via \code{outcome_labels}
+(\link{table_regression_categorical}).}
 
 \item{outcome_labels}{The \strong{Outcome body row}, which names the
 outcome of each model under the column headers. \code{NULL} (default)
@@ -742,13 +547,8 @@ no cells of the body, moves the row into the header: each label
 spans the columns of its model, under the model's name. A stacked gt
 table and the markdown grid of tinytable keep the label in the first
 column of the model, so a long label widens that column.
-\strong{Single multinomial model}
-(outcome-as-columns layout): repurposed as the category
-spanner override -- a character vector with one label per
-non-reference outcome category (unique, in model order), e.g.
-\code{c("Student vs Employed", ...)}; the reference category's
-AME-only group (when displayed) keeps its own name, and \code{FALSE}
-is a no-op (there is no Outcome row to suppress).}
+For a single multinomial model, the labels of the category
+spanners; see \link{table_regression_categorical}.}
 
 \item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
 Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
@@ -1052,7 +852,15 @@ for \code{"clipboard"}. The two data frames carry the note as printed in
 }
 \description{
 Publication-ready coefficient table from one or more fitted
-\code{lm} / \code{glm} models. Supports standardized coefficients
+regression models: linear and generalized linear models, robust,
+instrumental-variable, quantile and fixed-effects estimators,
+mixed-effects and GEE models, ordinal, multinomial, count and
+two-part models, survival models, survey-design fits, additive,
+beta-regression and sample-selection models, and Bayesian fits,
+39
+model classes listed by \code{\link[=table_regression_models]{table_regression_models()}}. Several fits,
+of one class or of several, go side by side in one table. For \code{lm}
+and \code{glm}, it supports standardized coefficients
 (\eqn{\beta}{beta}), average marginal effects (AME), partial
 effect sizes (\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} /
 \emph{\eqn{\omega^2}{omega^2}} and partial \emph{F} for \code{lm}; partial
@@ -1063,6 +871,33 @@ estimators
 df / bootstrap / jackknife). \code{glm} covers binomial / poisson /
 Gamma / inverse.gaussian / quasi families with any link.
 }
+\section{Pages by model family}{
+This page documents every argument. What is proper to one family of
+models, its own arguments and the values the shared ones take for it,
+is on the page of that family:
+
+\itemize{
+\item \link{table_regression_mixed}: \code{lmer}, \code{glmer}, \code{glmmTMB}, \code{lme}
+and \code{gls} fits.
+\item \link{table_regression_survival}: \code{coxph}, \code{survreg}, \code{cph} and
+\code{flexsurvreg} fits, the RMST and risk-difference columns.
+\item \link{table_regression_ordinal}: \code{polr}, \code{clm} and \code{clmm} fits.
+\item \link{table_regression_categorical}: \code{multinom} and \code{mlogit} fits.
+\item \link{table_regression_counts}: \code{zeroinfl} and \code{hurdle} fits, and
+the zero-inflation, hurdle and dispersion blocks of \code{glmmTMB}.
+\item \link{table_regression_survey}: \code{svyglm}, \code{svyolr} and \code{svycoxph}
+fits.
+\item \link{table_regression_bayesian}: \code{stanreg} and \code{brmsfit} fits.
+\item \link{table_regression_robust}: \code{lm_robust}, \code{iv_robust}, \code{ivreg},
+\code{tobit}, \code{rq} and \code{fixest} fits.
+}
+
+The other families (linear and generalized linear models, additive
+models, beta regression and sample selection, and the \code{rms} fits)
+follow the rules of this page. GEE fits are described in
+\code{\link[=table_regression_models]{table_regression_models()}}, which lists every supported class.
+}
+
 \section{Vocabulary tokens}{
 Two vector arguments -- \code{show_columns} and \code{show_fit_stats} --
 accept named tokens that select \strong{what} to display and in
@@ -1114,12 +949,8 @@ and when a model carries the other one while that one is not
 requested (each test has its own column: ask for both). Both come
 from the refits and the model's own dispersion (the residual
 variance of an \code{lm}) whatever \code{vcov}.
-For \code{lmer} / \code{glmer} /
-\code{glmmTMB} / \code{nlme::lme}, \code{"partial_chi2"} is the Wald
-chi-square built from the same hypothesis: Type II by default,
-where SAS PROC MIXED and \code{lmerTest} test Type III, which
-\code{partial_type = "III"} gives (the two conventions coincide for
-models without interactions). Rendered as \code{value (df)} to
+For the mixed models, \code{"partial_chi2"} is the Wald chi-square
+of the same hypothesis; see \link{table_regression_mixed}. Rendered as \code{value (df)} to
 disambiguate factor terms (k-1 df) from numeric terms (1 df),
 and the partial F as \code{F (q, df)} with both of its degrees of
 freedom, \code{3.45 (2, 28)}, as Stata and SAS report them: each cell
@@ -1162,7 +993,7 @@ survival-time difference over \verb{[0, tau]}) and
 \code{"risk_diff_p"} (cumulative-incidence difference at
 \code{at_time}), by g-computation from the fitted model with
 bootstrap inference. The horizon arguments are required;
-see \code{tau} / \code{at_time}.
+see \code{tau} / \code{at_time} and \link{table_regression_survival}.
 }
 
 \strong{Group tokens} (presets) expand to a fixed atomic vector
@@ -1269,7 +1100,8 @@ all-Bayesian default), \code{"elpd_loo"} and \code{"looic"} (PSIS-LOO
 expected log predictive density and its deviance-scale twin,
 Vehtari et al. 2017; opt-in, a few seconds per model; the
 footer discloses the elpd standard error), and \code{"waic"}
-(Watanabe-Akaike; PSIS-LOO is generally preferred).
+(Watanabe-Akaike; PSIS-LOO is generally preferred). See
+\link{table_regression_bayesian}.
 \item Negative-binomial dispersion. NB2 fits (\code{MASS::glm.nb},
 \code{lme4::glmer.nb}, \code{fixest::fenegbin}, \code{mgcv::gam} with \code{nb()},
 \code{pscl::zeroinfl} and \code{pscl::hurdle} with \code{dist = "negbin"}, whose
@@ -1623,146 +1455,83 @@ via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
 For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. \code{glmmTMB}, survival, ordinal,
 \code{betareg}, \code{mlogit} use z; \code{lm}, \code{lme}, \code{lmer}, \code{rms::ols} use t).
-\subsection{Multinomial models: outcome categories as columns}{
 
-A single \code{nnet::multinom} model renders the publication layout:
-predictors as rows, one column group per \strong{non-reference outcome
-category} (spanner = category name), so a predictor's effect can
-be compared across equations along its row. The mandatory footer
-note \verb{Reference outcome: <level>.} names the base category (Stata's
-"base outcome" line); \code{outcome_labels} relabels the spanners (e.g.
-\code{"Student vs Employed"}). Fit statistics print once, under the
-first group. When per-category AMEs are requested the reference
-category appears as a last, AME-only group (its coefficient cells
-are empty -- the reference has no equation; its AMEs complete the
-zero-sum across categories). The default \code{show_columns} compacts
-to B / SE / p exactly like multi-model tables; request atomic
-tokens to restore CIs. Multi-model and \code{nested = TRUE} multinomial
-tables keep the one-row-per-(category, predictor) layout --
-categories-within-models would need two spanner levels.
-\code{tidy()} and \code{output = "long"} always return the long form
-(\code{"<category>: <term>"} rows), whatever the display;
-\code{as_structured()} and \code{output = "data.frame"} mirror the displayed
-table (one column set per category), as they do for every other
-layout.
-}
-
+A single \code{nnet::multinom} model sets its outcome categories as column
+groups; see \link{table_regression_categorical}.
 \subsection{Robust SE availability by model class}{
 
 Not every estimator is defined for every class. A robust \code{vcov}
-the class cannot honor fails fast with \code{spicy_unsupported_vcov}
--- never a silent model-based result under a robust label:
-
-\describe{
-\item{\code{lm}, \code{glm}, \code{MASS::glm.nb}}{all of \code{classical}, \verb{HC*},
-\verb{CR*}, \code{bootstrap}, \code{jackknife}. \code{lm} additionally takes
-\code{"CR1S"} -- the full Stata \verb{regress, vce(cluster)}
-convention: the CR1S small-sample scaling (equal to
-\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} with \code{type = "HC1"}) with \code{t(G - 1)}
-inference, \code{G} the number of clusters. Use it to reproduce
-Stata tables; \code{"CR2"} (Bell-McCaffrey, Satterthwaite df)
-remains the recommended modern choice. \code{"CR1S"} is refused
-for \code{glm} with an explanation: Stata's ML commands use a
-different convention (\code{G/(G-1)} scaling, z), so the label
-would not match Stata output there. For \code{MASS::glm.nb}, the
-sandwich holds theta at its estimate, so robust standard errors
-can differ by a few percent from software that includes the
-score of theta.}
-\item{\code{mlogit}}{\code{classical} + \code{"CR1"} only (cluster at the
-choice-situation level) -- \code{sandwich::vcovHC()} mis-scales the
-sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
-refused.}
-\item{\code{lmer}, \code{lme}}{\code{classical} + \verb{CR*} only -- \verb{HC*} and the
-resamplers (which refit \code{lm}/\code{glm}) are not defined for these.}
-\item{\code{coxph}, \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical} +
-\code{"CR0"} only: the Lin-Wei sandwich of \code{coxph(cluster = )} and
-\code{\link[rms:robcov]{rms::robcov()}} are one cluster estimator each, with no
-small-sample factor. \code{"CR1"} to \code{"CR3"} are refused, as are \verb{HC*}
-and the resamplers.}
-\item{\code{survreg}, \code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
-\code{nnet::multinom}, \code{pscl::zeroinfl}/\code{hurdle}}{\code{classical}
-+ \code{"CR1"} only: \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} computes one cluster
-estimator for these, the CR0 sandwich scaled by
-\eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters
-(\pkg{clubSandwich}'s CR1). \code{"CR0"}, \code{"CR2"} and \code{"CR3"} are
-refused, as are \verb{HC*} and the resamplers. \code{clm} with a scale /
-nominal (partial-PO) component is \code{classical} only.
-\code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
-\code{estfun()} method); its \code{cluster} is one entry per
-observation. For the two-part \code{pscl} fits the cluster
-sandwich covers both components (count and zero) at once. A
-negative-binomial \code{zeroinfl} or \code{hurdle} is \code{classical} only:
-the sandwich of these fits leaves out the score of theta. When
-the count part is negative binomial, fit the model with
-\code{glmmTMB} instead (family \code{nbinom2} with \code{ziformula}, or
-\code{truncated_nbinom2} for a hurdle), whose sandwich includes it;
-glmmTMB's zero hurdle is binomial, as with
-\code{zero.dist = "binomial"}. When only the zero hurdle is negative
-binomial, the default
-\code{zero.dist = "binomial"} keeps \code{"CR1"}.}
-\item{\code{quantreg::rq}}{its own estimator family, not the sandwich
-vocabulary: \code{classical} (= \code{"nid"}, quantreg's large-sample
-default), \code{"iid"}, \code{"ker"}, \code{"rank"} (intervals only) and a
-native \code{"bootstrap"}, clustered via the wild gradient
-bootstrap. \verb{HC*}, \verb{CR*} and \code{jackknife} are refused, each with
-its own reason -- see the \code{vcov} argument.}
-\item{\code{geepack::geeglm}}{no spicy-side estimator at all: GEE
-inference is robust by construction, so the fit's own sandwich
-(or jackknife) standard errors -- chosen by geeglm's
-\verb{std.err =} option, clustered on its \verb{id =} -- are the
-displayed inference. \verb{HC*} / \verb{CR*} and \code{cluster} are refused
-with a pointer to those fit options.}
-\item{\code{survey::svyglm}}{\code{classical} only, on principle: the
-design-based Taylor / replicate variance is already the robust
-variance for the declared design, and clustering belongs in
-the design itself (\code{survey::svydesign(ids = )}), not in the
-table call.}
-\item{\code{estimatr} (\code{lm_robust}/\code{iv_robust}) and \code{fixest}}{these
-fits carry the variance they were computed with -- estimatr's
-\verb{se_type =}, and whatever fixest's own \code{vcov} interface
-produced -- and spicy never overwrites it. A \code{vcov} request is
-refused; set the estimator through the fitting package instead
-(\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
-\code{summary()} for fixest). With IID errors, fixest's default
-small-sample correction (\code{\link[fixest:ssc]{fixest::ssc()}}) multiplies the
-standard errors of a \code{feglm()} fit by sqrt((n - 1) / (n - K))
-over those of its \code{glm()} twin with the fixed effects as
-dummies (a \code{feols()} fit already matches \code{lm()}), and
-\code{summary(fit, ssc = fixest::ssc(K.adj = FALSE))} gives the
-\code{glm()} values.}
-\item{\code{glmmTMB}}{\code{classical}, \code{"CR0"} and \code{"CR1"}, from glmmTMB's
-own sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the
-coefficients, the zero-inflation and dispersion blocks and the
-AME. \code{"CR0"} is the sandwich as glmmTMB computes it; \code{"CR1"}
-scales it by \eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters,
-as for the \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} classes. Both use Wald z. Without
-\code{cluster}, the cluster is the top-level grouping factor of the
-random effects. The estimator needs independent clusters that
-contain the random effects -- every group within one cluster --
-so crossed random effects need a \code{cluster} that contains them
-all. It keeps the standard errors valid when the random-effects
-distribution or the conditional variance is misspecified,
-provided the estimates themselves stay consistent (Liang & Zeger
-1986; Verbeke & Lesaffre 1997); with few clusters it understates
-the variance, which the factor of \code{"CR1"} offsets only in part:
-this class has no bias-reduced correction (Cameron & Miller
-2015). \code{"CR2"}, \code{"CR3"} and \verb{HC*} are refused (the sandwich has
-one score per cluster, with no residuals and no hat values), as
-are REML fits and the ordinal family.}
-\item{Other classes (\code{glmer}, \code{rstanarm}/\code{brms}, ...)}{\code{classical}
-(model-based) only (\pkg{clubSandwich} has no working backend for
-\code{glmer}).}
+the class cannot honor is refused with \code{spicy_unsupported_vcov},
+instead of a model-based result under a robust label. The
+values each class accepts, the \code{vcov} column of
+\code{\link[=table_regression_models]{table_regression_models()}}:\tabular{lll}{
+   Family \tab Class \tab vcov \cr
+   Linear and generalized linear \tab \code{lm} \tab classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife \cr
+   Linear and generalized linear \tab \code{glm} \tab classical, HC0-HC5, CR0-CR3, bootstrap, jackknife \cr
+   Linear and generalized linear \tab \code{negbin} \tab classical, HC0-HC5, CR0-CR3, bootstrap, jackknife \cr
+   Linear and generalized linear \tab \code{rlm} \tab classical \cr
+   Linear and generalized linear \tab \code{nls} \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{lm_robust} \tab classical (the fit's own) \cr
+   Robust, IV, quantile, panel \tab \code{iv_robust} \tab classical (the fit's own) \cr
+   Robust, IV, quantile, panel \tab \code{ivreg} \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{tobit} \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{rq} \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
+   Robust, IV, quantile, panel \tab \code{fixest} \tab classical (the fit's own) \cr
+   Mixed effects \tab \code{lmerMod} \tab classical, CR0-CR3 \cr
+   Mixed effects \tab \code{glmerMod} \tab classical \cr
+   Mixed effects \tab \code{glmmTMB} \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
+   Mixed effects \tab \code{lme} \tab classical, CR0-CR3 \cr
+   Mixed effects \tab \code{gls} \tab classical \cr
+   Ordinal \tab \code{polr} \tab classical, CR1 \cr
+   Ordinal \tab \code{clm} \tab classical, CR1 (classical only with scale or nominal terms) \cr
+   Ordinal \tab \code{clmm} \tab classical \cr
+   Categorical \tab \code{multinom} \tab classical, CR1 \cr
+   Categorical \tab \code{mlogit} \tab classical, CR1 \cr
+   Counts, two-part \tab \code{zeroinfl} \tab classical, CR1 (classical only for a negative-binomial part) \cr
+   Counts, two-part \tab \code{hurdle} \tab classical, CR1 (classical only for a negative-binomial part) \cr
+   Survival \tab \code{coxph} \tab classical, CR0 \cr
+   Survival \tab \code{survreg} \tab classical, CR1 \cr
+   Survival \tab \code{cph} \tab classical, CR0 \cr
+   Survival \tab \code{flexsurvreg} \tab classical \cr
+   Survey-weighted \tab \code{svyglm} \tab classical (design-based) \cr
+   Survey-weighted \tab \code{svyolr} \tab classical (design-based) \cr
+   Survey-weighted \tab \code{svycoxph} \tab classical (design-based) \cr
+   Population-averaged (GEE) \tab \code{geeglm} \tab classical (the fit's own) \cr
+   Additive, proportions, selection \tab \code{gam} \tab classical, CR1 \cr
+   Additive, proportions, selection \tab \code{betareg} \tab classical, CR1 \cr
+   Additive, proportions, selection \tab \code{selection} \tab classical \cr
+   rms \tab \code{ols} \tab classical, CR0 \cr
+   rms \tab \code{lrm} \tab classical, CR0 \cr
+   rms \tab \code{Glm} \tab classical, CR0 \cr
+   Bayesian \tab \code{stanreg} \tab classical (the posterior) \cr
+   Bayesian \tab \code{brmsfit} \tab classical (the posterior) \cr
 }
 
-For the mixed-effects fits (\code{lmer}, \code{lme}, \code{glmmTMB}), the robust
-estimator covers the fixed effects: their coefficients, their joint
-tests (\code{"partial_chi2"}), the standardized coefficients and the AME.
-The random-effect variance components keep their model-based
-inference. glmmTMB's sandwich takes one likelihood score per cluster
-over the fixed and variance parameters, while the \verb{CR*} estimators of
-\code{lmer} and \code{lme} come from \pkg{clubSandwich} over the fixed effects
-alone: on the same model the two agree as the clusters grow, but not
-exactly.
+
+\code{"classical"} is the model-based variance, or the variance the fit
+carries for the classes marked so: \code{estimatr} and \code{fixest} fits keep
+the estimator they were computed with, a GEE fit its own sandwich, a
+survey fit its design-based variance, a Bayesian fit its posterior.
+Why the other tokens are refused, and the backend of each class, is
+on the page of its family (see \emph{Pages by model family}); for \code{lm},
+\code{glm}, GEE, \code{gam}, \code{betareg} and the \code{rms} fits, it is below.
+
+\code{lm} also takes \code{"CR1S"}, the full Stata \verb{regress, vce(cluster)} convention: the CR1S small-sample scaling (equal to
+\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} with \code{type = "HC1"}) with \code{t(G - 1)} inference,
+\code{G} the number of clusters. Use it to reproduce Stata tables; \code{"CR2"}
+(Bell-McCaffrey, Satterthwaite df) remains the recommended modern
+choice. \code{"CR1S"} is refused for \code{glm} with an explanation: Stata's ML
+commands use a different convention (\code{G/(G-1)} scaling, z), so the
+label would not match Stata output there. For \code{MASS::glm.nb}, the
+sandwich holds theta at its estimate, so robust standard errors can
+differ by a few percent from software that includes the score of
+theta.
+
+A GEE fit (\code{geepack::geeglm}) is robust by construction: the fit's
+own sandwich (or jackknife) standard errors, chosen by geeglm's
+\verb{std.err =} option and clustered on its \verb{id =}, are the displayed
+inference. \verb{HC*}, \verb{CR*} and \code{cluster} are refused with a pointer to
+those fit options.
 
 Cluster-robust backends differ by class but are each cross-validated
 to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
@@ -1785,11 +1554,7 @@ needs the fit's \verb{x = TRUE, y = TRUE}). The Lin-Wei and \code{robcov()}
 sandwiches have no small-sample factor: their one estimator is
 requested as \code{"CR0"}, and the other \verb{CR*} tokens are refused rather
 than mapped. \code{glmmTMB} fits use
-\code{glmmTMB::sandwich()}, with one score per cluster (the gradient of
-the cluster's marginal log-likelihood) and no finite-sample factor:
-\code{"CR0"} requests it as computed, \code{"CR1"} scaled by
-\eqn{G/(G-1)}{G/(G-1)}, and \code{"CR2"} and \code{"CR3"} are refused rather
-than mapped. \code{cluster} length is one
+\code{glmmTMB::sandwich()} (see \link{table_regression_mixed}). \code{cluster} length is one
 entry per observation, except \code{mlogit} (one per choice situation)
 and censored \code{coxph} (one per subject).
 }
@@ -1833,66 +1598,6 @@ For multi-model use, mix forms freely:
 }
 }
 
-\section{Bayesian fits (rstanarm / brms)}{
-\code{stanreg} and \code{brmsfit} models are summarized from their posterior
-draws: \code{B} is the posterior median, \code{SE} the posterior MAD SD (the
-scaled median absolute deviation -- the pairing of \emph{Regression and
-Other Stories} and rstanarm's own print; equal to the posterior SD
-for a normal posterior), and the interval an equal-tailed credible
-interval (header \verb{95\% CrI}; \code{ci_method = "hdi"} opts into the
-highest-density interval, header \verb{95\% HDI}). There is no p-value
-or t-statistic; group presets (\code{"all_b"}, ...) expand without
-them, and the opt-in \code{"pd"} column reports the probability of
-direction (Makowski et al. 2019), with a footer definition. Under
-\code{exponentiate = TRUE} all quantities are computed from the
-exponentiated draws directly (the SE is the posterior MAD SD on
-the ratio scale, not a delta-method approximation). The AME
-columns are equally draws-native: \code{avg_slopes()} computes the
-marginal effects per posterior draw, and the table reports their
-posterior median, MAD SD and credible interval (equal-tailed or
-HDI per \code{ci_method}); \code{"ame_p"} has nothing to fill and follows
-the p-column policy (dropped from presets, refused as an atomic
-token, dashed in mixed tables). Standardized betas follow the same
-draws logic: \code{"posthoc"} / \code{"basic"} / \code{"smart"} are exact affine
-rescales of the link-scale summaries (the Gaussian family divides
-by SD(y); every other family standardizes predictors only, the
-frequentist glm convention); \code{"refit"} and \code{"pseudo"} are refused.
-
-Fit statistics: \code{"r2_bayes"} (in the Bayesian default) plus the
-opt-in \code{"elpd_loo"} / \code{"looic"} / \code{"waic"}, whose standard errors
-are disclosed in the footer; unreliable estimates (PSIS-LOO Pareto
-k above the sample-size-specific threshold
-\eqn{\min(1 - 1/\log_{10} S, 0.7)}{min(1 - 1/log10(S), 0.7)} of
-Vehtari et al. 2024 -- the same bound \code{loo::loo()} prints -- and
-WAIC p_waic > 0.4) add a footer caveat instead of being
-silenced. Every table is backed by an automatic sampler-diagnostics
-guard (R-hat >= 1.01, ESS below 100 per chain -- floored at 400 so
-fewer chains never weaken the bar --, divergent
-transitions, E-BFMI < 0.2, per Vehtari et al. 2021): problems add
-a footer line and raise a warning classed
-\code{spicy_bayes_diagnostics} (nested under \code{spicy_caveat}, so
-\code{withCallingHandlers(spicy_bayes_diagnostics = ...)} mutes the
-guard selectively); clean fits print nothing. Per-coefficient
-\code{"rhat"} / \code{"ess_bulk"} / \code{"ess_tail"} columns are available in
-all-Bayesian tables, as is \code{"mcse"} -- the Monte Carlo standard
-error of the displayed posterior median, the criterion for how
-many digits a table can honestly show (a displayed digit is
-Monte-Carlo stable when twice the MCSE stays below it; Gelman,
-Vehtari, McElreath et al. 2026, sec. 11.6). Under
-\code{exponentiate = TRUE} the MCSE is recomputed on the exponentiated
-draws.
-
-Refused on principle (classed error, never a silent fallback):
-likelihood-based fit statistics (\code{"aic"}, pseudo-R², ...),
-\code{p_adjust}, robust / cluster \code{vcov} (model the clustering with
-group-level terms instead), \code{ci_method = "profile"} /
-\code{"boot_percentile"}, and non-MCMC fits
-(\code{algorithm = "meanfield"} / \code{"optimizing"} -- refit with
-\code{algorithm = "sampling"}). See the
-\href{https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html}{Bayesian regression tables}
-article.
-}
-
 \section{Hierarchical (nested) model comparison}{
 \code{nested = TRUE} adds \strong{per-pair change statistics as in-table
 rows} (APA Table 7.13 / Stata \code{esttab} / SPSS Model Summary
@@ -1908,24 +1613,12 @@ statistic whatever their \code{nobs} and response, and are refused with
 meaningless cells:
 \itemize{
 \item \emph{A REML pair whose fixed effects differ}
-(\code{nlme::lme(method = "REML")}, \code{glmmTMB(REML = TRUE)}). The
-restricted likelihood depends on the fixed-effects design
-matrix, so the two criteria are not on a common scale and the
-likelihood-ratio test is not valid (Pinheiro & Bates 2000
-Section 2.4.2). Refit both by maximum likelihood
-(\code{method = "ML"}, \code{REML = FALSE}). A REML pair that differs
-only in its random structure stays valid and is accepted.
+(\code{nlme::lme(method = "REML")}, \code{glmmTMB(REML = TRUE)}); see
+\link{table_regression_mixed}.
 \item \emph{Two \code{fixest} fits that absorbed different fixed
-effects}. fixest counts every absorbed level as an estimated
-parameter, so a test across two \verb{| fe} structures measures the
-change in the absorbed effects together with the change in the
-coefficients, and the two cannot be separated. Hold the
-\verb{| fe} part fixed across the hierarchy.
+effects}; see \link{table_regression_robust}.
 \item \emph{Mixed-effects fits from different engines} (\code{lme4},
-\code{glmmTMB}, \code{nlme::lme}). The change statistics come from the
-engine's own two-model \code{anova()}, and no engine's method
-accepts a fit produced by another. Refit one of the two with
-the other's engine.
+\code{glmmTMB}, \code{nlme::lme}); see \link{table_regression_mixed}.
 \item \emph{A \code{MASS::rlm} hierarchy}. M-estimation minimizes a
 bounded loss on the scaled residuals: it partitions no sums of
 squares and it is not a likelihood, so there is neither a
@@ -1956,8 +1649,7 @@ refused for such a hierarchy.
 (\code{survreg}, \code{polr}, \code{clm}, \code{coxph}, \code{gls}, \code{betareg},
 \code{multinom}, \code{fixest}, ...): the same
 \code{c("lrt_change", "p_change")}.
-\item Mixed-effects (\code{lmer} / \code{glmer} / \code{glmmTMB} /
-\code{nlme::lme}): \code{c("aic_change", "bic_change", "lrt_change", "p_change")} -- Pinheiro & Bates 2000 Section 2.4.1.
+\item Mixed-effects: see \link{table_regression_mixed}.
 \item Quantile (\code{rq}): \code{c("f_change", "p_change")} -- the
 Wald-type test \code{quantreg::anova.rq()} reports.
 }
@@ -2104,38 +1796,6 @@ so the family is the model's full coefficient set (intercept
 and reference rows excluded), not the displayed subset --
 filtering is a display choice and must not change the
 inferential family.
-}
-
-\section{Tied event times and the survival estimands}{
-A Cox model has to decide what to do when several events share
-the same time, and \code{survival::coxph()} decides with
-\code{ties = "efron"} by default. The absolute estimands do not make
-a second decision:
-
-\strong{The baseline hazard behind the RMST-difference and
-risk-difference columns follows the tie-handling convention of
-the fit, exactly as \code{\link[survival:survfit]{survival::survfit()}} and
-\code{\link[survival:basehaz]{survival::basehaz()}} do.} A \code{ties = "breslow"} fit gives a
-Breslow baseline; the default Efron fit gives an Efron baseline.
-One rule, so the hazard-ratio column and the dRMST column always
-come from the same likelihood. To change the convention, change
-the fit.
-
-When the choice matters is not simply "when there are many
-ties". What governs it is the fraction of tied events \emph{within
-the risk set}, together with the effect size and the spread of
-the covariates: a large risk set dilutes a tied block, a small
-one -- fine strata, matched or nested case-control designs --
-does not. A file with hundreds of tied days can be insensitive
-to the convention while a small stratified one with a handful of
-ties is not.
-
-And Efron is the better default, not the correct answer: the
-approximations are all biased at finite sample size and agree
-asymptotically, and Efron's virtue is a much smaller small-sample
-bias (Hertz-Picciotto & Rockhill 1997). Efron himself, quoting
-Peto, put it as "it probably doesn't make much difference"
-(Efron 1977).
 }
 
 \section{Output formats and broom integration}{
@@ -2334,39 +1994,6 @@ if (requireNamespace("broom", quietly = TRUE)) {
   broom::tidy(table_regression(fit))
 }
 
-\donttest{
-# ---- Mixed-effects models ----------------------------------------
-# Linear mixed-effects (lme4). The footer adds a random-effects
-# block with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
-# marginal / conditional R^2 fit-stats, and a per-class p-value
-# annotation line.
-if (requireNamespace("lme4", quietly = TRUE)) {
-  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject),
-                     data = lme4::sleepstudy)
-  table_regression(fit)
-
-  # Switch to the variance scale (sigma^2 instead of sigma).
-  table_regression(fit, re_scale = "variance")
-
-  # Minimal random-effects display: estimates only, no SE / CI.
-  table_regression(fit, re_columns = "est")
-
-  # Suppress the random-effects block entirely.
-  table_regression(fit, show_re = FALSE)
-}
-
-# Hierarchical mixed-effects comparison (nested LRT).
-if (requireNamespace("lme4", quietly = TRUE)) {
-  m1 <- lme4::lmer(Reaction ~ 1     + (1 | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  m2 <- lme4::lmer(Reaction ~ Days  + (1 | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
-                    data = lme4::sleepstudy, REML = FALSE)
-  table_regression(list(m1, m2, m3), nested = TRUE)
-}
-}
-
 \dontrun{
 # ---- Rich-format outputs (require optional Suggests packages) ----
 table_regression(fit, output = "gt")
@@ -2394,10 +2021,6 @@ and interpreting interactions}.
 Allison, P.D. (2014). Measures of fit for logistic regression.
 \emph{SAS Global Forum 2014}, Paper 1485-2014. SAS Institute.
 
-Cameron, A.C. & Miller, D.L. (2015). A practitioner's guide to
-cluster-robust inference. \emph{Journal of Human Resources}, 50(2),
-317-372.
-
 Cameron, A.C. & Windmeijer, F.A.G. (1997). An R-squared measure of
 goodness of fit for some common nonlinear regression models.
 \emph{Journal of Econometrics}, 77(2), 329-342.
@@ -2410,30 +2033,40 @@ behavioral sciences} (3rd ed.). Lawrence Erlbaum.
 Davison, A.C. & Hinkley, D.V. (1997). \emph{Bootstrap methods and
 their application}. Cambridge University Press.
 
-Efron, B. (1977). The efficiency of Cox's likelihood function
-for censored data. \emph{Journal of the American Statistical
-Association}, 72(359), 557-565.
+Ferrari, S. & Cribari-Neto, F. (2004). Beta regression for modelling
+rates and proportions. \emph{Journal of Applied Statistics}, 31(7),
+799-815. \doi{10.1080/0266476042000214501}
 
 Friedrich, R.J. (1982). In defense of multiplicative terms in
 multiple regression equations. \emph{American Journal of Political
 Science}, 26(4), 797-833.
+
+Gelman, A. (2008). Scaling regression inputs by dividing by two
+standard deviations. \emph{Statistics in Medicine}, 27(15), 2865-2873.
+\doi{10.1002/sim.3107}
+
+Gelman, A., Goodrich, B., Gabry, J. & Vehtari, A. (2019). R-squared
+for Bayesian regression models. \emph{The American Statistician}, 73(3),
+307-309.
+
+Gelman, A., Hill, J. & Yajima, M. (2012). Why we (usually) don't have
+to worry about multiple comparisons. \emph{Journal of Research on
+Educational Effectiveness}, 5(2), 189-211.
+\doi{10.1080/19345747.2011.618213}
 
 Gelman, A. & Pardoe, I. (2007). Average predictive comparisons for
 models with nonlinearity, interactions, and variance components.
 \emph{Sociological Methodology}, 37(1), 23-51.
 \doi{10.1111/j.1467-9531.2007.00181.x}
 
+Greenland, S. (2017). For and against methodologies: Some perspectives
+on recent causal and statistical inference debates. \emph{European Journal
+of Epidemiology}, 32(1), 3-20. \doi{10.1007/s10654-017-0230-6}
+
 Hemmert, G.A.J., Schons, L.M., Wieseke, J., & Schimmelpfennig, H.
 (2018). Log-likelihood-based pseudo-\eqn{R^2}{R^2} in logistic
 regression: Deriving sample-sensitive benchmarks. \emph{Sociological
 Methods & Research}, 47(3), 507-531. \doi{10.1177/0049124116638107}
-
-Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and
-efficiency of approximation methods for tied survival times in
-Cox regression. \emph{Biometrics}, 53(3), 1151-1156.
-
-Liang, K.-Y. & Zeger, S.L. (1986). Longitudinal data analysis
-using generalized linear models. \emph{Biometrika}, 73(1), 13-22.
 
 Long, J.S. & Freese, J. (2014). \emph{Regression models for categorical
 dependent variables using Stata} (3rd ed.). Stata Press.
@@ -2446,6 +2079,14 @@ Menard, S. (2000). Coefficients of determination for multiple
 logistic regression analysis. \emph{The American Statistician}, 54(1),
 17-24. \doi{10.1080/00031305.2000.10474502}
 
+Menard, S. (2004). Six approaches to calculating standardized logistic
+regression coefficients. \emph{The American Statistician}, 58(3), 218-223.
+\doi{10.1198/000313004x946}
+
+Menard, S. (2011). Standards for standardized logistic regression
+coefficients. \emph{Social Forces}, 89(4), 1409-1428.
+\doi{10.1093/sf/89.4.1409}
+
 Mize, T.D., Doan, L., & Long, J.S. (2019). A general framework for
 comparing predictions and marginal effects across models.
 \emph{Sociological Methodology}, 49(1), 152-189.
@@ -2455,20 +2096,34 @@ Nagelkerke, N.J.D. (1991). A note on a general definition of the
 coefficient of determination. \emph{Biometrika}, 78(3), 691-692.
 \doi{10.1093/biomet/78.3.691}
 
+Pan, W. (2001). Akaike's information criterion in generalized
+estimating equations. \emph{Biometrics}, 57(1), 120-125.
+\doi{10.1111/j.0006-341X.2001.00120.x}
+
+Prentice, R.L. & Gloeckler, L.A. (1978). Regression analysis of grouped
+survival data with application to breast cancer data. \emph{Biometrics},
+34(1), 57. \doi{10.2307/2529588}
+
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. \emph{Journal of Business & Economic
 Statistics}, 36(4), 672-683.
+
+Rothman, K.J. (1990). No adjustments are needed for multiple
+comparisons. \emph{Epidemiology}, 1(1), 43-46.
+\doi{10.1097/00001648-199001000-00010}
 
 Tjur, T. (2009). Coefficients of determination in logistic
 regression models -- A new proposal: The coefficient of
 discrimination. \emph{The American Statistician}, 63(4), 366-372.
 \doi{10.1198/tast.2009.08210}
 
-Verbeke, G. & Lesaffre, E. (1997). The effect of misspecifying
-the random-effects distribution in linear mixed models for
-longitudinal data. \emph{Computational Statistics & Data Analysis},
-23(4), 541-556.
+Vehtari, A., Gelman, A. & Gabry, J. (2017). Practical Bayesian model
+evaluation using leave-one-out cross-validation and WAIC. \emph{Statistics
+and Computing}, 27(5), 1413-1432. \doi{10.1007/s11222-016-9696-4}
+
+Venables, W.N. & Ripley, B.D. (2002). \emph{Modern applied statistics with
+S} (4th ed.). Springer. \doi{10.1007/978-0-387-21706-2}
 
 Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
 to a world beyond "p < 0.05". \emph{The American Statistician},
@@ -2476,8 +2131,8 @@ to a world beyond "p < 0.05". \emph{The American Statistician},
 }
 \seealso{
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported model
-classes and the per-family behavior reference (also reachable as
-\code{?table_regression_mixed}, \code{?table_regression_ordinal}, ...). If a
+classes; the pages of the model families listed under \emph{Pages by model
+family}. If a
 class is not listed there, try \code{table_regression(fit)} anyway --
 unsupported classes error with a clear message.
 Other regression-table functions:

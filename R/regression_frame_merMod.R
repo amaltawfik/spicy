@@ -274,7 +274,7 @@ as_regression_frame.glmerMod <- function(
 # Once-per-session hint for a plain lme4::lmer() fit, whose fixed-effect
 # p-values are Wald z-tests. The table note names the method; the advice
 # (refit with lmerTest) is for the analyst, not the reader of the table,
-# so it lives here and in ?table_regression. Same mechanism as
+# so it lives here and in ?table_regression_mixed. Same mechanism as
 # inform_polynomial_pedagogy(). Never fired for glmer (Wald z is the
 # method there, not a fallback) nor for an lmerTest fit.
 inform_lmertest_hint <- function() {

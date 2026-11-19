@@ -9,11 +9,10 @@
 #     registry at roxygen time via inline R);
 #   * the pkgdown "Supported models" article.
 #
-# The documentation page doubles as the CONCEPT page for per-family
-# behavior: short sections per model family, reachable under the aliases
-# table_regression_mixed / _ordinal / ... so `?table_regression_mixed` keeps
-# working in the console while the reference index carries a single, genuine
-# function entry.
+# The documentation page is the overview of the supported classes; each
+# model family has its own concept page (?table_regression_mixed, ...),
+# with an Engines table rendered from the same registry and a Usage
+# block rendered from the signature of table_regression().
 # ---------------------------------------------------------------------------
 
 # The registry. One row per supported engine call. Kept internal; exposed
@@ -97,14 +96,6 @@
     ),
     c("Mixed effects", "lme", "nlme::lme()", "yes", "-", .REG_BLOCK_RE),
     c("Mixed effects", "gls", "nlme::gls()", "yes", "-", "-"),
-    c(
-      "Population-averaged (GEE)",
-      "geeglm",
-      "geepack::geeglm()",
-      "yes",
-      "OR / IRR / RR / MR / HR (link)",
-      "-"
-    ),
     c(
       "Ordinal",
       "polr",
@@ -204,6 +195,14 @@
       "-"
     ),
     c(
+      "Population-averaged (GEE)",
+      "geeglm",
+      "geepack::geeglm()",
+      "yes",
+      "OR / IRR / RR / MR / HR (link)",
+      "-"
+    ),
+    c(
       "Additive, proportions, selection",
       "gam",
       "mgcv::gam(), mgcv::bam()",
@@ -256,30 +255,184 @@
   )
   out <- as.data.frame(df, stringsAsFactors = FALSE)
   names(out) <- c("family", "class", "engine", "ame", "exponentiate", "blocks")
+  out$vcov <- unname(.REG_VCOV[out$class])
+  stopifnot(!anyNA(out$vcov))
   out
+}
+
+# The `vcov` values each class accepts, one string per registry class:
+# the column `vcov` of the registry. Written by hand from the capability
+# gate (.robust_vcov_support() in R/vcov.R, and the refusals of
+# validate_vcov_cluster_lists()); each cell was checked on 2026-11-19 by
+# fitting each class and calling table_regression() with every token of
+# .VCOV_MODES. A parenthesis gives the condition under which the set
+# shrinks, or what "classical" stands for when the class carries its own
+# variance.
+.REG_VCOV <- c(
+  lm = "classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife",
+  glm = "classical, HC0-HC5, CR0-CR3, bootstrap, jackknife",
+  negbin = "classical, HC0-HC5, CR0-CR3, bootstrap, jackknife",
+  rlm = "classical",
+  nls = "classical",
+  lm_robust = "classical (the fit's own)",
+  iv_robust = "classical (the fit's own)",
+  ivreg = "classical",
+  tobit = "classical",
+  rq = "classical (= nid), nid, iid, ker, rank, bootstrap",
+  fixest = "classical (the fit's own)",
+  lmerMod = "classical, CR0-CR3",
+  glmerMod = "classical",
+  glmmTMB = "classical, CR0, CR1 (classical only for REML or the ordinal family)",
+  lme = "classical, CR0-CR3",
+  gls = "classical",
+  geeglm = "classical (the fit's own)",
+  polr = "classical, CR1",
+  clm = "classical, CR1 (classical only with scale or nominal terms)",
+  clmm = "classical",
+  multinom = "classical, CR1",
+  mlogit = "classical, CR1",
+  zeroinfl = "classical, CR1 (classical only for a negative-binomial part)",
+  hurdle = "classical, CR1 (classical only for a negative-binomial part)",
+  coxph = "classical, CR0",
+  survreg = "classical, CR1",
+  cph = "classical, CR0",
+  flexsurvreg = "classical",
+  svyglm = "classical (design-based)",
+  svyolr = "classical (design-based)",
+  svycoxph = "classical (design-based)",
+  gam = "classical, CR1",
+  betareg = "classical, CR1",
+  selection = "classical",
+  ols = "classical, CR0",
+  lrm = "classical, CR0",
+  Glm = "classical, CR0",
+  stanreg = "classical (the posterior)",
+  brmsfit = "classical (the posterior)"
+)
+
+# The other families a class also serves, with what it brings to each:
+# glmmTMB is a mixed engine (its row of the registry) that also fits
+# ordinal models and zero-inflated, hurdle and dispersion models. One
+# entry per class, a named vector family = what the class covers there.
+.REG_ALSO <- list(
+  glmmTMB = c(
+    "Ordinal" = "ordinal family",
+    "Counts, two-part" = "zero-inflation, hurdle and dispersion components"
+  )
+)
+
+# What a family has in common across its engines, for the summary table
+# of the README (one line per family).
+.REG_FAMILY_NOTE <- c(
+  "Survey-weighted" = "design-based SEs",
+  "Population-averaged (GEE)" = "native sandwich SEs, working correlation disclosed",
+  "Bayesian" = "posterior median, credible intervals, no p-values"
+)
+
+# One row per family, in the order of the registry: its engines, each
+# function backticked, an engine whose class has a
+# partial-proportional-odds block marked so, the engines another family
+# lends it (.REG_ALSO), then the note of the family (.REG_FAMILY_NOTE).
+# A markdown pipe table, for the README.
+.render_family_engines_md <- function() {
+  reg <- .supported_models_registry()
+  stopifnot(
+    all(names(.REG_ALSO) %in% reg$class),
+    all(unlist(lapply(.REG_ALSO, names)) %in% reg$family),
+    all(names(.REG_FAMILY_NOTE) %in% reg$family)
+  )
+  fams <- unique(reg$family)
+  cells <- vapply(
+    fams,
+    function(f) {
+      rows <- reg[reg$family == f, , drop = FALSE]
+      own <- unlist(lapply(seq_len(nrow(rows)), function(i) {
+        fns <- paste0(
+          "`",
+          strsplit(rows$engine[i], ", ", fixed = TRUE)[[1]],
+          "`"
+        )
+        if (grepl(.REG_BLOCK_NPO, rows$blocks[i], fixed = TRUE)) {
+          fns[length(fns)] <- paste(
+            fns[length(fns)],
+            "(incl. partial proportional odds)"
+          )
+        }
+        fns
+      }))
+      lent <- unlist(lapply(names(.REG_ALSO), function(cl) {
+        what <- .REG_ALSO[[cl]][f]
+        if (is.na(what)) {
+          return(NULL)
+        }
+        fns <- strsplit(reg$engine[reg$class == cl], ", ", fixed = TRUE)[[1]]
+        paste0(paste0("`", fns, "`", collapse = ", "), " (", what, ")")
+      }))
+      out <- paste(unique(c(own, lent)), collapse = ", ")
+      if (!is.na(.REG_FAMILY_NOTE[f])) {
+        out <- paste0(out, " (", .REG_FAMILY_NOTE[[f]], ")")
+      }
+      out
+    },
+    character(1)
+  )
+  paste(
+    c(
+      "| Family | Engines |",
+      "|---|---|",
+      paste0("| ", fams, " | ", cells, " |")
+    ),
+    collapse = "\n"
+  )
 }
 
 
 # Render the registry as a markdown pipe table for the roxygen page below
 # (evaluated at document() time -- the published table can never drift from
 # the registry).
-.render_supported_models_md <- function() {
+# `family` keeps the rows of one family and drops the Family column, for
+# the page of that family (?table_regression_mixed); a name that is not a
+# family of the registry stops document(). `columns` keeps those columns
+# only, for the table of the variance estimators on ?table_regression.
+.render_supported_models_md <- function(family = NULL, columns = NULL) {
   reg <- .supported_models_registry()
+  if (!is.null(family)) {
+    if (!family %in% reg$family) {
+      stop("Not a family of the registry: ", family, call. = FALSE)
+    }
+    reg <- reg[reg$family == family, setdiff(names(reg), "family")]
+  }
+  if (!is.null(columns)) {
+    reg <- reg[, intersect(columns, names(reg)), drop = FALSE]
+  }
   # Class and engine are code: backtick them (correct typography, and the
   # spell checker skips code spans). Engines are backticked ONE FUNCTION PER
   # SPAN: downlit auto-links an inline code span only when the whole span is
   # a single `pkg::fun()` call, so each function becomes clickable on the
   # pkgdown site.
-  reg$class <- paste0("`", reg$class, "`")
-  reg$engine <- vapply(
-    strsplit(reg$engine, ", ", fixed = TRUE),
-    function(fns) {
-      paste0("`", fns, "`", collapse = ", ")
-    },
-    character(1)
-  )
-  header <- "| Family | Class | Engine | AME | Exponentiate | Blocks |"
-  sep <- "|---|---|---|---|---|---|"
+  if ("class" %in% names(reg)) {
+    reg$class <- paste0("`", reg$class, "`")
+  }
+  if ("engine" %in% names(reg)) {
+    reg$engine <- vapply(
+      strsplit(reg$engine, ", ", fixed = TRUE),
+      function(fns) {
+        paste0("`", fns, "`", collapse = ", ")
+      },
+      character(1)
+    )
+  }
+  labels <- c(
+    family = "Family",
+    class = "Class",
+    engine = "Engine",
+    ame = "AME",
+    exponentiate = "Exponentiate",
+    blocks = "Blocks",
+    vcov = "vcov"
+  )[names(reg)]
+  header <- paste0("| ", paste(labels, collapse = " | "), " |")
+  sep <- paste0("|", strrep("---|", length(labels)))
   rows <- vapply(
     seq_len(nrow(reg)),
     function(i) {
@@ -291,21 +444,63 @@
 }
 
 
-#' Supported models and per-family behavior of table_regression()
+# The Usage block of a family page (?table_regression_mixed, ...),
+# rendered at document() time: the call with `models`, the arguments that
+# matter for the family with their defaults as formals() gives them, then
+# `...`. A family page carries no real \usage: codoc() compares a \usage
+# with the whole signature and reports every argument left out, and
+# checkDocFiles() asks for an alias of table_regression(), which belongs
+# to the page of the function. Every name is checked against formals(),
+# so an argument renamed or removed stops document() here and the block
+# cannot drift from the signature.
+.render_family_usage <- function(args) {
+  f <- formals(table_regression)
+  unknown <- setdiff(args, names(f))
+  if (length(unknown) > 0L) {
+    stop(
+      "Not an argument of table_regression(): ",
+      paste(unknown, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  arg_line <- function(a) {
+    paste0(
+      "  ",
+      a,
+      " = ",
+      paste(deparse(f[[a]], width.cutoff = 500L), collapse = " "),
+      ","
+    )
+  }
+  paste(
+    c(
+      "```r",
+      "table_regression(",
+      "  models,",
+      vapply(args, arg_line, character(1), USE.NAMES = FALSE),
+      "  ...  # the arguments of every class: see ?table_regression",
+      ")",
+      "```"
+    ),
+    collapse = "\n"
+  )
+}
+
+
+#' Supported models of table_regression()
 #'
 #' @description
 #' `table_regression_models()` returns the registry of model classes
 #' supported by [table_regression()], one row per engine, with each class's
-#' family, average-marginal-effects estimand, `exponentiate` semantics, and
-#' labeled table blocks. The same registry drives this page's table, so the
+#' family, average-marginal-effects estimand, `exponentiate` semantics,
+#' labeled table blocks and accepted `vcov` values. The same registry
+#' drives the table of this page and those of the family pages, so the
 #' published list cannot drift from the code.
 #'
-#' This page is also the reference for **per-family behavior** (the
-#' sections below). It is reachable as `?table_regression_models`,
-#' `?table_regression_mixed`, `?table_regression_ordinal`,
-#' `?table_regression_counts`, `?table_regression_categorical`,
-#' `?table_regression_survival`, `?table_regression_robust`, or
-#' `?table_regression_bayesian`.
+#' This page is the overview: the table of every supported class, the
+#' rules all classes share, and the page of each family, which gives its
+#' arguments, the values the shared arguments take for it, and what it
+#' refuses.
 #'
 #' If a class is not listed: fit the model and call `table_regression(fit)`
 #' anyway -- unsupported classes error with a clear message naming the
@@ -315,17 +510,44 @@
 #'
 #' `r spicy:::.render_supported_models_md()`
 #'
+#' AME: whether the average-marginal-effects columns are available, and
+#' what they estimate (`per category` for ordinal models, `per outcome`
+#' for multinomial models, `yes (draws)` for Bayesian fits). Exponentiate:
+#' what `exponentiate = TRUE` gives. Blocks: the labeled blocks of rows the
+#' class adds below its coefficients. vcov: the values of `vcov` the class
+#' accepts; see *Robust SE availability by model class* in
+#' [table_regression()].
+#'
+#' @section Pages by model family:
+#' \itemize{
+#'   \item [table_regression_mixed]: `lmer`, `glmer`, `glmmTMB`, `lme`
+#'     and `gls` fits.
+#'   \item [table_regression_survival]: `coxph`, `survreg`, `cph` and
+#'     `flexsurvreg` fits.
+#'   \item [table_regression_ordinal]: `polr`, `clm` and `clmm` fits.
+#'   \item [table_regression_categorical]: `multinom` and `mlogit` fits.
+#'   \item [table_regression_counts]: `zeroinfl` and `hurdle` fits, and
+#'     the zero-inflation, hurdle and dispersion blocks of `glmmTMB`.
+#'   \item [table_regression_survey]: `svyglm`, `svyolr` and `svycoxph`
+#'     fits.
+#'   \item [table_regression_bayesian]: `stanreg` and `brmsfit` fits.
+#'   \item [table_regression_robust]: `lm_robust`, `iv_robust`, `ivreg`,
+#'     `tobit`, `rq` and `fixest` fits.
+#' }
+#' The linear and generalized linear models are documented on
+#' [table_regression()] itself. GEE fits are described below. The
+#' additive, beta-regression, sample-selection and `rms` fits follow the
+#' rules of [table_regression()] and the table above.
+#'
 #' @section Shared semantics (all classes):
 #' \itemize{
 #'   \item A robust `vcov` request is honored through the class's
-#'     field-standard backend, or **refused with a clear error** naming the
-#'     supported set; the footer always names the estimator actually
-#'     applied.
+#'     backend, or refused with an error that names the supported set; the
+#'     footer names the estimator applied.
 #'   \item `exponentiate = TRUE` is link-gated: it produces a labeled ratio
 #'     (OR / IRR / HR / RR / MR / TR) only where the link warrants
 #'     one. Identity-link fits warn and are left untouched; non-ratio
-#'     links (probit, cauchit, inverse, ...) are **refused with a clear
-#'     error**.
+#'     links (probit, cauchit, inverse, ...) are refused with an error.
 #'   \item Class-specific structure renders as labeled subordinate blocks
 #'     of rows in the same table, each explained by a footer line.
 #'   \item Fit statistics default to the family's field standard
@@ -335,35 +557,13 @@
 #'     `glance()`, [as_structured()], `as.data.frame()`.
 #' }
 #'
-#' @section Mixed effects:
-#' Fixed effects: Satterthwaite t (`lmer` + \pkg{lmerTest}), Wald z
-#' (`glmer`, `glmmTMB`), containment-df t (`lme`). A plain `lme4::lmer()`
-#' fit gets Wald z, and a message, once per session, suggests refitting
-#' with `lmerTest::lmer()`; the note names the method only. Random effects
-#' render as a `Random effects` block of rows (SD / correlation / residual
-#' with SE and
-#' CI; `re_scale`, `re_columns`), deliberately with **no per-row p-value**
-#' (boundary-invalid Wald; Self & Liang 1987) -- the footer carries the
-#' chi-bar-squared LR test of the whole random part, and
-#' `re_test = "lrt"` / `"rlrt"` adds an opt-in boundary-correct per-term
-#' test. `N (groups)` and `ICC` are fit-stat rows; Nakagawa marginal /
-#' conditional R-squared are the default R-squared family. `CR*`
-#' cluster-robust standard errors are available for `lmer` and `lme` fits,
-#' via \pkg{clubSandwich} with Satterthwaite degrees of freedom. `glmmTMB`
-#' fits take `"CR0"` from glmmTMB's own sandwich, or `"CR1"`, the same
-#' scaled by G/(G-1) for G clusters (Wald z for both), clustered by
-#' default on the top-level grouping factor; see the robust-SE section of
-#' [table_regression()] for when it holds. `glmer` fits keep their
-#' model-based standard errors: a `CR*` request on them is refused with a
-#' clear error.
-#'
 #' @section Population-averaged (GEE) models:
 #' `geepack::geeglm()` fits are read on their own terms: the sandwich
 #' standard errors the fit computed (its `std.err =` option, clustered
 #' on its `id =`) are the displayed inference -- GEE is robust by
-#' construction, so spicy's `vcov` / `cluster` arguments are refused
-#' with a pointer to the fit options. Coefficients are
-#' population-averaged (marginal) effects; the footer discloses the
+#' construction, so spicy's `HC*` and `CR*` tokens, the resamplers and
+#' `cluster` are refused with a pointer to the fit options. Coefficients
+#' are population-averaged (marginal) effects; the footer discloses the
 #' working correlation structure with its estimated alpha. Wald z
 #' inference; `exponentiate` follows the usual link gates (OR / IRR /
 #' RR). Default fit statistics report the cluster structure (n,
@@ -371,213 +571,27 @@
 #' criteria `"qic"` / `"qicu"` (Pan 2001) and the `"scale"`
 #' (dispersion) parameter are opt-in -- there is no likelihood, so
 #' AIC, pseudo-R-squared, `nested = TRUE`, and `standardized` are
-#' refused. See the population-averaged section of the
+#' refused. See the
+#' [GEE regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-gee.html)
+#' article, and the population-averaged section of the
 #' [Mixed-effects regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
 #' article for the contrast with subject-specific mixed models.
 #'
-#' @section Ordinal models:
-#' Cut-points render as a `Thresholds` block (log-odds scale, never
-#' exponentiated; `show_thresholds`). Partial-proportional-odds `clm` terms
-#' render as a `Non-proportional effects` block, one coefficient per
-#' cut-point. `exponentiate` yields proportional odds ratios under logit;
-#' `ci_method = "profile"` profiles the predictor coefficients. AME is
-#' per-category (the marginal effect on each P(Y = k)). The default fit
-#' statistics include McFadden's pseudo-R-squared. See the
-#' [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
-#' article.
-#'
-#' Cumulative-link mixed models (`ordinal::clmm()`, and
-#' `glmmTMB::glmmTMB()` with `family = glmmTMB::ordinal()`) add a
-#' `Random effects` block and the mixed-model fit statistics (n, groups,
-#' AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
-#' `vcov`, `ci_method = "profile"` and `standardized` are refused, as is
-#' `nested = TRUE` for `clmm`. `exponentiate` follows the `clm` rule
-#' (odds ratios under logit, hazard ratios under cloglog), except for a
-#' `clmm` fit with the cloglog link and a single random intercept, where
-#' it is refused: on the current `ordinal`, `clmm()` fits such a model
-#' with the loglog link, and the reverse. The random-effects LR test
-#' refits its null with the link actually fitted.
-#'
-#' @section Counts and two-part models:
-#' Two-part models show their full model: the zero component renders as a
-#' `Zero-inflation` block (`zeroinfl`, glmmTMB `ziformula`: probability of a
-#' structural zero), a `Zero hurdle, Pr(y > 0)` block (`hurdle`: probability
-#' of a nonzero count -- the opposite direction, hence the distinct label)
-#' or a `Zero hurdle, Pr(y = 0)` block (a glmmTMB hurdle model, a
-#' zero-truncated family, `ziGamma()`, `lognormal()` or `beta_family()`
-#' with `ziformula`: probability of a zero), and a `Dispersion` block when
-#' `dispformula` has covariates. Component
-#' coefficients join the `p_adjust` family and take stars; a zero component
-#' is exponentiated only under a logit link (odds ratio). AME is the
-#' combined-response effect on E(Y). `"CR1"` for Poisson and geometric `pscl`
-#' fits covers both components via `sandwich::vcovCL()`; a negative-binomial
-#' `pscl` fit keeps its model-based standard errors, its sandwich having no
-#' score for theta. `"CR0"` and `"CR1"` for `glmmTMB` fits cover the
-#' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
-#'
-#' The dispersion of a negative-binomial fit is an opt-in fit-statistic
-#' row: `"theta"` and `"alpha"` (= 1/theta) for NB2 fits, `"delta"` for
-#' NB1 fits (glmmTMB `nbinom1`). A Poisson column in the same table is
-#' blank on these rows; see `show_fit_stats` in [table_regression()].
-#'
-#' @section Categorical outcomes:
-#' `multinom` renders per non-reference outcome; `exponentiate` yields
-#' odds ratios of each outcome against the reference outcome -- the
-#' baseline-category logits are log-odds (Agresti; SAS prints
-#' "Odds Ratio Estimates" under its generalized-logit link; Stata's `mlogit, rrr` labels
-#' the same quantity a relative-risk ratio). AME is per-outcome.
-#' `nested = TRUE` compares nested `multinom` fits by likelihood-ratio test
-#' (the `anova.multinom()` convention). Cluster-robust `"CR1"` is
-#' available (one cluster value per observation; sandwich >= 3.1-2)
-#' and the AME columns honor it; `HC*` is refused -- a multi-equation
-#' model has no working residuals.
-#' `mlogit` renders
-#' per-alternative rows; AME is refused (no `slopes()` method exists for
-#' its data format). `"CR1"` is available with one cluster value per choice
-#' situation, and `n` counts choice situations; `HC*` is refused
-#' (`sandwich::vcovHC()` mis-scales the meat for mlogit's per-chooser
-#' score structure).
-#'
-#' @section Survival models:
-#' Cox models exponentiate to hazard ratios; `survreg` log-scale
-#' distributions to time ratios (identity-scale distributions are left
-#' untouched). AME is refused for Cox fits (no marginal-probability effect
-#' on the hazard scale); their absolute-effect columns are the
-#' `"rmst"` and `"risk_diff"` families instead -- covariate-adjusted
-#' RMST and cumulative-incidence differences by g-computation, with
-#' the mandatory `tau` / `at_time` horizons. For `coxph`:
-#' right-censored single-record fits, `strata()` supported
-#' (within-stratum baselines), `tt()` refused. For `survreg`: the
-#' closed-form AFT curves are standardized directly (stratified
-#' `survreg` refused).
-#' `"CR0"` uses the Lin-Wei grouped-dfbeta sandwich
-#' (`coxph`) or `rms::robcov()` (`cph`, needs `x = TRUE, y = TRUE`);
-#' `survreg` takes `"CR1"`, from `sandwich::vcovCL()`.
-#' `nested = TRUE` compares nested Cox fits by likelihood-ratio test.
-#'
-#' @section Survey-design models:
-#' Fits from a `survey::svydesign()` or `survey::as.svrepdesign()`
-#' design -- `svyglm` (and its replicate sibling `svrepglm`), `svyolr`,
-#' `svycoxph` (and `svrepcoxph`) -- are read as design-based
-#' throughout: the coefficients, the variance and the reference
-#' distribution all come from survey.
-#'
-#' Inference is Wald **t** at the degrees of freedom survey writes on
-#' the FIT -- `df.residual` for `svyglm` / `svyolr`, `degf.resid` or
-#' `degf.residual` for the two Cox engines -- which is what
-#' [survey::regTermTest()] takes as its denominator. It is not
-#' `survey::degf(design)`, and it is not re-derived here: the six engines
-#' of survey do not share one expression and are not harmonized (a Cox
-#' fit carries `degf(design) - p + 1` although it has no intercept for
-#' the `+ 1` to cancel, so it ends one above the two other classes). The
-#' value is read off the object. The footer names the design and prints
-#' the number, and the average marginal effects answer to the same
-#' distribution as the coefficient rows.
-#'
-#' The average marginal effect is the Horvitz-Thompson estimator: the
-#' mean unit-level effect weighted by the sampling weights of the
-#' analytic sample, with its variance from the delta method on the
-#' design vcov.
-#'
-#' Counts are both reported: the observed `n` and the `Weighted n` the
-#' estimates describe. `svycoxph` adds the number of events, and its
-#' concordance goes to the footer, or to a row with
-#' `show_fit_stats = "concordance"`.
-#'
-#' What is refused, and why: every model-derived variance (`HC*`,
-#' `CR*`, bootstrap, jackknife) -- the design is the variance
-#' authority, and the way to change the estimator is to change the
-#' design; every likelihood statistic (AIC, BIC, logLik, deviance,
-#' pseudo-R-squared) for `svyolr` and `svycoxph` -- there is no
-#' likelihood, and survey's own `deviance()` returns a sign-flipped
-#' likelihood-ratio statistic on one Cox engine and a bare zero on the
-#' other; the AME for `svycoxph`, on the same ground as for a plain Cox
-#' fit; and the `"rmst"` / `"risk_diff"` columns for `svycoxph`, whose
-#' uncertainty comes from resampling subjects and so ignores the strata
-#' and clusters the design declares (use [survey::svykm()] for a
-#' marginal curve).
-#'
-#' `nested = TRUE` is refused for a design-based table: there is no
-#' likelihood to compare, so every change statistic would be empty, and
-#' a block of empty rows reads like an answer. Put the models side by
-#' side with `nested = FALSE`, and test a term under the design with
-#' [survey::regTermTest()].
-#'
-#' `svyglm` keeps an `AIC` row: survey's `extractAIC.svyglm` computes
-#' the design-based AIC of Lumley & Scott (2015), the one information
-#' criterion published for this class, and
-#' `show_fit_stats = "eff_p"` reports the effective number of design
-#' parameters beside it. `BIC.svyglm` requires a maximal model and has
-#' no default, so it stays blank. See the
-#' [Summary tables from a survey design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
-#' article.
-#'
-#' @section Robust, IV, quantile and panel models:
-#' `estimatr` fits keep their own robust SEs (never overwritten);
-#' `quantreg::rq()` defaults to the heteroskedasticity-robust `"nid"`
-#' sandwich (quantreg's own large-sample default), with `"iid"`,
-#' `"ker"`, `"rank"` (CIs only) and a native `"bootstrap"` --
-#' clustered via the wild gradient bootstrap -- as `vcov` options
-#' (the footer names the estimator);
-#' `fixest` fits -- and `estimatr` fits built with `fixed_effects =` --
-#' disclose their absorbed fixed effects as a default-on
-#' `Fixed effects:` block (one Yes / No row per factor;
-#' varying-slope-only factors are not absorbed intercepts and read
-#' No), with per-factor `N (<factor>)` counts via the opt-in
-#' `n_groups` token and the within R-squared in the default fit
-#' statistics for `fixest` except an IV `feols()` (opt-in via
-#' `within_r2` for `estimatr`).
-#' AME is refused for a `fixest` GLM with fixed effects (`feglm()`,
-#' `fepois()`, `femlm()`, `fenegbin()`, whatever the family):
-#' marginaleffects, which computes it, cannot take into account the
-#' uncertainty of the fixed effects. It is refused too for a `feols()`
-#' with fixed effects fitted with `lean = TRUE`, which marginaleffects
-#' cannot predict from (re-estimate it with `lean = FALSE`). Other
-#' `feols()` fits and a GLM without fixed effects have it. The AME of
-#' a factor in `i()` sits on the rows of its
-#' coefficients, against the reference `i()` gives them (`ref =`); a
-#' level of a factor in `i()`, or a numeric variable that `i()` enters
-#' as categories, with no coefficient row gets no AME, nor does a factor
-#' that `i()` enters only in an interaction.
-#'
-#' @section Bayesian models:
-#' Posterior median, posterior MAD SD, and equal-tailed credible
-#' intervals (`ci_method = "hdi"` opts into the highest-density
-#' interval); deliberately no p-value column and no stars -- the
-#' probability of direction (`"pd"`) is the opt-in posterior summary.
-#' A sampler-diagnostics guard checks every fit (R-hat, ESS,
-#' divergences, E-BFMI) and per-coefficient `"rhat"` / `"ess_bulk"` /
-#' `"ess_tail"` / `"mcse"` columns are available. The AME columns are
-#' draws-native (posterior median, MAD SD and credible interval of
-#' the per-draw `avg_slopes()`; no `"ame_p"`), and so are the
-#' standardized betas (`"posthoc"` / `"basic"` / `"smart"`, exact
-#' affine rescales of the draws) on fixed-effects fits:
-#' `stan_glm`-style models and standard-formula `brm()` models,
-#' whose design matrix is recovered through \pkg{insight}.
-#' Multilevel fits, `stan_polr` / `stan_betareg`, brms formulas with
-#' distributional or special terms, and `"refit"` / `"pseudo"` are
-#' refused with a pre-standardization hint.
-#' Multilevel fits
-#' (`stan_glmer`, `brm` with grouping terms) report their random
-#' effects as a block -- posterior median SD and credible interval per
-#' component, from the draws -- with no likelihood-ratio line.
-#' `p_adjust` and likelihood-based fit-statistic tokens are refused
-#' (no p-values, no likelihood-based information criteria in a
-#' posterior); `"r2_bayes"` is in the default fit statistics and
-#' `"elpd_loo"` / `"looic"` / `"waic"` are opt-in, with standard
-#' errors and reliability caveats in the footer; compare models with
-#' `loo::loo_compare()` outside the table.
+#' @references
+#' Pan, W. (2001). Akaike's information criterion in generalized
+#' estimating equations. *Biometrics*, 57(1), 120-125.
+#' \doi{10.1111/j.0006-341X.2001.00120.x}
 #'
 #' @return A data frame with one row per supported engine and columns
-#'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks`.
+#'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks` and
+#'   `vcov` (the values of `vcov` the class accepts).
 #'
-#' @seealso [table_regression()]; the
-#'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+#' @seealso [table_regression()]; the family pages listed under *Pages by
+#'   model family*; the
+#'   [Supported models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 #'   and
-#'   [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+#'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 #'   articles.
-#'
-#' @aliases table_regression_mixed table_regression_ordinal table_regression_categorical table_regression_counts table_regression_survival table_regression_robust table_regression_bayesian
 #'
 #' @examples
 #' table_regression_models()

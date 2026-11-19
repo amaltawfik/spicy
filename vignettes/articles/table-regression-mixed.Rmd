@@ -781,14 +781,16 @@ same factor header (`cat: A (ref.) / B / C`), each level sharing a row
 with its `B` coefficient — for a factor level the AME is the average
 *discrete* change against the reference, not a derivative.
 
-Inference on the AME rows is Wald-z asymptotic (`df = Inf`) with the
-model-based vcov. That matches the B-row inference for `glmer` and
-`glmmTMB`, which are Wald-z themselves; it does *not* match the
-t-based B rows of `lmerTest` fits (Satterthwaite df) or `nlme::lme`
-(containment df) — there the AME row keeps its large-sample z while
-the B row keeps its t, so under an identity link the same estimate can
-carry two different p-values in the same row. Treat the AME p as a
-large-sample approximation for those classes.
+Inference on the AME rows is Wald-z asymptotic (`df = Inf`), with the
+variance matrix of the coefficient rows: model-based by default, the
+cluster-robust one under a `CR*` `vcov`. That matches the B-row
+inference for `glmer` and `glmmTMB`, which are Wald-z themselves; it
+does *not* match the t-based B rows of `lmerTest` fits (Satterthwaite
+df), `nlme::lme` (containment df) or a `CR*` variance (Satterthwaite
+df) — there the AME row keeps its large-sample z while the B row keeps
+its t, so under an identity link the same estimate can carry two
+different p-values in the same row. Treat the AME p as a large-sample
+approximation for those classes.
 
 ## `glmmTMB`: beyond `lme4`
 

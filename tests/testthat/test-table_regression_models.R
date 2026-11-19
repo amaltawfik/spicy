@@ -8,8 +8,9 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
   expect_s3_class(reg, "data.frame")
   expect_identical(
     names(reg),
-    c("family", "class", "engine", "ame", "exponentiate", "blocks")
+    c("family", "class", "engine", "ame", "exponentiate", "blocks", "vcov")
   )
+  expect_true(all(nzchar(reg$vcov)))
   expect_true(all(nzchar(reg$class)))
   expect_false(any(duplicated(reg$class)))
 
@@ -57,7 +58,7 @@ test_that("the rendered documentation table covers every registry row", {
 ## ---- Phase 3 matrix (lot T2) ----------------------------------------------
 
 # Phase 3 matrix: rd-vcov-classes:help-topic-aliases
-test_that("the per-family help page is reachable via its 8 documented aliases", {
+test_that("each model family has a help page of its own", {
   wanted <- c(
     "table_regression_models",
     "table_regression_mixed",
@@ -65,6 +66,7 @@ test_that("the per-family help page is reachable via its 8 documented aliases", 
     "table_regression_counts",
     "table_regression_categorical",
     "table_regression_survival",
+    "table_regression_survey",
     "table_regression_robust",
     "table_regression_bayesian"
   )
@@ -77,14 +79,18 @@ test_that("the per-family help page is reachable via its 8 documented aliases", 
     unlist(lapply(rd[tags == "\\alias"], function(x) as.character(x[[1]])))
   }
   # Source tree when available (devtools::test), the built package's Rd
-  # database otherwise (R CMD check on the installed copy).
-  src <- testthat::test_path("..", "..", "man", "table_regression_models.Rd")
-  aliases <- if (file.exists(src)) {
-    rd_aliases(tools::parse_Rd(src))
-  } else {
-    rd_aliases(tools::Rd_db("spicy")[["table_regression_models.Rd"]])
+  # database otherwise (R CMD check on the installed copy). Each topic is
+  # the one alias of its own Rd file.
+  src <- testthat::test_path("..", "..", "man")
+  for (tp in wanted) {
+    f <- file.path(src, paste0(tp, ".Rd"))
+    rd <- if (file.exists(f)) {
+      tools::parse_Rd(f)
+    } else {
+      tools::Rd_db("spicy")[[paste0(tp, ".Rd")]]
+    }
+    expect_identical(rd_aliases(rd), tp)
   }
-  expect_setequal(aliases, wanted)
 })
 
 # Phase 3 matrix: rd-vcov-classes:shared-programmatic-methods

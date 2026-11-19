@@ -159,19 +159,11 @@ spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
 of these classes, and renders them with the conventions of each model
 family:
 
-| Family | Engines |
-|---|---|
-| Linear and generalized linear | `stats::lm()`, `stats::glm()`, `MASS::glm.nb()`, `MASS::rlm()`, `stats::nls()` |
-| Robust, IV, quantile, panel | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::fenegbin()` |
-| Mixed effects | `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`, `nlme::gls()` |
-| Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `ordinal::clmm()`, `glmmTMB::glmmTMB()` (ordinal family), `nnet::multinom()`, `mlogit::mlogit()` |
-| Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
-| Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
-| Survey-weighted | `survey::svyglm()`, `survey::svyolr()`, `survey::svycoxph()` (design-based SEs) |
-| Population-averaged (GEE) | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed) |
-| Additive, proportions, selection | `mgcv::gam()`, `mgcv::bam()`, `betareg::betareg()`, `sampleSelection::selection()` |
-| rms | `rms::ols()`, `rms::lrm()`, `rms::Glm()` |
-| Bayesian | `rstanarm::stan_glm()`, `rstanarm::stan_glmer()`, `brms::brm()` (posterior median, credible intervals, no p-values) |
+```{r supported-models, echo = FALSE, results = "asis"}
+# Generated from the registry of table_regression_models(), so the list
+# cannot drift from the code.
+cat(spicy:::.render_family_engines_md())
+```
 
 Class-specific structure renders as labeled blocks in the same
 table: random effects (with SE and CI on each variance component,
