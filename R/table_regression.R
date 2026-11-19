@@ -2263,6 +2263,20 @@ table_regression <- function(
     validate_show_columns(show_columns, standardized)
   }
   validate_show_fit_stats(show_fit_stats)
+  # A design-based Cox fit refuses the RMST / risk-difference columns
+  # whatever the horizon, so that refusal comes before the request for
+  # `tau`: asking for a horizon the table then refuses sent the user
+  # round twice.
+  is_svycox <- vapply(models, inherits, logical(1), "svycoxph")
+  if (any(is_svycox)) {
+    i_svycox <- which(is_svycox)[1L]
+    .svycoxph_refuse_estimands(
+      show_columns,
+      if (.reg_model_count(length(models), panel_req) > 1L) {
+        .model_display_names(models, panel_req)[i_svycox]
+      }
+    )
+  }
   # Survival estimand horizons: the horizon defines the estimand, so
   # it is explicit and mandatory -- and refused when unused.
   validate_estimand_horizons(show_columns, tau, at_time)

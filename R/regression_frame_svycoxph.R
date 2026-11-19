@@ -150,11 +150,13 @@ as_regression_frame.svycoxph <- function(
   if (length(asked) == 0L) {
     return(invisible(NULL))
   }
+  # The model is named only where there is a choice: table_regression()
+  # passes NULL for a table of one model, its display name otherwise.
   spicy_abort(
     c(
       sprintf(
-        "RMST / risk-difference columns are not available for a design-based Cox fit (%s).",
-        model_id
+        "RMST / risk-difference columns are not available for a design-based Cox fit%s.",
+        if (is.null(model_id)) "" else sprintf(" (%s)", model_id)
       ),
       "x" = paste0(
         "Their uncertainty comes from resampling subjects to rebuild the ",

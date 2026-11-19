@@ -141,3 +141,61 @@ test_that("the nested refusal for a design fit names regTermTest() and anova()",
   m$fit0$call[[1L]] <- m$fit$call[[1L]] <- quote(survey::svyglm)
   expect_s3_class(anova(m$fit0, m$fit), "regTermTestLRT")
 })
+
+# ---- RMST on a svycoxph: the design refusal comes first --------------------
+
+.scox_fixture <- function() {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  data(pbc, package = "survival", envir = environment())
+  pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
+  bias <- stats::glm(
+    randomized ~ age * edema,
+    data = pbc,
+    family = stats::binomial
+  )
+  pbc$randprob <- stats::fitted(bias)
+  des <- survey::svydesign(
+    id = ~1,
+    prob = ~randprob,
+    strata = ~edema,
+    data = subset(pbc, randomized)
+  )
+  survey::svycoxph(
+    survival::Surv(time, status > 0) ~ log(bili) + protime,
+    design = des
+  )
+}
+
+test_that("RMST on a svycoxph is refused for the design before tau is asked", {
+  fit <- .scox_fixture()
+  head_line <- "RMST / risk-difference columns are not available for a design-based Cox fit."
+  for (args in list(list(), list(tau = 1000))) {
+    err <- expect_error(
+      do.call(
+        table_regression,
+        c(list(fit, show_columns = c("b", "rmst")), args)
+      ),
+      class = "spicy_unsupported"
+    )
+    msg <- conditionMessage(err)
+    expect_match(msg, head_line, fixed = TRUE)
+    expect_no_match(msg, "explicit horizon", fixed = TRUE)
+    expect_no_match(msg, "(M1)", fixed = TRUE)
+  }
+  # Among several models, the design fit is named as its column is.
+  data(pbc, package = "survival", envir = environment())
+  plain <- survival::coxph(
+    survival::Surv(time, status > 0) ~ log(bili),
+    data = pbc
+  )
+  err <- expect_error(
+    table_regression(
+      list(Plain = plain, Design = fit),
+      show_columns = c("b", "risk_diff"),
+      at_time = 1000
+    ),
+    class = "spicy_unsupported"
+  )
+  expect_match(conditionMessage(err), "Cox fit (Design).", fixed = TRUE)
+})
