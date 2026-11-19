@@ -874,7 +874,7 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
     spicy_abort(
       c(
         sprintf(
-          "`vcov` must be a string or a list of strings, not a `%s` object.",
+          "`vcov` must be a string or a list of strings, not an object of class `%s`.",
           class(vcov)[1]
         ),
         hint
@@ -2409,7 +2409,7 @@ validate_class_appropriate_tokens <- function(
         # variance-explained change.
         sprintf(
           paste0(
-            "spicy compares a `%s` hierarchy through the ",
+            "spicy compares hierarchies of `%s` fits through the ",
             "likelihood-ratio chi-square, so token(s) %s in ",
             "`show_fit_stats` are not computed on this route."
           ),

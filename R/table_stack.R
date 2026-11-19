@@ -375,7 +375,7 @@ table_stack <- function(
     } else if (is.data.frame(x)) {
       "a plain data frame"
     } else {
-      sprintf("a `%s` object", class(x)[[1L]])
+      sprintf("an object of class `%s`", class(x)[[1L]])
     }
     spicy_abort(
       c(

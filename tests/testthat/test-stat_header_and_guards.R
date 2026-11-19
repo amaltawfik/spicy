@@ -56,7 +56,7 @@ test_that("forgotten list(): model passed as vcov gets a clear error", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "`vcov` must be a string or a list of strings, not a `lm` object.",
+    "`vcov` must be a string or a list of strings, not an object of class `lm`.",
     fixed = TRUE
   )
   expect_match(

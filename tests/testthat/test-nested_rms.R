@@ -152,10 +152,11 @@ test_that("cph refuses the variance-explained change tokens", {
   )
   expect_match(conditionMessage(err), "r2_change", fixed = TRUE)
   expect_match(conditionMessage(err), "likelihood-ratio", fixed = TRUE)
-  # The headline names the ROUTE, not a property of the class.
+  # The headline names the ROUTE, not a property of the class, and no
+  # indefinite article precedes the class name.
   expect_match(
     conditionMessage(err),
-    "spicy compares a `cph` hierarchy through the likelihood-ratio",
+    "spicy compares hierarchies of `cph` fits through the likelihood-ratio",
     fixed = TRUE
   )
   expect_false(grepl("are not defined for", conditionMessage(err)))

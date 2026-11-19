@@ -3129,7 +3129,11 @@ test_that("a named value in `...` is an argument, not a table", {
   expect_match(conditionMessage(e), "`foo` is not an argument", fixed = TRUE)
   # A model is no table: its class is named.
   e <- expect_error(table_stack(t1, f), class = "spicy_invalid_input")
-  expect_match(conditionMessage(e), "Table 2 is a `lm` object", fixed = TRUE)
+  expect_match(
+    conditionMessage(e),
+    "Table 2 is an object of class `lm`",
+    fixed = TRUE
+  )
 })
 
 test_that("a style that sets the decimal mark is refused as a style", {

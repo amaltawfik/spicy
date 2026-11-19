@@ -37,7 +37,7 @@
     spicy_abort(
       c(
         sprintf(
-          "A robust variance is not available for a `%s` fit with the `%s` family.",
+          "A robust variance is not available for `%s` fits with the `%s` family.",
           class(fit)[1L],
           fam$family
         ),

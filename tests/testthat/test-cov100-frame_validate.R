@@ -205,7 +205,7 @@ test_that("vcov = factor(...) errors with the single-string hint", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "`vcov` must be a string or a list of strings, not a `factor` object.",
+    "`vcov` must be a string or a list of strings, not an object of class `factor`.",
     fixed = TRUE
   )
   expect_match(conditionMessage(err), "Pass a single string", fixed = TRUE)
