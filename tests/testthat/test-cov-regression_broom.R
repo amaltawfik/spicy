@@ -88,7 +88,10 @@ test_that("glance – zero-row fit-stats attr → empty broom-shaped tibble", {
       "AICc",
       "BIC",
       "deviance",
-      "df.residual"
+      "df.residual",
+      "logLik",
+      "concordance",
+      "std.error.concordance"
     )
   )
   # `zero` carried snake_case names (r2, adj_r2, df_residual); the

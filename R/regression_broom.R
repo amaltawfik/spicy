@@ -52,7 +52,13 @@
 #' model-level statistics. Columns: `model_id, outcome, nobs,
 #' weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse,
 #' f2, AIC, AICc, BIC, deviance, df.residual` (numeric --
-#' Satterthwaite-safe).
+#' Satterthwaite-safe), `logLik, concordance, std.error.concordance`.
+#' `logLik` is the value of [stats::logLik()], the number of the
+#' `log_lik` row of [table_regression()], and `NA` for a model without a
+#' likelihood (quasi families, survey designs, GEE, Bayesian fits).
+#' `concordance` is Harrell's C of a `survival::coxph()` or
+#' `survey::svycoxph()` model and `std.error.concordance` its standard
+#' error, as in the note of the table; both are `NA` for other models.
 #'
 #' @param x A `spicy_regression_table` returned by
 #'   [table_regression()].
@@ -135,6 +141,11 @@ glance.spicy_regression_table <- function(x, ...) {
   if (is.null(fs) || nrow(fs) == 0L) {
     return(maybe_as_tibble(empty_glance()))
   }
+  # A column the fit statistics do not carry (a table built before it
+  # existed) is NA.
+  col <- function(nm) {
+    if (nm %in% names(fs)) as.numeric(fs[[nm]]) else rep(NA_real_, nrow(fs))
+  }
   out <- data.frame(
     model_id = fs$model_id,
     outcome = fs$outcome,
@@ -154,6 +165,12 @@ glance.spicy_regression_table <- function(x, ...) {
     deviance = fs$deviance,
     # df.residual kept numeric -- see file header.
     df.residual = as.numeric(fs$df_residual),
+    # Appended after the columns of 0.14, under broom's names: the
+    # log-likelihood of the `log_lik` row (NA for a model without one),
+    # and Harrell's C of a Cox model with its standard error.
+    logLik = col("log_lik"),
+    concordance = col("concordance"),
+    std.error.concordance = col("concordance_se"),
     stringsAsFactors = FALSE
   )
   rownames(out) <- NULL
@@ -367,6 +384,9 @@ empty_glance <- function() {
     BIC = numeric(0),
     deviance = numeric(0),
     df.residual = numeric(0),
+    logLik = numeric(0),
+    concordance = numeric(0),
+    std.error.concordance = numeric(0),
     stringsAsFactors = FALSE
   )
 }

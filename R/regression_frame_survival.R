@@ -519,6 +519,12 @@ as_regression_frame.survreg <- function(
       unname(concordance["C"])
     } else {
       NA_real_
+    },
+    # Its standard error, for glance() (`std.error.concordance`).
+    concordance_se = if (!is.null(concordance)) {
+      unname(concordance["se(C)"])
+    } else {
+      NA_real_
     }
   )
 

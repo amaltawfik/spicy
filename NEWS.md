@@ -274,6 +274,10 @@
   `re_scale`, `re_columns`, `re_test` or `re_ci` is set but no model of
   the table has random effects. These arguments were ignored silently.
 
+* `glance()` of a `table_regression()` table gains `logLik` for each
+  model, and `concordance` and `std.error.concordance` for a Cox model,
+  under broom's names. They are `NA` where the model has none.
+
 * `table_regression()`: `"adj_r2"`, mgcv's adjusted R², is accepted
   for a table of GAMs.
 

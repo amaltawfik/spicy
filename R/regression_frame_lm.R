@@ -439,6 +439,8 @@ as_regression_frame.glm <- function(fit, ...) {
     log_lik = .scalar_or_na(fs[["log_lik"]]),
     # Harrell's C of a Cox fit (coxph, svycoxph).
     concordance = .scalar_or_na(fs[["concordance"]]),
+    # Its standard error: no row, read by glance() only.
+    concordance_se = .scalar_or_na(fs[["concordance_se"]]),
     # survey::svyglm only: the effective number of parameters of the
     # design. NA everywhere else, so the row is dropped unless a design
     # glm is in the table AND the token was asked for.

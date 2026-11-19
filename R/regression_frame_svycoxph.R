@@ -283,7 +283,9 @@ as_regression_frame.svycoxph <- function(
     weighted_nobs = .design_weighted_n(fit, n_obs),
     n_events = n_events,
     # Harrell's C, the `concordance` row (also in the footer, below).
-    concordance = .svycoxph_concordance(fit)$c %||% NA_real_
+    concordance = .svycoxph_concordance(fit)$c %||% NA_real_,
+    # Its standard error, for glance() (`std.error.concordance`).
+    concordance_se = .svycoxph_concordance(fit)$se %||% NA_real_
   )
 
   # AME is refused on the same ground as for a plain Cox fit: a

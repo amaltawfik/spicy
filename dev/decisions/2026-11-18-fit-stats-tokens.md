@@ -61,7 +61,7 @@ La déviance nulle de mgcv traite donc l'offset et les poids comme le réajustem
 
 - L'AIC, le BIC et la log-vraisemblance d'un binomial à poids non entiers passent par l'arrondi des poids de `logLik()`. Hors lot.
 - Pas de McFadden pour un GAM binomial. Sur réponse 0/1, `dev.expl` en serait exactement la valeur. Hors lot.
-- `glance()` n'a pas de colonne `logLik`. Hors lot.
+- ~~`glance()` n'a pas de colonne `logLik`. Hors lot.~~ Levée le 2026-11-19 (branche `lot-family-arg-warning`) : `glance()` gagne `logLik` pour chaque modèle (NA sans vraisemblance, comme la ligne), et `concordance` et `std.error.concordance` pour un `coxph` ou un `svycoxph`, ajoutées après les colonnes existantes sous les noms de broom. Oracles : `broom::glance()` du modèle pour lm, glm et coxph, `stats::logLik()` pour lmer et polr, `fit$concordance` pour svycoxph (`tests/testthat/test-regression_broom.R`).
 - Les jetons muets corrigés sont ceux que le lot a croisés. Le balayage en compte 504 autres, et 294 pour les jetons de variation sans `nested = TRUE`. Une règle générale (refus de tout jeton demandé qu'aucun modèle du tableau ne peut afficher) changerait le contrat de `show_fit_stats` : c'est une décision à part, pour Amal.
 
 ## Conséquences

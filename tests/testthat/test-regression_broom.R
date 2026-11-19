@@ -150,6 +150,82 @@ test_that("glance – df.residual is numeric (not integer) – Satterthwaite-saf
   expect_type(g$df.residual, "double")
 })
 
+test_that("glance – logLik matches broom::glance() of lm and glm", {
+  m1 <- lm(mpg ~ wt + cyl, data = mt)
+  m2 <- glm(am ~ wt, data = mt, family = binomial)
+  g <- broom::glance(table_regression(list(m1, m2)))
+  expect_equal(g$logLik[1], broom::glance(m1)$logLik, tolerance = 1e-12)
+  expect_equal(g$logLik[2], broom::glance(m2)$logLik, tolerance = 1e-12)
+  expect_equal(g$logLik, c(-73.3111639067323, -9.58804240372254))
+  expect_identical(g$concordance, c(NA_real_, NA_real_))
+  expect_identical(g$std.error.concordance, c(NA_real_, NA_real_))
+})
+
+test_that("glance – logLik is NA for a model without a likelihood", {
+  m1 <- lm(mpg ~ wt, data = mt)
+  m2 <- glm(am ~ wt, data = mt, family = quasibinomial)
+  g <- broom::glance(table_regression(list(m1, m2)))
+  expect_false(is.na(g$logLik[1]))
+  expect_true(is.na(g$logLik[2]))
+})
+
+test_that("glance – logLik matches stats::logLik() of lmer and polr", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  m1 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  m2 <- MASS::polr(factor(gear) ~ wt, data = mtcars, Hess = TRUE)
+  g1 <- suppressMessages(broom::glance(table_regression(m1)))
+  g2 <- broom::glance(table_regression(m2))
+  expect_equal(g1$logLik, as.numeric(stats::logLik(m1)), tolerance = 1e-12)
+  expect_equal(g2$logLik, as.numeric(stats::logLik(m2)), tolerance = 1e-12)
+})
+
+test_that("glance – a Cox model gives broom's logLik, concordance and its SE", {
+  skip_if_not_installed("survival")
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ age + sex,
+    data = survival::lung
+  )
+  g <- broom::glance(table_regression(list(fit, lm(age ~ sex, survival::lung))))
+  ref <- broom::glance(fit)
+  expect_equal(g$logLik[1], ref$logLik, tolerance = 1e-12)
+  expect_equal(g$concordance[1], unname(ref$concordance), tolerance = 1e-12)
+  expect_equal(
+    g$std.error.concordance[1],
+    unname(ref$std.error.concordance),
+    tolerance = 1e-12
+  )
+  expect_equal(g$concordance[1], 0.602853002897971)
+  expect_equal(g$std.error.concordance[1], 0.0254986777697303)
+  # The model next to it has no concordance.
+  expect_true(is.na(g$concordance[2]))
+  expect_true(is.na(g$std.error.concordance[2]))
+})
+
+test_that("glance – a svycoxph model gives the concordance of the fit", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("survival")
+  lung <- survival::lung
+  lung$w <- 1 + (seq_len(nrow(lung)) %% 3)
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = lung)
+  fit <- survey::svycoxph(
+    survival::Surv(time, status) ~ age + sex,
+    design = des
+  )
+  g <- broom::glance(table_regression(fit))
+  expect_equal(
+    g$concordance,
+    unname(fit$concordance["concordance"]),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    g$std.error.concordance,
+    unname(fit$concordance["std"]),
+    tolerance = 1e-12
+  )
+  expect_true(is.na(g$logLik))
+})
+
 
 # ============================================================================
 # as.data.frame / as_tibble
@@ -288,7 +364,10 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "AICc",
       "BIC",
       "deviance",
-      "df.residual"
+      "df.residual",
+      "logLik",
+      "concordance",
+      "std.error.concordance"
     )
   )
 })
@@ -416,7 +495,10 @@ test_that("glance – exact documented column vector on a fitted model", {
       "AICc",
       "BIC",
       "deviance",
-      "df.residual"
+      "df.residual",
+      "logLik",
+      "concordance",
+      "std.error.concordance"
     )
   )
 })

@@ -43,7 +43,13 @@ levels) and singular coefficients (NA estimates) are dropped. Columns:
 
 \code{glance()} returns one row per \verb{(model_id, outcome)} with
 model-level statistics. Columns: \verb{model_id, outcome, nobs, weighted_nobs, r.squared, adj.r.squared, omega2, sigma, rmse, f2, AIC, AICc, BIC, deviance, df.residual} (numeric --
-Satterthwaite-safe).
+Satterthwaite-safe), \verb{logLik, concordance, std.error.concordance}.
+\code{logLik} is the value of \code{\link[stats:logLik]{stats::logLik()}}, the number of the
+\code{log_lik} row of \code{\link[=table_regression]{table_regression()}}, and \code{NA} for a model without a
+likelihood (quasi families, survey designs, GEE, Bayesian fits).
+\code{concordance} is Harrell's C of a \code{survival::coxph()} or
+\code{survey::svycoxph()} model and \code{std.error.concordance} its standard
+error, as in the note of the table; both are \code{NA} for other models.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_regression_table]{as.data.frame.spicy_regression_table()}} for the wide
