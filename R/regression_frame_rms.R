@@ -1063,6 +1063,27 @@ as_regression_frame.Glm <- function(
 }
 
 
+# logLik() of an lrm, NULL when it fails. For a penalized fit rms
+# returns the penalized log-likelihood (fit$deviance ends with it), with
+# the effective d.f. plus the intercepts as its "df": the AIC then
+# charges the fit for the penalty twice. Harrell (RMS, 2nd ed., eq. 9.65)
+# and pentrace() judge a penalized fit on the likelihood-ratio chi-square
+# "ignoring the penalty function", fit$stats["Model L.R."]: the value
+# becomes the log-likelihood without the penalty term at the penalized
+# estimates, -(null deviance - Model L.R.) / 2, and the df and nobs are
+# kept (dev/decisions/2026-11-19-rms-penalized-fit-statistics.md).
+.lrm_loglik <- function(fit, dev_null) {
+  ll <- tryCatch(stats::logLik(fit), error = function(e) NULL)
+  lr <- unname(fit$stats["Model L.R."])
+  if (is.null(ll) || is.null(.rms_penalty(fit)) || !isTRUE(is.finite(lr))) {
+    return(ll)
+  }
+  out <- -(dev_null - lr) / 2
+  attributes(out) <- attributes(ll)
+  out
+}
+
+
 # nobs for rms fits. fit$stats carries the sample count under "Obs"
 # (lrm / cph) or "n" (ols). Fall back to length(fit$residuals) for
 # Glm.
@@ -1110,7 +1131,8 @@ as_regression_frame.Glm <- function(
     # give McFadden's R2 and the residual deviance of glm and polr.
     dev <- c(NA_real_, NA_real_, fit$deviance)
     dev_null <- dev[[length(dev) - 1L]]
-    dev_fit <- dev[[length(dev)]]
+    ll <- .lrm_loglik(fit, dev_null)
+    dev_fit <- if (is.null(ll)) dev[[length(dev)]] else -2 * as.numeric(ll)
     # rms's R2 takes n as the sum of the weights, as polr and the glm
     # twin do (`compute_pseudo_r2_glm()`), so a weighted lrm gives the
     # values of its expanded data.
@@ -1126,11 +1148,9 @@ as_regression_frame.Glm <- function(
       pseudo_r2_mcfadden = 1 - dev_fit / dev_null,
       pseudo_r2_nagelkerke = nagelkerke,
       pseudo_r2_tjur = .lrm_tjur(fit),
-      aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
-      bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
-      log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
-        NA_real_
-      }),
+      aic = if (is.null(ll)) NA_real_ else stats::AIC(ll),
+      bic = if (is.null(ll)) NA_real_ else stats::BIC(ll),
+      log_lik = if (is.null(ll)) NA_real_ else as.numeric(ll),
       deviance = dev_fit,
       sigma = NA_real_,
       nobs = as.integer(st["Obs"] %||% NA_integer_)

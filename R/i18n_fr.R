@@ -280,6 +280,7 @@
   note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de \u00B11)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
   note_singular_mixed_fit = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de \u00B11).",
   note_penalized = "Estimations p\u00E9nalis\u00E9es (p\u00E9nalit\u00E9\u00A0: %s).",
+  note_penalized_fit_stats = "Statistiques d'ajustement du mod\u00E8le p\u00E9nalis\u00E9\u00A0: log-vraisemblance sans le terme de p\u00E9nalit\u00E9, degr\u00E9s de libert\u00E9 effectifs.",
   note_penalty_nonlinear = "non lin\u00E9aire %s",
   note_penalty_nonlinear_interaction = "interaction non lin\u00E9aire %s",
   note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",

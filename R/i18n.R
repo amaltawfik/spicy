@@ -546,6 +546,9 @@
   # same, else the parts below joined by the list separator ("simple
   # 1, nonlinear 4"). One hole in each part: the number.
   note_penalized = "Penalized estimates (penalty: %s).",
+  # Follows note_penalized when a likelihood row of a penalized fit is
+  # shown (log-likelihood, deviance, AIC, AICc, BIC, McFadden's R2).
+  note_penalized_fit_stats = "Fit statistics of the penalized model: log-likelihood without the penalty term, effective degrees of freedom.",
   note_penalty_simple = "simple %s",
   note_penalty_nonlinear = "nonlinear %s",
   note_penalty_interaction = "interaction %s",

@@ -430,9 +430,12 @@ build_regression_footer_from_frames <- function(
         show_intercept,
         intercept_label
       ),
-      if (coef_note) {
-        build_penalized_footer_block_from_frames(frames, decimal_mark)
-      },
+      build_penalized_footer_block_from_frames(
+        frames,
+        decimal_mark,
+        show_fit_stats,
+        coef_note
+      ),
       build_singular_footer_block_from_frames(
         frames,
         fit_only = fit_only,
@@ -3097,16 +3100,44 @@ build_re_se_unavailable_footer_block_from_frames <- function(frames) {
 # the interaction penalties are named only when they differ from the
 # nonlinear one, which rms gives them by default. Same layout as the
 # notes below: one shared line when one model or every model has the
-# same penalty, a line per penalized model otherwise.
+# same penalty, a line per penalized model otherwise. A likelihood row
+# shown for a penalized model (.PENALIZED_LL_TOKENS) adds the sentence
+# that says which likelihood and df it uses (.lrm_loglik()), also in a
+# table of fit statistics only, where `coef_note` drops the first one.
+.PENALIZED_LL_TOKENS <- c(
+  "log_lik",
+  "deviance",
+  "aic",
+  "aicc",
+  "bic",
+  "pseudo_r2_mcfadden"
+)
+
 build_penalized_footer_block_from_frames <- function(
   frames,
-  decimal_mark = "."
+  decimal_mark = ".",
+  show_fit_stats = character(0),
+  coef_note = TRUE
 ) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
   pen <- lapply(frames, function(f) f$info$extras$penalty)
-  affected <- which(!vapply(pen, is.null, logical(1)))
+  shown <- intersect(.PENALIZED_LL_TOKENS, show_fit_stats)
+  ll_rows <- vapply(
+    frames,
+    function(f) {
+      fs <- f$info$fit_stats
+      any(vapply(
+        shown,
+        function(k) isTRUE(is.finite(fs[[if (k == "aicc") "aic" else k]])),
+        logical(1)
+      ))
+    },
+    logical(1)
+  )
+  has_pen <- !vapply(pen, is.null, logical(1))
+  affected <- which(has_pen & (coef_note | ll_rows))
   if (length(affected) == 0L) {
     return(NULL)
   }
@@ -3135,6 +3166,19 @@ build_penalized_footer_block_from_frames <- function(
         character(1)
       )
       spicy_fmt("note_penalized", .join_note_vars(parts))
+    },
+    character(1)
+  )
+  txt <- vapply(
+    seq_along(affected),
+    function(j) {
+      paste(
+        c(
+          if (coef_note) txt[[j]],
+          if (ll_rows[[affected[[j]]]]) spicy_str("note_penalized_fit_stats")
+        ),
+        collapse = " "
+      )
     },
     character(1)
   )
