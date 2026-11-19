@@ -421,3 +421,22 @@ test_that("table_regression_uv() refuses a token, naming the screen", {
     show_fit_stats = c("nobs", "aic")
   ))
 })
+
+test_that("a fit-only table that shows the absorbed fixed effects alone is not an empty table", {
+  skip_if_not_installed("fixest")
+  fit <- fixest::feols(mpg ~ wt | cyl, data = mtcars)
+  tbl <- table_regression(
+    fit,
+    show_columns = "none",
+    show_fit_stats = "fixed_effects"
+  )
+  body <- attr(tbl, "structured")$body
+  # The block is the header row and one row per absorbed factor: no
+  # fit-statistic row, and still a table.
+  expect_identical(body$.row_role, c("factor_header", "level"))
+  out <- capture.output(print(tbl))
+  expect_true(any(grepl("Fixed effects", out, fixed = TRUE)))
+  expect_true(any(
+    grepl("cyl", out, fixed = TRUE) & grepl("Yes", out, fixed = TRUE)
+  ))
+})

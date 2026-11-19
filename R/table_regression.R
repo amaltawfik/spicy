@@ -4556,14 +4556,12 @@ table_regression <- function(
     re_columns = re_columns_val,
     fit_only = fit_only
   )
-  # A fit-only table whose statistics no model carries has no row. A
-  # token named in the call is refused before, by
-  # .reg_check_requested_rows(), and every default set holds `nobs`:
-  # no test reaches this guard, kept for a default without a value.
-  if (
-    fit_only &&
-      !any(attr(rendered, "structured")$body$.row_role %in% "fit_stat")
-  ) {
+  # A fit-only table with no row at all. A token named in the call is
+  # refused before, by .reg_check_requested_rows(), and every default
+  # set holds `nobs`: no test reaches this guard, kept for a default
+  # without a value. The block of the absorbed fixed effects counts: a
+  # fit-only table that shows it alone has rows.
+  if (fit_only && NROW(attr(rendered, "structured")$body) == 0L) {
     # nocov start
     spicy_abort(
       c(
@@ -5168,8 +5166,8 @@ table_regression <- function(
   nested,
   call = rlang::caller_env()
 ) {
-  missing <- .reg_tokens_without_rows(frames, unique(requested))
-  if (length(missing) == 0L) {
+  absent <- .reg_tokens_without_rows(frames, unique(requested))
+  if (length(absent) == 0L) {
     return(invisible(NULL))
   }
   quote_tokens <- function(x) {
@@ -5179,7 +5177,7 @@ table_regression <- function(
     }
     paste(paste(q[-length(q)], collapse = ", "), "and", q[length(q)])
   }
-  change <- intersect(missing, .NESTED_CHANGE_TOKENS)
+  change <- intersect(absent, .NESTED_CHANGE_TOKENS)
   if (!nested && length(change) > 0L) {
     spicy_abort(
       c(
@@ -5197,7 +5195,7 @@ table_regression <- function(
     )
   }
   # The message `log_lik` had alone before the general check.
-  if (identical(missing, "log_lik")) {
+  if (identical(absent, "log_lik")) {
     spicy_abort(
       c(
         paste0(
@@ -5210,7 +5208,7 @@ table_regression <- function(
       call = call
     )
   }
-  reasons <- lapply(missing, .reg_token_domain_reason, models = models)
+  reasons <- lapply(absent, .reg_token_domain_reason, models = models)
   given <- !vapply(reasons, is.null, logical(1))
   screen <- any(vapply(
     frames,
@@ -5221,9 +5219,9 @@ table_regression <- function(
     c(
       sprintf(
         "%s %s in `show_fit_stats` %s no value for any model in the table.",
-        if (length(missing) == 1L) "Token" else "Tokens",
-        quote_tokens(missing),
-        if (length(missing) == 1L) "has" else "have"
+        if (length(absent) == 1L) "Token" else "Tokens",
+        quote_tokens(absent),
+        if (length(absent) == 1L) "has" else "have"
       ),
       if (any(given)) {
         stats::setNames(unlist(reasons[given]), rep("i", sum(given)))
