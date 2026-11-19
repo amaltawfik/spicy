@@ -269,6 +269,18 @@
     )
   }
   .reg_emit_gathered(gathered, n, public_call)
+  # A token the call names must give a row in one panel at least: the
+  # stack is one table, as the side-by-side one is.
+  requested <- arg("show_fit_stats")
+  if (is.character(requested)) {
+    .reg_check_requested_rows(
+      models,
+      frames,
+      requested,
+      nested = nested_on,
+      call = env
+    )
+  }
   .reg_warn_label_names(models, frames, arg("labels"), arg("note_labels"))
   .reg_warn_exponentiate_noop(frames, arg("exponentiate"))
 

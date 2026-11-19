@@ -1676,8 +1676,22 @@ test_that("Tjur's R-squared of a univariable glm screen is checked on its fits",
       outcome = smoking,
       method = "glm",
       predictors = c(age, sex),
-      multivariable = FALSE,
       show_fit_stats = c("nobs", "pseudo_r2_tjur")
     )
+  )
+  # Without the multivariable model the gate lets the token through, and
+  # the table, which has no row to show for it, refuses it.
+  expect_error(
+    table_regression_uv(
+      sochealth,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, sex),
+      multivariable = FALSE,
+      show_fit_stats = c("nobs", "pseudo_r2_tjur")
+    ),
+    "univariable models of a screen show no fit statistic",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
 })

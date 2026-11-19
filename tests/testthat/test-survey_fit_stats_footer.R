@@ -194,13 +194,17 @@ test_that("eff_p is available under its own name, and only for svyglm", {
     .fsf_render(fit, show_columns = c("b")),
     fixed = TRUE
   ))
-  # A class that has no such number renders no such row.
-  out2 <- .fsf_render(
-    stats::glm(api00 ~ ell, data = d$apistrat),
-    show_columns = c("b"),
-    show_fit_stats = c("nobs", "eff_p")
+  # A class that has no such number refuses the token.
+  expect_error(
+    .fsf_render(
+      stats::glm(api00 ~ ell, data = d$apistrat),
+      show_columns = c("b"),
+      show_fit_stats = c("nobs", "eff_p")
+    ),
+    "effective number of parameters of a `svyglm()` design",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl("Effective parameters", out2, fixed = TRUE))
 })
 
 
@@ -373,14 +377,18 @@ test_that("an unweighted fit has no weighted count, and does not invent one", {
   expect_true(is.na(r$n))
   expect_false(r$has)
 
-  # Asked for by name on its own, the row still does not appear: no
-  # model in the table has a value for it.
-  out <- .fsf_render(
-    stats::glm(mpg ~ wt, data = d),
-    show_columns = c("b"),
-    show_fit_stats = c("nobs", "weighted_nobs")
+  # Asked for by name on its own, the token is refused: no model in the
+  # table has a value for it.
+  expect_error(
+    .fsf_render(
+      stats::glm(mpg ~ wt, data = d),
+      show_columns = c("b"),
+      show_fit_stats = c("nobs", "weighted_nobs")
+    ),
+    "Token \"weighted_nobs\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl("Weighted n", out, fixed = TRUE))
 
   # Binomial glm weighted by the number of trials. Varying trials, and
   # -- the case a "constant weights are no weights" rule would lose --

@@ -809,9 +809,19 @@ test_that("every negative-binomial glmer shows its theta, as lme4 counts it", {
     expect_true(is.na(fs$sigma))
   }
   expect_equal(lme4::getME(fixed, "glmer.nb.theta"), 2)
+  # No sigma in either column: the token is refused.
+  expect_error(
+    table_regression(
+      list(NB = nb, Fixed = fixed),
+      show_fit_stats = c("theta", "sigma")
+    ),
+    "Token \"sigma\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
   df <- as.data.frame(table_regression(
     list(NB = nb, Fixed = fixed),
-    show_fit_stats = c("theta", "sigma")
+    show_fit_stats = "theta"
   ))
   row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
   expect_equal(
@@ -820,7 +830,6 @@ test_that("every negative-binomial glmer shows its theta, as lme4 counts it", {
     tolerance = 1e-10
   )
   expect_equal(row("theta")[["Fixed: B"]], 2)
-  expect_true(all(is.na(unlist(row("sigma")[c("NB: B", "Fixed: B")]))))
 })
 
 test_that("nested glmer.nb() built with update(): theta in every column", {
@@ -834,7 +843,7 @@ test_that("nested glmer.nb() built with update(): theta in every column", {
   tbl <- table_regression(
     fits,
     nested = TRUE,
-    show_fit_stats = c("nobs", "theta", "alpha", "sigma", "aic")
+    show_fit_stats = c("nobs", "theta", "alpha", "aic")
   )
   df <- as.data.frame(tbl)
   row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
@@ -844,8 +853,13 @@ test_that("nested glmer.nb() built with update(): theta in every column", {
     expect_equal(row("theta")[[col]], theta, tolerance = 1e-12, info = nm)
     expect_equal(row("alpha")[[col]], 1 / theta, tolerance = 1e-12, info = nm)
     expect_equal(row("aic")[[col]], stats::AIC(fits[[nm]]), info = nm)
-    expect_true(all(is.na(row("sigma")[[col]])), info = nm)
   }
+  expect_error(
+    table_regression(fits, nested = TRUE, show_fit_stats = c("nobs", "sigma")),
+    "Token \"sigma\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
   # The random-effect test of each column, in the footer, names the theta
   # its row shows.
   txt <- gsub(

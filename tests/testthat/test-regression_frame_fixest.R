@@ -1576,11 +1576,13 @@ test_that("an IV feols shows the structural R-squared of ivreg when asked", {
   ))
   expect_equal(stat(ivfe, "r2"), reffe$r.squared, tolerance = 1e-10)
   expect_equal(stat(ivfe, "adj_r2"), reffe$adj.r.squared, tolerance = 1e-10)
-  # The within R-squared has no structural version.
-  df <- as.data.frame(
-    table_regression(ivfe, show_fit_stats = c("nobs", "within_r2"))
+  # The within R-squared has no structural version: the token is refused.
+  expect_error(
+    table_regression(ivfe, show_fit_stats = c("nobs", "within_r2")),
+    "Token \"within_r2\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  expect_false(any(df$variable == "within_r2" & !is.na(df$B)))
 })
 
 test_that("an IV feols shows by default the statistics ivreg shows", {

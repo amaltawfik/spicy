@@ -182,17 +182,17 @@ test_that("a no-intercept quasibinomial svyglm has no AIC, and says nothing", {
   expect_false(grepl("Effective parameters", out, fixed = TRUE))
   expect_match(out, "Weighted n", fixed = TRUE)
   expect_match(out, "residual degrees of freedom.", fixed = TRUE)
-  # And an explicit request for either token still prints no row.
-  out2 <- paste(
-    utils::capture.output(print(table_regression(
+  # An explicit request for either token is refused, naming both.
+  expect_error(
+    table_regression(
       fit,
       show_columns = c("b"),
       show_fit_stats = c("nobs", "aic", "eff_p")
-    ))),
-    collapse = "\n"
+    ),
+    "Tokens \"aic\" and \"eff_p\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl("AIC", out2, fixed = TRUE))
-  expect_false(grepl("Effective parameters", out2, fixed = TRUE))
 })
 
 test_that("a quasibinomial svyglm has its AIC without library(survey)", {

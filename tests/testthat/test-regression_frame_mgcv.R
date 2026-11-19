@@ -724,12 +724,20 @@ test_that("a betar() GAM has the phi of betareg and glmmTMB, and no sigma", {
   expect_true(is.na(fs$sigma))
   df <- as.data.frame(table_regression(
     list(betareg = br, GAM = fit),
-    show_fit_stats = c("phi", "sigma")
+    show_fit_stats = "phi"
   ))
   row <- function(tk) df[df$variable == tk & df$.row_role == "fit_stat", ]
   expect_equal(row("phi")[["GAM: B"]], fit$family$getTheta(TRUE))
-  # Neither model has a residual scale: the sigma row is dropped.
-  expect_identical(nrow(row("sigma")), 0L)
+  # Neither model has a residual scale: the sigma token is refused.
+  expect_error(
+    table_regression(
+      list(betareg = br, GAM = fit),
+      show_fit_stats = c("phi", "sigma")
+    ),
+    "Token \"sigma\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
   # betar(theta) with theta > 0 fixes phi: no row, and alone it is refused.
   fixed <- mgcv::gam(y ~ x, family = mgcv::betar(theta = 5), data = d)
   expect_equal(fixed$family$n.theta, 0)
@@ -783,15 +791,13 @@ test_that("an extended family shows sigma only when the GAM estimates a scale", 
   # cannot be the test.
   expect_true(fixed$bam_scat$scale.estimated)
   expect_false(fixed$scat$scale.estimated)
-  # Alone in the table, the sigma row has no value and is dropped.
-  out <- paste(
-    utils::capture.output(print(table_regression(
-      fixed$scat,
-      show_fit_stats = c("nobs", "sigma")
-    ))),
-    collapse = "\n"
+  # Alone in the table, the sigma row has no value: the token is refused.
+  expect_error(
+    table_regression(fixed$scat, show_fit_stats = c("nobs", "sigma")),
+    "Token \"sigma\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl(fit_stat_label("sigma"), out, fixed = TRUE))
   # tw() estimates its scale: sigma is the square root of mgcv's
   # estimate, as for a Tweedie glm.
   tw_fits <- list(

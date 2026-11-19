@@ -529,7 +529,11 @@ Under \code{nested = TRUE} the default is extended with the
 class-appropriate change-stat tokens (e.g. \code{"r2_change"},
 \code{"f_change"} for \code{lm}). See \emph{Vocabulary tokens}
 (\code{show_fit_stats} subsection) and \emph{Hierarchical (nested)
-model comparison} in the details for the full vocabulary.}
+model comparison} in the details for the full vocabulary.
+A token you name must have a value for at least one model of the
+table, or the call is refused with an error that names it (a
+change token also needs \code{nested = TRUE}). A token of the default
+that no model has is left out.}
 
 \item{fit_stats_layout}{Layout of the fit-stat values (\code{n}, \code{R^2},
 \code{AIC}, ...) within each model's column group. Two options:

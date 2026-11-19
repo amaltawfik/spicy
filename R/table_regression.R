@@ -1619,6 +1619,10 @@
 #'   `"f_change"` for `lm`). See *Vocabulary tokens*
 #'   (`show_fit_stats` subsection) and *Hierarchical (nested)
 #'   model comparison* in the details for the full vocabulary.
+#'   A token you name must have a value for at least one model of the
+#'   table, or the call is refused with an error that names it (a
+#'   change token also needs `nested = TRUE`). A token of the default
+#'   that no model has is left out.
 #' @param fit_stats_layout Layout of the fit-stat values (`n`, `R^2`,
 #'   `AIC`, ...) within each model's column group. Two options:
 #'   \itemize{
@@ -2653,6 +2657,10 @@ table_regression <- function(
   # injected RIGHT AFTER `r2` / `adj_r2` / `AIC` so the table reads
   # "n / R^2 / Adj. R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
   user_set_fit_stats <- !is.null(show_fit_stats)
+  # The tokens the call names: each one must give a row for some model
+  # of the table (`.reg_check_requested_rows()`). A default token
+  # without a value is skipped, as before.
+  requested_fit_stats <- if (user_set_fit_stats) show_fit_stats
   if (!user_set_fit_stats) {
     # Bayesian fits inherit from lm / glm (stanreg subclasses both), but
     # their defaults are their own: no likelihood-based information
@@ -3799,11 +3807,6 @@ table_regression <- function(
     )
   }
 
-  # `log_lik` follows the frames: a fit without a likelihood (quasi
-  # family, survey design, GEE, posterior, 2SLS) posts NA, and a table
-  # where every model does would drop the requested row in silence.
-  .reg_check_log_lik_rows(frames, show_fit_stats)
-
   # Singular mixed fits: the table note states the FACT (boundary
   # estimate, SE/CI omitted); the actionable advice belongs here, to the
   # analyst, once per table -- not in a published table note.
@@ -4158,6 +4161,17 @@ table_regression <- function(
       panel_req$nested
     )
     show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
+  }
+  # A token the call names must give a row for some model, once the
+  # frames carry every value, the change rows included. The panel of a
+  # stack leaves it to the driver, which sees every panel's frames.
+  if (is.null(panel_req)) {
+    .reg_check_requested_rows(
+      models,
+      frames,
+      requested_fit_stats,
+      nested = isTRUE(nested) && length(models) >= 2L
+    )
   }
   if (fit_only) {
     .reg_warn_ic_not_comparable(models, frames, show_fit_stats)
@@ -4542,11 +4556,15 @@ table_regression <- function(
     re_columns = re_columns_val,
     fit_only = fit_only
   )
-  # A fit-only table whose statistics no model carries has no row.
+  # A fit-only table whose statistics no model carries has no row. A
+  # token named in the call is refused before, by
+  # .reg_check_requested_rows(), and every default set holds `nobs`:
+  # no test reaches this guard, kept for a default without a value.
   if (
     fit_only &&
       !any(attr(rendered, "structured")$body$.row_role %in% "fit_stat")
   ) {
+    # nocov start
     spicy_abort(
       c(
         "None of the requested fit statistics is available for these models.",
@@ -4554,6 +4572,7 @@ table_regression <- function(
       ),
       class = "spicy_empty_table"
     )
+    # nocov end
   }
   # Stash the print-time padding as an attribute so the print
   # method can honor the call-site choice (and tooling like
@@ -5032,36 +5051,203 @@ table_regression <- function(
   "qicu"
 )
 
-.reg_check_log_lik_rows <- function(
-  frames,
-  show_fit_stats,
-  call = rlang::caller_env()
-) {
-  if (!"log_lik" %in% show_fit_stats) {
-    return(invisible(NULL))
+# The tokens of `tokens` that give a row for no frame: the test the
+# fit-stat builders apply (`build_fit_stats_rows()`), read on the frames.
+# `fixed_effects` and `n_groups` are blocks read outside the fit-stat
+# columns; every other token is a value, and a row needs one model with
+# it.
+.reg_tokens_without_rows <- function(frames, tokens) {
+  if (length(tokens) == 0L) {
+    return(character(0))
   }
-  has_ll <- vapply(
-    frames,
-    function(fr) is.finite(.scalar_or_na(fr$info$fit_stats[["log_lik"]])),
+  shown <- vapply(
+    tokens,
+    function(tk) {
+      any(vapply(
+        frames,
+        function(fr) {
+          if (identical(tk, "fixed_effects")) {
+            return(length(fr$info$extras$fixef_intercept) > 0L)
+          }
+          if (identical(tk, "n_groups")) {
+            return(length(fr$info$n_groups) > 0L)
+          }
+          fs <- .compact_fit_stats_for_legacy(
+            fr$info$fit_stats,
+            "M",
+            NA_character_,
+            icc = fr$info$random_effects$icc %||% NA_real_,
+            n_groups = fr$info$n_groups
+          )
+          tk %in% names(fs) && !is.na(fs[[tk]])
+        },
+        logical(1)
+      ))
+    },
     logical(1)
   )
-  if (!any(has_ll)) {
+  tokens[!shown]
+}
+
+# Why a token has no value, where the code fixes its domain: a sentence
+# when no model of the table is of a class the token is computed for,
+# NULL otherwise (a model of the domain without a value, or a token
+# whose domain is not one list of classes).
+.reg_token_domain_reason <- function(tk, models) {
+  any_of <- function(cls) any(vapply(models, inherits, logical(1), cls))
+  mixed <- c("merMod", "glmmTMB", "lme")
+  switch(
+    tk,
+    log_lik = paste0(
+      "Quasi families, survey designs, GEE, two-stage least squares ",
+      "and posterior fits are estimated without a maximized likelihood."
+    ),
+    weighted_nobs = {
+      weighted <- vapply(
+        models,
+        function(m) {
+          .is_design_fit(m) ||
+            .has_real_weights(tryCatch(
+              stats::weights(m),
+              error = function(e) NULL
+            ))
+        },
+        logical(1)
+      )
+      if (!any(weighted)) {
+        paste0(
+          "`weighted_nobs` is the weighted count of a model fitted with ",
+          "weights or on a survey design."
+        )
+      }
+    },
+    n_events = if (!any_of(c("coxph", "cph"))) {
+      "`n_events` counts the events of a Cox model."
+    },
+    icc = ,
+    r2_marginal = ,
+    r2_conditional = if (!any_of(mixed)) {
+      sprintf(
+        "`%s` is computed for the mixed models of lme4, glmmTMB and nlme.",
+        tk
+      )
+    },
+    n_groups = if (!any_of(c(mixed, "clmm", "geeglm", "fixest"))) {
+      paste0(
+        "`n_groups` counts the groups of a mixed model or a GEE, or the ",
+        "fixed effects a fixest model absorbs."
+      )
+    },
+    fixed_effects = if (
+      !any(vapply(models, absorbs_fixed_effects, logical(1)))
+    ) {
+      paste0(
+        "`fixed_effects` lists the fixed effects a fixest model, or an ",
+        "estimatr model with `fixed_effects =`, absorbs."
+      )
+    },
+    eff_p = if (!any_of("svyglm")) {
+      "`eff_p` is the effective number of parameters of a `svyglm()` design."
+    },
+    NULL
+  )
+}
+
+# Every token the call names in `show_fit_stats` gives a row for at
+# least one model of the table, or the call is refused. Run once the
+# frames are built and the change statistics attached, where the values
+# are known; the class gates of validate_class_appropriate_tokens() run
+# before, with their own messages. A token left to its default is not
+# checked: a default token without a value is skipped. `nested` is
+# whether the table compares adjacent models (a nested list, or the
+# stack of one).
+.reg_check_requested_rows <- function(
+  models,
+  frames,
+  requested,
+  nested,
+  call = rlang::caller_env()
+) {
+  missing <- .reg_tokens_without_rows(frames, unique(requested))
+  if (length(missing) == 0L) {
+    return(invisible(NULL))
+  }
+  quote_tokens <- function(x) {
+    q <- paste0("\"", x, "\"")
+    if (length(q) == 1L) {
+      return(q)
+    }
+    paste(paste(q[-length(q)], collapse = ", "), "and", q[length(q)])
+  }
+  change <- intersect(missing, .NESTED_CHANGE_TOKENS)
+  if (!nested && length(change) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "%s %s in `show_fit_stats` %s adjacent models: %s `nested = TRUE` and at least two models.",
+          if (length(change) == 1L) "Token" else "Tokens",
+          quote_tokens(change),
+          if (length(change) == 1L) "compares" else "compare",
+          if (length(change) == 1L) "it needs" else "they need"
+        ),
+        "i" = "Pass the models from the smallest to the largest, with `nested = TRUE`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  # The message `log_lik` had alone before the general check.
+  if (identical(missing, "log_lik")) {
     spicy_abort(
       c(
         paste0(
           "Token 'log_lik' in `show_fit_stats` needs a likelihood, and no ",
           "model in the table has one."
         ),
-        "i" = paste0(
-          "Quasi families, survey designs, GEE, two-stage least squares ",
-          "and posterior fits are estimated without a maximized likelihood."
-        )
+        "i" = .reg_token_domain_reason("log_lik", models)
       ),
       class = "spicy_invalid_input",
       call = call
     )
   }
-  invisible(NULL)
+  reasons <- lapply(missing, .reg_token_domain_reason, models = models)
+  given <- !vapply(reasons, is.null, logical(1))
+  screen <- any(vapply(
+    frames,
+    function(fr) isTRUE(fr$info$extras$fit_stats_display_blank),
+    logical(1)
+  ))
+  spicy_abort(
+    c(
+      sprintf(
+        "%s %s in `show_fit_stats` %s no value for any model in the table.",
+        if (length(missing) == 1L) "Token" else "Tokens",
+        quote_tokens(missing),
+        if (length(missing) == 1L) "has" else "have"
+      ),
+      if (any(given)) {
+        stats::setNames(unlist(reasons[given]), rep("i", sum(given)))
+      },
+      if (screen) {
+        c(
+          "i" = paste0(
+            "The univariable models of a screen show no fit statistic: ",
+            "the rows are those of the multivariable model."
+          )
+        )
+      },
+      if (!all(given)) {
+        c(
+          "i" = paste0(
+            "The `show_fit_stats` section of ?table_regression lists the ",
+            "models each token is computed for."
+          )
+        )
+      }
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
 }
 
 .reg_warn_ic_not_comparable <- function(models, frames, show_fit_stats) {

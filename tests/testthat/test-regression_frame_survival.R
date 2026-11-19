@@ -303,9 +303,13 @@ test_that("survreg: sigma is the AFT scale, blank with one scale per stratum", {
   fr_s <- as_regression_frame(fit_s, model_id = "M1")
   expect_true(is.na(fr_s$info$fit_stats$sigma))
   expect_true(is.na(fr_s$info$extras$scale_parameter))
-  tbl <- table_regression(fit_s, show_fit_stats = c("nobs", "sigma"))
-  out <- paste(utils::capture.output(print(tbl)), collapse = "\n")
-  expect_false(grepl(fit_stat_label("sigma"), out, fixed = TRUE))
+  expect_error(
+    table_regression(fit_s, show_fit_stats = c("nobs", "sigma")),
+    "Token \"sigma\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  tbl <- table_regression(fit_s, show_fit_stats = "nobs")
   expect_no_match(attr(tbl, "note"), "scale =", fixed = TRUE)
 })
 

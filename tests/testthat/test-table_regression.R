@@ -2577,7 +2577,7 @@ test_that("r2 / adj_r2 – lm oracle values; lm-only tokens refused on all-glm",
   }
 })
 
-test_that("change tokens render under nested = TRUE and are inert without it", {
+test_that("change tokens render under nested = TRUE and are refused without it", {
   skip_on_cran()
   # rd-core:fit-stats-change-tokens-nested-only
   m1 <- lm(mpg ~ wt, data = mt)
@@ -2589,15 +2589,13 @@ test_that("change tokens render under nested = TRUE and are inert without it", {
   )
   vars_nested <- trimws(o_nested$Variable)
   expect_true("ΔR²" %in% vars_nested)
-  # Same request without nested = TRUE: the change row is simply absent
-  # (inert), the table still renders.
-  o_flat <- table_regression(
-    list(m1, m2),
-    show_fit_stats = c("r2", "r2_change")
+  # Same request without nested = TRUE: the change token is refused.
+  expect_error(
+    table_regression(list(m1, m2), show_fit_stats = c("r2", "r2_change")),
+    "needs `nested = TRUE` and at least two models",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
-  vars_flat <- trimws(o_flat$Variable)
-  expect_false("ΔR²" %in% vars_flat)
-  expect_true("R²" %in% vars_flat)
 })
 
 test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
@@ -3997,7 +3995,9 @@ test_that("show_columns = \"none\" refuses what it cannot show", {
   )
   expect_error(
     table_regression(fit, show_columns = "none", show_fit_stats = "n_events"),
-    class = "spicy_empty_table"
+    "Token \"n_events\"",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
   )
   expect_error(
     table_regression_uv(
