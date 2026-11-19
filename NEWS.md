@@ -450,6 +450,16 @@
   standard errors of `sandwich::vcovCL()`, and under `nested = TRUE` a
   Wald test of the added terms.
 
+* Each family of models read by `table_regression()` has its own help
+  page: `?table_regression_mixed`, `?table_regression_survival`,
+  `?table_regression_ordinal`, `?table_regression_categorical`,
+  `?table_regression_counts`, `?table_regression_survey`,
+  `?table_regression_bayesian` and `?table_regression_robust`. Each opens
+  on the call with the arguments of the family, and gives the values the
+  shared arguments take for it and what it refuses. The `vcov` values each
+  class accepts are a column of `table_regression_models()`, shown on
+  `?table_regression` and on each family page.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.
