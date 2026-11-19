@@ -284,6 +284,15 @@
 
 ## New features
 
+* `table_regression()` shows the smooth terms of an `mgcv::gam()` or
+  `bam()` model in a "Smooth terms (edf)" block: one row per term, with
+  its effective degrees of freedom in the B column and the p-value of
+  its approximate test. A model made of smooth terms only showed its
+  intercept alone. The rows follow `keep` and `drop`, and their tests
+  count in `p_adjust`. In `tidy()` and `output = "long"` they have
+  `estimate_type = "edf"`, with the reference degrees of freedom in `df`
+  and the test in `statistic` and `p.value`.
+
 * `table_regression()` shows the precision submodel of a
   `betareg::betareg()` model (`y ~ x | z`) in a "Precision" block, on the
   scale of its link, which `show_components = FALSE` omits. The title
