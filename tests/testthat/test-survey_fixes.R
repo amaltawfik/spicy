@@ -167,6 +167,17 @@ test_that("the nested refusal for a design fit names regTermTest() and anova()",
   )
 }
 
+test_that("survey 4.5 still has no AIC for svycoxph, which keeps the token refused", {
+  fit <- .scox_fixture()
+  # extractAIC.svycoxph exists and stops; when survey implements it, the
+  # `aic` token can follow.
+  expect_error(stats::AIC(fit), "No AIC for survey models", fixed = TRUE)
+  expect_error(
+    table_regression(fit, show_fit_stats = "aic"),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that("RMST on a svycoxph is refused for the design before tau is asked", {
   fit <- .scox_fixture()
   head_line <- "RMST / risk-difference columns are not available for a design-based Cox fit."
