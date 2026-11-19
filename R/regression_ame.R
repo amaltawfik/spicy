@@ -1301,6 +1301,33 @@ extract_ame_glm <- function(
 }
 
 
+# ---- AME of a design fit, on predictions spicy controls --------------------
+
+# What avg_slopes() is given for a svyolr: the model, the data and the
+# variance, or NULL for any other class.
+#
+# * get_coef() of a svyolr puts the cut-points first ("Intercept: a|b")
+#   and vcov() puts them last ("a|b"), and marginaleffects pairs them by
+#   position when the names differ: the matrix is aligned by name on the
+#   order of get_coef().
+.design_ame_inputs <- function(fit) {
+  if (!inherits(fit, "svyolr")) {
+    return(NULL)
+  }
+  V <- as.matrix(stats::vcov(fit))
+  b <- names(marginaleffects::get_coef(fit))
+  key <- ifelse(b %in% colnames(V), b, sub("^Intercept: ", "", b))
+  if (anyNA(match(key, colnames(V)))) {
+    stop(
+      "the variance of the cut-points cannot be matched to the coefficients by name.",
+      call. = FALSE
+    )
+  }
+  V <- V[key, key, drop = FALSE]
+  dimnames(V) <- list(b, b)
+  list(model = fit, newdata = NULL, vcov = V)
+}
+
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
 # Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
@@ -1346,6 +1373,7 @@ extract_ame_glm <- function(
   if (!spicy_pkg_available("marginaleffects")) {
     return(NULL)
   }
+  design_in <- NULL
   if (inherits(fit, c("stanreg", "brmsfit"))) {
     # Bayesian fits: draws-native summaries under the table's own
     # conventions (median / MAD SD / ETI-or-HDI; no statistic, no p).
@@ -1385,6 +1413,27 @@ extract_ame_glm <- function(
     # NULL (marginaleffects' own data) but for a fixest fit whose i()
     # factors take another reference than their first level.
     newdata <- if (inherits(fit, "fixest")) .fixest_ame_newdata(fit)
+    # A svyolr: its variance aligned by name (.design_ame_inputs()).
+    # `vc_fit` stands for the fit's own variance (`TRUE`) wherever it is
+    # not `vc`.
+    vc_fit <- TRUE
+    design_in <- tryCatch(.design_ame_inputs(fit), error = function(e) e)
+    if (inherits(design_in, "error")) {
+      spicy_warn(
+        c(
+          "The AME of this model cannot be computed.",
+          "x" = paste0("Reason: ", conditionMessage(design_in)),
+          "i" = "AME column will be en-dashed in the displayed table."
+        ),
+        class = "spicy_fallback"
+      )
+      return(NULL)
+    }
+    if (!is.null(design_in)) {
+      fit_ame <- design_in$model
+      newdata <- design_in$newdata
+      vc_fit <- design_in$vcov
+    }
     do_slopes <- function(vcarg) {
       suppressWarnings(suppressMessages(
         .spicy_avg_ame(
@@ -1418,7 +1467,7 @@ extract_ame_glm <- function(
         # glmmTMB fit: the matrix goes through its Jacobian instead.
         .glmmTMB_ame_robust(do_slopes(TRUE), vc, ci_level)
       } else {
-        do_slopes(if (!is.null(vc)) vc else TRUE)
+        do_slopes(if (!is.null(vc)) vc else vc_fit)
       },
       error = function(e) {
         # Some model types reject a custom vcov matrix in avg_slopes(), and
@@ -1438,7 +1487,7 @@ extract_ame_glm <- function(
             ),
             class = "spicy_fallback"
           )
-          tryCatch(do_slopes(TRUE), error = fail_warn)
+          tryCatch(do_slopes(vc_fit), error = fail_warn)
         } else {
           fail_warn(e)
         }
