@@ -267,7 +267,19 @@ test_that("bam() fits give the R2 of their glm twin", {
     list(yg ~ x + offset(off), Gamma("log"), gr_tokens$continuous)
   )
   for (cs in cases) {
-    ba <- mgcv::bam(cs[[1L]], family = cs[[2L]], data = d, weights = w)
+    # The non-integer weights make the binomial fit warn, as its twin does.
+    ba <- withCallingHandlers(
+      mgcv::bam(cs[[1L]], family = cs[[2L]], data = d, weights = w),
+      warning = function(cnd) {
+        msg <- gettext(
+          "non-integer #successes in a binomial glm!",
+          domain = "R-stats"
+        )
+        if (grepl(msg, conditionMessage(cnd), fixed = TRUE)) {
+          invokeRestart("muffleWarning")
+        }
+      }
+    )
     tw <- suppressWarnings(
       glm(cs[[1L]], family = cs[[2L]], data = d, weights = w)
     )
