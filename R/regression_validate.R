@@ -2984,21 +2984,35 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
-  # mgcv's gam inherits glm but has its own frame, which computes none of
-  # the likelihood-ratio pseudo-R^2: the rows used to pass the glm gates
-  # and render nothing. Refused when every model is a GAM; beside other
-  # models the GAM cell is dashed.
+  # A GAM has the pseudo-R^2 of its glm twin (`.gam_pseudo_r2()`): Tjur's
+  # for a binomial, McFadden's and Nagelkerke's for a binomial, Poisson
+  # or nb() family. A table of GAMs none of which has the measure is
+  # answered here in its own words, before the glm gates below, which
+  # name a glm; beside other models the GAM cell is dashed.
   if (all_gam) {
-    bad_fit <- intersect(
-      show_fit_stats,
-      c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur")
+    kinds <- vapply(eff_models, .glm_r2_kind, character(1))
+    bad_fit <- c(
+      if (!any(kinds == "binomial")) {
+        intersect(show_fit_stats, "pseudo_r2_tjur")
+      },
+      if (!any(kinds %in% c("binomial", "count"))) {
+        intersect(
+          show_fit_stats,
+          c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke")
+        )
+      }
     )
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_fit_stats` are not computed for `mgcv` GAMs.",
+            "Token(s) %s in `show_fit_stats` are not defined for the families of these `mgcv` GAMs.",
             paste(.quote_val(bad_fit), collapse = ", ")
+          ),
+          "i" = paste0(
+            "A GAM has the R\u00B2 of the glm of its family. Tjur's needs ",
+            "a binomial family, McFadden's and Nagelkerke's a binomial, ",
+            "Poisson or negative-binomial one."
           ),
           .gam_r2_hint(eff_models)
         ),
@@ -3094,13 +3108,13 @@ validate_class_appropriate_tokens <- function(
   # family gates above so homogeneous non-glm sets (all-lm, all-GEE,
   # all-mixed, all-Bayesian) keep their more specific refusal wording.
   if ("pseudo_r2_tjur" %in% show_fit_stats) {
-    # A binomial GAM computes no Tjur (see the GAM arm above).
+    # A binomial GAM carries Tjur, as its glm twin.
     is_binom_glm <- glm_flags &
       !vapply(
         eff_models,
         inherits,
         logical(1),
-        c("stanreg", "brmsfit", "gam")
+        c("stanreg", "brmsfit")
       ) &
       vapply(
         eff_models,
@@ -3161,8 +3175,8 @@ validate_class_appropriate_tokens <- function(
         sprintf(
           paste0(
             "Token(s) %s in `show_fit_stats` are not defined for a `glm` ",
-            "of a continuous family (gaussian, Gamma, inverse Gaussian, ",
-            "Tweedie)."
+            "or GAM of a continuous family (gaussian, Gamma, inverse ",
+            "Gaussian, Tweedie)."
           ),
           paste(.quote_val(lr_req), collapse = ", ")
         ),
@@ -3187,9 +3201,7 @@ validate_class_appropriate_tokens <- function(
   # saturated log-likelihood is 0 and the deviance R^2 is McFadden's
   # (Cameron & Windmeijer 1997, p. 333 and 337): refused there rather
   # than printed twice under two names. ANY-gate, like Tjur's above. An
-  # mgcv GAM of the same families carries it too (mgcv's deviance
-  # explained); a binomial GAM is pointed at no McFadden, which the GAM
-  # frame does not compute.
+  # mgcv GAM follows its glm twin: a binomial GAM is pointed at McFadden.
   if (
     "r2_deviance" %in%
       show_fit_stats &&
@@ -3200,7 +3212,6 @@ validate_class_appropriate_tokens <- function(
       function(m) {
         inherits(m, c("polr", "clm", "multinom", "lrm")) ||
           (inherits(m, "glm") &&
-            !inherits(m, "gam") &&
             identical(.glm_r2_kind(m), "binomial"))
       },
       logical(1)

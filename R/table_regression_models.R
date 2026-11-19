@@ -394,7 +394,11 @@
   svyolr = "nobs, weighted_nobs",
   svycoxph = "nobs, weighted_nobs, n_events",
   geeglm = "nobs, n_groups, max_cluster_size",
-  gam = "nobs, aic",
+  gam = paste(
+    "nobs, pseudo_r2_tjur (binomial logit, binary outcome),",
+    "pseudo_r2_mcfadden (binomial, Poisson, negative binomial),",
+    "r2_deviance (Gaussian, Gamma, Tweedie), aic (not quasi)"
+  ),
   betareg = "nobs, aic",
   selection = "nobs, aic",
   ols = "nobs, r2",
@@ -488,7 +492,14 @@
   svyolr = "nobs, weighted_nobs",
   svycoxph = "nobs, weighted_nobs, n_events, concordance",
   geeglm = "nobs, qic, qicu, scale, max_cluster_size, n_groups",
-  gam = "nobs, adj_r2, r2_deviance, sigma, aic, aicc, bic, deviance, log_lik",
+  gam = paste(
+    "nobs, adj_r2,",
+    "pseudo_r2_mcfadden (binomial, Poisson, negative binomial),",
+    "pseudo_r2_nagelkerke (binomial, Poisson, negative binomial),",
+    "pseudo_r2_tjur (binomial), r2_deviance (glm families but the",
+    "binomial, negative binomial, Tweedie), sigma, aic, aicc, bic,",
+    "deviance, log_lik"
+  ),
   betareg = "nobs, phi, aic, aicc, bic, log_lik",
   selection = "nobs, aic, aicc, bic, log_lik",
   ols = "nobs, r2, sigma, aic, aicc, bic, deviance, log_lik",

@@ -297,10 +297,11 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # for a logit on a binary response, McFadden's alone for the other
 # binomial fits (probit, cloglog, grouped responses), Poisson and negative
 # binomial, and an ordinal rms::lrm, the deviance R^2 for the continuous
-# families. A binary lrm reads as its glm twin.
+# families. A binary lrm and an mgcv GAM read as their glm twin
+# (dev/decisions/2026-11-19-gam-follows-glm.md); an extended family of
+# mgcv other than nb() and tw() has no twin and no row.
 # `models` are the glm-class fits of the table; the result is the union
-# of their rows, in that order. mgcv's gam inherits glm but has its own
-# frame and no R^2 row; quasi families have no likelihood, and no
+# of their rows, in that order. Quasi families have no likelihood, and no
 # default row.
 .glm_default_r2_tokens <- function(models) {
   toks <- unlist(lapply(models, .glm_default_r2_kind))
@@ -308,9 +309,6 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 }
 
 .glm_default_r2_kind <- function(fit) {
-  if (inherits(fit, "gam")) {
-    return(character(0))
-  }
   # A binary lrm is a logit on a binary outcome, as its glm twin; Tjur's
   # row needs its response (`.lrm_tjur()`).
   if (inherits(fit, "lrm")) {
@@ -369,10 +367,10 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 }
 
 # A glm of a continuous family, as the table's refusal of McFadden and
-# Nagelkerke reads it (an rms::Glm through its glm twin; mgcv's gam,
-# which inherits glm, keeps its own frame and is not one).
+# Nagelkerke reads it (an rms::Glm through its glm twin, an mgcv GAM
+# through its own family).
 .glm_is_continuous <- function(m) {
-  if (!inherits(m, "glm") || inherits(m, c("gam", "lrm"))) {
+  if (!inherits(m, "glm") || inherits(m, "lrm")) {
     return(FALSE)
   }
   if (inherits(m, "Glm")) {
@@ -384,13 +382,8 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # A fit whose frame carries the deviance R^2: a glm (an rms::Glm too) of
 # any family but the binomial. Not a design, GEE or Bayesian fit, which
 # inherit glm with frames of their own. An mgcv GAM carries it for the
-# same families but the quasi-binomial: there mgcv's deviance explained
-# is taken over the rows of a grouped response, and the glm's over its
-# trials, so the two would be different numbers under one name.
+# same families, nb() and tw() included (`.gam_pseudo_r2()`).
 .glm_carries_r2_deviance <- function(m) {
-  if (inherits(m, "gam")) {
-    return(.glm_r2_kind(m) %in% c("count", "continuous", "quasi"))
-  }
   if (
     !inherits(m, "glm") ||
       inherits(m, c("lrm", "geeglm", "stanreg", "brmsfit")) ||
@@ -405,18 +398,28 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 }
 
 # The R^2 rows a table of mgcv GAMs does show, for its refusal messages:
-# the adjusted R^2 mgcv prints for every GAM, and the deviance explained
-# when a GAM of the table carries it (never offered to a table of
-# binomial GAMs, which would refuse it).
+# the adjusted R^2 mgcv prints for every GAM, and the rows of the glm
+# twins a GAM of the table has (`.gam_pseudo_r2()`). A token is named
+# only when a GAM of the table carries it, so no hint points at a token
+# the table would refuse.
 .gam_r2_hint <- function(models) {
+  kinds <- vapply(models, .glm_r2_kind, character(1))
   dev <- any(vapply(models, .glm_carries_r2_deviance, logical(1)))
+  toks <- c(
+    if (any(kinds == "binomial")) "`\"pseudo_r2_tjur\"`",
+    if (any(kinds %in% c("binomial", "count"))) {
+      c("`\"pseudo_r2_mcfadden\"`", "`\"pseudo_r2_nagelkerke\"`")
+    },
+    if (dev) "`\"r2_deviance\"`"
+  )
   c(
     "i" = paste0(
       "A GAM shows mgcv's adjusted R\u00B2, `\"adj_r2\"`",
-      if (dev) {
+      if (length(toks) > 0L) {
         paste0(
-          ", and the deviance explained of its `summary()`, ",
-          "`\"r2_deviance\"`."
+          ", and the R\u00B2 of the glm of its family: ",
+          paste(toks, collapse = ", "),
+          "."
         )
       } else {
         "."
@@ -524,7 +527,7 @@ compute_pseudo_r2_glm <- function(fit) {
     ll_full <- tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
       NA_real_ # nocov: logLik() of a Poisson or negative binomial glm
     })
-    ll_null <- if (inherits(fit, "negbin")) {
+    ll_null <- if (inherits(fit, "negbin") || .gam_is_nb_estimated(fit)) {
       .negbin_null_loglik(fit)
     } else {
       tryCatch(
@@ -687,6 +690,14 @@ compute_r2_deviance <- function(fit) {
     return(NULL) # nocov: a glm model.frame always has a response column
   }
   fam <- stats::family(fit)
+  # mgcv's nb() is an extended family glm() cannot fit: its twin is
+  # negative.binomial() at the GAM's theta, as for a glm.nb fit.
+  if (.gam_is_nb(fit)) {
+    if (!spicy_pkg_available("MASS")) {
+      return(NULL) # nocov: MASS ships with every R installation
+    }
+    fam <- MASS::negative.binomial(.gam_nb_theta(fit), link = fam$link)
+  }
   offset_vec <- tryCatch(stats::model.offset(mf), error = function(e) NULL)
   cv <- .glm_stored_response(y, fam, fit$prior.weights)
   args <- list(formula = y ~ 1, family = fam, data = data.frame(y = cv$y))
@@ -726,7 +737,7 @@ compute_r2_deviance <- function(fit) {
           formula = y ~ 1 + offset(off),
           data = d,
           weights = d$w,
-          init.theta = fit$theta,
+          init.theta = fit$theta %||% .gam_nb_theta(fit),
           link = stats::family(fit)$link
         )
       ))

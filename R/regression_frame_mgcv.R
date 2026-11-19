@@ -24,8 +24,9 @@
 #   * fit_stats$adj_r_squared = summary(fit)$r.sq (adjusted R^2, the
 #     only R^2 mgcv reports); fit_stats$r_squared is NA.
 #   * fit_stats$pseudo_r2$dev_explained = summary(fit)$dev.expl
-#     (deviance-explained ratio), also fit_stats$r2_deviance for the
-#     families whose glm carries the deviance R^2.
+#     (deviance-explained ratio). The R^2 rows (Tjur, McFadden,
+#     Nagelkerke, deviance R^2) are those of the glm twin
+#     (`.gam_pseudo_r2()`).
 # ---------------------------------------------------------------------------
 
 #' `as_regression_frame()` method for `gam` fits (mgcv::gam() / bam()).
@@ -318,6 +319,7 @@ as_regression_frame.gam <- function(
 
   sm <- summary(fit)
   dev_expl <- if (is.null(sm$dev.expl)) NA_real_ else as.numeric(sm$dev.expl)
+  pr2 <- .gam_pseudo_r2(fit, dev_expl)
   fit_stats <- list(
     # mgcv reports only the ADJUSTED R^2 (r.sq): it is the adj_r2 row,
     # and the R^2 row stays blank rather than repeat it under another
@@ -329,10 +331,11 @@ as_regression_frame.gam <- function(
     } else {
       NULL
     },
-    # mgcv's deviance explained, 1 - D / D0, is the deviance R^2 of the
-    # glm twin (same null deviance, offset and weights included), so it
-    # takes that row in the families the glm carries it for.
-    r2_deviance = if (.glm_carries_r2_deviance(fit)) dev_expl else NA_real_,
+    # The R^2 rows of the glm twin, by the glm rules (`.gam_pseudo_r2()`).
+    pseudo_r2_mcfadden = pr2$mcfadden,
+    pseudo_r2_nagelkerke = pr2$nagelkerke,
+    pseudo_r2_tjur = pr2$tjur,
+    r2_deviance = pr2$r2_deviance,
     aic = tryCatch(stats::AIC(fit), error = function(e) NA_real_),
     bic = tryCatch(stats::BIC(fit), error = function(e) NA_real_),
     log_lik = tryCatch(as.numeric(stats::logLik(fit)), error = function(e) {
@@ -430,6 +433,33 @@ as_regression_frame.gam <- function(
 }
 
 
+# The R^2 rows of a GAM are those of its glm twin, the glm of the same
+# family and link (dev/decisions/2026-11-19-gam-follows-glm.md), computed
+# by the glm path, `compute_pseudo_r2_glm()`: Tjur, McFadden and
+# Nagelkerke on the Bernoulli trials of a binomial, McFadden and
+# Nagelkerke on logLik() for Poisson and nb(), the null model refitted
+# with the offset and the prior weights (theta re-estimated for nb()).
+# A GAM reads the fitted values, the prior weights and the response of
+# its glm twin, so a GAM without smooth terms gives the twin's numbers.
+# The deviance R^2 is the twin's too, 1 - D / D0 with D0 refitted with
+# the offset and the weights. mgcv's deviance explained is the same
+# number for a gam() (dev/decisions/2026-11-18-fit-stats-tokens.md),
+# but not for a quasi-binomial, which mgcv measures on the rows of a
+# grouped response and the twin on its trials, nor for a bam() with an
+# offset, whose null deviance leaves the offset out. It stays the value
+# of tw(), whose null model glm() cannot fit. An extended family of
+# mgcv other than nb() and tw() has no twin and no row.
+.gam_pseudo_r2 <- function(fit, dev_expl) {
+  pr2 <- compute_pseudo_r2_glm(fit)
+  if (!.glm_carries_r2_deviance(fit)) {
+    pr2$r2_deviance <- NA_real_
+  } else if (!is.finite(pr2$r2_deviance)) {
+    pr2$r2_deviance <- dev_expl
+  }
+  pr2
+}
+
+
 # Extract smooth-term info from summary(fit)$s.table. mgcv produces a
 # matrix with columns: edf, Ref.df, F (or Chi.sq for non-Gaussian),
 # p-value. Normalize the statistic column name.
@@ -473,6 +503,15 @@ as_regression_frame.gam <- function(
   fam <- fit$family
   inherits(fam, "extended.family") &&
     isTRUE(startsWith(fam$family, "Negative Binomial("))
+}
+
+# The theta of a GAM's nb() family, estimated or fixed, on its natural
+# scale; NULL for any other fit.
+.gam_nb_theta <- function(fit) {
+  if (!.gam_is_nb(fit)) {
+    return(NULL)
+  }
+  as.numeric(fit$family$getTheta(TRUE))
 }
 
 # TRUE for a GAM whose negative-binomial theta is estimated: nb(), but

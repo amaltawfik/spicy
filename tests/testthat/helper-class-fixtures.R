@@ -350,6 +350,11 @@
     "geepack"
   ),
   gam = .cf("gam", function(d) mgcv::gam(y ~ x + s(z), data = d), "mgcv"),
+  gam_logit = .cf(
+    "gam",
+    function(d) mgcv::gam(yb ~ x + s(z), family = binomial, data = d),
+    "mgcv"
+  ),
   bam = .cf(
     "gam",
     function(d) mgcv::bam(cnt ~ x + s(z), family = poisson, data = d),

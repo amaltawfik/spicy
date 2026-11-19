@@ -125,6 +125,21 @@ rr_absent <- list(
     rows = c("theta", "alpha"),
     why = "a Poisson count part has no dispersion"
   ),
+  gam = list(
+    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
+    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
+    why = "a Gaussian GAM has the deviance R-squared of its glm twin"
+  ),
+  gam_logit = list(
+    rows = "r2_deviance",
+    default = "r2_deviance",
+    why = "a binomial GAM has the pseudo-R-squared of its glm twin instead"
+  ),
+  bam = list(
+    rows = "pseudo_r2_tjur",
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "a Poisson GAM defaults to McFadden's R-squared, as its glm twin"
+  ),
   survreg_strata = list(
     rows = "sigma",
     why = "strata give one scale per stratum"

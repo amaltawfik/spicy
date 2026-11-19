@@ -401,10 +401,13 @@ test_that("a GAM's r2_deviance is mgcv's deviance explained", {
       show_fit_stats = c("nobs", "r2_deviance"),
       output = "data.frame"
     )
+    # The row is the glm twin's, refitted: the null deviance of nb() is
+    # that of glm()'s negative.binomial() at the GAM's theta, which
+    # mgcv's iterations reach within 1e-9.
     expect_equal(
       fs_cell(tbl, "r2_deviance"),
       summary(f)$dev.expl,
-      tolerance = 1e-12,
+      tolerance = 1e-8,
       info = nm
     )
   }
@@ -463,7 +466,7 @@ test_that("a GAM and its glm twin share one deviance R2 row", {
   )
 })
 
-test_that("a binomial GAM has no deviance R2, and is not sent to McFadden", {
+test_that("a binomial GAM has no deviance R2, and is sent to McFadden", {
   skip_if_not_installed("mgcv")
   d <- tok_data()
   gb <- mgcv::gam(yb ~ x + s(z), family = binomial, data = d)
@@ -475,21 +478,40 @@ test_that("a binomial GAM has no deviance R2, and is not sent to McFadden", {
   )
   expect_true(is.na(fs_cell(tbl, "r2_deviance", "B: B")))
   expect_true(is.finite(fs_cell(tbl, "r2_deviance", "P: B")))
-  for (fit in list(
-    gb,
-    mgcv::gam(cbind(k, 5 - k) ~ x, family = quasibinomial, data = d),
-    mgcv::gam(
-      yb ~ x,
-      family = mgcv::ocat(R = 2),
-      data = transform(d, yb = yb + 1)
-    )
-  )) {
-    err <- expect_error(
-      table_regression(fit, show_fit_stats = c("nobs", "r2_deviance")),
-      class = "spicy_invalid_input"
-    )
-    expect_no_match(conditionMessage(err), "McFadden", fixed = TRUE)
-  }
+  # As for its glm twin, the deviance R2 of a binomial GAM is McFadden's.
+  err <- expect_error(
+    table_regression(gb, show_fit_stats = c("nobs", "r2_deviance")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "\"pseudo_r2_mcfadden\"", fixed = TRUE)
+  # An ocat() GAM has no twin and no pseudo-R2 to point at.
+  err <- expect_error(
+    table_regression(
+      mgcv::gam(
+        yb ~ x,
+        family = mgcv::ocat(R = 2),
+        data = transform(d, yb = yb + 1)
+      ),
+      show_fit_stats = c("nobs", "r2_deviance")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_no_match(conditionMessage(err), "McFadden", fixed = TRUE)
+  # A quasi-binomial GAM is measured on its trials, as its glm twin.
+  qa <- mgcv::gam(cbind(k, 5 - k) ~ x, family = quasibinomial, data = d)
+  qg <- glm(cbind(k, 5 - k) ~ x, family = quasibinomial, data = d)
+  expect_equal(
+    fs_cell(
+      table_regression(
+        qa,
+        show_fit_stats = c("nobs", "r2_deviance"),
+        output = "data.frame"
+      ),
+      "r2_deviance"
+    ),
+    compute_r2_deviance(qg),
+    tolerance = 1e-8
+  )
 })
 
 
@@ -508,24 +530,32 @@ test_that("a GAM beside an lm shows no unadjusted R2", {
   expect_equal(fs_cell(tbl, "adj_r2", "GAM: B"), summary(a)$r.sq)
 })
 
-test_that("pseudo-R2 tokens are refused for a table of GAMs", {
+test_that("pseudo-R2 tokens are refused for a table of GAMs outside their families", {
   skip_if_not_installed("mgcv")
   d <- tok_data()
   gb <- mgcv::gam(yb ~ x + s(z), family = binomial, data = d)
+  gn <- mgcv::gam(yn ~ x + s(z), data = d)
   for (tok in c(
     "pseudo_r2_mcfadden",
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur"
   )) {
     err <- expect_error(
-      table_regression(gb, show_fit_stats = c("nobs", tok)),
+      table_regression(gn, show_fit_stats = c("nobs", tok)),
       class = "spicy_invalid_input"
     )
     expect_match(conditionMessage(err), "mgcv", fixed = TRUE)
+    # A binomial GAM shows them, as its glm twin.
+    tbl <- table_regression(
+      gb,
+      show_fit_stats = c("nobs", tok),
+      output = "data.frame"
+    )
+    expect_true(is.finite(fs_cell(tbl, tok)))
   }
-  # Beside a logit, the GAM cell is dashed.
+  # Beside a logit, the Gaussian GAM cell is dashed.
   tbl <- table_regression(
-    list(GLM = glm(yb ~ x, binomial, d), GAM = gb),
+    list(GLM = glm(yb ~ x, binomial, d), GAM = gn),
     show_fit_stats = c("nobs", "pseudo_r2_tjur"),
     output = "data.frame"
   )
@@ -534,7 +564,7 @@ test_that("pseudo-R2 tokens are refused for a table of GAMs", {
   # Beside an lm, no model carries Tjur: refused.
   expect_error(
     table_regression(
-      list(lm(yn ~ x, d), gb),
+      list(lm(yn ~ x, d), gn),
       show_fit_stats = c("nobs", "pseudo_r2_tjur")
     ),
     class = "spicy_invalid_input"
@@ -574,10 +604,10 @@ test_that("a table of GAMs shows mgcv's adjusted R2 and refuses its R2", {
     output = "data.frame"
   )
   expect_equal(fs_cell(tbl, "adj_r2"), summary(a)$r.sq, tolerance = 1e-12)
-  # The default is unchanged.
+  # The default is that of the glm twin, without the adjusted R2.
   expect_identical(
     fs_rows(table_regression(a, output = "data.frame"))$variable,
-    c("nobs", "aic")
+    c("nobs", "r2_deviance", "aic")
   )
   err <- expect_error(
     table_regression(a, show_fit_stats = c("nobs", "r2")),
@@ -594,41 +624,43 @@ test_that("no refusal for a table of GAMs points at a token it refuses", {
   d <- tok_data()
   gn <- mgcv::gam(yn ~ x + s(z), data = d)
   gb <- mgcv::gam(yb ~ x + s(z), family = binomial, data = d)
-  refused_for_gam <- c(
-    "pseudo_r2_mcfadden",
-    "pseudo_r2_nagelkerke",
-    "pseudo_r2_tjur",
-    "partial_chi2",
-    "partial_f",
-    "lrt_change"
+  gp <- mgcv::gam(yp ~ x + s(z), family = poisson, data = d)
+  refused_for_all <- c("partial_chi2", "partial_f", "lrt_change")
+  # The R2 tokens each GAM refuses, as its glm twin does.
+  refused_r2 <- list(
+    gaussian = c(
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur"
+    ),
+    binomial = "r2_deviance",
+    poisson = "pseudo_r2_tjur"
   )
-  check <- function(expr, binomial = FALSE) {
+  check <- function(expr, refused = refused_r2$gaussian) {
     err <- expect_error(expr, class = "spicy_invalid_input")
     msg <- conditionMessage(err)
     expect_no_match(msg, "`glm`", fixed = TRUE)
     # The hints, below the headline that names the requested token.
     msg <- sub("^[^\n]*\n", "", msg)
     expect_true(nzchar(msg))
-    for (tk in refused_for_gam) {
+    for (tk in c(refused_for_all, refused)) {
       expect_no_match(msg, sprintf("\"%s\"", tk), fixed = TRUE)
     }
-    if (binomial) {
-      expect_no_match(msg, "r2_deviance", fixed = TRUE)
-    }
   }
-  for (fit in list(gn, gb)) {
-    bin <- identical(fit, gb)
+  fits <- list(gaussian = gn, binomial = gb, poisson = gp)
+  for (nm in names(fits)) {
+    fit <- fits[[nm]]
+    refused <- refused_r2[[nm]]
     for (tk in c(
       "r2",
       "omega2",
       "f2",
-      "pseudo_r2_mcfadden",
-      "pseudo_r2_tjur"
+      setdiff(refused, "r2_deviance")
     )) {
-      check(table_regression(fit, show_fit_stats = c("nobs", tk)), bin)
+      check(table_regression(fit, show_fit_stats = c("nobs", tk)), refused)
     }
     for (tk in c("r2", "adj_r2", "partial_eta2", "partial_f2")) {
-      check(table_regression(fit, show_columns = c("b", tk)), bin)
+      check(table_regression(fit, show_columns = c("b", tk)), refused)
     }
   }
   g0 <- mgcv::gam(yn ~ x, data = d)
