@@ -16,6 +16,12 @@
   but refuses the RMST and risk-difference columns, which would ignore
   the random effect.
 
+* `table_regression()` refuses the AME columns in two cases where their
+  value was wrong: a `glmmTMB()` model estimated by REML, whose AME
+  standard error came out near zero, and an instrumental-variables
+  `feols()` model without an exogenous regressor (`y ~ 1 | x ~ z`), whose
+  AME came out as 0. The error says what to do.
+
 * `table_regression()` names a transformed outcome as the formula writes
   it, for every model class and no longer for `lm()` and `glm()` only:
   the title, the Outcome row and the `outcome` column of `tidy()` and
@@ -560,6 +566,11 @@
 
 * `table_regression()`: a note says that the AME of a tobit model is
   computed on the latent outcome.
+
+* `table_regression()`: the AME of a `survreg()` model with a `strata()`
+  term no longer shows a row of 0 for each stratum, and the AME of an
+  `ordinal::clm()` model with `nominal =` covers the predictors with
+  nominal effects, one per category.
 
 * `table_regression()` prints counts and fit statistics in full from 1e7
   on: a weighted n of 255345910 read "3e+08".
