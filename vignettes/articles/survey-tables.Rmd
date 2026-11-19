@@ -380,8 +380,8 @@ table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 
 Statistics that need a likelihood are absent rather than approximated:
 `AIC()`, `BIC()`, `logLik()` and the pseudo-R-squared family are not
-defined for a design-weighted fit, and asking for them by token prints
-nothing rather than a number without an interpretation. The one
+defined for a design-weighted fit, and asking for them by token stops
+with an error rather than print a number without an interpretation. The one
 exception is `svyglm`, whose `AIC` row is the design-based criterion of
 Lumley & Scott -- and `show_fit_stats = "eff_p"` reports the effective
 number of parameters of the design beside it.
