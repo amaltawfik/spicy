@@ -169,6 +169,20 @@ test_that("glance – logLik is NA for a model without a likelihood", {
   expect_true(is.na(g$logLik[2]))
 })
 
+test_that("glance – a table saved before the columns existed gives NA", {
+  x <- table_regression(list(lm(mpg ~ wt, data = mt), lm(mpg ~ hp, data = mt)))
+  fs <- attr(x, "spicy_fit_stats")
+  expect_true(all(c("log_lik", "concordance", "concordance_se") %in% names(fs)))
+  attr(x, "spicy_fit_stats") <- fs[
+    setdiff(names(fs), c("log_lik", "concordance", "concordance_se"))
+  ]
+  g <- broom::glance(x)
+  expect_identical(g$logLik, c(NA_real_, NA_real_))
+  expect_identical(g$concordance, c(NA_real_, NA_real_))
+  expect_identical(g$std.error.concordance, c(NA_real_, NA_real_))
+  expect_equal(g$nobs, c(32L, 32L))
+})
+
 test_that("glance – logLik matches stats::logLik() of lmer and polr", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("merDeriv")
