@@ -642,6 +642,11 @@
   class accepts are a column of `table_regression_models()`, shown on
   `?table_regression` and on each family page.
 
+* The tokens of `show_columns` and `show_fit_stats` have their own help
+  page, `?table_regression_tokens`. It lists, for each model class, the
+  fit statistics shown by default and those a token can request.
+  `?table_regression` is shorter by that section.
+
 * The sources cited in the help pages and the articles were checked
   against the documents, and their sections, pages and quotations
   corrected where they were wrong. Each help page lists the references
