@@ -164,7 +164,7 @@
     # design (the first element of survey's extractAIC), beside the
     # design-based AIC of Lumley & Scott rather than instead of it.
     "eff_p",
-    # Nested-comparison change stats (APA Table 7.13 in-table rows).
+    # Nested-comparison change stats (APA Table 7.15 in-table rows).
     # `nested = TRUE` auto-injects a class-aware subset; the user
     # can request any of these explicitly in `show_fit_stats`.
     "r2_change",

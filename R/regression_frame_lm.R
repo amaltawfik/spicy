@@ -620,7 +620,7 @@ as_regression_frame.glm <- function(fit, ...) {
 # Attach per-row outcome event counts to a frame (show_columns
 # "n_events"). Factor-level rows -- reference row included -- carry
 # the events and row count OF THAT LEVEL in the fit's own estimation
-# sample (STROBE item 16: the data behind the association, per
+# sample (STROBE item 16: the data behind the measures of association, per
 # category); continuous, intercept, and polynomial-contrast rows
 # carry the model totals (gtsummary add_nevent convention). Default
 # path derives the 0/1 indicator from a binomial glm response; other

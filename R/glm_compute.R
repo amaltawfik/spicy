@@ -778,8 +778,7 @@ compute_pseudo_r2_tjur <- function(fit) {
 # Reference rows (en-dash) and singular coefs (NA) pass through
 # untouched. The "(Intercept)" row IS exponentiated because exp()
 # of the intercept is the baseline odds / rate / ... -- meaningful
-# in its own right (Stata reports it; SPSS reports it; APA Manual 7
-# Section 6.46 example).
+# in its own right (Stata reports it; SPSS reports it).
 apply_exponentiate_to_coefs <- function(coefs) {
   if (is.null(coefs) || nrow(coefs) == 0L) {
     return(coefs)

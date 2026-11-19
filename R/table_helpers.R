@@ -695,10 +695,10 @@ safe_glyph_width <- function(x) {
 # Non-decimal cells (en-dash, "NA", "N/A", etc.) are positioned so
 # the glyph centers on the decimal-mark column. For a single-char
 # glyph this lines the en-dash up exactly with the `.` of the other
-# rows -- the convention recommended by APA Manual 7 Section 7.13
-# ("use a dash in the cell position where a number would otherwise
-# appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
-# guidelines. Multi-char placeholders are centered around the
+# rows. APA Manual 7 Section 7.13 (pp. 202-203) puts a dash in a cell
+# whose data were not obtained ("insert a dash in that cell"); centering
+# it on the decimal mark follows Stata `esttab`, `modelsummary`, and
+# Hochuli typography guidelines. Multi-char placeholders are centered around the
 # decimal-mark position with bias-left for even widths.
 decimal_align_strings <- function(
   values,
@@ -778,8 +778,8 @@ decimal_align_strings <- function(
       #   (b) Non-numeric placeholder (en-dash, "NA", "N/A") --
       #       center the glyph on the decimal-mark column
       #       position so it visually replaces the `.` of the
-      #       absent value. APA Manual 7 Section 7.13 / Stata
-      #       esttab / modelsummary convention.
+      #       absent value. Stata esttab / modelsummary convention
+      #       (APA Manual 7 Section 7.13 gives the dash itself).
       if (grepl("^-?[0-9]+$", core[i])) {
         pad_l <- strrep(pad_char, max_before - before[i])
         pad_r <- strrep(pad_char, 1L + max_after - sfx[i])

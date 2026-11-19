@@ -1461,8 +1461,7 @@ build_ame_satterthwaite_footer_block_from_frames <- function(
   # Phase 7c22: trim the methodological detail. The Pustejovsky &
   # Tipton 2018 reference and the clubSandwich function name belong in
   # the help page (`?table_regression`), not in every table footer
-  # (APA Manual 7 sec. 7.10: keep table notes brief; methodological
-  # references go in the surrounding text). The footer keeps the
+  # (methodological references go in the surrounding text). The footer keeps the
   # actionable summary "t-test with Satterthwaite df", with a one-word
   # qualifier when the lm / glm paths diverge.
   qualifier <- if (any_lm && any_glm) {

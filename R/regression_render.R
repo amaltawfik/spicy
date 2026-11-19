@@ -2398,7 +2398,7 @@ fit_stat_label <- function(token) {
     log_lik = spicy_str("fitstat_log_lik"),
     concordance = spicy_str("fitstat_concordance"),
     eff_p = spicy_str("fitstat_eff_p"),
-    # Nested-comparison change tokens (APA Table 7.13)
+    # Nested-comparison change tokens (APA Table 7.15)
     r2_change = change_label(spicy_str("symbol_r2")),
     adj_r2_change = change_label(spicy_str("fitstat_adj_r2")),
     f_change = spicy_str("fitstat_f_change"),

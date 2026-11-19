@@ -1216,7 +1216,8 @@ spicy_style <- function(
       #  before a decimal when the statistic cannot be greater than 1".
       # "Report other means and standard deviations and correlations,
       #  proportions, and inferential statistics ... to two decimals."
-      # Sample tables: "95% CI [LL, UL]"; probability notes
+      # Publication Manual Table 7.16 (p. 219): "[LL, UL]" in one column,
+      #  the alternative the Sample tables page names; probability notes
       #  "*p < .05. **p < .01." and "***p < .001."
       # The star thresholds are deliberately NOT a rule of this theme,
       # so they are not in `rules` either: one `stars` lever carries

@@ -1927,7 +1927,7 @@ output_flextable <- function(rendered) {
     where = "note",
     decimal_mark = struct$format_spec$decimal_mark
   )
-  # APA Manual 7 Section 7.10-Section 7.11: the caption is flush-left
+  # APA Manual 7 Sections 7.10-7.11 (pp. 200-201): the caption is flush-left
   # (italic-styled by Word's "Table Caption" style at the OOXML level
   # when rendered into docx). Same helper as the descriptive
   # families; this builder pins Calibri on the whole table, so the

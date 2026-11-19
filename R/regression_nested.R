@@ -5,7 +5,7 @@
 # rows -- not as a "-- Model comparison --" footer block. Each
 # adjacent pair (M2 vs M1, M3 vs M2, ...) contributes one column
 # of change stats; the FIRST model column gets en-dashes (no
-# previous model to compare to). APA Table 7.13 / Stata `esttab` /
+# previous model to compare to). APA Table 7.15 (p. 219) / Stata `esttab` /
 # SPSS Model Summary convention.
 #
 # Tokens (all *_change suffix for consistency):
@@ -37,9 +37,10 @@
 # Class-aware default token sets (injected by table_regression() when
 # `nested = TRUE` and the user did not supply `show_fit_stats`):
 #   * least squares : c("r2_change", "f_change", "p_change") -- APA
-#                     Table 7.13
-#   * likelihood    : c("lrt_change", "p_change")  -- Hosmer & Lemeshow
-#                     Section 3.5 / Long & Freese 2014 Section 3.6
+#                     Table 7.15
+#   * likelihood    : c("lrt_change", "p_change")  -- Hosmer, Lemeshow
+#                     & Sturdivant 2013 Section 2.4 / Long & Freese 2014
+#                     Section 3.2.4
 #   * estimated dispersion (glm, feglm): c("f_change", "p_change")
 # Mixed-class hierarchies route through the least-squares path; the
 # likelihood side en-dashes the variance-explained tokens.
@@ -999,8 +1000,8 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 # called `compute_one_pair_glm` until it stopped being about glm; the
 # name now says what routes a pair here, which is the test it computes.
 #
-# The statistic is the LRT chi-square (Hosmer & Lemeshow Section 3.5;
-# Long & Freese 2014 Section 3.2.4) -- the canonical hierarchical test,
+# The statistic is the LRT chi-square (Hosmer, Lemeshow & Sturdivant
+# 2013 Section 2.4; Long & Freese 2014 Section 3.2.4) -- the canonical hierarchical test,
 # mirroring the role of partial F in lm. It is read off the class's own
 # anova() table where one exists, and recomputed from the likelihoods
 # otherwise. Variance-explained tokens (r2_change, adj_r2_change,

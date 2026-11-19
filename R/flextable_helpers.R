@@ -316,7 +316,8 @@
 # Set the title every gt route prints above its table: the same title
 # the console announces, laid out the APA way.
 #
-# APA Manual 7 Section 7.10-Section 7.11: caption is flush-left. gt's
+# APA Manual 7 Section 7.10 (p. 200): the table number is flush left,
+# and the italic title sits below it (Section 7.11, p. 201). gt's
 # default centers the title; override via `cell_text(align = "left")`
 # on `cells_title("title")`. Also drop the title's bottom border --
 # the spanner row below already carries the outer top rule via
@@ -551,7 +552,8 @@
 #     overrides the caller's `text.align` with the underlying table's
 #     alignment (via `process_caption_fp_par()`); the table is centered
 #     for HTML output, so the caption would be too. FALSE keeps the
-#     APA flush-left caption (APA Manual 7 Section 7.10-7.11).
+#     APA flush-left caption (APA Manual 7 Sections 7.10-7.11,
+#     pp. 200-201).
 #   * `padding.bottom`: the rendered HTML caption otherwise has
 #     `padding-bottom: 0pt` and sits flush against the table's top
 #     border. 6pt gives a comfortable APA-style gap.

@@ -2194,8 +2194,8 @@ table_regression <- function(
     )
   }
 
-  # Context-aware `show_columns` default. APA-7 Section 6.46 recommends
-  # CIs for inference, so a single-model table (the publication
+  # Context-aware `show_columns` default. APA Manual 7 Section 7.16 asks
+  # a table of point estimates to include CIs when possible, so a single-model table (the publication
   # workflow) keeps CI in the default ("all_b"). Multi-model tables
   # drop CI to fit the side-by-side layout in a typical console /
   # page width ("all_b_compact"); the multinomial columns layout has
@@ -2296,7 +2296,8 @@ table_regression <- function(
   # When `nested = TRUE`, change-stat tokens (`r2_change` / `f_change`
   # / `p_change` for lm; `lrt_change` / `p_change` for glm) are
   # injected RIGHT AFTER `r2` / `adj_r2` / `AIC` so the table reads
-  # "n / R^2 / Adj. R^2 / DeltaR^2 / F-change / p" as in APA Table 7.13.
+  # "n / R^2 / Adj. R^2 / DeltaR^2 / F-change / p", as the DeltaR^2 row
+  # follows R^2 in APA Table 7.15 (p. 219).
   user_set_fit_stats <- !is.null(show_fit_stats)
   # The tokens the call names: each one must give a row for some model
   # of the table (`.reg_check_requested_rows()`). A default token
@@ -3796,7 +3797,7 @@ table_regression <- function(
   # Standardized-on-non-additive caveat (Q15, Phase E)
   emit_standardized_caveat_if_needed(models, standardized, panel = panel_req)
 
-  # Nested-comparison change stats (APA Table 7.13 in-table rows).
+  # Nested-comparison change stats (APA Table 7.15 in-table rows).
   # Augments each `frames[[i]]$info$fit_stats` list with `r2_change`,
   # `f_change`, `p_change`, etc. (NA for Model 1). MUST run BEFORE
   # align_frames() because align_frames() rbinds the per-model
