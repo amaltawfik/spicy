@@ -65,6 +65,92 @@ test_that("the rendered documentation table covers every registry row", {
   expect_equal(length(strsplit(md, "\n")[[1]]), nrow(reg) + 2L)
 })
 
+test_that("the table of one family keeps its classes and drops the Family column", {
+  reg <- table_regression_models()
+  md <- strsplit(
+    spicy:::.render_supported_models_md("Survival"),
+    "\n",
+    fixed = TRUE
+  )[[1]]
+  surv <- reg$class[reg$family == "Survival"]
+  # Header, rule, then one row per class of the family and no other.
+  expect_length(md, length(surv) + 2L)
+  expect_false(grepl("Family", md[1L], fixed = TRUE))
+  expect_match(md[1L], "| Class | Engine |", fixed = TRUE)
+  for (cl in surv) {
+    expect_true(any(startsWith(md, paste0("| `", cl, "` |"))), info = cl)
+  }
+  expect_false(any(grepl("`lmerMod`", md, fixed = TRUE)))
+  # A name that is no family of the registry stops the page from building.
+  expect_error(
+    spicy:::.render_supported_models_md("Survivl"),
+    "Not a family of the registry: Survivl",
+    fixed = TRUE
+  )
+})
+
+test_that("the table of families of the README comes from the registry, notes included", {
+  reg <- table_regression_models()
+  md <- strsplit(spicy:::.render_family_engines_md(), "\n", fixed = TRUE)[[1]]
+  fams <- unique(reg$family)
+  # Header, rule, then one row per family, in the order of the registry.
+  expect_identical(md[1:2], c("| Family | Engines |", "|---|---|"))
+  expect_length(md, length(fams) + 2L)
+  expect_true(all(startsWith(md[-(1:2)], paste0("| ", fams, " | "))))
+  row <- function(fam) md[startsWith(md, paste0("| ", fam, " | "))]
+  # Every engine of a family is in its row, one function per code span.
+  for (i in seq_len(nrow(reg))) {
+    for (fn in strsplit(reg$engine[i], ", ", fixed = TRUE)[[1]]) {
+      expect_true(
+        grepl(paste0("`", fn, "`"), row(reg$family[i]), fixed = TRUE),
+        info = fn
+      )
+    }
+  }
+  # glmmTMB is lent to the families it also serves, with what it brings.
+  expect_match(
+    row("Ordinal"),
+    "`glmmTMB::glmmTMB()` (ordinal family)",
+    fixed = TRUE
+  )
+  expect_match(
+    row("Counts, two-part"),
+    "`glmmTMB::glmmTMB()` (zero-inflation, hurdle and dispersion components)",
+    fixed = TRUE
+  )
+  # The engine whose class carries a non-proportional block says so.
+  expect_match(
+    row("Ordinal"),
+    "`ordinal::clm()` (incl. partial proportional odds)",
+    fixed = TRUE
+  )
+  # The note of a family closes its row, and only the families that have
+  # one get a note.
+  expect_match(
+    row("Bayesian"),
+    "(posterior median, credible intervals, no p-values) |",
+    fixed = TRUE
+  )
+  expect_match(row("Survey-weighted"), "(design-based SEs) |", fixed = TRUE)
+  expect_false(grepl(") |", row("Survival"), fixed = TRUE))
+})
+
+test_that("the README shows the table of families the registry renders", {
+  readme <- testthat::test_path("..", "..", "README.md")
+  skip_if_not(file.exists(readme), "README.md not in this tree")
+  lines <- readLines(readme, warn = FALSE, encoding = "UTF-8")
+  # pandoc writes a no-break space after an abbreviation ("incl."), and
+  # its own rule under the header: the rows are compared with plain
+  # spaces, and the rule is left out.
+  lines <- gsub(intToUtf8(160L), " ", lines, fixed = TRUE)
+  md <- strsplit(spicy:::.render_family_engines_md(), "\n", fixed = TRUE)[[1]]
+  md <- md[md != "|---|---|"]
+  # A README that was not rebuilt after the registry changed fails here.
+  for (l in md) {
+    expect_true(l %in% lines, info = l)
+  }
+})
+
 test_that("every argument of table_regression() is common or of a family", {
   args <- names(formals(table_regression))
   fam <- names(.REG_FAMILY_ARGS)
