@@ -682,3 +682,126 @@ test_that("an IV fixest fit refuses the AME only without an exogenous regressor"
     expect_equal(sp$se[i], unname(se[c("fit_xen", "x")]), tolerance = 1e-4)
   }
 })
+
+# ---- Factors -----------------------------------------------------------------
+
+# The fixtures carry one numeric predictor: ten classes are refitted with
+# the factor `mn` of the fixture data (A, B, C) beside `x`, and each level
+# but the reference is held to the oracle (its contrast with level A).
+# multinom models `mn` itself, so it takes the factor `g` (six levels).
+ag_factor_cases <- list(
+  lm = list(
+    pkgs = NULL,
+    fit = function(d) lm(y ~ x + mn, d),
+    pf = ame_pf_link(identity)
+  ),
+  glm_logit = list(
+    pkgs = NULL,
+    fit = function(d) glm(yb ~ x + mn, binomial, d),
+    pf = ame_pf_link(stats::plogis)
+  ),
+  glm_poisson = list(
+    pkgs = NULL,
+    fit = function(d) glm(cnt ~ x + mn, poisson, d),
+    pf = ame_pf_link(exp)
+  ),
+  polr = list(
+    pkgs = "MASS",
+    fit = function(d) MASS::polr(ord ~ x + mn, d, Hess = TRUE),
+    beta = function(fit) c(fit$coefficients, fit$zeta),
+    pf = ag_pf_cum(c("lo", "mid", "hi"), function(b, D) {
+      X <- D$X[, colnames(D$X) != "(Intercept)", drop = FALSE]
+      list(
+        theta = matrix(b[c("lo|mid", "mid|hi")], nrow(X), 2L, byrow = TRUE),
+        eta = drop(X %*% b[colnames(X)]),
+        s = 1
+      )
+    })
+  ),
+  multinom = list(
+    pkgs = "nnet",
+    fit = function(d) nnet::multinom(mn ~ x + g, d, trace = FALSE),
+    rhs = ~ x + g,
+    vars = c("x", "g"),
+    beta = function(fit) {
+      cf <- stats::coef(fit)
+      stats::setNames(
+        as.vector(t(cf)),
+        paste0(rep(rownames(cf), each = ncol(cf)), ":", colnames(cf))
+      )
+    },
+    pf = function(b, D) {
+      E <- vapply(
+        c("B", "C"),
+        function(j) exp(drop(D$X %*% b[paste0(j, ":", colnames(D$X))])),
+        numeric(nrow(D$X))
+      )
+      P <- cbind(1, E) / (1 + rowSums(E))
+      colnames(P) <- c("A", "B", "C")
+      P
+    }
+  ),
+  lmer = list(
+    pkgs = "lme4",
+    fit = function(d) lme4::lmer(y ~ x + mn + (1 | g), d),
+    beta = function(fit) lme4::fixef(fit),
+    V = function(fit) as.matrix(stats::vcov(fit)),
+    pf = ame_pf_link(identity)
+  ),
+  svyglm = list(
+    pkgs = "survey",
+    fit = function(d) {
+      survey::svyglm(yb ~ x + mn, design = .svy_des(d), family = binomial)
+    },
+    w = TRUE,
+    pf = ame_pf_link(stats::plogis)
+  ),
+  betareg = list(
+    pkgs = "betareg",
+    fit = function(d) betareg::betareg(prop ~ x + mn, data = d),
+    pf = ame_pf_link(stats::plogis)
+  ),
+  lm_robust = list(
+    pkgs = "estimatr",
+    fit = function(d) estimatr::lm_robust(y ~ x + mn, data = d),
+    pf = ame_pf_link(identity)
+  ),
+  survreg = list(
+    pkgs = "survival",
+    fit = function(d) {
+      survival::survreg(survival::Surv(time, status) ~ x + mn, d)
+    },
+    pf = ame_pf_link(exp)
+  )
+)
+
+for (cl in names(ag_factor_cases)) {
+  local({
+    cl <- cl
+    test_that(paste0("the AME of each level of a factor matches: ", cl), {
+      skip_if_no_ame_guard()
+      cs <- ag_factor_cases[[cl]]
+      for (p in cs$pkgs) {
+        skip_if_not_installed(p)
+      }
+      d <- .class_fixture_data()
+      fit <- suppressWarnings(cs$fit(d))
+      or <- ame_oracle(
+        ame_prep_rhs(cs$rhs %||% ~ x + mn, d),
+        cs$pf,
+        (cs$beta %||% stats::coef)(fit),
+        (cs$V %||% stats::vcov)(fit),
+        d,
+        cs$vars %||% c("x", "mn"),
+        if (isTRUE(cs$w)) d$w
+      )
+      r <- ag_run(fit)
+      expect_false("spicy_fallback" %in% r$warnings)
+      sp <- r$rows[!is.na(r$rows$est), ]
+      expect_setequal(sp$key, or$key)
+      i <- match(or$key, sp$key)
+      expect_equal(sp$est[i], or$est, tolerance = 1e-6)
+      expect_equal(sp$se[i], or$se, tolerance = 1e-4)
+    })
+  })
+}
