@@ -9,10 +9,18 @@
   non-sparse `frailty()` term, which showed one row per spline basis or
   per cluster, `survey::svysurvreg()` fits, whose design went unmentioned,
   `nlme::nlme()` and `nlme::gnls()` fits, tabulated as linear models,
-  and the `lme` part of an `mgcv::gamm()` fit, whose random-effect rows
-  were the smooth terms of the GAM. A `coxph` fit with a sparse
-  `frailty()` term keeps its table but refuses the RMST and
-  risk-difference columns, which would ignore the random effect.
+  the `lme` part of an `mgcv::gamm()` fit, whose random-effect rows
+  were the smooth terms of the GAM, and a tobit-5
+  `sampleSelection::selection()` fit, whose second outcome equation was
+  left out. A `coxph` fit with a sparse `frailty()` term keeps its table
+  but refuses the RMST and risk-difference columns, which would ignore
+  the random effect.
+
+* `table_regression()`: the block of the `dispformula` of a `glmmTMB`
+  `beta_family()` model is labeled "Precision" instead of "Dispersion",
+  since that parameter is the precision, and its terms are keyed
+  `"Precision::"` in `tidy()` and `output = "long"`. A `betareg()` and a
+  `glmmTMB()` fit of the same model share its rows.
 
 * `table_regression()`: a transformed term of an rms model reads as in
   the formula, `log(bili)` and not rms's `bili`, like the same term of a
@@ -276,6 +284,21 @@
 
 ## New features
 
+* `table_regression()` shows the precision submodel of a
+  `betareg::betareg()` model (`y ~ x | z`) in a "Precision" block, on the
+  scale of its link, which `show_components = FALSE` omits. The title
+  names a mean link other than the logit ("Probit beta regression"), and
+  a weighted model reports its weighted count (`"weighted_nobs"`,
+  `glance()`).
+
+* `table_regression()` shows the error terms of a sample-selection model
+  (`selection()`, `heckit()`, `treatReg()`) in an "Error terms" block: σ
+  and ρ with their standard error and interval, and the inverse Mills
+  ratio of a two-step fit. `keep` and `drop` select these rows by
+  coefficient name, and `show_components = FALSE` omits the block. The
+  note names the estimation method, maximum likelihood or two-step, and
+  the number of observations whose outcome is observed.
+
 * `table_regression()`: `show_fit_stats = "log_lik"` shows the
   log-likelihood of each model, the value of `logLik()` from which the
   AIC row is computed. A model without a likelihood shows a dash, and
@@ -468,6 +491,18 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression()`: the p-values and intervals of a sample-selection
+  model use the t distribution on the residual degrees of freedom, as
+  `summary()` does, and the note says so. The note called them z tests.
+
+* `table_regression(nested = TRUE)` gives the likelihood-ratio test of
+  two selection models fitted by maximum likelihood, where it stopped on
+  an internal error. A two-step fit is refused with a message.
+
+* `table_regression()`: a selection model with a binary outcome and a
+  `treatReg()` model have titles of their own, and `exponentiate = TRUE`
+  on a selection model no longer mentions an identity link.
 
 * `table_regression()`: the standard errors of the average marginal
   effects of a `survey::svyolr()` model are now correct. They paired each
