@@ -3992,26 +3992,9 @@ validate_keep_drop <- function(keep, drop, call = rlang::caller_env()) {
         call = call
       )
     }
-    # The patterns are Perl regular expressions (`apply_keep_drop_filter()`
-    # reads them with `grepl(perl = TRUE)`): one that does not compile is
-    # refused here, in the name of the function called, rather than as
-    # grepl()'s error deep in the filter.
-    bad <- val[!vapply(val, .is_valid_perl_regex, logical(1))]
-    if (length(bad) > 0L) {
-      spicy_abort(
-        c(
-          sprintf(
-            "`%s` must hold regular expressions; %s %s not one.",
-            arg_name,
-            paste(.quote_val(bad), collapse = ", "),
-            if (length(bad) == 1L) "is" else "are"
-          ),
-          "i" = "Escape a literal character with a double backslash: `\"\\\\(\"` for a parenthesis."
-        ),
-        class = "spicy_invalid_input",
-        call = call
-      )
-    }
+    # A pattern that does not compile as a regular expression may still
+    # be the name of a term ("`a(`"): it is refused once the terms are
+    # known, by `.reg_warn_dead_patterns()`.
   }
   if (!is.null(keep) && !is.null(drop)) {
     spicy_abort(

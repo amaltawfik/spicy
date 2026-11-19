@@ -278,7 +278,8 @@
     .reg_warn_dead_patterns(
       c(intersect(term_order, seen), setdiff(seen, term_order)),
       arg("keep"),
-      arg("drop")
+      arg("drop"),
+      call = env
     )
   }
   .reg_emit_gathered(gathered, n, public_call)

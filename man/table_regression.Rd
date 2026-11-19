@@ -334,12 +334,14 @@ p-value use \code{"ame_p"}. \code{"none"} shows the fit statistics alone,
 one column per model (see \emph{Fit statistics alone} in
 \link{table_regression_tokens}).}
 
-\item{keep}{Character vector of regexes. Only coefficient rows
-whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g. \code{"wt"},
-\code{"cyl6"}, \code{"factor(cyl)8"}; the terms of an \code{rms} fit in the
+\item{keep}{Character vector of term names or regexes. Only
+coefficient rows whose term name (as in \code{\link[stats:coef]{stats::coef()}} -- e.g.
+\code{"wt"}, \code{"cyl6"}, \code{"factor(cyl)8"}; the terms of an \code{rms} fit in the
 spelling of \code{lm()}, \code{"cyl6"} for rms's \code{"cyl=6"} and \code{"wt:cyl6"}
 for \code{"wt * cyl=6"}) matches at
-least one pattern are kept. The intercept and the subordinate
+least one pattern are kept. A pattern is a Perl regular expression,
+and one identical to a term name also selects that term as
+written, with no escaping (\code{"log(bili)"}). The intercept and the subordinate
 blocks (thresholds, random effects) are exempt from \code{keep} and
 \code{drop}: \code{show_intercept}, \code{show_thresholds} and \code{show_re} govern
 them. The smooth terms of a GAM are predictors and are not exempt:

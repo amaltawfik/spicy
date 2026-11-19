@@ -953,12 +953,14 @@
 #'   p-value use `"ame_p"`. `"none"` shows the fit statistics alone,
 #'   one column per model (see *Fit statistics alone* in
 #'   [table_regression_tokens]).
-#' @param keep Character vector of regexes. Only coefficient rows
-#'   whose term name (as in [stats::coef()] -- e.g. `"wt"`,
-#'   `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the
+#' @param keep Character vector of term names or regexes. Only
+#'   coefficient rows whose term name (as in [stats::coef()] -- e.g.
+#'   `"wt"`, `"cyl6"`, `"factor(cyl)8"`; the terms of an `rms` fit in the
 #'   spelling of `lm()`, `"cyl6"` for rms's `"cyl=6"` and `"wt:cyl6"`
 #'   for `"wt * cyl=6"`) matches at
-#'   least one pattern are kept. The intercept and the subordinate
+#'   least one pattern are kept. A pattern is a Perl regular expression,
+#'   and one identical to a term name also selects that term as
+#'   written, with no escaping (`"log(bili)"`). The intercept and the subordinate
 #'   blocks (thresholds, random effects) are exempt from `keep` and
 #'   `drop`: `show_intercept`, `show_thresholds` and `show_re` govern
 #'   them. The smooth terms of a GAM are predictors and are not exempt:

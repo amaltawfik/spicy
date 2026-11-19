@@ -83,8 +83,9 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
 # is preserved for the surviving terms).
 #
 # `keep` and `drop` are validated upstream as mutually exclusive
-# character vectors of regex patterns. Multiple patterns combine
-# with logical OR (a row matches if ANY pattern matches).
+# character vectors of patterns: term names or regular expressions
+# (`.reg_pattern_hits()`). Multiple patterns combine with logical OR (a
+# row matches if ANY pattern matches).
 #
 # Side effect on `aligned`:
 #   * `coefs_aligned` filtered to the surviving terms
@@ -98,7 +99,8 @@ apply_keep_drop_filter <- function(
   aligned,
   keep = NULL,
   drop = NULL,
-  warn = TRUE
+  warn = TRUE,
+  call = rlang::caller_env()
 ) {
   if (is.null(keep) && is.null(drop)) {
     return(aligned)
@@ -115,17 +117,15 @@ apply_keep_drop_filter <- function(
   # other blocks are exempt (below).
   err <- aligned$coefs_aligned$factor_term %in% .REG_BLOCK_ERROR
   matches_any <- function(term, patterns) {
-    vapply(
-      term,
-      function(t) {
-        any(vapply(patterns, function(p) grepl(p, t, perl = TRUE), logical(1)))
-      },
-      logical(1)
+    Reduce(
+      `|`,
+      lapply(patterns, .reg_pattern_hits, terms = term),
+      rep(FALSE, length(term))
     )
   }
 
   if (isTRUE(warn)) {
-    .reg_warn_dead_patterns(terms, keep, drop)
+    .reg_warn_dead_patterns(terms, keep, drop, call = call)
   }
 
   keep_mask <- if (!is.null(keep)) {
@@ -211,30 +211,74 @@ apply_keep_drop_filter <- function(
 # every dead pattern instead of staying silent (the `coef_omit` bug class
 # documented in the 2026-08 field audit). `terms`: every term the
 # patterns were matched against.
-.reg_warn_dead_patterns <- function(terms, keep = NULL, drop = NULL) {
+#
+# A pattern that names no term and is no regular expression either is
+# refused, in the name of `call`: it could select nothing, under any
+# table.
+.reg_warn_dead_patterns <- function(
+  terms,
+  keep = NULL,
+  drop = NULL,
+  call = rlang::caller_env()
+) {
   dead <- character(0)
   for (p in c(keep, drop)) {
-    if (!any(grepl(p, terms, perl = TRUE))) {
+    if (!any(.reg_pattern_hits(p, terms))) {
       dead <- c(dead, p)
     }
   }
   if (length(dead) == 0L) {
     return(invisible(NULL))
   }
+  arg <- if (is.null(keep)) "`drop`" else "`keep`"
+  bad <- dead[!vapply(dead, .is_valid_perl_regex, logical(1))]
+  if (length(bad) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "%s must hold term names or regular expressions; %s %s neither.",
+          arg,
+          paste(.quote_val(bad), collapse = ", "),
+          if (length(bad) == 1L) "is" else "are"
+        ),
+        "i" = paste0(
+          "Escape a literal character with a double backslash: ",
+          "`\"\\\\(\"` for a parenthesis. ",
+          .reg_terms_sentence(terms)
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   spicy_warn(
     c(
       sprintf(
         "%s pattern(s) %s matched no coefficient term.",
-        if (is.null(keep)) "`drop`" else "`keep`",
+        arg,
         paste(.quote_val(dead), collapse = ", ")
       ),
       "i" = paste0(
-        "Patterns match term names as in `stats::coef()` (e.g. ",
+        "A pattern is a term name as in `stats::coef()` (e.g. ",
         "\"sexMale\", \"factor(cyl)8\"; an rms fit's in lm's spelling, ",
-        "\"sexMale\" for \"sex=Male\"), never display labels. ",
+        "\"sexMale\" for \"sex=Male\"), written as is, or a regular ",
+        "expression over those names, never a display label. ",
         .reg_terms_sentence(terms)
       )
     ),
     class = "spicy_no_match"
   )
+}
+
+# Which of `terms` a `keep` / `drop` pattern selects: the term it names
+# exactly, as written ("log(bili)", "I(age^2)", "s(age)", whose
+# parentheses and carets a regular expression reads otherwise), and the
+# terms it matches as a Perl regular expression. A pattern that is no
+# regular expression selects by name only.
+.reg_pattern_hits <- function(pattern, terms) {
+  hit <- terms %in% pattern
+  if (.is_valid_perl_regex(pattern)) {
+    hit <- hit | grepl(pattern, terms, perl = TRUE)
+  }
+  hit
 }
