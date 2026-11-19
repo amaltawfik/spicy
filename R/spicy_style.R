@@ -127,12 +127,12 @@
 #' for a coherent French report table -- French words, and numbers
 #' written the French way: comma decimal mark, and the leading zero
 #' French typography keeps on a p-value (`0,003`). "La virgule est
-#' utilisee pour separer les unites des decimales" (European Union,
-#' *Code de redaction interinstitutionnel*, French edition 2022,
-#' point 6.5, `https://style-guide.europa.eu/fr`); "Si le nombre se
-#' situe entre +1 et -1, le separateur decimal est toujours precede
-#' d'un zero" (BIPM, *Le Systeme international d'unites*, 9th
-#' edition, 2019, section 5.4.4,
+#' utilisée pour séparer les unités des décimales" (European Union,
+#' *Code de rédaction interinstitutionnel*, French edition 2022,
+#' point 6.5, p. 110, `https://style-guide.europa.eu/fr`); "Si le nombre
+#' se situe entre +1 et −1, le séparateur décimal est toujours précédé
+#' d’un zéro" (BIPM, *Le Système international d’unités*, 9th
+#' edition, 2019, section 5.4.4, p. 38,
 #' `https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`).
 #' `"en"` brings no locale, and nothing changes for anyone who sets
 #' no language. The locale reaches the exploration pair as well:
@@ -176,7 +176,7 @@
 #' ## `"jama"` -- JAMA / JAMA Network
 #'
 #' Source: *Instructions for Table Creation*, JAMA Network author
-#' document, 23 February 2016
+#' document, undated (PDF file created 23 February 2016)
 #' (`https://jamanetwork.com/DocumentLibrary/InstructionsForAuthors/InstructionsForTableCreation.pdf`),
 #' consulted 2026-08-14.
 #'
@@ -230,15 +230,13 @@
 #'
 #' Encoded:
 #' \itemize{
-#'   \item tiered p-values, leading zero kept -- "In general, P values
-#'     larger than 0.01 should be reported to two decimal places, and
-#'     those between 0.01 and 0.001 to three decimal places; P values
-#'     smaller than 0.001 should be reported as P<0.001." The
-#'     guideline's own text writes `0.01` / `0.001`: unlike JAMA, the
-#'     leading zero stays.
-#'   \item measures of association on two decimals -- "measures of
-#'     association, such as odds ratios, should ordinarily be reported
-#'     to two decimal places" (a pin of spicy's default).
+#'   \item tiered p-values, leading zero kept -- the guidelines ask for
+#'     two decimal places above 0.01, three between 0.01 and 0.001, and
+#'     P<0.001 below. The guideline's own text writes `0.01` / `0.001`:
+#'     unlike JAMA, the leading zero stays.
+#'   \item measures of association on two decimals -- the guidelines
+#'     ask for two decimal places for measures of association such as
+#'     odds ratios (a pin of spicy's default).
 #' }
 #'
 #' Not encoded: the guideline's stated exceptions to the p rule
@@ -268,8 +266,9 @@
 #'   \item midline decimal mark, U+00B7, on every number in the table
 #'     -- "Type decimal points midline (ie, 23`[.]`4, not 23.4)."
 #'   \item p-values on two significant figures, capped at four
-#'     decimals, floored at `p<0[.]0001`, leading zero kept --
-#'     "Supply p values to two significant figures (capped at four
+#'     decimals, floored at `p<0[.]0001`, leading zero kept -- the two
+#'     formatting guidelines, p. 4 of each: "Supply p values to two
+#'     significant figures (capped at four
 #'     decimal places), or p<0`[.]`0001."
 #'   \item en dash between the bounds of a confidence interval. **This
 #'     one is not a written rule**: the journal states none. It matches
@@ -362,8 +361,10 @@
 #'     means and standard deviations and correlations, proportions,
 #'     and inferential statistics (t, F, chi-square) to two decimals."
 #'   \item confidence intervals in square brackets, bounds separated by
-#'     a comma -- the *Sample tables* page gives
-#'     `95% CI [LL, UL]` as one of the two official layouts.
+#'     a comma -- the *Publication Manual*, 7th edition (2020), Table
+#'     7.16 (p. 219), prints them `[LL, UL]` in a single column, the
+#'     alternative the *Sample tables* page names to its separate `LL`
+#'     and `UL` columns.
 #'   \item the note under the table opens with "Note." in italics
 #'     (`note_label = "Note."`) -- the *Publication Manual*, 7th edition
 #'     (2020), section 7.14: the general note is "designated by the word
@@ -567,6 +568,18 @@
 #'   source document and the exact list of encoded rules; `print()`
 #'   shows it. `spicy_style_names()` returns the character vector of
 #'   available theme names.
+#'
+#' @references
+#' American Medical Association. (2020). *AMA Manual of Style: A Guide for
+#' Authors and Editors* (11th ed.). Oxford University Press.
+#' \doi{10.1093/jama/9780190246556.001.0001}
+#'
+#' American Psychological Association. (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.).
+#' \doi{10.1037/0000165-000}
+#'
+#' University of Chicago Press. (2024). *The Chicago Manual of Style*
+#' (18th ed.). University of Chicago Press.
 #'
 #' @examples
 #' fit <- lm(mpg ~ wt + hp, data = mtcars)
