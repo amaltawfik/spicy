@@ -24,8 +24,8 @@
 #' @details
 #' # Pages by model family
 #'
-#' This page documents every argument. What is proper to one family of
-#' models, its own arguments and the values the shared ones take for it,
+#' This page documents every argument. What is specific to one family of
+#' models (its own arguments and the values the shared ones take for it)
 #' is on the page of that family:
 #'
 #' \itemize{
