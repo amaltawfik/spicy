@@ -761,12 +761,15 @@
 #'     hierarchy itself is the question.
 #' }
 #' In the first three, `nested = FALSE` renders the models side by
-#' side instead.
+#' side instead. A hierarchy holding an `rms::ols()` or `rms::lrm()`
+#' fit estimated with `penalty =` is rendered side by side, without
+#' change statistics and with a warning: neither the partial F nor the
+#' likelihood-ratio test is valid for penalized estimates.
 #'
 #' Default change tokens auto-injected when `show_fit_stats` is
 #' `NULL`:
 #' \itemize{
-#'   \item All-lm (and `nls`): `c("r2_change", "f_change",
+#'   \item All-lm (`rms::ols` and `nls` included): `c("r2_change", "f_change",
 #'     "p_change")` -- APA hierarchical regression standard.
 #'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer,
 #'     Lemeshow & Sturdivant 2013 Section 2.4; Long & Freese 2014
@@ -798,8 +801,8 @@
 #' not a variance-explained change, and the message points at
 #' `"lrt_change"` + `"p_change"`. A quantile hierarchy refuses
 #' them too, and `"lrt_change"` with them, pointing at
-#' `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
-#' least-squares tokens.
+#' `"f_change"` + `"p_change"` instead. `lm`, `rms::ols` and `nls`
+#' keep the least-squares tokens.
 #'
 #' **The change test follows `vcov`.** Under the classical `vcov` the
 #' change test is the partial F, the likelihood-ratio test, the F test
@@ -2186,6 +2189,14 @@ table_regression <- function(
   # table checks the `vcov` and `cluster` of every model, and warns about
   # each in the words of the whole list: its panels do not again.
   validate_nested_alignment(models, nested)
+  nested_req <- nested
+  nested <- nested_without_penalized(models, nested)
+  if (!identical(nested, nested_req) && !is.null(show_fit_stats)) {
+    show_fit_stats <- setdiff(
+      show_fit_stats,
+      c(.NESTED_CHANGE_TOKENS, .NESTED_WALD_CHANGE_TOKENS)
+    )
+  }
   if (is.null(panel_req)) {
     validate_cluster_lists(vcov, cluster, models)
   }

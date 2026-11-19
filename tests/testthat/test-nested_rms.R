@@ -81,20 +81,22 @@ test_that("cph pair matches rms::lrtest() exactly", {
   expect_equal(fb$stat, unname(oracle[["L.R. Chisq"]]), tolerance = 1e-8)
 })
 
-test_that("ols pair matches rms::lrtest() exactly -- the real gain", {
+test_that("ols pair matches its lm twin's anova() exactly", {
   p <- rms_pairs()
-  # The baseline this replaces: anova.rms refuses a two-model call, so
-  # the least-squares route produced nothing at all.
+  # anova.rms refuses a two-model call: the pair is compared as the lm
+  # it also is (2026-11-19; it was rms::lrtest() before).
   expect_error(stats::anova(p$ols1, p$ols2))
   got <- compute_nested_comparisons(list(p$ols1, p$ols2))
-  oracle <- rms::lrtest(p$ols1, p$ols2)$stats
+  l1 <- stats::lm(yc ~ x1, data = p$data)
+  l2 <- stats::lm(yc ~ x1 + x2, data = p$data)
+  oracle <- stats::anova(l1, l2)
+  expect_equal(got$f_change[1L], oracle$F[2L], tolerance = 1e-12)
+  expect_equal(got$p_change[1L], oracle[["Pr(>F)"]][2L], tolerance = 1e-12)
   expect_equal(
     got$lrt_change[1L],
-    unname(oracle[["L.R. Chisq"]]),
-    tolerance = 1e-12
+    2 * as.numeric(stats::logLik(l2) - stats::logLik(l1)),
+    tolerance = 1e-10
   )
-  expect_equal(got$p_change[1L], rms_p_oracle(oracle), tolerance = 1e-12)
-  expect_true(is.finite(got$aic_change[1L]))
   expect_equal(
     got$aic_change[1L],
     unname(stats::AIC(p$ols2) - stats::AIC(p$ols1)),
@@ -113,33 +115,36 @@ test_that("an lrm hierarchy renders instead of aborting", {
   expect_s3_class(out, "data.frame")
 })
 
-test_that("an ols hierarchy reports the LRT it now has", {
+test_that("an ols hierarchy reports the partial F of its lm twin", {
   p <- rms_pairs()
   expect_identical(
     default_nested_tokens(list(p$ols1, p$ols2)),
-    c("lrt_change", "p_change")
+    c("r2_change", "f_change", "p_change")
   )
-  expect_true(all_likelihood_path(list(p$ols1, p$ols2)))
+  expect_false(all_likelihood_path(list(p$ols1, p$ols2)))
   txt <- paste(
     capture.output(table_regression(list(p$ols1, p$ols2), nested = TRUE)),
     collapse = "\n"
   )
-  oracle <- rms::lrtest(p$ols1, p$ols2)$stats
+  oracle <- stats::anova(
+    stats::lm(yc ~ x1, data = p$data),
+    stats::lm(yc ~ x1 + x2, data = p$data)
+  )
   expect_match(
     txt,
-    formatC(unname(oracle[["L.R. Chisq"]]), format = "f", digits = 2),
+    formatC(oracle$F[2L], format = "f", digits = 2),
     fixed = TRUE
   )
 })
 
 # The class-aware default and the token validator read ONE predicate, so
-# a variance-explained change token on an ols hierarchy is refused with
+# a variance-explained change token on a cph hierarchy is refused with
 # the reason rather than rendered as an empty row.
-test_that("ols refuses the variance-explained change tokens", {
+test_that("cph refuses the variance-explained change tokens", {
   p <- rms_pairs()
   err <- expect_error(
     table_regression(
-      list(p$ols1, p$ols2),
+      list(p$cph1, p$cph2),
       nested = TRUE,
       show_fit_stats = c("nobs", "r2_change")
     ),
@@ -147,21 +152,13 @@ test_that("ols refuses the variance-explained change tokens", {
   )
   expect_match(conditionMessage(err), "r2_change", fixed = TRUE)
   expect_match(conditionMessage(err), "likelihood-ratio", fixed = TRUE)
-  # The headline names the ROUTE, not a property of the class. rms::ols
-  # IS ordinary least squares and carries a real R-squared -- identical
-  # to lm's on the same data -- so "not defined for `ols` models" was
-  # simply false.
+  # The headline names the ROUTE, not a property of the class.
   expect_match(
     conditionMessage(err),
-    "spicy compares a `ols` hierarchy through the likelihood-ratio",
+    "spicy compares a `cph` hierarchy through the likelihood-ratio",
     fixed = TRUE
   )
   expect_false(grepl("are not defined for", conditionMessage(err)))
-  expect_equal(
-    unname(p$ols2$stats[["R2"]]),
-    summary(stats::lm(yc ~ x1 + x2, data = p$data))$r.squared,
-    tolerance = 1e-12
-  )
 })
 
 
@@ -169,9 +166,9 @@ test_that("ols refuses the variance-explained change tokens", {
 
 test_that("a non-nested rms pair relays rms's own refusal, cleanly", {
   p <- rms_pairs()
-  other <- rms::ols(yc ~ x2, data = p$data)
+  other <- rms::lrm(yb ~ x2, data = p$data)
   err <- expect_error(
-    compute_nested_comparisons(list(p$ols1, other)),
+    compute_nested_comparisons(list(p$lrm1, other)),
     class = "spicy_invalid_input"
   )
   expect_match(conditionMessage(err), "rms::lrtest()", fixed = TRUE)

@@ -181,9 +181,59 @@ is_dispersion_pair <- function(fit_prev, fit_curr) {
 # A pair BOTH of whose members are rms fits (ols, lrm, cph, Glm, psm,
 # orm -- every class in the family carries "rms"). Such a pair has its
 # own two-model comparison function and rides neither generic path; see
-# compute_one_pair_rms().
+# compute_one_pair_rms(). Two ols fits are not such a pair: least squares
+# like their lm twin, they ride its route (compute_one_pair_lm()).
 is_rms_pair <- function(fit_prev, fit_curr) {
-  inherits(fit_prev, "rms") && inherits(fit_curr, "rms")
+  inherits(fit_prev, "rms") &&
+    inherits(fit_curr, "rms") &&
+    !is_ols_pair(fit_prev, fit_curr)
+}
+
+is_ols_pair <- function(fit_prev, fit_curr) {
+  inherits(fit_prev, "ols") && inherits(fit_curr, "ols")
+}
+
+# `nested` once the hierarchy is checked for penalized fits: an ols or
+# lrm fitted with `penalty =` (.rms_penalty()) has biased coefficients
+# and a penalized likelihood, so neither the partial F nor the
+# likelihood-ratio test has its reference distribution. Measured on
+# 2026-11-19: an ols pair gave a chi-square on fractional df (main) or
+# a base error (the lm route, a penalized ols has no QR); an lrm pair
+# whose larger model is penalized fits "worse" and its change rows
+# vanished without a word. The models are rendered side by side, with
+# a warning in the form of the single-fit one (validate_nested_alignment()).
+nested_without_penalized <- function(models, nested) {
+  if (!isTRUE(nested) || length(models) < 2L) {
+    return(nested)
+  }
+  pen <- vapply(
+    models,
+    function(fit) inherits(fit, "rms") && !is.null(.rms_penalty(fit)),
+    logical(1)
+  )
+  if (!any(pen)) {
+    return(nested)
+  }
+  spicy_warn(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare penalized fits; the models were ",
+        "rendered side by side, without change statistics."
+      ),
+      "x" = sprintf(
+        "Fitted with a penalty: %s.",
+        paste0("Model ", which(pen), collapse = ", ")
+      ),
+      "i" = paste0(
+        "Penalized estimation biases the coefficients and the likelihood, ",
+        "so neither the partial F nor the likelihood-ratio test has its ",
+        "reference distribution."
+      ),
+      "i" = "Compare the fits estimated without a penalty."
+    ),
+    class = "spicy_ignored_arg"
+  )
+  FALSE
 }
 
 # TRUE when EVERY fit in a list rides the likelihood-ratio path, and so
@@ -199,13 +249,14 @@ is_rms_pair <- function(fit_prev, fit_curr) {
 # inheritance from "lm" and keeps its own, older arm.
 #
 # rms is decided SECOND and included, class vector notwithstanding: the
-# whole family compares through rms::lrtest(), so an ols hierarchy --
-# least squares, "lm" in its class vector, a real R-squared on the fit --
-# reports the likelihood-ratio chi-square and no variance-explained
-# change. Saying so here is what keeps the class-aware default and the
-# token validator from disagreeing about ols.
+# family compares through rms::lrtest(). An ols hierarchy is the
+# exception, decided with rq: least squares, it reports what its lm twin
+# reports, the partial F and the change in R-squared.
 all_likelihood_path <- function(models) {
   if (all(vapply(models, inherits, logical(1), "rq"))) {
+    return(FALSE)
+  }
+  if (all(vapply(models, inherits, logical(1), "ols"))) {
     return(FALSE)
   }
   if (length(models) > 0L && all(vapply(models, inherits, logical(1), "rms"))) {
@@ -918,6 +969,13 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     change_df1 = NA_real_,
     change_df2 = NA_real_
   )
+  # An ols is the lm it also is: rms's anova() and summary() describe a
+  # single fit, and lm's methods give the partial F, the R-squared and
+  # the likelihood of its lm twin.
+  if (is_ols_pair(fit_prev, fit_curr)) {
+    fit_prev <- structure(fit_prev, class = "lm")
+    fit_curr <- structure(fit_curr, class = "lm")
+  }
 
   av <- tryCatch(
     suppressWarnings(stats::anova(fit_prev, fit_curr)),
@@ -1394,8 +1452,10 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 # ---- Per-pair rms computation --------------------------------------------
 
 # rms fits compare through rms::lrtest(), the package's own two-model
-# likelihood-ratio test, for every class in the family: ols, lrm, cph,
-# Glm, psm, orm.
+# likelihood-ratio test, for every class in the family: lrm, cph, Glm,
+# psm, orm. A pair of ols fits, which this route once served too, is
+# compared as its lm twin since 2026-11-19: the partial F of anova(),
+# which rms's own anova() reports for an ols fit.
 #
 # They had to be routed away from BOTH generic paths, because they fit
 # both of them wrongly. anova.rms is a single-fit Wald test, not a model
@@ -1444,10 +1504,11 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 # fit$parms is length 0 for weibull and for exponential alike -- so it
 # is a policy about relaying warnings, not a described behavior.)
 #
-# Variance-explained tokens stay NA for the whole family, ols included:
-# the comparison reported IS the likelihood-ratio chi-square, and
-# all_likelihood_path() says so, so the class-aware default and the
-# token validator cannot disagree about it.
+# Variance-explained tokens stay NA for the whole family: the comparison
+# reported IS the likelihood-ratio chi-square, and all_likelihood_path()
+# says so, so the class-aware default and the token validator cannot
+# disagree about it. A pair of ols fits does not come here: it is
+# compared as its lm twin (is_rms_pair()).
 compute_one_pair_rms <- function(fit_prev, fit_curr) {
   na <- list(
     r2_change = NA_real_,

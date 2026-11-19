@@ -141,3 +141,85 @@ test_that("vcov = 'CR0' on an lrm bootstrap fit, which lost the model's variance
     class = "spicy_unsupported_vcov"
   )
 })
+
+
+# ---- F4: an ols hierarchy is compared as its lm twin ------------------------
+
+test_that("nested ols fits give the change rows of their lm twin", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  o0 <- rms::ols(y ~ x1, data = d)
+  o1 <- rms::ols(y ~ x1 + x2 + w, data = d)
+  l0 <- lm(y ~ x1, data = d)
+  l1 <- lm(y ~ x1 + x2 + w, data = d)
+  toks <- c(
+    "r2_change",
+    "adj_r2_change",
+    "f_change",
+    "f2_change",
+    "lrt_change",
+    "aic_change",
+    "bic_change",
+    "deviance_change",
+    "p_change"
+  )
+  fs <- function(m) {
+    fr <- table_regression(
+      m,
+      nested = TRUE,
+      show_fit_stats = toks,
+      digits = 10,
+      output = "data.frame"
+    )
+    fr <- fr[fr$.row_role == "fit_stat", ]
+    attr(fr, "note") <- NULL
+    fr
+  }
+  expect_identical(fs(list(o0, o1)), fs(list(l0, l1)))
+  av <- anova(l0, l1)
+  def <- table_regression(list(o0, o1), nested = TRUE, output = "data.frame")
+  expect_setequal(
+    def$variable[def$.row_role == "fit_stat"],
+    c("nobs", "r2", "r2_change", "f_change", "p_change")
+  )
+  expect_true(any(grepl(
+    format(round(av$F[2], 2), nsmall = 2),
+    capture.output(print(table_regression(list(o0, o1), nested = TRUE))),
+    fixed = TRUE
+  )))
+})
+
+test_that("a hierarchy holding a penalized ols or lrm fit has no change rows and says why", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  pairs <- list(
+    ols = list(
+      rms::ols(y ~ x1, data = d),
+      rms::ols(y ~ x1 + x2, data = d, penalty = 5)
+    ),
+    lrm = list(
+      rms::lrm(yb ~ x1, data = d),
+      rms::lrm(yb ~ x1 + x2, data = d, penalty = 5)
+    )
+  )
+  for (m in pairs) {
+    expect_warning(
+      tbl <- table_regression(m, nested = TRUE, output = "data.frame"),
+      "`nested = TRUE` cannot compare penalized fits",
+      class = "spicy_ignored_arg"
+    )
+    expect_false(any(grepl("_change$", tbl$variable)))
+    # A change token named in the call leaves with the comparison.
+    expect_warning(
+      tbl <- table_regression(
+        m,
+        nested = TRUE,
+        show_fit_stats = c("nobs", "lrt_change", "p_change"),
+        output = "data.frame"
+      ),
+      "Model 2",
+      class = "spicy_ignored_arg"
+    )
+    expect_identical(tbl$variable[tbl$.row_role == "fit_stat"], "nobs")
+  }
+})
